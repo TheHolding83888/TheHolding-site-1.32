@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layer 1: Autonomous Intelligence Infrastructure | TheHolding.eth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #fafaf9;
+            --bg-secondary: #ffffff;
+            --bg-dark: #1c1917;
+            --text-primary: #1c1917;
+            --text-secondary: #57534e;
+            --text-tertiary: #a8a29e;
+            --border-light: #e7e5e4;
+            --border-medium: #d6d3d1;
+            --accent-gold: #d4af37;
+            --accent-emerald: #059669;
+            --accent-purple: #7c3aed;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .serif {
+            font-family: 'Playfair Display', Georgia, serif;
+        }
+
+        /* Elegant grain texture */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.015;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Premium Header */
+        header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-light);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            box-shadow: var(--shadow-md);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: #9ca3af;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        .brand-logo svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .brand-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-badge {
+            padding: 0.5rem 1rem;
+            background: var(--bg-dark);
+            color: white;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 8rem 0 6rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, var(--border-light), transparent);
+        }
+
+        .hero-eyebrow {
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 600;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            font-weight: 400;
+            line-height: 1.8;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        /* Agent Grid */
+        .agents-section {
+            padding: 6rem 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .agent-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .agent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--agent-color);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .agent-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--agent-color);
+        }
+
+        .agent-card.expanded {
+            transform: none;
+        }
+
+        .agent-card.substantia {
+            --agent-color: var(--accent-gold);
+        }
+
+        .agent-card.defitea {
+            --agent-color: var(--accent-emerald);
+        }
+
+        .agent-card.singul {
+            --agent-color: var(--accent-purple);
+        }
+
+        .sources-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 0;
+        }
+
+        .sources-panel.open {
+            max-height: 600px;
+            margin-top: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .sources-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--agent-color);
+            margin-bottom: 0.75rem;
+        }
+
+        .sources-title {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--agent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .sources-count {
+            font-size: 0.6875rem;
+            color: var(--text-tertiary);
+        }
+
+        .sources-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.4rem;
+        }
+
+        .source-item {
+            padding: 0.4rem;
+            background: var(--bg-primary);
+            border-left: 2px solid var(--agent-color);
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+
+        .source-item:hover {
+            transform: translateX(2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .source-title {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.05rem;
+            line-height: 1.15;
+        }
+
+        .source-author {
+            font-size: 0.5625rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            line-height: 1.15;
+        }
+
+        .source-type {
+            display: inline-block;
+            margin-top: 0.2rem;
+            padding: 0.05rem 0.35rem;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 2px;
+            font-size: 0.5rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .agent-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: var(--agent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .agent-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .agent-role {
+            font-size: 0.875rem;
+            color: var(--agent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-description {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            font-size: 0.9375rem;
+        }
+
+        .agent-knowledge {
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .knowledge-title {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .knowledge-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .knowledge-item {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding-left: 1.25rem;
+            position: relative;
+        }
+
+        .knowledge-item::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--agent-color);
+            font-weight: 600;
+        }
+
+        /* Live Demo Section */
+        .demo-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .demo-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .demo-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .demo-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+
+        .demo-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .demo-button {
+            padding: 0.875rem 2rem;
+            border: 2px solid var(--border-medium);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.02em;
+        }
+
+        .demo-button:hover {
+            border-color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        .demo-button.active {
+            background: var(--bg-dark);
+            color: white;
+            border-color: var(--bg-dark);
+        }
+
+        .conversation-window {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 2rem;
+            max-height: 600px;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .message {
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--agent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .message-meta {
+            flex: 1;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        .message-content {
+            padding-left: 3rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .typing-indicator {
+            padding-left: 3rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+            font-style: italic;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        /* Ask Question Section */
+        .ask-section {
+            margin-top: 4rem;
+            padding-top: 3rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .ask-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .ask-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .ask-subtitle {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        .ask-input-container {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .ask-input {
+            width: 100%;
+            padding: 1.25rem 7rem 1.25rem 1.5rem;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-medium);
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ask-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+
+        .ask-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .ask-submit {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0.875rem 2rem;
+            background: var(--bg-dark);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ask-submit:hover {
+            background: var(--text-primary);
+            transform: translateY(-50%) scale(1.02);
+        }
+
+        .ask-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ask-note {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8125rem;
+            color: var(--text-tertiary);
+            font-style: italic;
+        }
+
+        /* Knowledge Base Section */
+        .knowledge-section {
+            padding: 6rem 0;
+        }
+
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .knowledge-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .knowledge-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .knowledge-card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .knowledge-card-description {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .knowledge-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .knowledge-stat {
+            text-align: center;
+        }
+
+        .knowledge-stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .knowledge-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 0;
+            text-align: center;
+            background: var(--bg-dark);
+            color: white;
+        }
+
+        .cta-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .cta-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            padding: 1.25rem 3rem;
+            background: white;
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.02em;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 0 2rem;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-secondary);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .footer-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-link {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-light);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Mobile */
+        @media (max-width: 968px) {
+            .agents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .knowledge-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .demo-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="brand">
+                    <div class="brand-logo">
+                    </div>
+                    <div class="brand-text">TheHolding.eth</div>
+                </div>
+                <nav class="nav-links">
+                    <a href="#agents" class="nav-link">Agents</a>
+                    <a href="#demo" class="nav-link">Live Demo</a>
+                    <a href="#knowledge" class="nav-link">Knowledge Base</a>
+                    <span class="nav-badge">Layer 1</span>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-eyebrow">Autonomous Intelligence Infrastructure</div>
+            <h1 class="serif">The Agent Economy</h1>
+            <p class="hero-subtitle">
+                Three specialized AI agents. One comprehensive knowledge base. 
+                Infinite institutional-grade intelligence.
+            </p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-value serif">2.4 GB</div>
+                    <div class="stat-label">Knowledge Base</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value serif">3</div>
+                    <div class="stat-label">AI Agents</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value serif">∞</div>
+                    <div class="stat-label">Time Horizon</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agents Section -->
+    <section class="agents-section" id="agents">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title serif">Meet the Agents</h2>
+                <p class="section-subtitle">
+                    Each agent brings specialized expertise, distinctive personality, 
+                    and institutional-grade knowledge depth.
+                </p>
+            </div>
+
+            <div class="agents-grid">
+                <!-- Substantia -->
+                <div class="agent-card substantia" onclick="toggleSources(this)">
+                    <div class="agent-icon">S</div>
+                    <h3 class="agent-name serif">Substantia</h3>
+                    <div class="agent-role">Foundation Steward</div>
+                    <p class="agent-description">
+                        Conservative long-term Bitcoin and macro steward. Drawing on Michael Saylor, 
+                        Ray Dalio, and Austrian economics. Infinite time horizons. Patient capital philosophy.
+                    </p>
+                    <div class="agent-knowledge">
+                        <div class="knowledge-title">Knowledge Domains</div>
+                        <div class="knowledge-items">
+                            <div class="knowledge-item">Bitcoin protocol & network economics</div>
+                            <div class="knowledge-item">Ethereum roadmap & L2 ecosystem</div>
+                            <div class="knowledge-item">Precious metals & macro cycles</div>
+                            <div class="knowledge-item">Store of value philosophy</div>
+                        </div>
+                    </div>
+
+                    <!-- Sources Panel -->
+                    <div class="sources-panel">
+                        <div class="sources-header">
+                            <div class="sources-title">Knowledge Sources</div>
+                            <div class="sources-count">60+ Sources</div>
+                        </div>
+                        <div class="sources-grid">
+                            <!-- 21ideas.org FULL PORTAL -->
+                            <div class="source-item">
+                                <div class="source-title">21ideas.org Portal</div>
+                                <div class="source-author">Complete Russian Bitcoin Library</div>
+                                <span class="source-type">Full Portal</span>
+                            </div>
+                            <!-- Bitcoin Books -->
+                            <div class="source-item">
+                                <div class="source-title">The Bitcoin Standard</div>
+                                <div class="source-author">Saifedean Ammous</div>
+                                <span class="source-type">Book</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">The Fiat Standard</div>
+                                <div class="source-author">Saifedean Ammous</div>
+                                <span class="source-type">Book</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Mastering Bitcoin</div>
+                                <div class="source-author">Andreas Antonopoulos</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Mastering Lightning</div>
+                                <div class="source-author">Andreas Antonopoulos</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Grokking Bitcoin</div>
+                                <div class="source-author">Kalle Rosenbaum</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Programming Bitcoin</div>
+                                <div class="source-author">Jimmy Song</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Digital Gold</div>
+                                <div class="source-author">Nathaniel Popper</div>
+                                <span class="source-type">History</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Layered Money</div>
+                                <div class="source-author">Nik Bhatia</div>
+                                <span class="source-type">Economics</span>
+                            </div>
+                            <!-- Saylor Content -->
+                            <div class="source-item">
+                                <div class="source-title">Saylor Bitcoin Strategy</div>
+                                <div class="source-author">MicroStrategy Conferences</div>
+                                <span class="source-type">Lectures</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">What Bitcoin Did</div>
+                                <div class="source-author">Peter McCormack × Saylor</div>
+                                <span class="source-type">Podcast</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Lex Fridman Podcast</div>
+                                <div class="source-author">Deep Tech × Saylor</div>
+                                <span class="source-type">Interview</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">MIT Bitcoin Course</div>
+                                <div class="source-author">Michael Saylor Lectures</div>
+                                <span class="source-type">Education</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Saylor Academy</div>
+                                <div class="source-author">Free Bitcoin Education</div>
+                                <span class="source-type">Course</span>
+                            </div>
+                            <!-- Economics Books -->
+                            <div class="source-item">
+                                <div class="source-title">The Price of Tomorrow</div>
+                                <div class="source-author">Jeff Booth</div>
+                                <span class="source-type">Economics</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">The Sovereign Individual</div>
+                                <div class="source-author">Davidson & Rees-Mogg</div>
+                                <span class="source-type">Philosophy</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Economics in One Lesson</div>
+                                <div class="source-author">Henry Hazlitt</div>
+                                <span class="source-type">Economics</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Machinery of Freedom</div>
+                                <div class="source-author">David Friedman</div>
+                                <span class="source-type">Economics</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Creature Jekyll Island</div>
+                                <div class="source-author">G. Edward Griffin</div>
+                                <span class="source-type">History</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Road to Serfdom</div>
+                                <div class="source-author">Friedrich Hayek</div>
+                                <span class="source-type">Philosophy</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">In Defense of Deflation</div>
+                                <div class="source-author">Philipp Bagus</div>
+                                <span class="source-type">Economics</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Human Action</div>
+                                <div class="source-author">Ludwig von Mises</div>
+                                <span class="source-type">Economics</span>
+                            </div>
+                            <!-- Philosophy & Fiction -->
+                            <div class="source-item">
+                                <div class="source-title">Atlas Shrugged</div>
+                                <div class="source-author">Ayn Rand</div>
+                                <span class="source-type">Philosophy</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">1984</div>
+                                <div class="source-author">George Orwell</div>
+                                <span class="source-type">Philosophy</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Moon Harsh Mistress</div>
+                                <div class="source-author">Robert Heinlein</div>
+                                <span class="source-type">Philosophy</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Demon-Haunted World</div>
+                                <div class="source-author">Carl Sagan</div>
+                                <span class="source-type">Science</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Richest Man Babylon</div>
+                                <div class="source-author">George Clason</div>
+                                <span class="source-type">Finance</span>
+                            </div>
+                            <!-- Precious Metals -->
+                            <div class="source-item">
+                                <div class="source-title">Peter Schiff Podcasts</div>
+                                <div class="source-author">Gold & Silver Advocacy</div>
+                                <span class="source-type">Podcast</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Gold Markets Analysis</div>
+                                <div class="source-author">Metals Research</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Silver Price Dynamics</div>
+                                <div class="source-author">Market Analysis</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Gold/Silver Ratio</div>
+                                <div class="source-author">Historical Data</div>
+                                <span class="source-type">Data</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Precious Metals History</div>
+                                <div class="source-author">5000+ Years Data</div>
+                                <span class="source-type">Historical</span>
+                            </div>
+                            <!-- Macro Analysis -->
+                            <div class="source-item">
+                                <div class="source-title">Principles (Debt Crises)</div>
+                                <div class="source-author">Ray Dalio</div>
+                                <span class="source-type">Macro</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Bridgewater Research</div>
+                                <div class="source-author">Macro Analysis</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Economic Cycles</div>
+                                <div class="source-author">Macro Research</div>
+                                <span class="source-type">Analysis</span>
+                            </div>
+                            <!-- Podcasts -->
+                            <div class="source-item">
+                                <div class="source-title">Bitcoin Audible</div>
+                                <div class="source-author">Guy Swann Readings</div>
+                                <span class="source-type">Podcast</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Investor's Podcast</div>
+                                <div class="source-author">Bitcoin Fundamentals</div>
+                                <span class="source-type">Podcast</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Stephan Livera</div>
+                                <div class="source-author">Bitcoin Interviews</div>
+                                <span class="source-type">Podcast</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Kiyosaki Interviews</div>
+                                <div class="source-author">Gold/Silver/Bitcoin</div>
+                                <span class="source-type">Interview</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Once BITten</div>
+                                <div class="source-author">Bitcoin Podcast</div>
+                                <span class="source-type">Podcast</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Tales from Crypt</div>
+                                <div class="source-author">Marty Bent</div>
+                                <span class="source-type">Podcast</span>
+                            </div>
+                            <!-- Ethereum -->
+                            <div class="source-item">
+                                <div class="source-title">Ethereum Roadmap</div>
+                                <div class="source-author">Vitalik & Core Devs</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">EIP Documentation</div>
+                                <div class="source-author">Ethereum Foundation</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">L2 Ecosystem</div>
+                                <div class="source-author">Scaling Solutions</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Staking Economics</div>
+                                <div class="source-author">ETH 2.0 Research</div>
+                                <span class="source-type">Analysis</span>
+                            </div>
+                            <!-- Network Data -->
+                            <div class="source-item">
+                                <div class="source-title">Bitcoin Hash Rate</div>
+                                <div class="source-author">Network Metrics</div>
+                                <span class="source-type">Data</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Halving Cycles</div>
+                                <div class="source-author">Historical Analysis</div>
+                                <span class="source-type">Data</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Stock-to-Flow Model</div>
+                                <div class="source-author">PlanB Research</div>
+                                <span class="source-type">Model</span>
+                            </div>
+                            <!-- Live Data Feeds -->
+                            <div class="source-item">
+                                <div class="source-title">Live BTC/ETH Price</div>
+                                <div class="source-author">CoinGecko API</div>
+                                <span class="source-type">Real-time</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Gold/Silver Spot</div>
+                                <div class="source-author">Metals Markets</div>
+                                <span class="source-type">Real-time</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">On-chain Metrics</div>
+                                <div class="source-author">Glassnode Data</div>
+                                <span class="source-type">Analytics</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Macro Indicators</div>
+                                <div class="source-author">Fed & Economic Data</div>
+                                <span class="source-type">Real-time</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Fear & Greed Index</div>
+                                <div class="source-author">Market Sentiment</div>
+                                <span class="source-type">Real-time</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Defitea -->
+                <div class="agent-card defitea" onclick="toggleSources(this)">
+                    <div class="agent-icon">D</div>
+                    <h3 class="agent-name serif">Defitea</h3>
+                    <div class="agent-role">Yield Strategist</div>
+                    <p class="agent-description">
+                        Yield-focused DeFi strategist modeled on Andre Cronje. Analytical, methodical, 
+                        systematic. Real yield over speculation. Eight protocols running continuously.
+                    </p>
+                    <div class="agent-knowledge">
+                        <div class="knowledge-title">Knowledge Domains</div>
+                        <div class="knowledge-items">
+                            <div class="knowledge-item">veToken mechanics & governance</div>
+                            <div class="knowledge-item">Curve, Convex, Aerodrome ecosystems</div>
+                            <div class="knowledge-item">Yield optimization strategies</div>
+                            <div class="knowledge-item">Protocol risk assessment</div>
+                        </div>
+                    </div>
+
+                    <!-- Sources Panel -->
+                    <div class="sources-panel">
+                        <div class="sources-header">
+                            <div class="sources-title">Knowledge Sources</div>
+                            <div class="sources-count">35+ Protocol Sources</div>
+                        </div>
+                        <div class="sources-grid">
+                            <!-- Curve Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Curve Finance Docs</div>
+                                <div class="source-author">Complete Documentation</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Stableswap Paper</div>
+                                <div class="source-author">Michael Egorov</div>
+                                <span class="source-type">Whitepaper</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">veCRV Tokenomics</div>
+                                <div class="source-author">Vote Escrow Model</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Curve Gauge System</div>
+                                <div class="source-author">Emissions Control</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Curve DAO Governance</div>
+                                <div class="source-author">Voting Mechanics</div>
+                                <span class="source-type">Governance</span>
+                            </div>
+                            <!-- Convex Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Convex Architecture</div>
+                                <div class="source-author">Meta-Protocol Design</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">vlCVX Mechanics</div>
+                                <div class="source-author">Vote Locking Guide</div>
+                                <span class="source-type">Documentation</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">cvxCRV Model</div>
+                                <div class="source-author">Wrapped veCRV</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <!-- Aerodrome Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Aerodrome Protocol</div>
+                                <div class="source-author">Base DEX Docs</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">veAERO Economics</div>
+                                <div class="source-author">Tokenomics Model</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Base L2 Integration</div>
+                                <div class="source-author">Ecosystem Analysis</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <!-- Velodrome Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Velodrome ve(3,3)</div>
+                                <div class="source-author">Game Theory Model</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">veVELO Mechanics</div>
+                                <div class="source-author">Optimism DEX</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Solidly Fork Analysis</div>
+                                <div class="source-author">Protocol Evolution</div>
+                                <span class="source-type">Analysis</span>
+                            </div>
+                            <!-- Pendle Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Pendle Whitepaper</div>
+                                <div class="source-author">Yield Tokenization</div>
+                                <span class="source-type">Whitepaper</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Pendle AMM v2</div>
+                                <div class="source-author">AMM Design</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">PT/YT Mechanics</div>
+                                <div class="source-author">Principal/Yield Split</div>
+                                <span class="source-type">Documentation</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">vePENDLE Model</div>
+                                <div class="source-author">Vote Escrow</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <!-- Frax Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Frax Ecosystem</div>
+                                <div class="source-author">Complete Protocol</div>
+                                <span class="source-type">Documentation</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Frax AMO Strategy</div>
+                                <div class="source-author">Algorithmic Operations</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">veFXS Tokenomics</div>
+                                <div class="source-author">Governance Model</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Fraxlend Protocol</div>
+                                <div class="source-author">Lending Markets</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <!-- F(x) Protocol -->
+                            <div class="source-item">
+                                <div class="source-title">F(x) Stability Design</div>
+                                <div class="source-author">Protocol Whitepaper</div>
+                                <span class="source-type">Whitepaper</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">veFXN Model</div>
+                                <div class="source-author">Tokenomics</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">F(x) Leverage Mechanics</div>
+                                <div class="source-author">Technical Docs</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <!-- Yield Basis -->
+                            <div class="source-item">
+                                <div class="source-title">Yield Basis Strategy</div>
+                                <div class="source-author">Optimization Protocol</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">veYB Mechanics</div>
+                                <div class="source-author">Yield Enhancement</div>
+                                <span class="source-type">Documentation</span>
+                            </div>
+                            <!-- DeFi Research -->
+                            <div class="source-item">
+                                <div class="source-title">veToken Comparisons</div>
+                                <div class="source-author">Cross-Protocol Analysis</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">IL Risk Models</div>
+                                <div class="source-author">Uniswap Research</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">DeFi Governance</div>
+                                <div class="source-author">Best Practices</div>
+                                <span class="source-type">Analysis</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Vote Buying Markets</div>
+                                <div class="source-author">Bribe Economics</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Gas Optimization</div>
+                                <div class="source-author">Transaction Efficiency</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <!-- Andre Cronje -->
+                            <div class="source-item">
+                                <div class="source-title">Andre Cronje Essays</div>
+                                <div class="source-author">Medium & Substack</div>
+                                <span class="source-type">Essays</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Yearn Strategy Papers</div>
+                                <div class="source-author">Yield Strategies</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <!-- Live Analytics -->
+                            <div class="source-item">
+                                <div class="source-title">DefiLlama TVL</div>
+                                <div class="source-author">Protocol Analytics</div>
+                                <span class="source-type">Real-time</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">APY Tracking</div>
+                                <div class="source-author">Yield Monitoring</div>
+                                <span class="source-type">Real-time</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Bribe Markets Data</div>
+                                <div class="source-author">Vote Incentives</div>
+                                <span class="source-type">Real-time</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Singul -->
+                <div class="agent-card singul" onclick="toggleSources(this)">
+                    <div class="agent-icon">Σ</div>
+                    <h3 class="agent-name serif">Singul</h3>
+                    <div class="agent-role">Venture Scout</div>
+                    <p class="agent-description">
+                        Bold venture scout modeled on Balaji Srinivasan and Packy McCormick. 
+                        Pattern recognition expert. Asymmetric upside, contained downside. Singular moments.
+                    </p>
+                    <div class="agent-knowledge">
+                        <div class="knowledge-title">Knowledge Domains</div>
+                        <div class="knowledge-items">
+                            <div class="knowledge-item">Metaverse infrastructure & virtual real estate</div>
+                            <div class="knowledge-item">GameFi & on-chain gaming primitives</div>
+                            <div class="knowledge-item">AI × Crypto convergence</div>
+                            <div class="knowledge-item">Emerging narratives & 0→1 moments</div>
+                        </div>
+                    </div>
+
+                    <!-- Sources Panel -->
+                    <div class="sources-panel">
+                        <div class="sources-header">
+                            <div class="sources-title">Knowledge Sources</div>
+                            <div class="sources-count">30+ Frontier Sources</div>
+                        </div>
+                        <div class="sources-grid">
+                            <!-- Metaverse Origins -->
+                            <div class="source-item">
+                                <div class="source-title">Snow Crash</div>
+                                <div class="source-author">Neal Stephenson</div>
+                                <span class="source-type">Origins</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Ready Player One</div>
+                                <div class="source-author">Ernest Cline</div>
+                                <span class="source-type">Vision</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Neuromancer</div>
+                                <div class="source-author">William Gibson</div>
+                                <span class="source-type">Cyberspace</span>
+                            </div>
+                            <!-- Decentraland Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Decentraland Docs</div>
+                                <div class="source-author">Complete Platform</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">MANA Economics</div>
+                                <div class="source-author">Token Model</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">LAND NFT Dynamics</div>
+                                <div class="source-author">Virtual Real Estate</div>
+                                <span class="source-type">Analysis</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Decentraland DAO</div>
+                                <div class="source-author">Governance</div>
+                                <span class="source-type">Governance</span>
+                            </div>
+                            <!-- Sandbox Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Sandbox Platform</div>
+                                <div class="source-author">Creator Economy</div>
+                                <span class="source-type">Documentation</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">SAND Token Model</div>
+                                <div class="source-author">Tokenomics</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Voxel Creator Tools</div>
+                                <div class="source-author">Builder Guides</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <!-- Otherside Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Otherside Metaverse</div>
+                                <div class="source-author">Yuga Labs Vision</div>
+                                <span class="source-type">Documentation</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">ApeCoin DAO</div>
+                                <div class="source-author">Governance Model</div>
+                                <span class="source-type">Governance</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Otherside Land Sales</div>
+                                <div class="source-author">Market Analysis</div>
+                                <span class="source-type">Data</span>
+                            </div>
+                            <!-- AI × Crypto Complete -->
+                            <div class="source-item">
+                                <div class="source-title">Virtuals Protocol</div>
+                                <div class="source-author">AI Agent Infrastructure</div>
+                                <span class="source-type">Whitepaper</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">ElizaOS Framework</div>
+                                <div class="source-author">AI Operating System</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">AI16Z Research</div>
+                                <div class="source-author">AI Investment DAO</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Agent Tokenomics</div>
+                                <div class="source-author">AI Token Models</div>
+                                <span class="source-type">Analysis</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Autonomous Agents</div>
+                                <div class="source-author">On-chain AI</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <!-- GameFi Complete -->
+                            <div class="source-item">
+                                <div class="source-title">On-chain Gaming</div>
+                                <div class="source-author">Primitives Research</div>
+                                <span class="source-type">Technical</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Play-to-Earn Models</div>
+                                <div class="source-author">Economic Design</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Gaming NFT Markets</div>
+                                <div class="source-author">Asset Dynamics</div>
+                                <span class="source-type">Analysis</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">GameFi Sustainability</div>
+                                <div class="source-author">Long-term Models</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <!-- Venture Thinkers -->
+                            <div class="source-item">
+                                <div class="source-title">Balaji Essays</div>
+                                <div class="source-author">Network State Theory</div>
+                                <span class="source-type">Essays</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Packy McCormick</div>
+                                <div class="source-author">Not Boring Newsletter</div>
+                                <span class="source-type">Analysis</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Chris Dixon Crypto</div>
+                                <div class="source-author">a16z Research</div>
+                                <span class="source-type">Essays</span>
+                            </div>
+                            <!-- NFT Intelligence -->
+                            <div class="source-item">
+                                <div class="source-title">NFT Market Trends</div>
+                                <div class="source-author">Market Analysis</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Virtual Land Sales</div>
+                                <div class="source-author">Metaverse Analytics</div>
+                                <span class="source-type">Data</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">NFT Valuation</div>
+                                <div class="source-author">Pricing Models</div>
+                                <span class="source-type">Research</span>
+                            </div>
+                            <!-- Emerging Narratives -->
+                            <div class="source-item">
+                                <div class="source-title">Narrative Tracking</div>
+                                <div class="source-author">Trend Detection</div>
+                                <span class="source-type">Real-time</span>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-title">Social Momentum</div>
+                                <div class="source-author">Twitter/X Analytics</div>
+                                <span class="source-type">Real-time</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Demo Section -->
+    <section class="demo-section" id="demo">
+        <div class="container">
+            <div class="demo-container">
+                <div class="demo-header">
+                    <h2 class="demo-title serif">Live Agent Dialogue</h2>
+                    <p class="demo-subtitle">
+                        Watch how agents communicate, deliberate, and reach consensus in real-time
+                    </p>
+                </div>
+
+                <div class="demo-controls">
+                    <button class="demo-button active" onclick="startDemo('rotation')">Capital Rotation</button>
+                    <button class="demo-button" onclick="startDemo('allocation')">Allocation Debate</button>
+                    <button class="demo-button" onclick="startDemo('market')">Market Analysis</button>
+                </div>
+
+                <div class="conversation-window" id="conversationWindow">
+                    <!-- Messages will be inserted here by JavaScript -->
+                </div>
+
+                <!-- Ask Anything Section -->
+                <div class="ask-section">
+                    <div class="ask-header">
+                        <h3 class="ask-title serif">Ask Anything</h3>
+                        <p class="ask-subtitle">Query the agents directly — they'll respond with institutional-grade analysis</p>
+                    </div>
+                    <div class="ask-input-container">
+                        <input 
+                            type="text" 
+                            class="ask-input" 
+                            id="questionInput"
+                            placeholder="Why hold Bitcoin through a correction? How do veTokens work? What's the metaverse thesis?"
+                        >
+                        <button class="ask-submit" onclick="handleQuestion()" disabled>
+                            Ask
+                        </button>
+                    </div>
+                    <p class="ask-note">Interactive agent responses coming Q3 2026</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Knowledge Base Section -->
+    <section class="knowledge-section" id="knowledge">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title serif">Knowledge Infrastructure</h2>
+                <p class="section-subtitle">
+                    Enterprise-grade big data center powering institutional intelligence. A comprehensive research foundation where curated knowledge, real-time market feeds, and on-chain transaction history converge into unified decision-making intelligence. Built for institutions that demand depth, precision, and scale.
+                </p>
+            </div>
+
+            <div class="knowledge-grid">
+                <div class="knowledge-card">
+                    <h3 class="knowledge-card-title serif">Source Library</h3>
+                    <p class="knowledge-card-description">
+                        Deep collection spanning complete educational portals (21ideas.org), books, whitepapers, 
+                        research papers, expert interviews, podcast transcripts, and technical documentation 
+                        from leading thinkers in Bitcoin, DeFi, and frontier technologies.
+                    </p>
+                    <div class="knowledge-stats">
+                        <div class="knowledge-stat">
+                            <div class="knowledge-stat-value serif">35+</div>
+                            <div class="knowledge-stat-label">Books</div>
+                        </div>
+                        <div class="knowledge-stat">
+                            <div class="knowledge-stat-value serif">125+</div>
+                            <div class="knowledge-stat-label">Sources</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card">
+                    <h3 class="knowledge-card-title serif">Real-Time Data</h3>
+                    <p class="knowledge-card-description">
+                        Live price feeds, on-chain metrics, protocol analytics, and market data 
+                        integrated seamlessly with historical knowledge for contextual intelligence.
+                    </p>
+                    <div class="knowledge-stats">
+                        <div class="knowledge-stat">
+                            <div class="knowledge-stat-value serif">30s</div>
+                            <div class="knowledge-stat-label">Update Cycle</div>
+                        </div>
+                        <div class="knowledge-stat">
+                            <div class="knowledge-stat-value serif">8</div>
+                            <div class="knowledge-stat-label">Protocols</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card">
+                    <h3 class="knowledge-card-title serif">Vector Database</h3>
+                    <p class="knowledge-card-description">
+                        Advanced semantic search enabling agents to retrieve relevant context 
+                        from 2.4 GB knowledge base in milliseconds via RAG architecture.
+                    </p>
+                    <div class="knowledge-stats">
+                        <div class="knowledge-stat">
+                            <div class="knowledge-stat-value serif">&lt;3s</div>
+                            <div class="knowledge-stat-label">Response Time</div>
+                        </div>
+                        <div class="knowledge-stat">
+                            <div class="knowledge-stat-value serif">4 GB</div>
+                            <div class="knowledge-stat-label">Embeddings</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card">
+                    <h3 class="knowledge-card-title serif">Transaction History</h3>
+                    <p class="knowledge-card-description">
+                        Complete on-chain transaction log with reasoning documentation, 
+                        enabling agents to learn from historical decisions and maintain context.
+                    </p>
+                    <div class="knowledge-stats">
+                        <div class="knowledge-stat">
+                            <div class="knowledge-stat-value serif">100%</div>
+                            <div class="knowledge-stat-label">Transparency</div>
+                        </div>
+                        <div class="knowledge-stat">
+                            <div class="knowledge-stat-value serif">3+</div>
+                            <div class="knowledge-stat-label">Years Data</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title serif">The Future of Asset Management</h2>
+            <p class="cta-subtitle">
+                Where patient capital meets sovereign infrastructure meets autonomous intelligence
+            </p>
+            <button class="cta-button" onclick="alert('Layer 1 launching Q3 2026')">
+                Follow Development
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand serif">TheHolding.eth</div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Documentation</a>
+                    <a href="#" class="footer-link">GitHub</a>
+                    <a href="#" class="footer-link">Twitter</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                © 2026 TheHolding.eth — Layer 1: Autonomous Intelligence Infrastructure
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sticky header effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Demo scenarios
+        const scenarios = {
+            rotation: [
+                {
+                    agent: 'defitea',
+                    name: 'Defitea',
+                    time: '10:23 AM',
+                    content: 'Harvested 234 CRV from Curve gauge (weekly reward cycle). Current value: $180. Propose rotation into foundation assets per protocol. BTC spot: $67,240. Recommend accumulation?'
+                },
+                {
+                    agent: 'substantia',
+                    name: 'Substantia',
+                    time: '10:24 AM',
+                    content: 'Confirmed. DCA schedule aligns with weekly accumulation phase. Current positioning: 0.062 BTC. Accept rotation. Executing via Cowswap: 234 CRV → WBTC. Time in market exceeds timing the market.'
+                },
+                {
+                    agent: 'defitea',
+                    name: 'Defitea',
+                    time: '10:25 AM',
+                    content: 'Transaction submitted. Gas optimization: 15 gwei. Expected slippage: 0.3%. Estimated completion: 2 minutes. Will confirm on-chain execution.'
+                },
+                {
+                    agent: 'substantia',
+                    name: 'Substantia',
+                    time: '10:27 AM',
+                    content: 'Transaction confirmed. Block 19847532. Added 0.00267 BTC to holdings. New total: 0.06467 BTC. Foundation strengthened. Patience compounds.'
+                }
+            ],
+            allocation: [
+                {
+                    agent: 'singul',
+                    name: 'Singul',
+                    time: '2:15 PM',
+                    content: 'Observing metaverse narrative momentum. MANA: +15% (7d), SAND: +12% (7d). Decentraland daily active users: +23% MoM. Request temporary allocation increase from 5% to 7% venture pool.'
+                },
+                {
+                    agent: 'substantia',
+                    name: 'Substantia',
+                    time: '2:16 PM',
+                    content: 'Denied. Allocation discipline supersedes weekly price action. 5% venture allocation represents appropriate risk tolerance for multi-year horizon. Weekly momentum ≠ long-term conviction. Patience, Singul.'
+                },
+                {
+                    agent: 'singul',
+                    name: 'Singul',
+                    time: '2:18 PM',
+                    content: 'Understood. Maintaining 5% allocation. However, noting pattern: metaverse land sales +40% QoQ across three platforms. Will monitor for sustained trend confirmation over 90-day period before reassessing.'
+                },
+                {
+                    agent: 'defitea',
+                    name: 'Defitea',
+                    time: '2:19 PM',
+                    content: 'Supporting Substantia\'s position. Current DeFi yield (16% APY) provides stable returns vs. speculative venture exposure. Risk-adjusted returns favor maintaining current allocation structure. System operates optimally at 75/20/5 distribution.'
+                }
+            ],
+            market: [
+                {
+                    agent: 'substantia',
+                    name: 'Substantia',
+                    time: '9:00 AM',
+                    content: 'Market observation: BTC consolidation at $67k resistance. Historical pattern analysis suggests accumulation phase. Gold/Silver ratio: 62 (slightly elevated). Recommend maintaining systematic DCA regardless of short-term volatility.'
+                },
+                {
+                    agent: 'defitea',
+                    name: 'Defitea',
+                    time: '9:02 AM',
+                    content: 'DeFi metrics supporting macro thesis. Curve TVL stable at $3.2B. veCRV voting power distribution healthy. No protocol risks detected across 8 monitored positions. Real yield generation unaffected by BTC price action. Income layer operating normally.'
+                },
+                {
+                    agent: 'singul',
+                    name: 'Singul',
+                    time: '9:04 AM',
+                    content: 'Venture perspective: AI agent narrative gaining institutional attention. Virtuals Protocol TVL: +35% (30d). Pattern recognition: similar to early DeFi summer signals (2020). Small position sizing maintains asymmetric risk/reward profile.'
+                },
+                {
+                    agent: 'substantia',
+                    name: 'Substantia',
+                    time: '9:06 AM',
+                    content: 'Consensus: Maintain course. Foundation continues DCA accumulation. Income layer harvests on schedule. Venture monitors emerging narratives within risk parameters. System integrity maintained. Long-term thinking prevails over short-term noise.'
+                }
+            ]
+        };
+
+        let currentScenario = 'rotation';
+        let messageIndex = 0;
+        let intervalId = null;
+
+        function startDemo(scenario) {
+            // Update button states
+            document.querySelectorAll('.demo-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Clear current conversation
+            const window = document.getElementById('conversationWindow');
+            window.innerHTML = '';
+
+            // Reset and start new scenario
+            currentScenario = scenario;
+            messageIndex = 0;
+            
+            if (intervalId) clearInterval(intervalId);
+            
+            // Show messages with delay
+            displayNextMessage();
+            intervalId = setInterval(displayNextMessage, 3000);
+        }
+
+        function displayNextMessage() {
+            const messages = scenarios[currentScenario];
+            const window = document.getElementById('conversationWindow');
+
+            if (messageIndex >= messages.length) {
+                clearInterval(intervalId);
+                return;
+            }
+
+            const msg = messages[messageIndex];
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${msg.agent}`;
+            messageEl.style.setProperty('--agent-color', 
+                msg.agent === 'substantia' ? 'var(--accent-gold)' :
+                msg.agent === 'defitea' ? 'var(--accent-emerald)' :
+                'var(--accent-purple)'
+            );
+
+            messageEl.innerHTML = `
+                <div class="message-header">
+                    <div class="message-avatar">${msg.name[0]}</div>
+                    <div class="message-meta">
+                        <div class="message-author">${msg.name}</div>
+                        <div class="message-time">${msg.time}</div>
+                    </div>
+                </div>
+                <div class="message-content">${msg.content}</div>
+            `;
+
+            window.appendChild(messageEl);
+            window.scrollTop = window.scrollHeight;
+
+            messageIndex++;
+
+            // Show typing indicator for next message
+            if (messageIndex < messages.length) {
+                const typingEl = document.createElement('div');
+                typingEl.className = 'typing-indicator';
+                typingEl.innerHTML = `
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <span style="margin-left: 0.5rem;">${messages[messageIndex].name} is typing...</span>
+                `;
+                window.appendChild(typingEl);
+
+                setTimeout(() => {
+                    if (window.contains(typingEl)) {
+                        window.removeChild(typingEl);
+                    }
+                }, 2800);
+            }
+        }
+
+        // Start first demo on load
+        window.addEventListener('load', () => {
+            setTimeout(() => startDemo('rotation'), 500);
+        });
+
+        // Handle question input
+        function handleQuestion() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+            
+            if (question) {
+                alert('Agent responses coming Q3 2026!\n\nYour question: ' + question);
+                input.value = '';
+            }
+        }
+
+        // Enable Ask button when typing
+        document.getElementById('questionInput').addEventListener('input', function(e) {
+            const button = document.querySelector('.ask-submit');
+            button.disabled = e.target.value.trim().length === 0;
+        });
+
+        // Submit on Enter key
+        document.getElementById('questionInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim().length > 0) {
+                handleQuestion();
+            }
+        });
+
+        // Toggle sources panel
+        function toggleSources(card) {
+            const panel = card.querySelector('.sources-panel');
+            const isOpen = panel.classList.contains('open');
+            
+            // Close all other panels
+            document.querySelectorAll('.sources-panel.open').forEach(p => {
+                if (p !== panel) {
+                    p.classList.remove('open');
+                    p.closest('.agent-card').classList.remove('expanded');
+                }
+            });
+            
+            // Toggle current panel
+            if (isOpen) {
+                panel.classList.remove('open');
+                card.classList.remove('expanded');
+            } else {
+                panel.classList.add('open');
+                card.classList.add('expanded');
+            }
+        }
+    </script>
+</body>
+</html>
