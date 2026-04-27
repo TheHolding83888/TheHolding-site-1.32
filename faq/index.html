@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<!-- TheHolding.ai FAQ Page -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ — TheHolding.ai</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Frequently Asked Questions about TheHolding — crypto portfolio structure, costs, allocation strategy, and how to copy our 8+ year track record.">
+    <meta name="keywords" content="crypto portfolio FAQ, bitcoin investment questions, defi yield FAQ, portfolio allocation questions">
+    <link rel="canonical" href="https://theholding.ai/faq">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://theholding.ai/faq">
+    <meta property="og:title" content="FAQ — TheHolding.ai">
+    <meta property="og:description" content="Frequently Asked Questions about TheHolding — crypto portfolio structure, costs, allocation strategy, and how to copy our 8+ year track record.">
+    <meta property="og:site_name" content="TheHolding">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary">
+    <meta property="twitter:url" content="https://theholding.ai/faq">
+    <meta property="twitter:title" content="FAQ — TheHolding.ai">
+    <meta property="twitter:description" content="Frequently Asked Questions about TheHolding — crypto portfolio structure, costs, allocation strategy, and how to copy our 8+ year track record.">
+    
+    <!-- Schema.org FAQPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "Why should I copy your portfolio instead of creating my own?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You're getting 8+ years of tested allocation structure in 2 clicks. We've spent years researching protocols, testing risk ratios, navigating market cycles — all of that trial-and-error you bypass."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Where's the historical performance data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We don't position ourselves as a performance tracker or marketing past returns. We share a transparent, institutionally-minded allocation model that you can adopt if it matches your risk tolerance and goals."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Why three funds?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Classic risk distribution: Substantia (75%) provides stability with Bitcoin, Ethereum, and precious metals. Defitea (20%) generates sustainable DeFi yield. Singul (5%) captures venture upside in AI, GameFi, and metaverse."
+        }
+      }]
+    }
+    </script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-elevated: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-tertiary: #6b7280;
+            --border-color: #e5e7eb;
+            --accent-blue: #4f8fff;
+            --accent-green: #10b981;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-elevated: #1a1a1a;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-tertiary: #6b7280;
+            --border-color: #262626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            z-index: 100;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span[onclick]:hover {
+            opacity: 0.6 !important;
+            transition: opacity 0.2s ease;
+        }
+
+        .back-link {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* Main Content */
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 6rem 2rem 4rem;
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .page-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3.5rem, 10vw, 5.5rem);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            letter-spacing: 0.02em;
+            margin-bottom: 4rem;
+        }
+
+        /* FAQ Sections */
+        .faq-section {
+            margin-bottom: 4rem;
+        }
+
+        .faq-section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .faq-item {
+            margin-bottom: 2.5rem;
+        }
+
+        .faq-question {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .faq-question::before {
+            content: "Q:";
+            color: var(--accent-blue);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .faq-answer {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            padding-left: 2.25rem;
+        }
+
+        .faq-answer p {
+            margin-bottom: 1rem;
+        }
+
+        .faq-answer p:last-child {
+            margin-bottom: 0;
+        }
+
+        .faq-answer strong {
+            color: var(--text-primary);
+        }
+
+        .faq-answer ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .faq-answer li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            main {
+                padding: 2.5rem 1.5rem;
+            }
+
+            .header-content {
+                padding: 0 1.5rem;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .back-link {
+                font-size: 0.7rem;
+            }
+
+            .page-title {
+                font-size: 2.25rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.05rem;
+            }
+
+            .faq-section-title {
+                font-size: 1.25rem;
+            }
+
+            .faq-question {
+                font-size: 1rem;
+            }
+
+            .faq-answer {
+                font-size: 0.95rem;
+                padding-left: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span>TheHolding<span style="opacity: 0.5;">.ai</span></span><span style="opacity: 0.35; font-weight: 400; cursor: pointer;" onclick="scrollToTop(event)">/faq</span>
+            </a>
+            <a href="/" class="back-link">← Back to Main</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1 class="page-title">Frequently Asked Questions</h1>
+        <p class="page-subtitle">Everything you need to know about TheHolding — our allocation strategy, how copying works, costs, and what you control.</p>
+
+        <!-- Section 1: About TheHolding -->
+        <section class="faq-section">
+            <h2 class="faq-section-title">About TheHolding</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">Why should I copy your portfolio instead of creating my own?</div>
+                <div class="faq-answer">
+                    <p>You're getting 8+ years of tested allocation structure in 2 clicks. We've spent years researching protocols, testing risk ratios, navigating market cycles — all of that trial-and-error you bypass.</p>
+                    
+                    <p><strong>Think of it as knowledge transfer:</strong> What took us nearly a decade to develop and refine, you receive ready-made.</p>
+                    
+                    <p><strong>What you avoid doing manually:</strong></p>
+                    <ul>
+                        <li>Running across multiple DEXs to buy each asset individually</li>
+                        <li>Calculating exact proportions (75/20/5)</li>
+                        <li>Setting up DeFi yield positions across Curve, Convex, Pendle, Aero, and other protocols</li>
+                        <li>Researching which AI, GameFi, and metaverse projects have real potential</li>
+                        <li>Spending weeks learning how each protocol works</li>
+                    </ul>
+                    
+                    <p>Instead, you get a turnkey, battle-tested portfolio mechanism in one action.</p>
+                    
+                    <p>Long-term focused. Ready to deploy.</p>
+                    
+                    <p><strong>Could you do it manually?</strong></p>
+                    
+                    <p>Absolutely. Our site is transparent — we openly share which assets we hold, our allocation percentages, our fund structure. There's no secret sauce hidden behind closed doors.</p>
+                    
+                    <p>You could replicate everything yourself if you wanted to invest the time and energy.</p>
+                    
+                    <p><strong>But if you value comfort, convenience, and significant time savings</strong> — if you'd rather not spend months studying DeFi protocols, risk distribution, and portfolio architecture — our service lets you leverage nearly 10 years of our experience in crypto investing, portfolio construction, and risk management.</p>
+                    
+                    <p><strong>Important:</strong> We don't provide guarantees. Crypto is volatile, protocols carry risks, and past structure doesn't guarantee future results. You're responsible for your own investment decisions.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Where's the historical performance data? Can you show returns?</div>
+                <div class="faq-answer">
+                    <p><strong>We don't position ourselves as a trading signals service.</strong> TheHolding isn't about "buy today, profit next week." We're sharing a deeply researched structure refined over nearly 10 years — a formula for long-term capital growth (3-5+ years).</p>
+                    
+                    <p>What you're getting:</p>
+                    <ul>
+                        <li><strong>A proven three-layer architecture</strong> — Foundation (75%), Income (20%), Venture (5%)</li>
+                        <li><strong>Asset selection</strong> with significant long-term growth potential</li>
+                        <li><strong>Risk distribution</strong> designed to survive market cycles</li>
+                    </ul>
+                    
+                    <p>This is not about flashy past returns or week-to-week portfolio fluctuations. It's a ticket for your capital to participate in the next generation of digital assets over the long haul.</p>
+                    
+                    <p><strong>Important:</strong> Balance your overall portfolio with other asset classes — real estate, business equity, savings, bonds, etc. But we don't give financial advice on your broader allocation. That remains your decision as an investor.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">How long have you been managing this portfolio?</div>
+                <div class="faq-answer">
+                    <p>For over 8 years, we've been building experience — managing capital, testing allocations, refining strategies across multiple market cycles. TheHolding went public in 2025 as the distilled result of all that work.</p>
+                    <p>Think of it as a quintessence: years of trial-and-error, portfolio experiments, and capital management compressed into a polished, three-fund architecture. TheHolding isn't where we started — it's where we arrived after nearly a decade of refinement.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Can I see your portfolio performance and verify it's real?</div>
+                <div class="faq-answer">
+                    <p>Yes. Our portfolio is publicly tracked on <strong>Dropstab</strong> — you can view live holdings, asset breakdown, and TVL at any time. The link is in our footer under "Public Portfolio".</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Three Funds Explained -->
+        <section class="faq-section fade-in">
+            <h2 class="faq-section-title">Three Funds Explained</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">Why three funds?</div>
+                <div class="faq-answer">
+                    <p>The portfolio is split into three funds with different goals and risk levels:</p>
+                    <ul>
+                        <li><strong>Substantia (75%)</strong> — Foundation. Bitcoin, Ethereum, gold, silver. Fundamental assets for long-term capital preservation and reliable growth. Low risk, stability.</li>
+                        <li><strong>Defitea (20%)</strong> — Income. DeFi protocols with sustainable cashflow: Curve, Convex, Pendle, Aero, and others. The assets themselves also have strong growth potential. Medium risk, regular yield.</li>
+                        <li><strong>Singul (5%)</strong> — Venture. High-risk investments in AI, GameFi, and metaverse sectors. High risk, potential for 10x-100x returns.</li>
+                    </ul>
+                    <p>This is classic risk distribution: the foundation (75%) protects capital, the income portion (20%) generates cashflow, and the venture portion (5%) offers upside potential. It's a deliberate, balanced architecture designed for long-term wealth building.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Why 75/20/5 allocation specifically?</div>
+                <div class="faq-answer">
+                    <p>This is classic risk distribution optimized for crypto:</p>
+                    <ul>
+                        <li><strong>75% Foundation (Substantia)</strong> — Protects capital with BTC, ETH, gold, silver. The bedrock that doesn't change.</li>
+                        <li><strong>20% Income (Defitea)</strong> — Generates cashflow through DeFi protocols. Sustainable yield without excessive risk.</li>
+                        <li><strong>5% Venture (Singul)</strong> — High-risk bets on emerging sectors. Small enough to survive total loss, large enough to matter if one hits 100x.</li>
+                    </ul>
+                    <p>The ratio balances stability (75%), regular income (20%), and asymmetric upside (5%).</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">How are fundamental assets distributed within Substantia?</div>
+                <div class="faq-answer">
+                    <p>Within the Substantia fund (75% of total portfolio), assets are split evenly:</p>
+                    <ul>
+                        <li><strong>25%</strong> → Bitcoin</li>
+                        <li><strong>25%</strong> → Ethereum</li>
+                        <li><strong>25%</strong> → Gold (XAUT)</li>
+                        <li><strong>25%</strong> → Silver</li>
+                    </ul>
+                    <p>Equal weight across four fundamental asset classes — maximum diversification within the foundation layer.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Why does Singul (venture) include new tokens if you've been building since 2016?</div>
+                <div class="faq-answer">
+                    <p>The venture allocation is designed to adapt. While our foundation (75% in BTC/ETH/metals) remains stable for years, the venture portion (5%) is our experimental zone.</p>
+                    <p><strong>This is intentional:</strong> Stability in the core, agility at the edges. We actively track emerging sectors — AI agents, GameFi, metaverse — and rotate positions as the market evolves. Singul reflects current opportunities, not 2016 bets.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">How often do you update each fund?</div>
+                <div class="faq-answer">
+                    <ul>
+                        <li><strong>Substantia (75%)</strong> — Assets don't change. We follow a long-term DCA (Dollar Cost Averaging) strategy to accumulate the four fundamental assets: Bitcoin, Ethereum, gold, and silver.</li>
+                        <li><strong>Defitea (20%)</strong> — Assets are periodically purchased using DCA strategy and locked for yield generation. No fixed schedule — purchases happen anywhere from once a week to once a quarter, depending on market conditions and opportunities.</li>
+                        <li><strong>Singul (5%)</strong> — No set timeline. When a promising project with real potential appears, the fund may acquire it — sometimes in a single purchase, sometimes through multiple DCA entries to manage risk.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Technical & Costs -->
+        <section class="faq-section fade-in">
+            <h2 class="faq-section-title">Technical & Costs</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">What are the costs to copy TheHolding?</div>
+                <div class="faq-answer">
+                    <p><strong>This information is being finalized.</strong> Costs will include:</p>
+                    <ul>
+                        <li>Enzyme Finance vault fees (platform infrastructure)</li>
+                        <li>Gas costs for on-chain transactions</li>
+                        <li>Potential setup fee (TBD)</li>
+                    </ul>
+                    <p>We'll update this page with exact figures before launch. Transparency first.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What's the minimum deposit to copy the portfolio?</div>
+                <div class="faq-answer">
+                    <p><strong>Being determined based on gas efficiency.</strong> We want to ensure that gas costs don't eat a disproportionate amount of smaller portfolios. More details coming soon.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Which blockchain networks do you support?</div>
+                <div class="faq-answer">
+                    <p><strong>Details forthcoming.</strong> We're evaluating Ethereum mainnet and L2 solutions to optimize for cost vs. security. This will be clarified before launch.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Do you rebalance my portfolio after I copy it?</div>
+                <div class="faq-answer">
+                    <p><strong>No.</strong> When you copy TheHolding, you receive a snapshot of our current allocation (75/20/5). After that, the portfolio is entirely yours. We don't touch it, rebalance it, or manage it ongoing.</p>
+                    <p>You're in full control. If you want to rebalance later, you do it yourself.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Is this custodial or non-custodial?</div>
+                <div class="faq-answer">
+                    <p><strong>100% non-custodial.</strong> Everything sits on your seed phrase. We never touch your funds, never hold your keys, never have the ability to move your assets. You have complete sovereignty.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: What You Get -->
+        <section class="faq-section fade-in">
+            <h2 class="faq-section-title">What You Get</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">What exactly happens when I click "Connect Wallet"?</div>
+                <div class="faq-answer">
+                    <p>When you connect and confirm:</p>
+                    <ol>
+                        <li>An Enzyme Finance vault is created on-chain in your name</li>
+                        <li>The vault deploys capital across the 75/20/5 structure</li>
+                        <li>You receive tokens representing your vault ownership</li>
+                        <li>DeFi positions are set up for yield harvesting (Defitea fund)</li>
+                        <li>Everything is controlled by your seed phrase</li>
+                    </ol>
+                    <p>The entire process is on-chain and verifiable.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Do you manage my capital on an ongoing basis?</div>
+                <div class="faq-answer">
+                    <p><strong>No.</strong> TheHolding provides the structure — the initial allocation setup. After that, you manage your own capital. We don't make investment decisions for you, don't execute DCA on your behalf, don't rebalance your portfolio.</p>
+                    <p>Think of it as a <strong>blueprint</strong>, not ongoing management.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Can I modify the portfolio after copying?</div>
+                <div class="faq-answer">
+                    <p><strong>Yes, it's fully yours.</strong> After copying, you can:</p>
+                    <ul>
+                        <li>Adjust proportions (shift from 75/20/5 to something else)</li>
+                        <li>Add new assets not in the original structure</li>
+                        <li>Remove assets you don't want</li>
+                        <li>Continue DCA yourself into specific positions</li>
+                        <li>Withdraw yield from DeFi positions anytime</li>
+                    </ul>
+                    <p>You control the seed phrase = you control everything.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What if I want to exit and withdraw everything?</div>
+                <div class="faq-answer">
+                    <p>You can exit anytime. Since it's non-custodial, you simply withdraw funds from the Enzyme vault to your wallet. No permission needed from us. It's your capital.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Do you give investment advice or recommendations?</div>
+                <div class="faq-answer">
+                    <p><strong>No.</strong> We share our portfolio structure publicly, but we don't give personalized investment advice. You make your own decisions about whether this allocation fits your goals and risk tolerance.</p>
+                    <p>We're not financial advisors. We're builders sharing what we've built.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <div style="margin-top: 4rem; padding: 2rem; background: var(--bg-secondary); border-radius: 12px; text-align: center;">
+            <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; margin-bottom: 1rem;">Still have questions?</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Reach out on Twitter/X or explore our documentation for more details.</p>
+            <a href="/" style="display: inline-block; padding: 0.875rem 2rem; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.2s;">Back to Main Page</a>
+        </div>
+    </main>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="10" r="5"></circle>
+            <line x1="10" y1="1" x2="10" y2="3"></line>
+            <line x1="10" y1="17" x2="10" y2="19"></line>
+            <line x1="3.22" y1="3.22" x2="4.64" y2="4.64"></line>
+            <line x1="15.36" y1="15.36" x2="16.78" y2="16.78"></line>
+            <line x1="1" y1="10" x2="3" y2="10"></line>
+            <line x1="17" y1="10" x2="19" y2="10"></line>
+            <line x1="3.22" y1="16.78" x2="4.64" y2="15.36"></line>
+            <line x1="15.36" y1="4.64" x2="16.78" y2="3.22"></line>
+        </svg>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
+
+        // Check for saved theme preference
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        htmlElement.setAttribute('data-theme', currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const theme = htmlElement.getAttribute('data-theme');
+            const newTheme = theme === 'dark' ? 'light' : 'dark';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Scroll to Top (for /faq link)
+        function scrollToTop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in elements
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
