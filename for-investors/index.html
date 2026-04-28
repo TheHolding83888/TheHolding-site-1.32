@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Investors — TheHolding.ai</title>
+    
+    <meta name="description" content="Everything you need to know before copying The Holding's portfolio — what you get, what you control, and how the three-fund architecture works.">
+    <meta name="keywords" content="crypto portfolio investment, non-custodial portfolio, DeFi investment guide, bitcoin ethereum portfolio">
+    <link rel="canonical" href="https://theholding.ai/for-investors">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://theholding.ai/for-investors">
+    <meta property="og:title" content="For Investors — TheHolding.ai">
+    <meta property="og:description" content="Everything you need to know before copying The Holding's portfolio — what you get, what you control, and how the three-fund architecture works.">
+    <meta property="og:site_name" content="TheHolding">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary">
+    <meta property="twitter:url" content="https://theholding.ai/for-investors">
+    <meta property="twitter:title" content="For Investors — TheHolding.ai">
+    <meta property="twitter:description" content="Everything you need to know before copying The Holding's portfolio — what you get, what you control, and how the three-fund architecture works.">
+    
+    <!-- Schema.org -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "For Investors",
+      "url": "https://theholding.ai/for-investors",
+      "description": "Complete guide to The Holding's portfolio structure, three-fund architecture, and non-custodial investment approach.",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "TheHolding",
+        "url": "https://theholding.ai"
+      }
+    }
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+            --text-tertiary: #999;
+            --border-color: #e5e5e5;
+            --accent-blue: #4f8fff;
+            --accent-green: #10b981;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --text-primary: #f9fafb;
+            --text-secondary: #999;
+            --text-tertiary: #666;
+            --border-color: #262626;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            z-index: 100;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span[onclick]:hover {
+            opacity: 0.6 !important;
+            transition: opacity 0.2s ease;
+        }
+
+        .back-link {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        .back-mobile {
+            display: none;
+        }
+
+        .back-desktop {
+            display: inline;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 6rem 2rem 4rem;
+        }
+
+        .page-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3.5rem, 10vw, 5.5rem);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            letter-spacing: 0.02em;
+            margin-bottom: 4rem;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .section p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .section strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .section ul {
+            margin: 1.5rem 0;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .section li {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        /* Fade-in animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Disclaimer box styling */
+        .disclaimer-box {
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent-green);
+            padding: 2rem;
+            border-radius: 4px;
+        }
+
+        .disclaimer-box a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        .disclaimer-box a:hover {
+            border-bottom-color: var(--accent-blue);
+        }
+
+        /* Footer */
+        .page-footer {
+            max-width: 800px;
+            margin: 4rem auto 0;
+            padding: 2rem 2rem 3rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .footer-cta {
+            margin-bottom: 2rem;
+        }
+
+        .footer-cta-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .footer-cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+        }
+
+        .footer-nav {
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-green);
+        }
+
+        .footer-copyright {
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            max-width: 750px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: 2rem 2.5rem 1.5rem 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.75rem, 4vw, 2.25rem);
+            font-weight: 400;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 2rem 2.5rem;
+            line-height: 1.8;
+        }
+
+        .disclaimer-section {
+            margin-bottom: 2rem;
+        }
+
+        .disclaimer-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .disclaimer-section h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .disclaimer-section p {
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .disclaimer-section ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 1rem 0;
+        }
+
+        .disclaimer-section li {
+            color: var(--text-secondary);
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .disclaimer-section li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .disclaimer-section a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        .disclaimer-section a:hover {
+            text-decoration: underline;
+        }
+
+        .disclaimer-funds {
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            main {
+                padding: 4rem 1.5rem 3rem;
+            }
+
+            .header-content {
+                padding: 0 1.5rem;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .back-link {
+                font-size: 0.7rem;
+            }
+
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .page-subtitle {
+                font-size: 1rem;
+            }
+
+            .section h2 {
+                font-size: 1.5rem;
+            }
+
+            .back-link {
+                font-size: 0.75rem;
+            }
+
+            .back-mobile {
+                display: inline;
+            }
+
+            .back-desktop {
+                display: none;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span>TheHolding<span style="opacity: 0.5;">.ai</span></span><span style="opacity: 0.35; font-weight: 400; cursor: pointer;" onclick="scrollToTop(event)">/for-investors</span>
+            </a>
+            <a href="/" class="back-link" data-text="← Back to Main"><span class="back-mobile">← Back</span><span class="back-desktop">← Back to Main</span></a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1 class="page-title">For Investors</h1>
+        <p class="page-subtitle">Everything you need to know before copying The Holding's portfolio — what you get, what you control, and how the three-fund architecture works.</p>
+
+        <!-- Section 1 -->
+        <div class="section fade-in">
+            <h2>What is The Holding?</h2>
+            <p>The Holding is a cryptocurrency holding company — a public portfolio with roots tracing back to 2016. We invest across three pillars: fundamental assets, DeFi income-generating strategies, and venture investments.</p>
+            <p>Think of The Holding as a ready-made investment recipe that we publicly manage and share with others.</p>
+            <p><strong>In 2 clicks, you gain 10 years of tested allocation experience.</strong> What took us years of research, testing protocols, navigating market cycles, and refining risk ratios — you receive ready-made. Skip the trial-and-error. Start with a proven foundation.</p>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="section fade-in">
+            <h2>Why three funds?</h2>
+            <p>The portfolio is split into three funds with different goals and risk levels:</p>
+            <ul>
+                <li><strong>Substantia (75%)</strong> — Foundation. Bitcoin, Ethereum, gold, silver. Fundamental assets for long-term capital preservation and reliable growth. Low risk, stability.</li>
+                <li><strong>Defitea (20%)</strong> — Income. DeFi protocols with sustainable cashflow: Curve, Convex, Pendle, Aero, and others. The assets themselves also have strong growth potential. Medium risk, regular yield.</li>
+                <li><strong>Singul (5%)</strong> — Venture. High-risk investments in AI, GameFi, and metaverse sectors. High risk, potential for 10x-100x returns.</li>
+            </ul>
+            <p>This is classic risk distribution: the foundation (75%) protects capital, the income portion (20%) generates cashflow, and the venture portion (5%) offers upside potential.</p>
+            <p><strong>Why Singul includes new tokens:</strong> The venture allocation is designed to adapt. While our foundation (75% in BTC/ETH/metals) remains stable over years, the venture portion (5%) is our experimental zone. We actively track emerging sectors and rotate positions as the market evolves. This is intentional: stability in the core, agility at the edges.</p>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="section fade-in">
+            <h2>What do you get turnkey?</h2>
+            <p>When you connect your wallet and launch the portfolio, you receive an exact copy of The Holding's structure on your seed phrase:</p>
+            <ul>
+                <li>Same assets in the same proportions (75/20/5)</li>
+                <li>DeFi yield harvesting setup</li>
+                <li>100% non-custodial — everything on your seed phrase</li>
+                <li>Full control over all future decisions</li>
+            </ul>
+            <p>It's like getting a ready-made investment portfolio in 2 clicks. You don't need to manually buy each asset, calculate proportions, or set up DeFi positions. Everything happens automatically through an Enzyme Finance vault.</p>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="section fade-in">
+            <h2>What you DON'T get</h2>
+            <p><strong>DCA (Dollar Cost Averaging) is not done for you.</strong></p>
+            <p>The Holding provides you with a ready-made portfolio structure — a snapshot of the current asset allocation. This is a one-time copy, not ongoing management.</p>
+            <p>We do NOT:</p>
+            <ul>
+                <li>Buy additional assets for you using DCA strategy</li>
+                <li>Manage your capital on an ongoing basis</li>
+                <li>Make investment decisions on your behalf</li>
+            </ul>
+            <p>You receive a ready-made projection of the holding at the moment of connection. Further management is in your hands.</p>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="section fade-in">
+            <h2>What you CAN do next</h2>
+            <p>After receiving the portfolio, you can:</p>
+            <ul>
+                <li>Continue DCA yourself — buy more BTC, ETH, gold, silver on your own schedule</li>
+                <li>Adjust proportions to match your goals and risk profile</li>
+                <li>Add new assets to the portfolio</li>
+                <li>Withdraw yield from DeFi positions</li>
+            </ul>
+            <p>The portfolio is fully yours. You control the seed phrase, you make the decisions.</p>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="section fade-in">
+            <h2>Money Skill Sharing</h2>
+            <p>The Holding is a <strong>non-custodial portfolio mirror service</strong>. A form of "money skill sharing."</p>
+            <p>Imagine your money instantly gaining the skills of an experienced investor: it automatically distributes across a proven structure, takes positions in DeFi protocols, and gains exposure to venture bets.</p>
+            <p>Instead of spending years learning crypto markets, DeFi, and metaverses — you copy a ready-made strategy in 2 clicks and start at the level The Holding has reached over 10 years (since 2016).</p>
+        </div>
+
+        <!-- Section 7 -->
+        <div class="section fade-in">
+            <h2>This is not trading. This is long-term capital allocation.</h2>
+            <p><strong>We don't sell weekly performance reports or flashy past returns.</strong> The Holding isn't about "buy today, profit next month." We're sharing a deeply researched structure refined over 10 years.</p>
+            <p>What you're getting is a <strong>formula for long-term capital growth</strong> (3-5+ years) — a three-layer architecture designed to survive market cycles, capture DeFi yields, and participate in next-generation digital assets.</p>
+            <p>This is a ticket for your capital to join a long-term journey with significant growth potential. Not a get-rich-quick scheme. Not trading signals. <strong>A proven allocation strategy for the long haul.</strong></p>
+            <p><strong>Important:</strong> Balance your overall portfolio with other asset classes — real estate, business equity, savings, bonds. But we don't give financial advice on your broader allocation. That remains your decision.</p>
+        </div>
+
+        <!-- Section 8 -->
+        <div class="section fade-in">
+            <h2>In short</h2>
+            <p><strong>You GET:</strong> A ready-made crypto portfolio with significant long-term growth potential. 75/20/5 allocation with yield harvesting setup.</p>
+            <p><strong>You DON'T GET:</strong> Ongoing capital management, automated DCA, automated rebalancing, investment advice.</p>
+            <p><strong>You CONTROL:</strong> Seed phrase, all assets, all decisions about future actions.</p>
+        </div>
+
+        <!-- Section 9: Important Disclaimers -->
+        <div class="section disclaimer-box fade-in">
+            <h2>Important Disclaimers</h2>
+            
+            <p><strong>No guarantees.</strong> Crypto markets are volatile, DeFi protocols carry smart contract risks, and venture positions can go to zero. Past performance doesn't guarantee future results.</p>
+            
+            <p><strong>No financial advice.</strong> This information is educational only. We're not financial advisors. You make your own investment decisions based on your risk tolerance, goals, and financial situation.</p>
+            
+            <p>For full legal terms and risk disclosures, see our <a href="#" onclick="openTermsModal(event)">Terms of Use</a> and <a href="#" onclick="openDisclaimerModal(event)">Disclaimers</a>.</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div class="page-footer">
+        <div class="footer-cta">
+            <a href="/" class="footer-cta-button">Explore The Holding</a>
+        </div>
+        <div class="footer-nav">
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="/faq">FAQ</a>
+                <a href="/blog">Blog</a>
+            </div>
+            <div class="footer-copyright">
+                © 2026 The Holding
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+        </svg>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
+
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        htmlElement.setAttribute('data-theme', currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const theme = htmlElement.getAttribute('data-theme');
+            const newTheme = theme === 'dark' ? 'light' : 'dark';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Scroll to Top (for /for-investors link)
+        function scrollToTop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Modal Functions
+        function openTermsModal(e) {
+            e.preventDefault();
+            document.getElementById('termsModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTermsModal() {
+            document.getElementById('termsModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function openDisclaimerModal(e) {
+            e.preventDefault();
+            document.getElementById('disclaimerModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDisclaimerModal() {
+            document.getElementById('disclaimerModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close modals on overlay click
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeTermsModal();
+                closeDisclaimerModal();
+            }
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeTermsModal();
+                closeDisclaimerModal();
+            }
+        });
+    </script>
+
+    <!-- Terms of Use Modal -->
+    <div id="termsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">TERMS OF USE</h2>
+                    <p class="modal-subtitle">TheHolding.ai</p>
+                </div>
+                <button class="modal-close" onclick="closeTermsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="disclaimer-section">
+                    <h3>Informational Purpose Only</h3>
+                    <p>This website provides information about The Holding portfolio structure for educational and informational purposes only. Nothing on this site constitutes financial, investment, legal, or tax advice.</p>
+                </div>
+
+                <div class="disclaimer-section">
+                    <h3>No Recommendations or Endorsements</h3>
+                    <p>We don't custody, we don't advise, we don't have fiduciary duties. Enzyme handles the vault, user controls keys, we just provide the portfolio structure.</p>
+                    <p>The Holding does not recommend, endorse, or solicit any investment, deposit, transaction, or strategy.</p>
+                </div>
+
+                <div class="disclaimer-section">
+                    <h3>Non-Custodial Service</h3>
+                    <p>All portfolio mirroring is executed through Enzyme Finance's non-custodial vault infrastructure. The Holding has:</p>
+                    <ul>
+                        <li>No custody of your assets</li>
+                        <li>No access to your private keys</li>
+                        <li>No ability to move your funds</li>
+                        <li>No control over your wallet</li>
+                    </ul>
+                    <p>You retain 100% control of your assets on your seed phrase at all times.</p>
+                </div>
+
+                <div class="disclaimer-section">
+                    <h3>Third-Party Services</h3>
+                    <p>Vault deployment and management are provided by Enzyme Finance. By using the portfolio mirror feature, you agree to Enzyme's <a href="https://enzyme.finance/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>.</p>
+                </div>
+
+                <div class="disclaimer-section">
+                    <h3>No Warranties</h3>
+                    <p>This service is provided "as is" without warranties of any kind, express or implied. We make no guarantees regarding:</p>
+                    <ul>
+                        <li>Portfolio performance or returns</li>
+                        <li>Smart contract security or functionality</li>
+                        <li>Availability or uptime of services</li>
+                        <li>Accuracy of displayed information</li>
+                    </ul>
+                </div>
+
+                <div class="disclaimer-section">
+                    <h3>User Responsibility</h3>
+                    <p>You are solely responsible for:</p>
+                    <ul>
+                        <li>Your own investment decisions and research</li>
+                        <li>Understanding the risks of DeFi and smart contracts</li>
+                        <li>Securing your private keys and seed phrase</li>
+                        <li>Complying with applicable laws in your jurisdiction</li>
+                        <li>Any losses, damages, or consequences of your actions</li>
+                    </ul>
+                </div>
+
+                <div class="disclaimer-section">
+                    <h3>Risk Acknowledgment</h3>
+                    <p>Cryptocurrency and DeFi involve significant risks including but not limited to: smart contract vulnerabilities, market volatility, regulatory changes, hacks, exploits, and total loss of capital. Never invest more than you can afford to lose.</p>
+                </div>
+
+                <div class="disclaimer-section">
+                    <h3>No Fiduciary Relationship</h3>
+                    <p>No fiduciary, advisory, or agency relationship is created between you and The Holding by using this website or deploying a portfolio mirror vault.</p>
+                </div>
+
+                <div class="disclaimer-section">
+                    <p><strong>By using this website, you acknowledge that you have read, understood, and agree to these Terms of Use.</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimers Modal -->
+    <div id="disclaimerModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">IMPORTANT DISCLAIMER</h2>
+                    <p class="modal-subtitle">Risk disclosure</p>
+                </div>
+                <button class="modal-close" onclick="closeDisclaimerModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="disclaimer-section">
+                    <p><strong>This is not financial advice.</strong></p>
+                    <p>The Holding does not recommend, endorse, or solicit any investment, deposit, or transaction.</p>
+                    <p>You are solely responsible for your own decisions and all risks associated with them. Perform your own research and consult qualified professional advisors before taking any action.</p>
+                </div>
+
+                <div class="disclaimer-section">
+                    <p>The proposed portfolio (<span class="disclaimer-funds">Substantia • Defitea • Singul</span>) is a mirror strategy executed through a non-custodial Enzyme vault.</p>
+                    <p>All assets remain 100% under your control on your seed phrase. The Holding and Enzyme have no custody, no access to your keys, and no ability to move your funds.</p>
+                </div>
+
+                <div class="disclaimer-section">
+                    <h3>By proceeding you acknowledge that:</h3>
+                    <ul>
+                        <li>You understand the risks (smart contract, market, strategy, etc.).</li>
+                        <li>You alone bear full responsibility for any losses.</li>
+                        <li>No fiduciary relationship is created.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
