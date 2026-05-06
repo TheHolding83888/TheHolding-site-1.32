@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fructus — Real World Assets Fund | TheHolding</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f5f5f5;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-tertiary: #888;
+            --border: #e5e5e5;
+            --accent: #d4af37;
+            --accent-subtle: #f0e6d2;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(250, 250, 250, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            padding: 1.5rem 2rem;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-back {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-back:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            font-weight: 400;
+            color: var(--text-primary);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 12rem 2rem 8rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+
+        .hero-label {
+            font-size: 0.85rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(4rem, 10vw, 7rem);
+            font-weight: 300;
+            margin-bottom: 2rem;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            font-weight: 300;
+            line-height: 1.7;
+        }
+
+        .hero-divider {
+            width: 60px;
+            height: 1px;
+            background: var(--accent);
+            margin: 0 auto;
+        }
+
+        /* Mission */
+        .mission {
+            padding: 8rem 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .mission-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 6vw, 3.5rem);
+            font-weight: 400;
+            margin-bottom: 3rem;
+            text-align: center;
+            letter-spacing: -0.02em;
+        }
+
+        .mission-text {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .mission-highlight {
+            background: var(--accent-subtle);
+            border-left: 3px solid var(--accent);
+            padding: 2rem;
+            margin: 3rem 0;
+            border-radius: 2px;
+        }
+
+        .mission-highlight p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        /* Holdings */
+        .holdings {
+            padding: 8rem 2rem;
+            background: var(--bg-tertiary);
+        }
+
+        .holdings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .holdings-intro {
+            max-width: 800px;
+            margin: 0 auto 5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        /* Ondo Card - Premium Featured */
+        .featured-asset {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 4rem;
+            margin-bottom: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .featured-asset::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+        }
+
+        .featured-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .featured-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .featured-tagline {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            font-style: italic;
+        }
+
+        .featured-description {
+            font-size: 1.05rem;
+            line-height: 1.9;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .featured-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .detail-item {
+            
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-tertiary);
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* Future Assets */
+        .future-assets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .future-asset-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2.5rem;
+            opacity: 0.7;
+        }
+
+        .future-asset-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.75rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .future-asset-description {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        /* Strategy */
+        .strategy {
+            padding: 8rem 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .strategy-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .strategy-item {
+            
+        }
+
+        .strategy-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 300;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .strategy-title {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .strategy-text {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Footer CTA */
+        .footer-cta {
+            padding: 6rem 2rem;
+            text-align: center;
+            background: var(--bg-tertiary);
+        }
+
+        .cta-text {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+        }
+
+        .cta-button:hover {
+            border-color: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 10rem 1.5rem 6rem;
+            }
+
+            .mission,
+            .holdings,
+            .strategy {
+                padding: 5rem 1.5rem;
+            }
+
+            .featured-asset {
+                padding: 2.5rem 2rem;
+            }
+
+            .featured-name {
+                font-size: 2.5rem;
+            }
+
+            .strategy-grid {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+            }
+        }
+
+        /* Staggered reveal for Current Holdings with growth effect */
+        .featured-asset,
+        .future-asset-card {
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .featured-asset.visible,
+        .future-asset-card.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1.0);
+        }
+
+        .future-asset-card:nth-child(1) { transition-delay: 0.15s; }
+        .future-asset-card:nth-child(2) { transition-delay: 0.3s; }
+        .future-asset-card:nth-child(3) { transition-delay: 0.45s; }
+
+        /* Featured asset icon/dot fade-in */
+        .featured-label {
+            transition: opacity 0.6s ease;
+        }
+
+        .featured-asset:not(.visible) .featured-label {
+            opacity: 0.3;
+        }
+
+        .featured-asset.visible .featured-label {
+            opacity: 1;
+        }
+
+        /* Parallax + growth line on Investment Strategy */
+        .strategy {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .strategy-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(212, 175, 55, 0.03) 50%, transparent 100%);
+            transform: translateY(0);
+            transition: transform 0.1s ease-out;
+        }
+
+        .strategy-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Growth lines under each strategy pillar */
+        .strategy-item {
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .strategy-growth-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .strategy-item.visible .strategy-growth-line {
+            width: 100%;
+        }
+
+        .strategy-item:nth-child(1) .strategy-growth-line { transition-delay: 0.2s; }
+        .strategy-item:nth-child(2) .strategy-growth-line { transition-delay: 0.4s; }
+        .strategy-item:nth-child(3) .strategy-growth-line { transition-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/" class="nav-back">← TheHolding</a>
+            <div class="nav-title">Fructus</div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-label">Real World Assets Fund</div>
+        <h1 class="hero-title">Fructus</h1>
+        <p class="hero-subtitle">
+            Harvesting sustainable income from tokenized real-world productivity. 
+            Digital access to tangible asset yields.
+        </p>
+        <div class="hero-divider"></div>
+    </section>
+
+    <!-- Mission -->
+    <section class="mission">
+        <div class="mission-container">
+            <h2 class="section-title">Mission & Mandate</h2>
+            
+            <p class="mission-text">
+                Fructus bridges the physical and digital economies by accumulating tokenized real-world 
+                assets that generate verifiable cashflow. Real estate, treasuries, commodities, equity 
+                in productive businesses—traditional yield-bearing instruments brought onchain with 
+                blockchain transparency and 24/7 liquidity.
+            </p>
+
+            <p class="mission-text">
+                The fund operates on a simple thesis: the most reliable income comes from assets with 
+                intrinsic productivity. Buildings generate rent. Treasuries pay interest. Businesses 
+                produce profits. These are not speculative instruments—they are productive assets with 
+                centuries of track record, now accessible through digital rails.
+            </p>
+
+            <div class="mission-highlight">
+                <p>
+                    Income from the Defitea fund flows directly into Fructus, reinvesting DeFi yields 
+                    into tangible real-world productivity. Digital income compounds into physical asset 
+                    ownership. Onchain cashflow fuels offchain income generation.
+                </p>
+            </div>
+
+            <p class="mission-text">
+                This creates a virtuous cycle: DeFi protocols generate yield → yield purchases RWA 
+                tokens → RWA assets produce real-world income → income compounds portfolio value. 
+                Two complementary income streams, one unified holding structure.
+            </p>
+        </div>
+    </section>
+
+    <!-- Holdings -->
+    <section class="holdings">
+        <div class="holdings-container">
+            <h2 class="section-title">Current Holdings</h2>
+            
+            <p class="holdings-intro">
+                The fund maintains concentrated positions in institutional-grade tokenized assets, 
+                prioritizing transparency, regulatory compliance, and sustainable yield.
+            </p>
+
+            <!-- Ondo Finance - Featured -->
+            <div class="featured-asset">
+                <div class="featured-label">Primary Position</div>
+                <h3 class="featured-name">Ondo Finance</h3>
+                <p class="featured-tagline">
+                    Institutional-grade tokenized securities infrastructure
+                </p>
+                
+                <p class="featured-description">
+                    Ondo Finance provides regulated access to U.S. Treasury Bills and investment-grade 
+                    credit through blockchain-native securities. Their tokenized products combine the 
+                    safety and yield of traditional fixed income with the transparency and efficiency 
+                    of public blockchain infrastructure.
+                </p>
+
+                <p class="featured-description">
+                    The platform operates under strict regulatory frameworks, offering qualified 
+                    investors exposure to short-duration treasuries (OUSG) and ultra-short bonds (USDY) 
+                    with daily liquidity and transparent on-chain settlement. Every dollar is backed by 
+                    verifiable real-world collateral held with institutional custodians.
+                </p>
+
+                <div class="featured-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Asset Class</div>
+                        <div class="detail-value">Tokenized Treasuries</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Compliance</div>
+                        <div class="detail-value">Regulated Securities</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Liquidity</div>
+                        <div class="detail-value">Daily Settlement</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STRCon - Featured -->
+            <div class="featured-asset">
+                <div class="featured-label">Strategic Holding</div>
+                <h3 class="featured-name">STRCon by Strategy</h3>
+                <p class="featured-tagline">
+                    Tokenized structured credit delivering consistent on-chain yield
+                </p>
+                
+                <p class="featured-description">
+                    STRCon represents tokenized exposure to Strategy's institutional credit fund, 
+                    offering investors access to diversified structured credit portfolios typically 
+                    reserved for large institutions. Issued through Ondo Finance's regulated 
+                    infrastructure, STRCon provides quarterly dividend distributions backed by 
+                    a professionally managed portfolio of senior secured loans and investment-grade credit.
+                </p>
+
+                <p class="featured-description">
+                    The fund targets risk-adjusted returns through systematic underwriting discipline, 
+                    maintaining a balanced allocation across corporate credit, asset-backed securities, 
+                    and specialized lending. Current dividend yield approximates 11.5% annually, paid 
+                    quarterly with full transparency of underlying holdings and NAV calculations published 
+                    on-chain for investor verification.
+                </p>
+
+                <div class="featured-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Asset Class</div>
+                        <div class="detail-value">Structured Credit</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Dividend Yield</div>
+                        <div class="detail-value">~11.5% APY</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Distribution</div>
+                        <div class="detail-value">Quarterly Dividends</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Holdings -->
+            <div class="future-assets">
+                <div class="future-asset-card">
+                    <h4 class="future-asset-name">Tokenized Real Estate</h4>
+                    <p class="future-asset-description">
+                        Fractional ownership in income-producing commercial and residential properties. 
+                        Geographic diversification across stable markets with transparent rent distribution.
+                    </p>
+                </div>
+
+                <div class="future-asset-card">
+                    <h4 class="future-asset-name">Commodity Exposure</h4>
+                    <p class="future-asset-description">
+                        Digital claims on physical commodities—precious metals, agricultural products, 
+                        energy resources. Tangible store of value with industrial utility.
+                    </p>
+                </div>
+
+                <div class="future-asset-card">
+                    <h4 class="future-asset-name">Productive Businesses</h4>
+                    <p class="future-asset-description">
+                        Tokenized equity in cash-generating enterprises. Dividend rights and profit 
+                        participation through compliant digital securities.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Strategy -->
+    <section class="strategy">
+        <div class="strategy-bg" id="strategyBg"></div>
+        <div class="strategy-container">
+            <h2 class="section-title">Investment Strategy</h2>
+
+            <div class="strategy-grid">
+                <div class="strategy-item">
+                    <div class="strategy-number">01</div>
+                    <h3 class="strategy-title">Income Focus</h3>
+                    <p class="strategy-text">
+                        Prioritize assets with demonstrated cashflow generation. Rent, interest, 
+                        dividends—verifiable income streams independent of price appreciation.
+                    </p>
+                    <div class="strategy-growth-line"></div>
+                </div>
+
+                <div class="strategy-item">
+                    <div class="strategy-number">02</div>
+                    <h3 class="strategy-title">Regulatory Clarity</h3>
+                    <p class="strategy-text">
+                        Only engage with compliant, transparent issuers operating under established 
+                        securities frameworks. Legal clarity protects long-term asset ownership.
+                    </p>
+                    <div class="strategy-growth-line"></div>
+                </div>
+
+                <div class="strategy-item">
+                    <div class="strategy-number">03</div>
+                    <h3 class="strategy-title">Reinvestment Discipline</h3>
+                    <p class="strategy-text">
+                        Compound income from Defitea directly into RWA acquisitions. Systematic 
+                        accumulation of productive assets using sustainable onchain yield.
+                    </p>
+                    <div class="strategy-growth-line"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <section class="footer-cta">
+        <p class="cta-text">
+            Real-world productivity. Digital transparency. Sustainable income.
+        </p>
+        <a href="/" class="cta-button">Return to TheHolding</a>
+    </section>
+
+    <script>
+        // Intersection Observer for staggered holdings reveal
+        const holdingsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.2,
+            rootMargin: '-50px'
+        });
+
+        // Observe featured asset and future holdings
+        document.querySelectorAll('.featured-asset, .future-asset-card').forEach(card => {
+            holdingsObserver.observe(card);
+        });
+
+        // Strategy items with growth lines
+        const strategyObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.3,
+            rootMargin: '-50px'
+        });
+
+        document.querySelectorAll('.strategy-item').forEach(item => {
+            strategyObserver.observe(item);
+        });
+
+        // Parallax on strategy section background
+        const strategySection = document.querySelector('.strategy');
+        const strategyBg = document.getElementById('strategyBg');
+
+        if (strategySection && strategyBg) {
+            window.addEventListener('scroll', () => {
+                const rect = strategySection.getBoundingClientRect();
+                const scrollPercent = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+                const parallaxValue = (scrollPercent - 0.5) * 40;
+                
+                if (scrollPercent > 0 && scrollPercent < 1) {
+                    strategyBg.style.transform = `translateY(${parallaxValue}px)`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
