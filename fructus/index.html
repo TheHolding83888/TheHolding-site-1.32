@@ -769,6 +769,49 @@
                 </div>
             </div>
 
+            <!-- OIHon - Featured -->
+            <div class="featured-asset">
+                <div class="featured-label">Energy Services Infrastructure</div>
+                <h3 class="featured-name">OIHon — VanEck Oil Services ETF</h3>
+                <p class="featured-tagline">
+                    Tokenized exposure to the companies that power global hydrocarbon extraction and production
+                </p>
+                
+                <p class="featured-description">
+                    OIHon provides tokenized fractional access to the VanEck Oil Services ETF — a concentrated 
+                    portfolio of the world's leading oilfield services and equipment companies. Unlike direct 
+                    energy equity, oil services firms occupy a unique position in the energy value chain: 
+                    they provide the drilling rigs, pressure pumping equipment, subsea infrastructure, and 
+                    technical expertise that hydrocarbon producers cannot operate without — regardless of 
+                    which company holds the underlying reserves.
+                </p>
+
+                <p class="featured-description">
+                    As global energy demand remains structurally elevated and existing fields mature, 
+                    operators face increasing pressure to invest in new production capacity and enhanced 
+                    recovery techniques. This capital expenditure cycle flows directly into oil services 
+                    revenue. In periods of supply constraint and geopolitical tension — precisely when 
+                    energy security becomes a national priority — services companies see the sharpest 
+                    demand acceleration. OIHon captures this thesis while distributing single-company risk 
+                    across a diversified basket of the sector's most critical infrastructure operators.
+                </p>
+
+                <div class="featured-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Asset Class</div>
+                        <div class="detail-value">Energy Services Equity</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Issuer</div>
+                        <div class="detail-value">VanEck (via Ondo)</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Thesis</div>
+                        <div class="detail-value">Energy Capex Cycle</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Future Holdings -->
             <div class="future-assets">
                 <div class="future-asset-card">
@@ -901,17 +944,21 @@
         // ========================================================================
         
         const fructusHoldings = {
-            ondo: 1059,        // ONDO Finance (dynamic)
+            ondo: 800,         // ONDO Finance (dynamic)
             strcon: 1,         // STRCon - fixed $100
-            dbcon: 3,          // DBCon - 3 × $30 = $90
-            copxon: 1,         // COPXon - fixed $90
-            cvxon: 0.5         // CVXon - 0.5 × $200 = $100
+            dbcon: 5,          // DBCon - 5 tokens = $146 total
+            copxon: 2,         // COPXon - 2 tokens = $175 total
+            cvxon: 0.5,        // CVXon - 0.5 tokens
+            slvon: 2,          // SLVon - 2 tokens = $138 total
+            oihon: 0.1         // OIHon - 0.1 tokens = $43 total
         };
 
         const FIXED_STRCON_VALUE = 100;
-        const FIXED_DBCON_VALUE = 30;
-        const FIXED_COPXON_VALUE = 90;
-        const FIXED_CVXON_VALUE = 200;
+        const FIXED_DBCON_VALUE = 29.2;      // $146 / 5 = $29.2 per token
+        const FIXED_COPXON_VALUE = 87.5;     // $175 / 2 = $87.5 per token
+        const FIXED_CVXON_VALUE = 200;       // 0.5 × $200 = $100
+        const FIXED_SLVON_VALUE = 69;        // $138 / 2 = $69 per token
+        const FIXED_OIHON_VALUE = 430;       // $43 / 0.1 = $430 per token
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
         async function updateFructusTVL() {
@@ -927,8 +974,10 @@
                 const dbconValue = fructusHoldings.dbcon * FIXED_DBCON_VALUE;
                 const copxonValue = fructusHoldings.copxon * FIXED_COPXON_VALUE;
                 const cvxonValue = fructusHoldings.cvxon * FIXED_CVXON_VALUE;
+                const slvonValue = fructusHoldings.slvon * FIXED_SLVON_VALUE;
+                const oihonValue = fructusHoldings.oihon * FIXED_OIHON_VALUE;
                 
-                const fructusTVL = ondoValue + strconValue + dbconValue + copxonValue + cvxonValue;
+                const fructusTVL = ondoValue + strconValue + dbconValue + copxonValue + cvxonValue + slvonValue + oihonValue;
                 
                 const tvlElement = document.querySelector('[data-tvl="fructus"]');
                 if (tvlElement) {
