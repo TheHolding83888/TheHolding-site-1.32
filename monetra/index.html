@@ -203,7 +203,6 @@
             border-left: 1px solid var(--border-mid);
             padding-left: 1.5rem;
         }
-
         .hero-stat-value {
             font-family: 'Cormorant Garamond', serif;
             font-size: 2.2rem;
@@ -429,7 +428,7 @@
             height: 10px;
             border-radius: 1.5px;
             flex-shrink: 0;
-            margin-top: 0.5rem;
+            margin-top: 0.7rem;
         }
 
         .arch-fund-name {
@@ -964,12 +963,26 @@
             .strategies-note   { text-align: left; max-width: none; }
             .risk-grid         { grid-template-columns: 1fr; }
             .thesis-body       { grid-template-columns: 1fr; gap: 0; }
-            .hero-stats        { flex-template-columns: 1fr 1fr; flex-wrap: wrap; gap: 2rem; }
+
+            /* Hero stats: 3-column grid on mobile */
+            .hero-stats {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0;
+            }
+            .hero-stat {
+                padding: 0 1.2rem;
+                border-left: 1px solid var(--border-mid);
+            }
+            .hero-stat:first-child { padding-left: 0; border-left: none; }
+
             .footer            { flex-direction: column; gap: 2rem; text-align: center; }
             .footer-links      { justify-content: center; flex-wrap: wrap; gap: 1.2rem; margin-top: 1rem; }
             .footer-link       { font-size: 0.88rem; }
 
-            .arch-fund { grid-template-columns: 2rem 1fr; }
+            /* Arch funds: tighter cube alignment */
+            .arch-fund { grid-template-columns: 1.5rem 1fr; gap: 1rem; }
+            .arch-fund-cube { margin-top: 0.65rem; }
             .arch-arrow { display: none; }
             .arch-badge { display: none; }
 
@@ -995,6 +1008,8 @@
             .mandate, .strategies, .risk, .thesis,
             .architecture, .aiagents { padding: 6rem 1.5rem; }
             .nav { padding: 1.25rem 1.5rem; }
+            .hero-stat-value { font-size: 1.6rem; }
+            .hero-stat-label { font-size: 0.65rem; }
         }
     </style>
 </head>
@@ -1061,10 +1076,9 @@
                     productive regardless of market conditions.
                 </p>
                 <p class="mandate-text">
-                    When Bitcoin consolidates, Substantia waits. When DeFi is quiet, 
-                    Defitea earns less. When venture plays are illiquid, Singul holds. 
-                    Monetra operates independently of all these cycles — generating 
-                    stable, predictable yield every single day.
+                    Substantia accumulates Bitcoin every week regardless of price.
+                    Monetra ensures that DCA never depends on selling other assets —
+                    stable yield provides a continuous funding stream for the accumulation engine.
                 </p>
                 <p class="mandate-text">
                     Every position is denominated in USD-pegged assets. Every yield 
