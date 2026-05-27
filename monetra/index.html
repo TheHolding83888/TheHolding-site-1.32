@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monetra — Stable Capital Fund | The Holding</title>
+    <link rel="canonical" href="https://theholding.ai/monetra">
+    <meta name="description" content="Monetra — dedicated stablecoin strategy fund by The Holding. Capital that flows.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black:       #0a0a0a;
+            --black-soft:  #111111;
+            --black-mid:   #1a1a1a;
+            --surface:     #161616;
+            --surface-2:   #1e1e1e;
+            --border:      rgba(255,255,255,0.08);
+            --border-mid:  rgba(255,255,255,0.14);
+            --white:       #f5f5f3;
+            --white-dim:   rgba(245,245,243,0.55);
+            --white-faint: rgba(245,245,243,0.25);
+            --silver:      #c8c8c8;
+            --accent:      #e8e0d0;
+            --accent-dim:  rgba(232,224,208,0.15);
+            --green-pos:   #4ade80;
+            --green-dim:   rgba(74,222,128,0.12);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Instrument Sans', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* ─── NAV ─── */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10,10,10,0.85);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-back {
+            color: var(--white-dim);
+            text-decoration: none;
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .nav-back:hover { color: var(--white); }
+
+        .nav-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: var(--white-dim);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-breadcrumb {
+            font-size: 0.78rem;
+            color: var(--white-faint);
+            letter-spacing: 0.08em;
+        }
+        .nav-breadcrumb a {
+            color: var(--white-faint);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .nav-breadcrumb a:hover { color: var(--white-dim); }
+
+        /* ─── HERO ─── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 10rem 2.5rem 6rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle grid texture */
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        /* Glow orb */
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 20%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(200,200,200,0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.2s forwards;
+        }
+
+        .hero-cube {
+            width: 10px;
+            height: 10px;
+            background: var(--white);
+            border-radius: 1.5px;
+            flex-shrink: 0;
+        }
+
+        .hero-label {
+            font-size: 0.78rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--white-dim);
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(5rem, 14vw, 11rem);
+            font-weight: 300;
+            letter-spacing: -0.04em;
+            line-height: 0.9;
+            color: var(--white);
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeUp 0.9s ease 0.35s forwards;
+        }
+
+        .hero-subtitle {
+            max-width: 560px;
+            font-size: 1.15rem;
+            font-weight: 300;
+            color: var(--white-dim);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeUp 0.9s ease 0.5s forwards;
+        }
+
+        .hero-tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.35rem;
+            font-style: italic;
+            font-weight: 300;
+            color: var(--silver);
+            letter-spacing: 0.04em;
+            margin-bottom: 4rem;
+            opacity: 0;
+            animation: fadeUp 0.9s ease 0.6s forwards;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 4rem;
+            opacity: 0;
+            animation: fadeUp 0.9s ease 0.65s forwards;
+        }
+
+        .hero-stat {
+            border-left: 1px solid var(--border-mid);
+            padding-left: 1.5rem;
+        }
+
+        .hero-stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 300;
+            color: var(--white);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .hero-stat-label {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+            margin-top: 0.4rem;
+        }
+
+        .hero-scroll {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            opacity: 0;
+            animation: fadeIn 1s ease 1.2s forwards;
+        }
+
+        .hero-scroll-line {
+            width: 1px;
+            height: 50px;
+            background: linear-gradient(180deg, transparent, var(--white-faint));
+            animation: scrollLine 2s ease-in-out infinite;
+        }
+
+        .hero-scroll-text {
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+        }
+
+        @keyframes scrollLine {
+            0%, 100% { opacity: 0.3; transform: scaleY(1); }
+            50% { opacity: 0.8; transform: scaleY(1.15); }
+        }
+
+        /* ─── MANDATE ─── */
+        .mandate {
+            padding: 10rem 2.5rem;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .mandate::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .mandate-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8rem;
+            align-items: start;
+        }
+
+        .mandate-left {}
+
+        .section-tag {
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .section-tag::before {
+            content: '';
+            width: 20px;
+            height: 1px;
+            background: var(--white-faint);
+        }
+
+        .mandate-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 300;
+            line-height: 1.15;
+            letter-spacing: -0.025em;
+            margin-bottom: 2.5rem;
+        }
+
+        .mandate-text {
+            font-size: 1rem;
+            line-height: 1.9;
+            color: var(--white-dim);
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+
+        .mandate-right {
+            padding-top: 5rem;
+        }
+
+        .mandate-principle {
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .mandate-principle:last-child {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .principle-number {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--white-faint);
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.08em;
+        }
+
+        .principle-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            margin-bottom: 0.6rem;
+            color: var(--white);
+        }
+
+        .principle-text {
+            font-size: 0.9rem;
+            color: var(--white-faint);
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* ─── STRATEGIES ─── */
+        .strategies {
+            padding: 10rem 2.5rem;
+            background: var(--black);
+            position: relative;
+        }
+
+        .strategies::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .strategies-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .strategies-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 5rem;
+        }
+
+        .strategies-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            line-height: 1.1;
+        }
+
+        .strategies-note {
+            font-size: 0.82rem;
+            color: var(--white-faint);
+            max-width: 220px;
+            text-align: right;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* Strategy table */
+        .strategy-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .strategy-table thead tr {
+            border-bottom: 1px solid var(--border-mid);
+        }
+
+        .strategy-table th {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+            font-weight: 400;
+            padding: 0 1.5rem 1.2rem 0;
+            text-align: left;
+        }
+
+        .strategy-table th:last-child { text-align: right; padding-right: 0; }
+
+        .strategy-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.3s;
+            cursor: default;
+        }
+
+        .strategy-table tbody tr:hover {
+            background: rgba(255,255,255,0.025);
+        }
+
+        .strategy-table td {
+            padding: 2rem 1.5rem 2rem 0;
+            vertical-align: top;
+        }
+
+        .strategy-table td:last-child {
+            text-align: right;
+            padding-right: 0;
+        }
+
+        .st-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--white);
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .st-sub {
+            font-size: 0.82rem;
+            color: var(--white-faint);
+            font-weight: 300;
+        }
+
+        .st-type {
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--white-dim);
+            padding-top: 0.3rem;
+        }
+
+        .st-protocol {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.82rem;
+            color: var(--white-dim);
+        }
+
+        .st-yield {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: var(--green-pos);
+            letter-spacing: -0.02em;
+        }
+
+        .st-yield-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--white-faint);
+            margin-top: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .st-status {
+            display: inline-block;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.35rem 0.75rem;
+            border-radius: 2px;
+            margin-top: 0.5rem;
+        }
+
+        .st-status.active {
+            color: var(--green-pos);
+            border: 1px solid rgba(74,222,128,0.25);
+            background: var(--green-dim);
+        }
+
+        .st-status.building {
+            color: var(--white-faint);
+            border: 1px solid var(--border);
+        }
+
+        /* ─── RISK MATRIX ─── */
+        .risk {
+            padding: 10rem 2.5rem;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .risk::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .risk-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .risk-header {
+            text-align: center;
+            margin-bottom: 6rem;
+        }
+
+        .risk-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            margin-bottom: 1.5rem;
+        }
+
+        .risk-subtext {
+            font-size: 1rem;
+            color: var(--white-dim);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .risk-item {
+            background: var(--surface-2);
+            padding: 3rem 2.5rem;
+            transition: background 0.3s;
+        }
+
+        .risk-item:hover {
+            background: var(--black-mid);
+        }
+
+        .risk-icon-line {
+            width: 32px;
+            height: 2px;
+            background: var(--white-faint);
+            margin-bottom: 2rem;
+        }
+
+        .risk-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .risk-text {
+            font-size: 0.9rem;
+            color: var(--white-faint);
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        /* ─── THESIS ─── */
+        .thesis {
+            padding: 10rem 2.5rem;
+            background: var(--black);
+            position: relative;
+        }
+
+        .thesis::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .thesis-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .thesis-quote {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4.5vw, 3.2rem);
+            font-weight: 300;
+            font-style: italic;
+            line-height: 1.4;
+            color: var(--white);
+            letter-spacing: -0.02em;
+            margin-bottom: 3rem;
+        }
+
+        .thesis-divider {
+            width: 40px;
+            height: 1px;
+            background: var(--white-faint);
+            margin: 0 auto 2rem;
+        }
+
+        .thesis-attribution {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+        }
+
+        .thesis-body {
+            margin-top: 6rem;
+            text-align: left;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .thesis-col p {
+            font-size: 1rem;
+            line-height: 1.9;
+            color: var(--white-dim);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ─── FOOTER ─── */
+        .footer {
+            padding: 4rem 2.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-weight: 300;
+            color: var(--white-dim);
+        }
+
+        .footer-brand span {
+            color: var(--white-faint);
+            font-size: 0.85rem;
+            margin-left: 0.5rem;
+        }
+
+        .footer-slogan {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.95rem;
+            font-style: italic;
+            font-weight: 300;
+            color: var(--white-faint);
+            margin-top: 0.3rem;
+            letter-spacing: 0.02em;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-link {
+            font-size: 0.78rem;
+            color: var(--white-faint);
+            text-decoration: none;
+            letter-spacing: 0.05em;
+            transition: color 0.3s;
+        }
+
+        .footer-link:hover { color: var(--white-dim); }
+
+        .footer-note {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--white-faint);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 900px) {
+            .mandate-inner  { grid-template-columns: 1fr; gap: 4rem; }
+            .mandate-right  { padding-top: 0; }
+            .strategies-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .strategies-note   { text-align: left; max-width: none; }
+            .risk-grid         { grid-template-columns: 1fr; }
+            .thesis-body       { grid-template-columns: 1fr; gap: 0; }
+            .hero-stats        { flex-direction: column; gap: 2rem; }
+            .footer            { flex-direction: column; gap: 2rem; text-align: center; }
+            .footer-links      { justify-content: center; }
+
+            .strategy-table thead { display: none; }
+            .strategy-table tbody tr {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+                padding: 1.5rem 0;
+            }
+            .strategy-table td { padding: 0.25rem 0; }
+            .strategy-table td:last-child { text-align: left; }
+        }
+
+        @media (max-width: 600px) {
+            .hero { padding: 9rem 1.5rem 5rem; }
+            .mandate, .strategies, .risk, .thesis { padding: 6rem 1.5rem; }
+            .nav { padding: 1.25rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav class="nav">
+        <a href="/" class="nav-back">← The Holding</a>
+        <div class="nav-title">TheHolding.ai</div>
+        <div class="nav-breadcrumb">
+            <a href="/">theholding.ai</a> / <a href="/monetra">monetra</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-eyebrow">
+                <div class="hero-cube"></div>
+                <span class="hero-label">Stable Capital Fund · monetra.eth</span>
+            </div>
+
+            <h1 class="hero-title">Monetra</h1>
+
+            <p class="hero-subtitle">
+                A dedicated stablecoin allocation vehicle. Capital deployed exclusively 
+                into yield-generating stable strategies — no directional exposure, 
+                no volatility. Pure return on stable principal.
+            </p>
+
+            <p class="hero-tagline">Capital that flows.</p>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">$0</div>
+                    <div class="hero-stat-label">TVL — Seeding</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">Stable</div>
+                    <div class="hero-stat-label">Principal exposure</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">Onchain</div>
+                    <div class="hero-stat-label">Settlement layer</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-scroll">
+            <div class="hero-scroll-line"></div>
+            <span class="hero-scroll-text">Scroll</span>
+        </div>
+    </section>
+
+    <!-- Mandate -->
+    <section class="mandate">
+        <div class="mandate-inner">
+            <div class="mandate-left reveal">
+                <div class="section-tag">Fund Mandate</div>
+                <h2 class="mandate-heading">Capital that<br>never sleeps.</h2>
+                <p class="mandate-text">
+                    Monetra operates a single-mandate: put stable capital to work 
+                    at the highest risk-adjusted yield available onchain, without 
+                    taking directional exposure to any asset.
+                </p>
+                <p class="mandate-text">
+                    While other funds within The Holding accumulate volatile assets 
+                    over years, Monetra captures the daily compounding available 
+                    in DeFi's stablecoin layer. It is the holding's liquidity engine.
+                </p>
+                <p class="mandate-text">
+                    Every position is denominated in USD-pegged assets. Every yield 
+                    is paid in stablecoins. The principal remains stable.
+                </p>
+            </div>
+
+            <div class="mandate-right reveal">
+                <div class="mandate-principle">
+                    <div class="principle-number">01</div>
+                    <div class="principle-title">Stable principal only</div>
+                    <div class="principle-text">USDC, USDT, DAI, FRAX and equivalent. No exposure to volatile assets within this fund.</div>
+                </div>
+                <div class="mandate-principle">
+                    <div class="principle-number">02</div>
+                    <div class="principle-title">Yield is reinvested</div>
+                    <div class="principle-text">Earnings compound back into the fund unless explicitly redirected to Substantia accumulation.</div>
+                </div>
+                <div class="mandate-principle">
+                    <div class="principle-number">03</div>
+                    <div class="principle-title">Protocol diversification</div>
+                    <div class="principle-text">No single protocol holds more than 40% of Monetra capital. Smart contract risk is distributed.</div>
+                </div>
+                <div class="mandate-principle">
+                    <div class="principle-number">04</div>
+                    <div class="principle-title">Liquidity tiers</div>
+                    <div class="principle-text">Capital split between instant-exit and locked positions. Minimum 30% remains liquid at all times.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Strategies -->
+    <section class="strategies">
+        <div class="strategies-inner">
+            <div class="strategies-header reveal">
+                <h2 class="strategies-heading">Stable strategies<br>in deployment</h2>
+                <p class="strategies-note">Positions scale as TVL grows. Yield ranges are indicative.</p>
+            </div>
+
+            <table class="strategy-table reveal">
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>Type</th>
+                        <th>Protocol</th>
+                        <th>Est. Yield</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="st-name">Stable Lending</div>
+                            <div class="st-sub">USDC, USDT, DAI supply-side lending</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Lending</div></td>
+                        <td>
+                            <div class="st-protocol">Aave v3</div>
+                            <div class="st-protocol">Compound</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">4–6%</div>
+                            <div class="st-yield-label">APY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">Stable LP</div>
+                            <div class="st-sub">USDC/USDT · USDC/DAI pools</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Liquidity Pool</div></td>
+                        <td>
+                            <div class="st-protocol">Curve Finance</div>
+                            <div class="st-protocol">Aerodrome</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">5–9%</div>
+                            <div class="st-yield-label">APR</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">Convex Stable Pools</div>
+                            <div class="st-sub">Boosted Curve stable LP via Convex</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Boosted LP</div></td>
+                        <td>
+                            <div class="st-protocol">Convex Finance</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">7–12%</div>
+                            <div class="st-yield-label">APR (CRV+CVX)</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">scrvUSD</div>
+                            <div class="st-sub">Staked crvUSD — native Curve stablecoin</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Staked Stable</div></td>
+                        <td>
+                            <div class="st-protocol">Curve Finance</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">5–8%</div>
+                            <div class="st-yield-label">APY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">sfrxUSD</div>
+                            <div class="st-sub">Staked frxUSD — Frax protocol yield</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Staked Stable</div></td>
+                        <td>
+                            <div class="st-protocol">Frax Finance</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">6–9%</div>
+                            <div class="st-yield-label">APY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">Yield Staking</div>
+                            <div class="st-sub">Tokenized treasury yield positions</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Yield Protocol</div></td>
+                        <td>
+                            <div class="st-protocol">Pendle Finance</div>
+                            <div class="st-protocol">Ondo Finance</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">5–8%</div>
+                            <div class="st-yield-label">Fixed APY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">Vault Deposits</div>
+                            <div class="st-sub">Managed stable vaults, auto-compound</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Vault</div></td>
+                        <td>
+                            <div class="st-protocol">Beefy Finance</div>
+                            <div class="st-protocol">Yearn Finance</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">6–12%</div>
+                            <div class="st-yield-label">APY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">GHO / crvUSD</div>
+                            <div class="st-sub">Protocol-native stablecoin strategies</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Stable Protocol</div></td>
+                        <td>
+                            <div class="st-protocol">Aave / Curve</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">6–10%</div>
+                            <div class="st-yield-label">APY</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Risk Matrix -->
+    <section class="risk">
+        <div class="risk-inner">
+            <div class="risk-header reveal">
+                <h2 class="risk-heading">Risk architecture</h2>
+                <p class="risk-subtext">Stable does not mean risk-free. These are the vectors we actively monitor and manage within Monetra.</p>
+            </div>
+
+            <div class="risk-grid reveal">
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Smart Contract Risk</div>
+                    <div class="risk-text">Protocol vulnerabilities can result in loss of deposited capital. Mitigated through audited protocols, diversification across 4–6 platforms, and graduated position sizing.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Depeg Risk</div>
+                    <div class="risk-text">Stablecoins can lose their USD peg during stress events. Monetra prioritises battle-tested stables (USDC, USDT, DAI) and avoids algorithmic or single-collateral experimental pegs.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Liquidity Risk</div>
+                    <div class="risk-text">Locked positions cannot be exited on demand. A minimum 30% liquid buffer is maintained at all times to ensure capital is accessible when needed.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Yield Compression</div>
+                    <div class="risk-text">DeFi yields fluctuate with market conditions and TVL. Monetra rotates capital between protocols to maintain competitive returns without chasing unsustainable incentives.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Governance Risk</div>
+                    <div class="risk-text">Protocol governance can alter fee structures, collateral ratios, and reward emissions. Positions are monitored against governance proposals that materially affect risk profile.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Regulatory Risk</div>
+                    <div class="risk-text">Stablecoin and DeFi regulation is evolving globally. Monetra operates on-chain with non-custodial positions. No regulatory compliance risk transfers to the fund operator.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Thesis -->
+    <section class="thesis">
+        <div class="thesis-inner">
+            <div class="reveal">
+                <p class="thesis-quote">"The boring layer of DeFi generates the most consistent returns. Monetra is built entirely on that insight."</p>
+                <div class="thesis-divider"></div>
+                <div class="thesis-attribution">The Holding · Monetra Fund Thesis</div>
+            </div>
+
+            <div class="thesis-body reveal">
+                <div class="thesis-col">
+                    <p>
+                        Crypto markets are dominated by narratives about volatile assets. Bitcoin, Ethereum, 
+                        DeFi governance tokens — all carry meaningful drawdown risk. This is the right 
+                        place for Substantia and Singul. But it is not Monetra's domain.
+                    </p>
+                    <p>
+                        Monetra exists because there is a persistent, structural yield available in DeFi's 
+                        stablecoin layer that most allocators ignore while chasing asymmetric plays. 
+                        Lending markets always need liquidity. Stablecoin LPs always need depth. 
+                        These primitives generate real yield, paid in dollars, every day.
+                    </p>
+                </div>
+                <div class="thesis-col">
+                    <p>
+                        Within the broader The Holding architecture, Monetra serves as the liquidity 
+                        layer — capital that works continuously, compounds daily, and can be redeployed 
+                        into Substantia's accumulation engine when Bitcoin presents optimal entry points.
+                    </p>
+                    <p>
+                        The strategy is deliberately unglamorous. No leverage. No directional bets. 
+                        No speculative protocols. Monetra is the engine that funds the holding's 
+                        long-term ambitions without requiring any asset appreciation to succeed.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-brand">
+            Monetra <span>by The Holding</span>
+            <div class="footer-slogan">Capital that flows.</div>
+        </div>
+        <div class="footer-links">
+            <a href="/" class="footer-link">TheHolding.ai</a>
+            <a href="/substantia" class="footer-link">Substantia</a>
+            <a href="/defitea" class="footer-link">Defitea</a>
+            <a href="/singul" class="footer-link">Singul</a>
+            <a href="/fructus" class="footer-link">Fructus</a>
+        </div>
+        <div class="footer-note">Non-custodial · monetra.eth</div>
+    </footer>
+
+    <script>
+        // Scroll reveal
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, i * 80);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+        reveals.forEach(el => observer.observe(el));
+    </script>
+
+</body>
+</html>
