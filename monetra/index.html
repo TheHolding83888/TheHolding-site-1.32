@@ -452,6 +452,25 @@
             font-weight: 300;
         }
 
+        /* Staked stables token list */
+        .st-sub-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+        }
+
+        .st-sub-list span {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+            color: var(--white-dim);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            padding: 0.2rem 0.55rem;
+            border-radius: 2px;
+        }
+
         .st-type {
             font-size: 0.78rem;
             letter-spacing: 0.08em;
@@ -691,18 +710,18 @@
 
         .footer-link {
             font-size: 0.78rem;
-            color: var(--white-faint);
+            color: rgba(245,245,243,0.6);
             text-decoration: none;
             letter-spacing: 0.05em;
             transition: color 0.3s;
         }
 
-        .footer-link:hover { color: var(--white-dim); }
+        .footer-link:hover { color: var(--white); }
 
         .footer-note {
             font-family: 'DM Mono', monospace;
             font-size: 0.68rem;
-            color: var(--white-faint);
+            color: rgba(245,245,243,0.45);
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
@@ -739,7 +758,22 @@
             .thesis-body       { grid-template-columns: 1fr; gap: 0; }
             .hero-stats        { flex-direction: column; gap: 2rem; }
             .footer            { flex-direction: column; gap: 2rem; text-align: center; }
-            .footer-links      { justify-content: center; }
+            .footer-links      { justify-content: center; flex-wrap: wrap; }
+
+            /* Breadcrumb: bottom-left under nav row */
+            .nav {
+                flex-wrap: wrap;
+                row-gap: 0;
+            }
+            .nav-breadcrumb {
+                order: 3;
+                width: 100%;
+                padding-top: 0.6rem;
+                margin-top: 0.4rem;
+                border-top: 1px solid var(--border);
+                font-size: 0.7rem;
+                text-align: left;
+            }
 
             .strategy-table thead { display: none; }
             .strategy-table tbody tr {
@@ -924,31 +958,19 @@
                     </tr>
                     <tr>
                         <td>
-                            <div class="st-name">scrvUSD</div>
-                            <div class="st-sub">Staked crvUSD — native Curve stablecoin</div>
+                            <div class="st-name">Staked Stables</div>
+                            <div class="st-sub-list">
+                                <span>scrvUSD</span><span>sfrxUSD</span><span>sGHO</span><span>sUSDe</span><span>sUSDS</span>
+                            </div>
                             <div class="st-status building">Building</div>
                         </td>
                         <td><div class="st-type">Staked Stable</div></td>
                         <td>
-                            <div class="st-protocol">Curve Finance</div>
+                            <div class="st-protocol">Curve · Frax</div>
+                            <div class="st-protocol">Aave · Ethena · Sky</div>
                         </td>
                         <td>
-                            <div class="st-yield">5–8%</div>
-                            <div class="st-yield-label">APY</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="st-name">sfrxUSD</div>
-                            <div class="st-sub">Staked frxUSD — Frax protocol yield</div>
-                            <div class="st-status building">Building</div>
-                        </td>
-                        <td><div class="st-type">Staked Stable</div></td>
-                        <td>
-                            <div class="st-protocol">Frax Finance</div>
-                        </td>
-                        <td>
-                            <div class="st-yield">6–9%</div>
+                            <div class="st-yield">5–10%</div>
                             <div class="st-yield-label">APY</div>
                         </td>
                     </tr>
@@ -981,21 +1003,6 @@
                         </td>
                         <td>
                             <div class="st-yield">6–12%</div>
-                            <div class="st-yield-label">APY</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="st-name">GHO / crvUSD</div>
-                            <div class="st-sub">Protocol-native stablecoin strategies</div>
-                            <div class="st-status building">Building</div>
-                        </td>
-                        <td><div class="st-type">Stable Protocol</div></td>
-                        <td>
-                            <div class="st-protocol">Aave / Curve</div>
-                        </td>
-                        <td>
-                            <div class="st-yield">6–10%</div>
                             <div class="st-yield-label">APY</div>
                         </td>
                     </tr>
