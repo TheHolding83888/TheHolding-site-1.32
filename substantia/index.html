@@ -59,14 +59,8 @@
             align-items: center;
         }
 
-        .nav-brand {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--faint);
-            text-decoration: none;
-        }
+        /* breadcrumb goes left on desktop */
+        .nav-brand { display: none; }
 
         .nav-back {
             font-size: 0.78rem;
@@ -79,12 +73,12 @@
         .nav-back:hover { color: var(--text); }
 
         .nav-breadcrumb {
-            font-size: 0.72rem;
+            font-size: 0.82rem;
             color: var(--faint);
             letter-spacing: 0.05em;
         }
-        .nav-breadcrumb a { color: var(--faint); text-decoration: none; transition: color 0.3s; }
-        .nav-breadcrumb a:hover { color: var(--dim); }
+        .nav-breadcrumb a { color: var(--dim); text-decoration: none; transition: color 0.3s; font-weight: 400; }
+        .nav-breadcrumb a:hover { color: var(--text); }
 
         /* ─── HERO ─── */
         .hero {
@@ -97,23 +91,8 @@
             overflow: hidden;
         }
 
-        /* Monumental background number */
-        .hero-bg-number {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -52%);
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(18rem, 38vw, 36rem);
-            font-weight: 300;
-            color: transparent;
-            -webkit-text-stroke: 1px rgba(0,0,0,0.04);
-            letter-spacing: -0.05em;
-            line-height: 1;
-            user-select: none;
-            pointer-events: none;
-            white-space: nowrap;
-        }
+        /* Monumental background number — hidden */
+        .hero-bg-number { display: none; }
 
         .hero-inner {
             max-width: 1200px;
@@ -562,7 +541,7 @@
 
         /* ─── FOOTER ─── */
         footer {
-            padding: 3rem 2.5rem;
+            padding: 3.5rem 2.5rem;
             background: var(--bg);
             border-top: 1px solid var(--border);
             display: flex;
@@ -570,10 +549,38 @@
             align-items: center;
         }
 
-        .footer-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 300; color: var(--dim); }
+        .footer-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--dim);
+        }
+
+        .footer-brand span {
+            color: var(--faint);
+            font-size: 1rem;
+            margin-left: 0.5rem;
+        }
+
+        .footer-slogan {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            font-style: italic;
+            font-weight: 300;
+            color: var(--faint);
+            margin-top: 0.3rem;
+        }
+
         .footer-links { display: flex; gap: 2rem; }
-        .footer-link { font-size: 0.78rem; color: var(--faint); text-decoration: none; letter-spacing: 0.04em; transition: color 0.3s; }
-        .footer-link:hover { color: var(--dim); }
+        .footer-link {
+            font-size: 0.85rem;
+            color: var(--dim);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            transition: color 0.3s;
+            font-weight: 400;
+        }
+        .footer-link:hover { color: var(--text); }
         .footer-note { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--faint); letter-spacing: 0.08em; text-transform: uppercase; }
 
         /* ─── ANIMATIONS ─── */
@@ -608,15 +615,31 @@
 
         @media (max-width: 768px) {
             nav { padding: 1.2rem 1.5rem; }
-            .nav-brand { display: none; }
-            .hero { padding: 0 1.5rem 4rem; }
-            .hero-bottom { grid-template-columns: 1fr 1fr; }
-            .hero-stat:last-child { display: none; }
-            .hero-stat:nth-child(2) { padding-left: 1.5rem; }
-            .hero-stat { padding-right: 1.5rem; }
-            .doctrine-inner { grid-template-columns: 1fr; gap: 4rem; }
-            .doctrine { padding: 6rem 1.5rem; }
-            .holdings, .dca { padding: 6rem 1.5rem; }
+
+            /* Nav: breadcrumb left, larger */
+            .nav-breadcrumb { font-size: 0.85rem; }
+            .nav-back { font-size: 0.72rem; }
+
+            /* Hero: much less top space */
+            .hero { padding: 0 1.5rem 3.5rem; min-height: 100svh; }
+            .hero-inner { padding-top: 5rem; }
+
+            /* Stats: single column, centered, no vertical line */
+            .hero-bottom {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .hero-stat {
+                padding: 0 !important;
+                border-right: none !important;
+                border-left: none !important;
+                text-align: center;
+            }
+            .hero-stat:last-child { display: block; }
+
+            .doctrine-inner { grid-template-columns: 1fr; gap: 3rem; }
+            .doctrine { padding: 5rem 1.5rem; }
+            .holdings, .dca { padding: 5rem 1.5rem; }
             .asset-row { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
             .asset-left { padding-right: 0; display: flex; align-items: baseline; gap: 1.5rem; }
             .asset-middle { padding: 0; border-left: none; border-top: 1px solid var(--border); padding-top: 1.5rem; }
@@ -624,8 +647,11 @@
             .dca-grid { grid-template-columns: 1fr; }
             .dca-schedule { grid-template-columns: 1fr; }
             .schedule-item, .schedule-item:nth-child(2), .schedule-item:nth-child(4) { padding-left: 0; border-left: none; padding-right: 0; }
-            footer { flex-direction: column; gap: 1.5rem; text-align: center; }
-            .footer-links { justify-content: center; flex-wrap: wrap; }
+
+            /* Footer */
+            footer { flex-direction: column; gap: 2rem; text-align: center; padding: 3rem 1.5rem; }
+            .footer-links { justify-content: center; flex-wrap: wrap; gap: 1.2rem; }
+            .footer-link { font-size: 0.88rem; }
         }
     </style>
 </head>
@@ -633,7 +659,6 @@
 
     <!-- Nav -->
     <nav>
-        <a href="/" class="nav-brand">TheHolding.ai</a>
         <div class="nav-breadcrumb">
             <a href="/">theholding.ai</a> / <a href="/substantia">substantia</a>
         </div>
@@ -881,7 +906,10 @@
 
     <!-- Footer -->
     <footer>
-        <div class="footer-brand">Substantia — The Holding</div>
+        <div>
+            <div class="footer-brand">Substantia <span>by The Holding</span></div>
+            <div class="footer-slogan">The Foundation.</div>
+        </div>
         <div class="footer-links">
             <a href="/" class="footer-link">TheHolding.ai</a>
             <a href="/defitea" class="footer-link">Defitea</a>
