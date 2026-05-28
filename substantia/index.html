@@ -620,22 +620,24 @@
             .nav-breadcrumb { font-size: 0.85rem; }
             .nav-back { font-size: 0.72rem; }
 
-            /* Hero: much less top space */
+            /* Hero: less top space but not too high */
             .hero { padding: 0 1.5rem 3.5rem; min-height: 100svh; }
-            .hero-inner { padding-top: 5rem; }
+            .hero-inner { padding-top: 8rem; }
 
-            /* Stats: single column, centered, no vertical line */
+            /* Stats: 2 columns horizontal, centered */
             .hero-bottom {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
+                grid-template-columns: 1fr 1fr;
+                gap: 0;
             }
             .hero-stat {
-                padding: 0 !important;
-                border-right: none !important;
+                padding: 0 1.2rem !important;
+                border-right: 1px solid var(--border) !important;
                 border-left: none !important;
                 text-align: center;
             }
-            .hero-stat:last-child { display: block; }
+            .hero-stat:first-child { padding-left: 0 !important; border-right: 1px solid var(--border) !important; }
+            .hero-stat:last-child { display: none; }
+            .hero-stat:nth-child(2) { border-right: none !important; }
 
             .doctrine-inner { grid-template-columns: 1fr; gap: 3rem; }
             .doctrine { padding: 5rem 1.5rem; }
