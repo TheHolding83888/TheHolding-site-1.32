@@ -104,24 +104,25 @@
 
         .hero-layer {
             font-family: 'DM Mono', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 0.2em;
+            font-size: 0.78rem;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
-            color: var(--faint);
+            color: var(--dim);
             margin-bottom: 2rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.9rem;
             opacity: 0;
             animation: fadeUp 0.8s ease 0.1s forwards;
         }
 
         .hero-layer::before {
             content: '';
-            width: 2px;
-            height: 2px;
+            width: 10px;
+            height: 10px;
             background: var(--blue);
-            border-radius: 50%;
+            border-radius: 1.5px;
+            flex-shrink: 0;
         }
 
         h1 {
@@ -622,7 +623,7 @@
 
             /* Hero: less top space but not too high */
             .hero { padding: 0 1.5rem 3.5rem; min-height: 100svh; }
-            .hero-inner { padding-top: 8rem; }
+            .hero-inner { padding-top: 6.5rem; }
 
             /* Stats: 2 columns horizontal, centered */
             .hero-bottom {
