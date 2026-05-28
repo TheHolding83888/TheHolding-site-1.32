@@ -658,6 +658,35 @@
             font-weight: 300;
         }
 
+        /* AI agents token-style tags */
+        .st-agents {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.6rem;
+        }
+
+        .st-agents span {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+            color: var(--white-dim);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
+        }
+
+        /* Featured row — subtle highlight for AI agents */
+        .st-row-featured {
+            background: rgba(255,255,255,0.025);
+            border-top: 1px solid rgba(255,255,255,0.1) !important;
+        }
+
+        .st-row-featured:hover {
+            background: rgba(255,255,255,0.045) !important;
+        }
+
         /* Staked stables token list */
         .st-sub-list {
             display: flex;
@@ -728,6 +757,156 @@
         .st-status.building {
             color: var(--white-faint);
             border: 1px solid var(--border);
+        }
+
+        /* ─── AI AGENT STRATEGIES ─── */
+        .agent-strategies {
+            padding: 10rem 2.5rem;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .agent-strategies::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .agent-strategies-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .agent-strat-header {
+            max-width: 800px;
+            margin-bottom: 5rem;
+        }
+
+        .agent-strat-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-strat-sub {
+            font-size: 1rem;
+            color: var(--white-dim);
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .agent-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 4rem;
+        }
+
+        .agent-detail-card {
+            background: var(--black-mid);
+            padding: 3rem 2.5rem;
+            transition: background 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .agent-detail-card:hover {
+            background: var(--black-soft);
+        }
+
+        .agent-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .agent-detail-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: var(--white);
+            letter-spacing: -0.02em;
+        }
+
+        .agent-detail-url {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--white-faint);
+            letter-spacing: 0.06em;
+        }
+
+        .agent-detail-desc {
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: var(--white-dim);
+            font-weight: 300;
+            flex: 1;
+            margin-bottom: 2rem;
+        }
+
+        .agent-detail-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .agent-stat-item {}
+
+        .agent-stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 300;
+            color: var(--white);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 0.3rem;
+        }
+
+        .agent-stat-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.62rem;
+            color: var(--white-faint);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            line-height: 1.4;
+        }
+
+        .agent-note {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            padding: 2.5rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .agent-note-line {
+            width: 24px;
+            height: 1px;
+            background: var(--white-faint);
+            flex-shrink: 0;
+            margin-top: 0.6rem;
+        }
+
+        .agent-note p {
+            font-size: 0.88rem;
+            color: var(--white-faint);
+            line-height: 1.8;
+            font-weight: 300;
+            font-style: italic;
         }
 
         /* ─── RISK MATRIX ─── */
@@ -958,6 +1137,8 @@
             .mandate-inner  { grid-template-columns: 1fr; gap: 4rem; }
             .mandate-right  { padding-top: 0; }
             .aiagents-inner { grid-template-columns: 1fr; gap: 4rem; }
+            .agent-cards    { grid-template-columns: 1fr; }
+            .agent-detail-stats { grid-template-columns: repeat(3, 1fr); }
             .strategies-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
             .strategies-note   { text-align: left; max-width: none; }
             .risk-grid         { grid-template-columns: 1fr; }
@@ -1012,7 +1193,7 @@
         @media (max-width: 600px) {
             .hero { padding: 9rem 1.5rem 5rem; }
             .mandate, .strategies, .risk, .thesis,
-            .architecture, .aiagents { padding: 6rem 1.5rem; }
+            .architecture, .aiagents, .agent-strategies { padding: 6rem 1.5rem; }
             .nav { padding: 1.25rem 1.5rem; }
             .hero-stat-value { font-size: 1.6rem; }
             .hero-stat-label { font-size: 0.65rem; }
@@ -1351,8 +1532,151 @@
                             <div class="st-yield-label">APY</div>
                         </td>
                     </tr>
+                    <tr class="st-row-featured">
+                        <td>
+                            <div class="st-name">AI Agent Strategies</div>
+                            <div class="st-sub">Autonomous agents continuously scan protocols, rebalance capital in real-time, and capture yield unavailable to static positions</div>
+                            <div class="st-agents">
+                                <span>ZyFAI</span><span>Mamo</span><span>Giza · ARMA</span>
+                            </div>
+                            <div class="st-status building">Exploring</div>
+                        </td>
+                        <td><div class="st-type">Agentic DeFi</div></td>
+                        <td>
+                            <div class="st-protocol">ZyFAI — Base, Sonic</div>
+                            <div class="st-protocol">Mamo — Base</div>
+                            <div class="st-protocol">Giza ARMA — Base, Mode</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">8–25%</div>
+                            <div class="st-yield-label">APY (agent-boosted)</div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
+        </div>
+    </section>
+
+    <!-- AI Agent Strategies Deep Dive -->
+    <section class="agent-strategies">
+        <div class="agent-strategies-inner">
+            <div class="agent-strat-header reveal">
+                <div class="section-tag">Agentic DeFi</div>
+                <h2 class="agent-strat-heading">Capital managed<br>by autonomous agents.</h2>
+                <p class="agent-strat-sub">
+                    The next frontier of stablecoin yield isn't a protocol — it's a network of AI agents 
+                    that monitor hundreds of pools simultaneously, rebalance capital in under two seconds, 
+                    and consistently outperform static positions. Monetra is actively exploring integration 
+                    with the leading agentic yield platforms.
+                </p>
+            </div>
+
+            <div class="agent-cards reveal">
+                <!-- ZyFAI -->
+                <div class="agent-detail-card">
+                    <div class="agent-detail-header">
+                        <div class="agent-detail-name">ZyFAI</div>
+                        <div class="agent-detail-url">zyf.ai</div>
+                    </div>
+                    <p class="agent-detail-desc">
+                        ZyFAI deploys autonomous agents via smart accounts with session keys — 
+                        your capital stays in self-custodied wallets while the agent continuously 
+                        reallocates across Aave, Morpho, and Compound on Base, Sonic, Plasma, 
+                        and Arbitrum. Rebalancing executes in under 1.5 seconds when a better 
+                        yield opportunity appears. Not just APY — the agent monitors interest 
+                        rate models, TVL, yield stability, slippage, and price impact 
+                        simultaneously before executing any move.
+                    </p>
+                    <div class="agent-detail-stats">
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">8–25%</div>
+                            <div class="agent-stat-label">Historical APY range</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">$8.4M</div>
+                            <div class="agent-stat-label">AUM at peak</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">&lt;1.5s</div>
+                            <div class="agent-stat-label">Rebalance execution</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mamo -->
+                <div class="agent-detail-card">
+                    <div class="agent-detail-header">
+                        <div class="agent-detail-name">Mamo</div>
+                        <div class="agent-detail-url">mamo.bot</div>
+                    </div>
+                    <p class="agent-detail-desc">
+                        Mamo is an AI-powered stablecoin yield optimizer built on Base, 
+                        independently audited by Certora and Halborn Security with a 
+                        $250,000 Code4rena bug bounty program. The platform focuses 
+                        exclusively on USDC yield maximization through intelligent 
+                        autonomous decision-making — removing the need for manual 
+                        protocol monitoring. Real yield distributed weekly, not inflationary 
+                        incentives. Mamo represents the institutional-grade security standard 
+                        that Monetra requires before any capital deployment.
+                    </p>
+                    <div class="agent-detail-stats">
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">Real</div>
+                            <div class="agent-stat-label">Yield source (non-inflationary)</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">2×</div>
+                            <div class="agent-stat-label">Audited (Certora + Halborn)</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">$250K</div>
+                            <div class="agent-stat-label">Bug bounty</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Giza ARMA -->
+                <div class="agent-detail-card">
+                    <div class="agent-detail-header">
+                        <div class="agent-detail-name">Giza · ARMA</div>
+                        <div class="agent-detail-url">gizatech.xyz</div>
+                    </div>
+                    <p class="agent-detail-desc">
+                        Giza's flagship agent ARMA operates across Base and Mode, 
+                        continuously routing stablecoins between Morpho, Aave, and Fluid 
+                        to capture the best risk-adjusted yield available. The agent 
+                        delivers up to 83% higher APR than static USDC market positions 
+                        through real-time optimization. Giza charges 10% performance fee 
+                        on realized yield only — never on principal — and covers all 
+                        gas fees after initial activation. Session keys define precise 
+                        operational limits, preventing any action outside defined parameters. 
+                        $20M+ in assets under agents with a 20% reinvestment rate signals 
+                        strong user confidence in sustained returns.
+                    </p>
+                    <div class="agent-detail-stats">
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">15%+</div>
+                            <div class="agent-stat-label">USDC APY (Base target)</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">$20M+</div>
+                            <div class="agent-stat-label">Assets under agents</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">+83%</div>
+                            <div class="agent-stat-label">vs. static positions</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="agent-note reveal">
+                <div class="agent-note-line"></div>
+                <p>Monetra applies the same due diligence to agentic protocols as to any other position: 
+                audit history, track record, TVL stability, and smart contract architecture are 
+                evaluated before capital deployment. Agent strategies will be introduced gradually 
+                as TVL grows and each platform's risk profile is validated through sustained operation.</p>
+            </div>
         </div>
     </section>
 
