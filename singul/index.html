@@ -80,17 +80,30 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .nav-logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
+        .nav-logo { display: none; }
+
+        .nav-breadcrumb {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.82rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.05em;
         }
+
+        .nav-breadcrumb a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .nav-breadcrumb a:hover { color: rgba(255,255,255,0.9); }
 
         .nav-back {
             font-family: 'DM Mono', monospace;
-            font-size: 0.875rem;
-            color: var(--text-muted);
+            font-size: 0.78rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
             text-decoration: none;
             transition: color 0.3s ease;
         }
@@ -123,6 +136,18 @@
             margin-bottom: 2rem;
             opacity: 0;
             animation: fadeUp 0.8s ease forwards;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .hero-label::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #8b5cf6;
+            border-radius: 1.5px;
+            flex-shrink: 0;
         }
 
         .hero-title {
@@ -617,12 +642,73 @@
                 gap: 3rem;
             }
         }
+        /* ─── FOOTER ─── */
+        .site-footer {
+            padding: 3.5rem 2.5rem;
+            background: var(--bg-primary);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: rgba(255,255,255,0.55);
+        }
+
+        .footer-brand span {
+            color: rgba(255,255,255,0.28);
+            font-size: 1.15rem;
+            margin-left: 0.5rem;
+        }
+
+        .footer-slogan {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            font-style: italic;
+            font-weight: 300;
+            color: rgba(255,255,255,0.26);
+            margin-top: 0.3rem;
+        }
+
+        .footer-links { display: flex; gap: 2rem; }
+
+        .footer-link {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.42);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .footer-link:hover { color: rgba(255,255,255,0.8); }
+
+        .footer-note {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.22);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .site-footer { flex-direction: column; gap: 2rem; text-align: center; padding: 3rem 1.5rem; }
+            .footer-links { justify-content: center; flex-wrap: wrap; gap: 1.2rem; }
+            .footer-link { font-size: 0.88rem; }
+        }
+
     </style>
 </head>
 <body>
     <nav>
-        <div class="nav-logo">THEHOLDING.AI</div>
-        <a href="/" class="nav-back">← Back to TheHolding</a>
+        <div class="nav-breadcrumb">
+            <a href="/">theholding.ai</a> / <a href="/singul">singul</a>
+        </div>
+        <a href="/" class="nav-back">← Back</a>
     </nav>
 
     <!-- Hero -->
@@ -996,5 +1082,22 @@
             });
         });
     </script>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div>
+            <div class="footer-brand">Singul <span>by The Holding</span></div>
+            <div class="footer-slogan">Asymmetric Growth.</div>
+        </div>
+        <div class="footer-links">
+            <a href="/" class="footer-link">TheHolding.ai</a>
+            <a href="/substantia" class="footer-link">Substantia</a>
+            <a href="/defitea" class="footer-link">Defitea</a>
+            <a href="/fructus" class="footer-link">Fructus</a>
+            <a href="/monetra" class="footer-link">Monetra</a>
+        </div>
+        <div class="footer-note">singul.eth · Non-custodial</div>
+    </footer>
+
 </body>
 </html>
