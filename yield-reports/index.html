@@ -349,8 +349,8 @@
 
         .fund-row {
             display: grid;
-            grid-template-columns: 2.5rem 1fr auto;
-            gap: 1.5rem;
+            grid-template-columns: 1.8rem 1fr auto;
+            gap: 1rem;
             align-items: start;
             padding: 2.5rem 0;
             border-top: 1px solid var(--border);
@@ -363,7 +363,7 @@
             height: 11px;
             border-radius: 2px;
             flex-shrink: 0;
-            margin-top: 1rem;
+            margin-top: 1.25rem;
         }
 
         .fund-info {}
@@ -541,40 +541,68 @@
             margin-bottom: 5rem;
         }
 
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1.5rem;
+        }
+
         .chart-label {
             font-family: 'DM Mono', monospace;
             font-size: 0.65rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
             color: var(--text-faint);
-            margin-bottom: 1.5rem;
+        }
+
+        .chart-legend {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-faint);
+            letter-spacing: 0.08em;
+        }
+
+        /* Desktop bar chart */
+        .bar-chart-wrap {
+            position: relative;
+        }
+
+        /* Percent grid lines */
+        .bar-grid {
+            position: absolute;
+            inset: 0 0 2.5rem 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bar-grid-line {
+            position: absolute;
+            left: 0; right: 0;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .bar-grid-label {
+            position: absolute;
+            right: calc(100% + 0.5rem);
+            font-family: 'DM Mono', monospace;
+            font-size: 0.55rem;
+            color: var(--text-faint);
+            letter-spacing: 0.06em;
+            transform: translateY(50%);
+            white-space: nowrap;
         }
 
         .bar-chart {
             display: flex;
             align-items: flex-end;
             gap: 0.8rem;
-            height: 160px;
+            height: 180px;
             padding-bottom: 2.5rem;
+            padding-left: 2.5rem;
             position: relative;
-            border-bottom: 1px solid var(--border-mid);
-        }
-
-        .bar-chart::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .bar-chart::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0; right: 0;
-            height: 1px;
-            background: var(--border);
+            z-index: 1;
         }
 
         .bar-item {
@@ -582,15 +610,15 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
             height: 100%;
             justify-content: flex-end;
+            position: relative;
         }
 
         .bar-fill {
             width: 100%;
             background: var(--defitea);
-            opacity: 0.7;
+            opacity: 0.75;
             border-radius: 2px 2px 0 0;
             transition: opacity 0.3s;
             position: relative;
@@ -605,7 +633,7 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             position: absolute;
-            bottom: -2.2rem;
+            bottom: -2rem;
             left: 50%;
             transform: translateX(-50%);
             white-space: nowrap;
@@ -620,6 +648,55 @@
             left: 50%;
             transform: translateX(-50%);
             white-space: nowrap;
+        }
+
+        /* Mobile chart — horizontal bars */
+        .bar-chart-mobile {
+            display: none;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .mobile-bar-row {
+            display: grid;
+            grid-template-columns: 3rem 1fr 3rem;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .mobile-bar-row:last-child { border-bottom: 1px solid var(--border); }
+
+        .mobile-bar-month {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .mobile-bar-track {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .mobile-bar-fill {
+            height: 100%;
+            background: var(--defitea);
+            border-radius: 4px;
+            opacity: 0.8;
+        }
+
+        .mobile-bar-pct {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: var(--green);
+            text-align: right;
+            letter-spacing: -0.01em;
         }
 
         /* Report table */
@@ -931,7 +1008,37 @@
             text-transform: uppercase;
         }
 
-        /* ─── ANIMATIONS ─── */
+        /* Year switcher */
+        .year-switcher {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .year-btn {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.5rem 1.2rem;
+            border-radius: 3px;
+            border: 1px solid var(--border-mid);
+            background: transparent;
+            color: var(--text-faint);
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .year-btn:hover {
+            color: var(--text-dim);
+            border-color: var(--text-faint);
+        }
+
+        .year-btn.active {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(20px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -964,15 +1071,27 @@
             .pending-grid { grid-template-columns: 1fr; }
             .footer { flex-direction: column; gap: 2rem; text-align: center; }
             .footer-links { justify-content: center; flex-wrap: wrap; }
-            .report-table th, .report-table td { padding: 1rem 1.2rem; }
+            .report-table th, .report-table td { padding: 1rem 1rem; }
             .td-bar { display: none; }
+            .report-table th:nth-child(2),
+            .report-table td:nth-child(2) { display: none; }
+            .td-month { font-size: 0.95rem; }
+            .td-yield { font-size: 1.1rem; }
+            .td-apy { font-size: 0.78rem; }
+            .td-num { font-size: 0.78rem; }
+            .report-table { table-layout: fixed; width: 100%; }
+            .report-table th:nth-child(1), .report-table td:nth-child(1) { width: 32%; }
+            .report-table th:nth-child(3), .report-table td:nth-child(3) { width: 24%; }
+            .report-table th:nth-child(4), .report-table td:nth-child(4) { width: 24%; }
+            .report-table th:nth-child(5), .report-table td:nth-child(5) { width: 20%; }
             .philosophy, .funds-overview, .defitea-reports, .pending-funds { padding: 5rem 1.5rem; }
         }
 
         @media (max-width: 600px) {
             .hero-summary { grid-template-columns: 1fr 1fr; }
             .dr-kpis { grid-template-columns: 1fr 1fr; }
-            .bar-chart { display: none; }
+            .bar-chart-wrap { display: none; }
+            .bar-chart-mobile { display: flex; }
             .nav { padding: 1.2rem 1.5rem; }
             .nav-breadcrumb { font-size: 0.68rem; }
         }
@@ -1195,59 +1314,101 @@
 
             <!-- Bar Chart -->
             <div class="dr-chart-section reveal">
-                <div class="chart-label">Monthly yield — % of fund TVL</div>
-                <div class="bar-chart">
-                    <div class="bar-item">
-                        <div class="bar-fill" style="height:72.8%">
-                            <span class="bar-pct">1.34%</span>
-                            <span class="bar-month">Jan</span>
+                <div class="chart-header">
+                    <div class="chart-label">Monthly yield — % of fund TVL</div>
+                    <div class="chart-legend">Each grid line = 0.25%</div>
+                </div>
+
+                <!-- Desktop: vertical bars with % grid -->
+                <div class="bar-chart-wrap" id="barChartWrap">
+                    <div class="bar-grid" id="barGrid"></div>
+                    <div class="bar-chart" id="barChart">
+                        <div class="bar-item">
+                            <div class="bar-fill" data-pct="1.34" style="height:0">
+                                <span class="bar-pct">1.34%</span>
+                                <span class="bar-month">Jan</span>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar-fill" data-pct="1.84" style="height:0">
+                                <span class="bar-pct">1.84%</span>
+                                <span class="bar-month">Feb</span>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar-fill" data-pct="1.02" style="height:0">
+                                <span class="bar-pct">1.02%</span>
+                                <span class="bar-month">Mar</span>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar-fill" data-pct="0.78" style="height:0">
+                                <span class="bar-pct">0.78%</span>
+                                <span class="bar-month">Apr</span>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar-fill" data-pct="1.01" style="height:0">
+                                <span class="bar-pct">1.01%</span>
+                                <span class="bar-month">May</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="bar-item">
-                        <div class="bar-fill" style="height:100%">
-                            <span class="bar-pct">1.84%</span>
-                            <span class="bar-month">Feb</span>
-                        </div>
+                </div>
+
+                <!-- Mobile: horizontal bars -->
+                <div class="bar-chart-mobile" id="mobileChart">
+                    <div class="mobile-bar-row">
+                        <div class="mobile-bar-month">Jan</div>
+                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="72.8%"></div></div>
+                        <div class="mobile-bar-pct">+1.34%</div>
                     </div>
-                    <div class="bar-item">
-                        <div class="bar-fill" style="height:55.4%">
-                            <span class="bar-pct">1.02%</span>
-                            <span class="bar-month">Mar</span>
-                        </div>
+                    <div class="mobile-bar-row">
+                        <div class="mobile-bar-month">Feb</div>
+                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="100%"></div></div>
+                        <div class="mobile-bar-pct">+1.84%</div>
                     </div>
-                    <div class="bar-item">
-                        <div class="bar-fill" style="height:42.4%">
-                            <span class="bar-pct">0.78%</span>
-                            <span class="bar-month">Apr</span>
-                        </div>
+                    <div class="mobile-bar-row">
+                        <div class="mobile-bar-month">Mar</div>
+                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="55.4%"></div></div>
+                        <div class="mobile-bar-pct">+1.02%</div>
                     </div>
-                    <div class="bar-item">
-                        <div class="bar-fill" style="height:54.9%">
-                            <span class="bar-pct">1.01%</span>
-                            <span class="bar-month">May</span>
-                        </div>
+                    <div class="mobile-bar-row">
+                        <div class="mobile-bar-month">Apr</div>
+                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="42.4%"></div></div>
+                        <div class="mobile-bar-pct">+0.78%</div>
+                    </div>
+                    <div class="mobile-bar-row">
+                        <div class="mobile-bar-month">May</div>
+                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="54.9%"></div></div>
+                        <div class="mobile-bar-pct">+1.01%</div>
                     </div>
                 </div>
             </div>
 
             <!-- Report Table -->
             <div class="reveal">
+
+                <!-- Year Switcher -->
+                <div class="year-switcher">
+                    <button class="year-btn active" onclick="switchYear(2026, this)">2026</button>
+                    <button class="year-btn" onclick="switchYear(2027, this)">2027</button>
+                </div>
+
                 <div class="report-table-wrap">
                     <table class="report-table">
                         <thead>
                             <tr>
-                                <th>Period</th>
-                                <th>Year</th>
+                                <th>Month</th>
                                 <th class="right">Cash Flow</th>
                                 <th class="right">Monthly Yield</th>
-                                <th class="right">APY (annualized)</th>
+                                <th class="right">APY</th>
                                 <th class="td-bar"></th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="table-body-2026">
                             <tr>
                                 <td class="td-month">January</td>
-                                <td class="td-note">2026</td>
                                 <td class="td-num">$29.66</td>
                                 <td class="td-yield">+1.34%</td>
                                 <td class="td-apy">16.00%</td>
@@ -1255,7 +1416,6 @@
                             </tr>
                             <tr>
                                 <td class="td-month">February</td>
-                                <td class="td-note">2026</td>
                                 <td class="td-num">$45.97</td>
                                 <td class="td-yield">+1.84%</td>
                                 <td class="td-apy">22.00%</td>
@@ -1263,7 +1423,6 @@
                             </tr>
                             <tr>
                                 <td class="td-month">March</td>
-                                <td class="td-note">2026</td>
                                 <td class="td-num">$27.51</td>
                                 <td class="td-yield">+1.02%</td>
                                 <td class="td-apy">12.22%</td>
@@ -1271,7 +1430,6 @@
                             </tr>
                             <tr>
                                 <td class="td-month">April</td>
-                                <td class="td-note">2026</td>
                                 <td class="td-num">$20.2</td>
                                 <td class="td-yield">+0.78%</td>
                                 <td class="td-apy">9.36%</td>
@@ -1279,7 +1437,6 @@
                             </tr>
                             <tr>
                                 <td class="td-month">May</td>
-                                <td class="td-note">2026</td>
                                 <td class="td-num">$30.4</td>
                                 <td class="td-yield">+1.01%</td>
                                 <td class="td-apy">12.2%</td>
@@ -1287,11 +1444,17 @@
                             </tr>
                             <tr class="row-total">
                                 <td class="td-month">Total 2026</td>
-                                <td class="td-note">Jan – May</td>
                                 <td class="td-num">$153.74</td>
                                 <td class="td-yield">+5.99%</td>
-                                <td class="td-apy">~14.4% avg</td>
+                                <td class="td-apy">~14.4%</td>
                                 <td class="td-bar"></td>
+                            </tr>
+                        </tbody>
+                        <tbody id="table-body-2027" style="display:none">
+                            <tr>
+                                <td class="td-month" colspan="4" style="text-align:center; padding:3rem 2rem; color:var(--text-faint); font-family:'DM Mono',monospace; font-size:0.78rem; letter-spacing:0.08em;">
+                                    Reports will appear here monthly as 2027 progresses.
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -1397,6 +1560,17 @@
     </footer>
 
     <script>
+        // Year switcher
+        function switchYear(year, btn) {
+            document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('[id^="table-body-"]').forEach(tb => {
+                tb.style.display = 'none';
+            });
+            const target = document.getElementById('table-body-' + year);
+            if (target) target.style.display = '';
+        }
+
         // Theme toggle
         function toggleTheme() {
             const html = document.documentElement;
@@ -1441,27 +1615,80 @@
         }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
         reveals.forEach(el => observer.observe(el));
 
-        // Animate bars on scroll
-        const barChart = document.querySelector('.bar-chart');
-        if (barChart) {
-            const barObserver = new IntersectionObserver((entries) => {
+        // Build percent grid + animate bars
+        function buildChart() {
+            const grid   = document.getElementById('barGrid');
+            const chart  = document.getElementById('barChart');
+            if (!grid || !chart) return;
+
+            const maxPct  = 2.0;   // top of chart = 2%
+            const step    = 0.25;  // one line per 0.25%
+            const chartH  = chart.offsetHeight; // includes padding-bottom
+            const barAreaH = chartH - 40; // subtract padding-bottom (2.5rem ≈ 40px)
+
+            // Draw horizontal grid lines for 0.25, 0.50 … 2.00%
+            grid.innerHTML = '';
+            for (let pct = step; pct <= maxPct; pct = Math.round((pct + step) * 100) / 100) {
+                const frac = pct / maxPct;
+                const bottomPx = frac * barAreaH; // distance from bottom of bar area
+                const topPx = barAreaH - bottomPx; // distance from top of bar area
+
+                const line = document.createElement('div');
+                line.className = 'bar-grid-line';
+                line.style.bottom = (bottomPx + 40) + 'px'; // +40 for padding-bottom
+                grid.appendChild(line);
+
+                const label = document.createElement('span');
+                label.className = 'bar-grid-label';
+                label.textContent = pct.toFixed(2) + '%';
+                label.style.bottom = (bottomPx + 40) + 'px';
+                grid.appendChild(label);
+            }
+
+            // Animate vertical bars
+            const fills = chart.querySelectorAll('.bar-fill');
+            fills.forEach((fill, i) => {
+                const pct = parseFloat(fill.getAttribute('data-pct'));
+                const heightPct = (pct / maxPct) * 100;
+                fill.style.transition = `height 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.1}s`;
+                setTimeout(() => { fill.style.height = heightPct + '%'; }, 80);
+            });
+        }
+
+        // Animate mobile horizontal bars
+        function animateMobileBars() {
+            const fills = document.querySelectorAll('.mobile-bar-fill');
+            fills.forEach((fill, i) => {
+                const targetW = fill.getAttribute('data-w');
+                fill.style.transition = `width 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.1}s`;
+                setTimeout(() => { fill.style.width = targetW; }, 80);
+            });
+        }
+
+        // Observe chart section
+        const chartSection = document.querySelector('.dr-chart-section');
+        if (chartSection) {
+            const chartObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        const fills = entry.target.querySelectorAll('.bar-fill');
-                        fills.forEach((fill, i) => {
-                            const targetH = fill.style.height;
-                            fill.style.height = '0';
-                            fill.style.transition = `height 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.1}s`;
-                            requestAnimationFrame(() => {
-                                setTimeout(() => { fill.style.height = targetH; }, 50);
-                            });
-                        });
-                        barObserver.unobserve(entry.target);
+                        buildChart();
+                        animateMobileBars();
+                        chartObserver.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.3 });
-            barObserver.observe(barChart);
+            }, { threshold: 0.2 });
+            chartObserver.observe(chartSection);
         }
+
+        // Rebuild grid on resize
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const grid = document.getElementById('barGrid');
+                if (grid && grid.children.length > 0) buildChart();
+            }, 200);
+        });
     </script>
 
 </body>
