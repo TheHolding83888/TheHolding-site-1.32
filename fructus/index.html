@@ -56,23 +56,33 @@
             align-items: center;
         }
 
+        .nav-title { display: none; }
+
+        .nav-breadcrumb {
+            font-size: 0.82rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .nav-breadcrumb a:hover { color: var(--text-primary); }
+
         .nav-back {
             color: var(--text-tertiary);
             text-decoration: none;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
+            font-size: 0.78rem;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
             transition: color 0.3s ease;
         }
 
         .nav-back:hover {
-            color: var(--text-primary);
-        }
-
-        .nav-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.25rem;
-            font-weight: 400;
             color: var(--text-primary);
         }
 
@@ -482,14 +492,76 @@
         .strategy-item:nth-child(1) .strategy-growth-line { transition-delay: 0.2s; }
         .strategy-item:nth-child(2) .strategy-growth-line { transition-delay: 0.4s; }
         .strategy-item:nth-child(3) .strategy-growth-line { transition-delay: 0.6s; }
+        /* ─── FOOTER ─── */
+        .site-footer {
+            padding: 3.5rem 2.5rem;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .footer-brand span {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            margin-left: 0.5rem;
+            font-weight: 400;
+        }
+
+        .footer-slogan {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            font-style: italic;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .footer-links { display: flex; gap: 2rem; }
+
+        .footer-link {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .footer-link:hover { color: var(--text-primary); }
+
+        .footer-note {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .site-footer { flex-direction: column; gap: 2rem; text-align: center; padding: 3rem 1.5rem; }
+            .footer-links { justify-content: center; flex-wrap: wrap; gap: 1.2rem; }
+            .footer-link { font-size: 0.88rem; }
+        }
+
     </style>
 </head>
 <body>
     <!-- Navigation -->
     <nav class="nav">
         <div class="nav-container">
-            <a href="/" class="nav-back">← TheHolding</a>
-            <div class="nav-title">Fructus</div>
+            <div class="nav-breadcrumb">
+                <a href="/">theholding.ai</a> / <a href="/fructus">fructus</a>
+            </div>
+            <a href="/" class="nav-back">← Back</a>
         </div>
     </nav>
 
@@ -886,7 +958,6 @@
         <p class="cta-text">
             Real-world productivity. Digital transparency. Sustainable income.
         </p>
-        <a href="/" class="cta-button">Return to TheHolding</a>
     </section>
 
     <script>
@@ -993,5 +1064,22 @@
         updateFructusTVL();
         setInterval(updateFructusTVL, 300000);
     </script>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div>
+            <div class="footer-brand">Fructus <span>by The Holding</span></div>
+            <div class="footer-slogan">Real World Assets.</div>
+        </div>
+        <div class="footer-links">
+            <a href="/" class="footer-link">TheHolding.ai</a>
+            <a href="/substantia" class="footer-link">Substantia</a>
+            <a href="/defitea" class="footer-link">Defitea</a>
+            <a href="/singul" class="footer-link">Singul</a>
+            <a href="/monetra" class="footer-link">Monetra</a>
+        </div>
+        <div class="footer-note">fructus.eth · Non-custodial</div>
+    </footer>
+
 </body>
 </html>
