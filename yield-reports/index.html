@@ -363,7 +363,7 @@
             height: 11px;
             border-radius: 2px;
             flex-shrink: 0;
-            margin-top: 1.25rem;
+            margin-top: 1.45rem;
         }
 
         .fund-info {}
@@ -556,12 +556,9 @@
             color: var(--text-faint);
         }
 
-        .chart-legend {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.6rem;
-            color: var(--text-faint);
-            letter-spacing: 0.08em;
-        }
+        /* bar-grid-label hidden everywhere */
+        .bar-grid-label { display: none; }
+        .chart-legend   { display: none; }
 
         /* Desktop bar chart */
         .bar-chart-wrap {
@@ -718,11 +715,11 @@
 
         .report-table th {
             font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.12em;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: var(--text-faint);
-            font-weight: 400;
+            color: var(--text-dim);
+            font-weight: 500;
             padding: 1.2rem 2rem;
             text-align: left;
         }
@@ -735,61 +732,53 @@
         }
 
         .report-table tbody tr:last-child { border-bottom: none; }
-
         .report-table tbody tr:hover { background: var(--row-hover); }
 
         .report-table td {
-            padding: 1.5rem 2rem;
-            font-size: 0.92rem;
-            color: var(--text-dim);
+            padding: 1.6rem 2rem;
             vertical-align: middle;
         }
 
         .td-month {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.15rem;
-            font-weight: 400;
+            font-size: 1.4rem;
+            font-weight: 500;
             color: var(--text);
             letter-spacing: -0.01em;
         }
 
         .td-num {
             font-family: 'DM Mono', monospace;
-            font-size: 0.88rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-dim);
             text-align: right;
         }
 
         .td-yield {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.35rem;
-            font-weight: 300;
+            font-size: 1.7rem;
+            font-weight: 500;
             color: var(--green);
             text-align: right;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.02em;
         }
 
         .td-apy {
             font-family: 'DM Mono', monospace;
-            font-size: 0.82rem;
+            font-size: 0.92rem;
+            font-weight: 500;
             color: var(--text-dim);
             text-align: right;
         }
 
-        .td-bar {
-            width: 140px;
-        }
+        .td-bar { width: 140px; }
 
         .inline-bar {
             height: 3px;
             background: var(--defitea);
             border-radius: 2px;
             opacity: 0.6;
-        }
-
-        .td-note {
-            font-size: 0.78rem;
-            color: var(--text-faint);
-            font-style: italic;
         }
 
         /* Totals row */
@@ -799,12 +788,22 @@
         }
 
         .row-total .td-month {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
             color: var(--text);
-            font-weight: 500;
+            font-style: italic;
         }
 
         .row-total .td-yield {
-            font-size: 1.5rem;
+            font-size: 1.9rem;
+            font-weight: 600;
+        }
+
+        .row-total .td-num,
+        .row-total .td-apy {
+            font-weight: 600;
+            color: var(--text);
         }
 
         /* Disclaimer */
@@ -1071,19 +1070,21 @@
             .pending-grid { grid-template-columns: 1fr; }
             .footer { flex-direction: column; gap: 2rem; text-align: center; }
             .footer-links { justify-content: center; flex-wrap: wrap; }
-            .report-table th, .report-table td { padding: 1rem 1rem; }
+            .report-table th, .report-table td { padding: 1.2rem 0.8rem; }
             .td-bar { display: none; }
             .report-table th:nth-child(2),
             .report-table td:nth-child(2) { display: none; }
-            .td-month { font-size: 0.95rem; }
-            .td-yield { font-size: 1.1rem; }
-            .td-apy { font-size: 0.78rem; }
-            .td-num { font-size: 0.78rem; }
             .report-table { table-layout: fixed; width: 100%; }
-            .report-table th:nth-child(1), .report-table td:nth-child(1) { width: 32%; }
-            .report-table th:nth-child(3), .report-table td:nth-child(3) { width: 24%; }
-            .report-table th:nth-child(4), .report-table td:nth-child(4) { width: 24%; }
-            .report-table th:nth-child(5), .report-table td:nth-child(5) { width: 20%; }
+            .report-table th:nth-child(1), .report-table td:nth-child(1) { width: 30%; }
+            .report-table th:nth-child(3), .report-table td:nth-child(3) { width: 24%; text-align: center; }
+            .report-table th:nth-child(4), .report-table td:nth-child(4) { width: 26%; text-align: center; }
+            .report-table th:nth-child(5), .report-table td:nth-child(5) { width: 20%; text-align: right; }
+            .td-month { font-size: 1.15rem; }
+            .td-yield { font-size: 1.4rem; text-align: center; }
+            .td-num   { font-size: 0.82rem; text-align: center; }
+            .td-apy   { font-size: 0.78rem; text-align: center; }
+            .row-total .td-month { font-size: 1.2rem; }
+            .row-total .td-yield { font-size: 1.5rem; }
             .philosophy, .funds-overview, .defitea-reports, .pending-funds { padding: 5rem 1.5rem; }
         }
 
@@ -1102,7 +1103,6 @@
     <!-- Nav -->
     <nav class="nav">
         <a href="/" class="nav-back">← The Holding</a>
-        <div class="nav-title">TheHolding.ai</div>
         <div style="display:flex;align-items:center;gap:1.5rem">
             <div class="nav-breadcrumb">
                 <a href="/">theholding.ai</a> / <a href="/yield-reports">yield-reports</a>
@@ -1194,7 +1194,7 @@
 
             <!-- Defitea -->
             <div class="fund-row reveal">
-                <div class="fund-cube" style="background:#10b981; margin-top:0.65rem"></div>
+                <div class="fund-cube" style="background:#10b981; margin-top:1.45rem"></div>
                 <div class="fund-info">
                     <div class="fund-name-row">
                         <div class="fund-name">Defitea</div>
@@ -1221,7 +1221,7 @@
 
             <!-- Monetra -->
             <div class="fund-row reveal">
-                <div class="fund-cube cube-monetra" style="background:#111111; margin-top:0.65rem"></div>
+                <div class="fund-cube cube-monetra" style="background:#111111; margin-top:1.45rem"></div>
                 <div class="fund-info">
                     <div class="fund-name-row">
                         <div class="fund-name">Monetra</div>
@@ -1248,7 +1248,7 @@
 
             <!-- Fructus -->
             <div class="fund-row reveal">
-                <div class="fund-cube" style="background:#eab308; margin-top:0.65rem"></div>
+                <div class="fund-cube" style="background:#eab308; margin-top:1.45rem"></div>
                 <div class="fund-info">
                     <div class="fund-name-row">
                         <div class="fund-name">Fructus</div>
@@ -1443,7 +1443,7 @@
                                 <td class="td-bar"><div class="inline-bar" style="width:54.9%"></div></td>
                             </tr>
                             <tr class="row-total">
-                                <td class="td-month">Total 2026</td>
+                                <td class="td-month">Total</td>
                                 <td class="td-num">$153.74</td>
                                 <td class="td-yield">+5.99%</td>
                                 <td class="td-apy">~14.4%</td>
