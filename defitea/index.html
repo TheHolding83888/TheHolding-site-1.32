@@ -88,20 +88,30 @@
             align-items: center;
         }
 
-        .logo {
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 500;
+        .logo { display: none; }
+
+        .nav-breadcrumb {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.82rem;
+            color: rgba(245,245,245,0.5);
+            letter-spacing: 0.05em;
         }
 
-        .back-link {
-            color: var(--text-muted);
+        .nav-breadcrumb a {
+            color: rgba(245,245,245,0.65);
             text-decoration: none;
-            font-size: 0.875rem;
-            letter-spacing: 0.05em;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .nav-breadcrumb a:hover { color: rgba(245,245,245,0.9); }
+
+        .back-link {
+            color: rgba(245,245,245,0.5);
+            text-decoration: none;
+            font-size: 0.78rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
             transition: color 0.3s;
         }
 
@@ -871,6 +881,73 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* ─── FOOTER ─── */
+        .site-footer {
+            padding: 3.5rem 2.5rem;
+            background: var(--bg-primary);
+            border-top: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: rgba(245,245,245,0.6);
+        }
+
+        .footer-brand span {
+            color: rgba(245,245,245,0.3);
+            font-size: 1.15rem;
+            margin-left: 0.5rem;
+        }
+
+        .footer-slogan {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            font-style: italic;
+            font-weight: 300;
+            color: rgba(245,245,245,0.28);
+            margin-top: 0.3rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-link {
+            font-size: 0.85rem;
+            color: rgba(245,245,245,0.45);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .footer-link:hover { color: rgba(245,245,245,0.8); }
+
+        .footer-note {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.65rem;
+            color: rgba(245,245,245,0.25);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .site-footer {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+                padding: 3rem 1.5rem;
+            }
+            .footer-links { justify-content: center; flex-wrap: wrap; gap: 1.2rem; }
+            .footer-link { font-size: 0.88rem; }
+        }
+
     </style>
 </head>
 <body>
@@ -886,7 +963,9 @@
 
     <nav>
         <div class="nav-content">
-            <span class="logo">TheHolding.ai</span>
+            <div class="nav-breadcrumb">
+                <a href="/">theholding.ai</a> / <a href="/defitea">defitea</a>
+            </div>
             <a href="/" class="back-link">← Back</a>
         </div>
     </nav>
@@ -1293,5 +1372,22 @@
             }
         });
     </script>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div>
+            <div class="footer-brand">Defitea <span>by The Holding</span></div>
+            <div class="footer-slogan">The Cash Flow Engine.</div>
+        </div>
+        <div class="footer-links">
+            <a href="/" class="footer-link">TheHolding.ai</a>
+            <a href="/substantia" class="footer-link">Substantia</a>
+            <a href="/singul" class="footer-link">Singul</a>
+            <a href="/fructus" class="footer-link">Fructus</a>
+            <a href="/monetra" class="footer-link">Monetra</a>
+        </div>
+        <div class="footer-note">defitea.eth · Non-custodial</div>
+    </footer>
+
 </body>
 </html>
