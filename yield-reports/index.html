@@ -14,33 +14,90 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --black:        #0a0a0a;
-            --black-soft:   #111111;
-            --black-mid:    #1a1a1a;
-            --surface:      #141414;
-            --surface-2:    #1c1c1c;
+            /* Light theme (default) */
+            --bg:           #f9f8f6;
+            --bg-2:         #f2f0ec;
+            --bg-3:         #eceae4;
+            --surface:      #ffffff;
+            --border:       rgba(0,0,0,0.08);
+            --border-mid:   rgba(0,0,0,0.13);
+            --text:         #1a1a1a;
+            --text-dim:     rgba(26,26,26,0.55);
+            --text-faint:   rgba(26,26,26,0.35);
+            --green:        #0a7c4e;
+            --green-dim:    rgba(10,124,78,0.08);
+            --defitea:      #0a7c4e;
+            --nav-bg:       rgba(249,248,246,0.92);
+            --row-hover:    rgba(0,0,0,0.02);
+            --row-total:    rgba(10,124,78,0.04);
+            --row-total-bd: rgba(10,124,78,0.2);
+            --kpi-bg:       #ffffff;
+            --kpi-hover:    #f5f3ef;
+            --pending-bg:   #ffffff;
+            --table-head:   rgba(0,0,0,0.025);
+        }
+
+        [data-theme="dark"] {
+            --bg:           #0a0a0a;
+            --bg-2:         #141414;
+            --bg-3:         #1c1c1c;
+            --surface:      #111111;
             --border:       rgba(255,255,255,0.07);
             --border-mid:   rgba(255,255,255,0.13);
-            --white:        #f4f4f2;
-            --white-dim:    rgba(244,244,242,0.55);
-            --white-faint:  rgba(244,244,242,0.25);
-            --silver:       #c4c4c4;
+            --text:         #f4f4f2;
+            --text-dim:     rgba(244,244,242,0.55);
+            --text-faint:   rgba(244,244,242,0.28);
             --green:        #4ade80;
-            --green-dim:    rgba(74,222,128,0.1);
+            --green-dim:    rgba(74,222,128,0.08);
             --defitea:      #10b981;
-            --monetra:      #e8e0d0;
-            --fructus:      #eab308;
+            --nav-bg:       rgba(10,10,10,0.9);
+            --row-hover:    var(--row-hover);
+            --row-total:    rgba(16,185,129,0.04);
+            --row-total-bd: var(--row-total-bd);
+            --kpi-bg:       #1a1a1a;
+            --kpi-hover:    #111111;
+            --pending-bg:   #1a1a1a;
+            --table-head:   var(--table-head);
         }
 
         html { scroll-behavior: smooth; }
 
         body {
             font-family: 'Instrument Sans', sans-serif;
-            background: var(--black);
-            color: var(--white);
+            background: var(--bg);
+            color: var(--text);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* ─── THEME TOGGLE ─── */
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-mid);
+            border-radius: 20px;
+            padding: 0.35rem 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--text-faint);
+            color: var(--text-dim);
+        }
+
+        .toggle-icon {
+            font-size: 0.8rem;
+            line-height: 1;
         }
 
         /* ─── NAV ─── */
@@ -52,45 +109,46 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(10,10,10,0.88);
+            background: var(--nav-bg);
             backdrop-filter: blur(24px);
             border-bottom: 1px solid var(--border);
         }
 
         .nav-back {
-            color: var(--white-dim);
+            color: var(--text-dim);
             text-decoration: none;
             font-size: 0.78rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
             transition: color 0.3s;
         }
-        .nav-back:hover { color: var(--white); }
+        .nav-back:hover { color: var(--text); }
 
         .nav-title {
             font-family: 'Cormorant Garamond', serif;
             font-size: 1.1rem;
             font-weight: 400;
-            color: var(--white-dim);
+            color: var(--text-dim);
         }
 
         .nav-breadcrumb {
             font-size: 0.75rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             letter-spacing: 0.06em;
         }
         .nav-breadcrumb a {
-            color: var(--white-faint);
+            color: var(--text-faint);
             text-decoration: none;
             transition: color 0.3s;
         }
-        .nav-breadcrumb a:hover { color: var(--white-dim); }
+        .nav-breadcrumb a:hover { color: var(--text-dim); }
 
         /* ─── HERO ─── */
         .hero {
             padding: 13rem 2.5rem 8rem;
             position: relative;
             overflow: hidden;
+            background: var(--bg);
         }
 
         .hero::before {
@@ -98,8 +156,8 @@
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
             background-size: 80px 80px;
             pointer-events: none;
         }
@@ -138,7 +196,7 @@
             font-size: 0.72rem;
             letter-spacing: 0.15em;
             text-transform: uppercase;
-            color: var(--white-faint);
+            color: var(--text-faint);
         }
 
         .hero-title {
@@ -148,70 +206,30 @@
             letter-spacing: -0.04em;
             line-height: 0.95;
             margin-bottom: 2.5rem;
+            color: var(--text);
             opacity: 0;
             animation: fadeUp 0.9s ease 0.3s forwards;
         }
 
         .hero-title em {
             font-style: italic;
-            color: var(--white-dim);
+            color: var(--text-dim);
         }
 
         .hero-desc {
-            max-width: 580px;
+            max-width: 620px;
             font-size: 1.05rem;
-            color: var(--white-dim);
+            color: var(--text-dim);
             line-height: 1.85;
             font-weight: 300;
-            margin-bottom: 4rem;
             opacity: 0;
             animation: fadeUp 0.9s ease 0.45s forwards;
-        }
-
-        /* Summary stats */
-        .hero-summary {
-            display: grid;
-            grid-template-columns: repeat(4, auto);
-            justify-content: start;
-            gap: 0;
-            border: 1px solid var(--border-mid);
-            border-radius: 3px;
-            overflow: hidden;
-            opacity: 0;
-            animation: fadeUp 0.9s ease 0.6s forwards;
-        }
-
-        .summary-item {
-            padding: 1.75rem 2.5rem;
-            border-right: 1px solid var(--border);
-        }
-
-        .summary-item:last-child { border-right: none; }
-
-        .summary-value {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2.2rem;
-            font-weight: 300;
-            color: var(--white);
-            letter-spacing: -0.03em;
-            line-height: 1;
-            margin-bottom: 0.5rem;
-        }
-
-        .summary-value.positive { color: var(--green); }
-
-        .summary-label {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--white-faint);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
         }
 
         /* ─── PHILOSOPHY ─── */
         .philosophy {
             padding: 8rem 2.5rem;
-            background: var(--surface);
+            background: var(--bg-2);
             border-top: 1px solid var(--border);
         }
 
@@ -229,7 +247,7 @@
             font-size: 0.68rem;
             letter-spacing: 0.18em;
             text-transform: uppercase;
-            color: var(--white-faint);
+            color: var(--text-faint);
             margin-bottom: 2rem;
             display: flex;
             align-items: center;
@@ -254,7 +272,7 @@
 
         .phil-text {
             font-size: 0.95rem;
-            color: var(--white-dim);
+            color: var(--text-dim);
             line-height: 1.9;
             font-weight: 300;
             margin-bottom: 1.2rem;
@@ -276,7 +294,7 @@
         .pp-num {
             font-family: 'DM Mono', monospace;
             font-size: 0.65rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             margin-bottom: 0.5rem;
             letter-spacing: 0.08em;
         }
@@ -285,13 +303,13 @@
             font-family: 'Cormorant Garamond', serif;
             font-size: 1.25rem;
             font-weight: 400;
-            color: var(--white);
+            color: var(--text);
             margin-bottom: 0.4rem;
         }
 
         .pp-text {
             font-size: 0.85rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             line-height: 1.7;
             font-weight: 300;
         }
@@ -299,7 +317,7 @@
         /* ─── FUNDS OVERVIEW ─── */
         .funds-overview {
             padding: 8rem 2.5rem;
-            background: var(--black);
+            background: var(--bg);
             border-top: 1px solid var(--border);
         }
 
@@ -323,7 +341,7 @@
 
         .fo-sub {
             font-size: 0.95rem;
-            color: var(--white-dim);
+            color: var(--text-dim);
             font-weight: 300;
             max-width: 560px;
             line-height: 1.8;
@@ -345,7 +363,7 @@
             height: 11px;
             border-radius: 2px;
             flex-shrink: 0;
-            margin-top: 0.6rem;
+            margin-top: 1rem;
         }
 
         .fund-info {}
@@ -361,7 +379,7 @@
             font-family: 'Cormorant Garamond', serif;
             font-size: 1.6rem;
             font-weight: 400;
-            color: var(--white);
+            color: var(--text);
             letter-spacing: -0.01em;
         }
 
@@ -370,7 +388,7 @@
             font-size: 0.65rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: var(--white-faint);
+            color: var(--text-faint);
             padding: 0.25rem 0.6rem;
             border: 1px solid var(--border-mid);
             border-radius: 2px;
@@ -378,7 +396,7 @@
 
         .fund-desc {
             font-size: 0.9rem;
-            color: var(--white-dim);
+            color: var(--text-dim);
             line-height: 1.75;
             font-weight: 300;
             max-width: 680px;
@@ -394,7 +412,7 @@
         .fund-mechanic {
             font-family: 'DM Mono', monospace;
             font-size: 0.68rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             background: rgba(255,255,255,0.04);
             border: 1px solid var(--border);
             padding: 0.25rem 0.65rem;
@@ -421,14 +439,14 @@
         }
 
         .badge-building {
-            color: var(--white-faint);
+            color: var(--text-faint);
             border: 1px solid var(--border-mid);
         }
 
         /* ─── DEFITEA REPORTS ─── */
         .defitea-reports {
             padding: 8rem 2.5rem;
-            background: var(--surface);
+            background: var(--bg-2);
             border-top: 1px solid var(--border);
         }
 
@@ -459,7 +477,7 @@
             gap: 0.7rem;
             font-family: 'DM Mono', monospace;
             font-size: 0.68rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
@@ -484,19 +502,19 @@
         }
 
         .kpi-card {
-            background: var(--black-mid);
+            background: var(--kpi-bg);
             padding: 2.5rem 2rem;
             transition: background 0.3s;
         }
 
-        .kpi-card:hover { background: var(--black-soft); }
+        .kpi-card:hover { background: var(--kpi-hover); }
 
         .kpi-label {
             font-family: 'DM Mono', monospace;
             font-size: 0.65rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: var(--white-faint);
+            color: var(--text-faint);
             margin-bottom: 1rem;
         }
 
@@ -506,7 +524,7 @@
             font-weight: 300;
             letter-spacing: -0.03em;
             line-height: 1;
-            color: var(--white);
+            color: var(--text);
             margin-bottom: 0.5rem;
         }
 
@@ -514,7 +532,7 @@
 
         .kpi-sub {
             font-size: 0.78rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             font-weight: 300;
         }
 
@@ -528,7 +546,7 @@
             font-size: 0.65rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: var(--white-faint);
+            color: var(--text-faint);
             margin-bottom: 1.5rem;
         }
 
@@ -583,7 +601,7 @@
         .bar-month {
             font-family: 'DM Mono', monospace;
             font-size: 0.62rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             letter-spacing: 0.06em;
             text-transform: uppercase;
             position: absolute;
@@ -596,7 +614,7 @@
         .bar-pct {
             font-family: 'DM Mono', monospace;
             font-size: 0.65rem;
-            color: var(--white-dim);
+            color: var(--text-dim);
             position: absolute;
             top: -1.4rem;
             left: 50%;
@@ -617,7 +635,7 @@
         }
 
         .report-table thead tr {
-            background: rgba(255,255,255,0.03);
+            background: var(--table-head);
             border-bottom: 1px solid var(--border-mid);
         }
 
@@ -626,7 +644,7 @@
             font-size: 0.65rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: var(--white-faint);
+            color: var(--text-faint);
             font-weight: 400;
             padding: 1.2rem 2rem;
             text-align: left;
@@ -641,12 +659,12 @@
 
         .report-table tbody tr:last-child { border-bottom: none; }
 
-        .report-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .report-table tbody tr:hover { background: var(--row-hover); }
 
         .report-table td {
             padding: 1.5rem 2rem;
             font-size: 0.92rem;
-            color: var(--white-dim);
+            color: var(--text-dim);
             vertical-align: middle;
         }
 
@@ -654,7 +672,7 @@
             font-family: 'Cormorant Garamond', serif;
             font-size: 1.15rem;
             font-weight: 400;
-            color: var(--white);
+            color: var(--text);
             letter-spacing: -0.01em;
         }
 
@@ -676,7 +694,7 @@
         .td-apy {
             font-family: 'DM Mono', monospace;
             font-size: 0.82rem;
-            color: var(--white-dim);
+            color: var(--text-dim);
             text-align: right;
         }
 
@@ -693,18 +711,18 @@
 
         .td-note {
             font-size: 0.78rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             font-style: italic;
         }
 
         /* Totals row */
         .row-total {
-            background: rgba(16, 185, 129, 0.04) !important;
-            border-top: 1px solid rgba(16,185,129,0.2) !important;
+            background: var(--row-total) !important;
+            border-top: 1px solid var(--row-total-bd) !important;
         }
 
         .row-total .td-month {
-            color: var(--white);
+            color: var(--text);
             font-weight: 500;
         }
 
@@ -718,12 +736,12 @@
             padding: 1.5rem 2rem;
             border: 1px solid var(--border);
             border-radius: 3px;
-            background: rgba(255,255,255,0.02);
+            background: var(--row-hover);
         }
 
         .report-disclaimer p {
             font-size: 0.78rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             line-height: 1.7;
             font-weight: 300;
         }
@@ -738,19 +756,19 @@
             font-size: 0.72rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: var(--white-dim);
+            color: var(--text-dim);
             text-decoration: none;
             border-bottom: 1px solid var(--border-mid);
             padding-bottom: 0.2rem;
             transition: color 0.3s, border-color 0.3s;
         }
 
-        .report-link:hover { color: var(--white); border-color: var(--white-dim); }
+        .report-link:hover { color: var(--text); border-color: var(--text-dim); }
 
         /* ─── PENDING FUNDS ─── */
         .pending-funds {
             padding: 8rem 2.5rem;
-            background: var(--black);
+            background: var(--bg);
             border-top: 1px solid var(--border);
         }
 
@@ -770,7 +788,7 @@
 
         .pending-sub {
             font-size: 0.95rem;
-            color: var(--white-dim);
+            color: var(--text-dim);
             max-width: 560px;
             line-height: 1.8;
             font-weight: 300;
@@ -788,7 +806,7 @@
         }
 
         .pending-card {
-            background: var(--black-mid);
+            background: var(--kpi-bg);
             padding: 3.5rem 3rem;
         }
 
@@ -809,13 +827,13 @@
             font-family: 'Cormorant Garamond', serif;
             font-size: 1.8rem;
             font-weight: 400;
-            color: var(--white);
+            color: var(--text);
             letter-spacing: -0.02em;
         }
 
         .pending-desc {
             font-size: 0.9rem;
-            color: var(--white-dim);
+            color: var(--text-dim);
             line-height: 1.8;
             font-weight: 300;
             margin-bottom: 2.5rem;
@@ -844,7 +862,7 @@
 
         .timeline-text {
             font-size: 0.85rem;
-            color: var(--white-faint);
+            color: var(--text-faint);
             line-height: 1.6;
             font-weight: 300;
         }
@@ -855,11 +873,22 @@
             font-size: 0.65rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: var(--white-faint);
+            color: var(--text-faint);
             border: 1px solid var(--border-mid);
             padding: 0.35rem 0.8rem;
             border-radius: 2px;
             margin-top: 2rem;
+        }
+
+        /* Monetra cube adapts in dark theme */
+        .cube-monetra {
+            background: #111111 !important;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        [data-theme="dark"] .cube-monetra {
+            background: #e8e0d0 !important;
+            border: none;
         }
 
         /* ─── FOOTER ─── */
@@ -873,9 +902,9 @@
 
         .footer-brand {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.1rem;
-            font-weight: 300;
-            color: var(--white-dim);
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: var(--text-dim);
         }
 
         .footer-links {
@@ -884,19 +913,20 @@
         }
 
         .footer-link {
-            font-size: 0.75rem;
-            color: rgba(244,244,242,0.45);
+            font-size: 0.85rem;
+            color: var(--text-dim);
             text-decoration: none;
             letter-spacing: 0.04em;
             transition: color 0.3s;
+            font-weight: 400;
         }
 
-        .footer-link:hover { color: var(--white-dim); }
+        .footer-link:hover { color: var(--text); }
 
         .footer-note {
             font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--white-faint);
+            font-size: 0.72rem;
+            color: var(--text-faint);
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
@@ -954,8 +984,14 @@
     <nav class="nav">
         <a href="/" class="nav-back">← The Holding</a>
         <div class="nav-title">TheHolding.ai</div>
-        <div class="nav-breadcrumb">
-            <a href="/">theholding.ai</a> / <a href="/yield-reports">yield-reports</a>
+        <div style="display:flex;align-items:center;gap:1.5rem">
+            <div class="nav-breadcrumb">
+                <a href="/">theholding.ai</a> / <a href="/yield-reports">yield-reports</a>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
+                <span class="toggle-icon" id="themeIcon">◐</span>
+                <span id="themeLabel">Dark</span>
+            </button>
         </div>
     </nav>
 
@@ -970,29 +1006,12 @@
             <h1 class="hero-title">Yield<br><em>Reports</em></h1>
 
             <p class="hero-desc">
-                Monthly performance records from The Holding's income-generating funds. 
-                No weekly noise. No trading metrics. Long-term capital compounding, 
-                documented transparently — month by month.
+                The Holding operates dedicated income-generating funds — engines that produce 
+                real cash-flow from DeFi yield, vote-escrowed governance rewards, stablecoin 
+                strategies, and tokenized real-world assets. These reports document that 
+                cash-flow: not price appreciation, not paper gains — actual income, denominated 
+                in dollars, produced every month across market cycles.
             </p>
-
-            <div class="hero-summary">
-                <div class="summary-item">
-                    <div class="summary-value positive">+5.99%</div>
-                    <div class="summary-label">Defitea YTD 2025</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-value">5</div>
-                    <div class="summary-label">Months reported</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-value">$30.4</div>
-                    <div class="summary-label">May cash flow</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-value">3</div>
-                    <div class="summary-label">Income funds active / building</div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -1003,15 +1022,18 @@
                 <div class="section-tag">Our Approach</div>
                 <h2 class="phil-heading">Slow money.<br>Compound time.</h2>
                 <p class="phil-text">
-                    These reports document real cash-flow generated from onchain positions — 
-                    DeFi yield, liquidity provision, vote-escrowed governance rewards, 
-                    and stablecoin strategies. Not paper gains. Not price appreciation. 
-                    Actual income, denominated in dollars, produced every month.
+                    The Holding is built around dedicated income engines — funds that generate 
+                    cash-flow independently of asset price movements. Defitea works through 
+                    vote-escrowed DeFi positions and liquidity provision. Monetra through 
+                    stablecoin strategies. Fructus through tokenized real-world asset yield. 
+                    Together they form a multi-layered cash-flow system that compounds 
+                    regardless of market direction.
                 </p>
                 <p class="phil-text">
-                    The goal is not to maximize any single month. It is to build 
-                    a system that compounds reliably across years — through bull markets, 
-                    bear markets, and everything in between.
+                    These reports capture that income. Not paper gains. Not price appreciation. 
+                    Actual dollars produced monthly — the goal being a system that compounds 
+                    reliably across years, through bull markets, bear markets, and everything 
+                    in between.
                 </p>
             </div>
 
@@ -1080,7 +1102,7 @@
 
             <!-- Monetra -->
             <div class="fund-row reveal">
-                <div class="fund-cube" style="background:#e8e0d0; margin-top:0.65rem"></div>
+                <div class="fund-cube cube-monetra" style="background:#111111; margin-top:0.65rem"></div>
                 <div class="fund-info">
                     <div class="fund-name-row">
                         <div class="fund-name">Monetra</div>
@@ -1143,7 +1165,7 @@
                 </div>
                 <div class="dr-fund-label">
                     <div class="dr-fund-dot"></div>
-                    Defitea · 2025
+                    Defitea · 2026
                 </div>
             </div>
 
@@ -1151,8 +1173,8 @@
             <div class="dr-kpis reveal">
                 <div class="kpi-card">
                     <div class="kpi-label">YTD Cash Flow</div>
-                    <div class="kpi-value green">$130.0</div>
-                    <div class="kpi-sub">Jan – May 2025</div>
+                    <div class="kpi-value green">$153.74</div>
+                    <div class="kpi-sub">Jan – May 2026</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">YTD Return</div>
@@ -1162,7 +1184,7 @@
                 <div class="kpi-card">
                     <div class="kpi-label">Best Month</div>
                     <div class="kpi-value">+1.84%</div>
-                    <div class="kpi-sub">February 2025</div>
+                    <div class="kpi-sub">February 2026</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">Annualized Run Rate</div>
@@ -1225,31 +1247,31 @@
                         <tbody>
                             <tr>
                                 <td class="td-month">January</td>
-                                <td class="td-note">2025</td>
-                                <td class="td-num">—</td>
+                                <td class="td-note">2026</td>
+                                <td class="td-num">$29.66</td>
                                 <td class="td-yield">+1.34%</td>
-                                <td class="td-apy">16.08%</td>
+                                <td class="td-apy">16.00%</td>
                                 <td class="td-bar"><div class="inline-bar" style="width:72.8%"></div></td>
                             </tr>
                             <tr>
                                 <td class="td-month">February</td>
-                                <td class="td-note">2025</td>
-                                <td class="td-num">—</td>
+                                <td class="td-note">2026</td>
+                                <td class="td-num">$45.97</td>
                                 <td class="td-yield">+1.84%</td>
-                                <td class="td-apy">22.08%</td>
+                                <td class="td-apy">22.00%</td>
                                 <td class="td-bar"><div class="inline-bar" style="width:100%"></div></td>
                             </tr>
                             <tr>
                                 <td class="td-month">March</td>
-                                <td class="td-note">2025</td>
-                                <td class="td-num">—</td>
+                                <td class="td-note">2026</td>
+                                <td class="td-num">$27.51</td>
                                 <td class="td-yield">+1.02%</td>
-                                <td class="td-apy">12.24%</td>
+                                <td class="td-apy">12.22%</td>
                                 <td class="td-bar"><div class="inline-bar" style="width:55.4%"></div></td>
                             </tr>
                             <tr>
                                 <td class="td-month">April</td>
-                                <td class="td-note">2025</td>
+                                <td class="td-note">2026</td>
                                 <td class="td-num">$20.2</td>
                                 <td class="td-yield">+0.78%</td>
                                 <td class="td-apy">9.36%</td>
@@ -1257,16 +1279,16 @@
                             </tr>
                             <tr>
                                 <td class="td-month">May</td>
-                                <td class="td-note">2025</td>
+                                <td class="td-note">2026</td>
                                 <td class="td-num">$30.4</td>
                                 <td class="td-yield">+1.01%</td>
                                 <td class="td-apy">12.2%</td>
                                 <td class="td-bar"><div class="inline-bar" style="width:54.9%"></div></td>
                             </tr>
                             <tr class="row-total">
-                                <td class="td-month">Total 2025</td>
+                                <td class="td-month">Total 2026</td>
                                 <td class="td-note">Jan – May</td>
-                                <td class="td-num">$50.6+</td>
+                                <td class="td-num">$153.74</td>
                                 <td class="td-yield">+5.99%</td>
                                 <td class="td-apy">~14.4% avg</td>
                                 <td class="td-bar"></td>
@@ -1276,7 +1298,7 @@
                 </div>
 
                 <div class="report-disclaimer">
-                    <p>All figures are approximate. Yield percentages represent monthly return relative to fund TVL at time of calculation. TVL fluctuates continuously as underlying assets (CRV, CVX, AERO, PENDLE and others) change in market value. Cash flow figures for January–March are not recorded individually; reporting began in detail from April 2025. APY figures are annualized projections based on monthly yield and do not account for compounding. Past performance does not guarantee future results.</p>
+                    <p>All figures are approximate. Yield percentages represent monthly return relative to fund TVL at time of calculation. TVL fluctuates continuously as underlying assets (CRV, CVX, AERO, PENDLE and others) change in market value. APY figures are annualized projections based on monthly yield and do not account for compounding. Past performance does not guarantee future results.</p>
                 </div>
 
                 <a href="https://docs.google.com/spreadsheets/d/1SfnnAvIiBRI7I83WyIvc-nH_sWjJA5h53AGHzrmCRp8/edit?usp=sharing" 
@@ -1300,7 +1322,7 @@
                 <!-- Monetra -->
                 <div class="pending-card">
                     <div class="pending-card-header">
-                        <div class="pending-cube" style="background:#e8e0d0"></div>
+                        <div class="pending-cube cube-monetra" style="background:#111111"></div>
                         <div class="pending-name">Monetra</div>
                     </div>
                     <p class="pending-desc">
@@ -1375,44 +1397,71 @@
     </footer>
 
     <script>
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            const label = document.getElementById('themeLabel');
+            const icon  = document.getElementById('themeIcon');
+
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                label.textContent = 'Dark';
+                icon.textContent  = '◐';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                label.textContent = 'Light';
+                icon.textContent  = '◑';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Restore saved theme
+        (function() {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                const label = document.getElementById('themeLabel');
+                const icon  = document.getElementById('themeIcon');
+                if (label) label.textContent = 'Light';
+                if (icon)  icon.textContent  = '◑';
+            }
+        })();
+
         // Scroll reveal
         const reveals = document.querySelectorAll('.reveal');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry, i) => {
                 if (entry.isIntersecting) {
-                    setTimeout(() => {
-                        entry.target.classList.add('visible');
-                    }, i * 60);
+                    setTimeout(() => entry.target.classList.add('visible'), i * 60);
                     observer.unobserve(entry.target);
                 }
             });
         }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
         reveals.forEach(el => observer.observe(el));
 
         // Animate bars on scroll
-        const barFills = document.querySelectorAll('.bar-fill');
-        const barObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const fills = entry.target.querySelectorAll('.bar-fill');
-                    fills.forEach((fill, i) => {
-                        const targetH = fill.style.height;
-                        fill.style.height = '0';
-                        fill.style.transition = `height 0.7s cubic-bezier(0.4, 0, 0.2, 1) ${i * 0.1}s`;
-                        requestAnimationFrame(() => {
-                            setTimeout(() => {
-                                fill.style.height = targetH;
-                            }, 50);
-                        });
-                    });
-                    barObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.3 });
-
         const barChart = document.querySelector('.bar-chart');
-        if (barChart) barObserver.observe(barChart);
+        if (barChart) {
+            const barObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const fills = entry.target.querySelectorAll('.bar-fill');
+                        fills.forEach((fill, i) => {
+                            const targetH = fill.style.height;
+                            fill.style.height = '0';
+                            fill.style.transition = `height 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.1}s`;
+                            requestAnimationFrame(() => {
+                                setTimeout(() => { fill.style.height = targetH; }, 50);
+                            });
+                        });
+                        barObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.3 });
+            barObserver.observe(barChart);
+        }
     </script>
 
 </body>
