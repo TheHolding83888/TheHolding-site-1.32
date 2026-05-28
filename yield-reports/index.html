@@ -1621,21 +1621,21 @@
             const chart  = document.getElementById('barChart');
             if (!grid || !chart) return;
 
-            const maxPct  = 1.75;  // top of chart = 1.75% (removes 2 top lines)
-            const step    = 0.25;  // one line per 0.25%
-            const chartH  = chart.offsetHeight; // includes padding-bottom
-            const barAreaH = chartH - 40; // subtract padding-bottom (2.5rem ≈ 40px)
+            const maxPct  = 1.75;
+            const step    = 0.25;
+            const stopAt  = 1.00; // draw lines only up to 1.00% — removes top lines
+            const chartH  = chart.offsetHeight;
+            const barAreaH = chartH - 40;
 
-            // Draw horizontal grid lines for 0.25, 0.50 … 2.00%
+            // Draw grid lines 0.25 → stopAt only
             grid.innerHTML = '';
-            for (let pct = step; pct <= maxPct; pct = Math.round((pct + step) * 100) / 100) {
+            for (let pct = step; pct <= stopAt; pct = Math.round((pct + step) * 100) / 100) {
                 const frac = pct / maxPct;
-                const bottomPx = frac * barAreaH; // distance from bottom of bar area
-                const topPx = barAreaH - bottomPx; // distance from top of bar area
+                const bottomPx = frac * barAreaH;
 
                 const line = document.createElement('div');
                 line.className = 'bar-grid-line';
-                line.style.bottom = (bottomPx + 40) + 'px'; // +40 for padding-bottom
+                line.style.bottom = (bottomPx + 40) + 'px';
                 grid.appendChild(line);
 
                 const label = document.createElement('span');
