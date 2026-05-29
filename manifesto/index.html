@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manifesto — The Holding</title>
+    <link rel="canonical" href="https://theholding.ai/manifesto">
+    <meta name="description" content="The sovereign capital manifesto of The Holding. Architecture over speculation. Onchain. Non-custodial. Forever.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:       #f7f5f0;
+            --bg-2:     #f0ece4;
+            --surface:  #ffffff;
+            --border:   rgba(0,0,0,0.07);
+            --border-m: rgba(0,0,0,0.12);
+            --text:     #1a1815;
+            --dim:      rgba(26,24,21,0.55);
+            --faint:    rgba(26,24,21,0.30);
+            --blue:     #3b82f6;
+            --nav-bg:   rgba(247,245,240,0.93);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Instrument Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* ─── NAV ─── */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 1.4rem 2.5rem;
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-breadcrumb {
+            font-size: 0.82rem;
+            color: var(--faint);
+        }
+        .nav-breadcrumb a { color: var(--dim); text-decoration: none; transition: color 0.3s; }
+        .nav-breadcrumb a:hover { color: var(--text); }
+
+        .nav-back {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--dim);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .nav-back:hover { color: var(--text); }
+
+        /* ─── HERO ─── */
+        .hero {
+            padding: 14rem 2.5rem 8rem;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border-m);
+        }
+
+        .hero-inner {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeUp 0.7s ease 0.1s forwards;
+        }
+
+        .hero-cube {
+            width: 10px;
+            height: 10px;
+            background: var(--text);
+            border-radius: 1.5px;
+        }
+
+        .hero-eyebrow-text {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--faint);
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3.5rem, 10vw, 8rem);
+            font-weight: 300;
+            letter-spacing: -0.04em;
+            line-height: 0.9;
+            color: var(--text);
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeUp 0.9s ease 0.2s forwards;
+        }
+
+        .hero-title em {
+            font-style: italic;
+            color: var(--dim);
+        }
+
+        .hero-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.4rem, 3vw, 1.9rem);
+            font-weight: 300;
+            font-style: italic;
+            color: var(--dim);
+            line-height: 1.5;
+            max-width: 700px;
+            opacity: 0;
+            animation: fadeUp 0.9s ease 0.35s forwards;
+        }
+
+        /* ─── MANIFESTO BODY ─── */
+        .manifesto {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 0 2.5rem;
+        }
+
+        /* Section */
+        .m-section {
+            padding: 7rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .m-section:first-child { border-top: none; padding-top: 8rem; }
+
+        .m-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--faint);
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .m-tag::before {
+            content: '';
+            width: 16px;
+            height: 1px;
+            background: var(--faint);
+        }
+
+        .m-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            margin-bottom: 2.5rem;
+            color: var(--text);
+        }
+
+        .m-heading em { font-style: italic; color: var(--dim); }
+
+        .m-lead {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+            font-weight: 400;
+            line-height: 1.7;
+            color: var(--text);
+            margin-bottom: 2rem;
+        }
+
+        .m-text {
+            font-size: 1rem;
+            line-height: 1.95;
+            color: var(--dim);
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+
+        .m-text strong {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .m-quote {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.4rem, 3vw, 1.9rem);
+            font-weight: 300;
+            font-style: italic;
+            line-height: 1.5;
+            color: var(--dim);
+            padding: 2.5rem 0;
+            border-top: 1px solid var(--border-m);
+            border-bottom: 1px solid var(--border-m);
+            margin: 2.5rem 0;
+        }
+
+        /* Fund list */
+        .fund-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin: 3rem 0;
+        }
+
+        .fund-item {
+            display: grid;
+            grid-template-columns: 1.5rem 10rem 1fr;
+            gap: 1rem;
+            align-items: baseline;
+            padding: 1.5rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .fund-item:last-child { border-bottom: 1px solid var(--border); }
+
+        .fund-cube {
+            width: 10px;
+            height: 10px;
+            border-radius: 1.5px;
+            margin-top: 0.35rem;
+            flex-shrink: 0;
+        }
+
+        .fund-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+
+        .fund-role {
+            font-size: 0.88rem;
+            color: var(--dim);
+            line-height: 1.65;
+            font-weight: 300;
+        }
+
+        .fund-role strong { font-weight: 500; color: var(--text); }
+
+        /* Roadmap steps */
+        .roadmap {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin: 3rem 0;
+        }
+
+        .roadmap-step {
+            display: grid;
+            grid-template-columns: 8rem 1fr;
+            gap: 2rem;
+            padding: 2.5rem 0;
+            border-top: 1px solid var(--border);
+            position: relative;
+        }
+
+        .roadmap-step:last-child { border-bottom: 1px solid var(--border); }
+
+        .roadmap-num {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--faint);
+            padding-top: 0.3rem;
+        }
+
+        .roadmap-status {
+            display: inline-block;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
+            margin-top: 0.5rem;
+        }
+
+        .status-now {
+            color: #0a7c4e;
+            border: 1px solid rgba(10,124,78,0.25);
+            background: rgba(10,124,78,0.06);
+        }
+
+        .status-next { color: var(--faint); border: 1px solid var(--border-m); }
+        .status-vision { color: var(--faint); border: 1px solid var(--border); opacity: 0.7; }
+
+        .roadmap-content {}
+
+        .roadmap-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--text);
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.01em;
+        }
+
+        .roadmap-text {
+            font-size: 0.9rem;
+            color: var(--dim);
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .roadmap-text strong { font-weight: 500; color: var(--text); }
+
+        /* Principles */
+        .principles {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border-m);
+            border: 1px solid var(--border-m);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 3rem 0;
+        }
+
+        .principle {
+            background: var(--bg);
+            padding: 2.5rem 2rem;
+            transition: background 0.3s;
+        }
+
+        .principle:hover { background: var(--surface); }
+
+        .principle-num {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--faint);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.8rem;
+        }
+
+        .principle-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .principle-text {
+            font-size: 0.84rem;
+            color: var(--faint);
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* Final declaration */
+        .declaration {
+            background: var(--text);
+            padding: 8rem 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .declaration::before {
+            content: 'THE HOLDING';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(247,245,240,0.04);
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .declaration-inner {
+            max-width: 780px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .declaration-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-bottom: 5rem;
+        }
+
+        .d-line {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.6rem, 4vw, 2.6rem);
+            font-weight: 300;
+            line-height: 1.4;
+            padding: 1.2rem 0;
+            border-bottom: 1px solid rgba(247,245,240,0.08);
+            color: rgba(247,245,240,0.85);
+            letter-spacing: -0.01em;
+        }
+
+        .d-line:first-child { border-top: 1px solid rgba(247,245,240,0.08); }
+        .d-line em { font-style: italic; color: rgba(247,245,240,0.45); }
+
+        .declaration-sig {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .sig-line {
+            width: 40px;
+            height: 1px;
+            background: rgba(247,245,240,0.2);
+        }
+
+        .sig-text {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(247,245,240,0.3);
+        }
+
+        /* ─── FOOTER ─── */
+        footer {
+            padding: 3.5rem 2.5rem;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .footer-brand span {
+            font-size: 1.15rem;
+            font-weight: 400;
+            color: var(--dim);
+            margin-left: 0.5rem;
+        }
+
+        .footer-links { display: flex; gap: 2rem; }
+
+        .footer-link {
+            font-size: 0.85rem;
+            color: var(--dim);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+        .footer-link:hover { color: var(--text); }
+
+        .footer-note {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--faint);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(22px);
+            transition: opacity 0.85s ease, transform 0.85s ease;
+        }
+
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-d1 { transition-delay: 0.1s; }
+        .reveal-d2 { transition-delay: 0.2s; }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 768px) {
+            nav { padding: 1.2rem 1.5rem; }
+            .hero { padding: 10rem 1.5rem 5rem; }
+            .manifesto { padding: 0 1.5rem; }
+            .m-section { padding: 5rem 0; }
+            .fund-item { grid-template-columns: 1.2rem 8rem 1fr; gap: 0.75rem; }
+            .roadmap-step { grid-template-columns: 1fr; gap: 0.5rem; }
+            .principles { grid-template-columns: 1fr; }
+            .declaration { padding: 5rem 1.5rem; }
+            footer { flex-direction: column; gap: 2rem; text-align: center; padding: 3rem 1.5rem; }
+            .footer-links { justify-content: center; flex-wrap: wrap; gap: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav>
+        <div class="nav-breadcrumb">
+            <a href="/">theholding.ai</a> / <a href="/manifesto">manifesto</a>
+        </div>
+        <a href="/" class="nav-back">← Back</a>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-eyebrow">
+                <div class="hero-cube"></div>
+                <span class="hero-eyebrow-text">Sovereign Capital Manifesto</span>
+            </div>
+            <h1 class="hero-title">
+                Architecture<br>
+                <em>over speculation.</em>
+            </h1>
+            <p class="hero-subtitle">
+                This isn't just a portfolio.<br>
+                It is sovereign capital infrastructure for the onchain era.
+            </p>
+        </div>
+    </section>
+
+    <!-- Body -->
+    <div class="manifesto">
+
+        <!-- I. Problem -->
+        <div class="m-section reveal">
+            <div class="m-tag">I · The Problem</div>
+            <h2 class="m-heading">Most crypto portfolios<br>are <em>organised chaos.</em></h2>
+            <p class="m-lead">
+                A random collection of tokens assembled under the influence of emotions, 
+                narratives, and the hype of the moment.
+            </p>
+            <p class="m-text">
+                There is no engineering in this approach. No resilience. No architecture. 
+                It is speculation dressed up as investing — and it fails the moment markets 
+                turn against sentiment.
+            </p>
+            <p class="m-text">
+                The world doesn't need another crypto portfolio. It needs a framework. 
+                A system. A capital architecture designed not for the next cycle, 
+                but for the next decade.
+            </p>
+            <div class="m-quote">
+                "The holding changes the paradigm. We don't build a random portfolio. 
+                We engineer capital architecture for a decade ahead."
+            </div>
+        </div>
+
+        <!-- II. The Holding -->
+        <div class="m-section reveal">
+            <div class="m-tag">II · What We Are</div>
+            <h2 class="m-heading">A sovereign onchain<br>investment <em>ecosystem.</em></h2>
+            <p class="m-text">
+                The Holding is a public, transparent, non-custodial holding company — 
+                built onchain, operated on personal capital, documented publicly. 
+                We don't manage your money. We provide the blueprint.
+            </p>
+            <p class="m-text">
+                <strong>Non-custodial. Fully transparent. We don't make investment 
+                decisions for you — we provide the architecture.</strong> Every position, 
+                every decision, every principle is published. Verify it yourself.
+            </p>
+            <p class="m-text">
+                We call it the <strong>Noah's Ark of modern investing</strong> — 
+                a multi-layered onchain system built to preserve and compound capital 
+                through bull markets, bear markets, geopolitical turbulence, 
+                and the inflation of everything.
+            </p>
+        </div>
+
+        <!-- III. The Five Funds -->
+        <div class="m-section reveal">
+            <div class="m-tag">III · The Architecture</div>
+            <h2 class="m-heading">Five funds.<br>Five distinct <em>mandates.</em></h2>
+            <p class="m-text">
+                Each fund exists because no single asset class or strategy is sufficient 
+                across all economic regimes. Together, they form an interlocking system 
+                where every layer serves the whole.
+            </p>
+
+            <div class="fund-list">
+                <div class="fund-item">
+                    <div class="fund-cube" style="background:#3b82f6"></div>
+                    <div class="fund-name">Substantia</div>
+                    <div class="fund-role">
+                        <strong>Foundation · 75%</strong><br>
+                        Bitcoin, Ethereum, Gold, Silver. Accumulated weekly, never sold. 
+                        The bedrock that absorbs volatility without reaction and compounds 
+                        over decades. Infinite time horizon by design.
+                    </div>
+                </div>
+                <div class="fund-item">
+                    <div class="fund-cube" style="background:#10b981"></div>
+                    <div class="fund-name">Defitea</div>
+                    <div class="fund-role">
+                        <strong>Cash Flow Engine · 20%</strong><br>
+                        Vote-escrowed governance tokens, DeFi yield, liquidity provision. 
+                        Generates monthly income that funds Substantia's continued 
+                        accumulation — the system's circulatory engine.
+                    </div>
+                </div>
+                <div class="fund-item">
+                    <div class="fund-cube" style="background:#8b5cf6"></div>
+                    <div class="fund-name">Singul</div>
+                    <div class="fund-role">
+                        <strong>Asymmetric Growth · 5%</strong><br>
+                        High-conviction positions in frontier protocols: AI agents, 
+                        emerging coordination layers, digital ownership rails. 
+                        Sized for full-loss acceptance. Structured for exponential upside.
+                    </div>
+                </div>
+                <div class="fund-item">
+                    <div class="fund-cube" style="background:#eab308"></div>
+                    <div class="fund-name">Fructus</div>
+                    <div class="fund-role">
+                        <strong>Real World Assets</strong><br>
+                        Tokenized commodities, treasuries, structured credit, energy. 
+                        Inflation hedge meets tangible ownership. Real-world productivity, 
+                        settled onchain. The diversification layer that performs when 
+                        crypto sleeps.
+                    </div>
+                </div>
+                <div class="fund-item">
+                    <div class="fund-cube" style="background:#111111"></div>
+                    <div class="fund-name">Monetra</div>
+                    <div class="fund-role">
+                        <strong>Liquidity & Stable Engine</strong><br>
+                        Non-directional stablecoin yield. Permanent liquidity. 
+                        Capital that compounds 24/7 regardless of market conditions — 
+                        the dry powder that powers every other fund's rebalancing 
+                        and accumulation cycles.
+                    </div>
+                </div>
+            </div>
+
+            <p class="m-text">
+                Together they form a complete capital operating system: 
+                foundation that never sells, income that compounds, 
+                speculation that is sized for asymmetry, real-world diversification, 
+                and stable liquidity that never sleeps.
+            </p>
+        </div>
+
+        <!-- IV. Principles -->
+        <div class="m-section reveal">
+            <div class="m-tag">IV · Our Principles</div>
+            <h2 class="m-heading">What we believe.<br><em>Without compromise.</em></h2>
+
+            <div class="principles">
+                <div class="principle">
+                    <div class="principle-num">01</div>
+                    <div class="principle-title">Sovereignty first</div>
+                    <div class="principle-text">Your keys, your capital. We hold nothing on your behalf. Not your keys, not your crypto — this is not a slogan, it is the architecture.</div>
+                </div>
+                <div class="principle">
+                    <div class="principle-num">02</div>
+                    <div class="principle-title">Architecture over alpha</div>
+                    <div class="principle-text">We don't chase yield. We don't time markets. We build systems that work across every cycle — because structure outlasts strategy.</div>
+                </div>
+                <div class="principle">
+                    <div class="principle-num">03</div>
+                    <div class="principle-title">Transparency by default</div>
+                    <div class="principle-text">Every position, every decision, every mistake is published. Accountability is not a liability — it is the mechanism that enforces discipline.</div>
+                </div>
+                <div class="principle">
+                    <div class="principle-num">04</div>
+                    <div class="principle-title">Brick by brick</div>
+                    <div class="principle-text">No shortcuts. No leverage. No hype. Capital compounds through consistency, not intensity. The holding has operated this way since 2016.</div>
+                </div>
+                <div class="principle">
+                    <div class="principle-num">05</div>
+                    <div class="principle-title">Onchain is the settlement layer</div>
+                    <div class="principle-text">The financial system is migrating onchain. Positions in this holding do not require intermediaries, custodians, or trusted third parties.</div>
+                </div>
+                <div class="principle">
+                    <div class="principle-num">06</div>
+                    <div class="principle-title">Time is the asset</div>
+                    <div class="principle-text">The most powerful lever available to any capital allocator is time horizon. Ours is infinite. The exit strategy is to have none.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- V. AI & The Future -->
+        <div class="m-section reveal">
+            <div class="m-tag">V · The Vision</div>
+            <h2 class="m-heading">Built for humans.<br><em>Ready for agents.</em></h2>
+
+            <p class="m-lead">
+                The next billion users of crypto won't be people. They will be AI agents — 
+                autonomous economic entities with wallets, treasuries, and the need for 
+                yield that is stable, predictable, and non-custodial.
+            </p>
+
+            <p class="m-text">
+                The Holding is designed with this reality in mind. The architecture we are 
+                building today — transparent, onchain, modular, non-custodial — is natively 
+                readable by AI agents. A machine doesn't need a roadshow. It needs an API, 
+                verifiable performance, and composable structure.
+            </p>
+
+            <p class="m-text">
+                We believe in the <strong>agent economy</strong>. We believe that capital 
+                allocation will increasingly be performed by autonomous systems. And we 
+                believe that the holding architectures that prove themselves to humans today 
+                will become the infrastructure that agents replicate tomorrow.
+            </p>
+
+            <div class="m-quote">
+                "We are moving from linear capital management to a decentralised 
+                network platform where value scales exponentially."
+            </div>
+
+            <div class="roadmap reveal reveal-d1">
+                <div class="roadmap-step">
+                    <div>
+                        <div class="roadmap-num">Phase 01</div>
+                        <div class="roadmap-status status-now">Now</div>
+                    </div>
+                    <div class="roadmap-content">
+                        <div class="roadmap-title">Infrastructure Foundation</div>
+                        <div class="roadmap-text">
+                            Five fund archetypes fully operational as the reference standard 
+                            for sovereign capital management. Public documentation, monthly 
+                            reporting, weekly DCA records. Building the track record 
+                            that cannot be faked: <strong>consistency over time.</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="roadmap-step">
+                    <div>
+                        <div class="roadmap-num">Phase 02</div>
+                        <div class="roadmap-status status-next">Next</div>
+                    </div>
+                    <div class="roadmap-content">
+                        <div class="roadmap-title">Platform & Open Ecosystem</div>
+                        <div class="roadmap-text">
+                            Transitioning from managing our own capital to building 
+                            <strong>value exchange infrastructure</strong>. 
+                            Following the platform model: producers (strategy architects) 
+                            and consumers (capital allocators) interacting within a 
+                            governed, transparent framework. Machine-readable allocation 
+                            schemas. API endpoints. The beginning of composability.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="roadmap-step">
+                    <div>
+                        <div class="roadmap-num">Phase 03</div>
+                        <div class="roadmap-status status-vision">Vision</div>
+                    </div>
+                    <div class="roadmap-content">
+                        <div class="roadmap-title">Sovereign AI Entities & Agent Economy</div>
+                        <div class="roadmap-text">
+                            Each of the five funds evolves into an <strong>autonomous 
+                            AI agent</strong> with its own logic, risk profile, and 
+                            decision-making framework. Monetra's agent scans DeFi markets 
+                            in real time, rebalancing stablecoin positions without human 
+                            input. Singul's agent monitors onchain activity in emerging 
+                            protocols and enters positions milliseconds ahead of the market. 
+                            Agents communicate via smart contracts — profit surpluses flow 
+                            automatically between funds, optimising the entire system 
+                            without human intervention.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="m-text">
+                <strong>The Holding will become a Noah's Ark managed by artificial 
+                intelligence</strong> — where humans and AI agents jointly create, 
+                allocate, and protect capital. This is not science fiction. 
+                The infrastructure exists today. We are building the track record 
+                that earns the right to scale it.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Final Declaration -->
+    <section class="declaration">
+        <div class="declaration-inner reveal">
+            <div class="declaration-lines">
+                <div class="d-line">This is not a fund. <em>It is a framework.</em></div>
+                <div class="d-line">This is not a portfolio. <em>It is an architecture.</em></div>
+                <div class="d-line">This is not a product. <em>It is a philosophy.</em></div>
+                <div class="d-line">Built onchain. Documented publicly. <em>Forever.</em></div>
+            </div>
+            <div class="declaration-sig">
+                <div class="sig-line"></div>
+                <div class="sig-text">The Holding · theholding.ai · Est. 2016</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div>
+            <div class="footer-brand">The Holding <span>Manifesto</span></div>
+        </div>
+        <div class="footer-links">
+            <a href="/" class="footer-link">TheHolding.ai</a>
+            <a href="/substantia" class="footer-link">Substantia</a>
+            <a href="/defitea" class="footer-link">Defitea</a>
+            <a href="/singul" class="footer-link">Singul</a>
+            <a href="/fructus" class="footer-link">Fructus</a>
+            <a href="/monetra" class="footer-link">Monetra</a>
+        </div>
+        <div class="footer-note">theholding.ai · Non-custodial</div>
+    </footer>
+
+    <script>
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach((e, i) => {
+                if (e.isIntersecting) {
+                    setTimeout(() => e.target.classList.add('visible'), i * 80);
+                    obs.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    </script>
+</body>
+</html>
