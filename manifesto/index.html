@@ -85,17 +85,28 @@
         .hero-eyebrow {
             display: flex;
             align-items: center;
-            gap: 0.9rem;
+            gap: 1.2rem;
             margin-bottom: 3rem;
             opacity: 0;
             animation: fadeUp 0.7s ease 0.1s forwards;
         }
 
-        .hero-cube {
-            width: 10px;
-            height: 10px;
-            background: var(--text);
-            border-radius: 1.5px;
+        /* Gradient strip — all five funds flowing into each other */
+        .funds-strip {
+            width: 80px;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(
+                90deg,
+                #e8e8e8   0%,
+                #3b82f6  22%,
+                #10b981  44%,
+                #8b5cf6  66%,
+                #eab308  83%,
+                #111111 100%
+            );
+            flex-shrink: 0;
+            opacity: 0.9;
         }
 
         .hero-eyebrow-text {
@@ -259,6 +270,22 @@
         }
 
         .fund-role strong { font-weight: 500; color: var(--text); }
+
+        .fund-badge {
+            display: inline-block;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.18rem 0.55rem;
+            border-radius: 2px;
+            color: var(--faint);
+            border: 1px solid var(--border-m);
+            margin-left: 0.6rem;
+            vertical-align: middle;
+            position: relative;
+            top: -1px;
+        }
 
         /* Roadmap steps */
         .roadmap {
@@ -532,7 +559,7 @@
     <section class="hero">
         <div class="hero-inner">
             <div class="hero-eyebrow">
-                <div class="hero-cube"></div>
+                <div class="funds-strip"></div>
                 <span class="hero-eyebrow-text">Sovereign Capital Manifesto</span>
             </div>
             <h1 class="hero-title">
@@ -638,7 +665,7 @@
                 </div>
                 <div class="fund-item">
                     <div class="fund-cube" style="background:#eab308"></div>
-                    <div class="fund-name">Fructus</div>
+                    <div class="fund-name">Fructus <span class="fund-badge">In Development</span></div>
                     <div class="fund-role">
                         <strong>Real World Assets</strong><br>
                         Tokenized commodities, treasuries, structured credit, energy. 
@@ -649,7 +676,7 @@
                 </div>
                 <div class="fund-item">
                     <div class="fund-cube" style="background:#111111"></div>
-                    <div class="fund-name">Monetra</div>
+                    <div class="fund-name">Monetra <span class="fund-badge">In Development</span></div>
                     <div class="fund-role">
                         <strong>Liquidity & Stable Engine</strong><br>
                         Non-directional stablecoin yield. Permanent liquidity. 
@@ -709,7 +736,7 @@
 
         <!-- V. AI & The Future -->
         <div class="m-section reveal">
-            <div class="m-tag">V · The Vision</div>
+            <div class="m-tag">V · The Vision & Roadmap</div>
             <h2 class="m-heading">Built for humans.<br><em>Ready for agents.</em></h2>
 
             <p class="m-lead">
@@ -816,7 +843,7 @@
             </div>
             <div class="declaration-sig">
                 <div class="sig-line"></div>
-                <div class="sig-text">The Holding · theholding.ai · Est. 2016</div>
+                <div class="sig-text">The Holding · Est. 2016</div>
             </div>
         </div>
     </section>
