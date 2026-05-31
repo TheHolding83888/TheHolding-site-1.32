@@ -412,6 +412,42 @@
             top: -1px;
         }
 
+
+        /* Roadmap label above phase 01 */
+        .roadmap-label {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 0;
+            padding: 2.5rem 0 0;
+        }
+        .roadmap-label::before,
+        .roadmap-label::after {
+            content: '';
+            height: 1px;
+            background: var(--border);
+        }
+        .roadmap-label-inner {
+            text-align: center;
+        }
+        .roadmap-label-kicker {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--faint);
+            margin-bottom: 0.4rem;
+        }
+        .roadmap-label-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            font-weight: 300;
+            font-style: italic;
+            color: var(--text);
+            letter-spacing: -0.01em;
+            line-height: 1;
+        }
         /* Roadmap steps */
         .roadmap {
             display: flex;
@@ -458,6 +494,7 @@
         }
 
         .status-next { color: var(--faint); border: 1px solid var(--border-m); }
+        .status-progress { color: #8b7cf8; border: 1px solid rgba(139,124,248,0.3); background: rgba(139,124,248,0.06); }
         .status-vision { color: var(--faint); border: 1px solid var(--border); opacity: 0.7; }
 
         .roadmap-content {}
@@ -872,14 +909,13 @@
             <p class="m-text">
                 The Holding is designed with this reality in mind. The architecture we are 
                 building today — transparent, onchain, modular, non-custodial — is natively 
-                readable by AI agents. A machine doesn't need a roadshow. It needs an API, 
-                verifiable performance, and composable structure.
+                readable by AI agents and composable by design.
             </p>
 
             <p class="m-text">
                 We believe in the <strong>agent economy</strong>. We believe that capital 
                 allocation will increasingly be performed by autonomous systems. And we 
-                believe that the holding architectures that prove themselves to humans today 
+                believe that the architectures that prove themselves to humans today 
                 will become the infrastructure that agents replicate tomorrow.
             </p>
 
@@ -888,18 +924,36 @@
                 network platform where value scales exponentially."
             </div>
 
+            <div class="roadmap-label">
+                <div class="roadmap-label-inner">
+                    <div class="roadmap-label-kicker">Five phases · The journey</div>
+                    <div class="roadmap-label-title">The Road Ahead</div>
+                </div>
+            </div>
+
             <div class="roadmap reveal reveal-d1">
+
                 <div class="roadmap-step">
                     <div>
                         <div class="roadmap-num">Phase 01</div>
                         <div class="roadmap-status status-now">Now</div>
                     </div>
                     <div class="roadmap-content">
-                        <div class="roadmap-title">Infrastructure Foundation</div>
+                        <div class="roadmap-title">Architecture & Foundations</div>
                         <div class="roadmap-text">
-                            Five fund archetypes fully operational as the reference standard 
-                            for sovereign capital management. Building the track record 
-                            that cannot be faked: <strong>consistency over time.</strong>
+                            Five funds. Five distinct functions. One architecture that works 
+                            in every market regime. <strong>Substantia</strong> — the foundation 
+                            of hard assets. <strong>Defitea</strong> — income from locked 
+                            governance positions. <strong>Singul</strong> — asymmetric bets 
+                            on frontier protocols. <strong>Fructus</strong> — real-world 
+                            assets that move independently of crypto. <strong>Monetra</strong> — 
+                            permanent liquidity and stable yield.<br><br>
+                            Each fund covers the blind spot of the others. None of them is 
+                            sufficient alone. Together they form something no single strategy 
+                            can replicate: capital that holds through every cycle.<br><br>
+                            The architecture is built. The strategy is defined. 
+                            Every position is managed in manual mode — precise, deliberate, 
+                            hands-on. This is the proving ground. The era of refinement.
                         </div>
                     </div>
                 </div>
@@ -907,17 +961,23 @@
                 <div class="roadmap-step">
                     <div>
                         <div class="roadmap-num">Phase 02</div>
-                        <div class="roadmap-status status-next">Next</div>
+                        <div class="roadmap-status status-progress">In Progress</div>
                     </div>
                     <div class="roadmap-content">
-                        <div class="roadmap-title">Platform & Open Ecosystem</div>
+                        <div class="roadmap-title">Sandboxes & Automation</div>
                         <div class="roadmap-text">
-                            Transitioning from managing our own capital to building 
-                            <strong>value exchange infrastructure</strong>. 
-                            Following the platform model: producers (strategy architects) 
-                            and consumers (capital allocators) interacting within a 
-                            governed, transparent framework. Machine-readable allocation 
-                            schemas. API endpoints. The beginning of composability.
+                            Every strategy currently running across the five funds gets its 
+                            own <strong>isolated sandbox</strong> — a parallel testing 
+                            environment where the same logic runs on separate accounts, 
+                            independent of live capital.<br><br>
+                            The sandboxes are not experiments. They are rehearsals. 
+                            Each one mirrors a fund's strategy in real conditions, 
+                            allowing it to be stress-tested, refined, and — step by step — 
+                            handed to automation. What is done by hand today gets 
+                            delegated to AI one process at a time.<br><br>
+                            This is the bridge: from manual precision to automated scale. 
+                            The less human intervention each fund requires, 
+                            the closer it comes to what it was always meant to become.
                         </div>
                     </div>
                 </div>
@@ -928,20 +988,80 @@
                         <div class="roadmap-status status-vision">Vision</div>
                     </div>
                     <div class="roadmap-content">
-                        <div class="roadmap-title">Sovereign AI Entities & Agent Economy</div>
+                        <div class="roadmap-title">Five Autonomous AI Entities</div>
                         <div class="roadmap-text">
-                            Each of the five funds evolves into an <strong>autonomous 
-                            AI agent</strong> with its own logic, risk profile, and 
-                            decision-making framework. Monetra's agent scans DeFi markets 
-                            in real time, rebalancing stablecoin positions without human 
-                            input. Singul's agent monitors onchain activity in emerging 
-                            protocols and enters positions milliseconds ahead of the market. 
-                            Agents communicate via smart contracts — profit surpluses flow 
-                            automatically between funds, optimising the entire system 
-                            without human intervention.
+                            The sandboxes graduate. Each fund becomes an 
+                            <strong>autonomous AI agent</strong> — a sovereign economic 
+                            entity with its own decision logic, risk profile, and 
+                            execution framework.<br><br>
+                            Everything that was done by hand is now done automatically. 
+                            Positions are opened and closed. Yields are harvested. 
+                            Capital rotates between funds when conditions shift. 
+                            The system rebalances itself without waiting for human input.<br><br>
+                            The agents communicate with each other — profit surpluses from 
+                            Defitea flow to Substantia accumulation. Singul signals from 
+                            Monetra's liquidity. Fructus anchors the whole when crypto 
+                            is turbulent.<br><br>
+                            The agents communicate with the world too — managing social 
+                            presence, engaging with visitors, publishing reports. 
+                            The Holding becomes a living, self-sustaining system. 
+                            Architecture without operators.
                         </div>
                     </div>
                 </div>
+
+                <div class="roadmap-step">
+                    <div>
+                        <div class="roadmap-num">Phase 04</div>
+                        <div class="roadmap-status status-vision">Vision</div>
+                    </div>
+                    <div class="roadmap-content">
+                        <div class="roadmap-title">Open to the World</div>
+                        <div class="roadmap-text">
+                            The architecture opens. Anyone can deploy their own 
+                            version — a single fund, a subset, or the full five-fund 
+                            holding — configured to their capital, their risk tolerance, 
+                            their goals. Autonomous from day one.<br><br>
+                            <strong>Humans and AI alike</strong> become clients. 
+                            An autonomous agent with a treasury can allocate to 
+                            The Holding infrastructure the same way a person does — 
+                            reading verifiable onchain data, connecting through 
+                            lightweight integrations, no intermediaries required.<br><br>
+                            The Holding becomes not just an architecture for capital, 
+                            but a node in a larger network of autonomous economic actors. 
+                            A place where machine intelligence and human capital 
+                            coexist on equal terms.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="roadmap-step">
+                    <div>
+                        <div class="roadmap-num">Phase 05</div>
+                        <div class="roadmap-status status-vision">Vision</div>
+                    </div>
+                    <div class="roadmap-content">
+                        <div class="roadmap-title">The Platform</div>
+                        <div class="roadmap-text">
+                            The Holding becomes a <strong>marketplace of strategies</strong>. 
+                            Third-party agents — and the humans behind them — build their 
+                            own funds, test them, and list them on the platform. 
+                            Any user can browse, compare, and deploy a strategy 
+                            built by someone else. Agents acquire strategies from 
+                            other agents. Capital finds its best allocation automatically.<br><br>
+                            At the center of the marketplace: the flagship five-fund 
+                            architecture — continuously optimised, battle-tested across 
+                            every cycle, updated as markets evolve. The reference standard 
+                            against which every other strategy is measured.<br><br>
+                            The platform is not a product. It is infrastructure. 
+                            A self-organising network where strategies compete, 
+                            combine, and compound. Where capital moves without friction. 
+                            Where architecture scales beyond what any single operator 
+                            could ever manage alone.
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <p class="m-text">
