@@ -968,8 +968,8 @@
 
         
         /* ── Yield Chart ─────────────────────────────────────── */
-        .yield-chart-section { padding: 0.2rem 0 4rem; border-top: 1px solid var(--border); }
-        .yield-chart-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; overflow: hidden; }
+        .yield-chart-section { padding: 0.2rem 0 4rem; border-top: 1px solid var(--border); overflow-x: hidden; }
+        .yield-chart-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
         .chart-heading {
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(1.8rem, 3vw, 2.4rem);
@@ -979,8 +979,8 @@
             letter-spacing: -0.02em;
         }
         .chart-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 3rem; letter-spacing: 0.02em; }
-        .yield-chart-wrap { position: relative; height: 220px; margin-bottom: 1rem; width: 100%; }
-        .yield-chart-wrap canvas { display: block; width: 100%; height: 100%; }
+        .yield-chart-wrap { position: relative; height: 220px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
+        .yield-chart-wrap canvas { display: block; }
         .chart-months { display: flex; justify-content: space-between; padding: 0 2px; font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
         .chart-kpi-row { display: flex; gap: 3rem; margin-top: 2.5rem; }
         .chart-kpi { display: flex; flex-direction: column; gap: 0.3rem; }
@@ -988,11 +988,11 @@
         .chart-kpi-lbl { font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
 
         /* ── Calculator ──────────────────────────────────────── */
-        .calculator-section { padding: 3rem 0 4rem; border-top: 1px solid var(--border); }
+        .calculator-section { padding: 3rem 0 4rem; border-top: 1px solid var(--border); overflow-x: hidden; }
         .calculator-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
         .calc-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 400; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.02em; }
         .calc-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 3rem; letter-spacing: 0.02em; }
-        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; overflow: hidden; }
         .calc-inputs { display: flex; flex-direction: column; gap: 1.8rem; }
         .calc-field label { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem; }
         .calc-field input, .calc-field select { width: 100%; background: var(--bg-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.9rem 1.1rem; font-family: 'Space Grotesk', sans-serif; font-size: 1rem; color: var(--text-primary); outline: none; transition: border-color 0.2s; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
@@ -1616,7 +1616,7 @@
      2. YIELD HISTORY CHART — Canvas line chart
   ══════════════════════════════════════════════════════════ */
   (function buildChart() {
-    const DATA = [
+    var DATA = [
       { month: 'JAN', pct: 1.34 },
       { month: 'FEB', pct: 1.84 },
       { month: 'MAR', pct: 1.02 },
@@ -1624,66 +1624,68 @@
       { month: 'MAY', pct: 1.01 },
     ];
 
-    const canvas = document.getElementById('yieldChart');
+    var canvas = document.getElementById('yieldChart');
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    var ctx = canvas.getContext('2d');
+    var wrap = canvas.parentElement; // .yield-chart-wrap
 
     // Month labels
-    const monthsEl = document.getElementById('chartMonths');
+    var monthsEl = document.getElementById('chartMonths');
     if (monthsEl) {
-      monthsEl.innerHTML = DATA.map(d => `<span>${d.month}</span>`).join('');
+      monthsEl.innerHTML = DATA.map(function(d) { return '<span>' + d.month + '</span>'; }).join('');
     }
 
-    // Core render function — progress 0..1 draws left-to-right
+    // Render at given progress (0=empty, 1=full)
     function renderFrame(progress) {
-      const W = canvas.parentElement ? canvas.parentElement.offsetWidth : 300;
-      const H = 220;
-      if (W <= 0) return;
+      var W = wrap.clientWidth || wrap.offsetWidth || 300;
+      var H = 220;
+      if (W <= 10) return;
 
-      canvas.width  = W * window.devicePixelRatio;
-      canvas.height = H * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      var dpr = window.devicePixelRatio || 1;
+      canvas.width  = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
 
-      const PAD = { top: 30, right: 20, bottom: 20, left: 40 };
-      const cW = W - PAD.left - PAD.right;
-      const cH = H - PAD.top - PAD.bottom;
-      const maxV = Math.max(...DATA.map(d => d.pct));
-      const range = maxV || 1;
+      var PAD = { top: 28, right: 16, bottom: 16, left: 38 };
+      var cW = W - PAD.left - PAD.right;
+      var cH = H - PAD.top  - PAD.bottom;
+      var maxV = 1.84; // known max
 
-      const xStep = cW / (DATA.length - 1);
-      const pts = DATA.map((d, i) => ({
-        x: PAD.left + i * xStep,
-        y: PAD.top + cH - (d.pct / range) * cH,
-      }));
-
-      // Grid lines + Y labels
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.lineWidth = 1;
-      [0, 0.5, 1].forEach(t => {
-        const y = PAD.top + cH * (1 - t);
-        ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
-        ctx.fillStyle = 'rgba(255,255,255,0.22)';
-        ctx.font = '10px Space Grotesk, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText((t * maxV).toFixed(2) + '%', 2, y + 4);
+      var pts = DATA.map(function(d, i) {
+        return {
+          x: PAD.left + i * (cW / (DATA.length - 1)),
+          y: PAD.top + cH - (d.pct / maxV) * cH,
+        };
       });
 
-      // Clip to progress width so everything draws left→right
-      const clipX = PAD.left + cW * progress;
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      [0, 0.5, 1].forEach(function(t) {
+        var y = PAD.top + cH * (1 - t);
+        ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.font = '9px Space Grotesk, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText((t * maxV).toFixed(2) + '%', PAD.left - 4, y + 3);
+      });
+
+      // Canvas clip: only draw up to clipX (left→right animation)
+      var clipX = PAD.left + cW * progress;
       ctx.save();
       ctx.beginPath();
-      ctx.rect(0, 0, clipX, H);
+      ctx.rect(0, 0, clipX + 8, H);
       ctx.clip();
 
-      // Gradient fill
-      const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
-      grad.addColorStop(0, 'rgba(74,222,128,0.22)');
-      grad.addColorStop(1, 'rgba(74,222,128,0)');
+      // Gradient fill under line
+      var grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+      grad.addColorStop(0, 'rgba(74,222,128,0.20)');
+      grad.addColorStop(1, 'rgba(74,222,128,0.00)');
       ctx.beginPath();
       ctx.moveTo(pts[0].x, PAD.top + cH);
-      pts.forEach(p => ctx.lineTo(p.x, p.y));
-      ctx.lineTo(pts[pts.length-1].x, PAD.top + cH);
+      pts.forEach(function(p) { ctx.lineTo(p.x, p.y); });
+      ctx.lineTo(pts[pts.length - 1].x, PAD.top + cH);
       ctx.closePath();
       ctx.fillStyle = grad;
       ctx.fill();
@@ -1691,76 +1693,62 @@
       // Line
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
-      pts.forEach((p, i) => {
-        if (i === 0) return;
-        const prev = pts[i-1];
-        const cpx = (prev.x + p.x) / 2;
-        ctx.bezierCurveTo(cpx, prev.y, cpx, p.y, p.x, p.y);
-      });
+      for (var i = 1; i < pts.length; i++) {
+        var mid = (pts[i-1].x + pts[i].x) / 2;
+        ctx.bezierCurveTo(mid, pts[i-1].y, mid, pts[i].y, pts[i].x, pts[i].y);
+      }
       ctx.strokeStyle = '#4ade80';
       ctx.lineWidth = 2.5;
       ctx.lineJoin = 'round';
       ctx.stroke();
 
-      // Dots + labels (only for points already revealed)
-      pts.forEach((p, i) => {
-        if (p.x > clipX + 4) return;
+      // Dots + value labels
+      for (var j = 0; j < pts.length; j++) {
+        if (pts[j].x > clipX + 6) continue;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = '#4ade80';
-        ctx.fill();
-        ctx.strokeStyle = '#08090a';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.arc(pts[j].x, pts[j].y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#4ade80'; ctx.fill();
+        ctx.strokeStyle = '#09090a'; ctx.lineWidth = 2; ctx.stroke();
         ctx.fillStyle = 'rgba(255,255,255,0.75)';
         ctx.font = '10px Space Grotesk, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('+' + DATA[i].pct.toFixed(2) + '%', p.x, p.y - 10);
-      });
+        ctx.fillText('+' + DATA[j].pct.toFixed(2) + '%', pts[j].x, pts[j].y - 10);
+      }
 
       ctx.restore();
     }
 
-    function draw() { renderFrame(1); }
-
-    // Animated draw: runs from progress 0→1 over ~1s
+    // Animate left→right over 1.1s
     function animateDraw() {
-      const duration = 1100;
-      const startT = performance.now();
+      var duration = 1100;
+      var startT   = performance.now();
       function frame(now) {
-        const p = Math.min((now - startT) / duration, 1);
-        const eased = 1 - Math.pow(1 - p, 3);
+        var raw    = (now - startT) / duration;
+        var p      = Math.min(raw, 1);
+        var eased  = 1 - Math.pow(1 - p, 3);
         renderFrame(eased);
         if (p < 1) requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
     }
-    window._animateYieldChart = animateDraw;
 
-    // Draw using parent width — accepts animated flag
-    function safeDraw(animated) {
-      const parent = canvas.parentElement;
-      const W = parent ? parent.offsetWidth : 0;
-      if (W > 0) {
-        if (animated && window._animateYieldChart) {
-          wrap.classList.add('chart-visible');
-          window._animateYieldChart();
-        } else {
-          draw();
-        }
-      } else {
-        setTimeout(function() { safeDraw(animated); }, 50);
+    // Called by IntersectionObserver when section scrolls into view
+    function triggerChart() {
+      var W = wrap.clientWidth || wrap.offsetWidth;
+      if (W <= 10) {
+        setTimeout(triggerChart, 60);
+        return;
       }
+      wrap.classList.add('chart-visible'); // fade in wrap
+      animateDraw();
     }
+    window._triggerYieldChart = triggerChart;
 
-    // Expose so the reveal observer can trigger it
-    window._drawYieldChart = function() { safeDraw(true); };
-    window._staticDrawYieldChart = safeDraw;
-    window._redrawYieldChart = draw;
-    window.addEventListener('resize', draw);
+    // Redraw on resize (full, no animation)
+    window.addEventListener('resize', function() { renderFrame(1); });
 
-    // Draw after layout is ready (fonts, images settled)
-    setTimeout(safeDraw, 150);
+    // Initial static draw after layout settles (hidden behind opacity:0)
+    setTimeout(function() { renderFrame(1); }, 200);
   })();
 
   /* ══════════════════════════════════════════════════════════
@@ -1872,14 +1860,13 @@
 
 /* ── 4. Chart — Draw from left on scroll ───────────────────── */
 (function initChartReveal() {
-  const wrap = document.querySelector('.yield-chart-wrap');
+  var wrap = document.querySelector('.yield-chart-wrap');
   if (!wrap) return;
 
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
       if (e.isIntersecting) {
-        // _drawYieldChart triggers safeDraw(true) → shows wrap + animates line
-        if (window._drawYieldChart) window._drawYieldChart();
+        if (window._triggerYieldChart) window._triggerYieldChart();
         io.unobserve(e.target);
       }
     });
