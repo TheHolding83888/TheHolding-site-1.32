@@ -966,26 +966,9 @@
 
 
 
-        /* ── Price Tickers ───────────────────────────────────── */
-        .price-tickers {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.78rem;
-            letter-spacing: 0.02em;
-        }
-        .ticker-item { display: flex; align-items: center; gap: 0.3rem; }
-        .ticker-sym  { color: var(--text-faint); font-weight: 500; }
-        .ticker-price { color: var(--text-primary); font-weight: 600; }
-        .ticker-change { font-size: 0.72rem; font-weight: 500; }
-        .ticker-change.up   { color: #4ade80; }
-        .ticker-change.down { color: #f87171; }
-        .ticker-sep { color: var(--text-faint); opacity: 0.4; }
-        @media (max-width: 600px) { .price-tickers { display: none; } }
-
+        
         /* ── Yield Chart ─────────────────────────────────────── */
-        .yield-chart-section { padding: 6rem 0; border-top: 1px solid var(--border); }
+        .yield-chart-section { padding: 3rem 0 4rem; border-top: 1px solid var(--border); }
         .yield-chart-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
         .chart-heading {
             font-family: 'Cormorant Garamond', serif;
@@ -996,7 +979,8 @@
             letter-spacing: -0.02em;
         }
         .chart-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 3rem; letter-spacing: 0.02em; }
-        .yield-chart-wrap { position: relative; height: 220px; margin-bottom: 1rem; }
+        .yield-chart-wrap { position: relative; height: 220px; margin-bottom: 1rem; width: 100%; }
+        .yield-chart-wrap canvas { display: block; width: 100%; height: 100%; }
         .chart-months { display: flex; justify-content: space-between; padding: 0 2px; font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
         .chart-kpi-row { display: flex; gap: 3rem; margin-top: 2.5rem; }
         .chart-kpi { display: flex; flex-direction: column; gap: 0.3rem; }
@@ -1004,7 +988,7 @@
         .chart-kpi-lbl { font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
 
         /* ── Calculator ──────────────────────────────────────── */
-        .calculator-section { padding: 6rem 0; border-top: 1px solid var(--border); }
+        .calculator-section { padding: 3rem 0 4rem; border-top: 1px solid var(--border); }
         .calculator-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
         .calc-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 400; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.02em; }
         .calc-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 3rem; letter-spacing: 0.02em; }
@@ -1021,9 +1005,18 @@
         .calc-result-value.green { color: #4ade80; }
         .calc-disclaimer { margin-top: 1.2rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; color: var(--text-faint); opacity: 0.6; line-height: 1.6; }
         @media (max-width: 768px) {
-            .calc-grid { grid-template-columns: 1fr; gap: 2rem; }
-            .yield-chart-section, .calculator-section { padding: 4rem 0; }
-            .chart-kpi-row { gap: 2rem; }
+            .calc-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .calc-inputs { gap: 1rem; }
+            .calc-field input, .calc-field select { padding: 0.65rem 0.9rem; font-size: 0.9rem; }
+            .calc-result-row { padding: 0.6rem 0; }
+            .calc-result-value { font-size: 0.95rem; }
+            .calc-results { padding: 1.2rem 1.4rem; }
+            .calc-heading { margin-bottom: 0.3rem; }
+            .calc-sub { margin-bottom: 1.5rem; }
+            .yield-chart-section { padding: 2.5rem 0 3rem; }
+            .calculator-section { padding: 2.5rem 0 3rem; }
+            .chart-kpi-row { gap: 1.5rem; margin-top: 1.5rem; }
+            .chart-kpi-val { font-size: 1.15rem; }
         }
     </style>
     <!-- Structured Data -->
@@ -1071,19 +1064,6 @@
         <div class="nav-content">
             <div class="nav-breadcrumb">
                 <a href="/">theholding.ai</a> / <a href="/defitea">defitea</a>
-            </div>
-            <div class="price-tickers">
-                <span class="ticker-item">
-                    <span class="ticker-sym">BTC</span>
-                    <span class="ticker-price" id="btc-price">—</span>
-                    <span class="ticker-change" id="btc-change"></span>
-                </span>
-                <span class="ticker-sep">·</span>
-                <span class="ticker-item">
-                    <span class="ticker-sym">ETH</span>
-                    <span class="ticker-price" id="eth-price">—</span>
-                    <span class="ticker-change" id="eth-change"></span>
-                </span>
             </div>
             <a href="/" class="back-link">← Back</a>
         </div>
@@ -1563,38 +1543,7 @@
 
 
 <script>
-  /* ══════════════════════════════════════════════════════════
-     1. PRICE TICKERS — BTC & ETH via CoinGecko
-  ══════════════════════════════════════════════════════════ */
-  async function fetchTickers() {
-    try {
-      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
-      const d = await r.json();
-      const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
-      const fmtChg = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
-
-      const btcP = document.getElementById('btc-price');
-      const btcC = document.getElementById('btc-change');
-      const ethP = document.getElementById('eth-price');
-      const ethC = document.getElementById('eth-change');
-
-      if (btcP) btcP.textContent = fmt(d.bitcoin.usd);
-      if (btcC) {
-        const chg = d.bitcoin.usd_24h_change;
-        btcC.textContent = fmtChg(chg);
-        btcC.className = 'ticker-change ' + (chg >= 0 ? 'up' : 'down');
-      }
-      if (ethP) ethP.textContent = fmt(d.ethereum.usd);
-      if (ethC) {
-        const chg = d.ethereum.usd_24h_change;
-        ethC.textContent = fmtChg(chg);
-        ethC.className = 'ticker-change ' + (chg >= 0 ? 'up' : 'down');
-      }
-    } catch(e) { console.warn('[Tickers]', e.message); }
-  }
-  fetchTickers();
-  setInterval(fetchTickers, 60000);
-
+  
   /* ══════════════════════════════════════════════════════════
      2. YIELD HISTORY CHART — Canvas line chart
   ══════════════════════════════════════════════════════════ */
@@ -1618,8 +1567,9 @@
     }
 
     function draw() {
-      const W = canvas.offsetWidth;
-      const H = canvas.offsetHeight;
+      const rect = canvas.getBoundingClientRect();
+      const W = rect.width || canvas.parentElement.offsetWidth || 300;
+      const H = rect.height || 220;
       canvas.width  = W * window.devicePixelRatio;
       canvas.height = H * window.devicePixelRatio;
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
