@@ -964,6 +964,67 @@
             .footer-link { font-size: 0.88rem; }
         }
 
+
+
+        /* ── Price Tickers ───────────────────────────────────── */
+        .price-tickers {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            letter-spacing: 0.02em;
+        }
+        .ticker-item { display: flex; align-items: center; gap: 0.3rem; }
+        .ticker-sym  { color: var(--text-faint); font-weight: 500; }
+        .ticker-price { color: var(--text-primary); font-weight: 600; }
+        .ticker-change { font-size: 0.72rem; font-weight: 500; }
+        .ticker-change.up   { color: #4ade80; }
+        .ticker-change.down { color: #f87171; }
+        .ticker-sep { color: var(--text-faint); opacity: 0.4; }
+        @media (max-width: 600px) { .price-tickers { display: none; } }
+
+        /* ── Yield Chart ─────────────────────────────────────── */
+        .yield-chart-section { padding: 6rem 0; border-top: 1px solid var(--border); }
+        .yield-chart-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+        .chart-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.8rem, 3vw, 2.4rem);
+            font-weight: 400;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .chart-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 3rem; letter-spacing: 0.02em; }
+        .yield-chart-wrap { position: relative; height: 220px; margin-bottom: 1rem; }
+        .chart-months { display: flex; justify-content: space-between; padding: 0 2px; font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
+        .chart-kpi-row { display: flex; gap: 3rem; margin-top: 2.5rem; }
+        .chart-kpi { display: flex; flex-direction: column; gap: 0.3rem; }
+        .chart-kpi-val { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; color: #4ade80; }
+        .chart-kpi-lbl { font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
+
+        /* ── Calculator ──────────────────────────────────────── */
+        .calculator-section { padding: 6rem 0; border-top: 1px solid var(--border); }
+        .calculator-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+        .calc-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 400; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .calc-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 3rem; letter-spacing: 0.02em; }
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+        .calc-inputs { display: flex; flex-direction: column; gap: 1.8rem; }
+        .calc-field label { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem; }
+        .calc-field input, .calc-field select { width: 100%; background: var(--bg-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.9rem 1.1rem; font-family: 'Space Grotesk', sans-serif; font-size: 1rem; color: var(--text-primary); outline: none; transition: border-color 0.2s; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
+        .calc-field input:focus, .calc-field select:focus { border-color: var(--accent); }
+        .calc-results { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; }
+        .calc-result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 0.9rem 0; border-bottom: 1px solid var(--border); }
+        .calc-result-row:last-child { border-bottom: none; }
+        .calc-result-label { font-family: 'Space Grotesk', sans-serif; font-size: 0.78rem; color: var(--text-faint); letter-spacing: 0.05em; }
+        .calc-result-value { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+        .calc-result-value.green { color: #4ade80; }
+        .calc-disclaimer { margin-top: 1.2rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; color: var(--text-faint); opacity: 0.6; line-height: 1.6; }
+        @media (max-width: 768px) {
+            .calc-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .yield-chart-section, .calculator-section { padding: 4rem 0; }
+            .chart-kpi-row { gap: 2rem; }
+        }
     </style>
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -1010,6 +1071,19 @@
         <div class="nav-content">
             <div class="nav-breadcrumb">
                 <a href="/">theholding.ai</a> / <a href="/defitea">defitea</a>
+            </div>
+            <div class="price-tickers">
+                <span class="ticker-item">
+                    <span class="ticker-sym">BTC</span>
+                    <span class="ticker-price" id="btc-price">—</span>
+                    <span class="ticker-change" id="btc-change"></span>
+                </span>
+                <span class="ticker-sep">·</span>
+                <span class="ticker-item">
+                    <span class="ticker-sym">ETH</span>
+                    <span class="ticker-price" id="eth-price">—</span>
+                    <span class="ticker-change" id="eth-change"></span>
+                </span>
             </div>
             <a href="/" class="back-link">← Back</a>
         </div>
@@ -1271,6 +1345,91 @@
         </div>
     </section>
 
+    <!-- ── Yield History Chart ─────────────────────────────── -->
+    <section class="yield-chart-section">
+        <div class="section-inner">
+            <h2 class="chart-heading">Monthly Performance</h2>
+            <p class="chart-sub">Defitea fund yield — % of TVL per month · 2026</p>
+
+            <div class="yield-chart-wrap">
+                <canvas id="yieldChart"></canvas>
+            </div>
+            <div class="chart-months" id="chartMonths"></div>
+
+            <div class="chart-kpi-row">
+                <div class="chart-kpi">
+                    <span class="chart-kpi-val">+5.99%</span>
+                    <span class="chart-kpi-lbl">Cumulative 2026</span>
+                </div>
+                <div class="chart-kpi">
+                    <span class="chart-kpi-val">+1.84%</span>
+                    <span class="chart-kpi-lbl">Best Month (Feb)</span>
+                </div>
+                <div class="chart-kpi">
+                    <span class="chart-kpi-val" id="chart-apy-kpi">~14.4%</span>
+                    <span class="chart-kpi-lbl">Annualized Run Rate</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Yield Calculator ────────────────────────────────── -->
+    <section class="calculator-section">
+        <div class="section-inner">
+            <h2 class="calc-heading">Yield Calculator</h2>
+            <p class="calc-sub">Estimate returns based on Defitea's historical performance</p>
+
+            <div class="calc-grid">
+                <div class="calc-inputs">
+                    <div class="calc-field">
+                        <label>Capital (USD)</label>
+                        <input type="number" id="calcCapital" value="10000" min="1" oninput="calcYield()">
+                    </div>
+                    <div class="calc-field">
+                        <label>Period</label>
+                        <select id="calcPeriod" onchange="calcYield()">
+                            <option value="1">1 month</option>
+                            <option value="3">3 months</option>
+                            <option value="6">6 months</option>
+                            <option value="12" selected>1 year</option>
+                            <option value="24">2 years</option>
+                            <option value="36">3 years</option>
+                        </select>
+                    </div>
+                    <div class="calc-field">
+                        <label>APY assumption</label>
+                        <select id="calcApy" onchange="calcYield()">
+                            <option value="9.36">Conservative — 9.36%</option>
+                            <option value="14.4" selected>Base — 14.4% (current avg)</option>
+                            <option value="22">Optimistic — 22%</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="calc-results">
+                    <div class="calc-result-row">
+                        <span class="calc-result-label">Capital</span>
+                        <span class="calc-result-value" id="res-capital">$10,000</span>
+                    </div>
+                    <div class="calc-result-row">
+                        <span class="calc-result-label">Yield earned</span>
+                        <span class="calc-result-value green" id="res-yield">—</span>
+                    </div>
+                    <div class="calc-result-row">
+                        <span class="calc-result-label">Total value</span>
+                        <span class="calc-result-value" id="res-total">—</span>
+                    </div>
+                    <div class="calc-result-row">
+                        <span class="calc-result-label">Monthly income</span>
+                        <span class="calc-result-value green" id="res-monthly">—</span>
+                    </div>
+                    <p class="calc-disclaimer">Estimates based on historical Defitea performance. Past yield does not guarantee future results. DeFi positions carry market and protocol risk.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
     <section class="final-section">
         <div class="final-content">
             <h2>Sustainable Yield</h2>
@@ -1402,40 +1561,193 @@
         <div class="footer-note">defitea.eth · Non-custodial</div>
     </footer>
 
-</body>
-</html>
+
 <script>
+  /* ══════════════════════════════════════════════════════════
+     1. PRICE TICKERS — BTC & ETH via CoinGecko
+  ══════════════════════════════════════════════════════════ */
+  async function fetchTickers() {
+    try {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+      const d = await r.json();
+      const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+      const fmtChg = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+
+      const btcP = document.getElementById('btc-price');
+      const btcC = document.getElementById('btc-change');
+      const ethP = document.getElementById('eth-price');
+      const ethC = document.getElementById('eth-change');
+
+      if (btcP) btcP.textContent = fmt(d.bitcoin.usd);
+      if (btcC) {
+        const chg = d.bitcoin.usd_24h_change;
+        btcC.textContent = fmtChg(chg);
+        btcC.className = 'ticker-change ' + (chg >= 0 ? 'up' : 'down');
+      }
+      if (ethP) ethP.textContent = fmt(d.ethereum.usd);
+      if (ethC) {
+        const chg = d.ethereum.usd_24h_change;
+        ethC.textContent = fmtChg(chg);
+        ethC.className = 'ticker-change ' + (chg >= 0 ? 'up' : 'down');
+      }
+    } catch(e) { console.warn('[Tickers]', e.message); }
+  }
+  fetchTickers();
+  setInterval(fetchTickers, 60000);
+
+  /* ══════════════════════════════════════════════════════════
+     2. YIELD HISTORY CHART — Canvas line chart
+  ══════════════════════════════════════════════════════════ */
+  (function buildChart() {
+    const DATA = [
+      { month: 'JAN', pct: 1.34 },
+      { month: 'FEB', pct: 1.84 },
+      { month: 'MAR', pct: 1.02 },
+      { month: 'APR', pct: 0.78 },
+      { month: 'MAY', pct: 1.01 },
+    ];
+
+    const canvas = document.getElementById('yieldChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Month labels
+    const monthsEl = document.getElementById('chartMonths');
+    if (monthsEl) {
+      monthsEl.innerHTML = DATA.map(d => `<span>${d.month}</span>`).join('');
+    }
+
+    function draw() {
+      const W = canvas.offsetWidth;
+      const H = canvas.offsetHeight;
+      canvas.width  = W * window.devicePixelRatio;
+      canvas.height = H * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+      const PAD = { top: 30, right: 20, bottom: 20, left: 40 };
+      const cW = W - PAD.left - PAD.right;
+      const cH = H - PAD.top  - PAD.bottom;
+
+      const maxV = Math.max(...DATA.map(d => d.pct));
+      const minV = 0;
+      const range = maxV - minV || 1;
+
+      const xStep = cW / (DATA.length - 1);
+      const pts = DATA.map((d, i) => ({
+        x: PAD.left + i * xStep,
+        y: PAD.top + cH - ((d.pct - minV) / range) * cH,
+      }));
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 1;
+      [0, 0.5, 1].forEach(t => {
+        const y = PAD.top + cH * (1 - t);
+        ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+        const val = (minV + t * range).toFixed(2);
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.font = '10px Space Grotesk, sans-serif';
+        ctx.fillText(val + '%', 0, y + 4);
+      });
+
+      // Gradient fill
+      const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+      grad.addColorStop(0,   'rgba(74,222,128,0.25)');
+      grad.addColorStop(1,   'rgba(74,222,128,0)');
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, PAD.top + cH);
+      pts.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(pts[pts.length-1].x, PAD.top + cH);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Line
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      pts.forEach((p, i) => {
+        if (i === 0) return;
+        const prev = pts[i-1];
+        const cpx = (prev.x + p.x) / 2;
+        ctx.bezierCurveTo(cpx, prev.y, cpx, p.y, p.x, p.y);
+      });
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // Dots + tooltip values
+      pts.forEach((p, i) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#4ade80';
+        ctx.fill();
+        ctx.strokeStyle = '#0a0a0a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // value label above dot
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '10px Space Grotesk, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('+' + DATA[i].pct.toFixed(2) + '%', p.x, p.y - 10);
+      });
+    }
+
+    // Wait for layout then draw
+    requestAnimationFrame(draw);
+    window.addEventListener('resize', draw);
+  })();
+
+  /* ══════════════════════════════════════════════════════════
+     3. YIELD CALCULATOR
+  ══════════════════════════════════════════════════════════ */
+  function calcYield() {
+    const capital  = parseFloat(document.getElementById('calcCapital').value) || 0;
+    const months   = parseInt(document.getElementById('calcPeriod').value);
+    const apy      = parseFloat(document.getElementById('calcApy').value) / 100;
+    const mRate    = apy / 12;
+
+    // Compound monthly
+    const total    = capital * Math.pow(1 + mRate, months);
+    const earned   = total - capital;
+    const monthly  = capital * mRate;
+
+    const fmt = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    document.getElementById('res-capital').textContent = fmt(capital);
+    document.getElementById('res-yield').textContent   = '+' + fmt(earned);
+    document.getElementById('res-total').textContent   = fmt(total);
+    document.getElementById('res-monthly').textContent = '~' + fmt(monthly) + '/mo';
+  }
+  calcYield();
+
+  /* ══════════════════════════════════════════════════════════
+     4. APY SYNC — from yield-reports.html
+  ══════════════════════════════════════════════════════════ */
   (function syncDefiteaAPY() {
-    const TARGETS = ['defitea-apy-hero', 'defitea-apy-stat'];
-
+    const TARGETS = ['defitea-apy-hero', 'defitea-apy-stat', 'chart-apy-kpi'];
     fetch('/yield-reports.html')
-      .then(function(res) {
-        if (!res.ok) throw new Error('fetch failed: ' + res.status);
-        return res.text();
-      })
-      .then(function(html) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const cards = doc.querySelectorAll('.kpi-card');
+      .then(r => r.ok ? r.text() : Promise.reject(r.status))
+      .then(html => {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
         let value = null;
-
-        cards.forEach(function(card) {
-          const label = card.querySelector('.kpi-label');
-          if (label && label.textContent.trim() === 'Annualized Run Rate') {
-            const val = card.querySelector('.kpi-value');
-            if (val) value = val.textContent.trim();
+        doc.querySelectorAll('.kpi-card').forEach(card => {
+          const lbl = card.querySelector('.kpi-label');
+          if (lbl && lbl.textContent.trim() === 'Annualized Run Rate') {
+            const v = card.querySelector('.kpi-value');
+            if (v) value = v.textContent.trim();
           }
         });
-
         if (!value) return;
         const clean = value.replace(/^~/, '');
-        TARGETS.forEach(function(id) {
+        TARGETS.forEach(id => {
           const el = document.getElementById(id);
-          if (el) el.textContent = clean;
+          if (el) el.textContent = id === 'chart-apy-kpi' ? value : clean;
         });
       })
-      .catch(function(err) {
-        console.warn('[Defitea APY Sync]', err.message);
-      });
+      .catch(e => console.warn('[APY Sync]', e));
   })();
 </script>
+</body>
+</html>
