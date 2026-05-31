@@ -968,7 +968,7 @@
 
         
         /* ── Yield Chart ─────────────────────────────────────── */
-        .yield-chart-section { padding: 3rem 0 4rem; border-top: 1px solid var(--border); }
+        .yield-chart-section { padding: 1.2rem 0 4rem; border-top: 1px solid var(--border); }
         .yield-chart-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
         .chart-heading {
             font-family: 'Cormorant Garamond', serif;
@@ -1013,10 +1013,77 @@
             .calc-results { padding: 1.2rem 1.4rem; }
             .calc-heading { margin-bottom: 0.3rem; }
             .calc-sub { margin-bottom: 1.5rem; }
-            .yield-chart-section { padding: 2.5rem 0 3rem; }
+            .yield-chart-section { padding: 1rem 0 3rem; }
             .calculator-section { padding: 2.5rem 0 3rem; }
             .chart-kpi-row { gap: 1.5rem; margin-top: 1.5rem; }
             .chart-kpi-val { font-size: 1.15rem; }
+        }
+
+        /* ── Scroll Reveal Animations ────────────────────────── */
+        .sr-fade-up {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1);
+        }
+        .sr-fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .sr-fade-left {
+            opacity: 0;
+            transform: translateX(-24px);
+            transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+        }
+        .sr-fade-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .sr-scale {
+            opacity: 0;
+            transform: scale(0.96);
+            transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1), transform 0.55s cubic-bezier(0.22,1,0.36,1);
+        }
+        .sr-scale.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        /* stagger delays */
+        .sr-d1 { transition-delay: 0.1s; }
+        .sr-d2 { transition-delay: 0.2s; }
+        .sr-d3 { transition-delay: 0.3s; }
+        .sr-d4 { transition-delay: 0.45s; }
+
+        /* Chart draw animation — clip from left */
+        .yield-chart-wrap {
+            clip-path: inset(0 100% 0 0);
+            transition: clip-path 1.1s cubic-bezier(0.22,1,0.36,1);
+        }
+        .yield-chart-wrap.chart-visible {
+            clip-path: inset(0 0% 0 0);
+        }
+        /* KPI counters start invisible */
+        .chart-kpi-val, .calc-result-value {
+            display: inline-block;
+        }
+        /* Engine cards stagger */
+        .engine-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease, background 0.3s;
+        }
+        .engine-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Performance stats */
+        .stat-item {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .stat-item.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
     <!-- Structured Data -->
@@ -1304,7 +1371,7 @@
 
     <section class="performance-section">
         <div class="section-inner">
-            <h2 class="performance-title">Performance Metrics</h2>
+            <h2 class="performance-title sr-fade-up">Performance Metrics</h2>
             
             <div class="philosophy-stats">
                 <div class="stat-item">
@@ -1328,15 +1395,15 @@
     <!-- ── Yield History Chart ─────────────────────────────── -->
     <section class="yield-chart-section">
         <div class="section-inner">
-            <h2 class="chart-heading">Monthly Performance</h2>
-            <p class="chart-sub">Defitea fund yield — % of TVL per month · 2026</p>
+            <h2 class="chart-heading sr-fade-up">Monthly Performance</h2>
+            <p class="chart-sub sr-fade-up sr-d1">Defitea fund yield — % of TVL per month · 2026</p>
 
             <div class="yield-chart-wrap">
                 <canvas id="yieldChart"></canvas>
             </div>
-            <div class="chart-months" id="chartMonths"></div>
+            <div class="chart-months sr-fade-up sr-d2" id="chartMonths"></div>
 
-            <div class="chart-kpi-row">
+            <div class="chart-kpi-row sr-fade-up sr-d3">
                 <div class="chart-kpi">
                     <span class="chart-kpi-val">+5.99%</span>
                     <span class="chart-kpi-lbl">Cumulative 2026</span>
@@ -1356,11 +1423,11 @@
     <!-- ── Yield Calculator ────────────────────────────────── -->
     <section class="calculator-section">
         <div class="section-inner">
-            <h2 class="calc-heading">Yield Calculator</h2>
-            <p class="calc-sub">Estimate returns based on Defitea's historical performance</p>
+            <h2 class="calc-heading sr-fade-up">Yield Calculator</h2>
+            <p class="calc-sub sr-fade-up sr-d1">Estimate returns based on Defitea's historical performance</p>
 
             <div class="calc-grid">
-                <div class="calc-inputs">
+                <div class="calc-inputs sr-fade-left">
                     <div class="calc-field">
                         <label>Capital (USD)</label>
                         <input type="number" id="calcCapital" value="10000" min="1" oninput="calcYield()">
@@ -1386,7 +1453,7 @@
                     </div>
                 </div>
 
-                <div class="calc-results">
+                <div class="calc-results sr-scale sr-d2">
                     <div class="calc-result-row">
                         <span class="calc-result-label">Capital</span>
                         <span class="calc-result-value" id="res-capital">$10,000</span>
@@ -1698,6 +1765,205 @@
       })
       .catch(e => console.warn('[APY Sync]', e));
   })();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   DEFITEA — SCROLL ANIMATION SYSTEM
+══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Universal Scroll Reveal ─────────────────────────────── */
+(function initScrollReveal() {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.sr-fade-up, .sr-fade-left, .sr-scale')
+    .forEach(el => io.observe(el));
+})();
+
+/* ── 2. Engine Cards — Stagger on scroll ────────────────────── */
+(function initEngineCards() {
+  const cards = document.querySelectorAll('.engine-card');
+  if (!cards.length) return;
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = Array.from(cards).indexOf(e.target);
+        setTimeout(() => e.target.classList.add('visible'), idx * 80);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  cards.forEach(c => io.observe(c));
+})();
+
+/* ── 3. Stat Items — Stagger on scroll ──────────────────────── */
+(function initStatItems() {
+  const items = document.querySelectorAll('.stat-item');
+  if (!items.length) return;
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = Array.from(items).indexOf(e.target);
+        setTimeout(() => e.target.classList.add('visible'), idx * 120);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  items.forEach(i => io.observe(i));
+})();
+
+/* ── 4. Chart — Draw from left on scroll ───────────────────── */
+(function initChartReveal() {
+  const wrap = document.querySelector('.yield-chart-wrap');
+  if (!wrap) return;
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        // Small delay so the section fade-in plays first
+        setTimeout(() => wrap.classList.add('chart-visible'), 200);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  io.observe(wrap);
+})();
+
+/* ── 5. Counter Animation — numbers count up ───────────────── */
+function animateCounter(el, targetStr, duration) {
+  // Parse: handles $, +, %, ~, /mo suffixes
+  const prefix = targetStr.match(/^[+~$]*/)?.[0] || '';
+  const suffix = targetStr.match(/[%\/\w]+$/)?.[0] || '';
+  const numStr  = targetStr.replace(/[^0-9.]/g, '');
+  const target  = parseFloat(numStr);
+  if (isNaN(target)) return;
+
+  const decimals = (numStr.split('.')[1] || '').length;
+  const start  = performance.now();
+
+  function tick(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = target * eased;
+
+    const formatted = current.toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+    el.textContent = prefix + formatted + suffix;
+
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ── 6. Chart KPIs — animate on chart reveal ───────────────── */
+(function initChartKpiCounters() {
+  const kpiRow = document.querySelector('.chart-kpi-row');
+  if (!kpiRow) return;
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const vals = kpiRow.querySelectorAll('.chart-kpi-val');
+        vals.forEach((el, i) => {
+          setTimeout(() => animateCounter(el, el.textContent.trim(), 1200), i * 200 + 400);
+        });
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  io.observe(kpiRow);
+})();
+
+/* ── 7. Calculator Results — animate on first appear ────────── */
+(function initCalcCounters() {
+  const resultsBox = document.querySelector('.calc-results');
+  if (!resultsBox) return;
+
+  let hasAnimated = false;
+
+  // Override calcYield to animate on first trigger
+  const origCalcYield = window.calcYield;
+
+  function runCounters() {
+    const vals = resultsBox.querySelectorAll('.calc-result-value');
+    vals.forEach((el, i) => {
+      const txt = el.textContent.trim();
+      setTimeout(() => animateCounter(el, txt, 900), i * 120);
+    });
+  }
+
+  // Hook into IntersectionObserver for first appearance
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !hasAnimated) {
+        hasAnimated = true;
+        // Small delay for the scale-in animation to complete
+        setTimeout(runCounters, 350);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  io.observe(resultsBox);
+
+  // Also animate on each manual recalculation after first reveal
+  window.calcYieldAnimated = function() {
+    calcYield();
+    if (hasAnimated) setTimeout(runCounters, 50);
+  };
+
+  // Replace input/select handlers to use animated version
+  document.querySelectorAll('#calcCapital, #calcPeriod, #calcApy').forEach(el => {
+    const evtName = el.tagName === 'SELECT' ? 'change' : 'input';
+    el.removeAttribute('oninput');
+    el.removeAttribute('onchange');
+    el.addEventListener(evtName, window.calcYieldAnimated);
+  });
+})();
+
+/* ── 8. Gauge circles — animate on scroll ──────────────────── */
+(function initGauges() {
+  const fills = document.querySelectorAll('.gauge-fill');
+  if (!fills.length) return;
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        // Reset then animate: briefly set offset to full dasharray, then to target
+        const el = e.target;
+        const dashArr = parseFloat(getComputedStyle(el).getPropertyValue('--dash') || el.style.getPropertyValue('--dash'));
+        const targetOffset = parseFloat(getComputedStyle(el).getPropertyValue('--offset') || el.style.getPropertyValue('--offset'));
+        if (!isNaN(dashArr)) {
+          el.style.strokeDashoffset = dashArr;
+          requestAnimationFrame(() => {
+            setTimeout(() => { el.style.strokeDashoffset = targetOffset; }, 100);
+          });
+        }
+        io.unobserve(el);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  fills.forEach(f => io.observe(f));
+})();
+
 </script>
 </body>
 </html>
