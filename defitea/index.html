@@ -46,7 +46,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://api.coingecko.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
         * {
@@ -130,95 +130,73 @@
 
         /* Hero */
         .hero {
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
+            align-items: center;
+            justify-content: center;
             position: relative;
             overflow: hidden;
-            padding: 0 3rem 5rem;
         }
 
         .hero-bg {
             position: absolute;
             inset: 0;
-            background: radial-gradient(ellipse at 20% 80%, rgba(16, 185, 129, 0.07) 0%, transparent 60%);
+            background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+            opacity: 0.4;
         }
 
         .hero-content {
-            max-width: 1400px;
-            width: 100%;
-            margin: 0 auto;
+            text-align: center;
             z-index: 1;
         }
 
         .hero-label {
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.22em;
+            letter-spacing: 0.3em;
             color: var(--text-muted);
-            margin-bottom: 2.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .hero-label::before {
-            content: '';
-            display: block;
-            width: 20px;
-            height: 1px;
-            background: var(--accent-primary);
+            margin-bottom: 2rem;
+            font-weight: 500;
         }
 
         .hero h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(5rem, 13vw, 11rem);
-            font-weight: 300;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(4rem, 12vw, 10rem);
+            font-weight: 400;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.03em;
-            line-height: 0.88;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            line-height: 0.9;
         }
 
         .hero-subtitle {
-            font-size: 0.65rem;
+            font-size: clamp(1rem, 2vw, 1.25rem);
             text-transform: uppercase;
-            letter-spacing: 0.25em;
-            color: var(--text-muted);
+            letter-spacing: 0.3em;
+            color: var(--accent-primary);
             margin-bottom: 3rem;
-            opacity: 0.5;
-        }
-
-        .hero-divider {
-            height: 1px;
-            background: rgba(255,255,255,0.07);
-            margin-bottom: 2rem;
-        }
-
-        .hero-bottom {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 3rem;
-            align-items: end;
+            font-weight: 600;
         }
 
         .engine-status {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 3rem;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
-            color: var(--text-muted);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
 
         .status-dots {
             display: flex;
-            gap: 4px;
+            gap: 0.5rem;
         }
 
         .status-dot {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: var(--accent-primary);
             animation: pulse 2s ease-in-out infinite;
@@ -234,27 +212,25 @@
 
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
+            50% { opacity: 0.5; transform: scale(0.9); }
         }
 
         .hero-metrics {
             display: flex;
-            gap: 3rem;
-            align-items: flex-end;
+            gap: 4rem;
+            justify-content: center;
             font-family: 'JetBrains Mono', monospace;
         }
 
         .hero-metric {
-            text-align: right;
+            text-align: center;
         }
 
         .hero-metric-value {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(2rem, 4vw, 3.2rem);
-            font-weight: 300;
+            font-size: 3rem;
+            font-weight: 600;
             color: var(--text-primary);
-            line-height: 1;
-            letter-spacing: -0.02em;
+            margin-bottom: 0.25rem;
         }
 
         .hero-metric-value.green {
@@ -262,11 +238,10 @@
         }
 
         .hero-metric-label {
-            font-size: 0.6rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.15em;
             color: var(--text-muted);
-            margin-top: 0.3rem;
         }
 
         .scroll-line {
@@ -276,7 +251,7 @@
             transform: translateX(-50%);
             width: 1px;
             height: 40px;
-            background: linear-gradient(to bottom, rgba(16,185,129,0.5), transparent);
+            background: linear-gradient(to bottom, var(--accent-primary), transparent);
             animation: scrollPulse 2s ease-in-out infinite;
         }
 
@@ -810,46 +785,12 @@
 
             .hero {
                 min-height: 100vh;
-                padding: 5rem 1.5rem 2.5rem;
-                justify-content: flex-end;
-            }
-            .hero h1 {
-                font-size: clamp(4.5rem, 18vw, 7rem);
-                margin-bottom: 0.3rem;
-            }
-            .hero-label {
-                font-size: 0.62rem;
-                margin-bottom: 1.5rem;
-            }
-            .hero-subtitle {
-                font-size: 0.6rem;
-                margin-bottom: 1.5rem;
-            }
-            .hero-divider { margin-bottom: 1.25rem; }
-            .engine-status {
-                font-size: 0.65rem;
-            }
-            .hero-metric-value {
-                font-size: clamp(1.6rem, 7vw, 2.2rem) !important;
-            }
-            .hero-metric-label {
-                font-size: 0.58rem;
+                padding: 8rem 2rem;
             }
 
             .hero-metrics {
-                flex-direction: row;
-                gap: 1.5rem;
-                align-items: flex-end;
-            }
-            .hero-metric {
-                text-align: right;
-            }
-            .hero-metric-value {
-                font-size: clamp(1.4rem, 5vw, 2rem);
-            }
-            .hero-bottom {
-                grid-template-columns: 1fr;
-                gap: 1.25rem;
+                flex-direction: column;
+                gap: 2rem;
             }
 
             .scroll-line {
@@ -1086,109 +1027,6 @@
             .chart-kpi-row { gap: 1.5rem; margin-top: 1.5rem; }
             .chart-kpi-val { font-size: 1.15rem; }
         }
-
-        /* ── Holdings Breakdown ────────────────────────────── */
-        .holdings-section {
-            padding: 5rem 0;
-            border-top: 1px solid var(--border);
-        }
-        .holdings-section .section-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-        .holdings-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.8rem, 3vw, 2.4rem);
-            font-weight: 400;
-            color: var(--text-primary);
-            margin-bottom: 0.4rem;
-            letter-spacing: -0.02em;
-        }
-        .holdings-sub {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            letter-spacing: 0.05em;
-            margin-bottom: 2.5rem;
-        }
-        .holdings-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .holdings-table thead tr {
-            border-bottom: 1px solid var(--border);
-        }
-        .holdings-table th {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            padding: 0 0 0.75rem;
-            text-align: left;
-            font-weight: 400;
-        }
-        .holdings-table th:last-child,
-        .holdings-table th:nth-child(3) { text-align: right; }
-        .holdings-table tbody tr {
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            transition: background 0.15s;
-        }
-        .holdings-table tbody tr:hover { background: rgba(255,255,255,0.02); }
-        .holdings-table td {
-            padding: 1rem 0;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            vertical-align: middle;
-        }
-        .ht-name { color: var(--text-primary); font-weight: 500; }
-        .ht-chain {
-            font-size: 0.6rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            display: block;
-            margin-top: 2px;
-        }
-        .ht-amount { color: var(--text-secondary); }
-        .ht-price { text-align: right; }
-        .ht-value {
-            text-align: right;
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-        .ht-badge {
-            display: inline-block;
-            font-size: 0.55rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            padding: 2px 6px;
-            border-radius: 2px;
-            margin-left: 6px;
-            vertical-align: middle;
-        }
-        .ht-badge.live {
-            background: rgba(16,185,129,0.12);
-            color: var(--accent-primary);
-            border: 1px solid rgba(16,185,129,0.25);
-        }
-        .ht-badge.fixed {
-            background: rgba(255,255,255,0.05);
-            color: var(--text-muted);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .holdings-total-row td {
-            padding-top: 1.2rem;
-            border-top: 1px solid var(--border);
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-        @media (max-width: 640px) {
-            .holdings-table th:nth-child(3),
-            .holdings-table td:nth-child(3) { display: none; }
-            .holdings-table td { font-size: 0.72rem; }
-        }
     </style>
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -1246,30 +1084,29 @@
             <div class="hero-label">Layer 2 — Income Generation</div>
             <h1>Defitea</h1>
             <div class="hero-subtitle">The Engine Room</div>
-            <div class="hero-divider"></div>
-            <div class="hero-bottom">
-                <div class="engine-status">
-                    <div class="status-dots">
-                        <div class="status-dot"></div>
-                        <div class="status-dot"></div>
-                        <div class="status-dot"></div>
-                        <div class="status-dot"></div>
-                        <div class="status-dot"></div>
-                        <div class="status-dot"></div>
-                        <div class="status-dot"></div>
-                        <div class="status-dot"></div>
-                    </div>
-                    <span>8/8 Engines Online</span>
+            
+            <div class="engine-status">
+                <div class="status-dots">
+                    <div class="status-dot"></div>
+                    <div class="status-dot"></div>
+                    <div class="status-dot"></div>
+                    <div class="status-dot"></div>
+                    <div class="status-dot"></div>
+                    <div class="status-dot"></div>
+                    <div class="status-dot"></div>
+                    <div class="status-dot"></div>
                 </div>
-                <div class="hero-metrics">
-                    <div class="hero-metric">
-                        <div class="hero-metric-value" data-tvl="defitea">$2,870</div>
-                        <div class="hero-metric-label">Total Value Locked</div>
-                    </div>
-                    <div class="hero-metric">
-                        <div class="hero-metric-value green" id="defitea-apy-hero">15.2%</div>
-                        <div class="hero-metric-label">Average APY</div>
-                    </div>
+                <span>8/8 ENGINES ONLINE</span>
+            </div>
+
+            <div class="hero-metrics">
+                <div class="hero-metric">
+                    <div class="hero-metric-value" data-tvl="defitea">$2,870</div>
+                    <div class="hero-metric-label">Total Value Locked</div>
+                </div>
+                <div class="hero-metric">
+                    <div class="hero-metric-value green" id="defitea-apy-hero">15.2%</div>
+                    <div class="hero-metric-label">Average APY</div>
                 </div>
             </div>
         </div>
@@ -1496,79 +1333,6 @@
             </div>
         </div>
     </section>
-    <section class="holdings-section sr-section">
-        <div class="section-inner">
-            <h2 class="holdings-title">Portfolio Breakdown</h2>
-            <p class="holdings-sub">Live token prices via CoinGecko · Updated every 5 minutes</p>
-            <table class="holdings-table">
-                <thead>
-                    <tr>
-                        <th>Protocol / Token</th>
-                        <th>Amount Held</th>
-                        <th>Price</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><span class="ht-name">Aerodrome <span class="ht-badge live">Live</span></span><span class="ht-chain">Base · veAERO</span></td>
-                        <td class="ht-amount">1,752 AERO</td>
-                        <td class="ht-price" id="ht-aero-price">—</td>
-                        <td class="ht-value" id="ht-aero-val">—</td>
-                    </tr>
-                    <tr>
-                        <td><span class="ht-name">Convex <span class="ht-badge live">Live</span></span><span class="ht-chain">Ethereum · cvxCRV</span></td>
-                        <td class="ht-amount">249 CVX</td>
-                        <td class="ht-price" id="ht-cvx-price">—</td>
-                        <td class="ht-value" id="ht-cvx-val">—</td>
-                    </tr>
-                    <tr>
-                        <td><span class="ht-name">Curve <span class="ht-badge live">Live</span></span><span class="ht-chain">Ethereum · veCRV</span></td>
-                        <td class="ht-amount">1,778 CRV</td>
-                        <td class="ht-price" id="ht-crv-price">—</td>
-                        <td class="ht-value" id="ht-crv-val">—</td>
-                    </tr>
-                    <tr>
-                        <td><span class="ht-name">Pendle <span class="ht-badge live">Live</span></span><span class="ht-chain">Multi-chain · vePENDLE</span></td>
-                        <td class="ht-amount">214 PENDLE</td>
-                        <td class="ht-price" id="ht-pendle-price">—</td>
-                        <td class="ht-value" id="ht-pendle-val">—</td>
-                    </tr>
-                    <tr>
-                        <td><span class="ht-name">f(x) Protocol <span class="ht-badge fixed">Fixed</span></span><span class="ht-chain">Ethereum · FXN</span></td>
-                        <td class="ht-amount">23.51 FXN</td>
-                        <td class="ht-price">—</td>
-                        <td class="ht-value" id="ht-fxn-val">$400</td>
-                    </tr>
-                    <tr>
-                        <td><span class="ht-name">Yield Basis <span class="ht-badge live">Live</span></span><span class="ht-chain">Ethereum · YB</span></td>
-                        <td class="ht-amount">3,041 YB</td>
-                        <td class="ht-price" id="ht-yb-price">—</td>
-                        <td class="ht-value" id="ht-yb-val">—</td>
-                    </tr>
-                    <tr>
-                        <td><span class="ht-name">Frax <span class="ht-badge live">Live</span></span><span class="ht-chain">Ethereum · veFXS</span></td>
-                        <td class="ht-amount">930 FXS</td>
-                        <td class="ht-price" id="ht-fxs-price">—</td>
-                        <td class="ht-value" id="ht-fxs-val">—</td>
-                    </tr>
-                    <tr>
-                        <td><span class="ht-name">Velodrome <span class="ht-badge live">Live</span></span><span class="ht-chain">Optimism · veVELO</span></td>
-                        <td class="ht-amount">12,180 VELO</td>
-                        <td class="ht-price" id="ht-velo-price">—</td>
-                        <td class="ht-value" id="ht-velo-val">—</td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr class="holdings-total-row">
-                        <td colspan="3">Total Portfolio Value</td>
-                        <td class="ht-value" data-tvl="defitea">$2,870</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </section>
-
 
     <section class="yield-chart-section">
         <div class="section-inner">
@@ -1825,55 +1589,6 @@
         </div>
         <div class="footer-note">defitea.eth · Non-custodial</div>
     </footer>
-
-
-/* ══ HOLDINGS TABLE ════════════════════════════════════════ */
-(function() {
-  var HOLDINGS = {
-    'aerodrome-finance':  { amt: 1752,    priceEl: 'ht-aero-price',   valEl: 'ht-aero-val'   },
-    'convex-finance':     { amt: 249,     priceEl: 'ht-cvx-price',    valEl: 'ht-cvx-val'    },
-    'curve-dao-token':    { amt: 1778,    priceEl: 'ht-crv-price',    valEl: 'ht-crv-val'    },
-    'pendle':             { amt: 214,     priceEl: 'ht-pendle-price', valEl: 'ht-pendle-val' },
-    'yield-basis':        { amt: 3041,    priceEl: 'ht-yb-price',     valEl: 'ht-yb-val'     },
-    'frax-share':         { amt: 930,     priceEl: 'ht-fxs-price',    valEl: 'ht-fxs-val'    },
-    'velodrome-finance':  { amt: 12180,   priceEl: 'ht-velo-price',   valEl: 'ht-velo-val'   },
-  };
-  var FXN_FIXED = 400;
-
-  function fmtPrice(n) {
-    if (n >= 1) return '$' + n.toFixed(2);
-    return '$' + n.toFixed(4);
-  }
-  function fmtVal(n) {
-    return '$' + Math.round(n).toLocaleString('en-US');
-  }
-
-  function fetchHoldings() {
-    var ids = Object.keys(HOLDINGS).join(',');
-    var url = 'https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd';
-    fetch(url)
-      .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-      .then(function(prices) {
-        var total = FXN_FIXED;
-        Object.keys(HOLDINGS).forEach(function(id) {
-          var h = HOLDINGS[id];
-          var price = prices[id] ? prices[id].usd : 0;
-          var val = h.amt * price;
-          total += val;
-          var pe = document.getElementById(h.priceEl);
-          var ve = document.getElementById(h.valEl);
-          if (pe) pe.textContent = price ? fmtPrice(price) : '—';
-          if (ve) ve.textContent = val ? fmtVal(val) : '—';
-        });
-        var totalEls = document.querySelectorAll('[data-tvl="defitea"]');
-        totalEls.forEach(function(el) { el.textContent = fmtVal(total); });
-      })
-      .catch(function(e) { console.warn('[Holdings]', e); });
-  }
-
-  fetchHoldings();
-  setInterval(fetchHoldings, 300000);
-})();
 
 </body>
 </html>
