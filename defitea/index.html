@@ -46,7 +46,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://api.coingecko.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
         * {
@@ -130,73 +130,116 @@
 
         /* Hero */
         .hero {
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: flex-end;
             position: relative;
             overflow: hidden;
+            padding: 0 3.5rem 5rem;
         }
 
         .hero-bg {
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
-            opacity: 0.4;
+            background: radial-gradient(ellipse at 15% 85%, rgba(16,185,129,0.07) 0%, transparent 55%);
+        }
+
+        /* Subtle CRT scanlines */
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.025) 2px,
+                rgba(0,0,0,0.025) 4px
+            );
+            pointer-events: none;
+            z-index: 0;
         }
 
         .hero-content {
-            text-align: center;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
             z-index: 1;
+            position: relative;
         }
 
         .hero-label {
-            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 0.3em;
+            letter-spacing: 0.2em;
             color: var(--text-muted);
-            margin-bottom: 2rem;
-            font-weight: 500;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .hero-label::before {
+            content: '';
+            display: block;
+            width: 24px;
+            height: 1px;
+            background: var(--accent-primary);
+            flex-shrink: 0;
         }
 
         .hero h1 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(4rem, 12vw, 10rem);
-            font-weight: 400;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(5.5rem, 13vw, 12rem);
+            font-weight: 300;
             color: var(--text-primary);
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
-            line-height: 0.9;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.03em;
+            line-height: 0.88;
         }
 
         .hero-subtitle {
-            font-size: clamp(1rem, 2vw, 1.25rem);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
             text-transform: uppercase;
-            letter-spacing: 0.3em;
-            color: var(--accent-primary);
+            letter-spacing: 0.28em;
+            color: var(--text-muted);
             margin-bottom: 3rem;
-            font-weight: 600;
+            opacity: 0.45;
+        }
+
+        .hero-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.07);
+            margin-bottom: 2rem;
+        }
+
+        .hero-bottom {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 3rem;
+            align-items: end;
         }
 
         .engine-status {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 3rem;
+            gap: 0.6rem;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
         }
 
         .status-dots {
             display: flex;
-            gap: 0.5rem;
+            gap: 4px;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: var(--accent-primary);
             animation: pulse 2s ease-in-out infinite;
@@ -212,25 +255,33 @@
 
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.9); }
+            50% { opacity: 0.35; transform: scale(0.8); }
         }
 
         .hero-metrics {
             display: flex;
-            gap: 4rem;
-            justify-content: center;
+            gap: 0;
+            align-items: flex-end;
             font-family: 'JetBrains Mono', monospace;
         }
 
         .hero-metric {
-            text-align: center;
+            text-align: right;
+            padding-left: 2.5rem;
+            border-left: 1px solid rgba(255,255,255,0.07);
+        }
+        .hero-metric:first-child {
+            border-left: none;
+            padding-left: 0;
         }
 
         .hero-metric-value {
-            font-size: 3rem;
-            font-weight: 600;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+            font-weight: 300;
             color: var(--text-primary);
-            margin-bottom: 0.25rem;
+            line-height: 1;
+            letter-spacing: -0.02em;
         }
 
         .hero-metric-value.green {
@@ -238,10 +289,13 @@
         }
 
         .hero-metric-label {
-            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
             text-transform: uppercase;
-            letter-spacing: 0.15em;
+            letter-spacing: 0.16em;
             color: var(--text-muted);
+            margin-top: 0.35rem;
+            opacity: 0.7;
         }
 
         .scroll-line {
@@ -785,12 +839,45 @@
 
             .hero {
                 min-height: 100vh;
-                padding: 8rem 2rem;
+                padding: 5rem 1.5rem 3rem;
+                justify-content: flex-end;
+            }
+
+            .hero h1 {
+                font-size: clamp(3.8rem, 17vw, 6rem);
+                margin-bottom: 0.3rem;
+            }
+
+            .hero-label { margin-bottom: 1.75rem; }
+            .hero-subtitle { margin-bottom: 2rem; }
+            .hero-divider { margin-bottom: 1.5rem; }
+
+            .hero-bottom {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
 
             .hero-metrics {
-                flex-direction: column;
-                gap: 2rem;
+                flex-direction: row;
+                gap: 0;
+                align-items: flex-end;
+                justify-content: flex-start;
+            }
+
+            .hero-metric {
+                text-align: left;
+                padding-left: 1.5rem;
+            }
+            .hero-metric:first-child {
+                padding-left: 0;
+            }
+
+            .hero-metric-value {
+                font-size: clamp(2rem, 9vw, 3rem);
+            }
+
+            .hero-metric-label {
+                font-size: 0.55rem;
             }
 
             .scroll-line {
@@ -1082,31 +1169,32 @@
         <div class="hero-bg"></div>
         <div class="hero-content">
             <div class="hero-label">Layer 2 — Income Generation</div>
-            <h1>Defitea</h1>
+            <h1>Defitea Yield Fund</h1>
             <div class="hero-subtitle">The Engine Room</div>
-            
-            <div class="engine-status">
-                <div class="status-dots">
-                    <div class="status-dot"></div>
-                    <div class="status-dot"></div>
-                    <div class="status-dot"></div>
-                    <div class="status-dot"></div>
-                    <div class="status-dot"></div>
-                    <div class="status-dot"></div>
-                    <div class="status-dot"></div>
-                    <div class="status-dot"></div>
+            <div class="hero-divider"></div>
+            <div class="hero-bottom">
+                <div class="engine-status">
+                    <div class="status-dots">
+                        <div class="status-dot"></div>
+                        <div class="status-dot"></div>
+                        <div class="status-dot"></div>
+                        <div class="status-dot"></div>
+                        <div class="status-dot"></div>
+                        <div class="status-dot"></div>
+                        <div class="status-dot"></div>
+                        <div class="status-dot"></div>
+                    </div>
+                    <span>8/8 Engines Online</span>
                 </div>
-                <span>8/8 ENGINES ONLINE</span>
-            </div>
-
-            <div class="hero-metrics">
-                <div class="hero-metric">
-                    <div class="hero-metric-value" data-tvl="defitea">$2,870</div>
-                    <div class="hero-metric-label">Total Value Locked</div>
-                </div>
-                <div class="hero-metric">
-                    <div class="hero-metric-value green" id="defitea-apy-hero">15.2%</div>
-                    <div class="hero-metric-label">Average APY</div>
+                <div class="hero-metrics">
+                    <div class="hero-metric">
+                        <div class="hero-metric-value" data-tvl="defitea">$3,062</div>
+                        <div class="hero-metric-label">Total Value Locked</div>
+                    </div>
+                    <div class="hero-metric">
+                        <div class="hero-metric-value green" id="defitea-apy-hero">14.4%</div>
+                        <div class="hero-metric-label">Average APY</div>
+                    </div>
                 </div>
             </div>
         </div>
