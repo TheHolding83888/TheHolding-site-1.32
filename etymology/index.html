@@ -183,7 +183,7 @@
         .latin-origin.defitea    { border-left-color: var(--accent-green); }
         .latin-origin.singul     { border-left-color: var(--accent-purple); }
         .latin-origin.fructus    { border-left-color: var(--accent-amber); }
-        .latin-origin.monetra    { border-left-color: var(--accent-teal); }
+        .latin-origin.monetra    { border-left-color: var(--text-primary); }
 
         .latin-word {
             font-family: 'Cormorant Garamond', serif;
@@ -273,33 +273,32 @@
 
         .footer-nav {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 2rem 0;
-            flex-wrap: wrap;
-            gap: 1rem;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 2rem 0 2.5rem;
         }
 
         .footer-links {
             display: flex;
-            gap: 2rem;
+            gap: 1.75rem;
             flex-wrap: wrap;
         }
 
         .footer-links a {
-            color: var(--text-tertiary);
+            color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.82rem;
-            letter-spacing: 0.04em;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
             transition: color 0.2s;
         }
         .footer-links a:hover { color: var(--text-primary); }
 
         .footer-tagline {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: var(--text-tertiary);
             letter-spacing: 0.06em;
-            text-align: right;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border);
         }
 
         /* ── SCROLL ANIMATIONS ──────────────────────────────── */
@@ -320,8 +319,11 @@
             .fund-section { padding: 3rem 0; }
             .latin-origin { padding: 1.25rem 1.5rem; }
             .footer-cta { padding: 3rem 0; }
-            .footer-tagline { text-align: left; }
-            .footer-links { gap: 1.25rem; }
+            .footer-links {
+                gap: 1rem 1.5rem;
+                flex-wrap: wrap;
+            }
+            .footer-links a { font-size: 0.875rem; }
         }
     </style>
 </head>
@@ -512,12 +514,12 @@
             <div class="footer-nav fade-in">
                 <div class="footer-links">
                     <a href="/">Home</a>
-                    <a href="/manifesto">Manifesto</a>
                     <a href="/substantia">Substantia</a>
                     <a href="/defitea">Defitea</a>
                     <a href="/singul">Singul</a>
                     <a href="/fructus">Fructus</a>
                     <a href="/monetra">Monetra</a>
+                    <a href="/manifesto">Manifesto</a>
                     <a href="/faq">FAQ</a>
                 </div>
                 <div class="footer-tagline">© 2026 TheHolding.ai</div>
