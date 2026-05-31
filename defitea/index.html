@@ -968,7 +968,7 @@
 
         
         /* ── Yield Chart ─────────────────────────────────────── */
-        .yield-chart-section { padding: 1.2rem 0 4rem; border-top: 1px solid var(--border); }
+        .yield-chart-section { padding: 0.2rem 0 4rem; border-top: 1px solid var(--border); }
         .yield-chart-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
         .chart-heading {
             font-family: 'Cormorant Garamond', serif;
@@ -1711,9 +1711,25 @@
       });
     }
 
-    // Wait for layout then draw
-    requestAnimationFrame(draw);
+    // Draw only when canvas is actually visible and has dimensions
+    function safeDraw() {
+      // Force a reflow read to get real dimensions
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0) {
+        draw();
+      } else {
+        // Canvas not laid out yet — retry after next paint
+        requestAnimationFrame(safeDraw);
+      }
+    }
+
+    // Expose so the reveal observer can trigger it
+    window._drawYieldChart = safeDraw;
+    window._redrawYieldChart = draw;
     window.addEventListener('resize', draw);
+
+    // Initial draw attempt after fonts/layout settle
+    setTimeout(safeDraw, 100);
   })();
 
   /* ══════════════════════════════════════════════════════════
@@ -1831,12 +1847,16 @@
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
-        // Small delay so the section fade-in plays first
-        setTimeout(() => wrap.classList.add('chart-visible'), 200);
+        // First draw the chart (canvas needs real dimensions before clip starts)
+        if (window._drawYieldChart) window._drawYieldChart();
+        // Then start the clip-path reveal after a tiny delay
+        setTimeout(() => {
+          wrap.classList.add('chart-visible');
+        }, 80);
         io.unobserve(e.target);
       }
     });
-  }, { threshold: 0.3 });
+  }, { threshold: 0.15 });
 
   io.observe(wrap);
 })();
@@ -1850,7 +1870,7 @@ function animateCounter(el, targetStr, duration) {
   const target  = parseFloat(numStr);
   if (isNaN(target)) return;
 
-  const decimals = (numStr.split('.')[1] || '').length;
+  const decimals = Math.min((numStr.split('.')[1] || '').length, 2);
   const start  = performance.now();
 
   function tick(now) {
