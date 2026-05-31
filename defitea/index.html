@@ -1743,6 +1743,29 @@ function animateCounter(el, targetStr, dur) {
   requestAnimationFrame(tick);
 }
 
+
+/* ══ CHART KPI COUNTERS ══════════════════════════════════════ */
+(function() {
+  var row = document.querySelector('.chart-kpi-row');
+  if (!row) return;
+  var seen = false;
+  function runCounters() {
+    row.querySelectorAll('.chart-kpi-val').forEach(function(el, i) {
+      setTimeout(function() { animateCounter(el, el.textContent.trim(), 1100); }, i * 180);
+    });
+  }
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting && !seen) {
+        seen = true;
+        setTimeout(runCounters, 300);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  io.observe(row);
+})();
+
 /* ══ 7. CALCULATOR ═══════════════════════════════════════════ */
 function calcYield() {
   var capital = parseFloat(document.getElementById('calcCapital').value) || 0;
