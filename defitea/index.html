@@ -738,7 +738,7 @@
             }
 
             .engine-name {
-                font-size: 1.4rem;
+                font-size: 1.15rem;
                 margin-bottom: 1rem;
             }
 
@@ -854,7 +854,7 @@
             }
 
             .engine-name {
-                font-size: 1.15rem;
+                font-size: 0.95rem;
                 margin-bottom: 0.5rem;
             }
 
@@ -965,10 +965,8 @@
         }
 
 
-
-        
         /* ── Yield Chart ─────────────────────────────────────── */
-        .yield-chart-section { padding: 0.2rem 0 4rem; border-top: 1px solid var(--border); overflow-x: hidden; }
+        .yield-chart-section { padding: 0.2rem 0 4rem; border-top: 1px solid var(--border); }
         .yield-chart-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
         .chart-heading {
             font-family: 'Cormorant Garamond', serif;
@@ -979,7 +977,7 @@
             letter-spacing: -0.02em;
         }
         .chart-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 3rem; letter-spacing: 0.02em; }
-        .yield-chart-wrap { position: relative; height: 220px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
+        .yield-chart-wrap { position: relative; height: 220px; margin-bottom: 1rem; width: 100%; }
         .yield-chart-wrap canvas { display: block; }
         .chart-months { display: flex; justify-content: space-between; padding: 0 2px; font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
         .chart-kpi-row { display: flex; gap: 3rem; margin-top: 2.5rem; }
@@ -988,11 +986,11 @@
         .chart-kpi-lbl { font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
 
         /* ── Calculator ──────────────────────────────────────── */
-        .calculator-section { padding: 3rem 0 4rem; border-top: 1px solid var(--border); overflow-x: hidden; }
+        .calculator-section { padding: 3rem 0 4rem; border-top: 1px solid var(--border); }
         .calculator-section .section-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
         .calc-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 400; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.02em; }
         .calc-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 3rem; letter-spacing: 0.02em; }
-        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; overflow: hidden; }
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
         .calc-inputs { display: flex; flex-direction: column; gap: 1.8rem; }
         .calc-field label { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem; }
         .calc-field input, .calc-field select { width: 100%; background: var(--bg-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.9rem 1.1rem; font-family: 'Space Grotesk', sans-serif; font-size: 1rem; color: var(--text-primary); outline: none; transition: border-color 0.2s; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
@@ -1004,6 +1002,22 @@
         .calc-result-value { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
         .calc-result-value.green { color: #4ade80; }
         .calc-disclaimer { margin-top: 1.2rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; color: var(--text-faint); opacity: 0.6; line-height: 1.6; }
+
+        /* ── Scroll Animations ───────────────────────────────── */
+        .sr-fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1); }
+        .sr-fade-up.visible { opacity: 1; transform: translateY(0); }
+        .sr-scale { opacity: 0; transform: scale(0.96); transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1), transform 0.55s cubic-bezier(0.22,1,0.36,1); }
+        .sr-scale.visible { opacity: 1; transform: scale(1); }
+        .sr-d1 { transition-delay: 0.1s; }
+        .sr-d2 { transition-delay: 0.2s; }
+        .sr-d3 { transition-delay: 0.35s; }
+        .yield-chart-wrap { opacity: 0; transition: opacity 0.4s ease; }
+        .yield-chart-wrap.chart-visible { opacity: 1; }
+        .engine-card { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease, background 0.3s; }
+        .engine-card.visible { opacity: 1; transform: translateY(0); }
+        .stat-item { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+        .stat-item.visible { opacity: 1; transform: translateY(0); }
+
         @media (max-width: 768px) {
             .calc-grid { grid-template-columns: 1fr; gap: 1rem; }
             .calc-inputs { gap: 1rem; }
@@ -1011,80 +1025,11 @@
             .calc-result-row { padding: 0.6rem 0; }
             .calc-result-value { font-size: 0.95rem; }
             .calc-results { padding: 1.2rem 1.4rem; }
-            .calc-heading { margin-bottom: 0.3rem; }
             .calc-sub { margin-bottom: 1.5rem; }
             .yield-chart-section { padding: 1rem 0 3rem; }
             .calculator-section { padding: 2.5rem 0 3rem; }
             .chart-kpi-row { gap: 1.5rem; margin-top: 1.5rem; }
             .chart-kpi-val { font-size: 1.15rem; }
-        }
-
-        /* ── Scroll Reveal Animations ────────────────────────── */
-        .sr-fade-up {
-            opacity: 0;
-            transform: translateY(28px);
-            transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1);
-        }
-        .sr-fade-up.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .sr-fade-left {
-            opacity: 0;
-            transform: translateX(-24px);
-            transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
-        }
-        .sr-fade-left.visible {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        .sr-scale {
-            opacity: 0;
-            transform: scale(0.96);
-            transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1), transform 0.55s cubic-bezier(0.22,1,0.36,1);
-        }
-        .sr-scale.visible {
-            opacity: 1;
-            transform: scale(1);
-        }
-        /* stagger delays */
-        .sr-d1 { transition-delay: 0.1s; }
-        .sr-d2 { transition-delay: 0.2s; }
-        .sr-d3 { transition-delay: 0.3s; }
-        .sr-d4 { transition-delay: 0.45s; }
-
-        /* Chart draw animation — progressive line draw via JS, wrap fades in */
-        .yield-chart-wrap {
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            overflow: hidden;
-        }
-        .yield-chart-wrap.chart-visible {
-            opacity: 1;
-        }
-        /* KPI counters start invisible */
-        .chart-kpi-val, .calc-result-value {
-            display: inline-block;
-        }
-        /* Engine cards stagger */
-        .engine-card {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease, transform 0.5s ease, background 0.3s;
-        }
-        .engine-card.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        /* Performance stats */
-        .stat-item {
-            opacity: 0;
-            transform: translateY(16px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-        .stat-item.visible {
-            opacity: 1;
-            transform: translateY(0);
         }
     </style>
     <!-- Structured Data -->
@@ -1372,7 +1317,7 @@
 
     <section class="performance-section">
         <div class="section-inner">
-            <h2 class="performance-title sr-fade-up">Performance Metrics</h2>
+            <h2 class="performance-title">Performance Metrics</h2>
             
             <div class="philosophy-stats">
                 <div class="stat-item">
@@ -1393,17 +1338,14 @@
         </div>
     </section>
 
-    <!-- ── Yield History Chart ─────────────────────────────── -->
     <section class="yield-chart-section">
         <div class="section-inner">
             <h2 class="chart-heading sr-fade-up">Monthly Performance</h2>
             <p class="chart-sub sr-fade-up sr-d1">Defitea fund yield — % of TVL per month · 2026</p>
-
             <div class="yield-chart-wrap">
                 <canvas id="yieldChart"></canvas>
             </div>
             <div class="chart-months sr-fade-up sr-d2" id="chartMonths"></div>
-
             <div class="chart-kpi-row sr-fade-up sr-d3">
                 <div class="chart-kpi">
                     <span class="chart-kpi-val">+5.99%</span>
@@ -1421,21 +1363,19 @@
         </div>
     </section>
 
-    <!-- ── Yield Calculator ────────────────────────────────── -->
     <section class="calculator-section">
         <div class="section-inner">
             <h2 class="calc-heading sr-fade-up">Yield Calculator</h2>
             <p class="calc-sub sr-fade-up sr-d1">Estimate returns based on Defitea's historical performance</p>
-
             <div class="calc-grid">
-                <div class="calc-inputs sr-fade-left">
+                <div class="calc-inputs sr-fade-up">
                     <div class="calc-field">
                         <label>Capital (USD)</label>
-                        <input type="number" id="calcCapital" value="10000" min="1" oninput="calcYield()">
+                        <input type="number" id="calcCapital" value="10000" min="1">
                     </div>
                     <div class="calc-field">
                         <label>Period</label>
-                        <select id="calcPeriod" onchange="calcYield()">
+                        <select id="calcPeriod">
                             <option value="1">1 month</option>
                             <option value="3">3 months</option>
                             <option value="6">6 months</option>
@@ -1446,18 +1386,17 @@
                     </div>
                     <div class="calc-field">
                         <label>APY assumption</label>
-                        <select id="calcApy" onchange="calcYield()">
+                        <select id="calcApy">
                             <option value="9.36">Conservative — 9.36%</option>
-                            <option value="14.4" selected>Base — 14.4% (current avg)</option>
+                            <option value="14.4" selected>Base — 14.4%</option>
                             <option value="22">Optimistic — 22%</option>
                         </select>
                     </div>
                 </div>
-
                 <div class="calc-results sr-scale sr-d2">
                     <div class="calc-result-row">
                         <span class="calc-result-label">Capital</span>
-                        <span class="calc-result-value" id="res-capital">$10,000</span>
+                        <span class="calc-result-value" id="res-capital">$10,000.00</span>
                     </div>
                     <div class="calc-result-row">
                         <span class="calc-result-label">Yield earned</span>
@@ -1471,7 +1410,7 @@
                         <span class="calc-result-label">Monthly income</span>
                         <span class="calc-result-value green" id="res-monthly">—</span>
                     </div>
-                    <p class="calc-disclaimer">Estimates based on historical Defitea performance. Past yield does not guarantee future results. DeFi positions carry market and protocol risk.</p>
+                    <p class="calc-disclaimer">Estimates based on historical Defitea performance. Past yield does not guarantee future results.</p>
                 </div>
             </div>
         </div>
@@ -1609,395 +1548,282 @@
         <div class="footer-note">defitea.eth · Non-custodial</div>
     </footer>
 
-
+</body>
+</html>
 <script>
-  
-  /* ══════════════════════════════════════════════════════════
-     2. YIELD HISTORY CHART — Canvas line chart
-  ══════════════════════════════════════════════════════════ */
-  (function buildChart() {
-    var DATA = [
-      { month: 'JAN', pct: 1.34 },
-      { month: 'FEB', pct: 1.84 },
-      { month: 'MAR', pct: 1.02 },
-      { month: 'APR', pct: 0.78 },
-      { month: 'MAY', pct: 1.01 },
-    ];
-
-    var canvas = document.getElementById('yieldChart');
-    if (!canvas) return;
-    var ctx = canvas.getContext('2d');
-    var wrap = canvas.parentElement; // .yield-chart-wrap
-
-    // Month labels
-    var monthsEl = document.getElementById('chartMonths');
-    if (monthsEl) {
-      monthsEl.innerHTML = DATA.map(function(d) { return '<span>' + d.month + '</span>'; }).join('');
-    }
-
-    // Render at given progress (0=empty, 1=full)
-    function renderFrame(progress) {
-      var W = wrap.clientWidth || wrap.offsetWidth || 300;
-      var H = 220;
-      if (W <= 10) return;
-
-      var dpr = window.devicePixelRatio || 1;
-      canvas.width  = W * dpr;
-      canvas.height = H * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
-
-      var PAD = { top: 28, right: 16, bottom: 16, left: 38 };
-      var cW = W - PAD.left - PAD.right;
-      var cH = H - PAD.top  - PAD.bottom;
-      var maxV = 1.84; // known max
-
-      var pts = DATA.map(function(d, i) {
-        return {
-          x: PAD.left + i * (cW / (DATA.length - 1)),
-          y: PAD.top + cH - (d.pct / maxV) * cH,
-        };
-      });
-
-      // Grid lines
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.lineWidth = 1;
-      [0, 0.5, 1].forEach(function(t) {
-        var y = PAD.top + cH * (1 - t);
-        ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.font = '9px Space Grotesk, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText((t * maxV).toFixed(2) + '%', PAD.left - 4, y + 3);
-      });
-
-      // Canvas clip: only draw up to clipX (left→right animation)
-      var clipX = PAD.left + cW * progress;
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, 0, clipX + 8, H);
-      ctx.clip();
-
-      // Gradient fill under line
-      var grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
-      grad.addColorStop(0, 'rgba(74,222,128,0.20)');
-      grad.addColorStop(1, 'rgba(74,222,128,0.00)');
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, PAD.top + cH);
-      pts.forEach(function(p) { ctx.lineTo(p.x, p.y); });
-      ctx.lineTo(pts[pts.length - 1].x, PAD.top + cH);
-      ctx.closePath();
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      // Line
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (var i = 1; i < pts.length; i++) {
-        var mid = (pts[i-1].x + pts[i].x) / 2;
-        ctx.bezierCurveTo(mid, pts[i-1].y, mid, pts[i].y, pts[i].x, pts[i].y);
-      }
-      ctx.strokeStyle = '#4ade80';
-      ctx.lineWidth = 2.5;
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-
-      // Dots + value labels
-      for (var j = 0; j < pts.length; j++) {
-        if (pts[j].x > clipX + 6) continue;
-        ctx.beginPath();
-        ctx.arc(pts[j].x, pts[j].y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = '#4ade80'; ctx.fill();
-        ctx.strokeStyle = '#09090a'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = 'rgba(255,255,255,0.75)';
-        ctx.font = '10px Space Grotesk, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('+' + DATA[j].pct.toFixed(2) + '%', pts[j].x, pts[j].y - 10);
-      }
-
-      ctx.restore();
-    }
-
-    // Animate left→right over 1.1s
-    function animateDraw() {
-      var duration = 1100;
-      var startT   = performance.now();
-      function frame(now) {
-        var raw    = (now - startT) / duration;
-        var p      = Math.min(raw, 1);
-        var eased  = 1 - Math.pow(1 - p, 3);
-        renderFrame(eased);
-        if (p < 1) requestAnimationFrame(frame);
-      }
-      requestAnimationFrame(frame);
-    }
-
-    // Called by IntersectionObserver when section scrolls into view
-    function triggerChart() {
-      var W = wrap.clientWidth || wrap.offsetWidth;
-      if (W <= 10) {
-        setTimeout(triggerChart, 60);
-        return;
-      }
-      wrap.classList.add('chart-visible'); // fade in wrap
-      animateDraw();
-    }
-    window._triggerYieldChart = triggerChart;
-
-    // Redraw on resize (full, no animation)
-    window.addEventListener('resize', function() { renderFrame(1); });
-
-    // Initial static draw after layout settles (hidden behind opacity:0)
-    setTimeout(function() { renderFrame(1); }, 200);
-  })();
-
-  /* ══════════════════════════════════════════════════════════
-     3. YIELD CALCULATOR
-  ══════════════════════════════════════════════════════════ */
-  function calcYield() {
-    const capital  = parseFloat(document.getElementById('calcCapital').value) || 0;
-    const months   = parseInt(document.getElementById('calcPeriod').value);
-    const apy      = parseFloat(document.getElementById('calcApy').value) / 100;
-    const mRate    = apy / 12;
-
-    // Compound monthly
-    const total    = capital * Math.pow(1 + mRate, months);
-    const earned   = total - capital;
-    const monthly  = capital * mRate;
-
-    const fmt = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    document.getElementById('res-capital').textContent = fmt(capital);
-    document.getElementById('res-yield').textContent   = '+' + fmt(earned);
-    document.getElementById('res-total').textContent   = fmt(total);
-    document.getElementById('res-monthly').textContent = '~' + fmt(monthly) + '/mo';
-  }
-  calcYield();
-
-  /* ══════════════════════════════════════════════════════════
-     4. APY SYNC — from yield-reports.html
-  ══════════════════════════════════════════════════════════ */
-  (function syncDefiteaAPY() {
-    const TARGETS = ['defitea-apy-hero', 'defitea-apy-stat', 'chart-apy-kpi'];
-    fetch('/yield-reports.html')
-      .then(r => r.ok ? r.text() : Promise.reject(r.status))
-      .then(html => {
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-        let value = null;
-        doc.querySelectorAll('.kpi-card').forEach(card => {
-          const lbl = card.querySelector('.kpi-label');
-          if (lbl && lbl.textContent.trim() === 'Annualized Run Rate') {
-            const v = card.querySelector('.kpi-value');
-            if (v) value = v.textContent.trim();
-          }
-        });
-        if (!value) return;
-        const clean = value.replace(/^~/, '');
-        TARGETS.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.textContent = id === 'chart-apy-kpi' ? value : clean;
-        });
-      })
-      .catch(e => console.warn('[APY Sync]', e));
-  })();
-</script>
-
-<script>
-/* ══════════════════════════════════════════════════════════════
-   DEFITEA — SCROLL ANIMATION SYSTEM
-══════════════════════════════════════════════════════════════ */
-
-/* ── 1. Universal Scroll Reveal ─────────────────────────────── */
-(function initScrollReveal() {
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        io.unobserve(e.target);
-      }
+/* ══ 1. SCROLL REVEAL ════════════════════════════════════════ */
+(function() {
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
     });
   }, { threshold: 0.12 });
-
-  document.querySelectorAll('.sr-fade-up, .sr-fade-left, .sr-scale')
-    .forEach(el => io.observe(el));
+  document.querySelectorAll('.sr-fade-up, .sr-scale').forEach(function(el) { io.observe(el); });
 })();
 
-/* ── 2. Engine Cards — Stagger on scroll ────────────────────── */
-(function initEngineCards() {
-  const cards = document.querySelectorAll('.engine-card');
+/* ══ 2. ENGINE CARDS STAGGER ════════════════════════════════ */
+(function() {
+  var cards = document.querySelectorAll('.engine-card');
   if (!cards.length) return;
-
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
       if (e.isIntersecting) {
-        const idx = Array.from(cards).indexOf(e.target);
-        setTimeout(() => e.target.classList.add('visible'), idx * 80);
+        var idx = Array.prototype.indexOf.call(cards, e.target);
+        setTimeout(function() { e.target.classList.add('visible'); }, idx * 80);
         io.unobserve(e.target);
       }
     });
   }, { threshold: 0.08 });
-
-  cards.forEach(c => io.observe(c));
+  cards.forEach(function(c) { io.observe(c); });
 })();
 
-/* ── 3. Stat Items — Stagger on scroll ──────────────────────── */
-(function initStatItems() {
-  const items = document.querySelectorAll('.stat-item');
+/* ══ 3. STAT ITEMS STAGGER ══════════════════════════════════ */
+(function() {
+  var items = document.querySelectorAll('.stat-item');
   if (!items.length) return;
-
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
       if (e.isIntersecting) {
-        const idx = Array.from(items).indexOf(e.target);
-        setTimeout(() => e.target.classList.add('visible'), idx * 120);
+        var idx = Array.prototype.indexOf.call(items, e.target);
+        setTimeout(function() { e.target.classList.add('visible'); }, idx * 120);
         io.unobserve(e.target);
       }
     });
   }, { threshold: 0.2 });
-
-  items.forEach(i => io.observe(i));
+  items.forEach(function(i) { io.observe(i); });
 })();
 
-/* ── 4. Chart — Draw from left on scroll ───────────────────── */
-(function initChartReveal() {
-  var wrap = document.querySelector('.yield-chart-wrap');
-  if (!wrap) return;
+/* ══ 4. YIELD CHART ═════════════════════════════════════════ */
+(function() {
+  var DATA = [
+    { month: 'JAN', pct: 1.34 },
+    { month: 'FEB', pct: 1.84 },
+    { month: 'MAR', pct: 1.02 },
+    { month: 'APR', pct: 0.78 },
+    { month: 'MAY', pct: 1.01 },
+  ];
+  var canvas = document.getElementById('yieldChart');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var wrap = canvas.parentElement;
 
+  // Month labels
+  var monthsEl = document.getElementById('chartMonths');
+  if (monthsEl) {
+    monthsEl.innerHTML = DATA.map(function(d) { return '<span>' + d.month + '</span>'; }).join('');
+  }
+
+  function renderFrame(progress) {
+    var W = wrap.offsetWidth;
+    var H = 220;
+    if (!W || W < 10) return;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    var T = 28, R = 16, B = 16, L = 38;
+    var cW = W - L - R;
+    var cH = H - T - B;
+    var maxV = 1.84;
+
+    var pts = DATA.map(function(d, i) {
+      return {
+        x: L + i * (cW / (DATA.length - 1)),
+        y: T + cH - (d.pct / maxV) * cH
+      };
+    });
+
+    // Grid
+    [0, 0.5, 1].forEach(function(t) {
+      var y = T + cH * (1 - t);
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(W - R, y); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.font = '9px Space Grotesk,sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText((t * maxV).toFixed(2) + '%', L - 4, y + 3);
+    });
+
+    // Clip left→right
+    var clipX = L + cW * progress;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, clipX + 10, H);
+    ctx.clip();
+
+    // Gradient fill
+    var grad = ctx.createLinearGradient(0, T, 0, T + cH);
+    grad.addColorStop(0, 'rgba(74,222,128,0.20)');
+    grad.addColorStop(1, 'rgba(74,222,128,0.00)');
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, T + cH);
+    pts.forEach(function(p) { ctx.lineTo(p.x, p.y); });
+    ctx.lineTo(pts[pts.length-1].x, T + cH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (var i = 1; i < pts.length; i++) {
+      var mx = (pts[i-1].x + pts[i].x) / 2;
+      ctx.bezierCurveTo(mx, pts[i-1].y, mx, pts[i].y, pts[i].x, pts[i].y);
+    }
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // Dots + labels
+    for (var j = 0; j < pts.length; j++) {
+      if (pts[j].x > clipX + 6) continue;
+      ctx.beginPath();
+      ctx.arc(pts[j].x, pts[j].y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#4ade80'; ctx.fill();
+      ctx.strokeStyle = '#09090a'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.font = '10px Space Grotesk,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('+' + DATA[j].pct.toFixed(2) + '%', pts[j].x, pts[j].y - 10);
+    }
+    ctx.restore();
+  }
+
+  function animateDraw() {
+    var dur = 1100, t0 = performance.now();
+    function frame(now) {
+      var p = Math.min((now - t0) / dur, 1);
+      renderFrame(1 - Math.pow(1 - p, 3));
+      if (p < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // Observe wrap — trigger once it enters viewport
+  var triggered = false;
   var io = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
-      if (e.isIntersecting) {
-        if (window._triggerYieldChart) window._triggerYieldChart();
+      if (e.isIntersecting && !triggered) {
+        triggered = true;
+        wrap.classList.add('chart-visible');
+        animateDraw();
         io.unobserve(e.target);
       }
     });
-  }, { threshold: 0.15 });
-
+  }, { threshold: 0.2 });
   io.observe(wrap);
+
+  // Also draw static version after layout (so it's ready even before scroll)
+  setTimeout(function() { if (!triggered) renderFrame(1); }, 300);
+  window.addEventListener('resize', function() { renderFrame(1); });
 })();
 
-/* ── 5. Counter Animation — numbers count up ───────────────── */
-function animateCounter(el, targetStr, duration) {
-  // Parse: handles $, +, %, ~, /mo suffixes
-  const prefix = targetStr.match(/^[+~$]*/)?.[0] || '';
-  const suffix = targetStr.match(/[%a-zA-Z\/]+$/)?.[0] || '';
-  const numStr  = targetStr.replace(/[^0-9.]/g, '');
-  const target  = parseFloat(numStr);
+/* ══ 5. COUNTER ANIMATION ═══════════════════════════════════ */
+function animateCounter(el, targetStr, dur) {
+  var prefix  = (targetStr.match(/^[+~$]*/) || [''])[0];
+  var suffix  = (targetStr.match(/[%a-zA-Z\/]+$/) || [''])[0];
+  var numStr  = targetStr.replace(/[^0-9.]/g, '');
+  var target  = parseFloat(numStr);
   if (isNaN(target)) return;
-
-  const decimals = Math.min((numStr.split('.')[1] || '').length, 2);
-  const start  = performance.now();
-
+  var dec = Math.min((numStr.split('.')[1] || '').length, 2);
+  var t0  = performance.now();
   function tick(now) {
-    const elapsed = now - start;
-    const progress = Math.min(elapsed / duration, 1);
-    // Ease out cubic
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const current = target * eased;
-
-    const formatted = current.toLocaleString('en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
-    el.textContent = prefix + formatted + suffix;
-
-    if (progress < 1) requestAnimationFrame(tick);
+    var p = Math.min((now - t0) / dur, 1);
+    var v = target * (1 - Math.pow(1 - p, 3));
+    el.textContent = prefix + v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suffix;
+    if (p < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
 }
 
-/* ── 6. Chart KPIs — animate on chart reveal ───────────────── */
-(function initChartKpiCounters() {
-  const kpiRow = document.querySelector('.chart-kpi-row');
-  if (!kpiRow) return;
-
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
+/* ══ 6. CHART KPI COUNTERS ══════════════════════════════════ */
+(function() {
+  var row = document.querySelector('.chart-kpi-row');
+  if (!row) return;
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
       if (e.isIntersecting) {
-        const vals = kpiRow.querySelectorAll('.chart-kpi-val');
-        vals.forEach((el, i) => {
-          setTimeout(() => animateCounter(el, el.textContent.trim(), 1200), i * 200 + 400);
+        row.querySelectorAll('.chart-kpi-val').forEach(function(el, i) {
+          setTimeout(function() { animateCounter(el, el.textContent.trim(), 1200); }, i * 200 + 400);
         });
         io.unobserve(e.target);
       }
     });
   }, { threshold: 0.5 });
-
-  io.observe(kpiRow);
+  io.observe(row);
 })();
 
-/* ── 7. Calculator Results — animate on first appear ────────── */
-(function initCalcCounters() {
-  const resultsBox = document.querySelector('.calc-results');
-  if (!resultsBox) return;
+/* ══ 7. CALCULATOR ═══════════════════════════════════════════ */
+function calcYield() {
+  var capital = parseFloat(document.getElementById('calcCapital').value) || 0;
+  var months  = parseInt(document.getElementById('calcPeriod').value);
+  var apy     = parseFloat(document.getElementById('calcApy').value) / 100;
+  var mRate   = apy / 12;
+  var total   = capital * Math.pow(1 + mRate, months);
+  var earned  = total - capital;
+  var monthly = capital * mRate;
+  var fmt = function(n) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  document.getElementById('res-capital').textContent = fmt(capital);
+  document.getElementById('res-yield').textContent   = '+' + fmt(earned);
+  document.getElementById('res-total').textContent   = fmt(total);
+  document.getElementById('res-monthly').textContent = '~' + fmt(monthly) + '/mo';
+}
+calcYield();
 
-  let hasAnimated = false;
-
-  // Override calcYield to animate on first trigger
-  const origCalcYield = window.calcYield;
-
+(function() {
+  var box = document.querySelector('.calc-results');
+  if (!box) return;
+  var seen = false;
   function runCounters() {
-    const vals = resultsBox.querySelectorAll('.calc-result-value');
-    vals.forEach((el, i) => {
-      const txt = el.textContent.trim();
-      setTimeout(() => animateCounter(el, txt, 900), i * 120);
+    box.querySelectorAll('.calc-result-value').forEach(function(el, i) {
+      setTimeout(function() { animateCounter(el, el.textContent.trim(), 900); }, i * 120);
     });
   }
-
-  // Hook into IntersectionObserver for first appearance
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting && !hasAnimated) {
-        hasAnimated = true;
-        // Small delay for the scale-in animation to complete
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting && !seen) {
+        seen = true;
         setTimeout(runCounters, 350);
         io.unobserve(e.target);
       }
     });
   }, { threshold: 0.4 });
+  io.observe(box);
 
-  io.observe(resultsBox);
-
-  // Also animate on each manual recalculation after first reveal
-  window.calcYieldAnimated = function() {
-    calcYield();
-    if (hasAnimated) setTimeout(runCounters, 50);
-  };
-
-  // Replace input/select handlers to use animated version
-  document.querySelectorAll('#calcCapital, #calcPeriod, #calcApy').forEach(el => {
-    const evtName = el.tagName === 'SELECT' ? 'change' : 'input';
-    el.removeAttribute('oninput');
-    el.removeAttribute('onchange');
-    el.addEventListener(evtName, window.calcYieldAnimated);
+  ['calcCapital','calcPeriod','calcApy'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input',  function() { calcYield(); if (seen) setTimeout(runCounters, 50); });
+    el.addEventListener('change', function() { calcYield(); if (seen) setTimeout(runCounters, 50); });
   });
 })();
 
-/* ── 8. Gauge circles — animate on scroll ──────────────────── */
-(function initGauges() {
-  const fills = document.querySelectorAll('.gauge-fill');
-  if (!fills.length) return;
-
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        // Reset then animate: briefly set offset to full dasharray, then to target
-        const el = e.target;
-        const dashArr = parseFloat(getComputedStyle(el).getPropertyValue('--dash') || el.style.getPropertyValue('--dash'));
-        const targetOffset = parseFloat(getComputedStyle(el).getPropertyValue('--offset') || el.style.getPropertyValue('--offset'));
-        if (!isNaN(dashArr)) {
-          el.style.strokeDashoffset = dashArr;
-          requestAnimationFrame(() => {
-            setTimeout(() => { el.style.strokeDashoffset = targetOffset; }, 100);
-          });
+/* ══ 8. APY SYNC ════════════════════════════════════════════ */
+(function() {
+  var TARGETS = ['defitea-apy-hero', 'defitea-apy-stat', 'chart-apy-kpi'];
+  fetch('/yield-reports.html')
+    .then(function(r) { return r.ok ? r.text() : Promise.reject(r.status); })
+    .then(function(html) {
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      var value = null;
+      doc.querySelectorAll('.kpi-card').forEach(function(card) {
+        var lbl = card.querySelector('.kpi-label');
+        if (lbl && lbl.textContent.trim() === 'Annualized Run Rate') {
+          var v = card.querySelector('.kpi-value');
+          if (v) value = v.textContent.trim();
         }
-        io.unobserve(el);
-      }
-    });
-  }, { threshold: 0.3 });
-
-  fills.forEach(f => io.observe(f));
+      });
+      if (!value) return;
+      var clean = value.replace(/^~/, '');
+      TARGETS.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = id === 'chart-apy-kpi' ? value : clean;
+      });
+    })
+    .catch(function(e) { console.warn('[APY Sync]', e); });
 })();
-
 </script>
-</body>
-</html>
