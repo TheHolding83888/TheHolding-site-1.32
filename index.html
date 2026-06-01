@@ -928,44 +928,47 @@
 
 
         /* ── Two-column pyramid layout ─────────────────────── */
-        /* Allocation section — compact header */
         .allocation-viz .section-title {
-            font-size: clamp(1.75rem, 3.8vw, 2.7rem);
-            margin-bottom: 0.5rem;
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            margin-bottom: 0.4rem;
         }
         .allocation-viz .section-subtitle {
-            font-size: clamp(0.85rem, 2vw, 1rem);
-            margin-bottom: 2.5rem;
+            font-size: clamp(0.82rem, 1.8vw, 0.95rem);
+            margin-bottom: 2rem;
         }
 
         .pyramid-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
+            grid-template-columns: 45% 55%;
+            gap: 3.5rem;
             align-items: start;
         }
         .pyramid-left {}
+
+        /* Each desc row height matches pyramid bar height (~62px + 4px gap).
+           Total pyramid height ≈ 5 * 66px = 330px. Right panel must match. */
         .pyramid-right {
             display: flex;
             flex-direction: column;
             gap: 0;
-            margin-top: -0.5rem;
+            padding-top: 0;
         }
 
-        /* Compact widths for left-column pyramid */
+        /* Pyramid widths inside left column — wider than before */
         .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
-        .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 79%; margin: 0 auto; }
-        .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 60%; margin: 0 auto; }
-        .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 44%; margin: 0 auto; }
-        .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 30%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 83%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 66%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 50%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 34%; margin: 0 auto; }
 
-        /* Right panel — one row per fund */
+        /* Right panel rows — height synced with pyramid bars */
         .pyr-desc-row {
             display: flex;
-            gap: 1.25rem;
-            padding: 1rem 0;
+            gap: 0;
+            padding: 0;
+            height: calc(62px + 4px); /* bar min-height + gap */
             border-bottom: 1px solid var(--border-color);
-            align-items: flex-start;
+            align-items: center;
             opacity: 0;
             transform: translateX(16px);
             transition: opacity 0.55s ease, transform 0.55s ease;
@@ -978,39 +981,39 @@
         .pyr-desc-row:nth-child(4) { transition-delay: 0.6s; }
         .pyr-desc-row:nth-child(5) { transition-delay: 0.75s; }
 
-        .pyr-desc-dot {
-            display: none;
-        }
-        .pyr-desc-body { flex: 1; }
+        .pyr-desc-dot { display: none; }
+        .pyr-desc-body { flex: 1; padding: 0.4rem 0; }
         .pyr-desc-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 400;
             color: var(--text-primary);
             letter-spacing: -0.02em;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
             display: flex;
             align-items: baseline;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            line-height: 1.1;
         }
         .pyr-desc-pct {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 400;
             color: var(--text-tertiary);
             letter-spacing: 0.05em;
         }
         .pyr-desc-text {
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             color: var(--text-secondary);
-            line-height: 1.65;
+            line-height: 1.5;
             font-weight: 300;
         }
 
         @media (max-width: 900px) {
             .pyramid-layout {
                 grid-template-columns: 1fr;
-                gap: 2.5rem;
+                gap: 2rem;
             }
+            .pyr-desc-row { height: auto; padding: 0.75rem 0; }
             .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
             .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 84%; }
             .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 68%; }
@@ -1106,44 +1109,47 @@
 
     
         /* ── Two-column pyramid layout ─────────────────────── */
-        /* Allocation section — compact header */
         .allocation-viz .section-title {
-            font-size: clamp(1.75rem, 3.8vw, 2.7rem);
-            margin-bottom: 0.5rem;
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            margin-bottom: 0.4rem;
         }
         .allocation-viz .section-subtitle {
-            font-size: clamp(0.85rem, 2vw, 1rem);
-            margin-bottom: 2.5rem;
+            font-size: clamp(0.82rem, 1.8vw, 0.95rem);
+            margin-bottom: 2rem;
         }
 
         .pyramid-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
+            grid-template-columns: 45% 55%;
+            gap: 3.5rem;
             align-items: start;
         }
         .pyramid-left {}
+
+        /* Each desc row height matches pyramid bar height (~62px + 4px gap).
+           Total pyramid height ≈ 5 * 66px = 330px. Right panel must match. */
         .pyramid-right {
             display: flex;
             flex-direction: column;
             gap: 0;
-            margin-top: -0.5rem;
+            padding-top: 0;
         }
 
-        /* Compact widths for left-column pyramid */
+        /* Pyramid widths inside left column — wider than before */
         .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
-        .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 79%; margin: 0 auto; }
-        .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 60%; margin: 0 auto; }
-        .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 44%; margin: 0 auto; }
-        .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 30%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 83%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 66%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 50%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 34%; margin: 0 auto; }
 
-        /* Right panel — one row per fund */
+        /* Right panel rows — height synced with pyramid bars */
         .pyr-desc-row {
             display: flex;
-            gap: 1.25rem;
-            padding: 1rem 0;
+            gap: 0;
+            padding: 0;
+            height: calc(62px + 4px); /* bar min-height + gap */
             border-bottom: 1px solid var(--border-color);
-            align-items: flex-start;
+            align-items: center;
             opacity: 0;
             transform: translateX(16px);
             transition: opacity 0.55s ease, transform 0.55s ease;
@@ -1156,39 +1162,39 @@
         .pyr-desc-row:nth-child(4) { transition-delay: 0.6s; }
         .pyr-desc-row:nth-child(5) { transition-delay: 0.75s; }
 
-        .pyr-desc-dot {
-            display: none;
-        }
-        .pyr-desc-body { flex: 1; }
+        .pyr-desc-dot { display: none; }
+        .pyr-desc-body { flex: 1; padding: 0.4rem 0; }
         .pyr-desc-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 400;
             color: var(--text-primary);
             letter-spacing: -0.02em;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
             display: flex;
             align-items: baseline;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            line-height: 1.1;
         }
         .pyr-desc-pct {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 400;
             color: var(--text-tertiary);
             letter-spacing: 0.05em;
         }
         .pyr-desc-text {
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             color: var(--text-secondary);
-            line-height: 1.65;
+            line-height: 1.5;
             font-weight: 300;
         }
 
         @media (max-width: 900px) {
             .pyramid-layout {
                 grid-template-columns: 1fr;
-                gap: 2.5rem;
+                gap: 2rem;
             }
+            .pyr-desc-row { height: auto; padding: 0.75rem 0; }
             .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
             .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 84%; }
             .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 68%; }
@@ -1251,44 +1257,47 @@
 
     
         /* ── Two-column pyramid layout ─────────────────────── */
-        /* Allocation section — compact header */
         .allocation-viz .section-title {
-            font-size: clamp(1.75rem, 3.8vw, 2.7rem);
-            margin-bottom: 0.5rem;
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            margin-bottom: 0.4rem;
         }
         .allocation-viz .section-subtitle {
-            font-size: clamp(0.85rem, 2vw, 1rem);
-            margin-bottom: 2.5rem;
+            font-size: clamp(0.82rem, 1.8vw, 0.95rem);
+            margin-bottom: 2rem;
         }
 
         .pyramid-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
+            grid-template-columns: 45% 55%;
+            gap: 3.5rem;
             align-items: start;
         }
         .pyramid-left {}
+
+        /* Each desc row height matches pyramid bar height (~62px + 4px gap).
+           Total pyramid height ≈ 5 * 66px = 330px. Right panel must match. */
         .pyramid-right {
             display: flex;
             flex-direction: column;
             gap: 0;
-            margin-top: -0.5rem;
+            padding-top: 0;
         }
 
-        /* Compact widths for left-column pyramid */
+        /* Pyramid widths inside left column — wider than before */
         .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
-        .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 79%; margin: 0 auto; }
-        .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 60%; margin: 0 auto; }
-        .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 44%; margin: 0 auto; }
-        .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 30%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 83%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 66%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 50%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 34%; margin: 0 auto; }
 
-        /* Right panel — one row per fund */
+        /* Right panel rows — height synced with pyramid bars */
         .pyr-desc-row {
             display: flex;
-            gap: 1.25rem;
-            padding: 1rem 0;
+            gap: 0;
+            padding: 0;
+            height: calc(62px + 4px); /* bar min-height + gap */
             border-bottom: 1px solid var(--border-color);
-            align-items: flex-start;
+            align-items: center;
             opacity: 0;
             transform: translateX(16px);
             transition: opacity 0.55s ease, transform 0.55s ease;
@@ -1301,39 +1310,39 @@
         .pyr-desc-row:nth-child(4) { transition-delay: 0.6s; }
         .pyr-desc-row:nth-child(5) { transition-delay: 0.75s; }
 
-        .pyr-desc-dot {
-            display: none;
-        }
-        .pyr-desc-body { flex: 1; }
+        .pyr-desc-dot { display: none; }
+        .pyr-desc-body { flex: 1; padding: 0.4rem 0; }
         .pyr-desc-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 400;
             color: var(--text-primary);
             letter-spacing: -0.02em;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
             display: flex;
             align-items: baseline;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            line-height: 1.1;
         }
         .pyr-desc-pct {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 400;
             color: var(--text-tertiary);
             letter-spacing: 0.05em;
         }
         .pyr-desc-text {
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             color: var(--text-secondary);
-            line-height: 1.65;
+            line-height: 1.5;
             font-weight: 300;
         }
 
         @media (max-width: 900px) {
             .pyramid-layout {
                 grid-template-columns: 1fr;
-                gap: 2.5rem;
+                gap: 2rem;
             }
+            .pyr-desc-row { height: auto; padding: 0.75rem 0; }
             .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
             .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 84%; }
             .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 68%; }
