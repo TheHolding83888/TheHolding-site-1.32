@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- TheHolding.ai Website v1.49 - Fructus & Monetra nav + footer links -->
+<!-- TheHolding.ai Website v1.50 - Five-fund pyramid -->
 <html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
@@ -801,7 +801,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.75rem;
+            gap: 6px;
             position: relative;
             z-index: 1;
         }
@@ -809,121 +809,92 @@
         .pyramid-item {
             width: 100%;
             opacity: 0;
-            transform: translateY(40px) scale(0.92);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-            will-change: auto;
+            transform: translateY(24px) scale(0.97);
+            transition: opacity 0.7s ease, transform 0.7s ease;
         }
-
         .pyramid-item.visible {
             opacity: 1;
             transform: translateY(0) scale(1);
-            will-change: auto;
         }
 
-        .pyramid-item[data-allocation="singul"] {
-            transition-delay: 0.2s;
-        }
+        /* Stagger — top (Singul) appears first, base (Substantia) last */
+        .pyramid-item[data-allocation="singul"]     { transition-delay: 0.1s; }
+        .pyramid-item[data-allocation="monetra"]    { transition-delay: 0.25s; }
+        .pyramid-item[data-allocation="fructus"]    { transition-delay: 0.4s; }
+        .pyramid-item[data-allocation="defitea"]    { transition-delay: 0.55s; }
+        .pyramid-item[data-allocation="substantia"] { transition-delay: 0.7s; }
 
-        .pyramid-item[data-allocation="defitea"] {
-            transition-delay: 0.4s;
-        }
-
-        .pyramid-item[data-allocation="substantia"] {
-            transition-delay: 0.6s;
-        }
-
-        /* Elegant pyramid proportions */
-        .pyramid-item[data-allocation="singul"] .pyramid-bar {
-            width: 32%;
-            margin: 0 auto;
-        }
-
-        .pyramid-item[data-allocation="defitea"] .pyramid-bar {
-            width: 62%;
-            margin: 0 auto;
-        }
-
-        .pyramid-item[data-allocation="substantia"] .pyramid-bar {
-            width: 100%;
-        }
+        /* Five-fund widths — base widest, apex narrowest */
+        .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
+        .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 80%; margin: 0 auto; }
+        .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 62%; margin: 0 auto; }
+        .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 47%; margin: 0 auto; }
+        .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 33%; margin: 0 auto; }
 
         .pyramid-bar {
             background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-            border: 1.5px solid rgba(0, 0, 0, 0.08);
-            border-radius: 8px;
-            padding: 1.75rem 2.25rem;
-            min-height: 110px;
+            border: 1.5px solid rgba(0, 0, 0, 0.07);
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            min-height: 100px;
             display: flex;
             align-items: center;
             position: relative;
             overflow: hidden;
-            box-shadow: 
-                0 1px 2px rgba(0, 0, 0, 0.02),
-                0 4px 12px rgba(0, 0, 0, 0.03),
-                0 8px 24px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .pyramid-bar:hover {
+            transform: translateX(3px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04), 0 8px 20px rgba(0,0,0,0.06);
         }
 
-        /* Premium gradient accent bar */
+        /* Colour accent left bar */
         .pyramid-bar::before {
             content: '';
             position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 6px;
+            left: 0; top: 0; bottom: 0;
+            width: 5px;
+            border-radius: 10px 0 0 10px;
             opacity: 0;
             transition: opacity 0.5s ease;
-            box-shadow: 3px 0 12px rgba(0, 0, 0, 0.08);
         }
+        .pyramid-item.visible .pyramid-bar::before { opacity: 1; }
+        .pyramid-item[data-allocation="substantia"] .pyramid-bar::before { background: linear-gradient(180deg, #1a56db, #3b82f6); }
+        .pyramid-item[data-allocation="defitea"]    .pyramid-bar::before { background: linear-gradient(180deg, #10b981, #34d399); }
+        .pyramid-item[data-allocation="fructus"]    .pyramid-bar::before { background: linear-gradient(180deg, #f59e0b, #fcd34d); }
+        .pyramid-item[data-allocation="monetra"]    .pyramid-bar::before { background: linear-gradient(180deg, #111827, #374151); }
+        .pyramid-item[data-allocation="singul"]     .pyramid-bar::before { background: linear-gradient(180deg, #8b5cf6, #a78bfa); }
 
-        .pyramid-item.visible .pyramid-bar::before {
-            opacity: 1;
-        }
 
-        .pyramid-item[data-allocation="singul"] .pyramid-bar::before {
-            background: linear-gradient(180deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%);
-        }
-
-        .pyramid-item[data-allocation="defitea"] .pyramid-bar::before {
-            background: linear-gradient(180deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
-        }
-
-        .pyramid-item[data-allocation="substantia"] .pyramid-bar::before {
-            background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
-        }
 
         .pyramid-content {
             position: relative;
             z-index: 1;
             width: 100%;
+            padding-left: 0.25rem;
         }
 
         .pyramid-header {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            margin-bottom: 1rem;
-            gap: 1.5rem;
+            margin-bottom: 0.85rem;
+            gap: 1rem;
         }
 
         .pyramid-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(2rem, 5vw, 3rem);
+            font-size: clamp(1.6rem, 3.5vw, 2.5rem);
             font-weight: 300;
             color: var(--text-primary);
             letter-spacing: -0.03em;
             line-height: 0.95;
-            position: relative;
-        }
-
-        /* Subtle text shadow for depth */
-        .pyramid-item[data-allocation="substantia"] .pyramid-name {
-            font-weight: 400;
         }
 
         .pyramid-percentage {
             font-family: 'DM Sans', sans-serif;
-            font-size: clamp(1.35rem, 3.5vw, 2.15rem);
+            font-size: clamp(1.1rem, 2.5vw, 1.75rem);
             font-weight: 200;
             color: var(--text-secondary);
             letter-spacing: -0.02em;
@@ -934,24 +905,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 1rem;
+            padding-top: 0.75rem;
             border-top: 1px solid var(--border-color);
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         .pyramid-tvl {
-            font-size: clamp(0.95rem, 2.5vw, 1.3rem);
+            font-size: clamp(0.85rem, 2vw, 1.1rem);
             font-weight: 400;
             color: var(--text-secondary);
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
             font-family: 'DM Sans', sans-serif;
         }
 
         .pyramid-label {
-            font-size: clamp(0.8rem, 2vw, 0.95rem);
+            font-size: clamp(0.65rem, 1.5vw, 0.8rem);
             color: var(--text-tertiary);
             text-transform: uppercase;
-            letter-spacing: 0.15em;
+            letter-spacing: 0.18em;
             font-weight: 600;
         }
 
@@ -994,20 +965,15 @@
                 margin-top: 0.5rem;
             }
 
-            .pyramid-item[data-allocation="singul"] .pyramid-bar {
-                width: 48%;
-            }
-
-            .pyramid-item[data-allocation="defitea"] .pyramid-bar {
-                width: 74%;
-            }
-
-            .pyramid-item[data-allocation="substantia"] .pyramid-bar {
-                width: 100%;
-            }
+            .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
+            .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 86%; margin: 0 auto; }
+            .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 72%; margin: 0 auto; }
+            .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 58%; margin: 0 auto; }
+            .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 44%; margin: 0 auto; }
 
             .pyramid-bar {
-                padding: 1.25rem 1.35rem;
+                padding: 1rem 1.25rem;
+                min-height: 82px;
             }
 
             .pyramid-header {
@@ -2702,7 +2668,6 @@
             }
         }
     </style>
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="f969f142-7fbe-47a2-b971-78c8b59c2ddb"></script>
 </head>
 <body>
     <div class="grain" aria-hidden="true"></div>
@@ -3178,10 +3143,10 @@
     <section class="allocation-viz">
         <div class="container">
             <h2 class="section-title" style="margin-bottom: 1rem;">Capital Allocation Strategy</h2>
-            <p class="section-subtitle" style="margin-bottom: 4rem;">Three-tier architecture engineered for balanced growth</p>
+            <p class="section-subtitle" style="margin-bottom: 4rem;">Five-fund architecture engineered for balanced growth</p>
             
             <div class="allocation-pyramid">
-                <!-- Singul - Top (smallest) -->
+                <!-- Singul — Apex (narrowest, top) -->
                 <div class="pyramid-item" data-allocation="singul">
                     <div class="pyramid-bar">
                         <div class="pyramid-content">
@@ -3190,14 +3155,46 @@
                                 <span class="pyramid-percentage">5%</span>
                             </div>
                             <div class="pyramid-meta">
-                                <span class="pyramid-tvl" data-tvl-viz="singul">$717</span>
+                                <span class="pyramid-tvl" data-tvl-viz="singul">—</span>
                                 <span class="pyramid-label">Venture</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Defitea - Middle -->
+                <!-- Monetra -->
+                <div class="pyramid-item" data-allocation="monetra">
+                    <div class="pyramid-bar">
+                        <div class="pyramid-content">
+                            <div class="pyramid-header">
+                                <span class="pyramid-name">Monetra</span>
+                                <span class="pyramid-percentage">10%</span>
+                            </div>
+                            <div class="pyramid-meta">
+                                <span class="pyramid-tvl" data-tvl-viz="monetra">—</span>
+                                <span class="pyramid-label">Stable</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fructus -->
+                <div class="pyramid-item" data-allocation="fructus">
+                    <div class="pyramid-bar">
+                        <div class="pyramid-content">
+                            <div class="pyramid-header">
+                                <span class="pyramid-name">Fructus</span>
+                                <span class="pyramid-percentage">15%</span>
+                            </div>
+                            <div class="pyramid-meta">
+                                <span class="pyramid-tvl" data-tvl-viz="fructus">—</span>
+                                <span class="pyramid-label">RWA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Defitea -->
                 <div class="pyramid-item" data-allocation="defitea">
                     <div class="pyramid-bar">
                         <div class="pyramid-content">
@@ -3213,13 +3210,13 @@
                     </div>
                 </div>
 
-                <!-- Substantia - Base (largest) -->
+                <!-- Substantia — Base (widest, bottom) -->
                 <div class="pyramid-item" data-allocation="substantia">
                     <div class="pyramid-bar">
                         <div class="pyramid-content">
                             <div class="pyramid-header">
                                 <span class="pyramid-name">Substantia</span>
-                                <span class="pyramid-percentage">75%</span>
+                                <span class="pyramid-percentage">50%</span>
                             </div>
                             <div class="pyramid-meta">
                                 <span class="pyramid-tvl" data-tvl-viz="substantia">$10,763</span>
@@ -3231,8 +3228,8 @@
             </div>
 
             <div class="allocation-footer">
-                <p>Capital allocated with precision—balancing preservation, cash flow, and asymmetric upside.</p>
-                <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.75; line-height: 1.6;">Initial allocation: 75/20/5 across foundation, income, and venture.<br><br>Market moves shift weights over time.<br><br>Rebalancing is deliberate, not reactive—focused on long-term balance over short-term volatility.</p>
+                <p>Five funds. One architecture. Strategic capital deployment across preservation, income, real-world assets, liquidity, and asymmetric upside.</p>
+                <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.75; line-height: 1.6;">Target allocation: 50/20/15/10/5 across five tiers. Market movements shift weights over time. Rebalancing is deliberate, not reactive.</p>
             </div>
         </div>
     </section>
