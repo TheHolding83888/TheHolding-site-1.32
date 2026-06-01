@@ -932,7 +932,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 5rem;
-            align-items: center;
+            align-items: start;
         }
         .pyramid-left {}
         .pyramid-right {
@@ -968,32 +968,28 @@
         .pyr-desc-row:nth-child(5) { transition-delay: 0.75s; }
 
         .pyr-desc-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            margin-top: 0.35rem;
+            display: none;
         }
         .pyr-desc-body { flex: 1; }
         .pyr-desc-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             font-weight: 400;
             color: var(--text-primary);
             letter-spacing: -0.02em;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.25rem;
             display: flex;
             align-items: baseline;
             gap: 0.5rem;
         }
         .pyr-desc-pct {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 400;
             color: var(--text-tertiary);
             letter-spacing: 0.05em;
         }
         .pyr-desc-text {
-            font-size: 0.78rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
             line-height: 1.65;
             font-weight: 300;
@@ -1038,14 +1034,14 @@
             font-weight: 300;
         }
 
-        /* Mobile optimizations - FIT ALL 3 BLOCKS ON SCREEN */
+        /* Mobile optimizations */
         @media (max-width: 768px) {
             .allocation-viz {
                 padding: 2.5rem 1.25rem 2rem 1.25rem;
             }
 
             .allocation-pyramid {
-                gap: 0.75rem;
+                gap: 4px;
                 margin-bottom: 1.5rem;
                 margin-top: 0.5rem;
             }
@@ -1057,9 +1053,13 @@
             .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 44%; margin: 0 auto; }
 
             .pyramid-bar {
-                padding: 0.7rem 1rem;
-                min-height: 60px;
+                padding: 0.55rem 0.85rem;
+                min-height: 50px;
             }
+            .pyramid-name { font-size: clamp(1rem, 3.5vw, 1.3rem) !important; }
+            .pyramid-percentage { font-size: clamp(0.8rem, 2.5vw, 1rem) !important; }
+            .pyramid-tvl { font-size: 0.72rem !important; }
+            .pyramid-label { font-size: 0.58rem !important; }
 
             .pyramid-header {
                 flex-direction: row;
@@ -1099,7 +1099,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 5rem;
-            align-items: center;
+            align-items: start;
         }
         .pyramid-left {}
         .pyramid-right {
@@ -1135,32 +1135,28 @@
         .pyr-desc-row:nth-child(5) { transition-delay: 0.75s; }
 
         .pyr-desc-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            margin-top: 0.35rem;
+            display: none;
         }
         .pyr-desc-body { flex: 1; }
         .pyr-desc-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             font-weight: 400;
             color: var(--text-primary);
             letter-spacing: -0.02em;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.25rem;
             display: flex;
             align-items: baseline;
             gap: 0.5rem;
         }
         .pyr-desc-pct {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 400;
             color: var(--text-tertiary);
             letter-spacing: 0.05em;
         }
         .pyr-desc-text {
-            font-size: 0.78rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
             line-height: 1.65;
             font-weight: 300;
@@ -1237,7 +1233,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 5rem;
-            align-items: center;
+            align-items: start;
         }
         .pyramid-left {}
         .pyramid-right {
@@ -1273,32 +1269,28 @@
         .pyr-desc-row:nth-child(5) { transition-delay: 0.75s; }
 
         .pyr-desc-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            margin-top: 0.35rem;
+            display: none;
         }
         .pyr-desc-body { flex: 1; }
         .pyr-desc-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             font-weight: 400;
             color: var(--text-primary);
             letter-spacing: -0.02em;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.25rem;
             display: flex;
             align-items: baseline;
             gap: 0.5rem;
         }
         .pyr-desc-pct {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 400;
             color: var(--text-tertiary);
             letter-spacing: 0.05em;
         }
         .pyr-desc-text {
-            font-size: 0.78rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
             line-height: 1.65;
             font-weight: 300;
