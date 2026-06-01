@@ -95,44 +95,43 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 100;
-            padding: 1.5rem 2.5rem;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            background: rgba(10,10,10,0.88);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-content {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(10,10,10,0.85);
-            backdrop-filter: blur(24px);
-            border-bottom: 1px solid var(--border);
         }
-
-        .nav-back {
-            color: var(--white-dim);
-            text-decoration: none;
-            font-size: 0.78rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            transition: color 0.3s;
-        }
-        .nav-back:hover { color: var(--white); }
-
-        .nav-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.1rem;
-            font-weight: 400;
-            color: var(--white-dim);
-            letter-spacing: 0.05em;
-        }
-
         .nav-breadcrumb {
-            font-size: 0.78rem;
+            font-size: 0.65rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
             color: var(--white-faint);
-            letter-spacing: 0.08em;
         }
         .nav-breadcrumb a {
             color: var(--white-faint);
             text-decoration: none;
-            transition: color 0.3s;
+            transition: color 0.2s;
         }
-        .nav-breadcrumb a:hover { color: var(--white-dim); }
+        .nav-breadcrumb a:hover { color: var(--white); }
+        .nav-back {
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: var(--white); }
 
         /* ─── HERO ─── */
         .hero {
@@ -1220,8 +1219,7 @@
             .risk-text { font-size: 0.85rem; }
 
             /* Nav mobile */
-            .nav-title { display: none; }
-            .nav-breadcrumb { font-size: 0.72rem; text-align: right; color: var(--white-faint); }
+            .nav-breadcrumb { font-size: 0.65rem; }
 
             /* Strategy table mobile: card-style layout */
             .strategy-table thead { display: none; }
@@ -1295,10 +1293,11 @@
 
     <!-- Nav -->
     <nav class="nav">
-        <a href="/" class="nav-back">← The Holding</a>
-        <div class="nav-title">TheHolding.ai</div>
-        <div class="nav-breadcrumb">
-            <a href="/">theholding.ai</a> / <a href="/monetra">monetra</a>
+        <div class="nav-content">
+            <div class="nav-breadcrumb">
+                <a href="/">theholding.ai</a> / <a href="/monetra">monetra</a>
+            </div>
+            <a href="/" class="nav-back">← Back</a>
         </div>
     </nav>
 
