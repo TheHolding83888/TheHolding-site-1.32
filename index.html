@@ -801,7 +801,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             position: relative;
             z-index: 1;
         }
@@ -835,8 +835,8 @@
             background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
             border: 1.5px solid rgba(0, 0, 0, 0.07);
             border-radius: 10px;
-            padding: 1.5rem 2rem;
-            min-height: 100px;
+            padding: 0.9rem 1.75rem;
+            min-height: 72px;
             display: flex;
             align-items: center;
             position: relative;
@@ -879,13 +879,13 @@
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            margin-bottom: 0.85rem;
+            margin-bottom: 0.6rem;
             gap: 1rem;
         }
 
         .pyramid-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+            font-size: clamp(1.35rem, 2.8vw, 2rem);
             font-weight: 300;
             color: var(--text-primary);
             letter-spacing: -0.03em;
@@ -894,7 +894,7 @@
 
         .pyramid-percentage {
             font-family: 'DM Sans', sans-serif;
-            font-size: clamp(1.1rem, 2.5vw, 1.75rem);
+            font-size: clamp(0.95rem, 2vw, 1.4rem);
             font-weight: 200;
             color: var(--text-secondary);
             letter-spacing: -0.02em;
@@ -905,7 +905,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 0.75rem;
+            padding-top: 0.5rem;
             border-top: 1px solid var(--border-color);
             gap: 1rem;
         }
@@ -926,6 +926,91 @@
             font-weight: 600;
         }
 
+
+        /* ── Two-column pyramid layout ─────────────────────── */
+        .pyramid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+        .pyramid-left {}
+        .pyramid-right {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* Compact widths for left-column pyramid */
+        .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
+        .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 82%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 65%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 50%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 36%; margin: 0 auto; }
+
+        /* Right panel — one row per fund */
+        .pyr-desc-row {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            align-items: flex-start;
+            opacity: 0;
+            transform: translateX(16px);
+            transition: opacity 0.55s ease, transform 0.55s ease;
+        }
+        .pyr-desc-row:first-child { border-top: 1px solid var(--border-color); }
+        .pyr-desc-row.visible { opacity: 1; transform: translateX(0); }
+        .pyr-desc-row:nth-child(1) { transition-delay: 0.15s; }
+        .pyr-desc-row:nth-child(2) { transition-delay: 0.3s; }
+        .pyr-desc-row:nth-child(3) { transition-delay: 0.45s; }
+        .pyr-desc-row:nth-child(4) { transition-delay: 0.6s; }
+        .pyr-desc-row:nth-child(5) { transition-delay: 0.75s; }
+
+        .pyr-desc-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 0.35rem;
+        }
+        .pyr-desc-body { flex: 1; }
+        .pyr-desc-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        .pyr-desc-pct {
+            font-size: 0.72rem;
+            font-weight: 400;
+            color: var(--text-tertiary);
+            letter-spacing: 0.05em;
+        }
+        .pyr-desc-text {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            font-weight: 300;
+        }
+
+        @media (max-width: 900px) {
+            .pyramid-layout {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+            }
+            .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
+            .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 84%; }
+            .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 68%; }
+            .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 54%; }
+            .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 40%; }
+            .pyr-desc-row { padding: 0.85rem 0; }
+        }
         .allocation-footer {
             max-width: 950px;
             margin: 1.5rem auto 0 auto;
@@ -972,8 +1057,8 @@
             .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 44%; margin: 0 auto; }
 
             .pyramid-bar {
-                padding: 1rem 1.25rem;
-                min-height: 82px;
+                padding: 0.7rem 1rem;
+                min-height: 60px;
             }
 
             .pyramid-header {
@@ -1008,7 +1093,92 @@
                 flex: 0 0 auto;
             }
 
-            .allocation-footer {
+    
+        /* ── Two-column pyramid layout ─────────────────────── */
+        .pyramid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+        .pyramid-left {}
+        .pyramid-right {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* Compact widths for left-column pyramid */
+        .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
+        .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 82%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 65%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 50%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 36%; margin: 0 auto; }
+
+        /* Right panel — one row per fund */
+        .pyr-desc-row {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            align-items: flex-start;
+            opacity: 0;
+            transform: translateX(16px);
+            transition: opacity 0.55s ease, transform 0.55s ease;
+        }
+        .pyr-desc-row:first-child { border-top: 1px solid var(--border-color); }
+        .pyr-desc-row.visible { opacity: 1; transform: translateX(0); }
+        .pyr-desc-row:nth-child(1) { transition-delay: 0.15s; }
+        .pyr-desc-row:nth-child(2) { transition-delay: 0.3s; }
+        .pyr-desc-row:nth-child(3) { transition-delay: 0.45s; }
+        .pyr-desc-row:nth-child(4) { transition-delay: 0.6s; }
+        .pyr-desc-row:nth-child(5) { transition-delay: 0.75s; }
+
+        .pyr-desc-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 0.35rem;
+        }
+        .pyr-desc-body { flex: 1; }
+        .pyr-desc-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        .pyr-desc-pct {
+            font-size: 0.72rem;
+            font-weight: 400;
+            color: var(--text-tertiary);
+            letter-spacing: 0.05em;
+        }
+        .pyr-desc-text {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            font-weight: 300;
+        }
+
+        @media (max-width: 900px) {
+            .pyramid-layout {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+            }
+            .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
+            .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 84%; }
+            .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 68%; }
+            .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 54%; }
+            .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 40%; }
+            .pyr-desc-row { padding: 0.85rem 0; }
+        }
+        .allocation-footer {
                 margin-top: 1rem;
                 padding-top: 2rem;
             }
@@ -1061,7 +1231,92 @@
                 align-items: center;
             }
 
-            .allocation-footer {
+    
+        /* ── Two-column pyramid layout ─────────────────────── */
+        .pyramid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+        .pyramid-left {}
+        .pyramid-right {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* Compact widths for left-column pyramid */
+        .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
+        .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 82%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 65%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 50%; margin: 0 auto; }
+        .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 36%; margin: 0 auto; }
+
+        /* Right panel — one row per fund */
+        .pyr-desc-row {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            align-items: flex-start;
+            opacity: 0;
+            transform: translateX(16px);
+            transition: opacity 0.55s ease, transform 0.55s ease;
+        }
+        .pyr-desc-row:first-child { border-top: 1px solid var(--border-color); }
+        .pyr-desc-row.visible { opacity: 1; transform: translateX(0); }
+        .pyr-desc-row:nth-child(1) { transition-delay: 0.15s; }
+        .pyr-desc-row:nth-child(2) { transition-delay: 0.3s; }
+        .pyr-desc-row:nth-child(3) { transition-delay: 0.45s; }
+        .pyr-desc-row:nth-child(4) { transition-delay: 0.6s; }
+        .pyr-desc-row:nth-child(5) { transition-delay: 0.75s; }
+
+        .pyr-desc-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 0.35rem;
+        }
+        .pyr-desc-body { flex: 1; }
+        .pyr-desc-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        .pyr-desc-pct {
+            font-size: 0.72rem;
+            font-weight: 400;
+            color: var(--text-tertiary);
+            letter-spacing: 0.05em;
+        }
+        .pyr-desc-text {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            font-weight: 300;
+        }
+
+        @media (max-width: 900px) {
+            .pyramid-layout {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+            }
+            .pyramid-layout .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
+            .pyramid-layout .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 84%; }
+            .pyramid-layout .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 68%; }
+            .pyramid-layout .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 54%; }
+            .pyramid-layout .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 40%; }
+            .pyr-desc-row { padding: 0.85rem 0; }
+        }
+        .allocation-footer {
                 padding-top: 1.5rem;
             }
 
@@ -3143,93 +3398,125 @@
     <section class="allocation-viz">
         <div class="container">
             <h2 class="section-title" style="margin-bottom: 1rem;">Capital Allocation Strategy</h2>
-            <p class="section-subtitle" style="margin-bottom: 4rem;">Five-fund architecture engineered for balanced growth</p>
-            
-            <div class="allocation-pyramid">
-                <!-- Singul — Apex (narrowest, top) -->
-                <div class="pyramid-item" data-allocation="singul">
-                    <div class="pyramid-bar">
-                        <div class="pyramid-content">
-                            <div class="pyramid-header">
-                                <span class="pyramid-name">Singul</span>
-                                <span class="pyramid-percentage">5%</span>
+            <p class="section-subtitle" style="margin-bottom: 3.5rem;">Five-fund architecture engineered for balanced growth</p>
+
+            <div class="pyramid-layout">
+
+                <!-- LEFT: Pyramid -->
+                <div class="pyramid-left">
+                    <div class="allocation-pyramid">
+                        <div class="pyramid-item" data-allocation="singul">
+                            <div class="pyramid-bar">
+                                <div class="pyramid-content">
+                                    <div class="pyramid-header">
+                                        <span class="pyramid-name">Singul</span>
+                                        <span class="pyramid-percentage">5%</span>
+                                    </div>
+                                    <div class="pyramid-meta">
+                                        <span class="pyramid-tvl" data-tvl-viz="singul">—</span>
+                                        <span class="pyramid-label">Venture</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="pyramid-meta">
-                                <span class="pyramid-tvl" data-tvl-viz="singul">—</span>
-                                <span class="pyramid-label">Venture</span>
+                        </div>
+                        <div class="pyramid-item" data-allocation="monetra">
+                            <div class="pyramid-bar">
+                                <div class="pyramid-content">
+                                    <div class="pyramid-header">
+                                        <span class="pyramid-name">Monetra</span>
+                                        <span class="pyramid-percentage">10%</span>
+                                    </div>
+                                    <div class="pyramid-meta">
+                                        <span class="pyramid-tvl" data-tvl-viz="monetra">—</span>
+                                        <span class="pyramid-label">Stable</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pyramid-item" data-allocation="fructus">
+                            <div class="pyramid-bar">
+                                <div class="pyramid-content">
+                                    <div class="pyramid-header">
+                                        <span class="pyramid-name">Fructus</span>
+                                        <span class="pyramid-percentage">15%</span>
+                                    </div>
+                                    <div class="pyramid-meta">
+                                        <span class="pyramid-tvl" data-tvl-viz="fructus">—</span>
+                                        <span class="pyramid-label">RWA</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pyramid-item" data-allocation="defitea">
+                            <div class="pyramid-bar">
+                                <div class="pyramid-content">
+                                    <div class="pyramid-header">
+                                        <span class="pyramid-name">Defitea</span>
+                                        <span class="pyramid-percentage">20%</span>
+                                    </div>
+                                    <div class="pyramid-meta">
+                                        <span class="pyramid-tvl" data-tvl-viz="defitea">$2,870</span>
+                                        <span class="pyramid-label">Yield</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pyramid-item" data-allocation="substantia">
+                            <div class="pyramid-bar">
+                                <div class="pyramid-content">
+                                    <div class="pyramid-header">
+                                        <span class="pyramid-name">Substantia</span>
+                                        <span class="pyramid-percentage">50%</span>
+                                    </div>
+                                    <div class="pyramid-meta">
+                                        <span class="pyramid-tvl" data-tvl-viz="substantia">$10,763</span>
+                                        <span class="pyramid-label">Foundation</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Monetra -->
-                <div class="pyramid-item" data-allocation="monetra">
-                    <div class="pyramid-bar">
-                        <div class="pyramid-content">
-                            <div class="pyramid-header">
-                                <span class="pyramid-name">Monetra</span>
-                                <span class="pyramid-percentage">10%</span>
-                            </div>
-                            <div class="pyramid-meta">
-                                <span class="pyramid-tvl" data-tvl-viz="monetra">—</span>
-                                <span class="pyramid-label">Stable</span>
-                            </div>
+                <!-- RIGHT: Descriptions -->
+                <div class="pyramid-right">
+                    <div class="pyr-desc-row">
+                        <div class="pyr-desc-dot" style="background:#8b5cf6"></div>
+                        <div class="pyr-desc-body">
+                            <div class="pyr-desc-name">Singul <span class="pyr-desc-pct">5%</span></div>
+                            <div class="pyr-desc-text">Asymmetric bets on frontier protocols — AI infrastructure, decentralized storage, metaverse primitives. High risk, unlimited horizon.</div>
+                        </div>
+                    </div>
+                    <div class="pyr-desc-row">
+                        <div class="pyr-desc-dot" style="background:#111827"></div>
+                        <div class="pyr-desc-body">
+                            <div class="pyr-desc-name">Monetra <span class="pyr-desc-pct">10%</span></div>
+                            <div class="pyr-desc-text">Permanent liquidity reserve. Stablecoin yield from lending markets and liquidity pools. Operates independently of market direction.</div>
+                        </div>
+                    </div>
+                    <div class="pyr-desc-row">
+                        <div class="pyr-desc-dot" style="background:#f59e0b"></div>
+                        <div class="pyr-desc-body">
+                            <div class="pyr-desc-name">Fructus <span class="pyr-desc-pct">15%</span></div>
+                            <div class="pyr-desc-text">Tokenized real-world assets — real estate, commodities, treasury bills. Income from the physical world, independent of crypto cycles.</div>
+                        </div>
+                    </div>
+                    <div class="pyr-desc-row">
+                        <div class="pyr-desc-dot" style="background:#10b981"></div>
+                        <div class="pyr-desc-body">
+                            <div class="pyr-desc-name">Defitea <span class="pyr-desc-pct">20%</span></div>
+                            <div class="pyr-desc-text">Vote-escrowed governance positions across eight DeFi protocols. Maximum-duration locks. Monthly cash flow from the infrastructure layer.</div>
+                        </div>
+                    </div>
+                    <div class="pyr-desc-row">
+                        <div class="pyr-desc-dot" style="background:#1a56db"></div>
+                        <div class="pyr-desc-body">
+                            <div class="pyr-desc-name">Substantia <span class="pyr-desc-pct">50%</span></div>
+                            <div class="pyr-desc-text">Bitcoin, Ethereum, Gold, Silver. Accumulated every week without exception. The bedrock that persists through every cycle — held for generations.</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Fructus -->
-                <div class="pyramid-item" data-allocation="fructus">
-                    <div class="pyramid-bar">
-                        <div class="pyramid-content">
-                            <div class="pyramid-header">
-                                <span class="pyramid-name">Fructus</span>
-                                <span class="pyramid-percentage">15%</span>
-                            </div>
-                            <div class="pyramid-meta">
-                                <span class="pyramid-tvl" data-tvl-viz="fructus">—</span>
-                                <span class="pyramid-label">RWA</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Defitea -->
-                <div class="pyramid-item" data-allocation="defitea">
-                    <div class="pyramid-bar">
-                        <div class="pyramid-content">
-                            <div class="pyramid-header">
-                                <span class="pyramid-name">Defitea</span>
-                                <span class="pyramid-percentage">20%</span>
-                            </div>
-                            <div class="pyramid-meta">
-                                <span class="pyramid-tvl" data-tvl-viz="defitea">$2,870</span>
-                                <span class="pyramid-label">Yield</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Substantia — Base (widest, bottom) -->
-                <div class="pyramid-item" data-allocation="substantia">
-                    <div class="pyramid-bar">
-                        <div class="pyramid-content">
-                            <div class="pyramid-header">
-                                <span class="pyramid-name">Substantia</span>
-                                <span class="pyramid-percentage">50%</span>
-                            </div>
-                            <div class="pyramid-meta">
-                                <span class="pyramid-tvl" data-tvl-viz="substantia">$10,763</span>
-                                <span class="pyramid-label">Foundation</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="allocation-footer">
-                <p>Five funds. One architecture. Strategic capital deployment across preservation, income, real-world assets, liquidity, and asymmetric upside.</p>
-                <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.75; line-height: 1.6;">Target allocation: 50/20/15/10/5 across five tiers. Market movements shift weights over time. Rebalancing is deliberate, not reactive.</p>
             </div>
         </div>
     </section>
@@ -4172,7 +4459,7 @@
             });
         }, observerOptions);
 
-        document.querySelectorAll('.pyramid-item').forEach(item => {
+        document.querySelectorAll('.pyramid-item, .pyr-desc-row').forEach(item => {
             observer.observe(item);
         });
 
