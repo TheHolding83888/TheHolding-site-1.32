@@ -1053,6 +1053,12 @@
 
         /* Mobile optimizations */
         @media (max-width: 768px) {
+            /* Mobile: hide specific metrics per fund card */
+            .fund-card[data-fund="defitea"]  .fund-metric:last-child,
+            .fund-card[data-fund="singul"]   .fund-metric:last-child,
+            .fund-card[data-fund="fructus"]  .fund-metric:last-child,
+            .fund-card[data-fund="monetra"]  .fund-metric:last-child { display: none; }
+
             .allocation-viz {
                 padding: 2rem 1.25rem 2rem;
             }
@@ -3672,10 +3678,6 @@
                         <div class="fund-metric-value" data-tvl="fructus">—</div>
                     </div>
                     <div class="fund-metric">
-                        <div class="fund-metric-label">Type</div>
-                        <div class="fund-metric-value">RWA</div>
-                    </div>
-                    <div class="fund-metric">
                         <div class="fund-metric-label">Horizon</div>
                         <div class="fund-metric-value">3-7 years</div>
                     </div>
@@ -3778,7 +3780,7 @@
                     </div>
                     <div class="fund-metric">
                         <div class="fund-metric-label">Yield</div>
-                        <div class="fund-metric-value">6-15%</div>
+                        <div class="fund-metric-value">4-12%+</div>
                     </div>
                     <div class="fund-metric">
                         <div class="fund-metric-label">Risk</div>
@@ -5226,7 +5228,7 @@
                 const fructusTVL  = ondoValue + strconValue + dbconValue + copxonValue + cvxonValue + slvonValue + oihonValue;
 
                 // Display Fructus TVL everywhere
-                document.querySelectorAll('[data-tvl-viz="fructus"]').forEach(el => {
+                document.querySelectorAll('[data-tvl="fructus"], [data-tvl-viz="fructus"]').forEach(el => {
                     el.textContent = `$${Math.round(fructusTVL).toLocaleString()}`;
                 });
 
