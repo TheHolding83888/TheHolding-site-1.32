@@ -1057,36 +1057,37 @@
                 padding: 2rem 1.25rem 2rem;
             }
 
-            /* Mobile: single column, hide right panel, compact pyramid */
+            /* Mobile: single column, hide right panel */
             .pyramid-layout {
                 grid-template-columns: 1fr;
                 gap: 0;
             }
             .pyramid-right { display: none; }
 
+            /* Pyramid: centered, max-width so it looks like a real triangle */
             .allocation-pyramid {
-                gap: 3px;
-                margin-bottom: 0;
-                margin-top: 0;
-                max-width: 100%;
+                gap: 4px;
+                margin: 0 auto;
+                max-width: 320px;
             }
 
-            /* Pyramid widths — tighter on mobile */
+            /* All bars relative to 320px base — tight triangle */
             .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
-            .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 84%; margin: 0 auto; }
-            .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 68%; margin: 0 auto; }
-            .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 54%; margin: 0 auto; }
-            .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 38%; margin: 0 auto; }
+            .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 82%; margin: 0 auto; }
+            .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 64%; margin: 0 auto; }
+            .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 48%; margin: 0 auto; }
+            .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 32%; margin: 0 auto; }
 
-            /* Compact bars — no meta row */
+            /* Slim bars — name + % only, no meta, no TVL */
             .pyramid-bar {
-                padding: 0.6rem 1rem;
+                padding: 0.55rem 0.9rem;
                 min-height: 0;
+                border-radius: 6px;
             }
             .pyramid-meta { display: none; }
-            .pyramid-header { margin-bottom: 0; }
-            .pyramid-name { font-size: clamp(1.1rem, 4vw, 1.4rem) !important; }
-            .pyramid-percentage { font-size: clamp(0.85rem, 3vw, 1.05rem) !important; }
+            .pyramid-header { margin-bottom: 0; gap: 0.5rem; }
+            .pyramid-name { font-size: 1rem !important; letter-spacing: -0.02em; }
+            .pyramid-percentage { font-size: 0.82rem !important; }
 
             /* Mobile fund cards below pyramid */
             .mobile-fund-list {
