@@ -2042,6 +2042,119 @@
             max-width: 800px;
             margin: 0 auto;
         }
+        /* ── Architecture & Philosophy ─────────────────────── */
+        .arch-intro {
+            max-width: 680px;
+            margin: 0 auto 3.5rem;
+            text-align: center;
+        }
+        .arch-intro p {
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            color: var(--text-secondary);
+            line-height: 1.85;
+            margin-bottom: 1.25rem;
+        }
+
+        .arch-funds {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            max-width: 800px;
+            margin: 0 auto 3rem;
+        }
+
+        .arch-fund {
+            display: grid;
+            grid-template-columns: 5px 1fr;
+            gap: 0 1.75rem;
+            padding: 1.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .arch-fund:first-child { border-top: 1px solid var(--border-color); }
+        .arch-fund.visible { opacity: 1; transform: translateY(0); }
+        .arch-fund:nth-child(1) { transition-delay: 0.05s; }
+        .arch-fund:nth-child(2) { transition-delay: 0.12s; }
+        .arch-fund:nth-child(3) { transition-delay: 0.19s; }
+        .arch-fund:nth-child(4) { transition-delay: 0.26s; }
+        .arch-fund:nth-child(5) { transition-delay: 0.33s; }
+
+        .arch-fund-line {
+            width: 5px;
+            border-radius: 3px;
+            align-self: stretch;
+        }
+        .arch-fund-body {}
+
+        .arch-fund-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            margin-bottom: 0.35rem;
+        }
+        .arch-fund-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.5rem, 3.5vw, 2rem);
+            font-weight: 400;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .arch-fund-pct {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.06em;
+            font-weight: 500;
+        }
+        .arch-fund-role {
+            font-size: 0.72rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 0.6rem;
+        }
+        .arch-fund-desc {
+            font-size: clamp(0.88rem, 2vw, 0.95rem);
+            color: var(--text-secondary);
+            line-height: 1.75;
+        }
+
+        .arch-closing {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        .arch-closing p {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            color: var(--text-secondary);
+            line-height: 1.85;
+            margin-bottom: 1.1rem;
+        }
+        .arch-closing .arch-final {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            font-weight: 300;
+            font-style: italic;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+            margin-top: 2rem;
+            margin-bottom: 0;
+        }
+
+        /* Scroll reveal for intro/closing */
+        .arch-reveal {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .arch-reveal.visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            .arch-fund { gap: 0 1.25rem; padding: 1.35rem 0; }
+            .arch-fund-name { font-size: clamp(1.3rem, 5vw, 1.6rem); }
+        }
+
 
         .manifesto-content p {
             font-size: clamp(1.05rem, 3vw, 1.125rem);
@@ -3764,17 +3877,75 @@
         <div class="container">
             <div class="manifesto-content">
                 <h2 class="section-title" style="margin-bottom: 3rem;">Architecture & Philosophy</h2>
-                <p>The Holding is built on a single principle: no single allocation can perform across all market conditions.</p>
-                <p>Capital is deployed across five allocations — 50% foundation, 20% yield, 15% real-world assets, 10% stable liquidity, and 5% venture. Each fund has a clearly defined mandate. Together, they form a system designed to perform across every market regime.</p>
-                <p>This structure was refined through years of deploying capital in live markets — through bull runs and bear markets, protocol failures and regulatory pressure, hype cycles and crypto winters. The result is a portfolio designed to preserve capital during market downturns, generate consistent income regardless of conditions, and maintain exposure to asymmetric upside.</p>
-                <p><strong>Substantia (50%)</strong><br>The foundation.<br>Bitcoin, Ethereum, gold, and silver.<br>Accumulated weekly without exception. Assets that have survived every cycle and continue to serve as the foundation of long-term wealth preservation.</p>
-                <p><strong>Defitea (20%)</strong><br>The income engine.<br>Vote-escrowed governance positions across leading DeFi protocols. Maximum-duration locks. Sustainable yield generated from the infrastructure layer of decentralized finance.</p>
-                <p><strong>Fructus (15%)</strong><br>Real-world assets.<br>Tokenized real estate, commodities, and treasury bills. Income streams that remain independent of crypto market cycles.</p>
-                <p><strong>Monetra (10%)</strong><br>The liquidity layer.<br>Stablecoin yield generated through lending markets and liquidity pools. Designed to operate independently of market direction.</p>
-                <p><strong>Singul (5%)</strong><br>Frontier capital.<br>High-conviction exposure to emerging sectors such as AI protocols, decentralized storage, and metaverse infrastructure. A small allocation with asymmetric return potential.</p>
-                <p>No fund replaces another — each fulfills a role the others cannot.</p>
-                <p>Hard assets preserve purchasing power but generate little income. Income-producing strategies may not provide inflation protection. Real-world assets offer diversification beyond crypto markets. Stable liquidity creates flexibility without requiring market exposure. Venture capital captures emerging opportunities but does not provide stability.</p>
-                <p>Only together can they create a system built to endure.</p>
+
+                <div class="arch-intro">
+                    <p class="arch-reveal">The Holding is built on a single principle: no single allocation can perform across all market conditions.</p>
+                    <p class="arch-reveal">Capital deployed across five funds — each with a clearly defined mandate. Together, they form a system designed to perform across every market regime.</p>
+                    <p class="arch-reveal">Refined through years of live capital deployment — through bull runs and bear markets, protocol failures and regulatory pressure, hype cycles and crypto winters.</p>
+                </div>
+
+                <div class="arch-funds">
+                    <div class="arch-fund">
+                        <div class="arch-fund-line" style="background:#1a56db"></div>
+                        <div class="arch-fund-body">
+                            <div class="arch-fund-header">
+                                <span class="arch-fund-name">Substantia</span>
+                                <span class="arch-fund-pct">50%</span>
+                            </div>
+                            <div class="arch-fund-role">Foundation</div>
+                            <div class="arch-fund-desc">Bitcoin, Ethereum, gold, and silver. Accumulated weekly without exception. Assets that have survived every cycle and continue to serve as the foundation of long-term wealth preservation.</div>
+                        </div>
+                    </div>
+                    <div class="arch-fund">
+                        <div class="arch-fund-line" style="background:#10b981"></div>
+                        <div class="arch-fund-body">
+                            <div class="arch-fund-header">
+                                <span class="arch-fund-name">Defitea</span>
+                                <span class="arch-fund-pct">20%</span>
+                            </div>
+                            <div class="arch-fund-role">Income Engine</div>
+                            <div class="arch-fund-desc">Vote-escrowed governance positions across leading DeFi protocols. Maximum-duration locks. Sustainable yield generated from the infrastructure layer of decentralized finance.</div>
+                        </div>
+                    </div>
+                    <div class="arch-fund">
+                        <div class="arch-fund-line" style="background:#f59e0b"></div>
+                        <div class="arch-fund-body">
+                            <div class="arch-fund-header">
+                                <span class="arch-fund-name">Fructus</span>
+                                <span class="arch-fund-pct">15%</span>
+                            </div>
+                            <div class="arch-fund-role">Real-World Assets</div>
+                            <div class="arch-fund-desc">Tokenized real estate, commodities, and treasury bills. Income streams that remain independent of crypto market cycles.</div>
+                        </div>
+                    </div>
+                    <div class="arch-fund">
+                        <div class="arch-fund-line" style="background:#111827"></div>
+                        <div class="arch-fund-body">
+                            <div class="arch-fund-header">
+                                <span class="arch-fund-name">Monetra</span>
+                                <span class="arch-fund-pct">10%</span>
+                            </div>
+                            <div class="arch-fund-role">Liquidity Layer</div>
+                            <div class="arch-fund-desc">Stablecoin yield generated through lending markets and liquidity pools. Designed to operate independently of market direction.</div>
+                        </div>
+                    </div>
+                    <div class="arch-fund">
+                        <div class="arch-fund-line" style="background:#8b5cf6"></div>
+                        <div class="arch-fund-body">
+                            <div class="arch-fund-header">
+                                <span class="arch-fund-name">Singul</span>
+                                <span class="arch-fund-pct">5%</span>
+                            </div>
+                            <div class="arch-fund-role">Frontier Capital</div>
+                            <div class="arch-fund-desc">High-conviction exposure to AI protocols, decentralized storage, and metaverse infrastructure. A small allocation with asymmetric return potential.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arch-closing">
+                    <p class="arch-reveal">No fund replaces another — each fulfills a role the others cannot. Hard assets preserve purchasing power but generate little income. Income-producing strategies may not provide inflation protection. Real-world assets offer diversification beyond crypto markets. Stable liquidity creates flexibility without requiring market exposure. Venture capital captures emerging opportunities but does not provide stability.</p>
+                    <p class="arch-final arch-reveal">Only together can they create a system built to endure.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -4700,7 +4871,7 @@
             });
         }, observerOptions);
 
-        document.querySelectorAll('.pyramid-item, .pyr-desc-row, .mobile-fund-card').forEach(item => {
+        document.querySelectorAll('.pyramid-item, .pyr-desc-row, .mobile-fund-card, .arch-fund, .arch-reveal').forEach(item => {
             observer.observe(item);
         });
 
