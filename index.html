@@ -4494,6 +4494,15 @@
         }
 
         .clone-content {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .clone-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .clone-content-real {
             max-width: 650px;
             margin: 0 auto;
             text-align: center;
@@ -5136,6 +5145,19 @@
             observer.observe(item);
         });
 
+
+
+        // Clone section reveal
+        const cloneObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    cloneObserver.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        const cloneContent = document.querySelector('.clone-content');
+        if (cloneContent) cloneObserver.observe(cloneContent);
 
         // Fund cards — staggered reveal on scroll
         const fundObserver = new IntersectionObserver((entries) => {
