@@ -3563,7 +3563,7 @@
                                         <span class="pyramid-percentage">10%</span>
                                     </div>
                                     <div class="pyramid-meta">
-                                        <span class="pyramid-tvl" data-tvl-viz="monetra">—</span>
+                                        <span class="pyramid-tvl" data-tvl-viz="monetra">$800</span>
                                         <span class="pyramid-label">Stable</span>
                                     </div>
                                 </div>
@@ -3723,7 +3723,7 @@
                     <div class="mfc-body">
                         <div class="mfc-top"><span class="mfc-name">Monetra</span><div class="mfc-right"><span class="mfc-pct">10%</span><span class="mfc-label">Stable</span></div></div>
                         <div class="mfc-desc">Permanent liquidity reserve. Stablecoin yield from lending markets and liquidity pools.</div>
-                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="monetra">—</span><span class="mfc-meta-label">Stable</span></div>
+                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="monetra">$800</span><span class="mfc-meta-label">Stable</span></div>
                     </div>
                 </div>
                 <div class="mobile-fund-card">
@@ -4822,10 +4822,9 @@
                     `$${Math.round(singulTVL).toLocaleString()}`;
                 
                 // Update allocation visualization
-                const singulVizElement = document.querySelector('[data-tvl-viz="singul"]');
-                if (singulVizElement) {
-                    singulVizElement.textContent = `$${Math.round(singulTVL).toLocaleString()}`;
-                }
+                document.querySelectorAll('[data-tvl-viz="singul"]').forEach(el => {
+                    el.textContent = `$${Math.round(singulTVL).toLocaleString()}`;
+                });
                 
                 // Calculate Fructus TVL (not displayed in UI, only for total)
                 const ondoValue   = fructusHoldings.ondo   * (prices['ondo-finance']?.usd || 0);
