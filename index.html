@@ -1098,7 +1098,7 @@
             }
             .mfc-body {
                 flex: 1;
-                padding: 0.55rem 0.75rem;
+                padding: 0.65rem 0.85rem;
             }
             .mfc-top {
                 display: flex;
@@ -1108,15 +1108,15 @@
             }
             .mfc-name {
                 font-family: 'Cormorant Garamond', serif;
-                font-size: clamp(0.85rem, 3.5vw, 1.1rem);
+                font-size: clamp(1rem, 4vw, 1.25rem);
                 font-weight: 400;
                 color: var(--text-primary);
                 letter-spacing: -0.02em;
                 white-space: nowrap;
             }
             .mfc-pct {
-                font-size: clamp(0.65rem, 2.5vw, 0.8rem);
-                color: var(--text-tertiary);
+                font-size: clamp(0.78rem, 3vw, 0.92rem);
+                color: var(--text-secondary);
                 font-weight: 400;
                 white-space: nowrap;
             }
@@ -1140,12 +1140,13 @@
                 margin-top: 0.35rem;
             }
             .mfc-meta .mfc-tvl {
-                font-size: clamp(0.65rem, 2.5vw, 0.78rem);
+                font-size: clamp(0.82rem, 3vw, 0.95rem);
                 color: var(--text-secondary);
+                font-weight: 400;
             }
             .mfc-meta-label {
-                font-size: clamp(0.48rem, 1.8vw, 0.6rem);
-                letter-spacing: 0.14em;
+                font-size: clamp(0.6rem, 2.2vw, 0.72rem);
+                letter-spacing: 0.12em;
                 text-transform: uppercase;
                 color: var(--text-tertiary);
                 font-weight: 600;
@@ -4613,23 +4614,25 @@
 
         // Fructus holdings (not displayed in cards, only for TVL calculation)
         const fructusHoldings = {
-            ondo: 1059,                   // ONDO Finance
-            strcon: 1,                    // STRCon - fixed $100 value
-            dbcon: 3,                     // Invesco DB Commodity Index Tracking Fund - 3 tokens
-            copxon: 2,                    // Global X Copper Miners ETF - 2 tokens (updated)
-            cvxon: 0.5,                   // CVXon - 0.5 tokens
-            slvon: 2                      // SLVon - 2 tokens (updated)
+            ondo: 800,                    // ONDO Finance (dynamic)
+            strcon: 1,                    // STRCon - fixed $100
+            dbcon: 5,                     // DBCon - 5 × $29.2 = $146
+            copxon: 2,                    // COPXon - 2 × $87.5 = $175
+            cvxon: 0.5,                   // CVXon - 0.5 × $200 = $100
+            slvon: 2,                     // SLVon - 2 × $69 = $138
+            oihon: 0.1                    // OIHon - 0.1 × $430 = $43
         };
 
         const FIXED_FXN_VALUE = 400;      // Fixed $400 value for FXN (was $300)
         const FIXED_STRCON_VALUE = 100;   // Fixed $100 value for STRCon
         const FIXED_TON_VALUE = 2800;     // Fixed $2800 total value for 1000 TON
-        const FIXED_DBCON_VALUE = 30;     // Fixed $30 per token for DBCon (3 tokens = $90 total)
+        const FIXED_DBCON_VALUE = 29.2;   // $146 / 5 = $29.2 per token
         const FIXED_COPXON_VALUE = 87.5;  // Fixed $87.5 per token for COPXon (2 tokens = $175 total)
         const FIXED_CVXON_VALUE = 200;    // Fixed $200 per token for CVXon (0.5 tokens = $100 total)
         const FIXED_DIEM_VALUE = 120;     // Fixed $120 total value for DIEM (0.07 tokens)
         const FIXED_MODE_VALUE = 90;      // Fixed $90 total value for MODE (1,000,000 tokens)
-        const FIXED_SLVON_VALUE = 70.5;   // Fixed $70.5 per token for SLVon (2 tokens = $141 total)
+        const FIXED_SLVON_VALUE = 69;     // $138 / 2 = $69 per token
+        const FIXED_OIHON_VALUE = 430;    // $43 / 0.1 = $430 per token
 
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
@@ -4816,15 +4819,21 @@
                 }
                 
                 // Calculate Fructus TVL (not displayed in UI, only for total)
-                const ondoValue = fructusHoldings.ondo * (prices['ondo-finance']?.usd || 0);
-                const strconValue = fructusHoldings.strcon * FIXED_STRCON_VALUE;  // Fixed $100
-                const dbconValue = fructusHoldings.dbcon * FIXED_DBCON_VALUE;      // 3 tokens × $30 = $90
-                const copxonValue = fructusHoldings.copxon * FIXED_COPXON_VALUE;  // Fixed $90
-                const cvxonValue = fructusHoldings.cvxon * FIXED_CVXON_VALUE;      // 0.5 tokens × $200 = $100
-                const slvonValue = fructusHoldings.slvon * FIXED_SLVON_VALUE;      // 0.483 tokens × $68.34 ≈ $33
-                const fructusTVL = ondoValue + strconValue + dbconValue + copxonValue + cvxonValue + slvonValue;
-                
-                // Calculate Total TVL (including Fructus)
+                const ondoValue   = fructusHoldings.ondo   * (prices['ondo-finance']?.usd || 0);
+                const strconValue = fructusHoldings.strcon  * FIXED_STRCON_VALUE;
+                const dbconValue  = fructusHoldings.dbcon   * FIXED_DBCON_VALUE;
+                const copxonValue = fructusHoldings.copxon  * FIXED_COPXON_VALUE;
+                const cvxonValue  = fructusHoldings.cvxon   * FIXED_CVXON_VALUE;
+                const slvonValue  = fructusHoldings.slvon   * FIXED_SLVON_VALUE;
+                const oihonValue  = fructusHoldings.oihon   * FIXED_OIHON_VALUE;
+                const fructusTVL  = ondoValue + strconValue + dbconValue + copxonValue + cvxonValue + slvonValue + oihonValue;
+
+                // Display Fructus TVL everywhere
+                document.querySelectorAll('[data-tvl-viz="fructus"]').forEach(el => {
+                    el.textContent = `$${Math.round(fructusTVL).toLocaleString()}`;
+                });
+
+                // Total TVL
                 const totalTVL = substantiaTVL + defiteaTVL + singulTVL + fructusTVL;
                 
                 document.querySelector('[data-metric="total-capital"]').textContent = 
