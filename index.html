@@ -2218,6 +2218,33 @@
             margin-bottom: 1.5rem;
         }
 
+
+        /* Footer columns reveal */
+        .footer-content {
+            /* base styles preserved */
+        }
+        .footer-column {
+            opacity: 0;
+            transform: translateY(18px);
+            transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .footer-column.visible { opacity: 1; transform: translateY(0); }
+
+        /* Desktop: all columns appear together */
+        @media (min-width: 769px) {
+            .footer-column:nth-child(1) { transition-delay: 0s; }
+            .footer-column:nth-child(2) { transition-delay: 0s; }
+            .footer-column:nth-child(3) { transition-delay: 0s; }
+            .footer-column:nth-child(4) { transition-delay: 0s; }
+        }
+        /* Mobile: stagger one by one */
+        @media (max-width: 768px) {
+            .footer-column:nth-child(1) { transition-delay: 0s; }
+            .footer-column:nth-child(2) { transition-delay: 0.15s; }
+            .footer-column:nth-child(3) { transition-delay: 0.3s; }
+            .footer-column:nth-child(4) { transition-delay: 0.45s; }
+        }
         /* Footer */
         footer {
             padding: 3rem 1.5rem 2rem;
@@ -5153,6 +5180,18 @@
         });
 
 
+
+
+        // Footer columns reveal
+        const footerObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    footerObserver.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+        document.querySelectorAll('.footer-column').forEach(el => footerObserver.observe(el));
 
         // Clone section reveal
         const cloneObserver = new IntersectionObserver((entries) => {
