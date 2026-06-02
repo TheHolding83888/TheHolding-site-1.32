@@ -1057,84 +1057,98 @@
                 padding: 2rem 1.25rem 2rem;
             }
 
-            /* Mobile: single column, hide right panel */
-            .pyramid-layout {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
+            /* Mobile: hide desktop two-column, show pyramid only */
+            .pyramid-layout { grid-template-columns: 1fr; gap: 0; }
             .pyramid-right { display: none; }
 
-            /* Pyramid: centered, max-width so it looks like a real triangle */
-            .allocation-pyramid {
-                gap: 4px;
-                margin: 0 auto;
-                max-width: 320px;
-            }
-
-            /* All bars relative to 320px base — tight triangle */
-            .pyramid-item[data-allocation="substantia"] .pyramid-bar { width: 100%; }
-            .pyramid-item[data-allocation="defitea"]    .pyramid-bar { width: 82%; margin: 0 auto; }
-            .pyramid-item[data-allocation="fructus"]    .pyramid-bar { width: 64%; margin: 0 auto; }
-            .pyramid-item[data-allocation="monetra"]    .pyramid-bar { width: 48%; margin: 0 auto; }
-            .pyramid-item[data-allocation="singul"]     .pyramid-bar { width: 32%; margin: 0 auto; }
-
-            /* Slim bars — name + % only, no meta, no TVL */
-            .pyramid-bar {
-                padding: 0.55rem 0.9rem;
-                min-height: 0;
-                border-radius: 6px;
-            }
-            .pyramid-meta { display: none; }
-            .pyramid-header { margin-bottom: 0; gap: 0.5rem; }
-            .pyramid-name { font-size: 1rem !important; letter-spacing: -0.02em; }
-            .pyramid-percentage { font-size: 0.82rem !important; }
-
-            /* Mobile fund cards below pyramid */
+            /* ── MOBILE PYRAMID ────────────────────────────── */
+            /* Hide desktop pyramid bars, show mobile fund cards as pyramid */
+            .pyramid-left { display: none; }
             .mobile-fund-list {
                 display: flex;
                 flex-direction: column;
-                gap: 0;
-                margin-top: 1.5rem;
-                border-top: 1px solid var(--border-color);
+                align-items: center;
+                gap: 4px;
+                margin: 0 auto;
+                width: 100%;
             }
+            /* Each card = one pyramid layer, width tapers top→bottom reversed
+               HTML order: Singul(top/narrow) → Substantia(bottom/wide) */
             .mobile-fund-card {
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+                background: var(--bg-primary);
+                overflow: hidden;
+                position: relative;
                 display: flex;
-                align-items: flex-start;
-                gap: 0.85rem;
-                padding: 0.85rem 0;
-                border-bottom: 1px solid var(--border-color);
+                align-items: center;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.03);
             }
-            .mobile-fund-card:last-child { border-bottom: none; }
+            /* Pyramid widths — narrow at top (Singul), wide at bottom (Substantia) */
+            .mobile-fund-card:nth-child(1) { width: 36%; }
+            .mobile-fund-card:nth-child(2) { width: 52%; }
+            .mobile-fund-card:nth-child(3) { width: 68%; }
+            .mobile-fund-card:nth-child(4) { width: 84%; }
+            .mobile-fund-card:nth-child(5) { width: 100%; }
+
             .mfc-accent {
-                width: 3px;
+                width: 4px;
                 align-self: stretch;
-                border-radius: 2px;
                 flex-shrink: 0;
             }
-            .mfc-body { flex: 1; }
+            .mfc-body {
+                flex: 1;
+                padding: 0.55rem 0.75rem;
+            }
             .mfc-top {
                 display: flex;
                 justify-content: space-between;
                 align-items: baseline;
-                margin-bottom: 0.2rem;
+                gap: 0.4rem;
             }
             .mfc-name {
                 font-family: 'Cormorant Garamond', serif;
-                font-size: 1.05rem;
+                font-size: clamp(0.85rem, 3.5vw, 1.1rem);
                 font-weight: 400;
                 color: var(--text-primary);
                 letter-spacing: -0.02em;
+                white-space: nowrap;
             }
             .mfc-pct {
-                font-size: 0.75rem;
+                font-size: clamp(0.65rem, 2.5vw, 0.8rem);
                 color: var(--text-tertiary);
                 font-weight: 400;
+                white-space: nowrap;
             }
-            .mfc-desc {
-                font-size: 0.75rem;
+            .mfc-desc { display: none; }
+            .mfc-meta { display: none; }
+            .mfc-right {
+                display: flex;
+                align-items: baseline;
+                gap: 0.3rem;
+                flex-shrink: 0;
+            }
+            .mfc-label {
+                display: none;
+            }
+            .mfc-meta {
+                display: flex !important;
+                justify-content: space-between;
+                align-items: center;
+                padding-top: 0.35rem;
+                border-top: 1px solid var(--border-color);
+                margin-top: 0.35rem;
+            }
+            .mfc-meta .mfc-tvl {
+                font-size: clamp(0.65rem, 2.5vw, 0.78rem);
                 color: var(--text-secondary);
-                line-height: 1.5;
-                font-weight: 300;
+            }
+            .mfc-meta-label {
+                font-size: clamp(0.48rem, 1.8vw, 0.6rem);
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--text-tertiary);
+                font-weight: 600;
             }
 
         /* ── Two-column pyramid layout ─────────────────────── */
@@ -3691,7 +3705,7 @@
                     <div class="mfc-body">
                         <div class="mfc-top"><span class="mfc-name">Singul</span><div class="mfc-right"><span class="mfc-pct">5%</span><span class="mfc-label">Venture</span></div></div>
                         <div class="mfc-desc">Asymmetric bets on frontier protocols — AI infrastructure, decentralized storage, metaverse primitives.</div>
-                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="singul">—</span></div>
+                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="singul">—</span><span class="mfc-meta-label">Venture</span></div>
                     </div>
                 </div>
                 <div class="mobile-fund-card">
@@ -3699,7 +3713,7 @@
                     <div class="mfc-body">
                         <div class="mfc-top"><span class="mfc-name">Monetra</span><div class="mfc-right"><span class="mfc-pct">10%</span><span class="mfc-label">Stable</span></div></div>
                         <div class="mfc-desc">Permanent liquidity reserve. Stablecoin yield from lending markets and liquidity pools.</div>
-                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="monetra">—</span></div>
+                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="monetra">—</span><span class="mfc-meta-label">Stable</span></div>
                     </div>
                 </div>
                 <div class="mobile-fund-card">
@@ -3707,7 +3721,7 @@
                     <div class="mfc-body">
                         <div class="mfc-top"><span class="mfc-name">Fructus</span><div class="mfc-right"><span class="mfc-pct">15%</span><span class="mfc-label">RWA</span></div></div>
                         <div class="mfc-desc">Tokenized real-world assets — real estate, commodities, treasury bills. Income from the physical world.</div>
-                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="fructus">—</span></div>
+                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="fructus">—</span><span class="mfc-meta-label">RWA</span></div>
                     </div>
                 </div>
                 <div class="mobile-fund-card">
@@ -3715,7 +3729,7 @@
                     <div class="mfc-body">
                         <div class="mfc-top"><span class="mfc-name">Defitea</span><div class="mfc-right"><span class="mfc-pct">20%</span><span class="mfc-label">Yield</span></div></div>
                         <div class="mfc-desc">Vote-escrowed governance positions across eight DeFi protocols. Maximum-duration locks. Monthly cash flow.</div>
-                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="defitea">$3,040</span></div>
+                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="defitea">$3,040</span><span class="mfc-meta-label">Yield</span></div>
                     </div>
                 </div>
                 <div class="mobile-fund-card">
@@ -3723,7 +3737,7 @@
                     <div class="mfc-body">
                         <div class="mfc-top"><span class="mfc-name">Substantia</span><div class="mfc-right"><span class="mfc-pct">50%</span><span class="mfc-label">Foundation</span></div></div>
                         <div class="mfc-desc">Bitcoin, Ethereum, Gold, Silver. Accumulated every week without exception. Held for generations.</div>
-                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="substantia">$10,695</span></div>
+                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="substantia">$10,695</span><span class="mfc-meta-label">Foundation</span></div>
                     </div>
                 </div>
             </div>
@@ -4599,25 +4613,23 @@
 
         // Fructus holdings (not displayed in cards, only for TVL calculation)
         const fructusHoldings = {
-            ondo: 800,                    // ONDO Finance (dynamic via CoinGecko)
-            strcon: 1,                    // STRCon - fixed $100
-            dbcon: 5,                     // DBCon - 5 tokens × $29.2 = $146
-            copxon: 2,                    // COPXon - 2 tokens × $87.5 = $175
-            cvxon: 0.5,                   // CVXon - 0.5 tokens × $200 = $100
-            slvon: 2,                     // SLVon - 2 tokens × $69 = $138
-            oihon: 0.1                    // OIHon - 0.1 tokens × $430 = $43
+            ondo: 1059,                   // ONDO Finance
+            strcon: 1,                    // STRCon - fixed $100 value
+            dbcon: 3,                     // Invesco DB Commodity Index Tracking Fund - 3 tokens
+            copxon: 2,                    // Global X Copper Miners ETF - 2 tokens (updated)
+            cvxon: 0.5,                   // CVXon - 0.5 tokens
+            slvon: 2                      // SLVon - 2 tokens (updated)
         };
 
         const FIXED_FXN_VALUE = 400;      // Fixed $400 value for FXN (was $300)
         const FIXED_STRCON_VALUE = 100;   // Fixed $100 value for STRCon
         const FIXED_TON_VALUE = 2800;     // Fixed $2800 total value for 1000 TON
-        const FIXED_DBCON_VALUE = 29.2;   // $146 / 5 tokens = $29.2 per token
+        const FIXED_DBCON_VALUE = 30;     // Fixed $30 per token for DBCon (3 tokens = $90 total)
         const FIXED_COPXON_VALUE = 87.5;  // Fixed $87.5 per token for COPXon (2 tokens = $175 total)
         const FIXED_CVXON_VALUE = 200;    // Fixed $200 per token for CVXon (0.5 tokens = $100 total)
         const FIXED_DIEM_VALUE = 120;     // Fixed $120 total value for DIEM (0.07 tokens)
         const FIXED_MODE_VALUE = 90;      // Fixed $90 total value for MODE (1,000,000 tokens)
-        const FIXED_SLVON_VALUE = 69;     // $138 / 2 tokens = $69 per token
-        const FIXED_OIHON_VALUE = 430;    // $43 / 0.1 tokens = $430 per token
+        const FIXED_SLVON_VALUE = 70.5;   // Fixed $70.5 per token for SLVon (2 tokens = $141 total)
 
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
@@ -4804,21 +4816,15 @@
                 }
                 
                 // Calculate Fructus TVL (not displayed in UI, only for total)
-                const ondoValue   = fructusHoldings.ondo   * (prices['ondo-finance']?.usd || 0);
-                const strconValue = fructusHoldings.strcon  * FIXED_STRCON_VALUE;
-                const dbconValue  = fructusHoldings.dbcon   * FIXED_DBCON_VALUE;
-                const copxonValue = fructusHoldings.copxon  * FIXED_COPXON_VALUE;
-                const cvxonValue  = fructusHoldings.cvxon   * FIXED_CVXON_VALUE;
-                const slvonValue  = fructusHoldings.slvon   * FIXED_SLVON_VALUE;
-                const oihonValue  = fructusHoldings.oihon   * FIXED_OIHON_VALUE;
-                const fructusTVL  = ondoValue + strconValue + dbconValue + copxonValue + cvxonValue + slvonValue + oihonValue;
-
-                // Display Fructus TVL in pyramid
-                document.querySelectorAll('[data-tvl-viz="fructus"]').forEach(el => {
-                    el.textContent = `$${Math.round(fructusTVL).toLocaleString()}`;
-                });
-
-                // Calculate Total TVL
+                const ondoValue = fructusHoldings.ondo * (prices['ondo-finance']?.usd || 0);
+                const strconValue = fructusHoldings.strcon * FIXED_STRCON_VALUE;  // Fixed $100
+                const dbconValue = fructusHoldings.dbcon * FIXED_DBCON_VALUE;      // 3 tokens × $30 = $90
+                const copxonValue = fructusHoldings.copxon * FIXED_COPXON_VALUE;  // Fixed $90
+                const cvxonValue = fructusHoldings.cvxon * FIXED_CVXON_VALUE;      // 0.5 tokens × $200 = $100
+                const slvonValue = fructusHoldings.slvon * FIXED_SLVON_VALUE;      // 0.483 tokens × $68.34 ≈ $33
+                const fructusTVL = ondoValue + strconValue + dbconValue + copxonValue + cvxonValue + slvonValue;
+                
+                // Calculate Total TVL (including Fructus)
                 const totalTVL = substantiaTVL + defiteaTVL + singulTVL + fructusTVL;
                 
                 document.querySelector('[data-metric="total-capital"]').textContent = 
