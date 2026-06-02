@@ -1,0 +1,51 @@
+# TheHolding.ai - Netlify Headers Configuration
+# Updated: June 2, 2026
+
+# These headers apply to all pages
+/*
+  # Security Headers
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+  # Content Security Policy
+  # Added cloud.umami.is for analytics (script-src + connect-src)
+  Content-Security-Policy: default-src 'self' https:; script-src 'self' 'unsafe-inline' https://api.coingecko.com https://cloud.umami.is https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.coingecko.com https://cloud.umami.is;
+
+  # Performance & Caching
+  Cache-Control: public, max-age=3600, must-revalidate
+
+  # CORS
+  Access-Control-Allow-Origin: https://theholding.ai
+  Access-Control-Allow-Methods: GET, OPTIONS
+  Access-Control-Allow-Headers: Content-Type
+
+# HTML files - shorter cache (so updates deploy fast)
+/*.html
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# API responses - no cache
+/api/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Static assets - long cache
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# Sitemap and robots - short cache so updates are picked up fast
+/sitemap.xml
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/robots.txt
+  Cache-Control: public, max-age=86400, must-revalidate
