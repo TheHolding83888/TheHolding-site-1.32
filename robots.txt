@@ -1,5 +1,5 @@
 # TheHolding.ai - robots.txt
-# Updated: April 27, 2026
+# Updated: June 2, 2026
 # Comprehensive crawler configuration with AI/LLM bot support
 
 # ============================================
@@ -46,6 +46,9 @@ Allow: /
 User-agent: ChatGPT-User
 Allow: /
 
+User-agent: OAI-SearchBot
+Allow: /
+
 # Anthropic (Claude)
 User-agent: Claude-Web
 Allow: /
@@ -53,12 +56,18 @@ Allow: /
 User-agent: anthropic-ai
 Allow: /
 
+User-agent: ClaudeBot
+Allow: /
+
 # Perplexity AI
 User-agent: PerplexityBot
 Allow: /
 
-# Google AI (Bard/Gemini)
+# Google AI (Gemini)
 User-agent: Google-Extended
+Allow: /
+
+User-agent: Googlebot-Image
 Allow: /
 
 # Apple Intelligence
@@ -75,6 +84,9 @@ Allow: /
 User-agent: Meta-ExternalAgent
 Allow: /
 
+User-agent: Meta-ExternalFetcher
+Allow: /
+
 # Cohere
 User-agent: cohere-ai
 Allow: /
@@ -83,15 +95,33 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
+# Amazon Alexa / AI
+User-agent: Amazonbot
+Allow: /
+
+# Diffbot
+User-agent: Diffbot
+Allow: /
+
+# You.com
+User-agent: YouBot
+Allow: /
+
+# Mistral AI
+User-agent: MistralBot
+Allow: /
+
+# Bytedance / Doubao
+User-agent: Bytespider
+Allow: /
+
 # ============================================
 # SEO & ANALYTICS TOOLS - Selective Allow
 # ============================================
 
-# Allow Screaming Frog (SEO tool)
 User-agent: Screaming Frog SEO Spider
 Allow: /
 
-# Allow Google PageSpeed
 User-agent: Lighthouse
 Allow: /
 
@@ -99,7 +129,6 @@ Allow: /
 # AGGRESSIVE CRAWLERS - Block
 # ============================================
 
-# SEO competitor analysis tools
 User-agent: AhrefsBot
 Disallow: /
 
@@ -208,9 +237,6 @@ Disallow: /
 User-agent: EirGrabber
 Disallow: /
 
-User-agent: EmailCollector
-Disallow: /
-
 User-agent: Express WebPictures
 Disallow: /
 
@@ -301,9 +327,6 @@ Disallow: /
 User-agent: Octopus
 Disallow: /
 
-User-agent: Offline Explorer
-Disallow: /
-
 User-agent: Offline Navigator
 Disallow: /
 
@@ -358,9 +381,6 @@ Disallow: /
 User-agent: WebAuto
 Disallow: /
 
-User-agent: WebCopier
-Disallow: /
-
 User-agent: WebFetch
 Disallow: /
 
@@ -368,9 +388,6 @@ User-agent: WebGo IS
 Disallow: /
 
 User-agent: WebLeacher
-Disallow: /
-
-User-agent: WebReaper
 Disallow: /
 
 User-agent: WebSauger
@@ -410,10 +427,10 @@ Disallow: /
 # NOTES FOR ADMINISTRATORS
 # ============================================
 # This robots.txt prioritizes:
-# 1. AI/LLM training access (GPT, Claude, Perplexity, etc.)
-# 2. Major search engines (Google, Bing, DuckDuckGo)
+# 1. AI/LLM training access (GPT, Claude, Perplexity, Gemini, etc.)
+# 2. Major search engines (Google, Bing, DuckDuckGo, Yandex)
 # 3. Legitimate SEO tools (Screaming Frog, Lighthouse)
 # 4. Protection against aggressive scrapers & malicious bots
 #
-# Last updated: April 27, 2026
+# Last updated: June 2, 2026
 # Maintained by: TheHolding Team
