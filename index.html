@@ -1476,6 +1476,22 @@
         }
 
         /* Enhanced Fund Cards */
+
+        /* Fund cards scroll reveal */
+        .fund-card {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+        .fund-card.card-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Smooth transition per card */
+        .fund-card[data-fund="substantia"] { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0s; }
+        .fund-card[data-fund="defitea"]    { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0.12s; }
+        .fund-card[data-fund="singul"]     { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0.24s; }
+        .fund-card[data-fund="fructus"]    { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0.36s; }
+        .fund-card[data-fund="monetra"]    { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0.48s; }
         .fund-card {
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease;
             background: var(--bg-primary);
@@ -2552,7 +2568,23 @@
                 font-size: 0.8125rem;
             }
 
-            .fund-card {
+    
+        /* Fund cards scroll reveal */
+        .fund-card {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+        .fund-card.card-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Smooth transition per card */
+        .fund-card[data-fund="substantia"] { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0s; }
+        .fund-card[data-fund="defitea"]    { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0.12s; }
+        .fund-card[data-fund="singul"]     { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0.24s; }
+        .fund-card[data-fund="fructus"]    { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0.36s; }
+        .fund-card[data-fund="monetra"]    { transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease, border-color 0.3s ease; transition-delay: 0.48s; }
+        .fund-card {
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease;
                 margin-bottom: 2.3rem;
             }
@@ -5129,6 +5161,18 @@
         document.querySelectorAll('.pyramid-item, .pyr-desc-row, .mobile-fund-card, .arch-fund, .arch-reveal, .divider, .phil-line').forEach(item => {
             observer.observe(item);
         });
+
+
+        // Fund cards — staggered reveal on scroll
+        const fundObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('card-visible');
+                    fundObserver.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+        document.querySelectorAll('.fund-card').forEach(el => fundObserver.observe(el));
 
         // Philosophy blockquote — triggers earlier
         const philObserver = new IntersectionObserver((entries) => {
