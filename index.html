@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- TheHolding.ai Website v1.51 - Mobile pyramid compact -->
+<!-- TheHolding.ai Website v1.52 - Fructus & Monetra fund cards -->
 <html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
@@ -1581,6 +1581,17 @@
         .fund-card[data-fund="singul"] .fund-name::before {
             background: #8b5cf6; /* Purple rounded square */
         }
+
+        .fund-card[data-fund="fructus"] .fund-name::before {
+            background: #f59e0b; /* Amber rounded square */
+        }
+
+        .fund-card[data-fund="monetra"] .fund-name::before {
+            background: #111827; /* Black rounded square */
+        }
+
+        .fund-card[data-fund="fructus"]:hover .chevron { color: #f59e0b; }
+        .fund-card[data-fund="monetra"]:hover .chevron { color: #374151; }
 
         .fund-badge {
             font-size: clamp(0.75rem, 2vw, 0.875rem);
@@ -3292,7 +3303,7 @@
                 <div class="fund-metrics">
                     <div class="fund-metric">
                         <div class="fund-metric-label">Allocation</div>
-                        <div class="fund-metric-value">75%</div>
+                        <div class="fund-metric-value">50%</div>
                     </div>
                     <div class="fund-metric">
                         <div class="fund-metric-label">TVL</div>
@@ -3719,7 +3730,225 @@
                         </div>
                     </div>
 
-                <!-- Mobile fund descriptions (shown only on mobile) -->
+    
+            <!-- Fructus -->
+            <div class="fund-card" data-fund="fructus">
+                <div class="fund-top-bar">
+                    <div class="fund-layer-badge">Layer IV · Real-World Assets</div>
+                </div>
+
+                <div class="fund-header">
+                    <div class="fund-title-section">
+                        <div class="fund-title-row">
+                            <h3 class="fund-name">Fructus Fund</h3>
+                        </div>
+                        <p class="fund-description">Income from the physical world, brought onchain</p>
+                    </div>
+                    <span class="chevron">›</span>
+                </div>
+
+                <div class="fund-metrics">
+                    <div class="fund-metric">
+                        <div class="fund-metric-label">Allocation</div>
+                        <div class="fund-metric-value">15%</div>
+                    </div>
+                    <div class="fund-metric">
+                        <div class="fund-metric-label">TVL</div>
+                        <div class="fund-metric-value" data-tvl="fructus">—</div>
+                    </div>
+                    <div class="fund-metric">
+                        <div class="fund-metric-label">Type</div>
+                        <div class="fund-metric-value">RWA</div>
+                    </div>
+                    <div class="fund-metric">
+                        <div class="fund-metric-label">Horizon</div>
+                        <div class="fund-metric-value">3-7 years</div>
+                    </div>
+                </div>
+
+                <div class="fund-details">
+                    <div class="fund-details-content">
+                        <div class="strategy-summary">
+                            <div class="strategy-title">Investment Strategy</div>
+                            <div class="strategy-text">
+                                15% allocated to tokenized real-world assets — real estate, commodities, treasury bills, and dividend-producing equities brought onchain.<br><br>Income generated from physical-world productivity, independent of crypto market cycles.<br><br>Positions held for yield, not for speculation. The same assets that have generated income for centuries, now accessible on-chain.
+                            </div>
+
+                            <div class="educational-section">
+                                <div class="educational-toggle" onclick="toggleEducational(this, event)">
+                                    <span class="educational-toggle-icon">▸</span>
+                                    <span>What are tokenized real-world assets?</span>
+                                </div>
+                                <div class="educational-content">
+                                    <p class="educational-text">
+                                        <strong>Tokenized RWAs are blockchain representations of physical assets</strong> — real estate, commodities, bonds, and equities — that can be held and traded on-chain. They bring the yield of traditional finance into DeFi rails.
+                                    </p>
+                                    <p class="educational-text">
+                                        Fructus holds positions in tokenized commodity ETFs (gold, silver, copper, oil), tokenized treasury instruments, and real estate tokens — all generating income streams independent of crypto market direction.
+                                    </p>
+                                    <a href="/fructus" class="educational-link">
+                                        <span>Explore Fructus</span>
+                                        <span class="educational-link-arrow">→</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="assets-section">
+                            <div class="section-header">
+                                <h4 class="assets-title">Holdings</h4>
+                                <span class="assets-count">7 Positions</span>
+                            </div>
+                            <div class="asset-item">
+                                <div class="asset-info">
+                                    <div class="asset-name">ONDO Finance</div>
+                                    <div class="asset-amount">800 ONDO</div>
+                                </div>
+                                <div class="asset-metrics"><div class="asset-value">—</div></div>
+                            </div>
+                            <div class="asset-item">
+                                <div class="asset-info">
+                                    <div class="asset-name">Tokenized Commodities</div>
+                                    <div class="asset-amount">Gold · Silver · Copper · Oil</div>
+                                </div>
+                                <div class="asset-metrics"><div class="asset-value">~$602</div></div>
+                            </div>
+                            <div class="asset-item">
+                                <div class="asset-info">
+                                    <div class="asset-name">Real Estate Token</div>
+                                    <div class="asset-amount">STRCon · 1 token</div>
+                                </div>
+                                <div class="asset-metrics"><div class="asset-value">$100</div></div>
+                            </div>
+                        </div>
+
+                        <div class="fund-philosophy">
+                            <p>"The fruits of the physical world, harvested through digital rails. Real income. Real assets. Real yield."</p>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 0.75rem;">
+                            <a href="/fructus" class="educational-link" style="width: 100%; justify-content: center;">
+                                <span>Explore Fund</span>
+                                <span class="educational-link-arrow">→</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monetra -->
+            <div class="fund-card" data-fund="monetra">
+                <div class="fund-top-bar">
+                    <div class="fund-layer-badge">Layer V · Stable Yield</div>
+                </div>
+
+                <div class="fund-header">
+                    <div class="fund-title-section">
+                        <div class="fund-title-row">
+                            <h3 class="fund-name">Monetra Fund</h3>
+                        </div>
+                        <p class="fund-description">Permanent liquidity and stable yield engine</p>
+                    </div>
+                    <span class="chevron">›</span>
+                </div>
+
+                <div class="fund-metrics">
+                    <div class="fund-metric">
+                        <div class="fund-metric-label">Allocation</div>
+                        <div class="fund-metric-value">10%</div>
+                    </div>
+                    <div class="fund-metric">
+                        <div class="fund-metric-label">TVL</div>
+                        <div class="fund-metric-value" data-tvl="monetra">$800</div>
+                    </div>
+                    <div class="fund-metric">
+                        <div class="fund-metric-label">Yield</div>
+                        <div class="fund-metric-value">6-15%</div>
+                    </div>
+                    <div class="fund-metric">
+                        <div class="fund-metric-label">Risk</div>
+                        <div class="fund-metric-value">Low</div>
+                    </div>
+                </div>
+
+                <div class="fund-details">
+                    <div class="fund-details-content">
+                        <div class="strategy-summary">
+                            <div class="strategy-title">Investment Strategy</div>
+                            <div class="strategy-text">
+                                10% deployed exclusively into stablecoin yield strategies — lending markets, liquidity pools, and auto-compounding vaults.<br><br>No directional market exposure. No volatility risk. Capital preserved in stable assets while generating consistent yield regardless of market conditions.<br><br>Monetra is the liquidity reserve of The Holding — always liquid, always compounding.
+                            </div>
+
+                            <div class="educational-section">
+                                <div class="educational-toggle" onclick="toggleEducational(this, event)">
+                                    <span class="educational-toggle-icon">▸</span>
+                                    <span>Why hold stablecoins in DeFi?</span>
+                                </div>
+                                <div class="educational-content">
+                                    <p class="educational-text">
+                                        <strong>Stablecoin yield in DeFi comes from structural demand.</strong> Lending markets always need liquidity. Liquidity pools always need depth. These primitives generate yield paid in stable assets — regardless of whether crypto markets are up or down.
+                                    </p>
+                                    <p class="educational-text">
+                                        Monetra captures this yield through Aave, Morpho, Curve stablecoin pools, and fxSAVE — generating 6–15% APY on capital that remains fully stable and liquid at all times.
+                                    </p>
+                                    <a href="/monetra" class="educational-link">
+                                        <span>Explore Monetra</span>
+                                        <span class="educational-link-arrow">→</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="assets-section">
+                            <div class="section-header">
+                                <h4 class="assets-title">Strategies</h4>
+                                <span class="assets-count">4 Active</span>
+                            </div>
+                            <div class="asset-item">
+                                <div class="asset-info">
+                                    <div class="asset-name">Aave / Morpho</div>
+                                    <div class="asset-amount">Lending markets · USDC/USDT</div>
+                                </div>
+                                <div class="asset-metrics"><div class="asset-value">5-8%</div></div>
+                            </div>
+                            <div class="asset-item">
+                                <div class="asset-info">
+                                    <div class="asset-name">Curve Stable Pools</div>
+                                    <div class="asset-amount">Liquidity provision</div>
+                                </div>
+                                <div class="asset-metrics"><div class="asset-value">6-10%</div></div>
+                            </div>
+                            <div class="asset-item">
+                                <div class="asset-info">
+                                    <div class="asset-name">fxSAVE</div>
+                                    <div class="asset-amount">f(x) Protocol V2 · Auto-compound</div>
+                                </div>
+                                <div class="asset-metrics"><div class="asset-value">6-12%</div></div>
+                            </div>
+                            <div class="asset-item">
+                                <div class="asset-info">
+                                    <div class="asset-name">Yield Staking</div>
+                                    <div class="asset-amount">Diversified stable yield</div>
+                                </div>
+                                <div class="asset-metrics"><div class="asset-value">8-15%</div></div>
+                            </div>
+                        </div>
+
+                        <div class="fund-philosophy">
+                            <p>"Stable capital that never stops working. The engine that makes every other fund more resilient."</p>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 0.75rem;">
+                            <a href="/monetra" class="educational-link" style="width: 100%; justify-content: center;">
+                                <span>Explore Fund</span>
+                                <span class="educational-link-arrow">→</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile fund descriptions (shown only on mobile) -->
                 <div class="mobile-fund-list">
                     <div class="mobile-fund-card">
                         <div class="mfc-accent" style="background:#8b5cf6"></div>
