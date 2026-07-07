@@ -1601,16 +1601,19 @@
         // Holdings data
         const defiteaHoldings = {
             aero: 1752,
-            cvx: 249,
-            crv: 1778,
-            pendle: 214,
-            fxn: 23.51,
-            yb: 3041,
-            fxs: 930,
-            velo: 12180
+            cvx: 1249,
+            crv: 3645,
+            pendle: 552,
+            fxn: 53.86,
+            yb: 9135,
+            fxs: 2552,
+            velo: 12180,
+            vvv: 50,          // Venice — new
+            lqty: 420,        // Liquity — new
+            rsup: 808         // Resupply — new
         };
 
-        const FIXED_FXN_VALUE = 400;
+        const FIXED_FXN_VALUE = 748;
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
         // Update TVL function - direct calculation like main site
@@ -1623,7 +1626,10 @@
                     'pendle',
                     'yield-basis',
                     'frax-share',
-                    'velodrome-finance'
+                    'velodrome-finance',
+                    'venice-token',
+                    'liquity',
+                    'resupply'
                 ].join(',');
 
                 const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`;
@@ -1645,8 +1651,11 @@
                 const ybValue = defiteaHoldings.yb * (prices['yield-basis']?.usd || 0);
                 const fxsValue = defiteaHoldings.fxs * (prices['frax-share']?.usd || 0);
                 const veloValue = defiteaHoldings.velo * (prices['velodrome-finance']?.usd || 0);
-                
-                const defiteaTVL = aeroValue + cvxValue + crvValue + pendleValue + fxnValue + ybValue + fxsValue + veloValue;
+                const vvvValue  = defiteaHoldings.vvv  * (prices['venice-token']?.usd || 0);
+                const lqtyValue = defiteaHoldings.lqty * (prices['liquity']?.usd || 0);
+                const rsupValue = defiteaHoldings.rsup * (prices['resupply']?.usd || 0);
+
+                const defiteaTVL = aeroValue + cvxValue + crvValue + pendleValue + fxnValue + ybValue + fxsValue + veloValue + vvvValue + lqtyValue + rsupValue;
                 
                 // Update all TVL displays on this page
                 document.querySelectorAll('[data-tvl="defitea"], [data-tvl-perf="defitea"]').forEach(el => {
