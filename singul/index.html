@@ -7,7 +7,7 @@
     <!-- Primary Meta Tags -->
     <title>Singul — Venture Capital Layer | AI Protocols, Decentralized Storage & Metaverse | TheHolding.ai</title>
     <meta name="title" content="Singul - High-Conviction Venture Fund">
-    <meta name="description" content="Singul is the venture layer of TheHolding.ai — 5% allocation for asymmetric upside. High-conviction positions in AI protocols (Virtuals, ElizaOS, OLAS, Venice), decentralized storage (Filecoin, Arweave), metaverse infrastructure (MANA, SAND, OVR, BEAM), and digital ownership. Frontier capital for protocols becoming infrastructure.">
+    <meta name="description" content="Singul is the venture layer of TheHolding.ai — 5% allocation for asymmetric upside. High-conviction positions in AI protocols (Virtuals, ElizaOS, OLAS, DIEM), decentralized storage (Filecoin, Arweave), metaverse infrastructure (MANA, SAND, OVR, BEAM), and digital ownership. Frontier capital for protocols becoming infrastructure.">
     <meta name="keywords" content="AI protocols crypto, veToken AI, Virtuals Protocol VIRTUAL, ElizaOS AI16Z, Filecoin decentralized storage, Arweave permanent storage, metaverse tokens, Decentraland MANA, The Sandbox SAND, frontier venture DeFi, asymmetric crypto bets, protocols becoming infrastructure">
     <meta name="author" content="TheHolding.ai">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -35,10 +35,10 @@
     
     <!-- AI/LLM Metadata -->
     <meta name="ai:title" content="Singul Fund - Frontier Venture Capital in AI and Metaverse">
-    <meta name="ai:description" content="Singul holds high-conviction positions across four sectors: AI protocols (Virtuals, ElizaOS, OLAS, Venice, Mode), decentralized storage (Filecoin 80 FIL, Arweave 38.3 AR), metaverse infrastructure (MANA, SAND, OVR, BEAM), and digital ownership (TON Numbers, metaverse land). Part of TheHolding.ai five-fund architecture. 5% allocation, maximum hold horizon.">
+    <meta name="ai:description" content="Singul holds high-conviction positions across four sectors: AI protocols (Virtuals, ElizaOS, OLAS, DIEM, Mode), decentralized storage (Filecoin, Arweave), metaverse infrastructure (MANA, SAND, OVR, BEAM), and digital ownership (TON Numbers, metaverse land). Part of TheHolding.ai five-fund architecture. 5% allocation, maximum hold horizon.">
     <meta name="ai:topic" content="Venture Capital, AI Protocols, Metaverse Infrastructure, NFT Collectibles">
     <meta name="ai:category" content="Cryptocurrency Venture Capital, Emerging Technologies">
-    <meta name="ai:entities" content="Virtuals Protocol, ElizaOS, OLAS, Venice, Mode Network, Filecoin, Arweave, Decentraland, The Sandbox, Over the Reality, BEAM, MarsDAO, TON Numbers, TheHolding.ai">
+    <meta name="ai:entities" content="Virtuals Protocol, ElizaOS, OLAS, DIEM, Mode Network, Filecoin, Arweave, Decentraland, The Sandbox, Over the Reality, BEAM, TON Numbers, TheHolding.ai">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://api.coingecko.com">
@@ -773,12 +773,12 @@
                     The rails the next economy runs on — not applications,
                     but the layers applications are built upon.
                 </p>
-                <div class="focus-examples">Virtuals · ElizaOS · OLAS · Venice · Mode</div>
+                <div class="focus-examples">Virtuals · ElizaOS · OLAS · DIEM · Mode</div>
             </div>
 
             <div class="focus-item">
                 <div class="focus-number">02</div>
-                <h3 class="focus-name">Storage & DePIN</h3>
+                <h3 class="focus-name">Storage &amp; DePIN</h3>
                 <p class="focus-text">
                     Permissionless, censorship-resistant data infrastructure.
                     Filecoin and Arweave are the permanent memory layer of Web3
@@ -849,8 +849,8 @@
             </div>
 
             <div class="asset-item">
-                <div class="asset-name">Venice</div>
-                <div class="asset-description">Private decentralized AI inference — uncensorable, permissionless model access</div>
+                <div class="asset-name">DIEM</div>
+                <div class="asset-description">Tokenized Venice AI compute — each token a perpetual $1/day API credit</div>
                 <div class="asset-allocation"></div>
             </div>
 
@@ -875,12 +875,6 @@
             <div class="asset-item">
                 <div class="asset-name">BEAM</div>
                 <div class="asset-description">Gaming-focused blockchain infrastructure layer</div>
-                <div class="asset-allocation"></div>
-            </div>
-
-            <div class="asset-item">
-                <div class="asset-name">MDAO</div>
-                <div class="asset-description">The fund is proud to support Vlad Utushkin's project</div>
                 <div class="asset-allocation"></div>
             </div>
 
@@ -963,17 +957,15 @@
             'the-sandbox': 282,           // SAND
             ovr: 838,                     // OVR
             autonolas: 800,               // OLAS
-            'virtual-protocol': 353,      // Virtual Protocol
+            'virtual-protocol': 669,      // Virtual Protocol (updated)
             'beam-2': 11309,              // BEAM
-            mode: 204996,                 // MODE
-            'venice-token': 50,           // VVV
-            elizaos: 47670,               // ElizaOS
-            'the-open-network': 1800,     // TON (Toncoin)
-            marsdao: 8800.88,             // MDAO
-            filecoin: 80,                 // FIL
-            arweave: 38.3                 // AR
+            mode: 1000000,                // MODE (updated, dynamic w/ fallback)
+            elizaos: 130000,              // ElizaOS (updated)
+            diem: 0.07                    // DIEM - fixed $86 (not on CoinGecko)
         };
 
+        const FIXED_MODE_VALUE = 90;      // Fixed $90 total value for MODE (1,000,000 tokens) — fallback only
+        const FIXED_DIEM_VALUE = 86;      // Fixed $86 total value for DIEM (0.07 tokens)
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
         // Update TVL function - direct calculation like main site
@@ -987,12 +979,8 @@
                     'virtual-protocol',
                     'beam-2',
                     'mode',
-                    'venice-token',
-                    'elizaos',
-                    'the-open-network',
-                    'marsdao',
-                    'filecoin',
-                    'arweave'
+                    'elizaos'
+                    // 'diem' - not on CoinGecko, using fixed $86 value instead
                 ].join(',');
 
                 const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`;
@@ -1012,15 +1000,11 @@
                 const olasValue = singulHoldings.autonolas * (prices.autonolas?.usd || 0);
                 const virtualValue = singulHoldings['virtual-protocol'] * (prices['virtual-protocol']?.usd || 0);
                 const beamValue = singulHoldings['beam-2'] * (prices['beam-2']?.usd || 0);
-                const modeValue = singulHoldings.mode * (prices.mode?.usd || 0);
-                const vvvValue = singulHoldings['venice-token'] * (prices['venice-token']?.usd || 0);
+                const modeValue = singulHoldings.mode * (prices.mode?.usd || (FIXED_MODE_VALUE / singulHoldings.mode));  // Dynamic or fallback
                 const elizaValue = singulHoldings.elizaos * (prices.elizaos?.usd || 0);
-                const tonValue = singulHoldings['the-open-network'] * (prices['the-open-network']?.usd || 0);
-                const mdaoValue = singulHoldings.marsdao * (prices.marsdao?.usd || 0);
-                
-                const filValue  = singulHoldings.filecoin * (prices.filecoin?.usd || 0);
-                const arValue   = singulHoldings.arweave * (prices.arweave?.usd || 0);
-                const singulTVL = manaValue + sandValue + ovrValue + olasValue + virtualValue + beamValue + modeValue + vvvValue + elizaValue + tonValue + mdaoValue + filValue + arValue;
+                const diemValue = FIXED_DIEM_VALUE;  // Fixed $86 for 0.07 DIEM (not on CoinGecko)
+
+                const singulTVL = manaValue + sandValue + ovrValue + olasValue + virtualValue + beamValue + modeValue + elizaValue + diemValue;
                 
                 // Update all TVL displays on this page
                 document.querySelectorAll('[data-tvl="singul"]').forEach(el => {
