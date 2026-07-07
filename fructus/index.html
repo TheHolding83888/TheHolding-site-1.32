@@ -1059,20 +1059,12 @@
         
         const fructusHoldings = {
             ondo: 800,         // ONDO Finance (dynamic)
-            strcon: 1,         // STRCon - fixed $100
-            dbcon: 5,          // DBCon - 5 tokens = $146 total
-            copxon: 2,         // COPXon - 2 tokens = $175 total
-            cvxon: 0.5,        // CVXon - 0.5 tokens
-            slvon: 2,          // SLVon - 2 tokens = $138 total
-            oihon: 0.1         // OIHon - 0.1 tokens = $43 total
+            dbcon: 5,          // DBCon - 5 tokens × $27 = $135 total
+            copxon: 2          // COPXon - 2 tokens × $87.5 = $175 total
         };
 
-        const FIXED_STRCON_VALUE = 100;
-        const FIXED_DBCON_VALUE = 29.2;      // $146 / 5 = $29.2 per token
+        const FIXED_DBCON_VALUE = 27;        // $135 / 5 = $27 per token
         const FIXED_COPXON_VALUE = 87.5;     // $175 / 2 = $87.5 per token
-        const FIXED_CVXON_VALUE = 200;       // 0.5 × $200 = $100
-        const FIXED_SLVON_VALUE = 69;        // $138 / 2 = $69 per token
-        const FIXED_OIHON_VALUE = 430;       // $43 / 0.1 = $430 per token
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
         async function updateFructusTVL() {
@@ -1084,14 +1076,10 @@
                 const prices = await response.json();
                 
                 const ondoValue = fructusHoldings.ondo * (prices['ondo-finance']?.usd || 0);
-                const strconValue = fructusHoldings.strcon * FIXED_STRCON_VALUE;
                 const dbconValue = fructusHoldings.dbcon * FIXED_DBCON_VALUE;
                 const copxonValue = fructusHoldings.copxon * FIXED_COPXON_VALUE;
-                const cvxonValue = fructusHoldings.cvxon * FIXED_CVXON_VALUE;
-                const slvonValue = fructusHoldings.slvon * FIXED_SLVON_VALUE;
-                const oihonValue = fructusHoldings.oihon * FIXED_OIHON_VALUE;
                 
-                const fructusTVL = ondoValue + strconValue + dbconValue + copxonValue + cvxonValue + slvonValue + oihonValue;
+                const fructusTVL = ondoValue + dbconValue + copxonValue;
                 
                 const tvlElement = document.querySelector('[data-tvl="fructus"]');
                 if (tvlElement) {
