@@ -788,8 +788,8 @@
                     </div>
                 </div>
                 <div class="asset-right">
-                    <div class="asset-amount-large">7,051,800 sats</div>
-                    <div class="asset-amount-sub">0.070518 BTC</div>
+                    <div class="asset-amount-large">10,000,000 sats</div>
+                    <div class="asset-amount-sub">0.1 BTC</div>
                 </div>
             </div>
 
@@ -966,7 +966,7 @@
 
         document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-        const holdings = { btc: 0.070518, eth: 1, xaut: 0.5, silverOz: 20 };
+        const holdings = { btc: 0.1, eth: 1, xaut: 0.5, silverOz: 20 };
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
         async function updateTVL() {
@@ -977,7 +977,7 @@
                 const tvl = holdings.btc * (p.bitcoin?.usd || 0)
                           + holdings.eth * (p.ethereum?.usd || 0)
                           + holdings.xaut * goldPx
-                          + holdings.silverOz * (goldPx / 62);
+                          + holdings.silverOz * (goldPx / 67);
                 document.querySelectorAll('[data-tvl="substantia"]').forEach(el => {
                     el.textContent = `$${Math.round(tvl).toLocaleString()}`;
                 });
