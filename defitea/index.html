@@ -1182,6 +1182,35 @@
         .text-reveal-toggle.expanded svg {
             transform: rotate(180deg);
         }
+    
+        .company-lede {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 400;
+            font-style: italic;
+            line-height: 1.5;
+            color: var(--text-primary);
+            max-width: 760px;
+            margin: 0 auto 2rem;
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+        .company-lede .plain {
+            font-style: normal;
+            color: var(--text-secondary);
+        }
+        .company-lede .accent {
+            font-style: normal;
+            color: var(--accent-primary);
+        }
+
+        @media (max-width: 768px) {
+            .company-lede {
+                font-size: 1.15rem;
+                line-height: 1.45;
+                margin-bottom: 1.25rem;
+            }
+        }
     </style>
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -1543,8 +1572,8 @@
             <div class="philosophy-content">
                 <h2 class="philosophy-heading">A Company, Not a Portfolio</h2>
 
-                <p class="philosophy-text large">
-                    Most crypto portfolios simply hold tokens and hope their prices rise. Defitea is built on a different premise: every position represents an on-chain claim on real, recurring revenue, much like owning equity gives investors a claim on a company's future profits.
+                <p class="company-lede">
+                    <span class="plain">Most crypto portfolios simply hold tokens and hope their prices rise.</span> Defitea is built on a different premise: every position represents <span class="accent">an on-chain claim on real, recurring revenue</span> — much like owning equity gives investors a claim on a company's future profits.
                 </p>
 
                 <button class="text-reveal-toggle" onclick="toggleReveal(this, 'company-thesis')">
