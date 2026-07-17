@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Company — 05081966.eth</title>
+<meta name="description" content="Цифровая компания 05081966.eth — активы, TVL в реальном времени, денежный поток.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #08090C; }
+  body { min-height: 100vh; background: radial-gradient(120% 70% at 50% -8%, #171A23 0%, #0B0D12 55%, #08090C 100%); color: #F2EEE6; font-family: 'Manrope', sans-serif; display: flex; justify-content: center; padding: 40px 18px 56px; }
+  .wrap { width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 40px; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .brand { font-size: 12px; font-weight: 600; letter-spacing: 0.34em; text-transform: uppercase; color: rgba(242,238,230,0.5); }
+  .est { font-family: 'Cormorant Garamond', serif; font-size: 17px; letter-spacing: 0.2em; color: rgba(242,238,230,0.4); }
+  .hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+  .rule { width: 90px; height: 1px; background: linear-gradient(90deg, rgba(210,175,109,0), #D2AF6D, rgba(210,175,109,0)); }
+  .ens { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: clamp(38px, 9vw, 64px); line-height: 1.05; letter-spacing: -0.01em; color: #D2AF6D; }
+  .tag { font-size: 14px; font-weight: 300; line-height: 1.6; color: rgba(242,238,230,0.65); max-width: 460px; margin: 0; }
+  .tag em { font-style: italic; font-family: 'Cormorant Garamond', serif; font-size: 17px; color: rgba(242,238,230,0.8); }
+  .tvlCard { display: flex; flex-direction: column; align-items: center; gap: 6px; border: 1px solid rgba(210,175,109,0.5); border-radius: 26px; background: linear-gradient(150deg, rgba(210,175,109,0.10), rgba(210,175,109,0.02)); padding: 30px 44px 26px; }
+  .tvlLabel { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(242,238,230,0.55); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #7FB58A; box-shadow: 0 0 8px rgba(127,181,138,0.9); animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .tvl { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: clamp(56px, 13vw, 92px); line-height: 1; color: #F2EEE6; }
+  .tvlSub { font-size: 12px; font-weight: 300; color: rgba(242,238,230,0.45); }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .metric { border: 1px solid rgba(242,238,230,0.12); border-radius: 18px; background: rgba(242,238,230,0.02); padding: 16px 14px; display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center; }
+  .mVal { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 5.5vw, 30px); color: #D2AF6D; }
+  .mLabel { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(242,238,230,0.45); }
+  h2 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 28px; margin: 0; }
+  .sectionHead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .sectionNote { font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(242,238,230,0.4); }
+  .assets { display: flex; flex-direction: column; gap: 10px; }
+  .asset { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) 64px; gap: 10px; align-items: center; border: 1px solid rgba(210,175,109,0.3); border-radius: 18px; background: rgba(242,238,230,0.025); padding: 16px 20px; }
+  .aName { display: flex; flex-direction: column; gap: 2px; }
+  .aTitle { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; }
+  .aQty { font-size: 12px; font-weight: 300; color: rgba(242,238,230,0.5); }
+  .aPrice, .aVal { font-family: 'Cormorant Garamond', serif; font-size: clamp(17px, 4.6vw, 23px); text-align: right; white-space: nowrap; }
+  .aPrice { color: rgba(242,238,230,0.65); }
+  .aVal { color: #E8CF9B; }
+  .aShare { font-size: 12px; font-weight: 500; color: rgba(242,238,230,0.5); text-align: right; }
+  .colHead { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) 64px; gap: 10px; padding: 0 20px; }
+  .colHead div { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(242,238,230,0.38); }
+  .colHead div + div { text-align: right; }
+  .lockNote { font-size: 12.5px; font-weight: 300; line-height: 1.6; color: rgba(242,238,230,0.5); margin: 0; }
+  .lockNote b { color: #D2AF6D; font-weight: 500; }
+  .links { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .link { display: flex; flex-direction: column; gap: 4px; border: 1px solid rgba(242,238,230,0.12); border-radius: 18px; background: rgba(242,238,230,0.02); padding: 18px 20px; text-decoration: none; transition: border-color .25s ease, background .25s ease; }
+  .link:hover { border-color: #D2AF6D; background: rgba(210,175,109,0.06); }
+  .lTitle { font-size: 14px; font-weight: 600; color: #D2AF6D; display: flex; align-items: center; gap: 8px; }
+  .lTitle span { font-family: 'Cormorant Garamond', serif; font-size: 18px; }
+  .lDesc { font-size: 12px; font-weight: 300; color: rgba(242,238,230,0.55); line-height: 1.45; }
+  .quote { text-align: center; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: clamp(21px, 5vw, 27px); line-height: 1.4; color: rgba(242,238,230,0.75); margin: 0; padding: 0 10px; }
+  .quote b { color: #D2AF6D; font-weight: 500; }
+  footer { display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; border-top: 1px solid rgba(242,238,230,0.1); padding-top: 24px; }
+  .foot { font-size: 11px; font-weight: 300; line-height: 1.6; color: rgba(242,238,230,0.35); max-width: 560px; }
+  a { color: #D2AF6D; }
+  @media (max-width: 560px) {
+    body { padding: 26px 14px 44px; }
+    .wrap { gap: 30px; }
+    .asset, .colHead { grid-template-columns: minmax(0,1.4fr) minmax(0,1fr) 52px; }
+    .aPrice, .colHead div:nth-child(2) { display: none; }
+    .links { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Digital Company</div>
+    <div class="est">MMXXVI</div>
+  </div>
+
+  <div class="hero">
+    <div class="rule"></div>
+    <div class="ens">05081966.eth</div>
+    <p class="tag">Цифровая компания, зарегистрированная в блокчейне.<br>
+    <em>Работает 24/7. Принадлежит одному владельцу.</em></p>
+  </div>
+
+  <div class="tvlCard">
+    <div class="tvlLabel"><span class="dot"></span>TVL компании · Live</div>
+    <div class="tvl" id="tvl">—</div>
+    <div class="tvlSub" id="updated">загрузка данных…</div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><div class="mVal">3</div><div class="mLabel">Протокола</div></div>
+    <div class="metric"><div class="mVal">4–8+%</div><div class="mLabel">Поток / год</div></div>
+    <div class="metric"><div class="mVal">3–5+ лет</div><div class="mLabel">Горизонт</div></div>
+  </div>
+
+  <div>
+    <div class="sectionHead" style="margin-bottom:14px;"><h2>Активы на балансе</h2><div class="sectionNote">Лок · 4 года</div></div>
+    <div class="colHead" style="margin-bottom:8px;"><div>Актив</div><div>Цена</div><div>Стоимость</div><div style="text-align:right;">Доля</div></div>
+    <div class="assets" id="assets"></div>
+    <p class="lockNote" style="margin-top:14px;">Все активы отправлены в <b>максимальный 4-летний лок</b> — это даёт Компании право на часть денежных потоков протоколов и защищает капитал от импульсивных решений.</p>
+  </div>
+
+  <div>
+    <h2 style="margin-bottom:14px;">Кабинет владельца</h2>
+    <div class="links">
+      <a class="link" href="https://debank.com/profile/0x7CdF49f589038242e77847573604441E383f5429" target="_blank" rel="noopener"><div class="lTitle"><span>◈</span>DeBank</div><div class="lDesc">Балансы, начисления и движение денежных потоков — в реальном времени.</div></a>
+      <a class="link" href="https://dropstab.com/p/05081966eth-oc9mvp5438" target="_blank" rel="noopener"><div class="lTitle"><span>◇</span>DropsTab</div><div class="lDesc">Аналитика и динамика активов портфеля.</div></a>
+      <a class="link" href="http://theholding.ai/05081966_calculator" target="_blank" rel="noopener"><div class="lTitle"><span>§</span>Калькулятор владельца</div><div class="lDesc">Введи сумму пополнения — расчёт по пяти сценариям на 3–5+ лет.</div></a>
+      <a class="link" href="https://t.me/O5081966" target="_blank" rel="noopener"><div class="lTitle"><span>✦</span>Telegram-канал</div><div class="lDesc">Инфо-сопровождение Компании и Книга владельца (PDF).</div></a>
+      <a class="link" href="https://app.ens.domains/05081966.eth" target="_blank" rel="noopener"><div class="lTitle"><span>❖</span>ENS-адрес</div><div class="lDesc">05081966.eth — уникальное имя по дате рождения владельца. Принимает переводы и пополнения.</div></a>
+    </div>
+  </div>
+
+  <p class="quote">Компания, которая <b>сама зарабатывает — и сама растёт</b>.<br>Маховик, который раскручивается годами.</p>
+
+  <footer>
+    <div class="brand" style="letter-spacing:0.28em;">05081966.eth</div>
+    <p class="foot">TVL рассчитывается по рыночным ценам CoinGecko. Все показатели — ориентиры, а не гарантия доходности и не финансовая рекомендация. Активы волатильны; правильный горизонт — 3–5+ лет.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var HOLDINGS = [
+    { id: 'aerodrome-finance', name: 'Aerodrome', proto: 'Aero Finance · Base', qty: 202 },
+    { id: 'frax-share', name: 'FXS', proto: 'Frax Finance', qty: 393 },
+    { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480 }
+  ];
+  var CACHE_KEY = 'dc05081966_prices_v1';
+  var TTL = 10 * 60 * 1000; // 10 минут — не чаще, как на главной
+  function money(n, dec) {
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+  function renderRows(prices) {
+    var total = 0, rows = '';
+    HOLDINGS.forEach(function (h) { total += (prices[h.id] || 0) * h.qty; });
+    HOLDINGS.forEach(function (h) {
+      var p = prices[h.id] || 0, v = p * h.qty;
+      var share = total ? Math.round(v / total * 100) : 0;
+      rows += '<div class="asset">' +
+        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.proto + ' · ' + h.qty + ' токенов</div></div>' +
+        '<div class="aPrice">' + (p ? money(p, p < 1 ? 3 : 2) : '—') + '</div>' +
+        '<div class="aVal">' + (p ? money(v, 0) : '—') + '</div>' +
+        '<div class="aShare">' + (p ? share + '%' : '—') + '</div></div>';
+    });
+    document.getElementById('assets').innerHTML = rows;
+    document.getElementById('tvl').textContent = total ? money(total, 0) : '—';
+  }
+  function setUpdated(ts, fromCache) {
+    var d = new Date(ts);
+    var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+    document.getElementById('updated').textContent = 'обновлено в ' + hh + ':' + mm + (fromCache ? ' · кэш' : ' · CoinGecko');
+  }
+  function load() {
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) {}
+    if (cached && cached.prices) { renderRows(cached.prices); setUpdated(cached.ts, true); }
+    if (cached && Date.now() - cached.ts < TTL) return;
+    var ids = HOLDINGS.map(function (h) { return h.id; }).join(',');
+    fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var prices = {};
+        HOLDINGS.forEach(function (h) { if (data[h.id]) prices[h.id] = data[h.id].usd; });
+        if (!Object.keys(prices).length) return;
+        var payload = { prices: prices, ts: Date.now() };
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch (e) {}
+        renderRows(prices); setUpdated(payload.ts, false);
+      })
+      .catch(function () {
+        if (!cached) document.getElementById('updated').textContent = 'данные временно недоступны';
+      });
+  }
+  load();
+})();
+</script>
+</body>
+</html>
