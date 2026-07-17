@@ -24,22 +24,25 @@
   input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   .inputLabel { font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(242,238,230,0.5); text-align: right; line-height: 1.35; }
   .table { display: flex; flex-direction: column; gap: 7px; }
-  .hdr, .row { display: grid; grid-template-columns: minmax(96px, 1.15fr) 1fr 0.9fr 0.8fr; gap: 10px; align-items: center; }
-  .hdr { padding: 0 16px; }
+  .hdr, .row { display: grid; grid-template-columns: minmax(84px, 1.05fr) 1fr 1fr 0.85fr; gap: 8px; align-items: center; }
+  .hdr { padding: 0 12px; }
   .hdr div { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(242,238,230,0.4); }
   .hdr div + div, .row .val { text-align: right; }
-  .row { border-radius: 14px; padding: 11px 16px; }
+  .row { border-radius: 14px; padding: 11px 12px; }
   .rowName { display: flex; flex-direction: column; gap: 1px; }
-  .name { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.25; }
-  .mult { font-family: 'Cormorant Garamond', serif; font-size: 17px; opacity: 0.8; }
-  .val { font-family: 'Cormorant Garamond', serif; font-size: 19px; line-height: 1.1; white-space: nowrap; }
+  .name { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1.25; }
+  .mult { font-family: 'Cormorant Garamond', serif; font-size: 16px; opacity: 0.8; }
+  .val { font-family: 'Cormorant Garamond', serif; font-size: 17px; line-height: 1.1; white-space: nowrap; }
   .note { font-size: 11px; font-weight: 300; line-height: 1.5; margin: 0; color: rgba(242,238,230,0.38); text-align: center; }
   a { color: #D2AF6D; text-decoration: none; }
   @media (min-width: 480px) {
     h1 { font-size: 36px; }
-    .name { font-size: 13px; }
+    .name { font-size: 13px; letter-spacing: 0.08em; }
+    .mult { font-size: 17px; }
     .val { font-size: 22px; }
     .row { padding: 13px 20px; }
+    .hdr { padding: 0 20px; }
+    .hdr, .row { gap: 10px; }
   }
 </style>
 </head>
@@ -76,12 +79,14 @@
     { name: 'Ультра позитивный', mult: '100–200×', capLo: 100, capHi: 200, capPlus: true, flow: true,
       border: '1px solid #E8CF9B', bg: 'linear-gradient(135deg,rgba(232,207,155,0.18),rgba(210,175,109,0.06))', color: bright, num: bright }
   ];
-  function f(n) {
-    if (n >= 1e6) { var v = n / 1e6; return (v % 1 ? v.toFixed(1).replace('.', ',') : v) + ' млн'; }
-    if (n >= 10000) return Math.round(n / 1000) + ' тыс';
-    return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  function unit(n) { return n >= 1e6 ? [1e6, ' млн'] : n >= 1000 ? [1e3, ' тыс'] : [1, '']; }
+  function num(n, d) { var v = n / d; var r = v >= 100 ? Math.round(v) : Math.round(v * 10) / 10; return String(r).replace('.', ','); }
+  function f(n) { var u = unit(n); return num(n, u[0]) + u[1]; }
+  function rng(lo, hi, plus) {
+    var uh = unit(hi), ul = unit(lo), tail = plus ? '+' : '';
+    if (ul[1] === uh[1]) return '$' + num(lo, uh[0]) + '–' + num(hi, uh[0]) + uh[1] + tail;
+    return '$' + num(lo, ul[0]) + ul[1] + '–' + num(hi, uh[0]) + uh[1] + tail;
   }
-  function rng(lo, hi, plus) { return '$' + f(lo) + '–' + f(hi) + (plus ? '+' : ''); }
   function render() {
     var a = Math.max(0, Number(document.getElementById('amount').value) || 0);
     var out = '';
