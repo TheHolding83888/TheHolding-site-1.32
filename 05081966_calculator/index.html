@@ -10,8 +10,8 @@
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: #08090C; }
-  body { min-height: 100vh; min-height: 100dvh; background: radial-gradient(140% 90% at 50% -10%, #171A23 0%, #0B0D12 55%, #08090C 100%); color: #F2EEE6; font-family: 'Manrope', sans-serif; display: flex; justify-content: center; padding: 20px 16px 28px; }
-  .wrap { width: 100%; max-width: 620px; display: flex; flex-direction: column; gap: 18px; }
+  body { min-height: 100vh; min-height: 100dvh; background: radial-gradient(140% 90% at 50% -10%, #171A23 0%, #0B0D12 55%, #08090C 100%); color: #F2EEE6; font-family: 'Manrope', sans-serif; display: flex; justify-content: center; padding: 18px 10px 24px; }
+  .wrap { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 16px; }
   .head { display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center; }
   .brand { font-size: 11px; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase; color: rgba(242,238,230,0.5); }
   h1 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 30px; line-height: 1.1; margin: 2px 0 0; }
@@ -23,26 +23,20 @@
   input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   .inputLabel { font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(242,238,230,0.5); text-align: right; line-height: 1.35; }
-  .table { display: flex; flex-direction: column; gap: 7px; }
-  .hdr, .row { display: grid; grid-template-columns: minmax(72px, 1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.85fr); gap: 8px; align-items: center; }
-  .hdr { padding: 0 12px; }
-  .hdr div { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(242,238,230,0.4); }
-  .hdr div + div, .row .val { text-align: right; }
-  .row { border-radius: 14px; padding: 11px 12px; }
-  .rowName { display: flex; flex-direction: column; gap: 1px; }
-  .name { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1.25; }
-  .mult { font-family: 'Cormorant Garamond', serif; font-size: 16px; opacity: 0.8; }
-  .val { font-family: 'Cormorant Garamond', serif; font-size: clamp(13px, 4.2vw, 17px); line-height: 1.15; white-space: nowrap; overflow: hidden; }
+  .table { display: flex; flex-direction: column; gap: 8px; }
+  .row { border-radius: 16px; padding: 13px 18px; display: flex; flex-direction: column; gap: 9px; }
+  .rowTop { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .name { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.2; }
+  .mult { font-family: 'Cormorant Garamond', serif; font-size: 21px; opacity: 0.85; white-space: nowrap; }
+  .vals { display: grid; grid-template-columns: 1.15fr 1fr 0.85fr; gap: 12px; }
+  .cellLabel { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(242,238,230,0.42); margin-bottom: 2px; }
+  .val { font-family: 'Cormorant Garamond', serif; font-size: clamp(20px, 6vw, 27px); line-height: 1.1; white-space: nowrap; overflow: hidden; }
   .note { font-size: 11px; font-weight: 300; line-height: 1.5; margin: 0; color: rgba(242,238,230,0.38); text-align: center; }
   a { color: #D2AF6D; text-decoration: none; }
   @media (min-width: 480px) {
     h1 { font-size: 36px; }
-    .name { font-size: 13px; letter-spacing: 0.08em; }
-    .mult { font-size: 17px; }
-    .val { font-size: 22px; }
-    .row { padding: 13px 20px; }
-    .hdr { padding: 0 20px; }
-    .hdr, .row { gap: 10px; }
+    .name { font-size: 14px; }
+    .row { padding: 16px 24px; }
   }
 </style>
 </head>
@@ -58,10 +52,7 @@
     <input id="amount" type="number" min="0" inputmode="numeric" value="300">
     <div class="inputLabel">сумма<br>пополнения</div>
   </div>
-  <div class="table">
-    <div class="hdr"><div>Сценарий</div><div>Капитал</div><div>Поток / год</div><div>/ мес</div></div>
-    <div id="rows" style="display:flex;flex-direction:column;gap:7px;"></div>
-  </div>
+  <div class="table" id="rows"></div>
   <p class="note">Ориентиры, а не гарантии. Поток — из ориентира 4–8+% годовых на текущий капитал.</p>
 </div>
 <script>
@@ -87,9 +78,10 @@
   }
   function f(n) { var x = fmt(n); return x.v + x.u; }
   function rng(lo, hi, plus) {
-    var L = fmt(lo), H = fmt(hi), tail = plus ? '+' : '';
-    if (L.u === H.u) return '$' + L.v + '–' + H.v + H.u + tail;
-    return '$' + L.v + L.u + '–' + H.v + H.u + tail;
+    var H = fmt(hi), tail = plus ? '+' : '';
+    var hd = H.u === ' млн' ? 1e6 : H.u === ' тыс' ? 1e3 : 1;
+    var lv = lo / hd, lr = lv >= 100 ? Math.round(lv) : Math.round(lv * 10) / 10;
+    return '$' + String(lr).replace('.', ',') + '–' + H.v + H.u + tail;
   }
   function render() {
     var a = Math.max(0, Number(document.getElementById('amount').value) || 0);
@@ -99,11 +91,13 @@
       var yr = s.flow ? rng(a * s.capLo * 0.04, a * s.capHi * 0.08, true) : '$0';
       var mo = s.flow ? rng(a * s.capLo * 0.04 / 12, a * s.capHi * 0.08 / 12, true) : '$0';
       out += '<div class="row" style="border:' + s.border + ';background:' + s.bg + '">' +
-        '<div class="rowName"><div class="name" style="color:' + s.color + '">' + s.name + '</div>' +
+        '<div class="rowTop"><div class="name" style="color:' + s.color + '">' + s.name + '</div>' +
         '<div class="mult" style="color:' + s.color + '">' + s.mult + '</div></div>' +
-        '<div class="val" style="color:' + s.num + '">' + cap + '</div>' +
-        '<div class="val" style="color:' + s.num + '">' + yr + '</div>' +
-        '<div class="val" style="color:' + s.num + '">' + mo + '</div></div>';
+        '<div class="vals">' +
+        '<div><div class="cellLabel">Капитал</div><div class="val" style="color:' + s.num + '">' + cap + '</div></div>' +
+        '<div><div class="cellLabel">Поток / год</div><div class="val" style="color:' + s.num + '">' + yr + '</div></div>' +
+        '<div><div class="cellLabel">/ мес</div><div class="val" style="color:' + s.num + '">' + mo + '</div></div>' +
+        '</div></div>';
     });
     document.getElementById('rows').innerHTML = out;
     fitAll();
@@ -112,12 +106,13 @@
   window.addEventListener('resize', fitAll);
   function fitAll() {
     document.querySelectorAll('.val').forEach(function (el) {
-      el.style.fontSize = '';
+      el.style.fontSize = ''; el.style.whiteSpace = ''; el.style.overflow = '';
       var size = parseFloat(getComputedStyle(el).fontSize);
-      while (el.scrollWidth > el.clientWidth && size > 10) {
+      while (el.scrollWidth > el.clientWidth && size > 15) {
         size -= 0.5;
         el.style.fontSize = size + 'px';
       }
+      if (el.scrollWidth > el.clientWidth) { el.style.whiteSpace = 'normal'; el.style.overflow = 'visible'; }
     });
   }
   render();
