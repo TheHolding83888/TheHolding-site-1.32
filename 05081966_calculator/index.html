@@ -24,7 +24,7 @@
   input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   .inputLabel { font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(242,238,230,0.5); text-align: right; line-height: 1.35; }
   .table { display: flex; flex-direction: column; gap: 7px; }
-  .hdr, .row { display: grid; grid-template-columns: minmax(84px, 1.05fr) 1fr 1fr 0.85fr; gap: 8px; align-items: center; }
+  .hdr, .row { display: grid; grid-template-columns: minmax(72px, 1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.85fr); gap: 8px; align-items: center; }
   .hdr { padding: 0 12px; }
   .hdr div { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(242,238,230,0.4); }
   .hdr div + div, .row .val { text-align: right; }
@@ -32,7 +32,7 @@
   .rowName { display: flex; flex-direction: column; gap: 1px; }
   .name { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1.25; }
   .mult { font-family: 'Cormorant Garamond', serif; font-size: 16px; opacity: 0.8; }
-  .val { font-family: 'Cormorant Garamond', serif; font-size: 17px; line-height: 1.1; white-space: nowrap; }
+  .val { font-family: 'Cormorant Garamond', serif; font-size: clamp(13px, 4.2vw, 17px); line-height: 1.15; white-space: nowrap; overflow: hidden; }
   .note { font-size: 11px; font-weight: 300; line-height: 1.5; margin: 0; color: rgba(242,238,230,0.38); text-align: center; }
   a { color: #D2AF6D; text-decoration: none; }
   @media (min-width: 480px) {
@@ -79,13 +79,17 @@
     { name: 'Ультра позитивный', mult: '100–200×', capLo: 100, capHi: 200, capPlus: true, flow: true,
       border: '1px solid #E8CF9B', bg: 'linear-gradient(135deg,rgba(232,207,155,0.18),rgba(210,175,109,0.06))', color: bright, num: bright }
   ];
-  function unit(n) { return n >= 1e6 ? [1e6, ' млн'] : n >= 1000 ? [1e3, ' тыс'] : [1, '']; }
-  function num(n, d) { var v = n / d; var r = v >= 100 ? Math.round(v) : Math.round(v * 10) / 10; return String(r).replace('.', ','); }
-  function f(n) { var u = unit(n); return num(n, u[0]) + u[1]; }
+  function fmt(n) {
+    var d = n >= 1e6 ? 1e6 : n >= 1000 ? 1e3 : 1;
+    var v = n / d, r = v >= 100 ? Math.round(v) : Math.round(v * 10) / 10;
+    if (r >= 1000 && d === 1e3) { d = 1e6; v = n / d; r = Math.round(v * 10) / 10; }
+    return { v: String(r).replace('.', ','), u: d === 1e6 ? ' млн' : d === 1e3 ? ' тыс' : '' };
+  }
+  function f(n) { var x = fmt(n); return x.v + x.u; }
   function rng(lo, hi, plus) {
-    var uh = unit(hi), ul = unit(lo), tail = plus ? '+' : '';
-    if (ul[1] === uh[1]) return '$' + num(lo, uh[0]) + '–' + num(hi, uh[0]) + uh[1] + tail;
-    return '$' + num(lo, ul[0]) + ul[1] + '–' + num(hi, uh[0]) + uh[1] + tail;
+    var L = fmt(lo), H = fmt(hi), tail = plus ? '+' : '';
+    if (L.u === H.u) return '$' + L.v + '–' + H.v + H.u + tail;
+    return '$' + L.v + L.u + '–' + H.v + H.u + tail;
   }
   function render() {
     var a = Math.max(0, Number(document.getElementById('amount').value) || 0);
@@ -102,8 +106,20 @@
         '<div class="val" style="color:' + s.num + '">' + mo + '</div></div>';
     });
     document.getElementById('rows').innerHTML = out;
+    fitAll();
   }
   document.getElementById('amount').addEventListener('input', render);
+  window.addEventListener('resize', fitAll);
+  function fitAll() {
+    document.querySelectorAll('.val').forEach(function (el) {
+      el.style.fontSize = '';
+      var size = parseFloat(getComputedStyle(el).fontSize);
+      while (el.scrollWidth > el.clientWidth && size > 10) {
+        size -= 0.5;
+        el.style.fontSize = size + 'px';
+      }
+    });
+  }
   render();
 })();
 </script>
