@@ -123,9 +123,9 @@
 <script>
 (function () {
   var HOLDINGS = [
-    { id: 'aerodrome-finance', name: 'Aerodrome', proto: 'Aero Finance · Base', qty: 202 },
-    { id: 'frax-share', name: 'FXS', proto: 'Frax Finance', qty: 393 },
-    { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480 }
+    { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'токена' },
+    { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'токена' },
+    { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'токенов' }
   ];
   var CACHE_KEY = 'dc05081966_prices_v1';
   var TTL = 10 * 60 * 1000; // 10 минут — не чаще, как на главной
@@ -139,7 +139,7 @@
       var p = prices[h.id] || 0, v = p * h.qty;
       var share = total ? Math.round(v / total * 100) : 0;
       rows += '<div class="asset">' +
-        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.proto + ' · ' + h.qty + ' токенов</div></div>' +
+        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.proto + ' · ' + h.qty + ' ' + h.word + '</div></div>' +
         '<div class="aPrice">' + (p ? money(p, p < 1 ? 3 : 2) : '—') + '</div>' +
         '<div class="aVal">' + (p ? money(v, 0) : '—') + '</div>' +
         '<div class="aShare">' + (p ? share + '%' : '—') + '</div></div>';
