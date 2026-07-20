@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Personal Onchain Companies — The Holding</title>
+    <meta name="description" content="The Holding builds personal onchain companies. Turnkey digital companies with real assets, live TVL, and autonomous cash flow — each one part of a single ecosystem.">
+    <link rel="canonical" href="https://theholding.ai/companies">
+
+    <meta property="og:title" content="Personal Onchain Companies — The Holding">
+    <meta property="og:description" content="Turnkey digital companies with real assets, live TVL, and autonomous cash flow. Built under one roof.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://theholding.ai/companies">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg:          #fcfcfa;
+            --bg-soft:     #f6f5f1;
+            --text:        #16150f;
+            --text-2:      rgba(22,21,15,0.62);
+            --text-3:      rgba(22,21,15,0.40);
+            --line:        rgba(22,21,15,0.10);
+            --line-strong: rgba(22,21,15,0.16);
+            --gold:        #a8842c;
+            --gold-soft:   rgba(168,132,44,0.08);
+            --gold-line:   rgba(168,132,44,0.32);
+            --green:       #0a7c4e;
+            --card:        #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* ── Nav ─────────────────────────────────────── */
+        nav {
+            padding: 1.6rem 0;
+            border-bottom: 1px solid var(--line);
+        }
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            letter-spacing: -0.01em;
+        }
+        .nav-back {
+            font-size: 0.78rem;
+            color: var(--text-3);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: var(--text); }
+
+        /* ── Hero ─────────────────────────────────────── */
+        .hero {
+            padding: 7rem 0 5.5rem;
+            text-align: center;
+        }
+        .hero-eyebrow {
+            font-size: 0.66rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1.75rem;
+            font-weight: 500;
+        }
+        .hero h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.6rem, 6.5vw, 4.6rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            line-height: 1.08;
+            max-width: 720px;
+            margin: 0 auto 1.75rem;
+        }
+        .hero h1 em {
+            font-style: italic;
+            color: var(--gold);
+        }
+        .hero-sub {
+            font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+            font-weight: 300;
+            color: var(--text-2);
+            max-width: 540px;
+            margin: 0 auto;
+            line-height: 1.75;
+        }
+
+        /* ── Philosophy strip ─────────────────────────── */
+        .strip {
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+            background: var(--bg-soft);
+            padding: 3.25rem 0;
+        }
+        .strip-inner {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+            text-align: center;
+        }
+        .strip-item-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.05rem;
+            color: var(--gold);
+            margin-bottom: 0.6rem;
+        }
+        .strip-item-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.01em;
+        }
+        .strip-item-text {
+            font-size: 0.78rem;
+            font-weight: 300;
+            color: var(--text-2);
+            line-height: 1.65;
+            max-width: 250px;
+            margin: 0 auto;
+        }
+
+        /* ── Collection section ───────────────────────── */
+        .collection {
+            padding: 5.5rem 0 6rem;
+        }
+        .collection-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 3rem;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .collection-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.9rem, 4vw, 2.6rem);
+            font-weight: 300;
+            letter-spacing: -0.02em;
+        }
+        .collection-count {
+            font-size: 0.72rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-3);
+        }
+        .collection-count b {
+            color: var(--gold);
+            font-weight: 500;
+        }
+
+        /* ── Company cards grid ───────────────────────── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .company-card {
+            position: relative;
+            display: block;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 2rem 2rem 1.75rem;
+            text-decoration: none;
+            color: var(--text);
+            transition: border-color 0.3s ease,
+                        transform 0.3s cubic-bezier(0.22,1,0.36,1),
+                        box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+        .company-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold-line), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .company-card:hover {
+            border-color: var(--gold-line);
+            transform: translateY(-3px);
+            box-shadow: 0 18px 44px -18px rgba(22,21,15,0.14);
+        }
+        .company-card:hover::before { opacity: 1; }
+
+        .cc-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+        .cc-seal {
+            width: 46px;
+            height: 46px;
+            border: 1px solid var(--gold-line);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gold-soft);
+            flex-shrink: 0;
+        }
+        .cc-seal svg { display: block; }
+        .cc-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.62rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--green);
+            font-weight: 500;
+            padding-top: 0.3rem;
+        }
+        .cc-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: livepulse 2.4s ease-in-out infinite;
+        }
+        @keyframes livepulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+
+        .cc-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.85rem;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.3rem;
+            line-height: 1.1;
+        }
+        .cc-sub {
+            font-size: 0.76rem;
+            font-weight: 300;
+            color: var(--text-2);
+            margin-bottom: 1.6rem;
+            line-height: 1.6;
+        }
+
+        .cc-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            padding-top: 1.4rem;
+            border-top: 1px solid var(--line);
+        }
+        .cc-metric-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 0.25rem;
+        }
+        .cc-metric-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.35rem;
+            color: var(--text);
+        }
+        .cc-metric-value.gold { color: var(--gold); }
+
+        .cc-arrow {
+            position: absolute;
+            bottom: 1.6rem;
+            right: 1.9rem;
+            font-size: 1rem;
+            color: var(--text-3);
+            transition: color 0.25s, transform 0.25s;
+        }
+        .company-card:hover .cc-arrow {
+            color: var(--gold);
+            transform: translateX(3px);
+        }
+
+        /* ── Placeholder / coming card ────────────────── */
+        .company-card.placeholder {
+            border-style: dashed;
+            border-color: var(--line-strong);
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 285px;
+            cursor: default;
+        }
+        .company-card.placeholder:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--gold-line);
+        }
+        .placeholder-mark {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: var(--text-3);
+            margin-bottom: 0.75rem;
+        }
+        .placeholder-title {
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            margin-bottom: 0.4rem;
+        }
+        .placeholder-text {
+            font-size: 0.74rem;
+            font-weight: 300;
+            color: var(--text-3);
+            max-width: 220px;
+            line-height: 1.6;
+        }
+
+        /* ── How it works ─────────────────────────────── */
+        .process {
+            border-top: 1px solid var(--line);
+            padding: 5.5rem 0;
+            background: var(--bg-soft);
+        }
+        .process-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.9rem, 4vw, 2.6rem);
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2.5rem;
+            max-width: 940px;
+            margin: 0 auto;
+        }
+        .step {
+            text-align: center;
+        }
+        .step-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.4rem;
+            font-weight: 300;
+            color: var(--gold);
+            line-height: 1;
+            margin-bottom: 0.9rem;
+        }
+        .step-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.45rem;
+        }
+        .step-text {
+            font-size: 0.75rem;
+            font-weight: 300;
+            color: var(--text-2);
+            line-height: 1.65;
+        }
+
+        /* ── Closing CTA ──────────────────────────────── */
+        .closing {
+            padding: 6.5rem 0 7rem;
+            text-align: center;
+        }
+        .closing-quote {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: clamp(1.4rem, 3.2vw, 1.9rem);
+            font-weight: 400;
+            color: var(--text-2);
+            max-width: 620px;
+            margin: 0 auto 2.75rem;
+            line-height: 1.5;
+        }
+        .closing-quote b {
+            color: var(--gold);
+            font-weight: 500;
+            font-style: normal;
+        }
+        .closing-cta {
+            display: inline-block;
+            padding: 0.95rem 2.6rem;
+            border: 1px solid var(--text);
+            border-radius: 100px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            transition: background 0.25s, color 0.25s;
+        }
+        .closing-cta:hover {
+            background: var(--text);
+            color: var(--bg);
+        }
+        .closing-note {
+            margin-top: 1.4rem;
+            font-size: 0.72rem;
+            color: var(--text-3);
+            letter-spacing: 0.04em;
+        }
+
+        /* ── Footer ───────────────────────────────────── */
+        footer {
+            border-top: 1px solid var(--line);
+            padding: 2.25rem 0;
+        }
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .footer-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            color: var(--text-2);
+        }
+        .footer-links {
+            display: flex;
+            gap: 1.75rem;
+        }
+        .footer-links a {
+            font-size: 0.75rem;
+            color: var(--text-3);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--text); }
+
+        /* ── Reveal on scroll ─────────────────────────── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1),
+                        transform 0.8s cubic-bezier(0.22,1,0.36,1);
+        }
+        .reveal.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Mobile ───────────────────────────────────── */
+        @media (max-width: 760px) {
+            .hero { padding: 4.5rem 0 3.75rem; }
+            .strip-inner { grid-template-columns: 1fr; gap: 2.25rem; }
+            .collection { padding: 4rem 0; }
+            .steps { grid-template-columns: 1fr 1fr; gap: 2.25rem 1.5rem; }
+            .closing { padding: 4.5rem 0 5rem; }
+            .footer-inner { flex-direction: column; text-align: center; }
+        }
+        @media (max-width: 460px) {
+            .steps { grid-template-columns: 1fr; }
+            .container { padding: 0 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="container nav-inner">
+        <a href="/" class="nav-brand">The Holding</a>
+        <a href="/" class="nav-back">← Back to Holding</a>
+    </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────── -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-eyebrow reveal">Personal Onchain Companies</div>
+        <h1 class="reveal">The Holding builds<br><em>personal onchain companies.</em></h1>
+        <p class="hero-sub reveal">
+            Turnkey digital companies with real assets on the balance sheet,
+            live TVL, and autonomous cash flow. Each one belongs to its owner.
+            All of them — part of a single ecosystem.
+        </p>
+    </div>
+</section>
+
+<!-- ── PHILOSOPHY STRIP ─────────────────────────────── -->
+<section class="strip">
+    <div class="container strip-inner">
+        <div class="reveal">
+            <div class="strip-item-num">I</div>
+            <div class="strip-item-title">Real Assets</div>
+            <div class="strip-item-text">Every company holds positions in fundamental DeFi protocols — locked long-term, generating cash flow.</div>
+        </div>
+        <div class="reveal">
+            <div class="strip-item-num">II</div>
+            <div class="strip-item-title">One Owner</div>
+            <div class="strip-item-text">A single seed phrase. A physical key. Full sovereignty over the company and everything on its balance.</div>
+        </div>
+        <div class="reveal">
+            <div class="strip-item-num">III</div>
+            <div class="strip-item-title">One Ecosystem</div>
+            <div class="strip-item-text">Every company is assembled under the roof of The Holding — with shared architecture, standards, and philosophy.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ── COLLECTION ───────────────────────────────────── -->
+<section class="collection">
+    <div class="container">
+        <div class="collection-head reveal">
+            <h2 class="collection-title">The Collection</h2>
+            <div class="collection-count"><b id="companyCount">1</b> company · growing</div>
+        </div>
+
+        <div class="grid">
+
+            <!-- ═══ Company 05081966.eth ═══ -->
+            <a class="company-card reveal" href="https://theholding.ai/05081966" target="_blank" rel="noopener">
+                <div class="cc-top">
+                    <div class="cc-seal">
+                        <!-- Five-layer mark, gold -->
+                        <svg width="22" height="20" viewBox="0 0 363 330" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="181.5" cy="12"  rx="178.5" ry="9"    fill="#a8842c"/>
+                            <ellipse cx="181.5" cy="53"  rx="178.5" ry="16.5" fill="#a8842c"/>
+                            <ellipse cx="181.5" cy="112" rx="178.5" ry="26"   fill="#a8842c"/>
+                            <ellipse cx="181.5" cy="189" rx="178.5" ry="35.5" fill="#a8842c"/>
+                            <ellipse cx="181.5" cy="284" rx="178.5" ry="43"   fill="#a8842c"/>
+                        </svg>
+                    </div>
+                    <div class="cc-status"><span class="cc-dot"></span>Live</div>
+                </div>
+
+                <div class="cc-name">05081966.eth</div>
+                <div class="cc-sub">A digital company registered on the blockchain. Three protocols, four-year lock, autonomous cash flow.</div>
+
+                <div class="cc-metrics">
+                    <div>
+                        <div class="cc-metric-label">Company TVL</div>
+                        <div class="cc-metric-value gold" id="tvl-05081966">—</div>
+                    </div>
+                    <div>
+                        <div class="cc-metric-label">Cash Flow / yr</div>
+                        <div class="cc-metric-value">4–8+%</div>
+                    </div>
+                </div>
+
+                <span class="cc-arrow">→</span>
+            </a>
+
+            <!-- ═══ Placeholder: next company ═══ -->
+            <div class="company-card placeholder reveal">
+                <div class="placeholder-mark">◇</div>
+                <div class="placeholder-title">Next Company</div>
+                <div class="placeholder-text">The collection grows as new personal companies are assembled and brought onchain.</div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ── HOW IT WORKS ─────────────────────────────────── -->
+<section class="process">
+    <div class="container">
+        <h2 class="process-title reveal">How a company is born</h2>
+        <div class="steps">
+            <div class="step reveal">
+                <div class="step-num">01</div>
+                <div class="step-title">Identity</div>
+                <div class="step-text">A unique ENS name is registered — often from a date of birth or personal meaning. This becomes the company's address.</div>
+            </div>
+            <div class="step reveal">
+                <div class="step-num">02</div>
+                <div class="step-title">Assets</div>
+                <div class="step-text">Fundamental DeFi protocols are placed on the balance sheet and committed to maximum-duration locks.</div>
+            </div>
+            <div class="step reveal">
+                <div class="step-num">03</div>
+                <div class="step-title">Key</div>
+                <div class="step-text">Ownership is secured by a seed phrase and can be held physically — a Tangem card or ring.</div>
+            </div>
+            <div class="step reveal">
+                <div class="step-num">04</div>
+                <div class="step-title">Autonomy</div>
+                <div class="step-text">The company begins to work: cash flow accrues through protocol mechanics, visible onchain at any time.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CLOSING ──────────────────────────────────────── -->
+<section class="closing">
+    <div class="container">
+        <p class="closing-quote reveal">
+            Not a thing. Not a token. <b>A company</b> — working around the clock,
+            owned by one person, transparent to the world.
+        </p>
+        <div class="reveal">
+            <a class="closing-cta" href="https://x.com/defitea_" target="_blank" rel="noopener">Request your company</a>
+            <div class="closing-note">Each company is assembled individually, turnkey.</div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container footer-inner">
+        <div class="footer-brand">The Holding · MMXXVI</div>
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/manifesto">Manifesto</a>
+            <a href="/faq">FAQ</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+/* ── Scroll reveal ─────────────────────────────────── */
+(function () {
+    const els = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('in');
+                io.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    els.forEach(el => io.observe(el));
+})();
+
+/* ── Live TVL for 05081966.eth ─────────────────────── */
+(async function () {
+    const el = document.getElementById('tvl-05081966');
+    if (!el) return;
+
+    // Same holdings as the case page: AERO 202 / FRAX 393 / CRV 480
+    const HOLDINGS = { aero: 202, fxs: 393, crv: 480 };
+    const API_KEY  = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
+    const url = 'https://api.coingecko.com/api/v3/simple/price'
+              + '?ids=aerodrome-finance,curve-dao-token,frax-share'
+              + '&vs_currencies=usd&x_cg_demo_api_key=' + API_KEY;
+
+    try {
+        const res    = await fetch(url);
+        const prices = await res.json();
+        const tvl =
+            HOLDINGS.aero * (prices['aerodrome-finance']?.usd || 0) +
+            HOLDINGS.crv  * (prices['curve-dao-token']?.usd  || 0) +
+            HOLDINGS.fxs  * (prices['frax-share']?.usd       || 0);
+
+        if (tvl > 0) {
+            el.textContent = '$' + Math.round(tvl).toLocaleString('en-US');
+        } else {
+            el.textContent = 'Live';
+        }
+    } catch (e) {
+        el.textContent = 'Live';
+    }
+})();
+</script>
+
+</body>
+</html>
