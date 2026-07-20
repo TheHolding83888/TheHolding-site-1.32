@@ -479,6 +479,114 @@
             .os-section { padding: 4.5rem 0; }
         }
 
+        /* ── Sticky section nav (portal feel) ─────────── */
+        .subnav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(252,252,250,0.86);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--line);
+        }
+        .subnav-inner {
+            display: flex;
+            gap: 2rem;
+            padding: 0.9rem 0;
+            padding-left: 3rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .subnav-inner::-webkit-scrollbar { display: none; }
+        .subnav a {
+            font-size: 0.74rem;
+            letter-spacing: 0.06em;
+            color: var(--text-3);
+            text-decoration: none;
+            white-space: nowrap;
+            padding-bottom: 0.15rem;
+            border-bottom: 1.5px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .subnav a:hover { color: var(--text); }
+        .subnav a.active {
+            color: var(--text);
+            border-bottom-color: var(--gold);
+        }
+
+        /* ── Ecosystem stats bar ───────────────────────── */
+        .stats-bar {
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+        .stats-inner {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+        .stat-cell {
+            padding: 1.6rem 1rem;
+            text-align: center;
+            border-left: 1px solid var(--line);
+        }
+        .stat-cell:first-child { border-left: none; }
+        .stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            color: var(--gold);
+            line-height: 1;
+            margin-bottom: 0.4rem;
+        }
+        .stat-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-3);
+        }
+        @media (max-width: 640px) {
+            .stats-inner { grid-template-columns: repeat(2, 1fr); }
+            .stat-cell:nth-child(3) { border-left: none; }
+        }
+
+        /* ── Filter tabs ───────────────────────────────── */
+        .filter-tabs {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 2.25rem;
+            flex-wrap: wrap;
+        }
+        .filter-tab {
+            font-size: 0.72rem;
+            letter-spacing: 0.03em;
+            padding: 0.5rem 1.1rem;
+            border-radius: 100px;
+            border: 1px solid var(--line-strong);
+            background: transparent;
+            color: var(--text-2);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-tab.active {
+            background: var(--text);
+            border-color: var(--text);
+            color: var(--bg);
+        }
+        .filter-tab.disabled {
+            color: var(--text-3);
+            cursor: default;
+            border-style: dashed;
+        }
+        .filter-tab.disabled:hover { background: transparent; }
+
+        /* ── Registry number on card ───────────────────── */
+        .cc-regnum {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            color: var(--text-3);
+            text-align: right;
+            margin-bottom: 0.6rem;
+        }
+
         /* ── Closing CTA ──────────────────────────────── */
         .closing {
             padding: 6.5rem 0 7rem;
@@ -586,6 +694,15 @@
     </div>
 </nav>
 
+<div class="subnav" id="subnav">
+    <div class="container subnav-inner">
+        <a href="#collection" data-section="collection">Collection</a>
+        <a href="#how-it-works" data-section="how-it-works">How It Works</a>
+        <a href="#platform" data-section="platform">Platform</a>
+        <a href="#build" data-section="build">Build Yours</a>
+    </div>
+</div>
+
 <!-- ── HERO ─────────────────────────────────────────── -->
 <section class="hero">
     <div class="container">
@@ -620,18 +737,47 @@
     </div>
 </section>
 
+<!-- ── ECOSYSTEM STATS ──────────────────────────────── -->
+<section class="stats-bar">
+    <div class="container stats-inner">
+        <div class="stat-cell reveal">
+            <div class="stat-value" id="statCompanies">1</div>
+            <div class="stat-label">Companies</div>
+        </div>
+        <div class="stat-cell reveal">
+            <div class="stat-value" id="statTVL">—</div>
+            <div class="stat-label">Combined TVL</div>
+        </div>
+        <div class="stat-cell reveal">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Protocols in Use</div>
+        </div>
+        <div class="stat-cell reveal">
+            <div class="stat-value">2026</div>
+            <div class="stat-label">Ecosystem Since</div>
+        </div>
+    </div>
+</section>
+
 <!-- ── COLLECTION ───────────────────────────────────── -->
-<section class="collection">
+<section class="collection" id="collection">
     <div class="container">
         <div class="collection-head reveal">
             <h2 class="collection-title">The Collection</h2>
             <div class="collection-count"><b id="companyCount">1</b> company · growing</div>
         </div>
 
+        <div class="filter-tabs reveal">
+            <button class="filter-tab active" data-filter="all">All Companies</button>
+            <button class="filter-tab" data-filter="standard">Holding Standard</button>
+            <button class="filter-tab disabled" disabled>Custom Build — Coming</button>
+        </div>
+
         <div class="grid">
 
             <!-- ═══ Company 05081966.eth ═══ -->
             <a class="company-card reveal" href="https://theholding.ai/05081966" target="_blank" rel="noopener">
+                <div class="cc-regnum">№ 001</div>
                 <div class="cc-top">
                     <div class="cc-seal">
                         <!-- Five-layer mark, gold -->
@@ -675,7 +821,7 @@
 </section>
 
 <!-- ── HOW IT WORKS ─────────────────────────────────── -->
-<section class="process">
+<section class="process" id="how-it-works">
     <div class="container">
         <h2 class="process-title reveal">How a company is born</h2>
         <div class="steps">
@@ -704,7 +850,7 @@
 </section>
 
 <!-- ── THE HOLDING OS / PLATFORM VISION ─────────────── -->
-<section class="os-section">
+<section class="os-section" id="platform">
     <div class="container">
         <div class="os-eyebrow reveal">The Holding OS</div>
 
@@ -739,7 +885,7 @@
 </section>
 
 <!-- ── CLOSING ──────────────────────────────────────── -->
-<section class="closing">
+<section class="closing" id="build">
     <div class="container">
         <p class="closing-quote reveal">
             Not a thing. Not a token. <b>A company</b> — working around the clock,
@@ -776,10 +922,11 @@
     els.forEach(el => io.observe(el));
 })();
 
-/* ── Live TVL for 05081966.eth ─────────────────────── */
+/* ── Live TVL for 05081966.eth (feeds card + combined stat) ── */
 (async function () {
-    const el = document.getElementById('tvl-05081966');
-    if (!el) return;
+    const el      = document.getElementById('tvl-05081966');
+    const statEl  = document.getElementById('statTVL');
+    if (!el && !statEl) return;
 
     // Same holdings as the case page: AERO 202 / FRAX 393 / CRV 480
     const HOLDINGS = { aero: 202, fxs: 393, crv: 480 };
@@ -796,14 +943,48 @@
             HOLDINGS.crv  * (prices['curve-dao-token']?.usd  || 0) +
             HOLDINGS.fxs  * (prices['frax-share']?.usd       || 0);
 
-        if (tvl > 0) {
-            el.textContent = '$' + Math.round(tvl).toLocaleString('en-US');
-        } else {
-            el.textContent = 'Live';
-        }
+        const formatted = tvl > 0 ? '$' + Math.round(tvl).toLocaleString('en-US') : 'Live';
+        if (el)     el.textContent = formatted;
+        if (statEl) statEl.textContent = formatted; // combined = sum of all companies; today just this one
+
     } catch (e) {
-        el.textContent = 'Live';
+        if (el)     el.textContent = 'Live';
+        if (statEl) statEl.textContent = 'Live';
     }
+})();
+
+/* ── Sticky subnav: highlight active section on scroll ── */
+(function () {
+    const links    = document.querySelectorAll('.subnav a');
+    const sections = Array.from(links).map(a =>
+        document.getElementById(a.dataset.section)
+    ).filter(Boolean);
+
+    if (!sections.length) return;
+
+    function onScroll() {
+        const y = window.scrollY + 140; // offset for subnav height
+        let current = sections[0];
+        sections.forEach(sec => { if (sec.offsetTop <= y) current = sec; });
+        links.forEach(a => {
+            a.classList.toggle('active', a.dataset.section === current.id);
+        });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+})();
+
+/* ── Filter tabs (visual state; single company today) ── */
+(function () {
+    const tabs = document.querySelectorAll('.filter-tab:not(.disabled)');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            // Future: filter .company-card by data-category here
+        });
+    });
 })();
 </script>
 
