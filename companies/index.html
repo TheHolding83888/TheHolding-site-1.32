@@ -77,6 +77,39 @@
         }
         .nav-back:hover { color: var(--text); }
 
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .lang-switch {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid var(--line-strong);
+            border-radius: 100px;
+            padding: 3px;
+            gap: 2px;
+        }
+        .lang-switch button {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            padding: 0.32rem 0.75rem;
+            border-radius: 100px;
+            border: none;
+            background: transparent;
+            color: var(--text-3);
+            cursor: pointer;
+            transition: background 0.25s, color 0.25s;
+        }
+        .lang-switch button.active {
+            background: var(--text);
+            color: var(--bg);
+        }
+        .lang-switch button:hover:not(.active) { color: var(--text); }
+
         /* ── Hero ─────────────────────────────────────── */
         .hero {
             padding: 7rem 0 5.5rem;
@@ -692,29 +725,31 @@
 <nav>
     <div class="container nav-inner">
         <a href="/" class="nav-brand">The Holding</a>
-        <a href="/" class="nav-back">← Back to Holding</a>
+        <div class="nav-right">
+            <a href="/" class="nav-back" data-i18n="nav.back">← Back to Holding</a>
+            <div class="lang-switch">
+                <button data-lang="en" class="active">EN</button>
+                <button data-lang="ru">RU</button>
+            </div>
+        </div>
     </div>
 </nav>
 
 <div class="subnav" id="subnav">
     <div class="container subnav-inner">
-        <a href="#collection" data-section="collection">Collection</a>
-        <a href="#how-it-works" data-section="how-it-works">How It Works</a>
-        <a href="#platform" data-section="platform">Platform</a>
-        <a href="#build" data-section="build">Build Yours</a>
+        <a href="#collection" data-section="collection" data-i18n="subnav.collection">Collection</a>
+        <a href="#how-it-works" data-section="how-it-works" data-i18n="subnav.how">How It Works</a>
+        <a href="#platform" data-section="platform" data-i18n="subnav.platform">Platform</a>
+        <a href="#build" data-section="build" data-i18n="subnav.build">Build Yours</a>
     </div>
 </div>
 
 <!-- ── HERO ─────────────────────────────────────────── -->
 <section class="hero">
     <div class="container">
-        <div class="hero-eyebrow reveal">Personal Onchain Companies</div>
-        <h1 class="reveal">The Holding builds<br><em>personal onchain companies.</em></h1>
-        <p class="hero-sub reveal">
-            Turnkey digital companies with real assets on the balance sheet,
-            live TVL, and autonomous cash flow. Each one belongs to its owner.
-            All of them are part of one ecosystem.
-        </p>
+        <div class="hero-eyebrow reveal" data-i18n="hero.eyebrow">Personal Onchain Companies</div>
+        <h1 class="reveal" data-i18n-html="hero.h1">The Holding builds<br><em>personal onchain companies.</em></h1>
+        <p class="hero-sub reveal" data-i18n="hero.sub">Turnkey digital companies with real assets on the balance sheet, live TVL, and autonomous cash flow. Each one belongs to its owner. All of them are part of one ecosystem.</p>
     </div>
 </section>
 
@@ -723,18 +758,18 @@
     <div class="container strip-inner">
         <div class="reveal">
             <div class="strip-item-num">I</div>
-            <div class="strip-item-title">Real Assets</div>
-            <div class="strip-item-text">Every company holds positions in fundamental DeFi protocols — locked for the long term and designed to generate cash flow.</div>
+            <div class="strip-item-title" data-i18n="strip.1.title">Real Assets</div>
+            <div class="strip-item-text" data-i18n="strip.1.text">Every company holds positions in fundamental DeFi protocols — locked for the long term and designed to generate cash flow.</div>
         </div>
         <div class="reveal">
             <div class="strip-item-num">II</div>
-            <div class="strip-item-title">One Owner</div>
-            <div class="strip-item-text">One owner. One physical key. Full control over the company and everything on its balance sheet.</div>
+            <div class="strip-item-title" data-i18n="strip.2.title">One Owner</div>
+            <div class="strip-item-text" data-i18n="strip.2.text">One owner. One physical key. Full control over the company and everything on its balance sheet.</div>
         </div>
         <div class="reveal">
             <div class="strip-item-num">III</div>
-            <div class="strip-item-title">One Ecosystem</div>
-            <div class="strip-item-text">Every company is assembled under The Holding — with shared architecture, standards, and philosophy.</div>
+            <div class="strip-item-title" data-i18n="strip.3.title">One Ecosystem</div>
+            <div class="strip-item-text" data-i18n="strip.3.text">Every company is assembled under The Holding — with shared architecture, standards, and philosophy.</div>
         </div>
     </div>
 </section>
@@ -744,19 +779,19 @@
     <div class="container stats-inner">
         <div class="stat-cell reveal">
             <div class="stat-value" id="statCompanies">1</div>
-            <div class="stat-label">Companies</div>
+            <div class="stat-label" data-i18n="stats.companies">Companies</div>
         </div>
         <div class="stat-cell reveal">
             <div class="stat-value" id="statTVL">—</div>
-            <div class="stat-label">Combined TVL</div>
+            <div class="stat-label" data-i18n="stats.tvl">Combined TVL</div>
         </div>
         <div class="stat-cell reveal">
             <div class="stat-value">3</div>
-            <div class="stat-label">Protocols in Use</div>
+            <div class="stat-label" data-i18n="stats.protocols">Protocols in Use</div>
         </div>
         <div class="stat-cell reveal">
             <div class="stat-value">2026</div>
-            <div class="stat-label">Ecosystem Since</div>
+            <div class="stat-label" data-i18n="stats.since">Ecosystem Since</div>
         </div>
     </div>
 </section>
@@ -765,14 +800,14 @@
 <section class="collection" id="collection">
     <div class="container">
         <div class="collection-head reveal">
-            <h2 class="collection-title">The Collection</h2>
-            <div class="collection-count"><b id="companyCount">1</b> company · growing</div>
+            <h2 class="collection-title" data-i18n="collection.title">The Collection</h2>
+            <div class="collection-count"><b id="companyCount">1</b> <span data-i18n="collection.count">company · growing</span></div>
         </div>
 
         <div class="filter-tabs reveal">
-            <button class="filter-tab active" data-filter="all">All Companies</button>
-            <button class="filter-tab" data-filter="standard">Holding Standard</button>
-            <button class="filter-tab disabled" disabled>Custom Build — Coming</button>
+            <button class="filter-tab active" data-filter="all" data-i18n="filter.all">All Companies</button>
+            <button class="filter-tab" data-filter="standard" data-i18n="filter.standard">Holding Standard</button>
+            <button class="filter-tab disabled" disabled data-i18n="filter.custom">Custom Build — Coming</button>
         </div>
 
         <div class="grid">
@@ -791,19 +826,19 @@
                             <ellipse cx="181.5" cy="284" rx="178.5" ry="43"   fill="#a8842c"/>
                         </svg>
                     </div>
-                    <div class="cc-status"><span class="cc-dot"></span>Live</div>
+                    <div class="cc-status"><span class="cc-dot"></span><span data-i18n="card.live">Live</span></div>
                 </div>
 
                 <div class="cc-name">05081966.eth</div>
-                <div class="cc-sub">A digital company registered onchain. Three protocols, a four-year lock, and autonomous cash flow.</div>
+                <div class="cc-sub" data-i18n="card.sub">A digital company registered onchain. Three protocols, a four-year lock, and autonomous cash flow.</div>
 
                 <div class="cc-metrics">
                     <div>
-                        <div class="cc-metric-label">Company TVL</div>
+                        <div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div>
                         <div class="cc-metric-value gold" id="tvl-05081966">—</div>
                     </div>
                     <div>
-                        <div class="cc-metric-label">Cash Flow / yr</div>
+                        <div class="cc-metric-label" data-i18n="card.cashflow">Cash Flow / yr</div>
                         <div class="cc-metric-value">4–8+%</div>
                     </div>
                 </div>
@@ -814,8 +849,8 @@
             <!-- ═══ Placeholder: next company ═══ -->
             <div class="company-card placeholder reveal">
                 <div class="placeholder-mark">◇</div>
-                <div class="placeholder-title">Next Company</div>
-                <div class="placeholder-text">The collection grows as new personal companies are assembled and brought onchain.</div>
+                <div class="placeholder-title" data-i18n="placeholder.title">Next Company</div>
+                <div class="placeholder-text" data-i18n="placeholder.text">The collection grows as new personal companies are assembled and brought onchain.</div>
             </div>
 
         </div>
@@ -825,27 +860,27 @@
 <!-- ── HOW IT WORKS ─────────────────────────────────── -->
 <section class="process" id="how-it-works">
     <div class="container">
-        <h2 class="process-title reveal">How a company is born</h2>
+        <h2 class="process-title reveal" data-i18n="process.title">How a company is born</h2>
         <div class="steps">
             <div class="step reveal">
                 <div class="step-num">01</div>
-                <div class="step-title">Identity</div>
-                <div class="step-text">A unique ENS name is registered — often based on a date of birth or personal meaning. This becomes the company's address.</div>
+                <div class="step-title" data-i18n="process.1.title">Identity</div>
+                <div class="step-text" data-i18n="process.1.text">A unique ENS name is registered — often based on a date of birth or personal meaning. This becomes the company's address.</div>
             </div>
             <div class="step reveal">
                 <div class="step-num">02</div>
-                <div class="step-title">Assets</div>
-                <div class="step-text">Fundamental DeFi protocols are placed on the balance sheet and locked for the maximum available term.</div>
+                <div class="step-title" data-i18n="process.2.title">Assets</div>
+                <div class="step-text" data-i18n="process.2.text">Fundamental DeFi protocols are placed on the balance sheet and locked for the maximum available term.</div>
             </div>
             <div class="step reveal">
                 <div class="step-num">03</div>
-                <div class="step-title">Key</div>
-                <div class="step-text">Ownership is delivered through a private access setup — from a recovery phrase to a Tangem card or ring, depending on the case.</div>
+                <div class="step-title" data-i18n="process.3.title">Key</div>
+                <div class="step-text" data-i18n="process.3.text">Ownership is delivered through a private access setup — from a recovery phrase to a Tangem card or ring, depending on the case.</div>
             </div>
             <div class="step reveal">
                 <div class="step-num">04</div>
-                <div class="step-title">Autonomy</div>
-                <div class="step-text">The company begins to work: cash flow starts accruing through the protocols, visible onchain at any time.</div>
+                <div class="step-title" data-i18n="process.4.title">Autonomy</div>
+                <div class="step-text" data-i18n="process.4.text">The company begins to work: cash flow starts accruing through the protocols, visible onchain at any time.</div>
             </div>
         </div>
     </div>
@@ -857,31 +892,26 @@
         <div class="os-eyebrow reveal">The Holding OS</div>
 
         <p class="os-statement reveal">
-            <span class="dim">Not custody. Not a broker. Not a fund manager.</span><br>
-            <span class="bright">A system for building your own onchain company.</span>
+            <span class="dim" data-i18n="os.statement.dim">Not custody. Not a broker. Not a fund manager.</span><br>
+            <span class="bright" data-i18n="os.statement.bright">A system for building your own onchain company.</span>
         </p>
 
-        <p class="os-body reveal">
-            Today, The Holding assembles personal companies using its own proven architecture.
-            Over time, this becomes something larger — a platform where anyone can assemble
-            a company from any assets they choose, from the same core structure Substantia,
-            Defitea and the rest are built on, to entirely custom combinations of their own.
-        </p>
+        <p class="os-body reveal" data-i18n="os.body">Today, The Holding assembles personal companies using its own proven architecture. Over time, this becomes something larger — a platform where anyone can assemble a company from any assets they choose, from the same core structure Substantia, Defitea and the rest are built on, to entirely custom combinations of their own.</p>
 
         <div class="os-grid">
             <div class="os-card reveal">
-                <div class="os-card-title"><span class="mark">◆</span>Built to Scale</div>
-                <div class="os-card-text">One infrastructure, many companies. Every new case strengthens the same underlying system — designed from day one to serve far more than a single owner.</div>
+                <div class="os-card-title"><span class="mark">◆</span><span data-i18n="os.card1.title">Built to Scale</span></div>
+                <div class="os-card-text" data-i18n="os.card1.text">One infrastructure, many companies. Every new case strengthens the same underlying system — designed from day one to serve far more than a single owner.</div>
             </div>
             <div class="os-card reveal">
-                <div class="os-card-title"><span class="mark">◆</span>Never Custodial</div>
-                <div class="os-card-text">The platform holds nothing. Every company remains fully self-custodied — its assets, its key, its rules belong to the owner alone.</div>
+                <div class="os-card-title"><span class="mark">◆</span><span data-i18n="os.card2.title">Never Custodial</span></div>
+                <div class="os-card-text" data-i18n="os.card2.text">The platform holds nothing. Every company remains fully self-custodied — its assets, its key, its rules belong to the owner alone.</div>
             </div>
         </div>
 
         <div class="os-tagline reveal">
-            <div class="os-tagline-main">Your assets. Your key. Your company.</div>
-            <div class="os-tagline-sub">Powered by <b>The Holding OS</b></div>
+            <div class="os-tagline-main" data-i18n="os.tagline">Your assets. Your key. Your company.</div>
+            <div class="os-tagline-sub"><span data-i18n="os.poweredby">Powered by</span> <b>The Holding OS</b></div>
         </div>
     </div>
 </section>
@@ -889,13 +919,10 @@
 <!-- ── CLOSING ──────────────────────────────────────── -->
 <section class="closing" id="build">
     <div class="container">
-        <p class="closing-quote reveal">
-            Not a thing. Not a token. <b>A company</b> — working around the clock,
-            owned by one person, transparent to the world.
-        </p>
+        <p class="closing-quote reveal" data-i18n-html="closing.quote">Not a thing. Not a token. <b>A company</b> — working around the clock, owned by one person, transparent to the world.</p>
         <div class="reveal">
-            <a class="closing-cta" href="https://x.com/defitea_" target="_blank" rel="noopener">Build your company</a>
-            <div class="closing-note">Each company is assembled individually, turnkey.</div>
+            <a class="closing-cta" href="https://x.com/defitea_" target="_blank" rel="noopener" data-i18n="closing.cta">Build your company</a>
+            <div class="closing-note" data-i18n="closing.note">Each company is assembled individually, turnkey.</div>
         </div>
     </div>
 </section>
@@ -904,7 +931,7 @@
     <div class="container footer-inner">
         <div class="footer-brand">The Holding · MMXXVI</div>
         <div class="footer-links">
-            <a href="/">Home</a>
+            <a href="/" data-i18n="footer.home">Home</a>
         </div>
     </div>
 </footer>
@@ -987,6 +1014,146 @@
             // Future: filter .company-card by data-category here
         });
     });
+})();
+
+/* ── i18n: EN / RU ─────────────────────────────────── */
+(function () {
+    const I18N = {
+        en: {
+            'nav.back': '← Back to Holding',
+            'subnav.collection': 'Collection',
+            'subnav.how': 'How It Works',
+            'subnav.platform': 'Platform',
+            'subnav.build': 'Build Yours',
+            'hero.eyebrow': 'Personal Onchain Companies',
+            'hero.h1': 'The Holding builds<br><em>personal onchain companies.</em>',
+            'hero.sub': 'Turnkey digital companies with real assets on the balance sheet, live TVL, and autonomous cash flow. Each one belongs to its owner. All of them are part of one ecosystem.',
+            'strip.1.title': 'Real Assets',
+            'strip.1.text': 'Every company holds positions in fundamental DeFi protocols — locked for the long term and designed to generate cash flow.',
+            'strip.2.title': 'One Owner',
+            'strip.2.text': 'One owner. One physical key. Full control over the company and everything on its balance sheet.',
+            'strip.3.title': 'One Ecosystem',
+            'strip.3.text': 'Every company is assembled under The Holding — with shared architecture, standards, and philosophy.',
+            'stats.companies': 'Companies',
+            'stats.tvl': 'Combined TVL',
+            'stats.protocols': 'Protocols in Use',
+            'stats.since': 'Ecosystem Since',
+            'collection.title': 'The Collection',
+            'collection.count': 'company · growing',
+            'filter.all': 'All Companies',
+            'filter.standard': 'Holding Standard',
+            'filter.custom': 'Custom Build — Coming',
+            'card.live': 'Live',
+            'card.sub': 'A digital company registered onchain. Three protocols, a four-year lock, and autonomous cash flow.',
+            'card.tvl': 'Company TVL',
+            'card.cashflow': 'Cash Flow / yr',
+            'placeholder.title': 'Next Company',
+            'placeholder.text': 'The collection grows as new personal companies are assembled and brought onchain.',
+            'process.title': 'How a company is born',
+            'process.1.title': 'Identity',
+            'process.1.text': 'A unique ENS name is registered — often based on a date of birth or personal meaning. This becomes the company\'s address.',
+            'process.2.title': 'Assets',
+            'process.2.text': 'Fundamental DeFi protocols are placed on the balance sheet and locked for the maximum available term.',
+            'process.3.title': 'Key',
+            'process.3.text': 'Ownership is delivered through a private access setup — from a recovery phrase to a Tangem card or ring, depending on the case.',
+            'process.4.title': 'Autonomy',
+            'process.4.text': 'The company begins to work: cash flow starts accruing through the protocols, visible onchain at any time.',
+            'os.statement.dim': 'Not custody. Not a broker. Not a fund manager.',
+            'os.statement.bright': 'A system for building your own onchain company.',
+            'os.body': 'Today, The Holding assembles personal companies using its own proven architecture. Over time, this becomes something larger — a platform where anyone can assemble a company from any assets they choose, from the same core structure Substantia, Defitea and the rest are built on, to entirely custom combinations of their own.',
+            'os.card1.title': 'Built to Scale',
+            'os.card1.text': 'One infrastructure, many companies. Every new case strengthens the same underlying system — designed from day one to serve far more than a single owner.',
+            'os.card2.title': 'Never Custodial',
+            'os.card2.text': 'The platform holds nothing. Every company remains fully self-custodied — its assets, its key, its rules belong to the owner alone.',
+            'os.tagline': 'Your assets. Your key. Your company.',
+            'os.poweredby': 'Powered by',
+            'closing.quote': 'Not a thing. Not a token. <b>A company</b> — working around the clock, owned by one person, transparent to the world.',
+            'closing.cta': 'Build your company',
+            'closing.note': 'Each company is assembled individually, turnkey.',
+            'footer.home': 'Home',
+        },
+        ru: {
+            'nav.back': '← Назад к Holding',
+            'subnav.collection': 'Коллекция',
+            'subnav.how': 'Как это работает',
+            'subnav.platform': 'Платформа',
+            'subnav.build': 'Создать свою',
+            'hero.eyebrow': 'Персональные ончейн-компании',
+            'hero.h1': 'The Holding создаёт<br><em>персональные ончейн-компании.</em>',
+            'hero.sub': 'Готовые цифровые компании с реальными активами на балансе, живым TVL и автономным денежным потоком. Каждая принадлежит своему владельцу. Все — часть единой экосистемы.',
+            'strip.1.title': 'Реальные активы',
+            'strip.1.text': 'Каждая компания держит позиции в фундаментальных DeFi-протоколах — заблокированные на долгий срок и предназначенные генерировать денежный поток.',
+            'strip.2.title': 'Один владелец',
+            'strip.2.text': 'Один владелец. Один физический ключ. Полный контроль над компанией и всем, что на её балансе.',
+            'strip.3.title': 'Единая экосистема',
+            'strip.3.text': 'Каждая компания собрана под крышей The Holding — с единой архитектурой, стандартами и философией.',
+            'stats.companies': 'Компаний',
+            'stats.tvl': 'Общий TVL',
+            'stats.protocols': 'Протоколов в работе',
+            'stats.since': 'Экосистема с',
+            'collection.title': 'Коллекция',
+            'collection.count': 'компания · растёт',
+            'filter.all': 'Все компании',
+            'filter.standard': 'Стандарт Holding',
+            'filter.custom': 'Индивидуальная сборка — скоро',
+            'card.live': 'Онлайн',
+            'card.sub': 'Цифровая компания, зарегистрированная ончейн. Три протокола, блокировка на четыре года и автономный денежный поток.',
+            'card.tvl': 'TVL компании',
+            'card.cashflow': 'Денежный поток / год',
+            'placeholder.title': 'Следующая компания',
+            'placeholder.text': 'Коллекция растёт по мере того, как собираются и выводятся в блокчейн новые персональные компании.',
+            'process.title': 'Как рождается компания',
+            'process.1.title': 'Идентичность',
+            'process.1.text': 'Регистрируется уникальное ENS-имя — часто на основе даты рождения или личного смысла. Оно становится адресом компании.',
+            'process.2.title': 'Активы',
+            'process.2.text': 'Фундаментальные DeFi-протоколы размещаются на балансе и блокируются на максимально доступный срок.',
+            'process.3.title': 'Ключ',
+            'process.3.text': 'Владение передаётся через приватную настройку доступа — от сид-фразы до карты или кольца Tangem, в зависимости от случая.',
+            'process.4.title': 'Автономность',
+            'process.4.text': 'Компания начинает работать: денежный поток начисляется через протоколы, и это видно в блокчейне в любой момент.',
+            'os.statement.dim': 'Не хранение. Не брокер. Не управляющий фондом.',
+            'os.statement.bright': 'Система для создания собственной ончейн-компании.',
+            'os.body': 'Сегодня The Holding собирает персональные компании на основе своей проверенной архитектуры. Со временем это станет чем-то большим — платформой, где каждый сможет собрать компанию из любых активов на выбор: от той же базовой структуры, на которой построены Substantia, Defitea и остальные фонды, до полностью индивидуальных комбинаций.',
+            'os.card1.title': 'Готово к масштабированию',
+            'os.card1.text': 'Одна инфраструктура, множество компаний. Каждый новый кейс укрепляет одну и ту же систему — изначально созданную для гораздо большего числа владельцев, чем один.',
+            'os.card2.title': 'Никогда не хранит средства',
+            'os.card2.text': 'Платформа ничего не хранит. Каждая компания остаётся полностью самостоятельной — её активы, её ключ, её правила принадлежат только владельцу.',
+            'os.tagline': 'Ваши активы. Ваш ключ. Ваша компания.',
+            'os.poweredby': 'На основе',
+            'closing.quote': 'Не вещь. Не токен. <b>Компания</b> — работающая круглосуточно, принадлежащая одному человеку, прозрачная для всего мира.',
+            'closing.cta': 'Создать свою компанию',
+            'closing.note': 'Каждая компания собирается индивидуально, под ключ.',
+            'footer.home': 'Главная',
+        }
+    };
+
+    function applyLang(lang) {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (I18N[lang][key] !== undefined) el.textContent = I18N[lang][key];
+        });
+        document.querySelectorAll('[data-i18n-html]').forEach(el => {
+            const key = el.getAttribute('data-i18n-html');
+            if (I18N[lang][key] !== undefined) el.innerHTML = I18N[lang][key];
+        });
+        document.documentElement.lang = lang;
+        document.querySelectorAll('.lang-switch button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === lang);
+        });
+        try { localStorage.setItem('holdingCompaniesLang', lang); } catch (e) {}
+    }
+
+    document.querySelectorAll('.lang-switch button').forEach(btn => {
+        btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+    });
+
+    let initial = 'en';
+    try {
+        const saved = localStorage.getItem('holdingCompaniesLang');
+        if (saved === 'en' || saved === 'ru') initial = saved;
+    } catch (e) {}
+
+    applyLang(initial);
 })();
 </script>
 
