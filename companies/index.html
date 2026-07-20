@@ -524,16 +524,17 @@
         }
         .subnav-inner {
             display: flex;
-            gap: 2.2rem;
-            padding: 1.25rem 3rem;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
             overflow-x: auto;
             scrollbar-width: none;
         }
         .subnav-inner::-webkit-scrollbar { display: none; }
         .subnav a {
-            font-size: 0.84rem;
+            font-size: 0.8rem;
             font-weight: 500;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.02em;
             color: var(--text-3);
             text-decoration: none;
             white-space: nowrap;
@@ -676,20 +677,23 @@
         }
         .footer-brand {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1rem;
-            color: var(--text-2);
+            font-size: 1.3rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            color: var(--text);
         }
         .footer-links {
             display: flex;
             gap: 1.75rem;
         }
         .footer-links a {
-            font-size: 0.75rem;
-            color: var(--text-3);
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--text-2);
             text-decoration: none;
             transition: color 0.2s;
         }
-        .footer-links a:hover { color: var(--text); }
+        .footer-links a:hover { color: var(--gold); }
 
         /* ── Reveal on scroll ─────────────────────────── */
         .reveal {
@@ -711,8 +715,8 @@
             .steps { grid-template-columns: 1fr 1fr; gap: 2.25rem 1.5rem; }
             .closing { padding: 4.5rem 0 5rem; }
             .footer-inner { flex-direction: column; text-align: center; }
-            .subnav-inner { padding: 1.1rem 1.5rem; gap: 1.6rem; }
-            .subnav a { font-size: 0.8rem; }
+            .subnav-inner { padding: 1rem 1.1rem; gap: 0.6rem; }
+            .subnav a { font-size: 0.72rem; }
         }
         @media (max-width: 460px) {
             .steps { grid-template-columns: 1fr; }
@@ -726,7 +730,6 @@
     <div class="container nav-inner">
         <a href="/" class="nav-brand">The Holding</a>
         <div class="nav-right">
-            <a href="/" class="nav-back" data-i18n="nav.back">← Back to Holding</a>
             <div class="lang-switch">
                 <button data-lang="en" class="active">EN</button>
                 <button data-lang="ru">RU</button>
@@ -791,7 +794,7 @@
         </div>
         <div class="stat-cell reveal">
             <div class="stat-value">2026</div>
-            <div class="stat-label" data-i18n="stats.since">Ecosystem Since</div>
+            <div class="stat-label" data-i18n="stats.since">Founded</div>
         </div>
     </div>
 </section>
@@ -801,7 +804,7 @@
     <div class="container">
         <div class="collection-head reveal">
             <h2 class="collection-title" data-i18n="collection.title">The Collection</h2>
-            <div class="collection-count"><b id="companyCount">1</b> <span data-i18n="collection.count">company · growing</span></div>
+            <div class="collection-count"><b id="companyCount">1</b> <span data-i18n="collection.count">company</span></div>
         </div>
 
         <div class="filter-tabs reveal">
@@ -875,7 +878,7 @@
             <div class="step reveal">
                 <div class="step-num">03</div>
                 <div class="step-title" data-i18n="process.3.title">Key</div>
-                <div class="step-text" data-i18n="process.3.text">Ownership is delivered through a private access setup — from a recovery phrase to a Tangem card or ring, depending on the case.</div>
+                <div class="step-text" data-i18n="process.3.text">Ownership is delivered through a private access setup — from a recovery phrase to a Tangem card or ring, based on the owner's preference.</div>
             </div>
             <div class="step reveal">
                 <div class="step-num">04</div>
@@ -901,7 +904,7 @@
         <div class="os-grid">
             <div class="os-card reveal">
                 <div class="os-card-title"><span class="mark">◆</span><span data-i18n="os.card1.title">Built to Scale</span></div>
-                <div class="os-card-text" data-i18n="os.card1.text">One infrastructure, many companies. Every new case strengthens the same underlying system — designed from day one to serve far more than a single owner.</div>
+                <div class="os-card-text" data-i18n="os.card1.text">One shared infrastructure runs every company in the collection. It was built from day one to support many owners at once — not tailored to any single case.</div>
             </div>
             <div class="os-card reveal">
                 <div class="os-card-title"><span class="mark">◆</span><span data-i18n="os.card2.title">Never Custodial</span></div>
@@ -919,7 +922,7 @@
 <!-- ── CLOSING ──────────────────────────────────────── -->
 <section class="closing" id="build">
     <div class="container">
-        <p class="closing-quote reveal" data-i18n-html="closing.quote">Not a thing. Not a token. <b>A company</b> — working around the clock, owned by one person, transparent to the world.</p>
+        <p class="closing-quote reveal" data-i18n-html="closing.quote">Not a thing. Not a token. <b>A company</b> — working around the clock, owned by one person, verifiable onchain at any time.</p>
         <div class="reveal">
             <a class="closing-cta" href="https://x.com/defitea_" target="_blank" rel="noopener" data-i18n="closing.cta">Build your company</a>
             <div class="closing-note" data-i18n="closing.note">Each company is assembled individually, turnkey.</div>
@@ -1037,9 +1040,9 @@
             'stats.companies': 'Companies',
             'stats.tvl': 'Combined TVL',
             'stats.protocols': 'Protocols in Use',
-            'stats.since': 'Ecosystem Since',
+            'stats.since': 'Founded',
             'collection.title': 'The Collection',
-            'collection.count': 'company · growing',
+            'collection.count': 'company',
             'filter.all': 'All Companies',
             'filter.standard': 'Holding Standard',
             'filter.custom': 'Custom Build — Coming',
@@ -1055,19 +1058,19 @@
             'process.2.title': 'Assets',
             'process.2.text': 'Fundamental DeFi protocols are placed on the balance sheet and locked for the maximum available term.',
             'process.3.title': 'Key',
-            'process.3.text': 'Ownership is delivered through a private access setup — from a recovery phrase to a Tangem card or ring, depending on the case.',
+            'process.3.text': 'Ownership is delivered through a private access setup — from a recovery phrase to a Tangem card or ring, based on the owner\'s preference.',
             'process.4.title': 'Autonomy',
             'process.4.text': 'The company begins to work: cash flow starts accruing through the protocols, visible onchain at any time.',
             'os.statement.dim': 'Not custody. Not a broker. Not a fund manager.',
             'os.statement.bright': 'A system for building your own onchain company.',
             'os.body': 'Today, The Holding assembles personal companies using its own proven architecture. Over time, this becomes something larger — a platform where anyone can assemble a company from any assets they choose, from the same core structure Substantia, Defitea and the rest are built on, to entirely custom combinations of their own.',
             'os.card1.title': 'Built to Scale',
-            'os.card1.text': 'One infrastructure, many companies. Every new case strengthens the same underlying system — designed from day one to serve far more than a single owner.',
+            'os.card1.text': 'One shared infrastructure runs every company in the collection. It was built from day one to support many owners at once — not tailored to any single case.',
             'os.card2.title': 'Never Custodial',
             'os.card2.text': 'The platform holds nothing. Every company remains fully self-custodied — its assets, its key, its rules belong to the owner alone.',
             'os.tagline': 'Your assets. Your key. Your company.',
             'os.poweredby': 'Powered by',
-            'closing.quote': 'Not a thing. Not a token. <b>A company</b> — working around the clock, owned by one person, transparent to the world.',
+            'closing.quote': 'Not a thing. Not a token. <b>A company</b> — working around the clock, owned by one person, verifiable onchain at any time.',
             'closing.cta': 'Build your company',
             'closing.note': 'Each company is assembled individually, turnkey.',
             'footer.home': 'Home',
@@ -1090,9 +1093,9 @@
             'stats.companies': 'Компаний',
             'stats.tvl': 'Общий TVL',
             'stats.protocols': 'Протоколов в работе',
-            'stats.since': 'Экосистема с',
+            'stats.since': 'Год основания',
             'collection.title': 'Коллекция',
-            'collection.count': 'компания · растёт',
+            'collection.count': 'компания',
             'filter.all': 'Все компании',
             'filter.standard': 'Стандарт Holding',
             'filter.custom': 'Индивидуальная сборка — скоро',
@@ -1108,19 +1111,19 @@
             'process.2.title': 'Активы',
             'process.2.text': 'Фундаментальные DeFi-протоколы размещаются на балансе и блокируются на максимально доступный срок.',
             'process.3.title': 'Ключ',
-            'process.3.text': 'Владение передаётся через приватную настройку доступа — от сид-фразы до карты или кольца Tangem, в зависимости от случая.',
+            'process.3.text': 'Владение передаётся через приватную настройку доступа — от сид-фразы до карты или кольца Tangem, в зависимости от предпочтений.',
             'process.4.title': 'Автономность',
             'process.4.text': 'Компания начинает работать: денежный поток начисляется через протоколы, и это видно в блокчейне в любой момент.',
             'os.statement.dim': 'Не хранение. Не брокер. Не управляющий фондом.',
             'os.statement.bright': 'Система для создания собственной ончейн-компании.',
             'os.body': 'Сегодня The Holding собирает персональные компании на основе своей проверенной архитектуры. Со временем это станет чем-то большим — платформой, где каждый сможет собрать компанию из любых активов на выбор: от той же базовой структуры, на которой построены Substantia, Defitea и остальные фонды, до полностью индивидуальных комбинаций.',
             'os.card1.title': 'Готово к масштабированию',
-            'os.card1.text': 'Одна инфраструктура, множество компаний. Каждый новый кейс укрепляет одну и ту же систему — изначально созданную для гораздо большего числа владельцев, чем один.',
+            'os.card1.text': 'Одна общая инфраструктура обслуживает все компании в коллекции. Она изначально создана для множества владельцев одновременно — а не под конкретный частный случай.',
             'os.card2.title': 'Никогда не хранит средства',
             'os.card2.text': 'Платформа ничего не хранит. Каждая компания остаётся полностью самостоятельной — её активы, её ключ, её правила принадлежат только владельцу.',
             'os.tagline': 'Ваши активы. Ваш ключ. Ваша компания.',
             'os.poweredby': 'На основе',
-            'closing.quote': 'Не вещь. Не токен. <b>Компания</b> — работающая круглосуточно, принадлежащая одному человеку, прозрачная для всего мира.',
+            'closing.quote': 'Не вещь. Не токен. <b>Компания</b> — работающая круглосуточно, принадлежащая одному человеку, с проверяемой ончейн-историей в любой момент.',
             'closing.cta': 'Создать свою компанию',
             'closing.note': 'Каждая компания собирается индивидуально, под ключ.',
             'footer.home': 'Главная',
