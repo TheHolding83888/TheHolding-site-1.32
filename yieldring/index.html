@@ -13,7 +13,8 @@
   html, body { margin: 0; padding: 0; background: #F5F2EC; }
   body { min-height: 100vh; background: radial-gradient(120% 70% at 50% -10%, #FBF9F4 0%, #F3F0E9 55%, #EDE9E0 100%); color: #16181C; font-family: 'Archivo', sans-serif; display: flex; justify-content: center; padding: 44px 20px 60px; }
   .wrap { width: 100%; max-width: 780px; display: flex; flex-direction: column; gap: 44px; position: relative; }
-  .rings { position: absolute; right: -280px; top: -180px; width: 620px; height: 620px; pointer-events: none; }
+  .rings { position: absolute; right: -280px; top: -180px; width: 620px; height: 620px; pointer-events: none; z-index: 0; }
+  .wrap > *:not(.rings) { position: relative; z-index: 1; }
   .rings i { position: absolute; border-radius: 50%; border: 1px solid rgba(168,112,66,0.18); display: block; }
   .top { display: flex; justify-content: space-between; align-items: baseline; }
   .brand { font-size: 12px; font-weight: 600; letter-spacing: 0.36em; text-transform: uppercase; color: rgba(22,24,28,0.5); }
@@ -75,7 +76,9 @@
   @media (max-width: 560px) {
     body { padding: 28px 14px 46px; }
     .wrap { gap: 32px; }
-    .rings { display: none; }
+    .rings { right: -180px; top: -120px; width: 380px; height: 380px; opacity: 0.7; }
+    .rings i:nth-child(2) { inset: 55px; }
+    .rings i:nth-child(3) { inset: 110px; }
     .asset, .colHead { grid-template-columns: minmax(0,1.4fr) minmax(0,1fr) 50px; }
     .aPrice, .colHead div:nth-child(2) { display: none; }
     .links { grid-template-columns: 1fr; }
