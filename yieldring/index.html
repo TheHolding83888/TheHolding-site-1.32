@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YieldRing.eth — a Bitcoin-backed digital company</title>
+<meta name="description" content="YieldRing.eth — a Bitcoin-backed digital company held through a Tangem Ring, designed to generate autonomous onchain cash flow.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Archivo:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #F5F2EC; }
+  body { min-height: 100vh; background: radial-gradient(120% 70% at 50% -10%, #FBF9F4 0%, #F3F0E9 55%, #EDE9E0 100%); color: #16181C; font-family: 'Archivo', sans-serif; display: flex; justify-content: center; padding: 44px 20px 60px; }
+  .wrap { width: 100%; max-width: 780px; display: flex; flex-direction: column; gap: 44px; position: relative; }
+  .rings { position: absolute; right: -280px; top: -180px; width: 620px; height: 620px; pointer-events: none; }
+  .rings i { position: absolute; border-radius: 50%; border: 1px solid rgba(168,112,66,0.18); display: block; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .brand { font-size: 12px; font-weight: 600; letter-spacing: 0.36em; text-transform: uppercase; color: rgba(22,24,28,0.5); }
+  .est { font-family: 'Marcellus', serif; font-size: 16px; letter-spacing: 0.2em; color: rgba(22,24,28,0.4); }
+  .hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+  .rule { width: 90px; height: 1px; background: linear-gradient(90deg, rgba(168,112,66,0), #A87042, rgba(168,112,66,0)); }
+  .ens { font-family: 'Marcellus', serif; font-size: clamp(40px, 9.5vw, 68px); line-height: 1.04; color: #A87042; }
+  .tag { font-size: 15px; font-weight: 300; line-height: 1.65; color: rgba(22,24,28,0.66); max-width: 480px; margin: 0; }
+  .tag em { font-style: normal; font-family: 'Marcellus', serif; font-size: 18px; color: rgba(22,24,28,0.8); }
+  .founded { display: flex; align-items: center; gap: 14px; margin-top: 2px; }
+  .founded span { font-size: 11px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(22,24,28,0.55); }
+  .founded i { display: block; width: 34px; height: 1px; background: rgba(168,112,66,0.6); }
+  .tvlCard { display: flex; flex-direction: column; align-items: center; gap: 6px; border: 1px solid rgba(168,112,66,0.45); border-radius: 26px; background: linear-gradient(150deg, rgba(255,255,255,0.75), rgba(168,112,66,0.05)); padding: 30px 40px 26px; }
+  .tvlLabel { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(22,24,28,0.55); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #4E8B62; box-shadow: 0 0 8px rgba(78,139,98,0.7); animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.32; } }
+  .tvl { font-family: 'Marcellus', serif; font-size: clamp(54px, 13vw, 88px); line-height: 1; }
+  .tvlSub { font-size: 12px; font-weight: 300; color: rgba(22,24,28,0.45); }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 14px; padding-top: 18px; border-top: 1px solid rgba(22,24,28,0.12); }
+  .splitCell { display: flex; flex-direction: column; gap: 3px; align-items: center; text-align: center; }
+  .splitVal { font-family: 'Marcellus', serif; font-size: clamp(21px, 5.4vw, 28px); }
+  .splitLabel { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(22,24,28,0.42); }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .metric { border: 1px solid rgba(22,24,28,0.13); border-radius: 18px; background: rgba(255,255,255,0.55); padding: 18px 14px; display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center; }
+  .mVal { font-family: 'Marcellus', serif; font-size: clamp(21px, 5.4vw, 29px); color: #A87042; }
+  .mLabel { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(22,24,28,0.45); }
+  h2 { font-family: 'Marcellus', serif; font-size: 27px; margin: 0; }
+  .sectionHead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .sectionNote { font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(22,24,28,0.42); }
+  .colHead { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr) 58px; gap: 10px; padding: 0 20px; margin-bottom: 8px; }
+  .colHead div { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(22,24,28,0.38); }
+  .colHead div + div { text-align: right; }
+  .assets { display: flex; flex-direction: column; gap: 10px; }
+  .asset { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr) 58px; gap: 10px; align-items: center; border: 1px solid rgba(168,112,66,0.28); border-radius: 18px; background: rgba(255,255,255,0.55); padding: 16px 20px; }
+  .aName { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .aTitle { font-size: 14px; font-weight: 600; }
+  .aQty { font-size: 11.5px; font-weight: 300; color: rgba(22,24,28,0.5); }
+  .aPrice, .aVal { font-family: 'Marcellus', serif; font-size: clamp(16px, 4.4vw, 22px); text-align: right; white-space: nowrap; }
+  .aPrice { color: rgba(22,24,28,0.6); }
+  .aVal { color: #8A5A31; }
+  .aShare { font-size: 12px; font-weight: 500; color: rgba(22,24,28,0.5); text-align: right; }
+  .note { font-size: 12.5px; font-weight: 300; line-height: 1.6; color: rgba(22,24,28,0.5); margin: 14px 0 0; }
+  .note b { color: #A87042; font-weight: 500; }
+  .links { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .link { display: flex; flex-direction: column; gap: 4px; border: 1px solid rgba(22,24,28,0.13); border-radius: 18px; background: rgba(255,255,255,0.5); padding: 18px 20px; text-decoration: none; transition: border-color .25s ease, background .25s ease; }
+  .link:hover { border-color: #A87042; background: rgba(168,112,66,0.06); }
+  .lTitle { font-size: 14px; font-weight: 600; color: #A87042; display: flex; align-items: center; gap: 9px; }
+  .lTitle i { display: block; width: 13px; height: 13px; border-radius: 50%; border: 2px solid #A87042; }
+  .lDesc { font-size: 12px; font-weight: 300; color: rgba(22,24,28,0.55); line-height: 1.5; }
+  .book { display: flex; align-items: center; gap: 22px; border: 1px solid rgba(168,112,66,0.45); border-radius: 22px; background: linear-gradient(135deg, rgba(168,112,66,0.10), rgba(255,255,255,0.5)); padding: 22px 26px; text-decoration: none; transition: border-color .25s ease; }
+  .book:hover { border-color: #A87042; }
+  .bookMark { flex-shrink: 0; width: 46px; height: 60px; border: 1px solid rgba(168,112,66,0.6); border-radius: 4px; background: rgba(255,255,255,0.7); display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 0 8px; }
+  .bookMark i { display: block; height: 1.5px; background: rgba(168,112,66,0.7); }
+  .quote { text-align: center; font-family: 'Marcellus', serif; font-size: clamp(20px, 4.8vw, 26px); line-height: 1.42; color: rgba(22,24,28,0.78); margin: 0; padding: 0 8px; }
+  .quote b { color: #A87042; font-weight: 400; }
+  footer { display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; border-top: 1px solid rgba(22,24,28,0.12); padding-top: 26px; }
+  .foot { font-size: 11px; font-weight: 300; line-height: 1.65; color: rgba(22,24,28,0.42); max-width: 580px; }
+  a { color: #A87042; }
+  @media (max-width: 560px) {
+    body { padding: 28px 14px 46px; }
+    .wrap { gap: 32px; }
+    .rings { display: none; }
+    .asset, .colHead { grid-template-columns: minmax(0,1.4fr) minmax(0,1fr) 50px; }
+    .aPrice, .colHead div:nth-child(2) { display: none; }
+    .links { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="rings"><i style="inset:0;"></i><i style="inset:90px;"></i><i style="inset:180px;border-color:rgba(168,112,66,0.3);"></i></div>
+
+  <div class="top">
+    <div class="brand">The Holding</div>
+    <div class="est">MMXXVI</div>
+  </div>
+
+  <div class="hero">
+    <div class="rule"></div>
+    <div class="ens">YieldRing.eth</div>
+    <p class="tag">A Bitcoin-backed digital company, held through a Tangem Ring.<br>
+    <em>Autonomous onchain cash flow.</em></p>
+    <div class="founded"><i></i><span>Founded July 2026</span><i></i></div>
+  </div>
+
+  <div class="tvlCard">
+    <div class="tvlLabel"><span class="dot"></span>Company value · Live</div>
+    <div class="tvl" id="tvl">—</div>
+    <div class="tvlSub" id="updated">loading market data…</div>
+    <div class="split">
+      <div class="splitCell"><div class="splitVal" id="reserveVal">—</div><div class="splitLabel">Bitcoin reserve</div></div>
+      <div class="splitCell"><div class="splitVal" id="engineVal">—</div><div class="splitLabel">Yield positions</div></div>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><div class="mVal">7–13+%</div><div class="mLabel">Cash flow / yr</div></div>
+    <div class="metric"><div class="mVal">3</div><div class="mLabel">Protocols</div></div>
+    <div class="metric"><div class="mVal">3–5+ yrs</div><div class="mLabel">Horizon</div></div>
+  </div>
+
+  <div>
+    <div class="sectionHead"><h2>Balance sheet</h2><div class="sectionNote">Locked positions</div></div>
+    <div class="colHead"><div>Asset</div><div>Price</div><div>Value</div><div style="text-align:right;">Share</div></div>
+    <div class="assets" id="assets"></div>
+    <p class="note">The reserve is pledged on Llamalend, where roughly <b>$300 of liquidity</b> was drawn against it and committed to three long-term positions. The Bitcoin itself is never sold — a loan is serviced instead.</p>
+  </div>
+
+  <div>
+    <div class="sectionHead"><h2>The Owner’s Book</h2><div class="sectionNote">PDF</div></div>
+    <a class="book" href="yieldring_presentation.pdf" target="_blank" rel="noopener">
+      <div class="bookMark"><i></i><i></i><i style="width:60%;"></i></div>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:#A87042;margin-bottom:4px;">Read the book — 23 pages</div>
+        <div style="font-size:12px;font-weight:300;line-height:1.5;color:rgba(22,24,28,0.6);">What this company is, how it earns, why the reserve is borrowed against rather than sold, and how the keys are kept.</div>
+      </div>
+    </a>
+  </div>
+
+  <div>
+    <h2 style="margin-bottom:14px;">Owner’s desk</h2>
+    <div class="links">
+      <a class="link" href="https://debank.com/profile/0x90815314fB9e7F015AB5845572FE5BcC0Ba14669" target="_blank" rel="noopener"><div class="lTitle"><i></i>DeBank</div><div class="lDesc">Positions, the loan and weekly income — live from the network.</div></a>
+      <a class="link" href="https://app.ens.domains/yieldring.eth" target="_blank" rel="noopener"><div class="lTitle"><i></i>ENS</div><div class="lDesc">yieldring.eth — the company’s name, address and identity.</div></a>
+    </div>
+  </div>
+
+  <p class="quote">A reserve that holds its ground. Liquidity that works.<br><b>A ring that opens all of it.</b></p>
+
+  <footer>
+    <div class="brand" style="letter-spacing:0.28em;">YieldRing.eth</div>
+    <p class="foot">Value is calculated from live market prices (CoinGecko). All figures are orientations, not a guarantee of return and not financial advice. These assets are volatile; the intended horizon is 3–5+ years.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var BTC = { id: 'bitcoin', name: 'Bitcoin', sub: 'Reserve · pledged as collateral', qty: 0.012 };
+  var ENGINES = [
+    { id: 'aerodrome-finance', name: 'veAERO', sub: 'Aerodrome · locked', qty: 240 },
+    { id: 'convex-finance', name: 'vlCVX', sub: 'Convex / Curve · vote-locked', qty: 80 },
+    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 380 }
+  ];
+  var ALL = [BTC].concat(ENGINES);
+  var CACHE_KEY = 'yieldring_prices_v1';
+  var TTL = 10 * 60 * 1000;
+  function money(n, dec) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+  function render(prices) {
+    var total = 0, reserve = 0, engines = 0, rows = '';
+    ALL.forEach(function (h) { total += (prices[h.id] || 0) * h.qty; });
+    reserve = (prices[BTC.id] || 0) * BTC.qty;
+    engines = total - reserve;
+    ALL.forEach(function (h) {
+      var p = prices[h.id] || 0, v = p * h.qty;
+      var share = total ? Math.round(v / total * 100) : 0;
+      var dec = p >= 1000 ? 0 : (p < 1 ? 3 : 2);
+      rows += '<div class="asset">' +
+        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.sub + ' · ' + h.qty + '</div></div>' +
+        '<div class="aPrice">' + (p ? money(p, dec) : '—') + '</div>' +
+        '<div class="aVal">' + (p ? money(v, 0) : '—') + '</div>' +
+        '<div class="aShare">' + (p ? share + '%' : '—') + '</div></div>';
+    });
+    document.getElementById('assets').innerHTML = rows;
+    document.getElementById('tvl').textContent = total ? money(total, 0) : '—';
+    document.getElementById('reserveVal').textContent = reserve ? money(reserve, 0) : '—';
+    document.getElementById('engineVal').textContent = engines ? money(engines, 0) : '—';
+  }
+  function setUpdated(ts, cached) {
+    var d = new Date(ts), hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+    document.getElementById('updated').textContent = 'updated ' + hh + ':' + mm + (cached ? ' · cached' : ' · CoinGecko');
+  }
+  function load() {
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) {}
+    if (cached && cached.prices) { render(cached.prices); setUpdated(cached.ts, true); }
+    if (cached && Date.now() - cached.ts < TTL) return;
+    var ids = ALL.map(function (h) { return h.id; }).join(',');
+    fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var prices = {};
+        ALL.forEach(function (h) { if (data[h.id]) prices[h.id] = data[h.id].usd; });
+        if (!Object.keys(prices).length) return;
+        var payload = { prices: prices, ts: Date.now() };
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch (e) {}
+        render(prices); setUpdated(payload.ts, false);
+      })
+      .catch(function () { if (!cached) document.getElementById('updated').textContent = 'market data temporarily unavailable'; });
+  }
+  load();
+})();
+</script>
+</body>
+</html>
