@@ -717,7 +717,7 @@
                 <div class="hero-stat">
                     <div class="hero-stat-label">Total Value</div>
                     <div class="hero-stat-value" data-tvl="substantia">Live</div>
-                    <div class="hero-stat-sub" data-tvl-updated="substantia">Live · via CoinGecko</div>
+                    <div class="hero-stat-sub" data-tvl-updated="substantia">Live · CoinGecko</div>
                 </div>
                 <div class="hero-stat">
                     <div class="hero-stat-label">Target Allocation</div>
@@ -745,10 +745,10 @@
             <div class="doctrine-right reveal">
                 <div class="doctrine-sep"></div>
                 <p class="doctrine-text">
-                    Substantia holds 50% of The Holding's total capital. It is the bedrock — 
-                    the layer that persists through every market cycle, absorbs volatility 
-                    without reaction, and compounds over decades through disciplined, 
-                    systematic accumulation.
+                    Substantia is designed as the 50% foundation layer of The Holding's capital architecture. 
+                    It is the bedrock — the layer that persists through every market cycle, is designed 
+                    to withstand volatility without tactical reaction, and compounds over decades through 
+                    disciplined, systematic accumulation.
                 </p>
                 <p class="doctrine-text">
                     No market timing. No speculation. No emotion.
@@ -891,7 +891,7 @@
                 <div class="dca-card">
                     <div class="dca-card-num">01</div>
                     <div class="dca-card-title">No Market Timing</div>
-                    <div class="dca-card-text">Price does not dictate the accumulation schedule. The system buys at $20k and at $100k with identical discipline.</div>
+                    <div class="dca-card-text">Price does not dictate the accumulation schedule. Price changes the entry point. It does not change the discipline.</div>
                 </div>
                 <div class="dca-card">
                     <div class="dca-card-num">02</div>
@@ -906,7 +906,7 @@
                 <div class="dca-card">
                     <div class="dca-card-num">04</div>
                     <div class="dca-card-title">Public Record</div>
-                    <div class="dca-card-text">Every purchase is publicly documented. Accountability reinforces discipline. Discipline compounds into track record.</div>
+                    <div class="dca-card-text">Regular accumulation updates are documented publicly. Accountability reinforces discipline. Discipline compounds into track record.</div>
                 </div>
             </div>
 
@@ -1022,9 +1022,9 @@
                         el.textContent = `$${Math.round(tvl).toLocaleString()}`;
                     });
                     const now = new Date();
-                    const stamp = now.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    const stamp = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
                     document.querySelectorAll('[data-tvl-updated="substantia"]').forEach(el => {
-                        el.textContent = `Last updated · ${stamp} · via CoinGecko`;
+                        el.textContent = `Updated ${stamp} · CoinGecko`;
                     });
                 }
             } catch(e) { console.error(e); }
