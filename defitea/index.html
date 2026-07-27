@@ -391,6 +391,96 @@
             letter-spacing: 0.2em;
         }
 
+        /* ── Engines List ───────────────────────────── */
+        .engines-list {
+            max-width: 720px;
+            margin: 0 auto;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            background: var(--bg-card);
+        }
+        .engine-row {
+            display: grid;
+            grid-template-columns: 3rem 1fr 6rem 6rem;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.05rem 1.6rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+        .engine-row:last-of-type { border-bottom: none; }
+        .engine-row:not(.engine-row-head):hover { background: rgba(16,185,129,0.04); }
+        .engine-row-head {
+            background: var(--bg-elevated);
+            padding-top: 0.85rem;
+            padding-bottom: 0.85rem;
+        }
+        .engine-row-head span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-muted);
+        }
+        .er-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        .er-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.02rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .er-status {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+        .er-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            box-shadow: 0 0 8px var(--accent-primary);
+            flex-shrink: 0;
+        }
+        .er-apr {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            text-align: right;
+            letter-spacing: -0.02em;
+        }
+        .engines-list-note {
+            max-width: 720px;
+            margin: 1.5rem auto 0;
+            text-align: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            opacity: 0.65;
+            line-height: 1.6;
+        }
+        @media (max-width: 640px) {
+            .engine-row {
+                grid-template-columns: 1.8rem 1fr 1rem 4.2rem;
+                gap: 0.55rem;
+                padding: 0.95rem 1.1rem;
+            }
+            .er-status { font-size: 0; gap: 0; justify-content: center; }
+            .engine-row-head .er-status { font-size: 0; }
+            .er-name { font-size: 0.92rem; }
+            .er-apr { font-size: 0.95rem; }
+            .er-num { font-size: 0.7rem; }
+        }
+
         .engines-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -1650,192 +1740,80 @@
             <h2 class="engines-title">The Eleven Engines</h2>
             <p class="engines-subtitle">Productive Positions · Recurring Yield</p>
 
-            <div class="engines-grid">
-                <!-- Engine 1: Aerodrome -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #1</div>
-                    <h3 class="engine-name">Aerodrome</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-aero>20+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+            <div class="engines-list">
+                <div class="engine-row engine-row-head">
+                    <span class="er-num">#</span>
+                    <span class="er-name">Protocol</span>
+                    <span class="er-status">Status</span>
+                    <span class="er-apr">Indicative APR</span>
                 </div>
-
-                <!-- Engine 2: Convex -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #2</div>
-                    <h3 class="engine-name">Convex</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-cvx>15+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">01</span>
+                    <span class="er-name">Aerodrome</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-aero>20+%</span>
                 </div>
-
-                <!-- Engine 3: Curve -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #3</div>
-                    <h3 class="engine-name">Curve</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-crv>8+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">02</span>
+                    <span class="er-name">Convex</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-cvx>15+%</span>
                 </div>
-
-                <!-- Engine 4: Pendle -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #4</div>
-                    <h3 class="engine-name">Pendle</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-pendle>10+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">03</span>
+                    <span class="er-name">Curve</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-crv>8+%</span>
                 </div>
-
-                <!-- Engine 5: f(x) Protocol -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #5</div>
-                    <h3 class="engine-name">f(x) Protocol</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy">15+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">04</span>
+                    <span class="er-name">Pendle</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-pendle>10+%</span>
                 </div>
-
-                <!-- Engine 6: Yield Basis -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #6</div>
-                    <h3 class="engine-name">Yield Basis</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-yb>10+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">05</span>
+                    <span class="er-name">f(x) Protocol</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr">15+%</span>
                 </div>
-
-                <!-- Engine 7: Frax -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #7</div>
-                    <h3 class="engine-name">Frax</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-fxs>2+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">06</span>
+                    <span class="er-name">Yield Basis</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-yb>10+%</span>
                 </div>
-
-                <!-- Engine 8: Velodrome -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #8</div>
-                    <h3 class="engine-name">Velodrome</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-velo>20+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">07</span>
+                    <span class="er-name">Frax</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-fxs>2+%</span>
                 </div>
-
-                <!-- Engine 9: Venice -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #9</div>
-                    <h3 class="engine-name">Venice</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-vvv>8+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">08</span>
+                    <span class="er-name">Velodrome</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-velo>20+%</span>
                 </div>
-
-                <!-- Engine 10: Liquity -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #10</div>
-                    <h3 class="engine-name">Liquity</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-lqty>5+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">09</span>
+                    <span class="er-name">Venice</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-vvv>8+%</span>
                 </div>
-                <!-- Engine 11: Resupply -->
-                <div class="engine-card">
-                    <div class="engine-number">ENGINE #11</div>
-                    <h3 class="engine-name">Resupply</h3>
-                    <div class="engine-status-row">
-                        <div class="engine-dot"></div>
-                        <span class="engine-status-text">Active</span>
-                    </div>
-                    <div class="engine-metrics">
-                        <div class="engine-metric-row">
-                            <span class="engine-metric-label">Indicative APR</span>
-                            <span class="engine-metric-value apy" data-apy-rsup>15+%</span>
-                            <span class="engine-metric-note">Variable</span>
-                        </div>
-                    </div>
+                <div class="engine-row">
+                    <span class="er-num">10</span>
+                    <span class="er-name">Liquity</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-lqty>5+%</span>
                 </div>
+                <div class="engine-row">
+                    <span class="er-num">11</span>
+                    <span class="er-name">Resupply</span>
+                    <span class="er-status"><i class="er-dot"></i>Active</span>
+                    <span class="er-apr" data-apy-rsup>15+%</span>
+                </div>
+                <p class="engines-list-note">Indicative APR is variable and not guaranteed. Rewards vary by protocol and market conditions.</p>
             </div>
         </div>
     </section>
