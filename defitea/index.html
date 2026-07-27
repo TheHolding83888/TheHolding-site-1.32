@@ -393,92 +393,78 @@
 
         /* ── Engines List ───────────────────────────── */
         .engines-list {
-            max-width: 720px;
+            max-width: 780px;
             margin: 0 auto;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            overflow: hidden;
-            background: var(--bg-card);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
         }
         .engine-row {
             display: grid;
-            grid-template-columns: 3rem 1fr 6rem 6rem;
+            grid-template-columns: 1.6rem 1fr auto;
             align-items: center;
-            gap: 1rem;
-            padding: 1.05rem 1.6rem;
-            border-bottom: 1px solid var(--border-color);
-            transition: background 0.2s;
+            gap: 0.7rem;
+            padding: 0.95rem 1.15rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-card);
+            transition: border-color 0.2s, background 0.2s;
         }
-        .engine-row:last-of-type { border-bottom: none; }
-        .engine-row:not(.engine-row-head):hover { background: rgba(16,185,129,0.04); }
-        .engine-row-head {
-            background: var(--bg-elevated);
-            padding-top: 0.85rem;
-            padding-bottom: 0.85rem;
+        .engine-row:hover {
+            border-color: rgba(16,185,129,0.4);
+            background: rgba(16,185,129,0.04);
         }
-        .engine-row-head span {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 0.16em;
-            color: var(--text-muted);
-        }
+        .engine-row-head { display: none; }
+        .engine-row:last-of-type { grid-column: 1 / -1; }
         .er-num {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.78rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
+            opacity: 0.7;
         }
         .er-name {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.02rem;
+            font-size: 0.98rem;
             font-weight: 500;
             color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .er-status {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.78rem;
-            color: var(--text-secondary);
+            display: none;
         }
-        .er-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--accent-primary);
-            box-shadow: 0 0 8px var(--accent-primary);
-            flex-shrink: 0;
-        }
+        .er-dot { display: none; }
         .er-apr {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--accent-primary);
             text-align: right;
             letter-spacing: -0.02em;
+            white-space: nowrap;
         }
         .engines-list-note {
-            max-width: 720px;
-            margin: 1.5rem auto 0;
+            max-width: 780px;
+            margin: 1.75rem auto 0;
             text-align: center;
             font-family: 'Space Grotesk', sans-serif;
             font-size: 0.72rem;
             color: var(--text-muted);
-            opacity: 0.65;
+            opacity: 0.6;
             line-height: 1.6;
         }
         @media (max-width: 640px) {
-            .engine-row {
-                grid-template-columns: 1.8rem 1fr 1rem 4.2rem;
-                gap: 0.55rem;
-                padding: 0.95rem 1.1rem;
+            .engines-list {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
             }
-            .er-status { font-size: 0; gap: 0; justify-content: center; }
-            .engine-row-head .er-status { font-size: 0; }
+            .engine-row {
+                padding: 0.85rem 1.05rem;
+                gap: 0.6rem;
+            }
             .er-name { font-size: 0.92rem; }
-            .er-apr { font-size: 0.95rem; }
-            .er-num { font-size: 0.7rem; }
+            .er-apr { font-size: 0.92rem; }
         }
 
         .engines-grid {
@@ -1741,12 +1727,6 @@
             <p class="engines-subtitle">Productive Positions · Recurring Yield</p>
 
             <div class="engines-list">
-                <div class="engine-row engine-row-head">
-                    <span class="er-num">#</span>
-                    <span class="er-name">Protocol</span>
-                    <span class="er-status">Status</span>
-                    <span class="er-apr">Indicative APR</span>
-                </div>
                 <div class="engine-row">
                     <span class="er-num">01</span>
                     <span class="er-name">Aerodrome</span>
