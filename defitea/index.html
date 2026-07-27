@@ -489,7 +489,7 @@
             .er-left { gap: 0.4rem; }
             .er-name { font-size: 0.82rem; }
             .er-apr { font-size: 0.85rem; }
-            .er-apr-lbl { font-size: 0.46rem; letter-spacing: 0.1em; text-align: left; padding-left: 1rem; }
+            .er-apr-lbl { font-size: 0.46rem; letter-spacing: 0.1em; text-align: right; }
         }
 
         .engines-grid {
@@ -1583,8 +1583,17 @@
             transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .text-reveal-content.expanded {
-            max-height: 3000px;
+            max-height: 6000px;
         }
+        .reveal-subhead {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: var(--accent-primary);
+            margin: 2.5rem 0 1rem;
+            letter-spacing: -0.01em;
+        }
+        .reveal-subhead:first-child { margin-top: 1rem; }
         .text-reveal-toggle {
             display: inline-flex;
             align-items: center;
@@ -1834,87 +1843,84 @@
         </div>
     </section>
 
+    <!-- How the Engine Works -->
     <section class="strategy-section">
         <div class="section-inner">
-            <div class="strategy-grid">
-                <div class="strategy-content">
-                    <h2>Yield by Design</h2>
-                    <p class="strategy-text">
-                        Defitea builds long-term positions using the protocol-native mechanism best suited to each asset — from locking and staking to delegation and liquidity provision.
-                    </p>
-                    <p class="strategy-text">
-                        These positions generate variable cash flow from protocol fees, voter incentives, token emissions, staking rewards, and other economic mechanisms.
-                    </p>
-                    <p class="strategy-text">
-                        No short-term trading. No uncontrolled fund-level leverage.
-                    </p>
-                    <p class="strategy-closer">
-                        Different mechanisms.<br><strong>One productive mandate.</strong>
-                    </p>
-                </div>
-
-                <div class="strategy-visual">
-                    <!-- Gauges removed for cleaner presentation -->
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Protocol Philosophy Section -->
-    <section class="protocol-philosophy-section">
-        <div class="section-inner">
             <div class="philosophy-content">
-                <h2 class="philosophy-heading">The Protocol Layer</h2>
+                <h2 class="philosophy-heading">How the Engine Works</h2>
 
                 <p class="philosophy-text large">
-                    Defitea is built across a growing set of DeFi protocols, each performing a different function within the onchain economy.
+                    Defitea builds long-term positions across carefully selected DeFi protocols.
+                </p>
+                <p class="philosophy-text">
+                    Each position uses the mechanism best suited to its structure — from locking and staking to delegation and liquidity provision.
+                </p>
+                <p class="philosophy-text">
+                    The goal is simple: generate recurring cash flow while retaining the long-term growth potential of the underlying assets.
+                </p>
+                <p class="strategy-closer">
+                    Different mechanisms.<br><strong>One productive mandate.</strong>
                 </p>
 
-                <p class="philosophy-text large">
-                    <span class="highlight-text">Aerodrome</span> and <span class="highlight-text">Velodrome</span> provide liquidity and trading infrastructure across Base and Optimism.
-                </p>
-
-                <p class="philosophy-text large">
-                    <span class="highlight-text">Curve</span> and <span class="highlight-text">Convex</span> form a major layer of stablecoin liquidity, governance, and incentive markets on Ethereum.
-                </p>
-
-                <p class="philosophy-text large">
-                    <span class="highlight-text">Pendle</span> creates markets for fixed and variable yield.
-                </p>
-
-                <p class="philosophy-text large">
-                    <span class="highlight-text">Frax</span>, <span class="highlight-text">Liquity</span>, and <span class="highlight-text">Resupply</span> contribute stablecoin, credit, and lending infrastructure.
-                </p>
-
-                <p class="philosophy-text large">
-                    <span class="highlight-text">f(x) Protocol</span> and <span class="highlight-text">Yield Basis</span> provide specialised structures for capital efficiency and risk transformation.
-                </p>
-
-                <p class="philosophy-text large">
-                    <span class="highlight-text">Venice</span> adds exposure to decentralised AI infrastructure.
-                </p>
-
-                <p class="strategy-closer" style="margin-top:2.5rem;">
-                    Different protocols. Different economic mechanisms.<br><strong>One productive system.</strong>
-                </p>
-
-                <button class="text-reveal-toggle" onclick="toggleReveal(this, 'protocol-mechanics')">
-                    <span class="toggle-label">Read how the cash-flow mechanics work</span>
+                <button class="text-reveal-toggle" onclick="toggleReveal(this, 'engine-detail')">
+                    <span class="toggle-label">Explore the engine</span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
 
-                <div class="text-reveal-content" id="protocol-mechanics">
+                <div class="text-reveal-content" id="engine-detail">
+                    <h3 class="reveal-subhead">The Protocol Layer</h3>
                     <p class="philosophy-text">
-                        Each position uses a protocol-specific mechanism. Cash flow may come from protocol fees, voter incentives, token emissions, staking rewards, or liquidity provision.
+                        Defitea is built across a growing set of DeFi protocols, each performing a different function within the onchain economy.
+                    </p>
+                    <p class="philosophy-text"><span class="highlight-text">Aerodrome</span> and <span class="highlight-text">Velodrome</span> provide liquidity and trading infrastructure across Base and Optimism.</p>
+                    <p class="philosophy-text"><span class="highlight-text">Curve</span> and <span class="highlight-text">Convex</span> form a major layer of stablecoin liquidity, governance, and incentive markets on Ethereum.</p>
+                    <p class="philosophy-text"><span class="highlight-text">Pendle</span> creates markets for fixed and variable yield.</p>
+                    <p class="philosophy-text"><span class="highlight-text">Frax</span>, <span class="highlight-text">Liquity</span>, and <span class="highlight-text">Resupply</span> contribute stablecoin, credit, and lending infrastructure.</p>
+                    <p class="philosophy-text"><span class="highlight-text">f(x) Protocol</span> and <span class="highlight-text">Yield Basis</span> provide specialised structures for capital efficiency and risk transformation.</p>
+                    <p class="philosophy-text"><span class="highlight-text">Venice</span> adds exposure to decentralised AI infrastructure.</p>
+                    <p class="strategy-closer" style="margin:1.5rem 0 2.5rem;">
+                        Different protocols. Different economic mechanisms.<br><strong>One productive system.</strong>
+                    </p>
+
+                    <h3 class="reveal-subhead">Commitment Architecture</h3>
+                    <p class="philosophy-text">
+                        Each position uses a protocol-specific mechanism — from multi-year vote-escrow locks to staking, delegation, and liquidity provision. The mechanism is chosen to match each protocol's structure, not forced into a single template.
                     </p>
                     <p class="philosophy-text">
-                        These sources differ in quality, duration, and risk. Defitea tracks them separately and brings available cash flow together through one monthly harvest and reporting cycle.
+                        These positions are not shares in legal companies. They are onchain economic positions defined by smart contracts and governance rules.
+                    </p>
+
+                    <h3 class="reveal-subhead">Cash-Flow Sources</h3>
+                    <div class="cashflow-grid">
+                        <div class="cashflow-item">
+                            <div class="cashflow-item-title">Protocol Fees</div>
+                            <div class="cashflow-item-text">Cash flow generated directly through trading, borrowing, settlement, and other protocol usage.</div>
+                        </div>
+                        <div class="cashflow-item">
+                            <div class="cashflow-item-title">Voter Incentives</div>
+                            <div class="cashflow-item-text">Payments from participants seeking governance-directed liquidity and emissions.</div>
+                        </div>
+                        <div class="cashflow-item">
+                            <div class="cashflow-item-title">Token Emissions</div>
+                            <div class="cashflow-item-text">Protocol-issued rewards that may decline over time or dilute the token supply.</div>
+                        </div>
+                        <div class="cashflow-item">
+                            <div class="cashflow-item-title">Staking &amp; Liquidity Rewards</div>
+                            <div class="cashflow-item-text">Distributions generated through staking, locking, liquidity provision, and other protocol-native mechanisms.</div>
+                        </div>
+                    </div>
+                    <p class="cashflow-conclusion" style="margin-top:1.75rem;">
+                        Cash flow is recurring, but variable.<br><em>Its quality matters as much as its size.</em>
+                    </p>
+                    <p class="cashflow-note">
+                        Different protocols distribute rewards on different schedules. Defitea brings them together through one monthly harvest and reporting cycle.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Productive Capital -->
     <section class="protocol-philosophy-section">
         <div class="section-inner">
             <div class="philosophy-content">
@@ -1923,74 +1929,37 @@
                 <p class="philosophy-text large">
                     Most crypto portfolios hold tokens and wait for prices to rise. Defitea takes a different approach.
                 </p>
-
                 <p class="philosophy-text">
-                    Each position is selected for the economic work it performs: generating fees, directing liquidity, participating in governance, or earning protocol-native rewards.
+                    Each position is selected for the economic work it performs.
                 </p>
-
-                <p class="philosophy-text">
-                    These positions are not shares in legal companies. They are onchain economic positions defined by smart contracts and governance rules.
-                </p>
-
                 <p class="philosophy-text">
                     The assets can rise or fall in value. Their cash flow can also increase, decline, or disappear.
                 </p>
-
                 <p class="strategy-closer">
                     Defitea does not simply hold DeFi assets.<br><strong>It puts capital to work.</strong>
                 </p>
 
-                <div class="text-reveal-content-static">
-                    <div class="two-engines">
-                        <div class="two-engines-label">Two Engines of Return</div>
-                        <p class="engines-subtitle-line">Two engines. <strong>One productive mandate.</strong></p>
-                        <div class="te-grid">
-                            <div class="engine-block">
-                                <div class="engine-block-num">Engine 01</div>
-                                <div class="engine-block-title">Cash Flow</div>
-                                <div class="engine-block-text">Protocol fees, voter incentives, staking rewards, token emissions, and other protocol-native distributions.</div>
-                            </div>
-                            <div class="engine-block">
-                                <div class="engine-block-num">Engine 02</div>
-                                <div class="engine-block-title">Asset Growth</div>
-                                <div class="engine-block-text">Long-term exposure to productive DeFi assets whose value may grow as their protocols, usage, and economic importance expand — or decline if they do not.</div>
-                            </div>
+                <div class="two-engines">
+                    <div class="two-engines-label">Two Engines of Return</div>
+                    <p class="engines-subtitle-line">Two engines. <strong>One productive mandate.</strong></p>
+                    <div class="te-grid">
+                        <div class="engine-block">
+                            <div class="engine-block-num">Engine 01</div>
+                            <div class="engine-block-title">Cash Flow</div>
+                            <div class="engine-block-text">Protocol fees, voter incentives, staking rewards, token emissions, and other protocol-native distributions.</div>
                         </div>
-                        <p class="engines-note">
-                            Neither engine is guaranteed. <strong>Both are measured separately.</strong>
-                        </p>
-                        <p class="engines-thesis">
-                            Defitea is not market-neutral.<br><em>Its assets remain exposed to market prices and changing protocol conditions.</em>
-                        </p>
-                    </div>
-
-                    <div class="cashflow-comp">
-                        <div class="cashflow-comp-label">Cash-Flow Sources</div>
-                        <div class="cashflow-grid">
-                            <div class="cashflow-item">
-                                <div class="cashflow-item-title">Protocol Fees</div>
-                                <div class="cashflow-item-text">Cash flow generated directly through trading, borrowing, settlement, and other protocol usage.</div>
-                            </div>
-                            <div class="cashflow-item">
-                                <div class="cashflow-item-title">Voter Incentives</div>
-                                <div class="cashflow-item-text">Payments from participants seeking governance-directed liquidity and emissions.</div>
-                            </div>
-                            <div class="cashflow-item">
-                                <div class="cashflow-item-title">Token Emissions</div>
-                                <div class="cashflow-item-text">Protocol-issued rewards that may decline over time or dilute the token supply.</div>
-                            </div>
-                            <div class="cashflow-item">
-                                <div class="cashflow-item-title">Staking &amp; Liquidity Rewards</div>
-                                <div class="cashflow-item-text">Distributions generated through staking, locking, liquidity provision, and other protocol-native mechanisms.</div>
-                            </div>
+                        <div class="engine-block">
+                            <div class="engine-block-num">Engine 02</div>
+                            <div class="engine-block-title">Asset Growth</div>
+                            <div class="engine-block-text">Long-term exposure to productive DeFi assets whose value may grow as their protocols, usage, and economic importance expand — or decline if they do not.</div>
                         </div>
-                        <p class="cashflow-conclusion">
-                            Cash flow is recurring, but variable.<br><em>Its quality matters as much as its size.</em>
-                        </p>
-                        <p class="cashflow-note">
-                            Different protocols distribute rewards on different schedules. Defitea brings them together through one monthly harvest and reporting cycle.
-                        </p>
                     </div>
+                    <p class="engines-note">
+                        Neither engine is guaranteed. <strong>Both are measured separately.</strong>
+                    </p>
+                    <p class="engines-thesis">
+                        Defitea is not market-neutral.<br><em>Its assets remain exposed to market prices and changing protocol conditions.</em>
+                    </p>
                 </div>
             </div>
         </div>
@@ -2175,27 +2144,41 @@
     <section class="risk-section">
         <div class="risk-inner">
             <div class="risk-label">Productive Does Not Mean Risk-Free</div>
-            <p class="risk-text">Defitea remains exposed to:</p>
-            <ul class="risk-exposures">
-                <li>market volatility</li>
-                <li>smart-contract vulnerabilities</li>
-                <li>governance changes</li>
-                <li>declining emissions and incentives</li>
-                <li>lock-duration and liquidity risk</li>
-                <li>protocol-specific dependencies</li>
-                <li>stablecoin and oracle risk</li>
-                <li>Layer 2 and bridge risk</li>
-                <li>embedded leverage</li>
-                <li>token dilution</li>
-                <li>regulatory change</li>
-                <li>the possibility of partial or total capital loss</li>
-            </ul>
             <p class="risk-text">
-                Long-duration locks can prevent positions from being exited quickly. Cash flow may decline or disappear. Token prices may fall faster than distributions accumulate. Some underlying protocols use embedded leverage even when Defitea does not borrow directly at the fund level.
+                Defitea remains exposed to market, smart-contract, governance, liquidity, and protocol-specific risks.
             </p>
             <p class="risk-text">
-                <strong>Defitea is designed to own productive assets for the long term — not to guarantee income or capital preservation.</strong>
+                Long-term locks can limit liquidity. Cash flow may decline or disappear. Asset values may fall.
             </p>
+            <p class="risk-text">
+                <strong>Defitea is designed for long-term productive ownership — not to guarantee income or capital preservation.</strong>
+            </p>
+
+            <button class="text-reveal-toggle" onclick="toggleReveal(this, 'risk-detail')">
+                <span class="toggle-label">Read the full risk framework</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+
+            <div class="text-reveal-content" id="risk-detail">
+                <p class="risk-text">Defitea remains exposed to:</p>
+                <ul class="risk-exposures">
+                    <li>market volatility</li>
+                    <li>smart-contract vulnerabilities</li>
+                    <li>governance changes</li>
+                    <li>declining emissions and incentives</li>
+                    <li>lock-duration and liquidity risk</li>
+                    <li>protocol-specific dependencies</li>
+                    <li>stablecoin and oracle risk</li>
+                    <li>Layer 2 and bridge risk</li>
+                    <li>embedded leverage</li>
+                    <li>token dilution</li>
+                    <li>regulatory change</li>
+                    <li>the possibility of partial or total capital loss</li>
+                </ul>
+                <p class="risk-text">
+                    Long-duration locks can prevent positions from being exited quickly. Cash flow may decline or disappear. Token prices may fall faster than distributions accumulate. Some underlying protocols use embedded leverage even when Defitea does not borrow directly at the fund level.
+                </p>
+            </div>
         </div>
     </section>
 
