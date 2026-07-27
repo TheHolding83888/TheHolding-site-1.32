@@ -29,7 +29,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://theholding.ai/defitea">
     <meta name="twitter:title" content="Defitea - DeFi Yield Engine">
-    <meta name="twitter:description" content="Eight productive DeFi positions. Long-term commitments. Monthly compounding. Two return engines — cash flow and asset growth.">
+    <meta name="twitter:description" content="A portfolio of productive DeFi positions. Long-term commitment. Monthly harvest cycle. Two return engines — cash flow and asset growth.">
     <meta name="twitter:site" content="@defitea_">
     <meta name="twitter:creator" content="@defitea_">
     
@@ -300,6 +300,15 @@
             margin-top: 0.35rem;
             opacity: 0.7;
         }
+        .hero-metric-note {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+            opacity: 0.6;
+            line-height: 1.4;
+            max-width: 180px;
+        }
 
         .scroll-line {
             position: absolute;
@@ -514,6 +523,16 @@
             letter-spacing: -0.03em;
             line-height: 1;
         }
+        .engine-metric-note {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-muted);
+            opacity: 0.65;
+            margin-top: 0.4rem;
+        }
 
         .engine-metric-value.holdings {
             font-size: 0.88rem;
@@ -548,6 +567,18 @@
             line-height: 1.65;
             color: var(--text-secondary);
             margin-bottom: 1.25rem;
+        }
+        .strategy-closer {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            margin-top: 1.75rem;
+        }
+        .strategy-closer strong {
+            color: var(--accent-primary);
+            font-weight: 500;
         }
 
         .strategy-visual .gauges-grid {
@@ -675,9 +706,18 @@
             letter-spacing: 0.24em;
             text-transform: uppercase;
             color: var(--accent-primary);
-            margin-bottom: 2.5rem;
+            margin-bottom: 0.9rem;
             font-weight: 500;
         }
+        .engines-subtitle-line {
+            text-align: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+        }
+        .engines-subtitle-line strong { color: var(--text-primary); font-weight: 500; }
         .te-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1027,12 +1067,38 @@
             letter-spacing: -0.02em;
         }
 
-        .final-tagline {
-            font-size: 1.25rem;
+        .final-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.22em;
+            color: var(--accent-primary);
+            margin-bottom: 1.5rem;
+        }
+        .final-process {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            line-height: 1.6;
             color: var(--text-secondary);
             margin-bottom: 3rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
+        }
+        .final-sig {
+            margin-top: 3.5rem;
+        }
+        .final-sig-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .final-sig-tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            color: var(--text-muted);
         }
 
         .cta-link {
@@ -1358,10 +1424,11 @@
         }
         .chart-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 2rem; letter-spacing: 0.02em; }
         .yield-chart-wrap { margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
-        .chart-kpi-row { display: flex; gap: 3rem; margin-top: 2.5rem; }
+        .chart-kpi-row { display: flex; flex-wrap: wrap; gap: 2.5rem; margin-top: 2.5rem; }
         .chart-kpi { display: flex; flex-direction: column; gap: 0.3rem; }
         .chart-kpi-val { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; color: #4ade80; }
         .chart-kpi-lbl { font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
+        .chart-disclaimer { font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); opacity: 0.65; margin-top: 1.75rem; line-height: 1.6; max-width: 560px; }
 
         /* ── Calculator ──────────────────────────────────────── */
         .calculator-section { padding: 3rem 0 4rem; border-top: 1px solid var(--border); }
@@ -1557,11 +1624,12 @@
                 <div class="hero-metrics">
                     <div class="hero-metric">
                         <div class="hero-metric-value" data-tvl="defitea">$3,062</div>
-                        <div class="hero-metric-label">Total Value Locked</div>
+                        <div class="hero-metric-label">Total Position Value</div>
                     </div>
                     <div class="hero-metric">
-                        <div class="hero-metric-value green" id="defitea-apy-hero">14.4%</div>
-                        <div class="hero-metric-label">Average APR</div>
+                        <div class="hero-metric-value green" id="defitea-apy-hero">14.6%</div>
+                        <div class="hero-metric-label">Annualized Cash-Flow APR</div>
+                        <div class="hero-metric-note">Based on realised Jan–Jun 2026 cash flow · No compounding</div>
                     </div>
                 </div>
             </div>
@@ -1572,7 +1640,7 @@
     <section class="philosophy">
         <div class="section-inner">
             <p class="philosophy-quote">
-                <em>Lock.</em> <em>Earn.</em> <em>Compound.</em><br>Eight productive positions designed to capture recurring yield from the <strong>infrastructure layer of DeFi</strong>. Long-term commitments. Monthly harvest cycle. Not trading — <strong>productive capital</strong>.
+                <em>Commit.</em> <em>Generate.</em> <em>Compound.</em><br>A portfolio of productive DeFi positions designed to generate recurring onchain cash flow while retaining the long-term growth potential of the underlying assets. Long-term commitment. Monthly harvest cycle. <strong>Productive capital, built to compound.</strong>
             </p>
         </div>
     </section>
@@ -1593,8 +1661,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-aero>20+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1609,8 +1678,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-cvx>15+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1625,8 +1695,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-crv>8+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1641,8 +1712,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-pendle>10+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1657,8 +1729,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy">15+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1673,8 +1746,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-yb>10+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1689,8 +1763,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-fxs>2+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1705,8 +1780,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-velo>20+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1721,8 +1797,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-vvv>8+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1737,8 +1814,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-lqty>5+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1752,8 +1830,9 @@
                     </div>
                     <div class="engine-metrics">
                         <div class="engine-metric-row">
-                            <span class="engine-metric-label">APR</span>
+                            <span class="engine-metric-label">Indicative APR</span>
                             <span class="engine-metric-value apy" data-apy-rsup>15+%</span>
+                            <span class="engine-metric-note">Variable</span>
                         </div>
                     </div>
                 </div>
@@ -1767,10 +1846,16 @@
                 <div class="strategy-content">
                     <h2>Yield by Design</h2>
                     <p class="strategy-text">
-                        Each position uses the <strong>strongest commitment mechanism available</strong> for its protocol—from multi-year vote-escrow locks to staking, delegation, and liquidity provision. Where longer lock periods are available, they unlock significantly greater governance influence, higher fee participation, and stronger exposure to protocol incentive flows. Monthly cash flows are either reinvested into core positions or allocated to the Substantia Fund.
+                        Each position uses the <strong>protocol-native commitment mechanism best suited to its structure</strong> — from multi-year vote-escrow locks to staking, delegation, and liquidity provision.
                     </p>
                     <p class="strategy-text">
-                        The strategy is simple: identify the highest-quality DeFi infrastructure, acquire long-term governance positions, and let protocol fees, gauge voting, and incentive mechanisms generate recurring yield. No leverage. No active trading. Just <strong>systematic, compounding cash flow</strong> from the infrastructure layer of decentralized finance — paired with long-term exposure to the assets that generate it.
+                        The strategy is simple: identify carefully selected DeFi infrastructure, build long-term productive positions, and capture cash flow from protocol fees, voter incentives, staking rewards, and other economic mechanisms.
+                    </p>
+                    <p class="strategy-text">
+                        No short-term trading. No uncontrolled fund-level leverage. Some underlying protocols may use embedded leverage as part of their internal design.
+                    </p>
+                    <p class="strategy-closer">
+                        Different mechanisms.<br><strong>One productive mandate.</strong>
                     </p>
                 </div>
 
@@ -1788,35 +1873,35 @@
                 <h2 class="philosophy-heading">The Protocol Layer</h2>
 
                 <p class="philosophy-text large">
-                    The strategy is built around eight core DeFi protocols, each generating recurring cash flow from a different layer of the on-chain economy.
+                    Defitea is built across a growing set of DeFi protocols, each performing a different function within the onchain economy.
                 </p>
 
                 <p class="philosophy-text large">
-                    <span class="highlight-text">Aerodrome Finance</span> and <span class="highlight-text">Velodrome Finance</span> power liquidity and trading activity on Base and Optimism. They sit at the center of emissions, trading fees, and governance incentives within their ecosystems.
+                    <span class="highlight-text">Aerodrome</span> and <span class="highlight-text">Velodrome</span> provide liquidity and trading infrastructure across Base and Optimism.
                 </p>
 
                 <p class="philosophy-text large">
-                    <span class="highlight-text">Curve Finance</span> and <span class="highlight-text">Convex Finance</span> form the backbone of stablecoin liquidity on Ethereum, where deep liquidity pools, efficient stable swaps, and vote-locked incentives create durable yield.
+                    <span class="highlight-text">Curve</span> and <span class="highlight-text">Convex</span> form a major layer of stablecoin liquidity, governance, and incentive markets on Ethereum.
                 </p>
 
                 <p class="philosophy-text large">
-                    <span class="highlight-text">Pendle</span> transforms yield itself into a tradable asset, allowing fixed and variable income streams to be separated, priced, and traded over time.
+                    <span class="highlight-text">Pendle</span> creates markets for fixed and variable yield.
                 </p>
 
                 <p class="philosophy-text large">
-                    <span class="highlight-text">F(x) Protocol</span> restructures staked ETH into two distinct outcomes: leveraged upside exposure and fully delta-neutral stable value.
+                    <span class="highlight-text">Frax</span>, <span class="highlight-text">Liquity</span>, and <span class="highlight-text">Resupply</span> contribute stablecoin, credit, and lending infrastructure.
                 </p>
 
                 <p class="philosophy-text large">
-                    <span class="highlight-text">Frax Finance</span> operates as a full-stack DeFi ecosystem, integrating stablecoins, staking, liquidity, and credit into a single coordinated monetary network.
+                    <span class="highlight-text">f(x) Protocol</span> and <span class="highlight-text">Yield Basis</span> provide specialised structures for capital efficiency and risk transformation.
                 </p>
 
                 <p class="philosophy-text large">
-                    <span class="highlight-text">Yield Basis</span> enhances capital efficiency on Curve by reducing impermanent loss through structured leveraged liquidity strategies.
+                    <span class="highlight-text">Venice</span> adds exposure to decentralised AI infrastructure.
                 </p>
 
-                <p class="philosophy-text">
-                    Together, these protocols represent different layers of the same financial system: <strong>liquidity, incentives, staking, yield generation, and risk transformation</strong>.
+                <p class="strategy-closer" style="margin-top:2.5rem;">
+                    Different protocols. Different economic mechanisms.<br><strong>One productive system.</strong>
                 </p>
 
                 <p class="philosophy-text">
@@ -1865,46 +1950,41 @@
 
                 <div class="text-reveal-content" id="company-thesis">
                     <p class="philosophy-text">
-                        A locked veCRV position is not primarily a bet on Curve's token price. It is a protocol-native economic position, defined by the protocol's smart contracts, that can direct governance power and share in trading fees, incentives, and reward flows — under rules that each protocol may adjust over time. The same principle applies across the portfolio: each protocol functions like a cash-generating business, while every position provides economic participation in its output — held without intermediaries or fund managers standing between the fund and the underlying flows. Defitea does not own equity in these protocols; it owns protocol-native positions whose rights are economic, not legal.
+                        Most crypto portfolios hold tokens and wait for prices to rise. Defitea takes a different approach. Each position is selected for the economic function it performs: generating fees, directing liquidity, participating in governance, earning incentives, or providing other protocol-native cash flow.
                     </p>
 
                     <p class="philosophy-text">
-                        This is what makes Defitea operate less like a portfolio of speculative assets and more like a productive capital system built entirely from code. The protocols it owns positions in — Curve, Convex, Frax, Pendle, Yield Basis, and the rest — serve as critical infrastructure for on-chain finance. Together, they process billions in trading volume, secure billions in liquidity, and generate revenue continuously regardless of whether markets are rising, falling, or moving sideways.
+                        These positions are not shares in legal companies. They are onchain economic positions whose rights are defined by smart contracts and governance rules.
                     </p>
 
                     <p class="philosophy-text">
-                        Unlike a traditional company, none of this depends on management teams executing quarterly business plans. Revenue is generated continuously by the underlying protocols themselves — a business model designed to operate around the clock, without waiting for a quarterly earnings report.
+                        The underlying assets can rise or fall in value. Their cash flow can also increase, decline, or disappear. The objective is not to avoid market exposure — it is to own productive assets that can generate cash flow while retaining long-term growth potential.
                     </p>
 
-                    <div class="philosophy-divider"></div>
-
-                    <p class="philosophy-text">
-                        What most people underestimate is the scale. These are not experimental protocols. They form the settlement layer for stablecoin trading, the yield infrastructure supporting billions of dollars in liquidity, and an increasingly important part of the financial rails used by institutional participants. As adoption of this infrastructure expands, so does the cash flow attached to every locked position Defitea already owns — without deploying a single additional dollar of capital.
-                    </p>
-
-                    <p class="philosophy-text">
-                        The investment thesis can be summarized in a single sentence: <strong>Defitea owns a growing claim on the cash flows generated by the infrastructure that powers the on-chain economy — while holding productive assets whose long-term value can grow alongside it.</strong>
+                    <p class="strategy-closer">
+                        Defitea does not simply hold DeFi assets.<br><strong>It puts capital to work.</strong>
                     </p>
 
                     <div class="two-engines">
                         <div class="two-engines-label">Two Engines of Return</div>
+                        <p class="engines-subtitle-line">Two engines. <strong>One productive mandate.</strong></p>
                         <div class="te-grid">
                             <div class="engine-block">
                                 <div class="engine-block-num">Engine 01</div>
                                 <div class="engine-block-title">Cash Flow</div>
-                                <div class="engine-block-text">Protocol fees, voter incentives, staking rewards, emissions, and other protocol-native distributions — generated continuously by the underlying infrastructure Defitea holds.</div>
+                                <div class="engine-block-text">Protocol fees, voter incentives, staking rewards, token emissions, and other protocol-native distributions.</div>
                             </div>
                             <div class="engine-block">
                                 <div class="engine-block-num">Engine 02</div>
                                 <div class="engine-block-title">Asset Growth</div>
-                                <div class="engine-block-text">Long-term exposure to productive DeFi assets whose value may increase as their protocols, usage, and economic importance grow — or decline if they do not.</div>
+                                <div class="engine-block-text">Long-term exposure to productive DeFi assets whose value may grow as their protocols, usage, and economic importance expand — or decline if they do not.</div>
                             </div>
                         </div>
                         <p class="engines-note">
                             Neither engine is guaranteed. <strong>Both are measured separately.</strong>
                         </p>
                         <p class="engines-thesis">
-                            Defitea is not market-neutral.<br><em>It is a productive-capital strategy.</em>
+                            Defitea is not market-neutral.<br><em>Its assets remain exposed to market prices and changing protocol conditions.</em>
                         </p>
                     </div>
 
@@ -1913,26 +1993,26 @@
                         <div class="cashflow-grid">
                             <div class="cashflow-item">
                                 <div class="cashflow-item-title">Protocol Fees</div>
-                                <div class="cashflow-item-text">Cash flow generated directly from protocol usage — trading, borrowing, and settlement activity. The most organic source of revenue.</div>
+                                <div class="cashflow-item-text">Cash flow generated directly through trading, borrowing, settlement, and other protocol usage.</div>
                             </div>
                             <div class="cashflow-item">
                                 <div class="cashflow-item-title">Voter Incentives</div>
-                                <div class="cashflow-item-text">Payments from participants competing for governance-directed liquidity and emissions. Revenue for directing influence, not from usage itself.</div>
+                                <div class="cashflow-item-text">Payments from participants seeking governance-directed liquidity and emissions.</div>
                             </div>
                             <div class="cashflow-item">
                                 <div class="cashflow-item-title">Token Emissions</div>
-                                <div class="cashflow-item-text">Protocol-issued rewards that may support early growth but can decline or dilute supply over time. Not the same as organic revenue.</div>
+                                <div class="cashflow-item-text">Protocol-issued rewards that may decline over time or dilute the token supply.</div>
                             </div>
                             <div class="cashflow-item">
                                 <div class="cashflow-item-title">Staking &amp; Liquidity Rewards</div>
-                                <div class="cashflow-item-text">Position-specific distributions generated through staking, liquidity provision, or other protocol-native mechanisms.</div>
+                                <div class="cashflow-item-text">Distributions generated through staking, locking, liquidity provision, and other protocol-native mechanisms.</div>
                             </div>
                         </div>
                         <p class="cashflow-conclusion">
-                            Cash flow is recurring, but variable.<br><em>Its source and quality matter as much as its size.</em>
+                            Cash flow is recurring, but variable.<br><em>Its quality matters as much as its size.</em>
                         </p>
                         <p class="cashflow-note">
-                            Underlying protocols distribute rewards on different schedules. Defitea consolidates, accounts for, and allocates available cash flow through a monthly harvest cycle.
+                            Different protocols distribute rewards on different schedules. Defitea brings them together through one monthly harvest and reporting cycle.
                         </p>
                     </div>
                 </div>
@@ -1947,17 +2027,17 @@
             <div class="philosophy-stats">
                 <div class="stat-item">
                     <span class="stat-number" data-tvl-perf="defitea">$2,870</span>
-                    <span class="stat-label">Total Value</span>
+                    <span class="stat-label">Total Position Value</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <span class="stat-number green" id="defitea-apy-stat">15.2%</span>
-                    <span class="stat-label">Avg APR</span>
+                    <span class="stat-number green" id="defitea-apy-stat">14.6%</span>
+                    <span class="stat-label">Annualized Cash-Flow APR</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
                     <span class="stat-number">Monthly</span>
-                    <span class="stat-label">Compounding</span>
+                    <span class="stat-label">Harvest &amp; Reporting Cycle</span>
                 </div>
             </div>
         </div>
@@ -1965,8 +2045,8 @@
 
     <section class="yield-chart-section">
         <div class="section-inner">
-            <h2 class="chart-heading sr-fade-up">Monthly Performance</h2>
-            <p class="chart-sub sr-fade-up sr-d1">Defitea fund yield — % of TVL per month · 2026</p>
+            <h2 class="chart-heading sr-fade-up">Monthly Cash-Flow Performance</h2>
+            <p class="chart-sub sr-fade-up sr-d1">Monthly cash-flow yield — based on average capital during each month · 2026</p>
 
             <div class="yield-chart-wrap sr-fade-up sr-d1">
                 <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block;">
@@ -2022,18 +2102,23 @@
 
             <div class="chart-kpi-row sr-fade-up sr-d2">
                 <div class="chart-kpi">
+                    <span class="chart-kpi-val">$228.50</span>
+                    <span class="chart-kpi-lbl">YTD Cash Flow</span>
+                </div>
+                <div class="chart-kpi">
                     <span class="chart-kpi-val">+7.30%</span>
-                    <span class="chart-kpi-lbl">Cumulative 2026</span>
+                    <span class="chart-kpi-lbl">YTD Cash-Flow Yield</span>
                 </div>
                 <div class="chart-kpi">
                     <span class="chart-kpi-val">+1.84%</span>
-                    <span class="chart-kpi-lbl">Best Month (Feb)</span>
+                    <span class="chart-kpi-lbl">Best Month · February</span>
                 </div>
                 <div class="chart-kpi">
                     <span class="chart-kpi-val" id="chart-apy-kpi">~14.6%</span>
-                    <span class="chart-kpi-lbl">Annualized Run Rate</span>
+                    <span class="chart-kpi-lbl">Annualized APR</span>
                 </div>
             </div>
+            <p class="chart-disclaimer sr-fade-up sr-d3">Based on realised cash flow from January to June 2026. Simple annualized projection. No compounding.</p>
         </div>
     </section>
 
@@ -2140,9 +2225,18 @@
 
     <section class="final-section">
         <div class="final-content">
-            <h2>Sustainable Yield</h2>
-            <p class="final-tagline">Productive Capital</p>
+            <div class="final-label">Defitea · The Productive Engine</div>
+            <h2>Built to work.</h2>
+            <p class="final-process">
+                Cash flow captured.<br>
+                Positions compounded.<br>
+                Value recycled through the system.
+            </p>
             <a href="/yield-reports" class="cta-link">Monthly Reports →</a>
+            <div class="final-sig">
+                <div class="final-sig-name">Defitea by The Holding</div>
+                <div class="final-sig-tagline">Designing the Architecture of Capital.</div>
+            </div>
         </div>
     </section>
 
