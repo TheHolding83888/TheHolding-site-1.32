@@ -645,10 +645,18 @@
             opacity: 0;
             transform: translate(-3px, 2px);
             transition: opacity 0.3s ease, transform 0.3s ease;
+            font-variant-emoji: text;
         }
         .metric-link:hover .metric-arrow {
             opacity: 1;
             transform: translate(0, 0);
+        }
+        /* Touch / no-hover devices: arrow always visible, same green style */
+        @media (hover: none), (max-width: 768px) {
+            .metric-arrow {
+                opacity: 1;
+                transform: translate(0, 0);
+            }
         }
         .metric-sublabel {
             font-size: 0.7rem;
@@ -3213,7 +3221,7 @@
                     <a href="/defitea" class="metric metric-link">
                         <div class="metric-value metric-value-green" data-metric="yield">14.6%</div>
                         <div class="metric-label">Annual Cash-Flow Yield</div>
-                        <div class="metric-sublabel">realised · income layer <span class="metric-arrow">↗</span></div>
+                        <div class="metric-sublabel">realised · income layer <span class="metric-arrow">&#8599;&#65038;</span></div>
                     </a>
                 </div>
             </div>
