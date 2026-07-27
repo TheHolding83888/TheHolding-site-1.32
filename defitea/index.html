@@ -443,7 +443,7 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 0.1rem;
+            gap: 0.28rem;
             flex-shrink: 0;
         }
         .er-status { display: none; }
@@ -475,15 +475,18 @@
         }
         @media (max-width: 640px) {
             .engines-list {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
                 gap: 0.5rem;
             }
             .engine-row {
-                padding: 0.85rem 1.05rem;
-                gap: 0.6rem;
+                padding: 0.8rem 0.9rem;
+                gap: 0.5rem;
             }
-            .er-name { font-size: 0.92rem; }
-            .er-apr { font-size: 0.92rem; }
+            .er-left { gap: 0.45rem; }
+            .er-name { font-size: 0.86rem; }
+            .er-apr { font-size: 0.9rem; }
+            .er-apr-lbl { font-size: 0.46rem; letter-spacing: 0.1em; }
+            .er-right { gap: 0.22rem; }
         }
 
         .engines-grid {
