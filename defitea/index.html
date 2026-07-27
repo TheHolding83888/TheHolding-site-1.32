@@ -400,11 +400,11 @@
             gap: 0.6rem;
         }
         .engine-row {
-            display: grid;
-            grid-template-columns: 1.6rem 1fr auto;
+            display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 0.7rem;
-            padding: 0.95rem 1.15rem;
+            padding: 0.9rem 1.2rem;
             border: 1px solid var(--border-color);
             border-radius: 10px;
             background: var(--bg-card);
@@ -416,11 +416,19 @@
         }
         .engine-row-head { display: none; }
         .engine-row:last-of-type { grid-column: 1 / -1; }
-        .er-num {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            opacity: 0.7;
+        .er-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 0;
+        }
+        .er-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            box-shadow: 0 0 8px var(--accent-primary);
+            flex-shrink: 0;
         }
         .er-name {
             font-family: 'Space Grotesk', sans-serif;
@@ -431,18 +439,29 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .er-status {
-            display: none;
+        .er-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.1rem;
+            flex-shrink: 0;
         }
-        .er-dot { display: none; }
+        .er-status { display: none; }
         .er-apr {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.95rem;
+            font-size: 0.98rem;
             font-weight: 600;
             color: var(--accent-primary);
-            text-align: right;
             letter-spacing: -0.02em;
-            white-space: nowrap;
+            line-height: 1;
+        }
+        .er-apr-lbl {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            opacity: 0.6;
         }
         .engines-list-note {
             max-width: 780px;
@@ -1728,70 +1747,48 @@
 
             <div class="engines-list">
                 <div class="engine-row">
-                    <span class="er-num">01</span>
-                    <span class="er-name">Aerodrome</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-aero>20+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Aerodrome</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-aero>20+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">02</span>
-                    <span class="er-name">Convex</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-cvx>15+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Convex</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-cvx>15+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">03</span>
-                    <span class="er-name">Curve</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-crv>8+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Curve</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-crv>8+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">04</span>
-                    <span class="er-name">Pendle</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-pendle>10+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Pendle</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-pendle>10+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">05</span>
-                    <span class="er-name">f(x) Protocol</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr">15+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">f(x) Protocol</span></span>
+                    <span class="er-right"><span class="er-apr">15+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">06</span>
-                    <span class="er-name">Yield Basis</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-yb>10+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Yield Basis</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-yb>10+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">07</span>
-                    <span class="er-name">Frax</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-fxs>2+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Frax</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-fxs>2+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">08</span>
-                    <span class="er-name">Velodrome</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-velo>20+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Velodrome</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-velo>20+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">09</span>
-                    <span class="er-name">Venice</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-vvv>8+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Venice</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-vvv>8+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">10</span>
-                    <span class="er-name">Liquity</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-lqty>5+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Liquity</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-lqty>5+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <div class="engine-row">
-                    <span class="er-num">11</span>
-                    <span class="er-name">Resupply</span>
-                    <span class="er-status"><i class="er-dot"></i>Active</span>
-                    <span class="er-apr" data-apy-rsup>15+%</span>
+                    <span class="er-left"><i class="er-dot"></i><span class="er-name">Resupply</span></span>
+                    <span class="er-right"><span class="er-apr" data-apy-rsup>15+%</span><span class="er-apr-lbl">Indicative APR</span></span>
                 </div>
                 <p class="engines-list-note">Indicative APR is variable and not guaranteed. Rewards vary by protocol and market conditions.</p>
             </div>
