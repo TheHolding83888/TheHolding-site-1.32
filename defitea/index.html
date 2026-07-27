@@ -1514,7 +1514,7 @@
         }
         .chart-sub { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 2rem; letter-spacing: 0.02em; }
         .yield-chart-wrap { margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
-        .chart-kpi-row { display: flex; flex-wrap: wrap; gap: 2.5rem; margin-top: 2.5rem; }
+        .chart-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem 2rem; margin-top: 2.5rem; }
         .chart-kpi { display: flex; flex-direction: column; gap: 0.3rem; }
         .chart-kpi-val { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; color: #4ade80; }
         .chart-kpi-lbl { font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
@@ -1561,7 +1561,7 @@
             .calc-sub { margin-bottom: 1.5rem; }
             .yield-chart-section { padding: 1rem 0 3rem; }
             .calculator-section { padding: 2.5rem 0 3rem; }
-            .chart-kpi-row { gap: 1.5rem; margin-top: 1.5rem; }
+            .chart-kpi-row { grid-template-columns: repeat(2, 1fr); gap: 1.5rem 1rem; margin-top: 1.5rem; }
             .chart-kpi-val { font-size: 1.15rem; }
         }
     
@@ -2024,7 +2024,7 @@
     <section class="yield-chart-section">
         <div class="section-inner">
             <h2 class="chart-heading sr-fade-up">Monthly Cash-Flow Performance</h2>
-            <p class="chart-sub sr-fade-up sr-d1">Monthly cash-flow yield — based on average capital during each month · 2026</p>
+            <p class="chart-sub sr-fade-up sr-d1">Monthly cash-flow yield · 2026</p>
 
             <div class="yield-chart-wrap sr-fade-up sr-d1">
                 <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block;">
@@ -2085,18 +2085,18 @@
                 </div>
                 <div class="chart-kpi">
                     <span class="chart-kpi-val">+7.30%</span>
-                    <span class="chart-kpi-lbl">YTD Cash-Flow Yield</span>
+                    <span class="chart-kpi-lbl">YTD Yield</span>
                 </div>
                 <div class="chart-kpi">
                     <span class="chart-kpi-val">+1.84%</span>
-                    <span class="chart-kpi-lbl">Best Month · February</span>
+                    <span class="chart-kpi-lbl">Best Month</span>
                 </div>
                 <div class="chart-kpi">
                     <span class="chart-kpi-val" id="chart-apy-kpi">~14.6%</span>
-                    <span class="chart-kpi-lbl">Annualized APR</span>
+                    <span class="chart-kpi-lbl">Annualized</span>
                 </div>
             </div>
-            <p class="chart-disclaimer sr-fade-up sr-d3">Based on realised cash flow from January to June 2026. Simple annualized projection. No compounding.</p>
+            <p class="chart-disclaimer sr-fade-up sr-d3">Realised Jan–Jun 2026 · simple annualized · no compounding</p>
         </div>
     </section>
 
