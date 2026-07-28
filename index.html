@@ -664,29 +664,25 @@
             margin-top: 0.35rem;
             letter-spacing: 0.04em;
         }
-        .metric-link { position: relative; }
+        .metric-link { position: relative; cursor: pointer; }
         .metric-tooltip {
             position: absolute;
-            top: calc(100% + 10px);
+            top: calc(100% + 14px);
             left: 50%;
-            transform: translateX(-50%) translateY(-6px);
-            background: rgba(10, 15, 13, 0.96);
-            border: 1px solid rgba(16,185,129,0.3);
-            border-radius: 10px;
-            padding: 0.7rem 1rem;
-            font-size: 0.72rem;
-            line-height: 1.5;
-            color: var(--text-secondary);
-            letter-spacing: 0.02em;
-            white-space: nowrap;
+            transform: translateX(-50%) translateY(-8px) scale(0.97);
+            width: 260px;
+            background: linear-gradient(165deg, rgba(18, 32, 27, 0.98), rgba(10, 20, 17, 0.98));
+            border: 1px solid rgba(16,185,129,0.28);
+            border-radius: 16px;
+            padding: 1.3rem 1.4rem 1.2rem;
             text-align: center;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 12px 30px -12px rgba(0,0,0,0.7);
-            z-index: 20;
-            pointer-events: none;
+            transition: opacity 0.35s cubic-bezier(0.16,1,0.3,1), transform 0.35s cubic-bezier(0.16,1,0.3,1), visibility 0.35s;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 24px 60px -20px rgba(0,0,0,0.75), 0 0 40px -18px rgba(16,185,129,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+            z-index: 30;
         }
         .metric-tooltip::before {
             content: '';
@@ -694,14 +690,52 @@
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            border: 5px solid transparent;
-            border-bottom-color: rgba(16,185,129,0.3);
+            border: 6px solid transparent;
+            border-bottom-color: rgba(16,185,129,0.28);
         }
+        .mt-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #34d399;
+            margin-bottom: 0.6rem;
+            letter-spacing: 0.01em;
+        }
+        .mt-body {
+            font-size: 0.76rem;
+            line-height: 1.65;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            letter-spacing: 0.02em;
+        }
+        .mt-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #10b981;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(16,185,129,0.35);
+            border-radius: 100px;
+            background: rgba(16,185,129,0.08);
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+            letter-spacing: 0.03em;
+        }
+        .mt-link span { transition: transform 0.3s ease; }
+        .mt-link:hover {
+            background: rgba(16,185,129,0.16);
+            border-color: rgba(16,185,129,0.6);
+            box-shadow: 0 6px 20px -8px rgba(16,185,129,0.5);
+        }
+        .mt-link:hover span { transform: translateX(3px); }
         .metric-link:hover .metric-tooltip,
-        .metric-link.show-tip .metric-tooltip {
+        .metric-link.show-tip .metric-tooltip,
+        .metric-link:focus-within .metric-tooltip {
             opacity: 1;
             visibility: visible;
-            transform: translateX(-50%) translateY(0);
+            transform: translateX(-50%) translateY(0) scale(1);
         }
 
         .live-indicator {
@@ -3267,12 +3301,16 @@
                             <span>Live</span>
                         </div>
                     </div>
-                    <a href="/defitea" class="metric metric-link" id="yield-metric">
+                    <div class="metric metric-link" id="yield-metric" tabindex="0" role="button" aria-label="Income Layer APR details">
                         <div class="metric-value metric-value-green" data-metric="yield">14.6%</div>
                         <div class="metric-label">Income Layer APR</div>
                         <div class="metric-sublabel">Realised · Jan–Jun 2026 <span class="metric-arrow">&#8599;&#65038;</span></div>
-                        <div class="metric-tooltip">Annualised from realised cash flow.<br>Simple projection. No compounding.</div>
-                    </a>
+                        <div class="metric-tooltip">
+                            <div class="mt-title">Defitea Fund</div>
+                            <div class="mt-body">Based on realised cash flow.<br>Simple annualisation.<br>No compounding.</div>
+                            <a href="/defitea" class="mt-link">View income layer <span>&#8594;</span></a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -5840,20 +5878,19 @@
         }
     </script>
     <script>
-    /* Yield metric: hover shows tooltip on desktop; on touch, first tap reveals, second navigates */
+    /* Yield metric: desktop shows tooltip on hover; touch toggles it on tap. Navigation only via the explicit link inside. */
     (function() {
         var m = document.getElementById('yield-metric');
         if (!m) return;
         var isTouch = window.matchMedia('(hover: none)').matches;
         if (!isTouch) return;
-        var revealed = false;
         m.addEventListener('click', function(e) {
-            if (!revealed) {
-                e.preventDefault();
-                m.classList.add('show-tip');
-                revealed = true;
-                setTimeout(function(){ m.classList.remove('show-tip'); revealed = false; }, 4000);
-            }
+            if (e.target.closest('.mt-link')) return; // let the link navigate
+            e.preventDefault();
+            m.classList.toggle('show-tip');
+        });
+        document.addEventListener('click', function(e) {
+            if (!m.contains(e.target)) m.classList.remove('show-tip');
         });
     })();
     </script>
