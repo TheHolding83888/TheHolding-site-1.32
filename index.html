@@ -642,14 +642,13 @@
             display: inline-block;
             font-size: 0.8em;
             color: #10b981;
-            opacity: 0;
-            transform: translate(-3px, 2px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 1;
+            transform: translate(0, 0);
+            transition: transform 0.3s ease;
             font-variant-emoji: text;
         }
         .metric-link:hover .metric-arrow {
-            opacity: 1;
-            transform: translate(0, 0);
+            transform: translate(2px, -2px);
         }
         /* Touch / no-hover devices: arrow always visible, same green style */
         @media (hover: none), (max-width: 768px) {
