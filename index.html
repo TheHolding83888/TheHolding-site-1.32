@@ -772,6 +772,15 @@
             cursor: pointer;
             z-index: 1;
         }
+        .scroll-indicator.tip-hidden {
+            opacity: 0 !important;
+            visibility: hidden;
+            animation: none;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        @media (max-width: 768px) {
+            .scroll-indicator { bottom: 3.5rem; }
+        }
 
         @keyframes fadeIn {
             from {
@@ -5900,14 +5909,19 @@
         }
 
         if (isTouch) {
+            var arrow = document.querySelector('.scroll-indicator');
             m.addEventListener('click', function(e) {
                 if (e.target.closest('.mt-link')) return; // let the link navigate
                 e.preventDefault();
                 var opened = m.classList.toggle('show-tip');
+                if (arrow) arrow.classList.toggle('tip-hidden', opened);
                 if (opened) ensureVisible();
             });
             document.addEventListener('click', function(e) {
-                if (!m.contains(e.target)) m.classList.remove('show-tip');
+                if (!m.contains(e.target)) {
+                    m.classList.remove('show-tip');
+                    if (arrow) arrow.classList.remove('tip-hidden');
+                }
             });
         } else {
             // Desktop: tooltip shows on hover/focus (CSS). Nudge scroll if it clips the viewport.
