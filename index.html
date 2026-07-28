@@ -5878,20 +5878,41 @@
         }
     </script>
     <script>
-    /* Yield metric: desktop shows tooltip on hover; touch toggles it on tap. Navigation only via the explicit link inside. */
+    /* Yield metric tooltip: reveal + gentle auto-scroll so the card is fully visible with breathing room. */
     (function() {
         var m = document.getElementById('yield-metric');
         if (!m) return;
+        var tip = m.querySelector('.metric-tooltip');
         var isTouch = window.matchMedia('(hover: none)').matches;
-        if (!isTouch) return;
-        m.addEventListener('click', function(e) {
-            if (e.target.closest('.mt-link')) return; // let the link navigate
-            e.preventDefault();
-            m.classList.toggle('show-tip');
-        });
-        document.addEventListener('click', function(e) {
-            if (!m.contains(e.target)) m.classList.remove('show-tip');
-        });
+
+        // Scroll the page just enough so the tooltip sits fully in view with padding below.
+        function ensureVisible() {
+            if (!tip) return;
+            setTimeout(function() {
+                var rect = tip.getBoundingClientRect();
+                var margin = 24; // breathing room below the card
+                var overflow = rect.bottom + margin - window.innerHeight;
+                if (overflow > 0) {
+                    window.scrollBy({ top: overflow, left: 0, behavior: 'smooth' });
+                }
+            }, 60);
+        }
+
+        if (isTouch) {
+            m.addEventListener('click', function(e) {
+                if (e.target.closest('.mt-link')) return; // let the link navigate
+                e.preventDefault();
+                var opened = m.classList.toggle('show-tip');
+                if (opened) ensureVisible();
+            });
+            document.addEventListener('click', function(e) {
+                if (!m.contains(e.target)) m.classList.remove('show-tip');
+            });
+        } else {
+            // Desktop: tooltip shows on hover/focus (CSS). Nudge scroll if it clips the viewport.
+            m.addEventListener('mouseenter', ensureVisible);
+            m.addEventListener('focusin', ensureVisible);
+        }
     })();
     </script>
 </body>
