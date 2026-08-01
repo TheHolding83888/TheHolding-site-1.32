@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- TheHolding.ai Website v1.57 - Fund cards synced to updated fund pages: honest Substantia/Defitea/Monetra copy, removed absolutes, For Investors→How It Works -->
+<!-- TheHolding.ai Website v1.58 - Holdings refresh: Defitea qty update + FXN $631, Fructus→ondo only, Singul ElizaOS 80808/MODE $41/DIEM $94, Monetra +$100 to total (card static $800) -->
 <html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
@@ -4908,17 +4908,17 @@
         };
 
         const defiteaHoldings = {
-            aero: 1752,
-            cvx: 1249,
-            crv: 3645,
+            aero: 2200,
+            cvx: 1173,
+            crv: 4125,
             pendle: 500,
             fxn: 59.81,
             yb: 10846,
-            fxs: 2552,
+            fxs: 3804,
             velo: 12180,
             vvv: 50,          // Venice — moved in from Singul
-            lqty: 871,        // Liquity — new
-            rsup: 1896        // Resupply — new
+            lqty: 1223,       // Liquity
+            rsup: 3682        // Resupply
         };
 
         // Singul token holdings
@@ -4930,22 +4930,20 @@
             'virtual-protocol': 669,      // Virtual Protocol
             'beam-2': 11309,              // BEAM
             mode: 1000000,                // MODE
-            elizaos: 130000,              // ElizaOS
+            elizaos: 80808,               // ElizaOS
             diem: 0.07                    // DIEM - fixed $86 value
         };
 
         // Fructus holdings (not displayed in cards, only for TVL calculation)
         const fructusHoldings = {
-            ondo: 542,                    // ONDO Finance (dynamic)
-            dbcon: 5,                     // DBCon - 5 × $27 = $135
-            copxon: 2                     // COPXon - 2 × $87.5 = $175
+            ondo: 542                     // ONDO Finance (dynamic)
         };
 
-        const FIXED_FXN_VALUE = 745;      // Fixed $745 value for FXN (was $748)
-        const FIXED_DBCON_VALUE = 27;     // $135 / 5 = $27 per token
-        const FIXED_COPXON_VALUE = 87.5;  // Fixed $87.5 per token for COPXon (2 tokens = $175 total)
-        const FIXED_DIEM_VALUE = 86;      // Fixed $86 total value for DIEM (0.07 tokens)
-        const FIXED_MODE_VALUE = 90;      // Fixed $90 total value for MODE (1,000,000 tokens)
+        const FIXED_FXN_VALUE = 631;      // Fixed $631 value for FXN
+        const FIXED_DIEM_VALUE = 94;      // Fixed $94 total value for DIEM (0.07 tokens)
+        const FIXED_MODE_VALUE = 41;      // Fixed $41 total value for MODE (1,000,000 tokens)
+
+        const MONETRA_TVL_CONTRIBUTION = 100;  // Added to total TVL; card displays static $800
 
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
@@ -5173,9 +5171,7 @@
                 
                 // Calculate Fructus TVL (not displayed in UI, only for total)
                 const ondoValue   = fructusHoldings.ondo   * (prices['ondo-finance']?.usd || 0);
-                const dbconValue  = fructusHoldings.dbcon   * FIXED_DBCON_VALUE;
-                const copxonValue = fructusHoldings.copxon  * FIXED_COPXON_VALUE;
-                const fructusTVL  = ondoValue + dbconValue + copxonValue;
+                const fructusTVL  = ondoValue;
 
                 // Display Fructus TVL everywhere
                 document.querySelectorAll('[data-tvl="fructus"], [data-tvl-viz="fructus"]').forEach(el => {
@@ -5183,7 +5179,7 @@
                 });
 
                 // Total TVL
-                const totalTVL = substantiaTVL + defiteaTVL + singulTVL + fructusTVL;
+                const totalTVL = substantiaTVL + defiteaTVL + singulTVL + fructusTVL + MONETRA_TVL_CONTRIBUTION;
                 
                 document.querySelector('[data-metric="total-capital"]').textContent = 
                     `$${Math.round(totalTVL).toLocaleString()}`;
@@ -5193,6 +5189,7 @@
                     defitea: Math.round(defiteaTVL),
                     singul: Math.round(singulTVL),
                     fructus: Math.round(fructusTVL),
+                    monetra: MONETRA_TVL_CONTRIBUTION,
                     total: Math.round(totalTVL)
                 });
                 
