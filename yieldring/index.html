@@ -122,7 +122,7 @@
     <div class="sectionHead"><h2>Balance sheet</h2><div class="sectionNote">Locked positions</div></div>
     <div class="colHead"><div>Asset</div><div>Price</div><div>Value</div><div style="text-align:right;">Share</div></div>
     <div class="assets" id="assets"></div>
-    <p class="note">The reserve is pledged on Llamalend, where roughly <b>$300 of liquidity</b> was drawn against it and committed to three long-term positions. The Bitcoin itself is never sold — a loan is serviced instead.</p>
+    <p class="note">The reserve is pledged on Llamalend, where roughly <b>$700 of liquidity</b> was drawn against it and committed to three long-term positions. The Bitcoin itself is never sold — a loan is serviced instead.</p>
   </div>
 
   <div>
@@ -155,11 +155,11 @@
 
 <script>
 (function () {
-  var BTC = { id: 'bitcoin', name: 'Bitcoin', sub: 'Reserve · pledged as collateral', qty: 0.012 };
+  var BTC = { id: 'bitcoin', name: 'Bitcoin', sub: 'Reserve · pledged as collateral', qty: 0.03 };
   var ENGINES = [
-    { id: 'aerodrome-finance', name: 'veAERO', sub: 'Aerodrome · locked', qty: 240 },
-    { id: 'convex-finance', name: 'vlCVX', sub: 'Convex / Curve · vote-locked', qty: 80 },
-    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 380 }
+    { id: 'aerodrome-finance', name: 'veAERO', sub: 'Aero · locked', qty: 480 },
+    { id: 'convex-finance', name: 'vlCVX', sub: 'Convex · vote-locked', qty: 240 },
+    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 800 }
   ];
   var ALL = [BTC].concat(ENGINES);
   var CACHE_KEY = 'yieldring_prices_v1';
