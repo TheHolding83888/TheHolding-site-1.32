@@ -841,7 +841,7 @@
                         <div class="cc-metric-value gold" id="tvl-05081966">—</div>
                     </div>
                     <div>
-                        <div class="cc-metric-label" data-i18n="card.cashflow">Cash Flow / yr</div>
+                        <div class="cc-metric-label" data-i18n="card.cashflow">Indicative APR</div>
                         <div class="cc-metric-value">4–8+%</div>
                     </div>
                 </div>
@@ -868,8 +868,8 @@
                         <div class="cc-metric-value gold" id="tvl-yieldring">—</div>
                     </div>
                     <div>
-                        <div class="cc-metric-label" data-i18n="card.cashflow">Cash Flow / yr</div>
-                        <div class="cc-metric-value">7–13+%</div>
+                        <div class="cc-metric-label" data-i18n="card.cashflow">Indicative APR</div>
+                        <div class="cc-metric-value">~10–12%</div>
                     </div>
                 </div>
 
@@ -990,7 +990,7 @@
 
     const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
     // 05081966.eth: AERO 202 / FRAX 393 / CRV 480
-    // YieldRing.eth: BTC 0.012 / veAERO 240 / vlCVX 80 / veFRAX 380
+    // YieldRing.eth: BTC 0.03 / veAERO 480 / vlCVX 240 / veFRAX 800
     const url = 'https://api.coingecko.com/api/v3/simple/price'
               + '?ids=bitcoin,aerodrome-finance,curve-dao-token,frax-share,convex-finance'
               + '&vs_currencies=usd&x_cg_demo_api_key=' + API_KEY;
@@ -1005,10 +1005,10 @@
         const tvl1 = 202 * usd('aerodrome-finance')
                    + 480 * usd('curve-dao-token')
                    + 393 * usd('frax-share');
-        const tvl2 = 0.012 * usd('bitcoin')
-                   + 240   * usd('aerodrome-finance')
-                   + 80    * usd('convex-finance')
-                   + 380   * usd('frax-share');
+        const tvl2 = 0.03  * usd('bitcoin')
+                   + 480   * usd('aerodrome-finance')
+                   + 240   * usd('convex-finance')
+                   + 800   * usd('frax-share');
 
         if (el1)    el1.textContent = fmt(tvl1);
         if (el2)    el2.textContent = fmt(tvl2);
@@ -1093,7 +1093,7 @@
             'card2.founded': 'Est. Jul 25, 2026',
             'card2.sub': 'A Bitcoin-backed company held through a Tangem Ring. A BTC reserve, borrowed liquidity, and three yield engines.',
             'card.tvl': 'Company TVL',
-            'card.cashflow': 'Cash Flow / yr',
+            'card.cashflow': 'Indicative APR',
             'placeholder.title': 'Next Company',
             'placeholder.text': 'The collection grows as new personal companies are assembled and brought onchain.',
             'process.title': 'How a company is born',
@@ -1149,7 +1149,7 @@
             'card2.founded': 'Осн. 25 июля 2026',
             'card2.sub': 'Компания на обеспечении биткоином, доступ через кольцо Tangem. BTC-резерв, заёмная ликвидность и три доходных двигателя.',
             'card.tvl': 'TVL компании',
-            'card.cashflow': 'Денежный поток / год',
+            'card.cashflow': 'Ориентировочный APR',
             'placeholder.title': 'Следующая компания',
             'placeholder.text': 'Коллекция растёт по мере того, как собираются и выводятся в блокчейн новые персональные компании.',
             'process.title': 'Как рождается компания',
