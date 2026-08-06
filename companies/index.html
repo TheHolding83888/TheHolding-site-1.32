@@ -406,6 +406,35 @@
             transform: translateX(4px);
         }
 
+        /* external destination label (e.g. DeBank) beside the arrow */
+        .cc-extlink {
+            position: absolute;
+            bottom: 1.6rem;
+            right: 1.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            z-index: 4;
+        }
+        .cc-extlink .cc-ext-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            opacity: 0.55;
+            font-weight: 500;
+            transition: opacity 0.3s ease, color 0.3s ease;
+        }
+        .cc-extlink .cc-arrow {
+            position: static;
+            bottom: auto;
+            right: auto;
+        }
+        a.company-card:hover .cc-extlink .cc-ext-label {
+            opacity: 0.9;
+            color: var(--gold);
+        }
+
         /* ── Placeholder / coming card ────────────────── */
         .company-card.placeholder {
             border-style: dashed;
@@ -986,8 +1015,8 @@
                 <span class="cc-arrow">→</span>
             </a>
 
-            <!-- ═══ Company YB ═══ -->
-            <div class="company-card reveal" data-category="onchain">
+            <!-- ═══ Company dinaz.eth ═══ -->
+            <a class="company-card reveal" data-category="onchain" href="https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc" target="_blank" rel="noopener">
                 <div class="cc-regnum"><span>№ 003</span><span class="cc-founded" data-i18n="card3.founded">Est. Jul 22, 2026</span></div>
                 <div class="cc-top">
                     <div class="cc-seal">
@@ -1009,7 +1038,8 @@
                         <div class="cc-metric-value" data-i18n="card3.apr">10–20%+ · Variable</div>
                     </div>
                 </div>
-            </div>
+                <span class="cc-extlink"><span class="cc-ext-label">DeBank</span><span class="cc-arrow">↗</span></span>
+            </a>
 
             <!-- ═══ Placeholder: next company ═══ -->
             <div class="company-card placeholder reveal">
