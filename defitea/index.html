@@ -2480,56 +2480,59 @@
         const FIXED_FXN_VALUE = 680;
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
-        // Update TVL function - direct calculation like main site
+        // ── Shared CoinGecko price cache (cross-page, TTL-based) ──
+        // Same store key as other pages, so prices are shared site-wide.
+        // Within TTL, refreshes and page-to-page navigation cost ZERO calls.
+        const CG_CACHE_KEY = 'th_cg_prices_v1';
+        const CG_TTL_MIN   = 10;
+        async function cgPrices(ids) {
+            const now = Date.now();
+            let store = { ts: 0, prices: {} };
+            try { store = JSON.parse(localStorage.getItem(CG_CACHE_KEY)) || store; } catch (e) {}
+            const fresh   = store.ts && (now - store.ts < CG_TTL_MIN * 60 * 1000);
+            const have    = store.prices || {};
+            const missing = ids.filter(id => !(id in have));
+            if (fresh && missing.length === 0) return have;   // fully cached → no call
+            try {
+                const url = 'https://api.coingecko.com/api/v3/simple/price?ids='
+                          + ids.join(',') + '&vs_currencies=usd&x_cg_demo_api_key=' + API_KEY;
+                const res = await fetch(url);
+                if (!res.ok) return have;
+                const p = await res.json();
+                const merged = fresh ? { ...have } : {};
+                for (const id in p) merged[id] = p[id].usd;
+                try { localStorage.setItem(CG_CACHE_KEY, JSON.stringify({ ts: now, prices: merged })); } catch (e) {}
+                return merged;
+            } catch (e) { return have; }
+        }
+
+        // Update TVL — reads from the shared cross-page price cache
         async function updateTVL() {
             try {
-                const ids = [
-                    'aerodrome-finance',
-                    'convex-finance',
-                    'curve-dao-token',
-                    'pendle',
-                    'yield-basis',
-                    'frax-share',
-                    'velodrome-finance',
-                    'venice-token',
-                    'liquity',
-                    'resupply',
-                    'clever'
-                ].join(',');
+                const ids = ['aerodrome-finance','convex-finance','curve-dao-token','pendle',
+                             'yield-basis','frax-share','velodrome-finance','venice-token',
+                             'liquity','resupply','clever'];
+                const prices = await cgPrices(ids);
+                if (!prices || Object.keys(prices).length === 0) return;
+                const usd = id => (prices[id] || 0);
 
-                const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`;
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    console.log('CoinGecko API error');
-                    return;
-                }
+                const defiteaTVL =
+                      defiteaHoldings.aero   * usd('aerodrome-finance')
+                    + defiteaHoldings.cvx    * usd('convex-finance')
+                    + defiteaHoldings.crv    * usd('curve-dao-token')
+                    + defiteaHoldings.pendle * usd('pendle')
+                    + FIXED_FXN_VALUE
+                    + defiteaHoldings.yb     * usd('yield-basis')
+                    + defiteaHoldings.fxs    * usd('frax-share')
+                    + defiteaHoldings.velo   * usd('velodrome-finance')
+                    + defiteaHoldings.vvv    * usd('venice-token')
+                    + defiteaHoldings.lqty   * usd('liquity')
+                    + defiteaHoldings.rsup   * usd('resupply')
+                    + defiteaHoldings.clev   * usd('clever');
 
-                const prices = await response.json();
-                
-                // Calculate Defitea TVL (same logic as main site)
-                const aeroValue = defiteaHoldings.aero * (prices['aerodrome-finance']?.usd || 0);
-                const cvxValue = defiteaHoldings.cvx * (prices['convex-finance']?.usd || 0);
-                const crvValue = defiteaHoldings.crv * (prices['curve-dao-token']?.usd || 0);
-                const pendleValue = defiteaHoldings.pendle * (prices.pendle?.usd || 0);
-                const fxnValue = FIXED_FXN_VALUE;
-                const ybValue = defiteaHoldings.yb * (prices['yield-basis']?.usd || 0);
-                const fxsValue = defiteaHoldings.fxs * (prices['frax-share']?.usd || 0);
-                const veloValue = defiteaHoldings.velo * (prices['velodrome-finance']?.usd || 0);
-                const vvvValue  = defiteaHoldings.vvv  * (prices['venice-token']?.usd || 0);
-                const lqtyValue = defiteaHoldings.lqty * (prices['liquity']?.usd || 0);
-                const rsupValue = defiteaHoldings.rsup * (prices['resupply']?.usd || 0);
-                const clevValue = defiteaHoldings.clev * (prices['clever']?.usd || 0);
-
-                const defiteaTVL = aeroValue + cvxValue + crvValue + pendleValue + fxnValue + ybValue + fxsValue + veloValue + vvvValue + lqtyValue + rsupValue + clevValue;
-                
-                // Update all TVL displays on this page
                 document.querySelectorAll('[data-tvl="defitea"], [data-tvl-perf="defitea"]').forEach(el => {
                     el.textContent = `$${Math.round(defiteaTVL).toLocaleString()}`;
                 });
-
-                console.log('Defitea TVL updated:', Math.round(defiteaTVL));
-                
             } catch (error) {
                 console.error('TVL update failed:', error);
             }
