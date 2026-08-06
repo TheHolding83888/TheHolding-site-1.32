@@ -876,6 +876,28 @@
                 <span class="cc-arrow">→</span>
             </a>
 
+            <!-- ═══ Company YB ═══ -->
+            <div class="company-card reveal" data-category="onchain">
+                <div class="cc-regnum"><span>№ 003</span><span class="cc-founded" data-i18n="card3.founded">Est. Jul 22, 2026</span></div>
+                <div class="cc-top">
+                    <div class="cc-status"><span class="cc-dot"></span><span data-i18n="card.live">Live</span></div>
+                </div>
+
+                <div class="cc-name">dinaz.eth</div>
+                <div class="cc-sub" data-i18n="card3.sub">A yield-bearing company built on Yield Basis — leveraged Bitcoin liquidity engineered to convert market volatility into compounding onchain return.</div>
+
+                <div class="cc-metrics">
+                    <div>
+                        <div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div>
+                        <div class="cc-metric-value gold" id="tvl-yb">—</div>
+                    </div>
+                    <div>
+                        <div class="cc-metric-label" data-i18n="card.cashflow">Indicative APR</div>
+                        <div class="cc-metric-value">10–20%+ · Variable</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ═══ Placeholder: next company ═══ -->
             <div class="company-card placeholder reveal">
                 <div class="placeholder-mark">◇</div>
@@ -985,14 +1007,16 @@
 (async function () {
     const el1    = document.getElementById('tvl-05081966');
     const el2    = document.getElementById('tvl-yieldring');
+    const el3    = document.getElementById('tvl-yb');
     const statEl = document.getElementById('statTVL');
-    if (!el1 && !el2 && !statEl) return;
+    if (!el1 && !el2 && !el3 && !statEl) return;
 
     const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
     // 05081966.eth: AERO 202 / FRAX 393 / CRV 480
     // YieldRing.eth: BTC 0.03 / veAERO 480 / vlCVX 240 / veFRAX 800
+    // dinaz.eth: YB 12029
     const url = 'https://api.coingecko.com/api/v3/simple/price'
-              + '?ids=bitcoin,aerodrome-finance,curve-dao-token,frax-share,convex-finance'
+              + '?ids=bitcoin,aerodrome-finance,curve-dao-token,frax-share,convex-finance,yield-basis'
               + '&vs_currencies=usd&x_cg_demo_api_key=' + API_KEY;
 
     const fmt = v => v > 0 ? '$' + Math.round(v).toLocaleString('en-US') : 'Live';
@@ -1009,13 +1033,16 @@
                    + 480   * usd('aerodrome-finance')
                    + 240   * usd('convex-finance')
                    + 800   * usd('frax-share');
+        const tvl3 = 12029 * usd('yield-basis');
 
         if (el1)    el1.textContent = fmt(tvl1);
         if (el2)    el2.textContent = fmt(tvl2);
-        if (statEl) statEl.textContent = fmt(tvl1 + tvl2);
+        if (el3)    el3.textContent = fmt(tvl3);
+        if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3);
     } catch (e) {
         if (el1)    el1.textContent = 'Live';
         if (el2)    el2.textContent = 'Live';
+        if (el3)    el3.textContent = 'Live';
         if (statEl) statEl.textContent = 'Live';
     }
 })();
@@ -1092,6 +1119,8 @@
             'card.sub': 'A digital company registered onchain. Three protocols, a four-year lock, and autonomous cash flow.',
             'card2.founded': 'Est. Jul 25, 2026',
             'card2.sub': 'A Bitcoin-backed company held through a Tangem Ring. A BTC reserve, borrowed liquidity, and three yield engines.',
+            'card3.founded': 'Est. Jul 22, 2026',
+            'card3.sub': 'A yield-bearing company built on Yield Basis — leveraged Bitcoin liquidity engineered to convert market volatility into compounding onchain return.',
             'card.tvl': 'Company TVL',
             'card.cashflow': 'Indicative APR',
             'placeholder.title': 'Next Company',
@@ -1148,6 +1177,8 @@
             'card.sub': 'Цифровая компания, зарегистрированная ончейн. Три протокола, блокировка на четыре года и автономный денежный поток.',
             'card2.founded': 'Осн. 25 июля 2026',
             'card2.sub': 'Компания на обеспечении биткоином, доступ через кольцо Tangem. BTC-резерв, заёмная ликвидность и три доходных двигателя.',
+            'card3.founded': 'Осн. 22 июля 2026',
+            'card3.sub': 'Доходная компания на базе Yield Basis — биткоин-ликвидность с плечом, преобразующая рыночную волатильность в накопительную ончейн-доходность.',
             'card.tvl': 'TVL компании',
             'card.cashflow': 'Ориентировочный APR',
             'placeholder.title': 'Следующая компания',
