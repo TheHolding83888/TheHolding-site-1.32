@@ -579,10 +579,31 @@
             .nextlayer { padding: 5rem 0; }
             .nl-grid { grid-template-columns: 1fr; gap: 2.25rem; }
             .nl-statement { margin-top: 3rem; }
+            /* re-center and widen the fade zones for a smooth dissipation */
+            .nextlayer::before {
+                -webkit-mask: radial-gradient(140% 100% at 65% 15%, #000 0%, transparent 78%);
+                        mask: radial-gradient(140% 100% at 65% 15%, #000 0%, transparent 78%);
+                opacity: 0.42;
+            }
+            .nextlayer::after {
+                top: -14%; left: -20%;
+                width: 90%; height: 70%;
+                background: radial-gradient(circle at 40% 40%, var(--gold-soft), transparent 74%);
+            }
         }
         @media (max-width: 460px) {
             .nextlayer { padding: 4.25rem 0; }
-            .nextlayer::before { background-size: 28px 28px; }
+            .nextlayer::before {
+                background-size: 26px 26px;
+                -webkit-mask: radial-gradient(160% 120% at 60% 12%, #000 0%, transparent 82%);
+                        mask: radial-gradient(160% 120% at 60% 12%, #000 0%, transparent 82%);
+                opacity: 0.36;
+            }
+            .nextlayer::after {
+                top: -18%; left: -30%;
+                width: 130%; height: 65%;
+                background: radial-gradient(circle at 45% 40%, var(--gold-soft), transparent 78%);
+            }
             .nl-eyebrow { margin-bottom: 1.2rem; }
             .nl-body p { font-size: 0.9rem; line-height: 1.7; }
             .nl-statement { margin-top: 2.5rem; padding-top: 1.75rem; }
