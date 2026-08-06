@@ -389,6 +389,9 @@
             line-height: 1.15;
             color: var(--text);
             letter-spacing: 0.01em;
+            /* reserve two lines so the metrics divider aligns across all cards
+               regardless of value length (e.g. "10–20%+ Variable" wraps) */
+            min-height: 2.3em;
         }
         .cc-metric-value.gold { color: var(--gold); }
 
@@ -985,7 +988,7 @@
                 letter-spacing: 0.15em;
                 margin-bottom: 0.35rem;
             }
-            .cc-metric-value { font-size: 1.5rem; }
+            .cc-metric-value { font-size: 1.5rem; min-height: 0; }
             .placeholder-text { font-size: 0.78rem; }
         }
         /* very narrow phones — prevent metric cramping */
