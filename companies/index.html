@@ -406,14 +406,15 @@
             transform: translateX(4px);
         }
 
-        /* external destination label (e.g. DeBank) beside the arrow */
+        /* external destination label (e.g. DeBank) as a footer row */
         .cc-extlink {
-            position: absolute;
-            bottom: 1.6rem;
-            right: 1.9rem;
-            display: inline-flex;
+            display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: 0.4rem;
+            margin-top: 1.15rem;
+            padding-top: 0.9rem;
+            border-top: 1px solid var(--line);
             z-index: 4;
         }
         .cc-extlink .cc-ext-label {
@@ -421,18 +422,26 @@
             letter-spacing: 0.14em;
             text-transform: uppercase;
             color: var(--text-3);
-            opacity: 0.55;
+            opacity: 0.6;
             font-weight: 500;
             transition: opacity 0.3s ease, color 0.3s ease;
         }
-        .cc-extlink .cc-arrow {
-            position: static;
-            bottom: auto;
-            right: auto;
+        .cc-ext-arrow {
+            width: 12px;
+            height: 12px;
+            color: var(--text-3);
+            opacity: 0.6;
+            transition: color 0.3s ease, opacity 0.3s ease,
+                        transform 0.35s cubic-bezier(0.22,1,0.36,1);
         }
-        a.company-card:hover .cc-extlink .cc-ext-label {
-            opacity: 0.9;
+        a.company-card:hover .cc-ext-label {
+            opacity: 0.95;
             color: var(--gold);
+        }
+        a.company-card:hover .cc-ext-arrow {
+            color: var(--gold);
+            opacity: 1;
+            transform: translate(2px, -2px);
         }
 
         /* ── Placeholder / coming card ────────────────── */
@@ -1038,7 +1047,7 @@
                         <div class="cc-metric-value" data-i18n="card3.apr">10–20%+ · Variable</div>
                     </div>
                 </div>
-                <span class="cc-extlink"><span class="cc-ext-label">DeBank</span><span class="cc-arrow">↗</span></span>
+                <span class="cc-extlink"><span class="cc-ext-label">View on DeBank</span><svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </a>
 
             <!-- ═══ Placeholder: next company ═══ -->
