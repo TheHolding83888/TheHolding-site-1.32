@@ -4970,6 +4970,9 @@
                 const p = await res.json();
                 const merged = fresh ? { ...have } : {};
                 for (const id in p) merged[id] = p[id].usd;
+                // record every requested id (0 if unpriced) so unpriced
+                // tokens don't force a fresh fetch on every reload
+                for (const id of idsArr) if (!(id in merged)) merged[id] = 0;
                 try { localStorage.setItem(CG_CACHE_KEY, JSON.stringify({ ts: now, prices: merged })); } catch (e) {}
                 return wrap(merged);
             } catch (e) { return wrap(have); }
