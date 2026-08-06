@@ -1326,6 +1326,43 @@
     els.forEach(el => io.observe(el));
 })();
 
+/* ── Shared CoinGecko price cache (cross-page, TTL-based) ──
+   One localStorage store shared by every page. Prices are cached
+   for TTL minutes, so navigating between pages or refreshing within
+   that window costs ZERO API calls. Missing ids trigger a single
+   merge-fetch; everything already cached is reused. */
+const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
+const CG_CACHE_KEY = 'th_cg_prices_v1';
+const CG_TTL_MIN   = 10;
+
+async function cgPrices(ids) {
+    const now = Date.now();
+    let store = { ts: 0, prices: {} };
+    try { store = JSON.parse(localStorage.getItem(CG_CACHE_KEY)) || store; } catch (e) {}
+
+    const fresh   = store.ts && (now - store.ts < CG_TTL_MIN * 60 * 1000);
+    const have    = store.prices || {};
+    const missing = ids.filter(id => !(id in have));
+
+    // Fully served from cache → no network call at all
+    if (fresh && missing.length === 0) return have;
+
+    // Otherwise one batched fetch for all this page's ids, merged into the store
+    try {
+        const url = 'https://api.coingecko.com/api/v3/simple/price?ids='
+                  + ids.join(',') + '&vs_currencies=usd&x_cg_demo_api_key=' + API_KEY;
+        const res = await fetch(url);
+        if (!res.ok) return have;               // keep whatever we had
+        const p = await res.json();
+        const merged = fresh ? { ...have } : {};
+        for (const id in p) merged[id] = p[id].usd;
+        try { localStorage.setItem(CG_CACHE_KEY, JSON.stringify({ ts: now, prices: merged })); } catch (e) {}
+        return merged;
+    } catch (e) {
+        return have;
+    }
+}
+
 /* ── Live TVL for all companies (feeds each card + combined stat) ── */
 (async function () {
     const el1    = document.getElementById('tvl-05081966');
@@ -1335,56 +1372,50 @@
     const statEl = document.getElementById('statTVL');
     if (!el1 && !el2 && !el3 && !el4 && !statEl) return;
 
-    const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
     // 05081966.eth: AERO 202 / FRAX 393 / CRV 480
     // YieldRing.eth: BTC 0.03 / veAERO 480 / vlCVX 240 / veFRAX 800
     // dinaz.eth: YB 12029
-    // defitea.eth: full Defitea fund book (fxn fixed $631)
-    const url = 'https://api.coingecko.com/api/v3/simple/price'
-              + '?ids=bitcoin,aerodrome-finance,curve-dao-token,frax-share,convex-finance,yield-basis,pendle,velodrome-finance,venice-token,liquity,resupply,clever'
-              + '&vs_currencies=usd&x_cg_demo_api_key=' + API_KEY;
+    // defitea.eth: full Defitea fund book (fxn fixed $680)
+    const IDS = ['bitcoin','aerodrome-finance','curve-dao-token','frax-share',
+                 'convex-finance','yield-basis','pendle','velodrome-finance',
+                 'venice-token','liquity','resupply','clever'];
 
     const fmt = v => v > 0 ? '$' + Math.round(v).toLocaleString('en-US') : 'Live';
 
-    try {
-        const res = await fetch(url);
-        const p   = await res.json();
-        const usd = id => (p[id]?.usd || 0);
-
-        const tvl1 = 202 * usd('aerodrome-finance')
-                   + 480 * usd('curve-dao-token')
-                   + 393 * usd('frax-share');
-        const tvl2 = 0.03  * usd('bitcoin')
-                   + 480   * usd('aerodrome-finance')
-                   + 240   * usd('convex-finance')
-                   + 800   * usd('frax-share');
-        const tvl3 = 12029 * usd('yield-basis');
-        const FIXED_FXN = 680;
-        const tvl4 = 2440 * usd('aerodrome-finance')
-                   + 1333 * usd('convex-finance')
-                   + 4125 * usd('curve-dao-token')
-                   + 500  * usd('pendle')
-                   + FIXED_FXN
-                   + 10846 * usd('yield-basis')
-                   + 4224 * usd('frax-share')
-                   + 12180 * usd('velodrome-finance')
-                   + 50   * usd('venice-token')
-                   + 1488 * usd('liquity')
-                   + 3682 * usd('resupply')
-                   + 20   * usd('clever');
-
-        if (el1)    el1.textContent = fmt(tvl1);
-        if (el2)    el2.textContent = fmt(tvl2);
-        if (el3)    el3.textContent = fmt(tvl3);
-        if (el4)    el4.textContent = fmt(tvl4);
-        if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3 + tvl4);
-    } catch (e) {
-        if (el1)    el1.textContent = 'Live';
-        if (el2)    el2.textContent = 'Live';
-        if (el3)    el3.textContent = 'Live';
-        if (el4)    el4.textContent = 'Live';
-        if (statEl) statEl.textContent = 'Live';
+    const prices = await cgPrices(IDS);
+    if (!prices || Object.keys(prices).length === 0) {
+        [el1, el2, el3, el4, statEl].forEach(el => { if (el) el.textContent = 'Live'; });
+        return;
     }
+    const usd = id => (prices[id] || 0);
+
+    const tvl1 = 202 * usd('aerodrome-finance')
+               + 480 * usd('curve-dao-token')
+               + 393 * usd('frax-share');
+    const tvl2 = 0.03  * usd('bitcoin')
+               + 480   * usd('aerodrome-finance')
+               + 240   * usd('convex-finance')
+               + 800   * usd('frax-share');
+    const tvl3 = 12029 * usd('yield-basis');
+    const FIXED_FXN = 680;
+    const tvl4 = 2440 * usd('aerodrome-finance')
+               + 1333 * usd('convex-finance')
+               + 4125 * usd('curve-dao-token')
+               + 500  * usd('pendle')
+               + FIXED_FXN
+               + 10846 * usd('yield-basis')
+               + 4224 * usd('frax-share')
+               + 12180 * usd('velodrome-finance')
+               + 50   * usd('venice-token')
+               + 1488 * usd('liquity')
+               + 3682 * usd('resupply')
+               + 20   * usd('clever');
+
+    if (el1)    el1.textContent = fmt(tvl1);
+    if (el2)    el2.textContent = fmt(tvl2);
+    if (el3)    el3.textContent = fmt(tvl3);
+    if (el4)    el4.textContent = fmt(tvl4);
+    if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3 + tvl4);
 })();
 
 /* ── Sticky subnav: highlight active section on scroll ── */
