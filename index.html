@@ -4947,6 +4947,34 @@
 
         const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
 
+        // ── Shared CoinGecko price cache (cross-page, TTL-based) ──
+        // One localStorage store shared by every page on the site.
+        // Within TTL, refreshes + page-to-page navigation cost ZERO API calls.
+        // Returns the same {id:{usd:n}} shape the callers already expect.
+        const CG_CACHE_KEY = 'th_cg_prices_v1';
+        const CG_TTL_MIN   = 10;
+        async function cgPrices(idsArr) {
+            const now = Date.now();
+            let store = { ts: 0, prices: {} };
+            try { store = JSON.parse(localStorage.getItem(CG_CACHE_KEY)) || store; } catch (e) {}
+            const fresh   = store.ts && (now - store.ts < CG_TTL_MIN * 60 * 1000);
+            const have    = store.prices || {};
+            const missing = idsArr.filter(id => !(id in have));
+            const wrap    = flat => { const o = {}; for (const id in flat) o[id] = { usd: flat[id] }; return o; };
+            if (fresh && missing.length === 0) return wrap(have);   // fully cached → no call
+            try {
+                const url = 'https://api.coingecko.com/api/v3/simple/price?ids='
+                          + idsArr.join(',') + '&vs_currencies=usd&x_cg_demo_api_key=' + API_KEY;
+                const res = await fetch(url);
+                if (!res.ok) return wrap(have);
+                const p = await res.json();
+                const merged = fresh ? { ...have } : {};
+                for (const id in p) merged[id] = p[id].usd;
+                try { localStorage.setItem(CG_CACHE_KEY, JSON.stringify({ ts: now, prices: merged })); } catch (e) {}
+                return wrap(merged);
+            } catch (e) { return wrap(have); }
+        }
+
         // Fund card toggle - independent toggle for each card
         document.querySelectorAll('.fund-card').forEach(card => {
             card.addEventListener('click', function(e) {
@@ -5081,15 +5109,11 @@
                     'ondo-finance'
                 ].join(',');
 
-                const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`;
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    console.log('CoinGecko API error');
+                const prices = await cgPrices(ids.split(','));
+                if (!prices || Object.keys(prices).length === 0) {
+                    console.log('CoinGecko prices unavailable');
                     return;
                 }
-
-                const prices = await response.json();
                 
                 // Calculate Substantia TVL
                 const btcValue = substantiaHoldings.btc * (prices.bitcoin?.usd || 0);
