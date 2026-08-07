@@ -1615,6 +1615,14 @@ function renderIndex(lang) {
     const list  = INDEX_STATE.slice().sort((a, b) => b.val - a.val);
     const total = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);
     const pct   = v => total > 0 ? (v / total * 100) : 0;
+    // Noble green ramp — deepest for the largest holding, lighter down the ranks
+    const shade = i => {
+        const n = list.length;
+        const t = n > 1 ? i / (n - 1) : 0;
+        const a = [29, 74, 58], b = [168, 178, 112];   // deep emerald → light olive
+        const r = a.map((v, k) => Math.round(v + (b[k] - v) * t));
+        return 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
+    };
 
     const nv = document.getElementById('idxNetworkValue');
     const cn = document.getElementById('idxCount');
@@ -1626,11 +1634,11 @@ function renderIndex(lang) {
     const bar = document.getElementById('idxCompBar');
     if (bar) {
         bar.innerHTML = '';
-        list.forEach(c => {
+        list.forEach((c, i) => {
             const seg = document.createElement('div');
             seg.className = 'index-comp-seg';
             seg.style.width = pct(c.val).toFixed(2) + '%';
-            seg.style.background = c.color;
+            seg.style.background = shade(i);
             seg.title = c.nm + ' · ' + pct(c.val).toFixed(1) + '%';
             bar.appendChild(seg);
         });
@@ -1638,10 +1646,10 @@ function renderIndex(lang) {
     const leg = document.getElementById('idxCompLegend');
     if (leg) {
         leg.innerHTML = '';
-        list.forEach(c => {
+        list.forEach((c, i) => {
             const it = document.createElement('span');
             it.className = 'icl-item';
-            it.innerHTML = '<span class="icl-swatch" style="background:' + c.color + '"></span>'
+            it.innerHTML = '<span class="icl-swatch" style="background:' + shade(i) + '"></span>'
                          + '<b>' + c.nm + '</b> <span class="icl-w">' + pct(c.val).toFixed(1) + '%</span>';
             leg.appendChild(it);
         });
@@ -1656,11 +1664,11 @@ function renderIndex(lang) {
             a.href = c.href; a.target = '_blank'; a.rel = 'noopener';
             a.innerHTML =
                   '<span class="ib-rank">' + (i + 1) + '</span>'
-                + '<span class="ib-name"><span class="ib-swatch" style="background:' + c.color + '"></span>'
+                + '<span class="ib-name"><span class="ib-swatch" style="background:' + shade(i) + '"></span>'
                 +   '<span class="ib-nm-wrap"><div class="ib-nm">' + c.nm + '</div>'
                 +   '<div class="ib-cat">' + c.cat[lang] + '</div></span></span>'
                 + '<span class="ib-value">' + (c.val > 0 ? money(c.val) : 'Live') + '</span>'
-                + '<span class="ib-weight"><span class="ibw-track"><span class="ibw-fill" style="width:' + w.toFixed(2) + '%;background:' + c.color + '"></span></span>'
+                + '<span class="ib-weight"><span class="ibw-track"><span class="ibw-fill" style="width:' + w.toFixed(2) + '%;background:' + shade(i) + '"></span></span>'
                 +   '<span class="ibw-pct">' + w.toFixed(1) + '%</span></span>'
                 + '<span class="ib-since">' + c.since[lang] + '</span>';
             board.appendChild(a);
@@ -1723,13 +1731,13 @@ function renderIndex(lang) {
 
     // Feed the live index with real per-company values
     INDEX_STATE = [
-        { nm: 'defitea.eth',   val: tvl4, color: '#a8842c', href: 'https://theholding.ai/defitea/',
+        { nm: 'defitea.eth',   val: tvl4, href: 'https://theholding.ai/defitea/',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' },        since: { en: 'Jan 2025', ru: 'Янв 2025' } },
-        { nm: 'YieldRing.eth', val: tvl2, color: '#2a6b64', href: 'https://theholding.ai/yieldring',
+        { nm: 'YieldRing.eth', val: tvl2, href: 'https://theholding.ai/yieldring',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' },        since: { en: 'Jul 2026', ru: 'Июл 2026' } },
-        { nm: '05081966.eth',  val: tvl1, color: '#a75f3d', href: 'https://theholding.ai/05081966',
+        { nm: '05081966.eth',  val: tvl1, href: 'https://theholding.ai/05081966',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' },       since: { en: 'Jul 2026', ru: 'Июл 2026' } },
-        { nm: 'dinaz.eth',     val: tvl3, color: '#4a5a73', href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
+        { nm: 'dinaz.eth',     val: tvl3, href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' },       since: { en: 'Jul 2026', ru: 'Июл 2026' } }
     ];
     renderIndex(idxLang());
