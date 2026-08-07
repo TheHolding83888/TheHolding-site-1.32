@@ -1788,9 +1788,9 @@ function buildGraph() {
 
     // Which protocols each company's capital flows through
     const MEMBERSHIP = {
-        'defitea.eth':   ['Aerodrome','Convex','Curve','Pendle','f(x)','Yield Basis','Frax','Velodrome','Venice','Liquity','Resupply','CLever'],
-        'YieldRing.eth': ['Bitcoin','Convex','Aerodrome','Frax'],
-        '05081966.eth':  ['Curve','Aerodrome','Frax'],
+        'defitea.eth':   ['Aero','Convex','Curve','Pendle','f(x) Protocol','Yield Basis','Frax','Velodrome','Venice','Liquity','Resupply','CLever'],
+        'YieldRing.eth': ['Bitcoin','Convex','Aero','Frax'],
+        '05081966.eth':  ['Curve','Aero','Frax'],
         'dinaz.eth':     ['Yield Basis']
     };
 
@@ -1848,7 +1848,7 @@ function buildGraph() {
         prNodes += '<g class="g-node g-node-pr" data-pr="' + p + '">'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.6).toFixed(1) + '" fill="#d8b45a" opacity="0.10" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-pr" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"></circle>'
-            + '<text class="g-label-pr" x="' + (x + r + P.offPr) + '" y="' + (y + (mobile ? 3.5 : 4)).toFixed(1) + '" style="font-size:' + P.fPr + 'px">' + p + '</text>'
+            + '<text class="g-label-pr" x="' + (P.prX + P.rPrMax + P.offPr) + '" y="' + (y + (mobile ? 3.5 : 4)).toFixed(1) + '" style="font-size:' + P.fPr + 'px">' + p + '</text>'
             + '</g>';
     });
 
@@ -1858,7 +1858,7 @@ function buildGraph() {
         coNodes += '<g class="g-node g-node-co" data-co="' + c.nm + '">'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.1).toFixed(1) + '" fill="' + col + '" opacity="0.20" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-co" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '" style="fill:' + col + '"></circle>'
-            + '<text class="g-label-co" x="' + (x - r - P.offCo) + '" y="' + (y + (mobile ? 4 : 5)).toFixed(1) + '" text-anchor="end" style="font-size:' + P.fCo + 'px">' + c.nm + '</text>'
+            + '<text class="g-label-co" x="' + (P.coX - P.rCoMax - P.offCo) + '" y="' + (y + (mobile ? 4 : 5)).toFixed(1) + '" text-anchor="end" style="font-size:' + P.fCo + 'px">' + c.nm + '</text>'
             + '</g>';
     });
 
@@ -1870,6 +1870,7 @@ function buildGraph() {
         + '</svg>';
 
     const svg = canvas.querySelector('svg');
+    let locked = null;   // persists focus on tap (mobile) / click (desktop)
     const setFocus = (type, key) => {
         svg.classList.add('focused');
         svg.querySelectorAll('.g-edge').forEach(e => {
@@ -1886,14 +1887,22 @@ function buildGraph() {
         svg.classList.remove('focused');
         svg.querySelectorAll('.on').forEach(el => el.classList.remove('on'));
     };
-    svg.querySelectorAll('.g-node-co').forEach(n => {
-        n.addEventListener('mouseenter', () => setFocus('co', n.dataset.co));
-        n.addEventListener('mouseleave', clearFocus);
-    });
-    svg.querySelectorAll('.g-node-pr').forEach(n => {
-        n.addEventListener('mouseenter', () => setFocus('pr', n.dataset.pr));
-        n.addEventListener('mouseleave', clearFocus);
-    });
+    const bind = (type, attr) => {
+        svg.querySelectorAll(type === 'co' ? '.g-node-co' : '.g-node-pr').forEach(n => {
+            const key = n.dataset[attr];
+            n.addEventListener('mouseenter', () => { if (!locked) setFocus(type, key); });
+            n.addEventListener('mouseleave', () => { if (!locked) clearFocus(); });
+            n.addEventListener('click', ev => {
+                ev.stopPropagation();
+                if (locked && locked.type === type && locked.key === key) { locked = null; clearFocus(); }
+                else { locked = { type, key }; setFocus(type, key); }
+            });
+        });
+    };
+    bind('co', 'co');
+    bind('pr', 'pr');
+    // tap/click empty space clears a locked focus
+    svg.addEventListener('click', () => { if (locked) { locked = null; clearFocus(); } });
 }
 let _graphRT;
 window.addEventListener('resize', function () {
