@@ -919,6 +919,147 @@
             .graph-hint { color: rgba(243,239,228,0.5); }
         }
 
+
+        /* ══ Index Framework — trigger + slide-out drawer ══ */
+        .index-comp-head {
+            display: flex; align-items: baseline; justify-content: space-between;
+            gap: 1rem; margin-bottom: 0.9rem; flex-wrap: wrap;
+        }
+        .index-comp-head .index-comp-label { margin-bottom: 0; }
+        .fw-trigger {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            background: none; border: none; cursor: pointer;
+            font-family: inherit; font-size: 0.6rem; letter-spacing: 0.2em;
+            text-transform: uppercase; font-weight: 600; color: var(--gold);
+            padding: 0.2rem 0; opacity: 0.85; transition: opacity 0.25s ease;
+        }
+        .fw-trigger:hover { opacity: 1; }
+        .fw-trigger .fw-arr { transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); }
+        .fw-trigger:hover .fw-arr { transform: translateX(3px); }
+
+        .fw-backdrop {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(10,9,6,0.55); backdrop-filter: blur(3px);
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .fw-backdrop.open { opacity: 1; visibility: visible; }
+
+        .fw-drawer {
+            position: fixed; top: 0; right: 0; z-index: 201;
+            width: 480px; max-width: 92vw; height: 100%;
+            background: linear-gradient(180deg, rgba(23,21,14,0.98), rgba(18,16,10,0.98));
+            backdrop-filter: blur(12px);
+            border-left: 1px solid rgba(168,132,44,0.24);
+            box-shadow: -30px 0 80px -40px rgba(0,0,0,0.7);
+            color: #ece7da; overflow-y: auto; overscroll-behavior: contain;
+            transform: translateX(100%); transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+        }
+        .fw-drawer.open { transform: translateX(0); }
+        .fw-close {
+            position: absolute; top: 1.4rem; right: 1.4rem; z-index: 3;
+            width: 34px; height: 34px; border-radius: 50%;
+            border: 1px solid rgba(236,231,218,0.16); background: rgba(236,231,218,0.04);
+            color: #ece7da; cursor: pointer; font-size: 1.1rem; line-height: 1;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.25s ease, border-color 0.25s ease;
+        }
+        .fw-close:hover { background: rgba(168,132,44,0.14); border-color: var(--gold-line); }
+        .fw-inner { padding: 3.25rem 2.1rem 3rem; }
+
+        /* header */
+        .fw-eyebrow {
+            font-size: 0.6rem; letter-spacing: 0.24em; text-transform: uppercase;
+            color: var(--gold); font-weight: 600; margin-bottom: 0.9rem;
+        }
+        .fw-title {
+            font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 400;
+            line-height: 1.12; letter-spacing: -0.01em; color: #f6f2e6; margin-bottom: 0.85rem;
+        }
+        .fw-lede { font-size: 0.86rem; line-height: 1.65; color: rgba(236,231,218,0.62); font-weight: 300; }
+
+        /* 3-stage mini flow */
+        .fw-stages {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem;
+            margin: 1.9rem 0 2.4rem; padding: 1.15rem 1.2rem;
+            border: 1px solid rgba(236,231,218,0.10); border-radius: 12px;
+            background: rgba(236,231,218,0.02);
+        }
+        .fw-stage { display: flex; align-items: center; gap: 0.6rem; font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
+        .fw-stage .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .fw-stage.s-live   .dot { background: var(--green); box-shadow: 0 0 0 3px rgba(10,124,78,0.16); }
+        .fw-stage.s-acc    .dot { background: #d8b45a; box-shadow: 0 0 0 3px rgba(216,180,90,0.16); }
+        .fw-stage.s-dev    .dot { background: rgba(236,231,218,0.32); }
+        .fw-stage.s-live   { color: #cfe6d9; }
+        .fw-stage.s-acc    { color: #ecdcb0; }
+        .fw-stage.s-dev    { color: rgba(236,231,218,0.5); }
+        .fw-stage-arrow { color: rgba(236,231,218,0.28); font-size: 0.7rem; margin: -0.15rem 0 -0.15rem 2px; }
+
+        /* section blocks on a vertical rail */
+        .fw-section { position: relative; padding: 0 0 1.9rem 1.5rem; border-left: 1px solid rgba(236,231,218,0.12); }
+        .fw-section:last-of-type { border-left-color: transparent; }
+        .fw-section::before {
+            content: ''; position: absolute; left: -4.5px; top: 3px;
+            width: 8px; height: 8px; border-radius: 50%; background: rgba(236,231,218,0.3);
+        }
+        .fw-section.live::before { background: var(--green); box-shadow: 0 0 0 3px rgba(10,124,78,0.16); }
+        .fw-section.acc::before  { background: #d8b45a; box-shadow: 0 0 0 3px rgba(216,180,90,0.16); }
+        .fw-section.dev::before  { background: rgba(236,231,218,0.28); }
+        .fw-status {
+            display: inline-block; font-size: 0.54rem; letter-spacing: 0.18em; text-transform: uppercase;
+            font-weight: 600; padding: 0.22rem 0.55rem; border-radius: 999px; margin-bottom: 0.7rem;
+        }
+        .fw-status.live { color: #7fd3aa; border: 1px solid rgba(10,124,78,0.4); }
+        .fw-status.acc  { color: #e6c877; border: 1px solid rgba(216,180,90,0.4); }
+        .fw-status.dev  { color: rgba(236,231,218,0.55); border: 1px solid rgba(236,231,218,0.2); }
+        .fw-h {
+            font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
+            font-weight: 600; color: #f2ecdd; margin-bottom: 0.7rem;
+        }
+        .fw-section p { font-size: 0.82rem; line-height: 1.68; color: rgba(236,231,218,0.66); font-weight: 300; margin-bottom: 0.75rem; }
+        .fw-section p:last-child { margin-bottom: 0; }
+        .fw-sub { font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: #d8b45a; margin: 1rem 0 0.4rem; }
+        .fw-sub.green { color: #7fd3aa; }
+        .fw-formula {
+            font-family: 'DM Mono', 'JetBrains Mono', monospace; font-size: 0.74rem;
+            color: #ece7da; background: rgba(236,231,218,0.04);
+            border: 1px solid rgba(236,231,218,0.1); border-radius: 8px;
+            padding: 0.85rem 1rem; margin: 0.5rem 0 0.9rem; line-height: 1.55; text-align: center;
+        }
+        .fw-facts { list-style: none; padding: 0; margin: 0.3rem 0 0.9rem; columns: 2; column-gap: 1.2rem; }
+        .fw-facts li { font-size: 0.76rem; color: rgba(236,231,218,0.72); padding: 0.2rem 0; }
+        .fw-facts li.future { color: rgba(236,231,218,0.4); }
+        .fw-example { border-top: 1px solid rgba(236,231,218,0.1); margin-top: 0.8rem; padding-top: 0.8rem; }
+        .fw-example .lbl { font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(236,231,218,0.45); margin-bottom: 0.25rem; }
+        .fw-example .val { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: #d8b45a; }
+
+        /* final block + footer */
+        .fw-final {
+            margin-top: 1.2rem; padding: 1.6rem 1.4rem;
+            border: 1px solid rgba(168,132,44,0.24); border-radius: 14px;
+            background: radial-gradient(120% 100% at 100% 0%, rgba(168,132,44,0.08), rgba(168,132,44,0) 70%);
+        }
+        .fw-final .fw-h { color: var(--gold); margin-bottom: 0.9rem; }
+        .fw-final p { font-size: 0.82rem; line-height: 1.68; color: rgba(236,231,218,0.68); font-weight: 300; margin-bottom: 0.75rem; }
+        .fw-cadence { margin: 1rem 0 0; }
+        .fw-cadence span { display: block; font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: #f2ecdd; line-height: 1.5; }
+        .fw-footer {
+            margin-top: 2rem; padding-top: 1.3rem; border-top: 1px solid rgba(236,231,218,0.1);
+            font-size: 0.62rem; letter-spacing: 0.06em; line-height: 1.7; color: rgba(236,231,218,0.4);
+        }
+        .fw-footer b { color: rgba(236,231,218,0.7); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-bottom: 0.2rem; }
+
+        @media (max-width: 560px) {
+            .fw-drawer {
+                width: 100%; max-width: 100%; height: 90vh; top: auto; bottom: 0; right: 0;
+                border-left: none; border-top: 1px solid rgba(168,132,44,0.24);
+                border-radius: 18px 18px 0 0;
+                transform: translateY(100%);
+            }
+            .fw-drawer.open { transform: translateY(0); }
+            .fw-inner { padding: 2.6rem 1.5rem 2.5rem; }
+            .fw-facts { columns: 1; }
+        }
+
         .process {
             border-top: 1px solid var(--line);
             padding: 5.5rem 0;
@@ -1567,7 +1708,10 @@
         </div>
 
         <div class="index-comp reveal">
-            <div class="index-comp-label" data-i18n="index.comp">Index Composition</div>
+            <div class="index-comp-head">
+                <div class="index-comp-label" data-i18n="index.comp">Index Composition</div>
+                <button class="fw-trigger" id="fwOpen" type="button"><span data-i18n="index.framework">Index Framework</span><span class="fw-arr">→</span></button>
+            </div>
             <div class="index-comp-bar" id="idxCompBar"></div>
             <div class="index-comp-legend" id="idxCompLegend"></div>
         </div>
@@ -1588,16 +1732,23 @@
     </div>
 </section>
 
+<!-- ── Index Framework drawer ─────────────────────────── -->
+<div class="fw-backdrop" id="fwBackdrop"></div>
+<aside class="fw-drawer" id="fwDrawer" aria-hidden="true" aria-label="Index Framework">
+    <button class="fw-close" id="fwClose" type="button" aria-label="Close">×</button>
+    <div class="fw-inner" id="fwBody"></div>
+</aside>
+
 <!-- ── THE HOLDING GRAPH (live capital map) ──────────── -->
 <section class="graph-sec" id="graph">
     <div class="container">
         <div class="graph-head">
             <div class="graph-eyebrow"><span class="graph-live-dot"></span><span data-i18n="graph.eyebrow">The Holding Graph</span></div>
             <h2 class="graph-title" data-i18n="graph.title">A live map of capital across the network.</h2>
-            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols its capital flows through — one living map of the network's shared onchain infrastructure. Node size reflects scale; each line traces real capital.</p>
+            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols it uses — one living map of the network's shared onchain infrastructure. Green company nodes scale with company TVL; yellow protocol nodes scale with the number of indexed companies connected to them.</p>
         </div>
         <div class="graph-canvas" id="graphCanvas"></div>
-        <p class="graph-hint" data-i18n="graph.hint">Hover any company or protocol to trace its connections. As the network grows, the map extends: Company → Asset → Protocol → Chain.</p>
+        <p class="graph-hint" data-i18n="graph.hint">Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.</p>
     </div>
 </section>
 
@@ -1997,6 +2148,169 @@ window.addEventListener('resize', function () {
     _graphRT = setTimeout(function () { if (INDEX_STATE) buildGraph(); }, 200);
 });
 
+/* ── Index Framework drawer: content + render + open/close ── */
+function renderFramework(lang) {
+    const body = document.getElementById('fwBody');
+    if (!body) return;
+    const C = (lang === 'ru') ? {
+        eyebrow: 'ВНУТРИ THE HOLDING INDEX',
+        title: 'Как сеть измеряется сегодня — и во что её данные могут превратиться со временем.',
+        stages: ['Работает сейчас', 'Накапливается', 'Со временем'],
+        s1status: 'Live', s1h: 'Текущая методология',
+        s1p: [
+            'Сегодня The Holding Index взвешивает компании по их текущему ончейн-TVL.',
+            'Network Weight компании показывает её долю в совокупной стоимости всех компаний, входящих в индекс.',
+            'Когда TVL компании меняется, её вес в индексе меняется вместе с ним.'
+        ],
+        s1formula: 'Вес компании = TVL компании ÷ Совокупный TVL индекса',
+        s1foot: 'Весь капитал остаётся под самостоятельным контролем владельцев компаний. The Holding измеряет сеть, но не хранит капитал, представленный в индексе.',
+        s2status: 'Live', s2h: 'Как читать карту сети',
+        s2intro: 'The Holding Graph показывает другое измерение индекса — связи между компаниями и инфраструктурой.',
+        s2gt: 'Зелёные узлы — компании', s2g: 'Размер зелёного узла зависит от текущего TVL компании. Больше TVL → крупнее узел.',
+        s2yt: 'Жёлтые узлы — протоколы', s2y: 'Размер жёлтого узла зависит не от объёма капитала, а от числа разных компаний индекса, которые используют этот протокол. Больше компаний → крупнее узел. Так размер отражает роль протокола как общей инфраструктуры сети, а не концентрацию капитала.',
+        s2ct: 'Связи', s2c: 'Линии показывают связи компаний с протоколами — какую инфраструктуру компании используют совместно. На текущем этапе толщина линии не означает объём капитала.',
+        s3status: 'Накапливается', s3h: 'Слой истории',
+        s3p1: 'С момента появления в реестре каждая компания начинает накапливать собственную историю работы. Company Passport уже содержит объективные данные:',
+        s3facts: ['Registry ID', 'Дата основания', 'Возраст', 'Вес в сети', 'Архитектура', 'Модель хранения', 'Протоколы', 'Статус'],
+        s3future: 'Сети (Chains)',
+        s3p2: 'Возраст компании увеличивается автоматически. Со временем к этому могут добавляться исторические данные по TVL, весу в сети, денежным потокам, структуре капитала и результатам работы. Само время становится частью данных.',
+        s3exLbl: 'История работы', s3exVal: '1 427 дней',
+        s4status: 'В разработке', s4h: 'Зрелость, репутация и результаты',
+        s4p: [
+            'The Holding Index не присваивает молодой компании искусственный рейтинг репутации. Репутацию не нужно придумывать — она должна появляться из реальной истории работы.',
+            'Сначала накапливаются факты: капитал, время, архитектура, денежные потоки, используемые протоколы, пройденные рыночные циклы и наблюдаемые результаты.',
+            'Когда месяцы превратятся в годы, эти данные смогут стать основой для новых слоёв зрелости, репутации, устойчивости и результатов — и позже использоваться в рейтингах, поиске компаний и новых семействах индексов.',
+            'Методология будет развиваться только тогда, когда для этого накопится достаточно реальных данных.'
+        ],
+        finalH: 'Создан, чтобы накапливать историю',
+        finalP: [
+            'Сегодня в The Holding Index входят только первые несколько компаний. Задача не в том, чтобы изображать зрелый рынок раньше времени.',
+            'Задача — уже сейчас строить инфраструктуру, постепенно добавлять компании, сохранять их историю с самого начала и позволять сети становиться содержательнее по мере роста.'
+        ],
+        cadence: ['Сначала компании.', 'Потом данные.', 'Потом время.'],
+        finalClose: 'А всё дальнейшее должно строиться на том, что действительно существует.',
+        footerTitle: 'The Holding Index', footerText: 'Методология развивается вместе с сетью.'
+    } : {
+        eyebrow: 'INSIDE THE HOLDING INDEX',
+        title: 'How the network is measured today — and what its data can become over time.',
+        stages: ['Live now', 'Accumulating', 'Over time'],
+        s1status: 'Live', s1h: 'Live Methodology',
+        s1p: [
+            'The Holding Index is currently weighted by the live onchain TVL of its constituent companies.',
+            "A company's Network Weight represents its share of the total value of all companies currently included in the index.",
+            'As company TVLs change, their weights change with them.'
+        ],
+        s1formula: 'Company Network Weight = Company TVL ÷ Total Index TVL',
+        s1foot: 'All capital remains self-custodied by its respective owner. The Holding measures the network; it does not custody the capital represented by the index.',
+        s2status: 'Live', s2h: 'How to Read the Network',
+        s2intro: 'The Holding Graph visualizes a different dimension of the index: relationships.',
+        s2gt: 'Green nodes — companies', s2g: 'Green company nodes scale with the current TVL of each company. Larger company TVL → larger green node.',
+        s2yt: 'Yellow nodes — protocols', s2y: 'Yellow protocol nodes do not represent the amount of capital deployed into a protocol. Their size reflects how many different companies in the index use that protocol. More indexed companies → larger node. This makes protocol size a measure of shared infrastructure across the network — not capital concentration.',
+        s2ct: 'Connections', s2c: 'Lines represent company-to-protocol relationships — which infrastructure companies share and how the network is connected. At this stage, line thickness does not imply capital size.',
+        s3status: 'Accumulating', s3h: 'The History Layer',
+        s3p1: 'Every company begins building an operating history from the moment it enters the registry. Its Company Passport already provides objective facts such as:',
+        s3facts: ['Registry ID', 'Founded', 'Age', 'Network Weight', 'Architecture', 'Custody', 'Protocols', 'Status'],
+        s3future: 'Chains',
+        s3p2: 'Age continues to grow automatically. Over time, additional historical data can be accumulated around TVL, network weight, cash flow, capital structure and operating performance. Time itself becomes part of the dataset.',
+        s3exLbl: 'Operating History', s3exVal: '1,427 days',
+        s4status: 'In development', s4h: 'Maturity, Reputation & Performance',
+        s4p: [
+            'The Holding Index does not assign an arbitrary reputation score to a young company. Reputation should not be invented — it should emerge from real operating history.',
+            'First come the facts: capital, time, architecture, cash flows, protocol usage, market cycles, and observable results.',
+            'As months become years, those records may eventually support new layers for maturity, reputation, resilience and performance — and may later influence rankings, discovery and new families of indices.',
+            'The methodology will evolve only when enough real data exists to justify it.'
+        ],
+        finalH: 'Built to Accumulate History',
+        finalP: [
+            'Today, The Holding Index contains only the first few companies. The goal is not to simulate a mature market before one exists.',
+            'The goal is to build the infrastructure now, add companies gradually, preserve their history from the beginning, and let the network become more meaningful as it grows.'
+        ],
+        cadence: ['First the companies.', 'Then the data.', 'Then time.'],
+        finalClose: 'What comes after that should be built from what is real.',
+        footerTitle: 'The Holding Index', footerText: 'Methodology evolves with the network.'
+    };
+
+    const facts = C.s3facts.map(f => '<li>' + f + '</li>').join('')
+                + '<li class="future">' + C.s3future + ' →</li>';
+    body.innerHTML =
+        '<div class="fw-head">'
+        + '<div class="fw-eyebrow">' + C.eyebrow + '</div>'
+        + '<h3 class="fw-title">' + C.title + '</h3>'
+        + '</div>'
+        + '<div class="fw-stages">'
+        +   '<div class="fw-stage s-live"><span class="dot"></span>' + C.stages[0] + '</div>'
+        +   '<div class="fw-stage-arrow">↓</div>'
+        +   '<div class="fw-stage s-acc"><span class="dot"></span>' + C.stages[1] + '</div>'
+        +   '<div class="fw-stage-arrow">↓</div>'
+        +   '<div class="fw-stage s-dev"><span class="dot"></span>' + C.stages[2] + '</div>'
+        + '</div>'
+        // section 01
+        + '<div class="fw-section live">'
+        +   '<span class="fw-status live">' + C.s1status + '</span>'
+        +   '<div class="fw-h">' + C.s1h + '</div>'
+        +   C.s1p.map(p => '<p>' + p + '</p>').join('')
+        +   '<div class="fw-formula">' + C.s1formula + '</div>'
+        +   '<p>' + C.s1foot + '</p>'
+        + '</div>'
+        // section 02
+        + '<div class="fw-section live">'
+        +   '<span class="fw-status live">' + C.s2status + '</span>'
+        +   '<div class="fw-h">' + C.s2h + '</div>'
+        +   '<p>' + C.s2intro + '</p>'
+        +   '<div class="fw-sub green">' + C.s2gt + '</div><p>' + C.s2g + '</p>'
+        +   '<div class="fw-sub">' + C.s2yt + '</div><p>' + C.s2y + '</p>'
+        +   '<div class="fw-sub">' + C.s2ct + '</div><p>' + C.s2c + '</p>'
+        + '</div>'
+        // section 03
+        + '<div class="fw-section acc">'
+        +   '<span class="fw-status acc">' + C.s3status + '</span>'
+        +   '<div class="fw-h">' + C.s3h + '</div>'
+        +   '<p>' + C.s3p1 + '</p>'
+        +   '<ul class="fw-facts">' + facts + '</ul>'
+        +   '<p>' + C.s3p2 + '</p>'
+        +   '<div class="fw-example"><div class="lbl">' + C.s3exLbl + '</div><div class="val">' + C.s3exVal + '</div></div>'
+        + '</div>'
+        // section 04
+        + '<div class="fw-section dev">'
+        +   '<span class="fw-status dev">' + C.s4status + '</span>'
+        +   '<div class="fw-h">' + C.s4h + '</div>'
+        +   C.s4p.map(p => '<p>' + p + '</p>').join('')
+        + '</div>'
+        // final
+        + '<div class="fw-final">'
+        +   '<div class="fw-h">' + C.finalH + '</div>'
+        +   C.finalP.map(p => '<p>' + p + '</p>').join('')
+        +   '<div class="fw-cadence">' + C.cadence.map(s => '<span>' + s + '</span>').join('') + '</div>'
+        +   '<p style="margin-top:0.9rem">' + C.finalClose + '</p>'
+        + '</div>'
+        + '<div class="fw-footer"><b>' + C.footerTitle + '</b>' + C.footerText + '</div>';
+}
+
+(function () {
+    const openBtn  = document.getElementById('fwOpen');
+    const drawer   = document.getElementById('fwDrawer');
+    const backdrop = document.getElementById('fwBackdrop');
+    const closeBtn = document.getElementById('fwClose');
+    if (!openBtn || !drawer || !backdrop) return;
+
+    const open = () => {
+        renderFramework(idxLang());
+        drawer.classList.add('open');
+        backdrop.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        drawer.scrollTop = 0;
+    };
+    const close = () => {
+        drawer.classList.remove('open');
+        backdrop.classList.remove('open');
+        document.body.style.overflow = '';
+    };
+    openBtn.addEventListener('click', open);
+    backdrop.addEventListener('click', close);
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+})();
+
 (async function () {
     const el1    = document.getElementById('tvl-05081966');
     const el2    = document.getElementById('tvl-yieldring');
@@ -2161,6 +2475,7 @@ window.addEventListener('resize', function () {
             'nextlayer.p3': 'As the network grows, each company will build its own history and reputation. Together, they will form a shared onchain registry — and, over time, a new generation of indices that reflect the growth of the network.',
             'nextlayer.statement': 'One holding. Many sovereign companies. Each with its own treasury and keys.',
             'index.eyebrow': 'The Index · Live',
+            'index.framework': 'Index Framework',
             'index.title': 'The Holding Index',
             'index.sub': 'A live measure of the network. Every company is weighted by its real onchain value — ranked, composited, and updated as the network grows. The first working piece of a larger registry to come.',
             'index.m.value': 'Network Value',
@@ -2176,8 +2491,8 @@ window.addEventListener('resize', function () {
             'index.note.body': 'Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.',
             'graph.eyebrow': 'The Holding Graph',
             'graph.title': 'A live map of capital across the network.',
-            'graph.sub': 'Every company and the protocols its capital flows through — one living map of the network\'s shared onchain infrastructure. Node size reflects scale; each line traces real capital.',
-            'graph.hint': 'Hover any company or protocol to trace its connections. As the network grows, the map extends: Company → Asset → Protocol → Chain.',
+            'graph.sub': 'Every company and the protocols it uses — one living map of the network\'s shared onchain infrastructure. Green company nodes scale with company TVL; yellow protocol nodes scale with the number of indexed companies connected to them.',
+            'graph.hint': 'Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.',
             'process.title': 'How a company is born',
             'process.1.title': 'Identity',
             'process.1.text': 'A unique ENS name is registered — often based on a date of birth or personal meaning. This becomes the company\'s address.',
@@ -2249,6 +2564,7 @@ window.addEventListener('resize', function () {
             'nextlayer.p3': 'По мере роста сети каждая компания будет накапливать собственную историю и репутацию. Вместе они сформируют единый ончейн-реестр, а со временем — новое поколение индексов, отражающих развитие всей сети.',
             'nextlayer.statement': 'Один холдинг. Множество суверенных компаний. У каждой — собственная казна и собственные ключи.',
             'index.eyebrow': 'Индекс · Live',
+            'index.framework': 'Как устроен индекс',
             'index.title': 'Индекс The Holding',
             'index.sub': 'Живой индекс сети. Каждая компания получает вес на основе своего текущего ончейн-TVL. Состав, позиции и веса обновляются по мере роста сети. Это первый работающий элемент будущего большого реестра.',
             'index.m.value': 'Ценность сети',
@@ -2264,8 +2580,8 @@ window.addEventListener('resize', function () {
             'index.note.body': 'Репутационные метрики, история результатов и кросс-сетевые индексы находятся в разработке — этот фундамент станет основой для их появления.',
             'graph.eyebrow': 'Граф The Holding',
             'graph.title': 'Живая карта капитала по всей сети.',
-            'graph.sub': 'Каждая компания и протоколы, через которые проходит её капитал, — единая живая карта общей ончейн-инфраструктуры сети. Размер узла отражает масштаб; каждая линия — реальный капитал.',
-            'graph.hint': 'Наведите на любую компанию или протокол, чтобы проследить связи. По мере роста сети карта расширяется: Компания → Актив → Протокол → Сеть.',
+            'graph.sub': 'Компании и протоколы, которые они используют, — единая живая карта общей ончейн-инфраструктуры сети. Размер зелёных узлов компаний зависит от их TVL; размер жёлтых узлов протоколов — от числа компаний индекса, связанных с ними.',
+            'graph.hint': 'Наведите на любой узел, чтобы увидеть его связи. По мере роста сети карта будет расширяться: Компания → Актив → Протокол → Сеть.',
             'process.title': 'Как рождается компания',
             'process.1.title': 'Идентичность',
             'process.1.text': 'Регистрируется уникальное ENS-имя — часто на основе даты рождения или личного смысла. Оно становится адресом компании.',
@@ -2310,6 +2626,7 @@ window.addEventListener('resize', function () {
     document.querySelectorAll('.lang-switch button').forEach(btn => {
         btn.addEventListener('click', () => applyLang(btn.dataset.lang));
         btn.addEventListener('click', () => renderIndex(btn.dataset.lang === 'ru' ? 'ru' : 'en'));
+        btn.addEventListener('click', () => renderFramework(btn.dataset.lang === 'ru' ? 'ru' : 'en'));
     });
 
     let initial = 'en';
