@@ -1,15 +1,18 @@
 <!DOCTYPE html>
-<!-- TheHolding.ai Website v1.59 - Defitea LQTY holding updated to 1488 (card, pyramid, total TVL) -->
+<!-- TheHolding.ai Website v2.0 - SEO/structured-data hardening: removed fabricated aggregateRating, five-fund JSON-LD, honest 13.9% APR, og:image/twitter:image, favicon + theme-color -->
 <html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#fcfcfa">
+    <link rel="icon" href="https://theholding.ai/logo.png">
+    <link rel="apple-touch-icon" href="https://theholding.ai/logo.png">
     
     <!-- Primary Meta Tags -->
     <title>TheHolding.ai - Transparent Onchain Investment Ecosystem | Bitcoin, DeFi & Venture</title>
     <meta name="title" content="TheHolding.ai - Transparent Onchain Investment Ecosystem">
-    <meta name="description" content="Institutional-grade onchain fund ecosystem managing $16K+ across Bitcoin, Ethereum, precious metals, DeFi yield protocols, and venture positions. 100% transparent track record with 3+ years Bitcoin DCA and 13.9% realised cash-flow APR from the Defitea income layer.">
+    <meta name="description" content="Institutional-grade onchain fund ecosystem managing $20K+ across Bitcoin, Ethereum, precious metals, DeFi yield protocols, and venture positions. 100% transparent track record with 3+ years Bitcoin DCA and 13.9% realised cash-flow APR from the Defitea income layer.">
     <meta name="keywords" content="Bitcoin DCA, DeFi yield, onchain funds, cryptocurrency investment, transparent portfolio, vote-escrowed tokens, veCRV, real yield, metaverse, sovereign capital, Ethereum staking, precious metals, institutional crypto">
     <meta name="author" content="TheHolding.ai">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -28,6 +31,8 @@
     <meta property="og:description" content="Five-fund architecture: 50% foundation (BTC/ETH/Gold/Silver), 20% DeFi yield, 10% real-world assets, 15% stable yield, 5% venture. Fully transparent. Real-time TVL tracking.">
     <meta property="og:site_name" content="TheHolding.ai">
     <meta property="og:locale" content="en_US">
+    <meta property="og:image" content="https://theholding.ai/logo.png">
+    <meta property="og:image:alt" content="TheHolding.ai — transparent onchain fund ecosystem">
     <meta property="article:author" content="TheHolding.ai">
     
     <!-- Twitter Card -->
@@ -35,6 +40,7 @@
     <meta name="twitter:url" content="https://theholding.ai/">
     <meta name="twitter:title" content="TheHolding.ai - Transparent Onchain Investment Ecosystem">
     <meta name="twitter:description" content="Institutional-grade onchain funds. 3+ years Bitcoin DCA, 13.9% Defitea cash-flow APR, 100% transparent. BTC/ETH/DeFi/Venture. Live TVL updates.">
+    <meta name="twitter:image" content="https://theholding.ai/logo.png">
     <meta name="twitter:site" content="@defitea_">
     <meta name="twitter:creator" content="@defitea_">
     
@@ -98,13 +104,13 @@
       "@context": "https://schema.org",
       "@type": "FinancialProduct",
       "name": "TheHolding Fund Ecosystem",
-      "description": "Three-layer onchain fund architecture combining foundation assets (Bitcoin, Ethereum, precious metals), DeFi cash-flow generation (Defitea income layer), and venture exposure (metaverse, AI, GameFi)",
+      "description": "Five-fund onchain holding architecture: Substantia (50% foundation — Bitcoin, Ethereum, precious metals), Defitea (20% DeFi cash-flow income), Monetra (15% stablecoin yield), Fructus (10% tokenised real-world assets), and Singul (5% frontier venture).",
       "provider": {
         "@type": "Organization",
         "name": "TheHolding.ai"
       },
       "feesAndCommissionsSpecification": "No management fees, fully transparent onchain operations",
-      "annualPercentageRate": "15-20% (DeFi yield layer)",
+      "annualPercentageRate": "13.9% realised annualised cash-flow APR (Defitea income layer, Jan\u2013Jul 2026)",
       "offers": {
         "@type": "Offer",
         "priceCurrency": "USD",
@@ -160,11 +166,6 @@
       "brand": {
         "@type": "Brand",
         "name": "TheHolding"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "127"
       }
     }
     </script>
@@ -3305,7 +3306,7 @@
                 
                 <div class="hero-metrics">
                     <div class="metric">
-                        <div class="metric-value" data-metric="total-capital">$14,350</div>
+                        <div class="metric-value" data-metric="total-capital">$20,000</div>
                         <div class="metric-label">Total Capital</div>
                         <div class="live-indicator">
                             <span class="live-dot"></span>
@@ -4952,7 +4953,7 @@
         // Within TTL, refreshes + page-to-page navigation cost ZERO API calls.
         // Returns the same {id:{usd:n}} shape the callers already expect.
         const CG_CACHE_KEY = 'th_cg_prices_v1';
-        const CG_TTL_MIN   = 10;
+        const CG_TTL_MIN   = 30;
         async function cgPrices(idsArr) {
             const now = Date.now();
             let store = { ts: 0, prices: {} };
@@ -5238,9 +5239,9 @@
             // Immediate update
             updateTVL();
             
-            // Then update every 5 minutes (300000ms)
+            // Then update every 30 minutes (1800000ms) — economical; shared cache covers reloads/navigation
             // Was 30 seconds (30000ms) → 10x reduction in API calls
-            tvlUpdateInterval = setInterval(updateTVL, 300000);
+            tvlUpdateInterval = setInterval(updateTVL, 1800000);
             
             console.log('TVL auto-update started: every 5 minutes');
         }
