@@ -799,6 +799,99 @@
             .icl-item { font-size: 0.7rem; }
         }
 
+
+        /* ══ The Holding Graph — live capital map (dark) ═══ */
+        .graph-sec {
+            position: relative;
+            background: #12100a;
+            color: #f3efe4;
+            border-top: 1px solid rgba(168,132,44,0.18);
+            padding: 7rem 0;
+            overflow: hidden;
+        }
+        .graph-sec::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(58% 60% at 82% 16%,
+                rgba(168,132,44,0.12) 0%,
+                rgba(168,132,44,0.05) 34%,
+                rgba(168,132,44,0.015) 60%,
+                rgba(168,132,44,0) 82%);
+            pointer-events: none;
+        }
+        .graph-sec .container { position: relative; z-index: 1; }
+        .graph-head { max-width: 720px; margin-bottom: 2.75rem; }
+        .graph-eyebrow {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            font-size: 0.66rem; letter-spacing: 0.28em; text-transform: uppercase;
+            color: var(--gold); font-weight: 600; margin-bottom: 1.4rem;
+        }
+        .graph-live-dot {
+            width: 6px; height: 6px; border-radius: 50%; background: #d8b45a;
+            box-shadow: 0 0 0 0 rgba(216,180,90,0.5);
+            animation: glivepulse 2.6s ease-in-out infinite;
+        }
+        @keyframes glivepulse {
+            0% { box-shadow: 0 0 0 0 rgba(216,180,90,0.4); opacity: 1; }
+            70% { box-shadow: 0 0 0 6px rgba(216,180,90,0); opacity: 0.55; }
+            100% { box-shadow: 0 0 0 0 rgba(216,180,90,0); opacity: 1; }
+        }
+        .graph-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.1rem, 4.4vw, 3.2rem);
+            font-weight: 300; letter-spacing: -0.025em; line-height: 1.08;
+            color: #f6f2e6; margin-bottom: 1rem;
+        }
+        .graph-sub {
+            font-size: 0.95rem; font-weight: 300; line-height: 1.7;
+            color: rgba(243,239,228,0.6);
+        }
+        .graph-canvas { width: 100%; }
+        .g-svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+        .g-edge {
+            fill: none; stroke-width: 1; stroke-opacity: 0.15;
+            transition: stroke-opacity 0.35s ease, stroke-width 0.35s ease;
+        }
+        .g-node { cursor: pointer; }
+        .g-node-pr .g-dot-pr { fill: #d8b45a; stroke: rgba(168,132,44,0.55); stroke-width: 1; }
+        .g-node-co .g-dot-co { stroke: rgba(255,255,255,0.16); stroke-width: 1; }
+        .g-label-co {
+            font-family: 'Space Grotesk', sans-serif; font-size: 18px;
+            fill: #f1ede2; font-weight: 500;
+        }
+        .g-label-pr {
+            font-family: 'Space Grotesk', sans-serif; font-size: 15px;
+            fill: rgba(243,239,228,0.62);
+        }
+
+        /* focus / dim on hover */
+        .g-svg.focused .g-edge { stroke-opacity: 0.045; }
+        .g-svg.focused .g-edge.on {
+            stroke-opacity: 0.9; stroke-width: 1.7;
+            stroke-dasharray: 2 7; animation: gflow 2.2s linear infinite;
+        }
+        .g-svg.focused .g-node { opacity: 0.26; transition: opacity 0.3s ease; }
+        .g-svg.focused .g-node.on { opacity: 1; }
+        @keyframes gflow { to { stroke-dashoffset: -36; } }
+
+        .graph-hint {
+            margin-top: 1.75rem; font-size: 0.74rem; line-height: 1.6;
+            color: rgba(243,239,228,0.42); max-width: 620px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .graph-live-dot { animation: none; }
+            .g-svg.focused .g-edge.on { animation: none; stroke-dasharray: none; }
+        }
+        @media (max-width: 760px) {
+            .graph-sec { padding: 4.75rem 0; }
+            .graph-canvas { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .g-svg { min-width: 720px; }
+            .graph-hint { color: rgba(243,239,228,0.5); }
+        }
+
         .process {
             border-top: 1px solid var(--line);
             padding: 5.5rem 0;
@@ -1467,6 +1560,19 @@
     </div>
 </section>
 
+<!-- ── THE HOLDING GRAPH (live capital map) ──────────── -->
+<section class="graph-sec" id="graph">
+    <div class="container">
+        <div class="graph-head">
+            <div class="graph-eyebrow"><span class="graph-live-dot"></span><span data-i18n="graph.eyebrow">The Holding Graph</span></div>
+            <h2 class="graph-title" data-i18n="graph.title">A live map of capital across the network.</h2>
+            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols its capital flows through — one living map of the network's shared onchain infrastructure. Node size reflects scale; each line traces real capital.</p>
+        </div>
+        <div class="graph-canvas" id="graphCanvas"></div>
+        <p class="graph-hint" data-i18n="graph.hint">Hover any company or protocol to trace its connections. As the network grows, the map extends: Company → Asset → Protocol → Chain.</p>
+    </div>
+</section>
+
 <!-- ── HOW IT WORKS ─────────────────────────────────── -->
 <section class="process" id="how-it-works">
     <div class="container">
@@ -1676,6 +1782,127 @@ function renderIndex(lang) {
     }
 }
 
+
+function buildGraph() {
+    const canvas = document.getElementById('graphCanvas');
+    if (!canvas || !INDEX_STATE) return;
+
+    // Which protocols each company's capital flows through (from live holdings)
+    const MEMBERSHIP = {
+        'defitea.eth':   ['Aerodrome','Convex','Curve','Pendle','f(x)','Yield Basis','Frax','Velodrome','Venice','Liquity','Resupply','CLever'],
+        'YieldRing.eth': ['Bitcoin','Convex','Aerodrome','Frax'],
+        '05081966.eth':  ['Curve','Aerodrome','Frax'],
+        'dinaz.eth':     ['Bitcoin','Yield Basis']
+    };
+
+    const comps  = INDEX_STATE.slice().sort((a, b) => b.val - a.val);
+    const maxVal = Math.max.apply(null, comps.map(c => c.val).concat([1]));
+    const shade  = i => {
+        const n = comps.length, t = n > 1 ? i / (n - 1) : 0;
+        const a = [29, 74, 58], b = [168, 178, 112];
+        const r = a.map((v, k) => Math.round(v + (b[k] - v) * t));
+        return 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
+    };
+
+    const W = 1000, padY = 56, coX = 240, prX = 760;
+    const nComp = comps.length;
+    const coIndex = {}; comps.forEach((c, i) => coIndex[c.nm] = i);
+
+    // protocol union + usage count
+    const protoCount = {};
+    comps.forEach(c => (MEMBERSHIP[c.nm] || []).forEach(p => protoCount[p] = (protoCount[p] || 0) + 1));
+    let protos = Object.keys(protoCount);
+
+    // barycentre ordering (minimise crossings): protocol y ~ avg of its companies' rows
+    const bary = {};
+    protos.forEach(p => {
+        const rows = comps.filter(c => (MEMBERSHIP[c.nm] || []).includes(p)).map(c => coIndex[c.nm]);
+        bary[p] = rows.length ? rows.reduce((s, v) => s + v, 0) / rows.length : 0;
+    });
+    protos.sort((a, b) => (bary[a] - bary[b]) || (protoCount[b] - protoCount[a]));
+    const prIndex = {}; protos.forEach((p, j) => prIndex[p] = j);
+    const nPr = protos.length;
+
+    const rows = Math.max(nComp, nPr);
+    const H = Math.max(520, padY * 2 + (rows - 1) * 46);
+    const coY = i => nComp > 1 ? padY + i * ((H - 2 * padY) / (nComp - 1)) : H / 2;
+    const prY = j => nPr   > 1 ? padY + j * ((H - 2 * padY) / (nPr - 1))   : H / 2;
+
+    const rCo = c => 16 + 22 * (c.val / maxVal);
+    const maxPr = Math.max.apply(null, Object.keys(protoCount).map(k => protoCount[k]).concat([1]));
+    const rPr = p => 5 + (maxPr > 1 ? (protoCount[p] - 1) / (maxPr - 1) * 6 : 0);
+
+    // edges
+    let edges = '';
+    comps.forEach((c, i) => {
+        const col = shade(i), x1 = coX + rCo(c), y1 = coY(i);
+        (MEMBERSHIP[c.nm] || []).forEach(p => {
+            const j = prIndex[p], x2 = prX - rPr(p), y2 = prY(j), mx = (x1 + x2) / 2;
+            const d = 'M' + x1.toFixed(1) + ',' + y1.toFixed(1)
+                    + ' C' + mx.toFixed(1) + ',' + y1.toFixed(1)
+                    + ' ' + mx.toFixed(1) + ',' + y2.toFixed(1)
+                    + ' ' + x2.toFixed(1) + ',' + y2.toFixed(1);
+            edges += '<path class="g-edge" d="' + d + '" stroke="' + col + '" data-co="' + c.nm + '" data-pr="' + p + '"></path>';
+        });
+    });
+
+    // protocol nodes
+    let prNodes = '';
+    protos.forEach((p, j) => {
+        const x = prX, y = prY(j), r = rPr(p);
+        prNodes += '<g class="g-node g-node-pr" data-pr="' + p + '">'
+            + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.6).toFixed(1) + '" fill="#d8b45a" opacity="0.10" filter="url(#gGlow)"></circle>'
+            + '<circle class="g-dot-pr" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"></circle>'
+            + '<text class="g-label-pr" x="' + (x + r + 12) + '" y="' + (y + 5).toFixed(1) + '">' + p + '</text>'
+            + '</g>';
+    });
+
+    // company nodes
+    let coNodes = '';
+    comps.forEach((c, i) => {
+        const x = coX, y = coY(i), r = rCo(c), col = shade(i);
+        coNodes += '<g class="g-node g-node-co" data-co="' + c.nm + '">'
+            + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.1).toFixed(1) + '" fill="' + col + '" opacity="0.20" filter="url(#gGlow)"></circle>'
+            + '<circle class="g-dot-co" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '" style="fill:' + col + '"></circle>'
+            + '<text class="g-label-co" x="' + (x - r - 14) + '" y="' + (y + 6).toFixed(1) + '" text-anchor="end">' + c.nm + '</text>'
+            + '</g>';
+    });
+
+    canvas.innerHTML =
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" class="g-svg">'
+        + '<defs><filter id="gGlow" x="-60%" y="-60%" width="220%" height="220%">'
+        + '<feGaussianBlur stdDeviation="5"></feGaussianBlur></filter></defs>'
+        + '<g class="g-edges">' + edges + '</g>' + prNodes + coNodes
+        + '</svg>';
+
+    // interactivity — hover a company or protocol to trace its capital
+    const svg = canvas.querySelector('svg');
+    const setFocus = (type, key) => {
+        svg.classList.add('focused');
+        svg.querySelectorAll('.g-edge').forEach(e => {
+            e.classList.toggle('on', (type === 'co' && e.dataset.co === key) || (type === 'pr' && e.dataset.pr === key));
+        });
+        svg.querySelectorAll('.g-node').forEach(n => {
+            let on = false;
+            if (type === 'co') on = n.dataset.co === key || (n.dataset.pr && (MEMBERSHIP[key] || []).includes(n.dataset.pr));
+            if (type === 'pr') on = n.dataset.pr === key || (n.dataset.co && (MEMBERSHIP[n.dataset.co] || []).includes(key));
+            n.classList.toggle('on', on);
+        });
+    };
+    const clearFocus = () => {
+        svg.classList.remove('focused');
+        svg.querySelectorAll('.on').forEach(el => el.classList.remove('on'));
+    };
+    svg.querySelectorAll('.g-node-co').forEach(n => {
+        n.addEventListener('mouseenter', () => setFocus('co', n.dataset.co));
+        n.addEventListener('mouseleave', clearFocus);
+    });
+    svg.querySelectorAll('.g-node-pr').forEach(n => {
+        n.addEventListener('mouseenter', () => setFocus('pr', n.dataset.pr));
+        n.addEventListener('mouseleave', clearFocus);
+    });
+}
+
 (async function () {
     const el1    = document.getElementById('tvl-05081966');
     const el2    = document.getElementById('tvl-yieldring');
@@ -1741,6 +1968,7 @@ function renderIndex(lang) {
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' },       since: { en: 'Jul 2026', ru: 'Июл 2026' } }
     ];
     renderIndex(idxLang());
+    buildGraph();
 })();
 
 /* ── Sticky subnav: highlight active section on scroll ── */
@@ -1848,6 +2076,10 @@ function renderIndex(lang) {
             'index.h.since': 'Since',
             'index.note.lead': 'Weightings reflect live onchain value.',
             'index.note.body': 'Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.',
+            'graph.eyebrow': 'The Holding Graph',
+            'graph.title': 'A live map of capital across the network.',
+            'graph.sub': 'Every company and the protocols its capital flows through — one living map of the network\'s shared onchain infrastructure. Node size reflects scale; each line traces real capital.',
+            'graph.hint': 'Hover any company or protocol to trace its connections. As the network grows, the map extends: Company → Asset → Protocol → Chain.',
             'process.title': 'How a company is born',
             'process.1.title': 'Identity',
             'process.1.text': 'A unique ENS name is registered — often based on a date of birth or personal meaning. This becomes the company\'s address.',
@@ -1932,6 +2164,10 @@ function renderIndex(lang) {
             'index.h.since': 'С',
             'index.note.lead': 'Индекс построен на некастодиальной архитектуре и отражает реальный капитал компаний в ончейне.',
             'index.note.body': 'Репутационные метрики, история результатов и кросс-сетевые индексы находятся в разработке — этот фундамент станет основой для их появления.',
+            'graph.eyebrow': 'Граф The Holding',
+            'graph.title': 'Живая карта капитала по всей сети.',
+            'graph.sub': 'Каждая компания и протоколы, через которые проходит её капитал, — единая живая карта общей ончейн-инфраструктуры сети. Размер узла отражает масштаб; каждая линия — реальный капитал.',
+            'graph.hint': 'Наведите на любую компанию или протокол, чтобы проследить связи. По мере роста сети карта расширяется: Компания → Актив → Протокол → Сеть.',
             'process.title': 'Как рождается компания',
             'process.1.title': 'Идентичность',
             'process.1.text': 'Регистрируется уникальное ENS-имя — часто на основе даты рождения или личного смысла. Оно становится адресом компании.',
