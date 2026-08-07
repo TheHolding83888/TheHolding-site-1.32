@@ -1882,11 +1882,13 @@ function buildGraph() {
     // Compact, responsive layout profiles (mobile fits the screen, no scroll)
     const mobile = (window.innerWidth || 1000) < 640;
     const P = mobile
-        ? { W:360, coX:104, prX:250, padY:16, rowH:22, fCo:12, fPr:11, rCoMin:7,  rCoMax:14, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
-        : { W:780, coX:172, prX:558, padY:22, rowH:27, fCo:15, fPr:13, rCoMin:12, rCoMax:24, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
+        ? { W:360, coX:104, prX:250, padY:16, rowH:22, fCo:12, fPr:11, rCoMin:5,  rCoMax:17, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
+        : { W:780, coX:172, prX:558, padY:22, rowH:27, fCo:15, fPr:13, rCoMin:8,  rCoMax:30, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
 
     const comps  = INDEX_STATE.slice().sort((a, b) => b.val - a.val);
-    const maxVal = Math.max.apply(null, comps.map(c => c.val).concat([1]));
+    const totalVal = comps.reduce((s, c) => s + Math.max(c.val, 0), 0) || 1;
+    const wt = c => Math.max(c.val, 0) / totalVal;               // network weight 0..1
+    const maxWt = Math.max.apply(null, comps.map(wt).concat([1e-9]));
     const shade  = i => {
         const n = comps.length, t = n > 1 ? i / (n - 1) : 0;
         const a = [29, 74, 58], b = [168, 178, 112];
@@ -1910,7 +1912,7 @@ function buildGraph() {
     const H = P.padY * 2 + (rows - 1) * P.rowH;
     const coY = i => nComp > 1 ? P.padY + i * ((H - 2 * P.padY) / (nComp - 1)) : H / 2;
     const prY = j => nPr   > 1 ? P.padY + j * ((H - 2 * P.padY) / (nPr - 1))   : H / 2;
-    const rCo = c => P.rCoMin + (P.rCoMax - P.rCoMin) * (c.val / maxVal);
+    const rCo = c => P.rCoMin + (P.rCoMax - P.rCoMin) * Math.sqrt(maxWt > 0 ? wt(c) / maxWt : 0);
     const maxPr = Math.max.apply(null, Object.keys(protoCount).map(k => protoCount[k]).concat([1]));
     const rPr = p => P.rPrMin + (maxPr > 1 ? (protoCount[p] - 1) / (maxPr - 1) * (P.rPrMax - P.rPrMin) : 0);
 
