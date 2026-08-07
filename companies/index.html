@@ -794,6 +794,12 @@
         .ipx-value.productive { color: var(--green); }
         .ipx-value.gold { color: var(--gold); }
         .ipx-value.muted { color: var(--text-3); font-weight: 400; }
+        .ipx-chip {
+            display: inline-block; margin-left: 0.4rem; padding: 0.08rem 0.34rem;
+            font-size: 0.46rem; letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--gold); border: 1px solid var(--gold-line); border-radius: 999px;
+            vertical-align: 1px; font-weight: 600;
+        }
         .ipx-age { color: var(--gold); }
         /* ── Composite weight breakdown + company signature ── */
         .ipx-composite {
@@ -1107,6 +1113,9 @@
             border: 1px solid rgba(236,231,218,0.1); border-radius: 8px;
             padding: 0.85rem 1rem; margin: 0.5rem 0 0.9rem; line-height: 1.55; text-align: center;
         }
+        .fw-lens { text-align: left; }
+        .fw-lens b { display: block; height: 0.45rem; }
+        .fw-lead { color: rgba(236,231,218,0.85) !important; font-style: italic; }
         .fw-facts { list-style: none; padding: 0; margin: 0.3rem 0 0.9rem; columns: 2; column-gap: 1.2rem; }
         .fw-facts li { font-size: 0.76rem; color: rgba(236,231,218,0.72); padding: 0.2rem 0; }
         .fw-facts li.future { color: rgba(236,231,218,0.4); }
@@ -1771,7 +1780,7 @@
         <div class="index-head">
             <div class="index-eyebrow reveal"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">The Index · Live</span></div>
             <h2 class="index-title reveal" data-i18n="index.title">The Holding Index</h2>
-            <p class="index-sub reveal" data-i18n="index.sub">A live measure of the network. Each company is weighted by a composite of capital, longevity and productivity — not size alone. Capital measures scale, longevity measures history, productivity measures economic output. The first working piece of a larger registry to come.</p>
+            <p class="index-sub reveal" data-i18n="index.sub">A live measure of the network, viewed through two lenses. Composite applies The Holding methodology — combining capital, longevity and productivity. TVL offers a simpler capital-weighted view. The first working piece of a larger registry to come.</p>
         </div>
 
         <div class="index-metrics reveal">
@@ -1820,7 +1829,7 @@
             <div id="idxBoard"></div>
         </div>
 
-        <p class="index-note reveal"><b data-i18n="index.note.lead">Index Weight = 40% capital + 30% longevity + 30% productivity.</b> <span data-i18n="index.note.body">Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.</span></p>
+        <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 40% Capital + 30% Longevity + 30% Productivity.</b> <span data-i18n="index.note.body">Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.</span></p>
     </div>
 </section>
 
@@ -1837,7 +1846,7 @@
         <div class="graph-head">
             <div class="graph-eyebrow"><span class="graph-live-dot"></span><span data-i18n="graph.eyebrow">The Holding Graph</span></div>
             <h2 class="graph-title" data-i18n="graph.title">A live map of capital across the network.</h2>
-            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols it uses — one living map of the network's shared onchain infrastructure. Green company nodes scale with their composite Index Weight; yellow protocol nodes scale with the number of indexed companies connected to them.</p>
+            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols it uses — one living map of the network's shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company's share of total index TVL. Yellow protocol nodes stay unchanged — their size reflects how many indexed companies connect to each protocol.</p>
         </div>
         <div class="graph-canvas" id="graphCanvas"></div>
         <p class="graph-hint" data-i18n="graph.hint">Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.</p>
@@ -2066,6 +2075,13 @@ function renderIndex(lang) {
         return 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
     };
 
+    const nl = document.getElementById('idxNoteLead');
+    if (nl) nl.textContent = (IDX_MODE === 'tvl')
+        ? (lang === 'ru' ? 'Взвешивание по капиталу · TVL компании / Совокупный TVL индекса.'
+                         : 'Capital-weighted view · Company TVL / Total Index TVL.')
+        : (lang === 'ru' ? 'Методология The Holding · 40% Капитал + 30% Возраст + 30% Производительность.'
+                         : 'The Holding methodology · 40% Capital + 30% Longevity + 30% Productivity.');
+
     const wh = document.getElementById('idxWeightHead');
     if (wh) wh.textContent = (IDX_MODE === 'tvl')
         ? (lang === 'ru' ? 'Вес по TVL' : 'TVL Weight')
@@ -2107,17 +2123,21 @@ function renderIndex(lang) {
             ? { registry:'Реестр', founded:'Основана', age:'Возраст', weight:'Вес в индексе', tvlWeight:'Вес по TVL',
                 arch:'Архитектура', custody:'Хранение', custodyVal:'Самостоятельное',
                 protocols:'Протоколы', status:'Статус', explore:'Перейти к компании', days:'дн.',
-                comp:'Из чего сложился вес', capital:'Капитал', longevity:'Возраст',
+                comp:'Состав композитного веса', inView:'Текущий', capital:'Капитал', longevity:'Возраст',
                 productivity:'Производительность', capNote:'Живой ончейн-TVL',
                 lonNote:'в работе', sigCap:'Сигнатура компании',
                 axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', custody:'Custody', custodyVal:'Self-Custodied',
                 protocols:'Protocols', status:'Status', explore:'Explore Company', days:'days',
-                comp:'How this weight is composed', capital:'Capital', longevity:'Longevity',
+                comp:'Composite breakdown', inView:'In view', capital:'Capital', longevity:'Longevity',
                 productivity:'Productivity', capNote:'Live onchain TVL',
                 lonNote:'operating', sigCap:'Company signature',
                 axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY' };
+        const wfld = (label, value, active) =>
+            '<div class="ipx-field"><span class="ipx-label">' + label
+            + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
+            + '<span class="ipx-value ' + (active ? 'gold' : 'muted') + '">' + value + '</span></div>';
         const fld = (label, value, cls) =>
             '<div class="ipx-field"><span class="ipx-label">' + label + '</span>'
             + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
@@ -2187,8 +2207,8 @@ function renderIndex(lang) {
                 +     fld(L.founded, c.founded[lang])
                 +     '<div class="ipx-field"><span class="ipx-label">' + L.age + '</span>'
                 +       '<span class="ipx-value ipx-age" data-founded="' + c.foundedISO + '">' + ageVal + '</span></div>'
-                +     fld(L.weight, w.toFixed(1) + '%', IDX_MODE === 'composite' ? 'gold' : 'muted')
-                +     fld(L.tvlWeight, ((c.tvlWeight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'tvl' ? 'gold' : 'muted')
+                +     wfld(L.weight, ((c.weight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'composite')
+                +     wfld(L.tvlWeight, ((c.tvlWeight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'tvl')
                 +     fld(L.arch, c.arch[lang])
                 +     fld(L.custody, L.custodyVal)
                 +     fld(L.protocols, String(c.protocols))
@@ -2390,7 +2410,17 @@ function renderFramework(lang) {
         eyebrow: 'ВНУТРИ THE HOLDING INDEX',
         title: 'Как сеть измеряется сегодня — и во что её данные могут превратиться со временем.',
         stages: ['Работает сейчас', 'Накапливается', 'Со временем'],
-        s1status: 'Live', s1h: 'Композитная методология',
+        s0h: 'Два взгляда · одна сеть',
+        s0p: [
+            'На The Holding Index можно посмотреть двумя способами.',
+            'COMPOSITE — основной режим, использующий собственную методологию The Holding: капитал, возраст и производительность объединяются в единый Index Weight.',
+            'TVL убирает дополнительные факторы и показывает классический взгляд, основанный только на доле TVL каждой компании в совокупном TVL индекса.',
+            'Состав компаний при переключении не меняется. Меняется только аналитическая линза. Это позволяет сравнить простой экономический масштаб компании с более глубоким взглядом The Holding на её вес внутри сети.'
+        ],
+        s0fa: 'COMPOSITE\n40% Capital Score + 30% Longevity Score + 30% Productivity Score',
+        s0fb: 'TVL\nTVL компании / Совокупный TVL индекса',
+        s1status: 'Live', s1h: 'The Holding · Композитная методология',
+        s1lead: 'Это основной режим The Holding Index.',
         s1p: [
             'Вес компании в индексе складывается из трёх факторов: капитала, возраста и производительности. Размер сам по себе не определяет её вес.',
             'Капитал показывает масштаб — текущий ончейн-TVL. Возраст показывает историю — сколько дней компания реально работает. Производительность показывает текущую доходность — на основе ориентировочного APR компании.',
@@ -2429,7 +2459,17 @@ function renderFramework(lang) {
         eyebrow: 'INSIDE THE HOLDING INDEX',
         title: 'How the network is measured today — and what its data can become over time.',
         stages: ['Live now', 'Accumulating', 'Over time'],
-        s1status: 'Live', s1h: 'Composite Methodology',
+        s0h: 'Two views · one network',
+        s0p: [
+            'The Holding Index can be viewed in two ways.',
+            "COMPOSITE is the default and applies The Holding's own methodology — combining capital, longevity and productivity into a single Index Weight.",
+            'TVL removes the additional factors and shows a traditional capital-weighted view based only on each company\'s share of total index TVL.',
+            'The underlying companies do not change. Only the analytical lens changes. This lets anyone compare simple economic scale with The Holding\'s broader view of company weight.'
+        ],
+        s0fa: 'COMPOSITE\n40% Capital Score + 30% Longevity Score + 30% Productivity Score',
+        s0fb: 'TVL\nCompany TVL / Total Index TVL',
+        s1status: 'Live', s1h: 'The Holding · Composite Methodology',
+        s1lead: 'This is the default view of The Holding Index.',
         s1p: [
             "A company's weight in the index is composed of three factors: capital, longevity and productivity. Size alone does not define its weight.",
             'Capital measures scale — live onchain TVL. Longevity measures history — how many days the company has actually been operating. Productivity measures current yield — based on the company\u2019s indicative APR.',
@@ -2480,10 +2520,19 @@ function renderFramework(lang) {
         +   '<div class="fw-stage-arrow">↓</div>'
         +   '<div class="fw-stage s-dev"><span class="dot"></span>' + C.stages[2] + '</div>'
         + '</div>'
+        // two lenses
+        + '<div class="fw-section live">'
+        +   '<span class="fw-status live">' + C.s1status + '</span>'
+        +   '<div class="fw-h">' + C.s0h + '</div>'
+        +   C.s0p.map(p => '<p>' + p + '</p>').join('')
+        +   '<div class="fw-formula fw-lens">' + C.s0fa.replace('\n', '<b></b>') + '</div>'
+        +   '<div class="fw-formula fw-lens">' + C.s0fb.replace('\n', '<b></b>') + '</div>'
+        + '</div>'
         // section 01
         + '<div class="fw-section live">'
         +   '<span class="fw-status live">' + C.s1status + '</span>'
         +   '<div class="fw-h">' + C.s1h + '</div>'
+        +   '<p class="fw-lead">' + C.s1lead + '</p>'
         +   C.s1p.map(p => '<p>' + p + '</p>').join('')
         +   '<div class="fw-formula">' + C.s1formula + '</div>'
         +   '<p>' + C.s1smooth + '</p>'
@@ -2742,7 +2791,7 @@ function renderFramework(lang) {
             'index.mode.tvl': 'TVL',
             'index.lens': 'Same companies. Different lens.',
             'index.title': 'The Holding Index',
-            'index.sub': 'A live measure of the network. Each company is weighted by a composite of capital, longevity and productivity — not size alone. Capital measures scale, longevity measures history, productivity measures economic output. The first working piece of a larger registry to come.',
+            'index.sub': 'A live measure of the network, viewed through two lenses. Composite applies The Holding methodology — combining capital, longevity and productivity. TVL offers a simpler capital-weighted view. The first working piece of a larger registry to come.',
             'index.m.value': 'Network Value',
             'index.m.constituents': 'Constituents',
             'index.m.leader': 'Leading Company',
@@ -2752,11 +2801,10 @@ function renderFramework(lang) {
             'index.h.value': 'Value',
             'index.h.weight': 'Index Weight',
             'index.h.since': 'Since',
-            'index.note.lead': 'Index Weight = 40% capital + 30% longevity + 30% productivity.',
             'index.note.body': 'Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.',
             'graph.eyebrow': 'The Holding Graph',
             'graph.title': 'A live map of capital across the network.',
-            'graph.sub': 'Every company and the protocols it uses — one living map of the network\'s shared onchain infrastructure. Green company nodes scale with their composite Index Weight; yellow protocol nodes scale with the number of indexed companies connected to them.',
+            'graph.sub': 'Every company and the protocols it uses — one living map of the network\'s shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company\'s share of total index TVL. Yellow protocol nodes stay unchanged — their size reflects how many indexed companies connect to each protocol.',
             'graph.hint': 'Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.',
             'process.title': 'How a company is born',
             'process.1.title': 'Identity',
@@ -2835,7 +2883,7 @@ function renderFramework(lang) {
             'index.mode.tvl': 'TVL',
             'index.lens': 'Те же компании. Другой взгляд.',
             'index.title': 'Индекс The Holding',
-            'index.sub': 'Живой индекс сети. Вес компании складывается из капитала, возраста и производительности — а не только из размера. Капитал показывает масштаб, возраст — историю, производительность — экономический результат. Это первый работающий элемент будущего большого реестра.',
+            'index.sub': 'Живой показатель сети, на которую можно посмотреть через две разные линзы. Composite использует методологию The Holding — объединяя капитал, возраст и производительность. TVL показывает более простой взгляд, основанный только на капитале. Первый работающий элемент будущего большого реестра.',
             'index.m.value': 'Ценность сети',
             'index.m.constituents': 'Компаний в индексе',
             'index.m.leader': 'Ведущая компания',
@@ -2845,11 +2893,10 @@ function renderFramework(lang) {
             'index.h.value': 'Ценность',
             'index.h.weight': 'Вес в индексе',
             'index.h.since': 'С',
-            'index.note.lead': 'Вес в индексе = 40% капитал + 30% возраст + 30% производительность.',
             'index.note.body': 'Репутационные метрики, история результатов и кросс-сетевые индексы находятся в разработке — этот фундамент станет основой для их появления.',
             'graph.eyebrow': 'Граф The Holding',
             'graph.title': 'Живая карта капитала по всей сети.',
-            'graph.sub': 'Компании и протоколы, которые они используют, — единая живая карта общей ончейн-инфраструктуры сети. Размер зелёных узлов компаний зависит от их совокупного веса в индексе; размер жёлтых узлов протоколов — от числа компаний индекса, связанных с ними.',
+            'graph.sub': 'Компании и используемые ими протоколы — единая живая карта общей ончейн-инфраструктуры сети. Зелёные узлы компаний следуют выбранному режиму индекса: в Composite их размер зависит от Index Weight, а в TVL — от доли компании в совокупном TVL индекса. Жёлтые узлы протоколов при переключении не меняются — их размер отражает количество компаний индекса, связанных с каждым протоколом.',
             'graph.hint': 'Наведите на любой узел, чтобы увидеть его связи. По мере роста сети карта будет расширяться: Компания → Актив → Протокол → Сеть.',
             'process.title': 'Как рождается компания',
             'process.1.title': 'Идентичность',
