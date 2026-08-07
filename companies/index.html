@@ -793,6 +793,47 @@
         .ipx-value { color: var(--text); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
         .ipx-value.productive { color: var(--green); }
         .ipx-age { color: var(--gold); }
+        /* ── Composite weight breakdown + company signature ── */
+        .ipx-composite {
+            display: grid; grid-template-columns: 1fr 112px; gap: 1.75rem;
+            align-items: start; margin-top: 1.5rem; padding-top: 1.35rem;
+            border-top: 1px solid var(--line);
+        }
+        .ipx-c-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem; }
+        .ipx-c-title {
+            font-size: 0.56rem; letter-spacing: 0.18em; text-transform: uppercase;
+            color: var(--text-3); font-weight: 600;
+        }
+        .ipx-c-total { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--gold); line-height: 1; }
+        .ipx-factor { margin-bottom: 0.9rem; }
+        .ipx-factor:last-child { margin-bottom: 0; }
+        .ipx-f-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.78rem; margin-bottom: 0.35rem; }
+        .ipx-f-name { color: var(--text); font-weight: 500; }
+        .ipx-f-name em {
+            font-style: normal; color: var(--text-3); font-size: 0.6rem;
+            letter-spacing: 0.1em; margin-left: 0.4rem;
+        }
+        .ipx-f-val { color: var(--text-2); font-variant-numeric: tabular-nums; }
+        .ipx-f-track { height: 4px; background: var(--line); border-radius: 999px; overflow: hidden; }
+        .ipx-f-track span { display: block; height: 100%; border-radius: 999px; transition: width 0.8s cubic-bezier(0.22,1,0.36,1); }
+        .ipx-factor.f-cap .ipx-f-track span { background: #1d4a3a; }
+        .ipx-factor.f-lon .ipx-f-track span { background: #a8842c; }
+        .ipx-factor.f-pro .ipx-f-track span { background: #7a8f5e; }
+        .ipx-f-note { font-size: 0.68rem; color: var(--text-3); margin-top: 0.32rem; }
+        .ipx-sig { width: 100%; height: auto; display: block; }
+        .sg-grid  { fill: none; stroke: var(--line-strong); stroke-width: 0.7; }
+        .sg-axis  { stroke: var(--line-strong); stroke-width: 0.7; }
+        .sg-shape { fill: rgba(168,132,44,0.16); stroke: var(--gold); stroke-width: 1.3; stroke-linejoin: round; }
+        .sg-dot   { fill: var(--gold); }
+        .ipx-sig-axes {
+            display: flex; justify-content: space-between; margin-top: 0.3rem;
+            font-size: 0.5rem; letter-spacing: 0.1em; color: var(--text-3);
+        }
+        @media (max-width: 560px) {
+            .ipx-composite { grid-template-columns: 1fr; gap: 1.4rem; }
+            .ipx-c-sig { max-width: 132px; margin: 0 auto; }
+        }
+
         .ipx-link {
             display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 1.3rem;
             font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
@@ -1689,7 +1730,7 @@
         <div class="index-head">
             <div class="index-eyebrow reveal"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">The Index · Live</span></div>
             <h2 class="index-title reveal" data-i18n="index.title">The Holding Index</h2>
-            <p class="index-sub reveal" data-i18n="index.sub">A live measure of the network. Every company is weighted by its real onchain value — ranked, composited, and updated as the network grows. The first working piece of a larger registry to come.</p>
+            <p class="index-sub reveal" data-i18n="index.sub">A live measure of the network. Each company is weighted by a composite of capital, longevity and productivity — not size alone. Capital measures scale, longevity measures history, productivity measures economic output. The first working piece of a larger registry to come.</p>
         </div>
 
         <div class="index-metrics reveal">
@@ -1721,14 +1762,14 @@
                 <div data-i18n="index.h.rank">#</div>
                 <div data-i18n="index.h.company">Company</div>
                 <div class="ib-r" data-i18n="index.h.value">Value</div>
-                <div data-i18n="index.h.weight">Network Weight</div>
+                <div data-i18n="index.h.weight">Index Weight</div>
                 <div class="ib-r" data-i18n="index.h.since">Since</div>
                 <div></div>
             </div>
             <div id="idxBoard"></div>
         </div>
 
-        <p class="index-note reveal"><b data-i18n="index.note.lead">Weightings reflect live onchain value.</b> <span data-i18n="index.note.body">Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.</span></p>
+        <p class="index-note reveal"><b data-i18n="index.note.lead">Index Weight = 40% capital + 30% longevity + 30% productivity.</b> <span data-i18n="index.note.body">Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.</span></p>
     </div>
 </section>
 
@@ -1745,7 +1786,7 @@
         <div class="graph-head">
             <div class="graph-eyebrow"><span class="graph-live-dot"></span><span data-i18n="graph.eyebrow">The Holding Graph</span></div>
             <h2 class="graph-title" data-i18n="graph.title">A live map of capital across the network.</h2>
-            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols it uses — one living map of the network's shared onchain infrastructure. Green company nodes scale with company TVL; yellow protocol nodes scale with the number of indexed companies connected to them.</p>
+            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols it uses — one living map of the network's shared onchain infrastructure. Green company nodes scale with their composite Index Weight; yellow protocol nodes scale with the number of indexed companies connected to them.</p>
         </div>
         <div class="graph-canvas" id="graphCanvas"></div>
         <p class="graph-hint" data-i18n="graph.hint">Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.</p>
@@ -1906,12 +1947,51 @@ function updateAges() {
     });
 }
 
+/* ── The Holding Index · composite methodology ─────────────
+   Index Weight = 40% Capital + 30% Longevity + 30% Productivity.
+   Every factor is smoothed with a square root, then normalised into
+   a share of the network, so all weights still sum to 100%.
+     Capital       sqrt(TVL)                  — scale, without whale capture
+     Longevity     sqrt(min(age,1460)/1460)   — history, maturing over ~4 years
+     Productivity  sqrt(min(APR,20)/20)       — economic output, capped so a
+                                                headline yield can't game the index
+   No single factor defines a company's weight.                         */
+const IDX_W        = { capital: 0.40, longevity: 0.30, productivity: 0.30 };
+const AGE_CAP_DAYS = 1460;   // ~4 years
+const APR_CAP_PCT  = 20;     // methodological cap, not a target
+
+function computeIndex() {
+    if (!INDEX_STATE) return [];
+    const list = INDEX_STATE.slice();
+    const rawCap = c => Math.sqrt(Math.max(c.val, 0));
+    const rawLon = c => Math.sqrt(Math.min(ageDays(c.foundedISO), AGE_CAP_DAYS) / AGE_CAP_DAYS);
+    const rawPro = c => Math.sqrt(Math.min(Math.max(c.apr || 0, 0), APR_CAP_PCT) / APR_CAP_PCT);
+    const sum = f => list.reduce((s, c) => s + f(c), 0);
+    const sC = sum(rawCap) || 1, sL = sum(rawLon) || 1, sP = sum(rawPro) || 1;
+    const mC = Math.max.apply(null, list.map(rawCap).concat([1e-9]));
+    const mL = Math.max.apply(null, list.map(rawLon).concat([1e-9]));
+    const mP = Math.max.apply(null, list.map(rawPro).concat([1e-9]));
+    list.forEach(c => {
+        c.capShare = rawCap(c) / sC;
+        c.lonShare = rawLon(c) / sL;
+        c.proShare = rawPro(c) / sP;
+        c.weight   = IDX_W.capital      * c.capShare
+                   + IDX_W.longevity    * c.lonShare
+                   + IDX_W.productivity * c.proShare;
+        // 0..1 relative to the strongest company — drives the three-axis signature
+        c.capScore = rawCap(c) / mC;
+        c.lonScore = rawLon(c) / mL;
+        c.proScore = rawPro(c) / mP;
+    });
+    return list.sort((a, b) => b.weight - a.weight);
+}
+
 function renderIndex(lang) {
     if (!INDEX_STATE) return;
     const money = v => '$' + Math.round(v).toLocaleString('en-US');
-    const list  = INDEX_STATE.slice().sort((a, b) => b.val - a.val);
+    const list  = computeIndex();
     const total = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);
-    const pct   = v => total > 0 ? (v / total * 100) : 0;
+    const pct   = c => (c.weight || 0) * 100;
     // Noble green ramp — deepest for the largest holding, lighter down the ranks
     const shade = i => {
         const n = list.length;
@@ -1934,9 +2014,9 @@ function renderIndex(lang) {
         list.forEach((c, i) => {
             const seg = document.createElement('div');
             seg.className = 'index-comp-seg';
-            seg.style.width = pct(c.val).toFixed(2) + '%';
+            seg.style.width = pct(c).toFixed(2) + '%';
             seg.style.background = shade(i);
-            seg.title = c.nm + ' · ' + pct(c.val).toFixed(1) + '%';
+            seg.title = c.nm + ' · ' + pct(c).toFixed(1) + '%';
             bar.appendChild(seg);
         });
     }
@@ -1947,28 +2027,61 @@ function renderIndex(lang) {
             const it = document.createElement('span');
             it.className = 'icl-item';
             it.innerHTML = '<span class="icl-swatch" style="background:' + shade(i) + '"></span>'
-                         + '<b>' + c.nm + '</b> <span class="icl-w">' + pct(c.val).toFixed(1) + '%</span>';
+                         + '<b>' + c.nm + '</b> <span class="icl-w">' + pct(c).toFixed(1) + '%</span>';
             leg.appendChild(it);
         });
     }
     const board = document.getElementById('idxBoard');
     if (board) {
         const L = (lang === 'ru')
-            ? { registry:'Реестр', founded:'Основана', age:'Возраст', weight:'Вес в сети',
+            ? { registry:'Реестр', founded:'Основана', age:'Возраст', weight:'Вес в индексе',
                 arch:'Архитектура', custody:'Хранение', custodyVal:'Самостоятельное',
-                protocols:'Протоколы', status:'Статус', explore:'Перейти к компании', days:'дн.' }
-            : { registry:'Registry', founded:'Founded', age:'Age', weight:'Network Weight',
+                protocols:'Протоколы', status:'Статус', explore:'Перейти к компании', days:'дн.',
+                comp:'Из чего сложился вес', capital:'Капитал', longevity:'Возраст',
+                productivity:'Производительность', capNote:'Живой ончейн-TVL',
+                lonNote:'в работе', sigCap:'Сигнатура компании',
+                axC:'КАП', axL:'ВОЗР', axP:'ПРОИЗВ' }
+            : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight',
                 arch:'Architecture', custody:'Custody', custodyVal:'Self-Custodied',
-                protocols:'Protocols', status:'Status', explore:'Explore Company', days:'days' };
+                protocols:'Protocols', status:'Status', explore:'Explore Company', days:'days',
+                comp:'How this weight is composed', capital:'Capital', longevity:'Longevity',
+                productivity:'Productivity', capNote:'Live onchain TVL',
+                lonNote:'operating', sigCap:'Company signature',
+                axC:'CAP', axL:'LONG', axP:'PROD' };
         const fld = (label, value, cls) =>
             '<div class="ipx-field"><span class="ipx-label">' + label + '</span>'
             + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
         const chev = '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         const arr  = '<svg viewBox="0 0 16 16" fill="none" width="12" height="12"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        // three-axis company signature: capital (top), productivity (right), longevity (left)
+        const sig = c => {
+            const sc = [c.capScore || 0, c.proScore || 0, c.lonScore || 0];
+            const ang = [-90, 30, 150], R = 34, cx = 44, cy = 44;
+            const xy = (i, r) => {
+                const a = ang[i] * Math.PI / 180;
+                return [(cx + Math.cos(a) * R * r).toFixed(1), (cy + Math.sin(a) * R * r).toFixed(1)];
+            };
+            const ring = r => [0,1,2].map(i => xy(i, r).join(',')).join(' ');
+            const shape = [0,1,2].map(i => xy(i, Math.max(sc[i], 0.07)).join(',')).join(' ');
+            return '<svg class="ipx-sig" viewBox="0 0 88 88" aria-hidden="true">'
+                + '<polygon class="sg-grid" points="' + ring(1) + '"/>'
+                + '<polygon class="sg-grid" points="' + ring(0.66) + '"/>'
+                + '<polygon class="sg-grid" points="' + ring(0.33) + '"/>'
+                + [0,1,2].map(i => '<line class="sg-axis" x1="' + cx + '" y1="' + cy + '" x2="' + xy(i,1)[0] + '" y2="' + xy(i,1)[1] + '"/>').join('')
+                + '<polygon class="sg-shape" points="' + shape + '"/>'
+                + [0,1,2].map(i => { const p = xy(i, Math.max(sc[i], 0.07)); return '<circle class="sg-dot" cx="' + p[0] + '" cy="' + p[1] + '" r="2.2"/>'; }).join('')
+                + '</svg>';
+        };
+        const factor = (cls, name, methodPct, share, note) =>
+            '<div class="ipx-factor ' + cls + '">'
+            + '<div class="ipx-f-top"><span class="ipx-f-name">' + name + '<em>' + methodPct + '</em></span>'
+            + '<span class="ipx-f-val">' + (share * 100).toFixed(1) + '%</span></div>'
+            + '<div class="ipx-f-track"><span style="width:' + Math.max(share * 100, 1).toFixed(1) + '%"></span></div>'
+            + '<div class="ipx-f-note">' + note + '</div></div>';
 
         board.innerHTML = '';
         list.forEach((c, i) => {
-            const w = pct(c.val);
+            const w = pct(c);
             const item = document.createElement('div');
             item.className = 'ib-item';
             const ageVal = ageDays(c.foundedISO).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US') + ' ' + L.days;
@@ -1990,11 +2103,23 @@ function renderIndex(lang) {
                 +     fld(L.founded, c.founded[lang])
                 +     '<div class="ipx-field"><span class="ipx-label">' + L.age + '</span>'
                 +       '<span class="ipx-value ipx-age" data-founded="' + c.foundedISO + '">' + ageVal + '</span></div>'
-                +     fld(L.weight, w.toFixed(1) + '%')
+                +     fld(L.weight, w.toFixed(1) + '%', 'gold')
                 +     fld(L.arch, c.arch[lang])
                 +     fld(L.custody, L.custodyVal)
                 +     fld(L.protocols, String(c.protocols))
                 +     fld(L.status, c.status[lang], 'productive')
+                +   '</div>'
+                +   '<div class="ipx-composite">'
+                +     '<div class="ipx-c-main">'
+                +       '<div class="ipx-c-head"><span class="ipx-c-title">' + L.comp + '</span>'
+                +         '<span class="ipx-c-total">' + w.toFixed(1) + '%</span></div>'
+                +       factor('f-cap', L.capital, '40%', c.capShare || 0, L.capNote + ' \u00b7 ' + (c.val > 0 ? money(c.val) : 'Live'))
+                +       factor('f-lon', L.longevity, '30%', c.lonShare || 0, ageVal + ' ' + L.lonNote)
+                +       factor('f-pro', L.productivity, '30%', c.proShare || 0, c.aprLabel ? c.aprLabel[lang] : '\u2014')
+                +     '</div>'
+                +     '<div class="ipx-c-sig">' + sig(c)
+                +       '<div class="ipx-sig-axes"><span>' + L.axC + '</span><span>' + L.axL + '</span><span>' + L.axP + '</span></div>'
+                +     '</div>'
                 +   '</div>'
                 +   '<a class="ipx-link" href="' + c.href + '" target="_blank" rel="noopener">' + L.explore + ' ' + arr + '</a>'
                 + '</div></div>';
@@ -2036,9 +2161,9 @@ function buildGraph() {
         ? { W:360, coX:104, prX:250, padY:16, rowH:22, fCo:12, fPr:11, rCoMin:5,  rCoMax:17, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
         : { W:780, coX:172, prX:558, padY:22, rowH:27, fCo:15, fPr:13, rCoMin:8,  rCoMax:30, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
 
-    const comps  = INDEX_STATE.slice().sort((a, b) => b.val - a.val);
-    const totalVal = comps.reduce((s, c) => s + Math.max(c.val, 0), 0) || 1;
-    const wt = c => Math.max(c.val, 0) / totalVal;               // network weight 0..1
+    // Ranked and sized by composite Index Weight (capital + longevity + productivity)
+    const comps = computeIndex();
+    const wt = c => Math.max(c.weight || 0, 0);                  // index weight 0..1
     const maxWt = Math.max.apply(null, comps.map(wt).concat([1e-9]));
     const shade  = i => {
         const n = comps.length, t = n > 1 ? i / (n - 1) : 0;
@@ -2156,22 +2281,23 @@ function renderFramework(lang) {
         eyebrow: 'ВНУТРИ THE HOLDING INDEX',
         title: 'Как сеть измеряется сегодня — и во что её данные могут превратиться со временем.',
         stages: ['Работает сейчас', 'Накапливается', 'Со временем'],
-        s1status: 'Live', s1h: 'Текущая методология',
+        s1status: 'Live', s1h: 'Композитная методология',
         s1p: [
-            'Сегодня The Holding Index взвешивает компании по их текущему ончейн-TVL.',
-            'Network Weight компании показывает её долю в совокупной стоимости всех компаний, входящих в индекс.',
-            'Когда TVL компании меняется, её вес в индексе меняется вместе с ним.'
+            'Вес компании в индексе складывается из трёх факторов: капитала, возраста и производительности. Размер сам по себе не определяет положение компании.',
+            'Капитал показывает масштаб — живой ончейн-TVL. Возраст показывает историю — сколько дней компания реально работает. Производительность показывает экономический результат — доходность, которую она генерирует.',
+            'Каждый фактор сглаживается квадратным корнем и переводится в долю сети, поэтому сумма весов всех компаний всегда равна 100%.'
         ],
-        s1formula: 'Вес компании = TVL компании ÷ Совокупный TVL индекса',
-        s1foot: 'Весь капитал остаётся под самостоятельным контролем владельцев компаний. The Holding измеряет сеть, но не хранит капитал, представленный в индексе.',
+        s1formula: 'Вес в индексе = 40% · Капитал + 30% · Возраст + 30% · Производительность',
+        s1smooth: 'Сглаживание применяется намеренно. Компания с TVL в 10 раз больше получает примерно втрое больший вес по капиталу, а не в десять раз — это убирает «эффект кита». Возраст засчитывается до четырёх лет: первые годы значат много, но преимущество не становится бесконечным. Производительность учитывается до 20% годовых — разница между 5%, 10% и 20% видна, но погоня за высоким headline-APR не позволяет захватить индекс.',
+        s1foot: 'Ни один показатель сам по себе не определяет вес компании. Весь капитал остаётся под самостоятельным контролем владельцев компаний. The Holding измеряет сеть, но не хранит капитал, представленный в индексе.',
         s2status: 'Live', s2h: 'Как читать карту сети',
         s2intro: 'The Holding Graph показывает другое измерение индекса — связи между компаниями и инфраструктурой.',
-        s2gt: 'Зелёные узлы — компании', s2g: 'Размер зелёного узла зависит от текущего TVL компании. Больше TVL → крупнее узел.',
+        s2gt: 'Зелёные узлы — компании', s2g: 'Размер зелёного узла зависит от совокупного веса компании в индексе — капитала, возраста и производительности вместе. Больше вес → крупнее узел.',
         s2yt: 'Жёлтые узлы — протоколы', s2y: 'Размер жёлтого узла зависит не от объёма капитала, а от числа разных компаний индекса, которые используют этот протокол. Больше компаний → крупнее узел. Так размер отражает роль протокола как общей инфраструктуры сети, а не концентрацию капитала.',
         s2ct: 'Связи', s2c: 'Линии показывают связи компаний с протоколами — какую инфраструктуру компании используют совместно. На текущем этапе толщина линии не означает объём капитала.',
         s3status: 'Накапливается', s3h: 'Слой истории',
         s3p1: 'С момента появления в реестре каждая компания начинает накапливать собственную историю работы. Company Passport уже содержит объективные данные:',
-        s3facts: ['Registry ID', 'Дата основания', 'Возраст', 'Вес в сети', 'Архитектура', 'Модель хранения', 'Протоколы', 'Статус'],
+        s3facts: ['Registry ID', 'Дата основания', 'Возраст', 'Вес в индексе', 'Архитектура', 'Модель хранения', 'Протоколы', 'Статус'],
         s3future: 'Сети (Chains)',
         s3p2: 'Возраст компании увеличивается автоматически. Со временем к этому могут добавляться исторические данные по TVL, весу в сети, денежным потокам, структуре капитала и результатам работы. Само время становится частью данных.',
         s3exLbl: 'История работы', s3exVal: '1 427 дней',
@@ -2194,22 +2320,23 @@ function renderFramework(lang) {
         eyebrow: 'INSIDE THE HOLDING INDEX',
         title: 'How the network is measured today — and what its data can become over time.',
         stages: ['Live now', 'Accumulating', 'Over time'],
-        s1status: 'Live', s1h: 'Live Methodology',
+        s1status: 'Live', s1h: 'Composite Methodology',
         s1p: [
-            'The Holding Index is currently weighted by the live onchain TVL of its constituent companies.',
-            "A company's Network Weight represents its share of the total value of all companies currently included in the index.",
-            'As company TVLs change, their weights change with them.'
+            "A company's weight in the index is composed of three factors: capital, longevity and productivity. Size alone does not define its position.",
+            'Capital measures scale — live onchain TVL. Longevity measures history — how many days the company has actually been operating. Productivity measures economic output — the yield it generates.',
+            'Each factor is smoothed with a square root and normalised into a share of the network, so all company weights always sum to 100%.'
         ],
-        s1formula: 'Company Network Weight = Company TVL ÷ Total Index TVL',
-        s1foot: 'All capital remains self-custodied by its respective owner. The Holding measures the network; it does not custody the capital represented by the index.',
+        s1formula: 'Index Weight = 40% · Capital + 30% · Longevity + 30% · Productivity',
+        s1smooth: 'The smoothing is deliberate. A company with 10x the TVL earns roughly 3x the capital weight rather than 10x, which removes the whale effect. Longevity matures over about four years, so early history counts for a great deal without granting an unlimited advantage. Productivity is counted up to 20% APR — the difference between 5%, 10% and 20% is visible, but chasing a high headline yield cannot capture the index.',
+        s1foot: 'No single factor defines a company. All capital remains self-custodied by its respective owner. The Holding measures the network; it does not custody the capital represented by the index.',
         s2status: 'Live', s2h: 'How to Read the Network',
         s2intro: 'The Holding Graph visualizes a different dimension of the index: relationships.',
-        s2gt: 'Green nodes — companies', s2g: 'Green company nodes scale with the current TVL of each company. Larger company TVL → larger green node.',
+        s2gt: 'Green nodes — companies', s2g: "Green company nodes scale with a company's composite Index Weight — capital, longevity and productivity combined. Larger weight → larger green node.",
         s2yt: 'Yellow nodes — protocols', s2y: 'Yellow protocol nodes do not represent the amount of capital deployed into a protocol. Their size reflects how many different companies in the index use that protocol. More indexed companies → larger node. This makes protocol size a measure of shared infrastructure across the network — not capital concentration.',
         s2ct: 'Connections', s2c: 'Lines represent company-to-protocol relationships — which infrastructure companies share and how the network is connected. At this stage, line thickness does not imply capital size.',
         s3status: 'Accumulating', s3h: 'The History Layer',
         s3p1: 'Every company begins building an operating history from the moment it enters the registry. Its Company Passport already provides objective facts such as:',
-        s3facts: ['Registry ID', 'Founded', 'Age', 'Network Weight', 'Architecture', 'Custody', 'Protocols', 'Status'],
+        s3facts: ['Registry ID', 'Founded', 'Age', 'Index Weight', 'Architecture', 'Custody', 'Protocols', 'Status'],
         s3future: 'Chains',
         s3p2: 'Age continues to grow automatically. Over time, additional historical data can be accumulated around TVL, network weight, cash flow, capital structure and operating performance. Time itself becomes part of the dataset.',
         s3exLbl: 'Operating History', s3exVal: '1,427 days',
@@ -2250,6 +2377,7 @@ function renderFramework(lang) {
         +   '<div class="fw-h">' + C.s1h + '</div>'
         +   C.s1p.map(p => '<p>' + p + '</p>').join('')
         +   '<div class="fw-formula">' + C.s1formula + '</div>'
+        +   '<p>' + C.s1smooth + '</p>'
         +   '<p>' + C.s1foot + '</p>'
         + '</div>'
         // section 02
@@ -2368,16 +2496,16 @@ function renderFramework(lang) {
     INDEX_STATE = [
         { nm: 'defitea.eth',   val: tvl4, href: 'https://theholding.ai/defitea/',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jan 2025', ru: 'Янв 2025' },
-          reg:'004', foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'Holding Native', ru:'Нативная The Holding' }, protocols:11, status:{ en:'Productive', ru:'Активна' } },
+          reg:'004', apr:13, aprLabel:{ en:'12–14% indicative APR', ru:'12–14% ориентировочный APR' }, foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'Holding Native', ru:'Нативная The Holding' }, protocols:11, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'YieldRing.eth', val: tvl2, href: 'https://theholding.ai/yieldring',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'002', foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'Holding Standard', ru:'Стандарт Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
+          reg:'002', apr:11, aprLabel:{ en:'~10–12% indicative APR', ru:'~10–12% ориентировочный APR' }, foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'Holding Standard', ru:'Стандарт Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
         { nm: '05081966.eth',  val: tvl1, href: 'https://theholding.ai/05081966',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'001', foundedISO:'2026-07-17', founded:{ en:'Jul 17, 2026', ru:'17 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
+          reg:'001', apr:6,  aprLabel:{ en:'4–8+% indicative APR', ru:'4–8+% ориентировочный APR' }, foundedISO:'2026-07-17', founded:{ en:'Jul 17, 2026', ru:'17 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'dinaz.eth',     val: tvl3, href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'003', foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } }
+          reg:'003', apr:15, aprLabel:{ en:'10–20%+ indicative APR', ru:'10–20%+ ориентировочный APR' }, foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } }
     ];
     renderIndex(idxLang());
     buildGraph();
@@ -2477,7 +2605,7 @@ function renderFramework(lang) {
             'index.eyebrow': 'The Index · Live',
             'index.framework': 'Index Framework',
             'index.title': 'The Holding Index',
-            'index.sub': 'A live measure of the network. Every company is weighted by its real onchain value — ranked, composited, and updated as the network grows. The first working piece of a larger registry to come.',
+            'index.sub': 'A live measure of the network. Each company is weighted by a composite of capital, longevity and productivity — not size alone. Capital measures scale, longevity measures history, productivity measures economic output. The first working piece of a larger registry to come.',
             'index.m.value': 'Network Value',
             'index.m.constituents': 'Constituents',
             'index.m.leader': 'Leading Company',
@@ -2485,13 +2613,13 @@ function renderFramework(lang) {
             'index.h.rank': '#',
             'index.h.company': 'Company',
             'index.h.value': 'Value',
-            'index.h.weight': 'Network Weight',
+            'index.h.weight': 'Index Weight',
             'index.h.since': 'Since',
-            'index.note.lead': 'Weightings reflect live onchain value.',
+            'index.note.lead': 'Index Weight = 40% capital + 30% longevity + 30% productivity.',
             'index.note.body': 'Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.',
             'graph.eyebrow': 'The Holding Graph',
             'graph.title': 'A live map of capital across the network.',
-            'graph.sub': 'Every company and the protocols it uses — one living map of the network\'s shared onchain infrastructure. Green company nodes scale with company TVL; yellow protocol nodes scale with the number of indexed companies connected to them.',
+            'graph.sub': 'Every company and the protocols it uses — one living map of the network\'s shared onchain infrastructure. Green company nodes scale with their composite Index Weight; yellow protocol nodes scale with the number of indexed companies connected to them.',
             'graph.hint': 'Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.',
             'process.title': 'How a company is born',
             'process.1.title': 'Identity',
@@ -2566,7 +2694,7 @@ function renderFramework(lang) {
             'index.eyebrow': 'Индекс · Live',
             'index.framework': 'Как устроен индекс',
             'index.title': 'Индекс The Holding',
-            'index.sub': 'Живой индекс сети. Каждая компания получает вес на основе своего текущего ончейн-TVL. Состав, позиции и веса обновляются по мере роста сети. Это первый работающий элемент будущего большого реестра.',
+            'index.sub': 'Живой индекс сети. Вес компании складывается из капитала, возраста и производительности — а не только из размера. Капитал показывает масштаб, возраст — историю, производительность — экономический результат. Это первый работающий элемент будущего большого реестра.',
             'index.m.value': 'Ценность сети',
             'index.m.constituents': 'Компаний в индексе',
             'index.m.leader': 'Ведущая компания',
@@ -2574,13 +2702,13 @@ function renderFramework(lang) {
             'index.h.rank': '#',
             'index.h.company': 'Компания',
             'index.h.value': 'Ценность',
-            'index.h.weight': 'Вес в сети',
+            'index.h.weight': 'Вес в индексе',
             'index.h.since': 'С',
-            'index.note.lead': 'Индекс построен на некастодиальной архитектуре и отражает реальный капитал компаний в ончейне.',
+            'index.note.lead': 'Вес в индексе = 40% капитал + 30% возраст + 30% производительность.',
             'index.note.body': 'Репутационные метрики, история результатов и кросс-сетевые индексы находятся в разработке — этот фундамент станет основой для их появления.',
             'graph.eyebrow': 'Граф The Holding',
             'graph.title': 'Живая карта капитала по всей сети.',
-            'graph.sub': 'Компании и протоколы, которые они используют, — единая живая карта общей ончейн-инфраструктуры сети. Размер зелёных узлов компаний зависит от их TVL; размер жёлтых узлов протоколов — от числа компаний индекса, связанных с ними.',
+            'graph.sub': 'Компании и протоколы, которые они используют, — единая живая карта общей ончейн-инфраструктуры сети. Размер зелёных узлов компаний зависит от их совокупного веса в индексе; размер жёлтых узлов протоколов — от числа компаний индекса, связанных с ними.',
             'graph.hint': 'Наведите на любой узел, чтобы увидеть его связи. По мере роста сети карта будет расширяться: Компания → Актив → Протокол → Сеть.',
             'process.title': 'Как рождается компания',
             'process.1.title': 'Идентичность',
