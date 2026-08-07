@@ -951,8 +951,13 @@
             stroke-opacity: 0.9; stroke-width: 1.7;
             stroke-dasharray: 2 7; animation: gflow 2.2s linear infinite;
         }
-        .g-svg.focused .g-node { opacity: 0.26; transition: opacity 0.3s ease; }
+        .g-svg.focused .g-node { opacity: 0.14; transition: opacity 0.3s ease; }
         .g-svg.focused .g-node.on { opacity: 1; }
+        /* the node you actually selected reads as the anchor of the trace */
+        .g-svg.focused .g-node.primary .g-dot-pr,
+        .g-svg.focused .g-node.primary .g-dot-co { stroke: #f2e3b8; stroke-width: 2.4; }
+        .g-svg.focused .g-node.primary .g-label-pr,
+        .g-svg.focused .g-node.primary .g-label-co { fill: #f6f2e6; font-weight: 600; }
         @keyframes gflow { to { stroke-dashoffset: -36; } }
 
         .graph-hint {
@@ -1985,13 +1990,17 @@ function computeIndex() {
     IDX_FACTORS.forEach(f => {
         const raws = list.map(f.raw);
         const sum  = raws.reduce((s, v) => s + v, 0) || 1;
-        const max  = Math.max.apply(null, raws.concat([1e-9]));
         list.forEach((c, i) => {
             c.score[f.key] = raws[i] / sum;   // factor score: share of all constituents (sums to 1)
-            c.rel[f.key]   = raws[i] / max;   // 0..1 vs. the strongest — drives the signature shape
         });
     });
+    // One global reference for the signature, so the drawn radius on every axis is
+    // directly proportional to the percentage printed beside it — a bigger number
+    // always means a longer arm, both within a company and between companies.
+    let maxShare = 1e-9;
+    list.forEach(c => IDX_FACTORS.forEach(f => { maxShare = Math.max(maxShare, c.score[f.key]); }));
     list.forEach(c => {
+        IDX_FACTORS.forEach(f => { c.rel[f.key] = c.score[f.key] / maxShare; });
         c.weight = IDX_FACTORS.reduce((s, f) => s + f.weight * c.score[f.key], 0);
     });
     return list.sort((a, b) => b.weight - a.weight);
@@ -2274,15 +2283,22 @@ function buildGraph() {
             e.classList.toggle('on', (type === 'co' && e.dataset.co === key) || (type === 'pr' && e.dataset.pr === key));
         });
         svg.querySelectorAll('.g-node').forEach(n => {
-            let on = false;
-            if (type === 'co') on = n.dataset.co === key || (n.dataset.pr && (MEMBERSHIP[key] || []).includes(n.dataset.pr));
-            if (type === 'pr') on = n.dataset.pr === key || (n.dataset.co && (MEMBERSHIP[n.dataset.co] || []).includes(key));
+            let on = false, primary = false;
+            if (type === 'co') {
+                primary = n.dataset.co === key;
+                on = primary || (n.dataset.pr && (MEMBERSHIP[key] || []).includes(n.dataset.pr));
+            }
+            if (type === 'pr') {
+                primary = n.dataset.pr === key;
+                on = primary || (n.dataset.co && (MEMBERSHIP[n.dataset.co] || []).includes(key));
+            }
             n.classList.toggle('on', on);
+            n.classList.toggle('primary', primary);   // the node actually selected
         });
     };
     const clearFocus = () => {
         svg.classList.remove('focused');
-        svg.querySelectorAll('.on').forEach(el => el.classList.remove('on'));
+        svg.querySelectorAll('.on, .primary').forEach(el => { el.classList.remove('on'); el.classList.remove('primary'); });
     };
     // Pointer hover is only meaningful on devices that actually hover; on touch
     // screens a tap would otherwise fire a stray hover on whichever node the
