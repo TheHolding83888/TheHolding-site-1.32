@@ -1994,7 +1994,7 @@
                 </div>
                 <div class="hero-metrics">
                     <div class="hero-metric">
-                        <div class="hero-metric-value" data-tvl="defitea">$3,062</div>
+                        <div class="hero-metric-value" data-tvl="defitea">$8,000</div>
                         <div class="hero-metric-label">Total Position Value</div>
                     </div>
                     <div class="hero-metric">
@@ -2232,7 +2232,7 @@
             
             <div class="philosophy-stats">
                 <div class="stat-item">
-                    <span class="stat-number" data-tvl-perf="defitea">$2,870</span>
+                    <span class="stat-number" data-tvl-perf="defitea">$8,000</span>
                     <span class="stat-label">Total Position Value</span>
                 </div>
                 <div class="stat-divider"></div>
@@ -2484,7 +2484,7 @@
         // Same store key as other pages, so prices are shared site-wide.
         // Within TTL, refreshes and page-to-page navigation cost ZERO calls.
         const CG_CACHE_KEY = 'th_cg_prices_v1';
-        const CG_TTL_MIN   = 10;
+        const CG_TTL_MIN   = 30;
         async function cgPrices(ids) {
             const now = Date.now();
             let store = { ts: 0, prices: {} };
@@ -2554,9 +2554,9 @@
             // Immediate update
             updateTVL();
             
-            // Then update every 5 minutes (300000ms)
+            // Then update every 30 minutes (1800000ms) — economical; shared cache covers reloads/navigation
             // Was 60 seconds (60000ms) → 5x reduction in API calls
-            tvlUpdateInterval = setInterval(updateTVL, 300000);
+            tvlUpdateInterval = setInterval(updateTVL, 1800000);
             
             console.log('Defitea TVL auto-update started: every 5 minutes');
         }
