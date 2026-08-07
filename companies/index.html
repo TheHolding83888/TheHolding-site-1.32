@@ -806,7 +806,7 @@
             background: #12100a;
             color: #f3efe4;
             border-top: 1px solid rgba(168,132,44,0.18);
-            padding: 7rem 0;
+            padding: 5.5rem 0;
             overflow: hidden;
         }
         .graph-sec::before {
@@ -848,7 +848,7 @@
             color: rgba(243,239,228,0.6);
         }
         .graph-canvas { width: 100%; }
-        .g-svg { width: 100%; height: auto; display: block; overflow: visible; }
+        .g-svg { width: 100%; max-width: 780px; height: auto; display: block; margin: 0 auto; overflow: visible; }
 
         .g-edge {
             fill: none; stroke-width: 1; stroke-opacity: 0.15;
@@ -886,9 +886,8 @@
             .g-svg.focused .g-edge.on { animation: none; stroke-dasharray: none; }
         }
         @media (max-width: 760px) {
-            .graph-sec { padding: 4.75rem 0; }
-            .graph-canvas { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .g-svg { min-width: 720px; }
+            .graph-sec { padding: 4rem 0; }
+            .graph-head { margin-bottom: 2rem; }
             .graph-hint { color: rgba(243,239,228,0.5); }
         }
 
@@ -1787,13 +1786,19 @@ function buildGraph() {
     const canvas = document.getElementById('graphCanvas');
     if (!canvas || !INDEX_STATE) return;
 
-    // Which protocols each company's capital flows through (from live holdings)
+    // Which protocols each company's capital flows through
     const MEMBERSHIP = {
         'defitea.eth':   ['Aerodrome','Convex','Curve','Pendle','f(x)','Yield Basis','Frax','Velodrome','Venice','Liquity','Resupply','CLever'],
         'YieldRing.eth': ['Bitcoin','Convex','Aerodrome','Frax'],
         '05081966.eth':  ['Curve','Aerodrome','Frax'],
-        'dinaz.eth':     ['Bitcoin','Yield Basis']
+        'dinaz.eth':     ['Yield Basis']
     };
+
+    // Compact, responsive layout profiles (mobile fits the screen, no scroll)
+    const mobile = (window.innerWidth || 1000) < 640;
+    const P = mobile
+        ? { W:360, coX:104, prX:250, padY:16, rowH:22, fCo:12, fPr:11, rCoMin:7,  rCoMax:14, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
+        : { W:780, coX:172, prX:558, padY:22, rowH:27, fCo:15, fPr:13, rCoMin:12, rCoMax:24, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
 
     const comps  = INDEX_STATE.slice().sort((a, b) => b.val - a.val);
     const maxVal = Math.max.apply(null, comps.map(c => c.val).concat([1]));
@@ -1804,40 +1809,31 @@ function buildGraph() {
         return 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
     };
 
-    const W = 1000, padY = 56, coX = 240, prX = 760;
-    const nComp = comps.length;
     const coIndex = {}; comps.forEach((c, i) => coIndex[c.nm] = i);
-
-    // protocol union + usage count
     const protoCount = {};
     comps.forEach(c => (MEMBERSHIP[c.nm] || []).forEach(p => protoCount[p] = (protoCount[p] || 0) + 1));
     let protos = Object.keys(protoCount);
-
-    // barycentre ordering (minimise crossings): protocol y ~ avg of its companies' rows
     const bary = {};
     protos.forEach(p => {
-        const rows = comps.filter(c => (MEMBERSHIP[c.nm] || []).includes(p)).map(c => coIndex[c.nm]);
-        bary[p] = rows.length ? rows.reduce((s, v) => s + v, 0) / rows.length : 0;
+        const rs = comps.filter(c => (MEMBERSHIP[c.nm] || []).includes(p)).map(c => coIndex[c.nm]);
+        bary[p] = rs.length ? rs.reduce((s, v) => s + v, 0) / rs.length : 0;
     });
     protos.sort((a, b) => (bary[a] - bary[b]) || (protoCount[b] - protoCount[a]));
     const prIndex = {}; protos.forEach((p, j) => prIndex[p] = j);
-    const nPr = protos.length;
 
-    const rows = Math.max(nComp, nPr);
-    const H = Math.max(520, padY * 2 + (rows - 1) * 46);
-    const coY = i => nComp > 1 ? padY + i * ((H - 2 * padY) / (nComp - 1)) : H / 2;
-    const prY = j => nPr   > 1 ? padY + j * ((H - 2 * padY) / (nPr - 1))   : H / 2;
-
-    const rCo = c => 16 + 22 * (c.val / maxVal);
+    const nComp = comps.length, nPr = protos.length, rows = Math.max(nComp, nPr);
+    const H = P.padY * 2 + (rows - 1) * P.rowH;
+    const coY = i => nComp > 1 ? P.padY + i * ((H - 2 * P.padY) / (nComp - 1)) : H / 2;
+    const prY = j => nPr   > 1 ? P.padY + j * ((H - 2 * P.padY) / (nPr - 1))   : H / 2;
+    const rCo = c => P.rCoMin + (P.rCoMax - P.rCoMin) * (c.val / maxVal);
     const maxPr = Math.max.apply(null, Object.keys(protoCount).map(k => protoCount[k]).concat([1]));
-    const rPr = p => 5 + (maxPr > 1 ? (protoCount[p] - 1) / (maxPr - 1) * 6 : 0);
+    const rPr = p => P.rPrMin + (maxPr > 1 ? (protoCount[p] - 1) / (maxPr - 1) * (P.rPrMax - P.rPrMin) : 0);
 
-    // edges
     let edges = '';
     comps.forEach((c, i) => {
-        const col = shade(i), x1 = coX + rCo(c), y1 = coY(i);
+        const col = shade(i), x1 = P.coX + rCo(c), y1 = coY(i);
         (MEMBERSHIP[c.nm] || []).forEach(p => {
-            const j = prIndex[p], x2 = prX - rPr(p), y2 = prY(j), mx = (x1 + x2) / 2;
+            const j = prIndex[p], x2 = P.prX - rPr(p), y2 = prY(j), mx = (x1 + x2) / 2;
             const d = 'M' + x1.toFixed(1) + ',' + y1.toFixed(1)
                     + ' C' + mx.toFixed(1) + ',' + y1.toFixed(1)
                     + ' ' + mx.toFixed(1) + ',' + y2.toFixed(1)
@@ -1846,36 +1842,33 @@ function buildGraph() {
         });
     });
 
-    // protocol nodes
     let prNodes = '';
     protos.forEach((p, j) => {
-        const x = prX, y = prY(j), r = rPr(p);
+        const x = P.prX, y = prY(j), r = rPr(p);
         prNodes += '<g class="g-node g-node-pr" data-pr="' + p + '">'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.6).toFixed(1) + '" fill="#d8b45a" opacity="0.10" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-pr" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"></circle>'
-            + '<text class="g-label-pr" x="' + (x + r + 12) + '" y="' + (y + 5).toFixed(1) + '">' + p + '</text>'
+            + '<text class="g-label-pr" x="' + (x + r + P.offPr) + '" y="' + (y + (mobile ? 3.5 : 4)).toFixed(1) + '" style="font-size:' + P.fPr + 'px">' + p + '</text>'
             + '</g>';
     });
 
-    // company nodes
     let coNodes = '';
     comps.forEach((c, i) => {
-        const x = coX, y = coY(i), r = rCo(c), col = shade(i);
+        const x = P.coX, y = coY(i), r = rCo(c), col = shade(i);
         coNodes += '<g class="g-node g-node-co" data-co="' + c.nm + '">'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.1).toFixed(1) + '" fill="' + col + '" opacity="0.20" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-co" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '" style="fill:' + col + '"></circle>'
-            + '<text class="g-label-co" x="' + (x - r - 14) + '" y="' + (y + 6).toFixed(1) + '" text-anchor="end">' + c.nm + '</text>'
+            + '<text class="g-label-co" x="' + (x - r - P.offCo) + '" y="' + (y + (mobile ? 4 : 5)).toFixed(1) + '" text-anchor="end" style="font-size:' + P.fCo + 'px">' + c.nm + '</text>'
             + '</g>';
     });
 
     canvas.innerHTML =
-        '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" class="g-svg">'
+        '<svg viewBox="0 0 ' + P.W + ' ' + H.toFixed(0) + '" xmlns="http://www.w3.org/2000/svg" class="g-svg">'
         + '<defs><filter id="gGlow" x="-60%" y="-60%" width="220%" height="220%">'
-        + '<feGaussianBlur stdDeviation="5"></feGaussianBlur></filter></defs>'
+        + '<feGaussianBlur stdDeviation="' + P.blur + '"></feGaussianBlur></filter></defs>'
         + '<g class="g-edges">' + edges + '</g>' + prNodes + coNodes
         + '</svg>';
 
-    // interactivity — hover a company or protocol to trace its capital
     const svg = canvas.querySelector('svg');
     const setFocus = (type, key) => {
         svg.classList.add('focused');
@@ -1902,6 +1895,11 @@ function buildGraph() {
         n.addEventListener('mouseleave', clearFocus);
     });
 }
+let _graphRT;
+window.addEventListener('resize', function () {
+    clearTimeout(_graphRT);
+    _graphRT = setTimeout(function () { if (INDEX_STATE) buildGraph(); }, 200);
+});
 
 (async function () {
     const el1    = document.getElementById('tvl-05081966');
