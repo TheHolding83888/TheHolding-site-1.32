@@ -792,6 +792,8 @@
         .ipx-label { color: var(--text-3); letter-spacing: 0.03em; }
         .ipx-value { color: var(--text); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
         .ipx-value.productive { color: var(--green); }
+        .ipx-value.gold { color: var(--gold); }
+        .ipx-value.muted { color: var(--text-3); font-weight: 400; }
         .ipx-age { color: var(--gold); }
         /* ── Composite weight breakdown + company signature ── */
         .ipx-composite {
@@ -825,10 +827,6 @@
         .sg-axis  { stroke: var(--line-strong); stroke-width: 0.7; }
         .sg-shape { fill: rgba(168,132,44,0.16); stroke: var(--gold); stroke-width: 1.3; stroke-linejoin: round; }
         .sg-dot   { fill: var(--gold); }
-        .ipx-sig-note {
-            font-size: 0.56rem; letter-spacing: 0.04em; color: var(--text-3);
-            text-align: center; margin-top: 0.35rem; line-height: 1.4;
-        }
         .sg-lb {
             font-family: 'Space Grotesk', sans-serif; font-size: 8px;
             letter-spacing: 0.12em; fill: var(--text-3); text-transform: uppercase; font-weight: 600;
@@ -928,7 +926,8 @@
             font-size: 0.95rem; font-weight: 300; line-height: 1.7;
             color: rgba(243,239,228,0.6);
         }
-        .graph-canvas { width: 100%; }
+        .graph-canvas { width: 100%; transition: opacity 0.22s ease; }
+        .graph-canvas.swapping { opacity: 0.22; }
         .g-svg { width: 100%; max-width: 780px; height: auto; display: block; margin: 0 auto; overflow: visible; }
 
         .g-edge {
@@ -991,6 +990,34 @@
         .fw-trigger:hover { opacity: 1; }
         .fw-trigger .fw-arr { transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); }
         .fw-trigger:hover .fw-arr { transform: translateX(3px); }
+
+        .index-comp-tools { display: flex; align-items: center; gap: 1.6rem; flex-wrap: wrap; }
+        .idx-lens { display: inline-flex; align-items: center; gap: 0.7rem; }
+        .idx-lens-label {
+            font-size: 0.56rem; letter-spacing: 0.18em; text-transform: uppercase;
+            color: var(--text-3); font-weight: 600;
+        }
+        .idx-lens-seg {
+            display: inline-flex; border: 1px solid var(--line-strong);
+            border-radius: 999px; padding: 2px; background: rgba(255,255,255,0.5);
+        }
+        .idx-lens-btn {
+            border: none; background: none; cursor: pointer; font-family: inherit;
+            font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
+            font-weight: 600; color: var(--text-3); padding: 0.34rem 0.85rem;
+            border-radius: 999px; transition: color 0.25s ease, background 0.25s ease;
+        }
+        .idx-lens-btn:hover { color: var(--text-2); }
+        .idx-lens-btn.active { color: var(--gold); background: var(--gold-soft); box-shadow: inset 0 0 0 1px var(--gold-line); }
+        .idx-lens-note {
+            font-size: 0.68rem; color: var(--text-3); font-style: italic;
+            margin: -0.3rem 0 0.95rem;
+        }
+        @media (max-width: 640px) {
+            .index-comp-head { gap: 0.85rem; }
+            .index-comp-tools { width: 100%; justify-content: space-between; gap: 0.9rem; }
+            .idx-lens-label { display: none; }
+        }
 
         .fw-backdrop {
             position: fixed; inset: 0; z-index: 200;
@@ -1765,8 +1792,18 @@
         <div class="index-comp reveal">
             <div class="index-comp-head">
                 <div class="index-comp-label" data-i18n="index.comp">Index Composition</div>
-                <button class="fw-trigger" id="fwOpen" type="button"><span data-i18n="index.framework">Index Framework</span><span class="fw-arr">→</span></button>
+                <div class="index-comp-tools">
+                    <div class="idx-lens" role="group">
+                        <span class="idx-lens-label" data-i18n="index.weighting">Weighting</span>
+                        <div class="idx-lens-seg">
+                            <button class="idx-lens-btn active" type="button" data-mode="composite" data-i18n="index.mode.composite">Composite</button>
+                            <button class="idx-lens-btn" type="button" data-mode="tvl" data-i18n="index.mode.tvl">TVL</button>
+                        </div>
+                    </div>
+                    <button class="fw-trigger" id="fwOpen" type="button"><span data-i18n="index.framework">Index Framework</span><span class="fw-arr">→</span></button>
+                </div>
             </div>
+            <p class="idx-lens-note" data-i18n="index.lens">Same companies. Different lens.</p>
             <div class="index-comp-bar" id="idxCompBar"></div>
             <div class="index-comp-legend" id="idxCompLegend"></div>
         </div>
@@ -1776,7 +1813,7 @@
                 <div data-i18n="index.h.rank">#</div>
                 <div data-i18n="index.h.company">Company</div>
                 <div class="ib-r" data-i18n="index.h.value">Value</div>
-                <div data-i18n="index.h.weight">Index Weight</div>
+                <div id="idxWeightHead" data-i18n="index.h.weight">Index Weight</div>
                 <div class="ib-r" data-i18n="index.h.since">Since</div>
                 <div></div>
             </div>
@@ -1943,6 +1980,7 @@ async function cgPrices(ids) {
 
 /* ── Live TVL for all companies (feeds each card + combined stat) ── */
 let INDEX_STATE = null;
+let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (capital-weighted lens)
 
 function idxLang() {
     try { return localStorage.getItem('holdingCompaniesLang') === 'ru' ? 'ru' : 'en'; }
@@ -1998,19 +2036,27 @@ function computeIndex() {
     // always means a longer arm, both within a company and between companies.
     let maxShare = 1e-9;
     list.forEach(c => IDX_FACTORS.forEach(f => { maxShare = Math.max(maxShare, c.score[f.key]); }));
+    const totalVal = list.reduce((s, c) => s + Math.max(c.val, 0), 0) || 1;
     list.forEach(c => {
         IDX_FACTORS.forEach(f => { c.rel[f.key] = c.score[f.key] / maxShare; });
-        c.weight = IDX_FACTORS.reduce((s, f) => s + f.weight * c.score[f.key], 0);
+        c.weight    = IDX_FACTORS.reduce((s, f) => s + f.weight * c.score[f.key], 0);
+        // Alternative analytical lens — a plain capital-weighted view of the same
+        // constituents. Not a second methodology; the index itself stays composite.
+        c.tvlWeight = Math.max(c.val, 0) / totalVal;
     });
-    return list.sort((a, b) => b.weight - a.weight);
+    const key = IDX_MODE === 'tvl' ? 'tvlWeight' : 'weight';
+    return list.sort((a, b) => b[key] - a[key]);
 }
+
+// Which weighting lens the index is currently displayed through
+function activeWeight(c) { return IDX_MODE === 'tvl' ? (c.tvlWeight || 0) : (c.weight || 0); }
 
 function renderIndex(lang) {
     if (!INDEX_STATE) return;
     const money = v => '$' + Math.round(v).toLocaleString('en-US');
     const list  = computeIndex();
     const total = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);
-    const pct   = c => (c.weight || 0) * 100;
+    const pct   = c => activeWeight(c) * 100;
     // Noble green ramp — deepest for the largest holding, lighter down the ranks
     const shade = i => {
         const n = list.length;
@@ -2019,6 +2065,11 @@ function renderIndex(lang) {
         const r = a.map((v, k) => Math.round(v + (b[k] - v) * t));
         return 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
     };
+
+    const wh = document.getElementById('idxWeightHead');
+    if (wh) wh.textContent = (IDX_MODE === 'tvl')
+        ? (lang === 'ru' ? 'Вес по TVL' : 'TVL Weight')
+        : (lang === 'ru' ? 'Вес в индексе' : 'Index Weight');
 
     const nv = document.getElementById('idxNetworkValue');
     const cn = document.getElementById('idxCount');
@@ -2053,22 +2104,20 @@ function renderIndex(lang) {
     const board = document.getElementById('idxBoard');
     if (board) {
         const L = (lang === 'ru')
-            ? { registry:'Реестр', founded:'Основана', age:'Возраст', weight:'Вес в индексе',
+            ? { registry:'Реестр', founded:'Основана', age:'Возраст', weight:'Вес в индексе', tvlWeight:'Вес по TVL',
                 arch:'Архитектура', custody:'Хранение', custodyVal:'Самостоятельное',
                 protocols:'Протоколы', status:'Статус', explore:'Перейти к компании', days:'дн.',
                 comp:'Из чего сложился вес', capital:'Капитал', longevity:'Возраст',
                 productivity:'Производительность', capNote:'Живой ончейн-TVL',
                 lonNote:'в работе', sigCap:'Сигнатура компании',
-                axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.',
-                sigNote:'Внешний контур — максимум в сети' }
-            : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight',
+                axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.' }
+            : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', custody:'Custody', custodyVal:'Self-Custodied',
                 protocols:'Protocols', status:'Status', explore:'Explore Company', days:'days',
                 comp:'How this weight is composed', capital:'Capital', longevity:'Longevity',
                 productivity:'Productivity', capNote:'Live onchain TVL',
                 lonNote:'operating', sigCap:'Company signature',
-                axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY',
-                sigNote:'Outer ring = network high' };
+                axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY' };
         const fld = (label, value, cls) =>
             '<div class="ipx-field"><span class="ipx-label">' + label + '</span>'
             + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
@@ -2138,7 +2187,8 @@ function renderIndex(lang) {
                 +     fld(L.founded, c.founded[lang])
                 +     '<div class="ipx-field"><span class="ipx-label">' + L.age + '</span>'
                 +       '<span class="ipx-value ipx-age" data-founded="' + c.foundedISO + '">' + ageVal + '</span></div>'
-                +     fld(L.weight, w.toFixed(1) + '%', 'gold')
+                +     fld(L.weight, w.toFixed(1) + '%', IDX_MODE === 'composite' ? 'gold' : 'muted')
+                +     fld(L.tvlWeight, ((c.tvlWeight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'tvl' ? 'gold' : 'muted')
                 +     fld(L.arch, c.arch[lang])
                 +     fld(L.custody, L.custodyVal)
                 +     fld(L.protocols, String(c.protocols))
@@ -2147,12 +2197,12 @@ function renderIndex(lang) {
                 +   '<div class="ipx-composite">'
                 +     '<div class="ipx-c-main">'
                 +       '<div class="ipx-c-head"><span class="ipx-c-title">' + L.comp + '</span>'
-                +         '<span class="ipx-c-total">' + w.toFixed(1) + '%</span></div>'
+                +         '<span class="ipx-c-total">' + ((c.weight || 0) * 100).toFixed(1) + '%</span></div>'
                 +       factor('f-cap', L.capital, '40%', c.score.capital || 0, L.capNote + ' \u00b7 ' + (c.val > 0 ? money(c.val) : 'Live'))
                 +       factor('f-lon', L.longevity, '30%', c.score.longevity || 0, ageVal + ' ' + L.lonNote)
                 +       factor('f-pro', L.productivity, '30%', c.score.productivity || 0, c.aprLabel ? c.aprLabel[lang] : '\u2014')
                 +     '</div>'
-                +     '<div class="ipx-c-sig">' + sig(c) + '<div class="ipx-sig-note">' + L.sigNote + '</div></div>'
+                +     '<div class="ipx-c-sig">' + sig(c) + '</div>'
                 +   '</div>'
                 +   '<a class="ipx-link" href="' + c.href + '" target="_blank" rel="noopener">' + L.explore + ' ' + arr + '</a>'
                 + '</div></div>';
@@ -2162,13 +2212,15 @@ function renderIndex(lang) {
             const toggle = () => {
                 const open = item.classList.toggle('open');
                 rowEl.setAttribute('aria-expanded', open ? 'true' : 'false');
-                // on small screens scroll the opened row up so the passport is fully visible
-                if (open && window.innerWidth < 760) {
-                    setTimeout(() => {
-                        const top = rowEl.getBoundingClientRect().top + window.pageYOffset - 72;
-                        window.scrollTo({ top: top, behavior: 'smooth' });
-                    }, 220);
-                }
+                // ease the page to the row so the passport is fully in view on open,
+                // and so the layout doesn't leave you stranded on close
+                const offset = window.innerWidth < 760 ? 72 : 104;
+                setTimeout(() => {
+                    const top = rowEl.getBoundingClientRect().top;
+                    if (open || top < offset) {
+                        window.scrollTo({ top: top + window.pageYOffset - offset, behavior: 'smooth' });
+                    }
+                }, open ? 220 : 170);
             };
             rowEl.addEventListener('click', toggle);
             rowEl.addEventListener('keydown', ev => {
@@ -2201,9 +2253,9 @@ function buildGraph() {
         ? { W:360, coX:104, prX:250, padY:16, rowH:22, fCo:12, fPr:11, rCoMin:5,  rCoMax:17, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
         : { W:780, coX:172, prX:558, padY:22, rowH:27, fCo:15, fPr:13, rCoMin:8,  rCoMax:30, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
 
-    // Ranked and sized by composite Index Weight (capital + longevity + productivity)
+    // Ranked and sized by the active weighting lens (composite by default, or plain TVL)
     const comps = computeIndex();
-    const wt = c => Math.max(c.weight || 0, 0);                  // index weight 0..1
+    const wt = c => Math.max(activeWeight(c), 0);                // active lens weight 0..1
     const maxWt = Math.max.apply(null, comps.map(wt).concat([1e-9]));
     const shade  = i => {
         const n = comps.length, t = n > 1 ? i / (n - 1) : 0;
@@ -2496,6 +2548,30 @@ function renderFramework(lang) {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 })();
 
+/* ── Weighting lens: Composite (The Holding methodology) ↔ TVL ──
+   Switching only changes how the same constituents are viewed: weights are
+   recalculated, companies reorder, and the graph's green nodes resize.
+   Yellow protocol nodes never change — they always reflect how many indexed
+   companies use each protocol. Network Value and Constituents are untouched. */
+(function () {
+    const btns = document.querySelectorAll('.idx-lens-btn');
+    if (!btns.length) return;
+    btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.dataset.mode;
+            if (mode === IDX_MODE) return;
+            IDX_MODE = mode;
+            btns.forEach(b => b.classList.toggle('active', b === btn));
+            renderIndex(idxLang());
+            const canvas = document.getElementById('graphCanvas');
+            if (canvas && INDEX_STATE) {
+                canvas.classList.add('swapping');
+                setTimeout(() => { buildGraph(); canvas.classList.remove('swapping'); }, 200);
+            }
+        });
+    });
+})();
+
 (async function () {
     const el1    = document.getElementById('tvl-05081966');
     const el2    = document.getElementById('tvl-yieldring');
@@ -2661,6 +2737,10 @@ function renderFramework(lang) {
             'nextlayer.statement': 'One holding. Many sovereign companies. Each with its own treasury and keys.',
             'index.eyebrow': 'The Index · Live',
             'index.framework': 'Index Framework',
+            'index.weighting': 'Weighting',
+            'index.mode.composite': 'Composite',
+            'index.mode.tvl': 'TVL',
+            'index.lens': 'Same companies. Different lens.',
             'index.title': 'The Holding Index',
             'index.sub': 'A live measure of the network. Each company is weighted by a composite of capital, longevity and productivity — not size alone. Capital measures scale, longevity measures history, productivity measures economic output. The first working piece of a larger registry to come.',
             'index.m.value': 'Network Value',
@@ -2750,6 +2830,10 @@ function renderFramework(lang) {
             'nextlayer.statement': 'Один холдинг. Множество суверенных компаний. У каждой — собственная казна и собственные ключи.',
             'index.eyebrow': 'Индекс · Live',
             'index.framework': 'Как устроен индекс',
+            'index.weighting': 'Взвешивание',
+            'index.mode.composite': 'Композит',
+            'index.mode.tvl': 'TVL',
+            'index.lens': 'Те же компании. Другой взгляд.',
             'index.title': 'Индекс The Holding',
             'index.sub': 'Живой индекс сети. Вес компании складывается из капитала, возраста и производительности — а не только из размера. Капитал показывает масштаб, возраст — историю, производительность — экономический результат. Это первый работающий элемент будущего большого реестра.',
             'index.m.value': 'Ценность сети',
