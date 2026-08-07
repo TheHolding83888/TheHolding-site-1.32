@@ -723,7 +723,7 @@
         .index-board { display: flex; flex-direction: column; }
         .ib-head, .ib-row {
             display: grid;
-            grid-template-columns: 44px minmax(0,1.8fr) 1fr 1.5fr 0.9fr;
+            grid-template-columns: 44px minmax(0,1.8fr) 1fr 1.5fr 0.9fr 26px;
             align-items: center; gap: 1rem;
         }
         .ib-head {
@@ -772,6 +772,34 @@
             font-variant-numeric: tabular-nums;
         }
 
+        /* ── Company Passport (expandable) ─────────────── */
+        .ib-item { border-bottom: 1px solid var(--line); }
+        .ib-item .ib-row { border-bottom: none; cursor: pointer; }
+        .ib-chev { display: flex; justify-content: flex-end; color: var(--text-3); transition: transform 0.35s ease, color 0.25s ease; }
+        .ib-item.open .ib-chev { transform: rotate(180deg); color: var(--gold); }
+        .ib-passport { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1); }
+        .ib-item.open .ib-passport { max-height: 520px; }
+        .ipx-inner { padding: 0.25rem 0 1.6rem; }
+        .ipx-grid {
+            display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
+            column-gap: 2.75rem; row-gap: 0;
+        }
+        .ipx-field {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line);
+            font-size: 0.82rem;
+        }
+        .ipx-label { color: var(--text-3); letter-spacing: 0.03em; }
+        .ipx-value { color: var(--text); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+        .ipx-value.productive { color: var(--green); }
+        .ipx-age { color: var(--gold); }
+        .ipx-link {
+            display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 1.3rem;
+            font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--gold); text-decoration: none; opacity: 0.85; transition: opacity 0.25s;
+        }
+        .ipx-link:hover { opacity: 1; }
+
         .index-note {
             margin-top: 2.5rem; font-size: 0.74rem; line-height: 1.65;
             color: var(--text-3); max-width: 640px;
@@ -785,12 +813,12 @@
         }
         @media (max-width: 760px) {
             .ib-head { display: none; }
-            .ib-head, .ib-row { grid-template-columns: 32px minmax(0,1fr) auto; }
-            .ib-row { padding: 1.05rem 0; gap: 0.85rem; }
-            a.ib-row:hover { padding-left: 0; }
+            .ib-head, .ib-row { grid-template-columns: 30px minmax(0,1fr) auto 22px; }
+            .ib-row { padding: 1.05rem 0; gap: 0.8rem; }
             .ib-weight, .ib-since { display: none; }
             .ib-rank { font-size: 1.3rem; }
             .ib-value { font-size: 1.25rem; }
+            .ipx-grid { grid-template-columns: 1fr; column-gap: 0; }
         }
         @media (max-width: 460px) {
             .index-sec { padding: 4.25rem 0; }
@@ -1551,6 +1579,7 @@
                 <div class="ib-r" data-i18n="index.h.value">Value</div>
                 <div data-i18n="index.h.weight">Network Weight</div>
                 <div class="ib-r" data-i18n="index.h.since">Since</div>
+                <div></div>
             </div>
             <div id="idxBoard"></div>
         </div>
@@ -1714,6 +1743,18 @@ function idxLang() {
     catch (e) { return 'en'; }
 }
 
+function ageDays(iso) {
+    const d = new Date(iso + 'T00:00:00Z');
+    return Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+}
+function updateAges() {
+    const lang = idxLang();
+    document.querySelectorAll('.ipx-age[data-founded]').forEach(el => {
+        el.textContent = ageDays(el.dataset.founded).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US')
+                       + ' ' + (lang === 'ru' ? 'дн.' : 'days');
+    });
+}
+
 function renderIndex(lang) {
     if (!INDEX_STATE) return;
     const money = v => '$' + Math.round(v).toLocaleString('en-US');
@@ -1761,25 +1802,69 @@ function renderIndex(lang) {
     }
     const board = document.getElementById('idxBoard');
     if (board) {
+        const L = (lang === 'ru')
+            ? { registry:'Реестр', founded:'Основана', age:'Возраст', weight:'Вес в сети',
+                arch:'Архитектура', custody:'Хранение', custodyVal:'Самостоятельное',
+                protocols:'Протоколы', status:'Статус', explore:'Перейти к компании', days:'дн.' }
+            : { registry:'Registry', founded:'Founded', age:'Age', weight:'Network Weight',
+                arch:'Architecture', custody:'Custody', custodyVal:'Self-Custodied',
+                protocols:'Protocols', status:'Status', explore:'Explore Company', days:'days' };
+        const fld = (label, value, cls) =>
+            '<div class="ipx-field"><span class="ipx-label">' + label + '</span>'
+            + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
+        const chev = '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        const arr  = '<svg viewBox="0 0 16 16" fill="none" width="12" height="12"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
         board.innerHTML = '';
         list.forEach((c, i) => {
             const w = pct(c.val);
-            const a = document.createElement('a');
-            a.className = 'ib-row';
-            a.href = c.href; a.target = '_blank'; a.rel = 'noopener';
-            a.innerHTML =
-                  '<span class="ib-rank">' + (i + 1) + '</span>'
-                + '<span class="ib-name"><span class="ib-swatch" style="background:' + shade(i) + '"></span>'
-                +   '<span class="ib-nm-wrap"><div class="ib-nm">' + c.nm + '</div>'
-                +   '<div class="ib-cat">' + c.cat[lang] + '</div></span></span>'
-                + '<span class="ib-value">' + (c.val > 0 ? money(c.val) : 'Live') + '</span>'
-                + '<span class="ib-weight"><span class="ibw-track"><span class="ibw-fill" style="width:' + w.toFixed(2) + '%;background:' + shade(i) + '"></span></span>'
-                +   '<span class="ibw-pct">' + w.toFixed(1) + '%</span></span>'
-                + '<span class="ib-since">' + c.since[lang] + '</span>';
-            board.appendChild(a);
+            const item = document.createElement('div');
+            item.className = 'ib-item';
+            const ageVal = ageDays(c.foundedISO).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US') + ' ' + L.days;
+            item.innerHTML =
+                '<div class="ib-row" role="button" tabindex="0" aria-expanded="false">'
+                +   '<span class="ib-rank">' + (i + 1) + '</span>'
+                +   '<span class="ib-name"><span class="ib-swatch" style="background:' + shade(i) + '"></span>'
+                +     '<span class="ib-nm-wrap"><div class="ib-nm">' + c.nm + '</div>'
+                +     '<div class="ib-cat">' + c.cat[lang] + '</div></span></span>'
+                +   '<span class="ib-value">' + (c.val > 0 ? money(c.val) : 'Live') + '</span>'
+                +   '<span class="ib-weight"><span class="ibw-track"><span class="ibw-fill" style="width:' + w.toFixed(2) + '%;background:' + shade(i) + '"></span></span>'
+                +     '<span class="ibw-pct">' + w.toFixed(1) + '%</span></span>'
+                +   '<span class="ib-since">' + c.since[lang] + '</span>'
+                +   '<span class="ib-chev">' + chev + '</span>'
+                + '</div>'
+                + '<div class="ib-passport"><div class="ipx-inner">'
+                +   '<div class="ipx-grid">'
+                +     fld(L.registry, c.reg)
+                +     fld(L.founded, c.founded[lang])
+                +     '<div class="ipx-field"><span class="ipx-label">' + L.age + '</span>'
+                +       '<span class="ipx-value ipx-age" data-founded="' + c.foundedISO + '">' + ageVal + '</span></div>'
+                +     fld(L.weight, w.toFixed(1) + '%')
+                +     fld(L.arch, c.arch[lang])
+                +     fld(L.custody, L.custodyVal)
+                +     fld(L.protocols, String(c.protocols))
+                +     fld(L.status, c.status[lang], 'productive')
+                +   '</div>'
+                +   '<a class="ipx-link" href="' + c.href + '" target="_blank" rel="noopener">' + L.explore + ' ' + arr + '</a>'
+                + '</div></div>';
+            board.appendChild(item);
+
+            const rowEl = item.querySelector('.ib-row');
+            const toggle = () => {
+                const open = item.classList.toggle('open');
+                rowEl.setAttribute('aria-expanded', open ? 'true' : 'false');
+            };
+            rowEl.addEventListener('click', toggle);
+            rowEl.addEventListener('keydown', ev => {
+                if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(); }
+            });
         });
     }
+    updateAges();
 }
+
+// Age lives in real time — refresh day counters periodically
+setInterval(updateAges, 30000);
 
 
 function buildGraph() {
@@ -1966,13 +2051,17 @@ window.addEventListener('resize', function () {
     // Feed the live index with real per-company values
     INDEX_STATE = [
         { nm: 'defitea.eth',   val: tvl4, href: 'https://theholding.ai/defitea/',
-          cat: { en: 'Holding Standard', ru: 'Стандарт Holding' },        since: { en: 'Jan 2025', ru: 'Янв 2025' } },
+          cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jan 2025', ru: 'Янв 2025' },
+          reg:'004', foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'Holding Native', ru:'Нативная The Holding' }, protocols:12, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'YieldRing.eth', val: tvl2, href: 'https://theholding.ai/yieldring',
-          cat: { en: 'Holding Standard', ru: 'Стандарт Holding' },        since: { en: 'Jul 2026', ru: 'Июл 2026' } },
+          cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
+          reg:'002', foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'Holding Standard', ru:'Стандарт Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
         { nm: '05081966.eth',  val: tvl1, href: 'https://theholding.ai/05081966',
-          cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' },       since: { en: 'Jul 2026', ru: 'Июл 2026' } },
+          cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
+          reg:'001', foundedISO:'2026-07-17', founded:{ en:'Jul 17, 2026', ru:'17 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'dinaz.eth',     val: tvl3, href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
-          cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' },       since: { en: 'Jul 2026', ru: 'Июл 2026' } }
+          cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
+          reg:'003', foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } }
     ];
     renderIndex(idxLang());
     buildGraph();
