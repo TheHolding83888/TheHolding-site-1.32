@@ -778,7 +778,7 @@
         .ib-chev { display: flex; justify-content: flex-end; color: var(--text-3); transition: transform 0.35s ease, color 0.25s ease; }
         .ib-item.open .ib-chev { transform: rotate(180deg); color: var(--gold); }
         .ib-passport { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1); }
-        .ib-item.open .ib-passport { max-height: 520px; }
+        .ib-item.open .ib-passport { max-height: 1200px; }
         .ipx-inner { padding: 0.25rem 0 1.6rem; }
         .ipx-grid {
             display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
@@ -795,7 +795,7 @@
         .ipx-age { color: var(--gold); }
         /* ── Composite weight breakdown + company signature ── */
         .ipx-composite {
-            display: grid; grid-template-columns: 1fr 112px; gap: 1.75rem;
+            display: grid; grid-template-columns: 1fr 176px; gap: 1.9rem;
             align-items: start; margin-top: 1.5rem; padding-top: 1.35rem;
             border-top: 1px solid var(--line);
         }
@@ -825,13 +825,19 @@
         .sg-axis  { stroke: var(--line-strong); stroke-width: 0.7; }
         .sg-shape { fill: rgba(168,132,44,0.16); stroke: var(--gold); stroke-width: 1.3; stroke-linejoin: round; }
         .sg-dot   { fill: var(--gold); }
-        .ipx-sig-axes {
-            display: flex; justify-content: space-between; margin-top: 0.3rem;
-            font-size: 0.5rem; letter-spacing: 0.1em; color: var(--text-3);
+        .sg-lb {
+            font-family: 'Space Grotesk', sans-serif; font-size: 8px;
+            letter-spacing: 0.12em; fill: var(--text-3); text-transform: uppercase; font-weight: 600;
+        }
+        .sg-vl {
+            font-family: 'Cormorant Garamond', serif; font-size: 12px;
+            fill: var(--gold); font-weight: 600;
         }
         @media (max-width: 560px) {
-            .ipx-composite { grid-template-columns: 1fr; gap: 1.4rem; }
-            .ipx-c-sig { max-width: 132px; margin: 0 auto; }
+            .ipx-composite { grid-template-columns: 1fr; gap: 1.5rem; }
+            .ipx-c-sig { max-width: 230px; margin: 0.4rem auto 0; }
+            .sg-lb { font-size: 7.5px; }
+            .sg-vl { font-size: 13px; }
         }
 
         .ipx-link {
@@ -860,6 +866,8 @@
             .ib-rank { font-size: 1.3rem; }
             .ib-value { font-size: 1.25rem; }
             .ipx-grid { grid-template-columns: 1fr; column-gap: 0; }
+            .ib-item.open .ib-passport { max-height: 2400px; }
+            .ipx-inner { padding-bottom: 1.9rem; }
         }
         @media (max-width: 460px) {
             .index-sec { padding: 4.25rem 0; }
@@ -924,6 +932,8 @@
             transition: stroke-opacity 0.35s ease, stroke-width 0.35s ease;
         }
         .g-node { cursor: pointer; }
+        .g-node > * { pointer-events: none; }
+        .g-hit { pointer-events: all; fill: transparent; }
         .g-node-pr .g-dot-pr { fill: #d8b45a; stroke: rgba(168,132,44,0.55); stroke-width: 1; }
         .g-node-co .g-dot-co { stroke: rgba(255,255,255,0.16); stroke-width: 1; }
         .g-label-co {
@@ -1953,35 +1963,36 @@ function updateAges() {
    a share of the network, so all weights still sum to 100%.
      Capital       sqrt(TVL)                  — scale, without whale capture
      Longevity     sqrt(min(age,1460)/1460)   — history, maturing over ~4 years
-     Productivity  sqrt(min(APR,20)/20)       — economic output, capped so a
-                                                headline yield can't game the index
+     Productivity  sqrt(min(APR,20)/20)       — current yield, capped so a high
+                                                headline APR cannot dominate the index
    No single factor defines a company's weight.                         */
-const IDX_W        = { capital: 0.40, longevity: 0.30, productivity: 0.30 };
 const AGE_CAP_DAYS = 1460;   // ~4 years
 const APR_CAP_PCT  = 20;     // methodological cap, not a target
+
+/* Factor registry. Adding Resilience / Realized Performance / Reputation later
+   is a matter of appending an entry here and rebalancing `weight` — the engine,
+   passport, signature and graph all read from this list.                    */
+const IDX_FACTORS = [
+    { key: 'capital',      weight: 0.40, raw: c => Math.sqrt(Math.max(c.val, 0)) },
+    { key: 'longevity',    weight: 0.30, raw: c => Math.sqrt(Math.min(ageDays(c.foundedISO), AGE_CAP_DAYS) / AGE_CAP_DAYS) },
+    { key: 'productivity', weight: 0.30, raw: c => Math.sqrt(Math.min(Math.max(c.apr || 0, 0), APR_CAP_PCT) / APR_CAP_PCT) }
+];
 
 function computeIndex() {
     if (!INDEX_STATE) return [];
     const list = INDEX_STATE.slice();
-    const rawCap = c => Math.sqrt(Math.max(c.val, 0));
-    const rawLon = c => Math.sqrt(Math.min(ageDays(c.foundedISO), AGE_CAP_DAYS) / AGE_CAP_DAYS);
-    const rawPro = c => Math.sqrt(Math.min(Math.max(c.apr || 0, 0), APR_CAP_PCT) / APR_CAP_PCT);
-    const sum = f => list.reduce((s, c) => s + f(c), 0);
-    const sC = sum(rawCap) || 1, sL = sum(rawLon) || 1, sP = sum(rawPro) || 1;
-    const mC = Math.max.apply(null, list.map(rawCap).concat([1e-9]));
-    const mL = Math.max.apply(null, list.map(rawLon).concat([1e-9]));
-    const mP = Math.max.apply(null, list.map(rawPro).concat([1e-9]));
+    list.forEach(c => { c.score = {}; c.rel = {}; });
+    IDX_FACTORS.forEach(f => {
+        const raws = list.map(f.raw);
+        const sum  = raws.reduce((s, v) => s + v, 0) || 1;
+        const max  = Math.max.apply(null, raws.concat([1e-9]));
+        list.forEach((c, i) => {
+            c.score[f.key] = raws[i] / sum;   // factor score: share of all constituents (sums to 1)
+            c.rel[f.key]   = raws[i] / max;   // 0..1 vs. the strongest — drives the signature shape
+        });
+    });
     list.forEach(c => {
-        c.capShare = rawCap(c) / sC;
-        c.lonShare = rawLon(c) / sL;
-        c.proShare = rawPro(c) / sP;
-        c.weight   = IDX_W.capital      * c.capShare
-                   + IDX_W.longevity    * c.lonShare
-                   + IDX_W.productivity * c.proShare;
-        // 0..1 relative to the strongest company — drives the three-axis signature
-        c.capScore = rawCap(c) / mC;
-        c.lonScore = rawLon(c) / mL;
-        c.proScore = rawPro(c) / mP;
+        c.weight = IDX_FACTORS.reduce((s, f) => s + f.weight * c.score[f.key], 0);
     });
     return list.sort((a, b) => b.weight - a.weight);
 }
@@ -2040,36 +2051,50 @@ function renderIndex(lang) {
                 comp:'Из чего сложился вес', capital:'Капитал', longevity:'Возраст',
                 productivity:'Производительность', capNote:'Живой ончейн-TVL',
                 lonNote:'в работе', sigCap:'Сигнатура компании',
-                axC:'КАП', axL:'ВОЗР', axP:'ПРОИЗВ' }
+                axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight',
                 arch:'Architecture', custody:'Custody', custodyVal:'Self-Custodied',
                 protocols:'Protocols', status:'Status', explore:'Explore Company', days:'days',
                 comp:'How this weight is composed', capital:'Capital', longevity:'Longevity',
                 productivity:'Productivity', capNote:'Live onchain TVL',
                 lonNote:'operating', sigCap:'Company signature',
-                axC:'CAP', axL:'LONG', axP:'PROD' };
+                axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY' };
         const fld = (label, value, cls) =>
             '<div class="ipx-field"><span class="ipx-label">' + label + '</span>'
             + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
         const chev = '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         const arr  = '<svg viewBox="0 0 16 16" fill="none" width="12" height="12"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        // three-axis company signature: capital (top), productivity (right), longevity (left)
+        // three-axis company signature — labelled at each vertex
         const sig = c => {
-            const sc = [c.capScore || 0, c.proScore || 0, c.lonScore || 0];
-            const ang = [-90, 30, 150], R = 34, cx = 44, cy = 44;
-            const xy = (i, r) => {
-                const a = ang[i] * Math.PI / 180;
-                return [(cx + Math.cos(a) * R * r).toFixed(1), (cy + Math.sin(a) * R * r).toFixed(1)];
+            const F = [
+                { rel: c.rel.capital      || 0, sh: c.score.capital      || 0, lb: L.axC, ang: -90 },
+                { rel: c.rel.productivity || 0, sh: c.score.productivity || 0, lb: L.axP, ang:  30 },
+                { rel: c.rel.longevity    || 0, sh: c.score.longevity    || 0, lb: L.axL, ang: 150 }
+            ];
+            const cx = 82, cy = 78, R = 46;
+            const at = (a, r) => {
+                const t = a * Math.PI / 180;
+                return [cx + Math.cos(t) * R * r, cy + Math.sin(t) * R * r];
             };
-            const ring = r => [0,1,2].map(i => xy(i, r).join(',')).join(' ');
-            const shape = [0,1,2].map(i => xy(i, Math.max(sc[i], 0.07)).join(',')).join(' ');
-            return '<svg class="ipx-sig" viewBox="0 0 88 88" aria-hidden="true">'
+            const ring  = r => F.map(f => at(f.ang, r).map(v => v.toFixed(1)).join(',')).join(' ');
+            const shape = F.map(f => at(f.ang, Math.max(f.rel, 0.08)).map(v => v.toFixed(1)).join(',')).join(' ');
+            let labels = '';
+            F.forEach(f => {
+                const p = at(f.ang, 1.34);
+                const anchor = f.ang === -90 ? 'middle' : (f.ang === 30 ? 'end' : 'start');
+                const dy = f.ang === -90 ? -4 : 10;
+                const x  = f.ang === -90 ? p[0] : (f.ang === 30 ? p[0] + 14 : p[0] - 14);
+                labels += '<text class="sg-lb" x="' + x.toFixed(1) + '" y="' + (p[1] + dy).toFixed(1) + '" text-anchor="' + anchor + '">' + f.lb + '</text>'
+                        + '<text class="sg-vl" x="' + x.toFixed(1) + '" y="' + (p[1] + dy + 11).toFixed(1) + '" text-anchor="' + anchor + '">' + (f.sh * 100).toFixed(0) + '%</text>';
+            });
+            return '<svg class="ipx-sig" viewBox="0 0 164 168" role="img">'
                 + '<polygon class="sg-grid" points="' + ring(1) + '"/>'
                 + '<polygon class="sg-grid" points="' + ring(0.66) + '"/>'
                 + '<polygon class="sg-grid" points="' + ring(0.33) + '"/>'
-                + [0,1,2].map(i => '<line class="sg-axis" x1="' + cx + '" y1="' + cy + '" x2="' + xy(i,1)[0] + '" y2="' + xy(i,1)[1] + '"/>').join('')
+                + F.map(f => { const p = at(f.ang, 1); return '<line class="sg-axis" x1="' + cx + '" y1="' + cy + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '"/>'; }).join('')
                 + '<polygon class="sg-shape" points="' + shape + '"/>'
-                + [0,1,2].map(i => { const p = xy(i, Math.max(sc[i], 0.07)); return '<circle class="sg-dot" cx="' + p[0] + '" cy="' + p[1] + '" r="2.2"/>'; }).join('')
+                + F.map(f => { const p = at(f.ang, Math.max(f.rel, 0.08)); return '<circle class="sg-dot" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.6"/>'; }).join('')
+                + labels
                 + '</svg>';
         };
         const factor = (cls, name, methodPct, share, note) =>
@@ -2113,13 +2138,11 @@ function renderIndex(lang) {
                 +     '<div class="ipx-c-main">'
                 +       '<div class="ipx-c-head"><span class="ipx-c-title">' + L.comp + '</span>'
                 +         '<span class="ipx-c-total">' + w.toFixed(1) + '%</span></div>'
-                +       factor('f-cap', L.capital, '40%', c.capShare || 0, L.capNote + ' \u00b7 ' + (c.val > 0 ? money(c.val) : 'Live'))
-                +       factor('f-lon', L.longevity, '30%', c.lonShare || 0, ageVal + ' ' + L.lonNote)
-                +       factor('f-pro', L.productivity, '30%', c.proShare || 0, c.aprLabel ? c.aprLabel[lang] : '\u2014')
+                +       factor('f-cap', L.capital, '40%', c.score.capital || 0, L.capNote + ' \u00b7 ' + (c.val > 0 ? money(c.val) : 'Live'))
+                +       factor('f-lon', L.longevity, '30%', c.score.longevity || 0, ageVal + ' ' + L.lonNote)
+                +       factor('f-pro', L.productivity, '30%', c.score.productivity || 0, c.aprLabel ? c.aprLabel[lang] : '\u2014')
                 +     '</div>'
-                +     '<div class="ipx-c-sig">' + sig(c)
-                +       '<div class="ipx-sig-axes"><span>' + L.axC + '</span><span>' + L.axL + '</span><span>' + L.axP + '</span></div>'
-                +     '</div>'
+                +     '<div class="ipx-c-sig">' + sig(c) + '</div>'
                 +   '</div>'
                 +   '<a class="ipx-link" href="' + c.href + '" target="_blank" rel="noopener">' + L.explore + ' ' + arr + '</a>'
                 + '</div></div>';
@@ -2129,6 +2152,13 @@ function renderIndex(lang) {
             const toggle = () => {
                 const open = item.classList.toggle('open');
                 rowEl.setAttribute('aria-expanded', open ? 'true' : 'false');
+                // on small screens scroll the opened row up so the passport is fully visible
+                if (open && window.innerWidth < 760) {
+                    setTimeout(() => {
+                        const top = rowEl.getBoundingClientRect().top + window.pageYOffset - 72;
+                        window.scrollTo({ top: top, behavior: 'smooth' });
+                    }, 220);
+                }
             };
             rowEl.addEventListener('click', toggle);
             rowEl.addEventListener('keydown', ev => {
@@ -2208,7 +2238,9 @@ function buildGraph() {
     let prNodes = '';
     protos.forEach((p, j) => {
         const x = P.prX, y = prY(j), r = rPr(p);
+        const hitH = (P.rowH * 0.94).toFixed(1), hitY = (y - P.rowH * 0.47).toFixed(1);
         prNodes += '<g class="g-node g-node-pr" data-pr="' + p + '">'
+            + '<rect class="g-hit" x="' + (P.prX - P.rPrMax - 6) + '" y="' + hitY + '" width="' + (P.W - P.prX + P.rPrMax + 6) + '" height="' + hitH + '"></rect>'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.6).toFixed(1) + '" fill="#d8b45a" opacity="0.10" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-pr" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"></circle>'
             + '<text class="g-label-pr" x="' + (P.prX + P.rPrMax + P.offPr) + '" y="' + (y + (mobile ? 3.5 : 4)).toFixed(1) + '" style="font-size:' + P.fPr + 'px">' + p + '</text>'
@@ -2218,7 +2250,9 @@ function buildGraph() {
     let coNodes = '';
     comps.forEach((c, i) => {
         const x = P.coX, y = coY(i), r = rCo(c), col = shade(i);
+        const hitH2 = (P.rowH * 0.94).toFixed(1), hitY2 = (y - P.rowH * 0.47).toFixed(1);
         coNodes += '<g class="g-node g-node-co" data-co="' + c.nm + '">'
+            + '<rect class="g-hit" x="0" y="' + hitY2 + '" width="' + (P.coX + P.rCoMax + 6) + '" height="' + hitH2 + '"></rect>'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.1).toFixed(1) + '" fill="' + col + '" opacity="0.20" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-co" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '" style="fill:' + col + '"></circle>'
             + '<text class="g-label-co" x="' + (P.coX - P.rCoMax - P.offCo) + '" y="' + (y + (mobile ? 4 : 5)).toFixed(1) + '" text-anchor="end" style="font-size:' + P.fCo + 'px">' + c.nm + '</text>'
@@ -2250,11 +2284,17 @@ function buildGraph() {
         svg.classList.remove('focused');
         svg.querySelectorAll('.on').forEach(el => el.classList.remove('on'));
     };
+    // Pointer hover is only meaningful on devices that actually hover; on touch
+    // screens a tap would otherwise fire a stray hover on whichever node the
+    // finger passed over, lighting up the wrong connections.
+    const canHover = !window.matchMedia || window.matchMedia('(hover: hover)').matches;
     const bind = (type, attr) => {
         svg.querySelectorAll(type === 'co' ? '.g-node-co' : '.g-node-pr').forEach(n => {
             const key = n.dataset[attr];
-            n.addEventListener('mouseenter', () => { if (!locked) setFocus(type, key); });
-            n.addEventListener('mouseleave', () => { if (!locked) clearFocus(); });
+            if (canHover) {
+                n.addEventListener('mouseenter', () => { if (!locked) setFocus(type, key); });
+                n.addEventListener('mouseleave', () => { if (!locked) clearFocus(); });
+            }
             n.addEventListener('click', ev => {
                 ev.stopPropagation();
                 if (locked && locked.type === type && locked.key === key) { locked = null; clearFocus(); }
@@ -2283,16 +2323,16 @@ function renderFramework(lang) {
         stages: ['Работает сейчас', 'Накапливается', 'Со временем'],
         s1status: 'Live', s1h: 'Композитная методология',
         s1p: [
-            'Вес компании в индексе складывается из трёх факторов: капитала, возраста и производительности. Размер сам по себе не определяет положение компании.',
-            'Капитал показывает масштаб — живой ончейн-TVL. Возраст показывает историю — сколько дней компания реально работает. Производительность показывает экономический результат — доходность, которую она генерирует.',
-            'Каждый фактор сглаживается квадратным корнем и переводится в долю сети, поэтому сумма весов всех компаний всегда равна 100%.'
+            'Вес компании в индексе складывается из трёх факторов: капитала, возраста и производительности. Размер сам по себе не определяет её вес.',
+            'Капитал показывает масштаб — текущий ончейн-TVL. Возраст показывает историю — сколько дней компания реально работает. Производительность показывает текущую доходность — на основе ориентировочного APR компании.',
+            'Каждый фактор сглаживается квадратным корнем и нормализуется относительно всех компаний индекса. Затем три полученных компонента объединяются в единый Index Weight, а сумма весов всех компаний всегда равна 100%.'
         ],
-        s1formula: 'Вес в индексе = 40% · Капитал + 30% · Возраст + 30% · Производительность',
-        s1smooth: 'Сглаживание применяется намеренно. Компания с TVL в 10 раз больше получает примерно втрое больший вес по капиталу, а не в десять раз — это убирает «эффект кита». Возраст засчитывается до четырёх лет: первые годы значат много, но преимущество не становится бесконечным. Производительность учитывается до 20% годовых — разница между 5%, 10% и 20% видна, но погоня за высоким headline-APR не позволяет захватить индекс.',
-        s1foot: 'Ни один показатель сам по себе не определяет вес компании. Весь капитал остаётся под самостоятельным контролем владельцев компаний. The Holding измеряет сеть, но не хранит капитал, представленный в индексе.',
+        s1formula: 'Вес в индексе = 40% \u00d7 Capital Score + 30% \u00d7 Longevity Score + 30% \u00d7 Productivity Score',
+        s1smooth: 'Сглаживание применяется намеренно. Компания с TVL в 10 раз больше получает примерно втрое больший Capital Score, а не в десять раз — это снижает «эффект кита». Возраст учитывается примерно до четырёх лет: первые годы имеют большое значение, но более старые компании не получают бесконечного преимущества. Производительность учитывается до 20% ориентировочного APR — разница между 5%, 10% и 20% остаётся значимой, но погоня за высоким заявленным APR не позволяет одному фактору доминировать в индексе.',
+        s1foot: 'Ни один показатель сам по себе не определяет компанию. Весь капитал остаётся под самостоятельным контролем владельцев компаний. The Holding измеряет сеть, но не хранит капитал, представленный в индексе.',
         s2status: 'Live', s2h: 'Как читать карту сети',
         s2intro: 'The Holding Graph показывает другое измерение индекса — связи между компаниями и инфраструктурой.',
-        s2gt: 'Зелёные узлы — компании', s2g: 'Размер зелёного узла зависит от совокупного веса компании в индексе — капитала, возраста и производительности вместе. Больше вес → крупнее узел.',
+        s2gt: 'Зелёные узлы — компании', s2g: 'Размер зелёного узла зависит от композитного Index Weight компании — капитала, возраста и производительности вместе. Выше Index Weight → крупнее узел.',
         s2yt: 'Жёлтые узлы — протоколы', s2y: 'Размер жёлтого узла зависит не от объёма капитала, а от числа разных компаний индекса, которые используют этот протокол. Больше компаний → крупнее узел. Так размер отражает роль протокола как общей инфраструктуры сети, а не концентрацию капитала.',
         s2ct: 'Связи', s2c: 'Линии показывают связи компаний с протоколами — какую инфраструктуру компании используют совместно. На текущем этапе толщина линии не означает объём капитала.',
         s3status: 'Накапливается', s3h: 'Слой истории',
@@ -2303,7 +2343,7 @@ function renderFramework(lang) {
         s3exLbl: 'История работы', s3exVal: '1 427 дней',
         s4status: 'В разработке', s4h: 'Зрелость, репутация и результаты',
         s4p: [
-            'The Holding Index не присваивает молодой компании искусственный рейтинг репутации. Репутацию не нужно придумывать — она должна появляться из реальной истории работы.',
+            'The Holding Index не присваивает искусственные рейтинги репутации до тех пор, пока для этого не накопится достаточно реальной истории работы. Репутацию не нужно придумывать — она должна появляться из реальной истории работы.',
             'Сначала накапливаются факты: капитал, время, архитектура, денежные потоки, используемые протоколы, пройденные рыночные циклы и наблюдаемые результаты.',
             'Когда месяцы превратятся в годы, эти данные смогут стать основой для новых слоёв зрелости, репутации, устойчивости и результатов — и позже использоваться в рейтингах, поиске компаний и новых семействах индексов.',
             'Методология будет развиваться только тогда, когда для этого накопится достаточно реальных данных.'
@@ -2322,16 +2362,16 @@ function renderFramework(lang) {
         stages: ['Live now', 'Accumulating', 'Over time'],
         s1status: 'Live', s1h: 'Composite Methodology',
         s1p: [
-            "A company's weight in the index is composed of three factors: capital, longevity and productivity. Size alone does not define its position.",
-            'Capital measures scale — live onchain TVL. Longevity measures history — how many days the company has actually been operating. Productivity measures economic output — the yield it generates.',
-            'Each factor is smoothed with a square root and normalised into a share of the network, so all company weights always sum to 100%.'
+            "A company's weight in the index is composed of three factors: capital, longevity and productivity. Size alone does not define its weight.",
+            'Capital measures scale — live onchain TVL. Longevity measures history — how many days the company has actually been operating. Productivity measures current yield — based on the company\u2019s indicative APR.',
+            'Each factor is smoothed with a square root and normalised across all index constituents. The three resulting factor scores are then combined into a single Index Weight, with all company weights summing to 100%.'
         ],
-        s1formula: 'Index Weight = 40% · Capital + 30% · Longevity + 30% · Productivity',
-        s1smooth: 'The smoothing is deliberate. A company with 10x the TVL earns roughly 3x the capital weight rather than 10x, which removes the whale effect. Longevity matures over about four years, so early history counts for a great deal without granting an unlimited advantage. Productivity is counted up to 20% APR — the difference between 5%, 10% and 20% is visible, but chasing a high headline yield cannot capture the index.',
+        s1formula: 'Index Weight = 40% \u00d7 Capital Score + 30% \u00d7 Longevity Score + 30% \u00d7 Productivity Score',
+        s1smooth: 'The smoothing is deliberate. A company with 10x the TVL earns roughly 3x the capital score rather than 10x, reducing the whale effect. Longevity matures over approximately four years, so the early years matter significantly without granting older companies an unlimited advantage. Productivity is counted up to 20% indicative APR — the difference between 5%, 10% and 20% remains meaningful, but chasing a high headline yield cannot dominate the index.',
         s1foot: 'No single factor defines a company. All capital remains self-custodied by its respective owner. The Holding measures the network; it does not custody the capital represented by the index.',
         s2status: 'Live', s2h: 'How to Read the Network',
         s2intro: 'The Holding Graph visualizes a different dimension of the index: relationships.',
-        s2gt: 'Green nodes — companies', s2g: "Green company nodes scale with a company's composite Index Weight — capital, longevity and productivity combined. Larger weight → larger green node.",
+        s2gt: 'Green nodes — companies', s2g: "Green company nodes scale with a company's composite Index Weight — capital, longevity and productivity combined. Higher Index Weight \u2192 larger green node.",
         s2yt: 'Yellow nodes — protocols', s2y: 'Yellow protocol nodes do not represent the amount of capital deployed into a protocol. Their size reflects how many different companies in the index use that protocol. More indexed companies → larger node. This makes protocol size a measure of shared infrastructure across the network — not capital concentration.',
         s2ct: 'Connections', s2c: 'Lines represent company-to-protocol relationships — which infrastructure companies share and how the network is connected. At this stage, line thickness does not imply capital size.',
         s3status: 'Accumulating', s3h: 'The History Layer',
@@ -2342,7 +2382,7 @@ function renderFramework(lang) {
         s3exLbl: 'Operating History', s3exVal: '1,427 days',
         s4status: 'In development', s4h: 'Maturity, Reputation & Performance',
         s4p: [
-            'The Holding Index does not assign an arbitrary reputation score to a young company. Reputation should not be invented — it should emerge from real operating history.',
+            'The Holding Index does not assign arbitrary reputation scores before enough real operating history exists. Reputation should not be invented — it should emerge from real operating history.',
             'First come the facts: capital, time, architecture, cash flows, protocol usage, market cycles, and observable results.',
             'As months become years, those records may eventually support new layers for maturity, reputation, resilience and performance — and may later influence rankings, discovery and new families of indices.',
             'The methodology will evolve only when enough real data exists to justify it.'
