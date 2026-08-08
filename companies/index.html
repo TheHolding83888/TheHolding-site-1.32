@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08k · two-column mobile grid -->
+<!-- companies.html · build 2026-08-08l · compact mobile tiles + per-device default view -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1735,52 +1735,52 @@
                 gap: 0.85rem;
             }
             .grid:not(.view-list) .company-card {
-                padding: 1.15rem 1rem 1rem;
-                border-radius: 16px;
+                padding: 0.95rem 0.9rem 0.85rem;
+                border-radius: 15px;
             }
             .grid:not(.view-list) .company-card:hover { transform: none; }
             .grid:not(.view-list) .cc-regnum {
                 flex-direction: column; align-items: flex-start; gap: 0.1rem;
-                font-size: 0.6rem; letter-spacing: 0.05em; margin-bottom: 0.55rem;
+                font-size: 0.58rem; letter-spacing: 0.05em; margin-bottom: 0.4rem;
             }
-            .grid:not(.view-list) .cc-top { margin-bottom: 0.7rem; min-height: 0; }
-            .grid:not(.view-list) .cc-seal { width: 32px; height: 32px; }
-            .grid:not(.view-list) .cc-seal img { width: 16px; height: 15px; }
+            .grid:not(.view-list) .cc-top { margin-bottom: 0.5rem; min-height: 0; }
+            .grid:not(.view-list) .cc-seal { width: 28px; height: 28px; }
+            .grid:not(.view-list) .cc-seal img { width: 14px; height: 13px; }
             .grid:not(.view-list) .cc-status { font-size: 0.5rem; letter-spacing: 0.12em; gap: 0.3rem; }
             .grid:not(.view-list) .cc-status-group { gap: 0.35rem; }
             .grid:not(.view-list) .cc-native {
                 font-size: 0.4rem; letter-spacing: 0.08em; padding: 0.18rem 0.38rem;
             }
-            .grid:not(.view-list) .cc-name { font-size: 1.28rem; margin-bottom: 0.4rem; }
+            .grid:not(.view-list) .cc-name { font-size: 1.2rem; margin-bottom: 0.28rem; line-height: 1.02; }
             .grid:not(.view-list) .cc-sub {
-                font-size: 0.72rem; line-height: 1.5; margin-bottom: 1rem;
-                display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical;
+                font-size: 0.7rem; line-height: 1.45; margin-bottom: 0.7rem;
+                display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
                 overflow: hidden;
             }
             /* metrics stack — a half-width tile has no room for two columns */
             .grid:not(.view-list) .cc-metrics {
                 grid-template-columns: 1fr !important;
-                gap: 0; padding-top: 0.9rem;
+                gap: 0; padding-top: 0.65rem;
             }
             .grid:not(.view-list) .cc-metrics::before { display: none; }
             .grid:not(.view-list) .cc-metrics > div:last-child {
-                padding-left: 0 !important; padding-top: 0.7rem;
-                margin-top: 0.7rem; border-top: 1px solid var(--line);
+                padding-left: 0 !important; padding-top: 0.5rem;
+                margin-top: 0.5rem; border-top: 1px solid var(--line);
             }
-            .grid:not(.view-list) .cc-metric-label { font-size: 0.5rem; letter-spacing: 0.12em; margin-bottom: 0.25rem; }
-            .grid:not(.view-list) .cc-metric-value { font-size: 1.08rem; min-height: 0; }
-            .grid:not(.view-list) .cc-extlink { margin-top: 0.9rem; padding-top: 0.7rem; gap: 0.3rem; }
+            .grid:not(.view-list) .cc-metric-label { font-size: 0.48rem; letter-spacing: 0.1em; margin-bottom: 0.18rem; }
+            .grid:not(.view-list) .cc-metric-value { font-size: 1.02rem; min-height: 0; line-height: 1.1; }
+            .grid:not(.view-list) .cc-extlink { margin-top: 0.7rem; padding-top: 0.55rem; gap: 0.3rem; }
             .grid:not(.view-list) .cc-ext-label { font-size: 0.48rem; letter-spacing: 0.1em; }
             .grid:not(.view-list) .cc-ext-arrow { width: 10px; height: 10px; }
-            .grid:not(.view-list) .company-card.placeholder { min-height: 0; padding: 2rem 1rem; }
+            .grid:not(.view-list) .company-card.placeholder { min-height: 0; padding: 1.5rem 1rem; }
             .grid:not(.view-list) .placeholder-text { display: none; }
         }
         /* very narrow phones — keep two columns but tighten further */
         @media (max-width: 360px) {
             .grid:not(.view-list) { gap: 0.6rem; }
-            .grid:not(.view-list) .company-card { padding: 0.95rem 0.8rem 0.85rem; }
+            .grid:not(.view-list) .company-card { padding: 0.85rem 0.75rem 0.75rem; }
             .grid:not(.view-list) .cc-name { font-size: 1.12rem; }
-            .grid:not(.view-list) .cc-sub { -webkit-line-clamp: 4; font-size: 0.68rem; }
+            .grid:not(.view-list) .cc-sub { -webkit-line-clamp: 3; font-size: 0.66rem; margin-bottom: 0.6rem; }
             .grid:not(.view-list) .cc-metric-value { font-size: 1rem; }
         }
     </style>
@@ -3107,9 +3107,14 @@ function renderFramework(lang) {
         try { localStorage.setItem('holdingCompaniesView', view); } catch (e) {}
     };
 
-    let saved = 'grid';
-    try { if (localStorage.getItem('holdingCompaniesView') === 'list') saved = 'list'; } catch (e) {}
-    apply(saved);
+    // Default per device — a phone reads better as a ledger of full-width rows,
+    // a laptop as a grid. An explicit choice by the reader always wins.
+    let view = (window.innerWidth < 761) ? 'list' : 'grid';
+    try {
+        const stored = localStorage.getItem('holdingCompaniesView');
+        if (stored === 'list' || stored === 'grid') view = stored;
+    } catch (e) {}
+    apply(view);
 
     btns.forEach(btn => {
         btn.addEventListener('click', () => {
