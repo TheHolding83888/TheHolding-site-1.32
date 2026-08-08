@@ -1036,6 +1036,25 @@
             font-size: 0.95rem; font-weight: 300; line-height: 1.7;
             color: rgba(243,239,228,0.6);
         }
+        .graph-lens {
+            display: flex; justify-content: flex-end; align-items: center;
+            gap: 0.7rem; margin-bottom: 1.3rem;
+        }
+        .graph-lens .idx-lens-label { color: rgba(243,239,228,0.4); }
+        .graph-lens .idx-lens-seg {
+            border-color: rgba(236,231,218,0.16);
+            background: rgba(236,231,218,0.03);
+        }
+        .graph-lens .idx-lens-btn { color: rgba(243,239,228,0.48); }
+        .graph-lens .idx-lens-btn:hover { color: rgba(243,239,228,0.82); }
+        .graph-lens .idx-lens-btn.active {
+            color: #e6c877; background: rgba(168,132,44,0.14);
+            box-shadow: inset 0 0 0 1px rgba(168,132,44,0.42);
+        }
+        @media (max-width: 640px) {
+            .graph-lens { justify-content: space-between; }
+            .graph-lens .idx-lens-label { display: block; }
+        }
         .graph-canvas { width: 100%; transition: opacity 0.22s ease; }
         .graph-canvas.swapping { opacity: 0.22; }
         .g-svg { width: 100%; max-width: 780px; height: auto; display: block; margin: 0 auto; overflow: visible; }
@@ -1968,6 +1987,13 @@
             <h2 class="graph-title" data-i18n="graph.title">A live map of capital across the network.</h2>
             <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols it uses — one living map of the network's shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company's share of total index TVL. Yellow protocol nodes stay unchanged — their size reflects how many indexed companies connect to each protocol.</p>
         </div>
+        <div class="graph-lens">
+            <span class="idx-lens-label" data-i18n="index.weighting">Weighting</span>
+            <div class="idx-lens-seg">
+                <button class="idx-lens-btn active" type="button" data-mode="composite" data-i18n="index.mode.composite">Composite</button>
+                <button class="idx-lens-btn" type="button" data-mode="tvl" data-i18n="index.mode.tvl">TVL</button>
+            </div>
+        </div>
         <div class="graph-canvas" id="graphCanvas"></div>
         <p class="graph-hint" data-i18n="graph.hint">Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.</p>
     </div>
@@ -2733,7 +2759,7 @@ function renderFramework(lang) {
             const mode = btn.dataset.mode;
             if (mode === IDX_MODE) return;
             IDX_MODE = mode;
-            btns.forEach(b => b.classList.toggle('active', b === btn));
+            btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
             renderIndex(idxLang());
             const canvas = document.getElementById('graphCanvas');
             if (canvas && INDEX_STATE) {
