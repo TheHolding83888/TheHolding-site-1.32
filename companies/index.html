@@ -2788,14 +2788,15 @@ function renderFramework(lang) {
             // the reader was, then restore both so the switch feels perfectly still.
             const openNames = Array.prototype.map.call(
                 document.querySelectorAll('.ib-item.open .ib-nm'), el => el.textContent);
-            const y = window.pageYOffset;
 
-            // The page uses smooth scrolling globally, which would animate the
-            // restore below and read as the page drifting up and down. Suspend it,
-            // and suppress passport height transitions, so the swap is motionless.
+            // Switching lenses changes the height of the copy ABOVE the fold — the
+            // roadmap sentence is hidden in the TVL view and the methodology line
+            // rewraps — so restoring a raw scroll offset still shifts what you see.
+            // Anchor on the control instead and keep IT fixed on screen.
+            const anchorTop = btn.getBoundingClientRect().top;
             const root = document.documentElement;
             const prevBehavior = root.style.scrollBehavior;
-            root.style.scrollBehavior = 'auto';
+            root.style.scrollBehavior = 'auto';     // page scrolls smoothly by default
             root.classList.add('no-anim');
 
             renderIndex(idxLang());
@@ -2809,9 +2810,13 @@ function renderFramework(lang) {
                 }
             });
 
-            window.scrollTo(0, y);
+            const hold = () => {
+                const delta = btn.getBoundingClientRect().top - anchorTop;
+                if (Math.abs(delta) > 0.5) window.scrollTo(0, window.pageYOffset + delta);
+            };
+            hold();
             requestAnimationFrame(() => {
-                window.scrollTo(0, y);          // settle after layout
+                hold();                              // settle once layout is final
                 root.classList.remove('no-anim');
                 root.style.scrollBehavior = prevBehavior;
             });
