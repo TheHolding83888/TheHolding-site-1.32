@@ -882,6 +882,8 @@
         .ib-item.open .ib-chev { transform: rotate(180deg); color: var(--gold); }
         .ib-passport { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1); }
         .ib-item.open .ib-passport { max-height: 1200px; }
+        /* used while swapping lenses so restored passports don't re-animate */
+        .no-anim .ib-passport, .no-anim .ibw-fill, .no-anim .index-comp-seg { transition: none !important; }
         .ipx-inner { padding: 0.25rem 0 1.6rem; }
         .ipx-grid {
             display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
@@ -2420,14 +2422,13 @@ function buildGraph() {
     // Compact, responsive layout profiles (mobile fits the screen, no scroll)
     const mobile = (window.innerWidth || 1000) < 640;
     const P = mobile
-        ? { W:360, coX:104, prX:250, padY:16, rowH:22, fCo:12, fPr:11, rCoMin:5,  rCoMax:17, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
-        : { W:780, coX:172, prX:558, padY:22, rowH:27, fCo:15, fPr:13, rCoMin:8,  rCoMax:30, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
+        ? { W:360, coX:104, prX:250, padY:16, rowH:22, fCo:12, fPr:11, rCoMin:5,  rCoMax:19, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
+        : { W:780, coX:172, prX:558, padY:22, rowH:27, fCo:15, fPr:13, rCoMin:7,  rCoMax:34, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
 
     // Layout order is stable (always composite) so switching lenses morphs node
     // sizes in place rather than reshuffling the map; only the SIZES follow the lens.
     const comps = computeIndex().slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
     const wt = c => Math.max(activeWeight(c), 0);                // active lens weight 0..1
-    const maxWt = Math.max.apply(null, comps.map(wt).concat([1e-9]));
     const shade  = i => {
         const n = comps.length, t = n > 1 ? i / (n - 1) : 0;
         const a = [29, 74, 58], b = [168, 178, 112];
@@ -2451,7 +2452,9 @@ function buildGraph() {
     const H = P.padY * 2 + (rows - 1) * P.rowH;
     const coY = i => nComp > 1 ? P.padY + i * ((H - 2 * P.padY) / (nComp - 1)) : H / 2;
     const prY = j => nPr   > 1 ? P.padY + j * ((H - 2 * P.padY) / (nPr - 1))   : H / 2;
-    const rCo = c => P.rCoMin + (P.rCoMax - P.rCoMin) * Math.sqrt(maxWt > 0 ? wt(c) / maxWt : 0);
+    // Area-proportional to the company's share of the whole network, so every node —
+    // including the largest — visibly re-weights when the lens changes.
+    const rCo = c => P.rCoMin + (P.rCoMax - P.rCoMin) * Math.sqrt(Math.min(wt(c), 1));
     const maxPr = Math.max.apply(null, Object.keys(protoCount).map(k => protoCount[k]).concat([1]));
     const rPr = p => P.rPrMin + (maxPr > 1 ? (protoCount[p] - 1) / (maxPr - 1) * (P.rPrMax - P.rPrMin) : 0);
 
@@ -2552,11 +2555,10 @@ function buildGraph() {
     // itself — the same companies, seen through a different lens.
     graphResize = () => {
         const list = computeIndex();
-        const mx = Math.max.apply(null, list.map(x => Math.max(activeWeight(x), 0)).concat([1e-9]));
         list.forEach(cc => {
             const g = svg.querySelector('.g-node-co[data-co="' + cc.nm + '"]');
             if (!g) return;
-            const r = P.rCoMin + (P.rCoMax - P.rCoMin) * Math.sqrt(Math.max(activeWeight(cc), 0) / mx);
+            const r = P.rCoMin + (P.rCoMax - P.rCoMin) * Math.sqrt(Math.min(Math.max(activeWeight(cc), 0), 1));
             const dot  = g.querySelector('.g-dot-co');
             const glow = g.querySelector('circle:not(.g-dot-co)');
             if (dot)  dot.setAttribute('r', r.toFixed(1));
@@ -2788,6 +2790,14 @@ function renderFramework(lang) {
                 document.querySelectorAll('.ib-item.open .ib-nm'), el => el.textContent);
             const y = window.pageYOffset;
 
+            // The page uses smooth scrolling globally, which would animate the
+            // restore below and read as the page drifting up and down. Suspend it,
+            // and suppress passport height transitions, so the swap is motionless.
+            const root = document.documentElement;
+            const prevBehavior = root.style.scrollBehavior;
+            root.style.scrollBehavior = 'auto';
+            root.classList.add('no-anim');
+
             renderIndex(idxLang());
 
             document.querySelectorAll('.ib-item').forEach(item => {
@@ -2798,7 +2808,13 @@ function renderFramework(lang) {
                     if (r) r.setAttribute('aria-expanded', 'true');
                 }
             });
+
             window.scrollTo(0, y);
+            requestAnimationFrame(() => {
+                window.scrollTo(0, y);          // settle after layout
+                root.classList.remove('no-anim');
+                root.style.scrollBehavior = prevBehavior;
+            });
 
             // Morph the map in place — no rebuild, so the network visibly re-weights
             if (INDEX_STATE) {
