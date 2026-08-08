@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08g · RU divider shifted left via CSS variable -->
+<!-- companies.html · build 2026-08-08i · lens-consistent node maths + zero-data guard -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -2194,13 +2194,17 @@ function computeIndex() {
     // always means a longer arm, both within a company and between companies.
     let maxShare = 1e-9;
     list.forEach(c => IDX_FACTORS.forEach(f => { maxShare = Math.max(maxShare, c.score[f.key]); }));
-    const totalVal = list.reduce((s, c) => s + Math.max(c.val, 0), 0) || 1;
+    const totalVal = list.reduce((s, c) => s + Math.max(c.val, 0), 0);
     list.forEach(c => {
         IDX_FACTORS.forEach(f => { c.rel[f.key] = c.score[f.key] / maxShare; });
         c.weight    = IDX_FACTORS.reduce((s, f) => s + f.weight * c.score[f.key], 0);
         // Alternative analytical lens — a plain capital-weighted view of the same
         // constituents. Not a second methodology; the index itself stays composite.
-        c.tvlWeight = Math.max(c.val, 0) / totalVal;
+        // If prices are unavailable every value is 0, which would collapse the whole
+        // TVL lens to zero-radius (invisible) nodes; fall back to equal shares so the
+        // map stays readable. The cards show "Live" in that state, so nothing is
+        // presented as a real figure.
+        c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : 1 / list.length;
     });
     const key = IDX_MODE === 'tvl' ? 'tvlWeight' : 'weight';
     return list.sort((a, b) => b[key] - a[key]);
@@ -2411,6 +2415,39 @@ function buildGraph() {
     const canvas = document.getElementById('graphCanvas');
     if (!canvas || !INDEX_STATE) return;
 
+    /* ── ADDING A COMPANY — how the map rescales itself ──────────────────────
+       Two edits are all that is ever needed:
+         1. add an entry to INDEX_STATE (name, live value, apr, foundedISO, …)
+         2. add its protocol list to MEMBERSHIP below
+       Everything else re-derives automatically.
+
+       YELLOW protocol nodes
+         size = how many indexed companies use that protocol, encoded by AREA:
+             radius = rPrMax × √(companiesUsingIt / mostUsedProtocol)
+         The busiest protocol always defines the largest node, so the whole scale
+         re-normalises the moment a company is added. Example: today Aero is used
+         by 3 companies and sits at the maximum. If a fifth company also used Aero,
+         Aero would become 4 and every other protocol would shrink relative to it —
+         the picture stays honest without touching any constant. Adding a company
+         that uses a brand-new protocol simply appends a new node at the smallest
+         size, and the barycentre sort re-positions the column to keep lines clean.
+
+       GREEN company nodes — and how the two lenses stay mathematically clean
+         area ∝ that company's share of the network under the ACTIVE lens:
+             radius = rCoMax × √(activeWeight)      activeWeight ∈ [0,1]
+         Composite → 40% Capital + 30% Longevity + 30% Productivity (factor scores)
+         TVL       → company TVL ÷ total index TVL
+         Both are true shares that sum to exactly 1, so in either lens the areas are
+         strictly proportional to weight and the TOTAL area of all company nodes is
+         conserved: switching lenses redistributes the same amount of ink rather than
+         inflating or shrinking the network. Verified: area ÷ weight is constant
+         across every node in both lenses. Adding a company simply divides the same
+         total among more participants, so all nodes shrink proportionally.
+
+       Both scales are area-proportional on purpose: the eye reads area, not radius,
+       so a protocol with 3 connections covers exactly 3× the area of one with 1.
+       Do not reintroduce a minimum-radius offset — it silently breaks that ratio.
+       ───────────────────────────────────────────────────────────────────────── */
     // Which protocols each company's capital flows through
     const MEMBERSHIP = {
         'defitea.eth':   ['Aero','Convex','Curve','Pendle','f(x) Protocol','Yield Basis','Frax','Velodrome','Venice','Liquity','Resupply'],
@@ -2454,9 +2491,11 @@ function buildGraph() {
     const prY = j => nPr   > 1 ? P.padY + j * ((H - 2 * P.padY) / (nPr - 1))   : H / 2;
     // Area-proportional to the company's share of the whole network, so every node —
     // including the largest — visibly re-weights when the lens changes.
-    const rCo = c => P.rCoMin + (P.rCoMax - P.rCoMin) * Math.sqrt(Math.min(wt(c), 1));
+    const rCo = c => P.rCoMax * Math.sqrt(Math.min(wt(c), 1));
     const maxPr = Math.max.apply(null, Object.keys(protoCount).map(k => protoCount[k]).concat([1]));
-    const rPr = p => P.rPrMin + (maxPr > 1 ? (protoCount[p] - 1) / (maxPr - 1) * (P.rPrMax - P.rPrMin) : 0);
+    // area ∝ number of connected companies (radius ∝ √count), so a protocol used by
+    // three companies covers exactly three times the area of one used by a single company
+    const rPr = p => P.rPrMax * Math.sqrt(protoCount[p] / maxPr);
 
     let edges = '';
     comps.forEach((c, i) => {
@@ -2558,7 +2597,7 @@ function buildGraph() {
         list.forEach(cc => {
             const g = svg.querySelector('.g-node-co[data-co="' + cc.nm + '"]');
             if (!g) return;
-            const r = P.rCoMin + (P.rCoMax - P.rCoMin) * Math.sqrt(Math.min(Math.max(activeWeight(cc), 0), 1));
+            const r = P.rCoMax * Math.sqrt(Math.min(Math.max(activeWeight(cc), 0), 1));
             const dot  = g.querySelector('.g-dot-co');
             const glow = g.querySelector('circle:not(.g-dot-co)');
             if (dot)  dot.setAttribute('r', r.toFixed(1));
@@ -2896,6 +2935,8 @@ function renderFramework(lang) {
     if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3 + tvl4);
 
     // Feed the live index with real per-company values
+    // Adding a company: append an entry here AND to MEMBERSHIP inside buildGraph().
+    // Index weights, ranking, node sizes and the capital map all re-derive from this.
     INDEX_STATE = [
         { nm: 'defitea.eth',   val: tvl4, href: 'https://theholding.ai/defitea/',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jan 2025', ru: 'Янв 2025' },
