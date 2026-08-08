@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<!-- TheHolding.ai Website v2.0 - SEO/structured-data hardening: removed fabricated aggregateRating, five-fund JSON-LD, honest 13.9% APR, og:image/twitter:image, favicon + theme-color -->
+<!-- TheHolding.ai Website v2.1 - The Holding Network strip (live registry bridge)
+     v2.0 - SEO/structured-data hardening: removed fabricated aggregateRating, five-fund JSON-LD, honest 13.9% APR, og:image/twitter:image, favicon + theme-color -->
 <html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
@@ -2058,6 +2059,113 @@
             max-width: 800px;
             margin: 0 auto;
         }
+        /* ── The Holding Network strip ─────────────────────── */
+        .network-strip {
+            position: relative;
+            background: #12100a;
+            color: #f1ede2;
+            padding: 6.5rem 0;
+            overflow: hidden;
+        }
+        .network-strip::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(105% 90% at 100% 0%,
+                rgba(168,132,44,0.10) 0%,
+                rgba(168,132,44,0.04) 32%,
+                rgba(168,132,44,0.012) 58%,
+                rgba(168,132,44,0) 85%);
+            pointer-events: none;
+        }
+        .network-strip .container { position: relative; z-index: 1; }
+        .ns-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-bottom: 1.6rem; margin-bottom: 2.4rem;
+            border-bottom: 1px solid rgba(241,237,226,0.10);
+        }
+        .ns-eyebrow {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.66rem; letter-spacing: 0.28em; text-transform: uppercase;
+            font-weight: 600; color: #d8b45a;
+        }
+        .ns-live {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+            font-weight: 600; color: rgba(241,237,226,0.55);
+        }
+        .ns-dot {
+            width: 6px; height: 6px; border-radius: 50%; background: #34d399;
+            box-shadow: 0 0 0 0 rgba(52,211,153,0.45);
+            animation: nsPulse 2.6s ease-in-out infinite;
+        }
+        @keyframes nsPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(52,211,153,0.4); opacity: 1; }
+            70%  { box-shadow: 0 0 0 6px rgba(52,211,153,0); opacity: 0.55; }
+            100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); opacity: 1; }
+        }
+        .ns-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4.2vw, 3rem);
+            font-weight: 300; letter-spacing: -0.025em; line-height: 1.1;
+            color: #f6f2e6; margin: 0 0 1rem;
+        }
+        .ns-sub {
+            font-size: 0.95rem; font-weight: 300; line-height: 1.7;
+            color: rgba(241,237,226,0.6); max-width: 640px; margin: 0 0 3.2rem;
+        }
+        .ns-metrics {
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 2rem; padding-bottom: 2.8rem; margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(241,237,226,0.10);
+        }
+        .ns-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.9rem, 3.6vw, 2.6rem);
+            font-weight: 400; line-height: 1; color: #d8b45a; margin-bottom: 0.6rem;
+        }
+        .ns-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+            font-weight: 500; color: rgba(241,237,226,0.45);
+        }
+        .ns-foot {
+            display: flex; align-items: flex-end; justify-content: space-between;
+            gap: 2rem; flex-wrap: wrap;
+        }
+        .ns-index-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+            font-weight: 600; color: rgba(241,237,226,0.8); margin-bottom: 0.45rem;
+        }
+        .ns-index-parts {
+            font-size: 0.78rem; font-weight: 300; color: rgba(241,237,226,0.42);
+            letter-spacing: 0.02em;
+        }
+        .ns-link {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase;
+            font-weight: 600; color: #d8b45a; text-decoration: none;
+            padding-bottom: 0.3rem; border-bottom: 1px solid rgba(216,180,90,0.35);
+            transition: color 0.25s ease, border-color 0.25s ease;
+        }
+        .ns-link svg { transition: transform 0.35s cubic-bezier(0.22,1,0.36,1); }
+        .ns-link:hover { color: #f0dda6; border-color: rgba(240,221,166,0.6); }
+        .ns-link:hover svg { transform: translateX(4px); }
+        @media (max-width: 768px) {
+            .network-strip { padding: 4.5rem 0; }
+            .ns-sub { margin-bottom: 2.4rem; }
+            .ns-metrics {
+                grid-template-columns: 1fr; gap: 1.6rem;
+                padding-bottom: 2.2rem;
+            }
+            .ns-metric { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+            .ns-value { margin-bottom: 0; }
+            .ns-foot { align-items: flex-start; gap: 1.6rem; }
+        }
+        @media (prefers-reduced-motion: reduce) { .ns-dot { animation: none; } }
+
         /* ── Architecture & Philosophy ─────────────────────── */
         .arch-intro {
             max-width: 680px;
@@ -4131,6 +4239,44 @@
         </div>
     </section>
 
+    <!-- ── The Holding Network — live bridge to the registry ── -->
+    <section class="network-strip" aria-label="The Holding Network">
+        <div class="container">
+            <div class="ns-head">
+                <span class="ns-eyebrow">The Holding Network</span>
+                <span class="ns-live"><span class="ns-dot"></span>Live</span>
+            </div>
+
+            <h2 class="ns-title">The architecture is becoming a network.</h2>
+            <p class="ns-sub">A growing registry of sovereign onchain companies — each with its own owner, treasury, keys, strategy and history.</p>
+
+            <div class="ns-metrics">
+                <div class="ns-metric">
+                    <div class="ns-value" id="nsNetworkValue">—</div>
+                    <div class="ns-label">Network Value</div>
+                </div>
+                <div class="ns-metric">
+                    <div class="ns-value">4</div>
+                    <div class="ns-label">Companies</div>
+                </div>
+                <div class="ns-metric">
+                    <div class="ns-value">8+</div>
+                    <div class="ns-label">Protocols</div>
+                </div>
+            </div>
+
+            <div class="ns-foot">
+                <div class="ns-index">
+                    <div class="ns-index-name">The Holding Index</div>
+                    <div class="ns-index-parts">Registry · Composite / TVL · Passports · Network Graph</div>
+                </div>
+                <a class="ns-link" href="https://theholding.ai/companies">Explore the network
+                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="M3.5 8h9M9 4.5 12.5 8 9 11.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- Other Funds Section -->
 
     <!-- Clone Strategy Section -->
@@ -5208,6 +5354,31 @@
 
                 // Total TVL
                 const totalTVL = substantiaTVL + defiteaTVL + singulTVL + fructusTVL + MONETRA_TVL_CONTRIBUTION;
+
+                /* ── The Holding Network strip ──────────────────────────────
+                   Live value of the companies in the registry — the same
+                   holdings the /companies page indexes. Uses the prices already
+                   fetched above, so this adds no extra API calls. Keep in sync
+                   with INDEX_STATE on companies.html when holdings change.   */
+                (function () {
+                    const nsEl = document.getElementById('nsNetworkValue');
+                    if (!nsEl) return;
+                    const p = id => (prices[id]?.usd || 0);
+                    const FIXED_FXN = 680;
+                    const co1 = 202 * p('aerodrome-finance') + 480 * p('curve-dao-token') + 393 * p('frax-share');
+                    const co2 = 0.03 * p('bitcoin') + 480 * p('aerodrome-finance')
+                              + 240 * p('convex-finance') + 800 * p('frax-share');
+                    const co3 = 12029 * p('yield-basis');
+                    const co4 = 2440 * p('aerodrome-finance') + 1333 * p('convex-finance')
+                              + 4125 * p('curve-dao-token') + 500 * p('pendle') + FIXED_FXN
+                              + 10846 * p('yield-basis') + 4224 * p('frax-share')
+                              + 12180 * p('velodrome-finance') + 50 * p('venice-token')
+                              + 1488 * p('liquity') + 3682 * p('resupply');
+                    const networkValue = co1 + co2 + co3 + co4;
+                    nsEl.textContent = networkValue > 0
+                        ? '$' + Math.round(networkValue).toLocaleString()
+                        : 'Live';
+                })();
                 
                 document.querySelector('[data-metric="total-capital"]').textContent = 
                     `$${Math.round(totalTVL).toLocaleString()}`;
