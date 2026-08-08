@@ -1650,12 +1650,13 @@
             }
         }
 
-        /* ── RU desktop: "Ориентировочный APR" is far longer than "Indicative APR",
-              so the second metric needs real clearance from the centre divider.
-              Mobile stacks the metrics, so it is deliberately excluded.        ── */
+        /* ── Desktop: clearance between the centre divider and the second metric.
+              Applied for every language so it never depends on language detection,
+              with extra room in Russian where "Ориентировочный APR" is much longer
+              than "Indicative APR". Mobile stacks the metrics, so it is excluded. ── */
         @media (min-width: 761px) {
-            html[lang="ru"] .cc-metrics { gap: 1.5rem; }
-            html[lang="ru"] .cc-metrics > div:last-child { padding-left: 1.9rem; }
+            .cc-metrics > div:last-child { padding-left: 1.7rem !important; }
+            html[lang="ru"] .cc-metrics > div:last-child { padding-left: 2.3rem !important; }
         }
     </style>
 </head>
