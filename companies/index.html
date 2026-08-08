@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08i · lens-consistent node maths + zero-data guard -->
+<!-- companies.html · build 2026-08-08j · collection grid/list view switcher -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -306,6 +306,45 @@
             text-transform: uppercase;
             color: var(--text-3);
         }
+        .collection-meta { display: flex; align-items: center; gap: 1.25rem; }
+        .view-switch {
+            display: inline-flex; gap: 2px; padding: 2px;
+            border: 1px solid var(--line-strong); border-radius: 999px;
+            background: rgba(255,255,255,0.5);
+        }
+        .view-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 26px; padding: 0; cursor: pointer;
+            border: none; background: none; border-radius: 999px;
+            color: var(--text-3); transition: color 0.25s ease, background 0.25s ease;
+        }
+        .view-btn:hover { color: var(--text-2); }
+        .view-btn.active {
+            color: var(--gold); background: var(--gold-soft);
+            box-shadow: inset 0 0 0 1px var(--gold-line);
+        }
+
+        /* ── List view: the collection reads as a registry ledger ── */
+        .grid.view-list { grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 761px) {
+            .grid.view-list .company-card {
+                display: grid;
+                grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+                column-gap: 2.6rem;
+                padding: 1.7rem 1.9rem 1.35rem;
+            }
+            .grid.view-list .cc-regnum  { grid-column: 1; grid-row: 1; margin-bottom: 0.5rem; }
+            .grid.view-list .cc-top     { grid-column: 2; grid-row: 1; justify-content: flex-end; gap: 0.9rem; margin-bottom: 0.5rem; }
+            .grid.view-list .cc-name    { grid-column: 1; grid-row: 2; font-size: 1.6rem; margin-bottom: 0.35rem; }
+            .grid.view-list .cc-sub     { grid-column: 1; grid-row: 3; margin-bottom: 0; flex-grow: 0; }
+            .grid.view-list .cc-metrics { grid-column: 2; grid-row: 2 / 4; border-top: none; padding-top: 0; align-self: center; }
+            .grid.view-list .cc-metrics::before { top: 0; }
+            .grid.view-list .cc-extlink { grid-column: 1 / -1; grid-row: 4; margin-top: 1.15rem; padding-top: 0.85rem; }
+            .grid.view-list .company-card:hover { transform: translateY(-3px); }
+            .grid.view-list .company-card.placeholder { min-height: 132px; display: flex; }
+            .grid.view-list .cc-metric-value { min-height: 0; }
+        }
+
         .collection-count b {
             color: var(--gold);
             font-weight: 500;
@@ -1767,7 +1806,25 @@
     <div class="container">
         <div class="collection-head reveal">
             <h2 class="collection-title" data-i18n="collection.title">The Collection</h2>
-            <div class="collection-count"><b id="companyCount">4</b> <span data-i18n="collection.count">companies</span></div>
+            <div class="collection-meta">
+                <div class="collection-count"><b id="companyCount">4</b> <span data-i18n="collection.count">companies</span></div>
+                <div class="view-switch" role="group" aria-label="View">
+                    <button class="view-btn active" type="button" data-view="grid" aria-label="Grid view" title="Grid">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+                            <rect x="1.6" y="1.6" width="5.2" height="5.2" rx="1.1" stroke="currentColor" stroke-width="1.3"/>
+                            <rect x="9.2" y="1.6" width="5.2" height="5.2" rx="1.1" stroke="currentColor" stroke-width="1.3"/>
+                            <rect x="1.6" y="9.2" width="5.2" height="5.2" rx="1.1" stroke="currentColor" stroke-width="1.3"/>
+                            <rect x="9.2" y="9.2" width="5.2" height="5.2" rx="1.1" stroke="currentColor" stroke-width="1.3"/>
+                        </svg>
+                    </button>
+                    <button class="view-btn" type="button" data-view="list" aria-label="List view" title="List">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+                            <rect x="1.6" y="2.4" width="12.8" height="3.1" rx="1.1" stroke="currentColor" stroke-width="1.3"/>
+                            <rect x="1.6" y="8.5" width="12.8" height="3.1" rx="1.1" stroke="currentColor" stroke-width="1.3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="filter-tabs reveal">
@@ -2975,6 +3032,41 @@ function renderFramework(lang) {
 
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+})();
+
+/* ── Collection view: grid ↔ list ──────────────────────
+   Only the layout changes — filters, data and card contents are untouched.
+   The choice is remembered so the reader keeps their preferred reading mode. */
+(function () {
+    const grid = document.querySelector('.grid');
+    const btns = document.querySelectorAll('.view-btn');
+    if (!grid || !btns.length) return;
+
+    const apply = view => {
+        grid.classList.toggle('view-list', view === 'list');
+        btns.forEach(b => b.classList.toggle('active', b.dataset.view === view));
+        try { localStorage.setItem('holdingCompaniesView', view); } catch (e) {}
+    };
+
+    let saved = 'grid';
+    try { if (localStorage.getItem('holdingCompaniesView') === 'list') saved = 'list'; } catch (e) {}
+    apply(saved);
+
+    btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // hold the switcher still so the page doesn't shift under the reader
+            const top = btn.getBoundingClientRect().top;
+            const root = document.documentElement;
+            const prev = root.style.scrollBehavior;
+            root.style.scrollBehavior = 'auto';
+            apply(btn.dataset.view);
+            requestAnimationFrame(() => {
+                const delta = btn.getBoundingClientRect().top - top;
+                if (Math.abs(delta) > 0.5) window.scrollTo(0, window.pageYOffset + delta);
+                root.style.scrollBehavior = prev;
+            });
+        });
+    });
 })();
 
 /* ── Filter tabs ───────────────────────────────────── */
