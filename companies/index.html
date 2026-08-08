@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08m · full text in mobile tiles, aligned baselines -->
+<!-- companies.html · build 2026-08-08n · anchor offsets for deep links -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1459,6 +1459,16 @@
         }
 
         /* ── Sticky section nav (portal feel) ─────────── */
+        /* deep links (e.g. /companies/#index) must clear the sticky subnav */
+        #collection, #next-layer, #index, #graph, #how-it-works, #platform, #build {
+            scroll-margin-top: 84px;
+        }
+        @media (max-width: 760px) {
+            #collection, #next-layer, #index, #graph, #how-it-works, #platform, #build {
+                scroll-margin-top: 70px;
+            }
+        }
+
         .subnav {
             position: sticky;
             top: 0;
