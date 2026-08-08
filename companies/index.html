@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08e · RU-only metric spacing, dual hook -->
+<!-- companies.html · build 2026-08-08f · RU metric spacing applied inline via JS -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -2579,6 +2579,16 @@ function buildGraph() {
 let graphResize = null;
 let _graphRT;
 window.addEventListener('resize', function () {
+    try {
+        const ru = document.documentElement.lang === 'ru' || document.documentElement.classList.contains('is-ru');
+        const wide = window.innerWidth > 360;
+        document.querySelectorAll('.cc-metrics > div:last-child').forEach(el => {
+            el.style.paddingLeft = (ru && wide) ? '2.4rem' : '';
+        });
+        document.querySelectorAll('.cc-metrics').forEach(el => {
+            el.style.gridTemplateColumns = (ru && wide) ? '1.14fr 0.86fr' : '';
+        });
+    } catch (e) {}
     clearTimeout(_graphRT);
     _graphRT = setTimeout(function () { if (INDEX_STATE) buildGraph(); }, 200);
 });
@@ -3143,6 +3153,20 @@ function renderFramework(lang) {
     };
 
     function applyLang(lang) {
+        // Russian metric labels ("Ориентировочный APR") are much longer than the
+        // English ones and crowd the card's centre divider. Selector-based rules
+        // proved unreliable here, so the clearance is written straight onto the
+        // elements — and done first, so nothing below can prevent it.
+        try {
+            const wide = window.innerWidth > 360;
+            document.querySelectorAll('.cc-metrics > div:last-child').forEach(el => {
+                el.style.paddingLeft = (lang === 'ru' && wide) ? '2.4rem' : '';
+            });
+            document.querySelectorAll('.cc-metrics').forEach(el => {
+                el.style.gridTemplateColumns = (lang === 'ru' && wide) ? '1.14fr 0.86fr' : '';
+            });
+        } catch (e) {}
+
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
             if (I18N[lang][key] !== undefined) el.textContent = I18N[lang][key];
