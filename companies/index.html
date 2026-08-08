@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08n · anchor offsets for deep links -->
+<!-- companies.html · build 2026-08-08o · animated lens transitions (FLIP + counters) -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -850,7 +850,7 @@
             display: flex; width: 100%; height: 15px; border-radius: 999px;
             overflow: hidden; background: var(--line); gap: 2px;
         }
-        .index-comp-seg { height: 100%; transition: width 0.9s cubic-bezier(0.22,1,0.36,1); min-width: 2px; }
+        .index-comp-seg { height: 100%; transition: width 0.9s cubic-bezier(0.22,1,0.36,1), background 0.7s ease; min-width: 2px; }
         .index-comp-legend {
             display: flex; flex-wrap: wrap; gap: 1.4rem; margin-top: 1.1rem;
         }
@@ -858,7 +858,7 @@
             display: inline-flex; align-items: center; gap: 0.55rem;
             font-size: 0.74rem; color: var(--text-2);
         }
-        .icl-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+        .icl-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; transition: background 0.7s ease; }
         .icl-item b { font-weight: 500; color: var(--text); }
         .icl-item .icl-w { color: var(--text-3); }
 
@@ -881,12 +881,13 @@
             transition: background 0.25s ease, padding-left 0.25s ease;
         }
         a.ib-row:hover { background: var(--gold-soft); padding-left: 0.6rem; }
+        .ib-rank { transition: color 0.5s ease; }
         .ib-rank {
             font-family: 'Cormorant Garamond', serif; font-size: 1.5rem;
             color: var(--gold); line-height: 1;
         }
         .ib-name { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
-        .ib-swatch { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+        .ib-swatch { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; transition: background 0.7s ease; }
         .ib-nm-wrap { min-width: 0; }
         .ib-nm {
             font-size: 0.98rem; font-weight: 500; letter-spacing: -0.01em;
@@ -905,7 +906,7 @@
             flex: 1; height: 6px; background: var(--line);
             border-radius: 999px; overflow: hidden; min-width: 40px;
         }
-        .ibw-fill { height: 100%; border-radius: 999px; transition: width 0.9s cubic-bezier(0.22,1,0.36,1); }
+        .ibw-fill { height: 100%; border-radius: 999px; transition: width 0.9s cubic-bezier(0.22,1,0.36,1), background 0.7s ease; }
         .ibw-pct {
             font-size: 0.78rem; color: var(--text-2); font-variant-numeric: tabular-nums;
             min-width: 2.9rem; text-align: right;
@@ -935,7 +936,7 @@
             font-size: 0.82rem;
         }
         .ipx-label { color: var(--text-3); letter-spacing: 0.03em; }
-        .ipx-value { color: var(--text); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+        .ipx-value { color: var(--text); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; transition: color 0.5s ease; }
         .ipx-value.productive { color: var(--green); }
         .ipx-value.gold { color: var(--gold); }
         .ipx-value.muted { color: var(--text-3); font-weight: 400; }
@@ -944,7 +945,9 @@
             font-size: 0.46rem; letter-spacing: 0.12em; text-transform: uppercase;
             color: var(--gold); border: 1px solid var(--gold-line); border-radius: 999px;
             vertical-align: 1px; font-weight: 600;
+            animation: chipIn 0.45s cubic-bezier(0.22,1,0.36,1);
         }
+        @keyframes chipIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
         .ipx-age { color: var(--gold); }
         /* ── Composite weight breakdown + company signature ── */
         .ipx-composite {
@@ -2345,6 +2348,118 @@ function computeIndex() {
 // Which weighting lens the index is currently displayed through
 function activeWeight(c) { return IDX_MODE === 'tvl' ? (c.tvlWeight || 0) : (c.weight || 0); }
 
+/* ── Lens switching, animated in place ─────────────────────────────────────
+   Re-rendering the board would snap every figure and bar to its new value at
+   once. Instead the existing nodes are kept and transitioned: percentages count
+   to their new value, composition segments and weight bars ease to their new
+   widths and colours, and rows glide to their new rank (FLIP). Open passports
+   survive, because nothing is destroyed.                                     */
+function tweenPct(el, to, suffix) {
+    const from = parseFloat((el.textContent || '').replace(/[^\d.]/g, '')) || 0;
+    if (Math.abs(from - to) < 0.05) { el.textContent = to.toFixed(1) + suffix; return; }
+    const t0 = performance.now(), dur = 620;
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const step = now => {
+        const k = Math.min((now - t0) / dur, 1);
+        el.textContent = (from + (to - from) * ease(k)).toFixed(1) + suffix;
+        if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+function updateLensInPlace(lang) {
+    const board = document.getElementById('idxBoard');
+    const bar   = document.getElementById('idxCompBar');
+    const leg   = document.getElementById('idxCompLegend');
+    if (!board || !bar || !leg || !board.children.length) return false;
+
+    const list  = computeIndex();
+    const pct   = c => activeWeight(c) * 100;
+    const shade = i => {
+        const n = list.length, t = n > 1 ? i / (n - 1) : 0;
+        const a = [29, 74, 58], b = [168, 178, 112];
+        const r = a.map((v, k) => Math.round(v + (b[k] - v) * t));
+        return 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
+    };
+    const pick = (root, nm) => root.querySelector('[data-nm="' + nm + '"]');
+
+    // labels that describe the active lens
+    const wh = document.getElementById('idxWeightHead');
+    if (wh) wh.textContent = (IDX_MODE === 'tvl')
+        ? (lang === 'ru' ? 'Вес по TVL' : 'TVL Weight')
+        : (lang === 'ru' ? 'Вес в индексе' : 'Index Weight');
+    const nl = document.getElementById('idxNoteLead');
+    if (nl) nl.textContent = (IDX_MODE === 'tvl')
+        ? (lang === 'ru' ? 'Взвешивание по капиталу · TVL компании / Совокупный TVL индекса.'
+                         : 'Capital-weighted view · Company TVL / Total Index TVL.')
+        : (lang === 'ru' ? 'Методология The Holding · 40% Капитал + 30% Возраст + 30% Производительность.'
+                         : 'The Holding methodology · 40% Capital + 30% Longevity + 30% Productivity.');
+    const nb = document.getElementById('idxNoteBody');
+    if (nb) nb.style.display = (IDX_MODE === 'tvl') ? 'none' : '';
+    const ld = document.getElementById('idxLeader');
+    if (ld && list[0]) ld.textContent = list[0].nm;
+
+    // FLIP: remember where every row sits before the reorder
+    const rows = Array.prototype.slice.call(board.children);
+    const before = {};
+    rows.forEach(el => { before[el.dataset.nm] = el.getBoundingClientRect().top; });
+
+    list.forEach((c, i) => {
+        const col = shade(i);
+
+        const seg = pick(bar, c.nm);
+        if (seg) { bar.appendChild(seg); seg.style.width = pct(c).toFixed(2) + '%'; seg.style.background = col; }
+
+        const li = pick(leg, c.nm);
+        if (li) {
+            leg.appendChild(li);
+            const sw = li.querySelector('.icl-swatch'); if (sw) sw.style.background = col;
+            const w  = li.querySelector('.icl-w');      if (w)  tweenPct(w, pct(c), '%');
+        }
+
+        const row = pick(board, c.nm);
+        if (row) {
+            board.appendChild(row);                       // reorder to the new rank
+            const rank = row.querySelector('.ib-rank');   if (rank) rank.textContent = i + 1;
+            const sw2  = row.querySelector('.ib-swatch'); if (sw2) sw2.style.background = col;
+            const fill = row.querySelector('.ibw-fill');
+            if (fill) { fill.style.width = pct(c).toFixed(2) + '%'; fill.style.background = col; }
+            const p    = row.querySelector('.ibw-pct');   if (p) tweenPct(p, pct(c), '%');
+            // passport: move the "in view" chip and the gold highlight to the active weight
+            const fields = row.querySelectorAll('.ipx-grid .ipx-field');
+            const chip = (lang === 'ru') ? 'Текущий' : 'In view';
+            [3, 4].forEach((idx, k) => {
+                const f = fields[idx]; if (!f) return;
+                const on = (k === 0) ? (IDX_MODE === 'composite') : (IDX_MODE === 'tvl');
+                const val = f.querySelector('.ipx-value');
+                if (val) { val.classList.toggle('gold', on); val.classList.toggle('muted', !on); }
+                const lab = f.querySelector('.ipx-label');
+                if (lab) {
+                    const old = lab.querySelector('.ipx-chip');
+                    if (on && !old) {
+                        const s = document.createElement('span');
+                        s.className = 'ipx-chip'; s.textContent = chip; lab.appendChild(s);
+                    } else if (!on && old) { old.remove(); }
+                    else if (on && old) { old.textContent = chip; }
+                }
+            });
+        }
+    });
+
+    // FLIP: play every row from its old position to the new one
+    rows.forEach(el => {
+        const dy = before[el.dataset.nm] - el.getBoundingClientRect().top;
+        if (!dy) return;
+        el.style.transition = 'none';
+        el.style.transform  = 'translateY(' + dy + 'px)';
+        requestAnimationFrame(() => {
+            el.style.transition = 'transform 0.62s cubic-bezier(0.22,1,0.36,1)';
+            el.style.transform  = '';
+        });
+    });
+    return true;
+}
+
 function renderIndex(lang) {
     if (!INDEX_STATE) return;
     const money = v => '$' + Math.round(v).toLocaleString('en-US');
@@ -2388,6 +2503,7 @@ function renderIndex(lang) {
         list.forEach((c, i) => {
             const seg = document.createElement('div');
             seg.className = 'index-comp-seg';
+            seg.dataset.nm = c.nm;
             seg.style.width = pct(c).toFixed(2) + '%';
             seg.style.background = shade(i);
             seg.title = c.nm + ' · ' + pct(c).toFixed(1) + '%';
@@ -2400,6 +2516,7 @@ function renderIndex(lang) {
         list.forEach((c, i) => {
             const it = document.createElement('span');
             it.className = 'icl-item';
+            it.dataset.nm = c.nm;
             it.innerHTML = '<span class="icl-swatch" style="background:' + shade(i) + '"></span>'
                          + '<b>' + c.nm + '</b> <span class="icl-w">' + pct(c).toFixed(1) + '%</span>';
             leg.appendChild(it);
@@ -2476,6 +2593,7 @@ function renderIndex(lang) {
             const w = pct(c);
             const item = document.createElement('div');
             item.className = 'ib-item';
+            item.dataset.nm = c.nm;
             const ageVal = ageDays(c.foundedISO).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US') + ' ' + L.days;
             item.innerHTML =
                 '<div class="ib-row" role="button" tabindex="0" aria-expanded="false">'
@@ -2969,29 +3087,17 @@ function renderFramework(lang) {
             // Re-rendering the board collapses any open passport, which changes the
             // page height and yanks the viewport. Remember what was open and where
             // the reader was, then restore both so the switch feels perfectly still.
-            const openNames = Array.prototype.map.call(
-                document.querySelectorAll('.ib-item.open .ib-nm'), el => el.textContent);
-
             // Switching lenses changes the height of the copy ABOVE the fold — the
-            // roadmap sentence is hidden in the TVL view and the methodology line
-            // rewraps — so restoring a raw scroll offset still shifts what you see.
-            // Anchor on the control instead and keep IT fixed on screen.
+            // roadmap sentence is hidden in the TVL view — so anchor on the control
+            // and keep IT fixed on screen while everything else transitions.
             const anchorTop = btn.getBoundingClientRect().top;
             const root = document.documentElement;
             const prevBehavior = root.style.scrollBehavior;
             root.style.scrollBehavior = 'auto';     // page scrolls smoothly by default
-            root.classList.add('no-anim');
 
-            renderIndex(idxLang());
-
-            document.querySelectorAll('.ib-item').forEach(item => {
-                const nm = item.querySelector('.ib-nm');
-                if (nm && openNames.indexOf(nm.textContent) !== -1) {
-                    item.classList.add('open');
-                    const r = item.querySelector('.ib-row');
-                    if (r) r.setAttribute('aria-expanded', 'true');
-                }
-            });
+            // Animate the existing nodes rather than rebuilding them; only fall back
+            // to a full render if the board hasn't been built yet.
+            if (!updateLensInPlace(idxLang())) renderIndex(idxLang());
 
             const hold = () => {
                 const delta = btn.getBoundingClientRect().top - anchorTop;
@@ -3000,7 +3106,6 @@ function renderFramework(lang) {
             hold();
             requestAnimationFrame(() => {
                 hold();                              // settle once layout is final
-                root.classList.remove('no-anim');
                 root.style.scrollBehavior = prevBehavior;
             });
 
