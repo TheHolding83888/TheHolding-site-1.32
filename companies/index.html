@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08d · metric spacing from 361px -->
+<!-- companies.html · build 2026-08-08e · RU-only metric spacing, dual hook -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1677,21 +1677,23 @@
               Applied for every language so it never depends on language detection,
               with extra room in Russian where "Ориентировочный APR" is much longer
               than "Indicative APR". Mobile stacks the metrics, so it is excluded. ── */
-        /* The metrics sit side by side from 361px up, so the clearance has to start
-           there too — a narrow laptop window or a zoomed browser reports well under
-           761 CSS px and was previously falling through this rule entirely. */
+        /* Russian labels ("Ориентировочный APR") are far longer than the English
+           ones, so only Russian needs extra clearance from the centre divider.
+           English keeps its original spacing. Two independent hooks are used —
+           the [lang] attribute and an .is-ru class set by applyLang() — so the
+           rule still lands if one of them fails to resolve. The metrics sit side
+           by side from 361px up, which is where the clearance has to begin. */
         @media (min-width: 361px) {
-            .cc-metrics { grid-template-columns: 1.06fr 0.94fr; }
-            .cc-metrics > div:last-child { padding-left: 1.15rem !important; }
-            html[lang="ru"] .cc-metrics > div:last-child { padding-left: 1.4rem !important; }
-        }
-        @media (min-width: 561px) {
-            /* the column boundary itself moves right of the centred divider, so the
-               clearance holds even if the padding is overridden somewhere upstream */
-            .cc-metrics { grid-template-columns: 1.1fr 0.9fr; }
-            .cc-metrics > div:last-child { padding-left: 1.7rem !important; }
-            html[lang="ru"] .cc-metrics { grid-template-columns: 1.16fr 0.84fr; }
-            html[lang="ru"] .cc-metrics > div:last-child { padding-left: 2.3rem !important; }
+            html[lang="ru"] .cc-metrics > div:last-child,
+            html.is-ru .cc-metrics > div:last-child,
+            body.is-ru .cc-metrics > div:last-child {
+                padding-left: 2.4rem !important;
+            }
+            html[lang="ru"] .cc-metrics,
+            html.is-ru .cc-metrics,
+            body.is-ru .cc-metrics {
+                grid-template-columns: 1.14fr 0.86fr;
+            }
         }
     </style>
 </head>
@@ -3150,6 +3152,8 @@ function renderFramework(lang) {
             if (I18N[lang][key] !== undefined) el.innerHTML = I18N[lang][key];
         });
         document.documentElement.lang = lang;
+        document.documentElement.classList.toggle('is-ru', lang === 'ru');
+        if (document.body) document.body.classList.toggle('is-ru', lang === 'ru');
         document.querySelectorAll('.lang-switch button').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === lang);
         });
