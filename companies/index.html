@@ -1055,8 +1055,7 @@
             .graph-lens { justify-content: space-between; }
             .graph-lens .idx-lens-label { display: block; }
         }
-        .graph-canvas { width: 100%; transition: opacity 0.22s ease; }
-        .graph-canvas.swapping { opacity: 0.22; }
+        .graph-canvas { width: 100%; }
         .g-svg { width: 100%; max-width: 780px; height: auto; display: block; margin: 0 auto; overflow: visible; }
 
         .g-edge {
@@ -1064,6 +1063,8 @@
             transition: stroke-opacity 0.35s ease, stroke-width 0.35s ease;
         }
         .g-node { cursor: pointer; }
+        /* company nodes re-weight smoothly when the lens changes */
+        .g-node-co circle { transition: r 0.75s cubic-bezier(0.22,1,0.36,1); }
         .g-node > * { pointer-events: none; }
         .g-hit { pointer-events: all; fill: transparent; }
         .g-node-pr .g-dot-pr { fill: #d8b45a; stroke: rgba(168,132,44,0.55); stroke-width: 1; }
@@ -2422,8 +2423,9 @@ function buildGraph() {
         ? { W:360, coX:104, prX:250, padY:16, rowH:22, fCo:12, fPr:11, rCoMin:5,  rCoMax:17, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
         : { W:780, coX:172, prX:558, padY:22, rowH:27, fCo:15, fPr:13, rCoMin:8,  rCoMax:30, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
 
-    // Ranked and sized by the active weighting lens (composite by default, or plain TVL)
-    const comps = computeIndex();
+    // Layout order is stable (always composite) so switching lenses morphs node
+    // sizes in place rather than reshuffling the map; only the SIZES follow the lens.
+    const comps = computeIndex().slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
     const wt = c => Math.max(activeWeight(c), 0);                // active lens weight 0..1
     const maxWt = Math.max.apply(null, comps.map(wt).concat([1e-9]));
     const shade  = i => {
@@ -2455,7 +2457,7 @@ function buildGraph() {
 
     let edges = '';
     comps.forEach((c, i) => {
-        const col = shade(i), x1 = P.coX + rCo(c), y1 = coY(i);
+        const col = shade(i), x1 = P.coX, y1 = coY(i);   // starts under the node, radius-independent
         (MEMBERSHIP[c.nm] || []).forEach(p => {
             const j = prIndex[p], x2 = P.prX - rPr(p), y2 = prY(j), mx = (x1 + x2) / 2;
             const d = 'M' + x1.toFixed(1) + ',' + y1.toFixed(1)
@@ -2544,7 +2546,25 @@ function buildGraph() {
     bind('pr', 'pr');
     // tap/click empty space clears a locked focus
     svg.addEventListener('click', () => { if (locked) { locked = null; clearFocus(); } });
+
+    // Morph company node sizes to the current lens without rebuilding the map.
+    // CSS transitions the SVG `r` property, so the network visibly re-weights
+    // itself — the same companies, seen through a different lens.
+    graphResize = () => {
+        const list = computeIndex();
+        const mx = Math.max.apply(null, list.map(x => Math.max(activeWeight(x), 0)).concat([1e-9]));
+        list.forEach(cc => {
+            const g = svg.querySelector('.g-node-co[data-co="' + cc.nm + '"]');
+            if (!g) return;
+            const r = P.rCoMin + (P.rCoMax - P.rCoMin) * Math.sqrt(Math.max(activeWeight(cc), 0) / mx);
+            const dot  = g.querySelector('.g-dot-co');
+            const glow = g.querySelector('circle:not(.g-dot-co)');
+            if (dot)  dot.setAttribute('r', r.toFixed(1));
+            if (glow) glow.setAttribute('r', (r * 2.1).toFixed(1));
+        });
+    };
 }
+let graphResize = null;
 let _graphRT;
 window.addEventListener('resize', function () {
     clearTimeout(_graphRT);
@@ -2760,11 +2780,30 @@ function renderFramework(lang) {
             if (mode === IDX_MODE) return;
             IDX_MODE = mode;
             btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+
+            // Re-rendering the board collapses any open passport, which changes the
+            // page height and yanks the viewport. Remember what was open and where
+            // the reader was, then restore both so the switch feels perfectly still.
+            const openNames = Array.prototype.map.call(
+                document.querySelectorAll('.ib-item.open .ib-nm'), el => el.textContent);
+            const y = window.pageYOffset;
+
             renderIndex(idxLang());
-            const canvas = document.getElementById('graphCanvas');
-            if (canvas && INDEX_STATE) {
-                canvas.classList.add('swapping');
-                setTimeout(() => { buildGraph(); canvas.classList.remove('swapping'); }, 200);
+
+            document.querySelectorAll('.ib-item').forEach(item => {
+                const nm = item.querySelector('.ib-nm');
+                if (nm && openNames.indexOf(nm.textContent) !== -1) {
+                    item.classList.add('open');
+                    const r = item.querySelector('.ib-row');
+                    if (r) r.setAttribute('aria-expanded', 'true');
+                }
+            });
+            window.scrollTo(0, y);
+
+            // Morph the map in place — no rebuild, so the network visibly re-weights
+            if (INDEX_STATE) {
+                if (graphResize) graphResize();
+                else buildGraph();
             }
         });
     });
