@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08o · animated lens transitions (FLIP + counters) -->
+<!-- companies.html · build 2026-08-08p · stable palette, no reflow while counting -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -857,10 +857,15 @@
         .icl-item {
             display: inline-flex; align-items: center; gap: 0.55rem;
             font-size: 0.74rem; color: var(--text-2);
+            white-space: nowrap;
         }
         .icl-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; transition: background 0.7s ease; }
         .icl-item b { font-weight: 500; color: var(--text); }
-        .icl-item .icl-w { color: var(--text-3); }
+        .icl-item .icl-w {
+            color: var(--text-3);
+            font-variant-numeric: tabular-nums;
+            display: inline-block; min-width: 3.1rem; text-align: right;
+        }
 
         /* constituents board */
         .index-board { display: flex; flex-direction: column; }
@@ -909,7 +914,7 @@
         .ibw-fill { height: 100%; border-radius: 999px; transition: width 0.9s cubic-bezier(0.22,1,0.36,1), background 0.7s ease; }
         .ibw-pct {
             font-size: 0.78rem; color: var(--text-2); font-variant-numeric: tabular-nums;
-            min-width: 2.9rem; text-align: right;
+            min-width: 3.1rem; text-align: right; flex-shrink: 0;
         }
         .ib-since {
             font-size: 0.74rem; color: var(--text-3); text-align: right;
@@ -2341,6 +2346,18 @@ function computeIndex() {
         // presented as a real figure.
         c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : 1 / list.length;
     });
+    // A company keeps its colour across both lenses: the ramp is assigned once from
+    // its composite standing, so a lens switch re-proportions the network without
+    // repainting it. Only lengths move, which is what makes the change readable.
+    const byComposite = list.slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
+    const n = byComposite.length;
+    byComposite.forEach((c, i) => {
+        const t = n > 1 ? i / (n - 1) : 0;
+        const a = [29, 74, 58], b = [168, 178, 112];
+        const r = a.map((v, k) => Math.round(v + (b[k] - v) * t));
+        c.color = 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
+    });
+
     const key = IDX_MODE === 'tvl' ? 'tvlWeight' : 'weight';
     return list.sort((a, b) => b[key] - a[key]);
 }
@@ -2357,8 +2374,8 @@ function activeWeight(c) { return IDX_MODE === 'tvl' ? (c.tvlWeight || 0) : (c.w
 function tweenPct(el, to, suffix) {
     const from = parseFloat((el.textContent || '').replace(/[^\d.]/g, '')) || 0;
     if (Math.abs(from - to) < 0.05) { el.textContent = to.toFixed(1) + suffix; return; }
-    const t0 = performance.now(), dur = 620;
-    const ease = t => 1 - Math.pow(1 - t, 3);
+    const t0 = performance.now(), dur = 900;
+    const ease = t => (t < 0.5) ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     const step = now => {
         const k = Math.min((now - t0) / dur, 1);
         el.textContent = (from + (to - from) * ease(k)).toFixed(1) + suffix;
@@ -2375,12 +2392,7 @@ function updateLensInPlace(lang) {
 
     const list  = computeIndex();
     const pct   = c => activeWeight(c) * 100;
-    const shade = i => {
-        const n = list.length, t = n > 1 ? i / (n - 1) : 0;
-        const a = [29, 74, 58], b = [168, 178, 112];
-        const r = a.map((v, k) => Math.round(v + (b[k] - v) * t));
-        return 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
-    };
+    const shade = i => (list[i] && list[i].color) || 'rgb(29,74,58)';
     const pick = (root, nm) => root.querySelector('[data-nm="' + nm + '"]');
 
     // labels that describe the active lens
@@ -2405,25 +2417,22 @@ function updateLensInPlace(lang) {
     rows.forEach(el => { before[el.dataset.nm] = el.getBoundingClientRect().top; });
 
     list.forEach((c, i) => {
-        const col = shade(i);
-
+        // composition keeps a stable order and palette — only the proportions move
         const seg = pick(bar, c.nm);
-        if (seg) { bar.appendChild(seg); seg.style.width = pct(c).toFixed(2) + '%'; seg.style.background = col; }
+        if (seg) seg.style.width = pct(c).toFixed(2) + '%';
 
         const li = pick(leg, c.nm);
         if (li) {
-            leg.appendChild(li);
-            const sw = li.querySelector('.icl-swatch'); if (sw) sw.style.background = col;
-            const w  = li.querySelector('.icl-w');      if (w)  tweenPct(w, pct(c), '%');
+            const w = li.querySelector('.icl-w');
+            if (w) tweenPct(w, pct(c), '%');
         }
 
         const row = pick(board, c.nm);
         if (row) {
             board.appendChild(row);                       // reorder to the new rank
             const rank = row.querySelector('.ib-rank');   if (rank) rank.textContent = i + 1;
-            const sw2  = row.querySelector('.ib-swatch'); if (sw2) sw2.style.background = col;
             const fill = row.querySelector('.ibw-fill');
-            if (fill) { fill.style.width = pct(c).toFixed(2) + '%'; fill.style.background = col; }
+            if (fill) fill.style.width = pct(c).toFixed(2) + '%';
             const p    = row.querySelector('.ibw-pct');   if (p) tweenPct(p, pct(c), '%');
             // passport: move the "in view" chip and the gold highlight to the active weight
             const fields = row.querySelectorAll('.ipx-grid .ipx-field');
@@ -2467,13 +2476,7 @@ function renderIndex(lang) {
     const total = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);
     const pct   = c => activeWeight(c) * 100;
     // Noble green ramp — deepest for the largest holding, lighter down the ranks
-    const shade = i => {
-        const n = list.length;
-        const t = n > 1 ? i / (n - 1) : 0;
-        const a = [29, 74, 58], b = [168, 178, 112];   // deep emerald → light olive
-        const r = a.map((v, k) => Math.round(v + (b[k] - v) * t));
-        return 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
-    };
+    const shade = i => (list[i] && list[i].color) || 'rgb(29,74,58)';
 
     const nl = document.getElementById('idxNoteLead');
     if (nl) nl.textContent = (IDX_MODE === 'tvl')
@@ -2716,12 +2719,7 @@ function buildGraph() {
     // sizes in place rather than reshuffling the map; only the SIZES follow the lens.
     const comps = computeIndex().slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
     const wt = c => Math.max(activeWeight(c), 0);                // active lens weight 0..1
-    const shade  = i => {
-        const n = comps.length, t = n > 1 ? i / (n - 1) : 0;
-        const a = [29, 74, 58], b = [168, 178, 112];
-        const r = a.map((v, k) => Math.round(v + (b[k] - v) * t));
-        return 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
-    };
+    const shade  = i => (comps[i] && comps[i].color) || 'rgb(29,74,58)';
 
     const coIndex = {}; comps.forEach((c, i) => coIndex[c.nm] = i);
     const protoCount = {};
