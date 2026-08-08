@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08p · stable palette, no reflow while counting -->
+<!-- companies.html · build 2026-08-08q · Performance Since Inception -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -578,6 +578,40 @@
         }
 
         /* external destination label (e.g. DeBank) as a footer row */
+        /* Performance Since Inception — an operating metric, not a signal:
+           deliberately no red/green, the sign carries the direction. */
+        .cc-perf {
+            display: flex; align-items: baseline; justify-content: space-between;
+            gap: 1rem; margin-top: 1.15rem; padding-top: 0.85rem;
+            border-top: 1px solid var(--line);
+        }
+        .cc-perf-label {
+            font-size: 0.5rem; letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--text-3); font-weight: 500; line-height: 1.4;
+        }
+        .cc-perf-vals { display: inline-flex; align-items: baseline; gap: 0.7rem; white-space: nowrap; }
+        .cc-perf-vals b {
+            font-family: 'Cormorant Garamond', serif; font-size: 1.15rem;
+            font-weight: 500; color: var(--text); font-variant-numeric: tabular-nums;
+        }
+        .cc-perf-vals i {
+            font-style: normal; font-size: 0.78rem; color: var(--text-2);
+            font-variant-numeric: tabular-nums;
+        }
+        @media (max-width: 640px) {
+            .grid:not(.view-list) .cc-perf {
+                flex-direction: column; align-items: flex-start; gap: 0.3rem;
+                margin-top: 0.75rem; padding-top: 0.6rem;
+            }
+            .grid:not(.view-list) .cc-perf-label { font-size: 0.46rem; letter-spacing: 0.12em; }
+            .grid:not(.view-list) .cc-perf-vals b { font-size: 1.02rem; }
+            .grid:not(.view-list) .cc-perf-vals i { font-size: 0.72rem; }
+        }
+        @media (min-width: 761px) {
+            .grid.view-list .cc-perf { grid-column: 1 / -1; grid-row: 4; }
+            .grid.view-list .cc-extlink { grid-row: 5; }
+        }
+
         .cc-extlink {
             display: flex;
             align-items: center;
@@ -955,6 +989,14 @@
         @keyframes chipIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
         .ipx-age { color: var(--gold); }
         /* ── Composite weight breakdown + company signature ── */
+        .ipx-perf {
+            margin-top: 1.4rem; padding-top: 1.25rem;
+            border-top: 1px solid var(--line);
+        }
+        .ipx-perf .ipx-c-title { margin-bottom: 0.7rem; }
+        .ipx-perf .ipx-field:nth-child(3) .ipx-value,
+        .ipx-perf .ipx-field:nth-child(4) .ipx-value { color: var(--text); font-weight: 600; }
+
         .ipx-composite {
             display: grid; grid-template-columns: 1fr 210px; gap: 2.1rem;
             align-items: center; margin-top: 1.5rem; padding-top: 1.35rem;
@@ -1941,6 +1983,10 @@
                         <div class="cc-metric-value">4–8+%</div>
                     </div>
                 </div>
+                <div class="cc-perf">
+                    <span class="cc-perf-label" data-i18n="card.perf">Performance · Since Inception</span>
+                    <span class="cc-perf-vals"><b id="perf-05081966-usd">—</b><i id="perf-05081966-pct">—</i></span>
+                </div>
                 <span class="cc-extlink"><span class="cc-ext-label" data-i18n="card.explore">Explore Company</span><svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </a>
 
@@ -1967,6 +2013,10 @@
                         <div class="cc-metric-value">~10–12%</div>
                     </div>
                 </div>
+                <div class="cc-perf">
+                    <span class="cc-perf-label" data-i18n="card.perf">Performance · Since Inception</span>
+                    <span class="cc-perf-vals"><b id="perf-yieldring-usd">—</b><i id="perf-yieldring-pct">—</i></span>
+                </div>
                 <span class="cc-extlink"><span class="cc-ext-label" data-i18n="card.explore">Explore Company</span><svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </a>
 
@@ -1992,6 +2042,10 @@
                         <div class="cc-metric-label" data-i18n="card.cashflow">Indicative APR</div>
                         <div class="cc-metric-value" data-i18n="card3.apr">10–20%+ Variable</div>
                     </div>
+                </div>
+                <div class="cc-perf">
+                    <span class="cc-perf-label" data-i18n="card.perf">Performance · Since Inception</span>
+                    <span class="cc-perf-vals"><b id="perf-yb-usd">—</b><i id="perf-yb-pct">—</i></span>
                 </div>
                 <span class="cc-extlink"><span class="cc-ext-label">View on DeBank</span><svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </a>
@@ -2021,6 +2075,10 @@
                         <div class="cc-metric-label" data-i18n="card.cashflow">Indicative APR</div>
                         <div class="cc-metric-value" data-i18n="card4.apr">12–14%</div>
                     </div>
+                </div>
+                <div class="cc-perf">
+                    <span class="cc-perf-label" data-i18n="card.perf">Performance · Since Inception</span>
+                    <span class="cc-perf-vals"><b id="perf-defitea-usd">—</b><i id="perf-defitea-pct">—</i></span>
                 </div>
                 <span class="cc-extlink"><span class="cc-ext-label" data-i18n="card.explore">Explore Company</span><svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </a>
@@ -2297,6 +2355,67 @@ function updateAges() {
     });
 }
 
+
+/* ── COMPANY BOOK — one source of truth for value AND cost basis ────────────
+   Every position carries its quantity and the price it was entered at, so the
+   live TVL and the Performance Since Inception figure are derived from the same
+   data and can never drift apart.
+
+   Performance answers: what has the originally committed capital earned or lost?
+   That is deliberately NOT "change in TVL" — TVL also moves with new deposits,
+   withdrawals, rewards and compounding, so the two must not be conflated.
+
+       Cost Basis    = Σ qty × entry price
+       Current Value = Σ qty × current price
+       Performance $ = Current Value − Cost Basis
+       Performance % = Current Value / Cost Basis − 1
+
+   `fixed` marks an asset priced manually because it is not on the price feed.  */
+const COMPANY_BOOK = {
+    'defitea.eth': [
+        { id: 'aerodrome-finance', qty: 2440,  entry: 0.4265 },
+        { id: 'convex-finance',    qty: 1333,  entry: 1.28   },
+        { id: 'curve-dao-token',   qty: 4125,  entry: 0.2722 },
+        { id: 'pendle',            qty: 500,   entry: 1.49   },
+        { id: 'fxn',               qty: 59.81, entry: 15.06, fixed: 12.04 },
+        { id: 'yield-basis',       qty: 10846, entry: 0.1281 },
+        { id: 'frax-share',        qty: 4224,  entry: 0.4042 },
+        { id: 'velodrome-finance', qty: 12180, entry: 0.03   },
+        { id: 'venice-token',      qty: 50,    entry: 2.85   },
+        { id: 'liquity',           qty: 1488,  entry: 0.1809 },
+        { id: 'resupply',          qty: 3682,  entry: 0.069  }
+    ],
+    'YieldRing.eth': [
+        { id: 'bitcoin',           qty: 0.03,  entry: 63442  },
+        { id: 'aerodrome-finance', qty: 480,   entry: 0.4068 },
+        { id: 'convex-finance',    qty: 240,   entry: 1.28   },
+        { id: 'frax-share',        qty: 800,   entry: 0.2628 }
+    ],
+    '05081966.eth': [
+        { id: 'aerodrome-finance', qty: 202,   entry: 0.4954 },
+        { id: 'curve-dao-token',   qty: 480,   entry: 0.2126 },
+        { id: 'frax-share',        qty: 393,   entry: 0.2589 }
+    ],
+    'dinaz.eth': [
+        { id: 'yield-basis',       qty: 12029, entry: 0.074  }
+    ]
+};
+
+function bookFigures(nm, prices) {
+    const pos = COMPANY_BOOK[nm] || [];
+    let value = 0, cost = 0;
+    pos.forEach(p => {
+        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);
+        value += p.qty * price;
+        cost  += p.qty * p.entry;
+    });
+    return { value: value, cost: cost, pnl: value - cost, pct: cost > 0 ? (value / cost - 1) * 100 : 0 };
+}
+
+const fmtMoney  = v => '$' + Math.round(v).toLocaleString('en-US');
+const fmtSigned = v => (v >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(v)).toLocaleString('en-US');
+const fmtPct    = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1) + '%';
+
 /* ── The Holding Index · composite methodology ─────────────
    Index Weight = 40% Capital + 30% Longevity + 30% Productivity.
    Every factor is smoothed with a square root, then normalised into
@@ -2531,14 +2650,18 @@ function renderIndex(lang) {
             ? { registry:'Реестр', founded:'Основана', age:'Возраст', weight:'Вес в индексе', tvlWeight:'Вес по TVL',
                 arch:'Архитектура', custody:'Хранение', custodyVal:'Самостоятельное',
                 protocols:'Протоколы', status:'Статус', explore:'Перейти к компании', days:'дн.',
-                comp:'Состав композитного веса', inView:'Текущий', capital:'Капитал', longevity:'Возраст',
+                comp:'Состав композитного веса', inView:'Текущий',
+                perfHead:'Результат · с момента запуска', costBasis:'Себестоимость капитала',
+                curValue:'Текущая стоимость', perfUsd:'Результат, $', perfPct:'Результат, %', capital:'Капитал', longevity:'Возраст',
                 productivity:'Производительность', capNote:'Живой ончейн-TVL',
                 lonNote:'в работе', sigCap:'Сигнатура компании',
                 axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', custody:'Custody', custodyVal:'Self-Custodied',
                 protocols:'Protocols', status:'Status', explore:'Explore Company', days:'days',
-                comp:'Composite breakdown', inView:'In view', capital:'Capital', longevity:'Longevity',
+                comp:'Composite breakdown', inView:'In view',
+                perfHead:'Performance · Since Inception', costBasis:'Cost Basis',
+                curValue:'Current Value', perfUsd:'Performance $', perfPct:'Performance %', capital:'Capital', longevity:'Longevity',
                 productivity:'Productivity', capNote:'Live onchain TVL',
                 lonNote:'operating', sigCap:'Company signature',
                 axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY' };
@@ -2623,6 +2746,16 @@ function renderIndex(lang) {
                 +     fld(L.protocols, String(c.protocols))
                 +     fld(L.status, c.status[lang], 'productive')
                 +   '</div>'
+                +   (c.cost > 0
+                      ? '<div class="ipx-perf">'
+                      +   '<div class="ipx-c-title">' + L.perfHead + '</div>'
+                      +   '<div class="ipx-grid">'
+                      +     fld(L.costBasis, fmtMoney(c.cost))
+                      +     fld(L.curValue,  fmtMoney(c.val))
+                      +     fld(L.perfUsd,   fmtSigned(c.pnl))
+                      +     fld(L.perfPct,   fmtPct(c.pct))
+                      +   '</div></div>'
+                      : '')
                 +   '<div class="ipx-composite">'
                 +     '<div class="ipx-c-main">'
                 +       '<div class="ipx-c-head"><span class="ipx-c-title">' + L.comp + '</span>'
@@ -3128,40 +3261,24 @@ function renderFramework(lang) {
     // YieldRing.eth: BTC 0.03 / veAERO 480 / vlCVX 240 / veFRAX 800
     // dinaz.eth: YB 12029
     // defitea.eth: full Defitea fund book (fxn fixed $680)
+    // every priced id the book needs (fxn is valued manually, so it is not fetched)
     const IDS = ['bitcoin','aerodrome-finance','curve-dao-token','frax-share',
                  'convex-finance','yield-basis','pendle','velodrome-finance',
-                 'venice-token','liquity','resupply','clever'];
+                 'venice-token','liquity','resupply'];
 
-    const fmt = v => v > 0 ? '$' + Math.round(v).toLocaleString('en-US') : 'Live';
+    const fmt = v => v > 0 ? fmtMoney(v) : 'Live';
 
     const prices = await cgPrices(IDS);
     if (!prices || Object.keys(prices).length === 0) {
         [el1, el2, el3, el4, statEl].forEach(el => { if (el) el.textContent = 'Live'; });
         return;
     }
-    const usd = id => (prices[id] || 0);
 
-    const tvl1 = 202 * usd('aerodrome-finance')
-               + 480 * usd('curve-dao-token')
-               + 393 * usd('frax-share');
-    const tvl2 = 0.03  * usd('bitcoin')
-               + 480   * usd('aerodrome-finance')
-               + 240   * usd('convex-finance')
-               + 800   * usd('frax-share');
-    const tvl3 = 12029 * usd('yield-basis');
-    const FIXED_FXN = 680;
-    const tvl4 = 2440 * usd('aerodrome-finance')
-               + 1333 * usd('convex-finance')
-               + 4125 * usd('curve-dao-token')
-               + 500  * usd('pendle')
-               + FIXED_FXN
-               + 10846 * usd('yield-basis')
-               + 4224 * usd('frax-share')
-               + 12180 * usd('velodrome-finance')
-               + 50   * usd('venice-token')
-               + 1488 * usd('liquity')
-               + 3682 * usd('resupply')
-               + 20   * usd('clever');
+    const F1 = bookFigures('05081966.eth', prices);
+    const F2 = bookFigures('YieldRing.eth', prices);
+    const F3 = bookFigures('dinaz.eth', prices);
+    const F4 = bookFigures('defitea.eth', prices);
+    const tvl1 = F1.value, tvl2 = F2.value, tvl3 = F3.value, tvl4 = F4.value;
 
     if (el1)    el1.textContent = fmt(tvl1);
     if (el2)    el2.textContent = fmt(tvl2);
@@ -3169,20 +3286,28 @@ function renderFramework(lang) {
     if (el4)    el4.textContent = fmt(tvl4);
     if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3 + tvl4);
 
+    // Performance Since Inception on each company card
+    [['05081966', F1], ['yieldring', F2], ['yb', F3], ['defitea', F4]].forEach(pair => {
+        const d = document.getElementById('perf-' + pair[0] + '-usd');
+        const p = document.getElementById('perf-' + pair[0] + '-pct');
+        if (d) d.textContent = pair[1].cost > 0 ? fmtSigned(pair[1].pnl) : '—';
+        if (p) p.textContent = pair[1].cost > 0 ? fmtPct(pair[1].pct)   : '—';
+    });
+
     // Feed the live index with real per-company values
     // Adding a company: append an entry here AND to MEMBERSHIP inside buildGraph().
     // Index weights, ranking, node sizes and the capital map all re-derive from this.
     INDEX_STATE = [
-        { nm: 'defitea.eth',   val: tvl4, href: 'https://theholding.ai/defitea/',
+        { nm: 'defitea.eth',   val: tvl4, cost: F4.cost, pnl: F4.pnl, pct: F4.pct, href: 'https://theholding.ai/defitea/',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jan 2025', ru: 'Янв 2025' },
           reg:'004', apr:13, aprLabel:{ en:'12–14% indicative APR', ru:'12–14% ориентировочный APR' }, foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'Holding Native', ru:'Нативная The Holding' }, protocols:11, status:{ en:'Productive', ru:'Активна' } },
-        { nm: 'YieldRing.eth', val: tvl2, href: 'https://theholding.ai/yieldring',
+        { nm: 'YieldRing.eth', val: tvl2, cost: F2.cost, pnl: F2.pnl, pct: F2.pct, href: 'https://theholding.ai/yieldring',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
           reg:'002', apr:11, aprLabel:{ en:'~10–12% indicative APR', ru:'~10–12% ориентировочный APR' }, foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'Holding Standard', ru:'Стандарт Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
-        { nm: '05081966.eth',  val: tvl1, href: 'https://theholding.ai/05081966',
+        { nm: '05081966.eth',  val: tvl1, cost: F1.cost, pnl: F1.pnl, pct: F1.pct, href: 'https://theholding.ai/05081966',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
           reg:'001', apr:6,  aprLabel:{ en:'4–8+% indicative APR', ru:'4–8+% ориентировочный APR' }, foundedISO:'2026-07-17', founded:{ en:'Jul 17, 2026', ru:'17 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
-        { nm: 'dinaz.eth',     val: tvl3, href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
+        { nm: 'dinaz.eth',     val: tvl3, cost: F3.cost, pnl: F3.pnl, pct: F3.pct, href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
           reg:'003', apr:15, aprLabel:{ en:'10–20%+ indicative APR', ru:'10–20%+ ориентировочный APR' }, foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } }
     ];
@@ -3313,6 +3438,7 @@ function renderFramework(lang) {
             'card.tvl': 'Company TVL',
             'card.cashflow': 'Indicative APR',
             'card.explore': 'Explore Company',
+            'card.perf': 'Performance · Since Inception',
             'placeholder.title': 'Next Company',
             'placeholder.text': 'The collection grows as new personal companies are assembled and brought onchain.',
             'nextlayer.eyebrow': 'The Next Layer',
@@ -3405,6 +3531,7 @@ function renderFramework(lang) {
             'card.tvl': 'TVL компании',
             'card.cashflow': 'Ориентировочный APR',
             'card.explore': 'Перейти к компании',
+            'card.perf': 'Результат · с момента запуска',
             'placeholder.title': 'Следующая компания',
             'placeholder.text': 'Коллекция растёт по мере того, как собираются и выводятся в блокчейн новые персональные компании.',
             'nextlayer.eyebrow': 'Следующий уровень',
