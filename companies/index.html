@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08f · RU metric spacing applied inline via JS -->
+<!-- companies.html · build 2026-08-08g · RU divider shifted left via CSS variable -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -495,7 +495,8 @@
             content: '';
             position: absolute;
             top: 1.5rem; bottom: 0.1rem;
-            left: 50%;
+            /* driven per language — Russian labels need the line further left */
+            left: var(--cc-div, 50%);
             width: 1px;
             background: linear-gradient(180deg, var(--line), transparent);
         }
@@ -1683,18 +1684,7 @@
            the [lang] attribute and an .is-ru class set by applyLang() — so the
            rule still lands if one of them fails to resolve. The metrics sit side
            by side from 361px up, which is where the clearance has to begin. */
-        @media (min-width: 361px) {
-            html[lang="ru"] .cc-metrics > div:last-child,
-            html.is-ru .cc-metrics > div:last-child,
-            body.is-ru .cc-metrics > div:last-child {
-                padding-left: 2.4rem !important;
-            }
-            html[lang="ru"] .cc-metrics,
-            html.is-ru .cc-metrics,
-            body.is-ru .cc-metrics {
-                grid-template-columns: 1.14fr 0.86fr;
-            }
-        }
+
     </style>
 </head>
 <body>
@@ -2583,10 +2573,12 @@ window.addEventListener('resize', function () {
         const ru = document.documentElement.lang === 'ru' || document.documentElement.classList.contains('is-ru');
         const wide = window.innerWidth > 360;
         document.querySelectorAll('.cc-metrics > div:last-child').forEach(el => {
-            el.style.paddingLeft = (ru && wide) ? '2.4rem' : '';
+            el.style.paddingLeft = (ru && wide) ? '1.1rem' : '';
         });
         document.querySelectorAll('.cc-metrics').forEach(el => {
-            el.style.gridTemplateColumns = (ru && wide) ? '1.14fr 0.86fr' : '';
+            el.style.gridTemplateColumns = '';
+            if (ru && wide) el.style.setProperty('--cc-div', '42%');
+            else            el.style.removeProperty('--cc-div');
         });
     } catch (e) {}
     clearTimeout(_graphRT);
@@ -3159,11 +3151,15 @@ function renderFramework(lang) {
         // elements — and done first, so nothing below can prevent it.
         try {
             const wide = window.innerWidth > 360;
+            const ru = (lang === 'ru' && wide);
             document.querySelectorAll('.cc-metrics > div:last-child').forEach(el => {
-                el.style.paddingLeft = (lang === 'ru' && wide) ? '2.4rem' : '';
+                el.style.paddingLeft = ru ? '1.1rem' : '';
             });
             document.querySelectorAll('.cc-metrics').forEach(el => {
-                el.style.gridTemplateColumns = (lang === 'ru' && wide) ? '1.14fr 0.86fr' : '';
+                el.style.gridTemplateColumns = '';
+                // move the divider left so the longer Russian label has real air
+                if (ru) el.style.setProperty('--cc-div', '42%');
+                else    el.style.removeProperty('--cc-div');
             });
         } catch (e) {}
 
