@@ -1,145 +1,257 @@
-# TheHolding.ai - robots.txt
-# Updated: June 2, 2026
-# Comprehensive crawler configuration with AI/LLM bot support
+# TheHolding.ai — robots.txt
+# Updated: August 8, 2026
+# Crawler policy: open to search engines and AI/LLM retrieval, closed to
+# aggressive scrapers, mirroring tools and competitive-intel crawlers.
 
 # ============================================
-# GENERAL CRAWLERS - Allow All
+# SITEMAP
 # ============================================
-User-agent: *
-Allow: /
-Crawl-delay: 1# TheHolding.ai - robots.txt
-# Updated: July 31, 2026
-# Comprehensive crawler configuration with AI/LLM bot support
+Sitemap: https://theholding.ai/sitemap.xml
 
 # ============================================
-# GENERAL CRAWLERS - Allow All
+# DEFAULT — allow everything except private paths
 # ============================================
+# NOTE ON GROUP MATCHING: a crawler obeys ONLY its most specific matching
+# User-agent group and ignores all others. That is why every allowed group
+# below repeats the same Disallow lines — otherwise a named bot such as
+# Googlebot would ignore the private-path rules declared here.
 User-agent: *
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 Crawl-delay: 1
 
 # ============================================
-# SITEMAP LOCATION
-# ============================================
-Sitemap: https://theholding.ai/sitemap.xml
-
-# ============================================
-# MAJOR SEARCH ENGINES
+# SEARCH ENGINES
 # ============================================
 User-agent: Googlebot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: Googlebot-Image
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: Bingbot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: Slurp
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: DuckDuckBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: Baiduspider
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: YandexBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: Applebot
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: PetalBot
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: SeznamBot
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: Yeti
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 # ============================================
-# AI/LLM CRAWLERS - Priority Access
+# AI / LLM CRAWLERS — training + real-time retrieval
 # ============================================
+# Retrieval/agent bots (ChatGPT-User, Claude-User, Claude-SearchBot,
+# OAI-SearchBot, Perplexity-User) are what allow the site to be cited
+# inside live AI answers — these matter most for visibility.
 
-# OpenAI (ChatGPT)
+# OpenAI (ChatGPT / SearchGPT)
 User-agent: GPTBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 # Anthropic (Claude)
 User-agent: Claude-Web
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: anthropic-ai
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: Claude-SearchBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: Claude-User
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 # Perplexity AI
 User-agent: PerplexityBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: Perplexity-User
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
-# Google AI (Gemini)
+# Google AI (Gemini / Vertex grounding)
 User-agent: Google-Extended
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: GoogleOther
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
-User-agent: Googlebot-Image
+User-agent: Google-CloudVertexBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 # Apple Intelligence
-User-agent: Applebot
-Allow: /
-
 User-agent: Applebot-Extended
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 # Meta AI
 User-agent: FacebookBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: Meta-ExternalAgent
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 User-agent: Meta-ExternalFetcher
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
-# Cohere
+# Microsoft Copilot
+User-agent: BingPreview
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+# Other model builders & retrieval agents
 User-agent: cohere-ai
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
-# Common Crawl (used by many AI models)
 User-agent: CCBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
-# Amazon Alexa / AI
 User-agent: Amazonbot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
-# Diffbot
 User-agent: Diffbot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
-# You.com
 User-agent: YouBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
-# Mistral AI
 User-agent: MistralBot
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
-# Bytedance / Doubao
 User-agent: Bytespider
 Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: AI2Bot
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: Ai2Bot-Dolma
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: TimpiBot
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: omgilibot
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: Webzio-Extended
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
+
+User-agent: ImagesiftBot
+Allow: /
+Disallow: /yield-admin
+Disallow: /yield-admin.html
 
 # ============================================
-# SEO & ANALYTICS TOOLS - Selective Allow
+# SEO & AUDIT TOOLS — allowed
 # ============================================
-
 User-agent: Screaming Frog SEO Spider
 Allow: /
 
@@ -147,13 +259,21 @@ User-agent: Lighthouse
 Allow: /
 
 # ============================================
-# AGGRESSIVE CRAWLERS - Block
+# BLOCKED — SEO / competitive-intel crawlers
 # ============================================
-
+# These consume crawl budget and expose backlink data to competitors.
+# If you ever want to audit this site with Ahrefs or Semrush yourself,
+# temporarily remove the relevant lines or verify via their site-audit token.
 User-agent: AhrefsBot
 Disallow: /
 
 User-agent: SemrushBot
+Disallow: /
+
+User-agent: SiteAuditBot
+Disallow: /
+
+User-agent: SemrushBot-SA
 Disallow: /
 
 User-agent: MJ12bot
@@ -162,16 +282,54 @@ Disallow: /
 User-agent: DotBot
 Disallow: /
 
-User-agent: Mediatoolkitbot
+User-agent: DataForSeoBot
 Disallow: /
 
-User-agent: SEOkicks
+User-agent: SerpstatBot
+Disallow: /
+
+User-agent: Barkrowler
+Disallow: /
+
+User-agent: MegaIndex
+Disallow: /
+
+User-agent: LinkpadBot
 Disallow: /
 
 User-agent: BLEXBot
 Disallow: /
 
-# Email harvesters
+User-agent: SEOkicks
+Disallow: /
+
+User-agent: Mediatoolkitbot
+Disallow: /
+
+User-agent: ZoominfoBot
+Disallow: /
+
+User-agent: AwarioSmartBot
+Disallow: /
+
+User-agent: AwarioRssBot
+Disallow: /
+
+User-agent: magpie-crawler
+Disallow: /
+
+User-agent: Nimbostratus-Bot
+Disallow: /
+
+User-agent: TurnitinBot
+Disallow: /
+
+User-agent: NetcraftSurveyAgent
+Disallow: /
+
+# ============================================
+# BLOCKED — harvesters, spam & malicious bots
+# ============================================
 User-agent: EmailCollector
 Disallow: /
 
@@ -181,33 +339,22 @@ Disallow: /
 User-agent: EmailWolf
 Disallow: /
 
-# Content scrapers
-User-agent: WebReaper
+User-agent: ExtractorPro
 Disallow: /
 
-User-agent: WebCopier
+User-agent: CherryPicker
 Disallow: /
 
-User-agent: HTTrack
+User-agent: CopyRightCheck
 Disallow: /
 
-User-agent: Offline Explorer
+User-agent: Zeus
 Disallow: /
 
-User-agent: WebZip
-Disallow: /
-
-# Malicious/Spam bots
 User-agent: asterias
 Disallow: /
 
 User-agent: BackDoorBot
-Disallow: /
-
-User-agent: Black Hole
-Disallow: /
-
-User-agent: BlowFish
 Disallow: /
 
 User-agent: BotALot
@@ -228,25 +375,58 @@ Disallow: /
 User-agent: CheeseBot
 Disallow: /
 
-User-agent: CherryPicker
-Disallow: /
-
-User-agent: CopyRightCheck
-Disallow: /
-
 User-agent: cosmos
 Disallow: /
 
 User-agent: Crescent
 Disallow: /
 
-User-agent: Custo
-Disallow: /
-
-User-agent: DiscoBot
-Disallow: /
-
 User-agent: DittoSpyder
+Disallow: /
+
+User-agent: VoidEYE
+Disallow: /
+
+User-agent: Black Hole
+Disallow: /
+
+User-agent: BlowFish
+Disallow: /
+
+User-agent: Widow
+Disallow: /
+
+User-agent: WWWOFFLE
+Disallow: /
+
+User-agent: Xaldon WebSpider
+Disallow: /
+
+# ============================================
+# BLOCKED — site mirroring / offline download tools
+# ============================================
+User-agent: WebReaper
+Disallow: /
+
+User-agent: WebCopier
+Disallow: /
+
+User-agent: HTTrack
+Disallow: /
+
+User-agent: Offline Explorer
+Disallow: /
+
+User-agent: Offline Navigator
+Disallow: /
+
+User-agent: WebZip
+Disallow: /
+
+User-agent: WebZIP
+Disallow: /
+
+User-agent: Custo
 Disallow: /
 
 User-agent: Download Demon
@@ -259,9 +439,6 @@ User-agent: EirGrabber
 Disallow: /
 
 User-agent: Express WebPictures
-Disallow: /
-
-User-agent: ExtractorPro
 Disallow: /
 
 User-agent: EyeNetIE
@@ -348,9 +525,6 @@ Disallow: /
 User-agent: Octopus
 Disallow: /
 
-User-agent: Offline Navigator
-Disallow: /
-
 User-agent: PageGrabber
 Disallow: /
 
@@ -390,9 +564,6 @@ Disallow: /
 User-agent: Teleport Pro
 Disallow: /
 
-User-agent: VoidEYE
-Disallow: /
-
 User-agent: Web Image Collector
 Disallow: /
 
@@ -426,468 +597,38 @@ Disallow: /
 User-agent: WebWhacker
 Disallow: /
 
-User-agent: WebZIP
-Disallow: /
-
 User-agent: Wget
 Disallow: /
 
-User-agent: Widow
-Disallow: /
-
-User-agent: WWWOFFLE
-Disallow: /
-
-User-agent: Xaldon WebSpider
-Disallow: /
-
-User-agent: Zeus
-Disallow: /
-
-# ============================================
-# NOTES FOR ADMINISTRATORS
-# ============================================
-# This robots.txt prioritizes:
-# 1. AI/LLM access — both training (GPTBot, ClaudeBot, CCBot) and
-#    real-time retrieval/agent bots (ChatGPT-User, Claude-User,
-#    Claude-SearchBot, OAI-SearchBot, PerplexityBot, Perplexity-User).
-#    Retrieval/agent bots are what enable citation in live AI answers.
-# 2. Major search engines (Google, Bing, DuckDuckGo, Yandex)
-# 3. Legitimate SEO tools (Screaming Frog, Lighthouse)
-# 4. Protection against aggressive scrapers & malicious bots
-#
-# IMPORTANT (hosting): This site is on Cloudflare. robots.txt is an
-# honor system — verify that no CDN/WAF rule (e.g. Cloudflare's
-# one-click "Block AI Bots") is silently overriding these directives,
-# or AI crawlers will be blocked regardless of what this file says.
-#
-# Review quarterly — the AI crawler landscape changes 2-4 times/year.
-#
-# Last updated: July 31, 2026
-# Maintained by: TheHolding Team
-
-# ============================================
-# SITEMAP LOCATION
-# ============================================
-Sitemap: https://theholding.ai/sitemap.xml
-
-# ============================================
-# MAJOR SEARCH ENGINES
-# ============================================
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Slurp
-Allow: /
-
-User-agent: DuckDuckBot
-Allow: /
-
-User-agent: Baiduspider
-Allow: /
-
-User-agent: YandexBot
-Allow: /
-
-# ============================================
-# AI/LLM CRAWLERS - Priority Access
-# ============================================
-
-# OpenAI (ChatGPT)
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: OAI-SearchBot
-Allow: /
-
-# Anthropic (Claude)
-User-agent: Claude-Web
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
-# Perplexity AI
-User-agent: PerplexityBot
-Allow: /
-
-# Google AI (Gemini)
-User-agent: Google-Extended
-Allow: /
-
-User-agent: Googlebot-Image
-Allow: /
-
-# Apple Intelligence
-User-agent: Applebot
-Allow: /
-
-User-agent: Applebot-Extended
-Allow: /
-
-# Meta AI
-User-agent: FacebookBot
-Allow: /
-
-User-agent: Meta-ExternalAgent
-Allow: /
-
-User-agent: Meta-ExternalFetcher
-Allow: /
-
-# Cohere
-User-agent: cohere-ai
-Allow: /
-
-# Common Crawl (used by many AI models)
-User-agent: CCBot
-Allow: /
-
-# Amazon Alexa / AI
-User-agent: Amazonbot
-Allow: /
-
-# Diffbot
-User-agent: Diffbot
-Allow: /
-
-# You.com
-User-agent: YouBot
-Allow: /
-
-# Mistral AI
-User-agent: MistralBot
-Allow: /
-
-# Bytedance / Doubao
-User-agent: Bytespider
-Allow: /
-
-# ============================================
-# SEO & ANALYTICS TOOLS - Selective Allow
-# ============================================
-
-User-agent: Screaming Frog SEO Spider
-Allow: /
-
-User-agent: Lighthouse
-Allow: /
-
-# ============================================
-# AGGRESSIVE CRAWLERS - Block
-# ============================================
-
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
-User-agent: MJ12bot
-Disallow: /
-
-User-agent: DotBot
-Disallow: /
-
-User-agent: Mediatoolkitbot
-Disallow: /
-
-User-agent: SEOkicks
-Disallow: /
-
-User-agent: BLEXBot
-Disallow: /
-
-# Email harvesters
-User-agent: EmailCollector
-Disallow: /
-
-User-agent: EmailSiphon
-Disallow: /
-
-User-agent: EmailWolf
-Disallow: /
-
-# Content scrapers
-User-agent: WebReaper
-Disallow: /
-
-User-agent: WebCopier
-Disallow: /
-
-User-agent: HTTrack
-Disallow: /
-
-User-agent: Offline Explorer
-Disallow: /
-
-User-agent: WebZip
-Disallow: /
-
-# Malicious/Spam bots
-User-agent: asterias
-Disallow: /
-
-User-agent: BackDoorBot
-Disallow: /
-
-User-agent: Black Hole
-Disallow: /
-
-User-agent: BlowFish
-Disallow: /
-
-User-agent: BotALot
-Disallow: /
-
-User-agent: BuiltBotTough
-Disallow: /
-
-User-agent: Bullseye
-Disallow: /
-
-User-agent: BunnySlippers
-Disallow: /
-
-User-agent: Cegbfeieh
-Disallow: /
-
-User-agent: CheeseBot
-Disallow: /
-
-User-agent: CherryPicker
-Disallow: /
-
-User-agent: CopyRightCheck
-Disallow: /
-
-User-agent: cosmos
-Disallow: /
-
-User-agent: Crescent
-Disallow: /
-
-User-agent: Custo
+User-agent: Scrapy
 Disallow: /
 
 User-agent: DiscoBot
 Disallow: /
 
-User-agent: DittoSpyder
-Disallow: /
-
-User-agent: Download Demon
-Disallow: /
-
-User-agent: eCatch
-Disallow: /
-
-User-agent: EirGrabber
-Disallow: /
-
-User-agent: Express WebPictures
-Disallow: /
-
-User-agent: ExtractorPro
-Disallow: /
-
-User-agent: EyeNetIE
-Disallow: /
-
-User-agent: FlashGet
-Disallow: /
-
-User-agent: GetRight
-Disallow: /
-
-User-agent: GetWeb!
-Disallow: /
-
-User-agent: Go!Zilla
-Disallow: /
-
-User-agent: Go-Ahead-Got-It
-Disallow: /
-
-User-agent: GrabNet
-Disallow: /
-
-User-agent: Grafula
-Disallow: /
-
-User-agent: HMView
-Disallow: /
-
-User-agent: Image Stripper
-Disallow: /
-
-User-agent: Image Sucker
-Disallow: /
-
-User-agent: Indy Library
-Disallow: /
-
-User-agent: InterGET
-Disallow: /
-
-User-agent: Internet Ninja
-Disallow: /
-
-User-agent: JetCar
-Disallow: /
-
-User-agent: JOC Web Spider
-Disallow: /
-
-User-agent: larbin
-Disallow: /
-
-User-agent: LeechFTP
-Disallow: /
-
-User-agent: Mass Downloader
-Disallow: /
-
-User-agent: MIIxpc
-Disallow: /
-
-User-agent: Mister PiX
-Disallow: /
-
-User-agent: Navroad
-Disallow: /
-
-User-agent: NearSite
-Disallow: /
-
-User-agent: NetAnts
-Disallow: /
-
-User-agent: NetSpider
-Disallow: /
-
-User-agent: Net Vampire
-Disallow: /
-
-User-agent: NetZIP
-Disallow: /
-
-User-agent: Octopus
-Disallow: /
-
-User-agent: Offline Navigator
-Disallow: /
-
-User-agent: PageGrabber
-Disallow: /
-
-User-agent: Papa Foto
-Disallow: /
-
-User-agent: pavuk
-Disallow: /
-
-User-agent: pcBrowser
-Disallow: /
-
-User-agent: RealDownload
-Disallow: /
-
-User-agent: ReGet
-Disallow: /
-
-User-agent: SiteSnagger
-Disallow: /
-
-User-agent: SmartDownload
-Disallow: /
-
-User-agent: SuperBot
-Disallow: /
-
-User-agent: SuperHTTP
-Disallow: /
-
-User-agent: Surfbot
-Disallow: /
-
-User-agent: tAkeOut
-Disallow: /
-
-User-agent: Teleport Pro
-Disallow: /
-
-User-agent: VoidEYE
-Disallow: /
-
-User-agent: Web Image Collector
-Disallow: /
-
-User-agent: Web Sucker
-Disallow: /
-
-User-agent: WebAuto
-Disallow: /
-
-User-agent: WebFetch
-Disallow: /
-
-User-agent: WebGo IS
-Disallow: /
-
-User-agent: WebLeacher
-Disallow: /
-
-User-agent: WebSauger
-Disallow: /
-
-User-agent: Website eXtractor
-Disallow: /
-
-User-agent: Website Quester
-Disallow: /
-
-User-agent: WebStripper
-Disallow: /
-
-User-agent: WebWhacker
-Disallow: /
-
-User-agent: WebZIP
-Disallow: /
-
-User-agent: Wget
-Disallow: /
-
-User-agent: Widow
-Disallow: /
-
-User-agent: WWWOFFLE
-Disallow: /
-
-User-agent: Xaldon WebSpider
-Disallow: /
-
-User-agent: Zeus
-Disallow: /
-
 # ============================================
-# NOTES FOR ADMINISTRATORS
+# ADMINISTRATOR NOTES
 # ============================================
-# This robots.txt prioritizes:
-# 1. AI/LLM training access (GPT, Claude, Perplexity, Gemini, etc.)
-# 2. Major search engines (Google, Bing, DuckDuckGo, Yandex)
-# 3. Legitimate SEO tools (Screaming Frog, Lighthouse)
-# 4. Protection against aggressive scrapers & malicious bots
+# PRIVATE PATHS: /yield-admin is disallowed above. Confirm the exact live
+# URL — if the admin view sits elsewhere, update these lines. robots.txt
+# only asks crawlers not to index; it does NOT secure a page. Anything
+# genuinely sensitive needs authentication or an X-Robots-Tag: noindex
+# header, since the file itself is public and lists the path.
 #
-# Last updated: June 2, 2026
-# Maintained by: TheHolding Team
+# CLOUDFLARE: this site sits behind Cloudflare. robots.txt is an honour
+# system — verify no WAF/CDN rule (e.g. the one-click "Block AI Bots")
+# is silently overriding these directives, or AI crawlers are blocked
+# regardless of what this file says.
+#
+# CRAWL-DELAY: ignored by Googlebot; respected by Bing, Yandex and others.
+#
+# UNLISTED BOTS: the wildcard group allows everything not named here, so
+# new AI crawlers gain access automatically. Only the block list needs
+# active maintenance.
+#
+# DUPLICATE URLS: if pages are reachable both as /companies and
+# /companies.html, rely on the canonical tags already in place rather than
+# blocking .html here — a blanket block would deindex the real pages.
+#
+# Review quarterly — the AI crawler landscape shifts 2-4 times a year.
+# Last updated: August 8, 2026 · Maintained by: TheHolding Team
