@@ -3,14 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Personal Onchain Companies — The Holding</title>
-    <meta name="description" content="The Holding builds personal onchain companies. Turnkey digital companies with real onchain assets, live TVL, and autonomous cash flow — each one part of a single ecosystem.">
+    <title>Personal Onchain Companies — The Holding Index &amp; Registry</title>
+    <meta name="description" content="A live registry of personal onchain companies ranked by The Holding Index — a composite of capital, longevity and productivity. Live TVL, capital map and company passports.">
+    <meta name="keywords" content="onchain companies, personal onchain company, The Holding Index, onchain company registry, DeFi TVL index, composite index methodology, self-custodied onchain capital, onchain capital map">
+    <meta name="author" content="The Holding">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large">
     <link rel="canonical" href="https://theholding.ai/companies">
+    <meta name="theme-color" content="#fcfcfa">
+    <link rel="icon" href="https://theholding.ai/logo.png">
+    <link rel="apple-touch-icon" href="https://theholding.ai/logo.png">
 
-    <meta property="og:title" content="Personal Onchain Companies — The Holding">
-    <meta property="og:description" content="Turnkey digital companies with real onchain assets, live TVL, and autonomous cash flow. Built under one roof.">
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="The Holding">
+    <meta property="og:title" content="Personal Onchain Companies — The Holding Index">
+    <meta property="og:description" content="A live registry of onchain companies weighted by capital, longevity and productivity. Live TVL, an interactive capital map, and a passport for every company.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://theholding.ai/companies">
+    <meta property="og:image" content="https://theholding.ai/logo.png">
+    <meta property="og:image:alt" content="The Holding — personal onchain companies and the live network index">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="ru_RU">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Personal Onchain Companies — The Holding Index">
+    <meta name="twitter:description" content="A live registry of onchain companies weighted by capital, longevity and productivity — with a live capital map.">
+    <meta name="twitter:image" content="https://theholding.ai/logo.png">
+    <meta name="twitter:url" content="https://theholding.ai/companies">
+    <meta name="twitter:site" content="@defitea_">
+    <meta name="twitter:creator" content="@defitea_">
+
+    <link rel="preconnect" href="https://api.coingecko.com" crossorigin>
+    <link rel="dns-prefetch" href="https://api.coingecko.com">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Personal Onchain Companies",
+      "headline": "The Holding Index — a live registry of personal onchain companies",
+      "description": "A live registry of personal onchain companies ranked by The Holding Index, a composite weighting of capital, longevity and productivity. Each company is self-custodied by its owner.",
+      "url": "https://theholding.ai/companies",
+      "inLanguage": ["en", "ru"],
+      "isPartOf": { "@type": "WebSite", "name": "The Holding", "url": "https://theholding.ai" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "The Holding",
+        "url": "https://theholding.ai",
+        "logo": "https://theholding.ai/logo.png"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "The Holding Index",
+        "description": "A composite index of onchain companies weighted 40% by capital (live onchain TVL), 30% by longevity (days operating) and 30% by productivity (indicative APR). Factor scores are square-root smoothed and normalised across all constituents."
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "The Holding", "item": "https://theholding.ai" },
+        { "@type": "ListItem", "position": 2, "name": "Companies", "item": "https://theholding.ai/companies" }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "The Holding Index constituents",
+      "description": "Companies currently included in The Holding Index registry.",
+      "numberOfItems": 4,
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "05081966.eth", "url": "https://theholding.ai/05081966" },
+        { "@type": "ListItem", "position": 2, "name": "YieldRing.eth", "url": "https://theholding.ai/yieldring" },
+        { "@type": "ListItem", "position": 3, "name": "dinaz.eth" },
+        { "@type": "ListItem", "position": 4, "name": "defitea.eth", "url": "https://theholding.ai/defitea/" }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How is The Holding Index weighted?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Index Weight combines three factor scores: 40% Capital Score (live onchain TVL), 30% Longevity Score (days the company has been operating, maturing over about four years) and 30% Productivity Score (indicative APR, counted up to a 20% cap). Each factor is smoothed with a square root and normalised across all constituents, so all company weights sum to 100%." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between the Composite and TVL views?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Composite is the default and applies The Holding methodology, combining capital, longevity and productivity. TVL is an alternative analytical view based only on each company's share of total index TVL. The constituent companies do not change - only the analytical lens changes." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does The Holding custody the capital of these companies?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. All capital remains self-custodied by its respective owner. Each company keeps its own owner, treasury, keys, strategy and history. The Holding measures the network and provides the architecture that connects it; it does not custody the capital represented by the index." }
+        },
+        {
+          "@type": "Question",
+          "name": "How is the capital map read?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Green company nodes scale with the selected index view. Yellow protocol nodes scale with the number of indexed companies connected to each protocol, making their size a measure of shared infrastructure across the network rather than capital concentration." }
+        }
+      ]
+    }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -399,6 +501,11 @@
         /* breathing room so the second metric doesn't crowd the divider */
         .cc-metrics > div:last-child {
             padding-left: 0.85rem;
+        }
+        /* Russian labels are longer — they need a little more clearance */
+        html[lang="ru"] .cc-metrics > div:last-child { padding-left: 1.4rem; }
+        @media (max-width: 760px) {
+            html[lang="ru"] .cc-metrics > div:last-child { padding-left: 0.85rem; }
         }
         .cc-metric-label {
             font-size: 0.58rem;
@@ -803,8 +910,8 @@
         .ipx-age { color: var(--gold); }
         /* ── Composite weight breakdown + company signature ── */
         .ipx-composite {
-            display: grid; grid-template-columns: 1fr 176px; gap: 1.9rem;
-            align-items: start; margin-top: 1.5rem; padding-top: 1.35rem;
+            display: grid; grid-template-columns: 1fr 210px; gap: 2.1rem;
+            align-items: center; margin-top: 1.5rem; padding-top: 1.35rem;
             border-top: 1px solid var(--line);
         }
         .ipx-c-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem; }
@@ -829,6 +936,7 @@
         .ipx-factor.f-pro .ipx-f-track span { background: #7a8f5e; }
         .ipx-f-note { font-size: 0.68rem; color: var(--text-3); margin-top: 0.32rem; }
         .ipx-sig { width: 100%; height: auto; display: block; }
+        .ipx-c-sig { align-self: center; }
         .sg-grid  { fill: none; stroke: var(--line-strong); stroke-width: 0.7; }
         .sg-axis  { stroke: var(--line-strong); stroke-width: 0.7; }
         .sg-shape { fill: rgba(168,132,44,0.16); stroke: var(--gold); stroke-width: 1.3; stroke-linejoin: round; }
@@ -975,6 +1083,9 @@
         }
         @media (max-width: 760px) {
             .graph-sec { padding: 4rem 0; }
+            /* on touch the protocol column stays fully readable — the trace is
+               carried by the edges and the connected companies instead */
+            .g-svg.focused .g-node-pr { opacity: 1; }
             .graph-head { margin-bottom: 2rem; }
             .graph-hint { color: rgba(243,239,228,0.5); }
         }
@@ -1829,7 +1940,7 @@
             <div id="idxBoard"></div>
         </div>
 
-        <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 40% Capital + 30% Longevity + 30% Productivity.</b> <span data-i18n="index.note.body">Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.</span></p>
+        <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 40% Capital + 30% Longevity + 30% Productivity.</b> <span id="idxNoteBody" data-i18n="index.note.body">Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.</span></p>
     </div>
 </section>
 
@@ -2081,6 +2192,9 @@ function renderIndex(lang) {
                          : 'Capital-weighted view · Company TVL / Total Index TVL.')
         : (lang === 'ru' ? 'Методология The Holding · 40% Капитал + 30% Возраст + 30% Производительность.'
                          : 'The Holding methodology · 40% Capital + 30% Longevity + 30% Productivity.');
+
+    const nb = document.getElementById('idxNoteBody');
+    if (nb) nb.style.display = (IDX_MODE === 'tvl') ? 'none' : '';
 
     const wh = document.getElementById('idxWeightHead');
     if (wh) wh.textContent = (IDX_MODE === 'tvl')
