@@ -502,11 +502,6 @@
         .cc-metrics > div:last-child {
             padding-left: 0.85rem;
         }
-        /* Russian labels are longer — they need a little more clearance */
-        html[lang="ru"] .cc-metrics > div:last-child { padding-left: 1.4rem; }
-        @media (max-width: 760px) {
-            html[lang="ru"] .cc-metrics > div:last-child { padding-left: 0.85rem; }
-        }
         .cc-metric-label {
             font-size: 0.58rem;
             letter-spacing: 0.18em;
@@ -1653,6 +1648,14 @@
                 padding-top: 1rem;
                 border-top: 1px solid var(--line);
             }
+        }
+
+        /* ── RU desktop: "Ориентировочный APR" is far longer than "Indicative APR",
+              so the second metric needs real clearance from the centre divider.
+              Mobile stacks the metrics, so it is deliberately excluded.        ── */
+        @media (min-width: 761px) {
+            html[lang="ru"] .cc-metrics { gap: 1.5rem; }
+            html[lang="ru"] .cc-metrics > div:last-child { padding-left: 1.9rem; }
         }
     </style>
 </head>
