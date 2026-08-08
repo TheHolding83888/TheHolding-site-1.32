@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08b · metric spacing fix -->
+<!-- companies.html · build 2026-08-08d · metric spacing from 361px -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1677,7 +1677,15 @@
               Applied for every language so it never depends on language detection,
               with extra room in Russian where "Ориентировочный APR" is much longer
               than "Indicative APR". Mobile stacks the metrics, so it is excluded. ── */
-        @media (min-width: 761px) {
+        /* The metrics sit side by side from 361px up, so the clearance has to start
+           there too — a narrow laptop window or a zoomed browser reports well under
+           761 CSS px and was previously falling through this rule entirely. */
+        @media (min-width: 361px) {
+            .cc-metrics { grid-template-columns: 1.06fr 0.94fr; }
+            .cc-metrics > div:last-child { padding-left: 1.15rem !important; }
+            html[lang="ru"] .cc-metrics > div:last-child { padding-left: 1.4rem !important; }
+        }
+        @media (min-width: 561px) {
             /* the column boundary itself moves right of the centred divider, so the
                clearance holds even if the padding is overridden somewhere upstream */
             .cc-metrics { grid-template-columns: 1.1fr 0.9fr; }
