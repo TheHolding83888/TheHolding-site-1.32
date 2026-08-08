@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08q · Performance Since Inception -->
+<!-- companies.html · build 2026-08-08r · four-factor composite (Performance added) -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -57,7 +57,7 @@
       "about": {
         "@type": "Thing",
         "name": "The Holding Index",
-        "description": "A composite index of onchain companies weighted 40% by capital (live onchain TVL), 30% by longevity (days operating) and 30% by productivity (indicative APR). Factor scores are square-root smoothed and normalised across all constituents."
+        "description": "A composite index of onchain companies weighted 35% by capital (live onchain TVL), 25% by longevity (days operating), 20% by productivity (indicative APR) and 20% by performance (observed capital result versus entry cost). Factor scores are smoothed and normalised across all constituents."
       }
     }
     </script>
@@ -94,12 +94,12 @@
         {
           "@type": "Question",
           "name": "How is The Holding Index weighted?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Index Weight combines three factor scores: 40% Capital Score (live onchain TVL), 30% Longevity Score (days the company has been operating, maturing over about four years) and 30% Productivity Score (indicative APR, counted up to a 20% cap). Each factor is smoothed with a square root and normalised across all constituents, so all company weights sum to 100%." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Index Weight combines four factor scores: 35% Capital Score (live onchain TVL), 25% Longevity Score (days the company has been operating, maturing over about four years), 20% Productivity Score (indicative APR, counted up to a 20% cap) and 20% Performance Score (the observed result of the capital, measured against the price each position was entered at, clamped at plus or minus 50% and weighted by how much operating history exists). Each factor is smoothed and normalised across all constituents, so all company weights sum to 100%." }
         },
         {
           "@type": "Question",
           "name": "What is the difference between the Composite and TVL views?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Composite is the default and applies The Holding methodology, combining capital, longevity and productivity. TVL is an alternative analytical view based only on each company's share of total index TVL. The constituent companies do not change - only the analytical lens changes." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Composite is the default and applies The Holding methodology, combining capital, longevity, productivity and performance. TVL is an alternative analytical view based only on each company's share of total index TVL. The constituent companies do not change - only the analytical lens changes." }
         },
         {
           "@type": "Question",
@@ -1022,6 +1022,7 @@
         .ipx-factor.f-cap .ipx-f-track span { background: #1d4a3a; }
         .ipx-factor.f-lon .ipx-f-track span { background: #a8842c; }
         .ipx-factor.f-pro .ipx-f-track span { background: #7a8f5e; }
+        .ipx-factor.f-perf .ipx-f-track span { background: #4b6d4c; }
         .ipx-f-note { font-size: 0.68rem; color: var(--text-3); margin-top: 0.32rem; }
         .ipx-sig { width: 100%; height: auto; display: block; }
         .ipx-c-sig { align-self: center; }
@@ -2120,7 +2121,7 @@
         <div class="index-head">
             <div class="index-eyebrow reveal"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">The Index · Live</span></div>
             <h2 class="index-title reveal" data-i18n="index.title">The Holding Index</h2>
-            <p class="index-sub reveal" data-i18n="index.sub">A live measure of the network, viewed through two lenses. Composite applies The Holding methodology — combining capital, longevity and productivity. TVL offers a simpler capital-weighted view. The first working piece of a larger registry to come.</p>
+            <p class="index-sub reveal" data-i18n="index.sub">A live measure of the network, viewed through two lenses. Composite applies The Holding methodology — combining capital, longevity, productivity and performance into a single Index Weight. TVL offers a simpler capital-weighted view. The first working piece of a larger registry to come.</p>
         </div>
 
         <div class="index-metrics reveal">
@@ -2169,7 +2170,7 @@
             <div id="idxBoard"></div>
         </div>
 
-        <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 40% Capital + 30% Longevity + 30% Productivity.</b> <span id="idxNoteBody" data-i18n="index.note.body">Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.</span></p>
+        <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.</b> <span id="idxNoteBody" data-i18n="index.note.body">Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.</span></p>
     </div>
 </section>
 
@@ -2417,13 +2418,14 @@ const fmtSigned = v => (v >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(v)).to
 const fmtPct    = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1) + '%';
 
 /* ── The Holding Index · composite methodology ─────────────
-   Index Weight = 40% Capital + 30% Longevity + 30% Productivity.
+   Index Weight = 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.
    Every factor is smoothed with a square root, then normalised into
    a share of the network, so all weights still sum to 100%.
      Capital       sqrt(TVL)                  — scale, without whale capture
      Longevity     sqrt(min(age,1460)/1460)   — history, maturing over ~4 years
      Productivity  sqrt(min(APR,20)/20)       — current yield, capped so a high
                                                 headline APR cannot dominate the index
+     Performance   signed, clamped, confidence-weighted — observed capital result
    No single factor defines a company's weight.                         */
 const AGE_CAP_DAYS = 1460;   // ~4 years
 const APR_CAP_PCT  = 20;     // methodological cap, not a target
@@ -2431,10 +2433,34 @@ const APR_CAP_PCT  = 20;     // methodological cap, not a target
 /* Factor registry. Adding Resilience / Realized Performance / Reputation later
    is a matter of appending an entry here and rebalancing `weight` — the engine,
    passport, signature and graph all read from this list.                    */
+const PERF_CLAMP    = 0.50;  // ±50% — beyond this the market cannot buy index weight
+const PERF_CONF_DAYS = 365;  // a full year of history before Performance counts in full
+
+/* Four independent dimensions, four different questions:
+     Capital       how large is the company
+     Longevity     how much real history has it accumulated
+     Productivity  what is the capital producing NOW (indicative APR)
+     Performance   how has the capital actually behaved (observed result)
+   Productivity and Performance are deliberately NOT the same measure. */
 const IDX_FACTORS = [
-    { key: 'capital',      weight: 0.40, raw: c => Math.sqrt(Math.max(c.val, 0)) },
-    { key: 'longevity',    weight: 0.30, raw: c => Math.sqrt(Math.min(ageDays(c.foundedISO), AGE_CAP_DAYS) / AGE_CAP_DAYS) },
-    { key: 'productivity', weight: 0.30, raw: c => Math.sqrt(Math.min(Math.max(c.apr || 0, 0), APR_CAP_PCT) / APR_CAP_PCT) }
+    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },
+    { key: 'longevity',    weight: 0.25, raw: c => Math.sqrt(Math.min(ageDays(c.foundedISO), AGE_CAP_DAYS) / AGE_CAP_DAYS) },
+    { key: 'productivity', weight: 0.20, raw: c => Math.sqrt(Math.min(Math.max(c.apr || 0, 0), APR_CAP_PCT) / APR_CAP_PCT) },
+    /* Performance — symmetric around zero, so a loss genuinely lowers the score.
+         Rc       = clamp(return, ±50%)
+         signed   = sign(Rc) · √(|Rc| / 50%)          extremes cannot dominate
+         base     = 0.5 + 0.5 · signed                 −50%→0 · 0%→0.5 · +50%→1
+         conf     = √(min(age,365) / 365)              short histories are less reliable
+         value    = 0.5 + conf · (base − 0.5)          shrink young results toward neutral
+       Missing data returns the neutral 0.5 — never a penalty, never a zero return. */
+    { key: 'performance',  weight: 0.20, raw: c => {
+        if (c.cost === undefined || !(c.cost > 0) || c.pct === undefined) return 0.5;
+        const Rc     = Math.max(-PERF_CLAMP, Math.min(PERF_CLAMP, c.pct / 100));
+        const signed = Math.sign(Rc) * Math.sqrt(Math.abs(Rc) / PERF_CLAMP);
+        const base   = 0.5 + 0.5 * signed;
+        const conf   = Math.sqrt(Math.min(ageDays(c.foundedISO), PERF_CONF_DAYS) / PERF_CONF_DAYS);
+        return 0.5 + conf * (base - 0.5);
+    } }
 ];
 
 function computeIndex() {
@@ -2523,8 +2549,8 @@ function updateLensInPlace(lang) {
     if (nl) nl.textContent = (IDX_MODE === 'tvl')
         ? (lang === 'ru' ? 'Взвешивание по капиталу · TVL компании / Совокупный TVL индекса.'
                          : 'Capital-weighted view · Company TVL / Total Index TVL.')
-        : (lang === 'ru' ? 'Методология The Holding · 40% Капитал + 30% Возраст + 30% Производительность.'
-                         : 'The Holding methodology · 40% Capital + 30% Longevity + 30% Productivity.');
+        : (lang === 'ru' ? 'Методология The Holding · 35% Капитал + 25% Возраст + 20% Производительность + 20% Performance.'
+                         : 'The Holding methodology · 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.');
     const nb = document.getElementById('idxNoteBody');
     if (nb) nb.style.display = (IDX_MODE === 'tvl') ? 'none' : '';
     const ld = document.getElementById('idxLeader');
@@ -2601,8 +2627,8 @@ function renderIndex(lang) {
     if (nl) nl.textContent = (IDX_MODE === 'tvl')
         ? (lang === 'ru' ? 'Взвешивание по капиталу · TVL компании / Совокупный TVL индекса.'
                          : 'Capital-weighted view · Company TVL / Total Index TVL.')
-        : (lang === 'ru' ? 'Методология The Holding · 40% Капитал + 30% Возраст + 30% Производительность.'
-                         : 'The Holding methodology · 40% Capital + 30% Longevity + 30% Productivity.');
+        : (lang === 'ru' ? 'Методология The Holding · 35% Капитал + 25% Возраст + 20% Производительность + 20% Performance.'
+                         : 'The Holding methodology · 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.');
 
     const nb = document.getElementById('idxNoteBody');
     if (nb) nb.style.display = (IDX_MODE === 'tvl') ? 'none' : '';
@@ -2655,7 +2681,8 @@ function renderIndex(lang) {
                 curValue:'Текущая стоимость', perfUsd:'Результат, $', perfPct:'Результат, %', capital:'Капитал', longevity:'Возраст',
                 productivity:'Производительность', capNote:'Живой ончейн-TVL',
                 lonNote:'в работе', sigCap:'Сигнатура компании',
-                axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.' }
+                axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.', axF:'РЕЗУЛЬТАТ',
+                perfFactor:'Результат', perfPeriod:'Период результата', sinceInception:'С момента запуска' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', custody:'Custody', custodyVal:'Self-Custodied',
                 protocols:'Protocols', status:'Status', explore:'Explore Company', days:'days',
@@ -2664,7 +2691,8 @@ function renderIndex(lang) {
                 curValue:'Current Value', perfUsd:'Performance $', perfPct:'Performance %', capital:'Capital', longevity:'Longevity',
                 productivity:'Productivity', capNote:'Live onchain TVL',
                 lonNote:'operating', sigCap:'Company signature',
-                axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY' };
+                axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY', axF:'PERFORMANCE',
+                perfFactor:'Performance', perfPeriod:'Performance Period', sinceInception:'Since inception' };
         const wfld = (label, value, active) =>
             '<div class="ipx-field"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
@@ -2674,36 +2702,40 @@ function renderIndex(lang) {
             + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
         const chev = '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         const arr  = '<svg viewBox="0 0 16 16" fill="none" width="12" height="12"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        // three-axis company signature — labelled at each vertex
+        // four-corner company signature — a restrained diamond, not a radar dial
         const sig = c => {
             const F = [
-                { rel: c.rel.capital      || 0, sh: c.score.capital      || 0, lb: L.axC, ang: -90 },
-                { rel: c.rel.productivity || 0, sh: c.score.productivity || 0, lb: L.axP, ang:  30 },
-                { rel: c.rel.longevity    || 0, sh: c.score.longevity    || 0, lb: L.axL, ang: 150 }
+                { k: 'capital',      lb: L.axC, ang: -90 },
+                { k: 'productivity', lb: L.axP, ang:   0 },
+                { k: 'performance',  lb: L.axF, ang:  90 },
+                { k: 'longevity',    lb: L.axL, ang: 180 }
             ];
-            const cx = 82, cy = 78, R = 46;
+            const cx = 95, cy = 82, R = 42;
             const at = (a, r) => {
                 const t = a * Math.PI / 180;
                 return [cx + Math.cos(t) * R * r, cy + Math.sin(t) * R * r];
             };
             const ring  = r => F.map(f => at(f.ang, r).map(v => v.toFixed(1)).join(',')).join(' ');
-            const shape = F.map(f => at(f.ang, Math.max(f.rel, 0.08)).map(v => v.toFixed(1)).join(',')).join(' ');
+            const shape = F.map(f => at(f.ang, Math.max((c.rel && c.rel[f.k]) || 0, 0.08)).map(v => v.toFixed(1)).join(',')).join(' ');
             let labels = '';
             F.forEach(f => {
-                const p = at(f.ang, 1.34);
-                const anchor = f.ang === -90 ? 'middle' : (f.ang === 30 ? 'end' : 'start');
-                const dy = f.ang === -90 ? -4 : 10;
-                const x  = f.ang === -90 ? p[0] : (f.ang === 30 ? p[0] + 14 : p[0] - 14);
-                labels += '<text class="sg-lb" x="' + x.toFixed(1) + '" y="' + (p[1] + dy).toFixed(1) + '" text-anchor="' + anchor + '">' + f.lb + '</text>'
-                        + '<text class="sg-vl" x="' + x.toFixed(1) + '" y="' + (p[1] + dy + 11).toFixed(1) + '" text-anchor="' + anchor + '">' + (f.sh * 100).toFixed(0) + '%</text>';
+                const p = at(f.ang, 1.3);
+                let x = p[0], y = p[1], anchor = 'middle', dy = 0;
+                if (f.ang === -90) { dy = -6; }
+                if (f.ang ===  90) { dy = 14; }
+                if (f.ang ===   0) { anchor = 'start'; x = p[0] + 6; dy = -1; }
+                if (f.ang === 180) { anchor = 'end';   x = p[0] - 6; dy = -1; }
+                const share = ((c.score && c.score[f.k]) || 0) * 100;
+                labels += '<text class="sg-lb" x="' + x.toFixed(1) + '" y="' + (y + dy).toFixed(1) + '" text-anchor="' + anchor + '">' + f.lb + '</text>'
+                        + '<text class="sg-vl" x="' + x.toFixed(1) + '" y="' + (y + dy + 11).toFixed(1) + '" text-anchor="' + anchor + '">' + share.toFixed(0) + '%</text>';
             });
-            return '<svg class="ipx-sig" viewBox="0 0 164 168" role="img">'
+            return '<svg class="ipx-sig" viewBox="0 0 190 178" role="img">'
                 + '<polygon class="sg-grid" points="' + ring(1) + '"/>'
                 + '<polygon class="sg-grid" points="' + ring(0.66) + '"/>'
                 + '<polygon class="sg-grid" points="' + ring(0.33) + '"/>'
                 + F.map(f => { const p = at(f.ang, 1); return '<line class="sg-axis" x1="' + cx + '" y1="' + cy + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '"/>'; }).join('')
                 + '<polygon class="sg-shape" points="' + shape + '"/>'
-                + F.map(f => { const p = at(f.ang, Math.max(f.rel, 0.08)); return '<circle class="sg-dot" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.6"/>'; }).join('')
+                + F.map(f => { const p = at(f.ang, Math.max((c.rel && c.rel[f.k]) || 0, 0.08)); return '<circle class="sg-dot" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.6"/>'; }).join('')
                 + labels
                 + '</svg>';
         };
@@ -2754,15 +2786,17 @@ function renderIndex(lang) {
                       +     fld(L.curValue,  fmtMoney(c.val))
                       +     fld(L.perfUsd,   fmtSigned(c.pnl))
                       +     fld(L.perfPct,   fmtPct(c.pct))
+                +     fld(L.perfPeriod, L.sinceInception)
                       +   '</div></div>'
                       : '')
                 +   '<div class="ipx-composite">'
                 +     '<div class="ipx-c-main">'
                 +       '<div class="ipx-c-head"><span class="ipx-c-title">' + L.comp + '</span>'
                 +         '<span class="ipx-c-total">' + ((c.weight || 0) * 100).toFixed(1) + '%</span></div>'
-                +       factor('f-cap', L.capital, '40%', c.score.capital || 0, L.capNote + ' \u00b7 ' + (c.val > 0 ? money(c.val) : 'Live'))
-                +       factor('f-lon', L.longevity, '30%', c.score.longevity || 0, ageVal + ' ' + L.lonNote)
-                +       factor('f-pro', L.productivity, '30%', c.score.productivity || 0, c.aprLabel ? c.aprLabel[lang] : '\u2014')
+                +       factor('f-cap', L.capital, '35%', c.score.capital || 0, L.capNote + ' \u00b7 ' + (c.val > 0 ? money(c.val) : 'Live'))
+                +       factor('f-lon', L.longevity, '25%', c.score.longevity || 0, ageVal + ' ' + L.lonNote)
+                +       factor('f-pro', L.productivity, '20%', c.score.productivity || 0, c.aprLabel ? c.aprLabel[lang] : '\u2014')
+                +       factor('f-perf', L.perfFactor, '20%', c.score.performance || 0, (c.cost > 0 ? fmtPct(c.pct) + ' \u00b7 ' : '') + L.sinceInception)
                 +     '</div>'
                 +     '<div class="ipx-c-sig">' + sig(c) + '</div>'
                 +   '</div>'
@@ -2821,7 +2855,7 @@ function buildGraph() {
        GREEN company nodes — and how the two lenses stay mathematically clean
          area ∝ that company's share of the network under the ACTIVE lens:
              radius = rCoMax × √(activeWeight)      activeWeight ∈ [0,1]
-         Composite → 40% Capital + 30% Longevity + 30% Productivity (factor scores)
+         Composite → 35% Capital + 25% Longevity + 20% Productivity + 20% Performance
          TVL       → company TVL ÷ total index TVL
          Both are true shares that sum to exactly 1, so in either lens the areas are
          strictly proportional to weight and the TOTAL area of all company nodes is
@@ -3016,25 +3050,25 @@ function renderFramework(lang) {
         s0h: 'Два взгляда · одна сеть',
         s0p: [
             'На The Holding Index можно посмотреть двумя способами.',
-            'COMPOSITE — основной режим, использующий собственную методологию The Holding: капитал, возраст и производительность объединяются в единый Index Weight.',
+            'COMPOSITE — основной режим, использующий собственную методологию The Holding: капитал, возраст, производительность и performance объединяются в единый Index Weight.',
             'TVL убирает дополнительные факторы и показывает классический взгляд, основанный только на доле TVL каждой компании в совокупном TVL индекса.',
             'Состав компаний при переключении не меняется. Меняется только аналитическая линза. Это позволяет сравнить простой экономический масштаб компании с более глубоким взглядом The Holding на её вес внутри сети.'
         ],
-        s0fa: 'COMPOSITE\n40% Capital Score + 30% Longevity Score + 30% Productivity Score',
+        s0fa: 'COMPOSITE\n35% Capital + 25% Longevity + 20% Productivity + 20% Performance',
         s0fb: 'TVL\nTVL компании / Совокупный TVL индекса',
         s1status: 'Live', s1h: 'The Holding · Композитная методология',
         s1lead: 'Это основной режим The Holding Index.',
         s1p: [
-            'Вес компании в индексе складывается из трёх факторов: капитала, возраста и производительности. Размер сам по себе не определяет её вес.',
-            'Капитал показывает масштаб — текущий ончейн-TVL. Возраст показывает историю — сколько дней компания реально работает. Производительность показывает текущую доходность — на основе ориентировочного APR компании.',
-            'Каждый фактор сглаживается квадратным корнем и нормализуется относительно всех компаний индекса. Затем три полученных компонента объединяются в единый Index Weight, а сумма весов всех компаний всегда равна 100%.'
+            'Вес компании в индексе складывается из четырёх факторов: капитала, возраста, производительности и performance. Размер сам по себе не определяет её вес.',
+            'Капитал показывает масштаб — текущий ончейн-TVL. Возраст показывает историю — сколько дней компания реально работает. Производительность показывает текущую доходность — на основе ориентировочного APR компании. Performance показывает фактический результат самого капитала: он считается относительно цены входа по каждой позиции, поэтому новое пополнение входит по своей себестоимости и никогда не засчитывается как инвестиционный результат.',
+            'Каждый фактор сглаживается и нормализуется относительно всех компаний индекса. Затем четыре полученных компонента объединяются в единый Index Weight, а сумма весов всех компаний всегда равна 100%.'
         ],
-        s1formula: 'Вес в индексе = 40% \u00d7 Capital Score + 30% \u00d7 Longevity Score + 30% \u00d7 Productivity Score',
-        s1smooth: 'Сглаживание применяется намеренно. Компания с TVL в 10 раз больше получает примерно втрое больший Capital Score, а не в десять раз — это снижает «эффект кита». Возраст учитывается примерно до четырёх лет: первые годы имеют большое значение, но более старые компании не получают бесконечного преимущества. Производительность учитывается до 20% ориентировочного APR — разница между 5%, 10% и 20% остаётся значимой, но погоня за высоким заявленным APR не позволяет одному фактору доминировать в индексе.',
+        s1formula: 'Вес в индексе = 35% \u00d7 Capital Score + 25% \u00d7 Longevity Score + 20% \u00d7 Productivity Score + 20% \u00d7 Performance Score',
+        s1smooth: 'Сглаживание применяется намеренно. Компания с TVL в 10 раз больше получает примерно втрое больший Capital Score, а не в десять раз — это снижает «эффект кита». Возраст учитывается примерно до четырёх лет: первые годы имеют большое значение, но более старые компании не получают бесконечного преимущества. Производительность учитывается до 20% ориентировочного APR — разница между 5%, 10% и 20% остаётся значимой, но погоня за высоким заявленным APR не позволяет одному фактору доминировать в индексе. Performance считается отдельно от роста TVL: результат ограничен диапазоном ±50% и сглажен симметрично, поэтому убыток действительно снижает оценку, а экстремальное рыночное движение не может захватить индекс; короткая история работы учитывается с меньшей степенью доверия, пока не пройдёт полный год. Productivity и Performance отвечают на разные вопросы — первый показывает, что капитал производит сейчас, второй — как он фактически себя проявил.',
         s1foot: 'Ни один показатель сам по себе не определяет компанию. Весь капитал остаётся под самостоятельным контролем владельцев компаний. The Holding измеряет сеть, но не хранит капитал, представленный в индексе.',
         s2status: 'Live', s2h: 'Как читать карту сети',
         s2intro: 'The Holding Graph показывает другое измерение индекса — связи между компаниями и инфраструктурой.',
-        s2gt: 'Зелёные узлы — компании', s2g: 'Размер зелёного узла зависит от композитного Index Weight компании — капитала, возраста и производительности вместе. Выше Index Weight → крупнее узел.',
+        s2gt: 'Зелёные узлы — компании', s2g: 'Размер зелёного узла зависит от композитного Index Weight компании — капитала, возраста, производительности и performance вместе. Выше Index Weight → крупнее узел.',
         s2yt: 'Жёлтые узлы — протоколы', s2y: 'Размер жёлтого узла зависит не от объёма капитала, а от числа разных компаний индекса, которые используют этот протокол. Больше компаний → крупнее узел. Так размер отражает роль протокола как общей инфраструктуры сети, а не концентрацию капитала.',
         s2ct: 'Связи', s2c: 'Линии показывают связи компаний с протоколами — какую инфраструктуру компании используют совместно. На текущем этапе толщина линии не означает объём капитала.',
         s3status: 'Накапливается', s3h: 'Слой истории',
@@ -3065,25 +3099,25 @@ function renderFramework(lang) {
         s0h: 'Two views · one network',
         s0p: [
             'The Holding Index can be viewed in two ways.',
-            "COMPOSITE is the default and applies The Holding's own methodology — combining capital, longevity and productivity into a single Index Weight.",
+            "COMPOSITE is the default and applies The Holding's own methodology — combining capital, longevity, productivity and performance into a single Index Weight.",
             'TVL removes the additional factors and shows a traditional capital-weighted view based only on each company\'s share of total index TVL.',
             'The underlying companies do not change. Only the analytical lens changes. This lets anyone compare simple economic scale with The Holding\'s broader view of company weight.'
         ],
-        s0fa: 'COMPOSITE\n40% Capital Score + 30% Longevity Score + 30% Productivity Score',
+        s0fa: 'COMPOSITE\n35% Capital + 25% Longevity + 20% Productivity + 20% Performance',
         s0fb: 'TVL\nCompany TVL / Total Index TVL',
         s1status: 'Live', s1h: 'The Holding · Composite Methodology',
         s1lead: 'This is the default view of The Holding Index.',
         s1p: [
-            "A company's weight in the index is composed of three factors: capital, longevity and productivity. Size alone does not define its weight.",
-            'Capital measures scale — live onchain TVL. Longevity measures history — how many days the company has actually been operating. Productivity measures current yield — based on the company\u2019s indicative APR.',
-            'Each factor is smoothed with a square root and normalised across all index constituents. The three resulting factor scores are then combined into a single Index Weight, with all company weights summing to 100%.'
+            "A company's weight in the index is composed of four factors: capital, longevity, productivity and performance. Size alone does not define its weight.",
+            'Capital measures scale — live onchain TVL. Longevity measures history — how many days the company has actually been operating. Productivity measures current yield — based on the company\u2019s indicative APR. Performance measures the observed result of the capital itself, computed against the price each position was entered at, so a new deposit enters at its own cost and is never counted as investment performance.',
+            'Each factor is smoothed and normalised across all index constituents. The four resulting factor scores are then combined into a single Index Weight, with all company weights summing to 100%.'
         ],
-        s1formula: 'Index Weight = 40% \u00d7 Capital Score + 30% \u00d7 Longevity Score + 30% \u00d7 Productivity Score',
-        s1smooth: 'The smoothing is deliberate. A company with 10x the TVL earns roughly 3x the capital score rather than 10x, reducing the whale effect. Longevity matures over approximately four years, so the early years matter significantly without granting older companies an unlimited advantage. Productivity is counted up to 20% indicative APR — the difference between 5%, 10% and 20% remains meaningful, but chasing a high headline yield cannot dominate the index.',
+        s1formula: 'Index Weight = 35% \u00d7 Capital Score + 25% \u00d7 Longevity Score + 20% \u00d7 Productivity Score + 20% \u00d7 Performance Score',
+        s1smooth: 'The smoothing is deliberate. A company with 10x the TVL earns roughly 3x the capital score rather than 10x, reducing the whale effect. Longevity matures over approximately four years, so the early years matter significantly without granting older companies an unlimited advantage. Productivity is counted up to 20% indicative APR — the difference between 5%, 10% and 20% remains meaningful, but chasing a high headline yield cannot dominate the index. Performance is measured independently of TVL growth: returns are clamped at ±50% and smoothed symmetrically, so a loss genuinely lowers the score while an extreme market move cannot capture the index, and a short operating history is weighted with lower confidence until a full year has passed. Productivity and Performance answer different questions — one describes what the capital is producing now, the other how it has actually behaved.',
         s1foot: 'No single factor defines a company. All capital remains self-custodied by its respective owner. The Holding measures the network; it does not custody the capital represented by the index.',
         s2status: 'Live', s2h: 'How to Read the Network',
         s2intro: 'The Holding Graph visualizes a different dimension of the index: relationships.',
-        s2gt: 'Green nodes — companies', s2g: "Green company nodes scale with a company's composite Index Weight — capital, longevity and productivity combined. Higher Index Weight \u2192 larger green node.",
+        s2gt: 'Green nodes — companies', s2g: "Green company nodes scale with a company's composite Index Weight — capital, longevity, productivity and performance combined. Higher Index Weight \u2192 larger green node.",
         s2yt: 'Yellow nodes — protocols', s2y: 'Yellow protocol nodes do not represent the amount of capital deployed into a protocol. Their size reflects how many different companies in the index use that protocol. More indexed companies → larger node. This makes protocol size a measure of shared infrastructure across the network — not capital concentration.',
         s2ct: 'Connections', s2c: 'Lines represent company-to-protocol relationships — which infrastructure companies share and how the network is connected. At this stage, line thickness does not imply capital size.',
         s3status: 'Accumulating', s3h: 'The History Layer',
@@ -3454,7 +3488,7 @@ function renderFramework(lang) {
             'index.mode.tvl': 'TVL',
             'index.lens': 'Same companies. Different lens.',
             'index.title': 'The Holding Index',
-            'index.sub': 'A live measure of the network, viewed through two lenses. Composite applies The Holding methodology — combining capital, longevity and productivity. TVL offers a simpler capital-weighted view. The first working piece of a larger registry to come.',
+            'index.sub': 'A live measure of the network, viewed through two lenses. Composite applies The Holding methodology — combining capital, longevity, productivity and performance into a single Index Weight. TVL offers a simpler capital-weighted view. The first working piece of a larger registry to come.',
             'index.m.value': 'Network Value',
             'index.m.constituents': 'Constituents',
             'index.m.leader': 'Leading Company',
@@ -3464,7 +3498,7 @@ function renderFramework(lang) {
             'index.h.value': 'Value',
             'index.h.weight': 'Index Weight',
             'index.h.since': 'Since',
-            'index.note.body': 'Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.',
+            'index.note.body': 'Non-custodial by design. Performance is now part of the live Composite methodology. Deeper historical analytics — consistency, drawdowns, market-cycle behaviour, resilience and long-term reputation — will emerge as the network accumulates more operating history.',
             'graph.eyebrow': 'The Holding Graph',
             'graph.title': 'A live map of capital across the network.',
             'graph.sub': 'Every company and the protocols it uses — one living map of the network\'s shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company\'s share of total index TVL. Yellow protocol nodes stay unchanged — their size reflects how many indexed companies connect to each protocol.',
@@ -3547,7 +3581,7 @@ function renderFramework(lang) {
             'index.mode.tvl': 'TVL',
             'index.lens': 'Те же компании. Другой взгляд.',
             'index.title': 'Индекс The Holding',
-            'index.sub': 'Живой показатель сети, на которую можно посмотреть через две разные линзы. Composite использует методологию The Holding — объединяя капитал, возраст и производительность. TVL показывает более простой взгляд, основанный только на капитале. Первый работающий элемент будущего большого реестра.',
+            'index.sub': 'Живой показатель сети, на которую можно посмотреть через две разные линзы. Composite использует методологию The Holding — объединяя капитал, возраст, производительность и performance в единый Index Weight. TVL показывает более простой взгляд, основанный только на капитале. Первый работающий элемент будущего большого реестра.',
             'index.m.value': 'Ценность сети',
             'index.m.constituents': 'Компаний в индексе',
             'index.m.leader': 'Ведущая компания',
@@ -3557,7 +3591,7 @@ function renderFramework(lang) {
             'index.h.value': 'Ценность',
             'index.h.weight': 'Вес в индексе',
             'index.h.since': 'С',
-            'index.note.body': 'Репутационные метрики, история результатов и кросс-сетевые индексы находятся в разработке — этот фундамент станет основой для их появления.',
+            'index.note.body': 'Некастодиальная архитектура по своей природе. Performance уже входит в действующую Composite-методологию. Более глубокая историческая аналитика — стабильность результатов, просадки, поведение в разных рыночных циклах, устойчивость и долгосрочная репутация — будет появляться по мере накопления реальной истории работы сети.',
             'graph.eyebrow': 'Граф The Holding',
             'graph.title': 'Живая карта капитала по всей сети.',
             'graph.sub': 'Компании и используемые ими протоколы — единая живая карта общей ончейн-инфраструктуры сети. Зелёные узлы компаний следуют выбранному режиму индекса: в Composite их размер зависит от Index Weight, а в TVL — от доли компании в совокупном TVL индекса. Жёлтые узлы протоколов при переключении не меняются — их размер отражает количество компаний индекса, связанных с каждым протоколом.',
