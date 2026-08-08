@@ -2136,6 +2136,7 @@
             gap: 1.4rem 2rem; flex-wrap: wrap;
             padding-top: 1.2rem; border-top: 1px solid rgba(242,239,232,0.12);
         }
+        .ns-caps-short { display: none; }
         .ns-caps {
             margin: 0; font-size: 0.76rem; font-weight: 300;
             color: rgba(242,239,232,0.62); letter-spacing: 0.03em; line-height: 1.6;
@@ -2157,19 +2158,32 @@
             .ns-sub { font-size: 0.86rem; line-height: 1.6; margin-bottom: 1.3rem; }
             /* the figures keep flowing as one line and wrap naturally — stacking them
                turned three facts into three storeys and stretched the whole block */
+            /* an institutional data strip: three equal columns, value over label,
+               all on one horizontal line — no accidental wrapping, no separators */
             .ns-stats {
-                flex-direction: row; flex-wrap: wrap;
-                align-items: baseline; gap: 0.35rem 0.7rem; margin-bottom: 1.2rem;
+                display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0; align-items: start; margin-bottom: 1.3rem;
             }
-            .ns-stat { gap: 0.4rem; font-size: 0.54rem; letter-spacing: 0.14em; }
-            .ns-stat b { font-size: 1.22rem; }
-            .ns-sep { display: inline; font-size: 0.7rem; }
+            .ns-sep { display: none; }
+            .ns-stat {
+                flex-direction: column; align-items: flex-start; gap: 0.4rem;
+                font-size: 0.52rem; letter-spacing: 0.13em; line-height: 1.25;
+                padding-right: 0.7rem;
+            }
+            .ns-stat:nth-child(3), .ns-stat:nth-child(5) {
+                border-left: 1px solid rgba(242,239,232,0.12);
+                padding-left: 0.85rem;
+            }
+            .ns-stat b { font-size: 1.35rem; font-variant-numeric: tabular-nums; }
             .ns-foot { flex-direction: column; align-items: flex-start; gap: 1rem; padding-top: 1rem; }
-            .ns-caps { font-size: 0.71rem; line-height: 1.55; }
+            .ns-caps-full { display: none; }
+            .ns-caps-short { display: inline; }
+            .ns-caps { font-size: 0.74rem; line-height: 1.55; white-space: nowrap; }
         }
         @media (max-width: 380px) {
-            .ns-stat { font-size: 0.5rem; letter-spacing: 0.1em; }
-            .ns-stat b { font-size: 1.12rem; }
+            .ns-stat { font-size: 0.47rem; letter-spacing: 0.09em; padding-right: 0.45rem; }
+            .ns-stat:nth-child(3), .ns-stat:nth-child(5) { padding-left: 0.6rem; }
+            .ns-stat b { font-size: 1.2rem; }
             .ns-caps { font-size: 0.68rem; }
         }
         @media (prefers-reduced-motion: reduce) { .ns-dot { animation: none; } }
@@ -4267,7 +4281,7 @@
             </p>
 
             <div class="ns-foot">
-                <p class="ns-caps">The Holding Index · Registry · Composite / TVL Views · Passports · Network Graph</p>
+                <p class="ns-caps"><span class="ns-caps-full">The Holding Index · Registry · Composite / TVL Views · Passports · Network Graph</span><span class="ns-caps-short">Index · Registry · Views · Passports · Graph</span></p>
                 <a class="ns-link" href="/companies/#index">Explore the network
                     <svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="M3.5 8h9M9 4.5 12.5 8 9 11.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </a>
