@@ -2501,7 +2501,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    existing manual APRs as a safe fallback. If the collector, a protocol, or the
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
-const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.9-unified-apr';
+const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.9.1-null-safe-apr';
 let PRODUCTIVITY_SNAPSHOT = null;
 
 async function loadProductivitySnapshot() {
@@ -2525,9 +2525,17 @@ async function loadProductivitySnapshot() {
 function resolvedCompanyApr(name, fallbackNumeric, fallbackDisplay) {
     const c = PRODUCTIVITY_SNAPSHOT && PRODUCTIVITY_SNAPSHOT.companies
             ? PRODUCTIVITY_SNAPSHOT.companies[name] : null;
-    const avg = c && Number(c.aprHistoricalAverage);
-    const latest = c && Number(c.aprLatest);
-    const coverage = c && Number(c.coverage);
+    // Nullable numeric fields must stay nullable. In JavaScript Number(null) === 0,
+    // which previously made Defitea's not-yet-established historical average render
+    // as a real 0.0% in the collection card / Passport.
+    const finiteOrNaN = value => {
+        if (value === null || value === undefined || value === '') return NaN;
+        const n = Number(value);
+        return Number.isFinite(n) ? n : NaN;
+    };
+    const avg = c ? finiteOrNaN(c.aprHistoricalAverage) : NaN;
+    const latest = c ? finiteOrNaN(c.aprLatest) : NaN;
+    const coverage = c ? finiteOrNaN(c.coverage) : NaN;
     const fullUsable = c && c.status === 'ok' && Number.isFinite(avg) && avg >= 0
                     && Number(c.observationCount || 0) > 0;
     const partialUsable = c && c.status === 'partial' && Number.isFinite(latest) && latest >= 0
