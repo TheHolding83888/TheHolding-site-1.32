@@ -39,16 +39,16 @@ jobs:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          PAGE_FILE: ../companies.html
-          DATA_FILE: ../productivity-data.json
-          REPORT_FILE: ../productivity-source-report.json
+          PAGE_FILE: ../companies/index.html
+          DATA_FILE: ../companies/productivity-data.json
+          REPORT_FILE: ../companies/productivity-source-report.json
         run: npm run update
 
       - name: Commit new snapshot
         run: |
           git config user.name "The Holding Data Engine"
           git config user.email "data-engine@theholding.ai"
-          git add productivity-data.json productivity-source-report.json
+          git add companies/productivity-data.json companies/productivity-source-report.json
           if git diff --cached --quiet; then
             echo "No data changes."
           else
