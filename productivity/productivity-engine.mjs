@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Productivity / APR Engine v1
+ * The Holding · Productivity / APR Engine v1.1
  *
  * SIMPLE-FIRST architecture:
  *   official protocol API / onchain data / official frontend
@@ -31,6 +31,7 @@ const REPORT_FILE = process.env.REPORT_FILE || path.join(ROOT, 'productivity-sou
 const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
+const METHODOLOGY_VERSION = '1.1-simple-safe';
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0 Safari/537.36';
 
 const ETH_RPC_URLS = [
@@ -79,6 +80,11 @@ const ENGINE_META = {
 function nowIso() { return new Date().toISOString(); }
 function round(n, d=4) { const f=10**d; return Math.round(n*f)/f; }
 function saneApr(n) { return Number.isFinite(n) && n >= 0 && n <= MAX_REASONABLE_APR; }
+function aprValue(v) {
+  if (v === null || v === undefined || v === '') return NaN;
+  const n = Number(v);
+  return saneApr(n) ? n : NaN;
+}
 function normalizeAprNumber(v) {
   if (v === null || v === undefined) return NaN;
   const cleaned = typeof v === 'string' ? v.replace(/,/g, '.').replace(/[%\s]/g, '') : v;
@@ -146,6 +152,32 @@ async function fetchJson(url, opts={}, attempts=3) {
   throw last;
 }
 
+function findSemanticApr(root, terms=[]) {
+  const wanted=terms.map(x=>String(x).toLowerCase());
+  const seen=new Set();
+  const candidates=[];
+  function walk(node,path=[],depth=0) {
+    if (!node || typeof node!=='object' || depth>12 || seen.has(node)) return;
+    seen.add(node);
+    if (!Array.isArray(node)) {
+      const scalarText=Object.entries(node)
+        .filter(([,v])=>['string','number','boolean'].includes(typeof v))
+        .map(([k,v])=>`${k}:${v}`).join(' ').toLowerCase();
+      const contextMatch=wanted.some(t=>scalarText.includes(t));
+      if (contextMatch) {
+        for (const [k,v] of Object.entries(node)) {
+          if (!/(^|_|-)(apr|apy|vapr)(_|-|$)|apr|apy/i.test(k)) continue;
+          const a=normalizeAprNumber(v);
+          if (saneApr(a)) candidates.push({apr:a,path:path.concat(k).join('.'),context:scalarText.slice(0,320)});
+        }
+      }
+    }
+    for (const [k,v] of Object.entries(node)) if (v && typeof v==='object') walk(v,path.concat(k),depth+1);
+  }
+  walk(root);
+  return candidates.sort((a,b)=>a.apr-b.apr)[0] || null;
+}
+
 async function parseCompanyBook() {
   const html = await fs.readFile(PAGE_FILE,'utf8');
   const m = html.match(/const COMPANY_BOOK\s*=\s*(\{[\s\S]*?\n\};)/);
@@ -204,44 +236,63 @@ async function collect40Acres(browser, protocolName) {
     await clickProtocol(page,protocolName);
   }});
   const t=normalizeText(text);
-  // 40 Acres simulator exposes Max Borrow, LTV and gross Est. Weekly rewards.
-  // Principal can be recovered as maxBorrow / LTV, avoiding fragile input selectors.
+  // 40 Acres homepage simulator exposes a veNFT value indirectly through
+  // max borrow + LTV, and the gross expected weekly voting rewards.
+  // IMPORTANT: parse "30% LTV" specifically. v1 accidentally picked the
+  // nearby 0.8% origination fee and understated APR by ~100x.
   const maxBorrow=moneyAfter(t,'max',40);
-  const ltv=firstPercentAround(t,'LTV',45);
+  const ltvMatch=t.match(/([0-9]+(?:[.,][0-9]+)?)\s*%\s*LTV/i);
+  const ltv=ltvMatch?normalizePercentPoints(ltvMatch[1]):NaN;
   const weekly=moneyAfter(t,'Est. Weekly',60);
-  let apr=NaN;
-  if (Number.isFinite(maxBorrow) && maxBorrow>0 && saneApr(ltv) && ltv>0 && Number.isFinite(weekly)) {
-    const principal=maxBorrow/(ltv/100);
+  let apr=NaN, principal=NaN;
+  if (Number.isFinite(maxBorrow) && maxBorrow>0 && saneApr(ltv) && ltv>0 && Number.isFinite(weekly) && weekly>=0) {
+    principal=maxBorrow/(ltv/100);
     apr=weekly*52/principal*100;
   }
-  if (!saneApr(apr)) {
-    // Some builds expose an explicit expected-return percentage instead.
-    apr=firstPercentAround(t,'expected return',180);
-  }
-  if (!saneApr(apr)) throw new Error(`40 Acres ${protocolName}: could not parse simulator yield`);
-  return {apr:round(apr),sourceType:'official-frontend',sourceMetric:'40 Acres gross expected weekly rewards annualized',details:{maxBorrow,ltv,weekly}};
+  if (!saneApr(apr)) apr=firstPercentAround(t,'expected return',180);
+  if (!saneApr(apr)) throw new Error(`40 Acres ${protocolName}: could not parse reference yield`);
+  return {
+    apr:round(apr), source:'https://www.40acres.finance/', sourceType:'official-frontend',
+    sourceMetric:'40 Acres simulator gross expected weekly voting rewards annualized',
+    details:{maxBorrow,ltv,weekly,impliedVeNftValue:Number.isFinite(principal)?round(principal,2):null}
+  };
 }
 
 async function collectConvex(browser) {
-  const text=await renderedText(browser,'https://www.convexfinance.com/lock-cvx');
-  // SIMPLE-FIRST: use the official top-level locked-CVX vAPR exactly as the user sees it.
-  // Votium incentive APR is recorded as diagnostics but intentionally NOT added in v1
-  // to avoid accidental double-counting.
-  const base=firstPercentAfter(text,'vAPR',90);
-  const votium=firstPercentAfter(text,'Last Round Incentives APR on Votium',100);
-  if (!saneApr(base)) throw new Error('Convex: vAPR not found');
-  return {apr:round(base),sourceType:'official-frontend',sourceMetric:'Locked CVX vAPR',details:{votiumLastRoundApr:saneApr(votium)?round(votium):null}};
+  const url='https://www.convexfinance.com/lock-cvx';
+  const text=await renderedText(browser,url,{waitMs:5500});
+  const base=firstPercentAfter(text,'vAPR',100);
+  const votium=firstPercentAfter(text,'Last Round Incentives APR on Votium',120);
+  // User strategy is vlCVX delegated to Votium. Convex presents platform-fee
+  // vAPR and Votium voting incentives as separate economic components.
+  if (!saneApr(votium) && !saneApr(base)) throw new Error('Convex: vAPR/Votium APR not found');
+  const apr=(saneApr(base)?base:0)+(saneApr(votium)?votium:0);
+  if (!saneApr(apr)) throw new Error('Convex: invalid combined vlCVX APR');
+  return {
+    apr:round(apr), source:url, sourceType:'official-frontend',
+    sourceMetric:'Locked CVX platform vAPR + last completed Votium incentives APR',
+    details:{platformVapr:saneApr(base)?round(base):null,votiumLastRoundApr:saneApr(votium)?round(votium):null}
+  };
 }
 
 async function collectCurve(browser) {
-  const text=await renderedText(browser,'https://classic.curve.finance/',{waitMs:6000});
-  const t=normalizeText(text);
-  const m=t.match(/veCRV holder APY\s*:\s*([0-9]+(?:[.,][0-9]+)?)\s*%?\s*\(\s*4 weeks average\s*:\s*([0-9]+(?:[.,][0-9]+)?)\s*%/i);
-  const current=m?normalizePercentPoints(m[1]):firstPercentAround(t,'veCRV holder APY',100);
-  const fourWeek=m?normalizePercentPoints(m[2]):firstPercentAround(t,'4 weeks average',80);
-  const apr=saneApr(fourWeek)?fourWeek:current;
-  if (!saneApr(apr)) throw new Error('Curve: veCRV holder APY not found');
-  return {apr:round(apr),sourceType:'official-frontend',sourceMetric:saneApr(fourWeek)?'veCRV holder APY · 4-week average':'veCRV holder APY',details:{current:saneApr(current)?round(current):null,fourWeek:saneApr(fourWeek)?round(fourWeek):null}};
+  const urls=['https://classic.curve.finance/usecrv','https://classic.curve.finance/'];
+  for (const url of urls) {
+    try {
+      const text=await renderedText(browser,url,{waitMs:7500});
+      const t=normalizeText(text);
+      const m=t.match(/veCRV holder APY\s*:?\s*([0-9]+(?:[.,][0-9]+)?)\s*%?\s*\(\s*4 weeks average\s*:?\s*([0-9]+(?:[.,][0-9]+)?)\s*%/i);
+      const current=m?normalizePercentPoints(m[1]):firstPercentAround(t,'veCRV holder APY',130);
+      const fourWeek=m?normalizePercentPoints(m[2]):firstPercentAround(t,'4 weeks average',100);
+      const apr=saneApr(fourWeek)?fourWeek:current;
+      if (saneApr(apr)) return {
+        apr:round(apr), source:url, sourceType:'official-frontend',
+        sourceMetric:saneApr(fourWeek)?'veCRV holder APY · 4-week average':'veCRV holder APY',
+        details:{current:saneApr(current)?round(current):null,fourWeek:saneApr(fourWeek)?round(fourWeek):null}
+      };
+    } catch {}
+  }
+  throw new Error('Curve: veCRV holder APY not found');
 }
 
 async function collectPendle() {
@@ -250,16 +301,23 @@ async function collectPendle() {
   const h=j.sPendleHistoricalData || j.spendleHistoricalData || {};
   const aprs=Array.isArray(h.aprs)?h.aprs:[];
   const timestamps=Array.isArray(h.timestamps)?h.timestamps:[];
-  let idx=-1;
-  for (let i=aprs.length-1;i>=0;i--) {
+  // API history is not guaranteed to be oldest -> newest. v1 walked the array
+  // backwards and selected an old zero-APR epoch. Select by greatest completed timestamp.
+  const candidates=[];
+  for (let i=0;i<aprs.length;i++) {
     const a=normalizeAprNumber(aprs[i]);
     if (!saneApr(a)) continue;
     const ts=Number(timestamps[i]||0);
-    if (!ts || ts*1000 <= Date.now()) { idx=i; break; }
+    if (ts && ts*1000>Date.now()) continue;
+    candidates.push({i,apr:a,ts});
   }
-  if (idx<0) throw new Error('Pendle: no valid completed sPENDLE APR');
-  const apr=normalizeAprNumber(aprs[idx]);
-  return {apr:round(apr),sourceType:'official-api',sourceMetric:'sPENDLE completed epoch APR',details:{epochTimestamp:timestamps[idx]||null,historyCount:aprs.length}};
+  if (!candidates.length) throw new Error('Pendle: no valid completed sPENDLE APR');
+  candidates.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const pick=candidates[0];
+  return {
+    apr:round(pick.apr), source:url, sourceType:'official-api', sourceMetric:'sPENDLE latest completed epoch APR',
+    details:{epochTimestamp:pick.ts||null,historyCount:aprs.length,selectedIndex:pick.i}
+  };
 }
 
 async function collectFx(browser) {
@@ -271,28 +329,48 @@ async function collectFx(browser) {
 }
 
 async function collectYieldBasis(browser) {
-  const text=await renderedText(browser,'https://yieldbasis.com/analytics',{waitMs:6500});
-  const apr=firstPercentAfter(text,'veYB APR',140);
-  if (!saneApr(apr)) throw new Error('Yield Basis: veYB APR not found');
-  return {apr:round(apr),sourceType:'official-analytics',sourceMetric:'veYB APR · current/latest epoch'};
+  const url='https://yieldbasis.com/analytics';
+  const text=await renderedText(browser,url,{waitMs:5000,action:async page=>{
+    // veYB APR is on a dedicated analytics tab, not necessarily rendered on the default Markets tab.
+    for (const label of ['VeYB Revenue','veYB Revenue','Locks']) {
+      try {
+        const loc=page.getByText(label,{exact:false});
+        if (await loc.count()) { await loc.first().click({timeout:5000}); await page.waitForTimeout(1800); break; }
+      } catch {}
+    }
+  }});
+  const t=normalizeText(text);
+  let apr=firstPercentAfter(t,'veYB APR',180);
+  if (!saneApr(apr)) apr=firstPercentAround(t,'veYB APR',220);
+  if (!saneApr(apr)) throw new Error('Yield Basis: veYB APR not found after opening revenue tab');
+  return {apr:round(apr),source:url,sourceType:'official-analytics',sourceMetric:'veYB APR · current/latest epoch'};
 }
 
 async function collectFrax(browser) {
-  const urls=['https://app.frax.finance/fxtl-vefxs','https://frax.com/own-frax'];
-  let last='';
-  for (const url of urls) {
+  // First try Frax's own public APIs. They are more stable than DOM scraping.
+  for (const url of ['https://api.frax.finance/combineddata/','https://api.frax.finance/pools']) {
     try {
-      const text=await renderedText(browser,url,{waitMs:6500});
-      last=text;
-      const t=normalizeText(text);
-      // Prefer an APR near the veFRAX / veFXS lock context, then a generic APR.
-      let apr=firstPercentAround(t,'veFRAX',220);
-      if (!saneApr(apr)) apr=firstPercentAround(t,'veFXS',220);
-      if (!saneApr(apr)) apr=firstPercentAfter(t,'APR',120);
-      if (saneApr(apr)) return {apr:round(apr),sourceType:'official-frontend',sourceMetric:'Fraxtal veFRAX lock APR',details:{url}};
+      const j=await fetchJson(url);
+      const c=findSemanticApr(j,['vefrax','vefxs','fraxtal vefxs']);
+      if (c && saneApr(c.apr)) return {
+        apr:round(c.apr), source:url, sourceType:'official-api', sourceMetric:'Fraxtal veFRAX/veFXS APR',
+        details:{path:c.path}
+      };
     } catch {}
   }
-  throw new Error('Frax: veFRAX APR not found on official frontend');
+  // Frontend fallback.
+  const urls=['https://app.frax.finance/fxtl-vefxs','https://frax.com/own-frax'];
+  for (const url of urls) {
+    try {
+      const text=await renderedText(browser,url,{waitMs:8000});
+      const t=normalizeText(text);
+      let apr=firstPercentAround(t,'veFRAX',260);
+      if (!saneApr(apr)) apr=firstPercentAround(t,'veFXS',260);
+      if (!saneApr(apr)) apr=firstPercentAfter(t,'APR',160);
+      if (saneApr(apr)) return {apr:round(apr),source:url,sourceType:'official-frontend',sourceMetric:'Fraxtal veFRAX lock APR'};
+    } catch {}
+  }
+  throw new Error('Frax: veFRAX APR not found in official API/frontend');
 }
 
 async function providerFrom(urls) {
@@ -338,47 +416,60 @@ async function findBlockAtOrBefore(provider,targetTs) {
   return lo;
 }
 
-async function collectLiquity(prices, previous) {
+async function collectLiquity(prices) {
   const ethPrice=prices.ethereum;
   const lqtyPrice=prices.liquity;
   if (!(ethPrice>0) || !(lqtyPrice>0)) throw new Error('Liquity: ETH/LQTY price unavailable');
   const provider=await providerFrom(ETH_RPC_URLS);
   const address='0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d';
-  const abi=['function F_ETH() view returns (uint256)','function F_LUSD() view returns (uint256)'];
+  const abi=[
+    'event F_ETHUpdated(uint256 _F_ETH)',
+    'event F_LUSDUpdated(uint256 _F_LUSD)'
+  ];
   const c=new Contract(address,abi,provider);
-  const [feNowRaw,flNowRaw,blockNow]=await Promise.all([c.F_ETH(),c.F_LUSD(),provider.getBlock('latest')]);
-  const feNow=Number(formatUnits(feNowRaw,18));
-  const flNow=Number(formatUnits(flNowRaw,18));
-  let feOld,flOld,oldTs,oldBlock=null;
-  const prevState=previous?.internalState?.liquity;
-  if (prevState && Number.isFinite(Number(prevState.fEth)) && Number.isFinite(Number(prevState.fLusd)) && prevState.timestamp) {
-    const elapsed=(Date.now()-new Date(prevState.timestamp).getTime())/1000;
-    if (elapsed > 2*24*3600 && elapsed < 21*24*3600) {
-      feOld=Number(prevState.fEth); flOld=Number(prevState.fLusd); oldTs=new Date(prevState.timestamp).getTime()/1000;
+  const latestBlock=await provider.getBlock('latest');
+  const targetTs=Math.floor(latestBlock.timestamp-7*24*3600);
+  const targetBlock=await findBlockAtOrBefore(provider,targetTs);
+
+  // Fetch cumulative fee-per-LQTY update events in chunks. This avoids eth_call
+  // compatibility issues seen with some public RPCs on the legacy staking contract.
+  async function logsFor(eventName) {
+    const ev=c.interface.getEvent(eventName);
+    const topic=ev.topicHash;
+    const from=Math.max(0,targetBlock-220000); // ~30d lookback for a baseline event
+    const out=[];
+    const step=20000;
+    for (let a=from;a<=latestBlock.number;a+=step) {
+      const b=Math.min(latestBlock.number,a+step-1);
+      const part=await provider.getLogs({address,topics:[topic],fromBlock:a,toBlock:b});
+      out.push(...part);
     }
+    return out.map(log=>{
+      const parsed=c.interface.parseLog(log);
+      return {blockNumber:log.blockNumber,value:Number(formatUnits(parsed.args[0],18))};
+    }).sort((x,y)=>x.blockNumber-y.blockNumber);
   }
-  if (!Number.isFinite(feOld) || !Number.isFinite(flOld)) {
-    const target=Math.floor(blockNow.timestamp-7*24*3600);
-    oldBlock=await findBlockAtOrBefore(provider,target);
-    const oldContract=new Contract(address,abi,provider);
-    const [a,b,blk]=await Promise.all([
-      oldContract.F_ETH({blockTag:oldBlock}),
-      oldContract.F_LUSD({blockTag:oldBlock}),
-      provider.getBlock(oldBlock)
-    ]);
-    feOld=Number(formatUnits(a,18)); flOld=Number(formatUnits(b,18)); oldTs=blk.timestamp;
+
+  const [ethEvents,lusdEvents]=await Promise.all([logsFor('F_ETHUpdated'),logsFor('F_LUSDUpdated')]);
+  function deltaAcrossWeek(events) {
+    if (!events.length) return 0;
+    const before=events.filter(x=>x.blockNumber<=targetBlock).at(-1);
+    const now=events.at(-1);
+    if (!before) throw new Error('Liquity: no baseline staking-fee event in lookback window');
+    return Math.max(0,now.value-before.value);
   }
-  const elapsed=Math.max(1,blockNow.timestamp-oldTs);
-  const dEth=Math.max(0,feNow-feOld);
-  const dLusd=Math.max(0,flNow-flOld);
-  const yieldUsdPerLqty=dEth*ethPrice+dLusd; // V1 assumption: LUSD = $1
+  const dEth=deltaAcrossWeek(ethEvents);
+  const dLusd=deltaAcrossWeek(lusdEvents);
+  const startBlock=await provider.getBlock(targetBlock);
+  const elapsed=Math.max(1,latestBlock.timestamp-startBlock.timestamp);
+  const yieldUsdPerLqty=dEth*ethPrice+dLusd; // V1 simplification: LUSD = $1
   const periodReturn=yieldUsdPerLqty/lqtyPrice;
   const apr=periodReturn*(SECONDS_YEAR/elapsed)*100;
   if (!saneApr(apr)) throw new Error(`Liquity: unreasonable APR ${apr}`);
   return {
-    apr:round(apr), sourceType:'onchain', sourceMetric:'LQTY F_ETH + F_LUSD weekly delta annualized',
-    details:{contract:address,deltaETHPerLQTY:dEth,deltaLUSDPerLQTY:dLusd,elapsedSeconds:elapsed,oldBlock,ethPrice,lqtyPrice},
-    internalState:{fEth:feNow,fLusd:flNow,timestamp:new Date(blockNow.timestamp*1000).toISOString()}
+    apr:round(apr), source:'https://etherscan.io/address/0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d',
+    sourceType:'onchain-events', sourceMetric:'LQTY F_ETH + F_LUSD 7-day event delta annualized',
+    details:{contract:address,deltaETHPerLQTY:dEth,deltaLUSDPerLQTY:dLusd,elapsedSeconds:elapsed,targetBlock,ethEvents:ethEvents.length,lusdEvents:lusdEvents.length,ethPrice,lqtyPrice}
   };
 }
 
@@ -405,7 +496,7 @@ async function runAdapter(engineId,{browser,prices,previous}) {
     case 'yieldbasis_veyb': return collectYieldBasis(browser);
     case 'frax_vefrax': return collectFrax(browser);
     case 'venice_svvv': return collectVenice();
-    case 'liquity_lqty': return collectLiquity(prices,previous);
+    case 'liquity_lqty': return collectLiquity(prices);
     case 'resupply_rsup': return collectResupply(browser);
     default: throw new Error(`No adapter for ${engineId}`);
   }
@@ -413,10 +504,14 @@ async function runAdapter(engineId,{browser,prices,previous}) {
 
 function lastGoodEngine(previous,id) {
   const p=previous?.engines?.[id];
-  if (p && saneApr(Number(p.aprLatest))) return Number(p.aprLatest);
+  const current=aprValue(p?.aprLatest);
+  if (saneApr(current)) return current;
   const hist=previous?.history?.engines?.[id];
   if (Array.isArray(hist)) {
-    for (let i=hist.length-1;i>=0;i--) if (saneApr(Number(hist[i].apr))) return Number(hist[i].apr);
+    for (let i=hist.length-1;i>=0;i--) {
+      const a=aprValue(hist[i]?.apr);
+      if (saneApr(a)) return a;
+    }
   }
   return NaN;
 }
@@ -439,7 +534,11 @@ function weekKey(date=new Date()) {
 
 async function main() {
   const generatedAt=nowIso();
-  const previous=await readJson(DATA_FILE,{});
+  const previousRaw=await readJson(DATA_FILE,{});
+  const previous=previousRaw?.methodologyVersion===METHODOLOGY_VERSION ? previousRaw : {};
+  if (previousRaw?.methodologyVersion && previousRaw.methodologyVersion!==METHODOLOGY_VERSION) {
+    console.warn(`[migration] Resetting v1.0 test history before first trusted v1.1 snapshot (${previousRaw.methodologyVersion} -> ${METHODOLOGY_VERSION})`);
+  }
   const companyBook=await parseCompanyBook();
 
   const priceIds=new Set(['ethereum','liquity']);
@@ -456,7 +555,7 @@ async function main() {
 
   const engines={};
   const engineErrors={};
-  let liquityInternal=previous?.internalState?.liquity || null;
+  let liquityInternal=null;
 
   for (const engineId of Object.keys(ENGINE_META)) {
     const meta=ENGINE_META[engineId];
@@ -468,19 +567,18 @@ async function main() {
       if (!saneApr(r.apr)) throw new Error(`invalid APR ${r.apr}`);
       engines[engineId]={
         engineId,...meta,aprLatest:round(r.apr),sourceType:r.sourceType,sourceMetric:r.sourceMetric,
-        source:meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:generatedAt,
-        status:'ok',methodologyVersion:'1.0-simple',details:r.details||{}
+        source:r.source||meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:generatedAt,
+        status:'ok',methodologyVersion:METHODOLOGY_VERSION,details:r.details||{}
       };
-      if (r.internalState && engineId==='liquity_lqty') liquityInternal=r.internalState;
-      console.log(`✓ ${engineId}: ${round(r.apr,2)}%`);
+            console.log(`✓ ${engineId}: ${round(r.apr,2)}%`);
     } catch(e) {
       const stale=lastGoodEngine(previous,engineId);
       engineErrors[engineId]=e?.message||String(e);
       if (saneApr(stale)) {
-        engines[engineId]={engineId,...meta,aprLatest:stale,sourceType:'last-known-good',sourceMetric:'previous valid Reference APR',source:meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:previous?.engines?.[engineId]?.lastUpdatedAt||null,status:'stale',methodologyVersion:'1.0-simple',error:engineErrors[engineId]};
+        engines[engineId]={engineId,...meta,aprLatest:stale,sourceType:'last-known-good',sourceMetric:'previous valid Reference APR',source:meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:previous?.engines?.[engineId]?.lastUpdatedAt||null,status:'stale',methodologyVersion:METHODOLOGY_VERSION,error:engineErrors[engineId]};
         console.warn(`! ${engineId}: stale ${stale}% (${engineErrors[engineId]})`);
       } else {
-        engines[engineId]={engineId,...meta,aprLatest:null,sourceType:'unavailable',sourceMetric:null,source:meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:null,status:'error',methodologyVersion:'1.0-simple',error:engineErrors[engineId]};
+        engines[engineId]={engineId,...meta,aprLatest:null,sourceType:'unavailable',sourceMetric:null,source:meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:null,status:'error',methodologyVersion:METHODOLOGY_VERSION,error:engineErrors[engineId]};
         console.warn(`✗ ${engineId}: ${engineErrors[engineId]}`);
       }
     }
@@ -491,8 +589,9 @@ async function main() {
   const historyEngines={...(previous?.history?.engines||{})};
   const snapKey=weekKey(new Date());
   for (const [id,e] of Object.entries(engines)) {
-    if (e.status!=='ok' || !saneApr(Number(e.aprLatest))) continue;
-    historyEngines[id]=upsertObservation(historyEngines[id],{snapshotKey:snapKey,apr:Number(e.aprLatest),periodEnd:generatedAt,sourceType:e.sourceType});
+    const a=aprValue(e.aprLatest);
+    if (e.status!=='ok' || !saneApr(a)) continue;
+    historyEngines[id]=upsertObservation(historyEngines[id],{snapshotKey:snapKey,apr:a,periodEnd:generatedAt,sourceType:e.sourceType});
   }
 
   const companies={};
@@ -509,7 +608,7 @@ async function main() {
       const e=engines[engineId];
       const price=p.fixed!==undefined ? Number(p.fixed) : Number(prices[p.id]);
       const value=Number(p.qty)*price;
-      const apr=e?Number(e.aprLatest):NaN;
+      const apr=aprValue(e?.aprLatest);
       const priceOk=Number.isFinite(price)&&price>0;
       const aprOk=saneApr(apr);
       if (!priceOk || !Number.isFinite(value) || value<0) complete=false;
@@ -527,8 +626,8 @@ async function main() {
       const obs={snapshotKey:snapKey,apr:round(aprLatest),periodEnd:generatedAt,totalProductiveValue:round(total,2)};
       historyCompanies[name]=upsertObservation(historyCompanies[name],obs);
     }
-    const observations=(historyCompanies[name]||[]).filter(x=>saneApr(Number(x.apr)));
-    const histAvg=avg(observations.map(x=>Number(x.apr)));
+    const observations=(historyCompanies[name]||[]).filter(x=>saneApr(aprValue(x?.apr)));
+    const histAvg=avg(observations.map(x=>aprValue(x.apr)));
     const oldCompany=previous?.companies?.[name];
     const usableAverage=saneApr(histAvg);
 
@@ -548,7 +647,7 @@ async function main() {
   }
 
   const output={
-    version:'1.0',methodologyVersion:'1.0-simple',generatedAt,snapshotKey:snapKey,
+    version:'1.1',methodologyVersion:METHODOLOGY_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions only.',
     engines,companies,
     history:{engines:historyEngines,companies:historyCompanies},
