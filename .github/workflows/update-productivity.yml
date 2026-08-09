@@ -1,0 +1,57 @@
+name: Update The Holding Productivity Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    # One synchronized The Holding snapshot per week.
+    # Sunday 04:17 UTC avoids common top-of-hour cron congestion.
+    - cron: '17 4 * * 0'
+
+permissions:
+  contents: write
+
+jobs:
+  update-productivity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install collector dependencies
+        working-directory: productivity
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: productivity
+        run: npx playwright install --with-deps chromium
+
+      - name: Update protocol APRs and company Productivity
+        working-directory: productivity
+        env:
+          # Optional. The engine also works with CoinGecko's public endpoint for
+          # this tiny weekly load. Add a repository secret later if desired.
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          PAGE_FILE: ../companies.html
+          DATA_FILE: ../productivity-data.json
+          REPORT_FILE: ../productivity-source-report.json
+        run: npm run update
+
+      - name: Commit new snapshot
+        run: |
+          git config user.name "The Holding Data Engine"
+          git config user.email "data-engine@theholding.ai"
+          git add productivity-data.json productivity-source-report.json
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "data: update weekly productivity snapshot"
+            git push
+          fi
