@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-08-09T19:51:14.889Z",
+  "generatedAt": "2026-08-09T20:09:26.895Z",
   "methodologyVersion": "1.1-simple-safe",
-  "collectorVersion": "1.6-pendle-epoch-map",
+  "collectorVersion": "1.7-pendle-transfer-reconstruction",
   "engines": {
     "aerodrome_veaero": {
       "protocol": "Aerodrome",
@@ -11,7 +11,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:51:14.889Z",
+      "periodEnd": "2026-08-09T20:09:26.895Z",
       "error": null,
       "details": {
         "maxBorrow": 3000,
@@ -28,7 +28,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:51:14.889Z",
+      "periodEnd": "2026-08-09T20:09:26.895Z",
       "error": null,
       "details": {
         "maxBorrow": 3000,
@@ -45,7 +45,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "Locked CVX platform vAPR + last completed Votium incentives APR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:51:14.889Z",
+      "periodEnd": "2026-08-09T20:09:26.895Z",
       "error": null,
       "details": {
         "platformVapr": 0.0033,
@@ -55,7 +55,7 @@
     "curve_vecrv": {
       "protocol": "Curve",
       "status": "ok",
-      "apr": 2.6926,
+      "apr": 2.6939,
       "source": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
       "sourceType": "onchain",
       "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
@@ -64,8 +64,8 @@
       "error": null,
       "details": {
         "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
-        "rpc": "https://ethereum-rpc.publicnode.com",
-        "crvPrice": 0.23805,
+        "rpc": "https://1rpc.io/eth",
+        "crvPrice": 0.237939,
         "crvUSDPriceAssumption": 1,
         "weeksUsed": 4,
         "lastTokenTime": 1786302071,
@@ -74,25 +74,25 @@
             "week": 1785369600,
             "tokensCrvUSD": 71692.38943973786,
             "veSupply": 784340206.5790856,
-            "apr": 1.9967
+            "apr": 1.9976
           },
           {
             "week": 1784764800,
             "tokensCrvUSD": 68748.37040583129,
             "veSupply": 784483774.253096,
-            "apr": 1.9143
+            "apr": 1.9152
           },
           {
             "week": 1784160000,
             "tokensCrvUSD": 68212.56637047377,
             "veSupply": 783794463.6861042,
-            "apr": 1.9011
+            "apr": 1.902
           },
           {
             "week": 1783555200,
             "tokensCrvUSD": 178201.84025600296,
             "veSupply": 785063578.3980215,
-            "apr": 4.9584
+            "apr": 4.9607
           }
         ]
       }
@@ -102,8 +102,8 @@
       "status": "warming",
       "apr": null,
       "source": "https://api-v2.pendle.finance/core/v1/spendle/data",
-      "sourceType": "official-api+official-merkle+onchain-diagnostic",
-      "sourceMetric": "sPENDLE APR withheld · zero API APR conflicts with mapped positive rewards",
+      "sourceType": "official-api+official-merkle+onchain-transfer-diagnostic",
+      "sourceMetric": "sPENDLE APR withheld · mapped positive rewards but Transfer reconstruction has not yet passed promotion gate",
       "periodStart": "2026-07-14T00:00:00.000Z",
       "periodEnd": "2026-07-28T00:00:00.000Z",
       "error": null,
@@ -115,7 +115,7 @@
         "publishedApr": 0,
         "revenue": 312875.1682402113,
         "buybackAmount": 0,
-        "selectionRule": "zero-apr-positive-reward-multi-epoch-map-guard",
+        "selectionRule": "zero-apr-positive-reward-transfer-reconstruction-not-yet-replicated",
         "mappedMerkleCampaign": {
           "campaign": "2026-08-01-spendle",
           "merklePeriodStart": "2026-07-17T00:00:00.000Z",
@@ -245,7 +245,7 @@
           ],
           "epochMap": {
             "pairCount": 8,
-            "exactAmountMatches": 4,
+            "exactAmountMatches": 7,
             "offsetConsensus": true,
             "offsetSeconds": 259200,
             "offsetDays": 3,
@@ -321,7 +321,7 @@
                 "offsetDays": 3,
                 "offsetDriftSeconds": 0,
                 "amountDifference": 0.0767954,
-                "amountMatch": false
+                "amountMatch": true
               },
               {
                 "campaign": "2026-06-06-spendle",
@@ -357,7 +357,7 @@
                 "offsetDays": 3,
                 "offsetDriftSeconds": 0,
                 "amountDifference": 1,
-                "amountMatch": false
+                "amountMatch": true
               },
               {
                 "campaign": "2026-04-27-spendle",
@@ -375,7 +375,7 @@
                 "offsetDays": 3,
                 "offsetDriftSeconds": 0,
                 "amountDifference": 0.30117071,
-                "amountMatch": false
+                "amountMatch": true
               },
               {
                 "campaign": "2026-04-10-spendle-airdrop",
@@ -397,40 +397,41 @@
               }
             ]
           },
-          "balanceDiagnostics": [
-            {
-              "campaign": "2026-08-01-spendle",
-              "status": "historical-rpc-unavailable",
-              "blockNumber": 25649110,
-              "errors": [
-                "https://ethereum-rpc.publicnode.com: RPC HTTP 403",
-                "https://eth.drpc.org: RPC HTTP 500",
-                "https://1rpc.io/eth: RPC HTTP 403",
-                "https://eth.llamarpc.com: RPC HTTP 403"
-              ]
-            },
-            {
-              "campaign": "2026-07-18-spendle",
-              "status": "historical-rpc-unavailable",
-              "blockNumber": 25548675,
-              "errors": [
-                "https://ethereum-rpc.publicnode.com: RPC HTTP 403",
-                "https://eth.drpc.org: RPC HTTP 500",
-                "https://1rpc.io/eth: RPC HTTP 403",
-                "https://eth.llamarpc.com: RPC HTTP 521"
-              ]
-            }
-          ],
-          "denominatorPolicy": "V1.6 diagnostics may infer historical active supply from direct-holder reward ratios, but Reference APR stays withheld until the inference replicates cleanly and reward scope is confirmed."
+          "transferReconstruction": {
+            "status": "transfer-log-rpc-unavailable",
+            "rpc": null,
+            "reconstructionStartBlock": null,
+            "reconstructionStartTimestamp": null,
+            "sampledAddresses": null,
+            "userTransferLogs": null,
+            "supplyTransferLogs": null,
+            "errors": [
+              "https://rpc.flashbots.net: eth_getLogs failed at minimum chunk 24486660-24491659: RPC HTTP 429",
+              "https://ethereum-rpc.publicnode.com: RPC HTTP 403",
+              "https://eth.llamarpc.com: RPC HTTP 403",
+              "https://eth.drpc.org: eth_getLogs failed at minimum chunk 24948810-24953809: RPC HTTP 408",
+              "https://1rpc.io/eth: eth_getLogs is limited to 0 - 50 blocks range"
+            ]
+          },
+          "balanceDiagnostics": [],
+          "transferReplication": {
+            "replicated": false,
+            "validCampaigns": 0,
+            "dominantBoundary": null,
+            "dominantBoundaryCount": 0,
+            "campaigns": []
+          },
+          "denominatorPolicy": "V1.7 reconstructs direct historical sPENDLE balances from Transfer logs starting before the official Jan-20-2026 staking launch. A Merkle reward APR may become Reference APR only after a tight direct-holder reward/balance cluster replicates across at least two campaigns on the same snapshot boundary.",
+          "rewardScope": "Reference APR reconstructed by this path is the sPENDLE buyback distribution component. In-kind point airdrops are intentionally excluded until they can be normalized independently."
         },
         "currentSupply": {
           "snapshotKey": "2026-W32",
-          "observedAt": 1786305093,
-          "periodEnd": "2026-08-09T19:51:33.000Z",
+          "observedAt": 1786306186,
+          "periodEnd": "2026-08-09T20:09:46.000Z",
           "totalPendleStaked": 98102230.96805654,
           "totalStakedInSpendle": 34201989.666016765,
-          "virtualSpendleFromVependle": 186153268.10860327,
-          "currentEffectiveSupply": 220355257.77462003
+          "virtualSpendleFromVependle": 186151488.63332194,
+          "currentEffectiveSupply": 220353478.2993387
         },
         "recentCompleted": [
           {
@@ -487,36 +488,36 @@
     "fx_vefxn": {
       "protocol": "f(x)",
       "status": "ok",
-      "apr": 42.19,
+      "apr": 41.62,
       "source": "https://fx.aladdin.club/v2/lock",
       "sourceType": "official-frontend",
       "sourceMetric": "veFXN Locker APR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:51:14.889Z",
+      "periodEnd": "2026-08-09T20:09:26.895Z",
       "error": null,
       "details": {}
     },
     "yieldbasis_veyb": {
       "protocol": "Yield Basis",
       "status": "ok",
-      "apr": 4.29,
+      "apr": 4.3,
       "source": "https://yieldbasis.com/analytics",
       "sourceType": "official-analytics",
       "sourceMetric": "veYB APR · current/latest epoch",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:51:14.889Z",
+      "periodEnd": "2026-08-09T20:09:26.895Z",
       "error": null,
       "details": {}
     },
     "frax_vefrax": {
       "protocol": "Frax",
       "status": "ok",
-      "apr": 5.3263,
+      "apr": 5.3264,
       "source": "https://api.frax.finance/combineddata/",
       "sourceType": "official-api",
       "sourceMetric": "Fraxtal veFRAX/veFXS APR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:51:14.889Z",
+      "periodEnd": "2026-08-09T20:09:26.895Z",
       "error": null,
       "details": {
         "path": "core.vefxs.apr"
@@ -530,13 +531,13 @@
       "sourceType": "onchain",
       "sourceMetric": "VVV emissionRatePerSecond / total sVVV supply",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:51:14.889Z",
+      "periodEnd": "2026-08-09T20:09:26.895Z",
       "error": null,
       "details": {
         "contract": "0x321b7ff75154472B18EDb199033fF4D116F340Ff",
         "rpc": "https://mainnet.base.org",
         "rateVVVPerSecond": 0.09512937595129375,
-        "totalStakedVVV": 33605730.0834653
+        "totalStakedVVV": 33605883.71209905
       }
     },
     "liquity_lqty": {
@@ -547,24 +548,24 @@
       "sourceType": "onchain-baseline",
       "sourceMetric": "LQTY F_ETH + F_LUSD baseline maturing; APR starts after observed period",
       "periodStart": "2026-08-09T18:40:35.000Z",
-      "periodEnd": "2026-08-09T19:51:47.000Z",
+      "periodEnd": "2026-08-09T20:25:11.000Z",
       "error": null,
       "details": {
         "contract": "0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d",
-        "rpc": "https://ethereum-rpc.publicnode.com",
-        "baselineAgeSeconds": 4272,
+        "rpc": "https://1rpc.io/eth",
+        "baselineAgeSeconds": 6276,
         "reason": "Existing baseline is younger than 5 days and is intentionally preserved"
       }
     },
     "resupply_rsup": {
       "protocol": "Resupply",
       "status": "ok",
-      "apr": 12.34,
+      "apr": 12.38,
       "source": "https://resupply.finance/governance/rsup",
       "sourceType": "official-frontend",
       "sourceMetric": "Staked RSUP vAPR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:51:14.889Z",
+      "periodEnd": "2026-08-09T20:09:26.895Z",
       "error": null,
       "details": {
         "url": "https://resupply.finance/governance/rsup"
