@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <!-- companies.html · build 2026-08-09 · premium centered Passport headline metrics -->
 <html lang="en">
@@ -2524,16 +2525,37 @@ function resolvedCompanyApr(name, fallbackNumeric, fallbackDisplay) {
     const c = PRODUCTIVITY_SNAPSHOT && PRODUCTIVITY_SNAPSHOT.companies
             ? PRODUCTIVITY_SNAPSHOT.companies[name] : null;
     const avg = c && Number(c.aprHistoricalAverage);
-    const usable = c && c.status === 'ok' && Number.isFinite(avg) && avg >= 0
-                && Number(c.observationCount || 0) > 0;
+    const latest = c && Number(c.aprLatest);
+    const coverage = c && Number(c.coverage);
+    const fullUsable = c && c.status === 'ok' && Number.isFinite(avg) && avg >= 0
+                    && Number(c.observationCount || 0) > 0;
+    const partialUsable = c && c.status === 'partial' && Number.isFinite(latest) && latest >= 0
+                       && Number.isFinite(coverage) && coverage > 0;
 
-    if (!usable) {
+    if (!fullUsable && !partialUsable) {
         return {
             aprNumeric: fallbackNumeric,
             aprDisplay: fallbackDisplay,
             aprSource: 'manual',
             aprUpdatedAt: null,
             aprPeriod: 'current-indicative'
+        };
+    }
+
+    if (partialUsable) {
+        const display = latest.toFixed(1) + '%';
+        return {
+            aprNumeric: latest,
+            aprDisplay: { en: display, ru: display },
+            aprSource: c.source || 'automatic',
+            aprUpdatedAt: c.updatedAt || PRODUCTIVITY_SNAPSHOT.generatedAt || null,
+            aprPeriod: 'covered-live',
+            aprLatest: latest,
+            aprObservationCount: Number(c.observationCount || 0),
+            aprTrackingStartedAt: c.trackingStartedAt || null,
+            aprCoverage: coverage,
+            aprCoveragePartial: true,
+            aprScope: c.aprScope || 'covered-productive-capital'
         };
     }
 
@@ -2544,9 +2566,12 @@ function resolvedCompanyApr(name, fallbackNumeric, fallbackDisplay) {
         aprSource: c.source || 'automatic',
         aprUpdatedAt: c.updatedAt || PRODUCTIVITY_SNAPSHOT.generatedAt || null,
         aprPeriod: 'since-tracking',
-        aprLatest: Number.isFinite(Number(c.aprLatest)) ? Number(c.aprLatest) : avg,
+        aprLatest: Number.isFinite(latest) ? latest : avg,
         aprObservationCount: Number(c.observationCount || 0),
-        aprTrackingStartedAt: c.trackingStartedAt || null
+        aprTrackingStartedAt: c.trackingStartedAt || null,
+        aprCoverage: Number.isFinite(coverage) ? coverage : 1,
+        aprCoveragePartial: false,
+        aprScope: c.aprScope || 'full-productive-capital'
     };
 }
 
@@ -2910,7 +2935,7 @@ function renderIndex(lang) {
                 lonNote:'в работе', sigCap:'Сигнатура компании',
                 axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.', axF:'РЕЗУЛЬТАТ',
                 perfFactor:'Результат', sinceInception:'С момента запуска',
-                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', performance:'Performance', operatingHistory:'История работы' }
+                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', protocols:'Protocols', explore:'Explore Company', days:'days',
                 comp:'Composite breakdown', inView:'In view',
@@ -2920,7 +2945,7 @@ function renderIndex(lang) {
                 lonNote:'operating', sigCap:'Company signature',
                 axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY', axF:'PERFORMANCE',
                 perfFactor:'Performance', sinceInception:'Since inception',
-                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', performance:'Performance', operatingHistory:'Operating History' };
+                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History' };
         const wfld = (label, value, active) =>
             '<div class="ipx-field"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
@@ -2929,12 +2954,21 @@ function renderIndex(lang) {
             '<div class="ipx-field"><span class="ipx-label">' + label + '</span>'
             + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
         const aprFld = c => {
-            if (c.aprSource !== 'manual' && Number.isFinite(Number(c.aprLatest)) && Number(c.aprObservationCount || 0) > 0) {
-                return '<div class="ipx-field ipx-apr-field"><span class="ipx-label">APR</span>'
-                    + '<span class="ipx-apr-pair">'
-                    +   '<span class="ipx-apr-point"><span class="ipx-apr-kicker">' + L.averageShort + '</span><span class="ipx-apr-number">' + Number(c.aprNumeric).toFixed(1) + '%</span></span>'
-                    +   '<span class="ipx-apr-point"><span class="ipx-apr-kicker">' + L.latestShort + '</span><span class="ipx-apr-number">' + Number(c.aprLatest).toFixed(1) + '%</span></span>'
-                    + '</span></div>';
+            if (c.aprSource !== 'manual' && Number.isFinite(Number(c.aprLatest))) {
+                if (c.aprCoveragePartial && Number.isFinite(Number(c.aprCoverage))) {
+                    return '<div class="ipx-field ipx-apr-field"><span class="ipx-label">APR</span>'
+                        + '<span class="ipx-apr-pair">'
+                        +   '<span class="ipx-apr-point"><span class="ipx-apr-kicker">' + L.coveredShort + '</span><span class="ipx-apr-number">' + Number(c.aprLatest).toFixed(1) + '%</span></span>'
+                        +   '<span class="ipx-apr-point"><span class="ipx-apr-kicker">' + L.coverage + '</span><span class="ipx-apr-number">' + (Number(c.aprCoverage) * 100).toFixed(1) + '%</span></span>'
+                        + '</span></div>';
+                }
+                if (Number(c.aprObservationCount || 0) > 0) {
+                    return '<div class="ipx-field ipx-apr-field"><span class="ipx-label">APR</span>'
+                        + '<span class="ipx-apr-pair">'
+                        +   '<span class="ipx-apr-point"><span class="ipx-apr-kicker">' + L.averageShort + '</span><span class="ipx-apr-number">' + Number(c.aprNumeric).toFixed(1) + '%</span></span>'
+                        +   '<span class="ipx-apr-point"><span class="ipx-apr-kicker">' + L.latestShort + '</span><span class="ipx-apr-number">' + Number(c.aprLatest).toFixed(1) + '%</span></span>'
+                        + '</span></div>';
+                }
             }
             return fld(L.indicativeApr, c.aprDisplay ? (c.aprDisplay[lang] || c.aprDisplay.en) : '—', 'productive');
         };
