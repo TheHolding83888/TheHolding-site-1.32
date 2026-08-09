@@ -1,5 +1,7 @@
 {
-  "generatedAt": "2026-08-09T17:29:02.674Z",
+  "generatedAt": "2026-08-09T18:39:51.205Z",
+  "methodologyVersion": "1.1-simple-safe",
+  "collectorVersion": "1.3-timeout-safe",
   "engines": {
     "aerodrome_veaero": {
       "protocol": "Aerodrome",
@@ -8,6 +10,8 @@
       "source": "https://www.40acres.finance/",
       "sourceType": "official-frontend",
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
+      "periodStart": null,
+      "periodEnd": "2026-08-09T18:39:51.205Z",
       "error": null,
       "details": {
         "maxBorrow": 3000,
@@ -23,6 +27,8 @@
       "source": "https://www.40acres.finance/",
       "sourceType": "official-frontend",
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
+      "periodStart": null,
+      "periodEnd": "2026-08-09T18:39:51.205Z",
       "error": null,
       "details": {
         "maxBorrow": 3000,
@@ -34,25 +40,62 @@
     "convex_vlcvx": {
       "protocol": "Convex",
       "status": "ok",
-      "apr": 14.3832,
+      "apr": 14.3833,
       "source": "https://www.convexfinance.com/lock-cvx",
       "sourceType": "official-frontend",
       "sourceMetric": "Locked CVX platform vAPR + last completed Votium incentives APR",
+      "periodStart": null,
+      "periodEnd": "2026-08-09T18:39:51.205Z",
       "error": null,
       "details": {
-        "platformVapr": 0.0032,
+        "platformVapr": 0.0033,
         "votiumLastRoundApr": 14.38
       }
     },
     "curve_vecrv": {
       "protocol": "Curve",
-      "status": "error",
-      "apr": null,
-      "source": "https://classic.curve.finance/",
-      "sourceType": "unavailable",
-      "sourceMetric": null,
-      "error": "Curve: veCRV holder APY not found",
-      "details": null
+      "status": "ok",
+      "apr": 2.6848,
+      "source": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+      "sourceType": "onchain",
+      "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
+      "periodStart": "2026-07-09T00:00:00.000Z",
+      "periodEnd": "2026-08-06T00:00:00.000Z",
+      "error": null,
+      "details": {
+        "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+        "rpc": "https://ethereum-rpc.publicnode.com",
+        "crvPrice": 0.238746,
+        "crvUSDPriceAssumption": 1,
+        "weeksUsed": 4,
+        "lastTokenTime": 1786213727,
+        "weekly": [
+          {
+            "week": 1785369600,
+            "tokensCrvUSD": 71692.38943973786,
+            "veSupply": 784340206.5790856,
+            "apr": 1.9908
+          },
+          {
+            "week": 1784764800,
+            "tokensCrvUSD": 68748.37040583129,
+            "veSupply": 784483774.253096,
+            "apr": 1.9087
+          },
+          {
+            "week": 1784160000,
+            "tokensCrvUSD": 68212.56637047377,
+            "veSupply": 783794463.6861042,
+            "apr": 1.8955
+          },
+          {
+            "week": 1783555200,
+            "tokensCrvUSD": 178201.84025600296,
+            "veSupply": 785063578.3980215,
+            "apr": 4.944
+          }
+        ]
+      }
     },
     "pendle_spendle": {
       "protocol": "Pendle",
@@ -60,12 +103,17 @@
       "apr": 0,
       "source": "https://api-v2.pendle.finance/core/v1/spendle/data",
       "sourceType": "official-api",
-      "sourceMetric": "sPENDLE latest completed epoch APR",
+      "sourceMetric": "sPENDLE latest fully completed 14-day epoch APR",
+      "periodStart": "2026-07-14T00:00:00.000Z",
+      "periodEnd": "2026-07-28T00:00:00.000Z",
       "error": null,
       "details": {
-        "epochTimestamp": 1785196800,
+        "epochTimestamp": 1783987200,
+        "epochCompletedAt": 1785196800,
         "historyCount": 12,
-        "selectedIndex": 0
+        "selectedIndex": 1,
+        "revenue": 312875.1682402113,
+        "selectionRule": "latest-completed"
       }
     },
     "fx_vefxn": {
@@ -75,6 +123,8 @@
       "source": "https://fx.aladdin.club/v2/lock",
       "sourceType": "official-frontend",
       "sourceMetric": "veFXN Locker APR",
+      "periodStart": null,
+      "periodEnd": "2026-08-09T18:39:51.205Z",
       "error": null,
       "details": {}
     },
@@ -85,16 +135,20 @@
       "source": "https://yieldbasis.com/analytics",
       "sourceType": "official-analytics",
       "sourceMetric": "veYB APR · current/latest epoch",
+      "periodStart": null,
+      "periodEnd": "2026-08-09T18:39:51.205Z",
       "error": null,
       "details": {}
     },
     "frax_vefrax": {
       "protocol": "Frax",
       "status": "ok",
-      "apr": 5.326,
+      "apr": 5.3262,
       "source": "https://api.frax.finance/combineddata/",
       "sourceType": "official-api",
       "sourceMetric": "Fraxtal veFRAX/veFXS APR",
+      "periodStart": null,
+      "periodEnd": "2026-08-09T18:39:51.205Z",
       "error": null,
       "details": {
         "path": "core.vefxs.apr"
@@ -103,27 +157,35 @@
     "venice_svvv": {
       "protocol": "Venice",
       "status": "ok",
-      "apr": 8.9384,
+      "apr": 8.9303,
       "source": "https://venice.ai/token",
       "sourceType": "onchain",
       "sourceMetric": "VVV emissionRatePerSecond / total sVVV supply",
+      "periodStart": null,
+      "periodEnd": "2026-08-09T18:39:51.205Z",
       "error": null,
       "details": {
         "contract": "0x321b7ff75154472B18EDb199033fF4D116F340Ff",
         "rpc": "https://mainnet.base.org",
         "rateVVVPerSecond": 0.09512937595129375,
-        "totalStakedVVV": 33563213.90154854
+        "totalStakedVVV": 33593488.04193722
       }
     },
     "liquity_lqty": {
       "protocol": "Liquity",
-      "status": "error",
+      "status": "warming",
       "apr": null,
-      "source": "https://www.liquity.org/stake",
-      "sourceType": "unavailable",
-      "sourceMetric": null,
-      "error": "could not coalesce error (error={ \"code\": -32602, \"message\": \"Archive requests require a personal token. Get one at: https://www.allnodes.com/publicnode\" }, payload={ \"id\": 40, \"jsonrpc\": \"2.0\", \"method\": \"eth_getLogs\", \"params\": [ { \"address\": \"0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d\", \"fromBlock\": \"0x18450fd\", \"toBlock\": \"0x1849f1c\", \"topics\": [ \"0x4c56a0cf74da9899410b818edf6758c8af9b7b3070da97d2dcb6a5b1bf96317e\" ] } ] }, code=UNKNOWN_ERROR, version=6.17.0)",
-      "details": null
+      "source": "https://docs.liquity.org/liquity-v1/faq/staking",
+      "sourceType": "onchain-baseline",
+      "sourceMetric": "LQTY F_ETH + F_LUSD baseline initialized; APR starts after observed period",
+      "periodStart": "2026-08-09T18:40:35.000Z",
+      "periodEnd": "2026-08-09T18:40:35.000Z",
+      "error": null,
+      "details": {
+        "contract": "0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d",
+        "rpc": "https://ethereum-rpc.publicnode.com",
+        "reason": "Archive bootstrap disabled in v1.3; Holding-owned weekly baseline initialized"
+      }
     },
     "resupply_rsup": {
       "protocol": "Resupply",
@@ -132,6 +194,8 @@
       "source": "https://resupply.finance/governance/rsup",
       "sourceType": "official-frontend",
       "sourceMetric": "Staked RSUP vAPR",
+      "periodStart": null,
+      "periodEnd": "2026-08-09T18:39:51.205Z",
       "error": null,
       "details": {
         "url": "https://resupply.finance/governance/rsup"
