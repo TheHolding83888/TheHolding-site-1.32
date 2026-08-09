@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<!-- TheHolding.ai Website v2.1 - The Holding Network strip (live registry bridge)
+<!-- TheHolding.ai Website v2.2 - dead-CSS cleanup: 41 unused rules removed (no markup or behaviour changed)
+     v2.1 - The Holding Network strip (live registry bridge)
      v2.0 - SEO/structured-data hardening: removed fabricated aggregateRating, five-fund JSON-LD, honest 13.9% APR, og:image/twitter:image, favicon + theme-color -->
 <html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
@@ -240,10 +241,6 @@
             opacity: var(--grain-opacity);
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
             z-index: -1;
-        }
-
-        .serif {
-            font-family: 'Cormorant Garamond', serif;
         }
 
         .container {
@@ -813,21 +810,6 @@
             }
         }
 
-        .skeleton {
-            background: linear-gradient(
-                90deg,
-                rgba(0, 0, 0, 0.04) 25%,
-                rgba(0, 0, 0, 0.08) 50%,
-                rgba(0, 0, 0, 0.04) 75%
-            );
-            background-size: 200% 100%;
-            animation: shimmer 1.5s ease-in-out infinite;
-            border-radius: 4px;
-            display: inline-block;
-            min-width: 60px;
-            min-height: 1em;
-        }
-
         /* Philosophy Section */
         .philosophy {
             padding: 6rem 1.5rem 2rem; /* Further reduced bottom padding */
@@ -898,37 +880,6 @@
             font-weight: 500;
             margin-bottom: 0.25rem;
             line-height: 1.2;
-        }
-
-        /* Three layers intro */
-        .philosophy-intro {
-            font-weight: 400;
-            opacity: 0.9;
-        }
-
-        /* Individual layer lines */
-        .philosophy-layer {
-            font-weight: 300;
-            opacity: 0.95;
-        }
-
-        .philosophy-pillars {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1.5rem;
-            font-size: clamp(0.875rem, 2vw, 1rem); /* Larger, more visible */
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.15em; /* More breathing room */
-            padding: 0 1rem;
-            white-space: nowrap;
-            font-weight: 500; /* Slightly bolder */
-        }
-
-        .philosophy-pillars span.dot {
-            color: var(--text-tertiary);
-            opacity: 0.4; /* Subtler dots */
         }
 
         /* Capital Allocation Visualization - ULTRA PREMIUM */
@@ -1102,7 +1053,6 @@
             gap: 3.5rem;
             align-items: start;
         }
-        .pyramid-left {}
 
         /* Each desc row height matches pyramid bar height (~62px + 4px gap).
            Total pyramid height ≈ 5 * 66px = 330px. Right panel must match. */
@@ -1154,12 +1104,6 @@
             align-items: baseline;
             gap: 0.4rem;
             line-height: 1.1;
-        }
-        .pyr-desc-pct {
-            font-size: 0.7rem;
-            font-weight: 400;
-            color: var(--text-tertiary);
-            letter-spacing: 0.05em;
         }
         .pyr-desc-text {
             font-size: 0.78rem;
@@ -1513,28 +1457,6 @@
             font-weight: 500;
         }
 
-        .fund-status-indicators {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: clamp(0.75rem, 2vw, 0.8rem);
-            color: var(--text-tertiary);
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #10b981;
-        }
-
         /* Fund Header */
         .fund-header {
             padding: 1.5rem 2rem 1.5rem 2rem;
@@ -1598,13 +1520,6 @@
 
         .fund-card[data-fund="fructus"]:hover .chevron { color: #f59e0b; }
         .fund-card[data-fund="monetra"]:hover .chevron { color: #374151; }
-
-        .fund-badge {
-            font-size: clamp(0.75rem, 2vw, 0.875rem);
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
 
         .fund-description {
             color: var(--text-secondary);
@@ -1832,36 +1747,6 @@
             font-weight: 600;
         }
 
-        .educational-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
-            margin: 1.25rem 0;
-            padding: 1.25rem;
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
-            border-radius: 6px;
-            border: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        .educational-stat {
-            text-align: center;
-        }
-
-        .educational-stat-value {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .educational-stat-label {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
         .educational-link {
             display: inline-flex;
             align-items: center;
@@ -1961,40 +1846,10 @@
             letter-spacing: -0.01em;
         }
 
-        .asset-allocation {
-            color: var(--text-tertiary);
-            font-size: clamp(0.75rem, 2vw, 0.8rem);
-        }
-
-        /* Protocol Items */
-        .protocol-item {
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.02);
-        }
-
-        .protocol-item:last-child {
-            border-bottom: none;
-        }
-
-        .protocol-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         .protocol-name {
             color: var(--text-primary);
             font-weight: 500;
             font-size: clamp(0.95rem, 2.5vw, 1rem);
-        }
-
-        .protocol-badge {
-            font-size: clamp(0.7rem, 2vw, 0.75rem);
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-weight: 500;
         }
 
         /* Protocols Grid for Defitea */
@@ -2202,65 +2057,6 @@
         }
         .arch-intro p:last-child { margin-bottom: 0; }
 
-        .arch-funds {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            max-width: 800px;
-            margin: 0 auto 2rem;
-        }
-
-        .arch-fund {
-            display: block;
-            padding: 1.25rem 0;
-            border-bottom: 1px solid var(--border-color);
-            opacity: 0;
-            transform: translateY(16px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-        .arch-fund:first-child { border-top: 1px solid var(--border-color); }
-        .arch-fund.visible { opacity: 1; transform: translateY(0); }
-        .arch-fund:nth-child(1) { transition-delay: 0.05s; }
-        .arch-fund:nth-child(2) { transition-delay: 0.12s; }
-        .arch-fund:nth-child(3) { transition-delay: 0.19s; }
-        .arch-fund:nth-child(4) { transition-delay: 0.26s; }
-        .arch-fund:nth-child(5) { transition-delay: 0.33s; }
-
-        .arch-fund-body {}
-
-        .arch-fund-header {
-            display: flex;
-            align-items: baseline;
-            gap: 0.75rem;
-            margin-bottom: 0.35rem;
-        }
-        .arch-fund-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.5rem, 3.5vw, 2rem);
-            font-weight: 400;
-            color: var(--text-primary);
-            letter-spacing: -0.02em;
-            line-height: 1;
-        }
-        .arch-fund-pct {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-            letter-spacing: 0.06em;
-            font-weight: 500;
-        }
-        .arch-fund-role {
-            font-size: 0.68rem;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            margin-bottom: 0.4rem;
-            font-weight: 600;
-        }
-        .arch-fund-desc {
-            font-size: clamp(0.88rem, 2vw, 0.95rem);
-            color: var(--text-secondary);
-            line-height: 1.75;
-        }
-
         .arch-closing {
             max-width: 680px;
             margin: 0 auto;
@@ -2300,11 +2096,6 @@
             transition: opacity 0.6s ease, transform 0.6s ease;
         }
         .arch-reveal.visible { opacity: 1; transform: translateY(0); }
-
-        @media (max-width: 768px) {
-            .arch-fund { gap: 0 1.25rem; padding: 1.35rem 0; }
-            .arch-fund-name { font-size: clamp(1.3rem, 5vw, 1.6rem); }
-        }
 
 
         .manifesto-content p {
@@ -2637,18 +2428,6 @@
                 line-height: 1.15;
             }
 
-            .philosophy-pillars {
-                gap: 0.75rem; /* Tighter for single line */
-                font-size: 0.75rem; /* Smaller to fit in one line */
-                flex-wrap: nowrap; /* Force single line */
-                white-space: nowrap;
-            }
-
-            .philosophy-pillars {
-                gap: 0.5rem;
-                font-size: 0.7rem;
-            }
-
             .funds {
                 padding: 1.4rem 1.25rem 3rem; /* Reduced top from 3rem to 1.4rem (-53%) */
             }
@@ -2886,12 +2665,6 @@
         .disclaimer-section p {
             color: var(--text-secondary);
             margin-bottom: 0.75rem;
-        }
-
-        .disclaimer-funds {
-            font-family: 'Space Grotesk', sans-serif;
-            color: var(--accent-blue);
-            font-weight: 500;
         }
 
         .disclaimer-list {
@@ -3170,19 +2943,6 @@
             .reports-table thead th:first-child,
             .reports-table tbody td:first-child {
                 padding-left: 0.75rem;
-            }
-
-            .chart-bars {
-                gap: 1rem;
-                height: 120px;
-            }
-
-            .bar-value {
-                font-size: 0.75rem;
-            }
-
-            .bar-label {
-                font-size: 0.7rem;
             }
 
             .footer-content {
