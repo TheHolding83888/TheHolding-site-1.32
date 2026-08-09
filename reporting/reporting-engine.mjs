@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Reporting Layer v1.0.1
+ * The Holding · Reporting Layer v1.0.2
  * ---------------------------------
  * Lightweight daily collector for Defitea reporting.
  *
@@ -33,7 +33,7 @@ const COMPANY_PAGE_FILE = process.env.COMPANY_PAGE_FILE || path.join(ROOT, 'comp
 const PRODUCTIVITY_DATA_FILE = process.env.PRODUCTIVITY_DATA_FILE || path.join(ROOT, 'companies', 'productivity-data.json');
 const REPORTING_DATA_FILE = process.env.REPORTING_DATA_FILE || path.join(ROOT, 'reporting', 'reporting-data.json');
 const FUND_NAME = 'defitea.eth';
-const REPORTING_VERSION = '1.0.1';
+const REPORTING_VERSION = '1.0.2';
 const METHODOLOGY_VERSION = '1.0-daily-tvl-reference-model';
 const API_TIMEOUT_MS = 12000;
 const MAX_DAILY_SNAPSHOTS = 550;
@@ -192,8 +192,14 @@ function buildDailySnapshot({ generatedAt, positions, prices, productivity, prev
 
   const internalCoveredApr = coveredValue > 0 ? weightedApr / coveredValue : NaN;
   const publicReferenceApr = Number.isFinite(referenceApr) && referenceApr >= 0 ? referenceApr : internalCoveredApr;
-  const modeledDailyCashFlow = totalValue > 0 && Number.isFinite(publicReferenceApr)
-    ? totalValue * (publicReferenceApr / 100) / 365
+
+  // IMPORTANT: reference cash flow must be modeled only from positions whose
+  // Reference APR is actually validated. Do not apply the covered-capital APR
+  // to warming/uncovered capital (e.g. Liquity), because that would silently
+  // invent income for an engine whose APR is still unknown. Once that engine
+  // becomes `ok`, it enters weightedApr automatically on the next snapshot.
+  const modeledDailyCashFlow = coveredValue > 0 && Number.isFinite(weightedApr)
+    ? (weightedApr / 100) / 365
     : NaN;
 
   return {
