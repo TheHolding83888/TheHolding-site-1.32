@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-08-09T19:23:54.198Z",
+  "generatedAt": "2026-08-09T19:51:14.889Z",
   "methodologyVersion": "1.1-simple-safe",
-  "collectorVersion": "1.5-pendle-merkle-audit",
+  "collectorVersion": "1.6-pendle-epoch-map",
   "engines": {
     "aerodrome_veaero": {
       "protocol": "Aerodrome",
@@ -11,7 +11,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:23:54.198Z",
+      "periodEnd": "2026-08-09T19:51:14.889Z",
       "error": null,
       "details": {
         "maxBorrow": 3000,
@@ -28,7 +28,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:23:54.198Z",
+      "periodEnd": "2026-08-09T19:51:14.889Z",
       "error": null,
       "details": {
         "maxBorrow": 3000,
@@ -45,7 +45,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "Locked CVX platform vAPR + last completed Votium incentives APR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:23:54.198Z",
+      "periodEnd": "2026-08-09T19:51:14.889Z",
       "error": null,
       "details": {
         "platformVapr": 0.0033,
@@ -55,7 +55,7 @@
     "curve_vecrv": {
       "protocol": "Curve",
       "status": "ok",
-      "apr": 2.6816,
+      "apr": 2.6926,
       "source": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
       "sourceType": "onchain",
       "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
@@ -65,7 +65,7 @@
       "details": {
         "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
         "rpc": "https://ethereum-rpc.publicnode.com",
-        "crvPrice": 0.239028,
+        "crvPrice": 0.23805,
         "crvUSDPriceAssumption": 1,
         "weeksUsed": 4,
         "lastTokenTime": 1786302071,
@@ -74,25 +74,25 @@
             "week": 1785369600,
             "tokensCrvUSD": 71692.38943973786,
             "veSupply": 784340206.5790856,
-            "apr": 1.9885
+            "apr": 1.9967
           },
           {
             "week": 1784764800,
             "tokensCrvUSD": 68748.37040583129,
             "veSupply": 784483774.253096,
-            "apr": 1.9065
+            "apr": 1.9143
           },
           {
             "week": 1784160000,
             "tokensCrvUSD": 68212.56637047377,
             "veSupply": 783794463.6861042,
-            "apr": 1.8933
+            "apr": 1.9011
           },
           {
             "week": 1783555200,
             "tokensCrvUSD": 178201.84025600296,
             "veSupply": 785063578.3980215,
-            "apr": 4.9381
+            "apr": 4.9584
           }
         ]
       }
@@ -102,8 +102,8 @@
       "status": "warming",
       "apr": null,
       "source": "https://api-v2.pendle.finance/core/v1/spendle/data",
-      "sourceType": "official-api+official-merkle",
-      "sourceMetric": "sPENDLE APR withheld · zero API APR conflicts with positive first-party rewards",
+      "sourceType": "official-api+official-merkle+onchain-diagnostic",
+      "sourceMetric": "sPENDLE APR withheld · zero API APR conflicts with mapped positive rewards",
       "periodStart": "2026-07-14T00:00:00.000Z",
       "periodEnd": "2026-07-28T00:00:00.000Z",
       "error": null,
@@ -115,40 +115,322 @@
         "publishedApr": 0,
         "revenue": 312875.1682402113,
         "buybackAmount": 0,
-        "selectionRule": "zero-apr-positive-reward-dual-source-guard",
-        "merkle": {
+        "selectionRule": "zero-apr-positive-reward-multi-epoch-map-guard",
+        "mappedMerkleCampaign": {
           "campaign": "2026-08-01-spendle",
-          "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-08-01-spendle/campaign.json",
-          "merkleRoot": "0x931bebdc0257235aa8fb1b4c4f18b47577aaecd67e35a341f3a1af4ef006645d",
-          "fromTimestamp": 1784246400,
-          "toTimestamp": 1785456000,
-          "distributedSPendle": 144387.99999999994,
-          "blockNumberStart": 25548675,
-          "blockNumberEnd": 25649110,
-          "userCount": 6048
+          "merklePeriodStart": "2026-07-17T00:00:00.000Z",
+          "merklePeriodEnd": "2026-07-31T00:00:00.000Z",
+          "merkleReward": 144388,
+          "apiIndex": 1,
+          "apiPeriodStart": "2026-07-14T00:00:00.000Z",
+          "apiPeriodEnd": "2026-07-28T00:00:00.000Z",
+          "apiRevenue": 312875.1682402113,
+          "apiBuybackAmount": 0,
+          "apiPublishedApr": 0,
+          "startOffsetSeconds": 259200,
+          "endOffsetSeconds": 259200,
+          "offsetDays": 3,
+          "offsetDriftSeconds": 0,
+          "amountDifference": 144388,
+          "amountMatch": false
         },
-        "merkleApiMatch": null,
-        "merkleError": null,
-        "denominatorPolicy": "No reconstructed APR until the exact historical ACTIVE sPENDLE snapshot (including virtual sPENDLE) is available",
+        "research": {
+          "merkleError": null,
+          "campaignCount": 8,
+          "campaigns": [
+            {
+              "campaign": "2026-08-01-spendle",
+              "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-08-01-spendle/campaign.json",
+              "merkleRoot": "0x931bebdc0257235aa8fb1b4c4f18b47577aaecd67e35a341f3a1af4ef006645d",
+              "fromTimestamp": 1784246400,
+              "toTimestamp": 1785456000,
+              "periodStart": "2026-07-17T00:00:00.000Z",
+              "periodEnd": "2026-07-31T00:00:00.000Z",
+              "distributedSPendle": 144388,
+              "blockNumberStart": 25548675,
+              "blockNumberEnd": 25649110,
+              "userCount": 6048
+            },
+            {
+              "campaign": "2026-07-18-spendle",
+              "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-07-18-spendle/campaign.json",
+              "merkleRoot": "0x5804cf9db19090e71a3ce730ecbb7f5d603a4661d701e2b0ac00198fec184fb2",
+              "fromTimestamp": 1783036800,
+              "toTimestamp": 1784246400,
+              "periodStart": "2026-07-03T00:00:00.000Z",
+              "periodEnd": "2026-07-17T00:00:00.000Z",
+              "distributedSPendle": 149086,
+              "blockNumberStart": 25448270,
+              "blockNumberEnd": 25548675,
+              "userCount": 5986
+            },
+            {
+              "campaign": "2026-07-03-spendle",
+              "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-07-03-spendle/campaign.json",
+              "merkleRoot": "0x67b91d73f0bcc763fb5b2e2148690123cf4a297e83e5ea20b22df45a0f6ca1df",
+              "fromTimestamp": 1781827200,
+              "toTimestamp": 1783036800,
+              "periodStart": "2026-06-19T00:00:00.000Z",
+              "periodEnd": "2026-07-03T00:00:00.000Z",
+              "distributedSPendle": 239840,
+              "blockNumberStart": 25347893,
+              "blockNumberEnd": 25448270,
+              "userCount": 5910
+            },
+            {
+              "campaign": "2026-06-19-spendle",
+              "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-06-19-spendle/campaign.json",
+              "merkleRoot": "0x566fde61f38e36d1337cc9c100c99f76f43e031fbddb7229bb8e07f4f0ecf645",
+              "fromTimestamp": 1780617600,
+              "toTimestamp": 1781827200,
+              "periodStart": "2026-06-05T00:00:00.000Z",
+              "periodEnd": "2026-06-19T00:00:00.000Z",
+              "distributedSPendle": 131832,
+              "blockNumberStart": 25247461,
+              "blockNumberEnd": 25347893,
+              "userCount": 5831
+            },
+            {
+              "campaign": "2026-06-06-spendle",
+              "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-06-06-spendle/campaign.json",
+              "merkleRoot": "0x510e119687bbb342f11453415b3fab02a22bcb7c242519b62bc5ecc2008ab040",
+              "fromTimestamp": 1779408000,
+              "toTimestamp": 1780617600,
+              "periodStart": "2026-05-22T00:00:00.000Z",
+              "periodEnd": "2026-06-05T00:00:00.000Z",
+              "distributedSPendle": 218235,
+              "blockNumberStart": 25147071,
+              "blockNumberEnd": 25247461,
+              "userCount": 5721
+            },
+            {
+              "campaign": "2026-05-09-spendle",
+              "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-05-09-spendle/campaign.json",
+              "merkleRoot": "0x4d6d2caaf37b995b2c5fb0f1d22c91a8fbe8907623c3c89269bdce7a5722a679",
+              "fromTimestamp": 1776988800,
+              "toTimestamp": 1778198400,
+              "periodStart": "2026-04-24T00:00:00.000Z",
+              "periodEnd": "2026-05-08T00:00:00.000Z",
+              "distributedSPendle": 110443,
+              "blockNumberStart": 24946093,
+              "blockNumberEnd": 25046605,
+              "userCount": 5477
+            },
+            {
+              "campaign": "2026-04-27-spendle",
+              "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-04-27-spendle/campaign.json",
+              "merkleRoot": "0x703eeb31caed534083bd5770fe58a6da920b17d1760e2af5bf663e77bc958375",
+              "fromTimestamp": 1775779200,
+              "toTimestamp": 1776988800,
+              "periodStart": "2026-04-10T00:00:00.000Z",
+              "periodEnd": "2026-04-24T00:00:00.000Z",
+              "distributedSPendle": 287935,
+              "blockNumberStart": 24845605,
+              "blockNumberEnd": 24946093,
+              "userCount": 5331
+            },
+            {
+              "campaign": "2026-04-10-spendle-airdrop",
+              "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-04-10-spendle-airdrop/campaign.json",
+              "merkleRoot": "0x3e84a243f2330f2e77c90a797ca670cfdaee6543e9ba4e29e030f6dd267248a2",
+              "fromTimestamp": 1774569600,
+              "toTimestamp": 1775779200,
+              "periodStart": "2026-03-27T00:00:00.000Z",
+              "periodEnd": "2026-04-10T00:00:00.000Z",
+              "distributedSPendle": 196115,
+              "blockNumberStart": 24745175,
+              "blockNumberEnd": 24845605,
+              "userCount": 5215
+            }
+          ],
+          "epochMap": {
+            "pairCount": 8,
+            "exactAmountMatches": 4,
+            "offsetConsensus": true,
+            "offsetSeconds": 259200,
+            "offsetDays": 3,
+            "maxOffsetDeviationSeconds": 0,
+            "pairs": [
+              {
+                "campaign": "2026-08-01-spendle",
+                "merklePeriodStart": "2026-07-17T00:00:00.000Z",
+                "merklePeriodEnd": "2026-07-31T00:00:00.000Z",
+                "merkleReward": 144388,
+                "apiIndex": 1,
+                "apiPeriodStart": "2026-07-14T00:00:00.000Z",
+                "apiPeriodEnd": "2026-07-28T00:00:00.000Z",
+                "apiRevenue": 312875.1682402113,
+                "apiBuybackAmount": 0,
+                "apiPublishedApr": 0,
+                "startOffsetSeconds": 259200,
+                "endOffsetSeconds": 259200,
+                "offsetDays": 3,
+                "offsetDriftSeconds": 0,
+                "amountDifference": 144388,
+                "amountMatch": false
+              },
+              {
+                "campaign": "2026-07-18-spendle",
+                "merklePeriodStart": "2026-07-03T00:00:00.000Z",
+                "merklePeriodEnd": "2026-07-17T00:00:00.000Z",
+                "merkleReward": 149086,
+                "apiIndex": 2,
+                "apiPeriodStart": "2026-06-30T00:00:00.000Z",
+                "apiPeriodEnd": "2026-07-14T00:00:00.000Z",
+                "apiRevenue": 270669.23910515575,
+                "apiBuybackAmount": 149086,
+                "apiPublishedApr": 0,
+                "startOffsetSeconds": 259200,
+                "endOffsetSeconds": 259200,
+                "offsetDays": 3,
+                "offsetDriftSeconds": 0,
+                "amountDifference": 0,
+                "amountMatch": true
+              },
+              {
+                "campaign": "2026-07-03-spendle",
+                "merklePeriodStart": "2026-06-19T00:00:00.000Z",
+                "merklePeriodEnd": "2026-07-03T00:00:00.000Z",
+                "merkleReward": 239840,
+                "apiIndex": 3,
+                "apiPeriodStart": "2026-06-16T00:00:00.000Z",
+                "apiPeriodEnd": "2026-06-30T00:00:00.000Z",
+                "apiRevenue": 508656.2850598516,
+                "apiBuybackAmount": 239840,
+                "apiPublishedApr": 0,
+                "startOffsetSeconds": 259200,
+                "endOffsetSeconds": 259200,
+                "offsetDays": 3,
+                "offsetDriftSeconds": 0,
+                "amountDifference": 0,
+                "amountMatch": true
+              },
+              {
+                "campaign": "2026-06-19-spendle",
+                "merklePeriodStart": "2026-06-05T00:00:00.000Z",
+                "merklePeriodEnd": "2026-06-19T00:00:00.000Z",
+                "merkleReward": 131832,
+                "apiIndex": 4,
+                "apiPeriodStart": "2026-06-02T00:00:00.000Z",
+                "apiPeriodEnd": "2026-06-16T00:00:00.000Z",
+                "apiRevenue": 642686.3331213985,
+                "apiBuybackAmount": 131832.0767954,
+                "apiPublishedApr": 0,
+                "startOffsetSeconds": 259200,
+                "endOffsetSeconds": 259200,
+                "offsetDays": 3,
+                "offsetDriftSeconds": 0,
+                "amountDifference": 0.0767954,
+                "amountMatch": false
+              },
+              {
+                "campaign": "2026-06-06-spendle",
+                "merklePeriodStart": "2026-05-22T00:00:00.000Z",
+                "merklePeriodEnd": "2026-06-05T00:00:00.000Z",
+                "merkleReward": 218235,
+                "apiIndex": 5,
+                "apiPeriodStart": "2026-05-19T00:00:00.000Z",
+                "apiPeriodEnd": "2026-06-02T00:00:00.000Z",
+                "apiRevenue": 446979.9759852908,
+                "apiBuybackAmount": 218235,
+                "apiPublishedApr": 0,
+                "startOffsetSeconds": 259200,
+                "endOffsetSeconds": 259200,
+                "offsetDays": 3,
+                "offsetDriftSeconds": 0,
+                "amountDifference": 0,
+                "amountMatch": true
+              },
+              {
+                "campaign": "2026-05-09-spendle",
+                "merklePeriodStart": "2026-04-24T00:00:00.000Z",
+                "merklePeriodEnd": "2026-05-08T00:00:00.000Z",
+                "merkleReward": 110443,
+                "apiIndex": 7,
+                "apiPeriodStart": "2026-04-21T00:00:00.000Z",
+                "apiPeriodEnd": "2026-05-05T00:00:00.000Z",
+                "apiRevenue": 585714.721351156,
+                "apiBuybackAmount": 110442,
+                "apiPublishedApr": 0,
+                "startOffsetSeconds": 259200,
+                "endOffsetSeconds": 259200,
+                "offsetDays": 3,
+                "offsetDriftSeconds": 0,
+                "amountDifference": 1,
+                "amountMatch": false
+              },
+              {
+                "campaign": "2026-04-27-spendle",
+                "merklePeriodStart": "2026-04-10T00:00:00.000Z",
+                "merklePeriodEnd": "2026-04-24T00:00:00.000Z",
+                "merkleReward": 287935,
+                "apiIndex": 8,
+                "apiPeriodStart": "2026-04-07T00:00:00.000Z",
+                "apiPeriodEnd": "2026-04-21T00:00:00.000Z",
+                "apiRevenue": 535129.6358102188,
+                "apiBuybackAmount": 287935.30117071,
+                "apiPublishedApr": 0,
+                "startOffsetSeconds": 259200,
+                "endOffsetSeconds": 259200,
+                "offsetDays": 3,
+                "offsetDriftSeconds": 0,
+                "amountDifference": 0.30117071,
+                "amountMatch": false
+              },
+              {
+                "campaign": "2026-04-10-spendle-airdrop",
+                "merklePeriodStart": "2026-03-27T00:00:00.000Z",
+                "merklePeriodEnd": "2026-04-10T00:00:00.000Z",
+                "merkleReward": 196115,
+                "apiIndex": 9,
+                "apiPeriodStart": "2026-03-24T00:00:00.000Z",
+                "apiPeriodEnd": "2026-04-07T00:00:00.000Z",
+                "apiRevenue": 1507514.0729151596,
+                "apiBuybackAmount": 196115,
+                "apiPublishedApr": 0,
+                "startOffsetSeconds": 259200,
+                "endOffsetSeconds": 259200,
+                "offsetDays": 3,
+                "offsetDriftSeconds": 0,
+                "amountDifference": 0,
+                "amountMatch": true
+              }
+            ]
+          },
+          "balanceDiagnostics": [
+            {
+              "campaign": "2026-08-01-spendle",
+              "status": "historical-rpc-unavailable",
+              "blockNumber": 25649110,
+              "errors": [
+                "https://ethereum-rpc.publicnode.com: RPC HTTP 403",
+                "https://eth.drpc.org: RPC HTTP 500",
+                "https://1rpc.io/eth: RPC HTTP 403",
+                "https://eth.llamarpc.com: RPC HTTP 403"
+              ]
+            },
+            {
+              "campaign": "2026-07-18-spendle",
+              "status": "historical-rpc-unavailable",
+              "blockNumber": 25548675,
+              "errors": [
+                "https://ethereum-rpc.publicnode.com: RPC HTTP 403",
+                "https://eth.drpc.org: RPC HTTP 500",
+                "https://1rpc.io/eth: RPC HTTP 403",
+                "https://eth.llamarpc.com: RPC HTTP 521"
+              ]
+            }
+          ],
+          "denominatorPolicy": "V1.6 diagnostics may infer historical active supply from direct-holder reward ratios, but Reference APR stays withheld until the inference replicates cleanly and reward scope is confirmed."
+        },
         "currentSupply": {
           "snapshotKey": "2026-W32",
-          "observedAt": 1786303457,
-          "periodEnd": "2026-08-09T19:24:17.000Z",
+          "observedAt": 1786305093,
+          "periodEnd": "2026-08-09T19:51:33.000Z",
           "totalPendleStaked": 98102230.96805654,
           "totalStakedInSpendle": 34201989.666016765,
-          "virtualSpendleFromVependle": 186158606.53444725,
-          "currentEffectiveSupply": 220360596.200464,
-          "snapshots": [
-            {
-              "snapshotKey": "2026-W32",
-              "observedAt": 1786303457,
-              "periodEnd": "2026-08-09T19:24:17.000Z",
-              "totalPendleStaked": 98102230.96805654,
-              "totalStakedInSpendle": 34201989.666016765,
-              "virtualSpendleFromVependle": 186158606.53444725,
-              "currentEffectiveSupply": 220360596.200464
-            }
-          ]
+          "virtualSpendleFromVependle": 186153268.10860327,
+          "currentEffectiveSupply": 220355257.77462003
         },
         "recentCompleted": [
           {
@@ -182,6 +464,22 @@
             "buybackAmount": 131832.0767954,
             "periodStart": "2026-06-02T00:00:00.000Z",
             "periodEnd": "2026-06-16T00:00:00.000Z"
+          },
+          {
+            "index": 5,
+            "apr": 0,
+            "revenue": 446979.9759852908,
+            "buybackAmount": 218235,
+            "periodStart": "2026-05-19T00:00:00.000Z",
+            "periodEnd": "2026-06-02T00:00:00.000Z"
+          },
+          {
+            "index": 6,
+            "apr": 0,
+            "revenue": 594685.1171127595,
+            "buybackAmount": 142392,
+            "periodStart": "2026-05-05T00:00:00.000Z",
+            "periodEnd": "2026-05-19T00:00:00.000Z"
           }
         ]
       }
@@ -189,12 +487,12 @@
     "fx_vefxn": {
       "protocol": "f(x)",
       "status": "ok",
-      "apr": 42.49,
+      "apr": 42.19,
       "source": "https://fx.aladdin.club/v2/lock",
       "sourceType": "official-frontend",
       "sourceMetric": "veFXN Locker APR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:23:54.198Z",
+      "periodEnd": "2026-08-09T19:51:14.889Z",
       "error": null,
       "details": {}
     },
@@ -206,7 +504,7 @@
       "sourceType": "official-analytics",
       "sourceMetric": "veYB APR · current/latest epoch",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:23:54.198Z",
+      "periodEnd": "2026-08-09T19:51:14.889Z",
       "error": null,
       "details": {}
     },
@@ -218,7 +516,7 @@
       "sourceType": "official-api",
       "sourceMetric": "Fraxtal veFRAX/veFXS APR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:23:54.198Z",
+      "periodEnd": "2026-08-09T19:51:14.889Z",
       "error": null,
       "details": {
         "path": "core.vefxs.apr"
@@ -227,18 +525,18 @@
     "venice_svvv": {
       "protocol": "Venice",
       "status": "ok",
-      "apr": 8.9303,
+      "apr": 8.927,
       "source": "https://venice.ai/token",
       "sourceType": "onchain",
       "sourceMetric": "VVV emissionRatePerSecond / total sVVV supply",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:23:54.198Z",
+      "periodEnd": "2026-08-09T19:51:14.889Z",
       "error": null,
       "details": {
         "contract": "0x321b7ff75154472B18EDb199033fF4D116F340Ff",
         "rpc": "https://mainnet.base.org",
         "rateVVVPerSecond": 0.09512937595129375,
-        "totalStakedVVV": 33593576.78893022
+        "totalStakedVVV": 33605730.0834653
       }
     },
     "liquity_lqty": {
@@ -249,12 +547,12 @@
       "sourceType": "onchain-baseline",
       "sourceMetric": "LQTY F_ETH + F_LUSD baseline maturing; APR starts after observed period",
       "periodStart": "2026-08-09T18:40:35.000Z",
-      "periodEnd": "2026-08-09T19:24:35.000Z",
+      "periodEnd": "2026-08-09T19:51:47.000Z",
       "error": null,
       "details": {
         "contract": "0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d",
-        "rpc": "https://1rpc.io/eth",
-        "baselineAgeSeconds": 2640,
+        "rpc": "https://ethereum-rpc.publicnode.com",
+        "baselineAgeSeconds": 4272,
         "reason": "Existing baseline is younger than 5 days and is intentionally preserved"
       }
     },
@@ -266,7 +564,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "Staked RSUP vAPR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T19:23:54.198Z",
+      "periodEnd": "2026-08-09T19:51:14.889Z",
       "error": null,
       "details": {
         "url": "https://resupply.finance/governance/rsup"
