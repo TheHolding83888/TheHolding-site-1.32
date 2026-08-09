@@ -1,43 +1,46 @@
 {
-  "generatedAt": "2026-08-09T17:11:17.845Z",
+  "generatedAt": "2026-08-09T17:29:02.674Z",
   "engines": {
     "aerodrome_veaero": {
       "protocol": "Aerodrome",
       "status": "ok",
-      "apr": 0.7211,
+      "apr": 27.04,
       "source": "https://www.40acres.finance/",
       "sourceType": "official-frontend",
-      "sourceMetric": "40 Acres gross expected weekly rewards annualized",
+      "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "error": null,
       "details": {
         "maxBorrow": 3000,
-        "ltv": 0.8,
-        "weekly": 52
+        "ltv": 30,
+        "weekly": 52,
+        "impliedVeNftValue": 10000
       }
     },
     "velodrome_vevelo": {
       "protocol": "Velodrome",
       "status": "ok",
-      "apr": 0.6656,
+      "apr": 24.96,
       "source": "https://www.40acres.finance/",
       "sourceType": "official-frontend",
-      "sourceMetric": "40 Acres gross expected weekly rewards annualized",
+      "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "error": null,
       "details": {
         "maxBorrow": 3000,
-        "ltv": 0.8,
-        "weekly": 48
+        "ltv": 30,
+        "weekly": 48,
+        "impliedVeNftValue": 10000
       }
     },
     "convex_vlcvx": {
       "protocol": "Convex",
       "status": "ok",
-      "apr": 0.0032,
+      "apr": 14.3832,
       "source": "https://www.convexfinance.com/lock-cvx",
       "sourceType": "official-frontend",
-      "sourceMetric": "Locked CVX vAPR",
+      "sourceMetric": "Locked CVX platform vAPR + last completed Votium incentives APR",
       "error": null,
       "details": {
+        "platformVapr": 0.0032,
         "votiumLastRoundApr": 14.38
       }
     },
@@ -57,17 +60,18 @@
       "apr": 0,
       "source": "https://api-v2.pendle.finance/core/v1/spendle/data",
       "sourceType": "official-api",
-      "sourceMetric": "sPENDLE completed epoch APR",
+      "sourceMetric": "sPENDLE latest completed epoch APR",
       "error": null,
       "details": {
-        "epochTimestamp": 1771891200,
-        "historyCount": 12
+        "epochTimestamp": 1785196800,
+        "historyCount": 12,
+        "selectedIndex": 0
       }
     },
     "fx_vefxn": {
       "protocol": "f(x)",
       "status": "ok",
-      "apr": 43.49,
+      "apr": 65.03,
       "source": "https://fx.aladdin.club/v2/lock",
       "sourceType": "official-frontend",
       "sourceMetric": "veFXN Locker APR",
@@ -76,23 +80,25 @@
     },
     "yieldbasis_veyb": {
       "protocol": "Yield Basis",
-      "status": "error",
-      "apr": null,
+      "status": "ok",
+      "apr": 4.19,
       "source": "https://yieldbasis.com/analytics",
-      "sourceType": "unavailable",
-      "sourceMetric": null,
-      "error": "Yield Basis: veYB APR not found",
-      "details": null
+      "sourceType": "official-analytics",
+      "sourceMetric": "veYB APR · current/latest epoch",
+      "error": null,
+      "details": {}
     },
     "frax_vefrax": {
       "protocol": "Frax",
-      "status": "error",
-      "apr": null,
-      "source": "https://app.frax.finance/fxtl-vefxs",
-      "sourceType": "unavailable",
-      "sourceMetric": null,
-      "error": "Frax: veFRAX APR not found on official frontend",
-      "details": null
+      "status": "ok",
+      "apr": 5.326,
+      "source": "https://api.frax.finance/combineddata/",
+      "sourceType": "official-api",
+      "sourceMetric": "Fraxtal veFRAX/veFXS APR",
+      "error": null,
+      "details": {
+        "path": "core.vefxs.apr"
+      }
     },
     "venice_svvv": {
       "protocol": "Venice",
@@ -106,7 +112,7 @@
         "contract": "0x321b7ff75154472B18EDb199033fF4D116F340Ff",
         "rpc": "https://mainnet.base.org",
         "rateVVVPerSecond": 0.09512937595129375,
-        "totalStakedVVV": 33563201.973303705
+        "totalStakedVVV": 33563213.90154854
       }
     },
     "liquity_lqty": {
@@ -116,7 +122,7 @@
       "source": "https://www.liquity.org/stake",
       "sourceType": "unavailable",
       "sourceMetric": null,
-      "error": "missing revert data (action=\"call\", data=null, reason=null, transaction={ \"data\": \"0xb9bbe00f\", \"to\": \"0x4f9Fbb3f1E99B56e0Fe2892e623Ed36A76Fc605d\" }, invocation=null, revert=null, code=CALL_EXCEPTION, version=6.17.0)",
+      "error": "could not coalesce error (error={ \"code\": -32602, \"message\": \"Archive requests require a personal token. Get one at: https://www.allnodes.com/publicnode\" }, payload={ \"id\": 40, \"jsonrpc\": \"2.0\", \"method\": \"eth_getLogs\", \"params\": [ { \"address\": \"0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d\", \"fromBlock\": \"0x18450fd\", \"toBlock\": \"0x1849f1c\", \"topics\": [ \"0x4c56a0cf74da9899410b818edf6758c8af9b7b3070da97d2dcb6a5b1bf96317e\" ] } ] }, code=UNKNOWN_ERROR, version=6.17.0)",
       "details": null
     },
     "resupply_rsup": {
