@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-08s · signature labels fit inside the canvas -->
+<!-- companies.html · build 2026-08-09 · automatic Productivity/APR data layer -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -2382,6 +2382,62 @@ async function cgPrices(ids) {
 let INDEX_STATE = null;
 let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (capital-weighted lens)
 
+/* ── Automatic Productivity / APR data layer ─────────────────────────────
+   A lightweight weekly collector writes `productivity-data.json` next to this
+   page. The UI consumes only the normalized company summary and keeps the
+   existing manual APRs as a safe fallback. If the collector, a protocol, or the
+   JSON file is unavailable, the page continues to work exactly as before. */
+const PRODUCTIVITY_DATA_URL = '/productivity-data.json';
+let PRODUCTIVITY_SNAPSHOT = null;
+
+async function loadProductivitySnapshot() {
+    try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch(PRODUCTIVITY_DATA_URL + '?t=' + Date.now(), {
+            cache: 'no-store', signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data || typeof data !== 'object' || !data.companies) return null;
+        PRODUCTIVITY_SNAPSHOT = data;
+        return data;
+    } catch (e) {
+        return null;
+    }
+}
+
+function resolvedCompanyApr(name, fallbackNumeric, fallbackDisplay) {
+    const c = PRODUCTIVITY_SNAPSHOT && PRODUCTIVITY_SNAPSHOT.companies
+            ? PRODUCTIVITY_SNAPSHOT.companies[name] : null;
+    const avg = c && Number(c.aprHistoricalAverage);
+    const usable = c && c.status === 'ok' && Number.isFinite(avg) && avg >= 0
+                && Number(c.observationCount || 0) > 0;
+
+    if (!usable) {
+        return {
+            aprNumeric: fallbackNumeric,
+            aprDisplay: fallbackDisplay,
+            aprSource: 'manual',
+            aprUpdatedAt: null,
+            aprPeriod: 'current-indicative'
+        };
+    }
+
+    const display = avg.toFixed(1) + '%';
+    return {
+        aprNumeric: avg,
+        aprDisplay: { en: display, ru: display },
+        aprSource: c.source || 'automatic',
+        aprUpdatedAt: c.updatedAt || PRODUCTIVITY_SNAPSHOT.generatedAt || null,
+        aprPeriod: 'since-tracking',
+        aprLatest: Number.isFinite(Number(c.aprLatest)) ? Number(c.aprLatest) : avg,
+        aprObservationCount: Number(c.observationCount || 0),
+        aprTrackingStartedAt: c.trackingStartedAt || null
+    };
+}
+
 function idxLang() {
     try { return localStorage.getItem('holdingCompaniesLang') === 'ru' ? 'ru' : 'en'; }
     catch (e) { return 'en'; }
@@ -3372,7 +3428,12 @@ function renderFramework(lang) {
 
     const fmt = v => v > 0 ? fmtMoney(v) : 'Live';
 
-    const prices = await cgPrices(IDS);
+    // Price data and protocol-productivity data are independent. Fetch them in
+    // parallel so the new engine cannot slow down or block the existing TVL path.
+    const [prices] = await Promise.all([
+        cgPrices(IDS),
+        loadProductivitySnapshot()
+    ]);
     if (!prices || Object.keys(prices).length === 0) {
         [el1, el2, el3, el4, statEl].forEach(el => { if (el) el.textContent = 'Live'; });
         return;
@@ -3401,23 +3462,28 @@ function renderFramework(lang) {
     // Feed the live index with real per-company values
     // Adding a company: append an entry here AND to MEMBERSHIP inside buildGraph().
     // Index weights, ranking, node sizes and the capital map all re-derive from this.
-    /* APR V1 — one source of truth.
-       aprNumeric feeds Productivity; aprDisplay feeds cards + Company Passport.
-       The metadata fields are intentionally present now so a future API/onchain
-       source can replace `manual` without changing the UI or Composite logic. */
+    /* APR V2 — automatic weekly Productivity data with manual fail-safe.
+       The collector calculates company-level, capital-weighted APR from protocol
+       Reference APRs + underlying token quantities + current prices. The page
+       consumes the historical average accumulated by that collector. */
+    const APR_DEFITEA = resolvedCompanyApr('defitea.eth', 13, { en:'12–14%', ru:'12–14%' });
+    const APR_YR      = resolvedCompanyApr('YieldRing.eth', 11, { en:'~10–12%', ru:'~10–12%' });
+    const APR_0508    = resolvedCompanyApr('05081966.eth', 6, { en:'4–8+%', ru:'4–8+%' });
+    const APR_DINAZ   = resolvedCompanyApr('dinaz.eth', 15, { en:'10–20%+ Variable', ru:'10–20%+ Плавающий' });
+
     INDEX_STATE = [
         { nm: 'defitea.eth',   val: tvl4, cost: F4.cost, pnl: F4.pnl, pct: F4.pct, href: 'https://theholding.ai/defitea/',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jan 2025', ru: 'Янв 2025' },
-          reg:'004', aprNumeric:13, aprDisplay:{ en:'12–14%', ru:'12–14%' }, aprSource:'manual', aprUpdatedAt:null, aprPeriod:'current-indicative', foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'Holding Native', ru:'Нативная The Holding' }, protocols:11, status:{ en:'Productive', ru:'Активна' } },
+          reg:'004', ...APR_DEFITEA, foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'Holding Native', ru:'Нативная The Holding' }, protocols:11, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'YieldRing.eth', val: tvl2, cost: F2.cost, pnl: F2.pnl, pct: F2.pct, href: 'https://theholding.ai/yieldring',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'002', aprNumeric:11, aprDisplay:{ en:'~10–12%', ru:'~10–12%' }, aprSource:'manual', aprUpdatedAt:null, aprPeriod:'current-indicative', foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'Holding Standard', ru:'Стандарт Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
+          reg:'002', ...APR_YR, foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'Holding Standard', ru:'Стандарт Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
         { nm: '05081966.eth',  val: tvl1, cost: F1.cost, pnl: F1.pnl, pct: F1.pct, href: 'https://theholding.ai/05081966',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'001', aprNumeric:6, aprDisplay:{ en:'4–8+%', ru:'4–8+%' }, aprSource:'manual', aprUpdatedAt:null, aprPeriod:'current-indicative', foundedISO:'2026-07-17', founded:{ en:'Jul 17, 2026', ru:'17 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
+          reg:'001', ...APR_0508, foundedISO:'2026-07-17', founded:{ en:'Jul 17, 2026', ru:'17 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'dinaz.eth',     val: tvl3, cost: F3.cost, pnl: F3.pnl, pct: F3.pct, href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'003', aprNumeric:15, aprDisplay:{ en:'10–20%+ Variable', ru:'10–20%+ Плавающий' }, aprSource:'manual', aprUpdatedAt:null, aprPeriod:'current-indicative', foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } }
+          reg:'003', ...APR_DINAZ, foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } }
     ];
     syncCompanyAprDisplays(idxLang());
     renderIndex(idxLang());
