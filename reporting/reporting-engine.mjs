@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Reporting Layer v1.0
+ * The Holding · Reporting Layer v1.0.1
  * ---------------------------------
  * Lightweight daily collector for Defitea reporting.
  *
@@ -33,7 +33,7 @@ const COMPANY_PAGE_FILE = process.env.COMPANY_PAGE_FILE || path.join(ROOT, 'comp
 const PRODUCTIVITY_DATA_FILE = process.env.PRODUCTIVITY_DATA_FILE || path.join(ROOT, 'companies', 'productivity-data.json');
 const REPORTING_DATA_FILE = process.env.REPORTING_DATA_FILE || path.join(ROOT, 'reporting', 'reporting-data.json');
 const FUND_NAME = 'defitea.eth';
-const REPORTING_VERSION = '1.0';
+const REPORTING_VERSION = '1.0.1';
 const METHODOLOGY_VERSION = '1.0-daily-tvl-reference-model';
 const API_TIMEOUT_MS = 12000;
 const MAX_DAILY_SNAPSHOTS = 550;
@@ -161,8 +161,13 @@ function buildDailySnapshot({ generatedAt, positions, prices, productivity, prev
     }
 
     const value = Number.isFinite(price) ? Number(p.qty) * price : NaN;
-    const apr = Number(productiveRow?.apr);
-    const aprOk = Number.isFinite(apr) && apr >= 0;
+
+    // IMPORTANT: null/undefined APR must remain unknown. Number(null) === 0,
+    // which would incorrectly treat warming engines (e.g. Liquity) as a
+    // validated 0% APR and inflate internal coverage to 100%.
+    const rawApr = productiveRow?.apr;
+    const apr = (rawApr === null || rawApr === undefined || rawApr === '') ? NaN : Number(rawApr);
+    const aprOk = productiveRow?.engineStatus === 'ok' && Number.isFinite(apr) && apr >= 0;
 
     if (Number.isFinite(value) && value >= 0) {
       totalValue += value;
