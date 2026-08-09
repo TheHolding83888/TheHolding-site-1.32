@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Productivity / APR Engine v1.1
+ * The Holding · Productivity / APR Engine v1.2
  *
  * SIMPLE-FIRST architecture:
  *   official protocol API / onchain data / official frontend
@@ -32,12 +32,21 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
+const COLLECTOR_VERSION = '1.2-curve-liquity-pendle';
+const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
+const CURVE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0 Safari/537.36';
 
 const ETH_RPC_URLS = [
   process.env.ETH_RPC_URL,
-  'https://ethereum-rpc.publicnode.com',
-  'https://eth.llamarpc.com'
+  // Multiple public fallbacks. Liquity's first-run historical bootstrap may need
+  // an RPC that permits older state/log queries; later weekly updates use only
+  // current state and the persisted baseline.
+  'https://eth.llamarpc.com',
+  'https://eth.drpc.org',
+  'https://1rpc.io/eth',
+  'https://rpc.flashbots.net',
+  'https://ethereum-rpc.publicnode.com'
 ].filter(Boolean);
 
 const BASE_RPC_URLS = [
@@ -275,24 +284,77 @@ async function collectConvex(browser) {
   };
 }
 
-async function collectCurve(browser) {
-  const urls=['https://classic.curve.finance/usecrv','https://classic.curve.finance/'];
-  for (const url of urls) {
+async function collectCurve(browser, prices) {
+  // Primary V1.2 path: Curve's official crvUSD FeeDistributor stores both
+  // `tokens_per_week[week]` and `ve_supply[week]` in current contract state.
+  // This lets us calculate a max-lock-equivalent veCRV fee APR without an
+  // archive RPC and without scraping the legacy UI. crvUSD is treated as $1.
+  const crvPrice=Number(prices['curve-dao-token']);
+  const distributor='0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914';
+  if (crvPrice>0) {
     try {
-      const text=await renderedText(browser,url,{waitMs:7500});
-      const t=normalizeText(text);
-      const m=t.match(/veCRV holder APY\s*:?\s*([0-9]+(?:[.,][0-9]+)?)\s*%?\s*\(\s*4 weeks average\s*:?\s*([0-9]+(?:[.,][0-9]+)?)\s*%/i);
-      const current=m?normalizePercentPoints(m[1]):firstPercentAround(t,'veCRV holder APY',130);
-      const fourWeek=m?normalizePercentPoints(m[2]):firstPercentAround(t,'4 weeks average',100);
-      const apr=saneApr(fourWeek)?fourWeek:current;
-      if (saneApr(apr)) return {
-        apr:round(apr), source:url, sourceType:'official-frontend',
-        sourceMetric:saneApr(fourWeek)?'veCRV holder APY · 4-week average':'veCRV holder APY',
-        details:{current:saneApr(current)?round(current):null,fourWeek:saneApr(fourWeek)?round(fourWeek):null}
-      };
+      const provider=await providerFrom(ETH_RPC_URLS);
+      const abi=[
+        'function tokens_per_week(uint256) view returns (uint256)',
+        'function ve_supply(uint256) view returns (uint256)',
+        'function last_token_time() view returns (uint256)'
+      ];
+      const c=new Contract(distributor,abi,provider);
+      const now=Math.floor(Date.now()/1000);
+      const currentWeek=Math.floor(now/CURVE_WEEK_SECONDS)*CURVE_WEEK_SECONDS;
+      let lastTokenTime=null;
+      try { lastTokenTime=Number(await c.last_token_time()); } catch {}
+      const weekly=[];
+      // Scan backwards because the latest week can be uncheckpointed or partial.
+      for (let back=1;back<=10 && weekly.length<4;back++) {
+        const week=currentWeek-back*CURVE_WEEK_SECONDS;
+        if (lastTokenTime && week>Math.floor(lastTokenTime/CURVE_WEEK_SECONDS)*CURVE_WEEK_SECONDS) continue;
+        try {
+          const [tokensRaw,veRaw]=await Promise.all([c.tokens_per_week(week),c.ve_supply(week)]);
+          const tokens=Number(formatUnits(tokensRaw,18));
+          const veSupply=Number(formatUnits(veRaw,18));
+          if (!(tokens>0) || !(veSupply>0)) continue;
+          const crvUsdPerVe=tokens/veSupply;
+          const apr=crvUsdPerVe/crvPrice*52*100;
+          if (!saneApr(apr)) continue;
+          weekly.push({week,tokensCrvUSD:tokens,veSupply,apr:round(apr)});
+        } catch {}
+      }
+      if (weekly.length) {
+        const apr=avg(weekly.map(x=>x.apr));
+        if (saneApr(apr)) return {
+          apr:round(apr),
+          source:`https://etherscan.io/address/${distributor}`,
+          sourceType:'onchain',
+          sourceMetric:weekly.length>=4?'veCRV crvUSD fee APR · 4 completed weeks average':'veCRV crvUSD fee APR · completed weeks average',
+          periodStart:new Date(Math.min(...weekly.map(x=>x.week))*1000).toISOString(),
+          periodEnd:new Date((Math.max(...weekly.map(x=>x.week))+CURVE_WEEK_SECONDS)*1000).toISOString(),
+          details:{contract:distributor,crvPrice,crvUSDPriceAssumption:1,weeksUsed:weekly.length,lastTokenTime,weekly}
+        };
+      }
     } catch {}
   }
-  throw new Error('Curve: veCRV holder APY not found');
+
+  // Conservative official-frontend fallback.
+  if (browser) {
+    const urls=['https://classic.curve.finance/usecrv','https://classic.curve.finance/'];
+    for (const url of urls) {
+      try {
+        const text=await renderedText(browser,url,{waitMs:7500});
+        const t=normalizeText(text);
+        const m=t.match(/veCRV holder APY\s*:?\s*([0-9]+(?:[.,][0-9]+)?)\s*%?\s*\(\s*4 weeks average\s*:?\s*([0-9]+(?:[.,][0-9]+)?)\s*%/i);
+        const current=m?normalizePercentPoints(m[1]):firstPercentAround(t,'veCRV holder APY',130);
+        const fourWeek=m?normalizePercentPoints(m[2]):firstPercentAround(t,'4 weeks average',100);
+        const apr=saneApr(fourWeek)?fourWeek:current;
+        if (saneApr(apr)) return {
+          apr:round(apr), source:url, sourceType:'official-frontend',
+          sourceMetric:saneApr(fourWeek)?'veCRV holder APY · 4-week average':'veCRV holder APY',
+          details:{current:saneApr(current)?round(current):null,fourWeek:saneApr(fourWeek)?round(fourWeek):null}
+        };
+      } catch {}
+    }
+  }
+  throw new Error('Curve: FeeDistributor/reference APY unavailable');
 }
 
 async function collectPendle() {
@@ -301,22 +363,32 @@ async function collectPendle() {
   const h=j.sPendleHistoricalData || j.spendleHistoricalData || {};
   const aprs=Array.isArray(h.aprs)?h.aprs:[];
   const timestamps=Array.isArray(h.timestamps)?h.timestamps:[];
-  // API history is not guaranteed to be oldest -> newest. v1 walked the array
-  // backwards and selected an old zero-APR epoch. Select by greatest completed timestamp.
+  const revenues=Array.isArray(h.revenues)?h.revenues:[];
+  const now=Math.floor(Date.now()/1000);
+
+  // Pendle takes an active-sPENDLE snapshot every 14 days and distributes on
+  // that cadence. A timestamp that has merely STARTED is not a completed epoch.
+  // v1.1 selected Jul-28 while run date was Aug-09, hence the suspicious 0%.
   const candidates=[];
   for (let i=0;i<aprs.length;i++) {
     const a=normalizeAprNumber(aprs[i]);
-    if (!saneApr(a)) continue;
     const ts=Number(timestamps[i]||0);
-    if (ts && ts*1000>Date.now()) continue;
-    candidates.push({i,apr:a,ts});
+    if (!saneApr(a) || !ts) continue;
+    const completedAt=ts+PENDLE_EPOCH_SECONDS;
+    if (completedAt>now) continue;
+    candidates.push({i,apr:a,ts,completedAt,revenue:Number(revenues[i])});
   }
-  if (!candidates.length) throw new Error('Pendle: no valid completed sPENDLE APR');
-  candidates.sort((a,b)=>(b.ts||0)-(a.ts||0));
-  const pick=candidates[0];
+  if (!candidates.length) throw new Error('Pendle: no fully completed sPENDLE epoch in API history');
+  candidates.sort((a,b)=>b.ts-a.ts);
+  // Prefer the newest completed epoch with a positive published APR. This avoids
+  // treating a zero placeholder as economic data. If every completed epoch is
+  // genuinely zero, keep the newest zero rather than inventing a yield.
+  const pick=candidates.find(x=>x.apr>0) || candidates[0];
   return {
-    apr:round(pick.apr), source:url, sourceType:'official-api', sourceMetric:'sPENDLE latest completed epoch APR',
-    details:{epochTimestamp:pick.ts||null,historyCount:aprs.length,selectedIndex:pick.i}
+    apr:round(pick.apr), source:url, sourceType:'official-api', sourceMetric:'sPENDLE latest fully completed 14-day epoch APR',
+    periodStart:new Date(pick.ts*1000).toISOString(),
+    periodEnd:new Date(pick.completedAt*1000).toISOString(),
+    details:{epochTimestamp:pick.ts,epochCompletedAt:pick.completedAt,historyCount:aprs.length,selectedIndex:pick.i,revenue:Number.isFinite(pick.revenue)?pick.revenue:null,selectionRule:pick===candidates[0]?'latest-completed':'latest-completed-positive-apr'}
   };
 }
 
@@ -416,60 +488,134 @@ async function findBlockAtOrBefore(provider,targetTs) {
   return lo;
 }
 
-async function collectLiquity(prices) {
-  const ethPrice=prices.ethereum;
-  const lqtyPrice=prices.liquity;
+async function collectLiquity(prices, previous) {
+  const ethPrice=Number(prices.ethereum);
+  const lqtyPrice=Number(prices.liquity);
   if (!(ethPrice>0) || !(lqtyPrice>0)) throw new Error('Liquity: ETH/LQTY price unavailable');
-  const provider=await providerFrom(ETH_RPC_URLS);
   const address='0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d';
   const abi=[
-    'event F_ETHUpdated(uint256 _F_ETH)',
-    'event F_LUSDUpdated(uint256 _F_LUSD)'
+    'function F_ETH() view returns (uint256)',
+    'function F_LUSD() view returns (uint256)'
   ];
-  const c=new Contract(address,abi,provider);
-  const latestBlock=await provider.getBlock('latest');
-  const targetTs=Math.floor(latestBlock.timestamp-7*24*3600);
-  const targetBlock=await findBlockAtOrBefore(provider,targetTs);
 
-  // Fetch cumulative fee-per-LQTY update events in chunks. This avoids eth_call
-  // compatibility issues seen with some public RPCs on the legacy staking contract.
-  async function logsFor(eventName) {
-    const ev=c.interface.getEvent(eventName);
-    const topic=ev.topicHash;
-    const from=Math.max(0,targetBlock-220000); // ~30d lookback for a baseline event
-    const out=[];
-    const step=20000;
-    for (let a=from;a<=latestBlock.number;a+=step) {
-      const b=Math.min(latestBlock.number,a+step-1);
-      const part=await provider.getLogs({address,topics:[topic],fromBlock:a,toBlock:b});
-      out.push(...part);
+  async function readCurrent(url) {
+    const provider=new JsonRpcProvider(url,undefined,{staticNetwork:false});
+    const c=new Contract(address,abi,provider);
+    const [feRaw,flRaw,block]=await Promise.all([c.F_ETH(),c.F_LUSD(),provider.getBlock('latest')]);
+    if (!block) throw new Error('latest block unavailable');
+    return {
+      url,provider,contract:c,
+      fEth:Number(formatUnits(feRaw,18)),
+      fLusd:Number(formatUnits(flRaw,18)),
+      blockNumber:block.number,
+      timestamp:Number(block.timestamp)
+    };
+  }
+
+  let current=null;
+  const currentErrors=[];
+  for (const url of ETH_RPC_URLS) {
+    try { current=await readCurrent(url); break; }
+    catch(e) { currentErrors.push(`${url}: ${e?.shortMessage||e?.message||e}`); }
+  }
+  if (!current) throw new Error(`Liquity: current F_ETH/F_LUSD unavailable on all RPCs · ${currentErrors.join(' | ')}`);
+
+  function baselineTimestamp(base) {
+    const raw=base?.timestamp;
+    const numeric=Number(raw);
+    if (Number.isFinite(numeric) && numeric>0) return numeric;
+    const parsed=Date.parse(String(raw||''));
+    return Number.isFinite(parsed) ? Math.floor(parsed/1000) : NaN;
+  }
+
+  function calculateFromBaseline(base, method, extra={}) {
+    const baseTs=baselineTimestamp(base);
+    const elapsed=current.timestamp-baseTs;
+    if (!(elapsed>0)) return null;
+    const dEth=Math.max(0,current.fEth-Number(base.fEth));
+    const dLusd=Math.max(0,current.fLusd-Number(base.fLusd));
+    const yieldUsdPerLqty=dEth*ethPrice+dLusd; // V1 simplification: LUSD = $1
+    const periodReturn=yieldUsdPerLqty/lqtyPrice;
+    const apr=periodReturn*(SECONDS_YEAR/elapsed)*100;
+    if (!saneApr(apr)) return null;
+    return {
+      apr:round(apr), source:'https://docs.liquity.org/liquity-v1/faq/staking',
+      sourceType:'onchain', sourceMetric:'LQTY F_ETH + F_LUSD observed-period delta annualized',
+      periodStart:new Date(baseTs*1000).toISOString(),
+      periodEnd:new Date(current.timestamp*1000).toISOString(),
+      details:{contract:address,rpc:current.url,baselineMethod:method,deltaETHPerLQTY:dEth,deltaLUSDPerLQTY:dLusd,elapsedSeconds:elapsed,ethPrice,lqtyPrice,...extra},
+      internalState:{fEth:current.fEth,fLusd:current.fLusd,timestamp:current.timestamp,blockNumber:current.blockNumber,rpc:current.url}
+    };
+  }
+
+  // Best long-term path: compare today's cumulative fee-per-LQTY counters with
+  // the baseline persisted by our own prior weekly run. No archive RPC needed.
+  // We require at least five days so manual retries cannot turn a few hours of
+  // fees into a noisy annualized APR. A retry before that keeps the old baseline.
+  const prev=previous?.internalState?.liquity;
+  const prevTs=baselineTimestamp(prev);
+  if (prev && Number.isFinite(Number(prev.fEth)) && Number.isFinite(Number(prev.fLusd)) && Number.isFinite(prevTs)) {
+    const age=current.timestamp-prevTs;
+    if (age>=5*24*3600 && age<=21*24*3600) {
+      const calculated=calculateFromBaseline({...prev,timestamp:prevTs},'persisted-weekly-baseline');
+      if (calculated) return calculated;
     }
-    return out.map(log=>{
-      const parsed=c.interface.parseLog(log);
-      return {blockNumber:log.blockNumber,value:Number(formatUnits(parsed.args[0],18))};
-    }).sort((x,y)=>x.blockNumber-y.blockNumber);
+    if (age>0 && age<5*24*3600) {
+      const previousApr=aprValue(previous?.engines?.liquity_lqty?.aprLatest);
+      if (saneApr(previousApr)) {
+        return {
+          apr:previousApr,
+          source:'https://docs.liquity.org/liquity-v1/faq/staking',
+          sourceType:'carry-forward',
+          sourceMetric:'previous observed LQTY staking APR · awaiting next full weekly interval',
+          periodStart:new Date(prevTs*1000).toISOString(), periodEnd:new Date(current.timestamp*1000).toISOString(),
+          details:{contract:address,rpc:current.url,baselineAgeSeconds:age,reason:'Existing baseline is younger than 5 days; previous validated APR carried forward'},
+          internalState:prev
+        };
+      }
+      return {
+        apr:null, notReady:true,
+        source:'https://docs.liquity.org/liquity-v1/faq/staking',
+        sourceType:'onchain-baseline',
+        sourceMetric:'LQTY F_ETH + F_LUSD baseline maturing; APR starts after observed period',
+        periodStart:new Date(prevTs*1000).toISOString(), periodEnd:new Date(current.timestamp*1000).toISOString(),
+        details:{contract:address,rpc:current.url,baselineAgeSeconds:age,reason:'Existing baseline is younger than 5 days and is intentionally preserved'},
+        internalState:prev
+      };
+    }
   }
 
-  const [ethEvents,lusdEvents]=await Promise.all([logsFor('F_ETHUpdated'),logsFor('F_LUSDUpdated')]);
-  function deltaAcrossWeek(events) {
-    if (!events.length) return 0;
-    const before=events.filter(x=>x.blockNumber<=targetBlock).at(-1);
-    const now=events.at(-1);
-    if (!before) throw new Error('Liquity: no baseline staking-fee event in lookback window');
-    return Math.max(0,now.value-before.value);
+  // First-run bootstrap: try a historical state read exactly ~7d ago across
+  // all configured RPCs. Some public RPCs allow it, some do not.
+  const targetTs=current.timestamp-7*24*3600;
+  const bootstrapErrors=[];
+  for (const url of ETH_RPC_URLS) {
+    try {
+      const provider=new JsonRpcProvider(url,undefined,{staticNetwork:false});
+      const targetBlock=await findBlockAtOrBefore(provider,targetTs);
+      const c=new Contract(address,abi,provider);
+      const [feRaw,flRaw,block]=await Promise.all([
+        c.F_ETH({blockTag:targetBlock}),
+        c.F_LUSD({blockTag:targetBlock}),
+        provider.getBlock(targetBlock)
+      ]);
+      if (!block) throw new Error('historical block unavailable');
+      const base={fEth:Number(formatUnits(feRaw,18)),fLusd:Number(formatUnits(flRaw,18)),timestamp:Number(block.timestamp)};
+      const calculated=calculateFromBaseline(base,'historical-state-bootstrap',{bootstrapRpc:url,targetBlock});
+      if (calculated) return calculated;
+    } catch(e) { bootstrapErrors.push(`${url}: ${e?.shortMessage||e?.message||e}`); }
   }
-  const dEth=deltaAcrossWeek(ethEvents);
-  const dLusd=deltaAcrossWeek(lusdEvents);
-  const startBlock=await provider.getBlock(targetBlock);
-  const elapsed=Math.max(1,latestBlock.timestamp-startBlock.timestamp);
-  const yieldUsdPerLqty=dEth*ethPrice+dLusd; // V1 simplification: LUSD = $1
-  const periodReturn=yieldUsdPerLqty/lqtyPrice;
-  const apr=periodReturn*(SECONDS_YEAR/elapsed)*100;
-  if (!saneApr(apr)) throw new Error(`Liquity: unreasonable APR ${apr}`);
+
+  // No archive provider is required for normal operation. Persist a clean
+  // current baseline now; the next weekly run will calculate the real period.
   return {
-    apr:round(apr), source:'https://etherscan.io/address/0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d',
-    sourceType:'onchain-events', sourceMetric:'LQTY F_ETH + F_LUSD 7-day event delta annualized',
-    details:{contract:address,deltaETHPerLQTY:dEth,deltaLUSDPerLQTY:dLusd,elapsedSeconds:elapsed,targetBlock,ethEvents:ethEvents.length,lusdEvents:lusdEvents.length,ethPrice,lqtyPrice}
+    apr:null, notReady:true,
+    source:'https://docs.liquity.org/liquity-v1/faq/staking',
+    sourceType:'onchain-baseline',
+    sourceMetric:'LQTY F_ETH + F_LUSD baseline initialized; APR starts after observed period',
+    periodStart:new Date(current.timestamp*1000).toISOString(), periodEnd:new Date(current.timestamp*1000).toISOString(),
+    details:{contract:address,rpc:current.url,reason:'No usable historical bootstrap RPC; baseline stored for next weekly observation',bootstrapErrors},
+    internalState:{fEth:current.fEth,fLusd:current.fLusd,timestamp:current.timestamp,blockNumber:current.blockNumber,rpc:current.url}
   };
 }
 
@@ -490,13 +636,13 @@ async function runAdapter(engineId,{browser,prices,previous}) {
     case 'aerodrome_veaero': return collect40Acres(browser,'Aerodrome');
     case 'velodrome_vevelo': return collect40Acres(browser,'Velodrome');
     case 'convex_vlcvx': return collectConvex(browser);
-    case 'curve_vecrv': return collectCurve(browser);
+    case 'curve_vecrv': return collectCurve(browser,prices);
     case 'pendle_spendle': return collectPendle();
     case 'fx_vefxn': return collectFx(browser);
     case 'yieldbasis_veyb': return collectYieldBasis(browser);
     case 'frax_vefrax': return collectFrax(browser);
     case 'venice_svvv': return collectVenice();
-    case 'liquity_lqty': return collectLiquity(prices);
+    case 'liquity_lqty': return collectLiquity(prices,previous);
     case 'resupply_rsup': return collectResupply(browser);
     default: throw new Error(`No adapter for ${engineId}`);
   }
@@ -555,30 +701,40 @@ async function main() {
 
   const engines={};
   const engineErrors={};
-  let liquityInternal=null;
+  let liquityInternal=previous?.internalState?.liquity || null;
 
   for (const engineId of Object.keys(ENGINE_META)) {
     const meta=ENGINE_META[engineId];
     try {
-      if (!browser && ['aerodrome_veaero','velodrome_vevelo','convex_vlcvx','curve_vecrv','fx_vefxn','yieldbasis_veyb','frax_vefrax','resupply_rsup'].includes(engineId)) {
+      if (!browser && ['aerodrome_veaero','velodrome_vevelo','convex_vlcvx','fx_vefxn','yieldbasis_veyb','frax_vefrax','resupply_rsup'].includes(engineId)) {
         throw new Error('browser collector unavailable');
       }
       const r=await runAdapter(engineId,{browser,prices,previous});
+      if (r?.internalState && engineId==='liquity_lqty') liquityInternal=r.internalState;
+      if (r?.notReady) {
+        engines[engineId]={
+          engineId,...meta,aprLatest:null,sourceType:r.sourceType,sourceMetric:r.sourceMetric,
+          source:r.source||meta.sourceUrl,periodStart:r.periodStart||null,periodEnd:r.periodEnd||generatedAt,lastUpdatedAt:generatedAt,
+          status:'warming',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,details:r.details||{}
+        };
+        console.warn(`… ${engineId}: baseline initialized; waiting for observed period`);
+        continue;
+      }
       if (!saneApr(r.apr)) throw new Error(`invalid APR ${r.apr}`);
       engines[engineId]={
         engineId,...meta,aprLatest:round(r.apr),sourceType:r.sourceType,sourceMetric:r.sourceMetric,
-        source:r.source||meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:generatedAt,
-        status:'ok',methodologyVersion:METHODOLOGY_VERSION,details:r.details||{}
+        source:r.source||meta.sourceUrl,periodStart:r.periodStart||null,periodEnd:r.periodEnd||generatedAt,lastUpdatedAt:generatedAt,
+        status:'ok',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,details:r.details||{}
       };
             console.log(`✓ ${engineId}: ${round(r.apr,2)}%`);
     } catch(e) {
       const stale=lastGoodEngine(previous,engineId);
       engineErrors[engineId]=e?.message||String(e);
       if (saneApr(stale)) {
-        engines[engineId]={engineId,...meta,aprLatest:stale,sourceType:'last-known-good',sourceMetric:'previous valid Reference APR',source:meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:previous?.engines?.[engineId]?.lastUpdatedAt||null,status:'stale',methodologyVersion:METHODOLOGY_VERSION,error:engineErrors[engineId]};
+        engines[engineId]={engineId,...meta,aprLatest:stale,sourceType:'last-known-good',sourceMetric:'previous valid Reference APR',source:meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:previous?.engines?.[engineId]?.lastUpdatedAt||null,status:'stale',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,error:engineErrors[engineId]};
         console.warn(`! ${engineId}: stale ${stale}% (${engineErrors[engineId]})`);
       } else {
-        engines[engineId]={engineId,...meta,aprLatest:null,sourceType:'unavailable',sourceMetric:null,source:meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:null,status:'error',methodologyVersion:METHODOLOGY_VERSION,error:engineErrors[engineId]};
+        engines[engineId]={engineId,...meta,aprLatest:null,sourceType:'unavailable',sourceMetric:null,source:meta.sourceUrl,periodStart:null,periodEnd:generatedAt,lastUpdatedAt:null,status:'error',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,error:engineErrors[engineId]};
         console.warn(`✗ ${engineId}: ${engineErrors[engineId]}`);
       }
     }
@@ -591,7 +747,7 @@ async function main() {
   for (const [id,e] of Object.entries(engines)) {
     const a=aprValue(e.aprLatest);
     if (e.status!=='ok' || !saneApr(a)) continue;
-    historyEngines[id]=upsertObservation(historyEngines[id],{snapshotKey:snapKey,apr:a,periodEnd:generatedAt,sourceType:e.sourceType});
+    historyEngines[id]=upsertObservation(historyEngines[id],{snapshotKey:snapKey,apr:a,periodStart:e.periodStart||null,periodEnd:e.periodEnd||generatedAt,sourceType:e.sourceType});
   }
 
   const companies={};
@@ -647,7 +803,7 @@ async function main() {
   }
 
   const output={
-    version:'1.1',methodologyVersion:METHODOLOGY_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.2',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions only.',
     engines,companies,
     history:{engines:historyEngines,companies:historyCompanies},
@@ -656,7 +812,7 @@ async function main() {
   };
 
   await writeJson(DATA_FILE,output);
-  const report={generatedAt,engines:Object.fromEntries(Object.entries(engines).map(([id,e])=>[id,{protocol:e.protocol,status:e.status,apr:e.aprLatest,source:e.source,sourceType:e.sourceType,sourceMetric:e.sourceMetric,error:e.error||null,details:e.details||null}]))};
+  const report={generatedAt,methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,engines:Object.fromEntries(Object.entries(engines).map(([id,e])=>[id,{protocol:e.protocol,status:e.status,apr:e.aprLatest,source:e.source,sourceType:e.sourceType,sourceMetric:e.sourceMetric,periodStart:e.periodStart||null,periodEnd:e.periodEnd||null,error:e.error||null,details:e.details||null}]))};
   await writeJson(REPORT_FILE,report);
   console.log(`\nWrote ${DATA_FILE}`);
   console.log(`Wrote ${REPORT_FILE}`);
