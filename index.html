@@ -1,5 +1,7 @@
+
 <!DOCTYPE html>
-<!-- TheHolding.ai Website v2.2 - dead-CSS cleanup: 41 unused rules removed (no markup or behaviour changed)
+<!-- TheHolding.ai Website v2.3 - homepage Defitea Reference APR synced to Productivity Intelligence Layer
+     v2.2 - dead-CSS cleanup: 41 unused rules removed (no markup or behaviour changed)
      v2.1 - The Holding Network strip (live registry bridge)
      v2.0 - SEO/structured-data hardening: removed fabricated aggregateRating, five-fund JSON-LD, honest 13.9% APR, og:image/twitter:image, favicon + theme-color -->
 <html lang="en" prefix="og: https://ogp.me/ns#">
@@ -3203,13 +3205,13 @@
                             <span>Live</span>
                         </div>
                     </div>
-                    <div class="metric metric-link" id="yield-metric" tabindex="0" role="button" aria-label="Income Layer APR details">
-                        <div class="metric-value metric-value-green" data-metric="yield">13.9%</div>
+                    <div class="metric metric-link" id="yield-metric" tabindex="0" role="button" aria-label="Income Layer Reference APR details">
+                        <div class="metric-value metric-value-green" data-metric="yield" data-th-company="defitea.eth" data-th-company-apr="latest" data-th-apr-digits="1">13.3%</div>
                         <div class="metric-label">Income Layer APR</div>
-                        <div class="metric-sublabel">Realised · Jan–Jul 2026 <span class="metric-arrow">&#8599;&#65038;</span></div>
+                        <div class="metric-sublabel">Reference · Auto-updated weekly <span class="metric-arrow">&#8599;&#65038;</span></div>
                         <div class="metric-tooltip">
                             <div class="mt-title">Defitea Fund</div>
-                            <div class="mt-body">Based on realised cash flow.</div>
+                            <div class="mt-body">Automatically measured by The Holding Productivity Intelligence Layer.</div>
                             <a href="/defitea" class="mt-link">Explore the income layer <span>&#8594;</span></a>
                         </div>
                     </div>
@@ -3378,8 +3380,8 @@
                         <div class="fund-metric-value" data-tvl="defitea">$2,870</div>
                     </div>
                     <div class="fund-metric">
-                        <div class="fund-metric-label">Cash-Flow APR</div>
-                        <div class="fund-metric-value">13.9%</div>
+                        <div class="fund-metric-label">Reference APR</div>
+                        <div class="fund-metric-value" data-th-company="defitea.eth" data-th-company-apr="latest" data-th-apr-digits="1">13.3%</div>
                     </div>
                     <div class="fund-metric">
                         <div class="fund-metric-label">Horizon</div>
@@ -6014,6 +6016,27 @@
             }, 200);
         }
     </script>
+    <!-- The Holding Productivity Intelligence Layer · shared read-only APR client -->
+    <script src="/companies/productivity-intelligence.js"></script>
+    <script>
+    (function () {
+        function syncHomepageDefiteaApr() {
+            if (!window.THProductivity || typeof window.THProductivity.bindCompanyAprs !== 'function') {
+                return;
+            }
+            window.THProductivity.bindCompanyAprs(document).catch(function (err) {
+                console.warn('[The Holding] Homepage Reference APR sync unavailable:', err);
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', syncHomepageDefiteaApr, { once: true });
+        } else {
+            syncHomepageDefiteaApr();
+        }
+    })();
+    </script>
+
     <script>
     /* Yield metric tooltip: reveal + gentle auto-scroll so the card is fully visible with breathing room. */
     (function() {
@@ -6059,3 +6082,4 @@
     </script>
 </body>
 </html>
+
