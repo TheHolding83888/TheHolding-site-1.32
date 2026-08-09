@@ -1,5 +1,5 @@
 /*
- * The Holding · Productivity Intelligence UI Core v1.1
+ * The Holding · Productivity Intelligence UI Core v1.2
  * ----------------------------------------------------
  * One read-only client for the canonical Productivity Intelligence Layer.
  * Source of truth: /companies/productivity-data.json
@@ -10,7 +10,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION = '1.1';
+  const VERSION = '1.2';
   const DEFAULT_DATA_URL = '/companies/productivity-data.json';
   const DEFAULT_TIMEOUT_MS = 4500;
 
@@ -124,6 +124,80 @@
     return { updated: updated, fallback: fallback, snapshot: snapshot };
   }
 
+
+  /*
+   * Resolve the public company APR presentation from the canonical snapshot.
+   * `latest` is always the current validated live APR when available.
+   * `average` uses the canonical full-coverage historical average when one
+   * exists; until then it intentionally starts from the validated live APR.
+   * Internal coverage / partial status remains in the data layer and is not
+   * exposed by this presentation helper.
+   */
+  function resolveCompanyApr(companyName, snapshot) {
+    const data = snapshot || cachedSnapshot;
+    const company = getCompany(companyName, data);
+    if (!company) return null;
+
+    const latest = finiteNumber(company.aprLatest);
+    const historicalAverage = finiteNumber(company.aprHistoricalAverage);
+    const publicAverage = Number.isFinite(historicalAverage) ? historicalAverage : latest;
+
+    return {
+      companyName: companyName,
+      latest: Number.isFinite(latest) ? latest : NaN,
+      average: Number.isFinite(publicAverage) ? publicAverage : NaN,
+      historicalAverage: Number.isFinite(historicalAverage) ? historicalAverage : NaN,
+      updatedAt: company.updatedAt || (data && data.generatedAt) || null,
+      source: company.source || 'the-holding-productivity-intelligence-layer',
+      status: company.status || null,
+      coverage: finiteNumber(company.coverage)
+    };
+  }
+
+  /*
+   * Generic company APR binder.
+   *
+   * Markup contract:
+   *   <span data-th-company="defitea.eth" data-th-company-apr="latest">13.3%</span>
+   *   <span data-th-company="defitea.eth" data-th-company-apr="average">13.3%</span>
+   *
+   * Missing central data never replaces the static fallback.
+   */
+  async function bindCompanyAprs(root, options) {
+    const scope = root || document;
+    const opts = options || {};
+    const snapshot = await fetchSnapshot(opts);
+    if (!snapshot) return { updated: 0, fallback: 0, snapshot: null };
+
+    let updated = 0;
+    let fallback = 0;
+    const targets = scope.querySelectorAll('[data-th-company][data-th-company-apr]');
+
+    targets.forEach(function (target) {
+      const companyName = target.getAttribute('data-th-company');
+      const mode = (target.getAttribute('data-th-company-apr') || 'latest').toLowerCase();
+      const resolved = resolveCompanyApr(companyName, snapshot);
+      const value = resolved ? (mode === 'average' ? resolved.average : resolved.latest) : NaN;
+      const digitsAttr = Number(target.getAttribute('data-th-apr-digits'));
+      const digits = Number.isInteger(digitsAttr) && digitsAttr >= 0 && digitsAttr <= 4 ? digitsAttr : 1;
+
+      if (Number.isFinite(value) && value >= 0) {
+        target.textContent = formatApr(value, digits);
+        target.setAttribute('data-th-auto', 'true');
+        target.setAttribute('data-th-productivity', 'automatic');
+        if (resolved.updatedAt) {
+          target.title = (mode === 'average' ? 'Average APR' : 'Reference APR') + ' · updated ' + resolved.updatedAt;
+        }
+        updated += 1;
+      } else {
+        target.setAttribute('data-th-productivity', 'fallback');
+        fallback += 1;
+      }
+    });
+
+    return { updated: updated, fallback: fallback, snapshot: snapshot };
+  }
+
   global.THProductivity = Object.freeze({
     version: VERSION,
     dataUrl: DEFAULT_DATA_URL,
@@ -131,7 +205,9 @@
     getSnapshot: function () { return cachedSnapshot; },
     getEngine: getEngine,
     getCompany: getCompany,
+    resolveCompanyApr: resolveCompanyApr,
     formatApr: formatApr,
-    bindProtocolAprs: bindProtocolAprs
+    bindProtocolAprs: bindProtocolAprs,
+    bindCompanyAprs: bindCompanyAprs
   });
 })(window);
