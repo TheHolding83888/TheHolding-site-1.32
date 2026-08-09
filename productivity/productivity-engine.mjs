@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Productivity / APR Engine v1.6
+ * The Holding · Productivity / APR Engine v1.7
  *
  * SIMPLE-FIRST architecture:
  *   official protocol API / onchain data / official frontend
@@ -32,7 +32,7 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.6-pendle-epoch-map';
+const COLLECTOR_VERSION = '1.7-pendle-transfer-reconstruction';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const CURVE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0 Safari/537.36';
@@ -411,7 +411,7 @@ async function collectCurve(browser, prices) {
 
 async function discoverRecentPendleMerkleCampaigns(now=Math.floor(Date.now()/1000), limit=8) {
   // Pendle publishes the actual sPENDLE Merkle distributions in its official
-  // GitHub repository. V1.6 reads several completed campaigns instead of only
+  // GitHub repository. V1.7 reads several completed campaigns instead of only
   // the latest one so we can map the Merkle calendar to API epoch timestamps.
   const token='0x999999999991e178d52cd95afd4b00d066664144';
   const repoApi='https://api.github.com/repos/pendle-finance/merkle-distributions/contents/vependle-airdrop/1';
@@ -442,15 +442,26 @@ async function discoverRecentPendleMerkleCampaigns(now=Math.floor(Date.now()/100
       const startBlock=Number(desc.match(/blockNumberStart:\s*(\d+)/i)?.[1]||NaN);
       const endBlock=Number(desc.match(/blockNumberEnd:\s*(\d+)/i)?.[1]||NaN);
       const users=d.users && typeof d.users==='object' ? d.users : {};
-      const sampleUsers=Object.entries(users)
+      const rewardUsers=Object.entries(users)
         .map(([address,rawReward])=>{
           let reward=NaN;
           try { reward=Number(formatUnits(BigInt(String(rawReward)),18)); } catch {}
           return {address:String(address).toLowerCase(),reward};
         })
         .filter(x=>/^0x[0-9a-f]{40}$/.test(x.address) && Number.isFinite(x.reward) && x.reward>0)
-        .sort((a,b)=>b.reward-a.reward)
-        .slice(0,18);
+        .sort((a,b)=>b.reward-a.reward);
+      // V1.7 keeps a wider, mildly stratified recipient sample. The largest
+      // rewards alone can over-sample DeFi integrations / legacy virtual
+      // holders; adding several percentile observations materially improves
+      // the chance of finding ordinary direct sPENDLE holders whose Transfer
+      // history can witness the common pro-rata reward rate.
+      const sampleMap=new Map();
+      for (const x of rewardUsers.slice(0,12)) sampleMap.set(x.address,x);
+      for (const q of [0.1,0.25,0.5,0.75,0.9,0.97]) {
+        const x=rewardUsers[Math.min(rewardUsers.length-1,Math.floor((rewardUsers.length-1)*q))];
+        if (x) sampleMap.set(x.address,x);
+      }
+      const sampleUsers=[...sampleMap.values()].slice(0,18);
       campaigns.push({
         campaign:name, source:raw, merkleRoot:campaign?.merkleRoot||null,
         fromTimestamp,toTimestamp,distributedSPendle,
@@ -506,7 +517,7 @@ function buildPendleEpochMap(campaigns,candidates) {
     const amountDiff=(Number.isFinite(api.buybackAmount)&&api.buybackAmount>=0)
       ? Math.abs(api.buybackAmount-campaign.distributedSPendle)
       : NaN;
-    const amountTolerance=Math.max(0.02,Math.abs(campaign.distributedSPendle)*1e-8);
+    const amountTolerance=Math.max(1,Math.abs(campaign.distributedSPendle)*1e-5);
     const amountMatch=Number.isFinite(amountDiff) && api.buybackAmount>0 && amountDiff<=amountTolerance;
     pairs.push({
       campaign:campaign.campaign,
@@ -555,72 +566,230 @@ function chooseRatioCluster(rows, tolerance=0.01) {
   return {cluster:best,medianRatio};
 }
 
-async function inferPendleActiveSupplyFromCampaign(campaign) {
-  // Diagnostic only: for campaign recipients that directly held sPENDLE at the
-  // campaign end block, reward / balance should be the common pro-rata reward
-  // rate. Virtual vePENDLE balances and integrations naturally fall out because
-  // they do not present as a matching direct ERC20 balance for that recipient.
-  if (!campaign?.blockNumberEnd || !Array.isArray(campaign.sampleUsers) || campaign.sampleUsers.length<3) {
-    return {campaign:campaign?.campaign||null,status:'not-enough-campaign-data'};
+const PENDLE_TRANSFER_TOPIC='0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const PENDLE_ZERO_TOPIC='0x'+'0'.repeat(64);
+// Official Pendle docs state sPENDLE staking went live Jan 20, 2026. Start two
+// days earlier so Transfer-log reconstruction has a conservative zero-balance
+// runway before public staking began.
+const PENDLE_SPENDLE_RECON_START_TIMESTAMP=1768694400; // 2026-01-18 00:00 UTC
+
+function topicForAddress(address) {
+  return '0x'+'0'.repeat(24)+String(address).toLowerCase().replace(/^0x/,'');
+}
+function addressFromTopic(topic) {
+  const s=String(topic||'').toLowerCase().replace(/^0x/,'');
+  return s.length===64 ? '0x'+s.slice(24) : null;
+}
+function logNumber(v) {
+  try { return Number(BigInt(String(v))); } catch { return NaN; }
+}
+function transferValueWei(log) {
+  try { return BigInt(String(log?.data||'0x0')); } catch { return 0n; }
+}
+function dedupeLogs(logs) {
+  const m=new Map();
+  for (const log of logs||[]) {
+    const key=`${String(log?.transactionHash||'')}:${String(log?.logIndex||'')}`;
+    if (!m.has(key)) m.set(key,log);
   }
-  const token='0x999999999991e178d52cd95afd4b00d066664144';
-  const iface=new Interface([
-    'function balanceOf(address) view returns (uint256)',
-    'function totalSupply() view returns (uint256)'
-  ]);
-  const sample=campaign.sampleUsers.slice(0,12);
-  const blockTag='0x'+Number(campaign.blockNumberEnd).toString(16);
-  const calls=[
-    {method:'eth_call',params:[{to:token,data:iface.encodeFunctionData('totalSupply',[])},blockTag]},
-    ...sample.map(x=>({method:'eth_call',params:[{to:token,data:iface.encodeFunctionData('balanceOf',[x.address])},blockTag]}))
-  ];
-  const archiveUrls=[
-    'https://ethereum-rpc.publicnode.com',
-    'https://eth.drpc.org',
-    'https://1rpc.io/eth',
-    ...ETH_RPC_URLS
-  ].filter((x,i,a)=>x&&a.indexOf(x)===i).slice(0,4);
-  const errors=[];
-  for (const rpc of archiveUrls) {
+  return [...m.values()].sort((a,b)=>{
+    const bn=logNumber(a.blockNumber)-logNumber(b.blockNumber);
+    return bn || (logNumber(a.logIndex)-logNumber(b.logIndex));
+  });
+}
+
+async function ethereumBlockHeader(rpc, blockNumber) {
+  const tag='0x'+Number(blockNumber).toString(16);
+  const b=await rpcCall(rpc,'eth_getBlockByNumber',[tag,false],8000);
+  if (!b?.number || !b?.timestamp) throw new Error(`block ${blockNumber} header unavailable`);
+  return {number:logNumber(b.number),timestamp:logNumber(b.timestamp)};
+}
+
+async function findEthereumBlockAtOrAfterTimestamp(rpc,targetTimestamp,upperBlock) {
+  // Header history is not archive-state. We use it only to translate the
+  // official Jan-2026 sPENDLE launch date into a bounded reconstruction block.
+  let hi=Number(upperBlock);
+  let lo=Math.max(0,hi-2_000_000);
+  let lowHeader=await ethereumBlockHeader(rpc,lo);
+  while (lowHeader.timestamp>targetTimestamp && lo>0) {
+    hi=lo;
+    lo=Math.max(0,lo-1_000_000);
+    lowHeader=await ethereumBlockHeader(rpc,lo);
+  }
+  for (let i=0;i<32 && lo<hi;i++) {
+    const mid=Math.floor((lo+hi)/2);
+    const h=await ethereumBlockHeader(rpc,mid);
+    if (h.timestamp<targetTimestamp) lo=mid+1; else hi=mid;
+  }
+  return hi;
+}
+
+async function fetchLogsChunked(rpc,filterBase,fromBlock,toBlock) {
+  const out=[];
+  let cursor=Number(fromBlock);
+  const end=Number(toBlock);
+  let chunk=120000;
+  let calls=0;
+  while (cursor<=end) {
+    const hi=Math.min(end,cursor+chunk-1);
+    const filter={...filterBase,fromBlock:'0x'+cursor.toString(16),toBlock:'0x'+hi.toString(16)};
     try {
-      const out=await rpcBatch(rpc,calls,8000);
-      const nativeTotalSupply=Number(formatUnits(iface.decodeFunctionResult('totalSupply',out[0])[0],18));
-      const rows=[];
-      for (let i=0;i<sample.length;i++) {
-        const balance=Number(formatUnits(iface.decodeFunctionResult('balanceOf',out[i+1])[0],18));
-        const reward=sample[i].reward;
-        const ratio=(balance>0&&reward>0)?reward/balance:NaN;
-        rows.push({address:sample[i].address,reward:round(reward,8),directBalance:round(balance,8),ratio:Number.isFinite(ratio)?ratio:null});
+      const logs=await rpcCall(rpc,'eth_getLogs',[filter],10000);
+      if (!Array.isArray(logs)) throw new Error('eth_getLogs response is not an array');
+      out.push(...logs);
+      cursor=hi+1;
+      calls++;
+      // Expand cautiously on quiet indexed ranges, but keep the job bounded.
+      if (logs.length<800 && chunk<180000) chunk=Math.min(180000,Math.floor(chunk*1.25));
+      if (calls>500) throw new Error('eth_getLogs safety call cap exceeded');
+    } catch(e) {
+      if (chunk<=5000) throw new Error(`eth_getLogs failed at minimum chunk ${cursor}-${hi}: ${e?.message||e}`);
+      chunk=Math.max(5000,Math.floor(chunk/2));
+    }
+  }
+  return out;
+}
+
+async function reconstructPendleTransferLedger(campaigns) {
+  const usable=(campaigns||[]).filter(c=>c?.blockNumberStart&&c?.blockNumberEnd&&Array.isArray(c?.sampleUsers)).slice(0,3);
+  if (usable.length<2) return {status:'not-enough-campaigns'};
+  const token='0x999999999991e178d52cd95afd4b00d066664144';
+  const maxEnd=Math.max(...usable.map(c=>Number(c.blockNumberEnd)));
+  const addresses=[...new Set(usable.flatMap(c=>c.sampleUsers.map(x=>String(x.address).toLowerCase())))];
+  const topics=addresses.map(topicForAddress);
+  const topicGroups=[];
+  for (let i=0;i<topics.length;i+=24) topicGroups.push(topics.slice(i,i+24));
+
+  const logUrls=[
+    process.env.ETH_RPC_URL,
+    'https://rpc.flashbots.net',
+    'https://ethereum-rpc.publicnode.com',
+    'https://eth.llamarpc.com',
+    'https://eth.drpc.org',
+    'https://1rpc.io/eth'
+  ].filter((x,i,a)=>x&&a.indexOf(x)===i);
+  const errors=[];
+
+  for (const rpc of logUrls) {
+    try {
+      // Cheap capability probes before the heavier backfill.
+      await ethereumBlockHeader(rpc,maxEnd);
+      const tinyFrom=Math.max(0,maxEnd-100);
+      await rpcCall(rpc,'eth_getLogs',[{address:token,fromBlock:'0x'+tinyFrom.toString(16),toBlock:'0x'+maxEnd.toString(16),topics:[PENDLE_TRANSFER_TOPIC]}],8000);
+
+      const reconstructionStartBlock=await findEthereumBlockAtOrAfterTimestamp(rpc,PENDLE_SPENDLE_RECON_START_TIMESTAMP,maxEnd);
+      const userLogs=[];
+      for (const group of topicGroups) {
+        // Standard JSON-RPC topic arrays provide OR semantics, letting one
+        // indexed query cover many sampled recipients without archive calls.
+        userLogs.push(...await fetchLogsChunked(rpc,{address:token,topics:[PENDLE_TRANSFER_TOPIC,null,group]},reconstructionStartBlock,maxEnd));
+        userLogs.push(...await fetchLogsChunked(rpc,{address:token,topics:[PENDLE_TRANSFER_TOPIC,group]},reconstructionStartBlock,maxEnd));
       }
-      const {cluster,medianRatio}=chooseRatioCluster(rows,0.01);
-      if (cluster.length<3 || !(medianRatio>0)) {
-        return {
-          campaign:campaign.campaign,status:'no-stable-direct-holder-cluster',rpc,blockNumber:campaign.blockNumberEnd,
-          nativeTotalSupply:Number.isFinite(nativeTotalSupply)?round(nativeTotalSupply,4):null,
-          sampledUsers:rows.length,directBalanceUsers:rows.filter(x=>Number(x.directBalance)>0).length,
-          clusterSize:cluster.length,sample:rows
-        };
-      }
-      const deviations=cluster.map(x=>Math.abs(Number(x.ratio)-medianRatio)/medianRatio*10000);
-      const maxSpreadBps=Math.max(...deviations);
-      const impliedActiveSupply=campaign.distributedSPendle/medianRatio;
-      const impliedVirtualOrOther=Math.max(0,impliedActiveSupply-nativeTotalSupply);
-      const rewardApr=medianRatio*(SECONDS_YEAR/PENDLE_EPOCH_SECONDS)*100;
+      // Net mint/burn reconstructs native sPENDLE totalSupply from the same
+      // public event history, again without historical eth_call state.
+      const mintLogs=await fetchLogsChunked(rpc,{address:token,topics:[PENDLE_TRANSFER_TOPIC,PENDLE_ZERO_TOPIC]},reconstructionStartBlock,maxEnd);
+      const burnLogs=await fetchLogsChunked(rpc,{address:token,topics:[PENDLE_TRANSFER_TOPIC,null,PENDLE_ZERO_TOPIC]},reconstructionStartBlock,maxEnd);
+      const logs=dedupeLogs(userLogs);
+      const supplyLogs=dedupeLogs([...mintLogs,...burnLogs]);
       return {
-        campaign:campaign.campaign,status:'diagnostic-cluster',rpc,blockNumber:campaign.blockNumberEnd,
-        sampledUsers:rows.length,directBalanceUsers:rows.filter(x=>Number(x.directBalance)>0).length,
-        clusterSize:cluster.length,clusterTolerancePct:1,maxClusterSpreadBps:round(maxSpreadBps,2),
-        rewardPerActiveSPendle:medianRatio,
-        diagnosticRewardApr:saneApr(rewardApr)?round(rewardApr):null,
-        distributedSPendle:round(campaign.distributedSPendle,6),
-        impliedActiveSPendle:round(impliedActiveSupply,4),
-        nativeTotalSupply:Number.isFinite(nativeTotalSupply)?round(nativeTotalSupply,4):null,
-        impliedVirtualOrOther:Number.isFinite(impliedVirtualOrOther)?round(impliedVirtualOrOther,4):null,
-        sample:rows
+        status:'ok',rpc,reconstructionStartBlock,reconstructionStartTimestamp:PENDLE_SPENDLE_RECON_START_TIMESTAMP,
+        sampledAddresses:addresses.length,userTransferLogs:logs.length,supplyTransferLogs:supplyLogs.length,
+        logs,supplyLogs,campaigns:usable
       };
     } catch(e) { errors.push(`${rpc}: ${e?.message||e}`); }
   }
-  return {campaign:campaign.campaign,status:'historical-rpc-unavailable',blockNumber:campaign.blockNumberEnd,errors};
+  return {status:'transfer-log-rpc-unavailable',errors};
+}
+
+function pendleBalancesAtBlock(ledger,blockNumber) {
+  const balances=new Map();
+  const end=Number(blockNumber);
+  for (const log of ledger?.logs||[]) {
+    if (logNumber(log.blockNumber)>end) break;
+    const from=addressFromTopic(log?.topics?.[1]);
+    const to=addressFromTopic(log?.topics?.[2]);
+    const amount=transferValueWei(log);
+    if (from && from!=='0x0000000000000000000000000000000000000000') balances.set(from,(balances.get(from)||0n)-amount);
+    if (to && to!=='0x0000000000000000000000000000000000000000') balances.set(to,(balances.get(to)||0n)+amount);
+  }
+  return balances;
+}
+
+function pendleNativeSupplyAtBlock(ledger,blockNumber) {
+  let supply=0n;
+  const end=Number(blockNumber);
+  for (const log of ledger?.supplyLogs||[]) {
+    if (logNumber(log.blockNumber)>end) break;
+    const from=addressFromTopic(log?.topics?.[1]);
+    const to=addressFromTopic(log?.topics?.[2]);
+    const amount=transferValueWei(log);
+    if (from==='0x0000000000000000000000000000000000000000') supply+=amount;
+    if (to==='0x0000000000000000000000000000000000000000') supply-=amount;
+  }
+  return Number(formatUnits(supply,18));
+}
+
+function pendleBoundaryRatioDiagnostic(campaign,ledger,blockNumber,boundary) {
+  const balances=pendleBalancesAtBlock(ledger,blockNumber);
+  const rows=[];
+  for (const user of campaign.sampleUsers||[]) {
+    const wei=balances.get(String(user.address).toLowerCase())||0n;
+    const balance=Number(formatUnits(wei,18));
+    const reward=Number(user.reward);
+    const ratio=(balance>0&&reward>0)?reward/balance:NaN;
+    rows.push({address:user.address,reward:round(reward,8),directBalance:round(balance,8),ratio:Number.isFinite(ratio)?ratio:null});
+  }
+  const {cluster,medianRatio}=chooseRatioCluster(rows,0.01);
+  const directBalanceUsers=rows.filter(x=>Number(x.directBalance)>0).length;
+  if (cluster.length<3 || !(medianRatio>0)) {
+    return {boundary,blockNumber,status:'no-stable-direct-holder-cluster',sampledUsers:rows.length,directBalanceUsers,clusterSize:cluster.length,sample:rows};
+  }
+  const deviations=cluster.map(x=>Math.abs(Number(x.ratio)-medianRatio)/medianRatio*10000);
+  const maxSpreadBps=Math.max(...deviations);
+  const impliedActiveSupply=campaign.distributedSPendle/medianRatio;
+  const nativeTotalSupply=pendleNativeSupplyAtBlock(ledger,blockNumber);
+  const rewardApr=medianRatio*(SECONDS_YEAR/PENDLE_EPOCH_SECONDS)*100;
+  return {
+    boundary,blockNumber,status:'diagnostic-cluster',sampledUsers:rows.length,directBalanceUsers,
+    clusterSize:cluster.length,clusterTolerancePct:1,maxClusterSpreadBps:round(maxSpreadBps,2),
+    rewardPerActiveSPendle:medianRatio,diagnosticRewardApr:saneApr(rewardApr)?round(rewardApr):null,
+    distributedSPendle:round(campaign.distributedSPendle,6),impliedActiveSPendle:round(impliedActiveSupply,4),
+    nativeTotalSupply:Number.isFinite(nativeTotalSupply)?round(nativeTotalSupply,4):null,
+    impliedActiveMinusNativeSupply:Number.isFinite(nativeTotalSupply)?round(impliedActiveSupply-nativeTotalSupply,4):null,
+    clusterAddresses:cluster.map(x=>x.address),sample:rows
+  };
+}
+
+function choosePendleCampaignBoundary(campaign,ledger) {
+  const start=pendleBoundaryRatioDiagnostic(campaign,ledger,campaign.blockNumberStart,'start');
+  const end=pendleBoundaryRatioDiagnostic(campaign,ledger,campaign.blockNumberEnd,'end');
+  const ranked=[start,end].sort((a,b)=>{
+    const av=a.status==='diagnostic-cluster'?1:0, bv=b.status==='diagnostic-cluster'?1:0;
+    if (av!==bv) return bv-av;
+    if (Number(b.clusterSize||0)!==Number(a.clusterSize||0)) return Number(b.clusterSize||0)-Number(a.clusterSize||0);
+    return Number(a.maxClusterSpreadBps??1e9)-Number(b.maxClusterSpreadBps??1e9);
+  });
+  const selected=ranked[0];
+  return {
+    campaign:campaign.campaign,status:selected.status,selectedBoundary:selected.boundary,
+    diagnosticRewardApr:selected.diagnosticRewardApr??null,rewardPerActiveSPendle:selected.rewardPerActiveSPendle??null,
+    impliedActiveSPendle:selected.impliedActiveSPendle??null,nativeTotalSupply:selected.nativeTotalSupply??null,
+    impliedActiveMinusNativeSupply:selected.impliedActiveMinusNativeSupply??null,
+    clusterSize:selected.clusterSize??0,maxClusterSpreadBps:selected.maxClusterSpreadBps??null,
+    start,end
+  };
+}
+
+function assessPendleTransferReplication(diagnostics) {
+  const valid=(diagnostics||[]).filter(x=>x?.status==='diagnostic-cluster' && saneApr(Number(x.diagnosticRewardApr)) && Number(x.clusterSize)>=3 && Number(x.maxClusterSpreadBps)<=100);
+  const byBoundary=new Map();
+  for (const x of valid) byBoundary.set(x.selectedBoundary,(byBoundary.get(x.selectedBoundary)||0)+1);
+  const dominant=[...byBoundary.entries()].sort((a,b)=>b[1]-a[1])[0]||[null,0];
+  const replicated=dominant[1]>=2;
+  return {
+    replicated,validCampaigns:valid.length,dominantBoundary:dominant[0],dominantBoundaryCount:dominant[1],
+    campaigns:valid.map(x=>({campaign:x.campaign,boundary:x.selectedBoundary,apr:x.diagnosticRewardApr,clusterSize:x.clusterSize,maxClusterSpreadBps:x.maxClusterSpreadBps,impliedActiveSPendle:x.impliedActiveSPendle}))
+  };
 }
 
 async function collectPendle(previous) {
@@ -669,15 +838,28 @@ async function collectPendle(previous) {
   candidates.sort((a,b)=>b.ts-a.ts);
 
   let campaigns=[],merkleError=null,epochMap=null,balanceDiagnostics=[];
+  let transferReconstruction={status:'not-run'},transferReplication={replicated:false,validCampaigns:0,dominantBoundary:null,dominantBoundaryCount:0,campaigns:[]};
   try {
     campaigns=await discoverRecentPendleMerkleCampaigns(now,8);
     epochMap=buildPendleEpochMap(campaigns,candidates);
-    // Two independent historical campaigns are enough for a first replication
-    // test while keeping GitHub Actions runtime bounded.
-    for (const campaign of campaigns.slice(0,2)) {
-      balanceDiagnostics.push(await inferPendleActiveSupplyFromCampaign(campaign));
-    }
   } catch(e) { merkleError=e?.message||String(e); }
+
+  if (campaigns.length>=2) {
+    try {
+      const ledger=await reconstructPendleTransferLedger(campaigns);
+      transferReconstruction={
+        status:ledger.status,rpc:ledger.rpc||null,reconstructionStartBlock:ledger.reconstructionStartBlock||null,
+        reconstructionStartTimestamp:ledger.reconstructionStartTimestamp||null,sampledAddresses:ledger.sampledAddresses||null,
+        userTransferLogs:ledger.userTransferLogs||null,supplyTransferLogs:ledger.supplyTransferLogs||null,errors:ledger.errors||null
+      };
+      if (ledger.status==='ok') {
+        balanceDiagnostics=campaigns.slice(0,3).map(c=>choosePendleCampaignBoundary(c,ledger));
+        transferReplication=assessPendleTransferReplication(balanceDiagnostics);
+      }
+    } catch(e) {
+      transferReconstruction={status:'transfer-reconstruction-error',error:e?.message||String(e)};
+    }
+  }
 
   const publicCampaigns=campaigns.map(publicPendleCampaign);
   const research={
@@ -685,8 +867,11 @@ async function collectPendle(previous) {
     campaignCount:publicCampaigns.length,
     campaigns:publicCampaigns,
     epochMap,
+    transferReconstruction,
     balanceDiagnostics,
-    denominatorPolicy:'V1.6 diagnostics may infer historical active supply from direct-holder reward ratios, but Reference APR stays withheld until the inference replicates cleanly and reward scope is confirmed.'
+    transferReplication,
+    denominatorPolicy:'V1.7 reconstructs direct historical sPENDLE balances from Transfer logs starting before the official Jan-20-2026 staking launch. A Merkle reward APR may become Reference APR only after a tight direct-holder reward/balance cluster replicates across at least two campaigns on the same snapshot boundary.',
+    rewardScope:'Reference APR reconstructed by this path is the sPENDLE buyback distribution component. In-kind point airdrops are intentionally excluded until they can be normalized independently.'
   };
 
   const internalState={
@@ -700,12 +885,13 @@ async function collectPendle(previous) {
       offsetDays:epochMap.offsetDays
     }:null,
     lastResearchAt:now,
+    transferReconstructionSummary:transferReconstruction,
+    transferReplication,
     balanceDiagnosticSummary:balanceDiagnostics.map(x=>({
-      campaign:x.campaign,status:x.status,clusterSize:x.clusterSize??null,
-      diagnosticRewardApr:x.diagnosticRewardApr??null,
-      impliedActiveSPendle:x.impliedActiveSPendle??null,
-      nativeTotalSupply:x.nativeTotalSupply??null,
-      impliedVirtualOrOther:x.impliedVirtualOrOther??null
+      campaign:x.campaign,status:x.status,selectedBoundary:x.selectedBoundary??null,clusterSize:x.clusterSize??null,
+      maxClusterSpreadBps:x.maxClusterSpreadBps??null,diagnosticRewardApr:x.diagnosticRewardApr??null,
+      impliedActiveSPendle:x.impliedActiveSPendle??null,nativeTotalSupply:x.nativeTotalSupply??null,
+      impliedActiveMinusNativeSupply:x.impliedActiveMinusNativeSupply??null
     }))
   };
 
@@ -732,16 +918,56 @@ async function collectPendle(previous) {
   const independentlyPositiveReward=Boolean(mappedLatest && Number(mappedLatest.merkleReward)>0 &&
     (!epochMap?.offsetConsensus || Math.abs(mappedLatest.startOffsetSeconds-Number(epochMap.offsetSeconds))<=3600));
 
+  // V1.7 promotion gate. A reconstructed value is accepted only when:
+  //   1) Merkle/API calendars have a stable multi-epoch offset,
+  //   2) several historical reward amounts match,
+  //   3) Transfer-log reward/balance clusters replicate on the same boundary, and
+  //   4) the latest mapped campaign itself has a clean cluster.
+  // This turns the reconstruction into a reproducible Reference APR rather than
+  // a one-off estimate. It intentionally measures the sPENDLE buyback reward
+  // component only; in-kind airdrops remain excluded.
+  const latestTransferDiag=mappedLatest ? balanceDiagnostics.find(x=>x?.campaign===mappedLatest.campaign) : null;
+  const latestCampaign=mappedLatest ? campaigns.find(x=>x?.campaign===mappedLatest.campaign) : null;
+  const canPromoteTransferApr=Boolean(
+    latest.apr===0 && independentlyPositiveReward && epochMap?.offsetConsensus &&
+    Number(epochMap?.exactAmountMatches||0)>=3 && transferReplication?.replicated &&
+    latestTransferDiag?.status==='diagnostic-cluster' &&
+    latestTransferDiag?.selectedBoundary===transferReplication?.dominantBoundary &&
+    Number(latestTransferDiag?.clusterSize||0)>=3 &&
+    Number(latestTransferDiag?.maxClusterSpreadBps??1e9)<=100 &&
+    saneApr(Number(latestTransferDiag?.diagnosticRewardApr)) && latestCampaign
+  );
+
+  if (canPromoteTransferApr) {
+    const reconstructedApr=Number(latestTransferDiag.diagnosticRewardApr);
+    return {
+      apr:round(reconstructedApr),
+      source:latestCampaign.source,
+      sourceType:'official-merkle+onchain-transfer-reconstruction',
+      sourceMetric:'sPENDLE buyback distribution APR · 14-day active-balance Transfer-log reconstruction',
+      periodStart:new Date(latestCampaign.fromTimestamp*1000).toISOString(),
+      periodEnd:new Date(latestCampaign.toTimestamp*1000).toISOString(),
+      details:{
+        apiEpochTimestamp:latest.ts,apiEpochCompletedAt:latest.completedAt,publishedApiApr:0,
+        revenue:Number.isFinite(revenue)?revenue:null,buybackAmount:Number.isFinite(latest.buybackAmount)?latest.buybackAmount:null,
+        selectionRule:'replicated-transfer-log-reconstruction',rewardScope:'sPENDLE buyback distribution only; in-kind airdrops excluded',
+        mappedMerkleCampaign:mappedLatest,selectedTransferDiagnostic:latestTransferDiag,
+        replication:transferReplication,research,currentSupply:currentSupplySnapshot
+      },
+      internalState
+    };
+  }
+
   if (latest.apr===0 && ((Number.isFinite(revenue)&&revenue>0) || independentlyPositiveReward)) {
     return {
-      notReady:true, source:url, sourceType:'official-api+official-merkle+onchain-diagnostic',
-      sourceMetric:'sPENDLE APR withheld · zero API APR conflicts with mapped positive rewards',
+      notReady:true, source:url, sourceType:'official-api+official-merkle+onchain-transfer-diagnostic',
+      sourceMetric:'sPENDLE APR withheld · mapped positive rewards but Transfer reconstruction has not yet passed promotion gate',
       periodStart:new Date(latest.ts*1000).toISOString(),periodEnd:new Date(latest.completedAt*1000).toISOString(),
       details:{
         epochTimestamp:latest.ts,epochCompletedAt:latest.completedAt,historyCount:aprs.length,selectedIndex:latest.i,
         publishedApr:0,revenue:Number.isFinite(revenue)?revenue:null,
         buybackAmount:Number.isFinite(latest.buybackAmount)?latest.buybackAmount:null,
-        selectionRule:'zero-apr-positive-reward-multi-epoch-map-guard',
+        selectionRule:'zero-apr-positive-reward-transfer-reconstruction-not-yet-replicated',
         mappedMerkleCampaign:mappedLatest,
         research,currentSupply:currentSupplySnapshot,
         recentCompleted:candidates.slice(0,6).map(x=>({
@@ -755,7 +981,7 @@ async function collectPendle(previous) {
   }
 
   return {
-    apr:0, source:url, sourceType:'official-api+official-merkle+onchain-diagnostic',
+    apr:0, source:url, sourceType:'official-api+official-merkle+onchain-transfer-diagnostic',
     sourceMetric:'sPENDLE latest fully completed 14-day epoch APR · multi-source verified zero',
     periodStart:new Date(latest.ts*1000).toISOString(),periodEnd:new Date(latest.completedAt*1000).toISOString(),
     details:{
@@ -1167,7 +1393,7 @@ async function main() {
   }
 
   const output={
-    version:'1.6',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.7',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions only.',
     engines,companies,
     history:{engines:historyEngines,companies:historyCompanies},
