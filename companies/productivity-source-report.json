@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-08-09T18:52:39.712Z",
+  "generatedAt": "2026-08-09T19:23:54.198Z",
   "methodologyVersion": "1.1-simple-safe",
-  "collectorVersion": "1.4-pendle-zero-guard",
+  "collectorVersion": "1.5-pendle-merkle-audit",
   "engines": {
     "aerodrome_veaero": {
       "protocol": "Aerodrome",
@@ -11,7 +11,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "periodStart": null,
-      "periodEnd": "2026-08-09T18:52:39.712Z",
+      "periodEnd": "2026-08-09T19:23:54.198Z",
       "error": null,
       "details": {
         "maxBorrow": 3000,
@@ -28,7 +28,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "periodStart": null,
-      "periodEnd": "2026-08-09T18:52:39.712Z",
+      "periodEnd": "2026-08-09T19:23:54.198Z",
       "error": null,
       "details": {
         "maxBorrow": 3000,
@@ -45,7 +45,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "Locked CVX platform vAPR + last completed Votium incentives APR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T18:52:39.712Z",
+      "periodEnd": "2026-08-09T19:23:54.198Z",
       "error": null,
       "details": {
         "platformVapr": 0.0033,
@@ -55,7 +55,7 @@
     "curve_vecrv": {
       "protocol": "Curve",
       "status": "ok",
-      "apr": 2.6858,
+      "apr": 2.6816,
       "source": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
       "sourceType": "onchain",
       "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
@@ -64,35 +64,35 @@
       "error": null,
       "details": {
         "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
-        "rpc": "https://1rpc.io/eth",
-        "crvPrice": 0.238659,
+        "rpc": "https://ethereum-rpc.publicnode.com",
+        "crvPrice": 0.239028,
         "crvUSDPriceAssumption": 1,
         "weeksUsed": 4,
-        "lastTokenTime": 1786213727,
+        "lastTokenTime": 1786302071,
         "weekly": [
           {
             "week": 1785369600,
             "tokensCrvUSD": 71692.38943973786,
             "veSupply": 784340206.5790856,
-            "apr": 1.9916
+            "apr": 1.9885
           },
           {
             "week": 1784764800,
             "tokensCrvUSD": 68748.37040583129,
             "veSupply": 784483774.253096,
-            "apr": 1.9094
+            "apr": 1.9065
           },
           {
             "week": 1784160000,
             "tokensCrvUSD": 68212.56637047377,
             "veSupply": 783794463.6861042,
-            "apr": 1.8962
+            "apr": 1.8933
           },
           {
             "week": 1783555200,
             "tokensCrvUSD": 178201.84025600296,
             "veSupply": 785063578.3980215,
-            "apr": 4.9458
+            "apr": 4.9381
           }
         ]
       }
@@ -102,8 +102,8 @@
       "status": "warming",
       "apr": null,
       "source": "https://api-v2.pendle.finance/core/v1/spendle/data",
-      "sourceType": "official-api",
-      "sourceMetric": "sPENDLE completed epoch APR withheld · positive revenue with zero published APR",
+      "sourceType": "official-api+official-merkle",
+      "sourceMetric": "sPENDLE APR withheld · zero API APR conflicts with positive first-party rewards",
       "periodStart": "2026-07-14T00:00:00.000Z",
       "periodEnd": "2026-07-28T00:00:00.000Z",
       "error": null,
@@ -114,15 +114,48 @@
         "selectedIndex": 1,
         "publishedApr": 0,
         "revenue": 312875.1682402113,
-        "selectionRule": "zero-apr-positive-revenue-guard",
-        "totalPendleStaked": 9.810223096805655e+25,
-        "totalStakedInSpendle": 3.4201989666016765e+25,
-        "virtualSpendleFromVependle": 1.8616394496029124e+26,
+        "buybackAmount": 0,
+        "selectionRule": "zero-apr-positive-reward-dual-source-guard",
+        "merkle": {
+          "campaign": "2026-08-01-spendle",
+          "source": "https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/2026-08-01-spendle/campaign.json",
+          "merkleRoot": "0x931bebdc0257235aa8fb1b4c4f18b47577aaecd67e35a341f3a1af4ef006645d",
+          "fromTimestamp": 1784246400,
+          "toTimestamp": 1785456000,
+          "distributedSPendle": 144387.99999999994,
+          "blockNumberStart": 25548675,
+          "blockNumberEnd": 25649110,
+          "userCount": 6048
+        },
+        "merkleApiMatch": null,
+        "merkleError": null,
+        "denominatorPolicy": "No reconstructed APR until the exact historical ACTIVE sPENDLE snapshot (including virtual sPENDLE) is available",
+        "currentSupply": {
+          "snapshotKey": "2026-W32",
+          "observedAt": 1786303457,
+          "periodEnd": "2026-08-09T19:24:17.000Z",
+          "totalPendleStaked": 98102230.96805654,
+          "totalStakedInSpendle": 34201989.666016765,
+          "virtualSpendleFromVependle": 186158606.53444725,
+          "currentEffectiveSupply": 220360596.200464,
+          "snapshots": [
+            {
+              "snapshotKey": "2026-W32",
+              "observedAt": 1786303457,
+              "periodEnd": "2026-08-09T19:24:17.000Z",
+              "totalPendleStaked": 98102230.96805654,
+              "totalStakedInSpendle": 34201989.666016765,
+              "virtualSpendleFromVependle": 186158606.53444725,
+              "currentEffectiveSupply": 220360596.200464
+            }
+          ]
+        },
         "recentCompleted": [
           {
             "index": 1,
             "apr": 0,
             "revenue": 312875.1682402113,
+            "buybackAmount": 0,
             "periodStart": "2026-07-14T00:00:00.000Z",
             "periodEnd": "2026-07-28T00:00:00.000Z"
           },
@@ -130,6 +163,7 @@
             "index": 2,
             "apr": 0,
             "revenue": 270669.23910515575,
+            "buybackAmount": 149086,
             "periodStart": "2026-06-30T00:00:00.000Z",
             "periodEnd": "2026-07-14T00:00:00.000Z"
           },
@@ -137,6 +171,7 @@
             "index": 3,
             "apr": 0,
             "revenue": 508656.2850598516,
+            "buybackAmount": 239840,
             "periodStart": "2026-06-16T00:00:00.000Z",
             "periodEnd": "2026-06-30T00:00:00.000Z"
           },
@@ -144,6 +179,7 @@
             "index": 4,
             "apr": 0,
             "revenue": 642686.3331213985,
+            "buybackAmount": 131832.0767954,
             "periodStart": "2026-06-02T00:00:00.000Z",
             "periodEnd": "2026-06-16T00:00:00.000Z"
           }
@@ -153,12 +189,12 @@
     "fx_vefxn": {
       "protocol": "f(x)",
       "status": "ok",
-      "apr": 43.18,
+      "apr": 42.49,
       "source": "https://fx.aladdin.club/v2/lock",
       "sourceType": "official-frontend",
       "sourceMetric": "veFXN Locker APR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T18:52:39.712Z",
+      "periodEnd": "2026-08-09T19:23:54.198Z",
       "error": null,
       "details": {}
     },
@@ -170,19 +206,19 @@
       "sourceType": "official-analytics",
       "sourceMetric": "veYB APR · current/latest epoch",
       "periodStart": null,
-      "periodEnd": "2026-08-09T18:52:39.712Z",
+      "periodEnd": "2026-08-09T19:23:54.198Z",
       "error": null,
       "details": {}
     },
     "frax_vefrax": {
       "protocol": "Frax",
       "status": "ok",
-      "apr": 5.3262,
+      "apr": 5.3263,
       "source": "https://api.frax.finance/combineddata/",
       "sourceType": "official-api",
       "sourceMetric": "Fraxtal veFRAX/veFXS APR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T18:52:39.712Z",
+      "periodEnd": "2026-08-09T19:23:54.198Z",
       "error": null,
       "details": {
         "path": "core.vefxs.apr"
@@ -196,13 +232,13 @@
       "sourceType": "onchain",
       "sourceMetric": "VVV emissionRatePerSecond / total sVVV supply",
       "periodStart": null,
-      "periodEnd": "2026-08-09T18:52:39.712Z",
+      "periodEnd": "2026-08-09T19:23:54.198Z",
       "error": null,
       "details": {
         "contract": "0x321b7ff75154472B18EDb199033fF4D116F340Ff",
         "rpc": "https://mainnet.base.org",
         "rateVVVPerSecond": 0.09512937595129375,
-        "totalStakedVVV": 33593504.62913101
+        "totalStakedVVV": 33593576.78893022
       }
     },
     "liquity_lqty": {
@@ -213,12 +249,12 @@
       "sourceType": "onchain-baseline",
       "sourceMetric": "LQTY F_ETH + F_LUSD baseline maturing; APR starts after observed period",
       "periodStart": "2026-08-09T18:40:35.000Z",
-      "periodEnd": "2026-08-09T18:53:11.000Z",
+      "periodEnd": "2026-08-09T19:24:35.000Z",
       "error": null,
       "details": {
         "contract": "0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d",
         "rpc": "https://1rpc.io/eth",
-        "baselineAgeSeconds": 756,
+        "baselineAgeSeconds": 2640,
         "reason": "Existing baseline is younger than 5 days and is intentionally preserved"
       }
     },
@@ -230,7 +266,7 @@
       "sourceType": "official-frontend",
       "sourceMetric": "Staked RSUP vAPR",
       "periodStart": null,
-      "periodEnd": "2026-08-09T18:52:39.712Z",
+      "periodEnd": "2026-08-09T19:23:54.198Z",
       "error": null,
       "details": {
         "url": "https://resupply.finance/governance/rsup"
