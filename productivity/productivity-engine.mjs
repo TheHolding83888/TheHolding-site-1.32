@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Productivity / APR Engine v1.4
+ * The Holding · Productivity / APR Engine v1.5
  *
  * SIMPLE-FIRST architecture:
  *   official protocol API / onchain data / official frontend
@@ -32,7 +32,7 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.4-pendle-zero-guard';
+const COLLECTOR_VERSION = '1.5-pendle-merkle-audit';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const CURVE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0 Safari/537.36';
@@ -409,18 +409,94 @@ async function collectCurve(browser, prices) {
   throw new Error('Curve: bounded onchain RPC + official frontend fallback unavailable');
 }
 
-async function collectPendle() {
+async function discoverLatestPendleMerkleCampaign(now=Math.floor(Date.now()/1000)) {
+  // Pendle publishes the actual sPENDLE Merkle distributions in its official
+  // GitHub repository. These files give us a second first-party truth layer:
+  // exact distribution window + exact amount of sPENDLE allocated to holders.
+  // We use it to audit the API, NOT to invent a denominator that Pendle has not
+  // published historically.
+  const token='0x999999999991e178d52cd95afd4b00d066664144';
+  const repoApi='https://api.github.com/repos/pendle-finance/merkle-distributions/contents/vependle-airdrop/1';
+  const rows=await fetchJson(repoApi,{headers:{'accept':'application/vnd.github+json'}},2);
+  if (!Array.isArray(rows)) throw new Error('Pendle Merkle: repository directory listing unavailable');
+
+  const names=rows
+    .filter(x=>x?.type==='dir' && /^\d{4}-\d{2}-\d{2}-spendle$/i.test(String(x?.name||'')))
+    .map(x=>String(x.name))
+    .sort((a,b)=>b.localeCompare(a));
+
+  for (const name of names.slice(0,8)) {
+    try {
+      const raw=`https://raw.githubusercontent.com/pendle-finance/merkle-distributions/main/vependle-airdrop/1/${name}/campaign.json`;
+      const campaign=await fetchJson(raw,{},2);
+      const distributions=Array.isArray(campaign?.distributions)?campaign.distributions:[];
+      const d=distributions.find(x=>String(x?.token||'').toLowerCase()===token);
+      if (!d) continue;
+      const fromTimestamp=Number(d.fromTimestamp||0);
+      const toTimestamp=Number(d.toTimestamp||0);
+      if (!(fromTimestamp>0) || !(toTimestamp>fromTimestamp) || toTimestamp>now) continue;
+      let distributedSPendle=NaN;
+      try { distributedSPendle=Number(formatUnits(BigInt(String(d.sumAmount)),18)); } catch {}
+      if (!(distributedSPendle>=0)) continue;
+      const desc=String(d.description||'');
+      const startBlock=Number(desc.match(/blockNumberStart:\s*(\d+)/i)?.[1]||NaN);
+      const endBlock=Number(desc.match(/blockNumberEnd:\s*(\d+)/i)?.[1]||NaN);
+      return {
+        campaign:name, source:raw, merkleRoot:campaign?.merkleRoot||null,
+        fromTimestamp,toTimestamp,distributedSPendle,
+        blockNumberStart:Number.isFinite(startBlock)?startBlock:null,
+        blockNumberEnd:Number.isFinite(endBlock)?endBlock:null,
+        userCount:d.users && typeof d.users==='object'?Object.keys(d.users).length:null
+      };
+    } catch {}
+  }
+  throw new Error('Pendle Merkle: no fully completed sPENDLE campaign found');
+}
+
+function pendleTokenUnits18(v) {
+  try { return Number(formatUnits(BigInt(String(v)),18)); } catch { return NaN; }
+}
+
+async function collectPendle(previous) {
   const url='https://api-v2.pendle.finance/core/v1/spendle/data';
   const j=await fetchJson(url);
   const h=j.sPendleHistoricalData || j.spendleHistoricalData || {};
   const aprs=Array.isArray(h.aprs)?h.aprs:[];
   const timestamps=Array.isArray(h.timestamps)?h.timestamps:[];
   const revenues=Array.isArray(h.revenues)?h.revenues:[];
+  const buybackAmounts=Array.isArray(h.buybackAmounts)?h.buybackAmounts:[];
   const now=Math.floor(Date.now()/1000);
+
+  const totalStakedInSpendle=pendleTokenUnits18(j.totalStakedInSpendle);
+  const virtualSpendleFromVependle=pendleTokenUnits18(j.virtualSpendleFromVependle);
+  const totalPendleStaked=pendleTokenUnits18(j.totalPendleStaked);
+  const currentEffectiveSupply=(Number.isFinite(totalStakedInSpendle)?totalStakedInSpendle:0)+
+    (Number.isFinite(virtualSpendleFromVependle)?virtualSpendleFromVependle:0);
+
+  // Preserve a Holding-owned audit trail of the current denominator components.
+  // IMPORTANT: this is diagnostic state only. It is NOT substituted for a
+  // historical active-sPENDLE snapshot, because Pendle rewards use the exact
+  // active balance snapshot for each 14-day epoch (including virtual sPENDLE).
+  const currentSupplySnapshot={
+    snapshotKey:weekKey(new Date(now*1000)),
+    observedAt:now,
+    periodEnd:new Date(now*1000).toISOString(),
+    totalPendleStaked:Number.isFinite(totalPendleStaked)?totalPendleStaked:null,
+    totalStakedInSpendle:Number.isFinite(totalStakedInSpendle)?totalStakedInSpendle:null,
+    virtualSpendleFromVependle:Number.isFinite(virtualSpendleFromVependle)?virtualSpendleFromVependle:null,
+    currentEffectiveSupply:Number.isFinite(currentEffectiveSupply)&&currentEffectiveSupply>0?currentEffectiveSupply:null
+  };
+  const previousSnapshots=Array.isArray(previous?.internalState?.pendle?.snapshots)
+    ? previous.internalState.pendle.snapshots.filter(Boolean)
+    : [];
+  const snapshotIndex=previousSnapshots.findIndex(x=>x?.snapshotKey===currentSupplySnapshot.snapshotKey);
+  const snapshots=previousSnapshots.slice();
+  if (snapshotIndex>=0) snapshots[snapshotIndex]=currentSupplySnapshot; else snapshots.push(currentSupplySnapshot);
+  snapshots.sort((a,b)=>Number(a?.observedAt||0)-Number(b?.observedAt||0));
+  const internalState={...currentSupplySnapshot,snapshots:snapshots.slice(-16)};
 
   // Pendle takes an active-sPENDLE snapshot every 14 days and distributes on
   // that cadence. A timestamp that has merely STARTED is not a completed epoch.
-  // v1.1 selected Jul-28 while run date was Aug-09, hence the suspicious 0%.
   const candidates=[];
   for (let i=0;i<aprs.length;i++) {
     const a=normalizeAprNumber(aprs[i]);
@@ -428,54 +504,109 @@ async function collectPendle() {
     if (!saneApr(a) || !ts) continue;
     const completedAt=ts+PENDLE_EPOCH_SECONDS;
     if (completedAt>now) continue;
-    candidates.push({i,apr:a,ts,completedAt,revenue:Number(revenues[i])});
+    candidates.push({
+      i,apr:a,ts,completedAt,
+      revenue:Number(revenues[i]),
+      buybackAmount:Number(buybackAmounts[i])
+    });
   }
   if (!candidates.length) throw new Error('Pendle: no fully completed sPENDLE epoch in API history');
   candidates.sort((a,b)=>b.ts-a.ts);
-  // Prefer the newest completed epoch with a positive APR published by Pendle.
-  // A zero APR is accepted only when the corresponding completed epoch also has
-  // zero / missing revenue. If Pendle reports positive revenue but APR=0, that is
-  // internally inconsistent for our Reference APR purpose, so do NOT silently
-  // record 0%. Mark the adapter not-ready and keep the company on safe fallback.
+
+  // Independent first-party audit layer: exact Merkle distribution published
+  // by Pendle. Failure to reach GitHub must never break the main API adapter.
+  let merkle=null, merkleError=null, merkleApiMatch=null;
+  try {
+    merkle=await discoverLatestPendleMerkleCampaign(now);
+    const eligible=candidates
+      .filter(x=>Number.isFinite(x.buybackAmount) && x.buybackAmount>0)
+      .map(x=>({x,diff:Math.abs(x.buybackAmount-merkle.distributedSPendle)}))
+      .sort((a,b)=>a.diff-b.diff);
+    if (eligible.length) {
+      const best=eligible[0];
+      const tolerance=Math.max(0.02,Math.abs(merkle.distributedSPendle)*1e-8);
+      if (best.diff<=tolerance) merkleApiMatch={
+        apiIndex:best.x.i,
+        apiEpochTimestamp:best.x.ts,
+        apiEpochCompletedAt:best.x.completedAt,
+        apiBuybackAmount:best.x.buybackAmount,
+        apiRevenue:Number.isFinite(best.x.revenue)?best.x.revenue:null,
+        apiPublishedApr:best.x.apr,
+        absoluteDifference:best.diff
+      };
+    }
+  } catch(e) { merkleError=e?.message||String(e); }
+
+  // If Pendle publishes a positive APR for a fully completed epoch, keep using
+  // that official value. Merkle data is attached as an audit cross-check.
   const positive=candidates.find(x=>x.apr>0);
   if (positive) {
     return {
-      apr:round(positive.apr), source:url, sourceType:'official-api', sourceMetric:'sPENDLE latest fully completed 14-day epoch APR',
+      apr:round(positive.apr), source:url, sourceType:'official-api',
+      sourceMetric:'sPENDLE latest fully completed 14-day epoch APR · Merkle-audited',
       periodStart:new Date(positive.ts*1000).toISOString(),
       periodEnd:new Date(positive.completedAt*1000).toISOString(),
       details:{
         epochTimestamp:positive.ts,epochCompletedAt:positive.completedAt,historyCount:aprs.length,selectedIndex:positive.i,
-        revenue:Number.isFinite(positive.revenue)?positive.revenue:null,selectionRule:positive===candidates[0]?'latest-completed-positive-apr':'latest-completed-positive-apr-fallback',
-        totalPendleStaked:Number(j.totalPendleStaked??NaN),totalStakedInSpendle:Number(j.totalStakedInSpendle??NaN),
-        virtualSpendleFromVependle:Number(j.virtualSpendleFromVependle??NaN)
-      }
+        revenue:Number.isFinite(positive.revenue)?positive.revenue:null,
+        buybackAmount:Number.isFinite(positive.buybackAmount)?positive.buybackAmount:null,
+        selectionRule:positive===candidates[0]?'latest-completed-positive-apr':'latest-completed-positive-apr-fallback',
+        merkle,merkleApiMatch,merkleError,
+        denominatorPolicy:'Historical active-sPENDLE snapshot required; current supply is diagnostic only',
+        currentSupply:internalState
+      },
+      internalState
     };
   }
 
   const latest=candidates[0];
   const revenue=Number(latest.revenue);
-  if (latest.apr===0 && Number.isFinite(revenue) && revenue>0) {
+  const merkleReward=Number(merkle?.distributedSPendle);
+  const independentlyPositiveReward=Boolean(merkleApiMatch && merkleApiMatch.apiIndex===latest.i && Number.isFinite(merkleReward) && merkleReward>0);
+
+  // Strong guard: zero published APR cannot be treated as genuine when either
+  // the API reports positive epoch revenue OR Pendle's own Merkle repository
+  // proves a positive sPENDLE distribution. This makes v1.5 fail-safe across
+  // two independent first-party data surfaces.
+  if (latest.apr===0 && ((Number.isFinite(revenue)&&revenue>0) || independentlyPositiveReward)) {
     return {
-      notReady:true, source:url, sourceType:'official-api',
-      sourceMetric:'sPENDLE completed epoch APR withheld · positive revenue with zero published APR',
+      notReady:true, source:url, sourceType:'official-api+official-merkle',
+      sourceMetric:'sPENDLE APR withheld · zero API APR conflicts with positive first-party rewards',
       periodStart:new Date(latest.ts*1000).toISOString(),
       periodEnd:new Date(latest.completedAt*1000).toISOString(),
       details:{
         epochTimestamp:latest.ts,epochCompletedAt:latest.completedAt,historyCount:aprs.length,selectedIndex:latest.i,
-        publishedApr:0,revenue,selectionRule:'zero-apr-positive-revenue-guard',
-        totalPendleStaked:Number(j.totalPendleStaked??NaN),totalStakedInSpendle:Number(j.totalStakedInSpendle??NaN),
-        virtualSpendleFromVependle:Number(j.virtualSpendleFromVependle??NaN),
-        recentCompleted:candidates.slice(0,4).map(x=>({index:x.i,apr:x.apr,revenue:Number.isFinite(x.revenue)?x.revenue:null,periodStart:new Date(x.ts*1000).toISOString(),periodEnd:new Date(x.completedAt*1000).toISOString()}))
-      }
+        publishedApr:0,revenue:Number.isFinite(revenue)?revenue:null,
+        buybackAmount:Number.isFinite(latest.buybackAmount)?latest.buybackAmount:null,
+        selectionRule:'zero-apr-positive-reward-dual-source-guard',
+        merkle,merkleApiMatch,merkleError,
+        denominatorPolicy:'No reconstructed APR until the exact historical ACTIVE sPENDLE snapshot (including virtual sPENDLE) is available',
+        currentSupply:internalState,
+        recentCompleted:candidates.slice(0,4).map(x=>({
+          index:x.i,apr:x.apr,
+          revenue:Number.isFinite(x.revenue)?x.revenue:null,
+          buybackAmount:Number.isFinite(x.buybackAmount)?x.buybackAmount:null,
+          periodStart:new Date(x.ts*1000).toISOString(),periodEnd:new Date(x.completedAt*1000).toISOString()
+        }))
+      },
+      internalState
     };
   }
 
-  // Genuine zero: completed epoch has zero APR and no positive revenue.
+  // Genuine zero: completed epoch has zero APR and no positive reward signal
+  // from either official source.
   return {
-    apr:0, source:url, sourceType:'official-api', sourceMetric:'sPENDLE latest fully completed 14-day epoch APR',
+    apr:0, source:url, sourceType:'official-api+official-merkle',
+    sourceMetric:'sPENDLE latest fully completed 14-day epoch APR · dual-source verified zero',
     periodStart:new Date(latest.ts*1000).toISOString(),
     periodEnd:new Date(latest.completedAt*1000).toISOString(),
-    details:{epochTimestamp:latest.ts,epochCompletedAt:latest.completedAt,historyCount:aprs.length,selectedIndex:latest.i,revenue:Number.isFinite(revenue)?revenue:null,selectionRule:'genuine-zero'}
+    details:{
+      epochTimestamp:latest.ts,epochCompletedAt:latest.completedAt,historyCount:aprs.length,selectedIndex:latest.i,
+      revenue:Number.isFinite(revenue)?revenue:null,
+      buybackAmount:Number.isFinite(latest.buybackAmount)?latest.buybackAmount:null,
+      selectionRule:'genuine-zero-dual-source',merkle,merkleApiMatch,merkleError,currentSupply:internalState
+    },
+    internalState
   };
 }
 
@@ -704,7 +835,7 @@ async function runAdapter(engineId,{browser,prices,previous}) {
     case 'velodrome_vevelo': return collect40Acres(browser,'Velodrome');
     case 'convex_vlcvx': return collectConvex(browser);
     case 'curve_vecrv': return collectCurve(browser,prices);
-    case 'pendle_spendle': return collectPendle();
+    case 'pendle_spendle': return collectPendle(previous);
     case 'fx_vefxn': return collectFx(browser);
     case 'yieldbasis_veyb': return collectYieldBasis(browser);
     case 'frax_vefrax': return collectFrax(browser);
@@ -769,6 +900,7 @@ async function main() {
   const engines={};
   const engineErrors={};
   let liquityInternal=previous?.internalState?.liquity || null;
+  let pendleInternal=previous?.internalState?.pendle || null;
 
   for (const engineId of Object.keys(ENGINE_META)) {
     const meta=ENGINE_META[engineId];
@@ -778,6 +910,7 @@ async function main() {
       }
       const r=await runAdapter(engineId,{browser,prices,previous});
       if (r?.internalState && engineId==='liquity_lqty') liquityInternal=r.internalState;
+      if (r?.internalState && engineId==='pendle_spendle') pendleInternal=r.internalState;
       if (r?.notReady) {
         engines[engineId]={
           engineId,...meta,aprLatest:null,sourceType:r.sourceType,sourceMetric:r.sourceMetric,
@@ -876,11 +1009,11 @@ async function main() {
   }
 
   const output={
-    version:'1.4',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.5',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions only.',
     engines,companies,
     history:{engines:historyEngines,companies:historyCompanies},
-    internalState:{liquity:liquityInternal},
+    internalState:{liquity:liquityInternal,pendle:pendleInternal},
     diagnostics:{engineErrors,priceTimestamp:generatedAt,pricesUsed:prices}
   };
 
