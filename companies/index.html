@@ -969,6 +969,43 @@
             display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
             column-gap: 2.75rem; row-gap: 0;
         }
+        /* primary economic snapshot — human-readable mirror of the four Composite factors */
+        .ipx-economic {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0;
+            margin: 0.15rem 0 1.35rem;
+            padding: 1.15rem 0;
+            border-top: 1px solid var(--gold-line);
+            border-bottom: 1px solid var(--line);
+        }
+        .ipx-economic-item {
+            min-width: 0;
+            padding: 0 1.15rem;
+            border-left: 1px solid var(--line);
+        }
+        .ipx-economic-item:first-child { padding-left: 0; border-left: none; }
+        .ipx-economic-item:last-child { padding-right: 0; }
+        .ipx-economic-label {
+            font-size: 0.52rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            font-weight: 600;
+            margin-bottom: 0.38rem;
+            line-height: 1.35;
+        }
+        .ipx-economic-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.42rem;
+            line-height: 1.1;
+            color: var(--text);
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+        .ipx-economic-value.gold { color: var(--gold); }
+        .ipx-economic-value.apr { color: var(--green); }
+        .ipx-economic-value.age { color: var(--gold); }
         .ipx-field {
             display: flex; justify-content: space-between; align-items: baseline;
             gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line);
@@ -1064,6 +1101,12 @@
             .index-metric .im-value { font-size: 1.8rem; }
         }
         @media (max-width: 760px) {
+            .ipx-economic { grid-template-columns: repeat(2, minmax(0,1fr)); row-gap: 0; }
+            .ipx-economic-item { padding: 0.8rem 1rem; }
+            .ipx-economic-item:nth-child(odd) { padding-left: 0; border-left: none; }
+            .ipx-economic-item:nth-child(n+3) { border-top: 1px solid var(--line); }
+            .ipx-economic-item:nth-child(even) { padding-right: 0; }
+            .ipx-economic-value { font-size: 1.3rem; }
             .ib-head { display: none; }
             .ib-head, .ib-row { grid-template-columns: 30px minmax(0,1fr) auto 22px; }
             .ib-row { padding: 1.05rem 0; gap: 0.8rem; }
@@ -1981,7 +2024,7 @@
                     </div>
                     <div>
                         <div class="cc-metric-label" data-i18n="card.cashflow">Indicative APR</div>
-                        <div class="cc-metric-value">4–8+%</div>
+                        <div class="cc-metric-value" id="apr-05081966">4–8+%</div>
                     </div>
                 </div>
                 <div class="cc-perf">
@@ -2011,7 +2054,7 @@
                     </div>
                     <div>
                         <div class="cc-metric-label" data-i18n="card.cashflow">Indicative APR</div>
-                        <div class="cc-metric-value">~10–12%</div>
+                        <div class="cc-metric-value" id="apr-yieldring">~10–12%</div>
                     </div>
                 </div>
                 <div class="cc-perf">
@@ -2041,7 +2084,7 @@
                     </div>
                     <div>
                         <div class="cc-metric-label" data-i18n="card.cashflow">Indicative APR</div>
-                        <div class="cc-metric-value" data-i18n="card3.apr">10–20%+ Variable</div>
+                        <div class="cc-metric-value" id="apr-dinaz">10–20%+ Variable</div>
                     </div>
                 </div>
                 <div class="cc-perf">
@@ -2074,7 +2117,7 @@
                     </div>
                     <div>
                         <div class="cc-metric-label" data-i18n="card.cashflow">Indicative APR</div>
-                        <div class="cc-metric-value" data-i18n="card4.apr">12–14%</div>
+                        <div class="cc-metric-value" id="apr-defitea">12–14%</div>
                     </div>
                 </div>
                 <div class="cc-perf">
@@ -2402,6 +2445,23 @@ const COMPANY_BOOK = {
     ]
 };
 
+/* Keep collection-card APR and Passport/Productivity on the same source of truth. */
+function syncCompanyAprDisplays(lang) {
+    if (!INDEX_STATE) return;
+    const ids = {
+        '05081966.eth': 'apr-05081966',
+        'YieldRing.eth': 'apr-yieldring',
+        'dinaz.eth': 'apr-dinaz',
+        'defitea.eth': 'apr-defitea'
+    };
+    INDEX_STATE.forEach(c => {
+        const el = document.getElementById(ids[c.nm]);
+        if (!el) return;
+        const display = c.aprDisplay && (c.aprDisplay[lang] || c.aprDisplay.en);
+        el.textContent = display || (((c.aprNumeric ?? c.apr ?? 0)).toFixed(1) + '%');
+    });
+}
+
 function bookFigures(nm, prices) {
     const pos = COMPANY_BOOK[nm] || [];
     let value = 0, cost = 0;
@@ -2445,7 +2505,7 @@ const PERF_CONF_DAYS = 365;  // a full year of history before Performance counts
 const IDX_FACTORS = [
     { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },
     { key: 'longevity',    weight: 0.25, raw: c => Math.sqrt(Math.min(ageDays(c.foundedISO), AGE_CAP_DAYS) / AGE_CAP_DAYS) },
-    { key: 'productivity', weight: 0.20, raw: c => Math.sqrt(Math.min(Math.max(c.apr || 0, 0), APR_CAP_PCT) / APR_CAP_PCT) },
+    { key: 'productivity', weight: 0.20, raw: c => Math.sqrt(Math.min(Math.max(c.aprNumeric ?? c.apr ?? 0, 0), APR_CAP_PCT) / APR_CAP_PCT) },
     /* Performance — symmetric around zero, so a loss genuinely lowers the score.
          Rc       = clamp(return, ±50%)
          signed   = sign(Rc) · √(|Rc| / 50%)          extremes cannot dominate
@@ -2682,7 +2742,8 @@ function renderIndex(lang) {
                 productivity:'Производительность', capNote:'Живой ончейн-TVL',
                 lonNote:'в работе', sigCap:'Сигнатура компании',
                 axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.', axF:'РЕЗУЛЬТАТ',
-                perfFactor:'Результат', perfPeriod:'Период результата', sinceInception:'С момента запуска' }
+                perfFactor:'Результат', perfPeriod:'Период результата', sinceInception:'С момента запуска',
+                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', performance:'Performance', operatingHistory:'История работы' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', custody:'Custody', custodyVal:'Self-Custodied',
                 protocols:'Protocols', status:'Status', explore:'Explore Company', days:'days',
@@ -2692,7 +2753,8 @@ function renderIndex(lang) {
                 productivity:'Productivity', capNote:'Live onchain TVL',
                 lonNote:'operating', sigCap:'Company signature',
                 axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY', axF:'PERFORMANCE',
-                perfFactor:'Performance', perfPeriod:'Performance Period', sinceInception:'Since inception' };
+                perfFactor:'Performance', perfPeriod:'Performance Period', sinceInception:'Since inception',
+                companyTVL:'Company TVL', indicativeApr:'Indicative APR', performance:'Performance', operatingHistory:'Operating History' };
         const wfld = (label, value, active) =>
             '<div class="ipx-field"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
@@ -2700,6 +2762,9 @@ function renderIndex(lang) {
         const fld = (label, value, cls) =>
             '<div class="ipx-field"><span class="ipx-label">' + label + '</span>'
             + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
+        const econ = (label, value, cls, attrs) =>
+            '<div class="ipx-economic-item"><div class="ipx-economic-label">' + label + '</div>'
+            + '<div class="ipx-economic-value' + (cls ? ' ' + cls : '') + '"' + (attrs ? ' ' + attrs : '') + '>' + value + '</div></div>';
         const chev = '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         const arr  = '<svg viewBox="0 0 16 16" fill="none" width="12" height="12"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         // four-corner company signature — a restrained diamond, not a radar dial
@@ -2767,11 +2832,15 @@ function renderIndex(lang) {
                 +   '<span class="ib-chev">' + chev + '</span>'
                 + '</div>'
                 + '<div class="ib-passport"><div class="ipx-inner">'
+                +   '<div class="ipx-economic">'
+                +     econ(L.companyTVL, c.val > 0 ? money(c.val) : 'Live', 'gold')
+                +     econ(L.indicativeApr, c.aprDisplay ? c.aprDisplay[lang] : ((c.aprNumeric ?? c.apr ?? 0).toFixed(1) + '%'), 'apr')
+                +     econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : '—')
+                +     econ(L.operatingHistory, ageVal, 'age ipx-age', 'data-founded="' + c.foundedISO + '"')
+                +   '</div>'
                 +   '<div class="ipx-grid">'
                 +     fld(L.registry, c.reg)
                 +     fld(L.founded, c.founded[lang])
-                +     '<div class="ipx-field"><span class="ipx-label">' + L.age + '</span>'
-                +       '<span class="ipx-value ipx-age" data-founded="' + c.foundedISO + '">' + ageVal + '</span></div>'
                 +     wfld(L.weight, ((c.weight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'composite')
                 +     wfld(L.tvlWeight, ((c.tvlWeight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'tvl')
                 +     fld(L.arch, c.arch[lang])
@@ -2796,7 +2865,7 @@ function renderIndex(lang) {
                 +         '<span class="ipx-c-total">' + ((c.weight || 0) * 100).toFixed(1) + '%</span></div>'
                 +       factor('f-cap', L.capital, '35%', c.score.capital || 0, L.capNote + ' \u00b7 ' + (c.val > 0 ? money(c.val) : 'Live'))
                 +       factor('f-lon', L.longevity, '25%', c.score.longevity || 0, ageVal + ' ' + L.lonNote)
-                +       factor('f-pro', L.productivity, '20%', c.score.productivity || 0, c.aprLabel ? c.aprLabel[lang] : '\u2014')
+                +       factor('f-pro', L.productivity, '20%', c.score.productivity || 0, c.aprDisplay ? c.aprDisplay[lang] : '\u2014')
                 +       factor('f-perf', L.perfFactor, '20%', c.score.performance || 0, (c.cost > 0 ? fmtPct(c.pct) + ' \u00b7 ' : '') + L.sinceInception)
                 +     '</div>'
                 +     '<div class="ipx-c-sig">' + sig(c) + '</div>'
@@ -3332,20 +3401,25 @@ function renderFramework(lang) {
     // Feed the live index with real per-company values
     // Adding a company: append an entry here AND to MEMBERSHIP inside buildGraph().
     // Index weights, ranking, node sizes and the capital map all re-derive from this.
+    /* APR V1 — one source of truth.
+       aprNumeric feeds Productivity; aprDisplay feeds cards + Company Passport.
+       The metadata fields are intentionally present now so a future API/onchain
+       source can replace `manual` without changing the UI or Composite logic. */
     INDEX_STATE = [
         { nm: 'defitea.eth',   val: tvl4, cost: F4.cost, pnl: F4.pnl, pct: F4.pct, href: 'https://theholding.ai/defitea/',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jan 2025', ru: 'Янв 2025' },
-          reg:'004', apr:13, aprLabel:{ en:'12–14% indicative APR', ru:'12–14% ориентировочный APR' }, foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'Holding Native', ru:'Нативная The Holding' }, protocols:11, status:{ en:'Productive', ru:'Активна' } },
+          reg:'004', aprNumeric:13, aprDisplay:{ en:'12–14%', ru:'12–14%' }, aprSource:'manual', aprUpdatedAt:null, aprPeriod:'current-indicative', foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'Holding Native', ru:'Нативная The Holding' }, protocols:11, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'YieldRing.eth', val: tvl2, cost: F2.cost, pnl: F2.pnl, pct: F2.pct, href: 'https://theholding.ai/yieldring',
           cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'002', apr:11, aprLabel:{ en:'~10–12% indicative APR', ru:'~10–12% ориентировочный APR' }, foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'Holding Standard', ru:'Стандарт Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
+          reg:'002', aprNumeric:11, aprDisplay:{ en:'~10–12%', ru:'~10–12%' }, aprSource:'manual', aprUpdatedAt:null, aprPeriod:'current-indicative', foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'Holding Standard', ru:'Стандарт Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
         { nm: '05081966.eth',  val: tvl1, cost: F1.cost, pnl: F1.pnl, pct: F1.pct, href: 'https://theholding.ai/05081966',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'001', apr:6,  aprLabel:{ en:'4–8+% indicative APR', ru:'4–8+% ориентировочный APR' }, foundedISO:'2026-07-17', founded:{ en:'Jul 17, 2026', ru:'17 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
+          reg:'001', aprNumeric:6, aprDisplay:{ en:'4–8+%', ru:'4–8+%' }, aprSource:'manual', aprUpdatedAt:null, aprPeriod:'current-indicative', foundedISO:'2026-07-17', founded:{ en:'Jul 17, 2026', ru:'17 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'dinaz.eth',     val: tvl3, cost: F3.cost, pnl: F3.pnl, pct: F3.pct, href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'003', apr:15, aprLabel:{ en:'10–20%+ indicative APR', ru:'10–20%+ ориентировочный APR' }, foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } }
+          reg:'003', aprNumeric:15, aprDisplay:{ en:'10–20%+ Variable', ru:'10–20%+ Плавающий' }, aprSource:'manual', aprUpdatedAt:null, aprPeriod:'current-indicative', foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } }
     ];
+    syncCompanyAprDisplays(idxLang());
     renderIndex(idxLang());
     buildGraph();
 })();
@@ -3466,10 +3540,8 @@ function renderFramework(lang) {
             'card2.sub': 'A Bitcoin-backed company held through a Tangem Ring. A BTC reserve, borrowed liquidity, and three yield engines.',
             'card3.founded': 'Est. Jul 22, 2026',
             'card3.sub': 'A Bitcoin-backed company built on Yield Basis — leveraged liquidity designed to maintain full BTC exposure while generating onchain yield.',
-            'card3.apr': '10–20%+ Variable',
             'card4.founded': 'Est. Jan 3, 2025',
             'card4.sub': 'One of The Holding’s core onchain companies — a diversified system of long-term DeFi positions designed to generate durable cash flow onchain.',
-            'card4.apr': '12–14%',
             'card.tvl': 'Company TVL',
             'card.cashflow': 'Indicative APR',
             'card.explore': 'Explore Company',
@@ -3559,10 +3631,8 @@ function renderFramework(lang) {
             'card2.sub': 'Компания на обеспечении биткоином, доступ через кольцо Tangem. BTC-резерв, заёмная ликвидность и три доходных двигателя.',
             'card3.founded': 'Осн. 22 июля 2026',
             'card3.sub': 'Биткоин-компания на базе Yield Basis — ликвидность с плечом, созданная для сохранения полной экспозиции на BTC и генерации ончейн-доходности.',
-            'card3.apr': '10–20%+ Плавающий',
             'card4.founded': 'Осн. 3 января 2025',
             'card4.sub': 'Одна из ключевых ончейн-компаний The Holding — диверсифицированная система долгосрочных DeFi-позиций, созданная для устойчивой генерации денежного потока ончейн.',
-            'card4.apr': '12–14%',
             'card.tvl': 'TVL компании',
             'card.cashflow': 'Ориентировочный APR',
             'card.explore': 'Перейти к компании',
@@ -3649,6 +3719,7 @@ function renderFramework(lang) {
             const key = el.getAttribute('data-i18n-html');
             if (I18N[lang][key] !== undefined) el.innerHTML = I18N[lang][key];
         });
+        syncCompanyAprDisplays(lang);
         document.documentElement.lang = lang;
         document.documentElement.classList.toggle('is-ru', lang === 'ru');
         if (document.body) document.body.classList.toggle('is-ru', lang === 'ru');
