@@ -1995,7 +1995,7 @@
                 </div>
                 <div class="hero-metrics">
                     <div class="hero-metric">
-                        <div class="hero-metric-value" data-tvl="defitea">$8,000</div>
+                        <div class="hero-metric-value" data-tvl="defitea" data-th-report-fund="defitea.eth" data-th-report="latest-tvl">$8,000</div>
                         <div class="hero-metric-label">Total Position Value</div>
                     </div>
                     <div class="hero-metric">
@@ -2233,7 +2233,7 @@
             
             <div class="philosophy-stats">
                 <div class="stat-item">
-                    <span class="stat-number" data-tvl-perf="defitea">$8,000</span>
+                    <span class="stat-number" data-tvl-perf="defitea" data-th-report-fund="defitea.eth" data-th-report="latest-tvl">$8,000</span>
                     <span class="stat-label">Total Position Value</span>
                 </div>
                 <div class="stat-divider"></div>
@@ -2255,80 +2255,32 @@
             <h2 class="chart-heading sr-fade-up">Monthly Cash-Flow Performance</h2>
             <p class="chart-sub sr-fade-up sr-d1">Monthly cash-flow yield · 2026</p>
 
-            <div class="yield-chart-wrap sr-fade-up sr-d1">
+            <div class="yield-chart-wrap sr-fade-up sr-d1" id="defitea-monthly-chart">
+                <!-- Fallback history; replaced automatically from /reporting/reporting-data.json -->
                 <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block;">
-                    <defs>
-                        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#4ade80" stop-opacity="0.22"/>
-                            <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
-                        </linearGradient>
-                    </defs>
-                    <!-- Grid lines -->
-                    <line x1="38" y1="28"  x2="484" y2="28"  stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                    <line x1="38" y1="106" x2="484" y2="106" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                    <line x1="38" y1="184" x2="484" y2="184" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                    <!-- Y labels -->
-                    <text x="34" y="31"  fill="rgba(255,255,255,0.2)" font-size="9" text-anchor="end" font-family="Space Grotesk,sans-serif">1.84%</text>
-                    <text x="34" y="109" fill="rgba(255,255,255,0.2)" font-size="9" text-anchor="end" font-family="Space Grotesk,sans-serif">0.92%</text>
-                    <text x="34" y="187" fill="rgba(255,255,255,0.2)" font-size="9" text-anchor="end" font-family="Space Grotesk,sans-serif">0.00%</text>
-                    <!-- Gradient fill -->
-                    <polygon
-                        points="38,184 38,70 112,28 187,98 261,118 335,98 410,73 484,114 484,184"
-                        fill="url(#chartGrad)"/>
-                    <!-- Line -->
-                    <polyline
-                        points="38,70 112,28 187,98 261,118 335,98 410,73 484,114"
-                        fill="none"
-                        stroke="#4ade80"
-                        stroke-width="2.5"
-                        stroke-linejoin="round"
-                        stroke-linecap="round"/>
-                    <!-- Dots -->
-                    <circle cx="38"  cy="70"  r="4" fill="#4ade80" stroke="#09090a" stroke-width="2"/>
-                    <circle cx="112" cy="28"  r="4" fill="#4ade80" stroke="#09090a" stroke-width="2"/>
-                    <circle cx="187" cy="98"  r="4" fill="#4ade80" stroke="#09090a" stroke-width="2"/>
-                    <circle cx="261" cy="118" r="4" fill="#4ade80" stroke="#09090a" stroke-width="2"/>
-                    <circle cx="335" cy="98"  r="4" fill="#4ade80" stroke="#09090a" stroke-width="2"/>
-                    <circle cx="410" cy="73"  r="4" fill="#4ade80" stroke="#09090a" stroke-width="2"/>
-                    <circle cx="484" cy="114" r="4" fill="#4ade80" stroke="#09090a" stroke-width="2"/>
-                    <!-- Value labels -->
-                    <text x="38"  y="60"  fill="rgba(255,255,255,0.75)" font-size="10" text-anchor="middle" font-family="Space Grotesk,sans-serif">+1.34%</text>
-                    <text x="112" y="18"  fill="rgba(255,255,255,0.75)" font-size="10" text-anchor="middle" font-family="Space Grotesk,sans-serif">+1.84%</text>
-                    <text x="187" y="88"  fill="rgba(255,255,255,0.75)" font-size="10" text-anchor="middle" font-family="Space Grotesk,sans-serif">+1.02%</text>
-                    <text x="261" y="108" fill="rgba(255,255,255,0.75)" font-size="10" text-anchor="middle" font-family="Space Grotesk,sans-serif">+0.78%</text>
-                    <text x="335" y="88"  fill="rgba(255,255,255,0.75)" font-size="10" text-anchor="middle" font-family="Space Grotesk,sans-serif">+1.01%</text>
-                    <text x="410" y="63"  fill="rgba(255,255,255,0.75)" font-size="10" text-anchor="middle" font-family="Space Grotesk,sans-serif">+1.31%</text>
-                    <text x="484" y="104" fill="rgba(255,255,255,0.75)" font-size="10" text-anchor="middle" font-family="Space Grotesk,sans-serif">+0.82%</text>
-                    <!-- Month labels -->
-                    <text x="38"  y="198" fill="rgba(255,255,255,0.3)" font-size="9" text-anchor="middle" font-family="Space Grotesk,sans-serif" letter-spacing="1">JAN</text>
-                    <text x="112" y="198" fill="rgba(255,255,255,0.3)" font-size="9" text-anchor="middle" font-family="Space Grotesk,sans-serif" letter-spacing="1">FEB</text>
-                    <text x="187" y="198" fill="rgba(255,255,255,0.3)" font-size="9" text-anchor="middle" font-family="Space Grotesk,sans-serif" letter-spacing="1">MAR</text>
-                    <text x="261" y="198" fill="rgba(255,255,255,0.3)" font-size="9" text-anchor="middle" font-family="Space Grotesk,sans-serif" letter-spacing="1">APR</text>
-                    <text x="335" y="198" fill="rgba(255,255,255,0.3)" font-size="9" text-anchor="middle" font-family="Space Grotesk,sans-serif" letter-spacing="1">MAY</text>
-                    <text x="410" y="198" fill="rgba(255,255,255,0.3)" font-size="9" text-anchor="middle" font-family="Space Grotesk,sans-serif" letter-spacing="1">JUN</text>
-                    <text x="484" y="198" fill="rgba(255,255,255,0.3)" font-size="9" text-anchor="middle" font-family="Space Grotesk,sans-serif" letter-spacing="1">JUL</text>
+                    <polyline points="38,70 112,28 187,98 261,118 335,98 410,73 484,114" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
                 </svg>
             </div>
 
             <div class="chart-kpi-row sr-fade-up sr-d2">
                 <div class="chart-kpi">
-                    <span class="chart-kpi-val">$284.55</span>
+                    <span class="chart-kpi-val" id="defitea-report-ytd-cashflow">$284.55</span>
                     <span class="chart-kpi-lbl">YTD Cash Flow</span>
                 </div>
                 <div class="chart-kpi">
-                    <span class="chart-kpi-val">+8.12%</span>
+                    <span class="chart-kpi-val" id="defitea-report-ytd-yield">+8.12%</span>
                     <span class="chart-kpi-lbl">YTD Cash-Flow Yield</span>
                 </div>
                 <div class="chart-kpi">
-                    <span class="chart-kpi-val">+1.84%</span>
+                    <span class="chart-kpi-val" id="defitea-report-best-month">+1.84%</span>
                     <span class="chart-kpi-lbl">Best Month</span>
                 </div>
                 <div class="chart-kpi">
                     <span class="chart-kpi-val" id="chart-apy-kpi">~13.9%</span>
-                    <span class="chart-kpi-lbl">Realised Annualised APR</span>
+                    <span class="chart-kpi-lbl">Annualised Cash-Flow APR</span>
                 </div>
             </div>
-            <p class="chart-disclaimer sr-fade-up sr-d3">Based on realised Jan–Jul 2026 cash flow · Simple annualisation · No compounding</p>
+            <p class="chart-disclaimer sr-fade-up sr-d3" id="defitea-report-note">Jan–Jul 2026 reported history · automated daily reference-model tracking starts Aug 2026 · current month remains provisional until month close</p>
         </div>
     </section>
 
@@ -2460,130 +2412,7 @@
         </div>
     </section>
 
-    <script>
-        // TVL fetch from main site
-        // Holdings data
-        const defiteaHoldings = {
-            aero: 2440,
-            cvx: 1333,
-            crv: 4125,
-            pendle: 500,
-            fxn: 59.81,
-            yb: 10846,
-            fxs: 4224,
-            velo: 12180,
-            vvv: 50,          // Venice
-            lqty: 1488,       // Liquity
-            rsup: 3682,       // Resupply
-            clev: 20          // CLever
-        };
-
-        const FIXED_FXN_VALUE = 680;
-        const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
-
-        // ── Shared CoinGecko price cache (cross-page, TTL-based) ──
-        // Same store key as other pages, so prices are shared site-wide.
-        // Within TTL, refreshes and page-to-page navigation cost ZERO calls.
-        const CG_CACHE_KEY = 'th_cg_prices_v1';
-        const CG_TTL_MIN   = 30;
-        async function cgPrices(ids) {
-            const now = Date.now();
-            let store = { ts: 0, prices: {} };
-            try { store = JSON.parse(localStorage.getItem(CG_CACHE_KEY)) || store; } catch (e) {}
-            const fresh   = store.ts && (now - store.ts < CG_TTL_MIN * 60 * 1000);
-            const have    = store.prices || {};
-            const missing = ids.filter(id => !(id in have));
-            if (fresh && missing.length === 0) return have;   // fully cached → no call
-            try {
-                const url = 'https://api.coingecko.com/api/v3/simple/price?ids='
-                          + ids.join(',') + '&vs_currencies=usd&x_cg_demo_api_key=' + API_KEY;
-                const res = await fetch(url);
-                if (!res.ok) return have;
-                const p = await res.json();
-                const merged = fresh ? { ...have } : {};
-                for (const id in p) merged[id] = p[id].usd;
-                // record every requested id (0 if unpriced) so unpriced
-                // tokens don't force a fresh fetch on every reload
-                for (const id of ids) if (!(id in merged)) merged[id] = 0;
-                try { localStorage.setItem(CG_CACHE_KEY, JSON.stringify({ ts: now, prices: merged })); } catch (e) {}
-                return merged;
-            } catch (e) { return have; }
-        }
-
-        // Update TVL — reads from the shared cross-page price cache
-        async function updateTVL() {
-            try {
-                const ids = ['aerodrome-finance','convex-finance','curve-dao-token','pendle',
-                             'yield-basis','frax-share','velodrome-finance','venice-token',
-                             'liquity','resupply','clever'];
-                const prices = await cgPrices(ids);
-                if (!prices || Object.keys(prices).length === 0) return;
-                const usd = id => (prices[id] || 0);
-
-                const defiteaTVL =
-                      defiteaHoldings.aero   * usd('aerodrome-finance')
-                    + defiteaHoldings.cvx    * usd('convex-finance')
-                    + defiteaHoldings.crv    * usd('curve-dao-token')
-                    + defiteaHoldings.pendle * usd('pendle')
-                    + FIXED_FXN_VALUE
-                    + defiteaHoldings.yb     * usd('yield-basis')
-                    + defiteaHoldings.fxs    * usd('frax-share')
-                    + defiteaHoldings.velo   * usd('velodrome-finance')
-                    + defiteaHoldings.vvv    * usd('venice-token')
-                    + defiteaHoldings.lqty   * usd('liquity')
-                    + defiteaHoldings.rsup   * usd('resupply')
-                    + defiteaHoldings.clev   * usd('clever');
-
-                document.querySelectorAll('[data-tvl="defitea"], [data-tvl-perf="defitea"]').forEach(el => {
-                    el.textContent = `$${Math.round(defiteaTVL).toLocaleString()}`;
-                });
-            } catch (error) {
-                console.error('TVL update failed:', error);
-            }
-        }
-
-        // Smart TVL update system with Visibility API
-        // Reduces API calls: updates only when tab is active, every 5 minutes
-        let tvlUpdateInterval;
-        
-        function startTVLUpdates() {
-            // Clear any existing interval
-            if (tvlUpdateInterval) {
-                clearInterval(tvlUpdateInterval);
-            }
-            
-            // Immediate update
-            updateTVL();
-            
-            // Then update every 30 minutes (1800000ms) — economical; shared cache covers reloads/navigation
-            // Was 60 seconds (60000ms) → 5x reduction in API calls
-            tvlUpdateInterval = setInterval(updateTVL, 1800000);
-            
-            console.log('Defitea TVL auto-update started: every 30 minutes');
-        }
-        
-        function stopTVLUpdates() {
-            if (tvlUpdateInterval) {
-                clearInterval(tvlUpdateInterval);
-                tvlUpdateInterval = null;
-                console.log('Defitea TVL auto-update paused (tab inactive)');
-            }
-        }
-        
-        // Start updates on page load
-        startTVLUpdates();
-        
-        // Pause updates when tab is hidden, resume when visible
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                // Tab is inactive → stop updates to save API calls
-                stopTVLUpdates();
-            } else {
-                // Tab is active → resume updates
-                startTVLUpdates();
-            }
-        });
-    </script>
+    <!-- Defitea TVL is rendered from the central Reporting Layer daily snapshot. -->
 
     <!-- Footer -->
     <footer class="site-footer">
@@ -2614,19 +2443,93 @@
     }
 </script>
 
-    <!-- The Holding Productivity Intelligence Layer · shared read-only UI client -->
+    <!-- The Holding Productivity Intelligence + Reporting Layers · shared read-only UI client -->
     <script src="/companies/productivity-intelligence.js"></script>
     <script>
     (function () {
+        function monthShort(key) {
+            var m = Number(String(key || '').slice(5, 7));
+            return ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][m - 1] || '';
+        }
+
+        function renderDefiteaMonthlyChart(fund) {
+            var wrap = document.getElementById('defitea-monthly-chart');
+            if (!wrap || !fund || !fund.months) return;
+            var months = Object.values(fund.months)
+                .filter(function (m) { return m && /^2026-/.test(m.month) && Number.isFinite(Number(m.monthlyYieldPct)); })
+                .sort(function (a,b) { return a.month.localeCompare(b.month); });
+            if (!months.length) return;
+
+            var W = 600, H = 220, left = 44, right = 18, top = 28, bottom = 30;
+            var plotW = W - left - right, plotH = H - top - bottom;
+            var maxYield = Math.max(2, Math.ceil(Math.max.apply(null, months.map(function (m) { return Number(m.monthlyYieldPct); })) * 4) / 4);
+            var x = function (i) { return months.length === 1 ? left + plotW / 2 : left + (plotW * i / (months.length - 1)); };
+            var y = function (v) { return top + plotH - (Number(v) / maxYield) * plotH; };
+            var points = months.map(function (m,i) { return x(i).toFixed(1) + ',' + y(m.monthlyYieldPct).toFixed(1); }).join(' ');
+            var area = left + ',' + (top + plotH) + ' ' + points + ' ' + (left + plotW) + ',' + (top + plotH);
+            var mid = maxYield / 2;
+
+            var labels = months.map(function (m,i) {
+                var provisional = m.status === 'provisional';
+                var px = x(i), py = y(m.monthlyYieldPct);
+                return '<circle cx="'+px+'" cy="'+py+'" r="4" fill="#4ade80" stroke="#09090a" stroke-width="2" opacity="'+(provisional ? '0.65' : '1')+'"/>' +
+                    '<text x="'+px+'" y="'+Math.max(12, py - 10)+'" fill="rgba(255,255,255,'+(provisional ? '0.52' : '0.75')+')" font-size="10" text-anchor="middle" font-family="Space Grotesk,sans-serif">+'+Number(m.monthlyYieldPct).toFixed(2)+'%'+(provisional ? '*' : '')+'</text>' +
+                    '<text x="'+px+'" y="'+(H - 4)+'" fill="rgba(255,255,255,0.3)" font-size="9" text-anchor="middle" font-family="Space Grotesk,sans-serif" letter-spacing="1">'+monthShort(m.month)+(provisional ? '*' : '')+'</text>';
+            }).join('');
+
+            wrap.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block;">' +
+                '<defs><linearGradient id="chartGradAuto" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4ade80" stop-opacity="0.22"/><stop offset="100%" stop-color="#4ade80" stop-opacity="0"/></linearGradient></defs>' +
+                '<line x1="'+left+'" y1="'+top+'" x2="'+(left+plotW)+'" y2="'+top+'" stroke="rgba(255,255,255,0.06)"/>' +
+                '<line x1="'+left+'" y1="'+y(mid)+'" x2="'+(left+plotW)+'" y2="'+y(mid)+'" stroke="rgba(255,255,255,0.06)"/>' +
+                '<line x1="'+left+'" y1="'+(top+plotH)+'" x2="'+(left+plotW)+'" y2="'+(top+plotH)+'" stroke="rgba(255,255,255,0.06)"/>' +
+                '<text x="'+(left-6)+'" y="'+(top+3)+'" fill="rgba(255,255,255,0.2)" font-size="9" text-anchor="end" font-family="Space Grotesk,sans-serif">'+maxYield.toFixed(2)+'%</text>' +
+                '<text x="'+(left-6)+'" y="'+(y(mid)+3)+'" fill="rgba(255,255,255,0.2)" font-size="9" text-anchor="end" font-family="Space Grotesk,sans-serif">'+mid.toFixed(2)+'%</text>' +
+                '<text x="'+(left-6)+'" y="'+(top+plotH+3)+'" fill="rgba(255,255,255,0.2)" font-size="9" text-anchor="end" font-family="Space Grotesk,sans-serif">0.00%</text>' +
+                '<polygon points="'+area+'" fill="url(#chartGradAuto)"/>' +
+                '<polyline points="'+points+'" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' +
+                labels + '</svg>';
+        }
+
+        function syncReporting(reporting) {
+            if (!reporting || !window.THProductivity) return;
+            var fund = window.THProductivity.getFundReporting('defitea.eth', reporting);
+            if (!fund) return;
+
+            if (fund.latestSnapshot && Number.isFinite(Number(fund.latestSnapshot.totalValueUsd))) {
+                var tvl = '$' + Math.round(Number(fund.latestSnapshot.totalValueUsd)).toLocaleString('en-US');
+                document.querySelectorAll('[data-tvl="defitea"], [data-tvl-perf="defitea"]').forEach(function (el) { el.textContent = tvl; });
+            }
+
+            var summary = window.THProductivity.getReportingSummary('defitea.eth', 2026, reporting);
+            if (summary) {
+                var estimated = Boolean(summary.ytdCashFlowEstimated);
+                var cash = document.getElementById('defitea-report-ytd-cashflow');
+                var yieldEl = document.getElementById('defitea-report-ytd-yield');
+                var best = document.getElementById('defitea-report-best-month');
+                var apr = document.getElementById('chart-apy-kpi');
+                if (cash) cash.textContent = window.THProductivity.formatMoney(summary.ytdCashFlowUsd, { digits:2, approximate:estimated });
+                if (yieldEl) yieldEl.textContent = window.THProductivity.formatPercent(summary.ytdCashFlowYieldPct, { digits:2, sign:true });
+                if (best) best.textContent = window.THProductivity.formatPercent(summary.bestMonthYieldPct, { digits:2, sign:true });
+                if (apr) apr.textContent = window.THProductivity.formatPercent(summary.annualizedCashFlowAprPct, { digits:1, approximate:true });
+            }
+
+            renderDefiteaMonthlyChart(fund);
+            var note = document.getElementById('defitea-report-note');
+            var current = fund.months && Object.values(fund.months).find(function (m) { return m.status === 'provisional'; });
+            if (note && current) {
+                note.textContent = 'Closed months feed the historical KPIs · ' + current.label + ' is live and provisional · automated reference model from daily TVL + validated Reference APR · no compounding';
+            }
+        }
+
         async function syncDefiteaProductivity() {
             if (!window.THProductivity) return;
-            const protocolResult = await window.THProductivity.bindProtocolAprs(document);
-            const companyResult  = await window.THProductivity.bindCompanyAprs(document);
-            const snapshot = (companyResult && companyResult.snapshot) || (protocolResult && protocolResult.snapshot);
+            var protocolResult = await window.THProductivity.bindProtocolAprs(document);
+            var companyResult  = await window.THProductivity.bindCompanyAprs(document);
+            var snapshot = (companyResult && companyResult.snapshot) || (protocolResult && protocolResult.snapshot);
 
             if (snapshot) {
-                const live = window.THProductivity.resolveCompanyApr('defitea.eth', snapshot);
-                const currentOption = document.getElementById('calcApyCurrent');
+                var live = window.THProductivity.resolveCompanyApr('defitea.eth', snapshot);
+                var currentOption = document.getElementById('calcApyCurrent');
                 if (live && Number.isFinite(live.latest) && currentOption) {
                     currentOption.value = String(live.latest);
                     currentOption.textContent = 'Current Reference – ' + window.THProductivity.formatApr(live.latest, 1);
@@ -2635,9 +2538,15 @@
                 console.log('[Productivity Intelligence] Defitea:',
                     (protocolResult ? protocolResult.updated : 0) + '/11 protocol APRs · live fund APR synced');
             }
+
+            var reporting = await window.THProductivity.loadReporting();
+            if (reporting) {
+                syncReporting(reporting);
+                console.log('[Reporting Layer] Defitea daily TVL + monthly history synced');
+            }
         }
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', syncDefiteaProductivity, { once: true });
+            document.addEventListener('DOMContentLoaded', syncDefiteaProductivity, { once:true });
         } else {
             syncDefiteaProductivity();
         }
