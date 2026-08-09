@@ -571,6 +571,38 @@
             font-weight: 300;
         }
 
+
+
+        /* Reporting Layer state */
+        .report-mode-badge {
+            display: inline-block;
+            margin-left: 0.55rem;
+            padding: 0.18rem 0.42rem;
+            border: 1px solid var(--border-mid);
+            border-radius: 2px;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            vertical-align: middle;
+        }
+        .report-mode-badge.live {
+            color: var(--green);
+            border-color: rgba(74,222,128,0.28);
+            background: var(--green-dim);
+        }
+        .row-provisional { opacity: 0.82; }
+        .row-reference .td-num::before { content: '~'; }
+        .reporting-status-line {
+            margin: -2.5rem 0 3.5rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.07em;
+            color: var(--text-faint);
+            line-height: 1.7;
+        }
+
         /* Chart area */
         .dr-chart-section {
             margin-bottom: 5rem;
@@ -1165,11 +1197,7 @@
             <h1 class="hero-title">Yield<br><em>Reports</em></h1>
 
             <p class="hero-desc">
-                The Holding operates dedicated income-generating funds — engines that produce 
-                real cash-flow from DeFi yield, vote-escrowed governance rewards, stablecoin 
-                strategies, and tokenised real-world assets. These reports document that 
-                cash-flow: not price appreciation, not paper gains — actual income, denominated 
-                in dollars, produced every month across market cycles.
+                The Holding operates dedicated income-generating funds that turn onchain economic activity into recurring cash flow. Jan–Jul 2026 preserve the original reported Defitea history. From the automated tracking start, the Reporting Layer adds a live monthly reference model built from time-weighted productive TVL and validated Reference APR — while keeping price appreciation separate.
             </p>
         </div>
     </section>
@@ -1206,7 +1234,7 @@
                     <div class="phil-principle">
                         <div class="pp-num">02</div>
                         <div class="pp-title">Cash-flow, not price</div>
-                        <div class="pp-text">Reports track income generated — not asset appreciation. The underlying holdings appreciate separately; this page is about yield.</div>
+                        <div class="pp-text">Reported months track realised income. Automated periods model cash-flow capacity from productive TVL and validated Reference APR. Asset-price performance remains separate.</div>
                     </div>
                     <div class="phil-principle">
                         <div class="pp-num">03</div>
@@ -1216,7 +1244,7 @@
                     <div class="phil-principle">
                         <div class="pp-num">04</div>
                         <div class="pp-title">Approximate figures</div>
-                        <div class="pp-text">TVL fluctuates in real-time as underlying assets change in value. Yield percentages are approximate representations of monthly performance.</div>
+                        <div class="pp-text">TVL changes with underlying asset prices. Automated months use daily TVL snapshots and remain provisional until the next month begins.</div>
                     </div>
                 </div>
             </div>
@@ -1340,25 +1368,26 @@
             <div class="dr-kpis reveal">
                 <div class="kpi-card">
                     <div class="kpi-label">YTD Cash Flow</div>
-                    <div class="kpi-value green">$284.55</div>
-                    <div class="kpi-sub">Jan – Jul 2026</div>
+                    <div class="kpi-value green" id="report-ytd-cashflow">$284.55</div>
+                    <div class="kpi-sub" id="report-ytd-period">Jan – Jul 2026</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">YTD Cash-Flow Yield</div>
-                    <div class="kpi-value green">+8.12%</div>
-                    <div class="kpi-sub">7 months cumulative</div>
+                    <div class="kpi-value green" id="report-ytd-yield">+8.12%</div>
+                    <div class="kpi-sub" id="report-ytd-months">7 closed months</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">Best Month</div>
-                    <div class="kpi-value">+1.84%</div>
-                    <div class="kpi-sub">February 2026</div>
+                    <div class="kpi-value" id="report-best-yield">+1.84%</div>
+                    <div class="kpi-sub" id="report-best-month">February 2026</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-label">Realised Annualised APR</div>
-                    <div class="kpi-value">~13.9%</div>
-                    <div class="kpi-sub">Jan–Jul monthly cash-flow avg × 12</div>
+                    <div class="kpi-label">Annualised Cash-Flow APR</div>
+                    <div class="kpi-value" id="report-annualized-apr">~13.9%</div>
+                    <div class="kpi-sub" id="report-apr-note">Closed-month average × 12</div>
                 </div>
             </div>
+            <div class="reporting-status-line" id="reporting-status-line">Jan–Jul 2026 · reported history · automated daily tracking begins with the Reporting Layer</div>
 
             <!-- Bar Chart -->
             <div class="dr-chart-section reveal">
@@ -1542,7 +1571,7 @@
                 </div>
 
                 <div class="report-disclaimer">
-                    <p>All figures are approximate. Monthly cash-flow yield is calculated as cash flow received during the month divided by average capital during the month. Annualised APR is the average monthly cash-flow yield multiplied by twelve — a simple annualisation with no compounding. Cash flow is reported separately from asset-price performance; the strategies remain exposed to market, protocol, liquidity, and asset-specific risks. Past performance does not guarantee future results. The Current Reference APR shown above is a separate live productivity snapshot from the Productivity Intelligence Layer and should not be confused with realised monthly cash-flow APR.</p>
+                    <p>Jan–Jul 2026 preserve the original reported Defitea cash-flow history. Automated periods are generated by The Holding Reporting Layer from daily productive TVL snapshots and the latest validated Reference APR. Those automated values are a reference cash-flow model, not claim accounting, and the current month remains provisional until the first daily snapshot of the next month closes it. Monthly yield is cash flow divided by average capital; closed-month annualised APR is the average monthly yield multiplied by twelve, with no compounding. Asset-price performance remains separate. Past performance does not guarantee future results.</p>
                 </div>
 
                 <a href="https://docs.google.com/spreadsheets/d/1SfnnAvIiBRI7I83WyIvc-nH_sWjJA5h53AGHzrmCRp8/edit?usp=sharing" 
@@ -1642,14 +1671,137 @@
 
     <script src="/companies/productivity-intelligence.js"></script>
     <script>
-        // Live Reference APR comes from the same central snapshot used by Companies and Defitea.
+        // Live Reference APR + monthly Reporting Layer use the same central UI core.
         (function () {
+            function money(v, approximate) {
+                return window.THProductivity.formatMoney(v, { digits:2, approximate:Boolean(approximate) });
+            }
+            function pct(v, approximate) {
+                return window.THProductivity.formatPercent(v, { digits:2, sign:true, approximate:Boolean(approximate) });
+            }
+            function monthShort(key) {
+                var m = Number(String(key || '').slice(5,7));
+                return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] || '';
+            }
+            function monthLong(key) {
+                var y = Number(String(key || '').slice(0,4));
+                var m = Number(String(key || '').slice(5,7));
+                if (!y || !m) return key || '';
+                return new Intl.DateTimeFormat('en-US', { month:'long', year:'numeric', timeZone:'UTC' }).format(new Date(Date.UTC(y,m-1,1)));
+            }
+
+            function updateSummary(fund, year) {
+                var summary = window.THProductivity.getReportingSummary('defitea.eth', year, { funds:{ 'defitea.eth':fund } });
+                if (!summary) return;
+                var cash = document.getElementById('report-ytd-cashflow');
+                var yld = document.getElementById('report-ytd-yield');
+                var best = document.getElementById('report-best-yield');
+                var bestMonth = document.getElementById('report-best-month');
+                var apr = document.getElementById('report-annualized-apr');
+                var period = document.getElementById('report-ytd-period');
+                var months = document.getElementById('report-ytd-months');
+                var status = document.getElementById('reporting-status-line');
+
+                if (cash) cash.textContent = money(summary.ytdCashFlowUsd, summary.ytdCashFlowEstimated);
+                if (yld) yld.textContent = pct(summary.ytdCashFlowYieldPct, false);
+                if (best) best.textContent = pct(summary.bestMonthYieldPct, false);
+                if (bestMonth) bestMonth.textContent = summary.bestMonthLabel || '—';
+                if (apr) apr.textContent = window.THProductivity.formatPercent(summary.annualizedCashFlowAprPct, { digits:1, approximate:true });
+                if (period) period.textContent = summary.periodStart && summary.periodEnd ? monthShort(summary.periodStart) + ' – ' + monthShort(summary.periodEnd) + ' ' + year : String(year);
+                if (months) months.textContent = summary.closedMonths + ' closed month' + (summary.closedMonths === 1 ? '' : 's');
+
+                var current = summary.currentMonth && fund.months ? fund.months[summary.currentMonth] : null;
+                if (status) {
+                    if (current) {
+                        status.textContent = monthLong(current.month) + ' is live · ' + current.sampleDays + ' daily snapshot' + (current.sampleDays === 1 ? '' : 's') + ' · closes automatically next month';
+                    } else {
+                        status.textContent = 'Closed monthly history · daily Reporting Layer active';
+                    }
+                }
+            }
+
+            function renderDesktopChart(months) {
+                var chart = document.getElementById('barChart');
+                if (!chart) return;
+                var vals = months.map(function (m) { return Number(m.monthlyYieldPct); }).filter(Number.isFinite);
+                var maxPct = Math.max(2, Math.ceil((Math.max.apply(null, vals.concat([0])) || 1) * 4) / 4);
+                chart.innerHTML = months.map(function (m) {
+                    var v = Number(m.monthlyYieldPct) || 0;
+                    var h = Math.max(2, Math.min(100, v / maxPct * 100));
+                    var live = m.status === 'provisional';
+                    return '<div class="bar-item"><div class="bar-fill" data-pct="'+v+'" style="height:'+h+'%;opacity:'+(live ? '0.48' : '0.75')+'">' +
+                        '<span class="bar-pct">'+(live ? '~' : '')+v.toFixed(2)+'%</span>' +
+                        '<span class="bar-month">'+monthShort(m.month)+(live ? '*' : '')+'</span></div></div>';
+                }).join('');
+                var grid = document.getElementById('barGrid');
+                if (grid) grid.innerHTML = '';
+            }
+
+            function renderMobileChart(months) {
+                var mobile = document.getElementById('mobileChart');
+                if (!mobile) return;
+                var maxPct = Math.max.apply(null, months.map(function (m) { return Number(m.monthlyYieldPct) || 0; }).concat([1]));
+                mobile.innerHTML = months.map(function (m) {
+                    var v = Number(m.monthlyYieldPct) || 0;
+                    var live = m.status === 'provisional';
+                    var w = Math.max(2, v / maxPct * 100);
+                    return '<div class="mobile-bar-row" style="opacity:'+(live ? '0.72' : '1')+'">' +
+                        '<div class="mobile-bar-month">'+monthShort(m.month)+(live ? '*' : '')+'</div>' +
+                        '<div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:'+w+'%"></div></div>' +
+                        '<div class="mobile-bar-pct">'+(live ? '~' : '+')+v.toFixed(2)+'%</div></div>';
+                }).join('');
+            }
+
+            function renderTable(year, months) {
+                var tbody = document.getElementById('table-body-' + year);
+                if (!tbody) return;
+                if (!months.length) {
+                    tbody.innerHTML = '<tr><td class="td-month" colspan="5" style="text-align:center;padding:3rem 2rem;color:var(--text-faint);font-family:\'DM Mono\',monospace;font-size:0.78rem;letter-spacing:0.08em;">No reports yet.</td></tr>';
+                    return;
+                }
+                var rows = months.map(function (m) {
+                    var live = m.status === 'provisional';
+                    var reference = m.mode === 'reference-model';
+                    var badge = reference ? '<span class="report-mode-badge '+(live ? 'live' : '')+'">'+(live ? 'Live' : 'Auto')+'</span>' : '';
+                    var cash = Number(m.cashFlowUsd);
+                    var yld = Number(m.monthlyYieldPct);
+                    var apr = Number(m.annualizedAprPct);
+                    return '<tr class="'+(live ? 'row-provisional ' : '')+(reference ? 'row-reference' : '')+'">' +
+                        '<td class="td-month">'+monthLong(m.month).replace(' '+year,'')+badge+'</td>' +
+                        '<td class="td-num">$'+(Number.isFinite(cash) ? cash.toFixed(2) : '—')+'</td>' +
+                        '<td class="td-yield">'+(live ? '~' : '+')+(Number.isFinite(yld) ? yld.toFixed(2) : '—')+'%</td>' +
+                        '<td class="td-apy">'+(reference ? '~' : '')+(Number.isFinite(apr) ? apr.toFixed(2) : '—')+'%</td>' +
+                        '<td class="td-bar"><div class="inline-bar" style="width:'+Math.min(100, Math.max(4, (yld || 0) / 2 * 100))+'%"></div></td></tr>';
+                });
+
+                var closed = months.filter(function (m) { return m.status !== 'provisional'; });
+                var totalCash = closed.reduce(function (s,m) { return s + (Number(m.cashFlowUsd) || 0); },0);
+                var totalYield = closed.reduce(function (s,m) { return s + (Number(m.monthlyYieldPct) || 0); },0);
+                var annual = closed.length ? totalYield / closed.length * 12 : NaN;
+                var estimated = closed.some(function (m) { return m.mode === 'reference-model'; });
+                rows.push('<tr class="row-total"><td class="td-month">Total</td><td class="td-num">'+(estimated ? '~' : '')+'$'+totalCash.toFixed(2)+'</td><td class="td-yield">+'+totalYield.toFixed(2)+'%</td><td class="td-apy">~'+(Number.isFinite(annual) ? annual.toFixed(1) : '—')+'%</td><td class="td-bar"></td></tr>');
+                tbody.innerHTML = rows.join('');
+            }
+
             async function syncReportProductivity() {
                 if (!window.THProductivity) return;
                 await window.THProductivity.bindCompanyAprs(document);
+                var reporting = await window.THProductivity.loadReporting();
+                if (!reporting) return;
+                var fund = window.THProductivity.getFundReporting('defitea.eth', reporting);
+                if (!fund) return;
+
+                updateSummary(fund, 2026);
+                var months2026 = window.THProductivity.getReportingMonths('defitea.eth', 2026, reporting);
+                var months2027 = window.THProductivity.getReportingMonths('defitea.eth', 2027, reporting);
+                renderDesktopChart(months2026);
+                renderMobileChart(months2026);
+                renderTable(2026, months2026);
+                renderTable(2027, months2027);
+                console.log('[Reporting Layer] Yield Reports synced:', months2026.length + ' months');
             }
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', syncReportProductivity, { once: true });
+                document.addEventListener('DOMContentLoaded', syncReportProductivity, { once:true });
             } else {
                 syncReportProductivity();
             }
