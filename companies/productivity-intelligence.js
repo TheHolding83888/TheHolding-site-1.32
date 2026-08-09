@@ -1,5 +1,5 @@
 /*
- * The Holding · Productivity Intelligence UI Core v1.2
+ * The Holding · Productivity Intelligence UI Core v1.3
  * ----------------------------------------------------
  * One read-only client for the canonical Productivity Intelligence Layer.
  * Source of truth: /companies/productivity-data.json
@@ -10,12 +10,15 @@
 (function (global) {
   'use strict';
 
-  const VERSION = '1.2';
+  const VERSION = '1.3';
   const DEFAULT_DATA_URL = '/companies/productivity-data.json';
+  const DEFAULT_REPORTING_URL = '/reporting/reporting-data.json';
   const DEFAULT_TIMEOUT_MS = 4500;
 
   let cachedSnapshot = null;
   let pendingLoad = null;
+  let cachedReporting = null;
+  let pendingReportingLoad = null;
 
   function finiteNumber(value) {
     if (value === null || value === undefined || value === '') return NaN;
@@ -198,16 +201,153 @@
     return { updated: updated, fallback: fallback, snapshot: snapshot };
   }
 
+
+
+  async function fetchReporting(options) {
+    const opts = options || {};
+    const dataUrl = opts.reportingUrl || DEFAULT_REPORTING_URL;
+    const timeoutMs = Number(opts.timeoutMs) > 0 ? Number(opts.timeoutMs) : DEFAULT_TIMEOUT_MS;
+    const force = Boolean(opts.force);
+
+    if (!force && cachedReporting) return cachedReporting;
+    if (!force && pendingReportingLoad) return pendingReportingLoad;
+
+    pendingReportingLoad = (async function () {
+      const controller = new AbortController();
+      const timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+      try {
+        const sep = dataUrl.indexOf('?') === -1 ? '?' : '&';
+        const res = await fetch(dataUrl + sep + 't=' + Date.now(), {
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data || typeof data !== 'object' || !data.funds) {
+          throw new Error('Invalid reporting snapshot');
+        }
+        cachedReporting = data;
+        return data;
+      } catch (err) {
+        console.warn('[TH Reporting Layer] snapshot unavailable:', err && err.message ? err.message : err);
+        return cachedReporting;
+      } finally {
+        clearTimeout(timer);
+        pendingReportingLoad = null;
+      }
+    })();
+
+    return pendingReportingLoad;
+  }
+
+  function getFundReporting(fundName, reporting) {
+    const data = reporting || cachedReporting;
+    return data && data.funds ? data.funds[fundName] || null : null;
+  }
+
+  function getReportingMonths(fundName, year, reporting) {
+    const fund = getFundReporting(fundName, reporting);
+    if (!fund || !fund.months) return [];
+    const prefix = year ? String(year) + '-' : '';
+    return Object.values(fund.months)
+      .filter(function (m) { return m && m.month && (!prefix || m.month.indexOf(prefix) === 0); })
+      .sort(function (a, b) { return String(a.month).localeCompare(String(b.month)); });
+  }
+
+  function getReportingSummary(fundName, year, reporting) {
+    const fund = getFundReporting(fundName, reporting);
+    if (!fund || !fund.summaries) return null;
+    return fund.summaries[String(year)] || null;
+  }
+
+  function formatMoney(value, options) {
+    const n = finiteNumber(value);
+    if (!Number.isFinite(n)) return null;
+    const opts = options || {};
+    const digits = Number.isInteger(opts.digits) ? opts.digits : 2;
+    const approximate = Boolean(opts.approximate);
+    return (approximate ? '~' : '') + '$' + n.toLocaleString('en-US', {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits
+    });
+  }
+
+  function formatPercent(value, options) {
+    const n = finiteNumber(value);
+    if (!Number.isFinite(n)) return null;
+    const opts = options || {};
+    const digits = Number.isInteger(opts.digits) ? opts.digits : 2;
+    const sign = opts.sign && n > 0 ? '+' : '';
+    const approximate = Boolean(opts.approximate);
+    return (approximate ? '~' : '') + sign + n.toFixed(digits) + '%';
+  }
+
+  /*
+   * Optional generic reporting binder.
+   *
+   * Markup examples:
+   *   <span data-th-report-fund="defitea.eth" data-th-report="latest-tvl">$9,000</span>
+   *   <span data-th-report-fund="defitea.eth" data-th-report="ytd-cash-flow" data-th-report-year="2026">$284.55</span>
+   */
+  async function bindReportingValues(root, options) {
+    const scope = root || document;
+    const opts = options || {};
+    const reporting = await fetchReporting(opts);
+    if (!reporting) return { updated:0, fallback:0, reporting:null };
+
+    let updated = 0;
+    let fallback = 0;
+    scope.querySelectorAll('[data-th-report-fund][data-th-report]').forEach(function (el) {
+      const fundName = el.getAttribute('data-th-report-fund');
+      const metric = el.getAttribute('data-th-report');
+      const year = Number(el.getAttribute('data-th-report-year')) || new Date().getUTCFullYear();
+      const fund = getFundReporting(fundName, reporting);
+      const summary = getReportingSummary(fundName, year, reporting);
+      let text = null;
+
+      if (metric === 'latest-tvl') {
+        text = fund && fund.latestSnapshot ? formatMoney(fund.latestSnapshot.totalValueUsd, { digits:0 }) : null;
+      } else if (metric === 'ytd-cash-flow') {
+        text = summary ? formatMoney(summary.ytdCashFlowUsd, { digits:2, approximate:Boolean(summary.ytdCashFlowEstimated) }) : null;
+      } else if (metric === 'ytd-yield') {
+        text = summary ? formatPercent(summary.ytdCashFlowYieldPct, { digits:2, sign:true }) : null;
+      } else if (metric === 'best-month-yield') {
+        text = summary ? formatPercent(summary.bestMonthYieldPct, { digits:2, sign:true }) : null;
+      } else if (metric === 'annualized-cashflow-apr') {
+        text = summary ? formatPercent(summary.annualizedCashFlowAprPct, { digits:1, approximate:true }) : null;
+      }
+
+      if (text !== null) {
+        el.textContent = text;
+        el.setAttribute('data-th-auto', 'true');
+        updated += 1;
+      } else {
+        fallback += 1;
+      }
+    });
+
+    return { updated:updated, fallback:fallback, reporting:reporting };
+  }
+
   global.THProductivity = Object.freeze({
     version: VERSION,
     dataUrl: DEFAULT_DATA_URL,
+    reportingUrl: DEFAULT_REPORTING_URL,
     load: fetchSnapshot,
+    loadReporting: fetchReporting,
     getSnapshot: function () { return cachedSnapshot; },
+    getReportingSnapshot: function () { return cachedReporting; },
     getEngine: getEngine,
     getCompany: getCompany,
     resolveCompanyApr: resolveCompanyApr,
+    getFundReporting: getFundReporting,
+    getReportingMonths: getReportingMonths,
+    getReportingSummary: getReportingSummary,
     formatApr: formatApr,
+    formatMoney: formatMoney,
+    formatPercent: formatPercent,
     bindProtocolAprs: bindProtocolAprs,
-    bindCompanyAprs: bindCompanyAprs
+    bindCompanyAprs: bindCompanyAprs,
+    bindReportingValues: bindReportingValues
   });
 })(window);
