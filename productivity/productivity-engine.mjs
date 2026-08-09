@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Productivity / APR Engine v1.8
+ * The Holding · Productivity / APR Engine v1.9
  *
  * SIMPLE-FIRST architecture:
  *   official protocol API / onchain data / official frontend
@@ -32,14 +32,17 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.8-pendle-survivor-cluster';
+const COLLECTOR_VERSION = '1.9-pendle-replicated-survivor';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const PENDLE_SPENDLE_TOKEN = '0x999999999991e178d52cd95afd4b00d066664144';
 const PENDLE_SURVIVOR_CAMPAIGNS = 3;
 const PENDLE_SURVIVOR_SAMPLE_SIZE = 180;
-const PENDLE_SURVIVOR_MIN_CLUSTER = 20;
+const PENDLE_SURVIVOR_MIN_CLUSTER = 30;
 const PENDLE_SURVIVOR_CLUSTER_TOLERANCE = 0.005; // ±0.5% around a common reward/balance ratio
-const PENDLE_SURVIVOR_MAX_SPREAD_BPS = 50;
+const PENDLE_SURVIVOR_MAX_SPREAD_BPS = 75;
+const PENDLE_SURVIVOR_MIN_DENSITY = 0.25;
+const PENDLE_SURVIVOR_MIN_CAMPAIGNS = 2;
+const PENDLE_SURVIVOR_MAX_SUPPLY_DEVIATION_PCT = 5;
 const PENDLE_SURVIVOR_RPC_BUDGET_MS = 90_000;
 const CURVE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0 Safari/537.36';
@@ -697,15 +700,40 @@ function assessPendleSurvivorReplication(diagnostics) {
     saneApr(Number(x.diagnosticRewardApr)) &&
     Number(x.clusterSize)>=PENDLE_SURVIVOR_MIN_CLUSTER &&
     Number(x.maxClusterSpreadBps??1e9)<=PENDLE_SURVIVOR_MAX_SPREAD_BPS &&
-    Number(x.clusterDensity||0)>=0.10 &&
+    Number(x.clusterDensity||0)>=PENDLE_SURVIVOR_MIN_DENSITY &&
     Number(x.impliedActiveSPendle)>1_000_000 && Number(x.impliedActiveSPendle)<1_000_000_000
   );
+
+  // V1.9 replaces the single ultra-tight 50 bps gate with a multi-signal gate.
+  // A cluster is allowed a still-tight <=75 bps max deviation, but it must be
+  // broad (>=30 holders, >=25% of direct-balance recipients), independently
+  // replicate across campaigns, and imply mutually consistent active supplies.
+  // This makes the promotion test stronger as a whole while avoiding a false
+  // negative caused by a few tenths of a percent of survivor drift.
+  const supplies=valid.map(x=>Number(x.impliedActiveSPendle)).filter(Number.isFinite).sort((a,b)=>a-b);
+  const supplyMedian=supplies.length
+    ? (supplies.length%2 ? supplies[(supplies.length-1)/2] : (supplies[supplies.length/2-1]+supplies[supplies.length/2])/2)
+    : NaN;
+  const maxSupplyDeviationPct=(Number.isFinite(supplyMedian)&&supplyMedian>0&&supplies.length)
+    ? Math.max(...supplies.map(v=>Math.abs(v-supplyMedian)/supplyMedian*100))
+    : NaN;
+  const supplyConsistencyOk=Boolean(
+    valid.length>=PENDLE_SURVIVOR_MIN_CAMPAIGNS &&
+    Number.isFinite(maxSupplyDeviationPct) &&
+    maxSupplyDeviationPct<=PENDLE_SURVIVOR_MAX_SUPPLY_DEVIATION_PCT
+  );
+
   return {
-    replicated:valid.length>=2,
+    replicated:valid.length>=PENDLE_SURVIVOR_MIN_CAMPAIGNS && supplyConsistencyOk,
     validCampaigns:valid.length,
-    minRequiredCampaigns:2,
+    minRequiredCampaigns:PENDLE_SURVIVOR_MIN_CAMPAIGNS,
     minClusterSize:PENDLE_SURVIVOR_MIN_CLUSTER,
+    minClusterDensity:PENDLE_SURVIVOR_MIN_DENSITY,
     maxSpreadBps:PENDLE_SURVIVOR_MAX_SPREAD_BPS,
+    maxSupplyDeviationPct:PENDLE_SURVIVOR_MAX_SUPPLY_DEVIATION_PCT,
+    observedSupplyMedian:Number.isFinite(supplyMedian)?round(supplyMedian,4):null,
+    observedMaxSupplyDeviationPct:Number.isFinite(maxSupplyDeviationPct)?round(maxSupplyDeviationPct,3):null,
+    supplyConsistencyOk,
     campaigns:valid.map(x=>({
       campaign:x.campaign,apr:x.diagnosticRewardApr,clusterSize:x.clusterSize,
       clusterDensity:x.clusterDensity,maxClusterSpreadBps:x.maxClusterSpreadBps,
@@ -764,7 +792,7 @@ async function collectPendle(previous) {
 
   let campaigns=[],merkleError=null,epochMap=null,balanceDiagnostics=[];
   let survivorSnapshot={status:'not-run'};
-  let survivorReplication={replicated:false,validCampaigns:0,minRequiredCampaigns:2,minClusterSize:PENDLE_SURVIVOR_MIN_CLUSTER,maxSpreadBps:PENDLE_SURVIVOR_MAX_SPREAD_BPS,campaigns:[]};
+  let survivorReplication={replicated:false,validCampaigns:0,minRequiredCampaigns:PENDLE_SURVIVOR_MIN_CAMPAIGNS,minClusterSize:PENDLE_SURVIVOR_MIN_CLUSTER,minClusterDensity:PENDLE_SURVIVOR_MIN_DENSITY,maxSpreadBps:PENDLE_SURVIVOR_MAX_SPREAD_BPS,maxSupplyDeviationPct:PENDLE_SURVIVOR_MAX_SUPPLY_DEVIATION_PCT,supplyConsistencyOk:false,campaigns:[]};
   try {
     campaigns=await discoverRecentPendleMerkleCampaigns(now,8);
     epochMap=buildPendleEpochMap(campaigns,candidates);
@@ -802,7 +830,7 @@ async function collectPendle(previous) {
     survivorSnapshot,
     balanceDiagnostics,
     survivorReplication,
-    denominatorPolicy:'V1.8 uses current-balance survivor clustering instead of historical archive state. A Merkle reward APR may become Reference APR only when a tight reward/current-direct-sPENDLE cluster contains at least 20 holders and independently replicates across at least two campaigns. The cluster represents holders whose direct balance is statistically consistent with having remained unchanged since the reward snapshot.',
+    denominatorPolicy:'V1.9 uses replicated current-balance survivor clustering instead of historical archive state. A Merkle reward APR may become Reference APR only when broad reward/current-direct-sPENDLE clusters pass holder-count, density and spread gates across multiple campaigns, and the independently implied active supplies are mutually consistent. The cluster represents holders whose direct balance is statistically consistent with having remained unchanged since the reward snapshot.',
     rewardScope:'Reference APR reconstructed by this path is the sPENDLE buyback distribution component. In-kind point airdrops are intentionally excluded until they can be normalized independently.'
   };
 
@@ -850,11 +878,13 @@ async function collectPendle(previous) {
   const independentlyPositiveReward=Boolean(mappedLatest && Number(mappedLatest.merkleReward)>0 &&
     (!epochMap?.offsetConsensus || Math.abs(mappedLatest.startOffsetSeconds-Number(epochMap.offsetSeconds))<=3600));
 
-  // V1.8 promotion gate. We accept a reconstructed APR only when:
+  // V1.9 promotion gate. We accept a reconstructed APR only when:
   //   1) API/Merkle calendars have a stable multi-epoch offset,
   //   2) several historical reward amounts match,
-  //   3) a broad current-balance survivor cluster replicates across >=2 campaigns,
-  //   4) the latest mapped campaign itself has >=20 survivors with <=50 bps spread.
+  //   3) broad survivor clusters replicate across multiple campaigns,
+  //   4) each valid cluster has >=30 holders, >=25% density and <=75 bps spread,
+  //   5) independently implied active supplies remain within a 5% consistency band,
+  //   6) the latest mapped campaign itself passes the same quality gates.
   // The inference is intentionally conservative: the common ratio is interpreted
   // as reward per active sPENDLE only when many independently sampled holders
   // agree. In-kind airdrops remain excluded from this buyback APR.
@@ -863,7 +893,7 @@ async function collectPendle(previous) {
   const latestClusterPlausible=Boolean(
     latestSurvivorDiag?.status==='diagnostic-survivor-cluster' &&
     Number(latestSurvivorDiag?.clusterSize||0)>=PENDLE_SURVIVOR_MIN_CLUSTER &&
-    Number(latestSurvivorDiag?.clusterDensity||0)>=0.10 &&
+    Number(latestSurvivorDiag?.clusterDensity||0)>=PENDLE_SURVIVOR_MIN_DENSITY &&
     Number(latestSurvivorDiag?.maxClusterSpreadBps??1e9)<=PENDLE_SURVIVOR_MAX_SPREAD_BPS &&
     Number(latestSurvivorDiag?.impliedActiveSPendle)>1_000_000 &&
     Number(latestSurvivorDiag?.impliedActiveSPendle)<1_000_000_000 &&
@@ -889,7 +919,7 @@ async function collectPendle(previous) {
         revenue:Number.isFinite(revenue)?revenue:null,buybackAmount:Number.isFinite(latest.buybackAmount)?latest.buybackAmount:null,
         selectionRule:'replicated-current-balance-survivor-cluster',
         rewardScope:'sPENDLE buyback distribution only; in-kind airdrops excluded',
-        inferenceNote:'APR is inferred from a tight cluster of Merkle recipients whose current direct sPENDLE balances imply the same pro-rata reward rate. Replication across multiple campaigns is required before promotion.',
+        inferenceNote:'APR is inferred from broad clusters of Merkle recipients whose current direct sPENDLE balances imply the same pro-rata reward rate. Promotion requires replication across multiple campaigns plus consistency of the independently reconstructed active-sPENDLE supply.',
         mappedMerkleCampaign:mappedLatest,selectedSurvivorDiagnostic:latestSurvivorDiag,
         replication:survivorReplication,research,currentSupply:currentSupplySnapshot
       },
@@ -1347,7 +1377,7 @@ async function main() {
   }
 
   const output={
-    version:'1.8',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.9',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions with valid Reference APRs. coverage shows the share of productive capital currently included; unknown engines are excluded, never treated as 0%. Canonical historical company averages use full-coverage observations only.',
     engines,companies,
     history:{engines:historyEngines,companies:historyCompanies},
