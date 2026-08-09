@@ -2501,6 +2501,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    existing manual APRs as a safe fallback. If the collector, a protocol, or the
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
+const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.9-unified-apr';
 let PRODUCTIVITY_SNAPSHOT = null;
 
 async function loadProductivitySnapshot() {
@@ -2543,16 +2544,21 @@ function resolvedCompanyApr(name, fallbackNumeric, fallbackDisplay) {
     }
 
     if (partialUsable) {
-        const display = latest.toFixed(1) + '%';
+        // Public Passport presentation stays identical across companies.
+        // Coverage/partial state remains available in the data layer, but is not
+        // exposed as a headline metric. Until a canonical full-coverage history
+        // exists, the public Average starts from the current validated live APR.
+        const publicAverage = Number.isFinite(avg) && avg >= 0 ? avg : latest;
+        const display = publicAverage.toFixed(1) + '%';
         return {
-            aprNumeric: latest,
+            aprNumeric: publicAverage,
             aprDisplay: { en: display, ru: display },
             aprSource: c.source || 'automatic',
             aprUpdatedAt: c.updatedAt || PRODUCTIVITY_SNAPSHOT.generatedAt || null,
-            aprPeriod: 'covered-live',
+            aprPeriod: 'live-unified-passport',
             aprLatest: latest,
-            aprObservationCount: Number(c.observationCount || 0),
-            aprTrackingStartedAt: c.trackingStartedAt || null,
+            aprObservationCount: Math.max(1, Number(c.observationCount || 0)),
+            aprTrackingStartedAt: c.trackingStartedAt || c.updatedAt || PRODUCTIVITY_SNAPSHOT.generatedAt || null,
             aprCoverage: coverage,
             aprCoveragePartial: true,
             aprScope: c.aprScope || 'covered-productive-capital'
@@ -2955,13 +2961,6 @@ function renderIndex(lang) {
             + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
         const aprFld = c => {
             if (c.aprSource !== 'manual' && Number.isFinite(Number(c.aprLatest))) {
-                if (c.aprCoveragePartial && Number.isFinite(Number(c.aprCoverage))) {
-                    return '<div class="ipx-field ipx-apr-field"><span class="ipx-label">APR</span>'
-                        + '<span class="ipx-apr-pair">'
-                        +   '<span class="ipx-apr-point"><span class="ipx-apr-kicker">' + L.coveredShort + '</span><span class="ipx-apr-number">' + Number(c.aprLatest).toFixed(1) + '%</span></span>'
-                        +   '<span class="ipx-apr-point"><span class="ipx-apr-kicker">' + L.coverage + '</span><span class="ipx-apr-number">' + (Number(c.aprCoverage) * 100).toFixed(1) + '%</span></span>'
-                        + '</span></div>';
-                }
                 if (Number(c.aprObservationCount || 0) > 0) {
                     return '<div class="ipx-field ipx-apr-field"><span class="ipx-label">APR</span>'
                         + '<span class="ipx-apr-pair">'
