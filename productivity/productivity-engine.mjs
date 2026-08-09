@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Productivity / APR Engine v1.2
+ * The Holding · Productivity / APR Engine v1.4
  *
  * SIMPLE-FIRST architecture:
  *   official protocol API / onchain data / official frontend
@@ -32,7 +32,7 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.3-timeout-safe';
+const COLLECTOR_VERSION = '1.4-pendle-zero-guard';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const CURVE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0 Safari/537.36';
@@ -432,15 +432,50 @@ async function collectPendle() {
   }
   if (!candidates.length) throw new Error('Pendle: no fully completed sPENDLE epoch in API history');
   candidates.sort((a,b)=>b.ts-a.ts);
-  // Prefer the newest completed epoch with a positive published APR. This avoids
-  // treating a zero placeholder as economic data. If every completed epoch is
-  // genuinely zero, keep the newest zero rather than inventing a yield.
-  const pick=candidates.find(x=>x.apr>0) || candidates[0];
+  // Prefer the newest completed epoch with a positive APR published by Pendle.
+  // A zero APR is accepted only when the corresponding completed epoch also has
+  // zero / missing revenue. If Pendle reports positive revenue but APR=0, that is
+  // internally inconsistent for our Reference APR purpose, so do NOT silently
+  // record 0%. Mark the adapter not-ready and keep the company on safe fallback.
+  const positive=candidates.find(x=>x.apr>0);
+  if (positive) {
+    return {
+      apr:round(positive.apr), source:url, sourceType:'official-api', sourceMetric:'sPENDLE latest fully completed 14-day epoch APR',
+      periodStart:new Date(positive.ts*1000).toISOString(),
+      periodEnd:new Date(positive.completedAt*1000).toISOString(),
+      details:{
+        epochTimestamp:positive.ts,epochCompletedAt:positive.completedAt,historyCount:aprs.length,selectedIndex:positive.i,
+        revenue:Number.isFinite(positive.revenue)?positive.revenue:null,selectionRule:positive===candidates[0]?'latest-completed-positive-apr':'latest-completed-positive-apr-fallback',
+        totalPendleStaked:Number(j.totalPendleStaked??NaN),totalStakedInSpendle:Number(j.totalStakedInSpendle??NaN),
+        virtualSpendleFromVependle:Number(j.virtualSpendleFromVependle??NaN)
+      }
+    };
+  }
+
+  const latest=candidates[0];
+  const revenue=Number(latest.revenue);
+  if (latest.apr===0 && Number.isFinite(revenue) && revenue>0) {
+    return {
+      notReady:true, source:url, sourceType:'official-api',
+      sourceMetric:'sPENDLE completed epoch APR withheld · positive revenue with zero published APR',
+      periodStart:new Date(latest.ts*1000).toISOString(),
+      periodEnd:new Date(latest.completedAt*1000).toISOString(),
+      details:{
+        epochTimestamp:latest.ts,epochCompletedAt:latest.completedAt,historyCount:aprs.length,selectedIndex:latest.i,
+        publishedApr:0,revenue,selectionRule:'zero-apr-positive-revenue-guard',
+        totalPendleStaked:Number(j.totalPendleStaked??NaN),totalStakedInSpendle:Number(j.totalStakedInSpendle??NaN),
+        virtualSpendleFromVependle:Number(j.virtualSpendleFromVependle??NaN),
+        recentCompleted:candidates.slice(0,4).map(x=>({index:x.i,apr:x.apr,revenue:Number.isFinite(x.revenue)?x.revenue:null,periodStart:new Date(x.ts*1000).toISOString(),periodEnd:new Date(x.completedAt*1000).toISOString()}))
+      }
+    };
+  }
+
+  // Genuine zero: completed epoch has zero APR and no positive revenue.
   return {
-    apr:round(pick.apr), source:url, sourceType:'official-api', sourceMetric:'sPENDLE latest fully completed 14-day epoch APR',
-    periodStart:new Date(pick.ts*1000).toISOString(),
-    periodEnd:new Date(pick.completedAt*1000).toISOString(),
-    details:{epochTimestamp:pick.ts,epochCompletedAt:pick.completedAt,historyCount:aprs.length,selectedIndex:pick.i,revenue:Number.isFinite(pick.revenue)?pick.revenue:null,selectionRule:pick===candidates[0]?'latest-completed':'latest-completed-positive-apr'}
+    apr:0, source:url, sourceType:'official-api', sourceMetric:'sPENDLE latest fully completed 14-day epoch APR',
+    periodStart:new Date(latest.ts*1000).toISOString(),
+    periodEnd:new Date(latest.completedAt*1000).toISOString(),
+    details:{epochTimestamp:latest.ts,epochCompletedAt:latest.completedAt,historyCount:aprs.length,selectedIndex:latest.i,revenue:Number.isFinite(revenue)?revenue:null,selectionRule:'genuine-zero'}
   };
 }
 
@@ -749,7 +784,7 @@ async function main() {
           source:r.source||meta.sourceUrl,periodStart:r.periodStart||null,periodEnd:r.periodEnd||generatedAt,lastUpdatedAt:generatedAt,
           status:'warming',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,details:r.details||{}
         };
-        console.warn(`… ${engineId}: baseline initialized; waiting for observed period`);
+        console.warn(`… ${engineId}: source not ready; waiting for a valid observed period`);
         continue;
       }
       if (!saneApr(r.apr)) throw new Error(`invalid APR ${r.apr}`);
@@ -775,6 +810,12 @@ async function main() {
 
   // Maintain engine history only for fresh successful observations.
   const historyEngines={...(previous?.history?.engines||{})};
+  // One-time cleanup: v1.3 accepted Pendle's 2026-W32 zero APR even though the
+  // same completed epoch reported positive revenue. That observation is not
+  // trusted and must not remain in historical averages.
+  if (previous?.collectorVersion==='1.3-timeout-safe' && Array.isArray(historyEngines.pendle_spendle)) {
+    historyEngines.pendle_spendle=historyEngines.pendle_spendle.filter(x=>!(x?.snapshotKey==='2026-W32' && Number(x?.apr)===0));
+  }
   const snapKey=weekKey(new Date());
   for (const [id,e] of Object.entries(engines)) {
     const a=aprValue(e.aprLatest);
@@ -835,7 +876,7 @@ async function main() {
   }
 
   const output={
-    version:'1.3',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.4',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions only.',
     engines,companies,
     history:{engines:historyEngines,companies:historyCompanies},
