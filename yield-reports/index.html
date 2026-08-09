@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,13 +52,13 @@
             --green-dim:    rgba(74,222,128,0.08);
             --defitea:      #10b981;
             --nav-bg:       rgba(10,10,10,0.9);
-            --row-hover:    var(--row-hover);
+            --row-hover:    rgba(255,255,255,0.025);
             --row-total:    rgba(16,185,129,0.04);
-            --row-total-bd: var(--row-total-bd);
+            --row-total-bd: rgba(16,185,129,0.20);
             --kpi-bg:       #1a1a1a;
             --kpi-hover:    #111111;
             --pending-bg:   #1a1a1a;
-            --table-head:   var(--table-head);
+            --table-head:   rgba(255,255,255,0.025);
         }
 
         html { scroll-behavior: smooth; }
@@ -258,7 +259,7 @@
             content: '';
             width: 18px;
             height: 1px;
-            background: var(--white-faint);
+            background: var(--text-faint);
         }
 
         .phil-heading {
@@ -487,6 +488,40 @@
             height: 8px;
             border-radius: 1.5px;
             background: var(--defitea);
+        }
+
+        .dr-header-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.7rem;
+        }
+
+        .dr-live-apr {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.65rem;
+            padding: 0.55rem 0.8rem;
+            border: 1px solid var(--border-mid);
+            border-radius: 3px;
+            background: var(--surface);
+            white-space: nowrap;
+        }
+
+        .dr-live-apr-label, .dr-live-apr-note {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+        }
+
+        .dr-live-apr-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            line-height: 1;
+            color: var(--green);
+            font-weight: 500;
         }
 
         /* KPI cards */
@@ -933,7 +968,7 @@
             width: 5px;
             height: 5px;
             border-radius: 50%;
-            background: var(--white-faint);
+            background: var(--text-faint);
             flex-shrink: 0;
             margin-top: 0.45rem;
         }
@@ -1068,6 +1103,8 @@
             .fund-row { grid-template-columns: 2rem 1fr; }
             .fund-status-badge { display: none; }
             .dr-header { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+            .dr-header-meta { align-items: flex-start; }
+            .dr-live-apr { white-space: normal; flex-wrap: wrap; }
             .dr-kpis { grid-template-columns: repeat(2, 1fr); }
             .pending-grid { grid-template-columns: 1fr; }
             .footer { flex-direction: column; gap: 2rem; text-align: center; }
@@ -1286,9 +1323,16 @@
                     <div class="section-tag">Monthly Performance</div>
                     <h2 class="dr-heading">Defitea Fund Reports</h2>
                 </div>
-                <div class="dr-fund-label">
-                    <div class="dr-fund-dot"></div>
-                    Defitea · 2026
+                <div class="dr-header-meta">
+                    <div class="dr-fund-label">
+                        <div class="dr-fund-dot"></div>
+                        Defitea · 2026
+                    </div>
+                    <div class="dr-live-apr" title="Current validated productive APR from The Holding Productivity Intelligence Layer">
+                        <span class="dr-live-apr-label">Current Reference APR</span>
+                        <strong class="dr-live-apr-value" data-th-company="defitea.eth" data-th-company-apr="latest">13.3%</strong>
+                        <span class="dr-live-apr-note">Auto-updated weekly</span>
+                    </div>
                 </div>
             </div>
 
@@ -1310,9 +1354,9 @@
                     <div class="kpi-sub">February 2026</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-label">Annualised Cash-Flow APR</div>
+                    <div class="kpi-label">Realised Annualised APR</div>
                     <div class="kpi-value">~13.9%</div>
-                    <div class="kpi-sub">Based on 7-month avg</div>
+                    <div class="kpi-sub">Jan–Jul monthly cash-flow avg × 12</div>
                 </div>
             </div>
 
@@ -1498,7 +1542,7 @@
                 </div>
 
                 <div class="report-disclaimer">
-                    <p>All figures are approximate. Monthly cash-flow yield is calculated as cash flow received during the month divided by average capital during the month. Annualised APR is the average monthly cash-flow yield multiplied by twelve — a simple annualisation with no compounding. Cash flow is reported separately from asset-price performance; the strategies remain exposed to market, protocol, liquidity, and asset-specific risks. Past performance does not guarantee future results.</p>
+                    <p>All figures are approximate. Monthly cash-flow yield is calculated as cash flow received during the month divided by average capital during the month. Annualised APR is the average monthly cash-flow yield multiplied by twelve — a simple annualisation with no compounding. Cash flow is reported separately from asset-price performance; the strategies remain exposed to market, protocol, liquidity, and asset-specific risks. Past performance does not guarantee future results. The Current Reference APR shown above is a separate live productivity snapshot from the Productivity Intelligence Layer and should not be confused with realised monthly cash-flow APR.</p>
                 </div>
 
                 <a href="https://docs.google.com/spreadsheets/d/1SfnnAvIiBRI7I83WyIvc-nH_sWjJA5h53AGHzrmCRp8/edit?usp=sharing" 
@@ -1596,7 +1640,21 @@
         <div class="footer-note">Non-custodial · Onchain</div>
     </footer>
 
+    <script src="/companies/productivity-intelligence.js"></script>
     <script>
+        // Live Reference APR comes from the same central snapshot used by Companies and Defitea.
+        (function () {
+            async function syncReportProductivity() {
+                if (!window.THProductivity) return;
+                await window.THProductivity.bindCompanyAprs(document);
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', syncReportProductivity, { once: true });
+            } else {
+                syncReportProductivity();
+            }
+        })();
+
         // Year switcher
         function switchYear(year, btn) {
             document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
@@ -1658,9 +1716,9 @@
             const chart  = document.getElementById('barChart');
             if (!grid || !chart) return;
 
-            const maxPct  = 1.75;
+            const maxPct  = 2.00;
             const step    = 0.25;
-            const stopAt  = 1.00; // draw lines only up to 1.00% — removes top lines
+            const stopAt  = 1.50; // leave headroom above the strongest observed month
             const chartH  = chart.offsetHeight;
             const barAreaH = chartH - 40;
 
