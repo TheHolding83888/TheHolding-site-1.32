@@ -1,0 +1,44 @@
+name: Update The Holding Reporting Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Lightweight daily capital snapshot.
+    # On Sundays this runs 20 minutes after the weekly Productivity workflow.
+    - cron: '37 4 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  update-reporting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Update daily TVL and monthly reporting state
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          COMPANY_PAGE_FILE: ./companies/index.html
+          PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          REPORTING_DATA_FILE: ./reporting/reporting-data.json
+        run: node reporting/reporting-engine.mjs
+
+      - name: Commit reporting snapshot
+        run: |
+          git config user.name "The Holding Data Engine"
+          git config user.email "data-engine@theholding.ai"
+          git add reporting/reporting-data.json
+          if git diff --cached --quiet; then
+            echo "No reporting data changes."
+          else
+            git commit -m "data: update daily reporting snapshot"
+            git push
+          fi
