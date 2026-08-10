@@ -2,63 +2,452 @@
   "version": "0.1",
   "collectorVersion": "0.1-protocol-accrual",
   "methodologyVersion": "0.1-earned-inside-protocols",
-  "generatedAt": null,
-  "date": null,
+  "generatedAt": "2026-08-10T05:27:57.979Z",
+  "date": "2026-08-10",
   "scope": "protocol-side accrued rewards for personal onchain companies",
   "methodology": {
     "definition": "Rewards already earned by a company inside protocol contracts but not yet freely held in the company wallet.",
+    "aerodrome": "Relay-compounded AERO read from LockedManagedReward.earned(AERO, veNFT). Classified as compounded-locked because it remains inside the managed veNFT until withdrawal.",
+    "curve": "Claimable crvUSD simulated against the official FeeDistributor with eth_call/staticCall. No transaction is sent.",
+    "frax": "Claimable emitted token read from Fraxtal YieldDistributor.earned(account); reward token is discovered from emittedTokenAddress().",
+    "yieldBasis": "Claimable multi-token veYB admin fees read with FeeDistributor.preview_claim. yb-LP rewards are valued at current realistic redemption value via LT.preview_withdraw and the underlying asset USD price.",
+    "union": "Votium/The Union is intentionally excluded from totals until a reproducible member-level read path is validated. The public Union implementation is private; no reward amount is guessed.",
     "tvlTreatment": "Accrued rewards are displayed separately and are not added to Company TVL in v0.1."
+  },
+  "rpc": {
+    "ethereum": "https://ethereum-rpc.publicnode.com",
+    "base": "https://base-rpc.publicnode.com",
+    "fraxtal": "https://rpc.frax.com"
   },
   "companies": {
     "05081966.eth": {
-      "status": "warming",
+      "status": "ok",
       "ens": "05081966.eth",
       "address": "0x7CdF49f589038242e77847573604441E383f5429",
-      "totalUsd": null,
-      "totalUsdIsComplete": false,
-      "routeCoverage": 0,
-      "measuredRoutes": 0,
+      "resolution": "ens",
+      "fallbackMatched": true,
+      "totalUsd": 0.934026,
+      "totalUsdIsComplete": true,
+      "routeCoverage": 1,
+      "measuredRoutes": 3,
       "routeCount": 3,
-      "pendingRoutes": 3,
+      "pendingRoutes": 0,
       "unpricedRewards": 0,
-      "rewards": [],
-      "rewardTokens": [],
-      "sources": [],
-      "updatedAt": null
+      "rewards": [
+        {
+          "protocol": "Aerodrome",
+          "route": "aerodrome-relay",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "amountRaw": "2025787730901732165",
+          "decimals": 18,
+          "amount": 2.0257877309,
+          "classification": "compounded-locked",
+          "source": "onchain: LockedManagedReward.earned",
+          "usdValue": 0.848945,
+          "priceUsd": 0.419069,
+          "priceMethod": "coingecko:aerodrome-finance",
+          "details": {
+            "symbol": "AERO",
+            "veNfts": [
+              {
+                "tokenId": "126980",
+                "managedTokenId": "10298",
+                "lockedManagedReward": "0xC6631c68f00A5c89927fada25c70934D922329EF",
+                "accruedAeroRaw": "2025787730901732165"
+              }
+            ],
+            "coingeckoId": "aerodrome-finance"
+          }
+        },
+        {
+          "protocol": "Curve",
+          "route": "curve-fees",
+          "chain": "Ethereum",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "symbol": "crvUSD",
+          "amountRaw": "85081300759702842",
+          "decimals": 18,
+          "amount": 0.0850813008,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.claim staticCall",
+          "usdValue": 0.085081,
+          "priceUsd": 1,
+          "priceMethod": "fixed-usd-assumption",
+          "details": {
+            "symbol": "crvUSD",
+            "fixedUsdPrice": 1
+          }
+        },
+        {
+          "protocol": "Frax",
+          "route": "frax-yield",
+          "chain": "Fraxtal",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "symbol": "WFRAX",
+          "amountRaw": "1335516191613807403",
+          "decimals": 18,
+          "amount": 1.3355161916,
+          "classification": "unclaimed",
+          "source": "onchain: YieldDistributor.earned",
+          "usdValue": null,
+          "priceUsd": null,
+          "priceMethod": null,
+          "details": {
+            "symbol": "WFRAX",
+            "coingeckoId": null,
+            "emittedToken": "0xFc00000000000000000000000000000000000002"
+          }
+        }
+      ],
+      "rewardTokens": [
+        {
+          "symbol": "AERO",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "amount": 2.0257877309,
+          "usdValue": 0.848945
+        },
+        {
+          "symbol": "crvUSD",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "amount": 0.0850813008,
+          "usdValue": 0.085081
+        },
+        {
+          "symbol": "WFRAX",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "amount": 1.3355161916,
+          "usdValue": 0
+        }
+      ],
+      "sources": [
+        {
+          "protocol": "Aerodrome",
+          "route": "aerodrome-relay",
+          "status": "ok",
+          "chain": "Base",
+          "metric": "LockedManagedReward.earned(AERO, veNFT)",
+          "note": "Relay-compounded AERO remains locked inside the managed veNFT until withdrawal."
+        },
+        {
+          "protocol": "Curve",
+          "route": "curve-fees",
+          "status": "ok",
+          "chain": "Ethereum",
+          "metric": "crvUSD FeeDistributor claim simulation"
+        },
+        {
+          "protocol": "Frax",
+          "route": "frax-yield",
+          "status": "ok",
+          "chain": "Fraxtal",
+          "metric": "YieldDistributor.earned(account)"
+        }
+      ],
+      "updatedAt": "2026-08-10T05:27:57.979Z"
     },
     "YieldRing.eth": {
-      "status": "warming",
+      "status": "partial",
       "ens": "yieldring.eth",
-      "address": null,
-      "totalUsd": null,
+      "address": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+      "resolution": "ens",
+      "fallbackMatched": null,
+      "totalUsd": 0.661517,
       "totalUsdIsComplete": false,
-      "routeCoverage": 0,
-      "measuredRoutes": 0,
+      "routeCoverage": 0.666667,
+      "measuredRoutes": 2,
       "routeCount": 3,
-      "pendingRoutes": 3,
-      "unpricedRewards": 0,
-      "rewards": [],
-      "rewardTokens": [],
-      "sources": [],
-      "updatedAt": null
-    },
-    "dinaz.eth": {
-      "status": "warming",
-      "ens": "dinaz.eth",
-      "address": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
-      "totalUsd": null,
-      "totalUsdIsComplete": false,
-      "routeCoverage": 0,
-      "measuredRoutes": 0,
-      "routeCount": 1,
       "pendingRoutes": 1,
       "unpricedRewards": 0,
-      "rewards": [],
-      "rewardTokens": [],
-      "sources": [],
-      "updatedAt": null
+      "rewards": [
+        {
+          "protocol": "Aerodrome",
+          "route": "aerodrome-relay",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "amountRaw": "1578540067223812498",
+          "decimals": 18,
+          "amount": 1.5785400672,
+          "classification": "compounded-locked",
+          "source": "onchain: LockedManagedReward.earned",
+          "usdValue": 0.661517,
+          "priceUsd": 0.419069,
+          "priceMethod": "coingecko:aerodrome-finance",
+          "details": {
+            "symbol": "AERO",
+            "veNfts": [
+              {
+                "tokenId": "130147",
+                "managedTokenId": "10298",
+                "lockedManagedReward": "0xC6631c68f00A5c89927fada25c70934D922329EF",
+                "accruedAeroRaw": "1578540067223812498"
+              }
+            ],
+            "coingeckoId": "aerodrome-finance"
+          }
+        },
+        {
+          "protocol": "Frax",
+          "route": "frax-yield",
+          "chain": "Fraxtal",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "symbol": "WFRAX",
+          "amountRaw": "1331303162196414188",
+          "decimals": 18,
+          "amount": 1.3313031622,
+          "classification": "unclaimed",
+          "source": "onchain: YieldDistributor.earned",
+          "usdValue": null,
+          "priceUsd": null,
+          "priceMethod": null,
+          "details": {
+            "symbol": "WFRAX",
+            "coingeckoId": null,
+            "emittedToken": "0xFc00000000000000000000000000000000000002"
+          }
+        }
+      ],
+      "rewardTokens": [
+        {
+          "symbol": "AERO",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "amount": 1.5785400672,
+          "usdValue": 0.661517
+        },
+        {
+          "symbol": "WFRAX",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "amount": 1.3313031622,
+          "usdValue": 0
+        }
+      ],
+      "sources": [
+        {
+          "protocol": "Aerodrome",
+          "route": "aerodrome-relay",
+          "status": "ok",
+          "chain": "Base",
+          "metric": "LockedManagedReward.earned(AERO, veNFT)",
+          "note": "Relay-compounded AERO remains locked inside the managed veNFT until withdrawal."
+        },
+        {
+          "protocol": "Frax",
+          "route": "frax-yield",
+          "status": "ok",
+          "chain": "Fraxtal",
+          "metric": "YieldDistributor.earned(account)"
+        },
+        {
+          "protocol": "Convex / Votium / The Union",
+          "route": "votium-union",
+          "status": "warming",
+          "chain": "Ethereum",
+          "metric": null,
+          "note": "Union forwards and consolidates Votium rewards, but its per-member accounting implementation is not exposed in the public frontend repository. Excluded until a reproducible member-level read path is validated."
+        }
+      ],
+      "updatedAt": "2026-08-10T05:27:57.979Z"
+    },
+    "dinaz.eth": {
+      "status": "ok",
+      "ens": "dinaz.eth",
+      "address": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+      "resolution": "ens",
+      "fallbackMatched": true,
+      "totalUsd": 0,
+      "totalUsdIsComplete": true,
+      "routeCoverage": 1,
+      "measuredRoutes": 1,
+      "routeCount": 1,
+      "pendingRoutes": 0,
+      "unpricedRewards": 0,
+      "rewards": [
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "symbol": "yb-WBTC",
+          "amountRaw": "27352596869814",
+          "decimals": 18,
+          "amount": 0.0000273526,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": null,
+          "priceUsd": null,
+          "priceMethod": null,
+          "details": {
+            "symbol": "yb-WBTC",
+            "redeemAsset": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+            "redeemSymbol": "WBTC",
+            "redeemDecimals": 8,
+            "redeemAmountRaw": "2755",
+            "redeemAmount": 0.00002755,
+            "priceByEthereumContract": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+            "marketIndex": 7
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "symbol": "yb-cbBTC",
+          "amountRaw": "19948909311589",
+          "decimals": 18,
+          "amount": 0.0000199489,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": null,
+          "priceUsd": null,
+          "priceMethod": null,
+          "details": {
+            "symbol": "yb-cbBTC",
+            "redeemAsset": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+            "redeemSymbol": "cbBTC",
+            "redeemDecimals": 8,
+            "redeemAmountRaw": "2007",
+            "redeemAmount": 0.00002007,
+            "priceByEthereumContract": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+            "marketIndex": 8
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "symbol": "yb-tBTC",
+          "amountRaw": "13035617925308",
+          "decimals": 18,
+          "amount": 0.0000130356,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": null,
+          "priceUsd": null,
+          "priceMethod": null,
+          "details": {
+            "symbol": "yb-tBTC",
+            "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
+            "redeemSymbol": "tBTC",
+            "redeemDecimals": 18,
+            "redeemAmountRaw": "13091356148198",
+            "redeemAmount": 0.000013091356,
+            "priceByEthereumContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
+            "marketIndex": 9
+          }
+        }
+      ],
+      "rewardTokens": [
+        {
+          "symbol": "yb-WBTC",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "amount": 0.0000273526,
+          "usdValue": 0
+        },
+        {
+          "symbol": "yb-cbBTC",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "amount": 0.0000199489,
+          "usdValue": 0
+        },
+        {
+          "symbol": "yb-tBTC",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "amount": 0.0000130356,
+          "usdValue": 0
+        }
+      ],
+      "sources": [
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "status": "ok",
+          "chain": "Ethereum",
+          "metric": "FeeDistributor.preview_claim(receiver, 50, false)"
+        }
+      ],
+      "updatedAt": "2026-08-10T05:27:57.979Z"
     }
   },
   "engineErrors": {},
-  "history": []
+  "history": [
+    {
+      "date": "2026-08-10",
+      "generatedAt": "2026-08-10T05:27:57.979Z",
+      "companies": {
+        "05081966.eth": {
+          "status": "ok",
+          "totalUsd": 0.934026,
+          "totalUsdIsComplete": true,
+          "rewardTokens": [
+            {
+              "symbol": "AERO",
+              "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+              "amount": 2.0257877309,
+              "usdValue": 0.848945
+            },
+            {
+              "symbol": "crvUSD",
+              "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+              "amount": 0.0850813008,
+              "usdValue": 0.085081
+            },
+            {
+              "symbol": "WFRAX",
+              "token": "0xFc00000000000000000000000000000000000002",
+              "amount": 1.3355161916,
+              "usdValue": 0
+            }
+          ]
+        },
+        "YieldRing.eth": {
+          "status": "partial",
+          "totalUsd": 0.661517,
+          "totalUsdIsComplete": false,
+          "rewardTokens": [
+            {
+              "symbol": "AERO",
+              "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+              "amount": 1.5785400672,
+              "usdValue": 0.661517
+            },
+            {
+              "symbol": "WFRAX",
+              "token": "0xFc00000000000000000000000000000000000002",
+              "amount": 1.3313031622,
+              "usdValue": 0
+            }
+          ]
+        },
+        "dinaz.eth": {
+          "status": "ok",
+          "totalUsd": 0,
+          "totalUsdIsComplete": true,
+          "rewardTokens": [
+            {
+              "symbol": "yb-WBTC",
+              "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+              "amount": 0.0000273526,
+              "usdValue": 0
+            },
+            {
+              "symbol": "yb-cbBTC",
+              "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+              "amount": 0.0000199489,
+              "usdValue": 0
+            },
+            {
+              "symbol": "yb-tBTC",
+              "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+              "amount": 0.0000130356,
+              "usdValue": 0
+            }
+          ]
+        }
+      }
+    }
+  ]
 }
