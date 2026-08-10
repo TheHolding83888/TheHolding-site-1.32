@@ -4093,9 +4093,9 @@
             <p class="ns-stats">
                 <span class="ns-stat"><b id="nsNetworkValue">—</b> Network Value</span>
                 <span class="ns-sep">·</span>
-                <span class="ns-stat"><b>4</b> Companies</span>
+                <span class="ns-stat"><b>5</b> Companies</span>
                 <span class="ns-sep">·</span>
-                <span class="ns-stat"><b>8+</b> Protocols</span>
+                <span class="ns-stat"><b>13</b> Protocols &amp; Assets</span>
             </p>
 
             <div class="ns-foot">
@@ -5068,6 +5068,7 @@
                     'curve-dao-token',
                     'pendle',
                     'fxn-token',             // FXN - f(x) Protocol · CoinGecko API ID
+                    'internet-computer',     // ICP - company #005 NNS-staked principal
                     'yield-basis',
                     'frax-share',
                     'velodrome-finance',
@@ -5202,7 +5203,9 @@
                               + 10846 * p('yield-basis') + 4224 * p('frax-share')
                               + 12180 * p('velodrome-finance') + 50 * p('venice-token')
                               + 1488 * p('liquity') + 3682 * p('resupply');
-                    const networkValue = co1 + co2 + co3 + co4;
+                    const co5 = 0.1241 * p('bitcoin') + 1363 * p('internet-computer')
+                              + 5000 * p('aerodrome-finance') + 28326 * p('velodrome-finance');
+                    const networkValue = co1 + co2 + co3 + co4 + co5;
                     nsEl.textContent = networkValue > 0
                         ? '$' + Math.round(networkValue).toLocaleString()
                         : 'Live';
