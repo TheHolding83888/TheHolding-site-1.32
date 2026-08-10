@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.3';
-const COLLECTOR_VERSION = '0.2.3-defitea-reusd-global-fix';
+const VERSION = '0.2.4';
+const COLLECTOR_VERSION = '0.2.4-defitea-votemarket-unclaimed';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -15,6 +15,7 @@ const RPC = {
   base: ['https://base-rpc.publicnode.com', 'https://mainnet.base.org'],
   optimism: ['https://optimism-rpc.publicnode.com', 'https://mainnet.optimism.io'],
   arbitrum: ['https://arbitrum-one-rpc.publicnode.com', 'https://arb1.arbitrum.io/rpc'],
+  polygon: ['https://polygon-bor-rpc.publicnode.com', 'https://polygon-rpc.com'],
   bsc: ['https://bsc-rpc.publicnode.com', 'https://bsc-dataseed.binance.org'],
   fraxtal: ['https://rpc.frax.com']
 };
@@ -23,6 +24,7 @@ const CHAIN_META = {
   1: { key: 'ethereum', name: 'Ethereum', platform: 'ethereum' },
   10: { key: 'optimism', name: 'Optimism', platform: 'optimistic-ethereum' },
   56: { key: 'bsc', name: 'BNB Chain', platform: 'binance-smart-chain' },
+  137: { key: 'polygon', name: 'Polygon', platform: 'polygon-pos' },
   8453: { key: 'base', name: 'Base', platform: 'base' },
   42161: { key: 'arbitrum', name: 'Arbitrum', platform: 'arbitrum-one' }
 };
@@ -193,6 +195,28 @@ const FORTY_ACRES_FACTORY_ABI = [
 const FORTY_ACRES_PORTFOLIO_ABI = [
   'function getRewardsToken() view returns (address)'
 ];
+const VOTEMARKET_ABI = [
+  'function campaignById(uint256) view returns (uint256 chainId,address gauge,address manager,address rewardToken,uint8 numberOfPeriods,uint256 maxRewardPerVote,uint256 totalRewardAmount,uint256 totalDistributed,uint256 startTimestamp,uint256 endTimestamp,address hook)',
+  'function CLAIM_WINDOW_LENGTH() view returns (uint256)',
+  'function isClosedCampaign(uint256 campaignId) view returns (bool)',
+  'function totalClaimedByAccount(uint256 campaignId,uint256 epoch,address account) view returns (uint256)',
+  'function claim(uint256 campaignId,address account,uint256 epoch,bytes hookData) returns (uint256 claimed)'
+];
+
+const VOTEMARKET = {
+  proofBase: 'https://raw.githubusercontent.com/stake-dao/api/main/api/votemarket',
+  weekSeconds: 7 * 24 * 60 * 60,
+  // 64 weeks covers Defitea's current operating lifetime and is intentionally
+  // broader than the documented six-month post-campaign claim window.
+  lookbackWeeks: 64,
+  concurrency: 16,
+  supportedChainIds: new Set([10, 137, 8453, 42161])
+};
+
+const voteMarketJsonCache = new Map();
+const voteMarketContractCache = new Map();
+const voteMarketTokenMetaCache = new Map();
+const voteMarketClaimWindowCache = new Map();
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const n = x => Number(x);
@@ -698,23 +722,337 @@ async function collectCurveBase(address, registry) {
   };
 }
 
-function voteMarketPendingSource(route) {
-  const isCurve = route === 'votemarket-vecrv';
+function voteMarketCurrentEpoch() {
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  return Math.floor(nowSeconds / VOTEMARKET.weekSeconds) * VOTEMARKET.weekSeconds;
+}
+
+async function mapLimit(items, limit, fn) {
+  const results = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (true) {
+      const i = next++;
+      if (i >= items.length) return;
+      results[i] = await fn(items[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length || 1) }, () => worker()));
+  return results;
+}
+
+async function fetchVoteMarketJson(url, timeoutMs = 6000) {
+  if (voteMarketJsonCache.has(url)) return voteMarketJsonCache.get(url);
+  const pending = (async () => {
+    let last = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        if (res.status === 404) return { status: 'missing', data: null, error: null };
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return { status: 'ok', data: await res.json(), error: null };
+      } catch (e) {
+        last = e;
+        if (attempt === 0) await sleep(250);
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    return { status: 'error', data: null, error: last?.message || 'VoteMarket proof fetch failed' };
+  })();
+  voteMarketJsonCache.set(url, pending);
+  return pending;
+}
+
+function objectHasAddress(obj, address) {
+  if (!obj || typeof obj !== 'object') return false;
+  const target = address.toLowerCase();
+  return Object.keys(obj).some(k => String(k).toLowerCase() === target);
+}
+
+function voteMarketPlatformContract(provider, chainId, platform) {
+  const key = `${chainId}:${platform.toLowerCase()}`;
+  if (!voteMarketContractCache.has(key)) {
+    voteMarketContractCache.set(key, new Contract(getAddress(platform), VOTEMARKET_ABI, provider));
+  }
+  return voteMarketContractCache.get(key);
+}
+
+async function voteMarketTokenMeta(provider, chainId, token) {
+  const key = `${chainId}:${token.toLowerCase()}`;
+  if (!voteMarketTokenMetaCache.has(key)) {
+    voteMarketTokenMetaCache.set(key, tokenMeta(provider, token));
+  }
+  return voteMarketTokenMetaCache.get(key);
+}
+
+async function voteMarketClaimWindow(vm, chainId, platform) {
+  const key = `${chainId}:${platform.toLowerCase()}`;
+  if (!voteMarketClaimWindowCache.has(key)) {
+    voteMarketClaimWindowCache.set(key, vm.CLAIM_WINDOW_LENGTH());
+  }
+  return voteMarketClaimWindowCache.get(key);
+}
+
+function parseVoteMarketCampaignId(composite, platform) {
+  const value = String(composite || '');
+  const prefix = `${String(platform).toLowerCase()}-`;
+  if (!value.toLowerCase().startsWith(prefix)) return null;
+  const id = value.slice(prefix.length);
+  return /^\d+$/.test(id) ? BigInt(id) : null;
+}
+
+function findVoteMarketCandidates(votesData, address) {
+  const candidates = [];
+  const platforms = votesData?.platforms;
+  if (!platforms || typeof platforms !== 'object') return candidates;
+  for (const [platform, chains] of Object.entries(platforms)) {
+    if (!isAddressLike(platform) || !chains || typeof chains !== 'object') continue;
+    for (const [chainIdRaw, chainData] of Object.entries(chains)) {
+      const chainId = Number(chainIdRaw);
+      if (!Number.isInteger(chainId) || !VOTEMARKET.supportedChainIds.has(chainId)) continue;
+      const gauges = chainData?.gauges;
+      if (!gauges || typeof gauges !== 'object') continue;
+      for (const [gauge, gaugeData] of Object.entries(gauges)) {
+        if (!isAddressLike(gauge)) continue;
+        if (objectHasAddress(gaugeData?.users, address)) {
+          candidates.push({ platform: getAddress(platform), chainId, gauge: getAddress(gauge) });
+        }
+      }
+    }
+  }
+  return candidates;
+}
+
+async function collectVoteMarket(address, registry, protocolKey, route) {
+  const isCurve = protocolKey === 'curve';
+  const protocol = isCurve ? 'VoteMarket · veCRV' : 'VoteMarket · veFXN';
+  const currentEpoch = voteMarketCurrentEpoch();
+  const epochs = Array.from({ length: VOTEMARKET.lookbackWeeks }, (_, i) => currentEpoch - i * VOTEMARKET.weekSeconds);
+  const issues = [];
+  const diagnostics = [];
+  const rewards = [];
+  let votesFilesRead = 0;
+  let votesFilesMissing = 0;
+  let proofFilesRead = 0;
+  let eligiblePeriods = 0;
+  let alreadyClaimedPeriods = 0;
+  let measuredUnclaimedPeriods = 0;
+
+  const voteFiles = await mapLimit(epochs, VOTEMARKET.concurrency, async epoch => {
+    const url = `${VOTEMARKET.proofBase}/${epoch}/${protocolKey}/votes.json`;
+    const fetched = await fetchVoteMarketJson(url);
+    return { epoch, url, ...fetched };
+  });
+
+  const candidatePeriods = [];
+  for (const item of voteFiles) {
+    if (item.status === 'missing') {
+      votesFilesMissing++;
+      continue;
+    }
+    if (item.status === 'error') {
+      issues.push(`votes ${item.epoch}: ${item.error}`);
+      continue;
+    }
+    votesFilesRead++;
+    for (const candidate of findVoteMarketCandidates(item.data, address)) {
+      candidatePeriods.push({ epoch: item.epoch, ...candidate });
+    }
+  }
+
+  const uniqueCandidatePeriods = [...new Map(candidatePeriods.map(x => [
+    `${x.epoch}:${x.chainId}:${x.platform.toLowerCase()}:${x.gauge.toLowerCase()}`, x
+  ])).values()];
+
+  for (const candidate of uniqueCandidatePeriods) {
+    const chainMeta = CHAIN_META[candidate.chainId];
+    if (!chainMeta) {
+      issues.push(`unsupported chain ${candidate.chainId} for epoch ${candidate.epoch}`);
+      continue;
+    }
+    const proofUrl = `${VOTEMARKET.proofBase}/${candidate.epoch}/${protocolKey}/${candidate.platform.toLowerCase()}/${candidate.chainId}/${candidate.gauge.toLowerCase()}.json`;
+    const proof = await fetchVoteMarketJson(proofUrl);
+    if (proof.status !== 'ok') {
+      issues.push(`proof ${candidate.epoch}/${candidate.chainId}/${candidate.gauge}: ${proof.status === 'missing' ? 'HTTP 404' : proof.error}`);
+      continue;
+    }
+    proofFilesRead++;
+    if (!objectHasAddress(proof.data?.users, address)) {
+      issues.push(`proof user mismatch ${candidate.epoch}/${candidate.chainId}/${candidate.gauge}`);
+      continue;
+    }
+
+    const activeIds = Array.isArray(proof.data?.active_campaigns_ids) ? proof.data.active_campaigns_ids : [];
+    if (!activeIds.length) {
+      issues.push(`proof has no active_campaigns_ids ${candidate.epoch}/${candidate.chainId}/${candidate.gauge}`);
+      continue;
+    }
+
+    const provider = await registry.get(chainMeta.key);
+    const vm = voteMarketPlatformContract(provider, candidate.chainId, candidate.platform);
+
+    for (const compositeId of activeIds) {
+      const campaignId = parseVoteMarketCampaignId(compositeId, candidate.platform);
+      if (campaignId === null) {
+        issues.push(`invalid campaign id ${compositeId}`);
+        continue;
+      }
+      const dedupeKey = `${candidate.chainId}:${candidate.platform.toLowerCase()}:${campaignId}:${candidate.epoch}`;
+      if (diagnostics.some(x => x.dedupeKey === dedupeKey)) continue;
+      eligiblePeriods++;
+
+      const diag = {
+        dedupeKey,
+        epoch: candidate.epoch,
+        chainId: candidate.chainId,
+        chain: chainMeta.name,
+        platform: candidate.platform,
+        gaugeFromProof: candidate.gauge,
+        campaignId: campaignId.toString(),
+        proofUrl,
+        claimedRaw: null,
+        simulatedClaimRaw: null,
+        status: 'checking'
+      };
+      diagnostics.push(diag);
+
+      try {
+        const campaign = await vm.campaignById(campaignId);
+        const rewardToken = getAddress(campaign.rewardToken ?? campaign[3]);
+        const campaignGauge = getAddress(campaign.gauge ?? campaign[1]);
+        const campaignGaugeChainId = Number(campaign.chainId ?? campaign[0]);
+        const startTimestamp = Number(campaign.startTimestamp ?? campaign[8]);
+        const endTimestamp = Number(campaign.endTimestamp ?? campaign[9]);
+        const hook = getAddress(campaign.hook ?? campaign[10]);
+        diag.rewardToken = rewardToken;
+        diag.campaignGauge = campaignGauge;
+        diag.campaignGaugeChainId = campaignGaugeChainId;
+        diag.startTimestamp = startTimestamp;
+        diag.endTimestamp = endTimestamp;
+        diag.hook = hook;
+
+        if (campaignGauge.toLowerCase() !== candidate.gauge.toLowerCase()) {
+          throw new Error(`campaign gauge mismatch ${campaignGauge} != ${candidate.gauge}`);
+        }
+        if (candidate.epoch < startTimestamp || candidate.epoch > endTimestamp) {
+          diag.status = 'outside-campaign-window';
+          continue;
+        }
+
+        const [isClosed, claimWindowRaw] = await Promise.all([
+          vm.isClosedCampaign(campaignId),
+          voteMarketClaimWindow(vm, candidate.chainId, candidate.platform)
+        ]);
+        diag.isClosed = Boolean(isClosed);
+        diag.claimWindowSeconds = Number(claimWindowRaw);
+        if (isClosed) {
+          diag.status = 'closed';
+          continue;
+        }
+        if (Number.isFinite(endTimestamp) && Math.floor(Date.now() / 1000) > endTimestamp + Number(claimWindowRaw)) {
+          diag.status = 'claim-window-expired';
+          continue;
+        }
+
+        const claimedRaw = await vm.totalClaimedByAccount(campaignId, BigInt(candidate.epoch), address);
+        diag.claimedRaw = claimedRaw.toString();
+        if (claimedRaw > 0n) {
+          alreadyClaimedPeriods++;
+          diag.status = 'already-claimed';
+          continue;
+        }
+
+        const claimFn = vm.getFunction('claim(uint256,address,uint256,bytes)');
+        const raw = await claimFn.staticCall(campaignId, address, BigInt(candidate.epoch), '0x', { from: address });
+        diag.simulatedClaimRaw = raw.toString();
+        if (raw === 0n) {
+          diag.status = 'zero-unclaimed';
+          continue;
+        }
+
+        const meta = await voteMarketTokenMeta(provider, candidate.chainId, rewardToken);
+        measuredUnclaimedPeriods++;
+        diag.status = 'measured-unclaimed';
+        diag.symbol = meta.symbol;
+        diag.decimals = meta.decimals;
+
+        rewards.push(rewardBase({
+          protocol,
+          route,
+          chain: chainMeta.name,
+          token: rewardToken,
+          amountRaw: raw,
+          decimals: meta.decimals,
+          amount: n(formatUnits(raw, meta.decimals)),
+          classification: 'unclaimed',
+          source: 'official Stake DAO proof feed + VoteMarket onchain claimed-state + claim staticCall',
+          details: {
+            symbol: meta.symbol,
+            protocolKey,
+            epoch: candidate.epoch,
+            epochDate: new Date(candidate.epoch * 1000).toISOString().slice(0, 10),
+            chainId: candidate.chainId,
+            platform: candidate.platform,
+            campaignId: campaignId.toString(),
+            gauge: campaignGauge,
+            gaugeChainId: campaignGaugeChainId,
+            hook,
+            proofUrl,
+            claimedRaw: '0',
+            claimSimulation: 'claim(uint256,address,uint256,bytes).staticCall',
+            pricePlatform: chainMeta.platform,
+            priceContract: rewardToken,
+            coingeckoId: COINGECKO_IDS[String(meta.symbol || '').toUpperCase()] || null
+          }
+        }));
+      } catch (e) {
+        diag.status = 'incomplete';
+        diag.error = e.shortMessage || e.message;
+        issues.push(`campaign ${campaignId} epoch ${candidate.epoch} chain ${candidate.chainId}: ${diag.error}`);
+      }
+    }
+  }
+
+  const hasMeasuredFeed = votesFilesRead > 0;
+  const status = !hasMeasuredFeed
+    ? (issues.length ? 'warming' : 'ok')
+    : issues.length ? 'partial' : 'ok';
+  const note = status === 'ok'
+    ? `Official VoteMarket proofs and onchain claimed-state were checked across ${VOTEMARKET.lookbackWeeks} weekly epochs; only contract-simulated unclaimed amounts are counted.`
+    : status === 'partial'
+      ? 'Measured VoteMarket rewards are retained, but one or more proof/onchain checks were incomplete; uncertain amounts are excluded.'
+      : 'VoteMarket proof/onchain measurement could not be completed; no amount is guessed.';
+
   return {
     source: {
-      protocol: isCurve ? 'VoteMarket · veCRV' : 'VoteMarket · veFXN',
+      protocol,
       route,
-      status: 'warming',
+      status,
       chain: 'Multi-chain',
-      metric: 'Stake DAO VoteMarket V2 official proof feed · exact unclaimed amount validation pending',
-      note: `Official Stake DAO VoteMarket proof data is available for ${isCurve ? 'Curve / veCRV' : 'f(x) / veFXN'} campaigns. The route is shown separately, but no USD amount is counted until already-claimed vs still-unclaimed rewards can be reproduced safely.`,
+      metric: 'Official VoteMarket proof eligibility + totalClaimedByAccount + claim() static simulation',
+      note,
       details: {
-        protocolKey: isCurve ? 'curve' : 'fxn',
-        proofBase: 'https://raw.githubusercontent.com/stake-dao/api/main/api/votemarket',
-        amountIncludedInTotal: false
+        protocolKey,
+        proofBase: VOTEMARKET.proofBase,
+        lookbackWeeks: VOTEMARKET.lookbackWeeks,
+        lookbackFromEpoch: epochs[epochs.length - 1],
+        lookbackToEpoch: currentEpoch,
+        votesFilesRead,
+        votesFilesMissing,
+        candidateGaugePeriods: uniqueCandidatePeriods.length,
+        proofFilesRead,
+        eligiblePeriods,
+        alreadyClaimedPeriods,
+        measuredUnclaimedPeriods,
+        amountIncludedInTotal: true,
+        issues,
+        diagnostics: diagnostics.map(({ dedupeKey, ...x }) => x)
       }
     },
-    rewards: []
+    rewards
   };
 }
 
@@ -1014,13 +1352,13 @@ async function collectRoute(route, address, registry) {
     case 'aerodrome-ve': return collectVeProtocol(address, registry, 'aerodrome');
     case 'velodrome-ve': return collectDefiteaVelodrome(address, registry);
     case 'curve-fees': return collectCurveBase(address, registry);
-    case 'votemarket-vecrv': return voteMarketPendingSource(route);
+    case 'votemarket-vecrv': return collectVoteMarket(address, registry, 'curve', route);
     case 'frax-yield': return collectFrax(address, registry);
     case 'yield-basis-fees': return collectYieldBasis(address, registry);
     case 'votium-union': return unionPendingSource();
     case 'pendle-spendle': return collectPendle(address, registry);
     case 'fx-fees': return collectFxFees(address, registry);
-    case 'votemarket-vefxn': return voteMarketPendingSource(route);
+    case 'votemarket-vefxn': return collectVoteMarket(address, registry, 'fxn', route);
     case 'venice-staking': return collectVenice(address, registry);
     case 'liquity-staking': return collectLiquity(address, registry);
     case 'resupply-staking': return collectResupply(address, registry);
@@ -1290,10 +1628,10 @@ async function main() {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
       multiWallet: 'Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.',
       aerodromeVelodrome: 'Aerodrome managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories, then reads current rewards at the actual holder. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
-      curve: 'Base crvUSD FeeDistributor claims are simulated. Defitea VoteMarket veCRV incentives are tracked as a known pending supplement and are not guessed.',
+      curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, VoteMarket totalClaimedByAccount state, and claim() static simulation for exact unclaimed amounts.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
       pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.',
-      fx: 'Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN incentives remain a known pending supplement.',
+      fx: 'Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN uses official Stake DAO proof membership, VoteMarket totalClaimedByAccount state, and claim() static simulation for exact unclaimed amounts.',
       yieldBasis: 'FeeDistributor.preview_claim is used; yb rewards are valued at current redemption value into underlying BTC assets.',
       frax: 'Fraxtal YieldDistributor.earned(account), with emitted reward token discovered onchain.',
       venice: 'StakingV2.pendingRewards(user) on Base.',
