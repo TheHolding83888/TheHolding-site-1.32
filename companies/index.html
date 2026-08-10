@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -83,7 +84,7 @@
         { "@type": "ListItem", "position": 2, "name": "YieldRing.eth", "url": "https://theholding.ai/yieldring" },
         { "@type": "ListItem", "position": 3, "name": "dinaz.eth" },
         { "@type": "ListItem", "position": 4, "name": "defitea.eth", "url": "https://theholding.ai/defitea/" },
-        { "@type": "ListItem", "position": 5, "name": "0x5860...83CA8.eth" }
+        { "@type": "ListItem", "position": 5, "name": "0x58...CA8.eth" }
       ]
     }
     </script>
@@ -611,6 +612,10 @@
         @media (min-width: 761px) {
             .grid.view-list .cc-perf { grid-column: 1 / -1; grid-row: 4; }
             .grid.view-list .cc-extlink { grid-row: 5; }
+
+            /* Company #005: same overall rhythm as neighbouring cards, with
+               the headline metrics lifted slightly for optical symmetry. */
+            .company-card-005 .cc-metrics { margin-top: -0.28rem; }
         }
 
         .cc-extlink {
@@ -648,6 +653,14 @@
             color: var(--gold);
             opacity: 1;
             transform: translate(2px, -2px);
+        }
+        .cc-extlink-static {
+            cursor: default;
+            user-select: none;
+        }
+        .cc-extlink-static .cc-ext-label {
+            opacity: 0.62;
+            color: var(--text-3);
         }
 
         /* ── Placeholder / coming card ────────────────── */
@@ -2946,8 +2959,8 @@
             </a>
 
             <!-- ═══ Placeholder: next company ═══ -->
-            <!-- ═══ Company 0x5860...83CA8.eth ═══ -->
-            <div class="company-card reveal" data-category="standard">
+            <!-- ═══ Company #005 · public label 0x58...CA8.eth ═══ -->
+            <div class="company-card company-card-005 reveal" data-category="standard">
                 <div class="cc-regnum"><span><span class="cc-reg-label" data-i18n="card.registry">Registry</span> · 005</span><span class="cc-founded" id="founded-5860">Est. · Onchain</span></div>
                 <div class="cc-top">
                     <div class="cc-seal">
@@ -2955,7 +2968,7 @@
                     </div>
                     <div class="cc-status"><span class="cc-dot"></span><span data-i18n="card.live">Live</span></div>
                 </div>
-                <div class="cc-name">0x5860...83CA8.eth</div>
+                <div class="cc-name">0x58...CA8.eth</div>
                 <div class="cc-sub" data-i18n="card5.sub">A Bitcoin-reserve company combining maximum-term ICP staking with long-lock positions in Aerodrome and Velodrome.</div>
                 <div class="cc-metrics">
                     <div>
@@ -2968,6 +2981,9 @@
                     </div>
                 </div>
                 
+                <span class="cc-extlink cc-extlink-static" aria-disabled="true">
+                    <span class="cc-ext-label" data-i18n="card.debankTracking">DeBank · Tracking</span>
+                </span>
             </div>
 
             <div class="company-card placeholder reveal">
@@ -3324,6 +3340,12 @@ const COMPANY_PROTOCOLS = {
     'dinaz.eth':     ['Yield Basis'],
     '0x5860...83CA8.eth': ['Bitcoin','ICP','Aero','Velodrome']
 };
+/* Stable canonical IDs keep every data join intact; compact public labels are
+   presentation-only, especially useful in the mobile network graph. */
+const COMPANY_DISPLAY_NAMES = {
+    '0x5860...83CA8.eth': '0x58...CA8.eth'
+};
+const companyDisplayName = value => COMPANY_DISPLAY_NAMES[value] || value;
 let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (capital-weighted lens)
 
 /* ── Automatic Productivity / APR data layer ─────────────────────────────
@@ -3845,7 +3867,7 @@ function renderIndex(lang) {
             seg.dataset.nm = c.nm;
             seg.style.width = pct(c).toFixed(2) + '%';
             seg.style.background = shade(i);
-            seg.title = c.nm + ' · ' + pct(c).toFixed(1) + '%';
+            seg.title = companyDisplayName(c.nm) + ' · ' + pct(c).toFixed(1) + '%';
             bar.appendChild(seg);
         });
     }
@@ -3857,7 +3879,7 @@ function renderIndex(lang) {
             it.className = 'icl-item';
             it.dataset.nm = c.nm;
             it.innerHTML = '<span class="icl-swatch" style="background:' + shade(i) + '"></span>'
-                         + '<b>' + c.nm + '</b> <span class="icl-w">' + pct(c).toFixed(1) + '%</span>';
+                         + '<b>' + companyDisplayName(c.nm) + '</b> <span class="icl-w">' + pct(c).toFixed(1) + '%</span>';
             leg.appendChild(it);
         });
     }
@@ -4216,7 +4238,7 @@ function renderIndex(lang) {
                 '<div class="ib-row" role="button" tabindex="0" aria-expanded="false">'
                 +   '<span class="ib-rank">' + (i + 1) + '</span>'
                 +   '<span class="ib-name"><span class="ib-swatch" style="background:' + shade(i) + '"></span>'
-                +     '<span class="ib-nm-wrap"><div class="ib-nm">' + c.nm + '</div>'
+                +     '<span class="ib-nm-wrap"><div class="ib-nm">' + companyDisplayName(c.nm) + '</div>'
                 +     '<div class="ib-cat">' + c.cat[lang] + '</div></span></span>'
                 +   '<span class="ib-value">' + (c.val > 0 ? money(c.val) : 'Live') + '</span>'
                 +   '<span class="ib-weight"><span class="ibw-track"><span class="ibw-fill" style="width:' + w.toFixed(2) + '%;background:' + shade(i) + '"></span></span>'
@@ -4656,7 +4678,7 @@ function buildGraph() {
             + '<rect class="g-hit" x="0" y="' + hitY2 + '" width="' + (P.coX + P.rCoMax + 6) + '" height="' + hitH2 + '"></rect>'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.1).toFixed(1) + '" fill="' + col + '" opacity="0.20" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-co" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '" style="fill:' + col + '"></circle>'
-            + '<text class="g-label-co" x="' + (P.coX - P.rCoMax - P.offCo) + '" y="' + (y + (mobile ? 4 : 5)).toFixed(1) + '" text-anchor="end" style="font-size:' + P.fCo + 'px">' + c.nm + '</text>'
+            + '<text class="g-label-co" x="' + (P.coX - P.rCoMax - P.offCo) + '" y="' + (y + (mobile ? 4 : 5)).toFixed(1) + '" text-anchor="end" style="font-size:' + P.fCo + 'px">' + companyDisplayName(c.nm) + '</text>'
             + '</g>';
     });
 
@@ -5103,7 +5125,7 @@ function renderFramework(lang) {
         { nm: 'dinaz.eth',     val: tvl3, cost: F3.cost, pnl: F3.pnl, pct: F3.pct, href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
           reg:'003', ...APR_DINAZ, foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } },
-        { nm: '0x5860...83CA8.eth', val: tvl5, cost: F5.cost, pnl: F5.pnl, pct: F5.pct, href: null,
+        { nm: '0x5860...83CA8.eth', displayName: '0x58...CA8.eth', val: tvl5, cost: F5.cost, pnl: F5.pnl, pct: F5.pct, href: null,
           cat: { en: 'The Holding Standard', ru: 'Стандарт The Holding' }, since: { en: FOUNDATION_5860.sinceEn, ru: FOUNDATION_5860.sinceRu },
           reg:'005', ...APR_5860, foundedISO:FOUNDATION_5860.iso, founded:{ en:FOUNDATION_5860.en, ru:FOUNDATION_5860.ru }, arch:{ en:'The Holding Standard', ru:'Стандарт The Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } }
     ];
@@ -5241,6 +5263,7 @@ function renderFramework(lang) {
             'card5.sub': 'A Bitcoin-reserve company combining maximum-term ICP staking with long-lock positions in Aerodrome and Velodrome.',
             'card.tvl': 'Company TVL',
             'card.cashflow': 'APR',
+            'card.debankTracking': 'DeBank · Tracking',
             'card.explore': 'Explore Company',
             'card.perf': 'Performance · Since Inception',
             'placeholder.title': 'Next Company',
@@ -5349,6 +5372,7 @@ function renderFramework(lang) {
             'card5.sub': 'Компания с резервом в Bitcoin, максимальным NNS-стейкингом ICP и долгосрочными ve-позициями в Aerodrome и Velodrome.',
             'card.tvl': 'TVL компании',
             'card.cashflow': 'APR',
+            'card.debankTracking': 'DeBank · Трекинг',
             'card.explore': 'Перейти к компании',
             'card.perf': 'Результат · с момента запуска',
             'placeholder.title': 'Следующая компания',
