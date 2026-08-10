@@ -32,7 +32,7 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.11-company-005-foundation-nft';
+const COLLECTOR_VERSION = '1.12-pendle-lkg-resilience';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const PENDLE_SPENDLE_TOKEN = '0x999999999991e178d52cd95afd4b00d066664144';
 const PENDLE_SURVIVOR_CAMPAIGNS = 3;
@@ -43,6 +43,7 @@ const PENDLE_SURVIVOR_MAX_SPREAD_BPS = 75;
 const PENDLE_SURVIVOR_MIN_DENSITY = 0.25;
 const PENDLE_SURVIVOR_MIN_CAMPAIGNS = 2;
 const PENDLE_SURVIVOR_MAX_SUPPLY_DEVIATION_PCT = 5;
+const PENDLE_LKG_MAX_AGE_DAYS = 28;
 const PENDLE_SURVIVOR_RPC_BUDGET_MS = 90_000;
 const CURVE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0 Safari/537.36';
@@ -442,7 +443,9 @@ async function discoverRecentPendleMerkleCampaigns(now=Math.floor(Date.now()/100
   // the latest one so we can map the Merkle calendar to API epoch timestamps.
   const token='0x999999999991e178d52cd95afd4b00d066664144';
   const repoApi='https://api.github.com/repos/pendle-finance/merkle-distributions/contents/vependle-airdrop/1';
-  const rows=await fetchJson(repoApi,{headers:{'accept':'application/vnd.github+json'}},2);
+  const githubHeaders={'accept':'application/vnd.github+json'};
+  if (process.env.GITHUB_TOKEN) githubHeaders.authorization=`Bearer ${process.env.GITHUB_TOKEN}`;
+  const rows=await fetchJson(repoApi,{headers:githubHeaders},2);
   if (!Array.isArray(rows)) throw new Error('Pendle Merkle: repository directory listing unavailable');
 
   const names=rows
@@ -1400,6 +1403,37 @@ function lastGoodEngine(previous,id) {
   return NaN;
 }
 
+
+function lastGoodEngineObservation(previous,id) {
+  const hist=previous?.history?.engines?.[id];
+  if (!Array.isArray(hist)) return null;
+  for (let i=hist.length-1;i>=0;i--) {
+    const row=hist[i];
+    const apr=aprValue(row?.apr);
+    if (!saneApr(apr)) continue;
+    const periodEndMs=Date.parse(row?.periodEnd||'');
+    const ageDays=Number.isFinite(periodEndMs) ? (Date.now()-periodEndMs)/86400000 : NaN;
+    return {
+      apr,
+      snapshotKey:row?.snapshotKey||null,
+      periodStart:row?.periodStart||null,
+      periodEnd:row?.periodEnd||null,
+      sourceType:row?.sourceType||null,
+      ageDays
+    };
+  }
+  return null;
+}
+
+function pendleValidationTemporarilyUnavailable(result) {
+  const research=result?.details?.research;
+  return Boolean(
+    result?.notReady &&
+    research?.merkleError &&
+    Number(research?.campaignCount||0)===0
+  );
+}
+
 function upsertObservation(arr,obs) {
   const out=Array.isArray(arr)?arr.slice():[];
   const i=out.findIndex(x=>x.snapshotKey===obs.snapshotKey);
@@ -1452,12 +1486,51 @@ async function main() {
       if (r?.internalState && engineId==='liquity_lqty') liquityInternal=r.internalState;
       if (r?.internalState && engineId==='pendle_spendle') pendleInternal=r.internalState;
       if (r?.notReady) {
-        engines[engineId]={
-          engineId,...meta,aprLatest:null,sourceType:r.sourceType,sourceMetric:r.sourceMetric,
-          source:r.source||meta.sourceUrl,periodStart:r.periodStart||null,periodEnd:r.periodEnd||generatedAt,lastUpdatedAt:generatedAt,
-          status:'warming',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,details:r.details||{}
-        };
-        console.warn(`… ${engineId}: source not ready; waiting for a valid observed period`);
+        // Pendle has already passed a strict replicated Merkle + onchain validation gate.
+        // If the current run cannot re-open the official Merkle source at all (for
+        // example a transient GitHub 403/429/5xx), do not erase that validated
+        // Reference APR immediately. Carry the latest validated observation for a
+        // bounded window, mark it STALE, and never add the stale carry to history.
+        // If Merkle data is reachable but the current validation gate genuinely
+        // fails, we keep the normal warming behavior instead of masking it.
+        const pendleLkg=engineId==='pendle_spendle' && pendleValidationTemporarilyUnavailable(r)
+          ? lastGoodEngineObservation(previous,engineId)
+          : null;
+        const pendleLkgFreshEnough=Boolean(
+          pendleLkg && saneApr(pendleLkg.apr) &&
+          Number.isFinite(pendleLkg.ageDays) &&
+          pendleLkg.ageDays>=0 && pendleLkg.ageDays<=PENDLE_LKG_MAX_AGE_DAYS
+        );
+        if (pendleLkgFreshEnough) {
+          engines[engineId]={
+            engineId,...meta,aprLatest:round(pendleLkg.apr),
+            sourceType:'last-known-good',
+            sourceMetric:'sPENDLE last validated Reference APR · current Merkle validation temporarily unavailable',
+            source:r.source||meta.sourceUrl,
+            periodStart:pendleLkg.periodStart,
+            periodEnd:pendleLkg.periodEnd,
+            lastUpdatedAt:null,
+            status:'stale',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,
+            details:{
+              staleReason:r?.details?.research?.merkleError||'current Pendle validation unavailable',
+              stalePolicy:`bounded last-known-good; max ${PENDLE_LKG_MAX_AGE_DAYS} days from validated reward period end`,
+              lastValidatedSnapshotKey:pendleLkg.snapshotKey,
+              lastValidatedPeriodStart:pendleLkg.periodStart,
+              lastValidatedPeriodEnd:pendleLkg.periodEnd,
+              lastValidatedSourceType:pendleLkg.sourceType,
+              staleAgeDays:round(pendleLkg.ageDays,2),
+              currentAttempt:r.details||{}
+            }
+          };
+          console.warn(`! ${engineId}: stale ${round(pendleLkg.apr)}% retained because current Merkle validation is unavailable (${r?.details?.research?.merkleError||'upstream unavailable'})`);
+        } else {
+          engines[engineId]={
+            engineId,...meta,aprLatest:null,sourceType:r.sourceType,sourceMetric:r.sourceMetric,
+            source:r.source||meta.sourceUrl,periodStart:r.periodStart||null,periodEnd:r.periodEnd||generatedAt,lastUpdatedAt:generatedAt,
+            status:'warming',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,details:r.details||{}
+          };
+          console.warn(`… ${engineId}: source not ready; waiting for a valid observed period`);
+        }
         continue;
       }
       if (!saneApr(r.apr)) throw new Error(`invalid APR ${r.apr}`);
@@ -1576,7 +1649,7 @@ async function main() {
   }
 
   const output={
-    version:'1.10',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.12',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions with valid Reference APRs. coverage shows the share of productive capital currently included; unknown engines are excluded, never treated as 0%. Canonical historical company averages use full-coverage observations only.',
     engines,companies,companyMetadata,
     history:{engines:historyEngines,companies:historyCompanies},
