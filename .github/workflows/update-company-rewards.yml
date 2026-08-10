@@ -15,7 +15,7 @@ concurrency:
 jobs:
   update-company-rewards:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Checkout repository
@@ -34,6 +34,11 @@ jobs:
       - name: Collect company accrued rewards
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          # Optional dedicated Base RPC(s). If unset, the engine automatically
+          # falls back to Base's official public RPC and other public endpoints.
+          # Secret values are never serialized into rewards-data.json.
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
         run: node rewards/company-rewards-engine.mjs
 
       - name: Commit updated rewards snapshot
