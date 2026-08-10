@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Productivity / APR Engine v1.9
+ * The Holding · Productivity / APR Engine v1.10
  *
  * SIMPLE-FIRST architecture:
  *   official protocol API / onchain data / official frontend
@@ -11,7 +11,7 @@
  *        -> historical average APR
  *        -> productivity-data.json consumed by companies.html
  *
- * No wallet tracking. No claim tracking. No company-address dependency.
+ * No wallet reward tracking. No claim tracking. Company addresses are used only for verifiable registry metadata such as founding events.
  */
 
 import fs from 'node:fs/promises';
@@ -32,7 +32,7 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.9-pendle-replicated-survivor';
+const COLLECTOR_VERSION = '1.10-company-005-icp-nns';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const PENDLE_SPENDLE_TOKEN = '0x999999999991e178d52cd95afd4b00d066664144';
 const PENDLE_SURVIVOR_CAMPAIGNS = 3;
@@ -48,6 +48,15 @@ const CURVE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0 Safari/537.36';
 const RPC_TIMEOUT_MS = 7000;
 const API_TIMEOUT_MS = 15000;
+
+// Company #005: temporary registry identity. Its founding date is not hardcoded:
+// the collector derives the earliest verifiable veVELO lock/mint on Optimism.
+const COMPANY_005_NAME = '0x5860...83CA8.eth';
+const COMPANY_005_ADDRESS = '0x58603461149Fc2A800a56d421e77DcbBA2D83CA8';
+const VELODROME_V1_ESCROW = '0x9c7305eb78a432ced5c4d14cac27e8ed569a2e26';
+const VELODROME_V2_ESCROW = '0xFAf8FD17D9840595845582fCB047DF13f006787d';
+const OPTIMISM_BLOCKSCOUT_URLS = ['https://explorer.optimism.io','https://optimism.blockscout.com'];
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const ETH_RPC_URLS = [
   process.env.ETH_RPC_URL,
@@ -81,7 +90,8 @@ const ENGINE_BY_CG_ID = {
   'velodrome-finance': 'velodrome_vevelo',
   'venice-token':      'venice_svvv',
   'liquity':           'liquity_lqty',
-  'resupply':          'resupply_rsup'
+  'resupply':          'resupply_rsup',
+  'internet-computer': 'icp_nns'
 };
 
 const ENGINE_META = {
@@ -95,7 +105,8 @@ const ENGINE_META = {
   frax_vefrax:      { protocol:'Frax', principalSymbol:'FRAX', sourceUrl:'https://app.frax.finance/fxtl-vefxs', nativeCadence:'epoch' },
   venice_svvv:      { protocol:'Venice', principalSymbol:'VVV', sourceUrl:'https://venice.ai/token', nativeCadence:'continuous' },
   liquity_lqty:     { protocol:'Liquity', principalSymbol:'LQTY', sourceUrl:'https://www.liquity.org/stake', nativeCadence:'continuous/week-sampled' },
-  resupply_rsup:    { protocol:'Resupply', principalSymbol:'RSUP', sourceUrl:'https://resupply.finance/governance/rsup', nativeCadence:'weekly' }
+  resupply_rsup:    { protocol:'Resupply', principalSymbol:'RSUP', sourceUrl:'https://resupply.finance/governance/rsup', nativeCadence:'weekly' },
+  icp_nns:          { protocol:'Internet Computer', principalSymbol:'ICP', sourceUrl:'https://dashboard.internetcomputer.org/governance', nativeCadence:'continuous' }
 };
 
 function nowIso() { return new Date().toISOString(); }
@@ -1182,6 +1193,96 @@ async function collectResupply(browser) {
   throw new Error('Resupply: vAPR not found');
 }
 
+async function collectIcpNns(browser) {
+  const url='https://dashboard.internetcomputer.org/governance';
+  const text=await renderedText(browser,url,{waitMs:5000});
+  const t=normalizeText(text);
+  // The official dashboard exposes an Annualized Estimate Rewards calculator.
+  // The default/current maximum dissolve-delay selection is 2 years. Require
+  // both pieces of context so a nearby unrelated percentage cannot be accepted.
+  const hasTwoYear=/Neuron dissolve delay.{0,120}?2\s*years/i.test(t) || /2\s*years.{0,160}?Dissolve delay bonus/i.test(t);
+  const apr=firstPercentAfter(t,'Annualized Estimate Rewards',220);
+  if (!hasTwoYear) throw new Error('ICP NNS: 2-year dissolve-delay context not found');
+  if (!saneApr(apr)) throw new Error('ICP NNS: Annualized Estimate Rewards not found');
+  return {
+    apr:round(apr), source:url, sourceType:'official-dashboard',
+    sourceMetric:'NNS 2-year dissolve-delay Annualized Estimate Rewards',
+    details:{dissolveDelayYears:2, rewardType:'NNS voting rewards', liveDashboard:true}
+  };
+}
+
+function unixIso(v) {
+  const n=Number(v);
+  if (!Number.isFinite(n) || n<=0) return null;
+  const d=new Date((n<1e12?n*1000:n));
+  return Number.isFinite(d.getTime()) ? d.toISOString() : null;
+}
+function lowerAddr(v) { return String(v||'').toLowerCase(); }
+
+async function blockscoutLegacy(action, params={}) {
+  const qs=new URLSearchParams({module:'account',action,...params});
+  let last=null;
+  for (const base of OPTIMISM_BLOCKSCOUT_URLS) {
+    try {
+      const j=await fetchJson(`${base}/api?${qs.toString()}`,{},1);
+      if (Array.isArray(j?.result)) return j.result;
+      last=new Error(`unexpected Blockscout result from ${base}`);
+    } catch(e) { last=e; }
+  }
+  throw last || new Error('Optimism Blockscout unavailable');
+}
+
+
+async function discoverCompany005Foundation(previousMeta={}) {
+  const old=previousMeta?.[COMPANY_005_NAME];
+  if (old?.foundedISO && old?.confidence==='high') return old;
+
+  const wallet=lowerAddr(COMPANY_005_ADDRESS);
+  const candidates=[];
+  const errors=[];
+  for (const [version,escrow] of [['v1',VELODROME_V1_ESCROW],['v2',VELODROME_V2_ESCROW]]) {
+    try {
+      const txs=await blockscoutLegacy('tokennfttx',{
+        address:COMPANY_005_ADDRESS,contractaddress:escrow,startblock:'0',endblock:'99999999',page:'1',offset:'1000',sort:'asc'
+      });
+      for (const x of txs) {
+        const from=lowerAddr(x.from), to=lowerAddr(x.to), contract=lowerAddr(x.contractAddress||x.contractaddress||escrow);
+        if (contract!==lowerAddr(escrow) || to!==wallet) continue;
+        const iso=unixIso(x.timeStamp||x.timestamp);
+        if (!iso) continue;
+        candidates.push({
+          foundedAt:iso, foundedISO:iso.slice(0,10), txHash:x.hash||x.transactionHash||null,
+          votingEscrow:escrow, votingEscrowVersion:version,
+          method:from===ZERO_ADDRESS?'veNFT-mint':'incoming-veNFT',
+          confidence:from===ZERO_ADDRESS?'high':'medium', tokenId:x.tokenID||x.tokenId||null
+        });
+      }
+    } catch(e) { errors.push(`${version} NFT transfers: ${e?.message||e}`); }
+  }
+
+  const minted=candidates.filter(x=>x.method==='veNFT-mint').sort((a,b)=>a.foundedAt.localeCompare(b.foundedAt));
+  if (minted.length) return {...minted[0],source:'onchain: optimism-blockscout-votingescrow',address:COMPANY_005_ADDRESS,discoveryErrors:errors};
+
+  // Fallback: a direct wallet transaction to a VotingEscrow is strong evidence
+  // of lock creation/increase, but not as specific as an ERC-721 mint event.
+  try {
+    const txs=await blockscoutLegacy('txlist',{address:COMPANY_005_ADDRESS,startblock:'0',endblock:'99999999',page:'1',offset:'10000',sort:'asc'});
+    for (const x of txs) {
+      const to=lowerAddr(x.to);
+      const escrow = to===lowerAddr(VELODROME_V1_ESCROW) ? VELODROME_V1_ESCROW : to===lowerAddr(VELODROME_V2_ESCROW) ? VELODROME_V2_ESCROW : null;
+      if (!escrow || String(x.isError||'0')==='1') continue;
+      const iso=unixIso(x.timeStamp||x.timestamp); if (!iso) continue;
+      candidates.push({foundedAt:iso,foundedISO:iso.slice(0,10),txHash:x.hash||null,votingEscrow:escrow,
+        votingEscrowVersion:escrow===VELODROME_V1_ESCROW?'v1':'v2',method:'direct-escrow-tx',confidence:'medium'});
+    }
+  } catch(e) { errors.push(`normal transactions: ${e?.message||e}`); }
+
+  const incoming=candidates.sort((a,b)=>a.foundedAt.localeCompare(b.foundedAt))[0];
+  if (incoming) return {...incoming,source:'onchain: optimism-blockscout-votingescrow',address:COMPANY_005_ADDRESS,discoveryErrors:errors};
+  if (old?.foundedISO) return {...old,discoveryErrors:errors};
+  return {address:COMPANY_005_ADDRESS,foundedISO:null,foundedAt:null,source:'onchain: optimism-blockscout-votingescrow',method:null,confidence:'unresolved',discoveryErrors:errors};
+}
+
 async function runAdapter(engineId,{browser,prices,previous}) {
   switch(engineId) {
     case 'aerodrome_veaero': return collect40Acres(browser,'Aerodrome');
@@ -1195,6 +1296,7 @@ async function runAdapter(engineId,{browser,prices,previous}) {
     case 'venice_svvv': return collectVenice();
     case 'liquity_lqty': return collectLiquity(prices,previous);
     case 'resupply_rsup': return collectResupply(browser);
+    case 'icp_nns': return collectIcpNns(browser);
     default: throw new Error(`No adapter for ${engineId}`);
   }
 }
@@ -1258,7 +1360,7 @@ async function main() {
   for (const engineId of Object.keys(ENGINE_META)) {
     const meta=ENGINE_META[engineId];
     try {
-      if (!browser && ['aerodrome_veaero','velodrome_vevelo','convex_vlcvx','fx_vefxn','yieldbasis_veyb','frax_vefrax','resupply_rsup'].includes(engineId)) {
+      if (!browser && ['aerodrome_veaero','velodrome_vevelo','convex_vlcvx','fx_vefxn','yieldbasis_veyb','frax_vefrax','resupply_rsup','icp_nns'].includes(engineId)) {
         throw new Error('browser collector unavailable');
       }
       const r=await runAdapter(engineId,{browser,prices,previous});
@@ -1293,6 +1395,18 @@ async function main() {
     }
   }
   if (browser) await browser.close();
+
+  const companyMetadata={...(previous?.companyMetadata||{})};
+  const companyMetadataErrors={};
+  try {
+    companyMetadata[COMPANY_005_NAME]=await discoverCompany005Foundation(previous?.companyMetadata||{});
+    const m=companyMetadata[COMPANY_005_NAME];
+    console.log(`${m?.foundedISO?'✓':'!'} ${COMPANY_005_NAME} foundation: ${m?.foundedISO||'unresolved'} (${m?.method||'no verified lock event'})`);
+    if (Array.isArray(m?.discoveryErrors) && m.discoveryErrors.length) companyMetadataErrors[COMPANY_005_NAME]=m.discoveryErrors;
+  } catch(e) {
+    companyMetadataErrors[COMPANY_005_NAME]=[e?.message||String(e)];
+    if (previous?.companyMetadata?.[COMPANY_005_NAME]) companyMetadata[COMPANY_005_NAME]=previous.companyMetadata[COMPANY_005_NAME];
+  }
 
   // Maintain engine history only for fresh successful observations.
   const historyEngines={...(previous?.history?.engines||{})};
@@ -1377,12 +1491,12 @@ async function main() {
   }
 
   const output={
-    version:'1.9',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.10',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions with valid Reference APRs. coverage shows the share of productive capital currently included; unknown engines are excluded, never treated as 0%. Canonical historical company averages use full-coverage observations only.',
-    engines,companies,
+    engines,companies,companyMetadata,
     history:{engines:historyEngines,companies:historyCompanies},
     internalState:{liquity:liquityInternal,pendle:pendleInternal},
-    diagnostics:{engineErrors,priceTimestamp:generatedAt,pricesUsed:prices}
+    diagnostics:{engineErrors,companyMetadataErrors,priceTimestamp:generatedAt,pricesUsed:prices}
   };
 
   await writeJson(DATA_FILE,output);
