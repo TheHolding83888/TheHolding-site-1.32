@@ -39,6 +39,9 @@ jobs:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          # Built-in ephemeral token: raises official GitHub API rate limits for Pendle Merkle discovery.
+          # The value stays in Actions secrets and is never written to public snapshots.
+          GITHUB_TOKEN: ${{ github.token }}
           PAGE_FILE: ../companies/index.html
           DATA_FILE: ../companies/productivity-data.json
           REPORT_FILE: ../companies/productivity-source-report.json
