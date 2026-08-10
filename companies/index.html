@@ -1122,6 +1122,71 @@
             line-height: 1.45;
         }
 
+        /* Defitea carries 11 productive positions, so its ledger is denser by
+           design without changing the Passport layout used by other companies. */
+        .ipx-defitea-balance { padding: 0.72rem 0.76rem 0.68rem; }
+        .ipx-defitea-balance .ipx-ledger-head { margin-bottom: 0.48rem; }
+        .ipx-defitea-balance .ipx-position-list {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.28rem;
+        }
+        .ipx-defitea-balance .ipx-position-pill {
+            min-height: 41px;
+            padding: 0.34rem 0.4rem 0.31rem;
+            border-radius: 9px;
+            gap: 0.1rem;
+        }
+        .ipx-defitea-balance .ipx-position-symbol { font-size: 0.52rem; }
+        .ipx-defitea-balance .ipx-position-qty { font-size: 0.88rem; }
+        .ipx-defitea-balance .ipx-ledger-caption { margin-top: 0.4rem; font-size: 0.54rem; }
+        .ipx-pendle-position { justify-content: center; }
+        .ipx-position-pendle-line {
+            color: var(--text);
+            font-size: 0.54rem;
+            line-height: 1.05;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+        .ipx-position-pendle-line b {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.78rem;
+            font-weight: 650;
+        }
+        .ipx-position-pendle-line.legacy { color: var(--text-3); }
+
+        .ipx-defitea-rewards .ipx-rewards-trigger { padding: 0.76rem 0.78rem 0.7rem; }
+        .ipx-defitea-rewards .ipx-rewards-value { font-size: 1.54rem; }
+        .ipx-defitea-rewards .ipx-reward-token-strip {
+            flex-wrap: nowrap;
+            gap: 0.2rem;
+            margin-top: 0.42rem;
+            overflow: hidden;
+        }
+        .ipx-defitea-rewards .ipx-reward-token {
+            min-height: 19px;
+            padding: 0.16rem 0.34rem;
+            font-size: 0.53rem;
+            white-space: nowrap;
+        }
+        .ipx-defitea-rewards .ipx-reward-token-more {
+            background: rgba(22,21,15,0.035);
+            border-color: var(--line);
+            color: var(--text-3);
+        }
+        .ipx-defitea-rewards .ipx-rewards-caption {
+            margin-top: 0.36rem;
+            font-size: 0.55rem;
+        }
+        .ipx-defitea-rewards .ipx-reward-row {
+            padding: 0.48rem 0.48rem;
+            gap: 0.62rem;
+        }
+        .ipx-defitea-rewards .ipx-reward-row-pending { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+        .ipx-defitea-rewards .ipx-reward-protocol { font-size: 0.69rem; }
+        .ipx-defitea-rewards .ipx-reward-meta { margin-top: 0.12rem; font-size: 0.56rem; }
+        .ipx-defitea-rewards .ipx-reward-amount { font-size: 0.69rem; }
+        .ipx-defitea-rewards .ipx-reward-usd { font-size: 0.58rem; }
+
         .ipx-rewards-card { overflow: visible; }
         .ipx-rewards-trigger {
             width: 100%;
@@ -1593,6 +1658,40 @@
                 margin-top: 0.38rem;
                 font-size: 0.55rem;
             }
+
+            /* Defitea only: 11 positions fit in a compact 3-column matrix.
+               The rest of the Passport retains the restored v0.1.7 layout. */
+            .ipx-defitea-live-ledger { gap: 0.42rem; }
+            .ipx-defitea-balance { padding: 0.6rem 0.62rem 0.56rem; }
+            .ipx-defitea-balance .ipx-position-list {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.22rem;
+            }
+            .ipx-defitea-balance .ipx-position-pill {
+                min-height: 37px;
+                padding: 0.27rem 0.3rem 0.25rem;
+                border-radius: 8px;
+            }
+            .ipx-defitea-balance .ipx-position-symbol { font-size: 0.47rem; }
+            .ipx-defitea-balance .ipx-position-qty { font-size: 0.78rem; }
+            .ipx-defitea-balance .ipx-ledger-count { font-size: 0.47rem; }
+            .ipx-defitea-balance .ipx-ledger-caption { display: none; }
+            .ipx-defitea-balance .ipx-position-pendle-line { font-size: 0.44rem; }
+            .ipx-defitea-balance .ipx-position-pendle-line b { font-size: 0.66rem; }
+
+            .ipx-defitea-rewards .ipx-rewards-trigger { padding: 0.6rem 0.64rem 0.57rem; }
+            .ipx-defitea-rewards .ipx-rewards-value { font-size: 1.34rem; }
+            .ipx-defitea-rewards .ipx-reward-token-strip {
+                flex-wrap: nowrap;
+                overflow: hidden;
+                margin-top: 0.34rem;
+            }
+            .ipx-defitea-rewards .ipx-reward-token {
+                min-height: 18px;
+                padding: 0.14rem 0.3rem;
+                font-size: 0.48rem;
+            }
+            .ipx-defitea-rewards .ipx-rewards-caption { margin-top: 0.3rem; font-size: 0.51rem; }
 
             /* Mobile reward composition is a true viewport modal.
                The panel is portaled under <body> before it becomes visible,
@@ -3025,7 +3124,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.2.0-defitea-multiwallet';
+const COMPANY_REWARDS_UI_VERSION = '0.2.1-defitea-compact-40acres';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth', 'defitea.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -3506,7 +3605,7 @@ function renderIndex(lang) {
                 lonNote:'в работе', sigCap:'Сигнатура компании',
                 axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.', axF:'РЕЗУЛЬТАТ',
                 perfFactor:'Результат', sinceInception:'С момента запуска',
-                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы', balanceSheet:'Баланс компании', positions:'Ончейн-позиции', positionCount:'позиций', capitalDeployed:'Капитал размещён ончейн', accruedRewards:'Накопленные rewards', rewardsCaption:'Заработано ончейн · Пока внутри протоколов', measuringOnchain:'Измеряется ончейн', valuePending:'Оценка в $ рассчитывается', noAccrued:'На этом снимке накопленных rewards нет', compounded:'Компаунд', unclaimed:'Не заклеймлено', measuredTotal:'Измеренная сумма', routeNotIncluded:'маршрут пока не включён', routesNotIncluded:'маршрута пока не включены', valuationPending:'Оценка ожидается', rewardToken:'reward-токен', rewardTokens:'reward-токена', rewardComposition:'Состав rewards', close:'Закрыть', measuring:'Измеряется' }
+                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы', balanceSheet:'Баланс компании', positions:'Ончейн-позиции', positionCount:'позиций', capitalDeployed:'Капитал размещён ончейн', accruedRewards:'Накопленные rewards', rewardsCaption:'Заработано ончейн · Пока внутри протоколов', measuringOnchain:'Измеряется ончейн', valuePending:'Оценка в $ рассчитывается', noAccrued:'На этом снимке накопленных rewards нет', compounded:'Компаунд', unclaimed:'Не заклеймлено', measuredTotal:'Измеренная сумма', routeNotIncluded:'маршрут ещё не закрыт полностью', routesNotIncluded:'маршрута ещё не закрыты полностью', valuationPending:'Оценка ожидается', rewardToken:'reward-токен', rewardTokens:'reward-токена', rewardComposition:'Состав rewards', close:'Закрыть', measuring:'Измеряется' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', protocols:'Protocols', explore:'Explore Company', days:'days',
                 comp:'Composite breakdown', inView:'In view',
@@ -3516,7 +3615,7 @@ function renderIndex(lang) {
                 lonNote:'operating', sigCap:'Company signature',
                 axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY', axF:'PERFORMANCE',
                 perfFactor:'Performance', sinceInception:'Since inception',
-                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', valuePending:'USD valuation pending', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not included yet', routesNotIncluded:'routes not included yet', valuationPending:'Valuation pending', rewardToken:'reward token', rewardTokens:'reward tokens', rewardComposition:'Reward composition', close:'Close', measuring:'Measuring' };
+                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', valuePending:'USD valuation pending', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not fully closed yet', routesNotIncluded:'routes not fully closed yet', valuationPending:'Valuation pending', rewardToken:'reward token', rewardTokens:'reward tokens', rewardComposition:'Reward composition', close:'Close', measuring:'Measuring' };
         const wfld = (label, value, active) =>
             '<div class="ipx-field"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
@@ -3571,17 +3670,91 @@ function renderIndex(lang) {
         const fmtRewardUsd = v => hasRewardNumber(v)
             ? '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
             : '—';
+
+        const defiteaLegacyVePendleAmount = () => {
+            const r = COMPANY_REWARDS_SNAPSHOT && COMPANY_REWARDS_SNAPSHOT.companies
+                    ? COMPANY_REWARDS_SNAPSHOT.companies['defitea.eth'] : null;
+            const src = r && Array.isArray(r.sources)
+                    ? r.sources.find(s => s && s.route === 'pendle-spendle') : null;
+            const wrs = src && src.details && Array.isArray(src.details.walletResults)
+                    ? src.details.walletResults : [];
+            let total = 0;
+            for (const wr of wrs) {
+                const d = wr && wr.details ? wr.details : null;
+                let value = d && hasRewardNumber(d.legacyVePendleAmount)
+                    ? Number(d.legacyVePendleAmount) : null;
+                if (value === null && d && d.vePendlePositionData && d.vePendlePositionData.amount != null) {
+                    const raw = Number(d.vePendlePositionData.amount);
+                    if (Number.isFinite(raw)) value = raw / 1e18;
+                }
+                if (Number.isFinite(value) && value > 0) total += value;
+            }
+            return total > 0 ? total : null;
+        };
+
+        const aggregateDisplayRewards = rewards => {
+            const grouped = new Map();
+            for (const x of rewards || []) {
+                const key = [
+                    x.protocol || '',
+                    x.route || '',
+                    x.chain || '',
+                    x.token || x.symbol || '',
+                    x.classification || ''
+                ].join('|');
+                if (!grouped.has(key)) {
+                    grouped.set(key, {
+                        ...x,
+                        amount: 0,
+                        usdValue: 0,
+                        usdComplete: true,
+                        walletCount: 0,
+                        wallets: new Set()
+                    });
+                }
+                const g = grouped.get(key);
+                g.amount += hasRewardNumber(x.amount) ? Number(x.amount) : 0;
+                if (hasRewardNumber(x.usdValue)) g.usdValue += Number(x.usdValue);
+                else g.usdComplete = false;
+                const wa = x.details && x.details.walletAlias;
+                if (wa) g.wallets.add(wa);
+            }
+            return [...grouped.values()].map(g => {
+                const wallets = [...g.wallets];
+                return {
+                    ...g,
+                    amount: Number(g.amount.toFixed(10)),
+                    usdValue: g.usdComplete ? Number(g.usdValue.toFixed(6))
+                                            : (g.usdValue > 0 ? Number(g.usdValue.toFixed(6)) : null),
+                    walletCount: wallets.length,
+                    wallets,
+                    details: g.details || null
+                };
+            });
+        };
+
         const balanceSheetBlock = c => {
             if (!COMPANY_REWARDS_SCOPE.has(c.nm)) return '';
             const book = COMPANY_BOOK[c.nm] || [];
-            const pills = book.map(p => {
-                const label = COMPANY_ASSET_LABELS[p.id] || p.id;
+            const isDefitea = c.nm === 'defitea.eth';
+            const legacyVePendle = isDefitea ? defiteaLegacyVePendleAmount() : null;
+            const pills = book.map(pos => {
+                const label = COMPANY_ASSET_LABELS[pos.id] || pos.id;
+                if (isDefitea && pos.id === 'pendle') {
+                    return '<span class="ipx-position-pill ipx-pendle-position">'
+                        + '<span class="ipx-position-symbol">PENDLE</span>'
+                        + '<span class="ipx-position-pendle-line"><b>' + fmtQty(pos.qty) + '</b> sPENDLE</span>'
+                        + (hasRewardNumber(legacyVePendle)
+                            ? '<span class="ipx-position-pendle-line legacy"><b>' + fmtQty(legacyVePendle) + '</b> vePENDLE</span>'
+                            : '')
+                        + '</span>';
+                }
                 return '<span class="ipx-position-pill">'
                     + '<span class="ipx-position-symbol">' + label + '</span>'
-                    + '<span class="ipx-position-qty">' + fmtQty(p.qty) + '</span>'
+                    + '<span class="ipx-position-qty">' + fmtQty(pos.qty) + '</span>'
                     + '</span>';
             }).join('');
-            return '<div class="ipx-ledger-card ipx-balance-card">'
+            return '<div class="ipx-ledger-card ipx-balance-card' + (isDefitea ? ' ipx-defitea-balance' : '') + '">'
                 + '<div class="ipx-ledger-head"><span class="ipx-ledger-kicker">' + L.balanceSheet + '</span>'
                 + '<span class="ipx-ledger-count">' + book.length + ' ' + L.positionCount + '</span></div>'
                 + '<div class="ipx-position-list">' + pills + '</div>'
@@ -3603,32 +3776,59 @@ function renderIndex(lang) {
                     ? L.valuePending
                     : (hasTotal ? fmtRewardUsd(r.totalUsd) + (incomplete ? '+' : '') : L.valuePending));
             const totalCls = liveMeasured && (hasPricedValue || (hasTotal && unpricedCount === 0)) ? '' : ' measuring';
+            const isDefitea = c.nm === 'defitea.eth';
             const tokens = r && Array.isArray(r.rewardTokens) ? r.rewardTokens : [];
+            const visibleTokens = isDefitea ? tokens.slice(0, 6) : tokens;
+            const hiddenTokenCount = Math.max(0, tokens.length - visibleTokens.length);
             const tokenStrip = tokens.length
-                ? tokens.map(t => '<span class="ipx-reward-token">' + (t.symbol || 'TOKEN') + '</span>').join('')
+                ? visibleTokens.map(t => '<span class="ipx-reward-token">' + (t.symbol || 'TOKEN') + '</span>').join('')
+                    + (hiddenTokenCount ? '<span class="ipx-reward-token ipx-reward-token-more">+' + hiddenTokenCount + '</span>' : '')
                 : '<span class="ipx-reward-token">Onchain</span>';
 
             let rows = '';
             const rewards = r && Array.isArray(r.rewards) ? r.rewards : [];
-            rewards.forEach(x => {
+            const displayRewards = isDefitea ? aggregateDisplayRewards(rewards) : rewards;
+            const sources = r && Array.isArray(r.sources) ? r.sources : [];
+            const pending = sources.filter(s => s && s.status !== 'ok');
+            const pendingByRoute = new Map(pending.map(s => [s.route, s]));
+            const annotatedRoutes = new Set();
+
+            displayRewards.forEach(x => {
                 const state = x.classification === 'compounded-locked' ? L.compounded : L.unclaimed;
                 const stateCls = x.classification === 'compounded-locked' ? ' compounded' : '';
+                const pendingSource = pendingByRoute.get(x.route);
+                const addPendingHint = isDefitea && pendingSource && !annotatedRoutes.has(x.route);
+                if (addPendingHint) annotatedRoutes.add(x.route);
+                const pendingHint = addPendingHint
+                    ? (pendingSource.route === 'velodrome-ve'
+                        ? (lang === 'ru' ? ' · 40 Acres · текущие начисления' : ' · 40 Acres · current accrual')
+                        : (lang === 'ru' ? ' · + маршрут ещё не закрыт' : ' · + route not fully closed'))
+                    : '';
+                const walletMeta = !isDefitea && x.details && x.details.walletAlias
+                    ? ' · ' + x.details.walletAlias : '';
+                const usdLabel = hasRewardNumber(x.usdValue)
+                    ? fmtRewardUsd(x.usdValue) + (x.usdComplete === false ? '+' : '')
+                    : '—';
                 rows += '<div class="ipx-reward-row">'
                     + '<div><div class="ipx-reward-protocol">' + (x.protocol || 'Protocol')
                     + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
                     + '<div class="ipx-reward-meta">' + (x.symbol || 'TOKEN') + ' · ' + (x.chain || 'Onchain')
-                    + (x.details && x.details.walletAlias ? ' · ' + x.details.walletAlias : '') + '</div></div>'
+                    + walletMeta + pendingHint + '</div></div>'
                     + '<div class="ipx-reward-right"><div class="ipx-reward-amount">' + fmtRewardQty(x.amount) + ' ' + (x.symbol || '') + '</div>'
-                    + '<div class="ipx-reward-usd">' + fmtRewardUsd(x.usdValue) + '</div></div></div>';
+                    + '<div class="ipx-reward-usd">' + usdLabel + '</div></div></div>';
             });
-            const sources = r && Array.isArray(r.sources) ? r.sources : [];
-            const pending = sources.filter(s => s && s.status !== 'ok');
+
             pending.forEach(s => {
+                // If a partial route already has measured rewards in the panel,
+                // fold its incompleteness into that row instead of duplicating it.
+                if (isDefitea && annotatedRoutes.has(s.route)) return;
                 const label = REWARD_ROUTE_LABELS[s.route] || (s.protocol && !String(s.protocol).includes('-') ? s.protocol : 'Protocol');
                 const pendingText = s.status === 'partial'
                     ? (lang === 'ru' ? 'Измерено частично · дополнительный reward route ожидается' : 'Measured · additional reward route pending')
-                    : L.measuring;
-                rows += '<div class="ipx-reward-row">'
+                    : (s.route === 'velodrome-ve'
+                        ? (lang === 'ru' ? 'Ищем veVELO через 40 Acres' : 'Discovering veVELO through 40 Acres')
+                        : L.measuring);
+                rows += '<div class="ipx-reward-row ipx-reward-row-pending">'
                     + '<div><div class="ipx-reward-protocol">' + label + '</div><div class="ipx-reward-meta">' + pendingText + '</div></div>'
                     + '<div class="ipx-reward-right"><div class="ipx-reward-amount">—</div></div></div>';
             });
@@ -3650,7 +3850,7 @@ function renderIndex(lang) {
                 + '<div class="ipx-reward-panel-total">' + totalLabel + '</div></div>'
                 + '<button class="ipx-reward-panel-close" type="button" aria-label="' + L.close + '">×</button>'
                 + '</div>';
-            return '<div class="ipx-ledger-card ipx-rewards-card ipx-rewards-disclosure">'
+            return '<div class="ipx-ledger-card ipx-rewards-card ipx-rewards-disclosure' + (isDefitea ? ' ipx-defitea-rewards' : '') + '">'
                 + '<button class="ipx-rewards-trigger" type="button" aria-expanded="false">'
                 + '<div class="ipx-rewards-top"><div><div class="ipx-ledger-kicker">' + L.accruedRewards + '</div>'
                 + '<div class="ipx-rewards-value' + totalCls + '">' + totalLabel + '</div></div></div>'
@@ -3660,7 +3860,7 @@ function renderIndex(lang) {
         };
         const liveLedgerBlock = c => {
             if (!COMPANY_REWARDS_SCOPE.has(c.nm)) return '';
-            return '<div class="ipx-live-ledger">' + balanceSheetBlock(c) + accruedRewardsBlock(c) + '</div>';
+            return '<div class="ipx-live-ledger' + (c.nm === 'defitea.eth' ? ' ipx-defitea-live-ledger' : '') + '">' + balanceSheetBlock(c) + accruedRewardsBlock(c) + '</div>';
         };
         const chev = '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         const arr  = '<svg viewBox="0 0 16 16" fill="none" width="12" height="12"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
