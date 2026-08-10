@@ -1,14 +1,14 @@
 {
-  "version": "0.3.2",
-  "collectorVersion": "0.3.2-ve-history-resilient-cache",
+  "version": "0.3.3",
+  "collectorVersion": "0.3.3-ve-history-final-hardening",
   "methodologyVersion": "0.2.2-earned-inside-protocols-multiwallet",
-  "generatedAt": "2026-08-10T18:35:48.870Z",
+  "generatedAt": "2026-08-10T18:59:20.428Z",
   "date": "2026-08-10",
   "scope": "protocol-side accrued rewards for Personal Onchain Companies and Defitea Fund",
   "methodology": {
     "definition": "Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.",
     "multiWallet": "Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.",
-    "aerodromeVelodrome": "Aerodrome and Velodrome direct veNFT routes reconstruct every historically voted pool from indexed Voter.Voted events, using provider-aware direct RPC eth_getLogs and Blockscout fallback reads. A validated full-history cache makes later runs incremental with a reorg-safe overlap. Each discovered pool’s current voting-reward contracts are queried for still-unclaimed rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.",
+    "aerodromeVelodrome": "Aerodrome and Velodrome direct veNFT routes reconstruct every historically voted pool from indexed Voter.Voted events, using provider-aware direct RPC eth_getLogs with endpoint failover and Blockscout fallback reads. Resumable checkpoints prevent repeated multi-year rescans after transport failures, and a validated full-history cache makes later runs incremental with a reorg-safe overlap. Each discovered pool’s current voting-reward contracts are queried for still-unclaimed rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.",
     "curve": "Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.",
     "convex": "Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.",
     "pendle": "Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.",
@@ -21,11 +21,11 @@
     "tvlTreatment": "Accrued Rewards remain separate from Company TVL and Treasury cash."
   },
   "rpc": {
-    "ethereum": "https://ethereum-rpc.publicnode.com",
-    "base": "https://base-rpc.publicnode.com",
-    "fraxtal": "https://rpc.frax.com",
-    "optimism": "https://optimism-rpc.publicnode.com",
-    "arbitrum": "https://arbitrum-one-rpc.publicnode.com"
+    "ethereum": "ethereum:ethereum-rpc.publicnode.com",
+    "base": "base:base-rpc.publicnode.com",
+    "fraxtal": "fraxtal:rpc.frax.com",
+    "optimism": "optimism:optimism-rpc.publicnode.com",
+    "arbitrum": "arbitrum:arbitrum-one-rpc.publicnode.com"
   },
   "internalState": {
     "historicalVoteCache": {
@@ -33,7 +33,7 @@
         "providerKey": "optimism",
         "tokenId": "32671",
         "startBlock": 144748388,
-        "throughBlock": 155394091,
+        "throughBlock": 155394797,
         "pools": [
           "0x478946BcD4a5a22b316470F5486fAfb928C0bA25",
           "0xa1055762336F92b4B8d2eDC032A0Ce45ead6280a",
@@ -73,14 +73,15 @@
           "pages": 1,
           "cacheUsed": true
         },
-        "validatedAt": "2026-08-10T18:35:48.870Z",
-        "source": "https://optimism.blockscout.com/api?module=logs"
+        "validatedAt": "2026-08-10T18:59:20.428Z",
+        "source": "https://optimism.blockscout.com/api?module=logs",
+        "complete": true
       },
       "optimism:11335": {
         "providerKey": "optimism",
         "tokenId": "11335",
         "startBlock": 107506553,
-        "throughBlock": 155394384,
+        "throughBlock": 155395180,
         "pools": [
           "0xa08fB94A933eAEa787F8191a5a980C4403Dc015C",
           "0x4E316557f63C2156eAFdfec08f31DF4957136203",
@@ -186,10 +187,35 @@
           "transactionHash": "0x249247aea2b59874c2771d042d85968e685ea14f9143ced5ef3269b6afe071eb",
           "source": "https://optimism.blockscout.com/api/v2/.../instances/11335/transfers",
           "pages": 1,
+          "cacheUsed": true
+        },
+        "validatedAt": "2026-08-10T18:59:20.428Z",
+        "source": "https://optimism.blockscout.com/api?module=logs",
+        "complete": true
+      },
+      "base:1938": {
+        "providerKey": "base",
+        "tokenId": "1938",
+        "startBlock": 3237666,
+        "throughBlock": 8237665,
+        "pools": [
+          "0x3Fc28BFac25fC8e93B5b2fc15EfBBD5a8aA44eFe",
+          "0x9e4CB8b916289864321661CE02cf66aa5BA63C94",
+          "0xB4885Bc63399BF5518b994c1d0C153334Ee579D0",
+          "0x0B25c51637c43decd6CC1C1e3da4518D54ddb528"
+        ],
+        "firstVoteBlock": 3291774,
+        "lastVoteBlock": 8144024,
+        "mintDiscovery": {
+          "blockNumber": 3237666,
+          "transactionHash": "0xda40896f3e2ba87f043d73d576de55eea413d5eb5e5e7afa687bffacd6cf5c8d",
+          "source": "https://base.blockscout.com/api/v2/.../instances/1938/transfers",
+          "pages": 1,
           "cacheUsed": false
         },
-        "validatedAt": "2026-08-10T18:35:48.870Z",
-        "source": "https://optimism.blockscout.com/api?module=logs"
+        "validatedAt": "2026-08-10T18:59:20.428Z",
+        "source": "https://base.blockscout.com/api?module=logs",
+        "complete": false
       }
     }
   },
@@ -209,7 +235,7 @@
           "fallbackMatched": true
         }
       ],
-      "totalUsd": 1.350908,
+      "totalUsd": 1.350937,
       "totalUsdIsComplete": true,
       "routeCoverage": 1,
       "completeRouteCoverage": 1,
@@ -230,8 +256,8 @@
           "amount": 2.0257877309,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.840216,
-          "priceUsd": 0.41476,
+          "usdValue": 0.84053,
+          "priceUsd": 0.414915,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -275,13 +301,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1366429437337489766",
+          "amountRaw": "1367352852231773211",
           "decimals": 18,
-          "amount": 1.3664294373,
+          "amount": 1.3673528522,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.425611,
-          "priceUsd": 0.311477,
+          "usdValue": 0.425326,
+          "priceUsd": 0.311058,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -297,7 +323,7 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 2.0257877309,
-          "usdValue": 0.840216
+          "usdValue": 0.84053
         },
         {
           "symbol": "crvUSD",
@@ -308,8 +334,8 @@
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.3664294373,
-          "usdValue": 0.425611
+          "amount": 1.3673528522,
+          "usdValue": 0.425326
         }
       ],
       "sources": [
@@ -374,7 +400,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T18:35:48.870Z"
+      "updatedAt": "2026-08-10T18:59:20.428Z"
     },
     "YieldRing.eth": {
       "status": "partial",
@@ -391,7 +417,7 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 1.08906,
+      "totalUsd": 1.089307,
       "totalUsdIsComplete": false,
       "routeCoverage": 0.666667,
       "completeRouteCoverage": 0.666667,
@@ -412,8 +438,8 @@
           "amount": 1.5785400672,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.654715,
-          "priceUsd": 0.41476,
+          "usdValue": 0.65496,
+          "priceUsd": 0.414915,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -436,13 +462,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1394468366112384624",
+          "amountRaw": "1396355104758176355",
           "decimals": 18,
-          "amount": 1.3944683661,
+          "amount": 1.3963551048,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.434345,
-          "priceUsd": 0.311477,
+          "usdValue": 0.434347,
+          "priceUsd": 0.311058,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -458,13 +484,13 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 1.5785400672,
-          "usdValue": 0.654715
+          "usdValue": 0.65496
         },
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.3944683661,
-          "usdValue": 0.434345
+          "amount": 1.3963551048,
+          "usdValue": 0.434347
         }
       ],
       "sources": [
@@ -525,7 +551,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T18:35:48.870Z"
+      "updatedAt": "2026-08-10T18:59:20.428Z"
     },
     "dinaz.eth": {
       "status": "ok",
@@ -542,7 +568,7 @@
           "fallbackMatched": true
         }
       ],
-      "totalUsd": 3.874787,
+      "totalUsd": 3.874657,
       "totalUsdIsComplete": true,
       "routeCoverage": 1,
       "completeRouteCoverage": 1,
@@ -563,8 +589,8 @@
           "amount": 0.0000273526,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.759012,
-          "priceUsd": 63848,
+          "usdValue": 1.759315,
+          "priceUsd": 63859,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -592,8 +618,8 @@
           "amount": 0.0000199489,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.281329,
-          "priceUsd": 63843,
+          "usdValue": 1.281289,
+          "priceUsd": 63841,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -621,16 +647,16 @@
           "amount": 0.0000130356,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.834446,
-          "priceUsd": 63741,
+          "usdValue": 0.834053,
+          "priceUsd": 63711,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "13091198607358",
-            "redeemAmount": 0.000013091199,
+            "redeemAmountRaw": "13091193729957",
+            "redeemAmount": 0.000013091194,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -645,19 +671,19 @@
           "symbol": "yb-WBTC",
           "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
           "amount": 0.0000273526,
-          "usdValue": 1.759012
+          "usdValue": 1.759315
         },
         {
           "symbol": "yb-cbBTC",
           "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
           "amount": 0.0000199489,
-          "usdValue": 1.281329
+          "usdValue": 1.281289
         },
         {
           "symbol": "yb-tBTC",
           "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
           "amount": 0.0000130356,
-          "usdValue": 0.834446
+          "usdValue": 0.834053
         }
       ],
       "sources": [
@@ -682,7 +708,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T18:35:48.870Z"
+      "updatedAt": "2026-08-10T18:59:20.428Z"
     },
     "defitea.eth": {
       "status": "partial",
@@ -706,7 +732,7 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 90.883857,
+      "totalUsd": 90.935032,
       "totalUsdIsComplete": false,
       "routeCoverage": 0.923077,
       "completeRouteCoverage": 0.769231,
@@ -727,8 +753,8 @@
           "amount": 100.8796279017,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 41.80361,
-          "priceUsd": 0.414391,
+          "usdValue": 41.840633,
+          "priceUsd": 0.414758,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -751,8 +777,8 @@
           "amount": 0.024088,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.024079,
-          "priceUsd": 0.999621,
+          "usdValue": 0.02408,
+          "priceUsd": 0.999665,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -783,8 +809,8 @@
           "amount": 0.0000150726,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.028193,
-          "priceUsd": 1870.47,
+          "usdValue": 0.028211,
+          "priceUsd": 1871.65,
           "priceMethod": "coingecko:weth",
           "details": {
             "symbol": "WETH",
@@ -847,8 +873,8 @@
           "amount": 0.0000019938,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.003729,
-          "priceUsd": 1870.47,
+          "usdValue": 0.003732,
+          "priceUsd": 1871.65,
           "priceMethod": "coingecko:weth",
           "details": {
             "symbol": "WETH",
@@ -911,8 +937,8 @@
           "amount": 0.0000036179,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.006767,
-          "priceUsd": 1870.47,
+          "usdValue": 0.006771,
+          "priceUsd": 1871.65,
           "priceMethod": "coingecko:weth",
           "details": {
             "symbol": "WETH",
@@ -944,7 +970,7 @@
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
           "usdValue": 0.00258,
-          "priceUsd": 0.999621,
+          "priceUsd": 0.999665,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -1039,8 +1065,8 @@
           "amount": 0.0000021425,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.004007,
-          "priceUsd": 1870.47,
+          "usdValue": 0.00401,
+          "priceUsd": 1871.65,
           "priceMethod": "coingecko:weth",
           "details": {
             "symbol": "WETH",
@@ -1135,8 +1161,8 @@
           "amount": 0.009726,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.009722,
-          "priceUsd": 0.999621,
+          "usdValue": 0.009723,
+          "priceUsd": 0.999665,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -1200,7 +1226,7 @@
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
           "usdValue": 0.00097,
-          "priceUsd": 0.999621,
+          "priceUsd": 0.999665,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -1263,8 +1289,8 @@
           "amount": 0.0000159736,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.029878,
-          "priceUsd": 1870.47,
+          "usdValue": 0.029897,
+          "priceUsd": 1871.65,
           "priceMethod": "coingecko:weth",
           "details": {
             "symbol": "WETH",
@@ -1295,8 +1321,8 @@
           "amount": 4.2e-7,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.026804,
-          "priceUsd": 63819,
+          "usdValue": 0.026828,
+          "priceUsd": 63876,
           "priceMethod": "coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "WBTC",
@@ -1328,7 +1354,7 @@
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
           "usdValue": 0.002157,
-          "priceUsd": 0.999621,
+          "priceUsd": 0.999665,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -1391,8 +1417,8 @@
           "amount": 0.0000064317,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.01203,
-          "priceUsd": 1870.47,
+          "usdValue": 0.012038,
+          "priceUsd": 1871.65,
           "priceMethod": "coingecko:weth",
           "details": {
             "symbol": "WETH",
@@ -1455,8 +1481,8 @@
           "amount": 0.000009722,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.018185,
-          "priceUsd": 1870.47,
+          "usdValue": 0.018196,
+          "priceUsd": 1871.65,
           "priceMethod": "coingecko:weth",
           "details": {
             "symbol": "WETH",
@@ -1487,8 +1513,8 @@
           "amount": 0.8166189444,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.014065,
-          "priceUsd": 0.01722406,
+          "usdValue": 0.014036,
+          "priceUsd": 0.01718808,
           "priceMethod": "coingecko:velodrome-finance",
           "details": {
             "symbol": "VELO",
@@ -1519,8 +1545,8 @@
           "amount": 0.017176,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.017169,
-          "priceUsd": 0.999621,
+          "usdValue": 0.01717,
+          "priceUsd": 0.999665,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -1583,8 +1609,8 @@
           "amount": 0.026959,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.026949,
-          "priceUsd": 0.999621,
+          "usdValue": 0.02695,
+          "priceUsd": 0.999665,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -1615,8 +1641,8 @@
           "amount": 4.4e-7,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.02808,
-          "priceUsd": 63819,
+          "usdValue": 0.028105,
+          "priceUsd": 63876,
           "priceMethod": "coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "WBTC",
@@ -1648,7 +1674,7 @@
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
           "usdValue": 0.013961,
-          "priceUsd": 0.999621,
+          "priceUsd": 0.999665,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -1679,8 +1705,8 @@
           "amount": 3.4e-7,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.021698,
-          "priceUsd": 63819,
+          "usdValue": 0.021718,
+          "priceUsd": 63876,
           "priceMethod": "coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "WBTC",
@@ -1753,8 +1779,8 @@
           "amount": 2.2837689918,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.710999,
-          "priceUsd": 0.311327,
+          "usdValue": 0.710286,
+          "priceUsd": 0.311015,
           "priceMethod": "redemption-value:WFRAX@coingecko:wrapped-frax",
           "details": {
             "symbol": "pWFRAX",
@@ -1803,8 +1829,8 @@
           "amount": 2.8240575198,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.879205,
-          "priceUsd": 0.311327,
+          "usdValue": 0.878324,
+          "priceUsd": 0.311015,
           "priceMethod": "redemption-value:WFRAX@coingecko:wrapped-frax",
           "details": {
             "symbol": "pWFRAX",
@@ -1853,8 +1879,8 @@
           "amount": 2.3703140609,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.737943,
-          "priceUsd": 0.311327,
+          "usdValue": 0.737203,
+          "priceUsd": 0.311015,
           "priceMethod": "redemption-value:WFRAX@coingecko:wrapped-frax",
           "details": {
             "symbol": "pWFRAX",
@@ -1903,8 +1929,8 @@
           "amount": 0.739285,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.739005,
-          "priceUsd": 0.999621,
+          "usdValue": 0.739037,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -1953,8 +1979,8 @@
           "amount": 0.74127,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.740989,
-          "priceUsd": 0.999621,
+          "usdValue": 0.741022,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2003,8 +2029,8 @@
           "amount": 0.754248,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.753962,
-          "priceUsd": 0.999621,
+          "usdValue": 0.753995,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2053,8 +2079,8 @@
           "amount": 0.767318,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.767027,
-          "priceUsd": 0.999621,
+          "usdValue": 0.767061,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2103,8 +2129,8 @@
           "amount": 0.599637,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.59941,
-          "priceUsd": 0.999621,
+          "usdValue": 0.599436,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2153,8 +2179,8 @@
           "amount": 0.60144,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.601212,
-          "priceUsd": 0.999621,
+          "usdValue": 0.601239,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2203,8 +2229,8 @@
           "amount": 0.695563,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.695299,
-          "priceUsd": 0.999621,
+          "usdValue": 0.69533,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2253,8 +2279,8 @@
           "amount": 5.4670684608,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.662543,
-          "priceUsd": 0.121188,
+          "usdValue": 0.662685,
+          "priceUsd": 0.121214,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -2303,8 +2329,8 @@
           "amount": 5.4663476812,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.662456,
-          "priceUsd": 0.121188,
+          "usdValue": 0.662598,
+          "priceUsd": 0.121214,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -2353,8 +2379,8 @@
           "amount": 5.2102780514,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.631423,
-          "priceUsd": 0.121188,
+          "usdValue": 0.631559,
+          "priceUsd": 0.121214,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -2403,8 +2429,8 @@
           "amount": 2.9445014853,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.356838,
-          "priceUsd": 0.121188,
+          "usdValue": 0.356915,
+          "priceUsd": 0.121214,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -2453,8 +2479,8 @@
           "amount": 2.8376684091,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.343891,
-          "priceUsd": 0.121188,
+          "usdValue": 0.343965,
+          "priceUsd": 0.121214,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -2503,8 +2529,8 @@
           "amount": 2.8757899555,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.348511,
-          "priceUsd": 0.121188,
+          "usdValue": 0.348586,
+          "priceUsd": 0.121214,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -2553,8 +2579,8 @@
           "amount": 0.0008947155,
           "classification": "unclaimed",
           "source": "onchain: f(x) FeeDistributor.claim staticCall",
-          "usdValue": 2.077279,
-          "priceUsd": 2321.72,
+          "usdValue": 2.079015,
+          "priceUsd": 2323.66,
           "priceMethod": "coingecko:wrapped-steth",
           "details": {
             "symbol": "wstETH",
@@ -2578,8 +2604,8 @@
           "amount": 0.0005834247,
           "classification": "unclaimed",
           "source": "onchain: f(x) FeeDistributor.claim staticCall",
-          "usdValue": 1.354549,
-          "priceUsd": 2321.72,
+          "usdValue": 1.355681,
+          "priceUsd": 2323.66,
           "priceMethod": "coingecko:wrapped-steth",
           "details": {
             "symbol": "wstETH",
@@ -2603,8 +2629,8 @@
           "amount": 0.0346064623,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.449538,
-          "priceUsd": 12.99,
+          "usdValue": 0.45023,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -2653,8 +2679,8 @@
           "amount": 0.0294008437,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.381917,
-          "priceUsd": 12.99,
+          "usdValue": 0.382505,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -2703,8 +2729,8 @@
           "amount": 0.0294076332,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.382005,
-          "priceUsd": 12.99,
+          "usdValue": 0.382593,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -2753,8 +2779,8 @@
           "amount": 0.0313940354,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.407809,
-          "priceUsd": 12.99,
+          "usdValue": 0.408436,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -2803,8 +2829,8 @@
           "amount": 0.0284208703,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.369187,
-          "priceUsd": 12.99,
+          "usdValue": 0.369756,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -2853,8 +2879,8 @@
           "amount": 0.0269913439,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.350618,
-          "priceUsd": 12.99,
+          "usdValue": 0.351157,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -2903,8 +2929,8 @@
           "amount": 0.0269968793,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.350689,
-          "priceUsd": 12.99,
+          "usdValue": 0.351229,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -2953,8 +2979,8 @@
           "amount": 0.0229353099,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.29793,
-          "priceUsd": 12.99,
+          "usdValue": 0.298388,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -3003,8 +3029,8 @@
           "amount": 0.0229400031,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.297991,
-          "priceUsd": 12.99,
+          "usdValue": 0.298449,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -3053,8 +3079,8 @@
           "amount": 0.0244888978,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.318111,
-          "priceUsd": 12.99,
+          "usdValue": 0.318601,
+          "priceUsd": 13.01,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -3103,8 +3129,8 @@
           "amount": 0.08098,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.080949,
-          "priceUsd": 0.999621,
+          "usdValue": 0.080953,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3153,8 +3179,8 @@
           "amount": 0.095941,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.095905,
-          "priceUsd": 0.999621,
+          "usdValue": 0.095909,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3203,8 +3229,8 @@
           "amount": 0.096448,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.096411,
-          "priceUsd": 0.999621,
+          "usdValue": 0.096416,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3253,8 +3279,8 @@
           "amount": 0.098578,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.098541,
-          "priceUsd": 0.999621,
+          "usdValue": 0.098545,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3303,8 +3329,8 @@
           "amount": 0.098616,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.098579,
-          "priceUsd": 0.999621,
+          "usdValue": 0.098583,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3353,8 +3379,8 @@
           "amount": 0.103449,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.10341,
-          "priceUsd": 0.999621,
+          "usdValue": 0.103414,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3403,8 +3429,8 @@
           "amount": 0.103481,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.103442,
-          "priceUsd": 0.999621,
+          "usdValue": 0.103446,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3453,8 +3479,8 @@
           "amount": 0.094401,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.094365,
-          "priceUsd": 0.999621,
+          "usdValue": 0.094369,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3503,8 +3529,8 @@
           "amount": 0.094885,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.094849,
-          "priceUsd": 0.999621,
+          "usdValue": 0.094853,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3553,8 +3579,8 @@
           "amount": 0.081473,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.081442,
-          "priceUsd": 0.999621,
+          "usdValue": 0.081446,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3603,8 +3629,8 @@
           "amount": 0.081887,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.081856,
-          "priceUsd": 0.999621,
+          "usdValue": 0.08186,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3653,8 +3679,8 @@
           "amount": 0.101016,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.100978,
-          "priceUsd": 0.999621,
+          "usdValue": 0.100982,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3703,8 +3729,8 @@
           "amount": 0.101524,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.101486,
-          "priceUsd": 0.999621,
+          "usdValue": 0.10149,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3753,8 +3779,8 @@
           "amount": 0.131479,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.131429,
-          "priceUsd": 0.999621,
+          "usdValue": 0.131435,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3803,8 +3829,8 @@
           "amount": 0.131494,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.131444,
-          "priceUsd": 0.999621,
+          "usdValue": 0.13145,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3853,8 +3879,8 @@
           "amount": 0.123345,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.123298,
-          "priceUsd": 0.999621,
+          "usdValue": 0.123304,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3903,8 +3929,8 @@
           "amount": 0.123298,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.123251,
-          "priceUsd": 0.999621,
+          "usdValue": 0.123257,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -3953,8 +3979,8 @@
           "amount": 0.11909,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.119045,
-          "priceUsd": 0.999621,
+          "usdValue": 0.11905,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -4003,8 +4029,8 @@
           "amount": 0.119671,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.119626,
-          "priceUsd": 0.999621,
+          "usdValue": 0.119631,
+          "priceUsd": 0.999665,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -4053,16 +4079,16 @@
           "amount": 0.0008723183,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.542293,
-          "priceUsd": 1870.47,
+          "usdValue": 1.543264,
+          "priceUsd": 1871.65,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "824548380568890",
-            "redeemAmount": 0.000824548381,
+            "redeemAmountRaw": "824547442834524",
+            "redeemAmount": 0.000824547443,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -4082,8 +4108,8 @@
           "amount": 0.0000623276,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 4.001337,
-          "priceUsd": 63807,
+          "usdValue": 4.002967,
+          "priceUsd": 63833,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -4111,8 +4137,8 @@
           "amount": 0.0000518369,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 3.33199,
-          "priceUsd": 63819,
+          "usdValue": 3.334966,
+          "priceUsd": 63876,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -4140,16 +4166,16 @@
           "amount": 0.0000261816,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.674745,
-          "priceUsd": 63695,
+          "usdValue": 1.675585,
+          "priceUsd": 63727,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "26293187829514",
-            "redeemAmount": 0.000026293188,
+            "redeemAmountRaw": "26293178033434",
+            "redeemAmount": 0.000026293178,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -4169,16 +4195,16 @@
           "amount": 0.0002754134,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.520737,
-          "priceUsd": 1870.47,
+          "usdValue": 0.521062,
+          "priceUsd": 1871.65,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "278398838890581",
-            "redeemAmount": 0.000278398839,
+            "redeemAmountRaw": "278396967917928",
+            "redeemAmount": 0.000278396968,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -4198,16 +4224,16 @@
           "amount": 0.0006126452,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.083181,
-          "priceUsd": 1870.47,
+          "usdValue": 1.083863,
+          "priceUsd": 1871.65,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "579095483914548",
-            "redeemAmount": 0.000579095484,
+            "redeemAmountRaw": "579094825178973",
+            "redeemAmount": 0.000579094825,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -4227,8 +4253,8 @@
           "amount": 0.0000274318,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.761073,
-          "priceUsd": 63807,
+          "usdValue": 1.761791,
+          "priceUsd": 63833,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -4256,8 +4282,8 @@
           "amount": 0.000020527,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.319139,
-          "priceUsd": 63819,
+          "usdValue": 1.320317,
+          "priceUsd": 63876,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -4285,16 +4311,16 @@
           "amount": 0.0000108571,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.694492,
-          "priceUsd": 63695,
+          "usdValue": 0.694841,
+          "priceUsd": 63727,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "10903402281407",
-            "redeemAmount": 0.000010903402,
+            "redeemAmountRaw": "10903398219115",
+            "redeemAmount": 0.000010903398,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -4314,16 +4340,16 @@
           "amount": 0.0001459869,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.276024,
-          "priceUsd": 1870.47,
+          "usdValue": 0.276196,
+          "priceUsd": 1871.65,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "147569344295744",
-            "redeemAmount": 0.000147569344,
+            "redeemAmountRaw": "147568352559544",
+            "redeemAmount": 0.000147568353,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -4338,13 +4364,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "10113749180047723201",
+          "amountRaw": "10118205703992848341",
           "decimals": 18,
-          "amount": 10.11374918,
+          "amount": 10.118205704,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 3.148683,
-          "priceUsd": 0.311327,
+          "usdValue": 3.146914,
+          "priceUsd": 0.311015,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -4360,13 +4386,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "2836584123734319761",
+          "amountRaw": "2837734646552084670",
           "decimals": 18,
-          "amount": 2.8365841237,
+          "amount": 2.8377346466,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.883105,
-          "priceUsd": 0.311327,
+          "usdValue": 0.882578,
+          "priceUsd": 0.311015,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -4382,13 +4408,13 @@
           "chain": "Base",
           "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
           "symbol": "VVV",
-          "amountRaw": "112896267401421282",
+          "amountRaw": "113056471086619573",
           "decimals": 18,
-          "amount": 0.1128962674,
+          "amount": 0.1130564711,
           "classification": "unclaimed",
           "source": "onchain: Venice StakingV2.pendingRewards",
-          "usdValue": 1.340079,
-          "priceUsd": 11.87,
+          "usdValue": 1.337458,
+          "priceUsd": 11.83,
           "priceMethod": "coingecko:venice-token",
           "details": {
             "symbol": "VVV",
@@ -4403,12 +4429,12 @@
           "chain": "Ethereum",
           "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
           "symbol": "reUSD",
-          "amountRaw": "3354694255512204381",
+          "amountRaw": "3356780159260777099",
           "decimals": 18,
-          "amount": 3.3546942555,
+          "amount": 3.3567801593,
           "classification": "unclaimed",
           "source": "onchain: GovStaker.earned(account,rewardToken)",
-          "usdValue": 3.354694,
+          "usdValue": 3.35678,
           "priceUsd": 1,
           "priceMethod": "fixed-usd-assumption",
           "details": {
@@ -4426,19 +4452,19 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 100.8796279017,
-          "usdValue": 41.80361
+          "usdValue": 41.840633
         },
         {
           "symbol": "USDC",
           "token": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
           "amount": 0.087898,
-          "usdValue": 0.087865
+          "usdValue": 0.087868
         },
         {
           "symbol": "WETH",
           "token": "0x4200000000000000000000000000000000000006",
           "amount": 0.0000549541,
-          "usdValue": 0.102789
+          "usdValue": 0.102855
         },
         {
           "symbol": "alETH",
@@ -4468,7 +4494,7 @@
           "symbol": "USDC",
           "token": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
           "amount": 0.009726,
-          "usdValue": 0.009722
+          "usdValue": 0.009723
         },
         {
           "symbol": "TAROT",
@@ -4480,7 +4506,7 @@
           "symbol": "WBTC",
           "token": "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
           "amount": 0.0000012,
-          "usdValue": 0.076582
+          "usdValue": 0.076651
         },
         {
           "symbol": "alUSD",
@@ -4498,7 +4524,7 @@
           "symbol": "VELO",
           "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
           "amount": 0.8166189444,
-          "usdValue": 0.014065
+          "usdValue": 0.014036
         },
         {
           "symbol": "crvUSD",
@@ -4510,79 +4536,79 @@
           "symbol": "pWFRAX",
           "token": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
           "amount": 7.4781405725,
-          "usdValue": 2.328147
+          "usdValue": 2.325813
         },
         {
           "symbol": "pUSDC",
           "token": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
           "amount": 6.879817,
-          "usdValue": 6.87721
+          "usdValue": 6.877513
         },
         {
           "symbol": "pRSUP",
           "token": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
           "amount": 24.8016540433,
-          "usdValue": 3.005662
+          "usdValue": 3.006308
         },
         {
           "symbol": "wstETH",
           "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
           "amount": 0.0014781402,
-          "usdValue": 3.431828
+          "usdValue": 3.434696
         },
         {
           "symbol": "pFXN",
           "token": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
           "amount": 0.2775822789,
-          "usdValue": 3.605795
+          "usdValue": 3.611344
         },
         {
           "symbol": "yb-WETH",
           "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
           "amount": 0.0014849635,
-          "usdValue": 2.625474
+          "usdValue": 2.627127
         },
         {
           "symbol": "yb-cbBTC",
           "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
           "amount": 0.0000897594,
-          "usdValue": 5.76241
+          "usdValue": 5.764758
         },
         {
           "symbol": "yb-WBTC",
           "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
           "amount": 0.0000723639,
-          "usdValue": 4.651129
+          "usdValue": 4.655283
         },
         {
           "symbol": "yb-tBTC",
           "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
           "amount": 0.0000370387,
-          "usdValue": 2.369237
+          "usdValue": 2.370426
         },
         {
           "symbol": "yb-WETH",
           "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
           "amount": 0.0004214003,
-          "usdValue": 0.796761
+          "usdValue": 0.797258
         },
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 12.9503333037,
-          "usdValue": 4.031788
+          "amount": 12.9559403506,
+          "usdValue": 4.029492
         },
         {
           "symbol": "VVV",
           "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
-          "amount": 0.1128962674,
-          "usdValue": 1.340079
+          "amount": 0.1130564711,
+          "usdValue": 1.337458
         },
         {
           "symbol": "reUSD",
           "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
-          "amount": 3.3546942555,
-          "usdValue": 3.354694
+          "amount": 3.3567801593,
+          "usdValue": 3.35678
         }
       ],
       "sources": [
@@ -4774,11 +4800,12 @@
                   "status": "ok",
                   "source": "https://optimism.blockscout.com/api?module=logs",
                   "method": "blockscout:logs",
-                  "latestBlock": 155394091,
+                  "latestBlock": 155394797,
                   "startBlock": 144748388,
-                  "scanStartBlock": 155373231,
-                  "previousThroughBlock": 155393230,
+                  "scanStartBlock": 155374092,
+                  "previousThroughBlock": 155394091,
                   "cacheUsed": true,
+                  "cachePreviouslyComplete": true,
                   "cacheOverlapBlocks": 20000,
                   "cachedPoolCount": 28,
                   "windowSize": 1500000,
@@ -4956,11 +4983,12 @@
                         "status": "ok",
                         "source": "https://optimism.blockscout.com/api?module=logs",
                         "method": "blockscout:logs",
-                        "latestBlock": 155394091,
+                        "latestBlock": 155394797,
                         "startBlock": 144748388,
-                        "scanStartBlock": 155373231,
-                        "previousThroughBlock": 155393230,
+                        "scanStartBlock": 155374092,
+                        "previousThroughBlock": 155394091,
                         "cacheUsed": true,
+                        "cachePreviouslyComplete": true,
                         "cacheOverlapBlocks": 20000,
                         "cachedPoolCount": 28,
                         "windowSize": 1500000,
@@ -10034,7 +10062,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T18:35:48.870Z"
+      "updatedAt": "2026-08-10T18:59:20.428Z"
     },
     "0x5860...83CA8.eth": {
       "status": "partial",
@@ -10051,7 +10079,7 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 55.498005,
+      "totalUsd": 55.565486,
       "totalUsdIsComplete": false,
       "routeCoverage": 1,
       "completeRouteCoverage": 0.5,
@@ -10072,8 +10100,8 @@
           "amount": 113.4180628896,
           "classification": "compounded-locked",
           "source": "onchain: RewardsDistributor.claimable",
-          "usdValue": 47.038554,
-          "priceUsd": 0.414736,
+          "usdValue": 47.097645,
+          "priceUsd": 0.415257,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -10095,8 +10123,8 @@
           "amount": 0.173432,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.173371,
-          "priceUsd": 0.999651,
+          "usdValue": 0.173365,
+          "priceUsd": 0.999616,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -10121,8 +10149,8 @@
           "amount": 0.5480139946,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.543276,
-          "priceUsd": 0.991354,
+          "usdValue": 0.542848,
+          "priceUsd": 0.990573,
           "priceMethod": "coingecko:mezo-usd",
           "details": {
             "symbol": "MUSD",
@@ -10147,8 +10175,8 @@
           "amount": 4.591335,
           "classification": "unclaimed",
           "source": "onchain: IncentiveVotingReward.earned",
-          "usdValue": 4.589733,
-          "priceUsd": 0.999651,
+          "usdValue": 4.589572,
+          "priceUsd": 0.999616,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -10173,8 +10201,8 @@
           "amount": 183.2483069163,
           "classification": "compounded-locked",
           "source": "onchain: RewardsDistributor.claimable",
-          "usdValue": 3.153071,
-          "priceUsd": 0.01720655,
+          "usdValue": 3.162056,
+          "priceUsd": 0.01725558,
           "priceMethod": "coingecko:velodrome-finance",
           "details": {
             "symbol": "VELO",
@@ -10191,25 +10219,25 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 113.4180628896,
-          "usdValue": 47.038554
+          "usdValue": 47.097645
         },
         {
           "symbol": "USDC",
           "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
           "amount": 4.764767,
-          "usdValue": 4.763104
+          "usdValue": 4.762937
         },
         {
           "symbol": "MUSD",
           "token": "0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186",
           "amount": 0.5480139946,
-          "usdValue": 0.543276
+          "usdValue": 0.542848
         },
         {
           "symbol": "VELO",
           "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
           "amount": 183.2483069163,
-          "usdValue": 3.153071
+          "usdValue": 3.162056
         }
       ],
       "sources": [
@@ -10593,25 +10621,26 @@
                   "status": "ok",
                   "source": "https://optimism.blockscout.com/api?module=logs",
                   "method": "blockscout:logs",
-                  "latestBlock": 155394384,
+                  "latestBlock": 155395180,
                   "startBlock": 107506553,
-                  "scanStartBlock": 107506553,
-                  "previousThroughBlock": null,
-                  "cacheUsed": false,
-                  "cacheOverlapBlocks": 0,
-                  "cachedPoolCount": 0,
+                  "scanStartBlock": 155374385,
+                  "previousThroughBlock": 155394384,
+                  "cacheUsed": true,
+                  "cachePreviouslyComplete": true,
+                  "cacheOverlapBlocks": 20000,
+                  "cachedPoolCount": 96,
                   "windowSize": 1500000,
-                  "windowCount": 32,
-                  "requestCount": 32,
+                  "windowCount": 1,
+                  "requestCount": 1,
                   "adaptiveSplits": 0,
                   "mintDiscovery": {
                     "blockNumber": 107506553,
                     "transactionHash": "0x249247aea2b59874c2771d042d85968e685ea14f9143ced5ef3269b6afe071eb",
                     "source": "https://optimism.blockscout.com/api/v2/.../instances/11335/transfers",
                     "pages": 1,
-                    "cacheUsed": false
+                    "cacheUsed": true
                   },
-                  "logCount": 262,
+                  "logCount": 0,
                   "pools": [
                     "0xa08fB94A933eAEa787F8191a5a980C4403Dc015C",
                     "0x4E316557f63C2156eAFdfec08f31DF4957136203",
@@ -10710,104 +10739,7 @@
                     "0x4e5541815227E3272C405886149F45D2F437C7Ff",
                     "0xDB1FE6DA83698885104DA02A6e0b3b65c0B0dE80"
                   ],
-                  "scannedPools": [
-                    "0xa08fB94A933eAEa787F8191a5a980C4403Dc015C",
-                    "0x4E316557f63C2156eAFdfec08f31DF4957136203",
-                    "0x7c9a7243F6A359781996822A141A28DC48AA258b",
-                    "0x70dE438D91eE592d46F5D6e79A85Ea4a47b0AAdf",
-                    "0x615B9dd61f1F9a80f5bcD33A53Eb79c37b20adDC",
-                    "0x917AA69D539D6518440dd0BEA2eaAc142a8d5610",
-                    "0xc37a0a37664aeB3848f98C5dD5d7AE286A1E9Ebd",
-                    "0x2fE304b407c7fAb2a3c10962F14dB751468a4f5b",
-                    "0xE54e4020d1C3afDB312095D90054103E68fe34B0",
-                    "0xadBB23Bcc3C1B9810491897cb0690Cf645B858b1",
-                    "0x6e57B9E54ea043a829584B22182ad22bF446926C",
-                    "0xc3439bC1A747e545887192d6b7F8BE47f608473F",
-                    "0xD330841EF9527E3Bd0abc28a230C7cA8dec9423B",
-                    "0xe9b168fa9409EaFFa07679196c7568317baf80eD",
-                    "0x8F0364Cd47Fb819953D9096Bda1ec8017829aAa2",
-                    "0x667002F9DC61ebcBA8Ee1Cbeb2ad04060388f223",
-                    "0xE25F3642Bd1FCeD37D35D0b38019B2A2F58ca1dc",
-                    "0xd95E98fc33670dC033424E7Aa0578D742D00f9C7",
-                    "0xa80ad5C1f8C21b34b427EA432530aE7fF36e3926",
-                    "0xFC34b97B9170E743eb02257FB3E0408E76FEae1D",
-                    "0x3aEbE5B4b47A8a71CEb66CC0989Fc0c81b2c66cD",
-                    "0xE896AC7E63E321ead1DF79160e2C44061EFD66B2",
-                    "0x4706e50fDe911525e4B904c240056c4Ea0884AA6",
-                    "0x0af32614EEa68B8D2232B9592FbdB6512ab6DA73",
-                    "0x41cC89B91D0abe260F2cB53C1ABDa07b321E71Df",
-                    "0x4ed90ca704F4f6f3955169F202EA35365e41B424",
-                    "0xF4F2657AE744354bAcA871E56775e5083F7276Ab",
-                    "0xC04754F8027aBBFe9EeA492C9cC78b66946a07D1",
-                    "0x173cDC71e29d5Cffa6D090AD99f555a24B8831f9",
-                    "0x8949A8E02998d76D7a703cAC9eE7e0f529828011",
-                    "0x71aa84275c7704D96c9cb29aAB38AC37eC320e3c",
-                    "0x6911FFaD80Ee47A5E78DCF40906B0159EA19aCb0",
-                    "0xAE6c9B2A2777D0396cbE7E13Fc9ACEAC0D052e00",
-                    "0x870cA5e2620Dd8cFe569B8E8E0bd42b337522A18",
-                    "0xebf48d42744Cc61fad508A5e70E71F732bDa3642",
-                    "0xbF30Ff33CF9C6b0c48702Ff17891293b002DfeA4",
-                    "0xE48b4E392E4FC29aC2600c3C8EFe0404A15D60D9",
-                    "0x62191C893DF8d26aC295BA1274a00975dc07190C",
-                    "0xbdED651C03E2bC332AA49C1ffCa391eAA3ea6B86",
-                    "0x814e2d6E8f7477329BB6C196111A08464ABE11DD",
-                    "0x03799d6A59624AbDd50f8774D360A64f4FBfdCF5",
-                    "0x10df8a154C806f74C589466214b1C831c2315173",
-                    "0x688e9C5290A7df36595169984FcC03f6aB03d5Db",
-                    "0xA925eF1EF90E2932fD4CB0554D1f34Cf2ee00d96",
-                    "0x0a8f0D4b3dE04AfADe29ca0C84743177c4BcEbb6",
-                    "0xF6fFB55bFb4f149B725211E7eF1CC9F3A67c5b01",
-                    "0x38160f7fcbf1e82A47c7aBc03A531ABDd48686f7",
-                    "0xA56a25Dee5B3199A9198Bbd48715EE3D0ed98378",
-                    "0xFFf37730744930Cb61Be34c0014068F4f1eC28cF",
-                    "0x1AB1C7d93EE5055406A3217260C3697A2c146095",
-                    "0x93e40C357C4Dc57b5d2B9198a94Da2bD1C2e89cA",
-                    "0x0f0509443b7fca172f5428580468A403b2924504",
-                    "0xEea82dCab12C855E3736558d80500ED52c8598cd",
-                    "0xD5fE49a4c0Fc482Ee757DF703A3a332DB209aC2e",
-                    "0x4cE1d27d824062B159D000e3212B2F5106792C34",
-                    "0xB84C932059A49e82C2c1bb96E29D59Ec921998Be",
-                    "0x3C01ec09D15D5450FC702DC4353b17Cd2978d8a5",
-                    "0x6387765fFA609aB9A1dA1B16C455548Bfed7CbEA",
-                    "0x18C830F6a32A06Cf2aC4262E977a096F12bDAB8D",
-                    "0x4B322314d6F7239F094f40d93e7d9C4A3081c625",
-                    "0xfE09D5156c4d4ac3b57b192608a8423401bac186",
-                    "0xf8Bfd2C99409cfa2AbfB94448ab967288010399e",
-                    "0x30162a70b4E803742A69165a01E60648FCd02f3A",
-                    "0x6da87897bB36D0E2bC4E69c407935bcC7FA9D9c9",
-                    "0x478946BcD4a5a22b316470F5486fAfb928C0bA25",
-                    "0x7e1357fa56C0eCfE69dAF22E08489aE8De56d86C",
-                    "0xdAD7B4C48b5B0BE1159c674226BE19038814eBf6",
-                    "0xf4638dC488F9C826DC40250515592E678E447238",
-                    "0x1D72B49f81832eF8155d8DeDfCE9cD122367e3B3",
-                    "0x25C488e5F69aC334ac1e8f786D890A97ec1bF713",
-                    "0x8F47041aDbeF5BF321c9F63A0660326614ab6B60",
-                    "0x6Ed6Df1C23C51cb7Cc67a348cC8d9E6108EA3BFE",
-                    "0x69A9B0f791507C50B413d24aBB761acB5ac52728",
-                    "0x112d7a717a617C25a91b1C261708CCe6831474B4",
-                    "0x71d53B5B7141E1ec9A3Fc9Cc48b4766102d14A4A",
-                    "0x894d6Ea97767EbeCEfE01c9410f6Bd67935AA952",
-                    "0x4DA46c6AFe7322b66EFEfda1f702605Cbe08E0Bd",
-                    "0x4F3da11c5caDf644ae023Dbad01008a934C993E2",
-                    "0xd0F92F5d756Bf223574DFa3ef284a35C3c046289",
-                    "0x2F748Ee75538CcEe11Ec5F523084E810023D8c21",
-                    "0x9dA9D8dCdAC3Cab214d2bd241C3835B90aA8fFdE",
-                    "0xdE85628bCBC392EFa5d44Cbfb6Ebf753318a2565",
-                    "0xfd5F39c74E63f1dacE336350afDF11E85BBD56F4",
-                    "0x1AD06Ca54de04DBe9e2817F4C13eCB406DCbeAf0",
-                    "0x0c327a0497cb08370D4879A3bEC0ea1109eaE584",
-                    "0x3D5cBC66C366a51975918a132B1809C34d5C6fa2",
-                    "0xf9e06512342997AB79694a077132cE3F380144cD",
-                    "0xf3C45b45223Df6071a478851B9C17e0630fDf535",
-                    "0xDFF90E4A6c229565f25337B1DB9fA12f6d8cB118",
-                    "0xa9F987869bfe56D3a2Ece2e79df55684D0bBCd8b",
-                    "0x67F56Ac099F11aD5F65E2ec804f75F2cEa6ab8C5",
-                    "0x7f40d48816711E31B71263f43a350bafa3D7a31a",
-                    "0x4d7959d17B9710BE87e3657e69d946914221BB88",
-                    "0x22BE4975c78B77979014d6A6Bc0140e0eaF21987",
-                    "0x4e5541815227E3272C405886149F45D2F437C7Ff",
-                    "0xDB1FE6DA83698885104DA02A6e0b3b65c0B0dE80"
-                  ],
+                  "scannedPools": [],
                   "firstVoteBlock": 107561907,
                   "lastVoteBlock": 149438710,
                   "methodErrors": []
@@ -11130,25 +11062,26 @@
                         "status": "ok",
                         "source": "https://optimism.blockscout.com/api?module=logs",
                         "method": "blockscout:logs",
-                        "latestBlock": 155394384,
+                        "latestBlock": 155395180,
                         "startBlock": 107506553,
-                        "scanStartBlock": 107506553,
-                        "previousThroughBlock": null,
-                        "cacheUsed": false,
-                        "cacheOverlapBlocks": 0,
-                        "cachedPoolCount": 0,
+                        "scanStartBlock": 155374385,
+                        "previousThroughBlock": 155394384,
+                        "cacheUsed": true,
+                        "cachePreviouslyComplete": true,
+                        "cacheOverlapBlocks": 20000,
+                        "cachedPoolCount": 96,
                         "windowSize": 1500000,
-                        "windowCount": 32,
-                        "requestCount": 32,
+                        "windowCount": 1,
+                        "requestCount": 1,
                         "adaptiveSplits": 0,
                         "mintDiscovery": {
                           "blockNumber": 107506553,
                           "transactionHash": "0x249247aea2b59874c2771d042d85968e685ea14f9143ced5ef3269b6afe071eb",
                           "source": "https://optimism.blockscout.com/api/v2/.../instances/11335/transfers",
                           "pages": 1,
-                          "cacheUsed": false
+                          "cacheUsed": true
                         },
-                        "logCount": 262,
+                        "logCount": 0,
                         "pools": [
                           "0xa08fB94A933eAEa787F8191a5a980C4403Dc015C",
                           "0x4E316557f63C2156eAFdfec08f31DF4957136203",
@@ -11247,104 +11180,7 @@
                           "0x4e5541815227E3272C405886149F45D2F437C7Ff",
                           "0xDB1FE6DA83698885104DA02A6e0b3b65c0B0dE80"
                         ],
-                        "scannedPools": [
-                          "0xa08fB94A933eAEa787F8191a5a980C4403Dc015C",
-                          "0x4E316557f63C2156eAFdfec08f31DF4957136203",
-                          "0x7c9a7243F6A359781996822A141A28DC48AA258b",
-                          "0x70dE438D91eE592d46F5D6e79A85Ea4a47b0AAdf",
-                          "0x615B9dd61f1F9a80f5bcD33A53Eb79c37b20adDC",
-                          "0x917AA69D539D6518440dd0BEA2eaAc142a8d5610",
-                          "0xc37a0a37664aeB3848f98C5dD5d7AE286A1E9Ebd",
-                          "0x2fE304b407c7fAb2a3c10962F14dB751468a4f5b",
-                          "0xE54e4020d1C3afDB312095D90054103E68fe34B0",
-                          "0xadBB23Bcc3C1B9810491897cb0690Cf645B858b1",
-                          "0x6e57B9E54ea043a829584B22182ad22bF446926C",
-                          "0xc3439bC1A747e545887192d6b7F8BE47f608473F",
-                          "0xD330841EF9527E3Bd0abc28a230C7cA8dec9423B",
-                          "0xe9b168fa9409EaFFa07679196c7568317baf80eD",
-                          "0x8F0364Cd47Fb819953D9096Bda1ec8017829aAa2",
-                          "0x667002F9DC61ebcBA8Ee1Cbeb2ad04060388f223",
-                          "0xE25F3642Bd1FCeD37D35D0b38019B2A2F58ca1dc",
-                          "0xd95E98fc33670dC033424E7Aa0578D742D00f9C7",
-                          "0xa80ad5C1f8C21b34b427EA432530aE7fF36e3926",
-                          "0xFC34b97B9170E743eb02257FB3E0408E76FEae1D",
-                          "0x3aEbE5B4b47A8a71CEb66CC0989Fc0c81b2c66cD",
-                          "0xE896AC7E63E321ead1DF79160e2C44061EFD66B2",
-                          "0x4706e50fDe911525e4B904c240056c4Ea0884AA6",
-                          "0x0af32614EEa68B8D2232B9592FbdB6512ab6DA73",
-                          "0x41cC89B91D0abe260F2cB53C1ABDa07b321E71Df",
-                          "0x4ed90ca704F4f6f3955169F202EA35365e41B424",
-                          "0xF4F2657AE744354bAcA871E56775e5083F7276Ab",
-                          "0xC04754F8027aBBFe9EeA492C9cC78b66946a07D1",
-                          "0x173cDC71e29d5Cffa6D090AD99f555a24B8831f9",
-                          "0x8949A8E02998d76D7a703cAC9eE7e0f529828011",
-                          "0x71aa84275c7704D96c9cb29aAB38AC37eC320e3c",
-                          "0x6911FFaD80Ee47A5E78DCF40906B0159EA19aCb0",
-                          "0xAE6c9B2A2777D0396cbE7E13Fc9ACEAC0D052e00",
-                          "0x870cA5e2620Dd8cFe569B8E8E0bd42b337522A18",
-                          "0xebf48d42744Cc61fad508A5e70E71F732bDa3642",
-                          "0xbF30Ff33CF9C6b0c48702Ff17891293b002DfeA4",
-                          "0xE48b4E392E4FC29aC2600c3C8EFe0404A15D60D9",
-                          "0x62191C893DF8d26aC295BA1274a00975dc07190C",
-                          "0xbdED651C03E2bC332AA49C1ffCa391eAA3ea6B86",
-                          "0x814e2d6E8f7477329BB6C196111A08464ABE11DD",
-                          "0x03799d6A59624AbDd50f8774D360A64f4FBfdCF5",
-                          "0x10df8a154C806f74C589466214b1C831c2315173",
-                          "0x688e9C5290A7df36595169984FcC03f6aB03d5Db",
-                          "0xA925eF1EF90E2932fD4CB0554D1f34Cf2ee00d96",
-                          "0x0a8f0D4b3dE04AfADe29ca0C84743177c4BcEbb6",
-                          "0xF6fFB55bFb4f149B725211E7eF1CC9F3A67c5b01",
-                          "0x38160f7fcbf1e82A47c7aBc03A531ABDd48686f7",
-                          "0xA56a25Dee5B3199A9198Bbd48715EE3D0ed98378",
-                          "0xFFf37730744930Cb61Be34c0014068F4f1eC28cF",
-                          "0x1AB1C7d93EE5055406A3217260C3697A2c146095",
-                          "0x93e40C357C4Dc57b5d2B9198a94Da2bD1C2e89cA",
-                          "0x0f0509443b7fca172f5428580468A403b2924504",
-                          "0xEea82dCab12C855E3736558d80500ED52c8598cd",
-                          "0xD5fE49a4c0Fc482Ee757DF703A3a332DB209aC2e",
-                          "0x4cE1d27d824062B159D000e3212B2F5106792C34",
-                          "0xB84C932059A49e82C2c1bb96E29D59Ec921998Be",
-                          "0x3C01ec09D15D5450FC702DC4353b17Cd2978d8a5",
-                          "0x6387765fFA609aB9A1dA1B16C455548Bfed7CbEA",
-                          "0x18C830F6a32A06Cf2aC4262E977a096F12bDAB8D",
-                          "0x4B322314d6F7239F094f40d93e7d9C4A3081c625",
-                          "0xfE09D5156c4d4ac3b57b192608a8423401bac186",
-                          "0xf8Bfd2C99409cfa2AbfB94448ab967288010399e",
-                          "0x30162a70b4E803742A69165a01E60648FCd02f3A",
-                          "0x6da87897bB36D0E2bC4E69c407935bcC7FA9D9c9",
-                          "0x478946BcD4a5a22b316470F5486fAfb928C0bA25",
-                          "0x7e1357fa56C0eCfE69dAF22E08489aE8De56d86C",
-                          "0xdAD7B4C48b5B0BE1159c674226BE19038814eBf6",
-                          "0xf4638dC488F9C826DC40250515592E678E447238",
-                          "0x1D72B49f81832eF8155d8DeDfCE9cD122367e3B3",
-                          "0x25C488e5F69aC334ac1e8f786D890A97ec1bF713",
-                          "0x8F47041aDbeF5BF321c9F63A0660326614ab6B60",
-                          "0x6Ed6Df1C23C51cb7Cc67a348cC8d9E6108EA3BFE",
-                          "0x69A9B0f791507C50B413d24aBB761acB5ac52728",
-                          "0x112d7a717a617C25a91b1C261708CCe6831474B4",
-                          "0x71d53B5B7141E1ec9A3Fc9Cc48b4766102d14A4A",
-                          "0x894d6Ea97767EbeCEfE01c9410f6Bd67935AA952",
-                          "0x4DA46c6AFe7322b66EFEfda1f702605Cbe08E0Bd",
-                          "0x4F3da11c5caDf644ae023Dbad01008a934C993E2",
-                          "0xd0F92F5d756Bf223574DFa3ef284a35C3c046289",
-                          "0x2F748Ee75538CcEe11Ec5F523084E810023D8c21",
-                          "0x9dA9D8dCdAC3Cab214d2bd241C3835B90aA8fFdE",
-                          "0xdE85628bCBC392EFa5d44Cbfb6Ebf753318a2565",
-                          "0xfd5F39c74E63f1dacE336350afDF11E85BBD56F4",
-                          "0x1AD06Ca54de04DBe9e2817F4C13eCB406DCbeAf0",
-                          "0x0c327a0497cb08370D4879A3bEC0ea1109eaE584",
-                          "0x3D5cBC66C366a51975918a132B1809C34d5C6fa2",
-                          "0xf9e06512342997AB79694a077132cE3F380144cD",
-                          "0xf3C45b45223Df6071a478851B9C17e0630fDf535",
-                          "0xDFF90E4A6c229565f25337B1DB9fA12f6d8cB118",
-                          "0xa9F987869bfe56D3a2Ece2e79df55684D0bBCd8b",
-                          "0x67F56Ac099F11aD5F65E2ec804f75F2cEa6ab8C5",
-                          "0x7f40d48816711E31B71263f43a350bafa3D7a31a",
-                          "0x4d7959d17B9710BE87e3657e69d946914221BB88",
-                          "0x22BE4975c78B77979014d6A6Bc0140e0eaF21987",
-                          "0x4e5541815227E3272C405886149F45D2F437C7Ff",
-                          "0xDB1FE6DA83698885104DA02A6e0b3b65c0B0dE80"
-                        ],
+                        "scannedPools": [],
                         "firstVoteBlock": 107561907,
                         "lastVoteBlock": 149438710,
                         "methodErrors": []
@@ -11358,25 +11194,25 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T18:35:48.870Z"
+      "updatedAt": "2026-08-10T18:59:20.428Z"
     }
   },
   "engineErrors": {},
   "history": [
     {
       "date": "2026-08-10",
-      "generatedAt": "2026-08-10T18:35:48.870Z",
+      "generatedAt": "2026-08-10T18:59:20.428Z",
       "companies": {
         "05081966.eth": {
           "status": "ok",
-          "totalUsd": 1.350908,
+          "totalUsd": 1.350937,
           "totalUsdIsComplete": true,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 2.0257877309,
-              "usdValue": 0.840216
+              "usdValue": 0.84053
             },
             {
               "symbol": "crvUSD",
@@ -11387,77 +11223,77 @@
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.3664294373,
-              "usdValue": 0.425611
+              "amount": 1.3673528522,
+              "usdValue": 0.425326
             }
           ]
         },
         "YieldRing.eth": {
           "status": "partial",
-          "totalUsd": 1.08906,
+          "totalUsd": 1.089307,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 1.5785400672,
-              "usdValue": 0.654715
+              "usdValue": 0.65496
             },
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.3944683661,
-              "usdValue": 0.434345
+              "amount": 1.3963551048,
+              "usdValue": 0.434347
             }
           ]
         },
         "dinaz.eth": {
           "status": "ok",
-          "totalUsd": 3.874787,
+          "totalUsd": 3.874657,
           "totalUsdIsComplete": true,
           "rewardTokens": [
             {
               "symbol": "yb-WBTC",
               "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
               "amount": 0.0000273526,
-              "usdValue": 1.759012
+              "usdValue": 1.759315
             },
             {
               "symbol": "yb-cbBTC",
               "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
               "amount": 0.0000199489,
-              "usdValue": 1.281329
+              "usdValue": 1.281289
             },
             {
               "symbol": "yb-tBTC",
               "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
               "amount": 0.0000130356,
-              "usdValue": 0.834446
+              "usdValue": 0.834053
             }
           ]
         },
         "defitea.eth": {
           "status": "partial",
-          "totalUsd": 90.883857,
+          "totalUsd": 90.935032,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 100.8796279017,
-              "usdValue": 41.80361
+              "usdValue": 41.840633
             },
             {
               "symbol": "USDC",
               "token": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
               "amount": 0.087898,
-              "usdValue": 0.087865
+              "usdValue": 0.087868
             },
             {
               "symbol": "WETH",
               "token": "0x4200000000000000000000000000000000000006",
               "amount": 0.0000549541,
-              "usdValue": 0.102789
+              "usdValue": 0.102855
             },
             {
               "symbol": "alETH",
@@ -11487,7 +11323,7 @@
               "symbol": "USDC",
               "token": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
               "amount": 0.009726,
-              "usdValue": 0.009722
+              "usdValue": 0.009723
             },
             {
               "symbol": "TAROT",
@@ -11499,7 +11335,7 @@
               "symbol": "WBTC",
               "token": "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
               "amount": 0.0000012,
-              "usdValue": 0.076582
+              "usdValue": 0.076651
             },
             {
               "symbol": "alUSD",
@@ -11517,7 +11353,7 @@
               "symbol": "VELO",
               "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
               "amount": 0.8166189444,
-              "usdValue": 0.014065
+              "usdValue": 0.014036
             },
             {
               "symbol": "crvUSD",
@@ -11529,110 +11365,110 @@
               "symbol": "pWFRAX",
               "token": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
               "amount": 7.4781405725,
-              "usdValue": 2.328147
+              "usdValue": 2.325813
             },
             {
               "symbol": "pUSDC",
               "token": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
               "amount": 6.879817,
-              "usdValue": 6.87721
+              "usdValue": 6.877513
             },
             {
               "symbol": "pRSUP",
               "token": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
               "amount": 24.8016540433,
-              "usdValue": 3.005662
+              "usdValue": 3.006308
             },
             {
               "symbol": "wstETH",
               "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
               "amount": 0.0014781402,
-              "usdValue": 3.431828
+              "usdValue": 3.434696
             },
             {
               "symbol": "pFXN",
               "token": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
               "amount": 0.2775822789,
-              "usdValue": 3.605795
+              "usdValue": 3.611344
             },
             {
               "symbol": "yb-WETH",
               "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
               "amount": 0.0014849635,
-              "usdValue": 2.625474
+              "usdValue": 2.627127
             },
             {
               "symbol": "yb-cbBTC",
               "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
               "amount": 0.0000897594,
-              "usdValue": 5.76241
+              "usdValue": 5.764758
             },
             {
               "symbol": "yb-WBTC",
               "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
               "amount": 0.0000723639,
-              "usdValue": 4.651129
+              "usdValue": 4.655283
             },
             {
               "symbol": "yb-tBTC",
               "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
               "amount": 0.0000370387,
-              "usdValue": 2.369237
+              "usdValue": 2.370426
             },
             {
               "symbol": "yb-WETH",
               "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
               "amount": 0.0004214003,
-              "usdValue": 0.796761
+              "usdValue": 0.797258
             },
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 12.9503333037,
-              "usdValue": 4.031788
+              "amount": 12.9559403506,
+              "usdValue": 4.029492
             },
             {
               "symbol": "VVV",
               "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
-              "amount": 0.1128962674,
-              "usdValue": 1.340079
+              "amount": 0.1130564711,
+              "usdValue": 1.337458
             },
             {
               "symbol": "reUSD",
               "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
-              "amount": 3.3546942555,
-              "usdValue": 3.354694
+              "amount": 3.3567801593,
+              "usdValue": 3.35678
             }
           ]
         },
         "0x5860...83CA8.eth": {
           "status": "partial",
-          "totalUsd": 55.498005,
+          "totalUsd": 55.565486,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 113.4180628896,
-              "usdValue": 47.038554
+              "usdValue": 47.097645
             },
             {
               "symbol": "USDC",
               "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
               "amount": 4.764767,
-              "usdValue": 4.763104
+              "usdValue": 4.762937
             },
             {
               "symbol": "MUSD",
               "token": "0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186",
               "amount": 0.5480139946,
-              "usdValue": 0.543276
+              "usdValue": 0.542848
             },
             {
               "symbol": "VELO",
               "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
               "amount": 183.2483069163,
-              "usdValue": 3.153071
+              "usdValue": 3.162056
             }
           ]
         }
