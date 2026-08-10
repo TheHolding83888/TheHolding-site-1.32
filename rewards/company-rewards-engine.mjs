@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.7';
-const COLLECTOR_VERSION = '0.2.7-defitea-votemarket-ptoken-pricing';
+const VERSION = '0.2.8';
+const COLLECTOR_VERSION = '0.2.8-company-005-ve-tracking';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -134,6 +134,11 @@ const COMPANIES = [
       'liquity-staking',
       'resupply-staking'
     ]
+  },
+  {
+    name: '0x5860...83CA8.eth',
+    wallets: [{ alias: '0x5860...83CA8.eth', address: '0x58603461149Fc2A800a56d421e77DcbBA2D83CA8' }],
+    routes: ['aerodrome-ve', 'velodrome-ve-direct']
   }
 ];
 
@@ -425,8 +430,9 @@ async function enumerateRewardContract(rewardAddress, tokenId, provider, context
   return { rewards: out, issue: null };
 }
 
-async function collectVeProtocol(address, registry, kind) {
+async function collectVeProtocol(address, registry, kind, routeOverride=null) {
   const cfg = VE_PROTOCOLS[kind];
+  const route = routeOverride || cfg.route;
   const provider = await registry.get(cfg.providerKey);
   const ve = new Contract(cfg.votingEscrow, VE_ABI, provider);
   const nftCount = Number(await ve.balanceOf(address));
@@ -453,7 +459,7 @@ async function collectVeProtocol(address, registry, kind) {
           lockedRaw = await c.earned(cfg.baseToken, tokenId);
           if (lockedRaw > 0n) {
             rewards.push(rewardBase({
-              protocol: cfg.protocol, route: cfg.route, chain: cfg.chain,
+              protocol: cfg.protocol, route, chain: cfg.chain,
               token: cfg.baseToken, amountRaw: lockedRaw, decimals: 18,
               amount: n(formatUnits(lockedRaw, 18)), classification: 'compounded-locked',
               source: 'onchain: LockedManagedReward.earned',
@@ -468,7 +474,7 @@ async function collectVeProtocol(address, registry, kind) {
 
       if (freeReward && freeReward !== ZeroAddress) {
         const free = await enumerateRewardContract(freeReward, tokenId, provider, {
-          protocol: cfg.protocol, route: cfg.route, chain: cfg.chain,
+          protocol: cfg.protocol, route, chain: cfg.chain,
           pricePlatform: CHAIN_META[cfg.providerKey === 'base' ? 8453 : 10].platform,
           kind: 'FreeManagedReward'
         });
@@ -486,7 +492,7 @@ async function collectVeProtocol(address, registry, kind) {
       const raw = await rd.claimable(tokenId);
       if (raw > 0n) {
         rewards.push(rewardBase({
-          protocol: cfg.protocol, route: cfg.route, chain: cfg.chain,
+          protocol: cfg.protocol, route, chain: cfg.chain,
           token: cfg.baseToken, amountRaw: raw, decimals: 18,
           amount: n(formatUnits(raw, 18)), classification: 'compounded-locked',
           source: 'onchain: RewardsDistributor.claimable',
@@ -518,7 +524,7 @@ async function collectVeProtocol(address, registry, kind) {
 
         for (const [rewardAddress, rewardKind] of [[feeReward, 'FeesVotingReward'], [incentiveReward, 'IncentiveVotingReward']]) {
           const part = await enumerateRewardContract(rewardAddress, tokenId, provider, {
-            protocol: cfg.protocol, route: cfg.route, chain: cfg.chain,
+            protocol: cfg.protocol, route, chain: cfg.chain,
             pricePlatform: cfg.providerKey === 'base' ? 'base' : 'optimistic-ethereum', kind: rewardKind
           });
           rewards.push(...part.rewards);
@@ -536,7 +542,7 @@ async function collectVeProtocol(address, registry, kind) {
   const status = directCaveat || issues.length ? 'partial' : 'ok';
   return {
     source: {
-      protocol: cfg.protocol, route: cfg.route, status, chain: cfg.chain,
+      protocol: cfg.protocol, route, status, chain: cfg.chain,
       metric: 'veNFT current accrued rewards + managed compounding',
       note: directCaveat
         ? 'Current direct-vote pools are measured, but old no-longer-voted pools may still contain unclaimed rewards. Managed/Relay positions are measured directly.'
@@ -1383,7 +1389,7 @@ async function collectFxFees(address, registry) {
       }
       const meta = await tokenMeta(provider, token);
       rewards.push(rewardBase({
-        protocol: 'f(x)', route: 'fx-fees', chain: 'Ethereum', token,
+        protocol: 'f(x) Protocol', route: 'fx-fees', chain: 'Ethereum', token,
         amountRaw: raw, decimals: meta.decimals, amount: n(formatUnits(raw, meta.decimals)), classification: 'unclaimed',
         source: 'onchain: f(x) FeeDistributor.claim staticCall',
         details: { symbol: meta.symbol, distributor: getAddress(fdCfg.address), distributorLabel: fdCfg.label, coingeckoId: COINGECKO_IDS[String(meta.symbol || '').toUpperCase()] || null, pricePlatform: 'ethereum', priceContract: token }
@@ -1392,7 +1398,7 @@ async function collectFxFees(address, registry) {
   }
   return {
     source: {
-      protocol: 'f(x)', route: 'fx-fees', status: issues.length ? 'partial' : 'ok', chain: 'Ethereum',
+      protocol: 'f(x) Protocol', route: 'fx-fees', status: issues.length ? 'partial' : 'ok', chain: 'Ethereum',
       metric: 'f(x) veFXN FeeDistributor claim simulations',
       note: issues.length ? 'Measured fee distributions are retained; one or more fee distributor reads were incomplete.' : 'Base veFXN fee distributions are measured independently from VoteMarket voting incentives.',
       details: { issues }
@@ -1576,6 +1582,7 @@ async function collectRoute(route, address, registry) {
     case 'aerodrome-relay': return collectAerodromeRelay(address, registry);
     case 'aerodrome-ve': return collectVeProtocol(address, registry, 'aerodrome');
     case 'velodrome-ve': return collectDefiteaVelodrome(address, registry);
+    case 'velodrome-ve-direct': return collectVeProtocol(address, registry, 'velodrome', 'velodrome-ve-direct');
     case 'curve-fees': return collectCurveBase(address, registry);
     case 'votemarket-vecrv': return collectVoteMarket(address, registry, 'curve', route);
     case 'frax-yield': return collectFrax(address, registry);
