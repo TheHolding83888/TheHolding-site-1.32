@@ -1,18 +1,18 @@
 {
-  "version": "0.2.6",
-  "collectorVersion": "0.2.6-defitea-votemarket-proof-votes",
+  "version": "0.2.7",
+  "collectorVersion": "0.2.7-defitea-votemarket-ptoken-pricing",
   "methodologyVersion": "0.2.2-earned-inside-protocols-multiwallet",
-  "generatedAt": "2026-08-10T12:59:55.262Z",
+  "generatedAt": "2026-08-10T13:29:15.225Z",
   "date": "2026-08-10",
   "scope": "protocol-side accrued rewards for Personal Onchain Companies and Defitea Fund",
   "methodology": {
     "definition": "Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.",
     "multiWallet": "Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.",
     "aerodromeVelodrome": "Aerodrome managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories, then reads current rewards at the actual holder. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.",
-    "curve": "Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated.",
+    "curve": "Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.",
     "convex": "Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.",
     "pendle": "Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.",
-    "fx": "Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated.",
+    "fx": "Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.",
     "yieldBasis": "FeeDistributor.preview_claim is used; yb rewards are valued at current redemption value into underlying BTC assets.",
     "frax": "Fraxtal YieldDistributor.earned(account), with emitted reward token discovered onchain.",
     "venice": "StakingV2.pendingRewards(user) on Base.",
@@ -43,7 +43,7 @@
           "fallbackMatched": true
         }
       ],
-      "totalUsd": 1.3657,
+      "totalUsd": 1.361496,
       "totalUsdIsComplete": true,
       "routeCoverage": 1,
       "completeRouteCoverage": 1,
@@ -64,8 +64,8 @@
           "amount": 2.0257877309,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.859246,
-          "priceUsd": 0.424154,
+          "usdValue": 0.856092,
+          "priceUsd": 0.422597,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -109,13 +109,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1353248961853327571",
+          "amountRaw": "1354399953184527463",
           "decimals": 18,
-          "amount": 1.3532489619,
+          "amount": 1.3543999532,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.421373,
-          "priceUsd": 0.311379,
+          "usdValue": 0.420323,
+          "priceUsd": 0.310339,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -131,7 +131,7 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 2.0257877309,
-          "usdValue": 0.859246
+          "usdValue": 0.856092
         },
         {
           "symbol": "crvUSD",
@@ -142,8 +142,8 @@
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.3532489619,
-          "usdValue": 0.421373
+          "amount": 1.3543999532,
+          "usdValue": 0.420323
         }
       ],
       "sources": [
@@ -208,7 +208,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T12:59:55.262Z"
+      "updatedAt": "2026-08-10T13:29:15.225Z"
     },
     "YieldRing.eth": {
       "status": "partial",
@@ -225,7 +225,7 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 1.095367,
+      "totalUsd": 1.092216,
       "totalUsdIsComplete": false,
       "routeCoverage": 0.666667,
       "completeRouteCoverage": 0.666667,
@@ -246,8 +246,8 @@
           "amount": 1.5785400672,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.669544,
-          "priceUsd": 0.424154,
+          "usdValue": 0.667086,
+          "priceUsd": 0.422597,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -270,13 +270,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1367537771882071991",
+          "amountRaw": "1369889499186580240",
           "decimals": 18,
-          "amount": 1.3675377719,
+          "amount": 1.3698894992,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.425823,
-          "priceUsd": 0.311379,
+          "usdValue": 0.42513,
+          "priceUsd": 0.310339,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -292,13 +292,13 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 1.5785400672,
-          "usdValue": 0.669544
+          "usdValue": 0.667086
         },
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.3675377719,
-          "usdValue": 0.425823
+          "amount": 1.3698894992,
+          "usdValue": 0.42513
         }
       ],
       "sources": [
@@ -359,7 +359,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T12:59:55.262Z"
+      "updatedAt": "2026-08-10T13:29:15.225Z"
     },
     "dinaz.eth": {
       "status": "ok",
@@ -376,7 +376,7 @@
           "fallbackMatched": true
         }
       ],
-      "totalUsd": 3.935921,
+      "totalUsd": 3.936124,
       "totalUsdIsComplete": true,
       "routeCoverage": 1,
       "completeRouteCoverage": 1,
@@ -397,8 +397,8 @@
           "amount": 0.0000273526,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.786287,
-          "priceUsd": 64838,
+          "usdValue": 1.786397,
+          "priceUsd": 64842,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -426,8 +426,8 @@
           "amount": 0.0000199489,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.301359,
-          "priceUsd": 64841,
+          "usdValue": 1.301479,
+          "priceUsd": 64847,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -455,16 +455,16 @@
           "amount": 0.0000130356,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.848275,
-          "priceUsd": 64797,
+          "usdValue": 0.848248,
+          "priceUsd": 64795,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "13091265035082",
-            "redeemAmount": 0.000013091265,
+            "redeemAmountRaw": "13091258959599",
+            "redeemAmount": 0.000013091259,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -479,19 +479,19 @@
           "symbol": "yb-WBTC",
           "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
           "amount": 0.0000273526,
-          "usdValue": 1.786287
+          "usdValue": 1.786397
         },
         {
           "symbol": "yb-cbBTC",
           "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
           "amount": 0.0000199489,
-          "usdValue": 1.301359
+          "usdValue": 1.301479
         },
         {
           "symbol": "yb-tBTC",
           "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
           "amount": 0.0000130356,
-          "usdValue": 0.848275
+          "usdValue": 0.848248
         }
       ],
       "sources": [
@@ -516,7 +516,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T12:59:55.262Z"
+      "updatedAt": "2026-08-10T13:29:15.225Z"
     },
     "defitea.eth": {
       "status": "partial",
@@ -540,15 +540,15 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 76.164235,
+      "totalUsd": 91.679596,
       "totalUsdIsComplete": false,
       "routeCoverage": 0.923077,
-      "completeRouteCoverage": 0.769231,
+      "completeRouteCoverage": 0.692308,
       "measuredRoutes": 12,
-      "completeRoutes": 10,
+      "completeRoutes": 9,
       "routeCount": 13,
-      "pendingRoutes": 3,
-      "unpricedRewards": 45,
+      "pendingRoutes": 4,
+      "unpricedRewards": 0,
       "rewards": [
         {
           "protocol": "Aerodrome",
@@ -561,8 +561,8 @@
           "amount": 100.8796279017,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 42.941532,
-          "priceUsd": 0.425671,
+          "usdValue": 42.58926,
+          "priceUsd": 0.422179,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -627,9 +627,9 @@
           "amount": 2.2837689918,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.705472,
+          "priceUsd": 0.308907,
+          "priceMethod": "redemption-value:WFRAX@coingecko:wrapped-frax",
           "details": {
             "symbol": "pWFRAX",
             "protocolKey": "curve",
@@ -654,6 +654,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "WFRAX",
+            "redeemAmount": 2.2837689917538175,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+            "redemptionCoingeckoId": "wrapped-frax",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -669,9 +677,9 @@
           "amount": 2.8240575198,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.872371,
+          "priceUsd": 0.308907,
+          "priceMethod": "redemption-value:WFRAX@coingecko:wrapped-frax",
           "details": {
             "symbol": "pWFRAX",
             "protocolKey": "curve",
@@ -696,6 +704,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "WFRAX",
+            "redeemAmount": 2.824057519802146,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+            "redemptionCoingeckoId": "wrapped-frax",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -711,9 +727,9 @@
           "amount": 2.3703140609,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.732207,
+          "priceUsd": 0.308907,
+          "priceMethod": "redemption-value:WFRAX@coingecko:wrapped-frax",
           "details": {
             "symbol": "pWFRAX",
             "protocolKey": "curve",
@@ -738,6 +754,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "WFRAX",
+            "redeemAmount": 2.3703140608719147,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+            "redemptionCoingeckoId": "wrapped-frax",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -753,9 +777,9 @@
           "amount": 0.739285,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.738956,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "curve",
@@ -780,6 +804,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.739285,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -795,9 +827,9 @@
           "amount": 0.74127,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.74094,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "curve",
@@ -822,6 +854,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.74127,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -837,9 +877,9 @@
           "amount": 0.754248,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.753912,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "curve",
@@ -864,6 +904,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.754248,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -879,9 +927,9 @@
           "amount": 0.767318,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.766977,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "curve",
@@ -906,6 +954,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.767318,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -921,9 +977,9 @@
           "amount": 0.599637,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.59937,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "curve",
@@ -948,6 +1004,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.599637,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -963,9 +1027,9 @@
           "amount": 0.60144,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.601172,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "curve",
@@ -990,6 +1054,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.60144,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -1005,9 +1077,9 @@
           "amount": 0.695563,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.695253,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "curve",
@@ -1032,6 +1104,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.695563,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -1047,9 +1127,9 @@
           "amount": 5.4670684608,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.677266,
+          "priceUsd": 0.123881,
+          "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
             "protocolKey": "curve",
@@ -1074,6 +1154,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "RSUP",
+            "redeemAmount": 5.467068460787538,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+            "redemptionCoingeckoId": "resupply",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1089,9 +1177,9 @@
           "amount": 5.4663476812,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.677177,
+          "priceUsd": 0.123881,
+          "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
             "protocolKey": "curve",
@@ -1116,6 +1204,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "RSUP",
+            "redeemAmount": 5.466347681181409,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+            "redemptionCoingeckoId": "resupply",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1131,9 +1227,9 @@
           "amount": 5.2102780514,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.645454,
+          "priceUsd": 0.123881,
+          "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
             "protocolKey": "curve",
@@ -1158,6 +1254,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "RSUP",
+            "redeemAmount": 5.2102780513908185,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+            "redemptionCoingeckoId": "resupply",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1173,9 +1277,9 @@
           "amount": 2.9445014853,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.364768,
+          "priceUsd": 0.123881,
+          "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
             "protocolKey": "curve",
@@ -1200,6 +1304,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "RSUP",
+            "redeemAmount": 2.9445014852514904,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+            "redemptionCoingeckoId": "resupply",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1215,9 +1327,9 @@
           "amount": 2.8376684091,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.351533,
+          "priceUsd": 0.123881,
+          "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
             "protocolKey": "curve",
@@ -1242,6 +1354,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "RSUP",
+            "redeemAmount": 2.8376684091068416,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+            "redemptionCoingeckoId": "resupply",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1257,9 +1377,9 @@
           "amount": 2.8757899555,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.356256,
+          "priceUsd": 0.123881,
+          "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
             "protocolKey": "curve",
@@ -1284,6 +1404,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "RSUP",
+            "redeemAmount": 2.875789955532697,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+            "redemptionCoingeckoId": "resupply",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1299,8 +1427,8 @@
           "amount": 0.0008947155,
           "classification": "unclaimed",
           "source": "onchain: f(x) FeeDistributor.claim staticCall",
-          "usdValue": 2.115644,
-          "priceUsd": 2364.6,
+          "usdValue": 2.118024,
+          "priceUsd": 2367.26,
           "priceMethod": "coingecko:wrapped-steth",
           "details": {
             "symbol": "wstETH",
@@ -1324,8 +1452,8 @@
           "amount": 0.0005834247,
           "classification": "unclaimed",
           "source": "onchain: f(x) FeeDistributor.claim staticCall",
-          "usdValue": 1.379566,
-          "priceUsd": 2364.6,
+          "usdValue": 1.381118,
+          "priceUsd": 2367.26,
           "priceMethod": "coingecko:wrapped-steth",
           "details": {
             "symbol": "wstETH",
@@ -1349,9 +1477,9 @@
           "amount": 0.0346064623,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.45023,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1376,6 +1504,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.03460646225314968,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -1391,9 +1527,9 @@
           "amount": 0.0294008437,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.382505,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1418,6 +1554,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.029400843670194826,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -1433,9 +1577,9 @@
           "amount": 0.0294076332,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.382593,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1460,6 +1604,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.029407633201861138,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -1475,9 +1627,9 @@
           "amount": 0.0313940354,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.408436,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1502,6 +1654,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.03139403542822921,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
             "walletAlias": "defitea.eth"
           }
@@ -1517,9 +1677,9 @@
           "amount": 0.0284208703,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.369756,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1544,6 +1704,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.028420870257745336,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1559,9 +1727,9 @@
           "amount": 0.0269913439,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.351157,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1586,6 +1754,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.026991343884203416,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1601,9 +1777,9 @@
           "amount": 0.0269968793,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.351229,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1628,6 +1804,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.026996879291236144,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1643,9 +1827,9 @@
           "amount": 0.0229353099,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.298388,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1670,6 +1854,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.022935309947118378,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1685,9 +1877,9 @@
           "amount": 0.0229400031,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.298449,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1712,6 +1904,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.02294000309095906,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1727,9 +1927,9 @@
           "amount": 0.0244888978,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.318601,
+          "priceUsd": 13.01,
+          "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
             "protocolKey": "fxn",
@@ -1754,6 +1954,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "FXN",
+            "redeemAmount": 0.024488897762040444,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+            "redemptionCoingeckoId": "fxn-token",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1769,9 +1977,9 @@
           "amount": 0.08098,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.080944,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -1796,6 +2004,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.08098,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1811,9 +2027,9 @@
           "amount": 0.095941,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.095898,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -1838,6 +2054,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.095941,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1853,9 +2077,9 @@
           "amount": 0.096448,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.096405,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -1880,6 +2104,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.096448,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1895,9 +2127,9 @@
           "amount": 0.098578,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.098534,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -1922,6 +2154,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.098578,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1937,9 +2177,9 @@
           "amount": 0.098616,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.098572,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -1964,6 +2204,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.098616,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -1979,9 +2227,9 @@
           "amount": 0.103449,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.103403,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2006,6 +2254,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.103449,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2021,9 +2277,9 @@
           "amount": 0.103481,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.103435,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2048,6 +2304,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.103481,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2063,9 +2327,9 @@
           "amount": 0.094401,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.094359,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2090,6 +2354,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.094401,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2105,9 +2377,9 @@
           "amount": 0.094885,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.094843,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2132,6 +2404,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.094885,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2147,9 +2427,9 @@
           "amount": 0.081473,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.081437,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2174,6 +2454,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.081473,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2189,9 +2477,9 @@
           "amount": 0.081887,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.081851,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2216,6 +2504,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.081887,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2231,9 +2527,9 @@
           "amount": 0.101016,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.100971,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2258,6 +2554,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.101016,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2273,9 +2577,9 @@
           "amount": 0.101524,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.101479,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2300,6 +2604,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.101524,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2315,9 +2627,9 @@
           "amount": 0.131479,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.13142,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2342,6 +2654,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.131479,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2357,9 +2677,9 @@
           "amount": 0.131494,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.131435,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2384,6 +2704,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.131494,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2399,9 +2727,9 @@
           "amount": 0.123345,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.12329,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2426,6 +2754,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.123345,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2441,9 +2777,9 @@
           "amount": 0.123298,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.123243,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2468,6 +2804,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.123298,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2483,9 +2827,9 @@
           "amount": 0.11909,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.119037,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2510,6 +2854,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.11909,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2525,9 +2877,9 @@
           "amount": 0.119671,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 0.119618,
+          "priceUsd": 0.999555,
+          "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
             "protocolKey": "fxn",
@@ -2552,6 +2904,14 @@
             "pricePlatform": "arbitrum-one",
             "priceContract": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
             "coingeckoId": null,
+            "laPosteWrapped": true,
+            "laPosteTokenFactory": "0x96006425Da428E45c282008b00004a00002B345e",
+            "redeemSymbol": "USDC",
+            "redeemAmount": 0.119671,
+            "redemptionPricePlatform": "ethereum",
+            "redemptionPriceContract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "redemptionCoingeckoId": "usd-coin",
+            "redemptionRatio": "1:1",
             "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
             "walletAlias": "Defitea Operations"
           }
@@ -2567,16 +2927,16 @@
           "amount": 0.0008723183,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.57078,
-          "priceUsd": 1905.01,
+          "usdValue": 1.572023,
+          "priceUsd": 1906.52,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "824552235633617",
-            "redeemAmount": 0.000824552236,
+            "redeemAmountRaw": "824551075235541",
+            "redeemAmount": 0.000824551075,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -2596,8 +2956,8 @@
           "amount": 0.0000623276,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 4.064674,
-          "priceUsd": 64817,
+          "usdValue": 4.067371,
+          "priceUsd": 64860,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -2625,8 +2985,8 @@
           "amount": 0.0000518369,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 3.38373,
-          "priceUsd": 64810,
+          "usdValue": 3.38561,
+          "priceUsd": 64846,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -2654,16 +3014,16 @@
           "amount": 0.0000261816,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.703229,
-          "priceUsd": 64778,
+          "usdValue": 1.703833,
+          "priceUsd": 64801,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "26293321410878",
-            "redeemAmount": 0.000026293321,
+            "redeemAmountRaw": "26293309295545",
+            "redeemAmount": 0.000026293309,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -2683,16 +3043,16 @@
           "amount": 0.0002754134,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.530437,
-          "priceUsd": 1905.01,
+          "usdValue": 0.530855,
+          "priceUsd": 1906.52,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "278443289385017",
-            "redeemAmount": 0.000278443289,
+            "redeemAmountRaw": "278441727321343",
+            "redeemAmount": 0.000278441727,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -2712,16 +3072,16 @@
           "amount": 0.0006126452,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.103188,
-          "priceUsd": 1905.01,
+          "usdValue": 1.104061,
+          "priceUsd": 1906.52,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "579098191249148",
-            "redeemAmount": 0.000579098191,
+            "redeemAmountRaw": "579097376280260",
+            "redeemAmount": 0.000579097376,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -2741,8 +3101,8 @@
           "amount": 0.0000274318,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.788949,
-          "priceUsd": 64817,
+          "usdValue": 1.790136,
+          "priceUsd": 64860,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -2770,8 +3130,8 @@
           "amount": 0.000020527,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.339623,
-          "priceUsd": 64810,
+          "usdValue": 1.340367,
+          "priceUsd": 64846,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -2799,16 +3159,16 @@
           "amount": 0.0000108571,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.706304,
-          "priceUsd": 64778,
+          "usdValue": 0.706555,
+          "priceUsd": 64801,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "10903457675634",
-            "redeemAmount": 0.000010903458,
+            "redeemAmountRaw": "10903452651581",
+            "redeemAmount": 0.000010903453,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -2828,16 +3188,16 @@
           "amount": 0.0001459869,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.281166,
-          "priceUsd": 1905.01,
+          "usdValue": 0.281387,
+          "priceUsd": 1906.52,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "147592905925106",
-            "redeemAmount": 0.000147592906,
+            "redeemAmountRaw": "147592077930589",
+            "redeemAmount": 0.000147592078,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -2852,13 +3212,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "10050204650986006530",
+          "amountRaw": "10055737521680254862",
           "decimals": 18,
-          "amount": 10.050204651,
+          "amount": 10.0557375217,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 3.129483,
-          "priceUsd": 0.311385,
+          "usdValue": 3.106288,
+          "priceUsd": 0.308907,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -2874,13 +3234,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "2820178979274058674",
+          "amountRaw": "2821607395584959259",
           "decimals": 18,
-          "amount": 2.8201789793,
+          "amount": 2.8216073956,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.878161,
-          "priceUsd": 0.311385,
+          "usdValue": 0.871614,
+          "priceUsd": 0.308907,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -2896,13 +3256,13 @@
           "chain": "Base",
           "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
           "symbol": "VVV",
-          "amountRaw": "110611920084265170",
+          "amountRaw": "110810842231309255",
           "decimals": 18,
-          "amount": 0.1106119201,
+          "amount": 0.1108108422,
           "classification": "unclaimed",
           "source": "onchain: Venice StakingV2.pendingRewards",
-          "usdValue": 1.31407,
-          "priceUsd": 11.88,
+          "usdValue": 1.32419,
+          "priceUsd": 11.95,
           "priceMethod": "coingecko:venice-token",
           "details": {
             "symbol": "VVV",
@@ -2917,12 +3277,12 @@
           "chain": "Ethereum",
           "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
           "symbol": "reUSD",
-          "amountRaw": "3324689332359680761",
+          "amountRaw": "3327292254986102446",
           "decimals": 18,
-          "amount": 3.3246893324,
+          "amount": 3.327292255,
           "classification": "unclaimed",
           "source": "onchain: GovStaker.earned(account,rewardToken)",
-          "usdValue": 3.324689,
+          "usdValue": 3.327292,
           "priceUsd": 1,
           "priceMethod": "fixed-usd-assumption",
           "details": {
@@ -2940,7 +3300,7 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 100.8796279017,
-          "usdValue": 42.941532
+          "usdValue": 42.58926
         },
         {
           "symbol": "crvUSD",
@@ -2952,79 +3312,79 @@
           "symbol": "pWFRAX",
           "token": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
           "amount": 7.4781405725,
-          "usdValue": null
+          "usdValue": 2.31005
         },
         {
           "symbol": "pUSDC",
           "token": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
           "amount": 6.879817,
-          "usdValue": null
+          "usdValue": 6.876754
         },
         {
           "symbol": "pRSUP",
           "token": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
           "amount": 24.8016540433,
-          "usdValue": null
+          "usdValue": 3.072454
         },
         {
           "symbol": "wstETH",
           "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
           "amount": 0.0014781402,
-          "usdValue": 3.49521
+          "usdValue": 3.499142
         },
         {
           "symbol": "pFXN",
           "token": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
           "amount": 0.2775822789,
-          "usdValue": null
+          "usdValue": 3.611344
         },
         {
           "symbol": "yb-WETH",
           "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
           "amount": 0.0014849635,
-          "usdValue": 2.673968
+          "usdValue": 2.676084
         },
         {
           "symbol": "yb-cbBTC",
           "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
           "amount": 0.0000897594,
-          "usdValue": 5.853623
+          "usdValue": 5.857507
         },
         {
           "symbol": "yb-WBTC",
           "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
           "amount": 0.0000723639,
-          "usdValue": 4.723353
+          "usdValue": 4.725977
         },
         {
           "symbol": "yb-tBTC",
           "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
           "amount": 0.0000370387,
-          "usdValue": 2.409533
+          "usdValue": 2.410388
         },
         {
           "symbol": "yb-WETH",
           "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
           "amount": 0.0004214003,
-          "usdValue": 0.811603
+          "usdValue": 0.812242
         },
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 12.8703836303,
-          "usdValue": 4.007644
+          "amount": 12.8773449173,
+          "usdValue": 3.977902
         },
         {
           "symbol": "VVV",
           "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
-          "amount": 0.1106119201,
-          "usdValue": 1.31407
+          "amount": 0.1108108422,
+          "usdValue": 1.32419
         },
         {
           "symbol": "reUSD",
           "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
-          "amount": 3.3246893324,
-          "usdValue": 3.324689
+          "amount": 3.327292255,
+          "usdValue": 3.327292
         }
       ],
       "sources": [
@@ -3211,10 +3571,10 @@
         {
           "protocol": "VoteMarket · veCRV",
           "route": "votemarket-vecrv",
-          "status": "ok",
+          "status": "partial",
           "chain": "Multi-chain",
           "metric": "Official VoteMarket proof eligibility + claimed-state + first-party vote reconstruction",
-          "note": "Official VoteMarket proofs, published raw vote details and onchain claimed-state were checked across 64 weekly epochs; unclaimed amounts reproduce the OracleLens/Votemarket vote formula with onchain cross-check when the Lens state is populated.",
+          "note": "Official VoteMarket proofs, published raw vote details and onchain claimed-state were checked across 64 weekly epochs; unclaimed amounts reproduce the OracleLens/Votemarket vote formula with onchain cross-check when the Lens state is populated. Measured VoteMarket rewards are retained, but one or more proof/onchain checks were incomplete; uncertain amounts are excluded.",
           "details": {
             "protocolKey": "curve",
             "proofBase": "https://raw.githubusercontent.com/stake-dao/api/main/api/votemarket",
@@ -3277,7 +3637,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "95157041323075725",
                 "symbol": "pWFRAX",
-                "decimals": 18
+                "decimals": 18,
+                "laPosteNativeToken": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "laPosteNativeSymbol": "WFRAX"
               },
               {
                 "epoch": 1785369600,
@@ -3321,7 +3683,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "117669063325089417",
                 "symbol": "pWFRAX",
-                "decimals": 18
+                "decimals": 18,
+                "laPosteNativeToken": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "laPosteNativeSymbol": "WFRAX"
               },
               {
                 "epoch": 1784764800,
@@ -3365,7 +3729,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "98763085869663111",
                 "symbol": "pWFRAX",
-                "decimals": 18
+                "decimals": 18,
+                "laPosteNativeToken": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "laPosteNativeSymbol": "WFRAX"
               },
               {
                 "epoch": 1784160000,
@@ -3409,7 +3775,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "30803",
                 "symbol": "pUSDC",
-                "decimals": 6
+                "decimals": 6,
+                "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "laPosteNativeSymbol": "USDC"
               },
               {
                 "epoch": 1783555200,
@@ -3471,7 +3839,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "30886",
                 "symbol": "pUSDC",
-                "decimals": 6
+                "decimals": 6,
+                "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "laPosteNativeSymbol": "USDC"
               },
               {
                 "epoch": 1782950400,
@@ -3515,7 +3885,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "31426",
                 "symbol": "pUSDC",
-                "decimals": 6
+                "decimals": 6,
+                "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "laPosteNativeSymbol": "USDC"
               },
               {
                 "epoch": 1782345600,
@@ -3577,7 +3949,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "31971",
                 "symbol": "pUSDC",
-                "decimals": 6
+                "decimals": 6,
+                "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "laPosteNativeSymbol": "USDC"
               },
               {
                 "epoch": 1781740800,
@@ -3621,7 +3995,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "24984",
                 "symbol": "pUSDC",
-                "decimals": 6
+                "decimals": 6,
+                "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "laPosteNativeSymbol": "USDC"
               },
               {
                 "epoch": 1781136000,
@@ -3683,7 +4059,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "25059",
                 "symbol": "pUSDC",
-                "decimals": 6
+                "decimals": 6,
+                "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "laPosteNativeSymbol": "USDC"
               },
               {
                 "epoch": 1780531200,
@@ -3727,7 +4105,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "28981",
                 "symbol": "pUSDC",
-                "decimals": 6
+                "decimals": 6,
+                "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "laPosteNativeSymbol": "USDC"
               },
               {
                 "epoch": 1779926400,
@@ -3973,7 +4353,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "95157041323075725",
                       "symbol": "pWFRAX",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                      "laPosteNativeSymbol": "WFRAX"
                     },
                     {
                       "epoch": 1785369600,
@@ -4017,7 +4399,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "117669063325089417",
                       "symbol": "pWFRAX",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                      "laPosteNativeSymbol": "WFRAX"
                     },
                     {
                       "epoch": 1784764800,
@@ -4061,7 +4445,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "98763085869663111",
                       "symbol": "pWFRAX",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                      "laPosteNativeSymbol": "WFRAX"
                     },
                     {
                       "epoch": 1784160000,
@@ -4105,7 +4491,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "30803",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1783555200,
@@ -4167,7 +4555,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "30886",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1782950400,
@@ -4211,7 +4601,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "31426",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1782345600,
@@ -4273,7 +4665,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "31971",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1781740800,
@@ -4317,7 +4711,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "24984",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1781136000,
@@ -4379,7 +4775,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "25059",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1780531200,
@@ -4423,7 +4821,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "28981",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1779926400,
@@ -4605,9 +5005,9 @@
               {
                 "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
                 "walletAlias": "Defitea Operations",
-                "status": "ok",
+                "status": "partial",
                 "rewardCount": 6,
-                "note": "Official VoteMarket proofs, published raw vote details and onchain claimed-state were checked across 64 weekly epochs; unclaimed amounts reproduce the OracleLens/Votemarket vote formula with onchain cross-check when the Lens state is populated.",
+                "note": "Measured VoteMarket rewards are retained, but one or more proof/onchain checks were incomplete; uncertain amounts are excluded.",
                 "details": {
                   "protocolKey": "curve",
                   "proofBase": "https://raw.githubusercontent.com/stake-dao/api/main/api/votemarket",
@@ -4626,7 +5026,9 @@
                   "oracleInvalidCount": 0,
                   "ineligibleByCampaignRulesCount": 0,
                   "amountIncludedInTotal": true,
-                  "issues": [],
+                  "issues": [
+                    "campaign 868 epoch 1767830400 chain 42161: read ECONNRESET"
+                  ],
                   "diagnostics": [
                     {
                       "epoch": 1775088000,
@@ -4688,7 +5090,9 @@
                       "feeRateRaw": "15000000000000000",
                       "feeRaw": "83254849656663023",
                       "symbol": "pRSUP",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                      "laPosteNativeSymbol": "RSUP"
                     },
                     {
                       "epoch": 1773878400,
@@ -4750,7 +5154,9 @@
                       "feeRateRaw": "15000000000000000",
                       "feeRaw": "83243873317483389",
                       "symbol": "pRSUP",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                      "laPosteNativeSymbol": "RSUP"
                     },
                     {
                       "epoch": 1773273600,
@@ -4794,7 +5200,9 @@
                       "feeRateRaw": "15000000000000000",
                       "feeRaw": "79344335807982003",
                       "symbol": "pRSUP",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                      "laPosteNativeSymbol": "RSUP"
                     },
                     {
                       "epoch": 1772668800,
@@ -4856,7 +5264,9 @@
                       "feeRateRaw": "15000000000000000",
                       "feeRaw": "44840124140885639",
                       "symbol": "pRSUP",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                      "laPosteNativeSymbol": "RSUP"
                     },
                     {
                       "epoch": 1772064000,
@@ -4900,7 +5310,9 @@
                       "feeRateRaw": "15000000000000000",
                       "feeRaw": "43213224504165103",
                       "symbol": "pRSUP",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                      "laPosteNativeSymbol": "RSUP"
                     },
                     {
                       "epoch": 1771459200,
@@ -4962,7 +5374,9 @@
                       "feeRateRaw": "15000000000000000",
                       "feeRaw": "43793755668010614",
                       "symbol": "pRSUP",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                      "laPosteNativeSymbol": "RSUP"
                     },
                     {
                       "epoch": 1770854400,
@@ -5128,15 +5542,14 @@
                       "proofUrl": "https://raw.githubusercontent.com/stake-dao/api/main/api/votemarket/1767830400/curve/0x8c2c5a295450ddff4cb360ca73fccc12243d14d9/42161/0xaf01d68714e7ea67f43f08b5947e367126b889b1.json",
                       "claimedRaw": null,
                       "calculatedClaimRaw": null,
-                      "status": "closed",
+                      "status": "incomplete",
                       "rewardToken": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
                       "campaignGauge": "0xaF01d68714E7eA67f43f08b5947e367126B889b1",
                       "campaignGaugeChainId": 1,
                       "startTimestamp": 1767830400,
                       "endTimestamp": 1769040000,
                       "hook": "0x0000000000000000000000000000000000000000",
-                      "isClosed": true,
-                      "claimWindowSeconds": 14515200
+                      "error": "read ECONNRESET"
                     },
                     {
                       "epoch": 1767225600,
@@ -5500,7 +5913,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "1441935927214569",
                 "symbol": "pFXN",
-                "decimals": 18
+                "decimals": 18,
+                "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                "laPosteNativeSymbol": "FXN"
               },
               {
                 "epoch": 1784160000,
@@ -5544,7 +5959,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "1225035152924784",
                 "symbol": "pFXN",
-                "decimals": 18
+                "decimals": 18,
+                "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                "laPosteNativeSymbol": "FXN"
               },
               {
                 "epoch": 1783555200,
@@ -5606,7 +6023,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "1225318050077547",
                 "symbol": "pFXN",
-                "decimals": 18
+                "decimals": 18,
+                "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                "laPosteNativeSymbol": "FXN"
               },
               {
                 "epoch": 1782950400,
@@ -5650,7 +6069,9 @@
                 "feeRateRaw": "40000000000000000",
                 "feeRaw": "1308084809509550",
                 "symbol": "pFXN",
-                "decimals": 18
+                "decimals": 18,
+                "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                "laPosteNativeSymbol": "FXN"
               },
               {
                 "epoch": 1782345600,
@@ -6030,7 +6451,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "1441935927214569",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1784160000,
@@ -6074,7 +6497,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "1225035152924784",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1783555200,
@@ -6136,7 +6561,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "1225318050077547",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1782950400,
@@ -6180,7 +6607,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "1308084809509550",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1782345600,
@@ -6561,7 +6990,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "1184202927406055",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1785369600,
@@ -6605,7 +7036,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "1124639328508475",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1784764800,
@@ -6667,7 +7100,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "1124869970468172",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1784160000,
@@ -6711,7 +7146,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "955637914463265",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1783555200,
@@ -6773,7 +7210,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "955833462123294",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1782950400,
@@ -6817,7 +7256,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "1020370740085018",
                       "symbol": "pFXN",
-                      "decimals": 18
+                      "decimals": 18,
+                      "laPosteNativeToken": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+                      "laPosteNativeSymbol": "FXN"
                     },
                     {
                       "epoch": 1782345600,
@@ -6879,7 +7320,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "3374",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1781740800,
@@ -6923,7 +7366,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "3997",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1781136000,
@@ -6985,7 +7430,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "4018",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1780531200,
@@ -7029,7 +7476,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "4107",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1779926400,
@@ -7091,7 +7540,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "4108",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1779321600,
@@ -7135,7 +7586,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "4310",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1778716800,
@@ -7197,7 +7650,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "4311",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1778112000,
@@ -7241,7 +7696,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "3933",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1777507200,
@@ -7303,7 +7760,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "3953",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1776902400,
@@ -7347,7 +7806,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "3394",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1776297600,
@@ -7409,7 +7870,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "3411",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1775692800,
@@ -7453,7 +7916,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "4209",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1775088000,
@@ -7515,7 +7980,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "4230",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1774483200,
@@ -7559,7 +8026,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "5478",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1773878400,
@@ -7621,7 +8090,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "5478",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1773273600,
@@ -7665,7 +8136,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "5139",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1772668800,
@@ -7727,7 +8200,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "5137",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1772064000,
@@ -7771,7 +8246,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "4962",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1771459200,
@@ -7833,7 +8310,9 @@
                       "feeRateRaw": "40000000000000000",
                       "feeRaw": "4986",
                       "symbol": "pUSDC",
-                      "decimals": 6
+                      "decimals": 6,
+                      "laPosteNativeToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "laPosteNativeSymbol": "USDC"
                     },
                     {
                       "epoch": 1770854400,
@@ -8040,25 +8519,25 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T12:59:55.262Z"
+      "updatedAt": "2026-08-10T13:29:15.225Z"
     }
   },
   "engineErrors": {},
   "history": [
     {
       "date": "2026-08-10",
-      "generatedAt": "2026-08-10T12:59:55.262Z",
+      "generatedAt": "2026-08-10T13:29:15.225Z",
       "companies": {
         "05081966.eth": {
           "status": "ok",
-          "totalUsd": 1.3657,
+          "totalUsd": 1.361496,
           "totalUsdIsComplete": true,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 2.0257877309,
-              "usdValue": 0.859246
+              "usdValue": 0.856092
             },
             {
               "symbol": "crvUSD",
@@ -8069,65 +8548,65 @@
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.3532489619,
-              "usdValue": 0.421373
+              "amount": 1.3543999532,
+              "usdValue": 0.420323
             }
           ]
         },
         "YieldRing.eth": {
           "status": "partial",
-          "totalUsd": 1.095367,
+          "totalUsd": 1.092216,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 1.5785400672,
-              "usdValue": 0.669544
+              "usdValue": 0.667086
             },
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.3675377719,
-              "usdValue": 0.425823
+              "amount": 1.3698894992,
+              "usdValue": 0.42513
             }
           ]
         },
         "dinaz.eth": {
           "status": "ok",
-          "totalUsd": 3.935921,
+          "totalUsd": 3.936124,
           "totalUsdIsComplete": true,
           "rewardTokens": [
             {
               "symbol": "yb-WBTC",
               "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
               "amount": 0.0000273526,
-              "usdValue": 1.786287
+              "usdValue": 1.786397
             },
             {
               "symbol": "yb-cbBTC",
               "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
               "amount": 0.0000199489,
-              "usdValue": 1.301359
+              "usdValue": 1.301479
             },
             {
               "symbol": "yb-tBTC",
               "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
               "amount": 0.0000130356,
-              "usdValue": 0.848275
+              "usdValue": 0.848248
             }
           ]
         },
         "defitea.eth": {
           "status": "partial",
-          "totalUsd": 76.164235,
+          "totalUsd": 91.679596,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 100.8796279017,
-              "usdValue": 42.941532
+              "usdValue": 42.58926
             },
             {
               "symbol": "crvUSD",
@@ -8139,79 +8618,79 @@
               "symbol": "pWFRAX",
               "token": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
               "amount": 7.4781405725,
-              "usdValue": null
+              "usdValue": 2.31005
             },
             {
               "symbol": "pUSDC",
               "token": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
               "amount": 6.879817,
-              "usdValue": null
+              "usdValue": 6.876754
             },
             {
               "symbol": "pRSUP",
               "token": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
               "amount": 24.8016540433,
-              "usdValue": null
+              "usdValue": 3.072454
             },
             {
               "symbol": "wstETH",
               "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
               "amount": 0.0014781402,
-              "usdValue": 3.49521
+              "usdValue": 3.499142
             },
             {
               "symbol": "pFXN",
               "token": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
               "amount": 0.2775822789,
-              "usdValue": null
+              "usdValue": 3.611344
             },
             {
               "symbol": "yb-WETH",
               "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
               "amount": 0.0014849635,
-              "usdValue": 2.673968
+              "usdValue": 2.676084
             },
             {
               "symbol": "yb-cbBTC",
               "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
               "amount": 0.0000897594,
-              "usdValue": 5.853623
+              "usdValue": 5.857507
             },
             {
               "symbol": "yb-WBTC",
               "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
               "amount": 0.0000723639,
-              "usdValue": 4.723353
+              "usdValue": 4.725977
             },
             {
               "symbol": "yb-tBTC",
               "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
               "amount": 0.0000370387,
-              "usdValue": 2.409533
+              "usdValue": 2.410388
             },
             {
               "symbol": "yb-WETH",
               "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
               "amount": 0.0004214003,
-              "usdValue": 0.811603
+              "usdValue": 0.812242
             },
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 12.8703836303,
-              "usdValue": 4.007644
+              "amount": 12.8773449173,
+              "usdValue": 3.977902
             },
             {
               "symbol": "VVV",
               "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
-              "amount": 0.1106119201,
-              "usdValue": 1.31407
+              "amount": 0.1108108422,
+              "usdValue": 1.32419
             },
             {
               "symbol": "reUSD",
               "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
-              "amount": 3.3246893324,
-              "usdValue": 3.324689
+              "amount": 3.327292255,
+              "usdValue": 3.327292
             }
           ]
         }
