@@ -2,23 +2,64 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.3.2';
-const COLLECTOR_VERSION = '0.3.2-ve-history-resilient-cache';
+const VERSION = '0.3.3';
+const COLLECTOR_VERSION = '0.3.3-ve-history-final-hardening';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
 const TODAY = new Date().toISOString().slice(0, 10);
 const NOW = new Date().toISOString();
 
+function uniqueUrls(values) {
+  return [...new Set((values || []).map(x => String(x || '').trim()).filter(Boolean))];
+}
+
+// Optional dedicated RPCs live only in GitHub Secrets. Public fallbacks keep the
+// collector self-sufficient, while a secret endpoint can be added later without
+// changing code. Never serialize raw RPC URLs into public snapshots.
 const RPC = {
-  ethereum: ['https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com'],
-  base: ['https://base-rpc.publicnode.com', 'https://mainnet.base.org'],
-  optimism: ['https://optimism-rpc.publicnode.com', 'https://mainnet.optimism.io'],
-  arbitrum: ['https://arbitrum-one-rpc.publicnode.com', 'https://arb1.arbitrum.io/rpc'],
-  polygon: ['https://polygon-bor-rpc.publicnode.com', 'https://polygon-rpc.com'],
-  bsc: ['https://bsc-rpc.publicnode.com', 'https://bsc-dataseed.binance.org'],
-  fraxtal: ['https://rpc.frax.com']
+  ethereum: uniqueUrls([process.env.ETH_RPC_URL, 'https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com']),
+  base: uniqueUrls([process.env.BASE_RPC_URL, process.env.BASE_RPC_URL_2, 'https://base-rpc.publicnode.com', 'https://mainnet.base.org']),
+  optimism: uniqueUrls([process.env.OPTIMISM_RPC_URL, 'https://optimism-rpc.publicnode.com', 'https://mainnet.optimism.io']),
+  arbitrum: uniqueUrls([process.env.ARBITRUM_RPC_URL, 'https://arbitrum-one-rpc.publicnode.com', 'https://arb1.arbitrum.io/rpc']),
+  polygon: uniqueUrls([process.env.POLYGON_RPC_URL, 'https://polygon-bor-rpc.publicnode.com', 'https://polygon-rpc.com']),
+  bsc: uniqueUrls([process.env.BSC_RPC_URL, 'https://bsc-rpc.publicnode.com', 'https://bsc-dataseed.binance.org']),
+  fraxtal: uniqueUrls([process.env.FRAXTAL_RPC_URL, 'https://rpc.frax.com'])
 };
+
+function safeRpcLabel(url, providerKey = 'rpc') {
+  try {
+    const u = new URL(String(url || ''));
+    const isSecret = [process.env.BASE_RPC_URL, process.env.BASE_RPC_URL_2, process.env.ETH_RPC_URL,
+      process.env.OPTIMISM_RPC_URL, process.env.ARBITRUM_RPC_URL, process.env.POLYGON_RPC_URL,
+      process.env.BSC_RPC_URL, process.env.FRAXTAL_RPC_URL].filter(Boolean).includes(url);
+    return `${providerKey}:${isSecret ? 'configured' : u.hostname}`;
+  } catch { return `${providerKey}:configured`; }
+}
+
+function redactKnownRpcUrls(value) {
+  let out = String(value ?? '');
+  for (const [providerKey, urls] of Object.entries(RPC)) {
+    for (const url of urls) if (url) out = out.split(url).join(`[${safeRpcLabel(url, providerKey)}]`);
+  }
+  return out;
+}
+
+function historicalRpcCandidates(providerKey, selectedProvider) {
+  const selected = selectedProvider?.__holdingRpc || null;
+  if (providerKey === 'base') {
+    // For historical logs prefer an optional dedicated endpoint, then Base's
+    // official RPC, then the provider selected for ordinary contract reads.
+    return uniqueUrls([
+      process.env.BASE_RPC_URL,
+      process.env.BASE_RPC_URL_2,
+      'https://mainnet.base.org',
+      selected,
+      ...RPC.base
+    ]);
+  }
+  return uniqueUrls([selected, ...(RPC[providerKey] || [])]);
+}
 
 const CHAIN_META = {
   1: { key: 'ethereum', name: 'Ethereum', platform: 'ethereum' },
@@ -267,14 +308,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // later daily runs only need to scan the new chain tail plus a small overlap.
 const VE_HISTORY_SCAN = {
   base: {
-    rpcWindow: 500_000,
-    rpcConcurrency: 2,
-    rpcPaceMs: 120,
-    blockscoutWindow: 500_000,
+    rpcWindow: 750_000,
+    rpcConcurrency: 1,
+    rpcPaceMs: 300,
+    // Voted is extremely sparse for one veNFT, so larger explorer windows cut
+    // shared-IP pressure while adaptive splitting still protects correctness.
+    blockscoutWindow: 5_000_000,
     blockscoutConcurrency: 1,
-    blockscoutPaceMs: 1_250,
-    timeoutMs: 18_000,
-    attempts: 6,
+    blockscoutPaceMs: 6_000,
+    timeoutMs: 25_000,
+    attempts: 5,
     overlapBlocks: 20_000
   },
   optimism: {
@@ -319,7 +362,8 @@ function normalizeHistoryCacheEntry(providerKey, tokenId, raw) {
     lastVoteBlock: Number.isFinite(Number(raw.lastVoteBlock)) ? Number(raw.lastVoteBlock) : null,
     mintDiscovery: raw.mintDiscovery && typeof raw.mintDiscovery === 'object' ? raw.mintDiscovery : null,
     validatedAt: raw.validatedAt || null,
-    source: raw.source || null
+    source: raw.source || null,
+    complete: raw.complete !== false
   };
 }
 
@@ -445,6 +489,7 @@ async function providerFrom(urls, label) {
         new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} RPC timeout`)), 9000))
       ]);
       p.__holdingRpc = url;
+      p.__holdingRpcLabel = safeRpcLabel(url, label);
       return p;
     } catch (e) { last = e; }
   }
@@ -470,7 +515,7 @@ function createProviderRegistry() {
     rpcSummary() {
       const out = {};
       for (const [k, v] of cache.entries()) {
-        if (v && typeof v.then !== 'function' && v.__holdingRpc) out[k] = v.__holdingRpc;
+        if (v && typeof v.then !== 'function' && v.__holdingRpc) out[k] = v.__holdingRpcLabel || safeRpcLabel(v.__holdingRpc, k);
       }
       return out;
     }
@@ -690,9 +735,8 @@ function buildWindows(startBlock, latestBlock, windowSize) {
   return windows;
 }
 
-async function rpcGetLogsJson(providerKey, provider, filter, timeoutMs, attempts = 3) {
-  const url = provider.__holdingRpc;
-  if (!url) throw new Error(`${providerKey} RPC URL unavailable for abortable eth_getLogs`);
+async function rpcGetLogsJson(providerKey, url, filter, timeoutMs, attempts = 3) {
+  if (!url) throw new Error(`${providerKey} RPC endpoint unavailable for abortable eth_getLogs`);
   let lastError = null;
   for (let attempt = 0; attempt < attempts; attempt++) {
     const controller = new AbortController();
@@ -726,48 +770,69 @@ async function rpcGetLogsJson(providerKey, provider, filter, timeoutMs, attempts
   throw lastError || new Error(`${providerKey} eth_getLogs failed`);
 }
 
-async function rpcHistoricalVotedLogs(providerKey, voterAddress, topic3, provider, startBlock, latestBlock) {
+async function rpcHistoricalVotedLogs(providerKey, voterAddress, topic3, provider, startBlock, latestBlock, onProgress = null) {
   const cfg = VE_HISTORY_SCAN[providerKey] || VE_HISTORY_SCAN.optimism;
-  const windows = buildWindows(startBlock, latestBlock, cfg.rpcWindow);
-  let requestCount = 0;
-  let adaptiveSplits = 0;
+  const candidates = historicalRpcCandidates(providerKey, provider);
+  let lastError = null;
 
-  async function fetchRange(fromBlock, toBlock, depth = 0) {
-    requestCount++;
-    if (cfg.rpcPaceMs) await sleep(cfg.rpcPaceMs);
+  for (const url of candidates) {
+    const windows = buildWindows(startBlock, latestBlock, cfg.rpcWindow);
+    let requestCount = 0;
+    let adaptiveSplits = 0;
+    const collected = [];
     try {
-      return await rpcGetLogsJson(providerKey, provider, {
-        address: voterAddress,
-        fromBlock: `0x${fromBlock.toString(16)}`,
-        toBlock: `0x${toBlock.toString(16)}`,
-        topics: [VOTED_TOPIC0, null, null, topic3]
-      }, cfg.timeoutMs, 3);
-    } catch (e) {
-      const span = toBlock - fromBlock;
-      if (span > 25_000 && depth < 16) {
-        adaptiveSplits++;
-        const mid = Math.floor((fromBlock + toBlock) / 2);
-        const left = await fetchRange(fromBlock, mid, depth + 1);
-        const right = await fetchRange(mid + 1, toBlock, depth + 1);
-        return [...left, ...right];
+      async function fetchRange(fromBlock, toBlock, depth = 0) {
+        requestCount++;
+        if (cfg.rpcPaceMs) await sleep(cfg.rpcPaceMs);
+        try {
+          return await rpcGetLogsJson(providerKey, url, {
+            address: voterAddress,
+            fromBlock: `0x${fromBlock.toString(16)}`,
+            toBlock: `0x${toBlock.toString(16)}`,
+            topics: [VOTED_TOPIC0, null, null, topic3]
+          }, cfg.timeoutMs, 3);
+        } catch (e) {
+          const span = toBlock - fromBlock;
+          if (span > 25_000 && depth < 16) {
+            adaptiveSplits++;
+            const mid = Math.floor((fromBlock + toBlock) / 2);
+            const left = await fetchRange(fromBlock, mid, depth + 1);
+            const right = await fetchRange(mid + 1, toBlock, depth + 1);
+            return [...left, ...right];
+          }
+          throw e;
+        }
       }
-      throw e;
+
+      if (cfg.rpcConcurrency === 1) {
+        for (const [from, to] of windows) {
+          const chunk = await fetchRange(from, to);
+          collected.push(...chunk);
+          if (onProgress) await onProgress({ throughBlock: to, logs: chunk, source: `${providerKey}:eth_getLogs:${safeRpcLabel(url, providerKey)}` });
+        }
+      } else {
+        const chunks = await mapLimit(windows, cfg.rpcConcurrency, ([from, to]) => fetchRange(from, to));
+        collected.push(...chunks.flat());
+      }
+
+      return {
+        method: 'onchain-rpc:eth_getLogs',
+        source: `${providerKey}:eth_getLogs:${safeRpcLabel(url, providerKey)}`,
+        logs: collected,
+        windowSize: cfg.rpcWindow,
+        windowCount: windows.length,
+        requestCount,
+        adaptiveSplits,
+        endpoint: safeRpcLabel(url, providerKey)
+      };
+    } catch (e) {
+      lastError = e;
     }
   }
-
-  const chunks = await mapLimit(windows, cfg.rpcConcurrency, ([from, to]) => fetchRange(from, to));
-  return {
-    method: 'onchain-rpc:eth_getLogs',
-    source: `${providerKey}:eth_getLogs`,
-    logs: chunks.flat(),
-    windowSize: cfg.rpcWindow,
-    windowCount: windows.length,
-    requestCount,
-    adaptiveSplits
-  };
+  throw lastError || new Error(`${providerKey} eth_getLogs failed across all configured endpoints`);
 }
 
-async function blockscoutHistoricalVotedLogs(providerKey, voterAddress, topic3, startBlock, latestBlock) {
+async function blockscoutHistoricalVotedLogs(providerKey, voterAddress, topic3, startBlock, latestBlock, onProgress = null) {
   const bases = BLOCKSCOUT[providerKey] || [];
   if (!bases.length) throw new Error(`No Blockscout endpoint configured for ${providerKey}`);
   const cfg = VE_HISTORY_SCAN[providerKey] || VE_HISTORY_SCAN.optimism;
@@ -819,11 +884,21 @@ async function blockscoutHistoricalVotedLogs(providerKey, voterAddress, topic3, 
       }
 
       const windows = buildWindows(startBlock, latestBlock, cfg.blockscoutWindow);
-      const chunks = await mapLimit(windows, cfg.blockscoutConcurrency, ([from, to]) => fetchRange(from, to));
+      const collected = [];
+      if (cfg.blockscoutConcurrency === 1) {
+        for (const [from, to] of windows) {
+          const chunk = await fetchRange(from, to);
+          collected.push(...chunk);
+          if (onProgress) await onProgress({ throughBlock: to, logs: chunk, source: `${base}/api?module=logs` });
+        }
+      } else {
+        const chunks = await mapLimit(windows, cfg.blockscoutConcurrency, ([from, to]) => fetchRange(from, to));
+        collected.push(...chunks.flat());
+      }
       return {
         method: 'blockscout:logs',
         source: `${base}/api?module=logs`,
-        logs: chunks.flat(),
+        logs: collected,
         windowSize: cfg.blockscoutWindow,
         windowCount: windows.length,
         requestCount,
@@ -846,38 +921,73 @@ async function historicalVotedLogs(providerKey, voterAddress, votingEscrow, toke
     throw new Error(`Invalid veNFT mint block ${startBlock} for token ${tokenId}`);
   }
 
-  const cacheUsable = cached && cached.startBlock === startBlock && cached.throughBlock >= startBlock;
-  const previousThroughBlock = cacheUsable ? cached.throughBlock : null;
-  const scanStartBlock = cacheUsable
+  // A partial checkpoint is allowed only as a scan accelerator. It never makes
+  // the route complete by itself. Completion still requires the tail to reach
+  // latestBlock successfully in the current run.
+  const checkpointUsable = cached && cached.startBlock === startBlock && cached.throughBlock >= startBlock;
+  const previousThroughBlock = checkpointUsable ? cached.throughBlock : null;
+  let scanStartBlock = checkpointUsable
     ? Math.max(startBlock, Math.min(latestBlock, cached.throughBlock - cfg.overlapBlocks + 1))
     : startBlock;
-  const cachedPools = cacheUsable ? cached.pools : [];
+  let accumulatedPools = checkpointUsable ? [...cached.pools] : [];
+  let accumulatedFirst = checkpointUsable ? cached.firstVoteBlock : null;
+  let accumulatedLast = checkpointUsable ? cached.lastVoteBlock : null;
+
+  const saveCheckpoint = async ({ throughBlock, logs, source }) => {
+    const normalized = normalizeVotedLogs(logs, topic3);
+    const chunkPools = normalized.map(x => x.pool);
+    accumulatedPools = [...new Set([...accumulatedPools, ...chunkPools])];
+    const chunkFirst = normalized.find(x => x.blockNumber)?.blockNumber ?? null;
+    const chunkLast = [...normalized].reverse().find(x => x.blockNumber)?.blockNumber ?? null;
+    accumulatedFirst = [accumulatedFirst, chunkFirst].filter(Number.isFinite).sort((a,b)=>a-b)[0] ?? null;
+    accumulatedLast = [accumulatedLast, chunkLast].filter(Number.isFinite).sort((a,b)=>b-a)[0] ?? null;
+    historicalVoteCache.set(key, {
+      providerKey,
+      tokenId: String(tokenId),
+      startBlock,
+      throughBlock,
+      pools: accumulatedPools,
+      firstVoteBlock: accumulatedFirst,
+      lastVoteBlock: accumulatedLast,
+      mintDiscovery: mint,
+      validatedAt: NOW,
+      source,
+      complete: false
+    });
+  };
 
   let scan = null;
   const methodErrors = [];
-  const methods = providerKey === 'base'
-    ? ['rpc', 'blockscout']
-    : ['blockscout', 'rpc'];
+  const methods = providerKey === 'base' ? ['rpc', 'blockscout'] : ['blockscout', 'rpc'];
 
   for (const method of methods) {
+    // If the previous method made partial progress before failing, resume the
+    // fallback from that checkpoint instead of replaying the same years again.
+    const progress = historicalVoteCache.get(key);
+    if (progress && progress.startBlock === startBlock && progress.throughBlock >= startBlock) {
+      scanStartBlock = Math.max(startBlock, Math.min(latestBlock, progress.throughBlock - cfg.overlapBlocks + 1));
+      accumulatedPools = [...progress.pools];
+      accumulatedFirst = progress.firstVoteBlock;
+      accumulatedLast = progress.lastVoteBlock;
+    }
     try {
       scan = method === 'rpc'
-        ? await rpcHistoricalVotedLogs(providerKey, voterAddress, topic3, provider, scanStartBlock, latestBlock)
-        : await blockscoutHistoricalVotedLogs(providerKey, voterAddress, topic3, scanStartBlock, latestBlock);
+        ? await rpcHistoricalVotedLogs(providerKey, voterAddress, topic3, provider, scanStartBlock, latestBlock, saveCheckpoint)
+        : await blockscoutHistoricalVotedLogs(providerKey, voterAddress, topic3, scanStartBlock, latestBlock, saveCheckpoint);
       break;
     } catch (e) {
-      methodErrors.push(`${method}: ${e.message || e}`);
+      methodErrors.push(`${method}: ${redactKnownRpcUrls(e?.message || e)}`);
     }
   }
   if (!scan) throw new Error(`Historical Voted discovery failed for ${providerKey} token ${tokenId}: ${methodErrors.join(' | ')}`);
 
   const normalized = normalizeVotedLogs(scan.logs, topic3);
   const scannedPools = [...new Set(normalized.map(x => x.pool))];
-  const pools = [...new Set([...cachedPools, ...scannedPools])];
+  const pools = [...new Set([...accumulatedPools, ...scannedPools])];
   const scannedFirst = normalized.find(x => x.blockNumber)?.blockNumber || null;
   const scannedLast = [...normalized].reverse().find(x => x.blockNumber)?.blockNumber || null;
-  const firstVoteBlock = [cacheUsable ? cached.firstVoteBlock : null, scannedFirst].filter(Number.isFinite).sort((a,b)=>a-b)[0] ?? null;
-  const lastVoteBlock = [cacheUsable ? cached.lastVoteBlock : null, scannedLast].filter(Number.isFinite).sort((a,b)=>b-a)[0] ?? null;
+  const firstVoteBlock = [accumulatedFirst, scannedFirst].filter(Number.isFinite).sort((a,b)=>a-b)[0] ?? null;
+  const lastVoteBlock = [accumulatedLast, scannedLast].filter(Number.isFinite).sort((a,b)=>b-a)[0] ?? null;
 
   const cacheEntry = {
     providerKey,
@@ -889,7 +999,8 @@ async function historicalVotedLogs(providerKey, voterAddress, votingEscrow, toke
     lastVoteBlock,
     mintDiscovery: mint,
     validatedAt: NOW,
-    source: scan.source
+    source: scan.source,
+    complete: true
   };
   historicalVoteCache.set(key, cacheEntry);
 
@@ -901,9 +1012,10 @@ async function historicalVotedLogs(providerKey, voterAddress, votingEscrow, toke
     startBlock,
     scanStartBlock,
     previousThroughBlock,
-    cacheUsed: Boolean(cacheUsable),
-    cacheOverlapBlocks: cacheUsable ? cfg.overlapBlocks : 0,
-    cachedPoolCount: cachedPools.length,
+    cacheUsed: Boolean(checkpointUsable),
+    cachePreviouslyComplete: Boolean(checkpointUsable && cached.complete !== false),
+    cacheOverlapBlocks: checkpointUsable ? cfg.overlapBlocks : 0,
+    cachedPoolCount: checkpointUsable ? cached.pools.length : 0,
     windowSize: scan.windowSize,
     windowCount: scan.windowCount,
     requestCount: scan.requestCount,
@@ -2380,7 +2492,7 @@ async function main() {
     methodology: {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
       multiWallet: 'Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.',
-      aerodromeVelodrome: 'Aerodrome and Velodrome direct veNFT routes reconstruct every historically voted pool from indexed Voter.Voted events, using provider-aware direct RPC eth_getLogs and Blockscout fallback reads. A validated full-history cache makes later runs incremental with a reorg-safe overlap. Each discovered pool’s current voting-reward contracts are queried for still-unclaimed rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
+      aerodromeVelodrome: 'Aerodrome and Velodrome direct veNFT routes reconstruct every historically voted pool from indexed Voter.Voted events, using provider-aware direct RPC eth_getLogs with endpoint failover and Blockscout fallback reads. Resumable checkpoints prevent repeated multi-year rescans after transport failures, and a validated full-history cache makes later runs incremental with a reorg-safe overlap. Each discovered pool’s current voting-reward contracts are queried for still-unclaimed rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
       curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
       pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.',
