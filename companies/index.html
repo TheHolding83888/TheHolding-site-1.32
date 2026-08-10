@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-10 · Company Balance Sheet + Accrued Rewards v0.1.1 -->
+<!-- companies.html · build 2026-08-10 · Company Passport final polish + Defitea APR null-safe v0.1.3 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -962,21 +962,21 @@
         .ib-chev { display: flex; justify-content: flex-end; color: var(--text-3); transition: transform 0.35s ease, color 0.25s ease; }
         .ib-item.open .ib-chev { transform: rotate(180deg); color: var(--gold); }
         .ib-passport { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1); }
-        .ib-item.open .ib-passport { max-height: 1800px; }
+        .ib-item.open .ib-passport { max-height: 2400px; }
         /* used while swapping lenses so restored passports don't re-animate */
         .no-anim .ib-passport, .no-anim .ibw-fill, .no-anim .index-comp-seg { transition: none !important; }
-        .ipx-inner { padding: 0.25rem 0 1.6rem; }
+        .ipx-inner { padding: 0.34rem 0 1.8rem; }
         .ipx-grid {
             display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
-            column-gap: 2.75rem; row-gap: 0;
+            column-gap: 3rem; row-gap: 0;
         }
         /* primary Passport snapshot — three headline facts; APR detail lives deeper in the Passport */
         .ipx-economic {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 0;
-            margin: 0.3rem 0 1.55rem;
-            padding: 1.5rem 0;
+            margin: 0.34rem 0 1.62rem;
+            padding: 1.58rem 0 1.52rem;
             border: 1px solid var(--gold-line);
             border-radius: 16px;
             background:
@@ -998,8 +998,8 @@
         }
         .ipx-economic-item:first-child { border-left: none; }
         .ipx-economic-label {
-            font-size: 0.58rem;
-            letter-spacing: 0.17em;
+            font-size: 0.57rem;
+            letter-spacing: 0.165em;
             text-transform: uppercase;
             color: var(--text-3);
             font-weight: 600;
@@ -1008,7 +1008,7 @@
         }
         .ipx-economic-value {
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.85rem, 3vw, 2.25rem);
+            font-size: clamp(1.95rem, 3vw, 2.38rem);
             line-height: 1;
             color: var(--text);
             font-weight: 500;
@@ -1019,118 +1019,339 @@
         .ipx-economic-value.apr { color: var(--green); }
         .ipx-economic-value.age { color: var(--gold); }
 
-        /* Live Company Balance Sheet + protocol-side accrued rewards */
+        /* Premium live Company Balance Sheet + protocol-side accrued rewards */
         .ipx-live-ledger {
             display: grid;
-            grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-            gap: 0.9rem;
-            margin: -0.48rem 0 1.35rem;
+            grid-template-columns: minmax(0, 1.14fr) minmax(0, 0.86fr);
+            gap: 1rem;
+            margin: -0.42rem 0 1.5rem;
+            align-items: stretch;
         }
         .ipx-ledger-card {
             min-width: 0;
             position: relative;
-            border: 1px solid rgba(22,21,15,0.085);
-            border-radius: 15px;
+            border: 1px solid rgba(15,23,42,0.075);
+            border-radius: 19px;
             background:
-                radial-gradient(circle at 94% 5%, rgba(255,255,255,0.96), rgba(255,255,255,0) 34%),
-                linear-gradient(180deg, rgba(252,253,252,0.97), rgba(247,250,248,0.92));
-            box-shadow: 0 12px 30px -28px rgba(15,23,20,0.32), inset 0 1px 0 rgba(255,255,255,0.92);
+                radial-gradient(circle at 96% 2%, rgba(255,255,255,0.98), rgba(255,255,255,0) 31%),
+                linear-gradient(180deg, rgba(253,254,254,0.985), rgba(247,250,249,0.955));
+            box-shadow:
+                0 18px 42px -34px rgba(15,23,42,0.34),
+                inset 0 1px 0 rgba(255,255,255,0.96);
         }
-        .ipx-balance-card { padding: 1rem 1.05rem 0.98rem; }
+        .ipx-balance-card { padding: 1.18rem 1.2rem 1.12rem; }
         .ipx-ledger-head {
-            display: flex; align-items: baseline; justify-content: space-between; gap: 0.8rem;
-            margin-bottom: 0.73rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            margin-bottom: 0.86rem;
         }
         .ipx-ledger-kicker {
-            font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase;
-            color: var(--text-3); font-weight: 700; line-height: 1.2;
+            font-size: 0.57rem;
+            letter-spacing: 0.175em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            font-weight: 700;
+            line-height: 1.2;
         }
         .ipx-ledger-count {
-            font-size: 0.64rem; color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            min-height: 23px;
+            padding: 0.22rem 0.52rem;
+            border-radius: 999px;
+            border: 1px solid rgba(15,23,42,0.06);
+            background: rgba(255,255,255,0.7);
+            font-size: 0.59rem;
+            color: var(--text-3);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
         }
-        .ipx-position-list { display: flex; flex-wrap: wrap; gap: 0.42rem; }
+        .ipx-position-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.52rem;
+        }
         .ipx-position-pill {
-            display: inline-flex; align-items: baseline; gap: 0.28rem;
-            min-height: 29px; padding: 0.37rem 0.62rem; border-radius: 999px;
-            border: 1px solid rgba(22,21,15,0.075); background: rgba(255,255,255,0.78);
-            color: var(--text-2); font-size: 0.68rem; line-height: 1; white-space: nowrap;
+            min-width: 0;
+            min-height: 66px;
+            padding: 0.68rem 0.72rem 0.64rem;
+            border-radius: 13px;
+            border: 1px solid rgba(15,23,42,0.065);
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.96), rgba(248,251,250,0.88));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 0.22rem;
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
         }
-        .ipx-position-pill b {
-            color: var(--text); font-size: 0.72rem; font-weight: 600; font-variant-numeric: tabular-nums;
+        .ipx-position-pill:hover {
+            transform: translateY(-1px);
+            border-color: rgba(10,124,78,0.14);
+            box-shadow:
+                0 10px 22px -20px rgba(15,23,42,0.24),
+                inset 0 1px 0 rgba(255,255,255,0.98);
+        }
+        .ipx-position-pill:only-child { grid-column: 1 / -1; }
+        .ipx-position-symbol {
+            color: var(--green);
+            font-size: 0.67rem;
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: 0.035em;
+            white-space: nowrap;
+        }
+        .ipx-position-qty {
+            color: var(--text);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.24rem;
+            line-height: 1;
+            font-weight: 600;
+            letter-spacing: -0.012em;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
         }
         .ipx-ledger-caption {
-            margin-top: 0.68rem; color: var(--text-3); font-size: 0.62rem; line-height: 1.45;
+            margin-top: 0.76rem;
+            color: var(--text-3);
+            font-size: 0.61rem;
+            line-height: 1.45;
         }
 
         .ipx-rewards-card { overflow: visible; }
         .ipx-rewards-trigger {
-            width: 100%; min-height: 100%; border: 0; background: transparent; cursor: pointer;
-            font: inherit; color: inherit; text-align: left; padding: 1rem 1.05rem 0.95rem;
-            border-radius: inherit; display: block;
+            width: 100%;
+            min-height: 100%;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            font: inherit;
+            color: inherit;
+            text-align: left;
+            padding: 1.18rem 1.2rem 1.08rem;
+            border-radius: inherit;
+            display: block;
         }
         .ipx-rewards-top {
-            display: flex; align-items: flex-start; justify-content: space-between; gap: 0.85rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.85rem;
         }
         .ipx-rewards-value {
-            margin-top: 0.34rem; font-family: 'Cormorant Garamond', serif;
-            font-size: 1.82rem; line-height: 0.98; font-weight: 600; letter-spacing: -0.02em;
-            color: var(--green); font-variant-numeric: tabular-nums;
+            margin-top: 0.38rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.04rem;
+            line-height: 0.96;
+            font-weight: 600;
+            letter-spacing: -0.024em;
+            color: var(--green);
+            font-variant-numeric: tabular-nums;
         }
-        .ipx-rewards-value.measuring { color: var(--text-2); font-size: 1.34rem; letter-spacing: -0.01em; }
+        .ipx-rewards-value.measuring {
+            color: var(--text-2);
+            font-size: 1.34rem;
+            letter-spacing: -0.01em;
+        }
         .ipx-reward-token-strip {
-            display: flex; flex-wrap: wrap; gap: 0.34rem; margin-top: 0.68rem; min-height: 22px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.34rem;
+            margin-top: 0.76rem;
+            min-height: 23px;
         }
         .ipx-reward-token {
-            display: inline-flex; align-items: center; min-height: 22px; padding: 0.26rem 0.48rem;
-            border-radius: 999px; background: rgba(10,124,78,0.065); border: 1px solid rgba(10,124,78,0.11);
-            color: var(--green); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.015em;
+            display: inline-flex;
+            align-items: center;
+            min-height: 23px;
+            padding: 0.27rem 0.52rem;
+            border-radius: 999px;
+            background: rgba(10,124,78,0.065);
+            border: 1px solid rgba(10,124,78,0.11);
+            color: var(--green);
+            font-size: 0.61rem;
+            font-weight: 650;
+            letter-spacing: 0.015em;
         }
         .ipx-rewards-caption {
-            display: flex; align-items: center; justify-content: space-between; gap: 0.65rem;
-            margin-top: 0.62rem; color: var(--text-3); font-size: 0.6rem; line-height: 1.4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
+            margin-top: 0.68rem;
+            color: var(--text-3);
+            font-size: 0.6rem;
+            line-height: 1.4;
         }
-        .ipx-rewards-caption svg { width: 13px; height: 13px; flex: 0 0 auto; transition: transform 0.25s ease; }
+        .ipx-rewards-caption svg {
+            width: 13px;
+            height: 13px;
+            flex: 0 0 auto;
+            transition: transform 0.25s ease;
+        }
         .ipx-rewards-disclosure.open .ipx-rewards-caption svg { transform: rotate(180deg); }
+
         .ipx-rewards-panel {
-            position: absolute; left: 50%; top: calc(100% + 9px); width: min(390px, calc(100vw - 30px));
+            position: absolute;
+            left: 50%;
+            top: calc(100% + 10px);
+            width: min(430px, calc(100vw - 30px));
             transform: translateX(-50%) translateY(-5px) scale(0.985);
-            opacity: 0; visibility: hidden; pointer-events: none; z-index: 35;
-            padding: 0.62rem; border-radius: 16px;
-            background: rgba(255,255,255,0.985); border: 1px solid rgba(22,21,15,0.09);
-            box-shadow: 0 24px 55px -25px rgba(15,23,20,0.32), 0 7px 18px -14px rgba(15,23,20,0.18);
-            transition: opacity 0.24s ease, visibility 0.24s ease, transform 0.24s cubic-bezier(0.16,1,0.3,1);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            z-index: 35;
+            padding: 0.72rem;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at 92% 0%, rgba(255,255,255,1), rgba(255,255,255,0) 34%),
+                rgba(252,253,253,0.992);
+            border: 1px solid rgba(15,23,42,0.085);
+            box-shadow:
+                0 30px 64px -28px rgba(15,23,42,0.34),
+                0 10px 24px -18px rgba(15,23,42,0.18);
+            transition:
+                opacity 0.24s ease,
+                visibility 0.24s ease,
+                transform 0.24s cubic-bezier(0.16,1,0.3,1);
         }
         .ipx-rewards-disclosure:hover .ipx-rewards-panel,
         .ipx-rewards-disclosure.open .ipx-rewards-panel {
-            opacity: 1; visibility: visible; pointer-events: auto; transform: translateX(-50%) translateY(0) scale(1);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+        .ipx-reward-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.35rem 0.46rem 0.58rem;
+            border-bottom: 1px solid var(--line);
+        }
+        .ipx-reward-panel-kicker {
+            color: var(--text-3);
+            font-size: 0.52rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+        .ipx-reward-panel-total {
+            margin-top: 0.14rem;
+            color: var(--text);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.08rem;
+            font-weight: 600;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+        .ipx-reward-panel-close {
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(15,23,42,0.07);
+            border-radius: 50%;
+            background: rgba(255,255,255,0.78);
+            color: var(--text-3);
+            font: inherit;
+            font-size: 1rem;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .ipx-reward-panel-close:hover {
+            background: #fff;
+            color: var(--text);
         }
         .ipx-reward-row {
-            display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0.75rem; align-items: center;
-            padding: 0.58rem 0.62rem; border-bottom: 1px solid var(--line);
+            display: grid;
+            grid-template-columns: minmax(0,1fr) auto;
+            gap: 0.9rem;
+            align-items: center;
+            padding: 0.68rem 0.55rem;
+            border-bottom: 1px solid var(--line);
         }
         .ipx-reward-row:last-of-type { border-bottom: 0; }
-        .ipx-reward-protocol { color: var(--text); font-size: 0.7rem; font-weight: 600; }
-        .ipx-reward-meta { margin-top: 0.16rem; color: var(--text-3); font-size: 0.59rem; line-height: 1.35; }
+        .ipx-reward-protocol {
+            color: var(--text);
+            font-size: 0.73rem;
+            font-weight: 650;
+        }
+        .ipx-reward-meta {
+            margin-top: 0.18rem;
+            color: var(--text-3);
+            font-size: 0.61rem;
+            line-height: 1.35;
+        }
         .ipx-reward-right { text-align: right; white-space: nowrap; }
-        .ipx-reward-amount { color: var(--text); font-size: 0.68rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-        .ipx-reward-usd { margin-top: 0.13rem; color: var(--green); font-size: 0.6rem; font-variant-numeric: tabular-nums; }
+        .ipx-reward-amount {
+            color: var(--text);
+            font-size: 0.73rem;
+            font-weight: 650;
+            font-variant-numeric: tabular-nums;
+        }
+        .ipx-reward-usd {
+            margin-top: 0.14rem;
+            color: var(--green);
+            font-size: 0.62rem;
+            font-variant-numeric: tabular-nums;
+        }
         .ipx-reward-state {
-            display: inline-block; margin-left: 0.28rem; padding: 0.12rem 0.3rem; border-radius: 999px;
-            font-size: 0.49rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700;
-            color: var(--text-3); background: rgba(22,21,15,0.035); border: 1px solid var(--line); vertical-align: 1px;
+            display: inline-block;
+            margin-left: 0.3rem;
+            padding: 0.12rem 0.32rem;
+            border-radius: 999px;
+            font-size: 0.48rem;
+            letter-spacing: 0.055em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-3);
+            background: rgba(22,21,15,0.035);
+            border: 1px solid var(--line);
+            vertical-align: 1px;
         }
-        .ipx-reward-state.compounded { color: #8b6b18; background: rgba(168,132,44,0.065); border-color: rgba(168,132,44,0.14); }
+        .ipx-reward-state.compounded {
+            color: #7a651f;
+            background: rgba(168,132,44,0.055);
+            border-color: rgba(168,132,44,0.12);
+        }
         .ipx-reward-panel-note {
-            padding: 0.55rem 0.62rem 0.35rem; color: var(--text-3); font-size: 0.56rem; line-height: 1.45;
+            padding: 0.62rem 0.55rem 0.32rem;
+            color: var(--text-3);
+            font-size: 0.57rem;
+            line-height: 1.45;
         }
-        .ipx-reward-empty { padding: 0.7rem 0.62rem; color: var(--text-3); font-size: 0.65rem; }
+        .ipx-reward-empty {
+            padding: 0.82rem 0.55rem;
+            color: var(--text-3);
+            font-size: 0.67rem;
+        }
+
         .ipx-field {
             display: flex; justify-content: space-between; align-items: baseline;
-            gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line);
+            gap: 1.1rem; padding: 0.68rem 0; border-bottom: 1px solid var(--line);
             font-size: 0.82rem;
         }
-        .ipx-label { color: var(--text-3); letter-spacing: 0.03em; }
-        .ipx-value { color: var(--text); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; transition: color 0.5s ease; }
+        .ipx-label {
+            color: var(--text-3);
+            letter-spacing: 0.035em;
+            font-size: 0.74rem;
+        }
+        .ipx-value {
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 550;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            transition: color 0.5s ease;
+        }
         .ipx-value.productive { color: var(--green); }
         .ipx-value.gold { color: var(--gold); }
         .ipx-value.muted { color: var(--text-3); font-weight: 400; }
@@ -1148,11 +1369,14 @@
             padding-left: 0.85rem; border-left: 1px solid var(--line);
         }
         .ipx-apr-kicker {
-            font-size: 0.54rem; letter-spacing: 0.11em; text-transform: uppercase;
-            color: var(--text-3); font-weight: 600;
+            font-size: 0.51rem; letter-spacing: 0.105em; text-transform: uppercase;
+            color: var(--text-3); font-weight: 650;
         }
         .ipx-apr-number {
-            color: var(--green); font-weight: 600; font-variant-numeric: tabular-nums;
+            color: var(--green);
+            font-size: 0.91rem;
+            font-weight: 650;
+            font-variant-numeric: tabular-nums;
         }
 
         /* Protocol disclosure — count at rest, exact stack on hover/tap */
@@ -1204,7 +1428,7 @@
         .ipx-age { color: var(--gold); }
         /* ── Composite weight breakdown + company signature ── */
         .ipx-perf {
-            margin-top: 1.4rem; padding-top: 1.25rem;
+            margin-top: 1.55rem; padding-top: 1.35rem;
             border-top: 1px solid var(--line);
         }
         .ipx-perf .ipx-c-title { margin-bottom: 0.7rem; }
@@ -1212,8 +1436,8 @@
         .ipx-perf .ipx-field:nth-child(4) .ipx-value { color: var(--text); font-weight: 600; }
 
         .ipx-composite {
-            display: grid; grid-template-columns: 1fr 246px; gap: 1.9rem;
-            align-items: center; margin-top: 1.5rem; padding-top: 1.35rem;
+            display: grid; grid-template-columns: minmax(0,1fr) 260px; gap: 2.1rem;
+            align-items: center; margin-top: 1.65rem; padding-top: 1.45rem;
             border-top: 1px solid var(--line);
         }
         .ipx-c-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem; }
@@ -1221,8 +1445,14 @@
             font-size: 0.56rem; letter-spacing: 0.18em; text-transform: uppercase;
             color: var(--text-3); font-weight: 600;
         }
-        .ipx-c-total { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--gold); line-height: 1; }
-        .ipx-factor { margin-bottom: 0.9rem; }
+        .ipx-c-total {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.52rem;
+            color: var(--gold);
+            line-height: 1;
+            font-weight: 600;
+        }
+        .ipx-factor { margin-bottom: 1rem; }
         .ipx-factor:last-child { margin-bottom: 0; }
         .ipx-f-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.78rem; margin-bottom: 0.35rem; }
         .ipx-f-name { color: var(--text); font-weight: 500; }
@@ -1237,7 +1467,7 @@
         .ipx-factor.f-lon .ipx-f-track span { background: #a8842c; }
         .ipx-factor.f-pro .ipx-f-track span { background: #7a8f5e; }
         .ipx-factor.f-perf .ipx-f-track span { background: #4b6d4c; }
-        .ipx-f-note { font-size: 0.68rem; color: var(--text-3); margin-top: 0.32rem; }
+        .ipx-f-note { font-size: 0.66rem; color: var(--text-3); margin-top: 0.34rem; line-height: 1.4; }
         .ipx-sig { width: 100%; height: auto; display: block; }
         .ipx-c-sig { align-self: center; }
         .sg-grid  { fill: none; stroke: var(--line-strong); stroke-width: 0.7; }
@@ -1300,29 +1530,106 @@
                 line-height: 1.18;
             }
             .ipx-economic-value {
-                font-size: 1.48rem;
+                font-size: 1.54rem;
                 line-height: 1;
                 white-space: nowrap;
             }
 
-            .ipx-live-ledger { grid-template-columns: 1fr; gap: 0.7rem; margin-top: -0.35rem; }
-            .ipx-balance-card, .ipx-rewards-trigger { padding: 0.92rem 0.9rem; }
-            .ipx-rewards-value { font-size: 1.65rem; }
-            .ipx-position-pill { min-height: 27px; font-size: 0.64rem; }
-            .ipx-position-pill b { font-size: 0.68rem; }
-            .ipx-rewards-panel {
-                position: static; width: auto; transform: none; margin: 0 0.72rem 0.72rem;
-                display: none; opacity: 1; visibility: visible; pointer-events: auto; box-shadow: none;
-                background: rgba(255,255,255,0.72); border-radius: 13px;
+            .ipx-live-ledger {
+                grid-template-columns: 1fr;
+                gap: 0.72rem;
+                margin-top: -0.34rem;
             }
-            .ipx-rewards-disclosure:hover .ipx-rewards-panel { display: none; }
-            .ipx-rewards-disclosure.open .ipx-rewards-panel { display: block; transform: none; }
+            .ipx-balance-card { padding: 1.02rem 0.98rem 1rem; }
+            .ipx-rewards-trigger { padding: 1.02rem 0.98rem 0.98rem; }
+            .ipx-rewards-value { font-size: 1.82rem; }
+            .ipx-position-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.48rem;
+            }
+            .ipx-position-pill {
+                min-height: 64px;
+                padding: 0.64rem 0.66rem 0.6rem;
+                border-radius: 12px;
+            }
+            .ipx-position-symbol { font-size: 0.63rem; }
+            .ipx-position-qty { font-size: 1.12rem; }
+            .ipx-ledger-count { font-size: 0.55rem; }
+            .ipx-ledger-caption { margin-top: 0.7rem; font-size: 0.59rem; }
+
+            /* Mobile rewards use a compact viewport-anchored bottom sheet.
+               It no longer expands the passport downward. */
+            .ib-item.open .ib-passport { overflow: visible; }
+            .ipx-rewards-panel {
+                position: fixed;
+                left: 14px;
+                right: 14px;
+                bottom: max(14px, env(safe-area-inset-bottom));
+                top: auto;
+                width: auto;
+                max-height: min(48vh, 360px);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                -webkit-overflow-scrolling: touch;
+                margin: 0;
+                padding: 0.66rem;
+                border-radius: 20px;
+                transform: translateY(22px) scale(0.985);
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                display: block;
+                z-index: 2200;
+                background: rgba(252,253,253,0.995);
+                box-shadow:
+                    0 26px 70px -20px rgba(15,23,42,0.38),
+                    0 0 0 100vmax rgba(15,23,42,0.13);
+            }
+            .ipx-rewards-disclosure:hover .ipx-rewards-panel {
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transform: translateY(22px) scale(0.985);
+            }
+            .ipx-rewards-disclosure.open .ipx-rewards-panel,
+            .ipx-rewards-disclosure.open:hover .ipx-rewards-panel {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+                transform: translateY(0) scale(1);
+            }
+            .ipx-reward-panel-head {
+                position: sticky;
+                top: -0.66rem;
+                z-index: 2;
+                margin: -0.02rem -0.02rem 0;
+                padding: 0.68rem 0.48rem 0.62rem;
+                background: rgba(252,253,253,0.98);
+                backdrop-filter: blur(14px);
+                -webkit-backdrop-filter: blur(14px);
+            }
+            .ipx-reward-panel-kicker { font-size: 0.5rem; }
+            .ipx-reward-panel-total { font-size: 1.18rem; }
+            .ipx-reward-panel-close {
+                width: 30px;
+                height: 30px;
+                font-size: 1.08rem;
+            }
+            .ipx-reward-row {
+                padding: 0.62rem 0.48rem;
+                gap: 0.68rem;
+            }
+            .ipx-reward-protocol { font-size: 0.69rem; }
+            .ipx-reward-meta { font-size: 0.58rem; }
+            .ipx-reward-amount { font-size: 0.68rem; }
+            .ipx-reward-usd { font-size: 0.59rem; }
+            .ipx-reward-state { font-size: 0.44rem; }
 
             .ipx-apr-pair { gap: 0.55rem; }
             .ipx-apr-point { gap: 0.28rem; }
             .ipx-apr-point + .ipx-apr-point { padding-left: 0.55rem; }
-            .ipx-apr-kicker { font-size: 0.48rem; letter-spacing: 0.08em; }
-            .ipx-apr-number { font-size: 0.78rem; }
+            .ipx-apr-kicker { font-size: 0.47rem; letter-spacing: 0.08em; }
+            .ipx-apr-number { font-size: 0.82rem; }
 
             /* On touch screens the protocol cloud expands inline instead of floating. */
             .ipx-protocol-panel {
@@ -1341,7 +1648,7 @@
             .ib-rank { font-size: 1.3rem; }
             .ib-value { font-size: 1.25rem; }
             .ipx-grid { grid-template-columns: 1fr; column-gap: 0; }
-            .ib-item.open .ib-passport { max-height: 3000px; }
+            .ib-item.open .ib-passport { max-height: 3600px; }
             .ipx-inner { padding-bottom: 1.9rem; }
         }
         @media (max-width: 460px) {
@@ -1360,8 +1667,8 @@
                 min-height: 2.3em;
             }
             .ipx-economic-value { font-size: 1.34rem; }
-            .ipx-apr-kicker { font-size: 0.44rem; }
-            .ipx-apr-number { font-size: 0.74rem; }
+            .ipx-apr-kicker { font-size: 0.43rem; }
+            .ipx-apr-number { font-size: 0.78rem; }
         }
 
 
@@ -2621,6 +2928,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
 const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.9-unified-apr';
+const PASSPORT_NULL_SAFE_FIX = '0.1.3-defitea-null-average';
 let PRODUCTIVITY_SNAPSHOT = null;
 
 async function loadProductivitySnapshot() {
@@ -2647,7 +2955,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.1.1-price-safe';
+const COMPANY_REWARDS_UI_VERSION = '0.1.3-passport-final';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -2693,13 +3001,24 @@ async function loadCompanyRewardsSnapshot() {
 function resolvedCompanyApr(name, fallbackNumeric, fallbackDisplay) {
     const c = PRODUCTIVITY_SNAPSHOT && PRODUCTIVITY_SNAPSHOT.companies
             ? PRODUCTIVITY_SNAPSHOT.companies[name] : null;
-    const avg = c && Number(c.aprHistoricalAverage);
-    const latest = c && Number(c.aprLatest);
-    const coverage = c && Number(c.coverage);
-    const fullUsable = c && c.status === 'ok' && Number.isFinite(avg) && avg >= 0
+
+    // IMPORTANT: Number(null) === 0 in JavaScript. Productivity JSON uses null
+    // deliberately when a historical average does not exist yet, so nullable
+    // APR fields must be rejected before numeric conversion.
+    const finiteProductivityNumber = value =>
+        value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+
+    const avg = c && finiteProductivityNumber(c.aprHistoricalAverage)
+        ? Number(c.aprHistoricalAverage) : null;
+    const latest = c && finiteProductivityNumber(c.aprLatest)
+        ? Number(c.aprLatest) : null;
+    const coverage = c && finiteProductivityNumber(c.coverage)
+        ? Number(c.coverage) : null;
+
+    const fullUsable = c && c.status === 'ok' && avg !== null && avg >= 0
                     && Number(c.observationCount || 0) > 0;
-    const partialUsable = c && c.status === 'partial' && Number.isFinite(latest) && latest >= 0
-                       && Number.isFinite(coverage) && coverage > 0;
+    const partialUsable = c && c.status === 'partial' && latest !== null && latest >= 0
+                       && coverage !== null && coverage > 0;
 
     if (!fullUsable && !partialUsable) {
         return {
@@ -2716,7 +3035,7 @@ function resolvedCompanyApr(name, fallbackNumeric, fallbackDisplay) {
         // Coverage/partial state remains available in the data layer, but is not
         // exposed as a headline metric. Until a canonical full-coverage history
         // exists, the public Average starts from the current validated live APR.
-        const publicAverage = Number.isFinite(avg) && avg >= 0 ? avg : latest;
+        const publicAverage = avg !== null && avg >= 0 ? avg : latest;
         const display = publicAverage.toFixed(1) + '%';
         return {
             aprNumeric: publicAverage,
@@ -2740,10 +3059,10 @@ function resolvedCompanyApr(name, fallbackNumeric, fallbackDisplay) {
         aprSource: c.source || 'automatic',
         aprUpdatedAt: c.updatedAt || PRODUCTIVITY_SNAPSHOT.generatedAt || null,
         aprPeriod: 'since-tracking',
-        aprLatest: Number.isFinite(latest) ? latest : avg,
+        aprLatest: latest !== null ? latest : avg,
         aprObservationCount: Number(c.observationCount || 0),
         aprTrackingStartedAt: c.trackingStartedAt || null,
-        aprCoverage: Number.isFinite(coverage) ? coverage : 1,
+        aprCoverage: coverage !== null ? coverage : 1,
         aprCoveragePartial: false,
         aprScope: c.aprScope || 'full-productive-capital'
     };
@@ -3109,7 +3428,7 @@ function renderIndex(lang) {
                 lonNote:'в работе', sigCap:'Сигнатура компании',
                 axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.', axF:'РЕЗУЛЬТАТ',
                 perfFactor:'Результат', sinceInception:'С момента запуска',
-                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы', balanceSheet:'Баланс компании', positions:'Ончейн-позиции', positionCount:'позиций', capitalDeployed:'Капитал размещён ончейн', accruedRewards:'Накопленные rewards', rewardsCaption:'Заработано ончейн · Пока внутри протоколов', measuringOnchain:'Измеряется ончейн', valuePending:'Оценка в $ рассчитывается', noAccrued:'На этом снимке накопленных rewards нет', compounded:'Компаунд', unclaimed:'Не заклеймлено', measuredTotal:'Измеренная сумма', routeNotIncluded:'маршрут пока не включён', routesNotIncluded:'маршрута пока не включены', valuationPending:'Оценка ожидается', rewardToken:'reward-токен', rewardTokens:'reward-токена', measuring:'Измеряется' }
+                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы', balanceSheet:'Баланс компании', positions:'Ончейн-позиции', positionCount:'позиций', capitalDeployed:'Капитал размещён ончейн', accruedRewards:'Накопленные rewards', rewardsCaption:'Заработано ончейн · Пока внутри протоколов', measuringOnchain:'Измеряется ончейн', valuePending:'Оценка в $ рассчитывается', noAccrued:'На этом снимке накопленных rewards нет', compounded:'Компаунд', unclaimed:'Не заклеймлено', measuredTotal:'Измеренная сумма', routeNotIncluded:'маршрут пока не включён', routesNotIncluded:'маршрута пока не включены', valuationPending:'Оценка ожидается', rewardToken:'reward-токен', rewardTokens:'reward-токена', rewardComposition:'Состав rewards', close:'Закрыть', measuring:'Измеряется' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', protocols:'Protocols', explore:'Explore Company', days:'days',
                 comp:'Composite breakdown', inView:'In view',
@@ -3119,7 +3438,7 @@ function renderIndex(lang) {
                 lonNote:'operating', sigCap:'Company signature',
                 axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY', axF:'PERFORMANCE',
                 perfFactor:'Performance', sinceInception:'Since inception',
-                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', valuePending:'USD valuation pending', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not included yet', routesNotIncluded:'routes not included yet', valuationPending:'Valuation pending', rewardToken:'reward token', rewardTokens:'reward tokens', measuring:'Measuring' };
+                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', valuePending:'USD valuation pending', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not included yet', routesNotIncluded:'routes not included yet', valuationPending:'Valuation pending', rewardToken:'reward token', rewardTokens:'reward tokens', rewardComposition:'Reward composition', close:'Close', measuring:'Measuring' };
         const wfld = (label, value, active) =>
             '<div class="ipx-field"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
@@ -3128,7 +3447,9 @@ function renderIndex(lang) {
             '<div class="ipx-field"><span class="ipx-label">' + label + '</span>'
             + '<span class="ipx-value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
         const aprFld = c => {
-            if (c.aprSource !== 'manual' && Number.isFinite(Number(c.aprLatest))) {
+            const hasAprLatest = c.aprLatest !== null && c.aprLatest !== undefined
+                              && c.aprLatest !== '' && Number.isFinite(Number(c.aprLatest));
+            if (c.aprSource !== 'manual' && hasAprLatest) {
                 if (Number(c.aprObservationCount || 0) > 0) {
                     return '<div class="ipx-field ipx-apr-field"><span class="ipx-label">APR</span>'
                         + '<span class="ipx-apr-pair">'
@@ -3177,7 +3498,10 @@ function renderIndex(lang) {
             const book = COMPANY_BOOK[c.nm] || [];
             const pills = book.map(p => {
                 const label = COMPANY_ASSET_LABELS[p.id] || p.id;
-                return '<span class="ipx-position-pill"><b>' + fmtQty(p.qty) + '</b> ' + label + '</span>';
+                return '<span class="ipx-position-pill">'
+                    + '<span class="ipx-position-symbol">' + label + '</span>'
+                    + '<span class="ipx-position-qty">' + fmtQty(p.qty) + '</span>'
+                    + '</span>';
             }).join('');
             return '<div class="ipx-ledger-card ipx-balance-card">'
                 + '<div class="ipx-ledger-head"><span class="ipx-ledger-kicker">' + L.balanceSheet + '</span>'
@@ -3239,13 +3563,18 @@ function renderIndex(lang) {
             if (notes.length) {
                 note = '<div class="ipx-reward-panel-note">' + notes.join(' · ') + '</div>';
             }
+            const panelHead = '<div class="ipx-reward-panel-head">'
+                + '<div><div class="ipx-reward-panel-kicker">' + L.rewardComposition + '</div>'
+                + '<div class="ipx-reward-panel-total">' + totalLabel + '</div></div>'
+                + '<button class="ipx-reward-panel-close" type="button" aria-label="' + L.close + '">×</button>'
+                + '</div>';
             return '<div class="ipx-ledger-card ipx-rewards-card ipx-rewards-disclosure">'
                 + '<button class="ipx-rewards-trigger" type="button" aria-expanded="false">'
                 + '<div class="ipx-rewards-top"><div><div class="ipx-ledger-kicker">' + L.accruedRewards + '</div>'
                 + '<div class="ipx-rewards-value' + totalCls + '">' + totalLabel + '</div></div></div>'
                 + '<div class="ipx-reward-token-strip">' + tokenStrip + '</div>'
                 + '<div class="ipx-rewards-caption"><span>' + L.rewardsCaption + '</span>' + chevSmall + '</div></button>'
-                + '<div class="ipx-rewards-panel">' + rows + note + '</div></div>';
+                + '<div class="ipx-rewards-panel">' + panelHead + rows + note + '</div></div>';
         };
         const liveLedgerBlock = c => {
             if (!COMPANY_REWARDS_SCOPE.has(c.nm)) return '';
@@ -3379,6 +3708,14 @@ function renderIndex(lang) {
 
             const rbox = item.querySelector('.ipx-rewards-disclosure');
             const rbtn = rbox && rbox.querySelector('.ipx-rewards-trigger');
+            const rclose = rbox && rbox.querySelector('.ipx-reward-panel-close');
+            if (rclose) {
+                rclose.addEventListener('click', ev => {
+                    ev.preventDefault(); ev.stopPropagation();
+                    rbox.classList.remove('open');
+                    if (rbtn) rbtn.setAttribute('aria-expanded', 'false');
+                });
+            }
             if (rbtn) {
                 rbtn.addEventListener('click', ev => {
                     ev.preventDefault(); ev.stopPropagation();
