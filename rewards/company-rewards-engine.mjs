@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.1';
-const COLLECTOR_VERSION = '0.1-protocol-accrual';
+const VERSION = '0.1.1';
+const COLLECTOR_VERSION = '0.1.1-price-safe';
 const METHODOLOGY_VERSION = '0.1-earned-inside-protocols';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -96,7 +96,19 @@ const YB_LT_ABI = [
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const n = x => Number(x);
-const round = (x, digits = 8) => Number.isFinite(Number(x)) ? Number(Number(x).toFixed(digits)) : null;
+const hasFiniteNumber = x =>
+  x !== null && x !== undefined && x !== '' && Number.isFinite(Number(x));
+const round = (x, digits = 8) =>
+  hasFiniteNumber(x) ? Number(Number(x).toFixed(digits)) : null;
+
+const COINGECKO_IDS = {
+  WFRAX: 'wrapped-frax',
+  FRAX: 'frax',
+  FXS: 'frax',
+  WBTC: 'wrapped-bitcoin',
+  CBBTC: 'coinbase-wrapped-btc',
+  TBTC: 'tbtc'
+};
 
 function readPrevious() {
   try {
@@ -245,7 +257,7 @@ async function collectFrax(address, fraxtalProvider) {
   ]);
   const meta = await tokenMeta(fraxtalProvider, emitted);
   const amount = n(formatUnits(raw, meta.decimals));
-  const cgId = /^(FRAX|FXS)$/i.test(meta.symbol) ? 'frax-share' : null;
+  const cgId = COINGECKO_IDS[String(meta.symbol || '').toUpperCase()] || null;
   return {
     source: {
       protocol: 'Frax', route: 'frax-yield', status: 'ok', chain: 'Fraxtal',
@@ -302,6 +314,8 @@ async function collectYieldBasis(address, ethProvider) {
         details.redeemAmountRaw = redemptionRaw.toString();
         details.redeemAmount = round(n(formatUnits(redemptionRaw, assetMeta.decimals)), 12);
         details.priceByEthereumContract = market.asset;
+        details.redemptionCoingeckoId =
+          COINGECKO_IDS[String(assetMeta.symbol || '').toUpperCase()] || null;
         details.marketIndex = market.index;
       }
     }
@@ -350,7 +364,10 @@ async function fetchJson(url, headers = {}) {
 
 async function applyPrices(rewards) {
   const headers = CG_KEY ? { 'x-cg-demo-api-key': CG_KEY } : {};
-  const ids = [...new Set(rewards.map(r => r.details?.coingeckoId).filter(Boolean))];
+  const ids = [...new Set(rewards.flatMap(r => [
+    r.details?.coingeckoId,
+    r.details?.redemptionCoingeckoId
+  ]).filter(Boolean))];
   const ethContracts = [...new Set(rewards.map(r => r.details?.priceByEthereumContract).filter(Boolean).map(a => a.toLowerCase()))];
   const idPrices = {};
   const ethPrices = {};
@@ -379,18 +396,25 @@ async function applyPrices(rewards) {
     const fixed = r.details?.fixedUsdPrice;
     const cgId = r.details?.coingeckoId;
     const asset = r.details?.priceByEthereumContract?.toLowerCase();
-    if (Number.isFinite(Number(fixed))) {
+    const redemptionCgId = r.details?.redemptionCoingeckoId;
+    const redeemAmount = r.details?.redeemAmount;
+
+    if (hasFiniteNumber(fixed)) {
       r.priceUsd = Number(fixed);
       r.usdValue = round(r.amount * r.priceUsd, 6);
       r.priceMethod = 'fixed-usd-assumption';
-    } else if (cgId && Number.isFinite(idPrices[cgId])) {
+    } else if (cgId && hasFiniteNumber(idPrices[cgId])) {
       r.priceUsd = idPrices[cgId];
       r.usdValue = round(r.amount * r.priceUsd, 6);
       r.priceMethod = `coingecko:${cgId}`;
-    } else if (asset && Number.isFinite(ethPrices[asset]) && Number.isFinite(Number(r.details?.redeemAmount))) {
+    } else if (asset && hasFiniteNumber(ethPrices[asset]) && hasFiniteNumber(redeemAmount)) {
       r.priceUsd = ethPrices[asset];
-      r.usdValue = round(Number(r.details.redeemAmount) * r.priceUsd, 6);
+      r.usdValue = round(Number(redeemAmount) * r.priceUsd, 6);
       r.priceMethod = `redemption-value:${r.details.redeemSymbol || 'asset'}@coingecko-contract`;
+    } else if (redemptionCgId && hasFiniteNumber(idPrices[redemptionCgId]) && hasFiniteNumber(redeemAmount)) {
+      r.priceUsd = idPrices[redemptionCgId];
+      r.usdValue = round(Number(redeemAmount) * r.priceUsd, 6);
+      r.priceMethod = `redemption-value:${r.details.redeemSymbol || 'asset'}@coingecko:${redemptionCgId}`;
     }
   }
 }
@@ -402,7 +426,7 @@ function aggregateTokenSummary(rewards) {
     if (!m.has(key)) m.set(key, { symbol: r.symbol, token: r.token, amount: 0, usdValue: 0, usdComplete: true });
     const x = m.get(key);
     x.amount += Number(r.amount || 0);
-    if (Number.isFinite(Number(r.usdValue))) x.usdValue += Number(r.usdValue);
+    if (hasFiniteNumber(r.usdValue)) x.usdValue += Number(r.usdValue);
     else x.usdComplete = false;
   }
   return [...m.values()].map(x => ({
@@ -470,8 +494,8 @@ async function main() {
     const measuredSources = sources.filter(s => s.status === 'ok').length;
     const routeCount = c.routes.length;
     const pendingSources = sources.filter(s => s.status !== 'ok').length;
-    const unpriced = rewards.filter(r => !Number.isFinite(Number(r.usdValue))).length;
-    const totalUsd = rewards.reduce((s, r) => s + (Number.isFinite(Number(r.usdValue)) ? Number(r.usdValue) : 0), 0);
+    const unpriced = rewards.filter(r => !hasFiniteNumber(r.usdValue)).length;
+    const totalUsd = rewards.reduce((s, r) => s + (hasFiniteNumber(r.usdValue) ? Number(r.usdValue) : 0), 0);
     const status = measuredSources === routeCount && unpriced === 0 ? 'ok' : measuredSources > 0 ? 'partial' : 'warming';
 
     companies[c.name] = {
