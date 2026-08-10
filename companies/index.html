@@ -1,11 +1,12 @@
+
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-10 · Company 005 identity + mobile first-paint stability v0.1.6 -->
+<!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.0 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Personal Onchain Companies — The Holding Index &amp; Registry</title>
-    <meta name="description" content="A live registry of personal onchain companies ranked by The Holding Index — a composite of capital, longevity and productivity. Live TVL, capital map and company passports.">
+    <meta name="description" content="A live registry of sovereign personal onchain companies measured by The Holding data and intelligence layer — live balances, productivity, accrued rewards, operating history, Index and network graph.">
     <meta name="keywords" content="onchain companies, personal onchain company, The Holding Index, onchain company registry, DeFi TVL index, composite index methodology, self-custodied onchain capital, onchain capital map">
     <meta name="author" content="The Holding">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -18,7 +19,7 @@
     <!-- Open Graph -->
     <meta property="og:site_name" content="The Holding">
     <meta property="og:title" content="Personal Onchain Companies — The Holding Index">
-    <meta property="og:description" content="A live registry of onchain companies weighted by capital, longevity and productivity. Live TVL, an interactive capital map, and a passport for every company.">
+    <meta property="og:description" content="A live registry of sovereign onchain companies with verified operating data, Company Passports, The Holding Index and a shared intelligence layer.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://theholding.ai/companies">
     <meta property="og:image" content="https://theholding.ai/logo.png">
@@ -29,7 +30,7 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Personal Onchain Companies — The Holding Index">
-    <meta name="twitter:description" content="A live registry of onchain companies weighted by capital, longevity and productivity — with a live capital map.">
+    <meta name="twitter:description" content="Sovereign onchain companies measured through live capital, productivity, rewards, history and The Holding Index.">
     <meta name="twitter:image" content="https://theholding.ai/logo.png">
     <meta name="twitter:url" content="https://theholding.ai/companies">
     <meta name="twitter:site" content="@defitea_">
@@ -44,7 +45,7 @@
       "@type": "CollectionPage",
       "name": "Personal Onchain Companies",
       "headline": "The Holding Index — a live registry of personal onchain companies",
-      "description": "A live registry of personal onchain companies ranked by The Holding Index, a composite weighting of capital, longevity and productivity. Each company is self-custodied by its owner.",
+      "description": "A live registry of personal onchain companies measured through capital, longevity, productivity and performance, with self-custodied ownership and a shared onchain data and intelligence layer.",
       "url": "https://theholding.ai/companies",
       "inLanguage": ["en", "ru"],
       "isPartOf": { "@type": "WebSite", "name": "The Holding", "url": "https://theholding.ai" },
@@ -2173,6 +2174,78 @@
             line-height: 1.65;
         }
 
+
+        /* ══ The Holding Intelligence Layer ═══════════════ */
+        .intel-sec {
+            position: relative;
+            overflow: hidden;
+            padding: 7rem 0;
+            color: #f3eee3;
+            background:
+                radial-gradient(90% 85% at 8% 5%, rgba(168,132,44,0.16) 0%, rgba(168,132,44,0.035) 38%, transparent 70%),
+                radial-gradient(75% 70% at 95% 90%, rgba(36,86,62,0.20) 0%, rgba(36,86,62,0.035) 42%, transparent 72%),
+                #0b0d0c;
+            border-top: 1px solid rgba(168,132,44,0.16);
+            border-bottom: 1px solid rgba(168,132,44,0.12);
+        }
+        .intel-sec::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.22;
+            background-image: linear-gradient(rgba(242,238,230,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(242,238,230,0.04) 1px, transparent 1px);
+            background-size: 44px 44px;
+            -webkit-mask: linear-gradient(to bottom, transparent 0%, #000 18%, #000 82%, transparent 100%);
+                    mask: linear-gradient(to bottom, transparent 0%, #000 18%, #000 82%, transparent 100%);
+            pointer-events: none;
+        }
+        .intel-sec .container { position: relative; z-index: 1; }
+        .intel-head { max-width: 820px; margin-bottom: 3rem; }
+        .intel-eyebrow {
+            display: inline-flex; align-items: center; gap: 0.65rem;
+            font-size: 0.64rem; letter-spacing: 0.26em; text-transform: uppercase;
+            color: #d8b45a; font-weight: 600; margin-bottom: 1.45rem;
+        }
+        .intel-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #55a77a; box-shadow: 0 0 0 4px rgba(85,167,122,0.10); }
+        .intel-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.25rem, 5vw, 3.65rem); font-weight: 300;
+            line-height: 1.06; letter-spacing: -0.025em; color: #f4efe5;
+            max-width: 760px; margin-bottom: 1.25rem;
+        }
+        .intel-sub { max-width: 720px; color: rgba(244,239,229,0.62); font-size: 0.95rem; font-weight: 300; line-height: 1.78; }
+        .intel-flow {
+            display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+            margin: 2.7rem 0 3rem; padding: 1.1rem 1.25rem;
+            border: 1px solid rgba(216,180,90,0.20); border-radius: 14px;
+            background: rgba(216,180,90,0.035);
+        }
+        .intel-flow span { font-size: 0.61rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(244,239,229,0.72); white-space: nowrap; }
+        .intel-flow i { font-style: normal; color: rgba(216,180,90,0.55); font-size: 0.72rem; }
+        .intel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .intel-card {
+            min-height: 170px; padding: 1.6rem 1.65rem;
+            border: 1px solid rgba(244,239,229,0.10); border-radius: 18px;
+            background: linear-gradient(145deg, rgba(244,239,229,0.04), rgba(244,239,229,0.015));
+        }
+        .intel-card-k { color: #d8b45a; font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 0.75rem; }
+        .intel-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.42rem; font-weight: 400; color: #f4efe5; margin-bottom: 0.6rem; }
+        .intel-card p { font-size: 0.79rem; line-height: 1.72; color: rgba(244,239,229,0.54); font-weight: 300; }
+        .intel-principle {
+            margin-top: 2.2rem; padding: 1.4rem 1.55rem;
+            border-left: 2px solid rgba(216,180,90,0.70);
+            color: rgba(244,239,229,0.80); font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.15rem, 2.5vw, 1.45rem); font-style: italic; line-height: 1.5;
+        }
+        .intel-future { margin-top: 1.35rem; max-width: 760px; font-size: 0.76rem; line-height: 1.7; color: rgba(244,239,229,0.40); }
+        @media (max-width: 700px) {
+            .intel-sec { padding: 4.8rem 0; }
+            .intel-grid { grid-template-columns: 1fr; }
+            .intel-flow { gap: 0.5rem; padding: 1rem; }
+            .intel-flow span { font-size: 0.56rem; }
+            .intel-card { min-height: 0; }
+        }
+
         /* ── The Holding OS / Platform section ────────── */
         .os-section {
             background: radial-gradient(120% 70% at 50% -10%, #1b1e28 0%, #0d0f14 55%, #08090c 100%);
@@ -2213,7 +2286,7 @@
 
         .os-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.25rem;
             max-width: 760px;
             margin: 0 auto 3.5rem;
@@ -2270,11 +2343,11 @@
 
         /* ── Sticky section nav (portal feel) ─────────── */
         /* deep links (e.g. /companies/#index) must clear the sticky subnav */
-        #collection, #next-layer, #index, #graph, #how-it-works, #platform, #build {
+        #collection, #next-layer, #index, #graph, #intelligence, #how-it-works, #platform, #build {
             scroll-margin-top: 84px;
         }
         @media (max-width: 760px) {
-            #collection, #next-layer, #index, #graph, #how-it-works, #platform, #build {
+            #collection, #next-layer, #index, #graph, #intelligence, #how-it-works, #platform, #build {
                 scroll-margin-top: 70px;
             }
         }
@@ -2641,6 +2714,8 @@
 <div class="subnav" id="subnav">
     <div class="container subnav-inner">
         <a href="#collection" data-section="collection" data-i18n="subnav.collection">Collection</a>
+        <a href="#index" data-section="index" data-i18n="subnav.index">Index</a>
+        <a href="#intelligence" data-section="intelligence" data-i18n="subnav.intelligence">Intelligence</a>
         <a href="#how-it-works" data-section="how-it-works" data-i18n="subnav.how">How It Works</a>
         <a href="#platform" data-section="platform" data-i18n="subnav.platform">Platform</a>
         <a href="#build" data-section="build" data-i18n="subnav.build">Build Yours</a>
@@ -2652,7 +2727,7 @@
     <div class="container">
         <div class="hero-eyebrow reveal" data-i18n="hero.eyebrow">Personal Onchain Companies</div>
         <h1 class="reveal" data-i18n-html="hero.h1">The Holding builds<br><em>personal onchain companies.</em></h1>
-        <p class="hero-sub reveal" data-i18n="hero.sub">Turnkey digital companies with real onchain assets on the balance sheet, live TVL, and autonomous cash flow. Each one belongs to its owner. All of them are part of one ecosystem.</p>
+        <p class="hero-sub reveal" data-i18n="hero.sub">Real assets on the balance sheet. Independent ownership. Live onchain measurement. Each company keeps its own keys and strategy while The Holding turns raw blockchain activity into a living operating record.</p>
     </div>
 </section>
 
@@ -2661,18 +2736,18 @@
     <div class="container strip-inner">
         <div class="reveal">
             <div class="strip-item-num">I</div>
-            <div class="strip-item-title" data-i18n="strip.1.title">Real Assets</div>
-            <div class="strip-item-text" data-i18n="strip.1.text">Every company holds real onchain assets on its balance sheet — selected to match its own strategy, engineered to generate cash flow, and built with the potential to grow in value.</div>
+            <div class="strip-item-title" data-i18n="strip.1.title">Real Balance Sheet</div>
+            <div class="strip-item-text" data-i18n="strip.1.text">Each company holds real onchain assets selected for its own strategy — reserve capital, productive positions and long-term economic rights.</div>
         </div>
         <div class="reveal">
             <div class="strip-item-num">II</div>
-            <div class="strip-item-title" data-i18n="strip.2.title">One Owner</div>
-            <div class="strip-item-text" data-i18n="strip.2.text">One owner. One physical key. Full control over the company and everything on its balance sheet.</div>
+            <div class="strip-item-title" data-i18n="strip.2.title">Sovereign Ownership</div>
+            <div class="strip-item-text" data-i18n="strip.2.text">One owner. Independent keys. Full control over the company, its treasury and every asset on its balance sheet.</div>
         </div>
         <div class="reveal">
             <div class="strip-item-num">III</div>
-            <div class="strip-item-title" data-i18n="strip.3.title">One Ecosystem</div>
-            <div class="strip-item-text" data-i18n="strip.3.text">Every company is assembled under The Holding — with shared architecture, standards, and philosophy.</div>
+            <div class="strip-item-title" data-i18n="strip.3.title">Measured from Day One</div>
+            <div class="strip-item-text" data-i18n="strip.3.text">Balances, locks, productivity, rewards and operating history enter one shared measurement system from the moment a company comes onchain.</div>
         </div>
     </div>
 </section>
@@ -2896,17 +2971,17 @@
     <div class="container">
         <div class="nl-grid">
             <div class="nl-head">
-                <div class="nl-eyebrow reveal" data-i18n="nextlayer.eyebrow">The Next Layer</div>
-                <h2 class="nl-title reveal" data-i18n="nextlayer.title">A network of sovereign onchain companies.</h2>
+                <div class="nl-eyebrow reveal" data-i18n="nextlayer.eyebrow">From Companies to Infrastructure</div>
+                <h2 class="nl-title reveal" data-i18n="nextlayer.title">A network that compounds more than capital.</h2>
             </div>
             <div class="nl-body reveal">
-                <p data-i18n="nextlayer.p1">Today, this is a growing collection of independently owned onchain companies. Over time, it will grow into a decentralized network — while each company remains sovereign, with its own owner, treasury, keys, strategy, and history.</p>
-                <p data-i18n="nextlayer.p2">The Holding never takes custody of their capital. It provides the architecture that connects them.</p>
-                <p data-i18n="nextlayer.p3">As the network grows, each company will build its own history and reputation. Together, they will form a shared onchain registry — and, over time, a new generation of indices that reflect the growth of the network.</p>
+                <p data-i18n="nextlayer.p1">Each company remains sovereign — its own owner, treasury, keys, strategy and history. What connects them is not custody, but a common architecture for measurement.</p>
+                <p data-i18n="nextlayer.p2">The Holding reads what can be verified onchain, normalizes it into a common company model, and preserves the resulting operating record over time.</p>
+                <p data-i18n="nextlayer.p3">Every new company adds another balance sheet, another cash-flow history and another set of protocol relationships to the shared data layer. Over time, the registry becomes a dataset; the dataset becomes intelligence; and that intelligence can support indices, ratings, discovery and eventually external data products.</p>
             </div>
         </div>
         <div class="nl-statement reveal">
-            <p data-i18n="nextlayer.statement">One holding. Many sovereign companies. Each with its own treasury and keys.</p>
+            <p data-i18n="nextlayer.statement">The companies remain sovereign. The intelligence becomes shared infrastructure.</p>
         </div>
     </div>
 </section>
@@ -2917,7 +2992,7 @@
         <div class="index-head">
             <div class="index-eyebrow reveal"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">The Index · Live</span></div>
             <h2 class="index-title reveal" data-i18n="index.title">The Holding Index</h2>
-            <p class="index-sub reveal" data-i18n="index.sub">A live measure of the network, viewed through two lenses. Composite applies The Holding methodology — combining capital, longevity, productivity and performance into a single Index Weight. TVL offers a simpler capital-weighted view. The first working piece of a larger registry to come.</p>
+            <p class="index-sub reveal" data-i18n="index.sub">The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance into one Index Weight; TVL shows pure economic scale. Both views are calculated from the same living company records.</p>
         </div>
 
         <div class="index-metrics reveal">
@@ -2946,7 +3021,7 @@
                             <button class="idx-lens-btn" type="button" data-mode="tvl" data-i18n="index.mode.tvl">TVL</button>
                         </div>
                     </div>
-                    <button class="fw-trigger" id="fwOpen" type="button"><span data-i18n="index.framework">Index Framework</span><span class="fw-arr">→</span></button>
+                    <button class="fw-trigger" id="fwOpen" type="button"><span data-i18n="index.framework">Inside the Index</span><span class="fw-arr">→</span></button>
                 </div>
             </div>
             <p class="idx-lens-note" data-i18n="index.lens">Same companies. Different lens.</p>
@@ -2966,7 +3041,7 @@
             <div id="idxBoard"></div>
         </div>
 
-        <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.</b> <span id="idxNoteBody" data-i18n="index.note.body">Non-custodial by design. Reputation, performance history, and cross-network indices are in development — this is the foundation they will build on.</span></p>
+        <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.</b> <span id="idxNoteBody" data-i18n="index.note.body">Below the weights sits a growing history of balances, productive engines, accrued rewards and operating time. As that history deepens, resilience, cash-flow quality and reputation can be measured from evidence rather than invented.</span></p>
     </div>
 </section>
 
@@ -2982,8 +3057,8 @@
     <div class="container">
         <div class="graph-head">
             <div class="graph-eyebrow"><span class="graph-live-dot"></span><span data-i18n="graph.eyebrow">The Holding Graph</span></div>
-            <h2 class="graph-title" data-i18n="graph.title">A live map of capital across the network.</h2>
-            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols it uses — one living map of the network's shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company's share of total index TVL. Yellow protocol / asset nodes stay unchanged — their size reflects how many indexed companies connect to each node.</p>
+            <h2 class="graph-title" data-i18n="graph.title">A live map of how the network is built.</h2>
+            <p class="graph-sub" data-i18n="graph.sub">Companies, assets and protocols become one living map of shared onchain infrastructure. Green company nodes follow the selected Index view; yellow protocol / asset nodes show how widely infrastructure is shared across the registry.</p>
         </div>
         <div class="graph-lens">
             <span class="idx-lens-label" data-i18n="index.weighting">Weighting</span>
@@ -2994,6 +3069,50 @@
         </div>
         <div class="graph-canvas" id="graphCanvas"></div>
         <p class="graph-hint" data-i18n="graph.hint">Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.</p>
+    </div>
+</section>
+
+<!-- ── THE HOLDING INTELLIGENCE LAYER ──────────────── -->
+<section class="intel-sec" id="intelligence">
+    <div class="container">
+        <div class="intel-head">
+            <div class="intel-eyebrow"><span class="intel-live-dot"></span><span data-i18n="intel.eyebrow">The Holding Intelligence · Live</span></div>
+            <h2 class="intel-title" data-i18n="intel.title">The network does not just hold capital. It measures itself.</h2>
+            <p class="intel-sub" data-i18n="intel.sub">A dedicated data layer reads blockchains, protocol contracts and official distribution data, normalizes them into a common company model, and turns raw onchain activity into usable operating intelligence.</p>
+        </div>
+        <div class="intel-flow" aria-label="The Holding intelligence data flow">
+            <span data-i18n="intel.flow.1">Blockchains</span><i>→</i>
+            <span data-i18n="intel.flow.2">Protocols</span><i>→</i>
+            <span data-i18n="intel.flow.3">Positions</span><i>→</i>
+            <span data-i18n="intel.flow.4">Productivity</span><i>→</i>
+            <span data-i18n="intel.flow.5">Rewards</span><i>→</i>
+            <span data-i18n="intel.flow.6">History</span><i>→</i>
+            <span data-i18n="intel.flow.7">Index</span>
+        </div>
+        <div class="intel-grid">
+            <article class="intel-card">
+                <div class="intel-card-k">01 · DATA</div>
+                <h3 data-i18n="intel.c1.title">Direct Onchain Reads</h3>
+                <p data-i18n="intel.c1.text">Wallets, veNFTs, locks, voting state and reward contracts are read directly wherever the result can be reproduced. External APIs remain useful inputs — not unquestioned answers.</p>
+            </article>
+            <article class="intel-card">
+                <div class="intel-card-k">02 · PRODUCTIVITY</div>
+                <h3 data-i18n="intel.c2.title">Productivity Intelligence</h3>
+                <p data-i18n="intel.c2.text">Different productive engines are normalized into a common Reference APR framework, allowing companies to be compared without pretending their underlying mechanics are identical.</p>
+            </article>
+            <article class="intel-card">
+                <div class="intel-card-k">03 · REWARDS</div>
+                <h3 data-i18n="intel.c3.title">Company Rewards</h3>
+                <p data-i18n="intel.c3.text">Protocol-side accrued rewards are separated from already claimed value, resolved to their payout assets and priced without double counting whenever the route can be verified.</p>
+            </article>
+            <article class="intel-card">
+                <div class="intel-card-k">04 · MEMORY</div>
+                <h3 data-i18n="intel.c4.title">Operating Memory</h3>
+                <p data-i18n="intel.c4.text">Validated snapshots become history. That history feeds Company Passports, reporting, The Holding Index and, over time, deeper measures of resilience, cash-flow quality and reputation.</p>
+            </article>
+        </div>
+        <div class="intel-principle" data-i18n="intel.principle">If a value cannot be reproduced and verified, The Holding does not invent it.</div>
+        <p class="intel-future" data-i18n="intel.future">Today this intelligence layer serves The Holding itself. Over time, the same structured data can become a source for company owners, applications, analysts and AI agents.</p>
     </div>
 </section>
 
@@ -3020,7 +3139,7 @@
             <div class="step reveal">
                 <div class="step-num">04</div>
                 <div class="step-title" data-i18n="process.4.title">Autonomy</div>
-                <div class="step-text" data-i18n="process.4.text">The company begins to work: cash flow starts accruing through the protocols, visible onchain at any time.</div>
+                <div class="step-text" data-i18n="process.4.text">The company begins to operate: productive positions accrue cash flow while its onchain activity starts building a measurable operating history.</div>
             </div>
         </div>
     </div>
@@ -3033,19 +3152,23 @@
 
         <p class="os-statement reveal">
             <span class="dim" data-i18n="os.statement.dim">Not a custodian. Not a broker. Not a fund manager.</span><br>
-            <span class="bright" data-i18n="os.statement.bright">A system for building your own onchain company.</span>
+            <span class="bright" data-i18n="os.statement.bright">An operating system for sovereign onchain capital.</span>
         </p>
 
-        <p class="os-body reveal" data-i18n="os.body">Today, The Holding assembles personal companies using its own proven architecture. Over time, this becomes something larger — a platform where anyone can assemble a company from any assets they choose, from the same core structure Substantia, Defitea and the rest are built on, to entirely custom combinations of their own.</p>
+        <p class="os-body reveal" data-i18n="os.body">The Holding OS connects creation, registry, operation, measurement and history. A company can be built once, remain independently owned, and then accumulate a living record as its capital works onchain.</p>
 
         <div class="os-grid">
             <div class="os-card reveal">
                 <div class="os-card-title"><span class="mark">◆</span><span data-i18n="os.card1.title">Built to Scale</span></div>
-                <div class="os-card-text" data-i18n="os.card1.text">One shared infrastructure runs every company in the collection. It was built from day one to support many owners at once — not tailored to any single case.</div>
+                <div class="os-card-text" data-i18n="os.card1.text">One shared architecture can onboard many independently owned companies while keeping their capital, identity and operating history separate.</div>
             </div>
             <div class="os-card reveal">
                 <div class="os-card-title"><span class="mark">◆</span><span data-i18n="os.card2.title">Never Custodial</span></div>
-                <div class="os-card-text" data-i18n="os.card2.text">The platform holds nothing. Every company remains fully self-custodied — its assets, its key, its rules belong to the owner alone.</div>
+                <div class="os-card-text" data-i18n="os.card2.text">The platform holds nothing. Every company remains fully self-custodied — its assets, keys and decisions remain with its owner.</div>
+            </div>
+            <div class="os-card reveal">
+                <div class="os-card-title"><span class="mark">◆</span><span data-i18n="os.card3.title">Measured by Design</span></div>
+                <div class="os-card-text" data-i18n="os.card3.text">Company Passports, productivity, rewards, history and Index Weight are not add-ons. Measurement is part of the operating architecture from the beginning.</div>
             </div>
         </div>
 
@@ -3059,7 +3182,7 @@
 <!-- ── CLOSING ──────────────────────────────────────── -->
 <section class="closing" id="build">
     <div class="container">
-        <p class="closing-quote reveal" data-i18n-html="closing.quote">Not a thing. Not a token. <b>A next-generation company</b> — working around the clock, owned by one person, verifiable onchain at any time.</p>
+        <p class="closing-quote reveal" data-i18n-html="closing.quote">Not a portfolio. Not a token. <b>A living onchain company</b> — independently owned, economically productive, and increasingly measurable through time.</p>
         <div class="reveal">
             <a class="closing-cta" href="https://x.com/defitea_" target="_blank" rel="noopener" data-i18n="closing.cta">Build your company</a>
             <div class="closing-note" data-i18n="closing.note">Each company is assembled individually, turnkey.</div>
@@ -4619,7 +4742,7 @@ function renderFramework(lang) {
     if (!body) return;
     const C = (lang === 'ru') ? {
         eyebrow: 'ВНУТРИ THE HOLDING INDEX',
-        title: 'Как сеть измеряется сегодня — и во что её данные могут превратиться со временем.',
+        title: 'От сырого ончейн-состояния до Index Weight — архитектура измерения всей сети.',
         stages: ['Работает сейчас', 'Накапливается', 'Со временем'],
         s0h: 'Два взгляда · одна сеть',
         s0p: [
@@ -4645,13 +4768,22 @@ function renderFramework(lang) {
         s2gt: 'Зелёные узлы — компании', s2g: 'Размер зелёного узла зависит от композитного Index Weight компании — капитала, возраста, производительности и performance вместе. Выше Index Weight → крупнее узел.',
         s2yt: 'Жёлтые узлы — протоколы', s2y: 'Размер жёлтого узла зависит не от объёма капитала, а от числа разных компаний индекса, которые используют этот протокол. Больше компаний → крупнее узел. Так размер отражает роль протокола как общей инфраструктуры сети, а не концентрацию капитала.',
         s2ct: 'Связи', s2c: 'Линии показывают связи компаний с протоколами — какую инфраструктуру компании используют совместно. На текущем этапе толщина линии не означает объём капитала.',
+        sdstatus: 'Live', sdh: 'Data & Intelligence Layer',
+        sdlead: 'Index начинается не с интерфейса. Под ним работает система, которая превращает сырой ончейн-state в данные уровня компании.',
+        sdp: [
+            'Productivity Intelligence читает productive engines и приводит их к единой методологии Reference APR.',
+            'Company Rewards отделяет реально накопленные protocol-side rewards от уже claimed value и сохраняет provenance расчёта.',
+            'Snapshots фиксируют состояние во времени и постепенно формируют собственную операционную память The Holding.'
+        ],
+        sdformula: 'BLOCKCHAIN → PROTOCOL STATE → COMPANY DATA → PRODUCTIVITY → REWARDS → HISTORY → INDEX',
+        sdfoot: 'Главное правило — воспроизводимость. Если источник нельзя подтвердить, система оставляет участок неполным вместо того, чтобы придумывать красивую цифру.',
         s3status: 'Накапливается', s3h: 'Слой истории',
         s3p1: 'С момента появления в реестре каждая компания начинает накапливать собственную историю работы. Company Passport уже содержит объективные данные:',
-        s3facts: ['Registry ID', 'Дата основания', 'Возраст', 'Вес в индексе', 'Архитектура', 'Протоколы', 'Средний APR', 'Последний APR'],
+        s3facts: ['Registry ID', 'Дата основания', 'Возраст', 'Баланс', 'Reference APR', 'Accrued Rewards', 'Index Weight', 'Архитектура', 'Протоколы', 'Performance'],
         s3future: 'Сети (Chains)',
         s3p2: 'Возраст компании увеличивается автоматически. Со временем к этому могут добавляться исторические данные по TVL, весу в сети, денежным потокам, структуре капитала и результатам работы. Само время становится частью данных.',
         s3exLbl: 'История работы', s3exVal: '1 427 дней',
-        s4status: 'В разработке', s4h: 'Зрелость, репутация и результаты',
+        s4status: 'В разработке', s4h: 'Зрелость, устойчивость и репутация',
         s4p: [
             'The Holding Index не присваивает искусственные рейтинги репутации до тех пор, пока для этого не накопится достаточно реальной истории работы. Репутацию не нужно придумывать — она должна появляться из реальной истории работы.',
             'Сначала накапливаются факты: капитал, время, архитектура, денежные потоки, используемые протоколы, пройденные рыночные циклы и наблюдаемые результаты.',
@@ -4663,12 +4795,12 @@ function renderFramework(lang) {
             'Сегодня в The Holding Index входят только первые несколько компаний. Задача не в том, чтобы изображать зрелый рынок раньше времени.',
             'Задача — уже сейчас строить инфраструктуру, постепенно добавлять компании, сохранять их историю с самого начала и позволять сети становиться содержательнее по мере роста.'
         ],
-        cadence: ['Сначала компании.', 'Потом данные.', 'Потом время.'],
+        cadence: ['Сначала компании.', 'Потом данные.', 'Потом время.', 'Потом репутация.'],
         finalClose: 'А всё дальнейшее должно строиться на том, что действительно существует.',
         footerTitle: 'The Holding Index', footerText: 'Методология развивается вместе с сетью.'
     } : {
         eyebrow: 'INSIDE THE HOLDING INDEX',
-        title: 'How the network is measured today — and what its data can become over time.',
+        title: 'From raw onchain state to Index Weight — the measurement architecture behind the network.',
         stages: ['Live now', 'Accumulating', 'Over time'],
         s0h: 'Two views · one network',
         s0p: [
@@ -4694,13 +4826,22 @@ function renderFramework(lang) {
         s2gt: 'Green nodes — companies', s2g: "Green company nodes scale with a company's composite Index Weight — capital, longevity, productivity and performance combined. Higher Index Weight \u2192 larger green node.",
         s2yt: 'Yellow nodes — protocols', s2y: 'Yellow protocol nodes do not represent the amount of capital deployed into a protocol. Their size reflects how many different companies in the index use that protocol. More indexed companies → larger node. This makes protocol size a measure of shared infrastructure across the network — not capital concentration.',
         s2ct: 'Connections', s2c: 'Lines represent company-to-protocol relationships — which infrastructure companies share and how the network is connected. At this stage, line thickness does not imply capital size.',
+        sdstatus: 'Live', sdh: 'The Data & Intelligence Layer',
+        sdlead: 'The Index does not begin at the interface. Under it sits a system that turns raw onchain state into company-level data.',
+        sdp: [
+            'Productivity Intelligence reads productive engines and normalizes them into a common Reference APR methodology.',
+            'Company Rewards separates genuinely accrued protocol-side rewards from already claimed value while preserving calculation provenance.',
+            'Validated snapshots preserve state through time and gradually become The Holding’s own operating memory.'
+        ],
+        sdformula: 'BLOCKCHAIN → PROTOCOL STATE → COMPANY DATA → PRODUCTIVITY → REWARDS → HISTORY → INDEX',
+        sdfoot: 'The governing rule is reproducibility. If a source cannot be verified, the system leaves that area incomplete rather than publishing a convenient number.',
         s3status: 'Accumulating', s3h: 'The History Layer',
         s3p1: 'Every company begins building an operating history from the moment it enters the registry. Its Company Passport already provides objective facts such as:',
-        s3facts: ['Registry ID', 'Founded', 'Age', 'Index Weight', 'Architecture', 'Protocols', 'Average APR', 'Latest APR'],
+        s3facts: ['Registry ID', 'Founded', 'Age', 'Balance Sheet', 'Reference APR', 'Accrued Rewards', 'Index Weight', 'Architecture', 'Protocols', 'Performance'],
         s3future: 'Chains',
         s3p2: 'Age continues to grow automatically. Over time, additional historical data can be accumulated around TVL, network weight, cash flow, capital structure and operating performance. Time itself becomes part of the dataset.',
         s3exLbl: 'Operating History', s3exVal: '1,427 days',
-        s4status: 'In development', s4h: 'Maturity, Reputation & Performance',
+        s4status: 'In development', s4h: 'Maturity, Resilience & Reputation',
         s4p: [
             'The Holding Index does not assign arbitrary reputation scores before enough real operating history exists. Reputation should not be invented — it should emerge from real operating history.',
             'First come the facts: capital, time, architecture, cash flows, protocol usage, market cycles, and observable results.',
@@ -4712,7 +4853,7 @@ function renderFramework(lang) {
             'Today, The Holding Index contains only the first few companies. The goal is not to simulate a mature market before one exists.',
             'The goal is to build the infrastructure now, add companies gradually, preserve their history from the beginning, and let the network become more meaningful as it grows.'
         ],
-        cadence: ['First the companies.', 'Then the data.', 'Then time.'],
+        cadence: ['First the companies.', 'Then the data.', 'Then time.', 'Then reputation.'],
         finalClose: 'What comes after that should be built from what is real.',
         footerTitle: 'The Holding Index', footerText: 'Methodology evolves with the network.'
     };
@@ -4758,7 +4899,16 @@ function renderFramework(lang) {
         +   '<div class="fw-sub">' + C.s2yt + '</div><p>' + C.s2y + '</p>'
         +   '<div class="fw-sub">' + C.s2ct + '</div><p>' + C.s2c + '</p>'
         + '</div>'
-        // section 03
+        // data & intelligence layer
+        + '<div class="fw-section live">'
+        +   '<span class="fw-status live">' + C.sdstatus + '</span>'
+        +   '<div class="fw-h">' + C.sdh + '</div>'
+        +   '<p class="fw-lead">' + C.sdlead + '</p>'
+        +   C.sdp.map(p => '<p>' + p + '</p>').join('')
+        +   '<div class="fw-formula">' + C.sdformula + '</div>'
+        +   '<p>' + C.sdfoot + '</p>'
+        + '</div>'
+        // section 04 · history
         + '<div class="fw-section acc">'
         +   '<span class="fw-status acc">' + C.s3status + '</span>'
         +   '<div class="fw-h">' + C.s3h + '</div>'
@@ -5043,18 +5193,20 @@ function renderFramework(lang) {
         en: {
             'nav.back': '← Back to The Holding',
             'subnav.collection': 'Collection',
+            'subnav.index': 'Index',
+            'subnav.intelligence': 'Intelligence',
             'subnav.how': 'How It Works',
             'subnav.platform': 'Platform',
             'subnav.build': 'Build Yours',
             'hero.eyebrow': 'Personal Onchain Companies',
             'hero.h1': 'The Holding builds<br><em>personal onchain companies.</em>',
-            'hero.sub': 'Turnkey digital companies with real onchain assets on the balance sheet, live TVL, and autonomous cash flow. Each one belongs to its owner. All of them are part of one ecosystem.',
-            'strip.1.title': 'Real Assets',
-            'strip.1.text': 'Every company holds real onchain assets on its balance sheet — selected to match its own strategy, engineered to generate cash flow, and built with the potential to grow in value.',
-            'strip.2.title': 'One Owner',
-            'strip.2.text': 'One owner. One physical key. Full control over the company and everything on its balance sheet.',
-            'strip.3.title': 'One Ecosystem',
-            'strip.3.text': 'Every company is assembled under The Holding — with shared architecture, standards, and philosophy.',
+            'hero.sub': 'Real assets on the balance sheet. Independent ownership. Live onchain measurement. Each company keeps its own keys and strategy while The Holding turns raw blockchain activity into a living operating record.',
+            'strip.1.title': 'Real Balance Sheet',
+            'strip.1.text': 'Each company holds real onchain assets selected for its own strategy — reserve capital, productive positions and long-term economic rights.',
+            'strip.2.title': 'Sovereign Ownership',
+            'strip.2.text': 'One owner. Independent keys. Full control over the company, its treasury and every asset on its balance sheet.',
+            'strip.3.title': 'Measured from Day One',
+            'strip.3.text': 'Balances, locks, productivity, rewards and operating history enter one shared measurement system from the moment a company comes onchain.',
             'stats.companies': 'Companies',
             'stats.tvl': 'Combined TVL',
             'stats.protocols': 'Protocols & Assets',
@@ -5081,20 +5233,20 @@ function renderFramework(lang) {
             'card.perf': 'Performance · Since Inception',
             'placeholder.title': 'Next Company',
             'placeholder.text': 'The collection grows as new personal companies are assembled and brought onchain.',
-            'nextlayer.eyebrow': 'The Next Layer',
-            'nextlayer.title': 'A network of sovereign onchain companies.',
-            'nextlayer.p1': 'Today, this is a growing collection of independently owned onchain companies. Over time, it will grow into a decentralized network — while each company remains sovereign, with its own owner, treasury, keys, strategy, and history.',
-            'nextlayer.p2': 'The Holding never takes custody of their capital. It provides the architecture that connects them.',
-            'nextlayer.p3': 'As the network grows, each company will build its own history and reputation. Together, they will form a shared onchain registry — and, over time, a new generation of indices that reflect the growth of the network.',
-            'nextlayer.statement': 'One holding. Many sovereign companies. Each with its own treasury and keys.',
+            'nextlayer.eyebrow': 'From Companies to Infrastructure',
+            'nextlayer.title': 'A network that compounds more than capital.',
+            'nextlayer.p1': 'Each company remains sovereign — its own owner, treasury, keys, strategy and history. What connects them is not custody, but a common architecture for measurement.',
+            'nextlayer.p2': 'The Holding reads what can be verified onchain, normalizes it into a common company model, and preserves the resulting operating record over time.',
+            'nextlayer.p3': 'Every new company adds another balance sheet, another cash-flow history and another set of protocol relationships to the shared data layer. Over time, the registry becomes a dataset; the dataset becomes intelligence; and that intelligence can support indices, ratings, discovery and eventually external data products.',
+            'nextlayer.statement': 'The companies remain sovereign. The intelligence becomes shared infrastructure.',
             'index.eyebrow': 'The Index · Live',
-            'index.framework': 'Index Framework',
+            'index.framework': 'Inside the Index',
             'index.weighting': 'Weighting',
             'index.mode.composite': 'Composite',
             'index.mode.tvl': 'TVL',
             'index.lens': 'Same companies. Different lens.',
             'index.title': 'The Holding Index',
-            'index.sub': 'A live measure of the network, viewed through two lenses. Composite applies The Holding methodology — combining capital, longevity, productivity and performance into a single Index Weight. TVL offers a simpler capital-weighted view. The first working piece of a larger registry to come.',
+            'index.sub': 'The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance into one Index Weight; TVL shows pure economic scale. Both views are calculated from the same living company records.',
             'index.m.value': 'Network Value',
             'index.m.constituents': 'Constituents',
             'index.m.leader': 'Leading Company',
@@ -5104,11 +5256,25 @@ function renderFramework(lang) {
             'index.h.value': 'Value',
             'index.h.weight': 'Index Weight',
             'index.h.since': 'Since',
-            'index.note.body': 'Non-custodial by design. Performance is now part of the live Composite methodology. Deeper historical analytics — consistency, drawdowns, market-cycle behaviour, resilience and long-term reputation — will emerge as the network accumulates more operating history.',
+            'index.note.body': 'Below the weights sits a growing history of balances, productive engines, accrued rewards and operating time. As that history deepens, resilience, cash-flow quality and reputation can be measured from evidence rather than invented.',
             'graph.eyebrow': 'The Holding Graph',
-            'graph.title': 'A live map of capital across the network.',
-            'graph.sub': 'Every company and the protocols it uses — one living map of the network\'s shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company\'s share of total index TVL. Yellow protocol / asset nodes stay unchanged — their size reflects how many indexed companies connect to each node.',
+            'graph.title': 'A live map of how the network is built.',
+            'graph.sub': 'Companies, assets and protocols become one living map of shared onchain infrastructure. Green company nodes follow the selected Index view; yellow protocol / asset nodes show how widely infrastructure is shared across the registry.',
             'graph.hint': 'Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.',
+            'intel.eyebrow': 'The Holding Intelligence · Live',
+            'intel.title': 'The network does not just hold capital. It measures itself.',
+            'intel.sub': 'A dedicated data layer reads blockchains, protocol contracts and official distribution data, normalizes them into a common company model, and turns raw onchain activity into usable operating intelligence.',
+            'intel.flow.1': 'Blockchains', 'intel.flow.2': 'Protocols', 'intel.flow.3': 'Positions', 'intel.flow.4': 'Productivity', 'intel.flow.5': 'Rewards', 'intel.flow.6': 'History', 'intel.flow.7': 'Index',
+            'intel.c1.title': 'Direct Onchain Reads',
+            'intel.c1.text': 'Wallets, veNFTs, locks, voting state and reward contracts are read directly wherever the result can be reproduced. External APIs remain useful inputs — not unquestioned answers.',
+            'intel.c2.title': 'Productivity Intelligence',
+            'intel.c2.text': 'Different productive engines are normalized into a common Reference APR framework, allowing companies to be compared without pretending their underlying mechanics are identical.',
+            'intel.c3.title': 'Company Rewards',
+            'intel.c3.text': 'Protocol-side accrued rewards are separated from already claimed value, resolved to their payout assets and priced without double counting whenever the route can be verified.',
+            'intel.c4.title': 'Operating Memory',
+            'intel.c4.text': 'Validated snapshots become history. That history feeds Company Passports, reporting, The Holding Index and, over time, deeper measures of resilience, cash-flow quality and reputation.',
+            'intel.principle': 'If a value cannot be reproduced and verified, The Holding does not invent it.',
+            'intel.future': 'Today this intelligence layer serves The Holding itself. Over time, the same structured data can become a source for company owners, applications, analysts and AI agents.',
             'process.title': 'How a company is born',
             'process.1.title': 'Identity',
             'process.1.text': 'A unique ENS name is registered — often based on a date of birth or personal meaning. This becomes the company\'s address.',
@@ -5117,17 +5283,19 @@ function renderFramework(lang) {
             'process.3.title': 'Key',
             'process.3.text': 'Ownership is delivered through a private access setup — from a recovery phrase to a Tangem card or ring, based on the owner\'s preference.',
             'process.4.title': 'Autonomy',
-            'process.4.text': 'The company begins to work: cash flow starts accruing through the protocols, visible onchain at any time.',
+            'process.4.text': 'The company begins to operate: productive positions accrue cash flow while its onchain activity starts building a measurable operating history.',
             'os.statement.dim': 'Not a custodian. Not a broker. Not a fund manager.',
-            'os.statement.bright': 'A system for building your own onchain company.',
-            'os.body': 'Today, The Holding assembles personal companies using its own proven architecture. Over time, this becomes something larger — a platform where anyone can assemble a company from any assets they choose, from the same core structure Substantia, Defitea and the rest are built on, to entirely custom combinations of their own.',
+            'os.statement.bright': 'An operating system for sovereign onchain capital.',
+            'os.body': 'The Holding OS connects creation, registry, operation, measurement and history. A company can be built once, remain independently owned, and then accumulate a living record as its capital works onchain.',
             'os.card1.title': 'Built to Scale',
-            'os.card1.text': 'One shared infrastructure runs every company in the collection. It was built from day one to support many owners at once — not tailored to any single case.',
+            'os.card1.text': 'One shared architecture can onboard many independently owned companies while keeping their capital, identity and operating history separate.',
             'os.card2.title': 'Never Custodial',
-            'os.card2.text': 'The platform holds nothing. Every company remains fully self-custodied — its assets, its key, its rules belong to the owner alone.',
+            'os.card2.text': 'The platform holds nothing. Every company remains fully self-custodied — its assets, keys and decisions remain with its owner.',
+            'os.card3.title': 'Measured by Design',
+            'os.card3.text': 'Company Passports, productivity, rewards, history and Index Weight are not add-ons. Measurement is part of the operating architecture from the beginning.',
             'os.tagline': 'Your assets. Your key. Your company.',
             'os.poweredby': 'Powered by',
-            'closing.quote': 'Not a thing. Not a token. <b>A next-generation company</b> — working around the clock, owned by one person, verifiable onchain at any time.',
+            'closing.quote': 'Not a portfolio. Not a token. <b>A living onchain company</b> — independently owned, economically productive, and increasingly measurable through time.',
             'closing.cta': 'Build your company',
             'closing.note': 'Each company is assembled individually, turnkey.',
             'footer.home': 'Home',
@@ -5135,27 +5303,29 @@ function renderFramework(lang) {
         ru: {
             'nav.back': '← Назад к The Holding',
             'subnav.collection': 'Коллекция',
+            'subnav.index': 'Индекс',
+            'subnav.intelligence': 'Интеллект',
             'subnav.how': 'Как это работает',
             'subnav.platform': 'Платформа',
             'subnav.build': 'Создать свою',
             'hero.eyebrow': 'Персональные ончейн-компании',
             'hero.h1': 'The Holding создаёт<br><em>персональные ончейн-компании.</em>',
-            'hero.sub': 'Готовые цифровые компании с реальными ончейн-активами на балансе, живым TVL и автономным денежным потоком. Каждая принадлежит своему владельцу. Все — часть единой экосистемы.',
-            'strip.1.title': 'Реальные активы',
-            'strip.1.text': 'Каждая компания держит на балансе реальные ончейн-активы — подобранные под собственную стратегию, настроенные на генерацию денежного потока и обладающие потенциалом роста в цене.',
-            'strip.2.title': 'Один владелец',
-            'strip.2.text': 'Один владелец. Один физический ключ. Полный контроль над компанией и всем, что на её балансе.',
-            'strip.3.title': 'Единая экосистема',
-            'strip.3.text': 'Каждая компания собрана под крышей The Holding — с единой архитектурой, стандартами и философией.',
+            'hero.sub': 'Реальные активы на балансе. Независимое владение. Живое ончейн-измерение. Каждая компания сохраняет собственные ключи и стратегию, а The Holding превращает сырую активность блокчейна в живую историю её работы.',
+            'strip.1.title': 'Реальный баланс',
+            'strip.1.text': 'Каждая компания держит реальные ончейн-активы, подобранные под её стратегию: резервный капитал, производительные позиции и долгосрочные экономические права.',
+            'strip.2.title': 'Суверенное владение',
+            'strip.2.text': 'Один владелец. Независимые ключи. Полный контроль над компанией, её казной и каждым активом на балансе.',
+            'strip.3.title': 'Измерение с первого дня',
+            'strip.3.text': 'Баланс, локи, производительность, rewards и история работы входят в единую систему измерения с момента появления компании ончейн.',
             'stats.companies': 'Компаний',
             'stats.tvl': 'Общий TVL',
-            'stats.protocols': 'Протоколов в работе',
-            'stats.since': 'Год основания',
+            'stats.protocols': 'Протоколы и активы',
+            'stats.since': 'Сеть с',
             'collection.title': 'Коллекция',
-            'collection.count': 'компании',
+            'collection.count': 'компаний',
             'filter.all': 'Все компании',
-            'filter.standard': 'Стандарт The Holding',
-            'filter.custom': 'Индивидуальная сборка',
+            'filter.standard': 'The Holding Standard',
+            'filter.custom': 'Индивидуальная архитектура',
             'card.live': 'Онлайн',
             'card.registry': 'Реестр',
             'card.founded': 'Осн. 17 июля 2026',
@@ -5173,20 +5343,20 @@ function renderFramework(lang) {
             'card.perf': 'Результат · с момента запуска',
             'placeholder.title': 'Следующая компания',
             'placeholder.text': 'Коллекция растёт по мере того, как собираются и выводятся в блокчейн новые персональные компании.',
-            'nextlayer.eyebrow': 'Следующий уровень',
-            'nextlayer.title': 'Сеть суверенных ончейн-компаний.',
-            'nextlayer.p1': 'Сегодня это растущая коллекция ончейн-компаний с независимыми владельцами. Со временем она вырастет в децентрализованную сеть, в которой каждая компания сохранит свой суверенитет — собственного владельца, казну, ключи, стратегию и историю.',
-            'nextlayer.p2': 'The Holding не хранит их капитал. Он создаёт архитектуру, которая их объединяет.',
-            'nextlayer.p3': 'По мере роста сети каждая компания будет накапливать собственную историю и репутацию. Вместе они сформируют единый ончейн-реестр, а со временем — новое поколение индексов, отражающих развитие всей сети.',
-            'nextlayer.statement': 'Один холдинг. Множество суверенных компаний. У каждой — собственная казна и собственные ключи.',
+            'nextlayer.eyebrow': 'От компаний к инфраструктуре',
+            'nextlayer.title': 'Сеть, в которой накапливается не только капитал.',
+            'nextlayer.p1': 'Каждая компания остаётся суверенной — со своим владельцем, казной, ключами, стратегией и историей. Их связывает не хранение капитала, а общая архитектура измерения.',
+            'nextlayer.p2': 'The Holding читает то, что можно подтвердить ончейн, приводит данные к единой модели компании и сохраняет её операционную историю во времени.',
+            'nextlayer.p3': 'Каждая новая компания добавляет в общий слой данных ещё один баланс, ещё одну историю денежного потока и ещё один набор связей с протоколами. Со временем реестр превращается в собственный dataset, dataset — в intelligence layer, а этот слой может стать основой индексов, рейтингов, discovery и будущих внешних data products.',
+            'nextlayer.statement': 'Компании остаются суверенными. Intelligence становится общей инфраструктурой.',
             'index.eyebrow': 'Индекс · Live',
-            'index.framework': 'Как устроен индекс',
+            'index.framework': 'Внутри индекса',
             'index.weighting': 'Взвешивание',
             'index.mode.composite': 'Композит',
             'index.mode.tvl': 'TVL',
             'index.lens': 'Те же компании. Другой взгляд.',
             'index.title': 'Индекс The Holding',
-            'index.sub': 'Живой показатель сети, на которую можно посмотреть через две разные линзы. Composite использует методологию The Holding — объединяя капитал, возраст, производительность и performance в единый Index Weight. TVL показывает более простой взгляд, основанный только на капитале. Первый работающий элемент будущего большого реестра.',
+            'index.sub': 'Аналитическая поверхность более глубокой системы данных. Composite объединяет капитал, возраст, производительность и performance в единый Index Weight; TVL показывает чистый экономический масштаб. Оба режима рассчитываются из одной живой истории компаний.',
             'index.m.value': 'Ценность сети',
             'index.m.constituents': 'Компаний в индексе',
             'index.m.leader': 'Ведущая компания',
@@ -5196,11 +5366,25 @@ function renderFramework(lang) {
             'index.h.value': 'Ценность',
             'index.h.weight': 'Вес в индексе',
             'index.h.since': 'С',
-            'index.note.body': 'Некастодиальная архитектура по своей природе. Performance уже входит в действующую Composite-методологию. Более глубокая историческая аналитика — стабильность результатов, просадки, поведение в разных рыночных циклах, устойчивость и долгосрочная репутация — будет появляться по мере накопления реальной истории работы сети.',
+            'index.note.body': 'Под весами индекса уже накапливается история балансов, productive engines, accrued rewards и времени работы. По мере углубления этой истории устойчивость, качество денежного потока и репутацию можно будет измерять по фактам, а не придумывать.',
             'graph.eyebrow': 'Граф The Holding',
-            'graph.title': 'Живая карта капитала по всей сети.',
-            'graph.sub': 'Компании и используемые ими протоколы — единая живая карта общей ончейн-инфраструктуры сети. Зелёные узлы компаний следуют выбранному режиму индекса: в Composite их размер зависит от Index Weight, а в TVL — от доли компании в совокупном TVL индекса. Жёлтые узлы протоколов при переключении не меняются — их размер отражает количество компаний индекса, связанных с каждым протоколом.',
+            'graph.title': 'Живая карта того, как устроена сеть.',
+            'graph.sub': 'Компании, активы и протоколы складываются в единую живую карту общей ончейн-инфраструктуры. Зелёные узлы следуют выбранному режиму Index, а жёлтые показывают, насколько широко конкретная инфраструктура используется компаниями реестра.',
             'graph.hint': 'Наведите на любой узел, чтобы увидеть его связи. По мере роста сети карта будет расширяться: Компания → Актив → Протокол → Сеть.',
+            'intel.eyebrow': 'The Holding Intelligence · Live',
+            'intel.title': 'Сеть не просто держит капитал. Она измеряет сама себя.',
+            'intel.sub': 'Специализированный слой данных читает блокчейны, контракты протоколов и официальные данные распределений, приводит их к единой модели компании и превращает сырую ончейн-активность в рабочую аналитику.',
+            'intel.flow.1': 'Блокчейны', 'intel.flow.2': 'Протоколы', 'intel.flow.3': 'Позиции', 'intel.flow.4': 'Productivity', 'intel.flow.5': 'Rewards', 'intel.flow.6': 'История', 'intel.flow.7': 'Индекс',
+            'intel.c1.title': 'Прямое чтение ончейн',
+            'intel.c1.text': 'Кошельки, veNFT, локи, состояние голосований и reward-контракты читаются напрямую там, где результат можно воспроизвести. Внешние API остаются полезными входами, но не принимаются на веру.',
+            'intel.c2.title': 'Productivity Intelligence',
+            'intel.c2.text': 'Разные productive engines приводятся к единой методологии Reference APR, чтобы компании можно было сравнивать, не делая вид, что механика их доходности одинакова.',
+            'intel.c3.title': 'Company Rewards',
+            'intel.c3.text': 'Накопленные внутри протоколов rewards отделяются от уже полученных, связываются с реальными payout assets и оцениваются без двойного учёта там, где маршрут можно подтвердить.',
+            'intel.c4.title': 'Операционная память',
+            'intel.c4.text': 'Проверенные snapshots становятся историей. Она питает Company Passports, отчётность, The Holding Index и со временем — более глубокие метрики устойчивости, качества денежного потока и репутации.',
+            'intel.principle': 'Если значение нельзя воспроизвести и подтвердить, The Holding его не придумывает.',
+            'intel.future': 'Сегодня этот intelligence layer обслуживает сам The Holding. Со временем тот же структурированный data layer может стать источником для владельцев компаний, приложений, аналитиков и AI agents.',
             'process.title': 'Как рождается компания',
             'process.1.title': 'Идентичность',
             'process.1.text': 'Регистрируется уникальное ENS-имя — часто на основе даты рождения или личного смысла. Оно становится адресом компании.',
@@ -5209,17 +5393,19 @@ function renderFramework(lang) {
             'process.3.title': 'Ключ',
             'process.3.text': 'Владение передаётся через приватную настройку доступа — от сид-фразы до карты или кольца Tangem, в зависимости от предпочтений.',
             'process.4.title': 'Автономность',
-            'process.4.text': 'Компания начинает работать: денежный поток начисляется через протоколы, и это видно в блокчейне в любой момент.',
+            'process.4.text': 'Компания начинает работать: productive positions накапливают денежный поток, а её ончейн-активность превращается в измеряемую операционную историю.',
             'os.statement.dim': 'Не депозитарий. Не брокер. Не управляющий фондом.',
-            'os.statement.bright': 'Система для создания собственной ончейн-компании.',
-            'os.body': 'Сегодня The Holding собирает персональные компании на основе своей проверенной архитектуры. Со временем это станет чем-то большим — платформой, где каждый сможет собрать компанию из любых активов на выбор: от той же базовой структуры, на которой построены Substantia, Defitea и остальные фонды, до полностью индивидуальных комбинаций.',
+            'os.statement.bright': 'Операционная система для суверенного ончейн-капитала.',
+            'os.body': 'The Holding OS соединяет создание, реестр, работу, измерение и историю. Компания создаётся один раз, остаётся независимо принадлежащей владельцу и затем накапливает живую историю по мере того, как её капитал работает ончейн.',
             'os.card1.title': 'Готово к масштабированию',
-            'os.card1.text': 'Одна общая инфраструктура обслуживает все компании в коллекции. Она изначально создана для множества владельцев одновременно — а не под конкретный частный случай.',
+            'os.card1.text': 'Единая архитектура может принимать множество независимо принадлежащих компаний, сохраняя их капитал, идентичность и операционную историю раздельными.',
             'os.card2.title': 'Никогда не хранит средства',
-            'os.card2.text': 'Платформа ничего не хранит. Каждая компания остаётся полностью самостоятельной — её активы, её ключ, её правила принадлежат только владельцу.',
+            'os.card2.text': 'Платформа ничего не хранит. Активы, ключи и решения каждой компании остаются под полным контролем её владельца.',
+            'os.card3.title': 'Измерение встроено',
+            'os.card3.text': 'Company Passports, productivity, rewards, история и Index Weight — не надстройки. Измерение заложено в операционную архитектуру компании с самого начала.',
             'os.tagline': 'Ваши активы. Ваш ключ. Ваша компания.',
             'os.poweredby': 'На основе',
-            'closing.quote': 'Не вещь. Не токен. <b>Компания нового поколения</b> — работающая круглосуточно, принадлежащая одному человеку, с проверяемой ончейн-историей в любой момент.',
+            'closing.quote': 'Не портфель. Не токен. <b>Живая ончейн-компания</b> — независимо принадлежащая владельцу, экономически производительная и всё лучше измеримая с течением времени.',
             'closing.cta': 'Создать свою компанию',
             'closing.note': 'Каждая компания собирается индивидуально, под ключ.',
             'footer.home': 'Главная',
