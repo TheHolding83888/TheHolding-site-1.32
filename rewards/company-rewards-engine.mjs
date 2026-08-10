@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.3.1';
-const COLLECTOR_VERSION = '0.3.1-windowed-historical-ve-votes';
+const VERSION = '0.3.2';
+const COLLECTOR_VERSION = '0.3.2-ve-history-resilient-cache';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -258,6 +258,149 @@ const voteMarketClaimWindowCache = new Map();
 const voteMarketWrappedRewardCache = new Map();
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Historical veNFT vote discovery is deliberately provider-aware. Base is
+// queried more conservatively because its public Blockscout instance can
+// throttle bursty log scans. Direct RPC eth_getLogs is preferred on Base;
+// Blockscout remains an independently implemented fallback. Successful full
+// history is cached in the public snapshot as reproducible onchain state so
+// later daily runs only need to scan the new chain tail plus a small overlap.
+const VE_HISTORY_SCAN = {
+  base: {
+    rpcWindow: 500_000,
+    rpcConcurrency: 2,
+    rpcPaceMs: 120,
+    blockscoutWindow: 500_000,
+    blockscoutConcurrency: 1,
+    blockscoutPaceMs: 1_250,
+    timeoutMs: 18_000,
+    attempts: 6,
+    overlapBlocks: 20_000
+  },
+  optimism: {
+    rpcWindow: 750_000,
+    rpcConcurrency: 2,
+    rpcPaceMs: 80,
+    blockscoutWindow: 1_500_000,
+    blockscoutConcurrency: 3,
+    blockscoutPaceMs: 180,
+    timeoutMs: 15_000,
+    attempts: 4,
+    overlapBlocks: 20_000
+  }
+};
+
+const historicalVoteCache = new Map();
+const blockscoutLastRequestAt = new Map();
+
+function historyCacheKey(providerKey, tokenId) {
+  return `${providerKey}:${String(tokenId)}`;
+}
+
+function inferHistoryProvider(source) {
+  const s = String(source || '').toLowerCase();
+  if (s.includes('base.blockscout') || s.includes('base:eth_getlogs')) return 'base';
+  if (s.includes('optimism.blockscout') || s.includes('explorer.optimism') || s.includes('optimism:eth_getlogs')) return 'optimism';
+  return null;
+}
+
+function normalizeHistoryCacheEntry(providerKey, tokenId, raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const startBlock = Number(raw.startBlock ?? raw.mintBlock ?? raw.mintDiscovery?.blockNumber);
+  const throughBlock = Number(raw.throughBlock ?? raw.latestBlock);
+  if (!Number.isFinite(startBlock) || !Number.isFinite(throughBlock) || throughBlock < startBlock) return null;
+  return {
+    providerKey,
+    tokenId: String(tokenId),
+    startBlock,
+    throughBlock,
+    pools: [...new Set((Array.isArray(raw.pools) ? raw.pools : []).filter(isAddressLike).map(getAddress))],
+    firstVoteBlock: Number.isFinite(Number(raw.firstVoteBlock)) ? Number(raw.firstVoteBlock) : null,
+    lastVoteBlock: Number.isFinite(Number(raw.lastVoteBlock)) ? Number(raw.lastVoteBlock) : null,
+    mintDiscovery: raw.mintDiscovery && typeof raw.mintDiscovery === 'object' ? raw.mintDiscovery : null,
+    validatedAt: raw.validatedAt || null,
+    source: raw.source || null
+  };
+}
+
+function bootstrapHistoricalVoteCache(previous) {
+  const saved = previous?.internalState?.historicalVoteCache;
+  if (saved && typeof saved === 'object') {
+    for (const [key, raw] of Object.entries(saved)) {
+      const [providerKey, tokenId] = key.split(':');
+      if (!providerKey || !tokenId) continue;
+      const entry = normalizeHistoryCacheEntry(providerKey, tokenId, raw);
+      if (entry) historicalVoteCache.set(historyCacheKey(providerKey, tokenId), entry);
+    }
+  }
+
+  // v0.3.1 did not yet have a top-level cache. Bootstrap any already-proven
+  // complete direct-veNFT history from its position audit objects so the first
+  // v0.3.2 run does not rescan Velodrome's multi-year history unnecessarily.
+  const walk = value => {
+    if (!value || typeof value !== 'object') return;
+    if (value.mode === 'direct' && value.tokenId && value.historyDiscovery?.status === 'ok') {
+      const providerKey = inferHistoryProvider(value.historyDiscovery.source);
+      if (providerKey) {
+        const entry = normalizeHistoryCacheEntry(providerKey, value.tokenId, value.historyDiscovery);
+        if (entry) historicalVoteCache.set(historyCacheKey(providerKey, value.tokenId), entry);
+      }
+    }
+    if (Array.isArray(value)) value.forEach(walk);
+    else for (const v of Object.values(value)) walk(v);
+  };
+  walk(previous?.companies);
+}
+
+function serializeHistoricalVoteCache() {
+  return Object.fromEntries([...historicalVoteCache.entries()].map(([key, value]) => [key, value]));
+}
+
+function parseRetryAfterMs(value) {
+  if (!value) return null;
+  const n = Number(value);
+  if (Number.isFinite(n) && n >= 0) return Math.ceil(n * 1000);
+  const t = Date.parse(value);
+  return Number.isFinite(t) ? Math.max(0, t - Date.now()) : null;
+}
+
+async function paceBlockscout(providerKey) {
+  const cfg = VE_HISTORY_SCAN[providerKey] || VE_HISTORY_SCAN.optimism;
+  const minGap = cfg.blockscoutPaceMs || 0;
+  const last = blockscoutLastRequestAt.get(providerKey) || 0;
+  const wait = minGap - (Date.now() - last);
+  if (wait > 0) await sleep(wait);
+  blockscoutLastRequestAt.set(providerKey, Date.now());
+}
+
+async function blockscoutFetchJson(providerKey, url, timeoutMs, attempts) {
+  let lastError = null;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    await paceBlockscout(providerKey);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      if (res.ok) return await res.json();
+      const err = new Error(`HTTP ${res.status}`);
+      err.status = res.status;
+      err.retryAfterMs = parseRetryAfterMs(res.headers.get('retry-after'));
+      throw err;
+    } catch (e) {
+      lastError = e;
+      const msg = String(e?.message || e);
+      const retryable = e?.status === 429 || (Number(e?.status) >= 500) || /abort|timeout|fetch failed|network/i.test(msg);
+      if (!retryable || attempt + 1 >= attempts) throw e;
+      const retryAfter = Number.isFinite(Number(e?.retryAfterMs)) ? Number(e.retryAfterMs) : 0;
+      const exponential = Math.min(30_000, 2_500 * (2 ** attempt));
+      const jitter = Math.floor(Math.random() * 750);
+      await sleep(Math.max(retryAfter, exponential) + jitter);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw lastError || new Error(`Blockscout request failed for ${providerKey}`);
+}
 const n = x => Number(x);
 const hasFiniteNumber = x => x !== null && x !== undefined && x !== '' && Number.isFinite(Number(x));
 const round = (x, digits = 8) => hasFiniteNumber(x) ? Number(Number(x).toFixed(digits)) : null;
@@ -468,8 +611,12 @@ function blockscoutAddressHash(v) {
 }
 
 async function blockscoutNftMintBlock(providerKey, votingEscrow, tokenId, provider) {
+  const cached = historicalVoteCache.get(historyCacheKey(providerKey, tokenId));
+  if (cached?.mintDiscovery?.blockNumber) return { ...cached.mintDiscovery, cacheUsed: true };
+
   const bases = BLOCKSCOUT[providerKey] || [];
   if (!bases.length) throw new Error(`No Blockscout endpoint configured for ${providerKey}`);
+  const cfg = VE_HISTORY_SCAN[providerKey] || VE_HISTORY_SCAN.optimism;
   let lastError = null;
   for (const base of bases) {
     try {
@@ -482,7 +629,12 @@ async function blockscoutNftMintBlock(providerKey, votingEscrow, tokenId, provid
           for (const [k, v] of Object.entries(next)) if (v !== null && v !== undefined) qs.set(k, String(v));
         }
         const suffix = qs.toString() ? `?${qs.toString()}` : '';
-        const data = await fetchJsonRetry(`${base}/api/v2/tokens/${votingEscrow}/instances/${tokenId}/transfers${suffix}`, {}, 15000, 3);
+        const data = await blockscoutFetchJson(
+          providerKey,
+          `${base}/api/v2/tokens/${votingEscrow}/instances/${tokenId}/transfers${suffix}`,
+          cfg.timeoutMs,
+          cfg.attempts
+        );
         const items = Array.isArray(data?.items) ? data.items : [];
         for (const x of items) {
           if (blockscoutAddressHash(x?.from) !== ZeroAddress.toLowerCase()) continue;
@@ -499,33 +651,126 @@ async function blockscoutNftMintBlock(providerKey, votingEscrow, tokenId, provid
         pages++;
         if (pages >= 25 && next) throw new Error(`NFT instance history exceeded 25 pages for token ${tokenId}`);
       } while (next);
-      if (best) return { ...best, pages };
+      if (best) return { ...best, pages, cacheUsed: false };
       throw new Error(`Zero-address mint transfer not found for veNFT ${tokenId}`);
     } catch (e) { lastError = e; }
   }
   throw lastError || new Error(`veNFT mint block discovery failed for ${providerKey} token ${tokenId}`);
 }
 
-async function blockscoutVotedLogs(providerKey, voterAddress, votingEscrow, tokenId, provider) {
-  const bases = BLOCKSCOUT[providerKey] || [];
-  if (!bases.length) throw new Error(`No Blockscout endpoint configured for ${providerKey}`);
-  const latestBlock = await provider.getBlockNumber();
-  const topic3 = topicForUint256(tokenId);
-  const mint = await blockscoutNftMintBlock(providerKey, votingEscrow, tokenId, provider);
-  const startBlock = mint.blockNumber;
-  if (!Number.isFinite(startBlock) || startBlock < 0 || startBlock > latestBlock) {
-    throw new Error(`Invalid veNFT mint block ${startBlock} for token ${tokenId}`);
+function normalizeVotedLogs(logs, topic3) {
+  const seen = new Set();
+  const normalized = [];
+  for (const log of logs || []) {
+    const topics = Array.isArray(log?.topics) ? log.topics : [];
+    if (String(topics[0] || '').toLowerCase() !== VOTED_TOPIC0.toLowerCase()) continue;
+    if (String(topics[3] || '').toLowerCase() !== topic3.toLowerCase()) continue;
+    const txHash = log.transactionHash || log.transaction_hash || null;
+    const logIndex = log.logIndex ?? log.log_index ?? log.index ?? null;
+    const blockNumber = logBlockNumber(log.blockNumber ?? log.block_number);
+    const key = `${txHash || ''}:${logIndex ?? ''}:${blockNumber ?? ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    normalized.push({
+      pool: topicToAddress(topics[2]),
+      blockNumber,
+      transactionHash: txHash,
+      logIndex
+    });
   }
+  normalized.sort((a, b) => (a.blockNumber || 0) - (b.blockNumber || 0));
+  return normalized;
+}
 
-  // Do not ask Blockscout for multi-year history in one request. On OP-stack
-  // explorers that can time out before returning even though the filtered log
-  // set is small. Start at the exact veNFT mint block, pre-split into bounded
-  // windows, query a few windows concurrently, and split again on timeout/cap.
-  const windowSize = 1_500_000;
+function buildWindows(startBlock, latestBlock, windowSize) {
   const windows = [];
   for (let from = startBlock; from <= latestBlock; from += windowSize) {
     windows.push([from, Math.min(latestBlock, from + windowSize - 1)]);
   }
+  return windows;
+}
+
+async function rpcGetLogsJson(providerKey, provider, filter, timeoutMs, attempts = 3) {
+  const url = provider.__holdingRpc;
+  if (!url) throw new Error(`${providerKey} RPC URL unavailable for abortable eth_getLogs`);
+  let lastError = null;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getLogs', params: [filter] }),
+        signal: controller.signal
+      });
+      if (!res.ok) {
+        const err = new Error(`RPC HTTP ${res.status}`);
+        err.status = res.status;
+        throw err;
+      }
+      const body = await res.json();
+      if (body?.error) throw new Error(`RPC ${body.error.code ?? ''} ${body.error.message || 'eth_getLogs error'}`.trim());
+      if (!Array.isArray(body?.result)) throw new Error('RPC eth_getLogs returned no result array');
+      return body.result;
+    } catch (e) {
+      lastError = e;
+      const msg = String(e?.message || e);
+      const retryable = e?.status === 429 || (Number(e?.status) >= 500) || /abort|timeout|fetch failed|network|rate|limit/i.test(msg);
+      if (!retryable || attempt + 1 >= attempts) throw e;
+      await sleep(Math.min(5_000, 650 * (2 ** attempt)) + Math.floor(Math.random() * 300));
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw lastError || new Error(`${providerKey} eth_getLogs failed`);
+}
+
+async function rpcHistoricalVotedLogs(providerKey, voterAddress, topic3, provider, startBlock, latestBlock) {
+  const cfg = VE_HISTORY_SCAN[providerKey] || VE_HISTORY_SCAN.optimism;
+  const windows = buildWindows(startBlock, latestBlock, cfg.rpcWindow);
+  let requestCount = 0;
+  let adaptiveSplits = 0;
+
+  async function fetchRange(fromBlock, toBlock, depth = 0) {
+    requestCount++;
+    if (cfg.rpcPaceMs) await sleep(cfg.rpcPaceMs);
+    try {
+      return await rpcGetLogsJson(providerKey, provider, {
+        address: voterAddress,
+        fromBlock: `0x${fromBlock.toString(16)}`,
+        toBlock: `0x${toBlock.toString(16)}`,
+        topics: [VOTED_TOPIC0, null, null, topic3]
+      }, cfg.timeoutMs, 3);
+    } catch (e) {
+      const span = toBlock - fromBlock;
+      if (span > 25_000 && depth < 16) {
+        adaptiveSplits++;
+        const mid = Math.floor((fromBlock + toBlock) / 2);
+        const left = await fetchRange(fromBlock, mid, depth + 1);
+        const right = await fetchRange(mid + 1, toBlock, depth + 1);
+        return [...left, ...right];
+      }
+      throw e;
+    }
+  }
+
+  const chunks = await mapLimit(windows, cfg.rpcConcurrency, ([from, to]) => fetchRange(from, to));
+  return {
+    method: 'onchain-rpc:eth_getLogs',
+    source: `${providerKey}:eth_getLogs`,
+    logs: chunks.flat(),
+    windowSize: cfg.rpcWindow,
+    windowCount: windows.length,
+    requestCount,
+    adaptiveSplits
+  };
+}
+
+async function blockscoutHistoricalVotedLogs(providerKey, voterAddress, topic3, startBlock, latestBlock) {
+  const bases = BLOCKSCOUT[providerKey] || [];
+  if (!bases.length) throw new Error(`No Blockscout endpoint configured for ${providerKey}`);
+  const cfg = VE_HISTORY_SCAN[providerKey] || VE_HISTORY_SCAN.optimism;
   let lastError = null;
 
   for (const base of bases) {
@@ -544,10 +789,10 @@ async function blockscoutVotedLogs(providerKey, voterAddress, votingEscrow, toke
         });
         let data;
         try {
-          data = await fetchJsonRetry(`${base}/api?${qs.toString()}`, {}, 12000, 3);
+          data = await blockscoutFetchJson(providerKey, `${base}/api?${qs.toString()}`, cfg.timeoutMs, cfg.attempts);
         } catch (e) {
           const span = toBlock - fromBlock;
-          if (span > 75_000 && depth < 12 && /abort|timeout|HTTP 429|HTTP 5\d\d/i.test(String(e?.message || e))) {
+          if (span > 50_000 && depth < 14 && /abort|timeout|HTTP 429|HTTP 5\d\d|fetch failed|network/i.test(String(e?.message || e))) {
             adaptiveSplits++;
             const mid = Math.floor((fromBlock + toBlock) / 2);
             const left = await fetchRange(fromBlock, mid, depth + 1);
@@ -563,9 +808,7 @@ async function blockscoutVotedLogs(providerKey, voterAddress, votingEscrow, toke
           else throw new Error(`Unexpected Blockscout logs response: ${msg || 'unknown'}`);
         }
         if (logs.length >= 1000) {
-          if (fromBlock >= toBlock || depth >= 20) {
-            throw new Error(`Blockscout 1,000-log cap could not be split at block ${fromBlock}`);
-          }
+          if (fromBlock >= toBlock || depth >= 20) throw new Error(`Blockscout 1,000-log cap could not be split at block ${fromBlock}`);
           adaptiveSplits++;
           const mid = Math.floor((fromBlock + toBlock) / 2);
           const left = await fetchRange(fromBlock, mid, depth + 1);
@@ -575,37 +818,104 @@ async function blockscoutVotedLogs(providerKey, voterAddress, votingEscrow, toke
         return logs;
       }
 
-      const chunks = await mapLimit(windows, 4, ([from, to]) => fetchRange(from, to));
-      const logs = chunks.flat();
-      const seen = new Set();
-      const normalized = [];
-      for (const log of logs) {
-        const topics = Array.isArray(log?.topics) ? log.topics : [];
-        if (String(topics[0] || '').toLowerCase() !== VOTED_TOPIC0.toLowerCase()) continue;
-        if (String(topics[3] || '').toLowerCase() !== topic3.toLowerCase()) continue;
-        const key = `${log.transactionHash || log.transaction_hash || ''}:${log.logIndex || log.log_index || ''}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        normalized.push({
-          pool: topicToAddress(topics[2]),
-          blockNumber: logBlockNumber(log.blockNumber ?? log.block_number),
-          transactionHash: log.transactionHash || log.transaction_hash || null,
-          logIndex: log.logIndex ?? log.log_index ?? null
-        });
-      }
-      normalized.sort((a, b) => (a.blockNumber || 0) - (b.blockNumber || 0));
+      const windows = buildWindows(startBlock, latestBlock, cfg.blockscoutWindow);
+      const chunks = await mapLimit(windows, cfg.blockscoutConcurrency, ([from, to]) => fetchRange(from, to));
       return {
-        status: 'ok', source: `${base}/api?module=logs`, latestBlock,
-        startBlock, windowSize, windowCount: windows.length, requestCount, adaptiveSplits,
-        mintDiscovery: mint,
-        logCount: normalized.length,
-        pools: [...new Set(normalized.map(x => x.pool))],
-        firstVoteBlock: normalized.find(x => x.blockNumber)?.blockNumber || null,
-        lastVoteBlock: [...normalized].reverse().find(x => x.blockNumber)?.blockNumber || null
+        method: 'blockscout:logs',
+        source: `${base}/api?module=logs`,
+        logs: chunks.flat(),
+        windowSize: cfg.blockscoutWindow,
+        windowCount: windows.length,
+        requestCount,
+        adaptiveSplits
       };
     } catch (e) { lastError = e; }
   }
-  throw lastError || new Error(`Historical Voted log discovery failed for ${providerKey}`);
+  throw lastError || new Error(`Blockscout historical logs failed for ${providerKey}`);
+}
+
+async function historicalVotedLogs(providerKey, voterAddress, votingEscrow, tokenId, provider) {
+  const cfg = VE_HISTORY_SCAN[providerKey] || VE_HISTORY_SCAN.optimism;
+  const latestBlock = await provider.getBlockNumber();
+  const topic3 = topicForUint256(tokenId);
+  const key = historyCacheKey(providerKey, tokenId);
+  const cached = historicalVoteCache.get(key) || null;
+  const mint = await blockscoutNftMintBlock(providerKey, votingEscrow, tokenId, provider);
+  const startBlock = Number(mint.blockNumber);
+  if (!Number.isFinite(startBlock) || startBlock < 0 || startBlock > latestBlock) {
+    throw new Error(`Invalid veNFT mint block ${startBlock} for token ${tokenId}`);
+  }
+
+  const cacheUsable = cached && cached.startBlock === startBlock && cached.throughBlock >= startBlock;
+  const previousThroughBlock = cacheUsable ? cached.throughBlock : null;
+  const scanStartBlock = cacheUsable
+    ? Math.max(startBlock, Math.min(latestBlock, cached.throughBlock - cfg.overlapBlocks + 1))
+    : startBlock;
+  const cachedPools = cacheUsable ? cached.pools : [];
+
+  let scan = null;
+  const methodErrors = [];
+  const methods = providerKey === 'base'
+    ? ['rpc', 'blockscout']
+    : ['blockscout', 'rpc'];
+
+  for (const method of methods) {
+    try {
+      scan = method === 'rpc'
+        ? await rpcHistoricalVotedLogs(providerKey, voterAddress, topic3, provider, scanStartBlock, latestBlock)
+        : await blockscoutHistoricalVotedLogs(providerKey, voterAddress, topic3, scanStartBlock, latestBlock);
+      break;
+    } catch (e) {
+      methodErrors.push(`${method}: ${e.message || e}`);
+    }
+  }
+  if (!scan) throw new Error(`Historical Voted discovery failed for ${providerKey} token ${tokenId}: ${methodErrors.join(' | ')}`);
+
+  const normalized = normalizeVotedLogs(scan.logs, topic3);
+  const scannedPools = [...new Set(normalized.map(x => x.pool))];
+  const pools = [...new Set([...cachedPools, ...scannedPools])];
+  const scannedFirst = normalized.find(x => x.blockNumber)?.blockNumber || null;
+  const scannedLast = [...normalized].reverse().find(x => x.blockNumber)?.blockNumber || null;
+  const firstVoteBlock = [cacheUsable ? cached.firstVoteBlock : null, scannedFirst].filter(Number.isFinite).sort((a,b)=>a-b)[0] ?? null;
+  const lastVoteBlock = [cacheUsable ? cached.lastVoteBlock : null, scannedLast].filter(Number.isFinite).sort((a,b)=>b-a)[0] ?? null;
+
+  const cacheEntry = {
+    providerKey,
+    tokenId: String(tokenId),
+    startBlock,
+    throughBlock: latestBlock,
+    pools,
+    firstVoteBlock,
+    lastVoteBlock,
+    mintDiscovery: mint,
+    validatedAt: NOW,
+    source: scan.source
+  };
+  historicalVoteCache.set(key, cacheEntry);
+
+  return {
+    status: 'ok',
+    source: scan.source,
+    method: scan.method,
+    latestBlock,
+    startBlock,
+    scanStartBlock,
+    previousThroughBlock,
+    cacheUsed: Boolean(cacheUsable),
+    cacheOverlapBlocks: cacheUsable ? cfg.overlapBlocks : 0,
+    cachedPoolCount: cachedPools.length,
+    windowSize: scan.windowSize,
+    windowCount: scan.windowCount,
+    requestCount: scan.requestCount,
+    adaptiveSplits: scan.adaptiveSplits,
+    mintDiscovery: mint,
+    logCount: normalized.length,
+    pools,
+    scannedPools,
+    firstVoteBlock,
+    lastVoteBlock,
+    methodErrors
+  };
 }
 
 async function collectVeProtocol(address, registry, kind, routeOverride=null) {
@@ -692,7 +1002,7 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
 
     let voteHistory = null;
     try {
-      voteHistory = await blockscoutVotedLogs(cfg.providerKey, cfg.voter, cfg.votingEscrow, tokenId, provider);
+      voteHistory = await historicalVotedLogs(cfg.providerKey, cfg.voter, cfg.votingEscrow, tokenId, provider);
     } catch (e) {
       directHistoryComplete = false;
       issues.push(`Historical Voted logs ${tokenId}: ${e.message || e}`);
@@ -757,7 +1067,7 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
         ? 'veNFT accrued rewards across complete Voter vote history + managed compounding'
         : 'veNFT current accrued rewards + managed compounding',
       note,
-      details: { veNftCount: nftCount, managedPositions: managedCount, directPositions: directCount, historicalVoteDiscoveryComplete: !directCaveat, issues }
+      details: { veNftCount: nftCount, managedPositions: managedCount, directPositions: directCount, historicalVoteDiscoveryComplete: !directCaveat, positions, issues }
     },
     rewards,
     details: { veNftCount: nftCount, positions }
@@ -1975,6 +2285,7 @@ function aggregateTokenSummary(rewards) {
 async function main() {
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
   const previous = readPrevious();
+  bootstrapHistoricalVoteCache(previous);
   const registry = createProviderRegistry();
   const ethProvider = await registry.get('ethereum');
   // Prewarm the three chains used by the already-production v0.1 companies.
@@ -2069,7 +2380,7 @@ async function main() {
     methodology: {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
       multiWallet: 'Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.',
-      aerodromeVelodrome: 'Aerodrome and Velodrome direct veNFT routes reconstruct every historically voted pool from indexed Voter.Voted events, then query each pool’s voting-reward contracts for still-unclaimed rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
+      aerodromeVelodrome: 'Aerodrome and Velodrome direct veNFT routes reconstruct every historically voted pool from indexed Voter.Voted events, using provider-aware direct RPC eth_getLogs and Blockscout fallback reads. A validated full-history cache makes later runs incremental with a reorg-safe overlap. Each discovered pool’s current voting-reward contracts are queried for still-unclaimed rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
       curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
       pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.',
@@ -2082,6 +2393,7 @@ async function main() {
       tvlTreatment: 'Accrued Rewards remain separate from Company TVL and Treasury cash.'
     },
     rpc: registry.rpcSummary(),
+    internalState: { historicalVoteCache: serializeHistoricalVoteCache() },
     companies,
     engineErrors,
     history: filtered.slice(-400)
