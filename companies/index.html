@@ -3762,16 +3762,14 @@ function renderIndex(lang) {
             if (!COMPANY_REWARDS_SCOPE.has(c.nm)) return '';
             const book = COMPANY_BOOK[c.nm] || [];
             const isDefitea = c.nm === 'defitea.eth';
-            const legacyVePendle = isDefitea ? defiteaLegacyVePendleAmount() : null;
             const pills = book.map(pos => {
                 const label = COMPANY_ASSET_LABELS[pos.id] || pos.id;
                 if (isDefitea && pos.id === 'pendle') {
-                    return '<span class="ipx-position-pill ipx-pendle-position">'
+                    // COMPANY_BOOK already stores Defitea's combined PENDLE principal
+                    // across both wallets/forms. Do not append legacy vePENDLE again.
+                    return '<span class="ipx-position-pill">'
                         + '<span class="ipx-position-symbol">PENDLE</span>'
-                        + '<span class="ipx-position-pendle-line"><b>' + fmtQty(pos.qty) + '</b> sPENDLE</span>'
-                        + (hasRewardNumber(legacyVePendle)
-                            ? '<span class="ipx-position-pendle-line legacy"><b>' + fmtQty(legacyVePendle) + '</b> vePENDLE</span>'
-                            : '')
+                        + '<span class="ipx-position-qty">' + fmtQty(pos.qty) + '</span>'
                         + '</span>';
                 }
                 return '<span class="ipx-position-pill">'
