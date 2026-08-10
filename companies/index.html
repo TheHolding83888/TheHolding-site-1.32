@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-10 · Company Balance Sheet + Accrued Rewards v0.1 -->
+<!-- companies.html · build 2026-08-10 · Company Balance Sheet + Accrued Rewards v0.1.1 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -2647,7 +2647,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.1-accrued-rewards';
+const COMPANY_REWARDS_UI_VERSION = '0.1.1-price-safe';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -3109,7 +3109,7 @@ function renderIndex(lang) {
                 lonNote:'в работе', sigCap:'Сигнатура компании',
                 axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.', axF:'РЕЗУЛЬТАТ',
                 perfFactor:'Результат', sinceInception:'С момента запуска',
-                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы', balanceSheet:'Баланс компании', positions:'Ончейн-позиции', positionCount:'позиций', capitalDeployed:'Капитал размещён ончейн', accruedRewards:'Накопленные rewards', rewardsCaption:'Заработано ончейн · Пока внутри протоколов', measuringOnchain:'Измеряется ончейн', noAccrued:'На этом снимке накопленных rewards нет', compounded:'Компаунд', unclaimed:'Не заклеймлено', measuredTotal:'Измеренная сумма', routeNotIncluded:'маршрут пока не включён', routesNotIncluded:'маршрута пока не включены', measuring:'Измеряется' }
+                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы', balanceSheet:'Баланс компании', positions:'Ончейн-позиции', positionCount:'позиций', capitalDeployed:'Капитал размещён ончейн', accruedRewards:'Накопленные rewards', rewardsCaption:'Заработано ончейн · Пока внутри протоколов', measuringOnchain:'Измеряется ончейн', valuePending:'Оценка в $ рассчитывается', noAccrued:'На этом снимке накопленных rewards нет', compounded:'Компаунд', unclaimed:'Не заклеймлено', measuredTotal:'Измеренная сумма', routeNotIncluded:'маршрут пока не включён', routesNotIncluded:'маршрута пока не включены', valuationPending:'Оценка ожидается', rewardToken:'reward-токен', rewardTokens:'reward-токена', measuring:'Измеряется' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', protocols:'Protocols', explore:'Explore Company', days:'days',
                 comp:'Composite breakdown', inView:'In view',
@@ -3119,7 +3119,7 @@ function renderIndex(lang) {
                 lonNote:'operating', sigCap:'Company signature',
                 axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY', axF:'PERFORMANCE',
                 perfFactor:'Performance', sinceInception:'Since inception',
-                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not included yet', routesNotIncluded:'routes not included yet', measuring:'Measuring' };
+                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', valuePending:'USD valuation pending', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not included yet', routesNotIncluded:'routes not included yet', valuationPending:'Valuation pending', rewardToken:'reward token', rewardTokens:'reward tokens', measuring:'Measuring' };
         const wfld = (label, value, active) =>
             '<div class="ipx-field"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
@@ -3167,7 +3167,9 @@ function renderIndex(lang) {
             const max = Math.abs(x) < 0.01 ? 6 : (Math.abs(x) < 10 ? 4 : 2);
             return x.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', { maximumFractionDigits: max });
         };
-        const fmtRewardUsd = v => Number.isFinite(Number(v))
+        const hasRewardNumber = v =>
+            v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
+        const fmtRewardUsd = v => hasRewardNumber(v)
             ? '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
             : '—';
         const balanceSheetBlock = c => {
@@ -3188,11 +3190,17 @@ function renderIndex(lang) {
             const r = COMPANY_REWARDS_SNAPSHOT && COMPANY_REWARDS_SNAPSHOT.companies
                     ? COMPANY_REWARDS_SNAPSHOT.companies[c.nm] : null;
             const chevSmall = '<svg viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-            const hasTotal = r && Number.isFinite(Number(r.totalUsd));
+            const hasTotal = r && hasRewardNumber(r.totalUsd);
             const liveMeasured = r && r.updatedAt && r.status !== 'warming';
             const incomplete = liveMeasured && r.totalUsdIsComplete === false;
-            const totalLabel = liveMeasured && hasTotal ? fmtRewardUsd(r.totalUsd) + (incomplete ? '+' : '') : L.measuringOnchain;
-            const totalCls = liveMeasured && hasTotal ? '' : ' measuring';
+            const unpricedCount = r ? Number(r.unpricedRewards || 0) : 0;
+            const hasPricedValue = hasTotal && Number(r.totalUsd) > 0;
+            const totalLabel = !liveMeasured
+                ? L.measuringOnchain
+                : (unpricedCount > 0 && !hasPricedValue
+                    ? L.valuePending
+                    : (hasTotal ? fmtRewardUsd(r.totalUsd) + (incomplete ? '+' : '') : L.valuePending));
+            const totalCls = liveMeasured && (hasPricedValue || (hasTotal && unpricedCount === 0)) ? '' : ' measuring';
             const tokens = r && Array.isArray(r.rewardTokens) ? r.rewardTokens : [];
             const tokenStrip = tokens.length
                 ? tokens.map(t => '<span class="ipx-reward-token">' + (t.symbol || 'TOKEN') + '</span>').join('')
@@ -3220,9 +3228,16 @@ function renderIndex(lang) {
             });
             if (!rows) rows = '<div class="ipx-reward-empty">' + (liveMeasured ? L.noAccrued : L.measuringOnchain) + '</div>';
             let note = '';
-            if (incomplete && Number(r.pendingRoutes || 0) > 0) {
-                const count = Number(r.pendingRoutes || 0);
-                note = '<div class="ipx-reward-panel-note">' + L.measuredTotal + ' · ' + count + ' ' + (count === 1 ? L.routeNotIncluded : L.routesNotIncluded) + '</div>';
+            const pendingRouteCount = Number(r && r.pendingRoutes || 0);
+            const notes = [];
+            if (incomplete && pendingRouteCount > 0) {
+                notes.push(L.measuredTotal + ' · ' + pendingRouteCount + ' ' + (pendingRouteCount === 1 ? L.routeNotIncluded : L.routesNotIncluded));
+            }
+            if (unpricedCount > 0) {
+                notes.push(L.valuationPending + ' · ' + unpricedCount + ' ' + (unpricedCount === 1 ? L.rewardToken : L.rewardTokens));
+            }
+            if (notes.length) {
+                note = '<div class="ipx-reward-panel-note">' + notes.join(' · ') + '</div>';
             }
             return '<div class="ipx-ledger-card ipx-rewards-card ipx-rewards-disclosure">'
                 + '<button class="ipx-rewards-trigger" type="button" aria-expanded="false">'
