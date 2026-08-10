@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.2';
-const COLLECTOR_VERSION = '0.2.2-defitea-reusd-votemarket-routes';
+const VERSION = '0.2.3';
+const COLLECTOR_VERSION = '0.2.3-defitea-reusd-global-fix';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -1143,7 +1143,11 @@ async function applyPrices(rewards) {
   }
 
   for (const r of rewards) {
-    const fixed = r.details?.fixedUsdPrice;
+    // reUSD is treated at explicit 1:1 USD parity across every reward route,
+    // including dynamically enumerated Resupply GovStaker rewards.
+    const fixed = String(r.symbol || r.details?.symbol || '').toUpperCase() === 'REUSD'
+      ? 1
+      : r.details?.fixedUsdPrice;
     const cgId = r.details?.coingeckoId;
     const directPlatform = r.details?.pricePlatform;
     const directContract = r.details?.priceContract?.toLowerCase();
@@ -1294,7 +1298,7 @@ async function main() {
       frax: 'Fraxtal YieldDistributor.earned(account), with emitted reward token discovered onchain.',
       venice: 'StakingV2.pendingRewards(user) on Base.',
       liquity: 'LQTYStaking pending ETH and LUSD gains.',
-      resupply: 'GovStaker reward tokens are dynamically enumerated and earned(account, token) is read onchain.',
+      resupply: 'GovStaker reward tokens are dynamically enumerated and earned(account, token) is read onchain. reUSD is valued with an explicit 1:1 USD parity assumption.',
       tvlTreatment: 'Accrued Rewards remain separate from Company TVL and Treasury cash.'
     },
     rpc: registry.rpcSummary(),
