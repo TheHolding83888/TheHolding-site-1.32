@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <!-- TheHolding.ai Website v2.3 - homepage Defitea Reference APR synced to Productivity Intelligence Layer
      v2.2 - dead-CSS cleanup: 41 unused rules removed (no markup or behaviour changed)
@@ -4915,7 +4916,6 @@
             ondo: 542                     // ONDO Finance (dynamic)
         };
 
-        const FIXED_FXN_VALUE = 631;      // Fixed $631 value for FXN
         const FIXED_DIEM_VALUE = 94;      // Fixed $94 total value for DIEM (0.07 tokens)
         const FIXED_MODE_VALUE = 41;      // Fixed $41 total value for MODE (1,000,000 tokens)
 
@@ -5067,7 +5067,7 @@
                     'convex-finance',
                     'curve-dao-token',
                     'pendle',
-                    'fx-protocol',           // FXN - F(x) Protocol (testing if exists)
+                    'fxn-token',             // FXN - f(x) Protocol · CoinGecko API ID
                     'yield-basis',
                     'frax-share',
                     'velodrome-finance',
@@ -5133,7 +5133,7 @@
                 const cvxValue = defiteaHoldings.cvx * (prices['convex-finance']?.usd || 0);
                 const crvValue = defiteaHoldings.crv * (prices['curve-dao-token']?.usd || 0);
                 const pendleValue = defiteaHoldings.pendle * (prices.pendle?.usd || 0);
-                const fxnValue = defiteaHoldings.fxn * (prices['fx-protocol']?.usd || (FIXED_FXN_VALUE / defiteaHoldings.fxn));  // Dynamic or fallback to fixed
+                const fxnValue = defiteaHoldings.fxn * (prices['fxn-token']?.usd || 0);  // Dynamic CoinGecko price
                 const ybValue = defiteaHoldings.yb * (prices['yield-basis']?.usd || 0);
                 const fxsValue = defiteaHoldings.fxs * (prices['frax-share']?.usd || 0);
                 const veloValue = defiteaHoldings.velo * (prices['velodrome-finance']?.usd || 0);
@@ -5193,13 +5193,12 @@
                     const nsEl = document.getElementById('nsNetworkValue');
                     if (!nsEl) return;
                     const p = id => (prices[id]?.usd || 0);
-                    const FIXED_FXN = 680;
                     const co1 = 202 * p('aerodrome-finance') + 480 * p('curve-dao-token') + 393 * p('frax-share');
                     const co2 = 0.03 * p('bitcoin') + 480 * p('aerodrome-finance')
                               + 240 * p('convex-finance') + 800 * p('frax-share');
                     const co3 = 12029 * p('yield-basis');
                     const co4 = 2440 * p('aerodrome-finance') + 1333 * p('convex-finance')
-                              + 4125 * p('curve-dao-token') + 500 * p('pendle') + FIXED_FXN
+                              + 4125 * p('curve-dao-token') + 500 * p('pendle') + 59.81 * p('fxn-token')
                               + 10846 * p('yield-basis') + 4224 * p('frax-share')
                               + 12180 * p('velodrome-finance') + 50 * p('venice-token')
                               + 1488 * p('liquity') + 3682 * p('resupply');
@@ -6137,3 +6136,4 @@
     </script>
 </body>
 </html>
+
