@@ -3155,7 +3155,7 @@ const COMPANY_ASSET_LABELS = {
     'venice-token': 'sVVV',
     'liquity': 'LQTY',
     'resupply': 'RSUP',
-    'fxn': 'veFXN'
+    'fxn-token': 'veFXN'
 };
 const REWARD_ROUTE_LABELS = {
     'aerodrome-relay': 'Aerodrome Relay',
@@ -3303,7 +3303,7 @@ const COMPANY_BOOK = {
         { id: 'convex-finance',    qty: 1333,  entry: 1.28   },
         { id: 'curve-dao-token',   qty: 4125,  entry: 0.2722 },
         { id: 'pendle',            qty: 500,   entry: 1.49   },
-        { id: 'fxn',               qty: 59.81, entry: 15.06, fixed: 12.04 },
+        { id: 'fxn-token',         qty: 59.81, entry: 15.06 },
         { id: 'yield-basis',       qty: 10846, entry: 0.1281 },
         { id: 'frax-share',        qty: 4224,  entry: 0.4042 },
         { id: 'velodrome-finance', qty: 12180, entry: 0.03   },
@@ -4728,11 +4728,11 @@ function renderFramework(lang) {
     // 05081966.eth: AERO 202 / FRAX 393 / CRV 480
     // YieldRing.eth: BTC 0.03 / veAERO 480 / vlCVX 240 / veFRAX 800
     // dinaz.eth: YB 12029
-    // defitea.eth: full Defitea fund book (fxn fixed $680)
-    // every priced id the book needs (fxn is valued manually, so it is not fetched)
+    // defitea.eth: full Defitea fund book (FXN priced dynamically via CoinGecko)
+    // every priced id the book needs
     const IDS = ['bitcoin','aerodrome-finance','curve-dao-token','frax-share',
                  'convex-finance','yield-basis','pendle','velodrome-finance',
-                 'venice-token','liquity','resupply'];
+                 'venice-token','liquity','resupply','fxn-token'];
 
     const fmt = v => v > 0 ? fmtMoney(v) : 'Live';
 
