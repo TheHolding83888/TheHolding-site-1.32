@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.5';
-const COLLECTOR_VERSION = '0.2.5-defitea-votemarket-view-formula';
+const VERSION = '0.2.6';
+const COLLECTOR_VERSION = '0.2.6-defitea-votemarket-proof-votes';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -210,6 +210,7 @@ const VOTEMARKET_ABI = [
   'function totalClaimedByAccount(uint256 campaignId,uint256 epoch,address account) view returns (uint256)'
 ];
 const VOTEMARKET_ORACLE_LENS_ABI = [
+  'error STATE_NOT_UPDATED()',
   'function isVoteValid(address account,address gauge,uint256 epoch) view returns (bool)',
   'function getAccountVotes(address account,address gauge,uint256 epoch) view returns (uint256)'
 ];
@@ -777,10 +778,37 @@ async function fetchVoteMarketJson(url, timeoutMs = 6000) {
   return pending;
 }
 
-function objectHasAddress(obj, address) {
-  if (!obj || typeof obj !== 'object') return false;
+function objectAddressEntry(obj, address) {
+  if (!obj || typeof obj !== 'object') return null;
   const target = address.toLowerCase();
-  return Object.keys(obj).some(k => String(k).toLowerCase() === target);
+  for (const [k, v] of Object.entries(obj)) {
+    if (String(k).toLowerCase() === target) return v;
+  }
+  return null;
+}
+
+function objectHasAddress(obj, address) {
+  return objectAddressEntry(obj, address) !== null;
+}
+
+function safeJsonBigInt(value) {
+  if (typeof value === 'bigint') return value;
+  if (typeof value === 'string' && /^\d+$/.test(value)) return BigInt(value);
+  if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) return BigInt(value);
+  return null;
+}
+
+function reconstructVoteMarketAccountVote(voteData, epoch) {
+  if (!voteData || typeof voteData !== 'object') return { ok:false, reason:'missing-vote-data' };
+  const slope = safeJsonBigInt(voteData.slope);
+  const end = safeJsonBigInt(voteData.end);
+  const lastVote = safeJsonBigInt(voteData.last_vote ?? voteData.lastVote);
+  const epochBn = BigInt(epoch);
+  if (slope === null || end === null || lastVote === null) return { ok:false, reason:'unsafe-or-missing-vote-fields' };
+  if (slope === 0n || epochBn >= end || epochBn <= lastVote) {
+    return { ok:true, valid:false, accountVote:0n, slope, end, lastVote };
+  }
+  return { ok:true, valid:true, accountVote:slope * (end - epochBn), slope, end, lastVote };
 }
 
 function voteMarketPlatformContract(provider, chainId, platform) {
@@ -828,8 +856,9 @@ function findVoteMarketCandidates(votesData, address) {
       if (!gauges || typeof gauges !== 'object') continue;
       for (const [gauge, gaugeData] of Object.entries(gauges)) {
         if (!isAddressLike(gauge)) continue;
-        if (objectHasAddress(gaugeData?.users, address)) {
-          candidates.push({ platform: getAddress(platform), chainId, gauge: getAddress(gauge) });
+        const voteData = objectAddressEntry(gaugeData?.users, address);
+        if (voteData) {
+          candidates.push({ platform: getAddress(platform), chainId, gauge: getAddress(gauge), voteData });
         }
       }
     }
@@ -1029,20 +1058,55 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
           continue;
         }
 
-        const oracle = new Contract(getAddress(oracleAddress), VOTEMARKET_ORACLE_LENS_ABI, provider);
-        const [voteValid, accountVote] = await Promise.all([
-          oracle.isVoteValid(address, campaignGauge, BigInt(candidate.epoch)),
-          oracle.getAccountVotes(address, campaignGauge, BigInt(candidate.epoch))
-        ]);
-        diag.oracleVoteValid = Boolean(voteValid);
-        diag.accountVoteRaw = accountVote.toString();
-        if (!voteValid) {
+        // The official Stake DAO proof generator publishes the raw vote fields
+        // (last_vote, slope, power, end) in votes.json for every eligible user.
+        // OracleLens.getAccountVotes uses exactly: slope * (end - epoch), with the
+        // same validity guards. Reconstruct from those first-party fields so an
+        // OracleLens STATE_NOT_UPDATED() does not hide an otherwise measurable
+        // accrued entitlement. When the Lens is populated, cross-check it onchain.
+        const reconstructedVote = reconstructVoteMarketAccountVote(candidate.voteData, candidate.epoch);
+        if (!reconstructedVote.ok) {
+          issues.push(`campaign ${campaignId} epoch ${candidate.epoch} chain ${candidate.chainId}: ${reconstructedVote.reason}`);
+          diag.status = 'vote-data-incomplete';
+          diag.voteData = candidate.voteData || null;
+          continue;
+        }
+        diag.voteSource = 'official-votes-json';
+        diag.voteSlopeRaw = reconstructedVote.slope.toString();
+        diag.voteEnd = reconstructedVote.end.toString();
+        diag.voteLastVote = reconstructedVote.lastVote.toString();
+        diag.oracleVoteValid = reconstructedVote.valid;
+        diag.accountVoteRaw = reconstructedVote.accountVote.toString();
+        if (!reconstructedVote.valid) {
           oracleInvalidCount++;
-          diag.status = 'oracle-vote-invalid';
+          diag.status = 'published-vote-invalid';
           continue;
         }
 
-        const grossRaw = (BigInt(accountVote) * rewardPerVote) / 1000000000000000000n;
+        let accountVote = reconstructedVote.accountVote;
+        const oracle = new Contract(getAddress(oracleAddress), VOTEMARKET_ORACLE_LENS_ABI, provider);
+        try {
+          const [voteValidOnchain, accountVoteOnchain] = await Promise.all([
+            oracle.isVoteValid(address, campaignGauge, BigInt(candidate.epoch)),
+            oracle.getAccountVotes(address, campaignGauge, BigInt(candidate.epoch))
+          ]);
+          diag.oracleState = 'populated';
+          diag.oracleVoteValidOnchain = Boolean(voteValidOnchain);
+          diag.accountVoteOnchainRaw = accountVoteOnchain.toString();
+          if (!voteValidOnchain || BigInt(accountVoteOnchain) !== accountVote) {
+            issues.push(`campaign ${campaignId} epoch ${candidate.epoch} chain ${candidate.chainId}: published vote/onchain OracleLens mismatch`);
+            diag.status = 'oracle-vote-mismatch';
+            continue;
+          }
+        } catch (oracleError) {
+          // OracleLens intentionally reverts STATE_NOT_UPDATED when its per-user
+          // state has not yet been populated. This does not invalidate the official
+          // proof generator's raw vote record; preserve it as the reproducible source.
+          diag.oracleState = 'not-populated-or-unavailable';
+          diag.oracleReadError = oracleError?.shortMessage || oracleError?.message || String(oracleError);
+        }
+
+        const grossRaw = (accountVote * rewardPerVote) / 1000000000000000000n;
         const feeRateRaw = BigInt(customFee) > 0n ? BigInt(customFee) : BigInt(defaultFee);
         const feeRaw = (grossRaw * feeRateRaw) / 1000000000000000000n;
         const raw = grossRaw - feeRaw;
@@ -1070,7 +1134,7 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
           decimals: meta.decimals,
           amount: n(formatUnits(raw, meta.decimals)),
           classification: 'unclaimed',
-          source: 'official Stake DAO proof feed + VoteMarket view-only onchain claim formula',
+          source: 'official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction',
           details: {
             symbol: meta.symbol,
             protocolKey,
@@ -1111,7 +1175,7 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
     ? (issues.length ? 'warming' : 'ok')
     : (issues.length || unresolvedPeriods > 0) ? 'partial' : 'ok';
   const note = status === 'ok'
-    ? `Official VoteMarket proofs and onchain claimed-state were checked across ${VOTEMARKET.lookbackWeeks} weekly epochs; unclaimed amounts are reproduced from the same public view-state formula used by the Votemarket contract.`
+    ? `Official VoteMarket proofs, published raw vote details and onchain claimed-state were checked across ${VOTEMARKET.lookbackWeeks} weekly epochs; unclaimed amounts reproduce the OracleLens/Votemarket vote formula with onchain cross-check when the Lens state is populated.`
     : status === 'partial'
       ? 'Measured VoteMarket rewards are retained, but one or more proof/onchain checks were incomplete; uncertain amounts are excluded.'
       : 'VoteMarket proof/onchain measurement could not be completed; no amount is guessed.';
@@ -1122,7 +1186,7 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
       route,
       status,
       chain: 'Multi-chain',
-      metric: 'Official VoteMarket proof eligibility + claimed-state + view-only onchain claim formula',
+      metric: 'Official VoteMarket proof eligibility + claimed-state + first-party vote reconstruction',
       note,
       details: {
         protocolKey,
@@ -1722,10 +1786,10 @@ async function main() {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
       multiWallet: 'Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.',
       aerodromeVelodrome: 'Aerodrome managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories, then reads current rewards at the actual holder. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
-      curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, VoteMarket claimed-state, period state and OracleLens votes to reproduce the Votemarket view-only claim formula for exact unclaimed amounts.',
+      curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
       pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.',
-      fx: 'Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN uses official Stake DAO proof membership, VoteMarket claimed-state, period state and OracleLens votes to reproduce the Votemarket view-only claim formula for exact unclaimed amounts.',
+      fx: 'Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated.',
       yieldBasis: 'FeeDistributor.preview_claim is used; yb rewards are valued at current redemption value into underlying BTC assets.',
       frax: 'Fraxtal YieldDistributor.earned(account), with emitted reward token discovered onchain.',
       venice: 'StakingV2.pendingRewards(user) on Base.',
