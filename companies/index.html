@@ -78,12 +78,13 @@
       "@type": "ItemList",
       "name": "The Holding Index constituents",
       "description": "Companies currently included in The Holding Index registry.",
-      "numberOfItems": 4,
+      "numberOfItems": 5,
       "itemListElement": [
         { "@type": "ListItem", "position": 1, "name": "05081966.eth", "url": "https://theholding.ai/05081966" },
         { "@type": "ListItem", "position": 2, "name": "YieldRing.eth", "url": "https://theholding.ai/yieldring" },
         { "@type": "ListItem", "position": 3, "name": "dinaz.eth" },
-        { "@type": "ListItem", "position": 4, "name": "defitea.eth", "url": "https://theholding.ai/defitea/" }
+        { "@type": "ListItem", "position": 4, "name": "defitea.eth", "url": "https://theholding.ai/defitea/" },
+        { "@type": "ListItem", "position": 5, "name": "0x5860...83CA8.eth", "url": "https://debank.com/profile/0x58603461149Fc2A800a56d421e77DcbBA2D83CA8" }
       ]
     }
     </script>
@@ -110,7 +111,7 @@
         {
           "@type": "Question",
           "name": "How is the capital map read?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Green company nodes scale with the selected index view. Yellow protocol nodes scale with the number of indexed companies connected to each protocol, making their size a measure of shared infrastructure across the network rather than capital concentration." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Green company nodes scale with the selected index view. Yellow protocol / asset nodes scale with the number of indexed companies connected to each node, making their size a measure of shared infrastructure across the network rather than capital concentration." }
         }
       ]
     }
@@ -2668,7 +2669,7 @@
 <section class="stats-bar">
     <div class="container stats-inner">
         <div class="stat-cell reveal">
-            <div class="stat-value" id="statCompanies">4</div>
+            <div class="stat-value" id="statCompanies">5</div>
             <div class="stat-label" data-i18n="stats.companies">Companies</div>
         </div>
         <div class="stat-cell reveal">
@@ -2676,12 +2677,12 @@
             <div class="stat-label" data-i18n="stats.tvl">Combined TVL</div>
         </div>
         <div class="stat-cell reveal">
-            <div class="stat-value">8+</div>
-            <div class="stat-label" data-i18n="stats.protocols">Protocols in Use</div>
+            <div class="stat-value" id="statProtocols">13</div>
+            <div class="stat-label" data-i18n="stats.protocols">Protocols & Assets</div>
         </div>
         <div class="stat-cell reveal">
-            <div class="stat-value">2026</div>
-            <div class="stat-label" data-i18n="stats.since">Founded</div>
+            <div class="stat-value" id="statFounded">—</div>
+            <div class="stat-label" data-i18n="stats.since">Network Since</div>
         </div>
     </div>
 </section>
@@ -2692,7 +2693,7 @@
         <div class="collection-head reveal">
             <h2 class="collection-title" data-i18n="collection.title">The Collection</h2>
             <div class="collection-meta">
-                <div class="collection-count"><b id="companyCount">4</b> <span data-i18n="collection.count">companies</span></div>
+                <div class="collection-count"><b id="companyCount">5</b> <span data-i18n="collection.count">companies</span></div>
                 <div class="view-switch" role="group" aria-label="View">
                     <button class="view-btn active" type="button" data-view="grid" aria-label="Grid view" title="Grid">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
@@ -2714,7 +2715,7 @@
 
         <div class="filter-tabs reveal">
             <button class="filter-tab active" data-filter="all" data-i18n="filter.all">All Companies</button>
-            <button class="filter-tab" data-filter="standard" data-i18n="filter.standard">Holding Standard</button>
+            <button class="filter-tab" data-filter="standard" data-i18n="filter.standard">The Holding Standard</button>
             <button class="filter-tab" data-filter="onchain" data-i18n="filter.custom">Custom Build</button>
         </div>
 
@@ -2828,6 +2829,30 @@
             </a>
 
             <!-- ═══ Placeholder: next company ═══ -->
+            <!-- ═══ Company 0x5860...83CA8.eth ═══ -->
+            <a class="company-card reveal" data-category="standard" href="https://debank.com/profile/0x58603461149Fc2A800a56d421e77DcbBA2D83CA8" target="_blank" rel="noopener">
+                <div class="cc-regnum"><span><span class="cc-reg-label" data-i18n="card.registry">Registry</span> · 005</span><span class="cc-founded" id="founded-5860">Est. · Onchain</span></div>
+                <div class="cc-top">
+                    <div class="cc-seal">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 20'%3E%3Cpath d='M11 1.5 19 6v8l-8 4.5L3 14V6z' fill='none' stroke='%23b99a55' stroke-width='1.1'/%3E%3Cpath d='M7.2 10h7.6M11 6.2v7.6' stroke='%237a8f5e' stroke-width='.9' opacity='.9'/%3E%3C/svg%3E" alt="" width="22" height="20" style="display:block; object-fit:contain;">
+                    </div>
+                    <div class="cc-status"><span class="cc-dot"></span><span data-i18n="card.live">Live</span></div>
+                </div>
+                <div class="cc-name">0x5860...83CA8.eth</div>
+                <div class="cc-sub" data-i18n="card5.sub">A Bitcoin-reserve company combining maximum-term ICP staking with long-lock positions in Aerodrome and Velodrome.</div>
+                <div class="cc-metrics">
+                    <div>
+                        <div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div>
+                        <div class="cc-metric-value gold" id="tvl-5860">—</div>
+                    </div>
+                    <div>
+                        <div class="cc-metric-label" data-i18n="card.cashflow">APR</div>
+                        <div class="cc-metric-value" id="apr-5860">~17%</div>
+                    </div>
+                </div>
+                <span class="cc-extlink"><span class="cc-ext-label">View on DeBank</span><svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </a>
+
             <div class="company-card placeholder reveal">
                 <div class="placeholder-mark">◇</div>
                 <div class="placeholder-title" data-i18n="placeholder.title">Next Company</div>
@@ -2930,7 +2955,7 @@
         <div class="graph-head">
             <div class="graph-eyebrow"><span class="graph-live-dot"></span><span data-i18n="graph.eyebrow">The Holding Graph</span></div>
             <h2 class="graph-title" data-i18n="graph.title">A live map of capital across the network.</h2>
-            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols it uses — one living map of the network's shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company's share of total index TVL. Yellow protocol nodes stay unchanged — their size reflects how many indexed companies connect to each protocol.</p>
+            <p class="graph-sub" data-i18n="graph.sub">Every company and the protocols it uses — one living map of the network's shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company's share of total index TVL. Yellow protocol / asset nodes stay unchanged — their size reflects how many indexed companies connect to each node.</p>
         </div>
         <div class="graph-lens">
             <span class="idx-lens-label" data-i18n="index.weighting">Weighting</span>
@@ -3024,21 +3049,32 @@
 </footer>
 
 <script>
-// Passport pages contain expanding rows, so browser scroll restoration can
-// reopen a hard reload at a stale lower offset. Reset only true reloads;
-// normal navigation/back behavior remains untouched.
+// Preserve the reader's exact position on a hard reload. The page contains
+// async TVL/index/passport blocks, so restore more than once while layout settles.
+// Normal navigation/back behavior remains native.
+const TH_RELOAD_SCROLL_KEY = 'th_companies_reload_scroll_y';
+let TH_RESTORE_RELOAD_SCROLL = false;
+function rememberCompaniesScroll() {
+    try { sessionStorage.setItem(TH_RELOAD_SCROLL_KEY, String(Math.max(0, window.scrollY || 0))); } catch (_) {}
+}
+function restoreCompaniesReloadScroll() {
+    if (!TH_RESTORE_RELOAD_SCROLL) return;
+    let y = 0;
+    try { y = Number(sessionStorage.getItem(TH_RELOAD_SCROLL_KEY) || 0); } catch (_) {}
+    if (!Number.isFinite(y) || y < 0) y = 0;
+    const hold = () => window.scrollTo(0, y);
+    requestAnimationFrame(hold);
+    setTimeout(hold, 90);
+    setTimeout(hold, 360);
+    setTimeout(hold, 1000);
+}
 try {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    window.addEventListener('pageshow', () => {
-        const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-        if (nav && nav.type === 'reload') {
-            window.scrollTo(0, 0);
-            requestAnimationFrame(() => {
-                window.scrollTo(0, 0);
-                setTimeout(() => window.scrollTo(0, 0), 80);
-            });
-        }
-    });
+    const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    TH_RESTORE_RELOAD_SCROLL = !!(nav && nav.type === 'reload');
+    window.addEventListener('scroll', rememberCompaniesScroll, { passive: true });
+    window.addEventListener('pagehide', rememberCompaniesScroll);
+    window.addEventListener('pageshow', restoreCompaniesReloadScroll);
 } catch (_) {}
 /* ── Scroll reveal ─────────────────────────────────── */
 (function () {
@@ -3102,7 +3138,8 @@ const COMPANY_PROTOCOLS = {
     'defitea.eth':   ['Aero','Convex','Curve','Pendle','f(x) Protocol','Yield Basis','Frax','Velodrome','Venice','Liquity','Resupply'],
     'YieldRing.eth': ['Bitcoin','Convex','Aero','Frax'],
     '05081966.eth':  ['Curve','Aero','Frax'],
-    'dinaz.eth':     ['Yield Basis']
+    'dinaz.eth':     ['Yield Basis'],
+    '0x5860...83CA8.eth': ['Bitcoin','ICP','Aero','Velodrome']
 };
 let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (capital-weighted lens)
 
@@ -3112,7 +3149,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    existing manual APRs as a safe fallback. If the collector, a protocol, or the
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
-const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.9-unified-apr';
+const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.10-company-005-icp';
 const PASSPORT_NULL_SAFE_FIX = '0.1.3-defitea-null-average';
 let PRODUCTIVITY_SNAPSHOT = null;
 
@@ -3140,11 +3177,12 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.2.3-defitea-votemarket-rollup';
+const COMPANY_REWARDS_UI_VERSION = '0.2.8-company-005-ve-tracking';
 let COMPANY_REWARDS_SNAPSHOT = null;
-const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth', 'defitea.eth']);
+const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth', 'defitea.eth', '0x5860...83CA8.eth']);
 const COMPANY_ASSET_LABELS = {
     'bitcoin': 'BTC',
+    'internet-computer': 'ICP',
     'aerodrome-finance': 'veAERO',
     'convex-finance': 'vlCVX',
     'curve-dao-token': 'veCRV',
@@ -3161,12 +3199,13 @@ const REWARD_ROUTE_LABELS = {
     'aerodrome-relay': 'Aerodrome Relay',
     'aerodrome-ve': 'Aerodrome',
     'velodrome-ve': 'Velodrome',
+    'velodrome-ve-direct': 'Velodrome',
     'curve-fees': 'Curve',
     'curve-fees-votemarket': 'Curve · VoteMarket', // legacy v0.2.1 data
     'votemarket-vecrv': 'VoteMarket · veCRV',
     'pendle-spendle': 'Pendle',
-    'fx-fees': 'f(x)',
-    'fx-fees-votemarket': 'f(x) · VoteMarket', // legacy v0.2.1 data
+    'fx-fees': 'f(x) Protocol',
+    'fx-fees-votemarket': 'f(x) Protocol · VoteMarket', // legacy v0.2.1 data
     'votemarket-vefxn': 'VoteMarket · veFXN',
     'frax-yield': 'Frax',
     'yield-basis-fees': 'Yield Basis',
@@ -3270,8 +3309,30 @@ function idxLang() {
 }
 
 function ageDays(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(String(iso))) return 0;
+    const d = new Date(String(iso) + 'T00:00:00Z');
+    const ms = d.getTime();
+    return Number.isFinite(ms) ? Math.max(0, Math.floor((Date.now() - ms) / 86400000)) : 0;
+}
+function companyFoundation(name, fallbackISO=null) {
+    const meta = PRODUCTIVITY_SNAPSHOT && PRODUCTIVITY_SNAPSHOT.companyMetadata
+        ? PRODUCTIVITY_SNAPSHOT.companyMetadata[name] : null;
+    const iso = meta && /^\d{4}-\d{2}-\d{2}$/.test(String(meta.foundedISO || ''))
+        ? String(meta.foundedISO) : fallbackISO;
+    if (!iso) return { iso:null, en:'Onchain verification', ru:'Ончейн-проверка', sinceEn:'Onchain', sinceRu:'Ончейн', meta:meta || null };
     const d = new Date(iso + 'T00:00:00Z');
-    return Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+    const en = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+    const ru = d.toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).replace(/\.$/,'');
+    const sinceEn = d.toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'});
+    const sinceRu = d.toLocaleDateString('ru-RU',{month:'short',year:'numeric',timeZone:'UTC'}).replace(/\.$/,'');
+    return { iso, en, ru, sinceEn, sinceRu, meta:meta || null };
+}
+function syncDynamicCompanyMetadata(lang=idxLang()) {
+    const f = companyFoundation('0x5860...83CA8.eth');
+    const el = document.getElementById('founded-5860');
+    if (el) el.textContent = f.iso
+        ? ((lang === 'ru' ? 'Осн. ' : 'Est. ') + (lang === 'ru' ? f.ru : f.en))
+        : (lang === 'ru' ? 'Осн. · ончейн' : 'Est. · Onchain');
 }
 function updateAges() {
     const lang = idxLang();
@@ -3324,6 +3385,12 @@ const COMPANY_BOOK = {
     ],
     'dinaz.eth': [
         { id: 'yield-basis',       qty: 12029, entry: 0.074  }
+    ],
+    '0x5860...83CA8.eth': [
+        { id: 'bitcoin',           qty: 0.1241, entry: 46800 },
+        { id: 'internet-computer', qty: 1363,   entry: 2.16  },
+        { id: 'aerodrome-finance', qty: 5000,   entry: 0, acquisition: 'airdrop' },
+        { id: 'velodrome-finance', qty: 28326,  entry: 0.091 }
     ]
 };
 
@@ -3334,7 +3401,8 @@ function syncCompanyAprDisplays(lang) {
         '05081966.eth': 'apr-05081966',
         'YieldRing.eth': 'apr-yieldring',
         'dinaz.eth': 'apr-dinaz',
-        'defitea.eth': 'apr-defitea'
+        'defitea.eth': 'apr-defitea',
+        '0x5860...83CA8.eth': 'apr-5860'
     };
     INDEX_STATE.forEach(c => {
         const el = document.getElementById(ids[c.nm]);
@@ -3437,13 +3505,11 @@ function computeIndex() {
     // its composite standing, so a lens switch re-proportions the network without
     // repainting it. Only lengths move, which is what makes the change readable.
     const byComposite = list.slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
-    const n = byComposite.length;
-    byComposite.forEach((c, i) => {
-        const t = n > 1 ? i / (n - 1) : 0;
-        const a = [29, 74, 58], b = [168, 178, 112];
-        const r = a.map((v, k) => Math.round(v + (b[k] - v) * t));
-        c.color = 'rgb(' + r[0] + ',' + r[1] + ',' + r[2] + ')';
-    });
+    // Noble-green family: ranking still drives visual weight, but each tier has
+    // its own botanical character (bottle / juniper / laurel / olive / sage)
+    // rather than being a mechanical lightness ramp of one RGB value.
+    const NOBLE_GREENS = ['#183F34','#2C574B','#466956','#647653','#819064','#9AA57A','#AFB78C'];
+    byComposite.forEach((c, i) => { c.color = NOBLE_GREENS[Math.min(i, NOBLE_GREENS.length - 1)]; });
 
     const key = IDX_MODE === 'tvl' ? 'tvlWeight' : 'weight';
     return list.sort((a, b) => b[key] - a[key]);
@@ -3772,9 +3838,10 @@ function renderIndex(lang) {
                         + '<span class="ipx-position-qty">' + fmtQty(pos.qty) + '</span>'
                         + '</span>';
                 }
+                const acquisition = pos.acquisition === 'airdrop' ? ' · Airdrop' : '';
                 return '<span class="ipx-position-pill">'
                     + '<span class="ipx-position-symbol">' + label + '</span>'
-                    + '<span class="ipx-position-qty">' + fmtQty(pos.qty) + '</span>'
+                    + '<span class="ipx-position-qty">' + fmtQty(pos.qty) + acquisition + '</span>'
                     + '</span>';
             }).join('');
             return '<div class="ipx-ledger-card ipx-balance-card' + (isDefitea ? ' ipx-defitea-balance' : '') + '">'
@@ -4749,17 +4816,19 @@ function renderFramework(lang) {
     const el2    = document.getElementById('tvl-yieldring');
     const el3    = document.getElementById('tvl-yb');
     const el4    = document.getElementById('tvl-defitea');
+    const el5    = document.getElementById('tvl-5860');
     const statEl = document.getElementById('statTVL');
-    if (!el1 && !el2 && !el3 && !el4 && !statEl) return;
+    if (!el1 && !el2 && !el3 && !el4 && !el5 && !statEl) return;
 
     // 05081966.eth: AERO 202 / FRAX 393 / CRV 480
     // YieldRing.eth: BTC 0.03 / veAERO 480 / vlCVX 240 / veFRAX 800
     // dinaz.eth: YB 12029
     // defitea.eth: full Defitea fund book (FXN priced dynamically via CoinGecko)
+    // 0x5860...83CA8.eth: BTC 0.1241 / ICP 1363 / veAERO 5000 / veVELO 28326
     // every priced id the book needs
     const IDS = ['bitcoin','aerodrome-finance','curve-dao-token','frax-share',
                  'convex-finance','yield-basis','pendle','velodrome-finance',
-                 'venice-token','liquity','resupply','fxn-token'];
+                 'venice-token','liquity','resupply','fxn-token','internet-computer'];
 
     const fmt = v => v > 0 ? fmtMoney(v) : 'Live';
 
@@ -4771,7 +4840,7 @@ function renderFramework(lang) {
         loadCompanyRewardsSnapshot()
     ]);
     if (!prices || Object.keys(prices).length === 0) {
-        [el1, el2, el3, el4, statEl].forEach(el => { if (el) el.textContent = 'Live'; });
+        [el1, el2, el3, el4, el5, statEl].forEach(el => { if (el) el.textContent = 'Live'; });
         return;
     }
 
@@ -4779,13 +4848,15 @@ function renderFramework(lang) {
     const F2 = bookFigures('YieldRing.eth', prices);
     const F3 = bookFigures('dinaz.eth', prices);
     const F4 = bookFigures('defitea.eth', prices);
-    const tvl1 = F1.value, tvl2 = F2.value, tvl3 = F3.value, tvl4 = F4.value;
+    const F5 = bookFigures('0x5860...83CA8.eth', prices);
+    const tvl1 = F1.value, tvl2 = F2.value, tvl3 = F3.value, tvl4 = F4.value, tvl5 = F5.value;
 
     if (el1)    el1.textContent = fmt(tvl1);
     if (el2)    el2.textContent = fmt(tvl2);
     if (el3)    el3.textContent = fmt(tvl3);
     if (el4)    el4.textContent = fmt(tvl4);
-    if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3 + tvl4);
+    if (el5)    el5.textContent = fmt(tvl5);
+    if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3 + tvl4 + tvl5);
 
     // Feed the live index with real per-company values
     // Adding a company: append an entry here AND to MEMBERSHIP inside buildGraph().
@@ -4798,24 +4869,46 @@ function renderFramework(lang) {
     const APR_YR      = resolvedCompanyApr('YieldRing.eth', 11, { en:'~10–12%', ru:'~10–12%' });
     const APR_0508    = resolvedCompanyApr('05081966.eth', 6, { en:'4–8+%', ru:'4–8+%' });
     const APR_DINAZ   = resolvedCompanyApr('dinaz.eth', 15, { en:'10–20%+ Variable', ru:'10–20%+ Плавающий' });
+    // Last-known official NNS 2-year estimate is only a UI fail-safe. The weekly
+    // Productivity collector now reads the current value from the official ICP Dashboard.
+    const ICP_NNS_UI_FALLBACK = 6.54;
+    const pvICP  = 1363  * Number(prices['internet-computer'] || 0);
+    const pvAERO = 5000  * Number(prices['aerodrome-finance'] || 0);
+    const pvVELO = 28326 * Number(prices['velodrome-finance'] || 0);
+    const pvSum  = pvICP + pvAERO + pvVELO;
+    const apr5Fallback = pvSum > 0 ? (pvICP*ICP_NNS_UI_FALLBACK + pvAERO*27.04 + pvVELO*24.96) / pvSum : 17;
+    const APR_5860 = resolvedCompanyApr('0x5860...83CA8.eth', apr5Fallback, { en:'~' + apr5Fallback.toFixed(1) + '%', ru:'~' + apr5Fallback.toFixed(1) + '%' });
+    const FOUNDATION_5860 = companyFoundation('0x5860...83CA8.eth');
 
     INDEX_STATE = [
         { nm: 'defitea.eth',   val: tvl4, cost: F4.cost, pnl: F4.pnl, pct: F4.pct, href: 'https://theholding.ai/defitea/',
-          cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jan 2025', ru: 'Янв 2025' },
-          reg:'004', ...APR_DEFITEA, foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'Holding Native', ru:'Нативная The Holding' }, protocols:11, status:{ en:'Productive', ru:'Активна' } },
+          cat: { en: 'The Holding Standard', ru: 'Стандарт The Holding' }, since: { en: 'Jan 2025', ru: 'Янв 2025' },
+          reg:'004', ...APR_DEFITEA, foundedISO:'2025-01-03', founded:{ en:'Jan 3, 2025', ru:'3 янв 2025' }, arch:{ en:'The Holding Native', ru:'Нативная The Holding' }, protocols:11, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'YieldRing.eth', val: tvl2, cost: F2.cost, pnl: F2.pnl, pct: F2.pct, href: 'https://theholding.ai/yieldring',
-          cat: { en: 'Holding Standard', ru: 'Стандарт Holding' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'002', ...APR_YR, foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'Holding Standard', ru:'Стандарт Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
+          cat: { en: 'The Holding Standard', ru: 'Стандарт The Holding' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
+          reg:'002', ...APR_YR, foundedISO:'2026-07-25', founded:{ en:'Jul 25, 2026', ru:'25 июл 2026' }, arch:{ en:'The Holding Standard', ru:'Стандарт The Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
         { nm: '05081966.eth',  val: tvl1, cost: F1.cost, pnl: F1.pnl, pct: F1.pct, href: 'https://theholding.ai/05081966',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
           reg:'001', ...APR_0508, foundedISO:'2026-07-17', founded:{ en:'Jul 17, 2026', ru:'17 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'dinaz.eth',     val: tvl3, cost: F3.cost, pnl: F3.pnl, pct: F3.pct, href: 'https://debank.com/profile/0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: 'Jul 2026', ru: 'Июл 2026' },
-          reg:'003', ...APR_DINAZ, foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } }
+          reg:'003', ...APR_DINAZ, foundedISO:'2026-07-22', founded:{ en:'Jul 22, 2026', ru:'22 июл 2026' }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:1, status:{ en:'Productive', ru:'Активна' } },
+        { nm: '0x5860...83CA8.eth', val: tvl5, cost: F5.cost, pnl: F5.pnl, pct: F5.pct, href: 'https://debank.com/profile/0x58603461149Fc2A800a56d421e77DcbBA2D83CA8',
+          cat: { en: 'The Holding Standard', ru: 'Стандарт The Holding' }, since: { en: FOUNDATION_5860.sinceEn, ru: FOUNDATION_5860.sinceRu },
+          reg:'005', ...APR_5860, foundedISO:FOUNDATION_5860.iso, founded:{ en:FOUNDATION_5860.en, ru:FOUNDATION_5860.ru }, arch:{ en:'The Holding Standard', ru:'Стандарт The Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } }
     ];
     syncCompanyAprDisplays(idxLang());
+    syncDynamicCompanyMetadata(idxLang());
+    const statProtocols = document.getElementById('statProtocols');
+    if (statProtocols) statProtocols.textContent = String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size);
+    const statFounded = document.getElementById('statFounded');
+    if (statFounded) {
+        const years = INDEX_STATE.map(c => c.foundedISO).filter(Boolean).map(x => Number(String(x).slice(0,4))).filter(Number.isFinite);
+        statFounded.textContent = years.length ? String(Math.min(...years)) : 'Onchain';
+    }
     renderIndex(idxLang());
     buildGraph();
+    restoreCompaniesReloadScroll();
 })();
 
 /* ── Sticky subnav: highlight active section on scroll ── */
@@ -4903,7 +4996,7 @@ function renderFramework(lang) {
 (function () {
     const I18N = {
         en: {
-            'nav.back': '← Back to Holding',
+            'nav.back': '← Back to The Holding',
             'subnav.collection': 'Collection',
             'subnav.how': 'How It Works',
             'subnav.platform': 'Platform',
@@ -4919,12 +5012,12 @@ function renderFramework(lang) {
             'strip.3.text': 'Every company is assembled under The Holding — with shared architecture, standards, and philosophy.',
             'stats.companies': 'Companies',
             'stats.tvl': 'Combined TVL',
-            'stats.protocols': 'Protocols in Use',
-            'stats.since': 'Founded',
+            'stats.protocols': 'Protocols & Assets',
+            'stats.since': 'Network Since',
             'collection.title': 'The Collection',
             'collection.count': 'companies',
             'filter.all': 'All Companies',
-            'filter.standard': 'Holding Standard',
+            'filter.standard': 'The Holding Standard',
             'filter.custom': 'Custom Build',
             'card.live': 'Live',
             'card.registry': 'Registry',
@@ -4936,6 +5029,7 @@ function renderFramework(lang) {
             'card3.sub': 'A Bitcoin-backed company built on Yield Basis — leveraged liquidity designed to maintain full BTC exposure while generating onchain yield.',
             'card4.founded': 'Est. Jan 3, 2025',
             'card4.sub': 'One of The Holding’s core onchain companies — a diversified system of long-term DeFi positions designed to generate durable cash flow onchain.',
+            'card5.sub': 'A Bitcoin-reserve company combining maximum-term ICP staking with long-lock positions in Aerodrome and Velodrome.',
             'card.tvl': 'Company TVL',
             'card.cashflow': 'APR',
             'card.explore': 'Explore Company',
@@ -4968,7 +5062,7 @@ function renderFramework(lang) {
             'index.note.body': 'Non-custodial by design. Performance is now part of the live Composite methodology. Deeper historical analytics — consistency, drawdowns, market-cycle behaviour, resilience and long-term reputation — will emerge as the network accumulates more operating history.',
             'graph.eyebrow': 'The Holding Graph',
             'graph.title': 'A live map of capital across the network.',
-            'graph.sub': 'Every company and the protocols it uses — one living map of the network\'s shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company\'s share of total index TVL. Yellow protocol nodes stay unchanged — their size reflects how many indexed companies connect to each protocol.',
+            'graph.sub': 'Every company and the protocols it uses — one living map of the network\'s shared onchain infrastructure. Green company nodes follow the selected Index view: Composite scales them by Index Weight, TVL by each company\'s share of total index TVL. Yellow protocol / asset nodes stay unchanged — their size reflects how many indexed companies connect to each node.',
             'graph.hint': 'Hover over any node to trace its relationships. As the network grows, the map will extend: Company → Asset → Protocol → Chain.',
             'process.title': 'How a company is born',
             'process.1.title': 'Identity',
@@ -4994,7 +5088,7 @@ function renderFramework(lang) {
             'footer.home': 'Home',
         },
         ru: {
-            'nav.back': '← Назад к Holding',
+            'nav.back': '← Назад к The Holding',
             'subnav.collection': 'Коллекция',
             'subnav.how': 'Как это работает',
             'subnav.platform': 'Платформа',
@@ -5015,7 +5109,7 @@ function renderFramework(lang) {
             'collection.title': 'Коллекция',
             'collection.count': 'компании',
             'filter.all': 'Все компании',
-            'filter.standard': 'Стандарт Holding',
+            'filter.standard': 'Стандарт The Holding',
             'filter.custom': 'Индивидуальная сборка',
             'card.live': 'Онлайн',
             'card.registry': 'Реестр',
@@ -5027,6 +5121,7 @@ function renderFramework(lang) {
             'card3.sub': 'Биткоин-компания на базе Yield Basis — ликвидность с плечом, созданная для сохранения полной экспозиции на BTC и генерации ончейн-доходности.',
             'card4.founded': 'Осн. 3 января 2025',
             'card4.sub': 'Одна из ключевых ончейн-компаний The Holding — диверсифицированная система долгосрочных DeFi-позиций, созданная для устойчивой генерации денежного потока ончейн.',
+            'card5.sub': 'Компания с резервом в Bitcoin, максимальным NNS-стейкингом ICP и долгосрочными ve-позициями в Aerodrome и Velodrome.',
             'card.tvl': 'TVL компании',
             'card.cashflow': 'APR',
             'card.explore': 'Перейти к компании',
@@ -5114,6 +5209,7 @@ function renderFramework(lang) {
             if (I18N[lang][key] !== undefined) el.innerHTML = I18N[lang][key];
         });
         syncCompanyAprDisplays(lang);
+        syncDynamicCompanyMetadata(lang);
         document.documentElement.lang = lang;
         document.documentElement.classList.toggle('is-ru', lang === 'ru');
         if (document.body) document.body.classList.toggle('is-ru', lang === 'ru');
