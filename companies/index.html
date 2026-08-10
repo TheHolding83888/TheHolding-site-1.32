@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -2569,9 +2568,12 @@
             .closing { padding: 4.5rem 0 5rem; }
             .footer-inner { flex-direction: column; text-align: center; }
             .subnav-inner {
-                justify-content: center;
-                gap: clamp(0.95rem, 4.2vw, 1.55rem);
-                padding: 1.02rem 0.95rem 0.98rem;
+                justify-content: space-between;
+                gap: 0;
+                width: 100%;
+                max-width: none;
+                box-sizing: border-box;
+                padding: 1.04rem 1rem 1rem;
                 overflow-x: visible;
             }
             .subnav a { font-size: 0.76rem; letter-spacing: 0.012em; }
@@ -2582,8 +2584,17 @@
             .cc-name { font-size: 1.9rem; }
         }
         @media (max-width: 460px) {
-            .subnav-inner { gap: clamp(0.68rem, 2.8vw, 1rem); padding-left: 0.72rem; padding-right: 0.72rem; }
-            .subnav a { font-size: 0.735rem; letter-spacing: 0.006em; }
+            .subnav .subnav-inner {
+                justify-content: space-between;
+                gap: 0;
+                width: 100%;
+                max-width: none;
+                padding: 1rem 0.82rem 0.96rem;
+            }
+            .subnav a {
+                font-size: clamp(0.69rem, 3vw, 0.735rem);
+                letter-spacing: 0.004em;
+            }
             .steps { grid-template-columns: 1fr; }
             .container { padding: 0 1.25rem; }
 
@@ -2724,7 +2735,28 @@
             #idxBoard { min-height: 304px; }
             #graphCanvas { min-height: 296px; }
         }
-    </style>
+    
+        /* Mobile subnav safeguard: placed last so generic .container rules
+           cannot compress the four navigation items. */
+        @media (max-width: 760px) {
+            .subnav > .subnav-inner {
+                justify-content: space-between;
+                gap: 0;
+                width: 100%;
+                max-width: none;
+                box-sizing: border-box;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+        @media (max-width: 460px) {
+            .subnav > .subnav-inner {
+                padding-left: 0.82rem;
+                padding-right: 0.82rem;
+            }
+        }
+
+</style>
 </head>
 <body>
 
