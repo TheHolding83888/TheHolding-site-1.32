@@ -3025,9 +3025,9 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.1.7-restored-layout-compact-ledger';
+const COMPANY_REWARDS_UI_VERSION = '0.2.0-defitea-multiwallet';
 let COMPANY_REWARDS_SNAPSHOT = null;
-const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth']);
+const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth', 'defitea.eth']);
 const COMPANY_ASSET_LABELS = {
     'bitcoin': 'BTC',
     'aerodrome-finance': 'veAERO',
@@ -3044,9 +3044,17 @@ const COMPANY_ASSET_LABELS = {
 };
 const REWARD_ROUTE_LABELS = {
     'aerodrome-relay': 'Aerodrome Relay',
+    'aerodrome-ve': 'Aerodrome',
+    'velodrome-ve': 'Velodrome',
     'curve-fees': 'Curve',
+    'curve-fees-votemarket': 'Curve · VoteMarket',
+    'pendle-spendle': 'Pendle',
+    'fx-fees-votemarket': 'f(x) · VoteMarket',
     'frax-yield': 'Frax',
     'yield-basis-fees': 'Yield Basis',
+    'venice-staking': 'Venice',
+    'liquity-staking': 'Liquity',
+    'resupply-staking': 'Resupply',
     'votium-union': 'Votium · The Union'
 };
 
@@ -3608,7 +3616,8 @@ function renderIndex(lang) {
                 rows += '<div class="ipx-reward-row">'
                     + '<div><div class="ipx-reward-protocol">' + (x.protocol || 'Protocol')
                     + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
-                    + '<div class="ipx-reward-meta">' + (x.symbol || 'TOKEN') + ' · ' + (x.chain || 'Onchain') + '</div></div>'
+                    + '<div class="ipx-reward-meta">' + (x.symbol || 'TOKEN') + ' · ' + (x.chain || 'Onchain')
+                    + (x.details && x.details.walletAlias ? ' · ' + x.details.walletAlias : '') + '</div></div>'
                     + '<div class="ipx-reward-right"><div class="ipx-reward-amount">' + fmtRewardQty(x.amount) + ' ' + (x.symbol || '') + '</div>'
                     + '<div class="ipx-reward-usd">' + fmtRewardUsd(x.usdValue) + '</div></div></div>';
             });
@@ -3616,8 +3625,11 @@ function renderIndex(lang) {
             const pending = sources.filter(s => s && s.status !== 'ok');
             pending.forEach(s => {
                 const label = REWARD_ROUTE_LABELS[s.route] || (s.protocol && !String(s.protocol).includes('-') ? s.protocol : 'Protocol');
+                const pendingText = s.status === 'partial'
+                    ? (lang === 'ru' ? 'Измерено частично · дополнительный reward route ожидается' : 'Measured · additional reward route pending')
+                    : L.measuring;
                 rows += '<div class="ipx-reward-row">'
-                    + '<div><div class="ipx-reward-protocol">' + label + '</div><div class="ipx-reward-meta">' + L.measuring + '</div></div>'
+                    + '<div><div class="ipx-reward-protocol">' + label + '</div><div class="ipx-reward-meta">' + pendingText + '</div></div>'
                     + '<div class="ipx-reward-right"><div class="ipx-reward-amount">—</div></div></div>';
             });
             if (!rows) rows = '<div class="ipx-reward-empty">' + (liveMeasured ? L.noAccrued : L.measuringOnchain) + '</div>';
