@@ -1,8 +1,8 @@
 {
-  "version": "0.2.2",
-  "collectorVersion": "0.2.2-defitea-reusd-votemarket-routes",
+  "version": "0.2.3",
+  "collectorVersion": "0.2.3-defitea-reusd-global-fix",
   "methodologyVersion": "0.2.2-earned-inside-protocols-multiwallet",
-  "generatedAt": "2026-08-10T11:30:31.694Z",
+  "generatedAt": "2026-08-10T11:37:38.232Z",
   "date": "2026-08-10",
   "scope": "protocol-side accrued rewards for Personal Onchain Companies and Defitea Fund",
   "methodology": {
@@ -17,7 +17,7 @@
     "frax": "Fraxtal YieldDistributor.earned(account), with emitted reward token discovered onchain.",
     "venice": "StakingV2.pendingRewards(user) on Base.",
     "liquity": "LQTYStaking pending ETH and LUSD gains.",
-    "resupply": "GovStaker reward tokens are dynamically enumerated and earned(account, token) is read onchain.",
+    "resupply": "GovStaker reward tokens are dynamically enumerated and earned(account, token) is read onchain. reUSD is valued with an explicit 1:1 USD parity assumption.",
     "tvlTreatment": "Accrued Rewards remain separate from Company TVL and Treasury cash."
   },
   "rpc": {
@@ -42,7 +42,7 @@
           "fallbackMatched": true
         }
       ],
-      "totalUsd": 1.355961,
+      "totalUsd": 1.356851,
       "totalUsdIsComplete": true,
       "routeCoverage": 1,
       "completeRouteCoverage": 1,
@@ -63,8 +63,8 @@
           "amount": 2.0257877309,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.849571,
-          "priceUsd": 0.419378,
+          "usdValue": 0.849006,
+          "priceUsd": 0.419099,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -108,13 +108,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1349742288086883883",
+          "amountRaw": "1350020889103896314",
           "decimals": 18,
-          "amount": 1.3497422881,
+          "amount": 1.3500208891,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.421309,
-          "priceUsd": 0.31214,
+          "usdValue": 0.422764,
+          "priceUsd": 0.313154,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -130,7 +130,7 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 2.0257877309,
-          "usdValue": 0.849571
+          "usdValue": 0.849006
         },
         {
           "symbol": "crvUSD",
@@ -141,8 +141,8 @@
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.3497422881,
-          "usdValue": 0.421309
+          "amount": 1.3500208891,
+          "usdValue": 0.422764
         }
       ],
       "sources": [
@@ -207,7 +207,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T11:30:31.694Z"
+      "updatedAt": "2026-08-10T11:37:38.232Z"
     },
     "YieldRing.eth": {
       "status": "partial",
@@ -224,7 +224,7 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 1.086632,
+      "totalUsd": 1.087749,
       "totalUsdIsComplete": false,
       "routeCoverage": 0.666667,
       "completeRouteCoverage": 0.666667,
@@ -245,8 +245,8 @@
           "amount": 1.5785400672,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.662005,
-          "priceUsd": 0.419378,
+          "usdValue": 0.661565,
+          "priceUsd": 0.419099,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -269,13 +269,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1360372870034118054",
+          "amountRaw": "1360939440421605764",
           "decimals": 18,
-          "amount": 1.36037287,
+          "amount": 1.3609394404,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.424627,
-          "priceUsd": 0.31214,
+          "usdValue": 0.426184,
+          "priceUsd": 0.313154,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -291,13 +291,13 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 1.5785400672,
-          "usdValue": 0.662005
+          "usdValue": 0.661565
         },
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.36037287,
-          "usdValue": 0.424627
+          "amount": 1.3609394404,
+          "usdValue": 0.426184
         }
       ],
       "sources": [
@@ -358,7 +358,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T11:30:31.694Z"
+      "updatedAt": "2026-08-10T11:37:38.232Z"
     },
     "dinaz.eth": {
       "status": "ok",
@@ -375,7 +375,7 @@
           "fallbackMatched": true
         }
       ],
-      "totalUsd": 3.9472,
+      "totalUsd": 3.947719,
       "totalUsdIsComplete": true,
       "routeCoverage": 1,
       "completeRouteCoverage": 1,
@@ -396,8 +396,8 @@
           "amount": 0.0000273526,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.791852,
-          "priceUsd": 65040,
+          "usdValue": 1.7921,
+          "priceUsd": 65049,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -425,8 +425,8 @@
           "amount": 0.0000199489,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.304951,
-          "priceUsd": 65020,
+          "usdValue": 1.305052,
+          "priceUsd": 65025,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -454,16 +454,16 @@
           "amount": 0.0000130356,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.850397,
-          "priceUsd": 64959,
+          "usdValue": 0.850567,
+          "priceUsd": 64972,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "13091283462536",
-            "redeemAmount": 0.000013091283,
+            "redeemAmountRaw": "13091282016242",
+            "redeemAmount": 0.000013091282,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -478,19 +478,19 @@
           "symbol": "yb-WBTC",
           "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
           "amount": 0.0000273526,
-          "usdValue": 1.791852
+          "usdValue": 1.7921
         },
         {
           "symbol": "yb-cbBTC",
           "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
           "amount": 0.0000199489,
-          "usdValue": 1.304951
+          "usdValue": 1.305052
         },
         {
           "symbol": "yb-tBTC",
           "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
           "amount": 0.0000130356,
-          "usdValue": 0.850397
+          "usdValue": 0.850567
         }
       ],
       "sources": [
@@ -515,7 +515,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T11:30:31.694Z"
+      "updatedAt": "2026-08-10T11:37:38.232Z"
     },
     "defitea.eth": {
       "status": "partial",
@@ -539,7 +539,7 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 72.3109,
+      "totalUsd": 75.616208,
       "totalUsdIsComplete": false,
       "routeCoverage": 0.769231,
       "completeRouteCoverage": 0.615385,
@@ -547,7 +547,7 @@
       "completeRoutes": 8,
       "routeCount": 13,
       "pendingRoutes": 5,
-      "unpricedRewards": 1,
+      "unpricedRewards": 0,
       "rewards": [
         {
           "protocol": "Aerodrome",
@@ -560,8 +560,8 @@
           "amount": 100.8796279017,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 42.308714,
-          "priceUsd": 0.419398,
+          "usdValue": 42.278551,
+          "priceUsd": 0.419099,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -626,8 +626,8 @@
           "amount": 0.0008947155,
           "classification": "unclaimed",
           "source": "onchain: f(x) FeeDistributor.claim staticCall",
-          "usdValue": 2.129727,
-          "priceUsd": 2380.34,
+          "usdValue": 2.13055,
+          "priceUsd": 2381.26,
           "priceMethod": "coingecko:wrapped-steth",
           "details": {
             "symbol": "wstETH",
@@ -651,8 +651,8 @@
           "amount": 0.0005834247,
           "classification": "unclaimed",
           "source": "onchain: f(x) FeeDistributor.claim staticCall",
-          "usdValue": 1.388749,
-          "priceUsd": 2380.34,
+          "usdValue": 1.389286,
+          "priceUsd": 2381.26,
           "priceMethod": "coingecko:wrapped-steth",
           "details": {
             "symbol": "wstETH",
@@ -676,16 +676,16 @@
           "amount": 0.0008723183,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.580937,
-          "priceUsd": 1917.32,
+          "usdValue": 1.581844,
+          "priceUsd": 1918.42,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "824555766741007",
-            "redeemAmount": 0.000824555767,
+            "redeemAmountRaw": "824555496410572",
+            "redeemAmount": 0.000824555496,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -705,8 +705,8 @@
           "amount": 0.0000623276,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 4.077404,
-          "priceUsd": 65020,
+          "usdValue": 4.078031,
+          "priceUsd": 65030,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -734,8 +734,8 @@
           "amount": 0.0000518369,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 3.395738,
-          "priceUsd": 65040,
+          "usdValue": 3.396208,
+          "priceUsd": 65049,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -763,16 +763,16 @@
           "amount": 0.0000261816,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.708017,
-          "priceUsd": 64960,
+          "usdValue": 1.708306,
+          "priceUsd": 64971,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "26293359337239",
-            "redeemAmount": 0.000026293359,
+            "redeemAmountRaw": "26293356514204",
+            "redeemAmount": 0.000026293357,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -792,16 +792,16 @@
           "amount": 0.0002754134,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.533874,
-          "priceUsd": 1917.32,
+          "usdValue": 0.53418,
+          "priceUsd": 1918.42,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "278448178673571",
-            "redeemAmount": 0.000278448179,
+            "redeemAmountRaw": "278447814919791",
+            "redeemAmount": 0.000278447815,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -821,16 +821,16 @@
           "amount": 0.0006126452,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.110321,
-          "priceUsd": 1917.32,
+          "usdValue": 1.110958,
+          "priceUsd": 1918.42,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "579100671210744",
-            "redeemAmount": 0.000579100671,
+            "redeemAmountRaw": "579100481500216",
+            "redeemAmount": 0.000579100482,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -850,8 +850,8 @@
           "amount": 0.0000274318,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.794552,
-          "priceUsd": 65020,
+          "usdValue": 1.794828,
+          "priceUsd": 65030,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -879,8 +879,8 @@
           "amount": 0.000020527,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.344377,
-          "priceUsd": 65040,
+          "usdValue": 1.344563,
+          "priceUsd": 65049,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -908,16 +908,16 @@
           "amount": 0.0000108571,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.70829,
-          "priceUsd": 64960,
+          "usdValue": 0.708409,
+          "priceUsd": 64971,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "10903473403144",
-            "redeemAmount": 0.000010903473,
+            "redeemAmountRaw": "10903472232472",
+            "redeemAmount": 0.000010903472,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -937,16 +937,16 @@
           "amount": 0.0001459869,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.282988,
-          "priceUsd": 1917.32,
+          "usdValue": 0.28315,
+          "priceUsd": 1918.42,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "147595497563450",
-            "redeemAmount": 0.000147595498,
+            "redeemAmountRaw": "147595304750481",
+            "redeemAmount": 0.000147595305,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -961,13 +961,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "10032951027664072195",
+          "amountRaw": "10034247741015536288",
           "decimals": 18,
-          "amount": 10.0329510277,
+          "amount": 10.034247741,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 3.132558,
-          "priceUsd": 0.312227,
+          "usdValue": 3.142265,
+          "priceUsd": 0.313154,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -983,13 +983,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "2815724616358460630",
+          "amountRaw": "2816059389005230535",
           "decimals": 18,
-          "amount": 2.8157246164,
+          "amount": 2.816059389,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.879145,
-          "priceUsd": 0.312227,
+          "usdValue": 0.88186,
+          "priceUsd": 0.313154,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -1005,12 +1005,12 @@
           "chain": "Base",
           "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
           "symbol": "VVV",
-          "amountRaw": "109991618895065355",
+          "amountRaw": "110038237243109998",
           "decimals": 18,
-          "amount": 0.1099916189,
+          "amount": 0.1100382372,
           "classification": "unclaimed",
           "source": "onchain: Venice StakingV2.pendingRewards",
-          "usdValue": 1.326499,
+          "usdValue": 1.327061,
           "priceUsd": 12.06,
           "priceMethod": "coingecko:venice-token",
           "details": {
@@ -1026,14 +1026,14 @@
           "chain": "Ethereum",
           "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
           "symbol": "reUSD",
-          "amountRaw": "3316541827974234322",
+          "amountRaw": "3317147988037921405",
           "decimals": 18,
-          "amount": 3.316541828,
+          "amount": 3.317147988,
           "classification": "unclaimed",
           "source": "onchain: GovStaker.earned(account,rewardToken)",
-          "usdValue": null,
-          "priceUsd": null,
-          "priceMethod": null,
+          "usdValue": 3.317148,
+          "priceUsd": 1,
+          "priceMethod": "fixed-usd-assumption",
           "details": {
             "symbol": "reUSD",
             "coingeckoId": null,
@@ -1049,7 +1049,7 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 100.8796279017,
-          "usdValue": 42.308714
+          "usdValue": 42.278551
         },
         {
           "symbol": "crvUSD",
@@ -1061,55 +1061,55 @@
           "symbol": "wstETH",
           "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
           "amount": 0.0014781402,
-          "usdValue": 3.518476
+          "usdValue": 3.519836
         },
         {
           "symbol": "yb-WETH",
           "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
           "amount": 0.0014849635,
-          "usdValue": 2.691258
+          "usdValue": 2.692802
         },
         {
           "symbol": "yb-cbBTC",
           "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
           "amount": 0.0000897594,
-          "usdValue": 5.871956
+          "usdValue": 5.872859
         },
         {
           "symbol": "yb-WBTC",
           "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
           "amount": 0.0000723639,
-          "usdValue": 4.740115
+          "usdValue": 4.740771
         },
         {
           "symbol": "yb-tBTC",
           "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
           "amount": 0.0000370387,
-          "usdValue": 2.416307
+          "usdValue": 2.416715
         },
         {
           "symbol": "yb-WETH",
           "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
           "amount": 0.0004214003,
-          "usdValue": 0.816862
+          "usdValue": 0.81733
         },
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 12.8486756441,
-          "usdValue": 4.011703
+          "amount": 12.85030713,
+          "usdValue": 4.024125
         },
         {
           "symbol": "VVV",
           "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
-          "amount": 0.1099916189,
-          "usdValue": 1.326499
+          "amount": 0.1100382372,
+          "usdValue": 1.327061
         },
         {
           "symbol": "reUSD",
           "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
-          "amount": 3.316541828,
-          "usdValue": null
+          "amount": 3.317147988,
+          "usdValue": 3.317148
         }
       ],
       "sources": [
@@ -1605,25 +1605,25 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T11:30:31.694Z"
+      "updatedAt": "2026-08-10T11:37:38.232Z"
     }
   },
   "engineErrors": {},
   "history": [
     {
       "date": "2026-08-10",
-      "generatedAt": "2026-08-10T11:30:31.694Z",
+      "generatedAt": "2026-08-10T11:37:38.232Z",
       "companies": {
         "05081966.eth": {
           "status": "ok",
-          "totalUsd": 1.355961,
+          "totalUsd": 1.356851,
           "totalUsdIsComplete": true,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 2.0257877309,
-              "usdValue": 0.849571
+              "usdValue": 0.849006
             },
             {
               "symbol": "crvUSD",
@@ -1634,65 +1634,65 @@
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.3497422881,
-              "usdValue": 0.421309
+              "amount": 1.3500208891,
+              "usdValue": 0.422764
             }
           ]
         },
         "YieldRing.eth": {
           "status": "partial",
-          "totalUsd": 1.086632,
+          "totalUsd": 1.087749,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 1.5785400672,
-              "usdValue": 0.662005
+              "usdValue": 0.661565
             },
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.36037287,
-              "usdValue": 0.424627
+              "amount": 1.3609394404,
+              "usdValue": 0.426184
             }
           ]
         },
         "dinaz.eth": {
           "status": "ok",
-          "totalUsd": 3.9472,
+          "totalUsd": 3.947719,
           "totalUsdIsComplete": true,
           "rewardTokens": [
             {
               "symbol": "yb-WBTC",
               "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
               "amount": 0.0000273526,
-              "usdValue": 1.791852
+              "usdValue": 1.7921
             },
             {
               "symbol": "yb-cbBTC",
               "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
               "amount": 0.0000199489,
-              "usdValue": 1.304951
+              "usdValue": 1.305052
             },
             {
               "symbol": "yb-tBTC",
               "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
               "amount": 0.0000130356,
-              "usdValue": 0.850397
+              "usdValue": 0.850567
             }
           ]
         },
         "defitea.eth": {
           "status": "partial",
-          "totalUsd": 72.3109,
+          "totalUsd": 75.616208,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 100.8796279017,
-              "usdValue": 42.308714
+              "usdValue": 42.278551
             },
             {
               "symbol": "crvUSD",
@@ -1704,55 +1704,55 @@
               "symbol": "wstETH",
               "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
               "amount": 0.0014781402,
-              "usdValue": 3.518476
+              "usdValue": 3.519836
             },
             {
               "symbol": "yb-WETH",
               "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
               "amount": 0.0014849635,
-              "usdValue": 2.691258
+              "usdValue": 2.692802
             },
             {
               "symbol": "yb-cbBTC",
               "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
               "amount": 0.0000897594,
-              "usdValue": 5.871956
+              "usdValue": 5.872859
             },
             {
               "symbol": "yb-WBTC",
               "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
               "amount": 0.0000723639,
-              "usdValue": 4.740115
+              "usdValue": 4.740771
             },
             {
               "symbol": "yb-tBTC",
               "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
               "amount": 0.0000370387,
-              "usdValue": 2.416307
+              "usdValue": 2.416715
             },
             {
               "symbol": "yb-WETH",
               "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
               "amount": 0.0004214003,
-              "usdValue": 0.816862
+              "usdValue": 0.81733
             },
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 12.8486756441,
-              "usdValue": 4.011703
+              "amount": 12.85030713,
+              "usdValue": 4.024125
             },
             {
               "symbol": "VVV",
               "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
-              "amount": 0.1099916189,
-              "usdValue": 1.326499
+              "amount": 0.1100382372,
+              "usdValue": 1.327061
             },
             {
               "symbol": "reUSD",
               "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
-              "amount": 3.316541828,
-              "usdValue": null
+              "amount": 3.317147988,
+              "usdValue": 3.317148
             }
           ]
         }
