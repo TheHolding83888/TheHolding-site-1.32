@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
+import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.9';
-const COLLECTOR_VERSION = '0.2.9-company-005-musd-pricing';
+const VERSION = '0.3.0';
+const COLLECTOR_VERSION = '0.3.0-historical-ve-vote-pools';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -28,6 +28,19 @@ const CHAIN_META = {
   8453: { key: 'base', name: 'Base', platform: 'base' },
   42161: { key: 'arbitrum', name: 'Arbitrum', platform: 'arbitrum-one' }
 };
+
+const BLOCKSCOUT = {
+  base: ['https://base.blockscout.com'],
+  optimism: ['https://optimism.blockscout.com', 'https://explorer.optimism.io']
+};
+
+// Both Aerodrome and Velodrome emit the same indexed Voted event. tokenId is
+// topic3, which lets Blockscout reconstruct every pool a direct veNFT has ever
+// voted for without replaying the whole chain or relying on current poolVote().
+const VOTED_EVENT_IFACE = new Interface([
+  'event Voted(address indexed voter,address indexed pool,uint256 indexed tokenId,uint256 weight,uint256 totalWeight,uint256 timestamp)'
+]);
+const VOTED_TOPIC0 = VOTED_EVENT_IFACE.getEvent('Voted').topicHash;
 
 const ADDR = {
   aerodrome: {
@@ -431,6 +444,97 @@ async function enumerateRewardContract(rewardAddress, tokenId, provider, context
   return { rewards: out, issue: null };
 }
 
+
+function topicForUint256(value) {
+  return `0x${BigInt(value).toString(16).padStart(64, '0')}`;
+}
+
+function topicToAddress(topic) {
+  const s = String(topic || '').replace(/^0x/, '');
+  if (s.length !== 64) throw new Error(`Invalid indexed address topic: ${topic}`);
+  return getAddress(`0x${s.slice(24)}`);
+}
+
+function logBlockNumber(value) {
+  if (typeof value === 'number') return value;
+  const s = String(value || '');
+  const n = s.startsWith('0x') ? Number.parseInt(s, 16) : Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+async function blockscoutVotedLogs(providerKey, voterAddress, tokenId, provider) {
+  const bases = BLOCKSCOUT[providerKey] || [];
+  if (!bases.length) throw new Error(`No Blockscout endpoint configured for ${providerKey}`);
+  const latestBlock = await provider.getBlockNumber();
+  const topic3 = topicForUint256(tokenId);
+  let lastError = null;
+
+  async function fetchRange(base, fromBlock, toBlock, depth = 0) {
+    const qs = new URLSearchParams({
+      module: 'logs', action: 'getLogs',
+      fromBlock: String(fromBlock), toBlock: String(toBlock),
+      address: voterAddress,
+      topic0: VOTED_TOPIC0,
+      topic3,
+      topic0_3_opr: 'and'
+    });
+    const data = await fetchJsonRetry(`${base}/api?${qs.toString()}`, {}, 20000, 2);
+    let logs = Array.isArray(data?.result) ? data.result : [];
+    if (!Array.isArray(data?.result)) {
+      const msg = String(data?.message || data?.result || '');
+      if (/no logs|no records|not found/i.test(msg)) logs = [];
+      else throw new Error(`Unexpected Blockscout logs response: ${msg || 'unknown'}`);
+    }
+
+    // Blockscout's legacy logs endpoint caps a response at 1,000 records.
+    // Split a saturated range recursively so completeness is proven rather
+    // than assuming a truncated result is exhaustive.
+    if (logs.length >= 1000) {
+      if (fromBlock >= toBlock || depth >= 32) {
+        throw new Error(`Blockscout 1,000-log cap could not be split at block ${fromBlock}`);
+      }
+      const mid = Math.floor((fromBlock + toBlock) / 2);
+      const left = await fetchRange(base, fromBlock, mid, depth + 1);
+      const right = await fetchRange(base, mid + 1, toBlock, depth + 1);
+      return [...left, ...right];
+    }
+    return logs;
+  }
+
+  for (const base of bases) {
+    try {
+      const logs = await fetchRange(base, 0, latestBlock);
+      const seen = new Set();
+      const normalized = [];
+      for (const log of logs) {
+        const topics = Array.isArray(log?.topics) ? log.topics : [];
+        if (String(topics[0] || '').toLowerCase() !== VOTED_TOPIC0.toLowerCase()) continue;
+        if (String(topics[3] || '').toLowerCase() !== topic3.toLowerCase()) continue;
+        const key = `${log.transactionHash || log.transaction_hash || ''}:${log.logIndex || log.log_index || ''}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        normalized.push({
+          pool: topicToAddress(topics[2]),
+          blockNumber: logBlockNumber(log.blockNumber ?? log.block_number),
+          transactionHash: log.transactionHash || log.transaction_hash || null,
+          logIndex: log.logIndex ?? log.log_index ?? null
+        });
+      }
+      normalized.sort((a, b) => (a.blockNumber || 0) - (b.blockNumber || 0));
+      return {
+        status: 'ok', source: `${base}/api?module=logs`, latestBlock,
+        logCount: normalized.length,
+        pools: [...new Set(normalized.map(x => x.pool))],
+        firstVoteBlock: normalized.find(x => x.blockNumber)?.blockNumber || null,
+        lastVoteBlock: [...normalized].reverse().find(x => x.blockNumber)?.blockNumber || null
+      };
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError || new Error(`Historical Voted log discovery failed for ${providerKey}`);
+}
+
 async function collectVeProtocol(address, registry, kind, routeOverride=null) {
   const cfg = VE_PROTOCOLS[kind];
   const route = routeOverride || cfg.route;
@@ -441,6 +545,7 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
   const positions = [];
   const issues = [];
   let managedCount = 0, directCount = 0;
+  let directHistoryComplete = true;
 
   for (let i = 0; i < nftCount; i++) {
     const tokenId = await ve.ownerToNFTokenIdList(address, i);
@@ -511,7 +616,20 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
         pools.push(pool);
       } catch { break; }
     }
-    for (const pool of [...new Set(pools)]) {
+
+    let voteHistory = null;
+    try {
+      voteHistory = await blockscoutVotedLogs(cfg.providerKey, cfg.voter, tokenId, provider);
+    } catch (e) {
+      directHistoryComplete = false;
+      issues.push(`Historical Voted logs ${tokenId}: ${e.message || e}`);
+    }
+    const historicalPools = voteHistory?.pools || [];
+    const allPools = [...new Set([...pools, ...historicalPools])];
+    const currentPoolSet = new Set(pools.map(x => x.toLowerCase()));
+    const oldNoLongerVotedPools = historicalPools.filter(x => !currentPoolSet.has(x.toLowerCase()));
+
+    for (const pool of allPools) {
       try {
         const gauge = getAddress(await voter.gauges(pool));
         if (!gauge || gauge === ZeroAddress) continue;
@@ -533,22 +651,40 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
         }
       } catch (e) { issues.push(`Voter pool ${pool}: ${e.shortMessage || e.message}`); }
     }
-    positions.push({ tokenId: tokenId.toString(), mode: 'direct', currentVotedPools: pools });
+    positions.push({
+      tokenId: tokenId.toString(), mode: 'direct',
+      currentVotedPools: pools,
+      historicalVotedPools: historicalPools,
+      oldNoLongerVotedPools,
+      allVotedPools: allPools,
+      historyDiscovery: voteHistory
+    });
   }
 
-  // Direct NFTs can retain old unclaimed voting rewards from pools that are no longer
-  // in current poolVote(). Those historical pools cannot be exhaustively discovered
-  // from a cheap current-state read, so direct mode is intentionally partial.
-  const directCaveat = directCount > 0;
+  // For direct veNFTs, completeness is now proven from the indexed Voter.Voted
+  // event history. Every pool ever voted by the tokenId is re-opened and its
+  // current reward contracts are queried with earned(token, tokenId), which
+  // itself accounts for historical weekly checkpoints since the last claim.
+  const directCaveat = directCount > 0 && !directHistoryComplete;
   const status = directCaveat || issues.length ? 'partial' : 'ok';
+  let note;
+  if (directCaveat) {
+    note = 'Current direct-vote pools are measured, but complete historical Voter.Voted log discovery was unavailable for at least one veNFT; route remains partial rather than assuming completeness.';
+  } else if (directCount > 0) {
+    note = 'Direct veNFT rewards are measured across every pool found in complete Voter.Voted event history, including old no-longer-voted pools. Managed/Relay positions are measured directly.';
+  } else if (issues.length) {
+    note = 'Managed position measured with one or more non-fatal reward-enumeration gaps.';
+  } else {
+    note = 'Managed/Relay rewards measured from current protocol state.';
+  }
   return {
     source: {
       protocol: cfg.protocol, route, status, chain: cfg.chain,
-      metric: 'veNFT current accrued rewards + managed compounding',
-      note: directCaveat
-        ? 'Current direct-vote pools are measured, but old no-longer-voted pools may still contain unclaimed rewards. Managed/Relay positions are measured directly.'
-        : issues.length ? 'Managed position measured with one or more non-fatal reward-enumeration gaps.' : 'Managed/Relay rewards measured from current protocol state.',
-      details: { veNftCount: nftCount, managedPositions: managedCount, directPositions: directCount, issues }
+      metric: directCount > 0
+        ? 'veNFT accrued rewards across complete Voter vote history + managed compounding'
+        : 'veNFT current accrued rewards + managed compounding',
+      note,
+      details: { veNftCount: nftCount, managedPositions: managedCount, directPositions: directCount, historicalVoteDiscoveryComplete: !directCaveat, issues }
     },
     rewards,
     details: { veNftCount: nftCount, positions }
@@ -1860,7 +1996,7 @@ async function main() {
     methodology: {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
       multiWallet: 'Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.',
-      aerodromeVelodrome: 'Aerodrome managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories, then reads current rewards at the actual holder. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
+      aerodromeVelodrome: 'Aerodrome and Velodrome direct veNFT routes reconstruct every historically voted pool from indexed Voter.Voted events, then query each pool’s voting-reward contracts for still-unclaimed rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
       curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
       pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.',
