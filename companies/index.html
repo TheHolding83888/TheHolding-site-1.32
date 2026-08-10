@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.1 · navigation polish -->
+<!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -2365,16 +2364,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(1.5rem, 4vw, 3.6rem);
-            padding: 1.12rem 1.5rem 1.08rem;
+            gap: clamp(2.4rem, 6vw, 5.75rem);
+            padding: 1.2rem 1.75rem 1.16rem;
             overflow-x: auto;
             scrollbar-width: none;
         }
         .subnav-inner::-webkit-scrollbar { display: none; }
         .subnav a {
-            font-size: 0.8rem;
+            font-size: 0.88rem;
             font-weight: 500;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.025em;
             color: var(--text-3);
             text-decoration: none;
             white-space: nowrap;
@@ -2538,6 +2537,16 @@
             transform: translateY(0);
         }
 
+        /* ── Laptop navigation breathing room ─────────── */
+        @media (min-width: 761px) and (max-width: 1180px) {
+            .subnav-inner {
+                gap: clamp(2.1rem, 5vw, 4.15rem);
+                padding-left: 1.6rem;
+                padding-right: 1.6rem;
+            }
+            .subnav a { font-size: 0.86rem; }
+        }
+
         /* ── Mobile ───────────────────────────────────── */
         @media (max-width: 760px) {
             .hero { padding: 4.5rem 0 3.75rem; }
@@ -2547,12 +2556,12 @@
             .closing { padding: 4.5rem 0 5rem; }
             .footer-inner { flex-direction: column; text-align: center; }
             .subnav-inner {
-                justify-content: space-between;
-                gap: 0.75rem;
-                padding: 0.98rem 1.05rem 0.94rem;
+                justify-content: center;
+                gap: clamp(0.95rem, 4.2vw, 1.55rem);
+                padding: 1.02rem 0.95rem 0.98rem;
                 overflow-x: visible;
             }
-            .subnav a { font-size: 0.71rem; letter-spacing: 0.015em; }
+            .subnav a { font-size: 0.76rem; letter-spacing: 0.012em; }
 
             /* premium card — tablet/large phone */
             .grid { gap: 1.35rem; }
@@ -2560,8 +2569,8 @@
             .cc-name { font-size: 1.9rem; }
         }
         @media (max-width: 460px) {
-            .subnav-inner { gap: 0.48rem; padding-left: 0.9rem; padding-right: 0.9rem; }
-            .subnav a { font-size: 0.675rem; }
+            .subnav-inner { gap: clamp(0.68rem, 2.8vw, 1rem); padding-left: 0.72rem; padding-right: 0.72rem; }
+            .subnav a { font-size: 0.735rem; letter-spacing: 0.006em; }
             .steps { grid-template-columns: 1fr; }
             .container { padding: 0 1.25rem; }
 
