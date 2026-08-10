@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.6';
-const COLLECTOR_VERSION = '0.2.6-defitea-votemarket-proof-votes';
+const VERSION = '0.2.7';
+const COLLECTOR_VERSION = '0.2.7-defitea-votemarket-ptoken-pricing';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -214,6 +214,14 @@ const VOTEMARKET_ORACLE_LENS_ABI = [
   'function isVoteValid(address account,address gauge,uint256 epoch) view returns (bool)',
   'function getAccountVotes(address account,address gauge,uint256 epoch) view returns (uint256)'
 ];
+const LAPOSTE_TOKEN_FACTORY_ABI = [
+  'function isWrapped(address token) view returns (bool)',
+  'function nativeTokens(address wrappedToken) view returns (address)'
+];
+const LAPOSTE = {
+  tokenFactory: '0x96006425Da428E45c282008b00004a00002B345e',
+  mainChainId: 1
+};
 
 const VOTEMARKET = {
   proofBase: 'https://raw.githubusercontent.com/stake-dao/api/main/api/votemarket',
@@ -229,6 +237,7 @@ const voteMarketJsonCache = new Map();
 const voteMarketContractCache = new Map();
 const voteMarketTokenMetaCache = new Map();
 const voteMarketClaimWindowCache = new Map();
+const voteMarketWrappedRewardCache = new Map();
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const n = x => Number(x);
@@ -243,6 +252,9 @@ const COINGECKO_IDS = {
   PENDLE: 'pendle',
   SPENDLE: 'pendle',
   WFRAX: 'wrapped-frax',
+  USDC: 'usd-coin',
+  FXN: 'fxn-token',
+  RSUP: 'resupply',
   FRAX: 'frax',
   FXS: 'frax',
   WBTC: 'wrapped-bitcoin',
@@ -827,6 +839,39 @@ async function voteMarketTokenMeta(provider, chainId, token) {
   return voteMarketTokenMetaCache.get(key);
 }
 
+async function resolveVoteMarketWrappedReward(provider, registry, chainId, rewardToken, rewardMeta) {
+  if (Number(chainId) === LAPOSTE.mainChainId) return null;
+  const key = `${chainId}:${String(rewardToken).toLowerCase()}`;
+  if (voteMarketWrappedRewardCache.has(key)) return voteMarketWrappedRewardCache.get(key);
+  const pending = (async () => {
+    try {
+      const factory = new Contract(LAPOSTE.tokenFactory, LAPOSTE_TOKEN_FACTORY_ABI, provider);
+      const [wrapped, nativeRaw] = await Promise.all([
+        factory.isWrapped(rewardToken),
+        factory.nativeTokens(rewardToken)
+      ]);
+      if (!wrapped || !nativeRaw || String(nativeRaw).toLowerCase() === ZeroAddress.toLowerCase()) return null;
+      const nativeToken = getAddress(nativeRaw);
+      const ethProvider = await registry.get('ethereum');
+      const nativeMeta = await tokenMeta(ethProvider, nativeToken);
+      if (Number(nativeMeta.decimals) !== Number(rewardMeta.decimals)) {
+        return { valid:false, reason:`LaPoste decimals mismatch ${rewardMeta.decimals} != ${nativeMeta.decimals}`, nativeToken, nativeSymbol:nativeMeta.symbol, nativeDecimals:nativeMeta.decimals };
+      }
+      return {
+        valid: true,
+        nativeToken,
+        nativeSymbol: nativeMeta.symbol,
+        nativeDecimals: nativeMeta.decimals,
+        coingeckoId: COINGECKO_IDS[String(nativeMeta.symbol || '').toUpperCase()] || null
+      };
+    } catch (e) {
+      return { valid:false, reason:e.shortMessage || e.message || String(e) };
+    }
+  })();
+  voteMarketWrappedRewardCache.set(key, pending);
+  return pending;
+}
+
 async function voteMarketClaimWindow(vm, chainId, platform) {
   const key = `${chainId}:${platform.toLowerCase()}`;
   if (!voteMarketClaimWindowCache.has(key)) {
@@ -1120,10 +1165,22 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
         }
 
         const meta = await voteMarketTokenMeta(provider, candidate.chainId, rewardToken);
+        const wrappedReward = await resolveVoteMarketWrappedReward(provider, registry, candidate.chainId, rewardToken, meta);
+        if (String(meta.symbol || '').startsWith('p') && (!wrappedReward || !wrappedReward.valid)) {
+          issues.push(`campaign ${campaignId} epoch ${candidate.epoch} chain ${candidate.chainId}: LaPoste native-token mapping unavailable${wrappedReward?.reason ? ` (${wrappedReward.reason})` : ''}`);
+          diag.status = 'ptoken-native-mapping-incomplete';
+          diag.symbol = meta.symbol;
+          diag.decimals = meta.decimals;
+          continue;
+        }
         measuredUnclaimedPeriods++;
         diag.status = 'measured-unclaimed';
         diag.symbol = meta.symbol;
         diag.decimals = meta.decimals;
+        if (wrappedReward?.valid) {
+          diag.laPosteNativeToken = wrappedReward.nativeToken;
+          diag.laPosteNativeSymbol = wrappedReward.nativeSymbol;
+        }
 
         rewards.push(rewardBase({
           protocol,
@@ -1158,7 +1215,17 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
             calculation: 'accountVotes * rewardPerVote / 1e18, less Votemarket fee',
             pricePlatform: chainMeta.platform,
             priceContract: rewardToken,
-            coingeckoId: COINGECKO_IDS[String(meta.symbol || '').toUpperCase()] || null
+            coingeckoId: COINGECKO_IDS[String(meta.symbol || '').toUpperCase()] || null,
+            ...(wrappedReward?.valid ? {
+              laPosteWrapped: true,
+              laPosteTokenFactory: LAPOSTE.tokenFactory,
+              redeemSymbol: wrappedReward.nativeSymbol,
+              redeemAmount: n(formatUnits(raw, meta.decimals)),
+              redemptionPricePlatform: 'ethereum',
+              redemptionPriceContract: wrappedReward.nativeToken,
+              redemptionCoingeckoId: wrappedReward.coingeckoId,
+              redemptionRatio: '1:1'
+            } : {})
           }
         }));
       } catch (e) {
@@ -1620,7 +1687,7 @@ async function applyPrices(rewards) {
   }
   for (const r of rewards) {
     addContract(r.details?.pricePlatform, r.details?.priceContract);
-    addContract(r.details?.pricePlatform || 'ethereum', r.details?.redemptionPriceContract);
+    addContract(r.details?.redemptionPricePlatform || r.details?.pricePlatform || 'ethereum', r.details?.redemptionPriceContract);
     // Backward compatibility for v0.1.1 YB objects if old history/data is ever reused.
     addContract('ethereum', r.details?.priceByEthereumContract);
   }
@@ -1648,7 +1715,7 @@ async function applyPrices(rewards) {
     const directPlatform = r.details?.pricePlatform;
     const directContract = r.details?.priceContract?.toLowerCase();
     const redemptionContract = (r.details?.redemptionPriceContract || r.details?.priceByEthereumContract)?.toLowerCase();
-    const redemptionPlatform = r.details?.pricePlatform || 'ethereum';
+    const redemptionPlatform = r.details?.redemptionPricePlatform || r.details?.pricePlatform || 'ethereum';
     const redemptionCgId = r.details?.redemptionCoingeckoId;
     const redeemAmount = r.details?.redeemAmount;
 
@@ -1786,10 +1853,10 @@ async function main() {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
       multiWallet: 'Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.',
       aerodromeVelodrome: 'Aerodrome managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories, then reads current rewards at the actual holder. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
-      curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated.',
+      curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
       pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.',
-      fx: 'Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated.',
+      fx: 'Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.',
       yieldBasis: 'FeeDistributor.preview_claim is used; yb rewards are valued at current redemption value into underlying BTC assets.',
       frax: 'Fraxtal YieldDistributor.earned(account), with emitted reward token discovered onchain.',
       venice: 'StakingV2.pendingRewards(user) on Base.',
