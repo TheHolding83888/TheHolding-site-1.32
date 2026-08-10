@@ -1,0 +1,48 @@
+name: Update Company Rewards
+
+on:
+  schedule:
+    - cron: '57 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: company-rewards-daily
+  cancel-in-progress: false
+
+jobs:
+  update-company-rewards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Collect company accrued rewards
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: node rewards/company-rewards-engine.mjs
+
+      - name: Commit updated rewards snapshot
+        run: |
+          if git diff --quiet -- companies/rewards-data.json; then
+            echo "No company rewards changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add companies/rewards-data.json
+          git commit -m "data: update company accrued rewards"
+          git push
