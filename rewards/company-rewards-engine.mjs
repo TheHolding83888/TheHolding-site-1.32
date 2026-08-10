@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.4';
-const COLLECTOR_VERSION = '0.2.4-defitea-votemarket-unclaimed';
+const VERSION = '0.2.5';
+const COLLECTOR_VERSION = '0.2.5-defitea-votemarket-view-formula';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -198,9 +198,20 @@ const FORTY_ACRES_PORTFOLIO_ABI = [
 const VOTEMARKET_ABI = [
   'function campaignById(uint256) view returns (uint256 chainId,address gauge,address manager,address rewardToken,uint8 numberOfPeriods,uint256 maxRewardPerVote,uint256 totalRewardAmount,uint256 totalDistributed,uint256 startTimestamp,uint256 endTimestamp,address hook)',
   'function CLAIM_WINDOW_LENGTH() view returns (uint256)',
+  'function ORACLE() view returns (address)',
+  'function fee() view returns (uint256)',
+  'function customFeeByManager(address manager) view returns (uint256)',
   'function isClosedCampaign(uint256 campaignId) view returns (bool)',
-  'function totalClaimedByAccount(uint256 campaignId,uint256 epoch,address account) view returns (uint256)',
-  'function claim(uint256 campaignId,address account,uint256 epoch,bytes hookData) returns (uint256 claimed)'
+  'function isProtected(address account) view returns (bool)',
+  'function recipients(address account) view returns (address)',
+  'function whitelistOnly(uint256 campaignId) view returns (bool)',
+  'function getAddressesByCampaign(uint256 campaignId) view returns (address[])',
+  'function periodByCampaignId(uint256 campaignId,uint256 epoch) view returns (uint256 rewardPerPeriod,uint256 rewardPerVote,uint256 leftover,bool updated)',
+  'function totalClaimedByAccount(uint256 campaignId,uint256 epoch,address account) view returns (uint256)'
+];
+const VOTEMARKET_ORACLE_LENS_ABI = [
+  'function isVoteValid(address account,address gauge,uint256 epoch) view returns (bool)',
+  'function getAccountVotes(address account,address gauge,uint256 epoch) view returns (uint256)'
 ];
 
 const VOTEMARKET = {
@@ -840,6 +851,9 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
   let eligiblePeriods = 0;
   let alreadyClaimedPeriods = 0;
   let measuredUnclaimedPeriods = 0;
+  let periodNotUpdatedCount = 0;
+  let oracleInvalidCount = 0;
+  let ineligibleByCampaignRulesCount = 0;
 
   const voteFiles = await mapLimit(epochs, VOTEMARKET.concurrency, async epoch => {
     const url = `${VOTEMARKET.proofBase}/${epoch}/${protocolKey}/votes.json`;
@@ -914,7 +928,7 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
         campaignId: campaignId.toString(),
         proofUrl,
         claimedRaw: null,
-        simulatedClaimRaw: null,
+        calculatedClaimRaw: null,
         status: 'checking'
       };
       diagnostics.push(diag);
@@ -937,7 +951,7 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
         if (campaignGauge.toLowerCase() !== candidate.gauge.toLowerCase()) {
           throw new Error(`campaign gauge mismatch ${campaignGauge} != ${candidate.gauge}`);
         }
-        if (candidate.epoch < startTimestamp || candidate.epoch > endTimestamp) {
+        if (candidate.epoch < startTimestamp || candidate.epoch >= endTimestamp) {
           diag.status = 'outside-campaign-window';
           continue;
         }
@@ -965,9 +979,77 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
           continue;
         }
 
-        const claimFn = vm.getFunction('claim(uint256,address,uint256,bytes)');
-        const raw = await claimFn.staticCall(campaignId, address, BigInt(candidate.epoch), '0x', { from: address });
-        diag.simulatedClaimRaw = raw.toString();
+        // Reproduce Votemarket._canClaim and _calculateClaimAndFee using view-only state.
+        // This avoids eth_call of claim(), which can revert while trying to mutate an
+        // uninitialised period or transfer the reward token even though the underlying
+        // claim amount is fully derivable from public contract state.
+        const [period, oracleAddress, defaultFee, customFee, protectedAccount, recipient, whitelistMode, listedAddresses] = await Promise.all([
+          vm.periodByCampaignId(campaignId, BigInt(candidate.epoch)),
+          vm.ORACLE(),
+          vm.fee(),
+          vm.customFeeByManager(campaign.manager ?? campaign[2]),
+          vm.isProtected(address),
+          vm.recipients(address),
+          vm.whitelistOnly(campaignId),
+          vm.getAddressesByCampaign(campaignId)
+        ]);
+
+        const rewardPerPeriod = BigInt(period.rewardPerPeriod ?? period[0]);
+        const rewardPerVote = BigInt(period.rewardPerVote ?? period[1]);
+        const leftover = BigInt(period.leftover ?? period[2]);
+        const periodUpdated = Boolean(period.updated ?? period[3]);
+        diag.periodUpdated = periodUpdated;
+        diag.rewardPerPeriodRaw = rewardPerPeriod.toString();
+        diag.rewardPerVoteRaw = rewardPerVote.toString();
+        diag.leftoverRaw = leftover.toString();
+        diag.oracle = getAddress(oracleAddress);
+        diag.defaultFeeRaw = defaultFee.toString();
+        diag.customFeeRaw = customFee.toString();
+        diag.isProtected = Boolean(protectedAccount);
+        diag.recipient = getAddress(recipient);
+        diag.whitelistOnly = Boolean(whitelistMode);
+
+        const listed = new Set((listedAddresses || []).map(x => String(x).toLowerCase()));
+        const isListed = listed.has(address.toLowerCase());
+        diag.isListed = isListed;
+        if ((whitelistMode && !isListed) || (!whitelistMode && isListed)) {
+          ineligibleByCampaignRulesCount++;
+          diag.status = whitelistMode ? 'not-whitelisted' : 'blacklisted';
+          continue;
+        }
+        if (protectedAccount && String(recipient).toLowerCase() === '0x0000000000000000000000000000000000000000') {
+          ineligibleByCampaignRulesCount++;
+          diag.status = 'protected-no-recipient';
+          continue;
+        }
+
+        if (!periodUpdated) {
+          periodNotUpdatedCount++;
+          diag.status = 'period-not-updated';
+          continue;
+        }
+
+        const oracle = new Contract(getAddress(oracleAddress), VOTEMARKET_ORACLE_LENS_ABI, provider);
+        const [voteValid, accountVote] = await Promise.all([
+          oracle.isVoteValid(address, campaignGauge, BigInt(candidate.epoch)),
+          oracle.getAccountVotes(address, campaignGauge, BigInt(candidate.epoch))
+        ]);
+        diag.oracleVoteValid = Boolean(voteValid);
+        diag.accountVoteRaw = accountVote.toString();
+        if (!voteValid) {
+          oracleInvalidCount++;
+          diag.status = 'oracle-vote-invalid';
+          continue;
+        }
+
+        const grossRaw = (BigInt(accountVote) * rewardPerVote) / 1000000000000000000n;
+        const feeRateRaw = BigInt(customFee) > 0n ? BigInt(customFee) : BigInt(defaultFee);
+        const feeRaw = (grossRaw * feeRateRaw) / 1000000000000000000n;
+        const raw = grossRaw - feeRaw;
+        diag.grossClaimRaw = grossRaw.toString();
+        diag.feeRateRaw = feeRateRaw.toString();
+        diag.feeRaw = feeRaw.toString();
+        diag.calculatedClaimRaw = raw.toString();
         if (raw === 0n) {
           diag.status = 'zero-unclaimed';
           continue;
@@ -988,7 +1070,7 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
           decimals: meta.decimals,
           amount: n(formatUnits(raw, meta.decimals)),
           classification: 'unclaimed',
-          source: 'official Stake DAO proof feed + VoteMarket onchain claimed-state + claim staticCall',
+          source: 'official Stake DAO proof feed + VoteMarket view-only onchain claim formula',
           details: {
             symbol: meta.symbol,
             protocolKey,
@@ -1002,7 +1084,14 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
             hook,
             proofUrl,
             claimedRaw: '0',
-            claimSimulation: 'claim(uint256,address,uint256,bytes).staticCall',
+            periodUpdated: true,
+            oracle: getAddress(oracleAddress),
+            accountVoteRaw: accountVote.toString(),
+            rewardPerVoteRaw: rewardPerVote.toString(),
+            grossClaimRaw: grossRaw.toString(),
+            feeRateRaw: feeRateRaw.toString(),
+            feeRaw: feeRaw.toString(),
+            calculation: 'accountVotes * rewardPerVote / 1e18, less Votemarket fee',
             pricePlatform: chainMeta.platform,
             priceContract: rewardToken,
             coingeckoId: COINGECKO_IDS[String(meta.symbol || '').toUpperCase()] || null
@@ -1017,11 +1106,12 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
   }
 
   const hasMeasuredFeed = votesFilesRead > 0;
+  const unresolvedPeriods = periodNotUpdatedCount;
   const status = !hasMeasuredFeed
     ? (issues.length ? 'warming' : 'ok')
-    : issues.length ? 'partial' : 'ok';
+    : (issues.length || unresolvedPeriods > 0) ? 'partial' : 'ok';
   const note = status === 'ok'
-    ? `Official VoteMarket proofs and onchain claimed-state were checked across ${VOTEMARKET.lookbackWeeks} weekly epochs; only contract-simulated unclaimed amounts are counted.`
+    ? `Official VoteMarket proofs and onchain claimed-state were checked across ${VOTEMARKET.lookbackWeeks} weekly epochs; unclaimed amounts are reproduced from the same public view-state formula used by the Votemarket contract.`
     : status === 'partial'
       ? 'Measured VoteMarket rewards are retained, but one or more proof/onchain checks were incomplete; uncertain amounts are excluded.'
       : 'VoteMarket proof/onchain measurement could not be completed; no amount is guessed.';
@@ -1032,7 +1122,7 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
       route,
       status,
       chain: 'Multi-chain',
-      metric: 'Official VoteMarket proof eligibility + totalClaimedByAccount + claim() static simulation',
+      metric: 'Official VoteMarket proof eligibility + claimed-state + view-only onchain claim formula',
       note,
       details: {
         protocolKey,
@@ -1047,6 +1137,10 @@ async function collectVoteMarket(address, registry, protocolKey, route) {
         eligiblePeriods,
         alreadyClaimedPeriods,
         measuredUnclaimedPeriods,
+        periodNotUpdatedCount,
+        unresolvedPeriods,
+        oracleInvalidCount,
+        ineligibleByCampaignRulesCount,
         amountIncludedInTotal: true,
         issues,
         diagnostics: diagnostics.map(({ dedupeKey, ...x }) => x)
@@ -1628,10 +1722,10 @@ async function main() {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
       multiWallet: 'Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.',
       aerodromeVelodrome: 'Aerodrome managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories, then reads current rewards at the actual holder. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
-      curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, VoteMarket totalClaimedByAccount state, and claim() static simulation for exact unclaimed amounts.',
+      curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, VoteMarket claimed-state, period state and OracleLens votes to reproduce the Votemarket view-only claim formula for exact unclaimed amounts.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
       pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.',
-      fx: 'Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN uses official Stake DAO proof membership, VoteMarket totalClaimedByAccount state, and claim() static simulation for exact unclaimed amounts.',
+      fx: 'Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN uses official Stake DAO proof membership, VoteMarket claimed-state, period state and OracleLens votes to reproduce the Votemarket view-only claim formula for exact unclaimed amounts.',
       yieldBasis: 'FeeDistributor.preview_claim is used; yb rewards are valued at current redemption value into underlying BTC assets.',
       frax: 'Fraxtal YieldDistributor.earned(account), with emitted reward token discovered onchain.',
       venice: 'StakingV2.pendingRewards(user) on Base.',
