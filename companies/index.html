@@ -1023,15 +1023,15 @@
         .ipx-live-ledger {
             display: grid;
             grid-template-columns: minmax(0, 1.14fr) minmax(0, 0.86fr);
-            gap: 1rem;
-            margin: -0.42rem 0 1.5rem;
+            gap: 0.82rem;
+            margin: -0.34rem 0 1.22rem;
             align-items: stretch;
         }
         .ipx-ledger-card {
             min-width: 0;
             position: relative;
             border: 1px solid rgba(15,23,42,0.075);
-            border-radius: 19px;
+            border-radius: 16px;
             background:
                 radial-gradient(circle at 96% 2%, rgba(255,255,255,0.98), rgba(255,255,255,0) 31%),
                 linear-gradient(180deg, rgba(253,254,254,0.985), rgba(247,250,249,0.955));
@@ -1039,13 +1039,13 @@
                 0 18px 42px -34px rgba(15,23,42,0.34),
                 inset 0 1px 0 rgba(255,255,255,0.96);
         }
-        .ipx-balance-card { padding: 1.18rem 1.2rem 1.12rem; }
+        .ipx-balance-card { padding: 0.94rem 0.98rem 0.9rem; }
         .ipx-ledger-head {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 0.8rem;
-            margin-bottom: 0.86rem;
+            gap: 0.62rem;
+            margin-bottom: 0.62rem;
         }
         .ipx-ledger-kicker {
             font-size: 0.57rem;
@@ -1058,8 +1058,8 @@
         .ipx-ledger-count {
             display: inline-flex;
             align-items: center;
-            min-height: 23px;
-            padding: 0.22rem 0.52rem;
+            min-height: 21px;
+            padding: 0.18rem 0.46rem;
             border-radius: 999px;
             border: 1px solid rgba(15,23,42,0.06);
             background: rgba(255,255,255,0.7);
@@ -1071,13 +1071,13 @@
         .ipx-position-list {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.52rem;
+            gap: 0.4rem;
         }
         .ipx-position-pill {
             min-width: 0;
-            min-height: 66px;
-            padding: 0.68rem 0.72rem 0.64rem;
-            border-radius: 13px;
+            min-height: 52px;
+            padding: 0.48rem 0.56rem 0.44rem;
+            border-radius: 11px;
             border: 1px solid rgba(15,23,42,0.065);
             background:
                 linear-gradient(145deg, rgba(255,255,255,0.96), rgba(248,251,250,0.88));
@@ -1099,7 +1099,7 @@
         .ipx-position-pill:only-child { grid-column: 1 / -1; }
         .ipx-position-symbol {
             color: var(--green);
-            font-size: 0.67rem;
+            font-size: 0.61rem;
             line-height: 1.1;
             font-weight: 700;
             letter-spacing: 0.035em;
@@ -1108,7 +1108,7 @@
         .ipx-position-qty {
             color: var(--text);
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.24rem;
+            font-size: 1.08rem;
             line-height: 1;
             font-weight: 600;
             letter-spacing: -0.012em;
@@ -1116,9 +1116,9 @@
             white-space: nowrap;
         }
         .ipx-ledger-caption {
-            margin-top: 0.76rem;
+            margin-top: 0.56rem;
             color: var(--text-3);
-            font-size: 0.61rem;
+            font-size: 0.58rem;
             line-height: 1.45;
         }
 
@@ -1132,7 +1132,7 @@
             font: inherit;
             color: inherit;
             text-align: left;
-            padding: 1.18rem 1.2rem 1.08rem;
+            padding: 0.94rem 0.98rem 0.88rem;
             border-radius: inherit;
             display: block;
         }
@@ -1143,9 +1143,9 @@
             gap: 0.85rem;
         }
         .ipx-rewards-value {
-            margin-top: 0.38rem;
+            margin-top: 0.3rem;
             font-family: 'Cormorant Garamond', serif;
-            font-size: 2.04rem;
+            font-size: 1.76rem;
             line-height: 0.96;
             font-weight: 600;
             letter-spacing: -0.024em;
@@ -1160,15 +1160,15 @@
         .ipx-reward-token-strip {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.34rem;
-            margin-top: 0.76rem;
-            min-height: 23px;
+            gap: 0.28rem;
+            margin-top: 0.58rem;
+            min-height: 21px;
         }
         .ipx-reward-token {
             display: inline-flex;
             align-items: center;
-            min-height: 23px;
-            padding: 0.27rem 0.52rem;
+            min-height: 21px;
+            padding: 0.22rem 0.45rem;
             border-radius: 999px;
             background: rgba(10,124,78,0.065);
             border: 1px solid rgba(10,124,78,0.11);
@@ -1181,8 +1181,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 0.65rem;
-            margin-top: 0.68rem;
+            gap: 0.56rem;
+            margin-top: 0.52rem;
             color: var(--text-3);
             font-size: 0.6rem;
             line-height: 1.4;
@@ -1550,27 +1550,49 @@
                 white-space: nowrap;
             }
 
+            /* Keep the original Passport structure and typography.
+               Only Balance Sheet + Accrued Rewards are intentionally compact. */
             .ipx-live-ledger {
                 grid-template-columns: 1fr;
-                gap: 0.72rem;
-                margin-top: -0.34rem;
+                gap: 0.5rem;
+                margin-top: -0.24rem;
+                margin-bottom: 0.98rem;
             }
-            .ipx-balance-card { padding: 1.02rem 0.98rem 1rem; }
-            .ipx-rewards-trigger { padding: 1.02rem 0.98rem 0.98rem; }
-            .ipx-rewards-value { font-size: 1.82rem; }
+            .ipx-balance-card { padding: 0.72rem 0.74rem 0.68rem; }
+            .ipx-rewards-trigger { padding: 0.74rem 0.76rem 0.7rem; }
+            .ipx-rewards-value { font-size: 1.48rem; }
             .ipx-position-list {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.48rem;
+                gap: 0.3rem;
             }
             .ipx-position-pill {
-                min-height: 64px;
-                padding: 0.64rem 0.66rem 0.6rem;
-                border-radius: 12px;
+                min-height: 43px;
+                padding: 0.38rem 0.44rem 0.34rem;
+                border-radius: 9px;
             }
-            .ipx-position-symbol { font-size: 0.63rem; }
-            .ipx-position-qty { font-size: 1.12rem; }
-            .ipx-ledger-count { font-size: 0.55rem; }
-            .ipx-ledger-caption { margin-top: 0.7rem; font-size: 0.59rem; }
+            .ipx-position-symbol { font-size: 0.54rem; }
+            .ipx-position-qty { font-size: 0.94rem; }
+            .ipx-ledger-head { margin-bottom: 0.46rem; }
+            .ipx-ledger-count {
+                min-height: 19px;
+                padding: 0.14rem 0.36rem;
+                font-size: 0.5rem;
+            }
+            .ipx-ledger-caption { display: none; }
+            .ipx-reward-token-strip {
+                gap: 0.22rem;
+                margin-top: 0.42rem;
+                min-height: 19px;
+            }
+            .ipx-reward-token {
+                min-height: 19px;
+                padding: 0.16rem 0.36rem;
+                font-size: 0.54rem;
+            }
+            .ipx-rewards-caption {
+                margin-top: 0.38rem;
+                font-size: 0.55rem;
+            }
 
             /* Mobile reward composition is a true viewport modal.
                The panel is portaled under <body> before it becomes visible,
@@ -1717,245 +1739,6 @@
             .ipx-economic-value { font-size: 1.34rem; }
             .ipx-apr-kicker { font-size: 0.43rem; }
             .ipx-apr-number { font-size: 0.78rem; }
-        }
-
-
-        /* ══ Passport mobile screenshot mode — tuned for iPhone 14 class viewports ══
-           Goal: one clean screen captures the company header, three headline facts,
-           compact Balance Sheet + Accrued Rewards, and the APR Average / Latest row. */
-        @media (max-width: 760px) {
-            .ib-row {
-                min-height: 58px;
-                padding: 0.78rem 0;
-            }
-            .ib-rank { font-size: 1.14rem; }
-            .ib-nm { font-size: 0.91rem; }
-            .ib-cat { margin-top: 0.12rem; font-size: 0.54rem; letter-spacing: 0.06em; }
-            .ib-value { font-size: 1.08rem; }
-
-            .ipx-inner {
-                padding-top: 0.16rem;
-                padding-bottom: 1.45rem;
-            }
-
-            /* Three primary facts stay premium but lose unnecessary vertical air. */
-            .ipx-economic {
-                margin: 0.08rem 0 0.68rem;
-                padding: 0.74rem 0 0.72rem;
-                border-radius: 13px;
-                box-shadow: 0 10px 26px -25px rgba(22,21,15,0.30);
-            }
-            .ipx-economic-item { padding: 0 0.42rem; }
-            .ipx-economic-label {
-                min-height: 1.95em;
-                margin-bottom: 0.27rem;
-                font-size: 0.435rem;
-                letter-spacing: 0.085em;
-                line-height: 1.08;
-            }
-            .ipx-economic-value {
-                font-size: 1.31rem;
-                line-height: 0.98;
-            }
-
-            /* Balance Sheet + Rewards become one compact two-column operating row. */
-            .ipx-live-ledger {
-                grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-                gap: 0.48rem;
-                margin: 0 0 0.62rem;
-                align-items: stretch;
-            }
-            .ipx-ledger-card {
-                border-radius: 13px;
-                box-shadow:
-                    0 12px 26px -28px rgba(15,23,42,0.30),
-                    inset 0 1px 0 rgba(255,255,255,0.95);
-            }
-            .ipx-balance-card {
-                padding: 0.62rem 0.62rem 0.56rem;
-            }
-            .ipx-ledger-head {
-                gap: 0.35rem;
-                margin-bottom: 0.42rem;
-            }
-            .ipx-ledger-kicker {
-                font-size: 0.46rem;
-                letter-spacing: 0.11em;
-                white-space: nowrap;
-            }
-            .ipx-ledger-count {
-                min-height: 18px;
-                padding: 0.14rem 0.34rem;
-                font-size: 0.47rem;
-            }
-            .ipx-position-list {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.28rem;
-            }
-            .ipx-position-pill,
-            .ipx-position-pill:only-child {
-                grid-column: auto;
-                min-height: 36px;
-                padding: 0.31rem 0.38rem 0.28rem;
-                border-radius: 9px;
-                gap: 0.08rem;
-            }
-            .ipx-position-symbol {
-                font-size: 0.48rem;
-                letter-spacing: 0.02em;
-            }
-            .ipx-position-qty {
-                font-size: 0.86rem;
-                line-height: 0.96;
-            }
-            .ipx-ledger-caption { display: none; }
-
-            .ipx-rewards-trigger {
-                padding: 0.62rem 0.61rem 0.56rem;
-            }
-            .ipx-rewards-value {
-                margin-top: 0.24rem;
-                font-size: 1.34rem;
-                line-height: 0.94;
-            }
-            .ipx-rewards-value.measuring { font-size: 0.96rem; }
-            .ipx-reward-token-strip {
-                gap: 0.22rem;
-                margin-top: 0.44rem;
-                min-height: 0;
-            }
-            .ipx-reward-token {
-                min-height: 18px;
-                padding: 0.16rem 0.34rem;
-                font-size: 0.48rem;
-            }
-            .ipx-rewards-caption {
-                margin-top: 0.40rem;
-                font-size: 0;
-                justify-content: flex-end;
-            }
-            .ipx-rewards-caption svg {
-                width: 12px;
-                height: 12px;
-            }
-
-            /* Core metadata is a compact 2-column passport table.
-               Only the currently active weighting methodology is shown on mobile. */
-            .ipx-core-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                column-gap: 0.9rem;
-                row-gap: 0;
-                margin-top: 0.02rem;
-            }
-            .ipx-core-grid > .ipx-field,
-            .ipx-core-grid > .ipx-protocol-disclosure {
-                min-width: 0;
-                min-height: 42px;
-                padding: 0.39rem 0;
-                border-bottom: 1px solid var(--line);
-            }
-            .ipx-core-grid > .ipx-field {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                justify-content: center;
-                gap: 0.14rem;
-            }
-            .ipx-core-grid .ipx-label {
-                font-size: 0.52rem;
-                letter-spacing: 0.045em;
-                line-height: 1.1;
-            }
-            .ipx-core-grid .ipx-value {
-                width: 100%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                text-align: left;
-                font-size: 0.69rem;
-                line-height: 1.15;
-            }
-            .ipx-core-grid .ipx-chip {
-                margin-left: 0.25rem;
-                padding: 0.05rem 0.24rem;
-                font-size: 0.39rem;
-                letter-spacing: 0.07em;
-            }
-            .ipx-weight-field.inactive { display: none !important; }
-
-            .ipx-core-grid .ipx-protocol-disclosure {
-                display: flex;
-                align-items: stretch;
-            }
-            .ipx-core-grid .ipx-protocol-trigger {
-                padding: 0;
-                flex-direction: column;
-                align-items: flex-start;
-                justify-content: center;
-                gap: 0.14rem;
-            }
-            .ipx-core-grid .ipx-protocol-meta {
-                gap: 0.28rem;
-                font-size: 0.69rem;
-                line-height: 1.1;
-            }
-            .ipx-core-grid .ipx-protocol-chev {
-                width: 10px;
-                height: 10px;
-            }
-
-            /* APR is the visual close of the screenshot-friendly core Passport. */
-            .ipx-core-grid > .ipx-apr-field {
-                grid-column: 1 / -1;
-                min-height: 46px;
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                padding: 0.46rem 0 0.44rem;
-                border-bottom-color: rgba(10,124,78,0.12);
-            }
-            .ipx-core-grid > .ipx-apr-field > .ipx-label {
-                font-size: 0.56rem;
-                font-weight: 650;
-                letter-spacing: 0.08em;
-                color: var(--text-2);
-            }
-            .ipx-apr-pair { gap: 0.74rem; }
-            .ipx-apr-point { gap: 0.22rem; }
-            .ipx-apr-point + .ipx-apr-point {
-                padding-left: 0.74rem;
-            }
-            .ipx-apr-kicker {
-                font-size: 0.43rem;
-                letter-spacing: 0.075em;
-            }
-            .ipx-apr-number {
-                font-size: 0.82rem;
-                font-weight: 700;
-            }
-
-            /* Keep deeper analytics below the screenshot core, with clear separation. */
-            .ipx-perf {
-                margin-top: 1.05rem;
-                padding-top: 1rem;
-            }
-            .ipx-composite {
-                margin-top: 1.15rem;
-                padding-top: 1.05rem;
-            }
-        }
-
-        @media (max-width: 430px) {
-            .container { padding-left: 1.05rem; padding-right: 1.05rem; }
-            .ipx-economic-value { font-size: 1.24rem; }
-            .ipx-live-ledger { gap: 0.42rem; }
-            .ipx-balance-card,
-            .ipx-rewards-trigger { padding-left: 0.55rem; padding-right: 0.55rem; }
-            .ipx-position-pill { min-height: 34px; padding: 0.28rem 0.32rem 0.25rem; }
-            .ipx-position-symbol { font-size: 0.455rem; }
-            .ipx-position-qty { font-size: 0.82rem; }
-            .ipx-rewards-value { font-size: 1.27rem; }
-            .ipx-core-grid { column-gap: 0.72rem; }
         }
 
 
@@ -3242,7 +3025,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.1.5-stable-modal';
+const COMPANY_REWARDS_UI_VERSION = '0.1.7-restored-layout-compact-ledger';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -3727,7 +3510,7 @@ function renderIndex(lang) {
                 perfFactor:'Performance', sinceInception:'Since inception',
                 companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', valuePending:'USD valuation pending', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not included yet', routesNotIncluded:'routes not included yet', valuationPending:'Valuation pending', rewardToken:'reward token', rewardTokens:'reward tokens', rewardComposition:'Reward composition', close:'Close', measuring:'Measuring' };
         const wfld = (label, value, active) =>
-            '<div class="ipx-field ipx-weight-field ' + (active ? 'active' : 'inactive') + '"><span class="ipx-label">' + label
+            '<div class="ipx-field"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
             + '<span class="ipx-value ' + (active ? 'gold' : 'muted') + '">' + value + '</span></div>';
         const fld = (label, value, cls) =>
@@ -3940,7 +3723,7 @@ function renderIndex(lang) {
                 +     econ(L.operatingHistory, ageVal, 'age ipx-age', 'data-founded="' + c.foundedISO + '"')
                 +   '</div>'
                 +   liveLedgerBlock(c)
-                +   '<div class="ipx-grid ipx-core-grid">'
+                +   '<div class="ipx-grid">'
                 +     fld(L.registry, c.reg)
                 +     fld(L.founded, c.founded[lang])
                 +     wfld(L.weight, ((c.weight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'composite')
