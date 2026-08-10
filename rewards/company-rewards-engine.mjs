@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.0';
-const COLLECTOR_VERSION = '0.2.0-defitea-two-wallet';
-const METHODOLOGY_VERSION = '0.2-earned-inside-protocols-multiwallet';
+const VERSION = '0.2.1';
+const COLLECTOR_VERSION = '0.2.1-defitea-40acres';
+const METHODOLOGY_VERSION = '0.2.1-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -39,6 +39,14 @@ const ADDR = {
     votingEscrow: '0xFAf8FD17D9840595845582fCB047DF13f006787d',
     rewardsDistributor: '0x9D4736EC60715e71aFe72973f7885DCBC21EA99b',
     voter: '0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C'
+  },
+  fortyAcres: {
+    // Official Optimism / Velodrome production deployments.
+    // A 40 Acres PortfolioFactory stores owner => portfolio, so Defitea's
+    // veVELO can be discovered even when the veNFT is no longer owned directly
+    // by either Defitea EOA.
+    velodromeRelayerFactory: '0xCe904f1C3c9Bdf74d4DBD6a204058D1eb649140B',
+    velodromeUsdcLoanFactory: '0x8A71e4BaB42DDC3d996FA4b4780919567e367924'
   },
   curve: {
     crvUsdFeeDistributor: '0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914',
@@ -175,6 +183,13 @@ const RESUPPLY_STAKER_ABI = [
   'function rewardTokensLength() view returns (uint256)',
   'function rewardTokens(uint256 index) view returns (address)',
   'function earned(address account, address rewardToken) view returns (uint256)'
+];
+const FORTY_ACRES_FACTORY_ABI = [
+  'function portfolios(address owner) view returns (address)',
+  'function portfolioOf(address owner) view returns (address)'
+];
+const FORTY_ACRES_PORTFOLIO_ABI = [
+  'function getRewardsToken() view returns (address)'
 ];
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -483,6 +498,158 @@ async function collectVeProtocol(address, registry, kind) {
   };
 }
 
+
+async function fortyAcresPortfolioForOwner(provider, factoryAddress, owner) {
+  const factory = new Contract(factoryAddress, FORTY_ACRES_FACTORY_ABI, provider);
+  try {
+    const portfolio = getAddress(await factory.portfolios(owner));
+    return portfolio !== ZeroAddress ? portfolio : null;
+  } catch {
+    try {
+      const portfolio = getAddress(await factory.portfolioOf(owner));
+      return portfolio !== ZeroAddress ? portfolio : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+function withHolderContext(rewards, extra) {
+  return (rewards || []).map(r => ({
+    ...r,
+    details: { ...(r.details || {}), ...extra }
+  }));
+}
+
+// Defitea's veVELO can be operated through 40 Acres. The veNFT then belongs to
+// a 40 Acres portfolio account rather than to the Defitea EOA itself.
+// Discover the account from official PortfolioFactory state, then read the same
+// Velodrome reward contracts at the actual veNFT holder.
+async function collectDefiteaVelodrome(address, registry) {
+  const provider = await registry.get('optimism');
+  const direct = await collectVeProtocol(address, registry, 'velodrome');
+
+  const candidates = [
+    { kind: 'relayer', factory: ADDR.fortyAcres.velodromeRelayerFactory },
+    { kind: 'usdc-loan', factory: ADDR.fortyAcres.velodromeUsdcLoanFactory }
+  ];
+  const portfolioAccounts = [];
+  const rewards = withHolderContext(direct.rewards, {
+    holderAddress: address,
+    custodyContext: 'direct-wallet'
+  });
+  const positionDetails = [];
+  const issues = [];
+  let totalVeNfts = Number(direct.details?.veNftCount || 0);
+
+  for (const candidate of candidates) {
+    let portfolio = null;
+    try {
+      portfolio = await fortyAcresPortfolioForOwner(provider, candidate.factory, address);
+    } catch (e) {
+      issues.push(`40 Acres ${candidate.kind} factory: ${e.shortMessage || e.message}`);
+      continue;
+    }
+    if (!portfolio) continue;
+    if (portfolioAccounts.some(x => x.address.toLowerCase() === portfolio.toLowerCase())) continue;
+
+    let payoutToken = null;
+    let payoutSymbol = null;
+    try {
+      const pa = new Contract(portfolio, FORTY_ACRES_PORTFOLIO_ABI, provider);
+      const token = getAddress(await pa.getRewardsToken());
+      if (token !== ZeroAddress) {
+        payoutToken = token;
+        try { payoutSymbol = (await tokenMeta(provider, token)).symbol; } catch {}
+      }
+    } catch {}
+
+    let out;
+    try {
+      out = await collectVeProtocol(portfolio, registry, 'velodrome');
+    } catch (e) {
+      issues.push(`40 Acres ${candidate.kind} portfolio ${portfolio}: ${e.shortMessage || e.message}`);
+      portfolioAccounts.push({
+        kind: candidate.kind,
+        factory: candidate.factory,
+        address: portfolio,
+        payoutToken,
+        payoutSymbol,
+        veNftCount: null,
+        status: 'error'
+      });
+      continue;
+    }
+
+    const count = Number(out.details?.veNftCount || 0);
+    totalVeNfts += count;
+    portfolioAccounts.push({
+      kind: candidate.kind,
+      factory: candidate.factory,
+      address: portfolio,
+      payoutToken,
+      payoutSymbol,
+      veNftCount: count,
+      status: out.source?.status || 'error'
+    });
+    positionDetails.push(...(out.details?.positions || []).map(pos => ({
+      ...pos,
+      holderAddress: portfolio,
+      custodyContext: '40acres',
+      fortyAcresStrategy: candidate.kind
+    })));
+    rewards.push(...withHolderContext(out.rewards, {
+      holderAddress: portfolio,
+      custodyContext: '40acres',
+      fortyAcresStrategy: candidate.kind,
+      fortyAcresFactory: candidate.factory,
+      fortyAcresPayoutToken: payoutToken,
+      fortyAcresPayoutSymbol: payoutSymbol
+    }));
+    if (Array.isArray(out.source?.details?.issues)) issues.push(...out.source.details.issues);
+  }
+
+  const directCount = Number(direct.details?.veNftCount || 0);
+  const fortyAcresCount = portfolioAccounts.reduce(
+    (s, x) => s + (Number.isFinite(Number(x.veNftCount)) ? Number(x.veNftCount) : 0), 0
+  );
+  const foundExpectedPosition = totalVeNfts > 0;
+
+  // Current protocol accrual is measurable. Historical no-longer-voted pools
+  // are not exhaustively enumerable from a cheap current-state read, so keep
+  // a 40 Acres/direct-vote route partial rather than overstating completeness.
+  let status;
+  if (!foundExpectedPosition) status = issues.length ? 'error' : 'warming';
+  else status = 'partial';
+
+  const payoutSymbols = [...new Set(portfolioAccounts.map(x => x.payoutSymbol).filter(Boolean))];
+
+  return {
+    source: {
+      protocol: 'Velodrome',
+      route: 'velodrome-ve',
+      status,
+      chain: 'Optimism',
+      metric: 'Velodrome veNFT current accrual at direct + 40 Acres portfolio holder',
+      note: foundExpectedPosition
+        ? `Defitea veVELO position discovered${fortyAcresCount ? ' through 40 Acres' : ''}. Current unprocessed Velodrome rewards are measured at the actual veNFT holder.${payoutSymbols.length ? ` Configured 40 Acres payout token: ${payoutSymbols.join(', ')}.` : ''} Already distributed wallet payouts are not counted as accrued rewards.`
+        : 'Expected Defitea veVELO position was not found at either Defitea wallet or the known 40 Acres Velodrome portfolio factories; route remains warming rather than reporting a false zero.',
+      details: {
+        directWalletVeNftCount: directCount,
+        fortyAcresVeNftCount: fortyAcresCount,
+        totalVeNftCount: totalVeNfts,
+        fortyAcresPortfolios: portfolioAccounts,
+        positions: [
+          ...(direct.details?.positions || []).map(pos => ({ ...pos, holderAddress: address, custodyContext: 'direct-wallet' })),
+          ...positionDetails
+        ],
+        issues
+      }
+    },
+    rewards
+  };
+}
+
 // Existing personal-company Aerodrome route remains intentionally identical in scope:
 // only Relay/managed compounded AERO is part of this route.
 async function collectAerodromeRelay(address, registry) {
@@ -764,6 +931,11 @@ async function collectPendle(address, registry) {
         claimableMerkleItems: claimable.length,
         hasLegacyVePendleData: Boolean(spendle?.vePendlePositionData),
         vePendlePositionData: spendle?.vePendlePositionData || null,
+        legacyVePendleAmountRaw: spendle?.vePendlePositionData?.amount != null
+          ? String(spendle.vePendlePositionData.amount) : null,
+        legacyVePendleAmount: spendle?.vePendlePositionData?.amount != null
+          ? n(formatUnits(BigInt(String(spendle.vePendlePositionData.amount)), 18)) : null,
+        legacyVePendleExpiry: spendle?.vePendlePositionData?.expiry ?? null,
         issues
       }
     }, rewards
@@ -830,7 +1002,7 @@ async function collectRoute(route, address, registry) {
   switch (route) {
     case 'aerodrome-relay': return collectAerodromeRelay(address, registry);
     case 'aerodrome-ve': return collectVeProtocol(address, registry, 'aerodrome');
-    case 'velodrome-ve': return collectVeProtocol(address, registry, 'velodrome');
+    case 'velodrome-ve': return collectDefiteaVelodrome(address, registry);
     case 'curve-fees': return collectCurveBase(address, registry);
     case 'curve-fees-votemarket': return collectCurveVoteMarket(address, registry);
     case 'frax-yield': return collectFrax(address, registry);
@@ -1079,10 +1251,10 @@ async function main() {
     methodology: {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
       multiWallet: 'Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.',
-      aerodromeVelodrome: 'Managed/Relay veNFT compounded rewards are read directly. Direct voting NFTs also read current RewardsDistributor and current voted fee/incentive contracts; direct routes stay partial because old no-longer-voted pools may still contain unclaimed rewards.',
+      aerodromeVelodrome: 'Aerodrome managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories, then reads current rewards at the actual holder. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
       curve: 'Base crvUSD FeeDistributor claims are simulated. Defitea VoteMarket veCRV incentives are tracked as a known pending supplement and are not guessed.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
-      pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE presence is retained from vePendlePositionData.',
+      pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.',
       fx: 'Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN incentives remain a known pending supplement.',
       yieldBasis: 'FeeDistributor.preview_claim is used; yb rewards are valued at current redemption value into underlying BTC assets.',
       frax: 'Fraxtal YieldDistributor.earned(account), with emitted reward token discovered onchain.',
