@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.8';
-const COLLECTOR_VERSION = '0.2.8-company-005-ve-tracking';
+const VERSION = '0.2.9';
+const COLLECTOR_VERSION = '0.2.9-company-005-musd-pricing';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -258,6 +258,7 @@ const COINGECKO_IDS = {
   SPENDLE: 'pendle',
   WFRAX: 'wrapped-frax',
   USDC: 'usd-coin',
+  MUSD: 'mezo-usd',
   FXN: 'fxn-token',
   RSUP: 'resupply',
   FRAX: 'frax',
