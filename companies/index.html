@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-09 · premium centered Passport headline metrics -->
+<!-- companies.html · build 2026-08-10 · Company Balance Sheet + Accrued Rewards v0.1 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -962,7 +962,7 @@
         .ib-chev { display: flex; justify-content: flex-end; color: var(--text-3); transition: transform 0.35s ease, color 0.25s ease; }
         .ib-item.open .ib-chev { transform: rotate(180deg); color: var(--gold); }
         .ib-passport { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1); }
-        .ib-item.open .ib-passport { max-height: 1200px; }
+        .ib-item.open .ib-passport { max-height: 1800px; }
         /* used while swapping lenses so restored passports don't re-animate */
         .no-anim .ib-passport, .no-anim .ibw-fill, .no-anim .index-comp-seg { transition: none !important; }
         .ipx-inner { padding: 0.25rem 0 1.6rem; }
@@ -1018,6 +1018,112 @@
         .ipx-economic-value.gold { color: var(--gold); }
         .ipx-economic-value.apr { color: var(--green); }
         .ipx-economic-value.age { color: var(--gold); }
+
+        /* Live Company Balance Sheet + protocol-side accrued rewards */
+        .ipx-live-ledger {
+            display: grid;
+            grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+            gap: 0.9rem;
+            margin: -0.48rem 0 1.35rem;
+        }
+        .ipx-ledger-card {
+            min-width: 0;
+            position: relative;
+            border: 1px solid rgba(22,21,15,0.085);
+            border-radius: 15px;
+            background:
+                radial-gradient(circle at 94% 5%, rgba(255,255,255,0.96), rgba(255,255,255,0) 34%),
+                linear-gradient(180deg, rgba(252,253,252,0.97), rgba(247,250,248,0.92));
+            box-shadow: 0 12px 30px -28px rgba(15,23,20,0.32), inset 0 1px 0 rgba(255,255,255,0.92);
+        }
+        .ipx-balance-card { padding: 1rem 1.05rem 0.98rem; }
+        .ipx-ledger-head {
+            display: flex; align-items: baseline; justify-content: space-between; gap: 0.8rem;
+            margin-bottom: 0.73rem;
+        }
+        .ipx-ledger-kicker {
+            font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--text-3); font-weight: 700; line-height: 1.2;
+        }
+        .ipx-ledger-count {
+            font-size: 0.64rem; color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap;
+        }
+        .ipx-position-list { display: flex; flex-wrap: wrap; gap: 0.42rem; }
+        .ipx-position-pill {
+            display: inline-flex; align-items: baseline; gap: 0.28rem;
+            min-height: 29px; padding: 0.37rem 0.62rem; border-radius: 999px;
+            border: 1px solid rgba(22,21,15,0.075); background: rgba(255,255,255,0.78);
+            color: var(--text-2); font-size: 0.68rem; line-height: 1; white-space: nowrap;
+        }
+        .ipx-position-pill b {
+            color: var(--text); font-size: 0.72rem; font-weight: 600; font-variant-numeric: tabular-nums;
+        }
+        .ipx-ledger-caption {
+            margin-top: 0.68rem; color: var(--text-3); font-size: 0.62rem; line-height: 1.45;
+        }
+
+        .ipx-rewards-card { overflow: visible; }
+        .ipx-rewards-trigger {
+            width: 100%; min-height: 100%; border: 0; background: transparent; cursor: pointer;
+            font: inherit; color: inherit; text-align: left; padding: 1rem 1.05rem 0.95rem;
+            border-radius: inherit; display: block;
+        }
+        .ipx-rewards-top {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 0.85rem;
+        }
+        .ipx-rewards-value {
+            margin-top: 0.34rem; font-family: 'Cormorant Garamond', serif;
+            font-size: 1.82rem; line-height: 0.98; font-weight: 600; letter-spacing: -0.02em;
+            color: var(--green); font-variant-numeric: tabular-nums;
+        }
+        .ipx-rewards-value.measuring { color: var(--text-2); font-size: 1.34rem; letter-spacing: -0.01em; }
+        .ipx-reward-token-strip {
+            display: flex; flex-wrap: wrap; gap: 0.34rem; margin-top: 0.68rem; min-height: 22px;
+        }
+        .ipx-reward-token {
+            display: inline-flex; align-items: center; min-height: 22px; padding: 0.26rem 0.48rem;
+            border-radius: 999px; background: rgba(10,124,78,0.065); border: 1px solid rgba(10,124,78,0.11);
+            color: var(--green); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.015em;
+        }
+        .ipx-rewards-caption {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.65rem;
+            margin-top: 0.62rem; color: var(--text-3); font-size: 0.6rem; line-height: 1.4;
+        }
+        .ipx-rewards-caption svg { width: 13px; height: 13px; flex: 0 0 auto; transition: transform 0.25s ease; }
+        .ipx-rewards-disclosure.open .ipx-rewards-caption svg { transform: rotate(180deg); }
+        .ipx-rewards-panel {
+            position: absolute; left: 50%; top: calc(100% + 9px); width: min(390px, calc(100vw - 30px));
+            transform: translateX(-50%) translateY(-5px) scale(0.985);
+            opacity: 0; visibility: hidden; pointer-events: none; z-index: 35;
+            padding: 0.62rem; border-radius: 16px;
+            background: rgba(255,255,255,0.985); border: 1px solid rgba(22,21,15,0.09);
+            box-shadow: 0 24px 55px -25px rgba(15,23,20,0.32), 0 7px 18px -14px rgba(15,23,20,0.18);
+            transition: opacity 0.24s ease, visibility 0.24s ease, transform 0.24s cubic-bezier(0.16,1,0.3,1);
+        }
+        .ipx-rewards-disclosure:hover .ipx-rewards-panel,
+        .ipx-rewards-disclosure.open .ipx-rewards-panel {
+            opacity: 1; visibility: visible; pointer-events: auto; transform: translateX(-50%) translateY(0) scale(1);
+        }
+        .ipx-reward-row {
+            display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0.75rem; align-items: center;
+            padding: 0.58rem 0.62rem; border-bottom: 1px solid var(--line);
+        }
+        .ipx-reward-row:last-of-type { border-bottom: 0; }
+        .ipx-reward-protocol { color: var(--text); font-size: 0.7rem; font-weight: 600; }
+        .ipx-reward-meta { margin-top: 0.16rem; color: var(--text-3); font-size: 0.59rem; line-height: 1.35; }
+        .ipx-reward-right { text-align: right; white-space: nowrap; }
+        .ipx-reward-amount { color: var(--text); font-size: 0.68rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .ipx-reward-usd { margin-top: 0.13rem; color: var(--green); font-size: 0.6rem; font-variant-numeric: tabular-nums; }
+        .ipx-reward-state {
+            display: inline-block; margin-left: 0.28rem; padding: 0.12rem 0.3rem; border-radius: 999px;
+            font-size: 0.49rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700;
+            color: var(--text-3); background: rgba(22,21,15,0.035); border: 1px solid var(--line); vertical-align: 1px;
+        }
+        .ipx-reward-state.compounded { color: #8b6b18; background: rgba(168,132,44,0.065); border-color: rgba(168,132,44,0.14); }
+        .ipx-reward-panel-note {
+            padding: 0.55rem 0.62rem 0.35rem; color: var(--text-3); font-size: 0.56rem; line-height: 1.45;
+        }
+        .ipx-reward-empty { padding: 0.7rem 0.62rem; color: var(--text-3); font-size: 0.65rem; }
         .ipx-field {
             display: flex; justify-content: space-between; align-items: baseline;
             gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line);
@@ -1199,6 +1305,19 @@
                 white-space: nowrap;
             }
 
+            .ipx-live-ledger { grid-template-columns: 1fr; gap: 0.7rem; margin-top: -0.35rem; }
+            .ipx-balance-card, .ipx-rewards-trigger { padding: 0.92rem 0.9rem; }
+            .ipx-rewards-value { font-size: 1.65rem; }
+            .ipx-position-pill { min-height: 27px; font-size: 0.64rem; }
+            .ipx-position-pill b { font-size: 0.68rem; }
+            .ipx-rewards-panel {
+                position: static; width: auto; transform: none; margin: 0 0.72rem 0.72rem;
+                display: none; opacity: 1; visibility: visible; pointer-events: auto; box-shadow: none;
+                background: rgba(255,255,255,0.72); border-radius: 13px;
+            }
+            .ipx-rewards-disclosure:hover .ipx-rewards-panel { display: none; }
+            .ipx-rewards-disclosure.open .ipx-rewards-panel { display: block; transform: none; }
+
             .ipx-apr-pair { gap: 0.55rem; }
             .ipx-apr-point { gap: 0.28rem; }
             .ipx-apr-point + .ipx-apr-point { padding-left: 0.55rem; }
@@ -1222,7 +1341,7 @@
             .ib-rank { font-size: 1.3rem; }
             .ib-value { font-size: 1.25rem; }
             .ipx-grid { grid-template-columns: 1fr; column-gap: 0; }
-            .ib-item.open .ib-passport { max-height: 2400px; }
+            .ib-item.open .ib-passport { max-height: 3000px; }
             .ipx-inner { padding-bottom: 1.9rem; }
         }
         @media (max-width: 460px) {
@@ -2501,7 +2620,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    existing manual APRs as a safe fallback. If the collector, a protocol, or the
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
-const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.9.1-null-safe-apr';
+const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.9-unified-apr';
 let PRODUCTIVITY_SNAPSHOT = null;
 
 async function loadProductivitySnapshot() {
@@ -2522,20 +2641,61 @@ async function loadProductivitySnapshot() {
     }
 }
 
+/* ── Daily protocol-side accrued rewards layer ───────────────────────────
+   This is intentionally separate from TVL and from Reference APR. It tracks
+   value already earned inside protocol contracts before it becomes freely
+   held treasury capital. Missing routes stay visibly incomplete rather than
+   being guessed. */
+const REWARDS_DATA_URL = './rewards-data.json';
+const COMPANY_REWARDS_UI_VERSION = '0.1-accrued-rewards';
+let COMPANY_REWARDS_SNAPSHOT = null;
+const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth']);
+const COMPANY_ASSET_LABELS = {
+    'bitcoin': 'BTC',
+    'aerodrome-finance': 'veAERO',
+    'convex-finance': 'vlCVX',
+    'curve-dao-token': 'veCRV',
+    'frax-share': 'veFRAX',
+    'yield-basis': 'veYB',
+    'pendle': 'sPENDLE',
+    'velodrome-finance': 'veVELO',
+    'venice-token': 'sVVV',
+    'liquity': 'LQTY',
+    'resupply': 'RSUP',
+    'fxn': 'veFXN'
+};
+const REWARD_ROUTE_LABELS = {
+    'aerodrome-relay': 'Aerodrome Relay',
+    'curve-fees': 'Curve',
+    'frax-yield': 'Frax',
+    'yield-basis-fees': 'Yield Basis',
+    'votium-union': 'Votium · The Union'
+};
+
+async function loadCompanyRewardsSnapshot() {
+    try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch(REWARDS_DATA_URL + '?t=' + Date.now(), {
+            cache: 'no-store', signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data || typeof data !== 'object' || !data.companies) return null;
+        COMPANY_REWARDS_SNAPSHOT = data;
+        return data;
+    } catch (e) {
+        return null;
+    }
+}
+
 function resolvedCompanyApr(name, fallbackNumeric, fallbackDisplay) {
     const c = PRODUCTIVITY_SNAPSHOT && PRODUCTIVITY_SNAPSHOT.companies
             ? PRODUCTIVITY_SNAPSHOT.companies[name] : null;
-    // Nullable numeric fields must stay nullable. In JavaScript Number(null) === 0,
-    // which previously made Defitea's not-yet-established historical average render
-    // as a real 0.0% in the collection card / Passport.
-    const finiteOrNaN = value => {
-        if (value === null || value === undefined || value === '') return NaN;
-        const n = Number(value);
-        return Number.isFinite(n) ? n : NaN;
-    };
-    const avg = c ? finiteOrNaN(c.aprHistoricalAverage) : NaN;
-    const latest = c ? finiteOrNaN(c.aprLatest) : NaN;
-    const coverage = c ? finiteOrNaN(c.coverage) : NaN;
+    const avg = c && Number(c.aprHistoricalAverage);
+    const latest = c && Number(c.aprLatest);
+    const coverage = c && Number(c.coverage);
     const fullUsable = c && c.status === 'ok' && Number.isFinite(avg) && avg >= 0
                     && Number(c.observationCount || 0) > 0;
     const partialUsable = c && c.status === 'partial' && Number.isFinite(latest) && latest >= 0
@@ -2949,7 +3109,7 @@ function renderIndex(lang) {
                 lonNote:'в работе', sigCap:'Сигнатура компании',
                 axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.', axF:'РЕЗУЛЬТАТ',
                 perfFactor:'Результат', sinceInception:'С момента запуска',
-                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы' }
+                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы', balanceSheet:'Баланс компании', positions:'Ончейн-позиции', positionCount:'позиций', capitalDeployed:'Капитал размещён ончейн', accruedRewards:'Накопленные rewards', rewardsCaption:'Заработано ончейн · Пока внутри протоколов', measuringOnchain:'Измеряется ончейн', noAccrued:'На этом снимке накопленных rewards нет', compounded:'Компаунд', unclaimed:'Не заклеймлено', measuredTotal:'Измеренная сумма', routeNotIncluded:'маршрут пока не включён', routesNotIncluded:'маршрута пока не включены', measuring:'Измеряется' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', protocols:'Protocols', explore:'Explore Company', days:'days',
                 comp:'Composite breakdown', inView:'In view',
@@ -2959,7 +3119,7 @@ function renderIndex(lang) {
                 lonNote:'operating', sigCap:'Company signature',
                 axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY', axF:'PERFORMANCE',
                 perfFactor:'Performance', sinceInception:'Since inception',
-                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History' };
+                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not included yet', routesNotIncluded:'routes not included yet', measuring:'Measuring' };
         const wfld = (label, value, active) =>
             '<div class="ipx-field"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
@@ -2995,6 +3155,87 @@ function renderIndex(lang) {
         const econ = (label, value, cls, attrs) =>
             '<div class="ipx-economic-item"><div class="ipx-economic-label">' + label + '</div>'
             + '<div class="ipx-economic-value' + (cls ? ' ' + cls : '') + '"' + (attrs ? ' ' + attrs : '') + '>' + value + '</div></div>';
+        const fmtQty = v => {
+            const x = Number(v);
+            if (!Number.isFinite(x)) return '—';
+            const max = Math.abs(x) < 1 ? 5 : (Math.abs(x) < 100 ? 2 : 0);
+            return x.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', { maximumFractionDigits: max });
+        };
+        const fmtRewardQty = v => {
+            const x = Number(v);
+            if (!Number.isFinite(x)) return '—';
+            const max = Math.abs(x) < 0.01 ? 6 : (Math.abs(x) < 10 ? 4 : 2);
+            return x.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', { maximumFractionDigits: max });
+        };
+        const fmtRewardUsd = v => Number.isFinite(Number(v))
+            ? '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            : '—';
+        const balanceSheetBlock = c => {
+            if (!COMPANY_REWARDS_SCOPE.has(c.nm)) return '';
+            const book = COMPANY_BOOK[c.nm] || [];
+            const pills = book.map(p => {
+                const label = COMPANY_ASSET_LABELS[p.id] || p.id;
+                return '<span class="ipx-position-pill"><b>' + fmtQty(p.qty) + '</b> ' + label + '</span>';
+            }).join('');
+            return '<div class="ipx-ledger-card ipx-balance-card">'
+                + '<div class="ipx-ledger-head"><span class="ipx-ledger-kicker">' + L.balanceSheet + '</span>'
+                + '<span class="ipx-ledger-count">' + book.length + ' ' + L.positionCount + '</span></div>'
+                + '<div class="ipx-position-list">' + pills + '</div>'
+                + '<div class="ipx-ledger-caption">' + L.capitalDeployed + '</div></div>';
+        };
+        const accruedRewardsBlock = c => {
+            if (!COMPANY_REWARDS_SCOPE.has(c.nm)) return '';
+            const r = COMPANY_REWARDS_SNAPSHOT && COMPANY_REWARDS_SNAPSHOT.companies
+                    ? COMPANY_REWARDS_SNAPSHOT.companies[c.nm] : null;
+            const chevSmall = '<svg viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            const hasTotal = r && Number.isFinite(Number(r.totalUsd));
+            const liveMeasured = r && r.updatedAt && r.status !== 'warming';
+            const incomplete = liveMeasured && r.totalUsdIsComplete === false;
+            const totalLabel = liveMeasured && hasTotal ? fmtRewardUsd(r.totalUsd) + (incomplete ? '+' : '') : L.measuringOnchain;
+            const totalCls = liveMeasured && hasTotal ? '' : ' measuring';
+            const tokens = r && Array.isArray(r.rewardTokens) ? r.rewardTokens : [];
+            const tokenStrip = tokens.length
+                ? tokens.map(t => '<span class="ipx-reward-token">' + (t.symbol || 'TOKEN') + '</span>').join('')
+                : '<span class="ipx-reward-token">Onchain</span>';
+
+            let rows = '';
+            const rewards = r && Array.isArray(r.rewards) ? r.rewards : [];
+            rewards.forEach(x => {
+                const state = x.classification === 'compounded-locked' ? L.compounded : L.unclaimed;
+                const stateCls = x.classification === 'compounded-locked' ? ' compounded' : '';
+                rows += '<div class="ipx-reward-row">'
+                    + '<div><div class="ipx-reward-protocol">' + (x.protocol || 'Protocol')
+                    + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
+                    + '<div class="ipx-reward-meta">' + (x.symbol || 'TOKEN') + ' · ' + (x.chain || 'Onchain') + '</div></div>'
+                    + '<div class="ipx-reward-right"><div class="ipx-reward-amount">' + fmtRewardQty(x.amount) + ' ' + (x.symbol || '') + '</div>'
+                    + '<div class="ipx-reward-usd">' + fmtRewardUsd(x.usdValue) + '</div></div></div>';
+            });
+            const sources = r && Array.isArray(r.sources) ? r.sources : [];
+            const pending = sources.filter(s => s && s.status !== 'ok');
+            pending.forEach(s => {
+                const label = REWARD_ROUTE_LABELS[s.route] || (s.protocol && !String(s.protocol).includes('-') ? s.protocol : 'Protocol');
+                rows += '<div class="ipx-reward-row">'
+                    + '<div><div class="ipx-reward-protocol">' + label + '</div><div class="ipx-reward-meta">' + L.measuring + '</div></div>'
+                    + '<div class="ipx-reward-right"><div class="ipx-reward-amount">—</div></div></div>';
+            });
+            if (!rows) rows = '<div class="ipx-reward-empty">' + (liveMeasured ? L.noAccrued : L.measuringOnchain) + '</div>';
+            let note = '';
+            if (incomplete && Number(r.pendingRoutes || 0) > 0) {
+                const count = Number(r.pendingRoutes || 0);
+                note = '<div class="ipx-reward-panel-note">' + L.measuredTotal + ' · ' + count + ' ' + (count === 1 ? L.routeNotIncluded : L.routesNotIncluded) + '</div>';
+            }
+            return '<div class="ipx-ledger-card ipx-rewards-card ipx-rewards-disclosure">'
+                + '<button class="ipx-rewards-trigger" type="button" aria-expanded="false">'
+                + '<div class="ipx-rewards-top"><div><div class="ipx-ledger-kicker">' + L.accruedRewards + '</div>'
+                + '<div class="ipx-rewards-value' + totalCls + '">' + totalLabel + '</div></div></div>'
+                + '<div class="ipx-reward-token-strip">' + tokenStrip + '</div>'
+                + '<div class="ipx-rewards-caption"><span>' + L.rewardsCaption + '</span>' + chevSmall + '</div></button>'
+                + '<div class="ipx-rewards-panel">' + rows + note + '</div></div>';
+        };
+        const liveLedgerBlock = c => {
+            if (!COMPANY_REWARDS_SCOPE.has(c.nm)) return '';
+            return '<div class="ipx-live-ledger">' + balanceSheetBlock(c) + accruedRewardsBlock(c) + '</div>';
+        };
         const chev = '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         const arr  = '<svg viewBox="0 0 16 16" fill="none" width="12" height="12"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         // four-corner company signature — a restrained diamond, not a radar dial
@@ -3067,6 +3308,7 @@ function renderIndex(lang) {
                 +     econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : '—')
                 +     econ(L.operatingHistory, ageVal, 'age ipx-age', 'data-founded="' + c.foundedISO + '"')
                 +   '</div>'
+                +   liveLedgerBlock(c)
                 +   '<div class="ipx-grid">'
                 +     fld(L.registry, c.reg)
                 +     fld(L.founded, c.founded[lang])
@@ -3117,6 +3359,24 @@ function renderIndex(lang) {
                     });
                     pbox.classList.toggle('open', next);
                     pbtn.setAttribute('aria-expanded', next ? 'true' : 'false');
+                });
+            }
+
+            const rbox = item.querySelector('.ipx-rewards-disclosure');
+            const rbtn = rbox && rbox.querySelector('.ipx-rewards-trigger');
+            if (rbtn) {
+                rbtn.addEventListener('click', ev => {
+                    ev.preventDefault(); ev.stopPropagation();
+                    const next = !rbox.classList.contains('open');
+                    board.querySelectorAll('.ipx-rewards-disclosure.open').forEach(other => {
+                        if (other !== rbox) {
+                            other.classList.remove('open');
+                            const ob = other.querySelector('.ipx-rewards-trigger');
+                            if (ob) ob.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    rbox.classList.toggle('open', next);
+                    rbtn.setAttribute('aria-expanded', next ? 'true' : 'false');
                 });
             }
 
@@ -3617,7 +3877,8 @@ function renderFramework(lang) {
     // parallel so the new engine cannot slow down or block the existing TVL path.
     const [prices] = await Promise.all([
         cgPrices(IDS),
-        loadProductivitySnapshot()
+        loadProductivitySnapshot(),
+        loadCompanyRewardsSnapshot()
     ]);
     if (!prices || Object.keys(prices).length === 0) {
         [el1, el2, el3, el4, statEl].forEach(el => { if (el) el.textContent = 'Live'; });
