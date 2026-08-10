@@ -3049,33 +3049,51 @@
 </footer>
 
 <script>
-// Preserve the reader's exact position on a hard reload. The page contains
-// async TVL/index/passport blocks, so restore more than once while layout settles.
-// Normal navigation/back behavior remains native.
+// Preserve the reader's position on a hard reload without fighting the browser.
+// The previous implementation forced the same scrollY several times while async
+// blocks were rendering, which produced visible up/down jumps. We now restore once
+// and only start persisting scroll again after that restore has completed.
 const TH_RELOAD_SCROLL_KEY = 'th_companies_reload_scroll_y';
 let TH_RESTORE_RELOAD_SCROLL = false;
+let TH_RELOAD_SCROLL_Y = 0;
+let TH_SCROLL_SAVE_ENABLED = false;
 function rememberCompaniesScroll() {
+    if (!TH_SCROLL_SAVE_ENABLED) return;
     try { sessionStorage.setItem(TH_RELOAD_SCROLL_KEY, String(Math.max(0, window.scrollY || 0))); } catch (_) {}
 }
 function restoreCompaniesReloadScroll() {
-    if (!TH_RESTORE_RELOAD_SCROLL) return;
-    let y = 0;
-    try { y = Number(sessionStorage.getItem(TH_RELOAD_SCROLL_KEY) || 0); } catch (_) {}
-    if (!Number.isFinite(y) || y < 0) y = 0;
-    const hold = () => window.scrollTo(0, y);
-    requestAnimationFrame(hold);
-    setTimeout(hold, 90);
-    setTimeout(hold, 360);
-    setTimeout(hold, 1000);
+    if (!TH_RESTORE_RELOAD_SCROLL) {
+        TH_SCROLL_SAVE_ENABLED = true;
+        return;
+    }
+    requestAnimationFrame(() => {
+        const root = document.documentElement;
+        const prevBehavior = root.style.scrollBehavior;
+        root.style.scrollBehavior = 'auto';
+        window.scrollTo(0, TH_RELOAD_SCROLL_Y);
+        root.style.scrollBehavior = prevBehavior;
+        requestAnimationFrame(() => { TH_SCROLL_SAVE_ENABLED = true; });
+    });
 }
 try {
-    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
     TH_RESTORE_RELOAD_SCROLL = !!(nav && nav.type === 'reload');
+    try {
+        TH_RELOAD_SCROLL_Y = Number(sessionStorage.getItem(TH_RELOAD_SCROLL_KEY) || 0);
+        if (!Number.isFinite(TH_RELOAD_SCROLL_Y) || TH_RELOAD_SCROLL_Y < 0) TH_RELOAD_SCROLL_Y = 0;
+    } catch (_) { TH_RELOAD_SCROLL_Y = 0; }
+
+    // Manual restoration is used only for an actual reload. Back/forward navigation
+    // keeps the browser's native restoration behavior.
+    if ('scrollRestoration' in history) history.scrollRestoration = TH_RESTORE_RELOAD_SCROLL ? 'manual' : 'auto';
     window.addEventListener('scroll', rememberCompaniesScroll, { passive: true });
-    window.addEventListener('pagehide', rememberCompaniesScroll);
-    window.addEventListener('pageshow', restoreCompaniesReloadScroll);
-} catch (_) {}
+    window.addEventListener('pagehide', () => {
+        try { sessionStorage.setItem(TH_RELOAD_SCROLL_KEY, String(Math.max(0, window.scrollY || 0))); } catch (_) {}
+    });
+    window.addEventListener('pageshow', restoreCompaniesReloadScroll, { once: true });
+} catch (_) {
+    TH_SCROLL_SAVE_ENABLED = true;
+}
 /* ── Scroll reveal ─────────────────────────────────── */
 (function () {
     const els = document.querySelectorAll('.reveal');
@@ -4908,7 +4926,6 @@ function renderFramework(lang) {
     }
     renderIndex(idxLang());
     buildGraph();
-    restoreCompaniesReloadScroll();
 })();
 
 /* ── Sticky subnav: highlight active section on scroll ── */
