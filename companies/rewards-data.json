@@ -1,23 +1,30 @@
 {
-  "version": "0.1.1",
-  "collectorVersion": "0.1.1-price-safe",
-  "methodologyVersion": "0.1-earned-inside-protocols",
-  "generatedAt": "2026-08-10T06:04:30.576Z",
+  "version": "0.2.0",
+  "collectorVersion": "0.2.0-defitea-two-wallet",
+  "methodologyVersion": "0.2-earned-inside-protocols-multiwallet",
+  "generatedAt": "2026-08-10T07:39:50.254Z",
   "date": "2026-08-10",
-  "scope": "protocol-side accrued rewards for personal onchain companies",
+  "scope": "protocol-side accrued rewards for Personal Onchain Companies and Defitea Fund",
   "methodology": {
-    "definition": "Rewards already earned by a company inside protocol contracts but not yet freely held in the company wallet.",
-    "aerodrome": "Relay-compounded AERO read from LockedManagedReward.earned(AERO, veNFT). Classified as compounded-locked because it remains inside the managed veNFT until withdrawal.",
-    "curve": "Claimable crvUSD simulated against the official FeeDistributor with eth_call/staticCall. No transaction is sent.",
-    "frax": "Claimable emitted token read from Fraxtal YieldDistributor.earned(account); reward token is discovered from emittedTokenAddress().",
-    "yieldBasis": "Claimable multi-token veYB admin fees read with FeeDistributor.preview_claim. yb-LP rewards are valued at current realistic redemption value via LT.preview_withdraw and the underlying asset USD price.",
-    "union": "Votium/The Union is intentionally excluded from totals until a reproducible member-level read path is validated. The public Union implementation is private; no reward amount is guessed.",
-    "tvlTreatment": "Accrued rewards are displayed separately and are not added to Company TVL in v0.1."
+    "definition": "Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.",
+    "multiWallet": "Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.",
+    "aerodromeVelodrome": "Managed/Relay veNFT compounded rewards are read directly. Direct voting NFTs also read current RewardsDistributor and current voted fee/incentive contracts; direct routes stay partial because old no-longer-voted pools may still contain unclaimed rewards.",
+    "curve": "Base crvUSD FeeDistributor claims are simulated. Defitea VoteMarket veCRV incentives are tracked as a known pending supplement and are not guessed.",
+    "convex": "Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.",
+    "pendle": "Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE presence is retained from vePendlePositionData.",
+    "fx": "Base veFXN FeeDistributor claims are simulated. VoteMarket veFXN incentives remain a known pending supplement.",
+    "yieldBasis": "FeeDistributor.preview_claim is used; yb rewards are valued at current redemption value into underlying BTC assets.",
+    "frax": "Fraxtal YieldDistributor.earned(account), with emitted reward token discovered onchain.",
+    "venice": "StakingV2.pendingRewards(user) on Base.",
+    "liquity": "LQTYStaking pending ETH and LUSD gains.",
+    "resupply": "GovStaker reward tokens are dynamically enumerated and earned(account, token) is read onchain.",
+    "tvlTreatment": "Accrued Rewards remain separate from Company TVL and Treasury cash."
   },
   "rpc": {
     "ethereum": "https://ethereum-rpc.publicnode.com",
     "base": "https://base-rpc.publicnode.com",
-    "fraxtal": "https://rpc.frax.com"
+    "fraxtal": "https://rpc.frax.com",
+    "optimism": "https://optimism-rpc.publicnode.com"
   },
   "companies": {
     "05081966.eth": {
@@ -26,10 +33,21 @@
       "address": "0x7CdF49f589038242e77847573604441E383f5429",
       "resolution": "ens",
       "fallbackMatched": true,
-      "totalUsd": 1.357831,
+      "wallets": [
+        {
+          "alias": "05081966.eth",
+          "ens": "05081966.eth",
+          "address": "0x7CdF49f589038242e77847573604441E383f5429",
+          "resolution": "ens",
+          "fallbackMatched": true
+        }
+      ],
+      "totalUsd": 1.360442,
       "totalUsdIsComplete": true,
       "routeCoverage": 1,
+      "completeRouteCoverage": 1,
       "measuredRoutes": 3,
+      "completeRoutes": 3,
       "routeCount": 3,
       "pendingRoutes": 0,
       "unpricedRewards": 0,
@@ -45,8 +63,8 @@
           "amount": 2.0257877309,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.847948,
-          "priceUsd": 0.418577,
+          "usdValue": 0.851317,
+          "priceUsd": 0.42024,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -58,7 +76,9 @@
                 "accruedAeroRaw": "2025787730901732165"
               }
             ],
-            "coingeckoId": "aerodrome-finance"
+            "coingeckoId": "aerodrome-finance",
+            "wallet": "0x7CdF49f589038242e77847573604441E383f5429",
+            "walletAlias": "05081966.eth"
           }
         },
         {
@@ -77,7 +97,9 @@
           "priceMethod": "fixed-usd-assumption",
           "details": {
             "symbol": "crvUSD",
-            "fixedUsdPrice": 1
+            "fixedUsdPrice": 1,
+            "wallet": "0x7CdF49f589038242e77847573604441E383f5429",
+            "walletAlias": "05081966.eth"
           }
         },
         {
@@ -86,18 +108,20 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1336949702266575788",
+          "amountRaw": "1340690343297591511",
           "decimals": 18,
-          "amount": 1.3369497023,
+          "amount": 1.3406903433,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.424802,
-          "priceUsd": 0.31774,
+          "usdValue": 0.424044,
+          "priceUsd": 0.316288,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
             "coingeckoId": "wrapped-frax",
-            "emittedToken": "0xFc00000000000000000000000000000000000002"
+            "emittedToken": "0xFc00000000000000000000000000000000000002",
+            "wallet": "0x7CdF49f589038242e77847573604441E383f5429",
+            "walletAlias": "05081966.eth"
           }
         }
       ],
@@ -106,7 +130,7 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 2.0257877309,
-          "usdValue": 0.847948
+          "usdValue": 0.851317
         },
         {
           "symbol": "crvUSD",
@@ -117,8 +141,8 @@
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.3369497023,
-          "usdValue": 0.424802
+          "amount": 1.3406903433,
+          "usdValue": 0.424044
         }
       ],
       "sources": [
@@ -128,24 +152,62 @@
           "status": "ok",
           "chain": "Base",
           "metric": "LockedManagedReward.earned(AERO, veNFT)",
-          "note": "Relay-compounded AERO remains locked inside the managed veNFT until withdrawal."
+          "note": "Relay-compounded AERO remains locked inside the managed veNFT until withdrawal.",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x7CdF49f589038242e77847573604441E383f5429",
+                "walletAlias": "05081966.eth",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": "Relay-compounded AERO remains locked inside the managed veNFT until withdrawal.",
+                "details": null
+              }
+            ]
+          }
         },
         {
           "protocol": "Curve",
           "route": "curve-fees",
           "status": "ok",
           "chain": "Ethereum",
-          "metric": "crvUSD FeeDistributor claim simulation"
+          "metric": "crvUSD FeeDistributor claim simulation",
+          "note": "",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x7CdF49f589038242e77847573604441E383f5429",
+                "walletAlias": "05081966.eth",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": null,
+                "details": null
+              }
+            ]
+          }
         },
         {
           "protocol": "Frax",
           "route": "frax-yield",
           "status": "ok",
           "chain": "Fraxtal",
-          "metric": "YieldDistributor.earned(account)"
+          "metric": "YieldDistributor.earned(account)",
+          "note": "",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x7CdF49f589038242e77847573604441E383f5429",
+                "walletAlias": "05081966.eth",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": null,
+                "details": null
+              }
+            ]
+          }
         }
       ],
-      "updatedAt": "2026-08-10T06:04:30.576Z"
+      "updatedAt": "2026-08-10T07:39:50.254Z"
     },
     "YieldRing.eth": {
       "status": "partial",
@@ -153,10 +215,21 @@
       "address": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
       "resolution": "ens",
       "fallbackMatched": null,
-      "totalUsd": 1.08468,
+      "wallets": [
+        {
+          "alias": "YieldRing.eth",
+          "ens": "yieldring.eth",
+          "address": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+          "resolution": "ens",
+          "fallbackMatched": null
+        }
+      ],
+      "totalUsd": 1.087786,
       "totalUsdIsComplete": false,
       "routeCoverage": 0.666667,
+      "completeRouteCoverage": 0.666667,
       "measuredRoutes": 2,
+      "completeRoutes": 2,
       "routeCount": 3,
       "pendingRoutes": 1,
       "unpricedRewards": 0,
@@ -172,8 +245,8 @@
           "amount": 1.5785400672,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.660741,
-          "priceUsd": 0.418577,
+          "usdValue": 0.663366,
+          "priceUsd": 0.42024,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -185,7 +258,9 @@
                 "accruedAeroRaw": "1578540067223812498"
               }
             ],
-            "coingeckoId": "aerodrome-finance"
+            "coingeckoId": "aerodrome-finance",
+            "wallet": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+            "walletAlias": "YieldRing.eth"
           }
         },
         {
@@ -194,18 +269,20 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1334232138590660968",
+          "amountRaw": "1341877760887807499",
           "decimals": 18,
-          "amount": 1.3342321386,
+          "amount": 1.3418777609,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.423939,
-          "priceUsd": 0.31774,
+          "usdValue": 0.42442,
+          "priceUsd": 0.316288,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
             "coingeckoId": "wrapped-frax",
-            "emittedToken": "0xFc00000000000000000000000000000000000002"
+            "emittedToken": "0xFc00000000000000000000000000000000000002",
+            "wallet": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+            "walletAlias": "YieldRing.eth"
           }
         }
       ],
@@ -214,13 +291,13 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 1.5785400672,
-          "usdValue": 0.660741
+          "usdValue": 0.663366
         },
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.3342321386,
-          "usdValue": 0.423939
+          "amount": 1.3418777609,
+          "usdValue": 0.42442
         }
       ],
       "sources": [
@@ -230,14 +307,39 @@
           "status": "ok",
           "chain": "Base",
           "metric": "LockedManagedReward.earned(AERO, veNFT)",
-          "note": "Relay-compounded AERO remains locked inside the managed veNFT until withdrawal."
+          "note": "Relay-compounded AERO remains locked inside the managed veNFT until withdrawal.",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+                "walletAlias": "YieldRing.eth",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": "Relay-compounded AERO remains locked inside the managed veNFT until withdrawal.",
+                "details": null
+              }
+            ]
+          }
         },
         {
           "protocol": "Frax",
           "route": "frax-yield",
           "status": "ok",
           "chain": "Fraxtal",
-          "metric": "YieldDistributor.earned(account)"
+          "metric": "YieldDistributor.earned(account)",
+          "note": "",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+                "walletAlias": "YieldRing.eth",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": null,
+                "details": null
+              }
+            ]
+          }
         },
         {
           "protocol": "Convex / Votium / The Union",
@@ -245,10 +347,18 @@
           "status": "warming",
           "chain": "Ethereum",
           "metric": null,
-          "note": "Union forwards and consolidates Votium rewards, but its per-member accounting implementation is not exposed in the public frontend repository. Excluded until a reproducible member-level read path is validated."
+          "note": "Votium → The Union is intentionally excluded until a reproducible member-level reward read is validated. No reward amount is guessed.",
+          "details": {
+            "wallets": [
+              {
+                "address": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+                "alias": "YieldRing.eth"
+              }
+            ]
+          }
         }
       ],
-      "updatedAt": "2026-08-10T06:04:30.576Z"
+      "updatedAt": "2026-08-10T07:39:50.254Z"
     },
     "dinaz.eth": {
       "status": "ok",
@@ -256,10 +366,21 @@
       "address": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
       "resolution": "ens",
       "fallbackMatched": true,
-      "totalUsd": 3.95212,
+      "wallets": [
+        {
+          "alias": "dinaz.eth",
+          "ens": "dinaz.eth",
+          "address": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+          "resolution": "ens",
+          "fallbackMatched": true
+        }
+      ],
+      "totalUsd": 3.963646,
       "totalUsdIsComplete": true,
       "routeCoverage": 1,
+      "completeRouteCoverage": 1,
       "measuredRoutes": 1,
+      "completeRoutes": 1,
       "routeCount": 1,
       "pendingRoutes": 0,
       "unpricedRewards": 0,
@@ -275,8 +396,8 @@
           "amount": 0.0000273526,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.794221,
-          "priceUsd": 65126,
+          "usdValue": 1.799208,
+          "priceUsd": 65307,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -285,9 +406,12 @@
             "redeemDecimals": 8,
             "redeemAmountRaw": "2755",
             "redeemAmount": 0.00002755,
-            "priceByEthereumContract": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
             "redemptionCoingeckoId": "wrapped-bitcoin",
-            "marketIndex": 7
+            "marketIndex": 7,
+            "wallet": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+            "walletAlias": "dinaz.eth"
           }
         },
         {
@@ -301,8 +425,8 @@
           "amount": 0.0000199489,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.306176,
-          "priceUsd": 65081,
+          "usdValue": 1.310491,
+          "priceUsd": 65296,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -311,9 +435,12 @@
             "redeemDecimals": 8,
             "redeemAmountRaw": "2007",
             "redeemAmount": 0.00002007,
-            "priceByEthereumContract": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
             "redemptionCoingeckoId": "coinbase-wrapped-btc",
-            "marketIndex": 8
+            "marketIndex": 8,
+            "wallet": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+            "walletAlias": "dinaz.eth"
           }
         },
         {
@@ -327,19 +454,22 @@
           "amount": 0.0000130356,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.851723,
-          "priceUsd": 65060,
+          "usdValue": 0.853947,
+          "priceUsd": 65230,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "13091348589363",
-            "redeemAmount": 0.000013091349,
-            "priceByEthereumContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
+            "redeemAmountRaw": "13091328881248",
+            "redeemAmount": 0.000013091329,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
-            "marketIndex": 9
+            "marketIndex": 9,
+            "wallet": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+            "walletAlias": "dinaz.eth"
           }
         }
       ],
@@ -348,19 +478,19 @@
           "symbol": "yb-WBTC",
           "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
           "amount": 0.0000273526,
-          "usdValue": 1.794221
+          "usdValue": 1.799208
         },
         {
           "symbol": "yb-cbBTC",
           "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
           "amount": 0.0000199489,
-          "usdValue": 1.306176
+          "usdValue": 1.310491
         },
         {
           "symbol": "yb-tBTC",
           "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
           "amount": 0.0000130356,
-          "usdValue": 0.851723
+          "usdValue": 0.853947
         }
       ],
       "sources": [
@@ -369,28 +499,996 @@
           "route": "yield-basis-fees",
           "status": "ok",
           "chain": "Ethereum",
-          "metric": "FeeDistributor.preview_claim(receiver, 50, false)"
+          "metric": "FeeDistributor.preview_claim(receiver, 50, false)",
+          "note": "",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+                "walletAlias": "dinaz.eth",
+                "status": "ok",
+                "rewardCount": 3,
+                "note": null,
+                "details": null
+              }
+            ]
+          }
         }
       ],
-      "updatedAt": "2026-08-10T06:04:30.576Z"
+      "updatedAt": "2026-08-10T07:39:50.254Z"
+    },
+    "defitea.eth": {
+      "status": "partial",
+      "ens": "defitea.eth",
+      "address": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+      "resolution": "ens",
+      "fallbackMatched": true,
+      "wallets": [
+        {
+          "alias": "defitea.eth",
+          "ens": "defitea.eth",
+          "address": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "resolution": "ens",
+          "fallbackMatched": true
+        },
+        {
+          "alias": "Defitea Operations",
+          "ens": null,
+          "address": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "resolution": "address",
+          "fallbackMatched": null
+        }
+      ],
+      "totalUsd": 72.539266,
+      "totalUsdIsComplete": false,
+      "routeCoverage": 0.909091,
+      "completeRouteCoverage": 0.727273,
+      "measuredRoutes": 10,
+      "completeRoutes": 8,
+      "routeCount": 11,
+      "pendingRoutes": 3,
+      "unpricedRewards": 1,
+      "rewards": [
+        {
+          "protocol": "Aerodrome",
+          "route": "aerodrome-ve",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "amountRaw": "100879627901730408183",
+          "decimals": 18,
+          "amount": 100.8796279017,
+          "classification": "compounded-locked",
+          "source": "onchain: LockedManagedReward.earned",
+          "usdValue": 42.433099,
+          "priceUsd": 0.420631,
+          "priceMethod": "coingecko:aerodrome-finance",
+          "details": {
+            "symbol": "AERO",
+            "tokenId": "103935",
+            "managedTokenId": "10298",
+            "lockedManagedReward": "0xC6631c68f00A5c89927fada25c70934D922329EF",
+            "coingeckoId": "aerodrome-finance",
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "Curve",
+          "route": "curve-fees-votemarket",
+          "chain": "Ethereum",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "symbol": "crvUSD",
+          "amountRaw": "2632942248145070184",
+          "decimals": 18,
+          "amount": 2.6329422481,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.claim staticCall",
+          "usdValue": 2.632942,
+          "priceUsd": 1,
+          "priceMethod": "fixed-usd-assumption",
+          "details": {
+            "symbol": "crvUSD",
+            "fixedUsdPrice": 1,
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "Curve",
+          "route": "curve-fees-votemarket",
+          "chain": "Ethereum",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "symbol": "crvUSD",
+          "amountRaw": "1976068110178230880",
+          "decimals": 18,
+          "amount": 1.9760681102,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.claim staticCall",
+          "usdValue": 1.976068,
+          "priceUsd": 1,
+          "priceMethod": "fixed-usd-assumption",
+          "details": {
+            "symbol": "crvUSD",
+            "fixedUsdPrice": 1,
+            "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+            "walletAlias": "Defitea Operations"
+          }
+        },
+        {
+          "protocol": "f(x)",
+          "route": "fx-fees-votemarket",
+          "chain": "Ethereum",
+          "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+          "symbol": "wstETH",
+          "amountRaw": "894715488518491",
+          "decimals": 18,
+          "amount": 0.0008947155,
+          "classification": "unclaimed",
+          "source": "onchain: f(x) FeeDistributor.claim staticCall",
+          "usdValue": 2.141323,
+          "priceUsd": 2393.3,
+          "priceMethod": "coingecko:wrapped-steth",
+          "details": {
+            "symbol": "wstETH",
+            "distributor": "0xd116513EEa4Efe3908212AfBAeFC76cb29245681",
+            "distributorLabel": "wstETH fees",
+            "coingeckoId": "wrapped-steth",
+            "pricePlatform": "ethereum",
+            "priceContract": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "f(x)",
+          "route": "fx-fees-votemarket",
+          "chain": "Ethereum",
+          "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+          "symbol": "wstETH",
+          "amountRaw": "583424673420852",
+          "decimals": 18,
+          "amount": 0.0005834247,
+          "classification": "unclaimed",
+          "source": "onchain: f(x) FeeDistributor.claim staticCall",
+          "usdValue": 1.39631,
+          "priceUsd": 2393.3,
+          "priceMethod": "coingecko:wrapped-steth",
+          "details": {
+            "symbol": "wstETH",
+            "distributor": "0xd116513EEa4Efe3908212AfBAeFC76cb29245681",
+            "distributorLabel": "wstETH fees",
+            "coingeckoId": "wrapped-steth",
+            "pricePlatform": "ethereum",
+            "priceContract": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+            "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+            "walletAlias": "Defitea Operations"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
+          "symbol": "yb-WETH",
+          "amountRaw": "872318324609865",
+          "decimals": 18,
+          "amount": 0.0008723183,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 1.590025,
+          "priceUsd": 1928.32,
+          "priceMethod": "redemption-value:WETH@coingecko:weth",
+          "details": {
+            "symbol": "yb-WETH",
+            "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "redeemSymbol": "WETH",
+            "redeemDecimals": 18,
+            "redeemAmountRaw": "824564782670836",
+            "redeemAmount": 0.000824564783,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "redemptionCoingeckoId": "weth",
+            "marketIndex": 6,
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "symbol": "yb-cbBTC",
+          "amountRaw": "62327612586445",
+          "decimals": 18,
+          "amount": 0.0000623276,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 4.094963,
+          "priceUsd": 65300,
+          "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
+          "details": {
+            "symbol": "yb-cbBTC",
+            "redeemAsset": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+            "redeemSymbol": "cbBTC",
+            "redeemDecimals": 8,
+            "redeemAmountRaw": "6271",
+            "redeemAmount": 0.00006271,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+            "redemptionCoingeckoId": "coinbase-wrapped-btc",
+            "marketIndex": 8,
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "symbol": "yb-WBTC",
+          "amountRaw": "51836922324566",
+          "decimals": 18,
+          "amount": 0.0000518369,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 3.409678,
+          "priceUsd": 65307,
+          "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
+          "details": {
+            "symbol": "yb-WBTC",
+            "redeemAsset": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+            "redeemSymbol": "WBTC",
+            "redeemDecimals": 8,
+            "redeemAmountRaw": "5221",
+            "redeemAmount": 0.00005221,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+            "redemptionCoingeckoId": "wrapped-bitcoin",
+            "marketIndex": 7,
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "symbol": "yb-tBTC",
+          "amountRaw": "26181557242985",
+          "decimals": 18,
+          "amount": 0.0000261816,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 1.715332,
+          "priceUsd": 65238,
+          "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
+          "details": {
+            "symbol": "yb-tBTC",
+            "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
+            "redeemSymbol": "tBTC",
+            "redeemDecimals": 18,
+            "redeemAmountRaw": "26293450559190",
+            "redeemAmount": 0.000026293451,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
+            "redemptionCoingeckoId": "tbtc",
+            "marketIndex": 9,
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
+          "symbol": "yb-WETH",
+          "amountRaw": "275413425795650",
+          "decimals": 18,
+          "amount": 0.0002754134,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 0.536961,
+          "priceUsd": 1928.32,
+          "priceMethod": "redemption-value:WETH@coingecko:weth",
+          "details": {
+            "symbol": "yb-WETH",
+            "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "redeemSymbol": "WETH",
+            "redeemDecimals": 18,
+            "redeemAmountRaw": "278460524970210",
+            "redeemAmount": 0.000278460525,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "redemptionCoingeckoId": "weth",
+            "marketIndex": 10,
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
+          "symbol": "yb-WETH",
+          "amountRaw": "612645191647370",
+          "decimals": 18,
+          "amount": 0.0006126452,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 1.116704,
+          "priceUsd": 1928.32,
+          "priceMethod": "redemption-value:WETH@coingecko:weth",
+          "details": {
+            "symbol": "yb-WETH",
+            "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "redeemSymbol": "WETH",
+            "redeemDecimals": 18,
+            "redeemAmountRaw": "579107003263909",
+            "redeemAmount": 0.000579107003,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "redemptionCoingeckoId": "weth",
+            "marketIndex": 6,
+            "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+            "walletAlias": "Defitea Operations"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "symbol": "yb-cbBTC",
+          "amountRaw": "27431766762365",
+          "decimals": 18,
+          "amount": 0.0000274318,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 1.80228,
+          "priceUsd": 65300,
+          "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
+          "details": {
+            "symbol": "yb-cbBTC",
+            "redeemAsset": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+            "redeemSymbol": "cbBTC",
+            "redeemDecimals": 8,
+            "redeemAmountRaw": "2760",
+            "redeemAmount": 0.0000276,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+            "redemptionCoingeckoId": "coinbase-wrapped-btc",
+            "marketIndex": 8,
+            "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+            "walletAlias": "Defitea Operations"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "symbol": "yb-WBTC",
+          "amountRaw": "20527043320052",
+          "decimals": 18,
+          "amount": 0.000020527,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 1.349896,
+          "priceUsd": 65307,
+          "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
+          "details": {
+            "symbol": "yb-WBTC",
+            "redeemAsset": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+            "redeemSymbol": "WBTC",
+            "redeemDecimals": 8,
+            "redeemAmountRaw": "2067",
+            "redeemAmount": 0.00002067,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+            "redemptionCoingeckoId": "wrapped-bitcoin",
+            "marketIndex": 7,
+            "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+            "walletAlias": "Defitea Operations"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "symbol": "yb-tBTC",
+          "amountRaw": "10857110702067",
+          "decimals": 18,
+          "amount": 0.0000108571,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 0.711323,
+          "priceUsd": 65238,
+          "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
+          "details": {
+            "symbol": "yb-tBTC",
+            "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
+            "redeemSymbol": "tBTC",
+            "redeemDecimals": 18,
+            "redeemAmountRaw": "10903511231597",
+            "redeemAmount": 0.000010903511,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
+            "redemptionCoingeckoId": "tbtc",
+            "marketIndex": 9,
+            "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+            "walletAlias": "Defitea Operations"
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "chain": "Ethereum",
+          "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
+          "symbol": "yb-WETH",
+          "amountRaw": "145986882767921",
+          "decimals": 18,
+          "amount": 0.0001459869,
+          "classification": "unclaimed",
+          "source": "onchain: FeeDistributor.preview_claim",
+          "usdValue": 0.284624,
+          "priceUsd": 1928.32,
+          "priceMethod": "redemption-value:WETH@coingecko:weth",
+          "details": {
+            "symbol": "yb-WETH",
+            "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "redeemSymbol": "WETH",
+            "redeemDecimals": 18,
+            "redeemAmountRaw": "147602041897136",
+            "redeemAmount": 0.000147602042,
+            "pricePlatform": "ethereum",
+            "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "redemptionCoingeckoId": "weth",
+            "marketIndex": 10,
+            "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+            "walletAlias": "Defitea Operations"
+          }
+        },
+        {
+          "protocol": "Frax",
+          "route": "frax-yield",
+          "chain": "Fraxtal",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "symbol": "WFRAX",
+          "amountRaw": "9989381966963124546",
+          "decimals": 18,
+          "amount": 9.989381967,
+          "classification": "unclaimed",
+          "source": "onchain: YieldDistributor.earned",
+          "usdValue": 3.159592,
+          "priceUsd": 0.316295,
+          "priceMethod": "coingecko:wrapped-frax",
+          "details": {
+            "symbol": "WFRAX",
+            "coingeckoId": "wrapped-frax",
+            "emittedToken": "0xFc00000000000000000000000000000000000002",
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "Frax",
+          "route": "frax-yield",
+          "chain": "Fraxtal",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "symbol": "WFRAX",
+          "amountRaw": "2804476341642825662",
+          "decimals": 18,
+          "amount": 2.8044763416,
+          "classification": "unclaimed",
+          "source": "onchain: YieldDistributor.earned",
+          "usdValue": 0.887042,
+          "priceUsd": 0.316295,
+          "priceMethod": "coingecko:wrapped-frax",
+          "details": {
+            "symbol": "WFRAX",
+            "coingeckoId": "wrapped-frax",
+            "emittedToken": "0xFc00000000000000000000000000000000000002",
+            "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+            "walletAlias": "Defitea Operations"
+          }
+        },
+        {
+          "protocol": "Venice",
+          "route": "venice-staking",
+          "chain": "Base",
+          "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
+          "symbol": "VVV",
+          "amountRaw": "108425363387823699",
+          "decimals": 18,
+          "amount": 0.1084253634,
+          "classification": "unclaimed",
+          "source": "onchain: Venice StakingV2.pendingRewards",
+          "usdValue": 1.301104,
+          "priceUsd": 12,
+          "priceMethod": "coingecko:venice-token",
+          "details": {
+            "symbol": "VVV",
+            "coingeckoId": "venice-token",
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        },
+        {
+          "protocol": "Resupply",
+          "route": "resupply-staking",
+          "chain": "Ethereum",
+          "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
+          "symbol": "reUSD",
+          "amountRaw": "3295985870520366541",
+          "decimals": 18,
+          "amount": 3.2959858705,
+          "classification": "unclaimed",
+          "source": "onchain: GovStaker.earned(account,rewardToken)",
+          "usdValue": null,
+          "priceUsd": null,
+          "priceMethod": null,
+          "details": {
+            "symbol": "reUSD",
+            "coingeckoId": null,
+            "pricePlatform": "ethereum",
+            "priceContract": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "walletAlias": "defitea.eth"
+          }
+        }
+      ],
+      "rewardTokens": [
+        {
+          "symbol": "AERO",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "amount": 100.8796279017,
+          "usdValue": 42.433099
+        },
+        {
+          "symbol": "crvUSD",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "amount": 4.6090103583,
+          "usdValue": 4.60901
+        },
+        {
+          "symbol": "wstETH",
+          "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+          "amount": 0.0014781402,
+          "usdValue": 3.537633
+        },
+        {
+          "symbol": "yb-WETH",
+          "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
+          "amount": 0.0014849635,
+          "usdValue": 2.706729
+        },
+        {
+          "symbol": "yb-cbBTC",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "amount": 0.0000897594,
+          "usdValue": 5.897243
+        },
+        {
+          "symbol": "yb-WBTC",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "amount": 0.0000723639,
+          "usdValue": 4.759574
+        },
+        {
+          "symbol": "yb-tBTC",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "amount": 0.0000370387,
+          "usdValue": 2.426655
+        },
+        {
+          "symbol": "yb-WETH",
+          "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
+          "amount": 0.0004214003,
+          "usdValue": 0.821585
+        },
+        {
+          "symbol": "WFRAX",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "amount": 12.7938583086,
+          "usdValue": 4.046634
+        },
+        {
+          "symbol": "VVV",
+          "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
+          "amount": 0.1084253634,
+          "usdValue": 1.301104
+        },
+        {
+          "symbol": "reUSD",
+          "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
+          "amount": 3.2959858705,
+          "usdValue": null
+        }
+      ],
+      "sources": [
+        {
+          "protocol": "Aerodrome",
+          "route": "aerodrome-ve",
+          "status": "ok",
+          "chain": "Base",
+          "metric": "veNFT current accrued rewards + managed compounding",
+          "note": "Managed/Relay rewards measured from current protocol state.",
+          "details": {
+            "veNftCount": 1,
+            "managedPositions": 1,
+            "directPositions": 0,
+            "issues": [],
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": "Managed/Relay rewards measured from current protocol state.",
+                "details": {
+                  "veNftCount": 1,
+                  "managedPositions": 1,
+                  "directPositions": 0,
+                  "issues": []
+                }
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "ok",
+                "rewardCount": 0,
+                "note": "Managed/Relay rewards measured from current protocol state.",
+                "details": {
+                  "veNftCount": 0,
+                  "managedPositions": 0,
+                  "directPositions": 0,
+                  "issues": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "Velodrome",
+          "route": "velodrome-ve",
+          "status": "ok",
+          "chain": "Optimism",
+          "metric": "veNFT current accrued rewards + managed compounding",
+          "note": "Managed/Relay rewards measured from current protocol state.",
+          "details": {
+            "veNftCount": 0,
+            "managedPositions": 0,
+            "directPositions": 0,
+            "issues": [],
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "ok",
+                "rewardCount": 0,
+                "note": "Managed/Relay rewards measured from current protocol state.",
+                "details": {
+                  "veNftCount": 0,
+                  "managedPositions": 0,
+                  "directPositions": 0,
+                  "issues": []
+                }
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "ok",
+                "rewardCount": 0,
+                "note": "Managed/Relay rewards measured from current protocol state.",
+                "details": {
+                  "veNftCount": 0,
+                  "managedPositions": 0,
+                  "directPositions": 0,
+                  "issues": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "Convex / Votium / The Union",
+          "route": "votium-union",
+          "status": "warming",
+          "chain": "Ethereum",
+          "metric": null,
+          "note": "Votium → The Union is intentionally excluded until a reproducible member-level reward read is validated. No reward amount is guessed.",
+          "details": {
+            "wallets": [
+              {
+                "address": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "alias": "defitea.eth"
+              },
+              {
+                "address": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "alias": "Defitea Operations"
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "Curve",
+          "route": "curve-fees-votemarket",
+          "status": "partial",
+          "chain": "Ethereum",
+          "metric": "crvUSD FeeDistributor + VoteMarket supplement pending",
+          "note": "Base veCRV crvUSD fees are measured. Stake DAO VoteMarket veCRV voting incentives are intentionally excluded until a reproducible per-user claim amount read is validated.",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "partial",
+                "rewardCount": 1,
+                "note": "Base veCRV crvUSD fees are measured. Stake DAO VoteMarket veCRV voting incentives are intentionally excluded until a reproducible per-user claim amount read is validated.",
+                "details": null
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "partial",
+                "rewardCount": 1,
+                "note": "Base veCRV crvUSD fees are measured. Stake DAO VoteMarket veCRV voting incentives are intentionally excluded until a reproducible per-user claim amount read is validated.",
+                "details": null
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "Pendle",
+          "route": "pendle-spendle",
+          "status": "ok",
+          "chain": "Multi-chain",
+          "metric": "Official sPENDLE holder + dashboard claimable rewards APIs",
+          "note": "Current claimable sPENDLE rewards are read from Pendle official APIs. Legacy vePENDLE participation is preserved by Pendle in the holder response.",
+          "details": {
+            "claimableMerkleItems": 0,
+            "hasLegacyVePendleData": false,
+            "vePendlePositionData": null,
+            "issues": [],
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "ok",
+                "rewardCount": 0,
+                "note": "Current claimable sPENDLE rewards are read from Pendle official APIs. Legacy vePENDLE participation is preserved by Pendle in the holder response.",
+                "details": {
+                  "claimableMerkleItems": 0,
+                  "hasLegacyVePendleData": false,
+                  "vePendlePositionData": null,
+                  "issues": []
+                }
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "ok",
+                "rewardCount": 0,
+                "note": "Current claimable sPENDLE rewards are read from Pendle official APIs. Legacy vePENDLE participation is preserved by Pendle in the holder response.",
+                "details": {
+                  "claimableMerkleItems": 0,
+                  "hasLegacyVePendleData": true,
+                  "vePendlePositionData": {
+                    "amount": "214825488388890938537",
+                    "expiry": 1829520000
+                  },
+                  "issues": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "f(x)",
+          "route": "fx-fees-votemarket",
+          "status": "partial",
+          "chain": "Ethereum",
+          "metric": "f(x) veFXN FeeDistributor claims + VoteMarket supplement pending",
+          "note": "Base veFXN fee distributions are measured where claim simulation is available. Stake DAO VoteMarket veFXN voting incentives are excluded until a reproducible per-user claim amount read is validated.",
+          "details": {
+            "issues": [
+              "stETH fees: execution reverted (no data present; likely require(false) occurred"
+            ],
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "partial",
+                "rewardCount": 1,
+                "note": "Base veFXN fee distributions are measured where claim simulation is available. Stake DAO VoteMarket veFXN voting incentives are excluded until a reproducible per-user claim amount read is validated.",
+                "details": {
+                  "issues": [
+                    "stETH fees: execution reverted (no data present; likely require(false) occurred"
+                  ]
+                }
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "partial",
+                "rewardCount": 1,
+                "note": "Base veFXN fee distributions are measured where claim simulation is available. Stake DAO VoteMarket veFXN voting incentives are excluded until a reproducible per-user claim amount read is validated.",
+                "details": {
+                  "issues": [
+                    "stETH fees: execution reverted (no data present; likely require(false) occurred"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "Yield Basis",
+          "route": "yield-basis-fees",
+          "status": "ok",
+          "chain": "Ethereum",
+          "metric": "FeeDistributor.preview_claim(receiver, 50, false)",
+          "note": "",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "ok",
+                "rewardCount": 5,
+                "note": null,
+                "details": null
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "ok",
+                "rewardCount": 5,
+                "note": null,
+                "details": null
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "Frax",
+          "route": "frax-yield",
+          "status": "ok",
+          "chain": "Fraxtal",
+          "metric": "YieldDistributor.earned(account)",
+          "note": "",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": null,
+                "details": null
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": null,
+                "details": null
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "Venice",
+          "route": "venice-staking",
+          "status": "ok",
+          "chain": "Base",
+          "metric": "StakingV2.pendingRewards(user)",
+          "note": "",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": null,
+                "details": null
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "ok",
+                "rewardCount": 0,
+                "note": null,
+                "details": null
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "Liquity",
+          "route": "liquity-staking",
+          "status": "ok",
+          "chain": "Ethereum",
+          "metric": "LQTYStaking pending ETH + LUSD gains",
+          "note": "",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "ok",
+                "rewardCount": 0,
+                "note": null,
+                "details": null
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "ok",
+                "rewardCount": 0,
+                "note": null,
+                "details": null
+              }
+            ]
+          }
+        },
+        {
+          "protocol": "Resupply",
+          "route": "resupply-staking",
+          "status": "ok",
+          "chain": "Ethereum",
+          "metric": "GovStaker dynamic reward tokens + earned(account,token)",
+          "note": "",
+          "details": {
+            "walletResults": [
+              {
+                "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+                "walletAlias": "defitea.eth",
+                "status": "ok",
+                "rewardCount": 1,
+                "note": null,
+                "details": null
+              },
+              {
+                "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+                "walletAlias": "Defitea Operations",
+                "status": "ok",
+                "rewardCount": 0,
+                "note": null,
+                "details": null
+              }
+            ]
+          }
+        }
+      ],
+      "updatedAt": "2026-08-10T07:39:50.254Z"
     }
   },
   "engineErrors": {},
   "history": [
     {
       "date": "2026-08-10",
-      "generatedAt": "2026-08-10T06:04:30.576Z",
+      "generatedAt": "2026-08-10T07:39:50.254Z",
       "companies": {
         "05081966.eth": {
           "status": "ok",
-          "totalUsd": 1.357831,
+          "totalUsd": 1.360442,
           "totalUsdIsComplete": true,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 2.0257877309,
-              "usdValue": 0.847948
+              "usdValue": 0.851317
             },
             {
               "symbol": "crvUSD",
@@ -401,52 +1499,125 @@
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.3369497023,
-              "usdValue": 0.424802
+              "amount": 1.3406903433,
+              "usdValue": 0.424044
             }
           ]
         },
         "YieldRing.eth": {
           "status": "partial",
-          "totalUsd": 1.08468,
+          "totalUsd": 1.087786,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 1.5785400672,
-              "usdValue": 0.660741
+              "usdValue": 0.663366
             },
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.3342321386,
-              "usdValue": 0.423939
+              "amount": 1.3418777609,
+              "usdValue": 0.42442
             }
           ]
         },
         "dinaz.eth": {
           "status": "ok",
-          "totalUsd": 3.95212,
+          "totalUsd": 3.963646,
           "totalUsdIsComplete": true,
           "rewardTokens": [
             {
               "symbol": "yb-WBTC",
               "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
               "amount": 0.0000273526,
-              "usdValue": 1.794221
+              "usdValue": 1.799208
             },
             {
               "symbol": "yb-cbBTC",
               "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
               "amount": 0.0000199489,
-              "usdValue": 1.306176
+              "usdValue": 1.310491
             },
             {
               "symbol": "yb-tBTC",
               "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
               "amount": 0.0000130356,
-              "usdValue": 0.851723
+              "usdValue": 0.853947
+            }
+          ]
+        },
+        "defitea.eth": {
+          "status": "partial",
+          "totalUsd": 72.539266,
+          "totalUsdIsComplete": false,
+          "rewardTokens": [
+            {
+              "symbol": "AERO",
+              "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+              "amount": 100.8796279017,
+              "usdValue": 42.433099
+            },
+            {
+              "symbol": "crvUSD",
+              "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+              "amount": 4.6090103583,
+              "usdValue": 4.60901
+            },
+            {
+              "symbol": "wstETH",
+              "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+              "amount": 0.0014781402,
+              "usdValue": 3.537633
+            },
+            {
+              "symbol": "yb-WETH",
+              "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
+              "amount": 0.0014849635,
+              "usdValue": 2.706729
+            },
+            {
+              "symbol": "yb-cbBTC",
+              "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+              "amount": 0.0000897594,
+              "usdValue": 5.897243
+            },
+            {
+              "symbol": "yb-WBTC",
+              "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+              "amount": 0.0000723639,
+              "usdValue": 4.759574
+            },
+            {
+              "symbol": "yb-tBTC",
+              "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+              "amount": 0.0000370387,
+              "usdValue": 2.426655
+            },
+            {
+              "symbol": "yb-WETH",
+              "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
+              "amount": 0.0004214003,
+              "usdValue": 0.821585
+            },
+            {
+              "symbol": "WFRAX",
+              "token": "0xFc00000000000000000000000000000000000002",
+              "amount": 12.7938583086,
+              "usdValue": 4.046634
+            },
+            {
+              "symbol": "VVV",
+              "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
+              "amount": 0.1084253634,
+              "usdValue": 1.301104
+            },
+            {
+              "symbol": "reUSD",
+              "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
+              "amount": 3.2959858705,
+              "usdValue": null
             }
           ]
         }
