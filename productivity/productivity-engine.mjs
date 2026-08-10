@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Productivity / APR Engine v1.10
+ * The Holding · Productivity / APR Engine v1.11
  *
  * SIMPLE-FIRST architecture:
  *   official protocol API / onchain data / official frontend
@@ -32,7 +32,7 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.10-company-005-icp-nns';
+const COLLECTOR_VERSION = '1.11-company-005-foundation-nft';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const PENDLE_SPENDLE_TOKEN = '0x999999999991e178d52cd95afd4b00d066664144';
 const PENDLE_SURVIVOR_CAMPAIGNS = 3;
@@ -56,6 +56,12 @@ const COMPANY_005_ADDRESS = '0x58603461149Fc2A800a56d421e77DcbBA2D83CA8';
 const VELODROME_V1_ESCROW = '0x9c7305eb78a432ced5c4d14cac27e8ed569a2e26';
 const VELODROME_V2_ESCROW = '0xFAf8FD17D9840595845582fCB047DF13f006787d';
 const OPTIMISM_BLOCKSCOUT_URLS = ['https://explorer.optimism.io','https://optimism.blockscout.com'];
+const OPTIMISM_RPC_URLS = [
+  process.env.OPTIMISM_RPC_URL,
+  'https://optimism-rpc.publicnode.com',
+  'https://mainnet.optimism.io',
+  'https://optimism.drpc.org'
+].filter(Boolean);
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const ETH_RPC_URLS = [
@@ -1233,6 +1239,52 @@ async function blockscoutLegacy(action, params={}) {
 }
 
 
+async function blockscoutNftInstanceTransfers(escrow, tokenId) {
+  let last=null;
+  for (const base of OPTIMISM_BLOCKSCOUT_URLS) {
+    try {
+      const j=await fetchJson(`${base}/api/v2/tokens/${escrow}/instances/${tokenId}/transfers`,{},2);
+      if (Array.isArray(j?.items)) return j.items;
+      last=new Error(`unexpected NFT instance transfer result from ${base}`);
+    } catch(e) { last=e; }
+  }
+  throw last || new Error('Optimism Blockscout NFT instance transfers unavailable');
+}
+
+function blockscoutAddressHash(v) {
+  if (typeof v === 'string') return lowerAddr(v);
+  return lowerAddr(v?.hash || v?.address_hash || v?.address || '');
+}
+function blockscoutTransferIso(x) {
+  const raw=x?.timestamp ?? x?.timeStamp ?? x?.block_timestamp;
+  if (typeof raw === 'string' && /T/.test(raw)) {
+    const d=new Date(raw);
+    return Number.isFinite(d.getTime()) ? d.toISOString() : null;
+  }
+  return unixIso(raw);
+}
+
+async function company005CurrentVeNfts() {
+  const provider=await providerFrom(OPTIMISM_RPC_URLS);
+  const abi=[
+    'function balanceOf(address owner) view returns (uint256)',
+    'function ownerToNFTokenIdList(address owner, uint256 index) view returns (uint256)'
+  ];
+  const found=[];
+  const errors=[];
+  for (const [version,escrow] of [['v1',VELODROME_V1_ESCROW],['v2',VELODROME_V2_ESCROW]]) {
+    try {
+      const ve=new Contract(escrow,abi,provider);
+      const count=Number(await ve.balanceOf(COMPANY_005_ADDRESS));
+      for (let i=0;i<count;i++) {
+        const tokenId=await ve.ownerToNFTokenIdList(COMPANY_005_ADDRESS,i);
+        found.push({version,escrow,tokenId:tokenId.toString()});
+      }
+    } catch(e) { errors.push(`${version} veNFT enumeration: ${e?.shortMessage||e?.message||e}`); }
+  }
+  return {found,errors};
+}
+
 async function discoverCompany005Foundation(previousMeta={}) {
   const old=previousMeta?.[COMPANY_005_NAME];
   if (old?.foundedISO && old?.confidence==='high') return old;
@@ -1240,6 +1292,39 @@ async function discoverCompany005Foundation(previousMeta={}) {
   const wallet=lowerAddr(COMPANY_005_ADDRESS);
   const candidates=[];
   const errors=[];
+
+  // Primary path: enumerate the wallet's current veVELO NFTs onchain, then ask
+  // Blockscout for the complete ownership history of each exact NFT instance.
+  // This is much more deterministic than scanning a wallet-wide transfer list.
+  try {
+    const owned=await company005CurrentVeNfts();
+    errors.push(...owned.errors);
+    for (const pos of owned.found) {
+      try {
+        const txs=await blockscoutNftInstanceTransfers(pos.escrow,pos.tokenId);
+        for (const x of txs) {
+          const from=blockscoutAddressHash(x.from), to=blockscoutAddressHash(x.to);
+          if (to!==wallet) continue;
+          const iso=blockscoutTransferIso(x); if (!iso) continue;
+          candidates.push({
+            foundedAt:iso, foundedISO:iso.slice(0,10),
+            txHash:x.transaction_hash||x.hash||x.transactionHash||null,
+            blockNumber:Number(x.block_number||x.blockNumber||0)||null,
+            votingEscrow:pos.escrow, votingEscrowVersion:pos.version,
+            method:from===ZERO_ADDRESS?'veNFT-mint-instance-history':'incoming-veNFT-instance-history',
+            confidence:from===ZERO_ADDRESS?'high':'medium', tokenId:pos.tokenId
+          });
+        }
+      } catch(e) { errors.push(`${pos.version} veNFT #${pos.tokenId} history: ${e?.message||e}`); }
+    }
+  } catch(e) { errors.push(`current veNFT enumeration: ${e?.message||e}`); }
+
+  const mint=candidates.filter(x=>x.method==='veNFT-mint-instance-history').sort((a,b)=>a.foundedAt.localeCompare(b.foundedAt))[0];
+  if (mint) return {...mint,source:'onchain+blockscout: exact veVELO NFT instance history',address:COMPANY_005_ADDRESS,discoveryErrors:errors};
+
+  // Secondary path: legacy wallet-wide NFT transfer API. Kept for redundancy
+  // and for cases where a lock was later transferred/merged and is no longer
+  // among the wallet's current NFT inventory.
   for (const [version,escrow] of [['v1',VELODROME_V1_ESCROW],['v2',VELODROME_V2_ESCROW]]) {
     try {
       const txs=await blockscoutLegacy('tokennfttx',{
@@ -1263,8 +1348,8 @@ async function discoverCompany005Foundation(previousMeta={}) {
   const minted=candidates.filter(x=>x.method==='veNFT-mint').sort((a,b)=>a.foundedAt.localeCompare(b.foundedAt));
   if (minted.length) return {...minted[0],source:'onchain: optimism-blockscout-votingescrow',address:COMPANY_005_ADDRESS,discoveryErrors:errors};
 
-  // Fallback: a direct wallet transaction to a VotingEscrow is strong evidence
-  // of lock creation/increase, but not as specific as an ERC-721 mint event.
+  // Final fallback: a direct wallet transaction to a VotingEscrow is strong
+  // evidence of lock creation/increase, but less specific than an NFT mint.
   try {
     const txs=await blockscoutLegacy('txlist',{address:COMPANY_005_ADDRESS,startblock:'0',endblock:'99999999',page:'1',offset:'10000',sort:'asc'});
     for (const x of txs) {
@@ -1280,7 +1365,7 @@ async function discoverCompany005Foundation(previousMeta={}) {
   const incoming=candidates.sort((a,b)=>a.foundedAt.localeCompare(b.foundedAt))[0];
   if (incoming) return {...incoming,source:'onchain: optimism-blockscout-votingescrow',address:COMPANY_005_ADDRESS,discoveryErrors:errors};
   if (old?.foundedISO) return {...old,discoveryErrors:errors};
-  return {address:COMPANY_005_ADDRESS,foundedISO:null,foundedAt:null,source:'onchain: optimism-blockscout-votingescrow',method:null,confidence:'unresolved',discoveryErrors:errors};
+  return {address:COMPANY_005_ADDRESS,foundedISO:null,foundedAt:null,source:'onchain+blockscout: veVELO foundation discovery',method:null,confidence:'unresolved',discoveryErrors:errors};
 }
 
 async function runAdapter(engineId,{browser,prices,previous}) {
