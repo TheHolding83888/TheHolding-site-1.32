@@ -1,14 +1,14 @@
 {
-  "version": "0.2.9",
-  "collectorVersion": "0.2.9-company-005-musd-pricing",
+  "version": "0.3.0",
+  "collectorVersion": "0.3.0-historical-ve-vote-pools",
   "methodologyVersion": "0.2.2-earned-inside-protocols-multiwallet",
-  "generatedAt": "2026-08-10T15:25:54.415Z",
+  "generatedAt": "2026-08-10T17:47:31.505Z",
   "date": "2026-08-10",
   "scope": "protocol-side accrued rewards for Personal Onchain Companies and Defitea Fund",
   "methodology": {
     "definition": "Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.",
     "multiWallet": "Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.",
-    "aerodromeVelodrome": "Aerodrome managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories, then reads current rewards at the actual holder. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.",
+    "aerodromeVelodrome": "Aerodrome and Velodrome direct veNFT routes reconstruct every historically voted pool from indexed Voter.Voted events, then query each pool’s voting-reward contracts for still-unclaimed rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.",
     "curve": "Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.",
     "convex": "Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.",
     "pendle": "Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.",
@@ -29,7 +29,7 @@
   },
   "companies": {
     "05081966.eth": {
-      "status": "ok",
+      "status": "partial",
       "ens": "05081966.eth",
       "address": "0x7CdF49f589038242e77847573604441E383f5429",
       "resolution": "ens",
@@ -43,15 +43,15 @@
           "fallbackMatched": true
         }
       ],
-      "totalUsd": 1.343289,
-      "totalUsdIsComplete": true,
+      "totalUsd": 0.085081,
+      "totalUsdIsComplete": false,
       "routeCoverage": 1,
       "completeRouteCoverage": 1,
       "measuredRoutes": 3,
       "completeRoutes": 3,
       "routeCount": 3,
       "pendingRoutes": 0,
-      "unpricedRewards": 0,
+      "unpricedRewards": 2,
       "rewards": [
         {
           "protocol": "Aerodrome",
@@ -64,9 +64,9 @@
           "amount": 2.0257877309,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.840037,
-          "priceUsd": 0.414672,
-          "priceMethod": "coingecko:aerodrome-finance",
+          "usdValue": null,
+          "priceUsd": null,
+          "priceMethod": null,
           "details": {
             "symbol": "AERO",
             "veNfts": [
@@ -109,14 +109,14 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1358977845577525481",
+          "amountRaw": "1364534188624911013",
           "decimals": 18,
-          "amount": 1.3589778456,
+          "amount": 1.3645341886,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.418171,
-          "priceUsd": 0.30771,
-          "priceMethod": "coingecko:wrapped-frax",
+          "usdValue": null,
+          "priceUsd": null,
+          "priceMethod": null,
           "details": {
             "symbol": "WFRAX",
             "coingeckoId": "wrapped-frax",
@@ -131,7 +131,7 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 2.0257877309,
-          "usdValue": 0.840037
+          "usdValue": null
         },
         {
           "symbol": "crvUSD",
@@ -142,8 +142,8 @@
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.3589778456,
-          "usdValue": 0.418171
+          "amount": 1.3645341886,
+          "usdValue": null
         }
       ],
       "sources": [
@@ -208,7 +208,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T15:25:54.415Z"
+      "updatedAt": "2026-08-10T17:47:31.505Z"
     },
     "YieldRing.eth": {
       "status": "partial",
@@ -225,7 +225,7 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 1.078983,
+      "totalUsd": 1.084428,
       "totalUsdIsComplete": false,
       "routeCoverage": 0.666667,
       "completeRouteCoverage": 0.666667,
@@ -246,8 +246,8 @@
           "amount": 1.5785400672,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 0.654576,
-          "priceUsd": 0.414672,
+          "usdValue": 0.654119,
+          "priceUsd": 0.414382,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -270,13 +270,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "1379243135022110544",
+          "amountRaw": "1390609321008401528",
           "decimals": 18,
-          "amount": 1.379243135,
+          "amount": 1.390609321,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.424407,
-          "priceUsd": 0.30771,
+          "usdValue": 0.430309,
+          "priceUsd": 0.309439,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -292,13 +292,13 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 1.5785400672,
-          "usdValue": 0.654576
+          "usdValue": 0.654119
         },
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 1.379243135,
-          "usdValue": 0.424407
+          "amount": 1.390609321,
+          "usdValue": 0.430309
         }
       ],
       "sources": [
@@ -359,7 +359,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T15:25:54.415Z"
+      "updatedAt": "2026-08-10T17:47:31.505Z"
     },
     "dinaz.eth": {
       "status": "ok",
@@ -376,7 +376,7 @@
           "fallbackMatched": true
         }
       ],
-      "totalUsd": 3.910391,
+      "totalUsd": 3.875368,
       "totalUsdIsComplete": true,
       "routeCoverage": 1,
       "completeRouteCoverage": 1,
@@ -397,8 +397,8 @@
           "amount": 0.0000273526,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.774826,
-          "priceUsd": 64422,
+          "usdValue": 1.759343,
+          "priceUsd": 63860,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -426,8 +426,8 @@
           "amount": 0.0000199489,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.292869,
-          "priceUsd": 64418,
+          "usdValue": 1.281369,
+          "priceUsd": 63845,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -455,16 +455,16 @@
           "amount": 0.0000130356,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.842696,
-          "priceUsd": 64371,
+          "usdValue": 0.834656,
+          "priceUsd": 63757,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "13091236471178",
-            "redeemAmount": 0.000013091236,
+            "redeemAmountRaw": "13091207172334",
+            "redeemAmount": 0.000013091207,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -479,19 +479,19 @@
           "symbol": "yb-WBTC",
           "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
           "amount": 0.0000273526,
-          "usdValue": 1.774826
+          "usdValue": 1.759343
         },
         {
           "symbol": "yb-cbBTC",
           "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
           "amount": 0.0000199489,
-          "usdValue": 1.292869
+          "usdValue": 1.281369
         },
         {
           "symbol": "yb-tBTC",
           "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
           "amount": 0.0000130356,
-          "usdValue": 0.842696
+          "usdValue": 0.834656
         }
       ],
       "sources": [
@@ -516,7 +516,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T15:25:54.415Z"
+      "updatedAt": "2026-08-10T17:47:31.505Z"
     },
     "defitea.eth": {
       "status": "partial",
@@ -540,7 +540,7 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 90.589716,
+      "totalUsd": 90.558893,
       "totalUsdIsComplete": false,
       "routeCoverage": 0.923077,
       "completeRouteCoverage": 0.769231,
@@ -561,8 +561,8 @@
           "amount": 100.8796279017,
           "classification": "compounded-locked",
           "source": "onchain: LockedManagedReward.earned",
-          "usdValue": 41.801189,
-          "priceUsd": 0.414367,
+          "usdValue": 41.785653,
+          "priceUsd": 0.414213,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -627,8 +627,8 @@
           "amount": 2.2837689918,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.702332,
-          "priceUsd": 0.307532,
+          "usdValue": 0.706797,
+          "priceUsd": 0.309487,
           "priceMethod": "redemption-value:WFRAX@coingecko:wrapped-frax",
           "details": {
             "symbol": "pWFRAX",
@@ -677,8 +677,8 @@
           "amount": 2.8240575198,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.868488,
-          "priceUsd": 0.307532,
+          "usdValue": 0.874009,
+          "priceUsd": 0.309487,
           "priceMethod": "redemption-value:WFRAX@coingecko:wrapped-frax",
           "details": {
             "symbol": "pWFRAX",
@@ -727,8 +727,8 @@
           "amount": 2.3703140609,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.728947,
-          "priceUsd": 0.307532,
+          "usdValue": 0.733581,
+          "priceUsd": 0.309487,
           "priceMethod": "redemption-value:WFRAX@coingecko:wrapped-frax",
           "details": {
             "symbol": "pWFRAX",
@@ -777,8 +777,8 @@
           "amount": 0.739285,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.739019,
-          "priceUsd": 0.99964,
+          "usdValue": 0.739023,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -827,8 +827,8 @@
           "amount": 0.74127,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.741003,
-          "priceUsd": 0.99964,
+          "usdValue": 0.741008,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -877,8 +877,8 @@
           "amount": 0.754248,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.753976,
-          "priceUsd": 0.99964,
+          "usdValue": 0.753981,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -927,8 +927,8 @@
           "amount": 0.767318,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.767042,
-          "priceUsd": 0.99964,
+          "usdValue": 0.767046,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -977,8 +977,8 @@
           "amount": 0.599637,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.599421,
-          "priceUsd": 0.99964,
+          "usdValue": 0.599425,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -1027,8 +1027,8 @@
           "amount": 0.60144,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.601223,
-          "priceUsd": 0.99964,
+          "usdValue": 0.601227,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -1077,8 +1077,8 @@
           "amount": 0.695563,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.695313,
-          "priceUsd": 0.99964,
+          "usdValue": 0.695317,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -1127,8 +1127,8 @@
           "amount": 5.4670684608,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.663981,
-          "priceUsd": 0.121451,
+          "usdValue": 0.663549,
+          "priceUsd": 0.121372,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -1177,8 +1177,8 @@
           "amount": 5.4663476812,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.663893,
-          "priceUsd": 0.121451,
+          "usdValue": 0.663462,
+          "priceUsd": 0.121372,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -1227,8 +1227,8 @@
           "amount": 5.2102780514,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.632793,
-          "priceUsd": 0.121451,
+          "usdValue": 0.632382,
+          "priceUsd": 0.121372,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -1277,8 +1277,8 @@
           "amount": 2.9445014853,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.357613,
-          "priceUsd": 0.121451,
+          "usdValue": 0.35738,
+          "priceUsd": 0.121372,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -1327,8 +1327,8 @@
           "amount": 2.8376684091,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.344638,
-          "priceUsd": 0.121451,
+          "usdValue": 0.344413,
+          "priceUsd": 0.121372,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -1377,8 +1377,8 @@
           "amount": 2.8757899555,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.349268,
-          "priceUsd": 0.121451,
+          "usdValue": 0.34904,
+          "priceUsd": 0.121372,
           "priceMethod": "redemption-value:RSUP@coingecko:resupply",
           "details": {
             "symbol": "pRSUP",
@@ -1427,8 +1427,8 @@
           "amount": 0.0008947155,
           "classification": "unclaimed",
           "source": "onchain: f(x) FeeDistributor.claim staticCall",
-          "usdValue": 2.080562,
-          "priceUsd": 2325.39,
+          "usdValue": 2.080187,
+          "priceUsd": 2324.97,
           "priceMethod": "coingecko:wrapped-steth",
           "details": {
             "symbol": "wstETH",
@@ -1452,8 +1452,8 @@
           "amount": 0.0005834247,
           "classification": "unclaimed",
           "source": "onchain: f(x) FeeDistributor.claim staticCall",
-          "usdValue": 1.35669,
-          "priceUsd": 2325.39,
+          "usdValue": 1.356445,
+          "priceUsd": 2324.97,
           "priceMethod": "coingecko:wrapped-steth",
           "details": {
             "symbol": "wstETH",
@@ -1477,8 +1477,8 @@
           "amount": 0.0346064623,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.449192,
-          "priceUsd": 12.98,
+          "usdValue": 0.450576,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1527,8 +1527,8 @@
           "amount": 0.0294008437,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.381623,
-          "priceUsd": 12.98,
+          "usdValue": 0.382799,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1577,8 +1577,8 @@
           "amount": 0.0294076332,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.381711,
-          "priceUsd": 12.98,
+          "usdValue": 0.382887,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1627,8 +1627,8 @@
           "amount": 0.0313940354,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.407495,
-          "priceUsd": 12.98,
+          "usdValue": 0.40875,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1677,8 +1677,8 @@
           "amount": 0.0284208703,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.368903,
-          "priceUsd": 12.98,
+          "usdValue": 0.37004,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1727,8 +1727,8 @@
           "amount": 0.0269913439,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.350348,
-          "priceUsd": 12.98,
+          "usdValue": 0.351427,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1777,8 +1777,8 @@
           "amount": 0.0269968793,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.350419,
-          "priceUsd": 12.98,
+          "usdValue": 0.351499,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1827,8 +1827,8 @@
           "amount": 0.0229353099,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.2977,
-          "priceUsd": 12.98,
+          "usdValue": 0.298618,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1877,8 +1877,8 @@
           "amount": 0.0229400031,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.297761,
-          "priceUsd": 12.98,
+          "usdValue": 0.298679,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1927,8 +1927,8 @@
           "amount": 0.0244888978,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.317866,
-          "priceUsd": 12.98,
+          "usdValue": 0.318845,
+          "priceUsd": 13.02,
           "priceMethod": "redemption-value:FXN@coingecko:fxn-token",
           "details": {
             "symbol": "pFXN",
@@ -1978,7 +1978,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.080951,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2027,8 +2027,8 @@
           "amount": 0.095941,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.095906,
-          "priceUsd": 0.99964,
+          "usdValue": 0.095907,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2077,8 +2077,8 @@
           "amount": 0.096448,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.096413,
-          "priceUsd": 0.99964,
+          "usdValue": 0.096414,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2128,7 +2128,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.098543,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2177,8 +2177,8 @@
           "amount": 0.098616,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.09858,
-          "priceUsd": 0.99964,
+          "usdValue": 0.098581,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2228,7 +2228,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.103412,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2278,7 +2278,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.103444,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2327,8 +2327,8 @@
           "amount": 0.094401,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.094367,
-          "priceUsd": 0.99964,
+          "usdValue": 0.094368,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2378,7 +2378,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.094851,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2428,7 +2428,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.081444,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2478,7 +2478,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.081858,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2528,7 +2528,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.10098,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2577,8 +2577,8 @@
           "amount": 0.101524,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.101487,
-          "priceUsd": 0.99964,
+          "usdValue": 0.101488,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2628,7 +2628,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.131432,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2678,7 +2678,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.131447,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2728,7 +2728,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.123301,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2778,7 +2778,7 @@
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
           "usdValue": 0.123254,
-          "priceUsd": 0.99964,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2827,8 +2827,8 @@
           "amount": 0.11909,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.119047,
-          "priceUsd": 0.99964,
+          "usdValue": 0.119048,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2877,8 +2877,8 @@
           "amount": 0.119671,
           "classification": "unclaimed",
           "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
-          "usdValue": 0.119628,
-          "priceUsd": 0.99964,
+          "usdValue": 0.119629,
+          "priceUsd": 0.999646,
           "priceMethod": "redemption-value:USDC@coingecko:usd-coin",
           "details": {
             "symbol": "pUSDC",
@@ -2927,16 +2927,16 @@
           "amount": 0.0008723183,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.544228,
-          "priceUsd": 1872.8,
+          "usdValue": 1.543649,
+          "priceUsd": 1872.11,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "824555828552756",
-            "redeemAmount": 0.000824555829,
+            "redeemAmountRaw": "824550264260400",
+            "redeemAmount": 0.000824550264,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -2956,8 +2956,8 @@
           "amount": 0.0000623276,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 4.032629,
-          "priceUsd": 64306,
+          "usdValue": 4.004159,
+          "priceUsd": 63852,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -2985,8 +2985,8 @@
           "amount": 0.0000518369,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 3.357312,
-          "priceUsd": 64304,
+          "usdValue": 3.333974,
+          "priceUsd": 63857,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -3014,16 +3014,16 @@
           "amount": 0.0000261816,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.690525,
-          "priceUsd": 64295,
+          "usdValue": 1.676192,
+          "priceUsd": 63750,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "26293264046271",
-            "redeemAmount": 0.000026293264,
+            "redeemAmountRaw": "26293207498233",
+            "redeemAmount": 0.000026293207,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -3043,16 +3043,16 @@
           "amount": 0.0002754134,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.521407,
-          "priceUsd": 1872.8,
+          "usdValue": 0.521198,
+          "priceUsd": 1872.11,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "278410635122208",
-            "redeemAmount": 0.000278410635,
+            "redeemAmountRaw": "278401408828860",
+            "redeemAmount": 0.000278401409,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -3072,16 +3072,16 @@
           "amount": 0.0006126452,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.08454,
-          "priceUsd": 1872.8,
+          "usdValue": 1.084133,
+          "priceUsd": 1872.11,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "579100714622953",
-            "redeemAmount": 0.000579100715,
+            "redeemAmountRaw": "579096806865703",
+            "redeemAmount": 0.000579096807,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -3101,8 +3101,8 @@
           "amount": 0.0000274318,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.774846,
-          "priceUsd": 64306,
+          "usdValue": 1.762315,
+          "priceUsd": 63852,
           "priceMethod": "redemption-value:cbBTC@coingecko:coinbase-wrapped-btc",
           "details": {
             "symbol": "yb-cbBTC",
@@ -3130,8 +3130,8 @@
           "amount": 0.000020527,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 1.329164,
-          "priceUsd": 64304,
+          "usdValue": 1.319924,
+          "priceUsd": 63857,
           "priceMethod": "redemption-value:WBTC@coingecko:wrapped-bitcoin",
           "details": {
             "symbol": "yb-WBTC",
@@ -3159,16 +3159,16 @@
           "amount": 0.0000108571,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.701036,
-          "priceUsd": 64295,
+          "usdValue": 0.695092,
+          "priceUsd": 63750,
           "priceMethod": "redemption-value:tBTC@coingecko:tbtc",
           "details": {
             "symbol": "yb-tBTC",
             "redeemAsset": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redeemSymbol": "tBTC",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "10903433887393",
-            "redeemAmount": 0.000010903434,
+            "redeemAmountRaw": "10903410437738",
+            "redeemAmount": 0.00001090341,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
             "redemptionCoingeckoId": "tbtc",
@@ -3188,16 +3188,16 @@
           "amount": 0.0001459869,
           "classification": "unclaimed",
           "source": "onchain: FeeDistributor.preview_claim",
-          "usdValue": 0.27638,
-          "priceUsd": 1872.8,
+          "usdValue": 0.276269,
+          "priceUsd": 1872.11,
           "priceMethod": "redemption-value:WETH@coingecko:weth",
           "details": {
             "symbol": "yb-WETH",
             "redeemAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redeemSymbol": "WETH",
             "redeemDecimals": 18,
-            "redeemAmountRaw": "147575597059476",
-            "redeemAmount": 0.000147575597,
+            "redeemAmountRaw": "147570706528820",
+            "redeemAmount": 0.000147570707,
             "pricePlatform": "ethereum",
             "redemptionPriceContract": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
             "redemptionCoingeckoId": "weth",
@@ -3212,13 +3212,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "10077793899451412596",
+          "amountRaw": "10104798246877050819",
           "decimals": 18,
-          "amount": 10.0777938995,
+          "amount": 10.1047982469,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 3.099244,
-          "priceUsd": 0.307532,
+          "usdValue": 3.127304,
+          "priceUsd": 0.309487,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -3234,13 +3234,13 @@
           "chain": "Fraxtal",
           "token": "0xFc00000000000000000000000000000000000002",
           "symbol": "WFRAX",
-          "amountRaw": "2827301656391861291",
+          "amountRaw": "2834273294258057690",
           "decimals": 18,
-          "amount": 2.8273016564,
+          "amount": 2.8342732943,
           "classification": "unclaimed",
           "source": "onchain: YieldDistributor.earned",
-          "usdValue": 0.869486,
-          "priceUsd": 0.307532,
+          "usdValue": 0.877171,
+          "priceUsd": 0.309487,
           "priceMethod": "coingecko:wrapped-frax",
           "details": {
             "symbol": "WFRAX",
@@ -3256,13 +3256,13 @@
           "chain": "Base",
           "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
           "symbol": "VVV",
-          "amountRaw": "111603796531921537",
+          "amountRaw": "112574515197849184",
           "decimals": 18,
-          "amount": 0.1116037965,
+          "amount": 0.1125745152,
           "classification": "unclaimed",
           "source": "onchain: Venice StakingV2.pendingRewards",
-          "usdValue": 1.331433,
-          "priceUsd": 11.93,
+          "usdValue": 1.339637,
+          "priceUsd": 11.9,
           "priceMethod": "coingecko:venice-token",
           "details": {
             "symbol": "VVV",
@@ -3277,12 +3277,12 @@
           "chain": "Ethereum",
           "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
           "symbol": "reUSD",
-          "amountRaw": "3337721773728957386",
+          "amountRaw": "3350468963303560111",
           "decimals": 18,
-          "amount": 3.3377217737,
+          "amount": 3.3504689633,
           "classification": "unclaimed",
           "source": "onchain: GovStaker.earned(account,rewardToken)",
-          "usdValue": 3.337722,
+          "usdValue": 3.350469,
           "priceUsd": 1,
           "priceMethod": "fixed-usd-assumption",
           "details": {
@@ -3300,7 +3300,7 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 100.8796279017,
-          "usdValue": 41.801189
+          "usdValue": 41.785653
         },
         {
           "symbol": "crvUSD",
@@ -3312,79 +3312,79 @@
           "symbol": "pWFRAX",
           "token": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
           "amount": 7.4781405725,
-          "usdValue": 2.299767
+          "usdValue": 2.314387
         },
         {
           "symbol": "pUSDC",
           "token": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
           "amount": 6.879817,
-          "usdValue": 6.877342
+          "usdValue": 6.877379
         },
         {
           "symbol": "pRSUP",
           "token": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
           "amount": 24.8016540433,
-          "usdValue": 3.012186
+          "usdValue": 3.010226
         },
         {
           "symbol": "wstETH",
           "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
           "amount": 0.0014781402,
-          "usdValue": 3.437252
+          "usdValue": 3.436632
         },
         {
           "symbol": "pFXN",
           "token": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
           "amount": 0.2775822789,
-          "usdValue": 3.603018
+          "usdValue": 3.61412
         },
         {
           "symbol": "yb-WETH",
           "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
           "amount": 0.0014849635,
-          "usdValue": 2.628768
+          "usdValue": 2.627782
         },
         {
           "symbol": "yb-cbBTC",
           "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
           "amount": 0.0000897594,
-          "usdValue": 5.807475
+          "usdValue": 5.766474
         },
         {
           "symbol": "yb-WBTC",
           "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
           "amount": 0.0000723639,
-          "usdValue": 4.686476
+          "usdValue": 4.653898
         },
         {
           "symbol": "yb-tBTC",
           "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
           "amount": 0.0000370387,
-          "usdValue": 2.391561
+          "usdValue": 2.371284
         },
         {
           "symbol": "yb-WETH",
           "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
           "amount": 0.0004214003,
-          "usdValue": 0.797787
+          "usdValue": 0.797467
         },
         {
           "symbol": "WFRAX",
           "token": "0xFc00000000000000000000000000000000000002",
-          "amount": 12.9050955559,
-          "usdValue": 3.96873
+          "amount": 12.9390715412,
+          "usdValue": 4.004475
         },
         {
           "symbol": "VVV",
           "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
-          "amount": 0.1116037965,
-          "usdValue": 1.331433
+          "amount": 0.1125745152,
+          "usdValue": 1.339637
         },
         {
           "symbol": "reUSD",
           "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
-          "amount": 3.3377217737,
-          "usdValue": 3.337722
+          "amount": 3.3504689633,
+          "usdValue": 3.350469
         }
       ],
       "sources": [
@@ -3399,6 +3399,7 @@
             "veNftCount": 1,
             "managedPositions": 1,
             "directPositions": 0,
+            "historicalVoteDiscoveryComplete": true,
             "issues": [],
             "walletResults": [
               {
@@ -3411,6 +3412,7 @@
                   "veNftCount": 1,
                   "managedPositions": 1,
                   "directPositions": 0,
+                  "historicalVoteDiscoveryComplete": true,
                   "issues": []
                 }
               },
@@ -3424,6 +3426,7 @@
                   "veNftCount": 0,
                   "managedPositions": 0,
                   "directPositions": 0,
+                  "historicalVoteDiscoveryComplete": true,
                   "issues": []
                 }
               }
@@ -3459,12 +3462,20 @@
                 "currentVotedPools": [
                   "0xAE6c9B2A2777D0396cbE7E13Fc9ACEAC0D052e00"
                 ],
+                "historicalVotedPools": [],
+                "oldNoLongerVotedPools": [],
+                "allVotedPools": [
+                  "0xAE6c9B2A2777D0396cbE7E13Fc9ACEAC0D052e00"
+                ],
+                "historyDiscovery": null,
                 "holderAddress": "0xefDA6d86c6eA8Bb80cf6456214432D45f14D06D4",
                 "custodyContext": "40acres",
                 "fortyAcresStrategy": "usdc-loan"
               }
             ],
-            "issues": [],
+            "issues": [
+              "Historical Voted logs 32671: This operation was aborted"
+            ],
             "walletResults": [
               {
                 "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
@@ -3494,12 +3505,20 @@
                       "currentVotedPools": [
                         "0xAE6c9B2A2777D0396cbE7E13Fc9ACEAC0D052e00"
                       ],
+                      "historicalVotedPools": [],
+                      "oldNoLongerVotedPools": [],
+                      "allVotedPools": [
+                        "0xAE6c9B2A2777D0396cbE7E13Fc9ACEAC0D052e00"
+                      ],
+                      "historyDiscovery": null,
                       "holderAddress": "0xefDA6d86c6eA8Bb80cf6456214432D45f14D06D4",
                       "custodyContext": "40acres",
                       "fortyAcresStrategy": "usdc-loan"
                     }
                   ],
-                  "issues": []
+                  "issues": [
+                    "Historical Voted logs 32671: This operation was aborted"
+                  ]
                 }
               },
               {
@@ -8518,7 +8537,7 @@
           }
         }
       ],
-      "updatedAt": "2026-08-10T15:25:54.415Z"
+      "updatedAt": "2026-08-10T17:47:31.505Z"
     },
     "0x5860...83CA8.eth": {
       "status": "partial",
@@ -8535,7 +8554,7 @@
           "fallbackMatched": null
         }
       ],
-      "totalUsd": 55.417689,
+      "totalUsd": 55.43728,
       "totalUsdIsComplete": false,
       "routeCoverage": 1,
       "completeRouteCoverage": 0,
@@ -8556,8 +8575,8 @@
           "amount": 113.4180628896,
           "classification": "compounded-locked",
           "source": "onchain: RewardsDistributor.claimable",
-          "usdValue": 46.996702,
-          "priceUsd": 0.414367,
+          "usdValue": 46.991032,
+          "priceUsd": 0.414317,
           "priceMethod": "coingecko:aerodrome-finance",
           "details": {
             "symbol": "AERO",
@@ -8579,8 +8598,8 @@
           "amount": 0.173432,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.173369,
-          "priceUsd": 0.999635,
+          "usdValue": 0.173367,
+          "priceUsd": 0.999625,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -8605,8 +8624,8 @@
           "amount": 0.5480139946,
           "classification": "unclaimed",
           "source": "onchain: FeesVotingReward.earned",
-          "usdValue": 0.542974,
-          "priceUsd": 0.990804,
+          "usdValue": 0.543244,
+          "priceUsd": 0.991295,
           "priceMethod": "coingecko:mezo-usd",
           "details": {
             "symbol": "MUSD",
@@ -8631,8 +8650,8 @@
           "amount": 4.591335,
           "classification": "unclaimed",
           "source": "onchain: IncentiveVotingReward.earned",
-          "usdValue": 4.589659,
-          "priceUsd": 0.999635,
+          "usdValue": 4.589613,
+          "priceUsd": 0.999625,
           "priceMethod": "coingecko:usd-coin",
           "details": {
             "symbol": "USDC",
@@ -8657,8 +8676,8 @@
           "amount": 183.2483069163,
           "classification": "compounded-locked",
           "source": "onchain: RewardsDistributor.claimable",
-          "usdValue": 3.114985,
-          "priceUsd": 0.01699871,
+          "usdValue": 3.140024,
+          "priceUsd": 0.01713535,
           "priceMethod": "coingecko:velodrome-finance",
           "details": {
             "symbol": "VELO",
@@ -8675,25 +8694,25 @@
           "symbol": "AERO",
           "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
           "amount": 113.4180628896,
-          "usdValue": 46.996702
+          "usdValue": 46.991032
         },
         {
           "symbol": "USDC",
           "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
           "amount": 4.764767,
-          "usdValue": 4.763028
+          "usdValue": 4.76298
         },
         {
           "symbol": "MUSD",
           "token": "0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186",
           "amount": 0.5480139946,
-          "usdValue": 0.542974
+          "usdValue": 0.543244
         },
         {
           "symbol": "VELO",
           "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
           "amount": 183.2483069163,
-          "usdValue": 3.114985
+          "usdValue": 3.140024
         }
       ],
       "sources": [
@@ -8702,25 +8721,31 @@
           "route": "aerodrome-ve",
           "status": "partial",
           "chain": "Base",
-          "metric": "veNFT current accrued rewards + managed compounding",
-          "note": "Current direct-vote pools are measured, but old no-longer-voted pools may still contain unclaimed rewards. Managed/Relay positions are measured directly.",
+          "metric": "veNFT accrued rewards across complete Voter vote history + managed compounding",
+          "note": "Current direct-vote pools are measured, but complete historical Voter.Voted log discovery was unavailable for at least one veNFT; route remains partial rather than assuming completeness.",
           "details": {
             "veNftCount": 1,
             "managedPositions": 0,
             "directPositions": 1,
-            "issues": [],
+            "historicalVoteDiscoveryComplete": false,
+            "issues": [
+              "Historical Voted logs 1938: This operation was aborted"
+            ],
             "walletResults": [
               {
                 "wallet": "0x58603461149Fc2A800a56d421e77DcbBA2D83CA8",
                 "walletAlias": "0x5860...83CA8.eth",
                 "status": "partial",
                 "rewardCount": 4,
-                "note": "Current direct-vote pools are measured, but old no-longer-voted pools may still contain unclaimed rewards. Managed/Relay positions are measured directly.",
+                "note": "Current direct-vote pools are measured, but complete historical Voter.Voted log discovery was unavailable for at least one veNFT; route remains partial rather than assuming completeness.",
                 "details": {
                   "veNftCount": 1,
                   "managedPositions": 0,
                   "directPositions": 1,
-                  "issues": []
+                  "historicalVoteDiscoveryComplete": false,
+                  "issues": [
+                    "Historical Voted logs 1938: This operation was aborted"
+                  ]
                 }
               }
             ]
@@ -8731,50 +8756,56 @@
           "route": "velodrome-ve-direct",
           "status": "partial",
           "chain": "Optimism",
-          "metric": "veNFT current accrued rewards + managed compounding",
-          "note": "Current direct-vote pools are measured, but old no-longer-voted pools may still contain unclaimed rewards. Managed/Relay positions are measured directly.",
+          "metric": "veNFT accrued rewards across complete Voter vote history + managed compounding",
+          "note": "Current direct-vote pools are measured, but complete historical Voter.Voted log discovery was unavailable for at least one veNFT; route remains partial rather than assuming completeness.",
           "details": {
             "veNftCount": 1,
             "managedPositions": 0,
             "directPositions": 1,
-            "issues": [],
+            "historicalVoteDiscoveryComplete": false,
+            "issues": [
+              "Historical Voted logs 11335: This operation was aborted"
+            ],
             "walletResults": [
               {
                 "wallet": "0x58603461149Fc2A800a56d421e77DcbBA2D83CA8",
                 "walletAlias": "0x5860...83CA8.eth",
                 "status": "partial",
                 "rewardCount": 1,
-                "note": "Current direct-vote pools are measured, but old no-longer-voted pools may still contain unclaimed rewards. Managed/Relay positions are measured directly.",
+                "note": "Current direct-vote pools are measured, but complete historical Voter.Voted log discovery was unavailable for at least one veNFT; route remains partial rather than assuming completeness.",
                 "details": {
                   "veNftCount": 1,
                   "managedPositions": 0,
                   "directPositions": 1,
-                  "issues": []
+                  "historicalVoteDiscoveryComplete": false,
+                  "issues": [
+                    "Historical Voted logs 11335: This operation was aborted"
+                  ]
                 }
               }
             ]
           }
         }
       ],
-      "updatedAt": "2026-08-10T15:25:54.415Z"
+      "updatedAt": "2026-08-10T17:47:31.505Z"
     }
   },
   "engineErrors": {},
   "history": [
     {
       "date": "2026-08-10",
-      "generatedAt": "2026-08-10T15:25:54.415Z",
+      "generatedAt": "2026-08-10T17:47:31.505Z",
       "companies": {
         "05081966.eth": {
-          "status": "ok",
-          "totalUsd": 1.343289,
-          "totalUsdIsComplete": true,
+          "status": "partial",
+          "totalUsd": 0.085081,
+          "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 2.0257877309,
-              "usdValue": 0.840037
+              "usdValue": null
             },
             {
               "symbol": "crvUSD",
@@ -8785,65 +8816,65 @@
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.3589778456,
-              "usdValue": 0.418171
+              "amount": 1.3645341886,
+              "usdValue": null
             }
           ]
         },
         "YieldRing.eth": {
           "status": "partial",
-          "totalUsd": 1.078983,
+          "totalUsd": 1.084428,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 1.5785400672,
-              "usdValue": 0.654576
+              "usdValue": 0.654119
             },
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 1.379243135,
-              "usdValue": 0.424407
+              "amount": 1.390609321,
+              "usdValue": 0.430309
             }
           ]
         },
         "dinaz.eth": {
           "status": "ok",
-          "totalUsd": 3.910391,
+          "totalUsd": 3.875368,
           "totalUsdIsComplete": true,
           "rewardTokens": [
             {
               "symbol": "yb-WBTC",
               "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
               "amount": 0.0000273526,
-              "usdValue": 1.774826
+              "usdValue": 1.759343
             },
             {
               "symbol": "yb-cbBTC",
               "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
               "amount": 0.0000199489,
-              "usdValue": 1.292869
+              "usdValue": 1.281369
             },
             {
               "symbol": "yb-tBTC",
               "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
               "amount": 0.0000130356,
-              "usdValue": 0.842696
+              "usdValue": 0.834656
             }
           ]
         },
         "defitea.eth": {
           "status": "partial",
-          "totalUsd": 90.589716,
+          "totalUsd": 90.558893,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 100.8796279017,
-              "usdValue": 41.801189
+              "usdValue": 41.785653
             },
             {
               "symbol": "crvUSD",
@@ -8855,110 +8886,110 @@
               "symbol": "pWFRAX",
               "token": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
               "amount": 7.4781405725,
-              "usdValue": 2.299767
+              "usdValue": 2.314387
             },
             {
               "symbol": "pUSDC",
               "token": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
               "amount": 6.879817,
-              "usdValue": 6.877342
+              "usdValue": 6.877379
             },
             {
               "symbol": "pRSUP",
               "token": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
               "amount": 24.8016540433,
-              "usdValue": 3.012186
+              "usdValue": 3.010226
             },
             {
               "symbol": "wstETH",
               "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
               "amount": 0.0014781402,
-              "usdValue": 3.437252
+              "usdValue": 3.436632
             },
             {
               "symbol": "pFXN",
               "token": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
               "amount": 0.2775822789,
-              "usdValue": 3.603018
+              "usdValue": 3.61412
             },
             {
               "symbol": "yb-WETH",
               "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
               "amount": 0.0014849635,
-              "usdValue": 2.628768
+              "usdValue": 2.627782
             },
             {
               "symbol": "yb-cbBTC",
               "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
               "amount": 0.0000897594,
-              "usdValue": 5.807475
+              "usdValue": 5.766474
             },
             {
               "symbol": "yb-WBTC",
               "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
               "amount": 0.0000723639,
-              "usdValue": 4.686476
+              "usdValue": 4.653898
             },
             {
               "symbol": "yb-tBTC",
               "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
               "amount": 0.0000370387,
-              "usdValue": 2.391561
+              "usdValue": 2.371284
             },
             {
               "symbol": "yb-WETH",
               "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
               "amount": 0.0004214003,
-              "usdValue": 0.797787
+              "usdValue": 0.797467
             },
             {
               "symbol": "WFRAX",
               "token": "0xFc00000000000000000000000000000000000002",
-              "amount": 12.9050955559,
-              "usdValue": 3.96873
+              "amount": 12.9390715412,
+              "usdValue": 4.004475
             },
             {
               "symbol": "VVV",
               "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
-              "amount": 0.1116037965,
-              "usdValue": 1.331433
+              "amount": 0.1125745152,
+              "usdValue": 1.339637
             },
             {
               "symbol": "reUSD",
               "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
-              "amount": 3.3377217737,
-              "usdValue": 3.337722
+              "amount": 3.3504689633,
+              "usdValue": 3.350469
             }
           ]
         },
         "0x5860...83CA8.eth": {
           "status": "partial",
-          "totalUsd": 55.417689,
+          "totalUsd": 55.43728,
           "totalUsdIsComplete": false,
           "rewardTokens": [
             {
               "symbol": "AERO",
               "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
               "amount": 113.4180628896,
-              "usdValue": 46.996702
+              "usdValue": 46.991032
             },
             {
               "symbol": "USDC",
               "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
               "amount": 4.764767,
-              "usdValue": 4.763028
+              "usdValue": 4.76298
             },
             {
               "symbol": "MUSD",
               "token": "0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186",
               "amount": 0.5480139946,
-              "usdValue": 0.542974
+              "usdValue": 0.543244
             },
             {
               "symbol": "VELO",
               "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
               "amount": 183.2483069163,
-              "usdValue": 3.114985
+              "usdValue": 3.140024
             }
           ]
         }
