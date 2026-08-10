@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -3414,7 +3415,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.2.8-company-005-ve-tracking';
+const COMPANY_REWARDS_UI_VERSION = '0.2.9-defitea-velodrome-rollup';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth', 'defitea.eth', '0x5860...83CA8.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -4018,12 +4019,18 @@ function renderIndex(lang) {
             const grouped = new Map();
             for (const x of rewards || []) {
                 const isVoteMarket = x.route === 'votemarket-vecrv' || x.route === 'votemarket-vefxn';
+                const isVelodromeRollup = x.route === 'velodrome-ve' || x.route === 'velodrome-ve-direct';
+                const isRouteRollup = isVoteMarket || isVelodromeRollup;
                 const key = isVoteMarket
                     ? ['votemarket-route', x.route || '', x.classification || ''].join('|')
-                    : [x.protocol || '', x.route || '', x.chain || '', x.token || x.symbol || '', x.classification || ''].join('|');
+                    : (isVelodromeRollup
+                        ? ['velodrome-route', 'velodrome-ve', x.classification || ''].join('|')
+                        : [x.protocol || '', x.route || '', x.chain || '', x.token || x.symbol || '', x.classification || ''].join('|'));
                 if (!grouped.has(key)) {
                     grouped.set(key, {
                         ...x,
+                        protocol: isVelodromeRollup ? 'Velodrome' : x.protocol,
+                        route: isVelodromeRollup ? 'velodrome-ve' : x.route,
                         amount: 0,
                         usdValue: 0,
                         usdComplete: true,
@@ -4031,11 +4038,12 @@ function renderIndex(lang) {
                         wallets: new Set(),
                         assetSymbols: new Set(),
                         rewardCount: 0,
-                        voteMarketRollup: isVoteMarket
+                        voteMarketRollup: isVoteMarket,
+                        velodromeRollup: isVelodromeRollup
                     });
                 }
                 const g = grouped.get(key);
-                if (!isVoteMarket) g.amount += hasRewardNumber(x.amount) ? Number(x.amount) : 0;
+                if (!isRouteRollup) g.amount += hasRewardNumber(x.amount) ? Number(x.amount) : 0;
                 if (hasRewardNumber(x.usdValue)) g.usdValue += Number(x.usdValue);
                 else g.usdComplete = false;
                 const wa = x.details && x.details.walletAlias;
@@ -4048,9 +4056,10 @@ function renderIndex(lang) {
             return [...grouped.values()].map(g => {
                 const wallets = [...g.wallets];
                 const assetSymbols = [...g.assetSymbols];
+                const isRouteRollup = g.voteMarketRollup || g.velodromeRollup;
                 return {
                     ...g,
-                    amount: g.voteMarketRollup ? null : Number(g.amount.toFixed(10)),
+                    amount: isRouteRollup ? null : Number(g.amount.toFixed(10)),
                     usdValue: g.usdComplete ? Number(g.usdValue.toFixed(6))
                                             : (g.usdValue > 0 ? Number(g.usdValue.toFixed(6)) : null),
                     walletCount: wallets.length,
@@ -4060,7 +4069,6 @@ function renderIndex(lang) {
                 };
             });
         };
-
         const balanceSheetBlock = c => {
             if (!COMPANY_REWARDS_SCOPE.has(c.nm)) return '';
             const book = COMPANY_BOOK[c.nm] || [];
@@ -4106,6 +4114,14 @@ function renderIndex(lang) {
             const isDefitea = c.nm === 'defitea.eth';
             const tokens = r && Array.isArray(r.rewardTokens) ? r.rewardTokens : [];
             const rewards = r && Array.isArray(r.rewards) ? r.rewards : [];
+            // Passport keeps Velodrome legacy dust in one route row. The raw JSON
+            // still preserves every reward record and every unpriced asset.
+            const velodromeUnpricedRawCount = isDefitea
+                ? rewards.filter(x => x
+                    && (x.route === 'velodrome-ve' || x.route === 'velodrome-ve-direct')
+                    && !hasRewardNumber(x.usdValue)).length
+                : 0;
+            const visibleUnpricedCount = Math.max(0, unpricedCount - velodromeUnpricedRawCount);
             const stripTokens = isDefitea
                 ? [...new Set(rewards.map(x => {
                     const nativeSymbol = x && x.details && x.details.redeemSymbol;
@@ -4143,7 +4159,23 @@ function renderIndex(lang) {
                 const usdLabel = hasRewardNumber(x.usdValue)
                     ? fmtRewardUsd(x.usdValue) + (x.usdComplete === false ? '+' : '')
                     : '—';
-                if (isDefitea && x.voteMarketRollup) {
+                if (isDefitea && x.velodromeRollup) {
+                    const symbols = Array.isArray(x.assetSymbols) ? x.assetSymbols.filter(Boolean) : [];
+                    const assetCount = symbols.length;
+                    const assetCountLabel = lang === 'ru'
+                        ? (assetCount === 1 ? '1 reward-актив' : assetCount + ' reward-активов')
+                        : (assetCount === 1 ? '1 reward asset' : assetCount + ' reward assets');
+                    const routeLabel = 'Velodrome · 40 Acres';
+                    const routeMeta = lang === 'ru'
+                        ? 'Optimism · текущие начисления'
+                        : 'Optimism · current accrual';
+                    rows += '<div class="ipx-reward-row">'
+                        + '<div><div class="ipx-reward-protocol">' + routeLabel
+                        + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
+                        + '<div class="ipx-reward-meta">' + routeMeta + '</div></div>'
+                        + '<div class="ipx-reward-right"><div class="ipx-reward-amount">' + usdLabel + '</div>'
+                        + '<div class="ipx-reward-usd">' + assetCountLabel + '</div></div></div>';
+                } else if (isDefitea && x.voteMarketRollup) {
                     const routeLabel = REWARD_ROUTE_LABELS[x.route] || x.protocol || 'VoteMarket';
                     const symbols = Array.isArray(x.assetSymbols) ? x.assetSymbols.filter(Boolean) : [];
                     const tokenMeta = symbols.length ? symbols.join(' · ') : 'Voting rewards';
@@ -4189,8 +4221,8 @@ function renderIndex(lang) {
             if (incomplete && pendingRouteCount > 0) {
                 notes.push(L.measuredTotal + ' · ' + pendingRouteCount + ' ' + (pendingRouteCount === 1 ? L.routeNotIncluded : L.routesNotIncluded));
             }
-            if (unpricedCount > 0) {
-                notes.push(L.valuationPending + ' · ' + unpricedCount + ' ' + (unpricedCount === 1 ? L.rewardToken : L.rewardTokens));
+            if (visibleUnpricedCount > 0) {
+                notes.push(L.valuationPending + ' · ' + visibleUnpricedCount + ' ' + (visibleUnpricedCount === 1 ? L.rewardToken : L.rewardTokens));
             }
             if (notes.length) {
                 note = '<div class="ipx-reward-panel-note">' + notes.join(' · ') + '</div>';
