@@ -3024,6 +3024,22 @@
 </footer>
 
 <script>
+// Passport pages contain expanding rows, so browser scroll restoration can
+// reopen a hard reload at a stale lower offset. Reset only true reloads;
+// normal navigation/back behavior remains untouched.
+try {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.addEventListener('pageshow', () => {
+        const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type === 'reload') {
+            window.scrollTo(0, 0);
+            requestAnimationFrame(() => {
+                window.scrollTo(0, 0);
+                setTimeout(() => window.scrollTo(0, 0), 80);
+            });
+        }
+    });
+} catch (_) {}
 /* ── Scroll reveal ─────────────────────────────────── */
 (function () {
     const els = document.querySelectorAll('.reveal');
@@ -3124,7 +3140,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.2.1-defitea-compact-40acres';
+const COMPANY_REWARDS_UI_VERSION = '0.2.2-defitea-rewards-ui-fixes';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth', 'defitea.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -3146,9 +3162,12 @@ const REWARD_ROUTE_LABELS = {
     'aerodrome-ve': 'Aerodrome',
     'velodrome-ve': 'Velodrome',
     'curve-fees': 'Curve',
-    'curve-fees-votemarket': 'Curve · VoteMarket',
+    'curve-fees-votemarket': 'Curve · VoteMarket', // legacy v0.2.1 data
+    'votemarket-vecrv': 'VoteMarket · veCRV',
     'pendle-spendle': 'Pendle',
-    'fx-fees-votemarket': 'f(x) · VoteMarket',
+    'fx-fees': 'f(x)',
+    'fx-fees-votemarket': 'f(x) · VoteMarket', // legacy v0.2.1 data
+    'votemarket-vefxn': 'VoteMarket · veFXN',
     'frax-yield': 'Frax',
     'yield-basis-fees': 'Yield Basis',
     'venice-staking': 'Venice',
@@ -3505,7 +3524,7 @@ function updateLensInPlace(lang) {
             // passport: move the "in view" chip and the gold highlight to the active weight
             const fields = row.querySelectorAll('.ipx-grid .ipx-field');
             const chip = (lang === 'ru') ? 'Текущий' : 'In view';
-            [3, 4].forEach((idx, k) => {
+            [2, 3].forEach((idx, k) => {
                 const f = fields[idx]; if (!f) return;
                 const on = (k === 0) ? (IDX_MODE === 'composite') : (IDX_MODE === 'tvl');
                 const val = f.querySelector('.ipx-value');
@@ -4040,6 +4059,10 @@ function renderIndex(lang) {
                 }
             };
 
+            // Expose the item-local close routine so one shared desktop
+            // outside-click handler can close the correct panel cleanly.
+            if (rbox) rbox.__ipxCloseRewardPanel = closeRewardPanel;
+
             const scrollThen = (delta, callback, delay = 300) => {
                 if (!Number.isFinite(delta) || Math.abs(delta) < 6) {
                     callback();
@@ -4167,6 +4190,20 @@ function renderIndex(lang) {
                     };
 
                     scrollThen(delta, revealDesktop, 300);
+                });
+            }
+
+            if (!window.__ipxRewardOutsideBound) {
+                window.__ipxRewardOutsideBound = true;
+                document.addEventListener('pointerdown', ev => {
+                    // Mobile already uses a full-screen backdrop. Desktop keeps
+                    // the panel anchored to the passport, so close it whenever
+                    // the pointer lands outside the disclosure.
+                    if (window.matchMedia('(max-width: 768px)').matches) return;
+                    document.querySelectorAll('.ipx-rewards-disclosure.open').forEach(owner => {
+                        if (owner.contains(ev.target)) return;
+                        if (typeof owner.__ipxCloseRewardPanel === 'function') owner.__ipxCloseRewardPanel(false);
+                    });
                 });
             }
 
