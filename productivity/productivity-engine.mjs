@@ -75,7 +75,7 @@ const ENGINE_BY_CG_ID = {
   'convex-finance':    'convex_vlcvx',
   'curve-dao-token':   'curve_vecrv',
   'pendle':            'pendle_spendle',
-  'fxn':               'fx_vefxn',
+  'fxn-token':         'fx_vefxn',
   'yield-basis':       'yieldbasis_veyb',
   'frax-share':        'frax_vefrax',
   'velodrome-finance': 'velodrome_vevelo',
