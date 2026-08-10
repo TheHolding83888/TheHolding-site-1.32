@@ -3140,7 +3140,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.2.2-defitea-rewards-ui-fixes';
+const COMPANY_REWARDS_UI_VERSION = '0.2.3-defitea-votemarket-rollup';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth', 'defitea.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -3714,13 +3714,10 @@ function renderIndex(lang) {
         const aggregateDisplayRewards = rewards => {
             const grouped = new Map();
             for (const x of rewards || []) {
-                const key = [
-                    x.protocol || '',
-                    x.route || '',
-                    x.chain || '',
-                    x.token || x.symbol || '',
-                    x.classification || ''
-                ].join('|');
+                const isVoteMarket = x.route === 'votemarket-vecrv' || x.route === 'votemarket-vefxn';
+                const key = isVoteMarket
+                    ? ['votemarket-route', x.route || '', x.classification || ''].join('|')
+                    : [x.protocol || '', x.route || '', x.chain || '', x.token || x.symbol || '', x.classification || ''].join('|');
                 if (!grouped.has(key)) {
                     grouped.set(key, {
                         ...x,
@@ -3728,25 +3725,34 @@ function renderIndex(lang) {
                         usdValue: 0,
                         usdComplete: true,
                         walletCount: 0,
-                        wallets: new Set()
+                        wallets: new Set(),
+                        assetSymbols: new Set(),
+                        rewardCount: 0,
+                        voteMarketRollup: isVoteMarket
                     });
                 }
                 const g = grouped.get(key);
-                g.amount += hasRewardNumber(x.amount) ? Number(x.amount) : 0;
+                if (!isVoteMarket) g.amount += hasRewardNumber(x.amount) ? Number(x.amount) : 0;
                 if (hasRewardNumber(x.usdValue)) g.usdValue += Number(x.usdValue);
                 else g.usdComplete = false;
                 const wa = x.details && x.details.walletAlias;
                 if (wa) g.wallets.add(wa);
+                const rawSymbol = (x.details && x.details.redeemSymbol) || x.symbol || 'TOKEN';
+                const displaySymbol = isVoteMarket && /^p[A-Z0-9]/.test(rawSymbol) ? rawSymbol.slice(1) : rawSymbol;
+                g.assetSymbols.add(displaySymbol);
+                g.rewardCount += 1;
             }
             return [...grouped.values()].map(g => {
                 const wallets = [...g.wallets];
+                const assetSymbols = [...g.assetSymbols];
                 return {
                     ...g,
-                    amount: Number(g.amount.toFixed(10)),
+                    amount: g.voteMarketRollup ? null : Number(g.amount.toFixed(10)),
                     usdValue: g.usdComplete ? Number(g.usdValue.toFixed(6))
                                             : (g.usdValue > 0 ? Number(g.usdValue.toFixed(6)) : null),
                     walletCount: wallets.length,
                     wallets,
+                    assetSymbols,
                     details: g.details || null
                 };
             });
@@ -3797,15 +3803,22 @@ function renderIndex(lang) {
             const totalCls = liveMeasured && (hasPricedValue || (hasTotal && unpricedCount === 0)) ? '' : ' measuring';
             const isDefitea = c.nm === 'defitea.eth';
             const tokens = r && Array.isArray(r.rewardTokens) ? r.rewardTokens : [];
-            const visibleTokens = isDefitea ? tokens.slice(0, 6) : tokens;
-            const hiddenTokenCount = Math.max(0, tokens.length - visibleTokens.length);
-            const tokenStrip = tokens.length
+            const rewards = r && Array.isArray(r.rewards) ? r.rewards : [];
+            const stripTokens = isDefitea
+                ? [...new Set(rewards.map(x => {
+                    const nativeSymbol = x && x.details && x.details.redeemSymbol;
+                    const raw = nativeSymbol || (x && x.symbol) || 'TOKEN';
+                    return (x && (x.route === 'votemarket-vecrv' || x.route === 'votemarket-vefxn') && /^p[A-Z0-9]/.test(raw)) ? raw.slice(1) : raw;
+                }))].map(symbol => ({ symbol }))
+                : tokens;
+            const visibleTokens = isDefitea ? stripTokens.slice(0, 6) : stripTokens;
+            const hiddenTokenCount = Math.max(0, stripTokens.length - visibleTokens.length);
+            const tokenStrip = stripTokens.length
                 ? visibleTokens.map(t => '<span class="ipx-reward-token">' + (t.symbol || 'TOKEN') + '</span>').join('')
                     + (hiddenTokenCount ? '<span class="ipx-reward-token ipx-reward-token-more">+' + hiddenTokenCount + '</span>' : '')
                 : '<span class="ipx-reward-token">Onchain</span>';
 
             let rows = '';
-            const rewards = r && Array.isArray(r.rewards) ? r.rewards : [];
             const displayRewards = isDefitea ? aggregateDisplayRewards(rewards) : rewards;
             const sources = r && Array.isArray(r.sources) ? r.sources : [];
             const pending = sources.filter(s => s && s.status !== 'ok');
@@ -3828,13 +3841,29 @@ function renderIndex(lang) {
                 const usdLabel = hasRewardNumber(x.usdValue)
                     ? fmtRewardUsd(x.usdValue) + (x.usdComplete === false ? '+' : '')
                     : '—';
-                rows += '<div class="ipx-reward-row">'
-                    + '<div><div class="ipx-reward-protocol">' + (x.protocol || 'Protocol')
-                    + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
-                    + '<div class="ipx-reward-meta">' + (x.symbol || 'TOKEN') + ' · ' + (x.chain || 'Onchain')
-                    + walletMeta + pendingHint + '</div></div>'
-                    + '<div class="ipx-reward-right"><div class="ipx-reward-amount">' + fmtRewardQty(x.amount) + ' ' + (x.symbol || '') + '</div>'
-                    + '<div class="ipx-reward-usd">' + usdLabel + '</div></div></div>';
+                if (isDefitea && x.voteMarketRollup) {
+                    const routeLabel = REWARD_ROUTE_LABELS[x.route] || x.protocol || 'VoteMarket';
+                    const symbols = Array.isArray(x.assetSymbols) ? x.assetSymbols.filter(Boolean) : [];
+                    const tokenMeta = symbols.length ? symbols.join(' · ') : 'Voting rewards';
+                    const assetCount = symbols.length;
+                    const assetCountLabel = lang === 'ru'
+                        ? (assetCount === 1 ? '1 токен' : assetCount + ' токенов')
+                        : (assetCount === 1 ? '1 reward asset' : assetCount + ' reward assets');
+                    rows += '<div class="ipx-reward-row">'
+                        + '<div><div class="ipx-reward-protocol">' + routeLabel
+                        + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
+                        + '<div class="ipx-reward-meta">' + tokenMeta + pendingHint + '</div></div>'
+                        + '<div class="ipx-reward-right"><div class="ipx-reward-amount">' + usdLabel + '</div>'
+                        + '<div class="ipx-reward-usd">' + assetCountLabel + '</div></div></div>';
+                } else {
+                    rows += '<div class="ipx-reward-row">'
+                        + '<div><div class="ipx-reward-protocol">' + (x.protocol || 'Protocol')
+                        + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
+                        + '<div class="ipx-reward-meta">' + (x.symbol || 'TOKEN') + ' · ' + (x.chain || 'Onchain')
+                        + walletMeta + pendingHint + '</div></div>'
+                        + '<div class="ipx-reward-right"><div class="ipx-reward-amount">' + fmtRewardQty(x.amount) + ' ' + (x.symbol || '') + '</div>'
+                        + '<div class="ipx-reward-usd">' + usdLabel + '</div></div></div>';
+                }
             });
 
             pending.forEach(s => {
