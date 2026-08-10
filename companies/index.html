@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · build 2026-08-10 · Reward composition smart-scroll + viewport portal v0.1.4 -->
+<!-- companies.html · build 2026-08-10 · Reward composition stable modal + smart-scroll v0.1.5 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1210,6 +1210,8 @@
             pointer-events: none;
             z-index: 35;
             padding: 0.72rem;
+            will-change: transform, opacity;
+            isolation: isolate;
             border-radius: 18px;
             background:
                 radial-gradient(circle at 92% 0%, rgba(255,255,255,1), rgba(255,255,255,0) 34%),
@@ -1223,7 +1225,6 @@
                 visibility 0.24s ease,
                 transform 0.24s cubic-bezier(0.16,1,0.3,1);
         }
-        .ipx-rewards-disclosure:hover .ipx-rewards-panel,
         .ipx-rewards-disclosure.open .ipx-rewards-panel {
             opacity: 1;
             visibility: visible;
@@ -1255,8 +1256,8 @@
             font-variant-numeric: tabular-nums;
         }
         .ipx-reward-panel-close {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border: 1px solid rgba(15,23,42,0.07);
             border-radius: 50%;
             background: rgba(255,255,255,0.78);
@@ -1266,6 +1267,9 @@
             line-height: 1;
             cursor: pointer;
             display: inline-flex;
+            position: relative;
+            z-index: 4;
+            touch-action: manipulation;
             align-items: center;
             justify-content: center;
             transition: background 0.2s ease, color 0.2s ease;
@@ -1332,6 +1336,13 @@
             font-size: 0.57rem;
             line-height: 1.45;
         }
+        @media (prefers-reduced-motion: reduce) {
+            .ipx-rewards-panel,
+            .ipx-reward-backdrop {
+                transition-duration: 0.01ms !important;
+            }
+        }
+
         .ipx-reward-empty {
             padding: 0.82rem 0.55rem;
             color: var(--text-3);
@@ -1561,9 +1572,29 @@
             .ipx-ledger-count { font-size: 0.55rem; }
             .ipx-ledger-caption { margin-top: 0.7rem; font-size: 0.59rem; }
 
-            /* Mobile rewards use a compact viewport-anchored bottom sheet.
-               It no longer expands the passport downward. */
+            /* Mobile reward composition is a true viewport modal.
+               The panel is portaled under <body> before it becomes visible,
+               so it never flashes from an old passport position. */
             .ib-item.open .ib-passport { overflow: visible; }
+
+            .ipx-reward-backdrop {
+                position: fixed;
+                inset: 0;
+                z-index: 2190;
+                background: rgba(15, 23, 42, 0.13);
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transition: opacity 0.24s ease, visibility 0.24s ease;
+            }
+            .ipx-reward-backdrop.open {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+            }
+
             .ipx-rewards-panel {
                 position: fixed;
                 left: 14px;
@@ -1578,23 +1609,40 @@
                 margin: 0;
                 padding: 0.66rem;
                 border-radius: 20px;
-                transform: translateY(calc(-50% + 22px)) scale(0.985);
+                transform: translateY(-50%) scale(0.97);
                 opacity: 0;
                 visibility: hidden;
                 pointer-events: none;
                 display: block;
                 z-index: 2200;
-                background: rgba(252,253,253,0.995);
-                box-shadow:
-                    0 28px 74px -20px rgba(15,23,42,0.40),
-                    0 0 0 100vmax rgba(15,23,42,0.14);
+                background:
+                    radial-gradient(circle at 90% 0%, rgba(255,255,255,1), rgba(255,255,255,0) 34%),
+                    rgba(252,253,253,0.997);
+                box-shadow: 0 30px 80px -24px rgba(15,23,42,0.42);
+                transition:
+                    opacity 0.26s ease,
+                    visibility 0.26s ease,
+                    transform 0.30s cubic-bezier(0.16,1,0.3,1);
+                will-change: transform, opacity;
             }
+
+            /* While the panel is still inside the passport it is ALWAYS hidden.
+               This overrides the desktop descendant .open rule and prevents the
+               one-frame "bottom-left corner" flash during portal moves. */
+            .ipx-rewards-disclosure.open > .ipx-rewards-panel {
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transform: translateY(-50%) scale(0.97);
+            }
+
             .ipx-rewards-panel.ipx-reward-portal-open {
                 opacity: 1;
                 visibility: visible;
                 pointer-events: auto;
                 transform: translateY(-50%) scale(1);
             }
+
             body.ipx-reward-overlay-open {
                 overscroll-behavior-y: contain;
             }
@@ -1669,6 +1717,245 @@
             .ipx-economic-value { font-size: 1.34rem; }
             .ipx-apr-kicker { font-size: 0.43rem; }
             .ipx-apr-number { font-size: 0.78rem; }
+        }
+
+
+        /* ══ Passport mobile screenshot mode — tuned for iPhone 14 class viewports ══
+           Goal: one clean screen captures the company header, three headline facts,
+           compact Balance Sheet + Accrued Rewards, and the APR Average / Latest row. */
+        @media (max-width: 760px) {
+            .ib-row {
+                min-height: 58px;
+                padding: 0.78rem 0;
+            }
+            .ib-rank { font-size: 1.14rem; }
+            .ib-nm { font-size: 0.91rem; }
+            .ib-cat { margin-top: 0.12rem; font-size: 0.54rem; letter-spacing: 0.06em; }
+            .ib-value { font-size: 1.08rem; }
+
+            .ipx-inner {
+                padding-top: 0.16rem;
+                padding-bottom: 1.45rem;
+            }
+
+            /* Three primary facts stay premium but lose unnecessary vertical air. */
+            .ipx-economic {
+                margin: 0.08rem 0 0.68rem;
+                padding: 0.74rem 0 0.72rem;
+                border-radius: 13px;
+                box-shadow: 0 10px 26px -25px rgba(22,21,15,0.30);
+            }
+            .ipx-economic-item { padding: 0 0.42rem; }
+            .ipx-economic-label {
+                min-height: 1.95em;
+                margin-bottom: 0.27rem;
+                font-size: 0.435rem;
+                letter-spacing: 0.085em;
+                line-height: 1.08;
+            }
+            .ipx-economic-value {
+                font-size: 1.31rem;
+                line-height: 0.98;
+            }
+
+            /* Balance Sheet + Rewards become one compact two-column operating row. */
+            .ipx-live-ledger {
+                grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+                gap: 0.48rem;
+                margin: 0 0 0.62rem;
+                align-items: stretch;
+            }
+            .ipx-ledger-card {
+                border-radius: 13px;
+                box-shadow:
+                    0 12px 26px -28px rgba(15,23,42,0.30),
+                    inset 0 1px 0 rgba(255,255,255,0.95);
+            }
+            .ipx-balance-card {
+                padding: 0.62rem 0.62rem 0.56rem;
+            }
+            .ipx-ledger-head {
+                gap: 0.35rem;
+                margin-bottom: 0.42rem;
+            }
+            .ipx-ledger-kicker {
+                font-size: 0.46rem;
+                letter-spacing: 0.11em;
+                white-space: nowrap;
+            }
+            .ipx-ledger-count {
+                min-height: 18px;
+                padding: 0.14rem 0.34rem;
+                font-size: 0.47rem;
+            }
+            .ipx-position-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.28rem;
+            }
+            .ipx-position-pill,
+            .ipx-position-pill:only-child {
+                grid-column: auto;
+                min-height: 36px;
+                padding: 0.31rem 0.38rem 0.28rem;
+                border-radius: 9px;
+                gap: 0.08rem;
+            }
+            .ipx-position-symbol {
+                font-size: 0.48rem;
+                letter-spacing: 0.02em;
+            }
+            .ipx-position-qty {
+                font-size: 0.86rem;
+                line-height: 0.96;
+            }
+            .ipx-ledger-caption { display: none; }
+
+            .ipx-rewards-trigger {
+                padding: 0.62rem 0.61rem 0.56rem;
+            }
+            .ipx-rewards-value {
+                margin-top: 0.24rem;
+                font-size: 1.34rem;
+                line-height: 0.94;
+            }
+            .ipx-rewards-value.measuring { font-size: 0.96rem; }
+            .ipx-reward-token-strip {
+                gap: 0.22rem;
+                margin-top: 0.44rem;
+                min-height: 0;
+            }
+            .ipx-reward-token {
+                min-height: 18px;
+                padding: 0.16rem 0.34rem;
+                font-size: 0.48rem;
+            }
+            .ipx-rewards-caption {
+                margin-top: 0.40rem;
+                font-size: 0;
+                justify-content: flex-end;
+            }
+            .ipx-rewards-caption svg {
+                width: 12px;
+                height: 12px;
+            }
+
+            /* Core metadata is a compact 2-column passport table.
+               Only the currently active weighting methodology is shown on mobile. */
+            .ipx-core-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                column-gap: 0.9rem;
+                row-gap: 0;
+                margin-top: 0.02rem;
+            }
+            .ipx-core-grid > .ipx-field,
+            .ipx-core-grid > .ipx-protocol-disclosure {
+                min-width: 0;
+                min-height: 42px;
+                padding: 0.39rem 0;
+                border-bottom: 1px solid var(--line);
+            }
+            .ipx-core-grid > .ipx-field {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                justify-content: center;
+                gap: 0.14rem;
+            }
+            .ipx-core-grid .ipx-label {
+                font-size: 0.52rem;
+                letter-spacing: 0.045em;
+                line-height: 1.1;
+            }
+            .ipx-core-grid .ipx-value {
+                width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                text-align: left;
+                font-size: 0.69rem;
+                line-height: 1.15;
+            }
+            .ipx-core-grid .ipx-chip {
+                margin-left: 0.25rem;
+                padding: 0.05rem 0.24rem;
+                font-size: 0.39rem;
+                letter-spacing: 0.07em;
+            }
+            .ipx-weight-field.inactive { display: none !important; }
+
+            .ipx-core-grid .ipx-protocol-disclosure {
+                display: flex;
+                align-items: stretch;
+            }
+            .ipx-core-grid .ipx-protocol-trigger {
+                padding: 0;
+                flex-direction: column;
+                align-items: flex-start;
+                justify-content: center;
+                gap: 0.14rem;
+            }
+            .ipx-core-grid .ipx-protocol-meta {
+                gap: 0.28rem;
+                font-size: 0.69rem;
+                line-height: 1.1;
+            }
+            .ipx-core-grid .ipx-protocol-chev {
+                width: 10px;
+                height: 10px;
+            }
+
+            /* APR is the visual close of the screenshot-friendly core Passport. */
+            .ipx-core-grid > .ipx-apr-field {
+                grid-column: 1 / -1;
+                min-height: 46px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.46rem 0 0.44rem;
+                border-bottom-color: rgba(10,124,78,0.12);
+            }
+            .ipx-core-grid > .ipx-apr-field > .ipx-label {
+                font-size: 0.56rem;
+                font-weight: 650;
+                letter-spacing: 0.08em;
+                color: var(--text-2);
+            }
+            .ipx-apr-pair { gap: 0.74rem; }
+            .ipx-apr-point { gap: 0.22rem; }
+            .ipx-apr-point + .ipx-apr-point {
+                padding-left: 0.74rem;
+            }
+            .ipx-apr-kicker {
+                font-size: 0.43rem;
+                letter-spacing: 0.075em;
+            }
+            .ipx-apr-number {
+                font-size: 0.82rem;
+                font-weight: 700;
+            }
+
+            /* Keep deeper analytics below the screenshot core, with clear separation. */
+            .ipx-perf {
+                margin-top: 1.05rem;
+                padding-top: 1rem;
+            }
+            .ipx-composite {
+                margin-top: 1.15rem;
+                padding-top: 1.05rem;
+            }
+        }
+
+        @media (max-width: 430px) {
+            .container { padding-left: 1.05rem; padding-right: 1.05rem; }
+            .ipx-economic-value { font-size: 1.24rem; }
+            .ipx-live-ledger { gap: 0.42rem; }
+            .ipx-balance-card,
+            .ipx-rewards-trigger { padding-left: 0.55rem; padding-right: 0.55rem; }
+            .ipx-position-pill { min-height: 34px; padding: 0.28rem 0.32rem 0.25rem; }
+            .ipx-position-symbol { font-size: 0.455rem; }
+            .ipx-position-qty { font-size: 0.82rem; }
+            .ipx-rewards-value { font-size: 1.27rem; }
+            .ipx-core-grid { column-gap: 0.72rem; }
         }
 
 
@@ -2955,7 +3242,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.1.4-smart-scroll';
+const COMPANY_REWARDS_UI_VERSION = '0.1.5-stable-modal';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -3440,7 +3727,7 @@ function renderIndex(lang) {
                 perfFactor:'Performance', sinceInception:'Since inception',
                 companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', valuePending:'USD valuation pending', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not included yet', routesNotIncluded:'routes not included yet', valuationPending:'Valuation pending', rewardToken:'reward token', rewardTokens:'reward tokens', rewardComposition:'Reward composition', close:'Close', measuring:'Measuring' };
         const wfld = (label, value, active) =>
-            '<div class="ipx-field"><span class="ipx-label">' + label
+            '<div class="ipx-field ipx-weight-field ' + (active ? 'active' : 'inactive') + '"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
             + '<span class="ipx-value ' + (active ? 'gold' : 'muted') + '">' + value + '</span></div>';
         const fld = (label, value, cls) =>
@@ -3653,7 +3940,7 @@ function renderIndex(lang) {
                 +     econ(L.operatingHistory, ageVal, 'age ipx-age', 'data-founded="' + c.foundedISO + '"')
                 +   '</div>'
                 +   liveLedgerBlock(c)
-                +   '<div class="ipx-grid">'
+                +   '<div class="ipx-grid ipx-core-grid">'
                 +     fld(L.registry, c.reg)
                 +     fld(L.founded, c.founded[lang])
                 +     wfld(L.weight, ((c.weight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'composite')
@@ -3711,20 +3998,73 @@ function renderIndex(lang) {
             const rpanel = rbox && rbox.querySelector('.ipx-rewards-panel');
             const rclose = rpanel && rpanel.querySelector('.ipx-reward-panel-close');
 
-            const closeRewardPanel = () => {
+            const ensureRewardBackdrop = () => {
+                let bg = document.querySelector('.ipx-reward-backdrop');
+                if (!bg) {
+                    bg = document.createElement('div');
+                    bg.className = 'ipx-reward-backdrop';
+                    bg.setAttribute('aria-hidden', 'true');
+                    document.body.appendChild(bg);
+                }
+                return bg;
+            };
+
+            const restorePanelToOwner = () => {
+                if (!rpanel || !rbox) return;
+                if (rpanel.parentNode !== rbox) {
+                    // Disable transitions during DOM re-parenting so no old viewport
+                    // coordinates are ever animated back into the passport.
+                    const oldTransition = rpanel.style.transition;
+                    rpanel.style.transition = 'none';
+                    rbox.appendChild(rpanel);
+                    void rpanel.offsetWidth;
+                    rpanel.style.transition = oldTransition;
+                }
+            };
+
+            const closeRewardPanel = (instant = false) => {
                 if (!rbox || !rpanel) return;
+                const mobile = window.matchMedia('(max-width: 768px)').matches;
                 rbox.classList.remove('open');
-                rpanel.classList.remove('ipx-reward-portal-open');
-                document.body.classList.remove('ipx-reward-overlay-open');
-                if (rpanel.parentNode === document.body) rbox.appendChild(rpanel);
                 if (rbtn) rbtn.setAttribute('aria-expanded', 'false');
+
+                if (mobile && rpanel.parentNode === document.body) {
+                    const bg = document.querySelector('.ipx-reward-backdrop');
+                    rpanel.classList.remove('ipx-reward-portal-open');
+                    if (bg) bg.classList.remove('open');
+                    document.body.classList.remove('ipx-reward-overlay-open');
+
+                    const finish = () => restorePanelToOwner();
+                    if (instant || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                        finish();
+                    } else {
+                        window.setTimeout(finish, 290);
+                    }
+                } else {
+                    rpanel.classList.remove('ipx-reward-portal-open');
+                }
+            };
+
+            const scrollThen = (delta, callback, delay = 300) => {
+                if (!Number.isFinite(delta) || Math.abs(delta) < 6) {
+                    callback();
+                    return;
+                }
+                const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (reduced) {
+                    window.scrollBy(0, delta);
+                    callback();
+                    return;
+                }
+                window.scrollBy({ top: delta, behavior: 'smooth' });
+                window.setTimeout(callback, delay);
             };
 
             if (rclose) {
                 rclose.addEventListener('click', ev => {
                     ev.preventDefault();
                     ev.stopPropagation();
-                    closeRewardPanel();
+                    closeRewardPanel(false);
                 });
             }
 
@@ -3733,9 +4073,16 @@ function renderIndex(lang) {
                     ev.preventDefault();
                     ev.stopPropagation();
 
-                    const next = !rbox.classList.contains('open')
-                              && !rpanel.classList.contains('ipx-reward-portal-open');
+                    const mobile = window.matchMedia('(max-width: 768px)').matches;
+                    const alreadyOpen = rbox.classList.contains('open')
+                        || rpanel.classList.contains('ipx-reward-portal-open');
 
+                    if (alreadyOpen) {
+                        closeRewardPanel(false);
+                        return;
+                    }
+
+                    // Close every other reward panel before opening this one.
                     board.querySelectorAll('.ipx-rewards-disclosure.open').forEach(other => {
                         if (other !== rbox) {
                             other.classList.remove('open');
@@ -3744,51 +4091,87 @@ function renderIndex(lang) {
                         }
                     });
                     document.querySelectorAll('.ipx-reward-portal-open').forEach(otherPanel => {
-                        if (otherPanel !== rpanel) {
-                            otherPanel.classList.remove('ipx-reward-portal-open');
-                            const owner = otherPanel.__ipxOwner;
-                            if (owner) owner.appendChild(otherPanel);
+                        if (otherPanel === rpanel) return;
+                        otherPanel.classList.remove('ipx-reward-portal-open');
+                        const owner = otherPanel.__ipxOwner;
+                        if (owner) {
+                            owner.classList.remove('open');
+                            const ob = owner.querySelector('.ipx-rewards-trigger');
+                            if (ob) ob.setAttribute('aria-expanded', 'false');
+                            const oldTransition = otherPanel.style.transition;
+                            otherPanel.style.transition = 'none';
+                            owner.appendChild(otherPanel);
+                            void otherPanel.offsetWidth;
+                            otherPanel.style.transition = oldTransition;
                         }
                     });
-                    document.body.classList.remove('ipx-reward-overlay-open');
 
-                    if (!next) {
-                        closeRewardPanel();
+                    if (mobile) {
+                        // Gently place the rewards card in the upper third of the viewport.
+                        // The movement is capped so opening never causes a dramatic jump.
+                        const rect = rbox.getBoundingClientRect();
+                        const desiredTop = Math.max(92, window.innerHeight * 0.20);
+                        let delta = rect.top - desiredTop;
+                        delta = Math.max(-180, Math.min(220, delta));
+
+                        const revealMobile = () => {
+                            const bg = ensureRewardBackdrop();
+
+                            // Move while fully hidden and with transitions disabled.
+                            rpanel.classList.remove('ipx-reward-portal-open');
+                            rpanel.__ipxOwner = rbox;
+                            const oldTransition = rpanel.style.transition;
+                            rpanel.style.transition = 'none';
+                            document.body.appendChild(rpanel);
+                            void rpanel.offsetWidth;
+                            rpanel.style.transition = oldTransition;
+
+                            rbox.classList.add('open');
+                            rbtn.setAttribute('aria-expanded', 'true');
+                            document.body.classList.add('ipx-reward-overlay-open');
+
+                            bg.onclick = e => {
+                                e.preventDefault();
+                                closeRewardPanel(false);
+                            };
+
+                            // Two frames guarantee the browser has committed the fixed,
+                            // centered geometry before starting the reveal transition.
+                            requestAnimationFrame(() => {
+                                requestAnimationFrame(() => {
+                                    bg.classList.add('open');
+                                    rpanel.classList.add('ipx-reward-portal-open');
+                                });
+                            });
+                        };
+
+                        scrollThen(delta, revealMobile, 280);
                         return;
                     }
 
-                    const mobile = window.matchMedia('(max-width: 768px)').matches;
+                    // Desktop: determine the ACTUAL amount of page scroll required
+                    // for the whole floating panel to fit under the card.
                     const rect = rbox.getBoundingClientRect();
-                    const desiredTop = mobile
-                        ? Math.max(92, window.innerHeight * 0.20)
-                        : Math.max(108, window.innerHeight * 0.14);
-                    const delta = rect.top - desiredTop;
+                    const panelHeight = Math.min(
+                        Math.max(rpanel.scrollHeight, 180),
+                        Math.min(window.innerHeight * 0.60, 440)
+                    );
+                    const safeBottom = window.innerHeight - 26;
+                    const projectedBottom = rect.bottom + 10 + panelHeight;
+                    let delta = Math.max(0, projectedBottom - safeBottom);
 
-                    const reveal = () => {
-                        requestAnimationFrame(() => {
-                            rbox.classList.add('open');
-                            rbtn.setAttribute('aria-expanded', 'true');
+                    // Also protect against the card sitting under the fixed navigation.
+                    const safeTop = 88;
+                    if (rect.top - delta < safeTop) {
+                        delta = Math.max(0, rect.top - safeTop);
+                    }
 
-                            if (mobile && rpanel) {
-                                // Portal the sheet directly under <body>. This guarantees that
-                                // position:fixed is relative to the viewport rather than any
-                                // animated/overflowing passport ancestor.
-                                rpanel.__ipxOwner = rbox;
-                                document.body.appendChild(rpanel);
-                                document.body.classList.add('ipx-reward-overlay-open');
-                                requestAnimationFrame(() => {
-                                    rpanel.classList.add('ipx-reward-portal-open');
-                                });
-                            }
-                        });
+                    const revealDesktop = () => {
+                        rbox.classList.add('open');
+                        rbtn.setAttribute('aria-expanded', 'true');
                     };
 
-                    if (Math.abs(delta) > 24) {
-                        window.scrollBy({ top: delta, behavior: 'smooth' });
-                        window.setTimeout(reveal, mobile ? 300 : 250);
-                    } else {
-                        reveal();
-                    }
+                    scrollThen(delta, revealDesktop, 300);
                 });
             }
 
@@ -3796,16 +4179,33 @@ function renderIndex(lang) {
                 window.__ipxRewardEscapeBound = true;
                 document.addEventListener('keydown', ev => {
                     if (ev.key !== 'Escape') return;
+
                     document.querySelectorAll('.ipx-reward-portal-open').forEach(panel => {
                         panel.classList.remove('ipx-reward-portal-open');
                         const owner = panel.__ipxOwner;
                         if (owner) {
                             owner.classList.remove('open');
-                            owner.appendChild(panel);
                             const btn = owner.querySelector('.ipx-rewards-trigger');
                             if (btn) btn.setAttribute('aria-expanded', 'false');
+
+                            window.setTimeout(() => {
+                                const oldTransition = panel.style.transition;
+                                panel.style.transition = 'none';
+                                owner.appendChild(panel);
+                                void panel.offsetWidth;
+                                panel.style.transition = oldTransition;
+                            }, 290);
                         }
                     });
+
+                    document.querySelectorAll('.ipx-rewards-disclosure.open').forEach(owner => {
+                        owner.classList.remove('open');
+                        const btn = owner.querySelector('.ipx-rewards-trigger');
+                        if (btn) btn.setAttribute('aria-expanded', 'false');
+                    });
+
+                    const bg = document.querySelector('.ipx-reward-backdrop');
+                    if (bg) bg.classList.remove('open');
                     document.body.classList.remove('ipx-reward-overlay-open');
                 });
             }
