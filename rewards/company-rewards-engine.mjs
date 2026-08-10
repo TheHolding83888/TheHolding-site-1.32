@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.2.1';
-const COLLECTOR_VERSION = '0.2.1-defitea-40acres';
-const METHODOLOGY_VERSION = '0.2.1-earned-inside-protocols-multiwallet';
+const VERSION = '0.2.2';
+const COLLECTOR_VERSION = '0.2.2-defitea-reusd-votemarket-routes';
+const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -121,9 +121,11 @@ const COMPANIES = [
       'aerodrome-ve',
       'velodrome-ve',
       'votium-union',
-      'curve-fees-votemarket',
+      'curve-fees',
+      'votemarket-vecrv',
       'pendle-spendle',
-      'fx-fees-votemarket',
+      'fx-fees',
+      'votemarket-vefxn',
       'yield-basis-fees',
       'frax-yield',
       'venice-staking',
@@ -696,17 +698,24 @@ async function collectCurveBase(address, registry) {
   };
 }
 
-async function collectCurveVoteMarket(address, registry) {
-  const out = await collectCurveBase(address, registry);
-  out.source = {
-    ...out.source,
-    route: 'curve-fees-votemarket',
-    status: 'partial',
-    metric: 'crvUSD FeeDistributor + VoteMarket supplement pending',
-    note: 'Base veCRV crvUSD fees are measured. Stake DAO VoteMarket veCRV voting incentives are intentionally excluded until a reproducible per-user claim amount read is validated.'
+function voteMarketPendingSource(route) {
+  const isCurve = route === 'votemarket-vecrv';
+  return {
+    source: {
+      protocol: isCurve ? 'VoteMarket · veCRV' : 'VoteMarket · veFXN',
+      route,
+      status: 'warming',
+      chain: 'Multi-chain',
+      metric: 'Stake DAO VoteMarket V2 official proof feed · exact unclaimed amount validation pending',
+      note: `Official Stake DAO VoteMarket proof data is available for ${isCurve ? 'Curve / veCRV' : 'f(x) / veFXN'} campaigns. The route is shown separately, but no USD amount is counted until already-claimed vs still-unclaimed rewards can be reproduced safely.`,
+      details: {
+        protocolKey: isCurve ? 'curve' : 'fxn',
+        proofBase: 'https://raw.githubusercontent.com/stake-dao/api/main/api/votemarket',
+        amountIncludedInTotal: false
+      }
+    },
+    rewards: []
   };
-  out.rewards = out.rewards.map(r => ({ ...r, route: 'curve-fees-votemarket' }));
-  return out;
 }
 
 async function collectFrax(address, registry) {
@@ -791,7 +800,7 @@ function unionPendingSource() {
   };
 }
 
-async function collectFxFeesVoteMarket(address, registry) {
+async function collectFxFees(address, registry) {
   const provider = await registry.get('ethereum');
   const rewards = [];
   const issues = [];
@@ -811,7 +820,7 @@ async function collectFxFeesVoteMarket(address, registry) {
       }
       const meta = await tokenMeta(provider, token);
       rewards.push(rewardBase({
-        protocol: 'f(x)', route: 'fx-fees-votemarket', chain: 'Ethereum', token,
+        protocol: 'f(x)', route: 'fx-fees', chain: 'Ethereum', token,
         amountRaw: raw, decimals: meta.decimals, amount: n(formatUnits(raw, meta.decimals)), classification: 'unclaimed',
         source: 'onchain: f(x) FeeDistributor.claim staticCall',
         details: { symbol: meta.symbol, distributor: getAddress(fdCfg.address), distributorLabel: fdCfg.label, coingeckoId: COINGECKO_IDS[String(meta.symbol || '').toUpperCase()] || null, pricePlatform: 'ethereum', priceContract: token }
@@ -820,9 +829,9 @@ async function collectFxFeesVoteMarket(address, registry) {
   }
   return {
     source: {
-      protocol: 'f(x)', route: 'fx-fees-votemarket', status: 'partial', chain: 'Ethereum',
-      metric: 'f(x) veFXN FeeDistributor claims + VoteMarket supplement pending',
-      note: 'Base veFXN fee distributions are measured where claim simulation is available. Stake DAO VoteMarket veFXN voting incentives are excluded until a reproducible per-user claim amount read is validated.',
+      protocol: 'f(x)', route: 'fx-fees', status: issues.length ? 'partial' : 'ok', chain: 'Ethereum',
+      metric: 'f(x) veFXN FeeDistributor claim simulations',
+      note: issues.length ? 'Measured fee distributions are retained; one or more fee distributor reads were incomplete.' : 'Base veFXN fee distributions are measured independently from VoteMarket voting incentives.',
       details: { issues }
     }, rewards
   };
@@ -901,6 +910,7 @@ async function collectPendle(address, registry) {
           symbol: meta.symbol, chainId, assetId: item.assetId || null,
           fromTimestamp: item.fromTimestamp || null, toTimestamp: item.toTimestamp || null,
           coingeckoId: COINGECKO_IDS[String(meta.symbol || '').toUpperCase()] || null,
+          fixedUsdPrice: String(meta.symbol || '').toUpperCase() === 'REUSD' ? 1 : null,
           pricePlatform: metaChain.platform, priceContract: token, apiAmountAtomic: parsed.atomic
         }
       }));
@@ -1004,12 +1014,13 @@ async function collectRoute(route, address, registry) {
     case 'aerodrome-ve': return collectVeProtocol(address, registry, 'aerodrome');
     case 'velodrome-ve': return collectDefiteaVelodrome(address, registry);
     case 'curve-fees': return collectCurveBase(address, registry);
-    case 'curve-fees-votemarket': return collectCurveVoteMarket(address, registry);
+    case 'votemarket-vecrv': return voteMarketPendingSource(route);
     case 'frax-yield': return collectFrax(address, registry);
     case 'yield-basis-fees': return collectYieldBasis(address, registry);
     case 'votium-union': return unionPendingSource();
     case 'pendle-spendle': return collectPendle(address, registry);
-    case 'fx-fees-votemarket': return collectFxFeesVoteMarket(address, registry);
+    case 'fx-fees': return collectFxFees(address, registry);
+    case 'votemarket-vefxn': return voteMarketPendingSource(route);
     case 'venice-staking': return collectVenice(address, registry);
     case 'liquity-staking': return collectLiquity(address, registry);
     case 'resupply-staking': return collectResupply(address, registry);
@@ -1025,14 +1036,37 @@ function mergeRouteSource(route, walletResults) {
   const allWarming = statuses.length > 0 && statuses.every(s => s === 'warming');
   const status = allOk ? 'ok' : anyMeasured ? 'partial' : allWarming ? 'warming' : 'error';
   const first = sourceObjects[0] || { protocol: route, route, chain: null, metric: null };
-  const notes = [...new Set(sourceObjects.map(s => s.note).filter(Boolean))];
+  let notes = [...new Set(sourceObjects.map(s => s.note).filter(Boolean))];
+
+  // A Defitea veVELO position may live in a 40 Acres portfolio linked to only
+  // one of the two company wallets. Once any linked wallet has a confirmed
+  // veNFT, do not merge an unrelated wallet's "position not found" note into
+  // the company-level source. Keep the route partial for the separate,
+  // conservative historical-vote completeness reason.
+  const velodromeFound = route === 'velodrome-ve' && sourceObjects.some(
+    s => Number(s.details?.totalVeNftCount || 0) > 0
+  );
+  if (velodromeFound) {
+    notes = notes.filter(note => !String(note).startsWith('Expected Defitea veVELO position was not found'));
+  }
+
+  const routeDetails = { ...(first.details || {}) };
+  if (route === 'velodrome-ve') {
+    routeDetails.directWalletVeNftCount = sourceObjects.reduce((sum, s) => sum + Number(s.details?.directWalletVeNftCount || 0), 0);
+    routeDetails.fortyAcresVeNftCount = sourceObjects.reduce((sum, s) => sum + Number(s.details?.fortyAcresVeNftCount || 0), 0);
+    routeDetails.totalVeNftCount = sourceObjects.reduce((sum, s) => sum + Number(s.details?.totalVeNftCount || 0), 0);
+    routeDetails.fortyAcresPortfolios = sourceObjects.flatMap(s => Array.isArray(s.details?.fortyAcresPortfolios) ? s.details.fortyAcresPortfolios : []);
+    routeDetails.positions = sourceObjects.flatMap(s => Array.isArray(s.details?.positions) ? s.details.positions : []);
+    routeDetails.issues = sourceObjects.flatMap(s => Array.isArray(s.details?.issues) ? s.details.issues : []);
+  }
+
   return {
     ...first,
     route,
     status,
     note: notes.join(' '),
     details: {
-      ...(first.details || {}),
+      ...routeDetails,
       walletResults: walletResults.map(x => ({
         wallet: x.wallet.address,
         walletAlias: x.wallet.alias,
