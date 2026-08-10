@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.3.0';
-const COLLECTOR_VERSION = '0.3.0-historical-ve-vote-pools';
+const VERSION = '0.3.1';
+const COLLECTOR_VERSION = '0.3.1-windowed-historical-ve-votes';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -462,48 +462,121 @@ function logBlockNumber(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-async function blockscoutVotedLogs(providerKey, voterAddress, tokenId, provider) {
+function blockscoutAddressHash(v) {
+  if (typeof v === 'string') return String(v).toLowerCase();
+  return String(v?.hash || v?.address_hash || v?.address || '').toLowerCase();
+}
+
+async function blockscoutNftMintBlock(providerKey, votingEscrow, tokenId, provider) {
+  const bases = BLOCKSCOUT[providerKey] || [];
+  if (!bases.length) throw new Error(`No Blockscout endpoint configured for ${providerKey}`);
+  let lastError = null;
+  for (const base of bases) {
+    try {
+      let next = null;
+      let pages = 0;
+      let best = null;
+      do {
+        const qs = new URLSearchParams();
+        if (next && typeof next === 'object') {
+          for (const [k, v] of Object.entries(next)) if (v !== null && v !== undefined) qs.set(k, String(v));
+        }
+        const suffix = qs.toString() ? `?${qs.toString()}` : '';
+        const data = await fetchJsonRetry(`${base}/api/v2/tokens/${votingEscrow}/instances/${tokenId}/transfers${suffix}`, {}, 15000, 3);
+        const items = Array.isArray(data?.items) ? data.items : [];
+        for (const x of items) {
+          if (blockscoutAddressHash(x?.from) !== ZeroAddress.toLowerCase()) continue;
+          let blockNumber = logBlockNumber(x?.block_number ?? x?.blockNumber);
+          const txHash = x?.transaction_hash || x?.transactionHash || x?.hash || null;
+          if (!blockNumber && txHash) {
+            try { blockNumber = Number((await provider.getTransactionReceipt(txHash))?.blockNumber || 0) || null; } catch {}
+          }
+          if (blockNumber && (!best || blockNumber < best.blockNumber)) {
+            best = { blockNumber, transactionHash: txHash, source: `${base}/api/v2/.../instances/${tokenId}/transfers` };
+          }
+        }
+        next = data?.next_page_params && Object.keys(data.next_page_params).length ? data.next_page_params : null;
+        pages++;
+        if (pages >= 25 && next) throw new Error(`NFT instance history exceeded 25 pages for token ${tokenId}`);
+      } while (next);
+      if (best) return { ...best, pages };
+      throw new Error(`Zero-address mint transfer not found for veNFT ${tokenId}`);
+    } catch (e) { lastError = e; }
+  }
+  throw lastError || new Error(`veNFT mint block discovery failed for ${providerKey} token ${tokenId}`);
+}
+
+async function blockscoutVotedLogs(providerKey, voterAddress, votingEscrow, tokenId, provider) {
   const bases = BLOCKSCOUT[providerKey] || [];
   if (!bases.length) throw new Error(`No Blockscout endpoint configured for ${providerKey}`);
   const latestBlock = await provider.getBlockNumber();
   const topic3 = topicForUint256(tokenId);
-  let lastError = null;
-
-  async function fetchRange(base, fromBlock, toBlock, depth = 0) {
-    const qs = new URLSearchParams({
-      module: 'logs', action: 'getLogs',
-      fromBlock: String(fromBlock), toBlock: String(toBlock),
-      address: voterAddress,
-      topic0: VOTED_TOPIC0,
-      topic3,
-      topic0_3_opr: 'and'
-    });
-    const data = await fetchJsonRetry(`${base}/api?${qs.toString()}`, {}, 20000, 2);
-    let logs = Array.isArray(data?.result) ? data.result : [];
-    if (!Array.isArray(data?.result)) {
-      const msg = String(data?.message || data?.result || '');
-      if (/no logs|no records|not found/i.test(msg)) logs = [];
-      else throw new Error(`Unexpected Blockscout logs response: ${msg || 'unknown'}`);
-    }
-
-    // Blockscout's legacy logs endpoint caps a response at 1,000 records.
-    // Split a saturated range recursively so completeness is proven rather
-    // than assuming a truncated result is exhaustive.
-    if (logs.length >= 1000) {
-      if (fromBlock >= toBlock || depth >= 32) {
-        throw new Error(`Blockscout 1,000-log cap could not be split at block ${fromBlock}`);
-      }
-      const mid = Math.floor((fromBlock + toBlock) / 2);
-      const left = await fetchRange(base, fromBlock, mid, depth + 1);
-      const right = await fetchRange(base, mid + 1, toBlock, depth + 1);
-      return [...left, ...right];
-    }
-    return logs;
+  const mint = await blockscoutNftMintBlock(providerKey, votingEscrow, tokenId, provider);
+  const startBlock = mint.blockNumber;
+  if (!Number.isFinite(startBlock) || startBlock < 0 || startBlock > latestBlock) {
+    throw new Error(`Invalid veNFT mint block ${startBlock} for token ${tokenId}`);
   }
 
+  // Do not ask Blockscout for multi-year history in one request. On OP-stack
+  // explorers that can time out before returning even though the filtered log
+  // set is small. Start at the exact veNFT mint block, pre-split into bounded
+  // windows, query a few windows concurrently, and split again on timeout/cap.
+  const windowSize = 1_500_000;
+  const windows = [];
+  for (let from = startBlock; from <= latestBlock; from += windowSize) {
+    windows.push([from, Math.min(latestBlock, from + windowSize - 1)]);
+  }
+  let lastError = null;
+
   for (const base of bases) {
+    let requestCount = 0;
+    let adaptiveSplits = 0;
     try {
-      const logs = await fetchRange(base, 0, latestBlock);
+      async function fetchRange(fromBlock, toBlock, depth = 0) {
+        requestCount++;
+        const qs = new URLSearchParams({
+          module: 'logs', action: 'getLogs',
+          fromBlock: String(fromBlock), toBlock: String(toBlock),
+          address: voterAddress,
+          topic0: VOTED_TOPIC0,
+          topic3,
+          topic0_3_opr: 'and'
+        });
+        let data;
+        try {
+          data = await fetchJsonRetry(`${base}/api?${qs.toString()}`, {}, 12000, 3);
+        } catch (e) {
+          const span = toBlock - fromBlock;
+          if (span > 75_000 && depth < 12 && /abort|timeout|HTTP 429|HTTP 5\d\d/i.test(String(e?.message || e))) {
+            adaptiveSplits++;
+            const mid = Math.floor((fromBlock + toBlock) / 2);
+            const left = await fetchRange(fromBlock, mid, depth + 1);
+            const right = await fetchRange(mid + 1, toBlock, depth + 1);
+            return [...left, ...right];
+          }
+          throw e;
+        }
+        let logs = Array.isArray(data?.result) ? data.result : [];
+        if (!Array.isArray(data?.result)) {
+          const msg = String(data?.message || data?.result || '');
+          if (/no logs|no records|not found/i.test(msg)) logs = [];
+          else throw new Error(`Unexpected Blockscout logs response: ${msg || 'unknown'}`);
+        }
+        if (logs.length >= 1000) {
+          if (fromBlock >= toBlock || depth >= 20) {
+            throw new Error(`Blockscout 1,000-log cap could not be split at block ${fromBlock}`);
+          }
+          adaptiveSplits++;
+          const mid = Math.floor((fromBlock + toBlock) / 2);
+          const left = await fetchRange(fromBlock, mid, depth + 1);
+          const right = await fetchRange(mid + 1, toBlock, depth + 1);
+          return [...left, ...right];
+        }
+        return logs;
+      }
+
+      const chunks = await mapLimit(windows, 4, ([from, to]) => fetchRange(from, to));
+      const logs = chunks.flat();
       const seen = new Set();
       const normalized = [];
       for (const log of logs) {
@@ -523,14 +596,14 @@ async function blockscoutVotedLogs(providerKey, voterAddress, tokenId, provider)
       normalized.sort((a, b) => (a.blockNumber || 0) - (b.blockNumber || 0));
       return {
         status: 'ok', source: `${base}/api?module=logs`, latestBlock,
+        startBlock, windowSize, windowCount: windows.length, requestCount, adaptiveSplits,
+        mintDiscovery: mint,
         logCount: normalized.length,
         pools: [...new Set(normalized.map(x => x.pool))],
         firstVoteBlock: normalized.find(x => x.blockNumber)?.blockNumber || null,
         lastVoteBlock: [...normalized].reverse().find(x => x.blockNumber)?.blockNumber || null
       };
-    } catch (e) {
-      lastError = e;
-    }
+    } catch (e) { lastError = e; }
   }
   throw lastError || new Error(`Historical Voted log discovery failed for ${providerKey}`);
 }
@@ -619,7 +692,7 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
 
     let voteHistory = null;
     try {
-      voteHistory = await blockscoutVotedLogs(cfg.providerKey, cfg.voter, tokenId, provider);
+      voteHistory = await blockscoutVotedLogs(cfg.providerKey, cfg.voter, cfg.votingEscrow, tokenId, provider);
     } catch (e) {
       directHistoryComplete = false;
       issues.push(`Historical Voted logs ${tokenId}: ${e.message || e}`);
@@ -671,7 +744,7 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
   if (directCaveat) {
     note = 'Current direct-vote pools are measured, but complete historical Voter.Voted log discovery was unavailable for at least one veNFT; route remains partial rather than assuming completeness.';
   } else if (directCount > 0) {
-    note = 'Direct veNFT rewards are measured across every pool found in complete Voter.Voted event history, including old no-longer-voted pools. Managed/Relay positions are measured directly.';
+    note = 'Direct veNFT rewards are measured across every pool found in complete windowed Voter.Voted event history from the exact veNFT mint block, including old no-longer-voted pools. Managed/Relay positions are measured directly.';
   } else if (issues.length) {
     note = 'Managed position measured with one or more non-fatal reward-enumeration gaps.';
   } else {
