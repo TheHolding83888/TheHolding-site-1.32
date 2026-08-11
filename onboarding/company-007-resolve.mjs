@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { Interface, formatUnits, getAddress, toBeHex } from 'ethers';
 
 const VERSION = '1.1-targeted-resolver';
-const YB_RESOLVER_VERSION = '1.6-configured-rpc-preflight';
+const YB_RESOLVER_VERSION = '1.7-historical-source-mesh';
 const OUTPUT_PATH = process.env.COMPANY_007_RESOLVE_OUTPUT
   || path.resolve('companies/company-007-resolve.json');
 
@@ -12,26 +12,6 @@ const YB_MARKETS = [
   { symbol: 'yb-WBTC', family: 'BTC', lt: getAddress('0x651d4b8168488fa163d85304662e8278d4c55baa') },
   { symbol: 'yb-WETH', family: 'ETH', lt: getAddress('0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea') }
 ];
-
-const HEADER_RPCS = uniq([
-  process.env.ETH_RPC_URL,
-  process.env.ETH_RPC_URL_2,
-  process.env.ETH_ARCHIVE_RPC_URL,
-  process.env.ETH_ARCHIVE_RPC_URL_2,
-  'https://eth.drpc.org',
-  'https://ethereum-rpc.publicnode.com',
-  'https://eth.llamarpc.com',
-  'https://rpc.flashbots.net',
-  'https://1rpc.io/eth',
-  'https://cloudflare-eth.com'
-]);
-
-const ARCHIVE_RPCS = uniq([
-  process.env.ETH_ARCHIVE_RPC_URL,
-  process.env.ETH_ARCHIVE_RPC_URL_2,
-  process.env.ETH_RPC_URL,
-  process.env.ETH_RPC_URL_2
-]);
 
 const LT_IFACE = new Interface(['function pricePerShare() view returns (uint256)']);
 
@@ -45,17 +25,8 @@ function round(x, d = 12) {
 }
 function errorText(e) {
   return String(e?.shortMessage || e?.message || e || 'unknown')
-    .replace(/https?:\/\/[^\s)]+/g, '[url-redacted]');
-}
-function safeHost(url) {
-  const secrets = [
-    process.env.ETH_ARCHIVE_RPC_URL,
-    process.env.ETH_ARCHIVE_RPC_URL_2,
-    process.env.ETH_RPC_URL,
-    process.env.ETH_RPC_URL_2
-  ].filter(Boolean);
-  if (secrets.includes(url)) return 'configured';
-  try { return new URL(url).hostname; } catch { return 'configured'; }
+    .replace(/https?:\/\/[^\s)]+/g, '[url-redacted]')
+    .replace(/apikey=[^&\s]+/gi, 'apikey=[redacted]');
 }
 function stableHash(value) {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -67,8 +38,38 @@ function positiveBigInt(x) {
     return b > 0n ? b : 0n;
   } catch { return 0n; }
 }
+function configuredUrls() {
+  return uniq([
+    process.env.ETH_ARCHIVE_RPC_URL,
+    process.env.ETH_ARCHIVE_RPC_URL_2,
+    process.env.ETH_RPC_URL,
+    process.env.ETH_RPC_URL_2
+  ]);
+}
+function safeHost(url) {
+  if (configuredUrls().includes(url)) return 'configured';
+  try { return new URL(url).hostname; } catch { return 'configured'; }
+}
 
-async function rpc(url, method, params = [], timeoutMs = 5000) {
+const HEADER_RPCS = uniq([
+  process.env.ETH_RPC_URL,
+  process.env.ETH_RPC_URL_2,
+  process.env.ETH_ARCHIVE_RPC_URL,
+  process.env.ETH_ARCHIVE_RPC_URL_2,
+  'https://eth.merkle.io',
+  'https://eth.blockscout.com/api/eth-rpc',
+  'https://rpc.flashbots.net',
+  'https://ethereum-rpc.publicnode.com',
+  'https://eth.drpc.org'
+]);
+
+const HISTORY_RPC_SOURCES = [
+  ...configuredUrls().map(url => ({ kind: 'rpc', url, label: 'ethereum-history:configured' })),
+  { kind: 'rpc', url: 'https://eth.merkle.io', label: 'ethereum-history:eth.merkle.io' },
+  { kind: 'rpc', url: 'https://eth.blockscout.com/api/eth-rpc', label: 'ethereum-history:eth.blockscout.com' }
+];
+
+async function rpc(url, method, params = [], timeoutMs = 7000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
@@ -76,14 +77,14 @@ async function rpc(url, method, params = [], timeoutMs = 5000) {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'accept': 'application/json',
-        'user-agent': 'The-Holding-Company-007-YB-History/1.5'
+        accept: 'application/json',
+        'user-agent': 'The-Holding-Company-007-YB-History/1.7'
       },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
       signal: ctrl.signal,
       cache: 'no-store'
     });
-    if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText || ''}`.trim());
     const j = await r.json();
     if (j?.error) throw new Error(`RPC ${j.error.code}: ${j.error.message || 'unknown error'}`);
     if (j?.result == null) throw new Error(`RPC ${method}: null result`);
@@ -93,8 +94,39 @@ async function rpc(url, method, params = [], timeoutMs = 5000) {
   }
 }
 
+async function etherscanHistoricalCall(market, blockNumber) {
+  const key = String(process.env.ETHERSCAN_API_KEY || '').trim();
+  if (!key) throw new Error('ETHERSCAN_API_KEY not configured');
+  const data = LT_IFACE.encodeFunctionData('pricePerShare', []);
+  const q = new URLSearchParams({
+    chainid: '1',
+    module: 'proxy',
+    action: 'eth_call',
+    to: market.lt,
+    data,
+    tag: blockTag(blockNumber),
+    apikey: key
+  });
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 9000);
+  try {
+    const r = await fetch(`https://api.etherscan.io/v2/api?${q.toString()}`, {
+      headers: { accept: 'application/json', 'user-agent': 'The-Holding-Company-007-YB-History/1.7' },
+      signal: ctrl.signal,
+      cache: 'no-store'
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText || ''}`.trim());
+    const j = await r.json();
+    if (j?.error) throw new Error(`Etherscan RPC ${j.error.code}: ${j.error.message || 'unknown error'}`);
+    if (!j?.result || j.result === '0x') throw new Error(`Etherscan eth_call returned no result`);
+    return j.result;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function getBlock(url, number) {
-  const b = await rpc(url, 'eth_getBlockByNumber', [blockTag(number), false], 5000);
+  const b = await rpc(url, 'eth_getBlockByNumber', [blockTag(number), false], 6000);
   if (!b?.number || !b?.timestamp) throw new Error(`block ${number} unavailable`);
   return { number: Number(BigInt(b.number)), timestamp: Number(BigInt(b.timestamp)) };
 }
@@ -109,8 +141,6 @@ async function locateHistoricalBlock(latestBlock, latestTimestamp, targetTimesta
     try {
       let estimate = initialEstimate;
       let candidate = null;
-
-      // Timestamp convergence; header reads do not require archive state.
       for (let i = 0; i < 6; i++) {
         candidate = await getBlock(url, estimate);
         const delta = targetTimestamp - candidate.timestamp;
@@ -123,7 +153,6 @@ async function locateHistoricalBlock(latestBlock, latestTimestamp, targetTimesta
       let hi = Math.min(latestBlock, candidate.number + 384);
       const loBlock = await getBlock(url, lo);
       const hiBlock = await getBlock(url, hi);
-
       if (loBlock.timestamp > targetTimestamp || hiBlock.timestamp <= targetTimestamp) {
         lo = Math.max(0, initialEstimate - 12000);
         hi = Math.min(latestBlock, initialEstimate + 12000);
@@ -141,48 +170,51 @@ async function locateHistoricalBlock(latestBlock, latestTimestamp, targetTimesta
         }
       }
       if (!best) throw new Error('target block not bracketed');
-
       return { block: best, provider: label, diagnostics };
     } catch (e) {
       diagnostics.push(`${label}: ${errorText(e)}`);
     }
   }
-
   return { block: null, provider: null, diagnostics };
 }
 
-async function historicalPps(market, blockNumber) {
+function decodePps(out, ppsNow) {
+  const raw = positiveBigInt(LT_IFACE.decodeFunctionResult('pricePerShare', out)[0]);
+  if (raw <= 0n) throw new Error('historical PPS is non-positive');
+  const pps = Number(formatUnits(raw, 18));
+  if (!(pps > 0) || !Number.isFinite(pps)) throw new Error('historical PPS decode invalid');
+  const ratio = ppsNow / pps;
+  if (!(ratio > 0.5 && ratio < 2)) throw new Error(`historical PPS sanity ratio out of bounds: ${ratio}`);
+  return { raw, pps };
+}
+
+async function historicalPps(market, blockNumber, ppsNow) {
   const diagnostics = [];
   const data = LT_IFACE.encodeFunctionData('pricePerShare', []);
   const tag = blockTag(blockNumber);
 
-  for (const url of ARCHIVE_RPCS) {
-    const label = `ethereum-history:${safeHost(url)}`;
+  // Direct historical eth_call is the actual capability we need. Do not gate on eth_getCode:
+  // some gateways proxy eth_call correctly but reject secondary historical methods.
+  for (const source of HISTORY_RPC_SOURCES) {
     try {
-      const code = await rpc(url, 'eth_getCode', [market.lt, tag], 5000);
-      if (!code || code === '0x') throw new Error(`LT contract code absent at block ${blockNumber}`);
-
-      const out = await rpc(url, 'eth_call', [{ to: market.lt, data }, tag], 6500);
-      const raw = positiveBigInt(LT_IFACE.decodeFunctionResult('pricePerShare', out)[0]);
-      if (raw <= 0n) throw new Error('historical PPS is non-positive');
-
-      return { raw, provider: label, diagnostics };
+      const out = await rpc(source.url, 'eth_call', [{ to: market.lt, data }, tag], 9000);
+      const decoded = decodePps(out, ppsNow);
+      return { ...decoded, provider: source.label, diagnostics };
     } catch (e) {
-      diagnostics.push(`${label}: ${errorText(e)}`);
+      diagnostics.push(`${source.label}: ${errorText(e)}`);
     }
   }
 
-  throw new Error(
-    `${market.symbol}: configured archive endpoint(s) could not read historical pricePerShare at block ${blockNumber}: ${diagnostics.join(' | ')}`
-  );
-}
-
-function requireArchiveSecret() {
-  if (!ARCHIVE_RPCS.length) {
-    throw new Error(
-      'No configured Ethereum RPC candidate is available. Configure ETH_RPC_URL/ETH_RPC_URL_2 or ETH_ARCHIVE_RPC_URL/ETH_ARCHIVE_RPC_URL_2.'
-    );
+  // Etherscan's official proxy API accepts an explicit hex block tag. Optional: skipped when no key exists.
+  try {
+    const out = await etherscanHistoricalCall(market, blockNumber);
+    const decoded = decodePps(out, ppsNow);
+    return { ...decoded, provider: 'ethereum-history:etherscan-proxy', diagnostics };
+  } catch (e) {
+    diagnostics.push(`ethereum-history:etherscan-proxy: ${errorText(e)}`);
   }
+
+  return { raw: 0n, pps: null, provider: null, diagnostics };
 }
 
 function validateBaseline(d) {
@@ -212,12 +244,20 @@ async function resolveHistoryOnly(baseline) {
   const latestBlock = Number(prior.latestBlock);
   const latestTimestamp = Number(prior.latestTimestamp);
   const targetTimestamp = latestTimestamp - 30 * 86400;
-
   const blockLookup = await locateHistoricalBlock(latestBlock, latestTimestamp, targetTimestamp);
   const priorByMarket = new Map(prior.positions.map(p => [p.market, p]));
 
   if (!blockLookup.block) {
-    throw new Error(`historical block lookup failed: ${blockLookup.diagnostics.join(' | ')}`);
+    return {
+      ...prior,
+      status: 'warming',
+      yieldBasisResolverVersion: YB_RESOLVER_VERSION,
+      recoveryMode: 'historical-source-mesh diagnostic-safe; validated current PPS preserved',
+      historicalBlockProvider: null,
+      historicalBlockDiagnostics: blockLookup.diagnostics,
+      sourceMeshExhausted: true,
+      sourceMeshError: `historical block lookup failed: ${blockLookup.diagnostics.join(' | ')}`
+    };
   }
 
   const elapsedSeconds = latestTimestamp - blockLookup.block.timestamp;
@@ -226,20 +266,19 @@ async function resolveHistoryOnly(baseline) {
 
   for (const market of YB_MARKETS) {
     const previous = priorByMarket.get(market.symbol);
-    const hist = await historicalPps(market, blockLookup.block.number);
+    if (!previous) throw new Error(`baseline market missing: ${market.symbol}`);
     const ppsNow = Number(previous.ppsNow);
-    const ppsPast = hist.raw > 0n ? Number(formatUnits(hist.raw, 18)) : null;
-
+    const hist = await historicalPps(market, blockLookup.block.number, ppsNow);
+    const ppsPast = hist.pps;
     let apy = null;
     let status = 'warming';
     let historyError = null;
+
     if (ppsPast != null && ppsPast > 0 && ppsNow > 0 && elapsedDays > 0) {
       apy = (Math.pow(ppsNow / ppsPast, 365 / elapsedDays) - 1) * 100;
       status = 'ok';
     } else {
-      historyError = hist.diagnostics.length
-        ? `historical PPS providers exhausted: ${hist.diagnostics.join(' | ')}`
-        : 'historical PPS unavailable';
+      historyError = `historical PPS source mesh exhausted: ${hist.diagnostics.join(' | ')}`;
     }
 
     positions.push({
@@ -250,26 +289,28 @@ async function resolveHistoryOnly(baseline) {
       elapsedDays: round(elapsedDays, 6),
       fundamentalTradingApy30dPct: apy == null ? null : round(apy, 6),
       productivityStatus: status,
-      productivityMethod: 'validated baseline PPS_now vs historical onchain LT.pricePerShare over bounded 30-day interval; annualized; emissions excluded',
+      productivityMethod: 'validated baseline PPS_now vs historical LT.pricePerShare over bounded trailing-30-day interval; annualized; emissions excluded',
       historicalProvider: hist.provider,
       historicalDiagnostics: hist.diagnostics,
       historyError
     });
   }
 
+  const ok = positions.every(p => p.productivityStatus === 'ok');
   return {
     ...prior,
-    status: positions.every(p => p.productivityStatus === 'ok') ? 'ok' : 'warming',
+    status: ok ? 'ok' : 'warming',
     positions,
     yieldBasisResolverVersion: YB_RESOLVER_VERSION,
-    recoveryMode: 'configured-rpc archive preflight history-only; validated current PPS preserved from last-known-good resolver baseline',
+    recoveryMode: 'historical-source-mesh; configured RPCs + official public Merkle/Blockscout + optional Etherscan proxy; validated current PPS preserved',
     historicalBlockProvider: blockLookup.provider,
     historicalBlockDiagnostics: blockLookup.diagnostics,
+    sourceMeshExhausted: !ok,
     methodology: {
       ...prior.methodology,
       emissionsIncluded: false,
       redemptionPpsUsedForApr: false,
-      note: 'FT APY uses validated baseline PPS_now and historical LT.pricePerShare from the first configured RPC that passes historical-state preflight. Current-state reads are intentionally not repeated; emissions remain excluded.'
+      note: 'FT APY uses validated baseline PPS_now and trailing-30-day historical LT.pricePerShare. Historical sources are accepted only after a successful direct historical eth_call returning a positive, sane PPS. Emissions and redemption PPS remain excluded.'
     }
   };
 }
@@ -278,7 +319,6 @@ async function main() {
   if (!fs.existsSync(OUTPUT_PATH)) {
     throw new Error(`Missing resolver baseline at ${OUTPUT_PATH}. Workflow must restore last-known-good baseline first.`);
   }
-
   const baseline = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'));
   validateBaseline(baseline);
 
@@ -286,14 +326,8 @@ async function main() {
     ['crv', 'link', 'zk', 'votium'].map(k => [k, stableHash(baseline.results[k])])
   );
 
-  requireArchiveSecret();
-
   const startedAt = nowIso();
   const yieldBasis = await resolveHistoryOnly(baseline);
-  if (yieldBasis.status !== 'ok') {
-    throw new Error(`Yield Basis archive recovery did not reach ok: ${yieldBasis.status}`);
-  }
-
   const output = structuredClone(baseline);
   output.generatedAt = nowIso();
   output.startedAt = startedAt;
@@ -306,10 +340,12 @@ async function main() {
     yieldBasisProductivityResolved: yieldBasis.status === 'ok',
     votiumResolved: true,
     readyForFinalIntegrator: yieldBasis.status === 'ok',
-    note: 'Configured-RPC YB recovery. CRV/LINK/ZK/Votium preserved exactly. Publish occurs only after both YB markets resolve historical PPS and FT APY successfully.'
+    note: yieldBasis.status === 'ok'
+      ? 'YB historical source mesh resolved both markets. CRV/LINK/ZK/Votium preserved exactly.'
+      : 'YB source mesh exhausted without a reproducible historical PPS. CRV/LINK/ZK/Votium preserved exactly; warming retained rather than inventing a value.'
   };
   output.recovery = {
-    mode: 'yield-basis-history-only-configured-rpc-preflight',
+    mode: 'yield-basis-history-only-source-mesh',
     resolverVersion: YB_RESOLVER_VERSION,
     preservedResultSha256: preservedBefore
   };
@@ -322,16 +358,16 @@ async function main() {
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2) + '\n');
-
-  console.log(`Company #007 YB configured-RPC resolver written: ${OUTPUT_PATH}`);
+  console.log(`Company #007 YB source-mesh resolver written: ${OUTPUT_PATH}`);
   console.log(`Yield Basis: ${yieldBasis.status}`);
   for (const p of yieldBasis.positions || []) {
     console.log(`${p.market}: PPS30d=${p.pps30dAgo ?? 'warming'} FT_APY=${p.fundamentalTradingApy30dPct ?? 'warming'} provider=${p.historicalProvider ?? 'none'}`);
   }
+  console.log(`sourceMeshExhausted=${yieldBasis.sourceMeshExhausted === true}`);
   console.log(`readyForFinalIntegrator=${output.productionReadiness.readyForFinalIntegrator}`);
 }
 
 main().catch(err => {
-  console.error(`Company #007 YB history-only resolver failed: ${errorText(err)}`);
+  console.error(`Company #007 YB source-mesh resolver failed: ${errorText(err)}`);
   process.exitCode = 1;
 });
