@@ -12,7 +12,7 @@ import {
   toBeHex
 } from 'ethers';
 
-const VERSION = '1.2';
+const VERSION = '1.3';
 const OUTPUT = process.env.COMPANY_006_DISCOVERY_OUTPUT || path.resolve('companies/company-006-discovery.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
 
@@ -482,7 +482,11 @@ async function discoverStandardVe({
     }
 
     let entryPrice = null;
-    const eventForEntry = Object.values(acq.events).sort((a,b)=>(a.blockNumber||0)-(b.blockNumber||0))[0] || mint.first || null;
+    // Company #006 continuity rule:
+    // veVELO #16325 existed before it was transferred into the current company wallet.
+    // Preserve the original veNFT mint/first-lock as the economic origin for cost basis.
+    // The later wallet transfer is provenance/custody history only and must not reset entry.
+    const eventForEntry = mint.first || Object.values(acq.events).sort((a,b)=>(a.blockNumber||0)-(b.blockNumber||0))[0] || null;
     if (eventForEntry?.timestamp) {
       const normalizedEvent = {
         ...eventForEntry,
@@ -506,6 +510,11 @@ async function discoverStandardVe({
       firstLockCandidates: mint.candidates,
       currentNftAcquisitionEvents: acq.events,
       entryPrice,
+      provenancePolicy: {
+        economicOrigin: 'original veNFT mint / first lock',
+        custodyTransfer: 'later transfer into current wallet does not reset entry or company age',
+        ownerDecision: 'preserve continuous economic history of veVELO #16325 across wallet transfer'
+      },
       discoveryDiagnostics: [...new Set([...(mint.diagnostics || []), ...(acq.diagnostics || [])])]
     };
   });
@@ -732,7 +741,7 @@ function buildProposedBook(aero, velo, yb, currentPrices) {
     entry: vEntry,
     classification: 'productive',
     walletAlias: COMPANY.wallets.aerodrome.alias,
-    entryMethod: 'historical VELO market price at first verified veVELO lock/acquisition'
+    entryMethod: 'historical VELO market price at original veVELO mint / first lock; later wallet transfer does not reset cost basis'
   });
 
   if (yQty !== null && yQty > 0) rows.push({
@@ -784,17 +793,17 @@ async function main() {
   try { yieldBasis = await discoverYieldBasis(); } catch (e) { errors.yieldBasis = errMsg(e); }
   const currentPrices = await cgCurrent(['aerodrome-finance','velodrome-finance','yield-basis']);
   const proposedCompanyBook = buildProposedBook(aerodrome, velodrome, yieldBasis, currentPrices);
-  const founded = aerodrome?.result?.firstLock || null;
+  const founded = velodrome?.result?.firstLock || aerodrome?.result?.firstLock || null;
 
   const output = {
     version: VERSION,
     generatedAt: new Date().toISOString(),
     startedAt,
-    purpose: 'Company #006 deterministic onboarding discovery v1.2: resilient veVELO current-state + Blockscout-v2 history; AERO paid/airdrop + veYB; no production metrics are changed by this file.',
+    purpose: 'Company #006 deterministic onboarding discovery v1.3: company age + VELO entry anchored to original veVELO #16325 mint/first-lock; later wallet transfer preserved as custody provenance only; no production metrics are changed by this file.',
     company: {
       registry: COMPANY.registry,
       name: COMPANY.name,
-      foundingRule: 'first verified veAERO lock on Aerodrome wallet',
+      foundingRule: 'original veVELO #16325 mint / first lock, preserving economic history across later wallet transfer',
       foundedAt: founded?.foundedAt || null,
       foundedISO: founded?.foundedISO || null,
       wallets: Object.values(COMPANY.wallets)
