@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
+import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress, keccak256, solidityPackedKeccak256, concat } from 'ethers';
 
-const VERSION = '0.3.6';
-const COLLECTOR_VERSION = '0.3.6-bounded-180d-ve-rewards';
+const VERSION = '0.3.7';
+const COLLECTOR_VERSION = '0.3.7-company-007-votium-current-root';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -204,6 +204,19 @@ const COMPANIES = [
       { route: 'aerodrome-ve', wallets: ['Aero / Velo wallet'] },
       { route: 'velodrome-ve-direct', wallets: ['Aero / Velo wallet'] },
       { route: 'yield-basis-fees', wallets: ['Yield Basis wallet'] }
+    ]
+  }
+,
+  {
+    name: "Rook's portfolio",
+    wallets: [
+      { alias: 'Wallet 1', address: '0x7eC6331188468269DC7C1Cf6a84C972632178B1E' },
+      { alias: 'Wallet 2', address: '0x9c548960bd053C8465F298a711b6343Ae0360309' }
+    ],
+    routes: [
+      { route: 'aerodrome-relay', wallets: ['Wallet 2'] },
+      { route: 'curve-fees', wallets: ['Wallet 1'] },
+      { route: 'votium-union', wallets: ['Wallet 1','Wallet 2'] }
     ]
   }
 ];
@@ -2553,6 +2566,38 @@ async function collectYieldBasis(address, registry) {
   return { source: { protocol: 'Yield Basis', route: 'yield-basis-fees', status: 'ok', chain: 'Ethereum', metric: 'FeeDistributor.preview_claim(receiver, 50, false)' }, rewards };
 }
 
+
+const VOTIUM_CURRENT = {
+  activeTokens:'https://raw.githubusercontent.com/oo-00/Votium/main/merkle/activeTokens.json',
+  aggregateBase:'https://raw.githubusercontent.com/oo-00/Votium/main/merkle',
+  stash:'0x378ba9b73309be80bf4c2c027aad799766a7ed5a'
+};
+let votiumCurrentSnapshotPromise=null;
+function votiumRootFromJson(j,depth=0){if(!j||typeof j!=='object'||depth>5)return null;for(const k of ['merkleRoot','root'])if(typeof j[k]==='string'&&/^0x[0-9a-fA-F]{64}$/.test(j[k]))return j[k];if(Array.isArray(j)){for(const v of j){const x=votiumRootFromJson(v,depth+1);if(x)return x;}return null;}for(const v of Object.values(j)){if(v&&typeof v==='object'){const x=votiumRootFromJson(v,depth+1);if(x)return x;}}return null;}
+function votiumProof(p){if(!Array.isArray(p))return null;const a=p.filter(x=>typeof x==='string'&&/^0x[0-9a-fA-F]{64}$/.test(x));return a.length===p.length?a:null;}
+function votiumLeaf(obj,hint=null){if(!obj||typeof obj!=='object')return null;const account=obj.account||obj.address||obj.user||hint,index=obj.index??obj.claimIndex??obj.idx,amount=obj.amount??obj.value??obj.claimable,proof=votiumProof(obj.proof||obj.merkleProof||obj.merkle_proof);if(!account||index==null||amount==null||!proof||!/^0x[0-9a-fA-F]{40}$/.test(String(account)))return null;try{return{account:getAddress(String(account).toLowerCase()),index:BigInt(index).toString(),amountRaw:BigInt(amount).toString(),proof};}catch{return null;}}
+function votiumFindLeaves(j,walletSet){const out=[],seen=new Set();function push(c){if(!c||!walletSet.has(String(c.account).toLowerCase()))return;const k=String(c.account).toLowerCase()+'|'+c.index+'|'+c.amountRaw;if(seen.has(k))return;seen.add(k);out.push(c);}function walk(n,d=0){if(d>12||n==null)return;if(Array.isArray(n)){n.forEach(x=>walk(x,d+1));return;}if(typeof n!=='object')return;push(votiumLeaf(n));for(const[k,v]of Object.entries(n)){if(/^0x[0-9a-fA-F]{40}$/.test(k))push(votiumLeaf(v,k));if(v&&typeof v==='object')walk(v,d+1);}}walk(j);return out;}
+function votiumHashPair(a,b){return keccak256(String(a).toLowerCase()<String(b).toLowerCase()?concat([a,b]):concat([b,a]));}
+function votiumVerify(leaf,root){let h=solidityPackedKeccak256(['uint256','address','uint256'],[BigInt(leaf.index),leaf.account,BigInt(leaf.amountRaw)]);for(const p of leaf.proof)h=votiumHashPair(h,p);return String(h).toLowerCase()===String(root).toLowerCase();}
+async function votiumSnapshot(registry){
+ if(votiumCurrentSnapshotPromise)return votiumCurrentSnapshotPromise;
+ votiumCurrentSnapshotPromise=(async()=>{
+  const provider=await registry.get('ethereum');
+  const stash=new Contract(VOTIUM_CURRENT.stash,['function merkleRoot(address token) view returns (bytes32)','function update(address token) view returns (uint256)','function isClaimed(address token,uint256 index) view returns (bool)'],provider);
+  const raw=await fetchJson(VOTIUM_CURRENT.activeTokens,{},15000); if(!Array.isArray(raw))throw new Error('Votium activeTokens is not an array');
+  const tokens=raw.filter(x=>x?.value&&x?.symbol&&Number.isFinite(Number(x.decimals))).map(x=>({token:getAddress(String(x.value).toLowerCase()),symbol:String(x.symbol),label:x.label||null,decimals:Number(x.decimals)}));
+  const states=new Array(tokens.length),stateErrors=[];let c1=0;async function sw(){while(c1<tokens.length){const i=c1++,t=tokens[i];try{const[root,update]=await Promise.all([stash.merkleRoot(t.token),stash.update(t.token)]);states[i]={...t,root,update:Number(update),hasRoot:!/^0x0{64}$/i.test(root)};}catch(e){stateErrors.push({symbol:t.symbol,error:e.shortMessage||e.message});states[i]={...t,hasRoot:false};}}}await Promise.all(Array.from({length:8},sw));
+  const rooted=states.filter(x=>x?.hasRoot),files=new Array(rooted.length),scanErrors=[];let c2=0;const start=Date.now(),budget=75000;async function fw(){while(c2<rooted.length&&Date.now()-start<budget){const i=c2++,t=rooted[i];try{const j=await fetchJson(VOTIUM_CURRENT.aggregateBase+'/'+encodeURIComponent(t.symbol)+'/'+encodeURIComponent(t.symbol)+'.json',{},9000);const fileRoot=votiumRootFromJson(j);files[i]={...t,json:j,fileRoot,rootMatches:Boolean(fileRoot&&String(fileRoot).toLowerCase()===String(t.root).toLowerCase())};}catch(e){scanErrors.push({symbol:t.symbol,error:e.message});}}}await Promise.all(Array.from({length:8},fw));
+  const scanned=files.filter(Boolean);return{provider,stash,tokens,rooted,files:scanned,stateErrors,scanErrors,budgetExceeded:scanned.length<rooted.length,complete:stateErrors.length===0&&scanErrors.length===0&&scanned.length===rooted.length&&scanned.every(x=>x.rootMatches)};
+ })();
+ try{return await votiumCurrentSnapshotPromise;}catch(e){votiumCurrentSnapshotPromise=null;throw e;}
+}
+async function collectVotiumUnion(wallets,registry){
+ const snap=await votiumSnapshot(registry),walletSet=new Set(wallets.map(w=>String(w.address).toLowerCase())),rewards=[],walletResults=wallets.map(w=>({wallet:w.address,walletAlias:w.alias,status:'ok',rewardCount:0,note:null}));
+ const wrMap=new Map(walletResults.map(x=>[String(x.wallet).toLowerCase(),x]));
+ for(const t of snap.files){if(!t.rootMatches)continue;const leaves=votiumFindLeaves(t.json,walletSet);for(const leaf of leaves){if(!votiumVerify(leaf,t.root))continue;let claimed=null;try{claimed=Boolean(await snap.stash.isClaimed(t.token,BigInt(leaf.index)));}catch(e){const wr=wrMap.get(String(leaf.account).toLowerCase());if(wr){wr.status='partial';wr.note='isClaimed read failed';}continue;}if(claimed)continue;const amount=Number(formatUnits(BigInt(leaf.amountRaw),t.decimals));const alias=wallets.find(w=>String(w.address).toLowerCase()===String(leaf.account).toLowerCase())?.alias||'Wallet';rewards.push(rewardBase({protocol:'Votium · vlCVX',route:'votium-union',chain:'Ethereum',token:t.token,amountRaw:leaf.amountRaw,decimals:t.decimals,amount,classification:'unclaimed',source:'Votium current Merkle root + onchain claimed-state',details:{symbol:t.symbol,coingeckoId:t.label||COINGECKO_IDS[String(t.symbol).toUpperCase()]||null,pricePlatform:'ethereum',priceContract:t.token,wallet:leaf.account,walletAlias:alias,merkleIndex:leaf.index,merkleUpdate:t.update,merkleRoot:t.root,proofValid:true,claimed:false}}));const wr=wrMap.get(String(leaf.account).toLowerCase());if(wr)wr.rewardCount++;}}
+ const status=snap.complete?'ok':(rewards.length?'partial':'partial');return{source:{protocol:'Votium · vlCVX',route:'votium-union',status,chain:'Ethereum',metric:'current unclaimed Merkle rewards',note:snap.complete?'Official current-root scan + local proof verification + onchain isClaimed=false.':'Current-root scan partially complete; only reproducibly verified unclaimed rewards counted.',details:{activeTokens:snap.tokens.length,rootedTokens:snap.rooted.length,aggregateFilesScanned:snap.files.length,aggregateFilesExpected:snap.rooted.length,budgetExceeded:snap.budgetExceeded,stateErrors:snap.stateErrors,scanErrors:snap.scanErrors,walletResults}},rewards};
+}
 function unionPendingSource() {
   return {
     source: {
@@ -2847,11 +2892,7 @@ function mergeRouteSource(route, walletResults) {
 }
 
 async function collectRouteAcrossWallets(route, wallets, registry) {
-  if (route === 'votium-union') {
-    const out = unionPendingSource();
-    out.source.details = { wallets: wallets.map(w => ({ address: w.address, alias: w.alias })) };
-    return out;
-  }
+  if (route === 'votium-union') return collectVotiumUnion(wallets, registry);
   const walletResults = [];
   const rewards = [];
   for (const wallet of wallets) {
