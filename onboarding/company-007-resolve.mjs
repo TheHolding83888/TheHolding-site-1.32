@@ -11,6 +11,7 @@ import {
 } from 'ethers';
 
 const VERSION = '1.1-targeted-resolver';
+// BOOT-SAFE PATCH: normalize address casing before ethers checksum validation.
 const DISCOVERY_PATH = process.env.COMPANY_007_DISCOVERY_INPUT
   || path.resolve('companies/company-007-discovery.json');
 const OUTPUT_PATH = process.env.COMPANY_007_RESOLVE_OUTPUT
@@ -65,21 +66,21 @@ const CHAIN_LABEL = {
 };
 
 const CRV = {
-  token: getAddress('0xD533a949740bb3306d119CC777fa900bA034cd52'),
-  votingEscrow: getAddress('0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2'),
-  cvxCRV: getAddress('0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7')
+  token: getAddress('0xd533a949740bb3306d119cc777fa900ba034cd52'),
+  votingEscrow: getAddress('0x5f3b5dfeb7b28cdbd7faba78963ee202a494e2a2'),
+  cvxCRV: getAddress('0x62b9c7356a2dc64a1969e19c23e4f579f9810aa7')
 };
 
 const LINK = {
-  ethereum: getAddress('0x514910771AF9Ca656af840dff83E8264EcF986CA'),
-  base: getAddress('0x88Fb150BDc53A65fe94Dea0c9BA0a6dAf8C6e196'),
-  arbitrum: getAddress('0xf97f4df75117a78c1A5a0DBb814Af92458539FB4'),
-  optimism: getAddress('0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6'),
-  zksync: getAddress('0x52869bae3E091e36b0915941577F2D47d8d8B534')
+  ethereum: getAddress('0x514910771af9ca656af840dff83e8264ecf986ca'),
+  base: getAddress('0x88fb150bdc53a65fe94dea0c9ba0a6daf8c6e196'),
+  arbitrum: getAddress('0xf97f4df75117a78c1a5a0dbb814af92458539fb4'),
+  optimism: getAddress('0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6'),
+  zksync: getAddress('0x52869bae3e091e36b0915941577f2d47d8d8b534')
 };
 
 const ZK = {
-  token: getAddress('0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E'),
+  token: getAddress('0x5a7d6b2f92c77fad6ccabd7ee0624e64907eaf3e'),
   coingeckoId: 'zksync'
 };
 
@@ -88,20 +89,20 @@ const VOTIUM = {
   branch: 'main',
   activeTokens:
     'https://raw.githubusercontent.com/oo-00/Votium/main/merkle/activeTokens.json',
-  stash: getAddress('0x378Ba9B73309bE80BF4C2c027aAD799766a7ED5A')
+  stash: getAddress('0x378ba9b73309be80bf4c2c027aad799766a7ed5a')
 };
 
 const YB_MARKETS = [
   {
     symbol: 'yb-WBTC',
     family: 'BTC',
-    lt: getAddress('0x651D4b8168488FA163D85304662E8278d4c55BAa'),
+    lt: getAddress('0x651d4b8168488fa163d85304662e8278d4c55baa'),
     underlyingDecimals: 8
   },
   {
     symbol: 'yb-WETH',
     family: 'ETH',
-    lt: getAddress('0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa'),
+    lt: getAddress('0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea'),
     underlyingDecimals: 18
   }
 ];
@@ -570,7 +571,7 @@ function normalizeLeafCandidate(obj, accountHint = null) {
   if (!/^0x[0-9a-fA-F]{40}$/.test(String(account))) return null;
   try {
     return {
-      account: getAddress(account),
+      account: getAddress(String(account).toLowerCase()),
       index: BigInt(index).toString(),
       amountRaw: BigInt(amount).toString(),
       proof
