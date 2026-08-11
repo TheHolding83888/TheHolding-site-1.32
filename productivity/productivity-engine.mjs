@@ -32,7 +32,7 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.13-company-007-yblp-bridge';
+const COLLECTOR_VERSION = '1.14-company-007-yblp-signed-resolver';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const PENDLE_SPENDLE_TOKEN = '0x999999999991e178d52cd95afd4b00d066664144';
 const PENDLE_SURVIVOR_CAMPAIGNS = 3;
@@ -120,7 +120,10 @@ const ENGINE_META = {
 
 function nowIso() { return new Date().toISOString(); }
 function round(n, d=4) { const f=10**d; return Math.round(n*f)/f; }
-function saneApr(n) { return Number.isFinite(n) && n >= 0 && n <= MAX_REASONABLE_APR; }
+// Reference APR / APY can be a verified signed economic return (for example
+// Yield Basis fundamental PPS growth). Bound the downside at -100% while
+// preserving the existing upper sanity cap.
+function saneApr(n) { return Number.isFinite(n) && n >= -100 && n <= MAX_REASONABLE_APR; }
 function aprValue(v) {
   if (v === null || v === undefined || v === '') return NaN;
   const n = Number(v);
@@ -1375,15 +1378,16 @@ async function discoverCompany005Foundation(previousMeta={}) {
 
 
 async function collectCompany007YieldBasisLp(market) {
-  const file=path.resolve('companies/company-007-resolve.json');
+  const file=path.join(ROOT,'companies','company-007-resolve.json');
+  const publicSource='companies/company-007-resolve.json';
   const j=await readJson(file,{});
   const yb=j?.results?.yieldBasis;
   const p=Array.isArray(yb?.positions) ? yb.positions.find(x=>x?.market===market) : null;
   const apr=Number(p?.fundamentalTradingApy30dPct);
-  if (!(yb?.status==='ok' && Number.isFinite(apr) && apr>=0 && apr<=MAX_REASONABLE_APR)) {
-    return {notReady:true,source:file,sourceType:'local-verified-resolver',sourceMetric:'Yield Basis FT APY (30D) pending reproducible historical PPS',details:{market,resolverStatus:yb?.status||'missing',resolverVersion:yb?.yieldBasisResolverVersion||null,productivityStatus:p?.productivityStatus||null}};
+  if (!(yb?.status==='ok' && saneApr(apr))) {
+    return {notReady:true,source:publicSource,sourceType:'local-verified-resolver',sourceMetric:'Yield Basis FT APY (30D) pending reproducible historical PPS',details:{market,resolverStatus:yb?.status||'missing',resolverVersion:yb?.yieldBasisResolverVersion||null,productivityStatus:p?.productivityStatus||null}};
   }
-  return {apr:round(apr),source:file,sourceType:'local-verified-resolver',sourceMetric:'Yield Basis FT APY (30D) · fundamental PPS growth · emissions excluded',periodStart:p?.historicalTimestamp?new Date(Number(p.historicalTimestamp)*1000).toISOString():null,periodEnd:j?.generatedAt||nowIso(),details:{market,ppsNow:p?.ppsNow??null,pps30dAgo:p?.pps30dAgo??null,historicalProvider:p?.historicalProvider??null,resolverVersion:yb?.yieldBasisResolverVersion||null}};
+  return {apr:round(apr),source:publicSource,sourceType:'local-verified-resolver',sourceMetric:'Yield Basis FT APY (30D) · fundamental PPS growth · emissions excluded',periodStart:p?.historicalTimestamp?new Date(Number(p.historicalTimestamp)*1000).toISOString():null,periodEnd:j?.generatedAt||nowIso(),details:{market,ppsNow:p?.ppsNow??null,pps30dAgo:p?.pps30dAgo??null,historicalProvider:p?.historicalProvider??null,resolverVersion:yb?.yieldBasisResolverVersion||null}};
 }
 async function runAdapter(engineId,{browser,prices,previous}) {
   switch(engineId) {
@@ -1665,7 +1669,7 @@ async function main() {
   }
 
   const output={
-    version:'1.13',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.14',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions with valid Reference APRs. coverage shows the share of productive capital currently included; unknown engines are excluded, never treated as 0%. Canonical historical company averages use full-coverage observations only.',
     engines,companies,companyMetadata,
     history:{engines:historyEngines,companies:historyCompanies},
