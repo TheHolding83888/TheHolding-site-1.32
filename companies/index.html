@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -3445,7 +3446,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.3.0-company-006-wallet-scoped';
+const COMPANY_REWARDS_UI_VERSION = '0.3.1-ve-route-rollups';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth', 'defitea.eth', '0x5860...83CA8.eth', 'aerocrvyb.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -4069,60 +4070,74 @@ function renderIndex(lang) {
             return total > 0 ? total : null;
         };
 
-        const aggregateDisplayRewards = rewards => {
-            const grouped = new Map();
-            for (const x of rewards || []) {
-                const isVoteMarket = x.route === 'votemarket-vecrv' || x.route === 'votemarket-vefxn';
-                const isVelodromeRollup = x.route === 'velodrome-ve' || x.route === 'velodrome-ve-direct';
-                const isRouteRollup = isVoteMarket || isVelodromeRollup;
-                const key = isVoteMarket
-                    ? ['votemarket-route', x.route || '', x.classification || ''].join('|')
-                    : (isVelodromeRollup
-                        ? ['velodrome-route', 'velodrome-ve', x.classification || ''].join('|')
-                        : [x.protocol || '', x.route || '', x.chain || '', x.token || x.symbol || '', x.classification || ''].join('|'));
-                if (!grouped.has(key)) {
-                    grouped.set(key, {
-                        ...x,
-                        protocol: isVelodromeRollup ? 'Velodrome' : x.protocol,
-                        route: isVelodromeRollup ? 'velodrome-ve' : x.route,
-                        amount: 0,
-                        usdValue: 0,
-                        usdComplete: true,
-                        walletCount: 0,
-                        wallets: new Set(),
-                        assetSymbols: new Set(),
-                        rewardCount: 0,
-                        voteMarketRollup: isVoteMarket,
-                        velodromeRollup: isVelodromeRollup
+        const aggregateDisplayRewards = (rewards, opts = {}) => {
+                    const grouped = new Map();
+                    const preserveOtherRows = opts.preserveOtherRows === true;
+                    (rewards || []).forEach((x, index) => {
+                        const isVoteMarket = x.route === 'votemarket-vecrv' || x.route === 'votemarket-vefxn';
+                        const isAerodromeRollup = x.route === 'aerodrome-ve';
+                        const isVelodromeRollup = x.route === 'velodrome-ve' || x.route === 'velodrome-ve-direct';
+                        const isVeRollup = isAerodromeRollup || isVelodromeRollup;
+                        const isRouteRollup = isVoteMarket || isVeRollup;
+                        const key = isVoteMarket
+                            ? ['votemarket-route', x.route || '', x.classification || ''].join('|')
+                            : (isAerodromeRollup
+                                ? ['aerodrome-route', 'aerodrome-ve'].join('|')
+                                : (isVelodromeRollup
+                                    ? ['velodrome-route', 'velodrome-ve'].join('|')
+                                    : (preserveOtherRows
+                                        ? ['raw', index].join('|')
+                                        : [x.protocol || '', x.route || '', x.chain || '', x.token || x.symbol || '', x.classification || ''].join('|'))));
+                        if (!grouped.has(key)) {
+                            grouped.set(key, {
+                                ...x,
+                                protocol: isAerodromeRollup ? 'Aerodrome' : (isVelodromeRollup ? 'Velodrome' : x.protocol),
+                                amount: 0,
+                                usdValue: 0,
+                                usdComplete: true,
+                                walletCount: 0,
+                                wallets: new Set(),
+                                assetSymbols: new Set(),
+                                classifications: new Set(),
+                                rewardCount: 0,
+                                voteMarketRollup: isVoteMarket,
+                                aerodromeRollup: isAerodromeRollup,
+                                velodromeRollup: isVelodromeRollup
+                            });
+                        }
+                        const g = grouped.get(key);
+                        if (!isRouteRollup) g.amount += hasRewardNumber(x.amount) ? Number(x.amount) : 0;
+                        if (hasRewardNumber(x.usdValue)) g.usdValue += Number(x.usdValue);
+                        else g.usdComplete = false;
+                        const wa = x.details && x.details.walletAlias;
+                        if (wa) g.wallets.add(wa);
+                        const rawSymbol = (x.details && x.details.redeemSymbol) || x.symbol || 'TOKEN';
+                        const displaySymbol = isVoteMarket && /^p[A-Z0-9]/.test(rawSymbol) ? rawSymbol.slice(1) : rawSymbol;
+                        g.assetSymbols.add(displaySymbol);
+                        g.classifications.add(x.classification || 'unclaimed');
+                        g.rewardCount += 1;
                     });
-                }
-                const g = grouped.get(key);
-                if (!isRouteRollup) g.amount += hasRewardNumber(x.amount) ? Number(x.amount) : 0;
-                if (hasRewardNumber(x.usdValue)) g.usdValue += Number(x.usdValue);
-                else g.usdComplete = false;
-                const wa = x.details && x.details.walletAlias;
-                if (wa) g.wallets.add(wa);
-                const rawSymbol = (x.details && x.details.redeemSymbol) || x.symbol || 'TOKEN';
-                const displaySymbol = isVoteMarket && /^p[A-Z0-9]/.test(rawSymbol) ? rawSymbol.slice(1) : rawSymbol;
-                g.assetSymbols.add(displaySymbol);
-                g.rewardCount += 1;
-            }
-            return [...grouped.values()].map(g => {
-                const wallets = [...g.wallets];
-                const assetSymbols = [...g.assetSymbols];
-                const isRouteRollup = g.voteMarketRollup || g.velodromeRollup;
-                return {
-                    ...g,
-                    amount: isRouteRollup ? null : Number(g.amount.toFixed(10)),
-                    usdValue: g.usdComplete ? Number(g.usdValue.toFixed(6))
-                                            : (g.usdValue > 0 ? Number(g.usdValue.toFixed(6)) : null),
-                    walletCount: wallets.length,
-                    wallets,
-                    assetSymbols,
-                    details: g.details || null
+                    return [...grouped.values()].map(g => {
+                        const wallets = [...g.wallets];
+                        const assetSymbols = [...g.assetSymbols];
+                        const classifications = [...g.classifications];
+                        const isVeRollup = g.aerodromeRollup || g.velodromeRollup;
+                        const isRouteRollup = g.voteMarketRollup || isVeRollup;
+                        return {
+                            ...g,
+                            classification: isVeRollup && classifications.length > 1
+                                ? 'mixed'
+                                : (classifications[0] || g.classification || 'unclaimed'),
+                            amount: isRouteRollup ? null : Number(g.amount.toFixed(10)),
+                            usdValue: g.usdComplete ? Number(g.usdValue.toFixed(6))
+                                                    : (g.usdValue > 0 ? Number(g.usdValue.toFixed(6)) : null),
+                            walletCount: wallets.length,
+                            wallets,
+                            assetSymbols,
+                            details: g.details || null
+                        };
+                    });
                 };
-            });
-        };
         const balanceSheetBlock = c => {
             if (!COMPANY_REWARDS_SCOPE.has(c.nm)) return '';
             const book = COMPANY_BOOK[c.nm] || [];
@@ -4176,35 +4191,42 @@ function renderIndex(lang) {
                     && !hasRewardNumber(x.usdValue)).length
                 : 0;
             const visibleUnpricedCount = Math.max(0, unpricedCount - velodromeUnpricedRawCount);
-            const stripTokens = isDefitea
-                ? [...new Set(rewards.map(x => {
-                    const nativeSymbol = x && x.details && x.details.redeemSymbol;
-                    const raw = nativeSymbol || (x && x.symbol) || 'TOKEN';
-                    return (x && (x.route === 'votemarket-vecrv' || x.route === 'votemarket-vefxn') && /^p[A-Z0-9]/.test(raw)) ? raw.slice(1) : raw;
-                }))].map(symbol => ({ symbol }))
+            const rewardDisplaySymbol = x => {
+                const nativeSymbol = x && x.details && x.details.redeemSymbol;
+                const raw = nativeSymbol || (x && x.symbol) || 'TOKEN';
+                return (x && (x.route === 'votemarket-vecrv' || x.route === 'votemarket-vefxn') && /^p[A-Z0-9]/.test(raw))
+                    ? raw.slice(1) : raw;
+            };
+            // Small passports stay exactly as before. Only genuinely dense reward
+            // compositions switch to the calm Defitea-style "six symbols +N" strip.
+            const denseTokenStrip = isDefitea || tokens.length > 6 || rewards.length > 8;
+            const stripTokens = denseTokenStrip
+                ? [...new Set(rewards.map(rewardDisplaySymbol).filter(Boolean))].map(symbol => ({ symbol }))
                 : tokens;
-            const visibleTokens = isDefitea ? stripTokens.slice(0, 6) : stripTokens;
+            const visibleTokens = denseTokenStrip ? stripTokens.slice(0, 6) : stripTokens;
             const hiddenTokenCount = Math.max(0, stripTokens.length - visibleTokens.length);
             const tokenStrip = stripTokens.length
                 ? visibleTokens.map(t => '<span class="ipx-reward-token">' + (t.symbol || 'TOKEN') + '</span>').join('')
                     + (hiddenTokenCount ? '<span class="ipx-reward-token ipx-reward-token-more">+' + hiddenTokenCount + '</span>' : '')
                 : '<span class="ipx-reward-token">Onchain</span>';
-
             let rows = '';
-            const displayRewards = isDefitea ? aggregateDisplayRewards(rewards) : rewards;
+            const displayRewards = aggregateDisplayRewards(rewards, { preserveOtherRows: !isDefitea });
             const sources = r && Array.isArray(r.sources) ? r.sources : [];
             const pending = sources.filter(s => s && s.status !== 'ok');
             const pendingByRoute = new Map(pending.map(s => [s.route, s]));
             const annotatedRoutes = new Set();
 
             displayRewards.forEach(x => {
-                const state = x.classification === 'compounded-locked' ? L.compounded : L.unclaimed;
+                const state = x.classification === 'compounded-locked'
+                    ? L.compounded
+                    : (x.classification === 'mixed' ? (lang === 'ru' ? 'Начислено' : 'Accrued') : L.unclaimed);
                 const stateCls = x.classification === 'compounded-locked' ? ' compounded' : '';
                 const pendingSource = pendingByRoute.get(x.route);
-                const addPendingHint = isDefitea && pendingSource && !annotatedRoutes.has(x.route);
+                const isVeRollup = x.aerodromeRollup || x.velodromeRollup;
+                const addPendingHint = pendingSource && !annotatedRoutes.has(x.route) && (isDefitea || isVeRollup);
                 if (addPendingHint) annotatedRoutes.add(x.route);
                 const pendingHint = addPendingHint
-                    ? (pendingSource.route === 'velodrome-ve'
+                    ? (isDefitea && pendingSource.route === 'velodrome-ve'
                         ? (lang === 'ru' ? ' · 40 Acres · текущие начисления' : ' · 40 Acres · current accrual')
                         : (lang === 'ru' ? ' · + маршрут ещё не закрыт' : ' · + route not fully closed'))
                     : '';
@@ -4213,16 +4235,22 @@ function renderIndex(lang) {
                 const usdLabel = hasRewardNumber(x.usdValue)
                     ? fmtRewardUsd(x.usdValue) + (x.usdComplete === false ? '+' : '')
                     : '—';
-                if (isDefitea && x.velodromeRollup) {
+                if (x.aerodromeRollup || x.velodromeRollup) {
                     const symbols = Array.isArray(x.assetSymbols) ? x.assetSymbols.filter(Boolean) : [];
+                    const compactSymbols = symbols.slice(0, 4);
+                    const symbolTail = symbols.length > compactSymbols.length
+                        ? ' · +' + (symbols.length - compactSymbols.length) : '';
+                    const tokenMeta = compactSymbols.length ? compactSymbols.join(' · ') + symbolTail : '';
                     const assetCount = symbols.length;
                     const assetCountLabel = lang === 'ru'
                         ? (assetCount === 1 ? '1 reward-актив' : assetCount + ' reward-активов')
                         : (assetCount === 1 ? '1 reward asset' : assetCount + ' reward assets');
-                    const routeLabel = 'Velodrome · 40 Acres';
-                    const routeMeta = lang === 'ru'
-                        ? 'Optimism · текущие начисления'
-                        : 'Optimism · current accrual';
+                    const isDefiteaFortyAcres = isDefitea && x.velodromeRollup && x.route === 'velodrome-ve';
+                    const routeLabel = isDefiteaFortyAcres
+                        ? 'Velodrome · 40 Acres'
+                        : (REWARD_ROUTE_LABELS[x.route] || x.protocol || (x.aerodromeRollup ? 'Aerodrome' : 'Velodrome'));
+                    const chainLabel = x.aerodromeRollup ? 'Base' : 'Optimism';
+                    const routeMeta = chainLabel + (tokenMeta ? ' · ' + tokenMeta : '') + pendingHint;
                     rows += '<div class="ipx-reward-row">'
                         + '<div><div class="ipx-reward-protocol">' + routeLabel
                         + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
@@ -4257,7 +4285,7 @@ function renderIndex(lang) {
             pending.forEach(s => {
                 // If a partial route already has measured rewards in the panel,
                 // fold its incompleteness into that row instead of duplicating it.
-                if (isDefitea && annotatedRoutes.has(s.route)) return;
+                if (annotatedRoutes.has(s.route)) return;
                 const label = REWARD_ROUTE_LABELS[s.route] || (s.protocol && !String(s.protocol).includes('-') ? s.protocol : 'Protocol');
                 const pendingText = s.status === 'partial'
                     ? (lang === 'ru' ? 'Измерено частично · дополнительный reward route ожидается' : 'Measured · additional reward route pending')
