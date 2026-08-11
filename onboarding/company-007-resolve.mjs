@@ -57,6 +57,15 @@ const RPC = {
   ])
 };
 
+const ARCHIVE_ETH_RPC = uniq([
+  process.env.ETH_ARCHIVE_RPC_URL,
+  process.env.ETH_ARCHIVE_RPC_URL_2,
+  'https://eth.drpc.org',
+  'https://ethereum-rpc.publicnode.com',
+  'https://eth.llamarpc.com',
+  'https://rpc.flashbots.net'
+]);
+
 const CHAIN_LABEL = {
   ethereum: 'Ethereum',
   base: 'Base',
@@ -419,6 +428,48 @@ async function findBlockAtOrBefore(provider, targetTs) {
   return best;
 }
 
+async function readHistoricalYieldBasisPps(market, blockNumber) {
+  const diagnostics = [];
+
+  for (const url of ARCHIVE_ETH_RPC) {
+    const provider = new JsonRpcProvider(url);
+    const providerLabel = `ethereum-archive:${safeHost(url)}`;
+
+    try {
+      const code = await provider.getCode(market.lt, blockNumber);
+      if (!code || code === '0x') {
+        throw new Error(`LT contract code unavailable at historical block ${blockNumber}`);
+      }
+
+      const lt = new Contract(market.lt, [
+        'function pricePerShare() view returns (uint256)'
+      ], provider);
+
+      const raw = positiveBigInt(
+        await lt.pricePerShare({ blockTag: Number(blockNumber) })
+      );
+
+      if (raw <= 0n) {
+        throw new Error('historical PPS is non-positive');
+      }
+
+      return {
+        raw,
+        provider: providerLabel,
+        diagnostics
+      };
+    } catch (e) {
+      diagnostics.push(`${providerLabel}: ${errorText(e)}`);
+    }
+  }
+
+  return {
+    raw: 0n,
+    provider: null,
+    diagnostics
+  };
+}
+
 async function resolveYieldBasisPps(discovery) {
   const r = await safeProvider('ethereum', async provider => {
     const latest = await provider.getBlock('latest');
@@ -455,20 +506,27 @@ async function resolveYieldBasisPps(discovery) {
       let apy = null;
       let historyStatus = 'ok';
       let historyError = null;
+      let historicalProvider = null;
+      let historicalDiagnostics = [];
 
-      try {
-        ppsPastRaw = positiveBigInt(
-          await lt.pricePerShare({ blockTag: Number(pastBlock.number) })
-        );
-        if (ppsPastRaw <= 0n || ppsNowRaw <= 0n) {
-          throw new Error('non-positive PPS');
-        }
+      const historical = await readHistoricalYieldBasisPps(
+        market,
+        Number(pastBlock.number)
+      );
+
+      ppsPastRaw = positiveBigInt(historical.raw);
+      historicalProvider = historical.provider;
+      historicalDiagnostics = historical.diagnostics || [];
+
+      if (ppsPastRaw <= 0n || ppsNowRaw <= 0n) {
+        historyStatus = 'warming';
+        historyError = historicalDiagnostics.length
+          ? `archive providers exhausted: ${historicalDiagnostics.join(' | ')}`
+          : 'historical PPS unavailable';
+        allApy = false;
+      } else {
         const ratio = Number(ppsNowRaw) / Number(ppsPastRaw);
         apy = (Math.pow(ratio, 365 / elapsedDays) - 1) * 100;
-      } catch (e) {
-        historyStatus = 'warming';
-        historyError = errorText(e);
-        allApy = false;
       }
 
       const ppsNow = Number(formatUnits(ppsNowRaw, 18));
@@ -496,6 +554,8 @@ async function resolveYieldBasisPps(discovery) {
         trdPct: round(trdPct, 6),
         productivityStatus: historyStatus,
         productivityMethod: 'onchain LT.pricePerShare growth over bounded 30-day block interval; annualized; emissions excluded',
+        historicalProvider,
+        historicalDiagnostics,
         historyError
       });
     }
@@ -507,12 +567,13 @@ async function resolveYieldBasisPps(discovery) {
       latestTimestamp: Number(latest.timestamp),
       referenceWindowDays: 30,
       positions,
+      yieldBasisResolverVersion: '1.2-archive-failover',
       methodology: {
         canonicalMetric: 'FT APY (30D) / Fundamental Trading APY',
         formula: '(PPS_now / PPS_30d_ago)^(365 / elapsed_days) - 1',
         emissionsIncluded: false,
         redemptionPpsUsedForApr: false,
-        note: 'pricePerShare is fundamental value. preview_withdraw is used for current redemption/TRD, not for Fundamental Trading APY.'
+        note: 'pricePerShare is fundamental value. preview_withdraw is used for current redemption/TRD, not for Fundamental Trading APY. Historical PPS uses independent archive-provider failover so a current-state RPC cannot block the 30-day read.'
       }
     };
   });
