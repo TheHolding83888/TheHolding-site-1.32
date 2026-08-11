@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { Interface, formatUnits, getAddress, toBeHex } from 'ethers';
 
 const VERSION = '1.1-targeted-resolver';
-const YB_RESOLVER_VERSION = '1.5-archive-secret-gated';
+const YB_RESOLVER_VERSION = '1.6-configured-rpc-preflight';
 const OUTPUT_PATH = process.env.COMPANY_007_RESOLVE_OUTPUT
   || path.resolve('companies/company-007-resolve.json');
 
@@ -28,7 +28,9 @@ const HEADER_RPCS = uniq([
 
 const ARCHIVE_RPCS = uniq([
   process.env.ETH_ARCHIVE_RPC_URL,
-  process.env.ETH_ARCHIVE_RPC_URL_2
+  process.env.ETH_ARCHIVE_RPC_URL_2,
+  process.env.ETH_RPC_URL,
+  process.env.ETH_RPC_URL_2
 ]);
 
 const LT_IFACE = new Interface(['function pricePerShare() view returns (uint256)']);
@@ -178,7 +180,7 @@ async function historicalPps(market, blockNumber) {
 function requireArchiveSecret() {
   if (!ARCHIVE_RPCS.length) {
     throw new Error(
-      'ETH_ARCHIVE_RPC_URL is missing. Add a verified Ethereum archive RPC endpoint as a GitHub Actions repository secret before running this workflow.'
+      'No configured Ethereum RPC candidate is available. Configure ETH_RPC_URL/ETH_RPC_URL_2 or ETH_ARCHIVE_RPC_URL/ETH_ARCHIVE_RPC_URL_2.'
     );
   }
 }
@@ -260,14 +262,14 @@ async function resolveHistoryOnly(baseline) {
     status: positions.every(p => p.productivityStatus === 'ok') ? 'ok' : 'warming',
     positions,
     yieldBasisResolverVersion: YB_RESOLVER_VERSION,
-    recoveryMode: 'archive-secret-gated history-only; validated current PPS preserved from last-known-good resolver baseline',
+    recoveryMode: 'configured-rpc archive preflight history-only; validated current PPS preserved from last-known-good resolver baseline',
     historicalBlockProvider: blockLookup.provider,
     historicalBlockDiagnostics: blockLookup.diagnostics,
     methodology: {
       ...prior.methodology,
       emissionsIncluded: false,
       redemptionPpsUsedForApr: false,
-      note: 'FT APY uses validated baseline PPS_now and historical LT.pricePerShare from a verified archive RPC secret. Current-state reads are intentionally not repeated; emissions remain excluded.'
+      note: 'FT APY uses validated baseline PPS_now and historical LT.pricePerShare from the first configured RPC that passes historical-state preflight. Current-state reads are intentionally not repeated; emissions remain excluded.'
     }
   };
 }
@@ -304,10 +306,10 @@ async function main() {
     yieldBasisProductivityResolved: yieldBasis.status === 'ok',
     votiumResolved: true,
     readyForFinalIntegrator: yieldBasis.status === 'ok',
-    note: 'Archive-gated YB recovery. CRV/LINK/ZK/Votium preserved exactly. Publish occurs only after both YB markets resolve historical PPS and FT APY successfully.'
+    note: 'Configured-RPC YB recovery. CRV/LINK/ZK/Votium preserved exactly. Publish occurs only after both YB markets resolve historical PPS and FT APY successfully.'
   };
   output.recovery = {
-    mode: 'yield-basis-history-only-archive-gated',
+    mode: 'yield-basis-history-only-configured-rpc-preflight',
     resolverVersion: YB_RESOLVER_VERSION,
     preservedResultSha256: preservedBefore
   };
@@ -321,7 +323,7 @@ async function main() {
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2) + '\n');
 
-  console.log(`Company #007 YB archive-gated resolver written: ${OUTPUT_PATH}`);
+  console.log(`Company #007 YB configured-RPC resolver written: ${OUTPUT_PATH}`);
   console.log(`Yield Basis: ${yieldBasis.status}`);
   for (const p of yieldBasis.positions || []) {
     console.log(`${p.market}: PPS30d=${p.pps30dAgo ?? 'warming'} FT_APY=${p.fundamentalTradingApy30dPct ?? 'warming'} provider=${p.historicalProvider ?? 'none'}`);
