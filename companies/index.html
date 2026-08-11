@@ -7,6 +7,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -2865,7 +2866,254 @@
         }
         .ipx-yb-embedded-row .ipx-reward-amount { font-variant-numeric: tabular-nums; }
         .ipx-yb-embedded-row .ipx-reward-usd { color: var(--text-3); }
+
+        /* ══ Premium motion + mobile Index + Yield Basis help · v1.17 ══ */
+
+        /* Hard reload is restored behind the curtain, then softly revealed. */
+        html.th-reload-stabilizing body {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        html.th-reload-revealing body {
+            transition: opacity 0.20s cubic-bezier(0.22,1,0.36,1);
+        }
+
+        /* Passport close: the content folds while the page reflow is continuously
+           compensated, so the section beneath never flashes into view. */
+        .ib-item.th-passport-premium-closing .ipx-inner {
+            opacity: 0.82;
+            transform: translateY(-4px) scale(0.999);
+            transition: opacity 0.28s ease, transform 0.34s cubic-bezier(0.22,1,0.36,1);
+            pointer-events: none;
+        }
+
+        /* Yield Basis help control stays intentionally tiny. */
+        .ipx-income-divider.ipx-yb-income-addon {
+            display: flex;
+            align-items: center;
+            gap: 0.42rem;
+        }
+        .yb-mini-info {
+            width: 17px;
+            height: 17px;
+            flex: 0 0 17px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(168,132,44,0.28);
+            border-radius: 50%;
+            background: rgba(168,132,44,0.055);
+            color: var(--gold);
+            font: 650 10px/1 'Space Grotesk', sans-serif;
+            text-transform: none;
+            letter-spacing: 0;
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+        }
+        .yb-mini-info:hover {
+            background: rgba(168,132,44,0.11);
+            border-color: rgba(168,132,44,0.46);
+            transform: translateY(-1px);
+        }
+
+        .yb-info-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 3300;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .yb-info-layer.open {
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .yb-info-shade {
+            position: absolute;
+            inset: 0;
+            background: rgba(15,23,42,0.18);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.24s ease;
+        }
+        .yb-info-layer.open .yb-info-shade { opacity: 1; }
+        .yb-info-card {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: min(390px, calc(100vw - 34px));
+            max-height: min(76vh, 520px);
+            overflow-y: auto;
+            transform: translate(-50%,-47%) scale(0.975);
+            opacity: 0;
+            padding: 1.25rem 1.25rem 1.15rem;
+            border: 1px solid rgba(168,132,44,0.20);
+            border-radius: 22px;
+            background:
+                radial-gradient(circle at 92% 0%, rgba(168,132,44,0.08), transparent 35%),
+                rgba(253,253,251,0.99);
+            box-shadow: 0 34px 90px -28px rgba(15,23,42,0.48);
+            transition: opacity 0.25s ease, transform 0.30s cubic-bezier(0.16,1,0.3,1);
+        }
+        .yb-info-layer.open .yb-info-card {
+            opacity: 1;
+            transform: translate(-50%,-50%) scale(1);
+        }
+        .yb-info-close {
+            position: absolute;
+            top: 0.82rem;
+            right: 0.82rem;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            background: rgba(255,255,255,0.82);
+            color: var(--text-3);
+            font: 400 1rem/1 'Space Grotesk', sans-serif;
+            cursor: pointer;
+        }
+        .yb-info-kicker {
+            margin-bottom: 0.42rem;
+            color: var(--gold);
+            font-size: 0.52rem;
+            font-weight: 650;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+        .yb-info-card h3 {
+            max-width: 310px;
+            padding-right: 2rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.45rem;
+            font-weight: 500;
+            line-height: 1.08;
+            letter-spacing: -0.015em;
+        }
+        .yb-info-mode {
+            display: inline-flex;
+            margin-top: 0.82rem;
+            padding: 0.3rem 0.58rem;
+            border: 1px solid rgba(168,132,44,0.18);
+            border-radius: 999px;
+            background: rgba(168,132,44,0.055);
+            color: #7a651f;
+            font-size: 0.59rem;
+            font-weight: 650;
+        }
+        .yb-info-lead {
+            margin-top: 0.82rem;
+            color: var(--text-2);
+            font-size: 0.74rem;
+            line-height: 1.58;
+        }
+        .yb-info-fact {
+            display: grid;
+            grid-template-columns: 92px minmax(0,1fr);
+            gap: 0.75rem;
+            padding: 0.72rem 0;
+            border-top: 1px solid var(--line);
+            color: var(--text-2);
+            font-size: 0.69rem;
+            line-height: 1.48;
+        }
+        .yb-info-fact:first-of-type { margin-top: 0.8rem; }
+        .yb-info-fact b {
+            color: var(--text);
+            font-weight: 600;
+        }
+        .yb-info-foot {
+            margin-top: 0.72rem;
+            padding-top: 0.72rem;
+            border-top: 1px solid var(--line);
+            color: var(--text-3);
+            font-size: 0.62rem;
+            line-height: 1.5;
+        }
+
+        /* Mobile Index Composition: two clean company columns.
+           Typography remains exactly the accepted mobile size. */
+        @media (max-width: 640px) {
+            .index-comp-legend {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0,1fr));
+                gap: 0.82rem 1rem;
+                align-items: start;
+            }
+            .index-comp-legend .icl-item {
+                width: 100%;
+                display: grid;
+                grid-template-columns: 10px minmax(0,1fr);
+                grid-template-rows: auto auto;
+                column-gap: 0.55rem;
+                row-gap: 0.02rem;
+                align-items: center;
+                min-width: 0;
+            }
+            .index-comp-legend .icl-swatch {
+                grid-column: 1;
+                grid-row: 1;
+                margin: 0;
+                align-self: center;
+            }
+            .index-comp-legend .icl-item b {
+                grid-column: 2;
+                grid-row: 1;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .index-comp-legend .icl-item .icl-w {
+                grid-column: 2;
+                grid-row: 2;
+                justify-self: start;
+                min-width: 0;
+                text-align: left;
+            }
+            .hero-eyebrow { letter-spacing: 0.20em; }
+
+            .yb-info-card {
+                left: 14px;
+                right: 14px;
+                top: auto;
+                bottom: max(16px, env(safe-area-inset-bottom));
+                width: auto;
+                max-height: min(72vh, 520px);
+                transform: translateY(14px) scale(0.985);
+                border-radius: 22px;
+                padding: 1.18rem 1.12rem 1.06rem;
+            }
+            .yb-info-layer.open .yb-info-card {
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html.th-reload-revealing body,
+            .ib-item.th-passport-premium-closing .ipx-inner,
+            .yb-info-shade,
+            .yb-info-card,
+            .yb-mini-info {
+                transition-duration: 0.01ms !important;
+            }
+        }
 </style>
+
+<script data-th-addon="premium-prepaint-v1.17">(function(){
+    'use strict';
+    try {
+        var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        if (!nav || nav.type !== 'reload') return;
+        var y = Number(sessionStorage.getItem('th_companies_reload_scroll_y') || 0);
+        if (!Number.isFinite(y) || y <= 0) return;
+        document.documentElement.classList.add('th-reload-stabilizing');
+        document.documentElement.setAttribute('data-th-restore-y', String(y));
+    } catch (_) {}
+})();</script>
 </head>
 <body>
 
@@ -2893,9 +3141,9 @@
 <!-- ── HERO ─────────────────────────────────────────── -->
 <section class="hero">
     <div class="container">
-        <div class="hero-eyebrow reveal" data-i18n="hero.eyebrow">Personal Onchain Companies</div>
-        <h1 class="reveal" data-i18n-html="hero.h1">The Holding builds<br><em>personal onchain companies.</em></h1>
-        <p class="hero-sub reveal" data-i18n="hero.sub">Real assets on the balance sheet. Independent ownership. Live onchain measurement. Each company keeps its own keys and strategy while The Holding turns raw blockchain activity into a living operating record.</p>
+        <div class="hero-eyebrow reveal" data-i18n="hero.eyebrow">Personal Onchain Companies · The Holding Index</div>
+        <h1 class="reveal" data-i18n-html="hero.h1">The Holding builds<br><em>and indexes onchain companies.</em></h1>
+        <p class="hero-sub reveal" data-i18n="hero.sub">Real assets. Independent ownership. Live onchain measurement. Each company keeps its own keys and strategy while The Holding turns its onchain activity into an operating record and indexes it as part of a growing network.</p>
     </div>
 </section>
 
@@ -6087,6 +6335,325 @@ function renderFramework(lang) {
         observer.observe(root, { childList: true, subtree: true });
         schedule();
     };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+    else start();
+})();</script>
+
+<!-- The Holding premium polish v1.17 · isolated addon -->
+<script data-th-addon="premium-polish-v1.17">(function(){
+    'use strict';
+    const POLISH_VERSION = '1.17-premium-motion-index-yb-help';
+
+    const lang = () => {
+        try {
+            if (typeof idxLang === 'function') return idxLang();
+            return localStorage.getItem('holdingCompaniesLang') === 'ru' ? 'ru' : 'en';
+        } catch (_) { return 'en'; }
+    };
+
+    /* ── Hero: build + index, without expanding the page ─────────────────── */
+    const HERO = {
+        en: {
+            eyebrow: 'Personal Onchain Companies · The Holding Index',
+            h1: 'The Holding builds<br><em>and indexes onchain companies.</em>',
+            sub: 'Real assets. Independent ownership. Live onchain measurement. Each company keeps its own keys and strategy while The Holding turns its onchain activity into an operating record and indexes it as part of a growing network.'
+        },
+        ru: {
+            eyebrow: 'Персональные ончейн-компании · The Holding Index',
+            h1: 'The Holding создаёт<br><em>и индексирует ончейн-компании.</em>',
+            sub: 'Реальные активы. Независимое владение. Живое ончейн-измерение. Каждая компания сохраняет собственные ключи и стратегию, а The Holding превращает её ончейн-активность в историю работы и индексирует как часть растущей сети.'
+        }
+    };
+    const applyHero = () => {
+        const L = HERO[lang()] || HERO.en;
+        const eyebrow = document.querySelector('.hero-eyebrow');
+        const h1 = document.querySelector('.hero h1');
+        const sub = document.querySelector('.hero-sub');
+        if (eyebrow) eyebrow.textContent = L.eyebrow;
+        if (h1) h1.innerHTML = L.h1;
+        if (sub) sub.textContent = L.sub;
+    };
+    const bindHeroLanguage = () => {
+        document.querySelectorAll('.lang-switch button').forEach(btn => {
+            if (btn.dataset.thHeroPolishBound) return;
+            btn.dataset.thHeroPolishBound = '1';
+            btn.addEventListener('click', () => requestAnimationFrame(applyHero));
+        });
+        applyHero();
+    };
+
+    /* ── Reload: restore only after dynamic layout is actually stable ────── */
+    const settleReload = () => {
+        const root = document.documentElement;
+        if (!root.classList.contains('th-reload-stabilizing')) return;
+        const stored = Number(root.getAttribute('data-th-restore-y') || 0);
+        if (!Number.isFinite(stored) || stored <= 0) {
+            root.classList.remove('th-reload-stabilizing');
+            return;
+        }
+
+        const started = performance.now();
+        const maxWait = 1250;
+        let lastHeight = 0;
+        let stableFrames = 0;
+
+        const reveal = () => {
+            const prevBehavior = root.style.scrollBehavior;
+            root.style.scrollBehavior = 'auto';
+            const maxY = Math.max(0, root.scrollHeight - window.innerHeight);
+            window.scrollTo(0, Math.min(stored, maxY));
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    root.classList.add('th-reload-revealing');
+                    requestAnimationFrame(() => {
+                        root.classList.remove('th-reload-stabilizing');
+                        root.removeAttribute('data-th-restore-y');
+                        window.setTimeout(() => {
+                            root.classList.remove('th-reload-revealing');
+                            root.style.scrollBehavior = prevBehavior;
+                            try {
+                                if (typeof rememberCompaniesScroll === 'function') rememberCompaniesScroll();
+                            } catch (_) {}
+                        }, 240);
+                    });
+                });
+            });
+        };
+
+        const tick = () => {
+            const boardReady = document.querySelectorAll('#idxBoard .ib-item').length >= 7;
+            const graphReady = !!document.querySelector('#graphCanvas svg');
+            const h = root.scrollHeight;
+            stableFrames = Math.abs(h - lastHeight) < 2 ? stableFrames + 1 : 0;
+            lastHeight = h;
+
+            if ((boardReady && graphReady && stableFrames >= 4) || performance.now() - started >= maxWait) {
+                reveal();
+                return;
+            }
+            requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    };
+
+    /* ── Passport close: continuously compensate the reflow ─────────────── */
+    const premiumPassportClose = ev => {
+        const btn = ev.target && ev.target.closest ? ev.target.closest('.ipx-passport-close') : null;
+        if (!btn) return;
+
+        const item = btn.closest('.ib-item');
+        const passport = item && item.querySelector('.ib-passport');
+        const row = item && item.querySelector('.ib-row');
+        if (!item || !passport || !row || !item.classList.contains('open')) return;
+
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        if (item.dataset.thPremiumClosing === '1') return;
+        item.dataset.thPremiumClosing = '1';
+
+        // If a rewards modal belongs to this passport, close/restore it instantly first.
+        const rewardOwner = item.querySelector('.ipx-rewards-disclosure.open');
+        try {
+            if (rewardOwner && typeof rewardOwner.__ipxCloseRewardPanel === 'function') {
+                rewardOwner.__ipxCloseRewardPanel(true);
+            }
+        } catch (_) {}
+
+        const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        const root = document.documentElement;
+        const startHeight = Math.max(0, passport.getBoundingClientRect().height);
+        if (startHeight < 1) {
+            item.classList.remove('open');
+            row.setAttribute('aria-expanded', 'false');
+            delete item.dataset.thPremiumClosing;
+            return;
+        }
+
+        const oldBehavior = root.style.scrollBehavior;
+        const oldAnchor = root.style.overflowAnchor;
+        const oldMaxHeight = passport.style.maxHeight;
+        const oldHeight = passport.style.height;
+        const oldOverflow = passport.style.overflow;
+        const oldTransition = passport.style.transition;
+        let oldSave = null;
+
+        try {
+            if (typeof TH_SCROLL_SAVE_ENABLED !== 'undefined') {
+                oldSave = TH_SCROLL_SAVE_ENABLED;
+                TH_SCROLL_SAVE_ENABLED = false;
+            }
+        } catch (_) {}
+
+        root.style.scrollBehavior = 'auto';
+        root.style.overflowAnchor = 'none';
+        passport.style.transition = 'none';
+        passport.style.maxHeight = 'none';
+        passport.style.height = startHeight + 'px';
+        passport.style.overflow = 'hidden';
+        item.classList.add('th-passport-premium-closing');
+        row.setAttribute('aria-expanded', 'false');
+
+        const finish = () => {
+            item.classList.remove('open');
+            item.classList.remove('th-passport-premium-closing');
+            passport.style.maxHeight = oldMaxHeight;
+            passport.style.height = oldHeight;
+            passport.style.overflow = oldOverflow;
+            passport.style.transition = oldTransition;
+            root.style.overflowAnchor = oldAnchor;
+            root.style.scrollBehavior = oldBehavior;
+            delete item.dataset.thPremiumClosing;
+            try {
+                if (oldSave !== null && typeof TH_SCROLL_SAVE_ENABLED !== 'undefined') {
+                    TH_SCROLL_SAVE_ENABLED = oldSave;
+                }
+                if (typeof rememberCompaniesScroll === 'function') rememberCompaniesScroll();
+            } catch (_) {}
+        };
+
+        if (reduce) {
+            const delta = Math.min(startHeight, Math.max(0, window.scrollY));
+            passport.style.height = '0px';
+            if (delta > 0) window.scrollBy(0, -delta);
+            finish();
+            return;
+        }
+
+        const duration = 360;
+        let prevHeight = startHeight;
+        let startTime = 0;
+        const frame = now => {
+            if (!startTime) startTime = now;
+            const p = Math.min(1, (now - startTime) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
+            const nextHeight = startHeight * (1 - eased);
+            passport.style.height = nextHeight + 'px';
+
+            const collapsed = Math.max(0, prevHeight - nextHeight);
+            if (collapsed > 0 && window.scrollY > 0) {
+                window.scrollBy(0, -Math.min(collapsed, window.scrollY));
+            }
+            prevHeight = nextHeight;
+
+            if (p < 1) requestAnimationFrame(frame);
+            else finish();
+        };
+        requestAnimationFrame(frame);
+    };
+
+    /* ── Yield Basis help: one tiny i, one layered explanation ───────────── */
+    let ybLayer = null;
+    const YB_COPY = {
+        en: {
+            title: 'How this Yield Basis position earns',
+            mode: 'Unstaked · Fee-compounding',
+            a: 'Fees stay inside the unstaked position and compound into PPS.',
+            bTitle: 'Embedded Yield',
+            b: 'The net PPS result for the measured window. It is already inside the position.',
+            cTitle: 'Claimable',
+            c: 'No separate claim here.',
+            foot: 'If the position is staked, the income mode switches to Staked · YB emissions.',
+            close: 'Close Yield Basis explanation'
+        },
+        ru: {
+            title: 'Как зарабатывает эта позиция Yield Basis',
+            mode: 'Unstaked · Fee-compounding',
+            a: 'Комиссии остаются внутри незастейканной позиции и капитализируются в PPS.',
+            bTitle: 'Embedded Yield',
+            b: 'Чистый результат PPS за измеряемый период. Он уже находится внутри позиции.',
+            cTitle: 'Клейм',
+            c: 'Отдельного клейма здесь нет.',
+            foot: 'Если позиция застейкана, режим дохода меняется на Staked · YB emissions.',
+            close: 'Закрыть пояснение Yield Basis'
+        }
+    };
+
+    const ensureYbLayer = () => {
+        if (ybLayer && ybLayer.isConnected) return ybLayer;
+        const wrap = document.createElement('div');
+        wrap.className = 'yb-info-layer';
+        wrap.setAttribute('aria-hidden', 'true');
+        wrap.innerHTML =
+            '<div class="yb-info-shade"></div>'
+            + '<section class="yb-info-card" role="dialog" aria-modal="true" aria-labelledby="ybInfoTitle">'
+            + '<button class="yb-info-close" type="button">×</button>'
+            + '<div class="yb-info-kicker">Yield Basis</div>'
+            + '<h3 id="ybInfoTitle"></h3>'
+            + '<div class="yb-info-mode"></div>'
+            + '<p class="yb-info-lead"></p>'
+            + '<div class="yb-info-fact"><b class="yb-info-b-title"></b><span class="yb-info-b"></span></div>'
+            + '<div class="yb-info-fact"><b class="yb-info-c-title"></b><span class="yb-info-c"></span></div>'
+            + '<div class="yb-info-foot"></div>'
+            + '</section>';
+        document.body.appendChild(wrap);
+        ybLayer = wrap;
+
+        const close = () => {
+            wrap.classList.remove('open');
+            wrap.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('yb-info-open');
+        };
+        wrap.querySelector('.yb-info-shade').addEventListener('click', close);
+        wrap.querySelector('.yb-info-close').addEventListener('click', close);
+        wrap.__closeYbInfo = close;
+        return wrap;
+    };
+
+    const openYbInfo = () => {
+        const L = YB_COPY[lang()] || YB_COPY.en;
+        const wrap = ensureYbLayer();
+        wrap.querySelector('#ybInfoTitle').textContent = L.title;
+        wrap.querySelector('.yb-info-mode').textContent = L.mode;
+        wrap.querySelector('.yb-info-lead').textContent = L.a;
+        wrap.querySelector('.yb-info-b-title').textContent = L.bTitle;
+        wrap.querySelector('.yb-info-b').textContent = L.b;
+        wrap.querySelector('.yb-info-c-title').textContent = L.cTitle;
+        wrap.querySelector('.yb-info-c').textContent = L.c;
+        wrap.querySelector('.yb-info-foot').textContent = L.foot;
+        wrap.querySelector('.yb-info-close').setAttribute('aria-label', L.close);
+        wrap.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('yb-info-open');
+        requestAnimationFrame(() => wrap.classList.add('open'));
+    };
+
+    const decorateYbHelp = () => {
+        document.querySelectorAll('.ipx-income-divider.ipx-yb-income-addon').forEach(divider => {
+            if (divider.querySelector('.yb-mini-info')) return;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'yb-mini-info';
+            btn.textContent = 'i';
+            btn.setAttribute('aria-label', lang() === 'ru' ? 'Как работает доход Yield Basis' : 'How Yield Basis income works');
+            btn.addEventListener('click', ev => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                openYbInfo();
+            });
+            divider.appendChild(btn);
+        });
+    };
+
+    const bindYbHelp = () => {
+        const observer = new MutationObserver(() => decorateYbHelp());
+        observer.observe(document.body, { childList: true, subtree: true });
+        decorateYbHelp();
+        document.addEventListener('keydown', ev => {
+            if (ev.key === 'Escape' && ybLayer && ybLayer.classList.contains('open')) {
+                ev.stopPropagation();
+                if (typeof ybLayer.__closeYbInfo === 'function') ybLayer.__closeYbInfo();
+            }
+        });
+    };
+
+    const start = () => {
+        bindHeroLanguage();
+        bindYbHelp();
+        settleReload();
+        document.addEventListener('click', premiumPassportClose, true);
+        document.documentElement.setAttribute('data-th-premium-polish', POLISH_VERSION);
+    };
+
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
     else start();
 })();</script>
