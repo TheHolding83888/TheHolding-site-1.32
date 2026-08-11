@@ -6,6 +6,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -2851,6 +2852,19 @@
                 justify-self: end;
             }
         }
+
+        /* ══ Yield Basis income disclosure · isolated addon v1.16.2 ══ */
+        .ipx-income-divider {
+            padding: 0.72rem 0.55rem 0.22rem;
+            border-top: 1px solid var(--line);
+            color: var(--text-3);
+            font-size: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 0.095em;
+            text-transform: uppercase;
+        }
+        .ipx-yb-embedded-row .ipx-reward-amount { font-variant-numeric: tabular-nums; }
+        .ipx-yb-embedded-row .ipx-reward-usd { color: var(--text-3); }
 </style>
 </head>
 <body>
@@ -5938,5 +5952,143 @@ function renderFramework(lang) {
 })();
 </script>
 
+
+<!-- Yield Basis income UI v1.16.2 · isolated addon -->
+<script>(function () {
+    'use strict';
+    const YB_UI_VERSION = '1.16.2-isolated-addon';
+    const RESOLVER_URL = './company-007-resolve.json';
+    const TARGET_COMPANY = "Rook's portfolio";
+    let resolverPromise = null;
+    let scheduled = false;
+
+    const currentLang = () => {
+        try {
+            if (typeof idxLang === 'function') return idxLang();
+            return localStorage.getItem('holdingCompaniesLang') === 'ru' ? 'ru' : 'en';
+        } catch (e) { return 'en'; }
+    };
+    const signedUsd = value => {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return '—';
+        const sign = n > 0 ? '+' : (n < 0 ? '−' : '');
+        return sign + '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+    const signedPct = value => {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return '—';
+        const sign = n > 0 ? '+' : (n < 0 ? '−' : '');
+        return sign + Math.abs(n).toFixed(2) + '%';
+    };
+    const loadResolver = () => {
+        if (resolverPromise) return resolverPromise;
+        resolverPromise = fetch(RESOLVER_URL + '?t=' + Date.now(), { cache: 'no-store' })
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null);
+        return resolverPromise;
+    };
+    const productivityBreakdown = () => {
+        try {
+            const c = PRODUCTIVITY_SNAPSHOT && PRODUCTIVITY_SNAPSHOT.companies
+                ? PRODUCTIVITY_SNAPSHOT.companies[TARGET_COMPANY] : null;
+            return c && Array.isArray(c.breakdown) ? c.breakdown : [];
+        } catch (e) { return []; }
+    };
+    const priceForMarket = market => {
+        const engineId = market === 'yb-WBTC' ? 'yieldbasis_yblp_wbtc'
+            : (market === 'yb-WETH' ? 'yieldbasis_yblp_weth' : null);
+        if (!engineId) return null;
+        const row = productivityBreakdown().find(x => x && x.engineId === engineId);
+        const p = Number(row && row.price);
+        return Number.isFinite(p) && p > 0 ? p : null;
+    };
+    const aprForMarket = (market, fallback) => {
+        const engineId = market === 'yb-WBTC' ? 'yieldbasis_yblp_wbtc'
+            : (market === 'yb-WETH' ? 'yieldbasis_yblp_weth' : null);
+        const row = productivityBreakdown().find(x => x && x.engineId === engineId);
+        const n = Number(row && row.apr);
+        return Number.isFinite(n) ? n : Number(fallback);
+    };
+    const makeDivider = lang => {
+        const el = document.createElement('div');
+        el.className = 'ipx-income-divider ipx-yb-income-addon';
+        el.dataset.ybUi = YB_UI_VERSION;
+        el.textContent = lang === 'ru' ? 'Встроенный доход' : 'Embedded yield';
+        return el;
+    };
+    const makeRow = (position, lang) => {
+        const ppsNow = Number(position.ppsNow);
+        const ppsPast = Number(position.pps30dAgo);
+        const shares = Number(position.directShares);
+        const price = priceForMarket(position.market);
+        const apr = aprForMarket(position.market, position.fundamentalTradingApy30dPct);
+        const embeddedUsd = Number.isFinite(ppsNow) && Number.isFinite(ppsPast)
+            && Number.isFinite(shares) && Number.isFinite(price)
+            ? shares * (ppsNow - ppsPast) * price : null;
+        const days = Number.isFinite(Number(position.elapsedDays)) ? Math.round(Number(position.elapsedDays)) : 30;
+
+        const row = document.createElement('div');
+        row.className = 'ipx-reward-row ipx-yb-embedded-row ipx-yb-income-addon';
+        row.dataset.ybUi = YB_UI_VERSION;
+        row.dataset.ybMarket = position.market || '';
+
+        const left = document.createElement('div');
+        const protocol = document.createElement('div');
+        protocol.className = 'ipx-reward-protocol';
+        protocol.textContent = 'Yield Basis · ' + (position.market || 'yb-LP');
+        const meta = document.createElement('div');
+        meta.className = 'ipx-reward-meta';
+        meta.textContent = 'Unstaked · Fee-compounding';
+        left.append(protocol, meta);
+
+        const right = document.createElement('div');
+        right.className = 'ipx-reward-right';
+        const amount = document.createElement('div');
+        amount.className = 'ipx-reward-amount';
+        amount.textContent = signedUsd(embeddedUsd);
+        const detail = document.createElement('div');
+        detail.className = 'ipx-reward-usd';
+        detail.textContent = days + 'D · ' + signedPct(apr) + ' FT APY';
+        right.append(amount, detail);
+        row.append(left, right);
+        return row;
+    };
+    const decorate = async () => {
+        scheduled = false;
+        const item = Array.from(document.querySelectorAll('.ib-item')).find(x => x.dataset.nm === TARGET_COMPANY);
+        if (!item) return;
+        const panel = item.querySelector('.ipx-rewards-panel');
+        if (!panel || panel.querySelector('.ipx-yb-income-addon')) return;
+        panel.dataset.ybIncomeOwner = TARGET_COMPANY;
+
+        const resolver = await loadResolver();
+        if (!resolver || !panel.isConnected) return;
+        const yb = resolver.results && resolver.results.yieldBasis;
+        const positions = yb && Array.isArray(yb.positions)
+            ? yb.positions.filter(x => x && x.mode === 'unstaked-plain' && Number(x.directShares) > 0)
+            : [];
+        if (!positions.length || panel.querySelector('.ipx-yb-income-addon')) return;
+
+        const lang = currentLang();
+        const note = panel.querySelector('.ipx-reward-panel-note');
+        const anchor = note || null;
+        panel.insertBefore(makeDivider(lang), anchor);
+        positions.forEach(position => panel.insertBefore(makeRow(position, lang), anchor));
+    };
+    const schedule = () => {
+        if (scheduled) return;
+        scheduled = true;
+        requestAnimationFrame(() => decorate());
+    };
+
+    const observer = new MutationObserver(schedule);
+    const start = () => {
+        const root = document.getElementById('idxBoard') || document.body;
+        observer.observe(root, { childList: true, subtree: true });
+        schedule();
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+    else start();
+})();</script>
 </body>
 </html>
