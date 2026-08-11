@@ -1,14 +1,14 @@
 {
-  "version": "1.2",
-  "generatedAt": "2026-08-11T07:57:04.236Z",
-  "startedAt": "2026-08-11T07:56:57.739Z",
-  "purpose": "Company #006 deterministic onboarding discovery v1.2: resilient veVELO current-state + Blockscout-v2 history; AERO paid/airdrop + veYB; no production metrics are changed by this file.",
+  "version": "1.3",
+  "generatedAt": "2026-08-11T08:15:28.537Z",
+  "startedAt": "2026-08-11T08:15:21.002Z",
+  "purpose": "Company #006 deterministic onboarding discovery v1.3: company age + VELO entry anchored to original veVELO #16325 mint/first-lock; later wallet transfer preserved as custody provenance only; no production metrics are changed by this file.",
   "company": {
     "registry": "006",
     "name": "aerocrvyb.eth",
-    "foundingRule": "first verified veAERO lock on Aerodrome wallet",
-    "foundedAt": "2024-12-22T08:34:23.000Z",
-    "foundedISO": "2024-12-22",
+    "foundingRule": "original veVELO #16325 mint / first lock, preserving economic history across later wallet transfer",
+    "foundedAt": "2023-08-18T19:50:25.000Z",
+    "foundedISO": "2023-08-18",
     "wallets": [
       {
         "alias": "Aero / Velo wallet",
@@ -230,15 +230,20 @@
       "chain": "optimism",
       "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
       "symbol": "Velo",
-      "timestamp": 1738168379,
-      "at": "2025-01-29T16:32:59.000Z",
-      "usd": 0.09225,
+      "timestamp": 1692388225,
+      "at": "2023-08-18T19:50:25.000Z",
+      "usd": 0.076936,
       "method": "DeFiLlama contract historical price at verified onchain event timestamp",
       "source": "coins.llama.fi/prices/historical",
       "confidence": 0.99,
       "status": "ok",
       "coingeckoId": "velodrome-finance",
-      "date": "2025-01-29"
+      "date": "2023-08-18"
+    },
+    "provenancePolicy": {
+      "economicOrigin": "original veNFT mint / first lock",
+      "custodyTransfer": "later transfer into current wallet does not reset entry or company age",
+      "ownerDecision": "preserve continuous economic history of veVELO #16325 across wallet transfer"
     },
     "discoveryDiagnostics": [
       "Blockscout v2 instance 16325: 2 transfer rows"
@@ -325,23 +330,23 @@
           }
         ],
         "entryMethod": "weighted effective entry for one public AERO line; internal paid + airdrop cost basis preserved",
-        "currentPriceUsdAtDiscovery": 0.418002,
-        "currentValueUsdAtDiscovery": 3858.262174365489,
+        "currentPriceUsdAtDiscovery": 0.417149,
+        "currentValueUsdAtDiscovery": 3850.3887727197225,
         "costBasisUsd": 10575.949455619573,
-        "performanceUsdAtDiscovery": -6717.687281254084
+        "performanceUsdAtDiscovery": -6725.560682899851
       },
       {
         "id": "velodrome-finance",
         "symbol": "VELO / veVELO",
         "qty": 6971.925992122776,
-        "entry": 0.09225,
+        "entry": 0.076936,
         "classification": "productive",
         "walletAlias": "Aero / Velo wallet",
-        "entryMethod": "historical VELO market price at first verified veVELO lock/acquisition",
-        "currentPriceUsdAtDiscovery": 0.01717368,
-        "currentValueUsdAtDiscovery": 119.73362597239907,
-        "costBasisUsd": 643.160172773326,
-        "performanceUsdAtDiscovery": -523.426546800927
+        "entryMethod": "historical VELO market price at original veVELO mint / first lock; later wallet transfer does not reset cost basis",
+        "currentPriceUsdAtDiscovery": 0.01717653,
+        "currentValueUsdAtDiscovery": 119.75349596147662,
+        "costBasisUsd": 536.392098129958,
+        "performanceUsdAtDiscovery": -416.6386021684813
       },
       {
         "id": "yield-basis",
@@ -351,16 +356,16 @@
         "classification": "productive",
         "walletAlias": "Yield Basis wallet",
         "entryMethod": "historical YB market price at first verified veYB lock",
-        "currentPriceUsdAtDiscovery": 0.076423,
-        "currentValueUsdAtDiscovery": 955.2874999999968,
+        "currentPriceUsdAtDiscovery": 0.077075,
+        "currentValueUsdAtDiscovery": 963.4374999999968,
         "costBasisUsd": 1007.6456110925183,
-        "performanceUsdAtDiscovery": -52.358111092521426
+        "performanceUsdAtDiscovery": -44.20811109252145
       }
     ],
-    "totalCurrentValueUsdAtDiscovery": 4933.283300337885,
-    "totalCostBasisUsd": 12226.755239485417,
-    "performanceUsdAtDiscovery": -7293.471939147533,
-    "performancePctAtDiscovery": -59.65173749118486
+    "totalCurrentValueUsdAtDiscovery": 4933.579768681197,
+    "totalCostBasisUsd": 12119.987164842049,
+    "performanceUsdAtDiscovery": -7186.407396160852,
+    "performancePctAtDiscovery": -59.29385318993865
   },
   "knownAdapterReuse": {
     "productivity": [
