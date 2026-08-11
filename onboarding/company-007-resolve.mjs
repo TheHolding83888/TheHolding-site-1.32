@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { Interface, formatUnits, getAddress, toBeHex } from 'ethers';
 
 const VERSION = '1.1-targeted-resolver';
-const YB_RESOLVER_VERSION = '1.4-history-only-diagnostic-safe';
+const YB_RESOLVER_VERSION = '1.5-archive-secret-gated';
 const OUTPUT_PATH = process.env.COMPANY_007_RESOLVE_OUTPUT
   || path.resolve('companies/company-007-resolve.json');
 
@@ -13,17 +13,22 @@ const YB_MARKETS = [
   { symbol: 'yb-WETH', family: 'ETH', lt: getAddress('0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea') }
 ];
 
-const RPCS = uniq([
-  process.env.ETH_ARCHIVE_RPC_URL,
-  process.env.ETH_ARCHIVE_RPC_URL_2,
+const HEADER_RPCS = uniq([
   process.env.ETH_RPC_URL,
   process.env.ETH_RPC_URL_2,
+  process.env.ETH_ARCHIVE_RPC_URL,
+  process.env.ETH_ARCHIVE_RPC_URL_2,
   'https://eth.drpc.org',
   'https://ethereum-rpc.publicnode.com',
   'https://eth.llamarpc.com',
   'https://rpc.flashbots.net',
   'https://1rpc.io/eth',
   'https://cloudflare-eth.com'
+]);
+
+const ARCHIVE_RPCS = uniq([
+  process.env.ETH_ARCHIVE_RPC_URL,
+  process.env.ETH_ARCHIVE_RPC_URL_2
 ]);
 
 const LT_IFACE = new Interface(['function pricePerShare() view returns (uint256)']);
@@ -70,7 +75,7 @@ async function rpc(url, method, params = [], timeoutMs = 5000) {
       headers: {
         'content-type': 'application/json',
         'accept': 'application/json',
-        'user-agent': 'The-Holding-Company-007-YB-History/1.4'
+        'user-agent': 'The-Holding-Company-007-YB-History/1.5'
       },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
       signal: ctrl.signal,
@@ -97,7 +102,7 @@ async function locateHistoricalBlock(latestBlock, latestTimestamp, targetTimesta
   const expectedBlocks = Math.round((latestTimestamp - targetTimestamp) / 12);
   const initialEstimate = Math.max(0, latestBlock - expectedBlocks);
 
-  for (const url of RPCS) {
+  for (const url of HEADER_RPCS) {
     const label = `ethereum-header:${safeHost(url)}`;
     try {
       let estimate = initialEstimate;
@@ -149,7 +154,7 @@ async function historicalPps(market, blockNumber) {
   const data = LT_IFACE.encodeFunctionData('pricePerShare', []);
   const tag = blockTag(blockNumber);
 
-  for (const url of RPCS) {
+  for (const url of ARCHIVE_RPCS) {
     const label = `ethereum-history:${safeHost(url)}`;
     try {
       const code = await rpc(url, 'eth_getCode', [market.lt, tag], 5000);
@@ -165,7 +170,17 @@ async function historicalPps(market, blockNumber) {
     }
   }
 
-  return { raw: 0n, provider: null, diagnostics };
+  throw new Error(
+    `${market.symbol}: configured archive endpoint(s) could not read historical pricePerShare at block ${blockNumber}: ${diagnostics.join(' | ')}`
+  );
+}
+
+function requireArchiveSecret() {
+  if (!ARCHIVE_RPCS.length) {
+    throw new Error(
+      'ETH_ARCHIVE_RPC_URL is missing. Add a verified Ethereum archive RPC endpoint as a GitHub Actions repository secret before running this workflow.'
+    );
+  }
 }
 
 function validateBaseline(d) {
@@ -200,31 +215,7 @@ async function resolveHistoryOnly(baseline) {
   const priorByMarket = new Map(prior.positions.map(p => [p.market, p]));
 
   if (!blockLookup.block) {
-    return {
-      ...prior,
-      status: 'warming',
-      positions: prior.positions.map(p => ({
-        ...p,
-        pps30dAgo: null,
-        historicalBlock: null,
-        historicalTimestamp: null,
-        fundamentalTradingApy30dPct: null,
-        productivityStatus: 'warming',
-        historicalProvider: null,
-        historicalDiagnostics: blockLookup.diagnostics,
-        historyError: 'historical block lookup providers exhausted'
-      })),
-      yieldBasisResolverVersion: YB_RESOLVER_VERSION,
-      recoveryMode: 'history-only; validated current PPS preserved from last-known-good resolver baseline',
-      historicalBlockProvider: null,
-      historicalBlockDiagnostics: blockLookup.diagnostics,
-      methodology: {
-        ...prior.methodology,
-        emissionsIncluded: false,
-        redemptionPpsUsedForApr: false,
-        note: 'FT APY uses validated baseline PPS_now and historical LT.pricePerShare. This recovery performs historical reads only; current-state reads are intentionally not repeated.'
-      }
-    };
+    throw new Error(`historical block lookup failed: ${blockLookup.diagnostics.join(' | ')}`);
   }
 
   const elapsedSeconds = latestTimestamp - blockLookup.block.timestamp;
@@ -269,14 +260,14 @@ async function resolveHistoryOnly(baseline) {
     status: positions.every(p => p.productivityStatus === 'ok') ? 'ok' : 'warming',
     positions,
     yieldBasisResolverVersion: YB_RESOLVER_VERSION,
-    recoveryMode: 'history-only; validated current PPS preserved from last-known-good resolver baseline',
+    recoveryMode: 'archive-secret-gated history-only; validated current PPS preserved from last-known-good resolver baseline',
     historicalBlockProvider: blockLookup.provider,
     historicalBlockDiagnostics: blockLookup.diagnostics,
     methodology: {
       ...prior.methodology,
       emissionsIncluded: false,
       redemptionPpsUsedForApr: false,
-      note: 'FT APY uses validated baseline PPS_now and historical LT.pricePerShare. This recovery performs historical reads only; current-state reads are intentionally not repeated.'
+      note: 'FT APY uses validated baseline PPS_now and historical LT.pricePerShare from a verified archive RPC secret. Current-state reads are intentionally not repeated; emissions remain excluded.'
     }
   };
 }
@@ -293,36 +284,12 @@ async function main() {
     ['crv', 'link', 'zk', 'votium'].map(k => [k, stableHash(baseline.results[k])])
   );
 
+  requireArchiveSecret();
+
   const startedAt = nowIso();
-  let yieldBasis;
-  try {
-    yieldBasis = await resolveHistoryOnly(baseline);
-  } catch (e) {
-    // Diagnostic-safe: unexpected RPC/decoding failure must become warming JSON, not a red workflow.
-    const prior = baseline.results.yieldBasis;
-    yieldBasis = {
-      ...prior,
-      status: 'warming',
-      positions: prior.positions.map(p => ({
-        ...p,
-        pps30dAgo: null,
-        historicalBlock: null,
-        historicalTimestamp: null,
-        fundamentalTradingApy30dPct: null,
-        productivityStatus: 'warming',
-        historicalProvider: null,
-        historicalDiagnostics: [`unexpected: ${errorText(e)}`],
-        historyError: `unexpected history-only resolver failure: ${errorText(e)}`
-      })),
-      yieldBasisResolverVersion: YB_RESOLVER_VERSION,
-      recoveryMode: 'history-only diagnostic-safe fallback',
-      diagnostics: [...(prior.diagnostics || []), `history-only: ${errorText(e)}`],
-      methodology: {
-        ...prior.methodology,
-        emissionsIncluded: false,
-        redemptionPpsUsedForApr: false
-      }
-    };
+  const yieldBasis = await resolveHistoryOnly(baseline);
+  if (yieldBasis.status !== 'ok') {
+    throw new Error(`Yield Basis archive recovery did not reach ok: ${yieldBasis.status}`);
   }
 
   const output = structuredClone(baseline);
@@ -337,10 +304,10 @@ async function main() {
     yieldBasisProductivityResolved: yieldBasis.status === 'ok',
     votiumResolved: true,
     readyForFinalIntegrator: yieldBasis.status === 'ok',
-    note: 'History-only YB recovery. CRV/LINK/ZK/Votium preserved exactly. Warming is published with diagnostics rather than converted to zero or causing a red workflow.'
+    note: 'Archive-gated YB recovery. CRV/LINK/ZK/Votium preserved exactly. Publish occurs only after both YB markets resolve historical PPS and FT APY successfully.'
   };
   output.recovery = {
-    mode: 'yield-basis-history-only',
+    mode: 'yield-basis-history-only-archive-gated',
     resolverVersion: YB_RESOLVER_VERSION,
     preservedResultSha256: preservedBefore
   };
@@ -354,7 +321,7 @@ async function main() {
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2) + '\n');
 
-  console.log(`Company #007 YB history-only resolver written: ${OUTPUT_PATH}`);
+  console.log(`Company #007 YB archive-gated resolver written: ${OUTPUT_PATH}`);
   console.log(`Yield Basis: ${yieldBasis.status}`);
   for (const p of yieldBasis.positions || []) {
     console.log(`${p.market}: PPS30d=${p.pps30dAgo ?? 'warming'} FT_APY=${p.fundamentalTradingApy30dPct ?? 'warming'} provider=${p.historicalProvider ?? 'none'}`);
