@@ -1,0 +1,186 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-08-11T07:25:48.806Z",
+  "startedAt": "2026-08-11T07:25:46.259Z",
+  "purpose": "Company #006 deterministic onboarding discovery; no production metrics are changed by this file.",
+  "company": {
+    "registry": "006",
+    "name": "aerocrvyb.eth",
+    "foundingRule": "first verified veAERO lock on Aerodrome wallet",
+    "foundedAt": "2024-12-22T08:34:23.000Z",
+    "foundedISO": "2024-12-22",
+    "wallets": [
+      {
+        "alias": "Aerodrome wallet",
+        "address": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+        "chain": "Base",
+        "route": "aerodrome-ve"
+      },
+      {
+        "alias": "Yield Basis wallet",
+        "address": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
+        "chain": "Ethereum",
+        "route": "yield-basis-fees"
+      }
+    ]
+  },
+  "aerodrome": {
+    "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+    "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+    "votingEscrow": "0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4",
+    "currentVeNftCount": 2,
+    "positions": [
+      {
+        "tokenId": "64985",
+        "escrowType": 0,
+        "managedTokenId": "0",
+        "directLockedAero": 6912.385265110832,
+        "managedWeightAero": 0,
+        "economicPrincipalAero": 6912.385265110832,
+        "lockEnd": "2028-12-21T00:00:00.000Z",
+        "isPermanent": false
+      },
+      {
+        "tokenId": "69194",
+        "escrowType": 0,
+        "managedTokenId": "0",
+        "directLockedAero": 2317.8628541935973,
+        "managedWeightAero": 0,
+        "economicPrincipalAero": 2317.8628541935973,
+        "lockEnd": null,
+        "isPermanent": true
+      }
+    ],
+    "economicPrincipalAero": 9230.248119304428,
+    "firstLock": {
+      "blockNumber": 24033558,
+      "txHash": "0x914527ab4526b2df7313d59a013398009897eeaf90936c636694857a3f4f01a6",
+      "tokenId": "64985",
+      "timestamp": 1734856463,
+      "source": "base-blockscout: wallet NFT mint history",
+      "foundedAt": "2024-12-22T08:34:23.000Z",
+      "foundedISO": "2024-12-22",
+      "method": "veNFT-zero-address-mint-history",
+      "confidence": "high"
+    },
+    "firstLockCandidates": [
+      {
+        "blockNumber": 24033558,
+        "txHash": "0x914527ab4526b2df7313d59a013398009897eeaf90936c636694857a3f4f01a6",
+        "tokenId": "64985",
+        "timestamp": 1734856463,
+        "source": "base-blockscout: wallet NFT mint history",
+        "foundedAt": "2024-12-22T08:34:23.000Z",
+        "foundedISO": "2024-12-22",
+        "method": "veNFT-zero-address-mint-history",
+        "confidence": "high"
+      }
+    ],
+    "entryPrice": {
+      "coingeckoId": "aerodrome-finance",
+      "date": "2024-12-22",
+      "usd": null,
+      "status": "unavailable",
+      "error": "HTTP 401"
+    },
+    "discoveryDiagnostics": [
+      "Blockscout mint candidates: 1"
+    ]
+  },
+  "yieldBasis": {
+    "wallet": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
+    "token": "0x01791F726B4103694969820be083196cC7c045fF",
+    "votingEscrow": "0x8235c179E9e84688FBd8B12295EfC26834dAC211",
+    "feeDistributor": "0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90",
+    "veNftBalance": 1,
+    "expectedTokenIdFromAddress": "618829295216846091833840144176773359279862576553",
+    "economicPrincipalYb": 12499.999999999958,
+    "lockEnd": "2030-06-20T00:00:00.000Z",
+    "firstLock": {
+      "blockNumber": 25373575,
+      "txHash": "0x091207cb71b12443f06aa11db3ad882030caf205423dadc4f050248584810db1",
+      "tokenId": "618829295216846091833840144176773359279862576553",
+      "timestamp": 1782136511,
+      "source": "ethereum-blockscout: wallet NFT mint history",
+      "foundedAt": "2026-06-22T13:55:11.000Z",
+      "foundedISO": "2026-06-22",
+      "method": "veNFT-zero-address-mint-history",
+      "confidence": "high"
+    },
+    "firstLockCandidates": [
+      {
+        "blockNumber": 25373575,
+        "txHash": "0x091207cb71b12443f06aa11db3ad882030caf205423dadc4f050248584810db1",
+        "tokenId": "618829295216846091833840144176773359279862576553",
+        "timestamp": 1782136511,
+        "source": "ethereum-blockscout: wallet NFT mint history",
+        "foundedAt": "2026-06-22T13:55:11.000Z",
+        "foundedISO": "2026-06-22",
+        "method": "veNFT-zero-address-mint-history",
+        "confidence": "high"
+      }
+    ],
+    "entryPrice": {
+      "coingeckoId": "yield-basis",
+      "date": "2026-06-22",
+      "usd": 0.07815009781089512,
+      "method": "CoinGecko daily history market_data.current_price.usd",
+      "status": "ok"
+    },
+    "discoveryDiagnostics": [
+      "Blockscout mint candidates: 1"
+    ]
+  },
+  "proposedCompanyBook": {
+    "positions": [
+      {
+        "id": "aerodrome-finance",
+        "symbol": "AERO / veAERO",
+        "qty": 9230.248119304428,
+        "entry": 0,
+        "classification": "productive",
+        "walletAlias": "Aerodrome wallet",
+        "entryMethod": "daily AERO market price on first verified veAERO lock date",
+        "currentPriceUsdAtDiscovery": 0.416996,
+        "currentValueUsdAtDiscovery": 3848.976544757469,
+        "costBasisUsd": 0,
+        "performanceUsdAtDiscovery": 3848.976544757469
+      },
+      {
+        "id": "yield-basis",
+        "symbol": "YB / veYB",
+        "qty": 12499.999999999958,
+        "entry": 0.07815009781089512,
+        "classification": "productive",
+        "walletAlias": "Yield Basis wallet",
+        "entryMethod": "daily YB market price on first verified veYB lock date",
+        "currentPriceUsdAtDiscovery": 0.076739,
+        "currentValueUsdAtDiscovery": 959.2374999999968,
+        "costBasisUsd": 976.8762226361857,
+        "performanceUsdAtDiscovery": -17.63872263618896
+      }
+    ],
+    "totalCurrentValueUsdAtDiscovery": 4808.214044757466,
+    "totalCostBasisUsd": 976.8762226361857,
+    "performanceUsdAtDiscovery": 3831.3378221212797,
+    "performancePctAtDiscovery": 392.2029969960862
+  },
+  "knownAdapterReuse": {
+    "productivity": [
+      "aerodrome_veaero",
+      "yieldbasis_veyb"
+    ],
+    "rewards": [
+      {
+        "route": "aerodrome-ve",
+        "walletAlias": "Aerodrome wallet"
+      },
+      {
+        "route": "yield-basis-fees",
+        "walletAlias": "Yield Basis wallet"
+      }
+    ],
+    "note": "Company #006 should use wallet-scoped reward routes rather than running every route against every company wallet."
+  },
+  "errors": {}
+}
