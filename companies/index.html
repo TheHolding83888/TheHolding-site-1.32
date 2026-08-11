@@ -2,6 +2,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -1259,6 +1260,16 @@
             font-weight: 650;
             letter-spacing: 0.015em;
         }
+        /* Hidden-token count is neutral metadata, not a reward token. Keep it
+           visually identical to Defitea's accepted gray +N treatment. */
+        .ipx-reward-token-more {
+            min-height: 19px;
+            padding: 0.16rem 0.34rem;
+            background: rgba(22,21,15,0.035);
+            border-color: var(--line);
+            color: var(--text-3);
+            font-size: 0.53rem;
+        }
         .ipx-rewards-caption {
             display: flex;
             align-items: center;
@@ -1704,6 +1715,11 @@
                 margin-top: 0.34rem;
             }
             .ipx-defitea-rewards .ipx-reward-token {
+                min-height: 18px;
+                padding: 0.14rem 0.3rem;
+                font-size: 0.48rem;
+            }
+            .ipx-reward-token-more {
                 min-height: 18px;
                 padding: 0.14rem 0.3rem;
                 font-size: 0.48rem;
@@ -3447,7 +3463,7 @@ async function loadProductivitySnapshot() {
    held treasury capital. Missing routes stay visibly incomplete rather than
    being guessed. */
 const REWARDS_DATA_URL = './rewards-data.json';
-const COMPANY_REWARDS_UI_VERSION = '0.3.2-class-aware-ve-rollups';
+const COMPANY_REWARDS_UI_VERSION = '0.3.3-rebase-token-more-polish';
 let COMPANY_REWARDS_SNAPSHOT = null;
 const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.eth', 'defitea.eth', '0x5860...83CA8.eth', 'aerocrvyb.eth']);
 const COMPANY_ASSET_LABELS = {
@@ -4313,7 +4329,7 @@ function renderIndex(lang) {
                     + '<div><div class="ipx-reward-protocol">' + protocolLabel
                     + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
                     + '<div class="ipx-reward-meta">' + (x.symbol || 'TOKEN') + ' · ' + chainLabel
-                    + pendingHint + '</div></div>'
+                    + (x.veCompoundedRollup ? ' · Rebase' : '') + pendingHint + '</div></div>'
                     + '<div class="ipx-reward-right"><div class="ipx-reward-amount">' + fmtRewardQty(x.amount) + ' ' + (x.symbol || '') + '</div>'
                     + '<div class="ipx-reward-usd">' + usdLabel + '</div></div></div>';
             });
