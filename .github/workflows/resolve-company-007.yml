@@ -52,7 +52,7 @@ jobs:
       - name: Install resolver dependency
         run: npm install --no-save ethers@6
 
-      - name: "Resolve Company #007 Yield Basis historical source mesh"
+      - name: "Resolve Company #007 Yield Basis canonical-quantity source mesh"
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
@@ -80,7 +80,7 @@ jobs:
           }
           const yb = after.results?.yieldBasis;
           if (!yb) throw new Error('Yield Basis result missing');
-          if (yb.yieldBasisResolverVersion !== '1.7-historical-source-mesh') throw new Error('YB sub-version mismatch');
+          if (yb.yieldBasisResolverVersion !== '1.8-canonical-quantity-source-mesh') throw new Error('YB sub-version mismatch');
           if (yb.methodology?.emissionsIncluded !== false) throw new Error('YB emissions must be excluded');
           if (yb.methodology?.redemptionPpsUsedForApr !== false) throw new Error('redemption PPS must not be used for FT APY');
           if (!Array.isArray(yb.positions) || yb.positions.length !== 2) throw new Error('expected two YB markets');
@@ -90,11 +90,11 @@ jobs:
               if (!Number.isFinite(Number(p.fundamentalTradingApy30dPct))) throw new Error(`${p.market}: FT APY missing`);
               if (!p.historicalProvider) throw new Error(`${p.market}: historical provider missing`);
             }
-            console.log('YB SOURCE MESH: OK');
+            console.log('YB SOURCE MESH v1.8: OK');
           } else {
             if (yb.status !== 'warming') throw new Error(`unexpected Yield Basis status: ${yb.status}`);
             if (yb.sourceMeshExhausted !== true) throw new Error('warming YB must explicitly mark sourceMeshExhausted=true');
-            console.log('YB SOURCE MESH: WARMING – all reproducible historical sources exhausted; diagnostics will be published.');
+            console.log('YB SOURCE MESH v1.8: WARMING – all reproducible historical sources exhausted; diagnostics will be published.');
           }
           NODE
 
@@ -108,7 +108,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f "$FILE"
           if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Resolve Company #007 Yield Basis source mesh"
+            git commit -m "Resolve Company #007 Yield Basis canonical quantity"
           else
             echo "Generated resolver matches tracked content."
           fi
