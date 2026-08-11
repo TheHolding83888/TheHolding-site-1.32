@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.3.5';
-const COLLECTOR_VERSION = '0.3.5-state-first-ve-rewards';
+const VERSION = '0.3.6';
+const COLLECTOR_VERSION = '0.3.6-bounded-180d-ve-rewards';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -1189,6 +1189,304 @@ async function probeRewardParticipation(rewardAddress, tokenId, provider, cfg) {
   };
 }
 
+// v0.3.6 — bounded operational index for direct veAERO / veVELO rewards.
+// Daily Company Rewards is operational accounting, not full-life forensic archaeology.
+const DIRECT_VE_LOOKBACK_DAYS = 180;
+const DIRECT_VE_BLOCK_SECONDS = { base: 2, optimism: 2 };
+const DIRECT_VE_RECENT_OVERLAP_BLOCKS = 50_000;
+const DIRECT_VE_NEW_NFT_BUDGET_MS = 15_000;
+const DIRECT_VE_INDEXED_BUDGET_MS = 8_000;
+const directVeRewardIndex = new Map();
+
+function directVeIndexKey(providerKey, tokenId) {
+  return `${providerKey}:${String(tokenId)}`;
+}
+function safeOperationalContract(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  try {
+    const rewardAddress = getAddress(raw.rewardAddress || raw.rewardContract);
+    if (!rewardAddress || rewardAddress === ZeroAddress) return null;
+    return {
+      pool: isAddressLike(raw.pool) ? getAddress(raw.pool) : null,
+      gauge: isAddressLike(raw.gauge) ? getAddress(raw.gauge) : null,
+      rewardAddress,
+      rewardKind: raw.rewardKind || null,
+      firstSeenAt: raw.firstSeenAt || null,
+      lastSeenAt: raw.lastSeenAt || null
+    };
+  } catch {
+    return null;
+  }
+}
+function mergeOperationalContracts(entries) {
+  const map = new Map();
+  for (const raw of entries || []) {
+    const x = safeOperationalContract(raw);
+    if (!x) continue;
+    const key = x.rewardAddress.toLowerCase();
+    const prev = map.get(key);
+    map.set(key, prev ? {
+      pool: prev.pool || x.pool,
+      gauge: prev.gauge || x.gauge,
+      rewardAddress: prev.rewardAddress,
+      rewardKind: prev.rewardKind || x.rewardKind,
+      firstSeenAt: prev.firstSeenAt || x.firstSeenAt,
+      lastSeenAt: x.lastSeenAt || prev.lastSeenAt
+    } : x);
+  }
+  return [...map.values()];
+}
+function normalizeDirectVeIndexEntry(providerKey, tokenId, raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  return {
+    providerKey,
+    tokenId: String(tokenId),
+    contracts: mergeOperationalContracts(raw.contracts || []),
+    observedAt: raw.observedAt || raw.lastUpdatedAt || null,
+    recentThroughBlock: Number.isFinite(Number(raw.recentThroughBlock)) ? Number(raw.recentThroughBlock) : null,
+    recentStartBlock: Number.isFinite(Number(raw.recentStartBlock)) ? Number(raw.recentStartBlock) : null,
+    bootstrapSource: raw.bootstrapSource || null,
+    bootstrapComplete: raw.bootstrapComplete === true,
+    lastUpdatedAt: raw.lastUpdatedAt || null
+  };
+}
+function upsertDirectVeIndex(providerKey, tokenId, patch) {
+  const key = directVeIndexKey(providerKey, tokenId);
+  const prev = directVeRewardIndex.get(key) || {
+    providerKey, tokenId: String(tokenId), contracts: [],
+    observedAt: null, recentThroughBlock: null, recentStartBlock: null,
+    bootstrapSource: null, bootstrapComplete: false, lastUpdatedAt: null
+  };
+  const next = {
+    ...prev,
+    ...patch,
+    providerKey,
+    tokenId: String(tokenId),
+    contracts: mergeOperationalContracts([...(prev.contracts || []), ...(patch.contracts || [])])
+  };
+  directVeRewardIndex.set(key, next);
+  return next;
+}
+function bootstrapDirectVeRewardIndex(previous) {
+  const saved = previous?.internalState?.directVeRewardIndex;
+  if (saved && typeof saved === 'object') {
+    for (const [key, raw] of Object.entries(saved)) {
+      const [providerKey, tokenId] = key.split(':');
+      if (!providerKey || !tokenId) continue;
+      const entry = normalizeDirectVeIndexEntry(providerKey, tokenId, raw);
+      if (entry) directVeRewardIndex.set(directVeIndexKey(providerKey, tokenId), entry);
+    }
+  }
+
+  // One-time migration from the successful v0.3.5 full-registry snapshot.
+  // v0.3.5 already identified every reward contract where the veNFT had participation
+  // state in the current deployed Voter registry. Preserve that work instead of
+  // re-enumerating thousands of zero-participation contracts.
+  const previousObservedAt = previous?.generatedAt || null;
+  const walk = (value, inheritedProvider = null) => {
+    if (!value || typeof value !== 'object') return;
+    let providerKey = inheritedProvider;
+    if (value.protocol === 'Aerodrome' || value.chain === 'Base') providerKey = 'base';
+    if (value.protocol === 'Velodrome' || value.chain === 'Optimism') providerKey = 'optimism';
+
+    if (value.mode === 'direct' && value.tokenId && providerKey && Array.isArray(value.matchedRewardContracts)) {
+      const contracts = value.matchedRewardContracts.map(x => ({
+        ...x,
+        firstSeenAt: previousObservedAt,
+        lastSeenAt: previousObservedAt
+      }));
+      const current = directVeRewardIndex.get(directVeIndexKey(providerKey, value.tokenId));
+      upsertDirectVeIndex(providerKey, value.tokenId, {
+        contracts,
+        observedAt: current?.observedAt || previousObservedAt,
+        bootstrapSource: current?.bootstrapSource || 'v0.3.5-full-registry',
+        bootstrapComplete: current?.bootstrapComplete === true || value.currentStateDiscovery?.registryComplete === true,
+        lastUpdatedAt: current?.lastUpdatedAt || previousObservedAt
+      });
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item, providerKey);
+    } else {
+      for (const item of Object.values(value)) walk(item, providerKey);
+    }
+  };
+  walk(previous?.companies);
+}
+function serializeDirectVeRewardIndex() {
+  return Object.fromEntries([...directVeRewardIndex.entries()].map(([key, value]) => [key, value]));
+}
+function taggedOperationalEntries(entries, source) {
+  return (entries || []).map(x => ({ ...x, discoverySources: [source] }));
+}
+function mergeTaggedOperationalEntries(groups) {
+  const map = new Map();
+  for (const entry of groups.flat().filter(Boolean)) {
+    if (!entry?.rewardAddress || entry.rewardAddress === ZeroAddress) continue;
+    const key = String(entry.rewardAddress).toLowerCase();
+    const prev = map.get(key);
+    const sources = [...new Set([...(prev?.discoverySources || []), ...(entry.discoverySources || [])])];
+    map.set(key, {
+      pool: prev?.pool || entry.pool || null,
+      gauge: prev?.gauge || entry.gauge || null,
+      rewardAddress: getAddress(entry.rewardAddress),
+      rewardKind: prev?.rewardKind || entry.rewardKind || null,
+      registryIndex: null,
+      discoverySources: sources
+    });
+  }
+  return [...map.values()];
+}
+function indexedEntriesForPool(indexEntry, pool) {
+  if (!pool) return [];
+  const key = String(pool).toLowerCase();
+  return (indexEntry?.contracts || []).filter(x => String(x.pool || '').toLowerCase() === key);
+}
+async function resolveOperationalPools(voter, cfg, pools, indexEntry, source) {
+  const uniquePools = [...new Set((pools || []).filter(isAddressLike).map(getAddress))];
+  const rows = await mapLimit(uniquePools, 8, async pool => {
+    const cached = indexedEntriesForPool(indexEntry, pool);
+    try {
+      const resolved = await resolveVoterPoolRewardEntries(voter, cfg, pool, null);
+      const entries = mergeOperationalContracts([...(resolved.entries || []), ...cached]);
+      const coveredByCache = cached.length >= 2 || (cached.length && !(resolved.issues || []).length);
+      return {
+        entries: taggedOperationalEntries(entries, source),
+        issues: coveredByCache ? [] : (resolved.issues || []).map(x => `${source} pool ${pool}: ${x}`)
+      };
+    } catch (e) {
+      if (cached.length) return { entries: taggedOperationalEntries(cached, source), issues: [] };
+      return { entries: [], issues: [`${source} pool ${pool}: ${e.shortMessage || e.message}`] };
+    }
+  });
+  return {
+    entries: rows.flatMap(x => x.entries || []),
+    issues: rows.flatMap(x => x.issues || [])
+  };
+}
+async function fetchRecentBlockscoutWindow(providerKey, voterAddress, topic3, fromBlock, toBlock, deadline) {
+  const base = (BLOCKSCOUT[providerKey] || [])[0];
+  if (!base) throw new Error(`No Blockscout endpoint for ${providerKey}`);
+  const remain = deadline - Date.now();
+  if (remain <= 500) throw new Error('recent discovery time budget exhausted');
+  const qs = new URLSearchParams({
+    module: 'logs',
+    action: 'getLogs',
+    fromBlock: String(fromBlock),
+    toBlock: String(toBlock),
+    address: voterAddress,
+    topic0: VOTED_TOPIC0,
+    topic3,
+    topic0_3_opr: 'and'
+  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), Math.min(4_000, Math.max(700, remain)));
+  try {
+    const res = await fetch(`${base}/api?${qs.toString()}`, { signal: controller.signal });
+    if (!res.ok) throw new Error(`Blockscout HTTP ${res.status}`);
+    const data = await res.json();
+    if (Array.isArray(data?.result)) {
+      if (data.result.length >= 1000) throw new Error('Blockscout 1,000-log cap reached');
+      return data.result;
+    }
+    const msg = String(data?.message || data?.result || '');
+    if (/no logs|no records|not found/i.test(msg)) return [];
+    throw new Error(`Unexpected Blockscout response: ${msg || 'unknown'}`);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function boundedRecentVotedPools(cfg, tokenId, provider, indexEntry) {
+  const latestBlock = Number(await provider.getBlockNumber());
+  const blockSeconds = DIRECT_VE_BLOCK_SECONDS[cfg.providerKey] || 2;
+  const lookbackBlocks = Math.ceil(DIRECT_VE_LOOKBACK_DAYS * 86400 / blockSeconds);
+  const floorBlock = Math.max(0, latestBlock - lookbackBlocks);
+  const overlap = DIRECT_VE_RECENT_OVERLAP_BLOCKS;
+
+  let startBlock = floorBlock;
+  let mode = 'fresh-180d-bootstrap';
+  if (Number.isFinite(Number(indexEntry?.recentThroughBlock))) {
+    startBlock = Math.max(floorBlock, Number(indexEntry.recentThroughBlock) - overlap);
+    mode = 'indexed-tail';
+  } else if (indexEntry?.bootstrapComplete && indexEntry?.observedAt) {
+    const observedMs = Date.parse(indexEntry.observedAt);
+    if (Number.isFinite(observedMs)) {
+      const elapsedSeconds = Math.max(0, (Date.now() - observedMs) / 1000);
+      const estimatedPreviousBlock = latestBlock - Math.ceil(elapsedSeconds / blockSeconds);
+      startBlock = Math.max(floorBlock, estimatedPreviousBlock - overlap);
+      mode = 'v0.3.5-baseline-tail';
+    }
+  }
+  if (startBlock > latestBlock) startBlock = latestBlock;
+
+  const budgetMs = indexEntry ? DIRECT_VE_INDEXED_BUDGET_MS : DIRECT_VE_NEW_NFT_BUDGET_MS;
+  const deadline = Date.now() + budgetMs;
+  const topic3 = topicForUint256(tokenId);
+  const errors = [];
+
+  // Small tails are cheapest through direct RPC. One abortable request only.
+  if (latestBlock - startBlock <= 1_000_000) {
+    for (const url of historicalRpcCandidates(cfg.providerKey, provider)) {
+      const remain = deadline - Date.now();
+      if (remain <= 700) break;
+      try {
+        const raw = await rpcGetLogsJson(cfg.providerKey, url, {
+          address: cfg.voter,
+          fromBlock: `0x${startBlock.toString(16)}`,
+          toBlock: `0x${latestBlock.toString(16)}`,
+          topics: [VOTED_TOPIC0, null, null, topic3]
+        }, Math.min(3_500, Math.max(700, remain)), 1);
+        const logs = normalizeVotedLogs(raw, topic3);
+        return {
+          complete: true, mode, source: `bounded-rpc:${safeRpcLabel(url, cfg.providerKey)}`,
+          startBlock, throughBlock: latestBlock, latestBlock,
+          pools: [...new Set(logs.map(x => x.pool))],
+          logCount: logs.length, requestCount: 1, budgetMs, errors
+        };
+      } catch (e) {
+        errors.push(`rpc:${safeRpcLabel(url, cfg.providerKey)}:${redactKnownRpcUrls(e?.message || e)}`);
+      }
+    }
+  }
+
+  // Broad first onboarding uses only the recent 180-day horizon and a hard deadline.
+  // No slow retry/backoff loop and no pre-180-day archaeology.
+  const windowSize = 3_000_000;
+  const collected = [];
+  let throughBlock = startBlock - 1;
+  let requestCount = 0;
+  for (let from = startBlock; from <= latestBlock; from += windowSize) {
+    if (Date.now() >= deadline - 700) {
+      errors.push('recent discovery time budget exhausted');
+      break;
+    }
+    const to = Math.min(latestBlock, from + windowSize - 1);
+    try {
+      const chunk = await fetchRecentBlockscoutWindow(cfg.providerKey, cfg.voter, topic3, from, to, deadline);
+      collected.push(...chunk);
+      throughBlock = to;
+      requestCount++;
+      if (to < latestBlock) await sleep(120);
+    } catch (e) {
+      errors.push(`blockscout:${e?.message || e}`);
+      break;
+    }
+  }
+  const logs = normalizeVotedLogs(collected, topic3);
+  return {
+    complete: throughBlock >= latestBlock,
+    mode,
+    source: `bounded-blockscout:${cfg.providerKey}`,
+    startBlock,
+    throughBlock: Math.max(startBlock - 1, throughBlock),
+    latestBlock,
+    pools: [...new Set(logs.map(x => x.pool))],
+    logCount: logs.length,
+    requestCount,
+    budgetMs,
+    errors
+  };
+}
+
 async function collectVeProtocol(address, registry, kind, routeOverride=null) {
   const cfg = VE_PROTOCOLS[kind];
   const route = routeOverride || cfg.route;
@@ -1198,8 +1496,9 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
   const rewards = [];
   const positions = [];
   const issues = [];
+  const auditIssues = [];
+  const directOperationalComplete = [];
   let managedCount = 0, directCount = 0;
-  let stateRegistry = null;
 
   for (let i = 0; i < nftCount; i++) {
     const tokenId = await ve.ownerToNFTokenIdList(address, i);
@@ -1252,6 +1551,7 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
 
     directCount++;
 
+    // Rebase / veNFT emission component: exact current protocol state.
     const rd = new Contract(cfg.rewardsDistributor, REWARDS_DISTRIBUTOR_ABI, provider);
     try {
       const raw = await rd.claimable(tokenId);
@@ -1278,123 +1578,142 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
       } catch { break; }
     }
 
-    if (!stateRegistry) {
-      try {
-        stateRegistry = await currentVoterRewardRegistry(cfg, provider);
-        if (!stateRegistry.complete) issues.push(...stateRegistry.issues.map(x => `Voter registry: ${x}`));
-      } catch (e) {
-        stateRegistry = {
-          complete: false,
-          poolCount: null,
-          rewardContractCount: 0,
-          entries: [],
-          issues: [e.shortMessage || e.message || String(e)]
-        };
-        issues.push(`Voter registry discovery: ${e.shortMessage || e.message || e}`);
-      }
-    }
+    const key = directVeIndexKey(cfg.providerKey, tokenId);
+    const indexEntry = directVeRewardIndex.get(key) || null;
+    const recent = await boundedRecentVotedPools(cfg, tokenId, provider, indexEntry);
 
-    const fastRows = await mapLimit(currentPools, 8, async pool => {
-      try {
-        return await resolveVoterPoolRewardEntries(voter, cfg, pool, null);
-      } catch (e) {
-        return { entries: [], issues: [`current pool ${pool}: ${e.shortMessage || e.message}`] };
-      }
-    });
-    const fastEntries = [];
-    for (const row of fastRows) {
-      fastEntries.push(...(row?.entries || []));
-      if (Array.isArray(row?.issues)) issues.push(...row.issues);
-    }
+    const currentResolved = await resolveOperationalPools(voter, cfg, currentPools, indexEntry, 'current');
+    const recentOnlyPools = recent.pools.filter(p => !currentPools.some(x => x.toLowerCase() === p.toLowerCase()));
+    const recentResolved = await resolveOperationalPools(voter, cfg, recentOnlyPools, indexEntry, 'recent');
+    issues.push(...currentResolved.issues, ...recentResolved.issues);
+    if (!recent.complete) issues.push(`Recent ${DIRECT_VE_LOOKBACK_DAYS}d Voted discovery incomplete: ${recent.errors.join(' | ') || 'bounded scan stopped'}`);
 
-    const candidateEntries = uniqueRewardRegistryEntries([
-      ...(stateRegistry?.entries || []),
-      ...fastEntries
+    const cachedEntries = taggedOperationalEntries(indexEntry?.contracts || [], 'cache');
+    const candidateEntries = mergeTaggedOperationalEntries([
+      cachedEntries,
+      currentResolved.entries,
+      recentResolved.entries
     ]);
 
-    const checks = await mapLimit(candidateEntries, 24, async entry => {
-      const probe = await probeRewardParticipation(entry.rewardAddress, tokenId, provider, cfg);
-      if (probe.known && !probe.participates) return { entry, probe, rewards: [], issue: null };
-
+    const checks = await mapLimit(candidateEntries, 16, async entry => {
       const part = await enumerateRewardContract(entry.rewardAddress, tokenId, provider, {
         protocol: cfg.protocol,
         route,
         chain: cfg.chain,
         pricePlatform: cfg.providerKey === 'base' ? 'base' : 'optimistic-ethereum',
-        kind: entry.rewardKind,
+        kind: entry.rewardKind || 'VotingReward',
         details: {
           pool: entry.pool,
           gauge: entry.gauge,
-          registryIndex: entry.registryIndex,
-          participationProbe: probe.method,
-          participationValue: probe.value
+          discoverySources: entry.discoverySources
         }
       });
-      return { entry, probe, rewards: part.rewards || [], issue: part.issue || null };
+      return { entry, rewards: part.rewards || [], issue: part.issue || null };
     });
 
     const matchedPools = [];
     const matchedRewardContracts = [];
     for (const checked of checks) {
-      if (checked.issue) issues.push(checked.issue);
-      if (checked.probe?.participates || (checked.rewards || []).length) {
-        matchedPools.push(checked.entry.pool);
+      const operational = (checked.entry.discoverySources || []).some(x => x === 'current' || x === 'recent');
+      if (checked.issue) {
+        if (operational) issues.push(checked.issue);
+        else auditIssues.push(checked.issue);
+      }
+      if ((checked.rewards || []).length) {
+        if (checked.entry.pool) matchedPools.push(checked.entry.pool);
         matchedRewardContracts.push({
           pool: checked.entry.pool,
           gauge: checked.entry.gauge,
           rewardContract: checked.entry.rewardAddress,
           rewardKind: checked.entry.rewardKind,
-          participationProbe: checked.probe?.method || null,
-          participationValue: checked.probe?.value ?? null,
-          positiveRewardCount: (checked.rewards || []).length
+          discoverySources: checked.entry.discoverySources,
+          positiveRewardCount: checked.rewards.length
         });
       }
+      // No USD/materiality filter here: every positive fresh reward remains included,
+      // even cents. Pricing happens later in the common pricing layer.
       rewards.push(...(checked.rewards || []));
     }
 
-    const auditCache = historicalVoteCache.get(historyCacheKey(cfg.providerKey, tokenId)) || null;
-    const historicalPools = auditCache?.pools || [];
-    const currentPoolSet = new Set(currentPools.map(x => x.toLowerCase()));
-    const oldNoLongerVotedPools = historicalPools.filter(x => !currentPoolSet.has(x.toLowerCase()));
-    const allPools = [...new Set([...currentPools, ...historicalPools, ...matchedPools])];
+    const previousRecentThrough = Number.isFinite(Number(indexEntry?.recentThroughBlock))
+      ? Number(indexEntry.recentThroughBlock)
+      : null;
+    const nextRecentThrough = recent.complete
+      ? recent.latestBlock
+      : Math.max(previousRecentThrough || 0, Number(recent.throughBlock || 0)) || null;
 
+    const persistedContracts = candidateEntries.map(x => ({
+      pool: x.pool,
+      gauge: x.gauge,
+      rewardAddress: x.rewardAddress,
+      rewardKind: x.rewardKind,
+      firstSeenAt: indexEntry?.contracts?.find(y => String(y.rewardAddress).toLowerCase() === String(x.rewardAddress).toLowerCase())?.firstSeenAt || NOW,
+      lastSeenAt: NOW
+    }));
+    const nextIndex = upsertDirectVeIndex(cfg.providerKey, tokenId, {
+      contracts: persistedContracts,
+      observedAt: NOW,
+      recentStartBlock: recent.startBlock,
+      recentThroughBlock: nextRecentThrough,
+      bootstrapSource: indexEntry?.bootstrapSource || 'bounded-180d',
+      bootstrapComplete: indexEntry?.bootstrapComplete === true,
+      lastUpdatedAt: NOW
+    });
+
+    const operationalComplete = recent.complete && currentResolved.issues.length === 0 && recentResolved.issues.length === 0;
+    directOperationalComplete.push(operationalComplete);
+
+    const auditCache = historicalVoteCache.get(historyCacheKey(cfg.providerKey, tokenId)) || null;
     positions.push({
       tokenId: tokenId.toString(),
       mode: 'direct',
       currentVotedPools: currentPools,
+      recentVotedPools: recent.pools,
       matchedRewardPools: [...new Set(matchedPools)],
       matchedRewardContracts,
-      historicalVotedPools: historicalPools,
-      oldNoLongerVotedPools,
-      allVotedPools: allPools,
-      currentStateDiscovery: {
-        method: 'Voter registry -> reward participation checkpoint -> Reward.earned(current block)',
-        registryComplete: Boolean(stateRegistry?.complete),
-        voterPoolCount: stateRegistry?.poolCount ?? null,
-        rewardContractCount: stateRegistry?.rewardContractCount ?? candidateEntries.length,
-        candidateRewardContracts: candidateEntries.length
+      operationalDiscovery: {
+        method: 'known reward index + current poolVote + bounded 180d Voted tail -> Reward.earned(current block)',
+        lookbackDays: DIRECT_VE_LOOKBACK_DAYS,
+        complete: operationalComplete,
+        mode: recent.mode,
+        source: recent.source,
+        startBlock: recent.startBlock,
+        throughBlock: recent.throughBlock,
+        latestBlock: recent.latestBlock,
+        recentLogCount: recent.logCount,
+        recentPoolCount: recent.pools.length,
+        candidateRewardContracts: candidateEntries.length,
+        cachedRewardContracts: indexEntry?.contracts?.length || 0,
+        currentPoolCount: currentPools.length,
+        budgetMs: recent.budgetMs,
+        errors: recent.errors
+      },
+      rewardIndex: {
+        contractCount: nextIndex.contracts.length,
+        recentThroughBlock: nextIndex.recentThroughBlock,
+        bootstrapSource: nextIndex.bootstrapSource,
+        bootstrapComplete: nextIndex.bootstrapComplete
       },
       historyDiscovery: auditCache ? {
         status: auditCache.complete === false ? 'cached-partial-audit' : 'cached-complete-audit',
         source: auditCache.source || null,
         throughBlock: auditCache.throughBlock ?? null,
-        poolCount: historicalPools.length,
-        note: 'Historical Voted cache retained for audit/provenance only; it is not required for current Accrued Rewards.'
+        poolCount: (auditCache.pools || []).length,
+        note: 'Full-life historical Voted cache is audit/provenance only and never blocks operational Accrued Rewards.'
       } : {
-        status: 'not-run-daily',
-        note: 'Historical Voted backfill is non-blocking audit/fallback and is not run by the daily current-state collector.'
+        status: 'not-required-operationally',
+        note: 'Pre-180-day unknown history is forensic/audit scope, not daily operational discovery.'
       }
     });
   }
 
-  const directStateIncomplete = directCount > 0 && !stateRegistry?.complete;
-  const status = directStateIncomplete || issues.length ? 'partial' : 'ok';
-
+  const directComplete = directCount === 0 || directOperationalComplete.every(Boolean);
+  const status = !directComplete || issues.length ? 'partial' : 'ok';
   let note;
-  if (directStateIncomplete) {
-    note = 'Current rewards are measured from protocol reward state, but the Voter reward-contract registry had a transport/mapping gap; route remains partial rather than assuming completeness.';
+  if (directCount > 0 && directComplete && !issues.length) {
+    note = `Direct veNFT Accrued Rewards use a bounded operational index: known reward contracts + current votes + a ${DIRECT_VE_LOOKBACK_DAYS}-day recent Voted tail, then exact Reward.earned at the current block. Fresh rewards of any USD size are retained.`;
   } else if (directCount > 0) {
-    note = 'Direct veNFT Accrued Rewards are measured from the current Voter pool registry and each reward contract’s own participation checkpoints plus earned(token, tokenId). Historical Voted backfill is retained only for audit/provenance.';
+    note = `Current Accrued Rewards are measured, but bounded ${DIRECT_VE_LOOKBACK_DAYS}-day operational discovery had a gap. Deep pre-${DIRECT_VE_LOOKBACK_DAYS}-day archaeology is intentionally non-blocking.`;
   } else if (issues.length) {
     note = 'Managed position measured with one or more non-fatal reward-enumeration gaps.';
   } else {
@@ -1408,17 +1727,20 @@ async function collectVeProtocol(address, registry, kind, routeOverride=null) {
       status,
       chain: cfg.chain,
       metric: directCount > 0
-        ? 'veNFT exact current accrued rewards from Voter reward registry + Reward.earned'
+        ? `veNFT operational accrued rewards · ${DIRECT_VE_LOOKBACK_DAYS}d fresh horizon + persistent reward index`
         : 'veNFT current accrued rewards + managed compounding',
       note,
       details: {
         veNftCount: nftCount,
         managedPositions: managedCount,
         directPositions: directCount,
-        currentStateRegistryComplete: directCount > 0 ? Boolean(stateRegistry?.complete) : true,
-        historicalVoteBackfillRequiredForCurrentAccrued: false,
+        operationalCoverageComplete: directComplete,
+        freshLookbackDays: DIRECT_VE_LOOKBACK_DAYS,
+        freshRewardsMinimumUsd: 0,
+        deepHistoryBlocksDailyRun: false,
         positions,
-        issues
+        issues,
+        auditIssues
       }
     },
     rewards,
@@ -2641,6 +2963,7 @@ async function main() {
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
   const previous = readPrevious();
   bootstrapHistoricalVoteCache(previous);
+  bootstrapDirectVeRewardIndex(previous);
   const registry = createProviderRegistry();
   const ethProvider = await registry.get('ethereum');
   // Prewarm the three chains used by the already-production v0.1 companies.
@@ -2750,7 +3073,7 @@ async function main() {
     methodology: {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
       multiWallet: 'Company wallets are resolved independently. Reward routes may be scoped to specific wallet aliases or addresses; only matching wallets are queried for that route. Raw rewards retain wallet provenance and scoped results are aggregated into one Company Passport.',
-      aerodromeVelodrome: 'Direct veAERO/veVELO Accrued Rewards use a state-first current-block method: enumerate the deployed Voter pools registry, resolve pool -> gauge -> fee/incentive reward contracts, use protocol-native tokenId participation checkpoints (Aerodrome numCheckpoints; current Velodrome userRewardEpoch) as a filter, then call each relevant Reward.earned(token, tokenId). Current poolVote is a fast path only. Existing historical Voted caches/backfill remain audit/provenance/fallback infrastructure and no longer block daily Accrued Rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers the actual veNFT holder through official 40 Acres portfolio factories; already distributed wallet payouts are not counted as accrued rewards.',
+      aerodromeVelodrome: 'Direct veAERO/veVELO Accrued Rewards use bounded operational accounting. The collector persists a per-veNFT reward-contract index, always checks current poolVote reward contracts, and discovers only the fresh 180-day Voted tail. Every positive fresh reward is retained regardless of USD size. Unknown pre-180-day history is audit/forensic scope and never blocks a normal run. The successful v0.3.5 full-registry snapshot is reused as a one-time baseline for existing veNFTs. Managed/Relay rewards are read directly. Defitea Velodrome still discovers the actual 40 Acres holder; already distributed wallet payouts are not counted as accrued rewards.',
       curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
       pendle: 'Per-wallet sPENDLE claimable merkle rewards and accrued ETH fees are read from Pendle official Core API. Legacy vePENDLE is normalized from vePendlePositionData for Passport display without adding it to TVL.',
@@ -2763,7 +3086,10 @@ async function main() {
       tvlTreatment: 'Accrued Rewards remain separate from Company TVL and Treasury cash.'
     },
     rpc: registry.rpcSummary(),
-    internalState: { historicalVoteCache: serializeHistoricalVoteCache() },
+    internalState: {
+      historicalVoteCache: serializeHistoricalVoteCache(),
+      directVeRewardIndex: serializeDirectVeRewardIndex()
+    },
     companies,
     engineErrors,
     history: filtered.slice(-400)
