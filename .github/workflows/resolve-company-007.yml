@@ -1,4 +1,4 @@
-name: Discover Company #007
+name: "Resolve Company #007"
 
 on:
   workflow_dispatch:
@@ -7,11 +7,11 @@ permissions:
   contents: write
 
 concurrency:
-  group: discover-company-007
+  group: resolve-company-007
   cancel-in-progress: false
 
 jobs:
-  discover:
+  resolve:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -26,11 +26,12 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install discovery dependency
+      - name: Install resolver dependency
         run: npm install --no-save ethers@6
 
-      - name: Discover Company #007 current state
+      - name: "Resolve Company #007 targeted unknowns"
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
@@ -38,40 +39,49 @@ jobs:
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
           ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
           ZKSYNC_RPC_URL: ${{ secrets.ZKSYNC_RPC_URL }}
-          COMPANY_007_DISCOVERY_OUTPUT: companies/company-007-discovery.json
-        run: node onboarding/company-007-discovery.mjs
+          COMPANY_007_DISCOVERY_INPUT: companies/company-007-discovery.json
+          COMPANY_007_RESOLVE_OUTPUT: companies/company-007-resolve.json
+        run: node onboarding/company-007-resolve.mjs
 
-      - name: Validate generated JSON
+      - name: Validate resolver JSON
         run: |
           node - <<'NODE'
           const fs = require('fs');
-          const p = 'companies/company-007-discovery.json';
+          const p = 'companies/company-007-resolve.json';
           const d = JSON.parse(fs.readFileSync(p, 'utf8'));
-          if (d.version !== '1.0-current-state-fast') throw new Error('unexpected discovery version');
+
+          if (d.version !== '1.1-targeted-resolver') throw new Error('resolver version mismatch');
           if (d.company?.registry !== '007') throw new Error('registry mismatch');
           if (d.company?.name !== "Rook's portfolio") throw new Error('name mismatch');
-          if (d.company?.foundedAt !== '2026-01-08') throw new Error('founding mismatch');
-          if (!Array.isArray(d.company?.wallets) || d.company.wallets.length !== 2) throw new Error('wallet count mismatch');
-          if (!Array.isArray(d.proposedCompanyBook) || d.proposedCompanyBook.length !== 7) throw new Error('Company Book row count mismatch');
-          const syms = d.proposedCompanyBook.map(x => x.symbol).join(',');
-          if (syms !== 'BTC,ETH,AERO,CVX,CRV,LINK,ZK') throw new Error('Company Book symbols mismatch: ' + syms);
-          console.log('Discovery JSON validation passed');
+
+          for (const key of ['crv','link','zk','yieldBasis','votium']) {
+            if (!d.results?.[key]) throw new Error('missing result: ' + key);
+          }
+
+          if (d.results.zk?.coingeckoId !== 'zksync') {
+            throw new Error('ZK CoinGecko mapping is not zksync');
+          }
+
+          if (d.results.yieldBasis?.methodology?.emissionsIncluded !== false) {
+            throw new Error('Yield Basis unstaked methodology must exclude emissions');
+          }
+
+          console.log('Company #007 resolver JSON validation passed');
+          console.log('Production readiness:', JSON.stringify(d.productionReadiness));
           NODE
 
-      - name: Commit discovery output
+      - name: Commit resolver output
         run: |
-          # `git diff` does not report a brand-new untracked file.
-          # `git status --porcelain` correctly detects both new and modified JSON.
-          if [ -z "$(git status --porcelain -- companies/company-007-discovery.json)" ]; then
-            echo "No discovery changes to commit."
+          if [ -z "$(git status --porcelain -- companies/company-007-resolve.json)" ]; then
+            echo "No resolver changes to commit."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add companies/company-007-discovery.json
-          git commit -m "Update Company #007 discovery"
+          git add companies/company-007-resolve.json
+          git commit -m "Resolve Company #007 targeted routes"
 
           for attempt in 1 2 3; do
             git fetch origin main
@@ -82,5 +92,5 @@ jobs:
             sleep $((attempt * 2))
           done
 
-          echo "Failed to push discovery output after retries."
+          echo "Failed to push resolver output after retries."
           exit 1
