@@ -3872,7 +3872,7 @@ const REWARD_ROUTE_LABELS = {
     'fx-fees-votemarket': 'f(x) Protocol · VoteMarket', // legacy v0.2.1 data
     'votemarket-vefxn': 'VoteMarket · veFXN',
     'frax-yield': 'Frax',
-    'yield-basis-fees': 'Yield Basis',
+    'yield-basis-fees': 'Yield Basis · veYB',
     'venice-staking': 'Venice',
     'liquity-staking': 'Liquity',
     'resupply-staking': 'Resupply',
@@ -4738,9 +4738,11 @@ function renderIndex(lang) {
 
                 // Normal rows, including AERO/VELO Compounded, intentionally remain
                 // separate from the Unclaimed route rollup.
-                const protocolLabel = isDefitea && x.velodromeRollup
-                    ? 'Velodrome · 40 Acres'
-                    : (x.protocol || 'Protocol');
+                const protocolLabel = x.route === 'yield-basis-fees'
+                    ? 'Yield Basis · veYB'
+                    : (isDefitea && x.velodromeRollup
+                        ? 'Velodrome · 40 Acres'
+                        : (x.protocol || 'Protocol'));
                 rows += '<div class="ipx-reward-row">'
                     + '<div><div class="ipx-reward-protocol">' + protocolLabel
                     + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
