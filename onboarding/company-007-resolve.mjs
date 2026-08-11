@@ -1,19 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import {
-  Contract,
-  JsonRpcProvider,
+  Interface,
   formatUnits,
   getAddress,
-  keccak256,
-  solidityPackedKeccak256,
-  concat
+  toBeHex
 } from 'ethers';
 
 const VERSION = '1.1-targeted-resolver';
-// BOOT-SAFE PATCH: normalize address casing before ethers checksum validation.
-const DISCOVERY_PATH = process.env.COMPANY_007_DISCOVERY_INPUT
-  || path.resolve('companies/company-007-discovery.json');
+const YB_RESOLVER_VERSION = '1.3-yb-only-bounded-recovery';
 const OUTPUT_PATH = process.env.COMPANY_007_RESOLVE_OUTPUT
   || path.resolve('companies/company-007-resolve.json');
 
@@ -21,85 +17,6 @@ const WALLETS = [
   getAddress('0x7ec6331188468269dc7c1cf6a84c972632178b1e'),
   getAddress('0x9c548960bd053c8465f298a711b6343ae0360309')
 ];
-
-const ENTRY = Object.freeze({
-  CRV: 0.2129,
-  LINK: 14.9,
-  ZK: 0.14
-});
-
-const RPC = {
-  ethereum: uniq([
-    process.env.ETH_RPC_URL,
-    process.env.ETH_RPC_URL_2,
-    'https://ethereum-rpc.publicnode.com',
-    'https://eth.llamarpc.com'
-  ]),
-  base: uniq([
-    process.env.BASE_RPC_URL,
-    process.env.BASE_RPC_URL_2,
-    'https://base-rpc.publicnode.com',
-    'https://mainnet.base.org'
-  ]),
-  optimism: uniq([
-    process.env.OPTIMISM_RPC_URL,
-    'https://optimism-rpc.publicnode.com',
-    'https://mainnet.optimism.io'
-  ]),
-  arbitrum: uniq([
-    process.env.ARBITRUM_RPC_URL,
-    'https://arbitrum-one-rpc.publicnode.com',
-    'https://arb1.arbitrum.io/rpc'
-  ]),
-  zksync: uniq([
-    process.env.ZKSYNC_RPC_URL,
-    'https://mainnet.era.zksync.io'
-  ])
-};
-
-const ARCHIVE_ETH_RPC = uniq([
-  process.env.ETH_ARCHIVE_RPC_URL,
-  process.env.ETH_ARCHIVE_RPC_URL_2,
-  'https://eth.drpc.org',
-  'https://ethereum-rpc.publicnode.com',
-  'https://eth.llamarpc.com',
-  'https://rpc.flashbots.net'
-]);
-
-const CHAIN_LABEL = {
-  ethereum: 'Ethereum',
-  base: 'Base',
-  optimism: 'Optimism',
-  arbitrum: 'Arbitrum',
-  zksync: 'ZKsync Era'
-};
-
-const CRV = {
-  token: getAddress('0xd533a949740bb3306d119cc777fa900ba034cd52'),
-  votingEscrow: getAddress('0x5f3b5dfeb7b28cdbd7faba78963ee202a494e2a2'),
-  cvxCRV: getAddress('0x62b9c7356a2dc64a1969e19c23e4f579f9810aa7')
-};
-
-const LINK = {
-  ethereum: getAddress('0x514910771af9ca656af840dff83e8264ecf986ca'),
-  base: getAddress('0x88fb150bdc53a65fe94dea0c9ba0a6daf8c6e196'),
-  arbitrum: getAddress('0xf97f4df75117a78c1a5a0dbb814af92458539fb4'),
-  optimism: getAddress('0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6'),
-  zksync: getAddress('0x52869bae3e091e36b0915941577f2d47d8d8b534')
-};
-
-const ZK = {
-  token: getAddress('0x5a7d6b2f92c77fad6ccabd7ee0624e64907eaf3e'),
-  coingeckoId: 'zksync'
-};
-
-const VOTIUM = {
-  repo: 'oo-00/Votium',
-  branch: 'main',
-  activeTokens:
-    'https://raw.githubusercontent.com/oo-00/Votium/main/merkle/activeTokens.json',
-  stash: getAddress('0x378ba9b73309be80bf4c2c027aad799766a7ed5a')
-};
 
 const YB_MARKETS = [
   {
@@ -116,34 +33,58 @@ const YB_MARKETS = [
   }
 ];
 
+const CURRENT_ETH_RPC = uniq([
+  process.env.ETH_RPC_URL,
+  process.env.ETH_RPC_URL_2,
+  'https://ethereum-rpc.publicnode.com',
+  'https://eth.drpc.org',
+  'https://eth.llamarpc.com'
+]);
+
+const ARCHIVE_ETH_RPC = uniq([
+  process.env.ETH_ARCHIVE_RPC_URL,
+  process.env.ETH_ARCHIVE_RPC_URL_2,
+  'https://eth.drpc.org',
+  'https://ethereum-rpc.publicnode.com',
+  'https://eth.llamarpc.com',
+  'https://rpc.flashbots.net'
+]);
+
+const LT_IFACE = new Interface([
+  'function pricePerShare() view returns (uint256)',
+  'function preview_withdraw(uint256 shares) view returns (uint256)',
+  'function balanceOf(address) view returns (uint256)'
+]);
+
 function uniq(xs) {
   return [...new Set((xs || []).map(x => String(x || '').trim()).filter(Boolean))];
 }
-function lower(x) {
-  return String(x || '').toLowerCase();
+
+function nowIso() {
+  return new Date().toISOString();
 }
-function finite(x) {
-  const n = Number(x);
-  return Number.isFinite(n) ? n : null;
-}
+
 function round(x, d = 12) {
   const n = Number(x);
   return Number.isFinite(n) ? Number(n.toFixed(d)) : null;
 }
+
 function errorText(e) {
   return String(e?.shortMessage || e?.message || e || 'unknown')
     .replace(/https?:\/\/[^\s)]+/g, '[url-redacted]');
 }
+
 function safeHost(url) {
   const secrets = [
-    process.env.ETH_RPC_URL, process.env.ETH_RPC_URL_2,
-    process.env.BASE_RPC_URL, process.env.BASE_RPC_URL_2,
-    process.env.OPTIMISM_RPC_URL, process.env.ARBITRUM_RPC_URL,
-    process.env.ZKSYNC_RPC_URL
+    process.env.ETH_RPC_URL,
+    process.env.ETH_RPC_URL_2,
+    process.env.ETH_ARCHIVE_RPC_URL,
+    process.env.ETH_ARCHIVE_RPC_URL_2
   ].filter(Boolean);
   if (secrets.includes(url)) return 'configured';
   try { return new URL(url).hostname; } catch { return 'configured'; }
 }
+
 function positiveBigInt(x) {
   try {
     const b = BigInt(x);
@@ -152,896 +93,344 @@ function positiveBigInt(x) {
     return 0n;
   }
 }
-function sum(xs) {
-  return (xs || []).reduce((a, b) => a + (Number(b) || 0), 0);
-}
-function nowIso() { return new Date().toISOString(); }
 
-async function fetchJson(url, opts = {}) {
-  const timeoutMs = opts.timeoutMs || 15000;
+function blockTag(n) {
+  return toBeHex(Number(n));
+}
+
+function stableHash(value) {
+  return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
+async function rpc(url, method, params = [], timeoutMs = 7000) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const headers = {
-      'user-agent': 'The-Holding-Company-007-Resolver/1.1',
-      'accept': 'application/vnd.github+json',
-      ...(opts.headers || {})
-    };
     const r = await fetch(url, {
-      cache: 'no-store',
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'user-agent': 'The-Holding-Company-007-YB-Recovery/1.3'
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method,
+        params
+      }),
       signal: ctrl.signal,
-      headers
+      cache: 'no-store'
     });
     if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
-    return await r.json();
+    const j = await r.json();
+    if (j?.error) throw new Error(`RPC ${j.error.code}: ${j.error.message || 'unknown error'}`);
+    if (j?.result == null) throw new Error(`RPC ${method}: null result`);
+    return j.result;
   } finally {
-    clearTimeout(t);
+    clearTimeout(timer);
   }
 }
 
-async function fetchText(url, opts = {}) {
-  const timeoutMs = opts.timeoutMs || 15000;
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const headers = {
-      'user-agent': 'The-Holding-Company-007-Resolver/1.1',
-      ...(opts.headers || {})
-    };
-    const r = await fetch(url, {
-      cache: 'no-store',
-      signal: ctrl.signal,
-      headers
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
-    return await r.text();
-  } finally {
-    clearTimeout(t);
-  }
-}
-
-async function withProvider(chain, fn) {
-  const errors = [];
-  for (const url of RPC[chain] || []) {
-    const provider = new JsonRpcProvider(url);
-    try {
-      const result = await fn(provider);
-      return { result, provider: `${chain}:${safeHost(url)}`, errors };
-    } catch (e) {
-      errors.push(`${chain}:${safeHost(url)}: ${errorText(e)}`);
-    }
-  }
-  throw new Error(`${chain} providers exhausted: ${errors.join(' | ')}`);
-}
-
-async function safeProvider(chain, fn) {
-  try {
-    return await withProvider(chain, fn);
-  } catch (e) {
-    return { result: null, provider: null, errors: [errorText(e)] };
-  }
-}
-
-async function erc20Balance(provider, token, wallet, decimals = 18) {
-  const c = new Contract(token, [
-    'function balanceOf(address) view returns (uint256)'
-  ], provider);
-  const raw = positiveBigInt(await c.balanceOf(wallet));
+async function getBlock(url, numberOrTag) {
+  const tag = numberOrTag === 'latest' ? 'latest' : blockTag(numberOrTag);
+  const b = await rpc(url, 'eth_getBlockByNumber', [tag, false], 7000);
+  if (!b?.number || !b?.timestamp) throw new Error(`block ${tag} unavailable`);
   return {
-    raw: raw.toString(),
-    amount: Number(formatUnits(raw, decimals))
+    number: Number(BigInt(b.number)),
+    timestamp: Number(BigInt(b.timestamp))
   };
 }
 
-async function resolveCRV() {
-  const r = await safeProvider('ethereum', async provider => {
-    const ve = new Contract(CRV.votingEscrow, [
-      'function locked(address) view returns (int128 amount,uint256 end)',
-      'function token() view returns (address)'
-    ], provider);
-
-    const underlying = getAddress(await ve.token());
-    if (lower(underlying) !== lower(CRV.token)) {
-      throw new Error(`veCRV token mismatch: ${underlying}`);
-    }
-
-    const rows = [];
-    let directTotal = 0;
-    let lockedTotal = 0;
-    let cvxCrvCandidateTotal = 0;
-
-    for (const wallet of WALLETS) {
-      const direct = await erc20Balance(provider, CRV.token, wallet, 18);
-      const cvxCrv = await erc20Balance(provider, CRV.cvxCRV, wallet, 18);
-
-      let lockedRaw = 0n;
-      let lockEnd = 0n;
-      try {
-        const x = await ve.locked(wallet);
-        lockedRaw = positiveBigInt(x.amount);
-        lockEnd = positiveBigInt(x.end);
-      } catch {}
-
-      const locked = Number(formatUnits(lockedRaw, 18));
-      directTotal += direct.amount;
-      lockedTotal += locked;
-      cvxCrvCandidateTotal += cvxCrv.amount;
-
-      rows.push({
-        wallet,
-        directCRV: round(direct.amount),
-        veCRVLockedPrincipal: round(locked),
-        veCRVLockEndUnix: lockEnd > 0n ? Number(lockEnd) : null,
-        cvxCRVCandidate: round(cvxCrv.amount)
-      });
-    }
-
-    const publicCandidateQuantity = directTotal + lockedTotal;
-    return {
-      status: 'ok',
-      chain: 'Ethereum',
-      crvToken: CRV.token,
-      votingEscrow: CRV.votingEscrow,
-      rows,
-      directCRV: round(directTotal),
-      veCRVLockedPrincipal: round(lockedTotal),
-      publicCandidateQuantity: round(publicCandidateQuantity),
-      entryUsd: ENTRY.CRV,
-      costBasisUsd: round(publicCandidateQuantity * ENTRY.CRV, 6),
-      cvxCRVCandidateNotAggregated: round(cvxCrvCandidateTotal),
-      classificationDecision: lockedTotal > 0
-        ? 'veCRV exists; resolver reports it separately. Do not change #007 productivity policy until final integration review.'
-        : 'No veCRV lock detected. Public CRV candidate is direct CRV only.',
-      note: 'cvxCRV is intentionally not collapsed into CRV without explicit economic-normalization approval.'
-    };
-  });
-
-  return {
-    ...(r.result || { status: 'partial' }),
-    diagnostics: r.errors || [],
-    provider: r.provider || null
-  };
-}
-
-async function resolveLINK() {
-  const rows = [];
+async function chooseCurrentProvider() {
   const diagnostics = [];
-  let completeChains = 0;
-
-  for (const [chain, token] of Object.entries(LINK)) {
-    const r = await safeProvider(chain, async provider => {
-      const chainRows = [];
-      for (const wallet of WALLETS) {
-        const b = await erc20Balance(provider, token, wallet, 18);
-        chainRows.push({
-          wallet,
-          chain: CHAIN_LABEL[chain],
-          token,
-          amount: round(b.amount)
-        });
-      }
-      return chainRows;
-    });
-    diagnostics.push(...(r.errors || []));
-    if (r.result) {
-      completeChains += 1;
-      rows.push(...r.result);
+  for (const url of CURRENT_ETH_RPC) {
+    try {
+      const latest = await getBlock(url, 'latest');
+      return { url, latest, diagnostics };
+    } catch (e) {
+      diagnostics.push(`ethereum-current:${safeHost(url)}: ${errorText(e)}`);
     }
   }
-
-  const quantity = sum(rows.map(x => x.amount));
-  return {
-    status: completeChains === Object.keys(LINK).length ? 'ok' : 'partial',
-    chainsExpected: Object.keys(LINK).length,
-    chainsMeasured: completeChains,
-    rows,
-    quantity: round(quantity),
-    entryUsd: ENTRY.LINK,
-    costBasisUsd: round(quantity * ENTRY.LINK, 6),
-    diagnostics
-  };
+  throw new Error(`Ethereum current providers exhausted: ${diagnostics.join(' | ')}`);
 }
 
-async function resolveZK(discovery) {
-  const quantityFromDiscovery = Number(
-    discovery?.proposedCompanyBook?.find?.(x => x.symbol === 'ZK')?.quantity || 0
-  );
+async function findBlockAtOrBefore(url, latest, targetTs) {
+  if (latest.timestamp <= targetTs) return latest;
 
-  let quantity = quantityFromDiscovery;
-  const chainRead = await safeProvider('zksync', async provider => {
-    let total = 0;
-    const rows = [];
-    for (const wallet of WALLETS) {
-      const b = await erc20Balance(provider, ZK.token, wallet, 18);
-      total += b.amount;
-      rows.push({ wallet, amount: round(b.amount) });
-    }
-    return { total, rows };
-  });
-  if (chainRead.result) quantity = chainRead.result.total;
+  // Start near the expected 30-day Ethereum distance, then converge by timestamp.
+  let estimate = Math.max(0, latest.number - 216000);
+  let candidate = null;
 
-  let priceUsd = null;
-  let priceError = null;
-  try {
-    const j = await fetchJson(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(ZK.coingeckoId)}&vs_currencies=usd`,
-      { timeoutMs: 12000 }
-    );
-    priceUsd = finite(j?.[ZK.coingeckoId]?.usd);
-  } catch (e) {
-    priceError = errorText(e);
+  for (let i = 0; i < 6; i++) {
+    candidate = await getBlock(url, estimate);
+    const delta = targetTs - candidate.timestamp;
+    if (Math.abs(delta) <= 24) break;
+    estimate = Math.max(0, Math.min(
+      latest.number,
+      Math.round(estimate + delta / 12)
+    ));
   }
 
-  const costBasisUsd = quantity * ENTRY.ZK;
-  const currentValueUsd = priceUsd == null ? null : quantity * priceUsd;
-  const performanceUsd = currentValueUsd == null ? null : currentValueUsd - costBasisUsd;
-  const performancePct = currentValueUsd == null || costBasisUsd <= 0
-    ? null : (currentValueUsd / costBasisUsd - 1) * 100;
+  if (!candidate) candidate = await getBlock(url, estimate);
 
-  return {
-    status: chainRead.result && priceUsd != null ? 'ok' : 'partial',
-    chain: 'ZKsync Era',
-    token: ZK.token,
-    coingeckoId: ZK.coingeckoId,
-    quantity: round(quantity),
-    entryUsd: ENTRY.ZK,
-    currentPriceUsd: priceUsd,
-    costBasisUsd: round(costBasisUsd, 6),
-    currentValueUsd: round(currentValueUsd, 6),
-    performanceUsd: round(performanceUsd, 6),
-    performancePct: round(performancePct, 6),
-    walletRows: chainRead.result?.rows || [],
-    diagnostics: [
-      ...(chainRead.errors || []),
-      ...(priceError ? [`CoinGecko: ${priceError}`] : [])
-    ]
-  };
-}
+  let lo = Math.max(0, candidate.number - 256);
+  let hi = Math.min(latest.number, candidate.number + 256);
+  let best = null;
 
-async function findBlockAtOrBefore(provider, targetTs) {
-  const latest = await provider.getBlock('latest');
-  if (!latest) throw new Error('latest block unavailable');
-  if (Number(latest.timestamp) <= targetTs) return latest;
-
-  // 30 days on Ethereum is roughly 216k blocks. Search a generous recent band.
-  let hi = Number(latest.number);
-  let lo = Math.max(0, hi - 400000);
-
-  const loBlock = await provider.getBlock(lo);
-  if (!loBlock || Number(loBlock.timestamp) > targetTs) {
-    throw new Error('30d block fell outside bounded 400k-block search range');
+  // Ensure the bracket actually contains the target.
+  const loBlock = await getBlock(url, lo);
+  const hiBlock = await getBlock(url, hi);
+  if (loBlock.timestamp > targetTs || hiBlock.timestamp <= targetTs) {
+    // Fall back to a bounded wider band if the estimate was unusually off.
+    lo = Math.max(0, latest.number - 240000);
+    hi = latest.number;
   }
 
-  let best = loBlock;
-  for (let i = 0; i < 24 && lo <= hi; i++) {
+  for (let i = 0; i < 20 && lo <= hi; i++) {
     const mid = Math.floor((lo + hi) / 2);
-    const b = await provider.getBlock(mid);
-    if (!b) throw new Error(`block ${mid} unavailable`);
-    const ts = Number(b.timestamp);
-    if (ts <= targetTs) {
+    const b = await getBlock(url, mid);
+    if (b.timestamp <= targetTs) {
       best = b;
       lo = mid + 1;
     } else {
       hi = mid - 1;
     }
   }
+
+  if (!best) throw new Error('unable to locate bounded 30-day Ethereum block');
   return best;
 }
 
-async function readHistoricalYieldBasisPps(market, blockNumber) {
+async function ethCall(url, to, data, tag = 'latest', timeoutMs = 7000) {
+  return rpc(url, 'eth_call', [{ to, data }, tag], timeoutMs);
+}
+
+async function currentMarketReads(url, market) {
+  const ppsData = LT_IFACE.encodeFunctionData('pricePerShare', []);
+  const redeemData = LT_IFACE.encodeFunctionData('preview_withdraw', [10n ** 18n]);
+  const balanceData = WALLETS.map(w => LT_IFACE.encodeFunctionData('balanceOf', [w]));
+
+  const [ppsHex, redemptionHex, ...balanceHexes] = await Promise.all([
+    ethCall(url, market.lt, ppsData),
+    ethCall(url, market.lt, redeemData),
+    ...balanceData.map(d => ethCall(url, market.lt, d))
+  ]);
+
+  const ppsNowRaw = positiveBigInt(LT_IFACE.decodeFunctionResult('pricePerShare', ppsHex)[0]);
+  const redemptionRaw = positiveBigInt(LT_IFACE.decodeFunctionResult('preview_withdraw', redemptionHex)[0]);
+  const walletShares = balanceHexes.reduce((acc, hex) => {
+    const v = positiveBigInt(LT_IFACE.decodeFunctionResult('balanceOf', hex)[0]);
+    return acc + v;
+  }, 0n);
+
+  if (ppsNowRaw <= 0n) throw new Error(`${market.symbol}: current PPS is non-positive`);
+
+  return { ppsNowRaw, redemptionRaw, walletShares };
+}
+
+async function historicalPps(market, blockNumber) {
   const diagnostics = [];
+  const ppsData = LT_IFACE.encodeFunctionData('pricePerShare', []);
+  const tag = blockTag(blockNumber);
 
   for (const url of ARCHIVE_ETH_RPC) {
-    const provider = new JsonRpcProvider(url);
-    const providerLabel = `ethereum-archive:${safeHost(url)}`;
-
+    const label = `ethereum-archive:${safeHost(url)}`;
     try {
-      const code = await provider.getCode(market.lt, blockNumber);
+      const code = await rpc(url, 'eth_getCode', [market.lt, tag], 6500);
       if (!code || code === '0x') {
-        throw new Error(`LT contract code unavailable at historical block ${blockNumber}`);
+        throw new Error(`LT contract code unavailable at block ${blockNumber}`);
       }
 
-      const lt = new Contract(market.lt, [
-        'function pricePerShare() view returns (uint256)'
-      ], provider);
+      const ppsHex = await ethCall(url, market.lt, ppsData, tag, 6500);
+      const raw = positiveBigInt(LT_IFACE.decodeFunctionResult('pricePerShare', ppsHex)[0]);
+      if (raw <= 0n) throw new Error('historical PPS is non-positive');
 
-      const raw = positiveBigInt(
-        await lt.pricePerShare({ blockTag: Number(blockNumber) })
-      );
-
-      if (raw <= 0n) {
-        throw new Error('historical PPS is non-positive');
-      }
-
-      return {
-        raw,
-        provider: providerLabel,
-        diagnostics
-      };
+      return { raw, provider: label, diagnostics };
     } catch (e) {
-      diagnostics.push(`${providerLabel}: ${errorText(e)}`);
+      diagnostics.push(`${label}: ${errorText(e)}`);
     }
   }
 
-  return {
-    raw: 0n,
-    provider: null,
-    diagnostics
-  };
+  return { raw: 0n, provider: null, diagnostics };
 }
 
-async function resolveYieldBasisPps(discovery) {
-  const r = await safeProvider('ethereum', async provider => {
-    const latest = await provider.getBlock('latest');
-    if (!latest) throw new Error('latest Ethereum block unavailable');
+function validateBaseline(d) {
+  if (d?.version !== VERSION) throw new Error(`baseline version mismatch: ${d?.version}`);
+  if (d?.company?.registry !== '007') throw new Error('baseline registry is not 007');
+  if (d?.company?.name !== "Rook's portfolio") throw new Error('baseline company name mismatch');
 
-    const targetTs = Number(latest.timestamp) - 30 * 86400;
-    const pastBlock = await findBlockAtOrBefore(provider, targetTs);
-    const elapsedSeconds = Number(latest.timestamp) - Number(pastBlock.timestamp);
-    const elapsedDays = elapsedSeconds / 86400;
-
-    const positions = [];
-    let allApy = true;
-
-    for (const market of YB_MARKETS) {
-      const lt = new Contract(market.lt, [
-        'function pricePerShare() view returns (uint256)',
-        'function preview_withdraw(uint256 shares) view returns (uint256)',
-        'function balanceOf(address) view returns (uint256)'
-      ], provider);
-
-      let walletShares = 0n;
-      for (const wallet of WALLETS) {
-        try {
-          walletShares += positiveBigInt(await lt.balanceOf(wallet));
-        } catch {}
-      }
-
-      const ppsNowRaw = positiveBigInt(await lt.pricePerShare());
-      const redemptionOneShareRaw = positiveBigInt(
-        await lt.preview_withdraw(10n ** 18n)
-      );
-
-      let ppsPastRaw = 0n;
-      let apy = null;
-      let historyStatus = 'ok';
-      let historyError = null;
-      let historicalProvider = null;
-      let historicalDiagnostics = [];
-
-      const historical = await readHistoricalYieldBasisPps(
-        market,
-        Number(pastBlock.number)
-      );
-
-      ppsPastRaw = positiveBigInt(historical.raw);
-      historicalProvider = historical.provider;
-      historicalDiagnostics = historical.diagnostics || [];
-
-      if (ppsPastRaw <= 0n || ppsNowRaw <= 0n) {
-        historyStatus = 'warming';
-        historyError = historicalDiagnostics.length
-          ? `archive providers exhausted: ${historicalDiagnostics.join(' | ')}`
-          : 'historical PPS unavailable';
-        allApy = false;
-      } else {
-        const ratio = Number(ppsNowRaw) / Number(ppsPastRaw);
-        apy = (Math.pow(ratio, 365 / elapsedDays) - 1) * 100;
-      }
-
-      const ppsNow = Number(formatUnits(ppsNowRaw, 18));
-      const ppsPast = ppsPastRaw > 0n ? Number(formatUnits(ppsPastRaw, 18)) : null;
-      const redemptionOneShare = Number(
-        formatUnits(redemptionOneShareRaw, market.underlyingDecimals)
-      );
-      const trdPct = ppsNow > 0
-        ? (redemptionOneShare / ppsNow - 1) * 100
-        : null;
-
-      positions.push({
-        market: market.symbol,
-        family: market.family,
-        lt: market.lt,
-        directShares: Number(formatUnits(walletShares, 18)),
-        mode: 'unstaked-plain',
-        ppsNow: round(ppsNow, 12),
-        pps30dAgo: ppsPast == null ? null : round(ppsPast, 12),
-        historicalBlock: ppsPast == null ? null : Number(pastBlock.number),
-        historicalTimestamp: ppsPast == null ? null : Number(pastBlock.timestamp),
-        elapsedDays: round(elapsedDays, 6),
-        fundamentalTradingApy30dPct: apy == null ? null : round(apy, 6),
-        redemptionPerShareUnderlying: round(redemptionOneShare, 12),
-        trdPct: round(trdPct, 6),
-        productivityStatus: historyStatus,
-        productivityMethod: 'onchain LT.pricePerShare growth over bounded 30-day block interval; annualized; emissions excluded',
-        historicalProvider,
-        historicalDiagnostics,
-        historyError
-      });
-    }
-
-    return {
-      status: allApy ? 'ok' : 'warming',
-      chain: 'Ethereum',
-      latestBlock: Number(latest.number),
-      latestTimestamp: Number(latest.timestamp),
-      referenceWindowDays: 30,
-      positions,
-      yieldBasisResolverVersion: '1.2-archive-failover',
-      methodology: {
-        canonicalMetric: 'FT APY (30D) / Fundamental Trading APY',
-        formula: '(PPS_now / PPS_30d_ago)^(365 / elapsed_days) - 1',
-        emissionsIncluded: false,
-        redemptionPpsUsedForApr: false,
-        note: 'pricePerShare is fundamental value. preview_withdraw is used for current redemption/TRD, not for Fundamental Trading APY. Historical PPS uses independent archive-provider failover so a current-state RPC cannot block the 30-day read.'
-      }
-    };
-  });
-
-  return {
-    ...(r.result || { status: 'warming', positions: [] }),
-    diagnostics: r.errors || [],
-    provider: r.provider || null,
-    discoveryCrossCheck: (discovery?.discovery?.yieldBasis?.positions || []).map(x => ({
-      market: x.market,
-      custody: x.custody,
-      directLtShares: x.directLtShares,
-      gaugeShares: x.gaugeShares,
-      totalUnderlying: x.totalUnderlying,
-      productivityMode: x.productivityMode
-    }))
-  };
-}
-
-function rootFromJson(j, depth = 0) {
-  if (!j || typeof j !== 'object' || depth > 5) return null;
-  for (const key of ['merkleRoot', 'root']) {
-    if (typeof j[key] === 'string' && /^0x[0-9a-fA-F]{64}$/.test(j[key])) {
-      return j[key];
+  for (const key of ['crv', 'link', 'zk', 'votium']) {
+    if (d?.results?.[key]?.status !== 'ok') {
+      throw new Error(`baseline ${key} is not ok`);
     }
   }
-  if (Array.isArray(j)) {
-    for (const v of j) {
-      const x = rootFromJson(v, depth + 1);
-      if (x) return x;
-    }
-    return null;
+  if (d?.results?.votium?.completeCurrentRootScan !== true) {
+    throw new Error('baseline Votium current-root scan is not complete');
   }
-  for (const v of Object.values(j)) {
-    if (v && typeof v === 'object') {
-      const x = rootFromJson(v, depth + 1);
-      if (x) return x;
-    }
-  }
-  return null;
+  if (!d?.results?.yieldBasis) throw new Error('baseline Yield Basis result missing');
 }
 
-function normalizeProof(p) {
-  if (!Array.isArray(p)) return null;
-  const out = p.filter(x => typeof x === 'string' && /^0x[0-9a-fA-F]{64}$/.test(x));
-  return out.length === p.length ? out : null;
-}
+async function resolveYieldBasis(baseline) {
+  const current = await chooseCurrentProvider();
+  const targetTs = current.latest.timestamp - 30 * 86400;
+  const pastBlock = await findBlockAtOrBefore(current.url, current.latest, targetTs);
+  const elapsedSeconds = current.latest.timestamp - pastBlock.timestamp;
+  const elapsedDays = elapsedSeconds / 86400;
 
-function normalizeLeafCandidate(obj, accountHint = null) {
-  if (!obj || typeof obj !== 'object') return null;
-  const account = obj.account || obj.address || obj.user || accountHint;
-  const index = obj.index ?? obj.claimIndex ?? obj.idx;
-  const amount = obj.amount ?? obj.value ?? obj.claimable;
-  const proof = normalizeProof(obj.proof || obj.merkleProof || obj.merkle_proof);
-  if (!account || index == null || amount == null || !proof) return null;
-  if (!/^0x[0-9a-fA-F]{40}$/.test(String(account))) return null;
-  try {
-    return {
-      account: getAddress(String(account).toLowerCase()),
-      index: BigInt(index).toString(),
-      amountRaw: BigInt(amount).toString(),
-      proof
-    };
-  } catch {
-    return null;
-  }
-}
-
-function findWalletLeaves(j, walletSet) {
-  const results = [];
-  const seen = new Set();
-
-  function push(c) {
-    if (!c || !walletSet.has(lower(c.account))) return;
-    const key = `${lower(c.account)}|${c.index}|${c.amountRaw}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-    results.push(c);
-  }
-
-  function walk(node, depth = 0) {
-    if (depth > 12 || node == null) return;
-    if (Array.isArray(node)) {
-      for (const x of node) walk(x, depth + 1);
-      return;
-    }
-    if (typeof node !== 'object') return;
-
-    push(normalizeLeafCandidate(node));
-
-    for (const [k, v] of Object.entries(node)) {
-      if (/^0x[0-9a-fA-F]{40}$/.test(k)) {
-        push(normalizeLeafCandidate(v, k));
-      }
-      if (typeof v === 'object' && v !== null) walk(v, depth + 1);
-    }
-  }
-
-  walk(j);
-  return results;
-}
-
-function hashPair(a, b) {
-  const A = lower(a);
-  const B = lower(b);
-  return keccak256(A < B ? concat([a, b]) : concat([b, a]));
-}
-
-function verifyVotiumProof(leaf, root) {
-  let h = solidityPackedKeccak256(
-    ['uint256', 'address', 'uint256'],
-    [BigInt(leaf.index), leaf.account, BigInt(leaf.amountRaw)]
+  const previousByMarket = new Map(
+    (baseline?.results?.yieldBasis?.positions || []).map(x => [x.market, x])
   );
-  for (const p of leaf.proof) h = hashPair(h, p);
-  return lower(h) === lower(root);
-}
 
-function githubHeaders() {
-  const token = process.env.GITHUB_TOKEN || '';
-  return {
-    ...(token ? { authorization: `Bearer ${token}` } : {}),
-    'x-github-api-version': '2022-11-28'
-  };
-}
+  const positions = await Promise.all(YB_MARKETS.map(async market => {
+    const currentReads = await currentMarketReads(current.url, market);
+    const historical = await historicalPps(market, pastBlock.number);
 
-async function githubCodeSearch(wallet) {
-  const q = `${wallet} repo:${VOTIUM.repo} path:merkle`;
-  const url = `https://api.github.com/search/code?q=${encodeURIComponent(q)}&per_page=100`;
-  const j = await fetchJson(url, {
-    timeoutMs: 20000,
-    headers: githubHeaders()
-  });
-  return Array.isArray(j?.items) ? j.items : [];
-}
+    const ppsNow = Number(formatUnits(currentReads.ppsNowRaw, 18));
+    const ppsPast = historical.raw > 0n
+      ? Number(formatUnits(historical.raw, 18))
+      : null;
+    const redemptionOneShare = Number(formatUnits(
+      currentReads.redemptionRaw,
+      market.underlyingDecimals
+    ));
 
-function currentAggregatePath(symbol) {
-  return `merkle/${symbol}/${symbol}.json`;
-}
+    let apy = null;
+    let productivityStatus = 'warming';
+    let historyError = null;
 
-async function getVotiumTokenStates(provider, activeTokens) {
-  const stash = new Contract(VOTIUM.stash, [
-    'function merkleRoot(address token) view returns (bytes32)',
-    'function update(address token) view returns (uint256)',
-    'function isClaimed(address token,uint256 index) view returns (bool)'
-  ], provider);
-
-  const states = [];
-  const concurrency = 8;
-  let cursor = 0;
-
-  async function worker() {
-    while (cursor < activeTokens.length) {
-      const i = cursor++;
-      const t = activeTokens[i];
-      try {
-        const [root, update] = await Promise.all([
-          stash.merkleRoot(t.value),
-          stash.update(t.value)
-        ]);
-        states[i] = {
-          ...t,
-          token: getAddress(String(t.value).toLowerCase()),
-          onchainRoot: root,
-          update: Number(update),
-          hasRoot: !/^0x0{64}$/i.test(root)
-        };
-      } catch (e) {
-        states[i] = {
-          ...t,
-          token: getAddress(String(t.value).toLowerCase()),
-          onchainRoot: null,
-          update: null,
-          hasRoot: null,
-          error: errorText(e)
-        };
-      }
-    }
-  }
-  await Promise.all(Array.from({ length: concurrency }, () => worker()));
-  return { stash, states };
-}
-
-async function fetchVotiumAggregate(symbol) {
-  const safe = encodeURIComponent(symbol);
-  const url = `https://raw.githubusercontent.com/${VOTIUM.repo}/${VOTIUM.branch}/merkle/${safe}/${safe}.json`;
-  const txt = await fetchText(url, { timeoutMs: 18000 });
-  return { url, json: JSON.parse(txt) };
-}
-
-async function resolveVotium() {
-  const r = await safeProvider('ethereum', async provider => {
-    const activeTokensRaw = await fetchJson(VOTIUM.activeTokens, { timeoutMs: 18000 });
-    if (!Array.isArray(activeTokensRaw)) throw new Error('activeTokens.json is not an array');
-
-    const activeTokens = activeTokensRaw
-      .filter(x => x?.value && x?.symbol && Number.isFinite(Number(x.decimals)))
-      .map(x => ({
-        value: getAddress(String(x.value).toLowerCase()),
-        label: x.label || null,
-        symbol: String(x.symbol),
-        decimals: Number(x.decimals)
-      }));
-
-    const { stash, states } = await getVotiumTokenStates(provider, activeTokens);
-    const stateErrors = states.filter(x => x?.error);
-    const rooted = states.filter(x => x?.hasRoot === true);
-
-    // Fast hint: authenticated GitHub code search identifies likely token folders.
-    // It is only an optimization. Completeness still comes from the bounded
-    // current-root aggregate scan below.
-    const hintedSymbols = new Set();
-    const searchDiagnostics = [];
-    for (const wallet of WALLETS) {
-      try {
-        const hits = await githubCodeSearch(wallet);
-        for (const hit of hits) {
-          const p = String(hit?.path || '');
-          const parts = p.split('/');
-          if (parts[0] === 'merkle' && parts.length >= 3) hintedSymbols.add(parts[1]);
-        }
-      } catch (e) {
-        searchDiagnostics.push(`${wallet}: ${errorText(e)}`);
-      }
+    if (ppsPast != null && ppsPast > 0 && ppsNow > 0) {
+      const ratio = ppsNow / ppsPast;
+      apy = (Math.pow(ratio, 365 / elapsedDays) - 1) * 100;
+      productivityStatus = 'ok';
+    } else {
+      historyError = historical.diagnostics.length
+        ? `archive providers exhausted: ${historical.diagnostics.join(' | ')}`
+        : 'historical PPS unavailable';
     }
 
-    const sortedStates = [...rooted].sort((a, b) => {
-      const ah = hintedSymbols.has(a.symbol) ? 0 : 1;
-      const bh = hintedSymbols.has(b.symbol) ? 0 : 1;
-      return ah - bh;
-    });
+    const trdPct = ppsNow > 0
+      ? (redemptionOneShare / ppsNow - 1) * 100
+      : null;
 
-    const walletSet = new Set(WALLETS.map(lower));
-    const tokenResults = [];
-    const scanErrors = [];
-    const started = Date.now();
-    const GLOBAL_BUDGET_MS = 95000;
-    const concurrency = 5;
-    let cursor = 0;
-
-    async function scanWorker() {
-      while (cursor < sortedStates.length) {
-        if (Date.now() - started > GLOBAL_BUDGET_MS) return;
-        const i = cursor++;
-        const state = sortedStates[i];
-        try {
-          const { json } = await fetchVotiumAggregate(state.symbol);
-          const fileRoot = rootFromJson(json);
-          const rootMatches = Boolean(
-            fileRoot && state.onchainRoot && lower(fileRoot) === lower(state.onchainRoot)
-          );
-          const leaves = findWalletLeaves(json, walletSet);
-          const checkedLeaves = [];
-
-          for (const leaf of leaves) {
-            const proofValid = rootMatches
-              ? verifyVotiumProof(leaf, state.onchainRoot)
-              : false;
-            let claimed = null;
-            if (proofValid) {
-              try {
-                claimed = Boolean(await stash.isClaimed(state.token, BigInt(leaf.index)));
-              } catch {}
-            }
-            checkedLeaves.push({
-              ...leaf,
-              proofValid,
-              claimed
-            });
-          }
-
-          tokenResults.push({
-            token: state.token,
-            symbol: state.symbol,
-            label: state.label,
-            decimals: state.decimals,
-            update: state.update,
-            onchainRoot: state.onchainRoot,
-            fileRoot,
-            rootMatches,
-            leaves: checkedLeaves,
-            hintedByCodeSearch: hintedSymbols.has(state.symbol)
-          });
-        } catch (e) {
-          scanErrors.push({
-            token: state.token,
-            symbol: state.symbol,
-            error: errorText(e)
-          });
-        }
-      }
-    }
-
-    await Promise.all(Array.from({ length: concurrency }, () => scanWorker()));
-
-    const budgetExceeded = cursor < sortedStates.length;
-    const validUnclaimed = [];
-
-    for (const t of tokenResults) {
-      for (const leaf of t.leaves || []) {
-        if (t.rootMatches && leaf.proofValid && leaf.claimed === false) {
-          validUnclaimed.push({
-            token: t.token,
-            symbol: t.symbol,
-            label: t.label,
-            decimals: t.decimals,
-            update: t.update,
-            wallet: leaf.account,
-            index: leaf.index,
-            amountRaw: leaf.amountRaw,
-            amount: Number(formatUnits(BigInt(leaf.amountRaw), t.decimals)),
-            onchainRoot: t.onchainRoot,
-            proofValid: true,
-            claimed: false
-          });
-        }
-      }
-    }
-
-    // Best-effort current USD prices. Amount validity does not depend on pricing.
-    const priceMap = {};
-    const labels = [...new Set(validUnclaimed.map(x => x.label).filter(Boolean))];
-    if (labels.length) {
-      try {
-        const j = await fetchJson(
-          `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(labels.join(','))}&vs_currencies=usd`,
-          { timeoutMs: 15000 }
-        );
-        for (const label of labels) {
-          const p = finite(j?.[label]?.usd);
-          if (p != null) priceMap[label] = p;
-        }
-      } catch {}
-    }
-
-    const rewards = validUnclaimed.map(x => {
-      const priceUsd = x.label ? priceMap[x.label] ?? null : null;
-      return {
-        ...x,
-        priceUsd,
-        usdValue: priceUsd == null ? null : round(x.amount * priceUsd, 6)
-      };
-    });
-
-    const complete =
-      !budgetExceeded
-      && stateErrors.length === 0
-      && scanErrors.length === 0
-      && tokenResults.length === rooted.length
-      && tokenResults.every(x => x.rootMatches === true);
+    const previous = previousByMarket.get(market.symbol) || {};
 
     return {
-      status: complete ? 'ok' : 'partial',
-      protocol: 'Votium',
-      chain: 'Ethereum',
-      stash: VOTIUM.stash,
-      activeTokens: activeTokens.length,
-      rootedTokens: rooted.length,
-      currentAggregateFilesScanned: tokenResults.length,
-      currentAggregateFilesExpected: rooted.length,
-      budgetExceeded,
-      codeSearchHintedSymbols: [...hintedSymbols],
-      searchDiagnostics,
-      stateErrors,
-      scanErrors,
-      rewards,
-      rewardCount: rewards.length,
-      rewardSymbols: [...new Set(rewards.map(x => x.symbol))],
-      pricedUsd: round(sum(rewards.map(x => x.usdValue)), 6),
-      unpricedRewards: rewards.filter(x => x.usdValue == null).length,
-      completeCurrentRootScan: complete,
-      zeroIsDefensible: complete && rewards.length === 0,
-      methodology: [
-        'official oo-00/Votium activeTokens current set',
-        'onchain MultiMerkleStash merkleRoot/update',
-        'current aggregate Merkle file',
-        'file root must equal onchain root',
-        'local keccak256(index, account, amount) Merkle proof verification',
-        'onchain isClaimed(token,index) must be false',
-        'only then count as current Accrued Rewards'
-      ]
+      market: market.symbol,
+      family: market.family,
+      lt: market.lt,
+      directShares: Number(formatUnits(currentReads.walletShares, 18)),
+      mode: 'unstaked-plain',
+      ppsNow: round(ppsNow, 12),
+      pps30dAgo: ppsPast == null ? null : round(ppsPast, 12),
+      historicalBlock: ppsPast == null ? null : pastBlock.number,
+      historicalTimestamp: ppsPast == null ? null : pastBlock.timestamp,
+      elapsedDays: round(elapsedDays, 6),
+      fundamentalTradingApy30dPct: apy == null ? null : round(apy, 6),
+      redemptionPerShareUnderlying: round(redemptionOneShare, 12),
+      trdPct: round(trdPct, 6),
+      productivityStatus,
+      productivityMethod: 'onchain LT.pricePerShare growth over bounded 30-day block interval; annualized; emissions excluded',
+      historicalProvider: historical.provider,
+      historicalDiagnostics: historical.diagnostics,
+      historyError,
+      priorResolverCrossCheck: {
+        priorDirectShares: previous.directShares ?? null,
+        priorPpsNow: previous.ppsNow ?? null
+      }
     };
-  });
+  }));
+
+  const allOk = positions.every(x => x.productivityStatus === 'ok');
 
   return {
-    ...(r.result || {
-      status: 'partial',
-      protocol: 'Votium',
-      rewards: [],
-      completeCurrentRootScan: false,
-      zeroIsDefensible: false
-    }),
-    diagnostics: r.errors || [],
-    provider: r.provider || null
+    status: allOk ? 'ok' : 'warming',
+    chain: 'Ethereum',
+    latestBlock: current.latest.number,
+    latestTimestamp: current.latest.timestamp,
+    referenceWindowDays: 30,
+    positions,
+    yieldBasisResolverVersion: YB_RESOLVER_VERSION,
+    recoveryMode: 'yield-basis-only; CRV/LINK/ZK/Votium preserved from last-known-good resolver baseline',
+    methodology: {
+      canonicalMetric: 'FT APY (30D) / Fundamental Trading APY',
+      formula: '(PPS_now / PPS_30d_ago)^(365 / elapsed_days) - 1',
+      emissionsIncluded: false,
+      redemptionPpsUsedForApr: false,
+      note: 'pricePerShare is fundamental value. preview_withdraw is used only for current redemption/TRD. Historical PPS uses bounded independent archive-provider failover with hard per-RPC timeouts.'
+    },
+    diagnostics: current.diagnostics,
+    provider: `ethereum-current:${safeHost(current.url)}`,
+    discoveryCrossCheck: baseline?.results?.yieldBasis?.discoveryCrossCheck || []
   };
 }
 
 async function main() {
-  if (!fs.existsSync(DISCOVERY_PATH)) {
-    throw new Error(`Missing discovery input: ${DISCOVERY_PATH}`);
+  if (!fs.existsSync(OUTPUT_PATH)) {
+    throw new Error(`Missing resolver baseline at ${OUTPUT_PATH}. Workflow must restore last-known-good baseline first.`);
   }
-  const discovery = JSON.parse(fs.readFileSync(DISCOVERY_PATH, 'utf8'));
-  if (discovery?.version !== '1.0-current-state-fast') {
-    throw new Error(`Unexpected discovery version: ${discovery?.version}`);
-  }
-  if (discovery?.company?.registry !== '007') {
-    throw new Error('Discovery registry is not 007');
-  }
+
+  const baseline = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'));
+  validateBaseline(baseline);
+
+  const preservedBefore = {
+    crv: stableHash(baseline.results.crv),
+    link: stableHash(baseline.results.link),
+    zk: stableHash(baseline.results.zk),
+    votium: stableHash(baseline.results.votium)
+  };
 
   const startedAt = nowIso();
+  const yieldBasis = await resolveYieldBasis(baseline);
 
-  const [crv, link, zk, yieldBasis, votium] = await Promise.all([
-    resolveCRV(),
-    resolveLINK(),
-    resolveZK(discovery),
-    resolveYieldBasisPps(discovery),
-    resolveVotium()
-  ]);
-
-  const output = {
-    version: VERSION,
-    generatedAt: nowIso(),
-    startedAt,
-    company: {
-      registry: '007',
-      name: "Rook's portfolio",
-      foundedAt: '2026-01-08',
-      wallets: WALLETS
-    },
-    purpose: 'targeted resolution only: CRV, LINK, ZK current price, Yield Basis unstaked yb-LP Productivity, Votium current unclaimed',
-    noHistoricalArchaeology: true,
-    results: {
-      crv,
-      link,
-      zk,
-      yieldBasis,
-      votium
-    },
-    productionReadiness: {
-      crvResolved: crv.status === 'ok',
-      linkResolved: link.status === 'ok',
-      zkResolved: zk.status === 'ok',
-      yieldBasisProductivityResolved: yieldBasis.status === 'ok',
-      votiumResolved: votium.status === 'ok',
-      readyForFinalIntegrator:
-        crv.status === 'ok'
-        && link.status === 'ok'
-        && zk.status === 'ok'
-        && yieldBasis.status === 'ok'
-        && votium.status === 'ok',
-      note: 'A partial Votium or warming Yield Basis result must not be silently converted to zero/APR. Known Company #007 balance and existing known adapters remain valid.'
-    }
+  const output = structuredClone(baseline);
+  output.generatedAt = nowIso();
+  output.startedAt = startedAt;
+  output.results.yieldBasis = yieldBasis;
+  output.productionReadiness = {
+    ...(output.productionReadiness || {}),
+    crvResolved: output.results.crv?.status === 'ok',
+    linkResolved: output.results.link?.status === 'ok',
+    zkResolved: output.results.zk?.status === 'ok',
+    yieldBasisProductivityResolved: yieldBasis.status === 'ok',
+    votiumResolved: output.results.votium?.status === 'ok',
+    readyForFinalIntegrator:
+      output.results.crv?.status === 'ok'
+      && output.results.link?.status === 'ok'
+      && output.results.zk?.status === 'ok'
+      && yieldBasis.status === 'ok'
+      && output.results.votium?.status === 'ok',
+    note: 'YB-only recovery run. CRV/LINK/ZK/Votium are preserved exactly from the validated baseline; Yield Basis remains warming unless historical PPS is reproducible.'
   };
+  output.recovery = {
+    mode: 'yield-basis-only',
+    resolverVersion: YB_RESOLVER_VERSION,
+    preservedResultSha256: preservedBefore
+  };
+
+  // Fail closed if this narrow worker mutated any previously solved result.
+  for (const key of ['crv', 'link', 'zk', 'votium']) {
+    const after = stableHash(output.results[key]);
+    if (after !== preservedBefore[key]) {
+      throw new Error(`Preservation guard failed: ${key} changed during YB-only recovery`);
+    }
+  }
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2) + '\n');
 
-  console.log(`Company #007 targeted resolver written: ${OUTPUT_PATH}`);
-  console.log(`CRV: ${crv.status} qty=${crv.publicCandidateQuantity ?? 'n/a'}`);
-  console.log(`LINK: ${link.status} qty=${link.quantity ?? 'n/a'}`);
-  console.log(`ZK: ${zk.status} qty=${zk.quantity ?? 'n/a'} price=${zk.currentPriceUsd ?? 'n/a'}`);
+  console.log(`Company #007 YB-only resolver written: ${OUTPUT_PATH}`);
   console.log(`Yield Basis: ${yieldBasis.status}`);
   for (const p of yieldBasis.positions || []) {
-    console.log(`  ${p.market}: FT APY 30D=${p.fundamentalTradingApy30dPct ?? 'warming'}%`);
+    console.log(
+      `  ${p.market}: PPS30d=${p.pps30dAgo ?? 'warming'} `
+      + `FT APY 30D=${p.fundamentalTradingApy30dPct ?? 'warming'}% `
+      + `provider=${p.historicalProvider ?? 'none'}`
+    );
   }
-  console.log(`Votium: ${votium.status} rewards=${votium.rewardCount ?? 0} USD=${votium.pricedUsd ?? 0}`);
+  console.log(`readyForFinalIntegrator=${output.productionReadiness.readyForFinalIntegrator}`);
 }
 
 main().catch(err => {
-  console.error(`Company #007 targeted resolver failed: ${errorText(err)}`);
+  console.error(`Company #007 YB-only resolver failed: ${errorText(err)}`);
   process.exitCode = 1;
 });
