@@ -21,6 +21,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Verify discovery input exists
+        run: |
+          test -s companies/company-007-discovery.json || {
+            echo "ERROR: companies/company-007-discovery.json is absent."
+            echo "Run Discover Company #007 successfully first."
+            exit 1
+          }
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -48,6 +56,7 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const p = 'companies/company-007-resolve.json';
+          if (!fs.existsSync(p)) throw new Error('resolver JSON was not created');
           const d = JSON.parse(fs.readFileSync(p, 'utf8'));
 
           if (d.version !== '1.1-targeted-resolver') throw new Error('resolver version mismatch');
@@ -70,27 +79,52 @@ jobs:
           console.log('Production readiness:', JSON.stringify(d.productionReadiness));
           NODE
 
-      - name: Commit resolver output
+      - name: Publish resolver JSON to main
+        shell: bash
         run: |
-          if [ -z "$(git status --porcelain -- companies/company-007-resolve.json)" ]; then
-            echo "No resolver changes to commit."
-            exit 0
-          fi
+          set -euo pipefail
+
+          FILE="companies/company-007-resolve.json"
+
+          test -s "$FILE" || {
+            echo "ERROR: $FILE is missing or empty after resolver."
+            exit 1
+          }
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add companies/company-007-resolve.json
-          git commit -m "Resolve Company #007 targeted routes"
+          git add -f "$FILE"
+
+          if ! git diff --cached --quiet -- "$FILE"; then
+            git commit -m "Resolve Company #007 targeted routes"
+          else
+            echo "Generated resolver matches currently tracked content."
+          fi
 
           for attempt in 1 2 3; do
             git fetch origin main
-            if git rebase origin/main && git push origin HEAD:main; then
-              exit 0
+
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then
+                break
+              fi
             fi
+
             git rebase --abort || true
+
+            if [ "$attempt" -eq 3 ]; then
+              echo "ERROR: failed to publish resolver JSON after retries."
+              exit 1
+            fi
+
             sleep $((attempt * 2))
           done
 
-          echo "Failed to push resolver output after retries."
-          exit 1
+          git fetch origin main
+          git cat-file -e "origin/main:$FILE" || {
+            echo "ERROR: workflow would otherwise be green, but $FILE is absent from origin/main."
+            exit 1
+          }
+
+          echo "Verified on origin/main: $FILE"
