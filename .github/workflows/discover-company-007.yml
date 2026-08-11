@@ -60,9 +60,7 @@ jobs:
 
       - name: Commit discovery output
         run: |
-          # `git diff` does not report a brand-new untracked file.
-          # `git status --porcelain` correctly detects both new and modified JSON.
-          if [ -z "$(git status --porcelain -- companies/company-007-discovery.json)" ]; then
+          if git diff --quiet -- companies/company-007-discovery.json; then
             echo "No discovery changes to commit."
             exit 0
           fi
