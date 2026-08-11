@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '0.3.3';
-const COLLECTOR_VERSION = '0.3.3-ve-history-final-hardening';
+const VERSION = '0.3.4';
+const COLLECTOR_VERSION = '0.3.4-company-006-wallet-scoped';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -193,6 +193,18 @@ const COMPANIES = [
     name: '0x5860...83CA8.eth',
     wallets: [{ alias: '0x5860...83CA8.eth', address: '0x58603461149Fc2A800a56d421e77DcbBA2D83CA8' }],
     routes: ['aerodrome-ve', 'velodrome-ve-direct']
+  },
+  {
+    name: 'aerocrvyb.eth',
+    wallets: [
+      { alias: 'Aero / Velo wallet', address: '0xA641752824d512FA8683758c6b2D8A04ea46dcD0' },
+      { alias: 'Yield Basis wallet', address: '0x6c6543eBA07946706Fd10a1064FA773326B5f5a9' }
+    ],
+    routes: [
+      { route: 'aerodrome-ve', wallets: ['Aero / Velo wallet'] },
+      { route: 'velodrome-ve-direct', wallets: ['Aero / Velo wallet'] },
+      { route: 'yield-basis-fees', wallets: ['Yield Basis wallet'] }
+    ]
   }
 ];
 
@@ -2420,9 +2432,24 @@ async function main() {
 
     const rewards = [];
     const sources = [];
-    for (const route of c.routes) {
+    for (const routeSpec of c.routes) {
+      const route = typeof routeSpec === 'string' ? routeSpec : routeSpec?.route;
+      const requestedWallets = typeof routeSpec === 'object' && Array.isArray(routeSpec?.wallets)
+        ? new Set(routeSpec.wallets.map(x => String(x).toLowerCase()))
+        : null;
+      const routeWallets = requestedWallets
+        ? wallets.filter(w => requestedWallets.has(String(w.alias || '').toLowerCase())
+                           || requestedWallets.has(String(w.address || '').toLowerCase()))
+        : wallets;
+      if (!route || !routeWallets.length) {
+        const note = !route ? 'Route specification missing route' : 'No resolved wallets matched route scope';
+        const routeName = route || 'unknown-route';
+        sources.push({ protocol: routeName, route: routeName, status: 'error', metric: null, note });
+        engineErrors[c.name + ':' + routeName + ':scope'] = note;
+        continue;
+      }
       try {
-        const out = await collectRouteAcrossWallets(route, wallets, registry);
+        const out = await collectRouteAcrossWallets(route, routeWallets, registry);
         sources.push(out.source);
         rewards.push(...(out.rewards || []));
         if (out.source?.status === 'error') engineErrors[`${c.name}:${route}`] = out.source.note || 'route error';
@@ -2491,7 +2518,7 @@ async function main() {
     scope: 'protocol-side accrued rewards for Personal Onchain Companies and Defitea Fund',
     methodology: {
       definition: 'Rewards already earned inside protocol contracts but not yet freely held in the company/fund wallet.',
-      multiWallet: 'Defitea rewards are measured independently for defitea.eth and the Defitea Operations wallet, then aggregated into one Defitea Passport. Every reward retains wallet provenance.',
+      multiWallet: 'Company wallets are resolved independently. Reward routes may be scoped to specific wallet aliases or addresses; only matching wallets are queried for that route. Raw rewards retain wallet provenance and scoped results are aggregated into one Company Passport.',
       aerodromeVelodrome: 'Aerodrome and Velodrome direct veNFT routes reconstruct every historically voted pool from indexed Voter.Voted events, using provider-aware direct RPC eth_getLogs with endpoint failover and Blockscout fallback reads. Resumable checkpoints prevent repeated multi-year rescans after transport failures, and a validated full-history cache makes later runs incremental with a reorg-safe overlap. Each discovered pool’s current voting-reward contracts are queried for still-unclaimed rewards. Managed/Relay rewards are read directly. Defitea Velodrome additionally discovers veNFT ownership through official 40 Acres Optimism portfolio factories. Already distributed 40 Acres wallet payouts are not counted as accrued rewards.',
       curve: 'Base crvUSD FeeDistributor claims are simulated. VoteMarket veCRV uses official Stake DAO proof membership, published raw vote details, VoteMarket claimed-state and period state to reproduce the Votemarket claim formula; OracleLens is used as an onchain cross-check when populated. LaPoste pToken rewards are mapped onchain through TokenFactory.nativeTokens and valued 1:1 at the native L1 token price.',
       convex: 'Votium/The Union remains intentionally excluded until a reproducible member-level reward read is validated.',
