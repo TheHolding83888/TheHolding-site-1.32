@@ -1,8 +1,8 @@
 {
-  "version": "1.1",
-  "generatedAt": "2026-08-11T07:46:46.677Z",
-  "startedAt": "2026-08-11T07:45:51.675Z",
-  "purpose": "Company #006 deterministic onboarding discovery v1.1: AERO paid/airdrop cost basis + veVELO + veYB; no production metrics are changed by this file.",
+  "version": "1.2",
+  "generatedAt": "2026-08-11T07:57:04.236Z",
+  "startedAt": "2026-08-11T07:56:57.739Z",
+  "purpose": "Company #006 deterministic onboarding discovery v1.2: resilient veVELO current-state + Blockscout-v2 history; AERO paid/airdrop + veYB; no production metrics are changed by this file.",
   "company": {
     "registry": "006",
     "name": "aerocrvyb.eth",
@@ -171,7 +171,79 @@
       "Blockscout transfer rows for current NFTs: 6"
     ]
   },
-  "velodrome": null,
+  "velodrome": {
+    "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+    "chain": "Optimism",
+    "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
+    "votingEscrow": "0xFAf8FD17D9840595845582fCB047DF13f006787d",
+    "currentVeNftCount": 1,
+    "positions": [
+      {
+        "tokenId": "16325",
+        "escrowType": 0,
+        "managedTokenId": "0",
+        "directLockedVelo": 6971.925992122776,
+        "managedWeightVelo": 0,
+        "economicPrincipalVelo": 6971.925992122776,
+        "lockEnd": "2028-04-20T00:00:00.000Z",
+        "isPermanent": false
+      }
+    ],
+    "economicPrincipalVelo": 6971.925992122776,
+    "firstLock": {
+      "blockNumber": 108394724,
+      "txHash": "0x6af20c65b82ee234186ee65c1e7b7bd46c8cef3b08218e1f99c493fcb40c9e71",
+      "tokenId": "16325",
+      "timestamp": 1692388225,
+      "source": "optimism-blockscout-v2: veNFT instance mint history",
+      "method": "veNFT-zero-address-mint-history",
+      "confidence": "high",
+      "foundedAt": "2023-08-18T19:50:25.000Z",
+      "foundedISO": "2023-08-18"
+    },
+    "firstLockCandidates": [
+      {
+        "tokenId": "16325",
+        "from": "0x0000000000000000000000000000000000000000",
+        "to": "0xe7bbf1db8cba14a889874b1e2c82750c0baa5537",
+        "blockNumber": 108394724,
+        "txHash": "0x6af20c65b82ee234186ee65c1e7b7bd46c8cef3b08218e1f99c493fcb40c9e71",
+        "timestamp": 1692388225
+      }
+    ],
+    "currentNftAcquisitionEvents": {
+      "16325": {
+        "blockNumber": 131284801,
+        "txHash": "0x73cdad95d8d86e93025077079ae5ec3c0a67ec0781a8580a7ee4403f75922926",
+        "tokenId": "16325",
+        "from": "0xe7bbf1db8cba14a889874b1e2c82750c0baa5537",
+        "to": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+        "timestamp": 1738168379,
+        "eventType": "transfer-to-wallet",
+        "source": "optimism-blockscout-v2: first inbound current veNFT transfer",
+        "confidence": "high",
+        "acquiredAt": "2025-01-29T16:32:59.000Z",
+        "acquiredISO": "2025-01-29"
+      }
+    },
+    "entryPrice": {
+      "chain": "optimism",
+      "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
+      "symbol": "Velo",
+      "timestamp": 1738168379,
+      "at": "2025-01-29T16:32:59.000Z",
+      "usd": 0.09225,
+      "method": "DeFiLlama contract historical price at verified onchain event timestamp",
+      "source": "coins.llama.fi/prices/historical",
+      "confidence": 0.99,
+      "status": "ok",
+      "coingeckoId": "velodrome-finance",
+      "date": "2025-01-29"
+    },
+    "discoveryDiagnostics": [
+      "Blockscout v2 instance 16325: 2 transfer rows"
+    ]
+  },
   "yieldBasis": {
     "wallet": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
     "token": "0x01791F726B4103694969820be083196cC7c045fF",
@@ -253,10 +325,23 @@
           }
         ],
         "entryMethod": "weighted effective entry for one public AERO line; internal paid + airdrop cost basis preserved",
-        "currentPriceUsdAtDiscovery": 0.417929,
-        "currentValueUsdAtDiscovery": 3857.5883662527804,
+        "currentPriceUsdAtDiscovery": 0.418002,
+        "currentValueUsdAtDiscovery": 3858.262174365489,
         "costBasisUsd": 10575.949455619573,
-        "performanceUsdAtDiscovery": -6718.361089366793
+        "performanceUsdAtDiscovery": -6717.687281254084
+      },
+      {
+        "id": "velodrome-finance",
+        "symbol": "VELO / veVELO",
+        "qty": 6971.925992122776,
+        "entry": 0.09225,
+        "classification": "productive",
+        "walletAlias": "Aero / Velo wallet",
+        "entryMethod": "historical VELO market price at first verified veVELO lock/acquisition",
+        "currentPriceUsdAtDiscovery": 0.01717368,
+        "currentValueUsdAtDiscovery": 119.73362597239907,
+        "costBasisUsd": 643.160172773326,
+        "performanceUsdAtDiscovery": -523.426546800927
       },
       {
         "id": "yield-basis",
@@ -266,16 +351,16 @@
         "classification": "productive",
         "walletAlias": "Yield Basis wallet",
         "entryMethod": "historical YB market price at first verified veYB lock",
-        "currentPriceUsdAtDiscovery": 0.076611,
-        "currentValueUsdAtDiscovery": 957.6374999999967,
+        "currentPriceUsdAtDiscovery": 0.076423,
+        "currentValueUsdAtDiscovery": 955.2874999999968,
         "costBasisUsd": 1007.6456110925183,
-        "performanceUsdAtDiscovery": -50.00811109252152
+        "performanceUsdAtDiscovery": -52.358111092521426
       }
     ],
-    "totalCurrentValueUsdAtDiscovery": 4815.225866252777,
-    "totalCostBasisUsd": 11583.595066712092,
-    "performanceUsdAtDiscovery": -6768.369200459315,
-    "performancePctAtDiscovery": -58.43064403994623
+    "totalCurrentValueUsdAtDiscovery": 4933.283300337885,
+    "totalCostBasisUsd": 12226.755239485417,
+    "performanceUsdAtDiscovery": -7293.471939147533,
+    "performancePctAtDiscovery": -59.65173749118486
   },
   "knownAdapterReuse": {
     "productivity": [
@@ -299,7 +384,5 @@
     ],
     "note": "Company #006 should use wallet-scoped reward routes rather than running every route against every company wallet."
   },
-  "errors": {
-    "velodrome": "optimism providers exhausted: optimism:optimism-rpc.publicnode.com: could not coalesce error | optimism:mainnet.optimism.io: could not coalesce error | optimism:optimism.drpc.org: could not coalesce error"
-  }
+  "errors": {}
 }
