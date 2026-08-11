@@ -12,7 +12,7 @@ import {
   toBeHex
 } from 'ethers';
 
-const VERSION = '1.0';
+const VERSION = '1.1';
 const OUTPUT = process.env.COMPANY_006_DISCOVERY_OUTPUT || path.resolve('companies/company-006-discovery.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
 
@@ -21,16 +21,17 @@ const COMPANY = {
   name: 'aerocrvyb.eth',
   wallets: {
     aerodrome: {
-      alias: 'Aerodrome wallet',
+      alias: 'Aero / Velo wallet',
       address: getAddress('0xa641752824d512fa8683758c6b2d8a04ea46dcd0'),
-      chain: 'Base',
-      route: 'aerodrome-ve'
+      chains: ['Base', 'Optimism'],
+      routes: ['aerodrome-ve', 'velodrome-ve-direct']
     },
     yieldBasis: {
       alias: 'Yield Basis wallet',
       address: getAddress('0x6c6543eba07946706fd10a1064fa773326b5f5a9'),
       chain: 'Ethereum',
-      route: 'yield-basis-fees'
+      route: 'yield-basis-fees',
+      routes: ['yield-basis-fees']
     }
   }
 };
@@ -39,6 +40,10 @@ const ADDR = {
   aerodrome: {
     token: getAddress('0x940181a94A35A4569E4529A3CDfB74e38FD98631'),
     votingEscrow: getAddress('0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4')
+  },
+  velodrome: {
+    token: getAddress('0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db'),
+    votingEscrow: getAddress('0xFAf8FD17D9840595845582fCB047DF13f006787d')
   },
   yieldBasis: {
     token: getAddress('0x01791F726B4103694969820be083196cC7c045fF'),
@@ -58,6 +63,12 @@ const RPC = {
     process.env.ETH_RPC_URL,
     'https://ethereum-rpc.publicnode.com',
     'https://eth.llamarpc.com'
+  ]),
+  optimism: unique([
+    process.env.OPTIMISM_RPC_URL,
+    'https://optimism-rpc.publicnode.com',
+    'https://mainnet.optimism.io',
+    'https://optimism.drpc.org'
   ])
 };
 
@@ -86,7 +97,7 @@ async function withProvider(chain, fn) {
 }
 function safeHost(url) {
   try {
-    const secret = [process.env.BASE_RPC_URL, process.env.BASE_RPC_URL_2, process.env.ETH_RPC_URL].filter(Boolean).includes(url);
+    const secret = [process.env.BASE_RPC_URL, process.env.BASE_RPC_URL_2, process.env.ETH_RPC_URL, process.env.OPTIMISM_RPC_URL].filter(Boolean).includes(url);
     return secret ? 'configured' : new URL(url).hostname;
   } catch { return 'configured'; }
 }
@@ -117,6 +128,53 @@ async function cgHistory(idValue, isoDate) {
     method: 'CoinGecko daily history market_data.current_price.usd',
     status: usd !== null && usd > 0 ? 'ok' : 'unavailable'
   };
+}
+
+
+async function llamaHistoricalPrice(chain, tokenAddress, timestamp, symbol = null) {
+  const coin = `${chain}:${String(tokenAddress).toLowerCase()}`;
+  const url = `https://coins.llama.fi/prices/historical/${Number(timestamp)}/${encodeURIComponent(coin)}`;
+  const data = await fetchJson(url, {}, 25000);
+  const row = data?.coins?.[coin] || data?.coins?.[String(coin).toLowerCase()] || null;
+  const usd = safeNumber(row?.price);
+  return {
+    chain,
+    token: tokenAddress,
+    symbol,
+    timestamp: Number(timestamp),
+    at: isoFromTs(timestamp),
+    usd,
+    method: 'DeFiLlama contract historical price at verified onchain event timestamp',
+    source: 'coins.llama.fi/prices/historical',
+    confidence: usd !== null && usd > 0 ? (row?.confidence ?? null) : null,
+    status: usd !== null && usd > 0 ? 'ok' : 'unavailable'
+  };
+}
+
+async function marketHistory({ coingeckoId, llamaChain, token, event, symbol }) {
+  if (!event?.timestamp) return {
+    symbol, coingeckoId, date: event?.foundedISO || null, usd: null,
+    status: 'unavailable', error: 'event timestamp unavailable'
+  };
+
+  // Exact event-time, contract-address price is preferred. It works for history
+  // older than CoinGecko Demo's rolling historical window.
+  try {
+    const llama = await llamaHistoricalPrice(llamaChain, token, event.timestamp, symbol);
+    if (llama.status === 'ok') return { ...llama, coingeckoId, date: event.foundedISO };
+  } catch (e) {}
+
+  // Daily CoinGecko history remains a deterministic fallback when available.
+  try {
+    const cg = await cgHistory(coingeckoId, event.foundedISO);
+    if (cg.status === 'ok') return { ...cg, symbol, timestamp: event.timestamp, at: event.foundedAt };
+    return { ...cg, symbol, timestamp: event.timestamp, at: event.foundedAt };
+  } catch (e) {
+    return {
+      symbol, coingeckoId, date: event.foundedISO, timestamp: event.timestamp,
+      at: event.foundedAt, usd: null, status: 'unavailable', error: errMsg(e)
+    };
+  }
 }
 
 async function cgCurrent(ids) {
@@ -241,6 +299,150 @@ async function earliestMintToWallet({ chain, provider, contract, wallet, blocksc
   return { first, candidates, diagnostics };
 }
 
+
+async function acquisitionEventsForCurrentIds({ chain, provider, contract, wallet, tokenIds, blockscoutBase = null }) {
+  const wanted = new Set((tokenIds || []).map(String));
+  const out = {};
+  const diagnostics = [];
+  if (!wanted.size) return { events: out, diagnostics };
+
+  let rows = [];
+  if (blockscoutBase) rows = await blockscoutLegacyNftTransfers(blockscoutBase, wallet, contract);
+  diagnostics.push(`Blockscout transfer rows for current NFTs: ${rows.length}`);
+
+  for (const idValue of wanted) {
+    const inbound = rows
+      .filter(x => String(x.tokenID || x.tokenId || x.token_id || '') === idValue)
+      .filter(x => String(x.to || '').toLowerCase() === wallet.toLowerCase())
+      .sort((a,b) => Number(a.blockNumber || a.block_number || 0) - Number(b.blockNumber || b.block_number || 0))[0];
+    if (!inbound) continue;
+    let timestamp = Number(inbound.timeStamp || inbound.timestamp || 0) || null;
+    const blockNumber = Number(inbound.blockNumber || inbound.block_number || 0);
+    if (!timestamp && blockNumber) {
+      try { timestamp = Number((await provider.getBlock(blockNumber)).timestamp); } catch {}
+    }
+    const from = String(inbound.from || '');
+    const event = {
+      blockNumber,
+      txHash: inbound.hash || inbound.transactionHash || inbound.transaction_hash || null,
+      tokenId: idValue,
+      from: from || null,
+      to: wallet,
+      timestamp,
+      eventType: from.toLowerCase() === ZeroAddress.toLowerCase() ? 'mint-to-wallet' : 'transfer-to-wallet',
+      source: `${chain}-blockscout: first inbound current veNFT transfer`,
+      confidence: 'high'
+    };
+    if (timestamp) {
+      event.acquiredAt = isoFromTs(timestamp);
+      event.acquiredISO = event.acquiredAt.slice(0, 10);
+    }
+    out[idValue] = event;
+  }
+  return { events: out, diagnostics };
+}
+
+async function discoverStandardVe({
+  providerKey, chainLabel, wallet, token, votingEscrow, blockscoutBase,
+  symbol, amountField, cgId, llamaChain
+}) {
+  return await withProvider(providerKey, async provider => {
+    const abi = [
+      'function balanceOf(address owner) view returns (uint256)',
+      'function ownerToNFTokenIdList(address owner,uint256 index) view returns (uint256)',
+      'function locked(uint256 tokenId) view returns (int128 amount,uint256 end,bool isPermanent)',
+      'function idToManaged(uint256 tokenId) view returns (uint256)',
+      'function weights(uint256 tokenId,uint256 managedTokenId) view returns (uint256)',
+      'function escrowType(uint256 tokenId) view returns (uint8)'
+    ];
+    const ve = new Contract(votingEscrow, abi, provider);
+    const count = Number(await ve.balanceOf(wallet));
+    const positions = [];
+    let economicPrincipalRaw = 0n;
+
+    for (let i = 0; i < count; i++) {
+      const tokenId = await ve.ownerToNFTokenIdList(wallet, i);
+      let managedId = 0n;
+      try { managedId = await ve.idToManaged(tokenId); } catch {}
+      let amountRaw = 0n, end = 0n, isPermanent = false, escrowType = 0;
+      try {
+        const l = await ve.locked(tokenId);
+        amountRaw = positiveBigInt(l.amount);
+        end = BigInt(l.end);
+        isPermanent = Boolean(l.isPermanent);
+      } catch {}
+      try { escrowType = Number(await ve.escrowType(tokenId)); } catch {}
+      let managedWeightRaw = 0n;
+      if (managedId > 0n) {
+        try { managedWeightRaw = positiveBigInt(await ve.weights(tokenId, managedId)); } catch {}
+      }
+      const economicRaw = managedWeightRaw > 0n ? managedWeightRaw : amountRaw;
+      economicPrincipalRaw += economicRaw;
+      positions.push({
+        tokenId: tokenId.toString(),
+        escrowType,
+        managedTokenId: managedId.toString(),
+        [`directLocked${symbol}`]: Number(formatUnits(amountRaw, 18)),
+        [`managedWeight${symbol}`]: Number(formatUnits(managedWeightRaw, 18)),
+        [`economicPrincipal${symbol}`]: Number(formatUnits(economicRaw, 18)),
+        lockEnd: end > 0n ? isoFromTs(end) : null,
+        isPermanent
+      });
+    }
+
+    const mint = await earliestMintToWallet({
+      chain: providerKey, provider, contract: votingEscrow, wallet, blockscoutBase
+    });
+    const acq = await acquisitionEventsForCurrentIds({
+      chain: providerKey, provider, contract: votingEscrow, wallet,
+      tokenIds: positions.map(x => x.tokenId), blockscoutBase
+    });
+
+    let entryPrice = null;
+    const eventForEntry = mint.first || Object.values(acq.events).sort((a,b)=>(a.blockNumber||0)-(b.blockNumber||0))[0] || null;
+    if (eventForEntry?.timestamp) {
+      const normalizedEvent = {
+        ...eventForEntry,
+        foundedAt: eventForEntry.foundedAt || eventForEntry.acquiredAt || isoFromTs(eventForEntry.timestamp),
+        foundedISO: eventForEntry.foundedISO || eventForEntry.acquiredISO || isoFromTs(eventForEntry.timestamp).slice(0,10)
+      };
+      entryPrice = await marketHistory({
+        coingeckoId: cgId, llamaChain, token, event: normalizedEvent, symbol
+      });
+    }
+
+    return {
+      wallet,
+      chain: chainLabel,
+      token,
+      votingEscrow,
+      currentVeNftCount: count,
+      positions,
+      [`economicPrincipal${symbol}`]: Number(formatUnits(economicPrincipalRaw, 18)),
+      firstLock: mint.first,
+      firstLockCandidates: mint.candidates,
+      currentNftAcquisitionEvents: acq.events,
+      entryPrice,
+      discoveryDiagnostics: [...mint.diagnostics, ...acq.diagnostics]
+    };
+  });
+}
+
+async function discoverVelodrome() {
+  return discoverStandardVe({
+    providerKey: 'optimism',
+    chainLabel: 'Optimism',
+    wallet: COMPANY.wallets.aerodrome.address,
+    token: ADDR.velodrome.token,
+    votingEscrow: ADDR.velodrome.votingEscrow,
+    blockscoutBase: 'https://explorer.optimism.io',
+    symbol: 'Velo',
+    amountField: 'VELO',
+    cgId: 'velodrome-finance',
+    llamaChain: 'optimism'
+  });
+}
+
 async function discoverAerodrome() {
   const wallet = COMPANY.wallets.aerodrome.address;
   return await withProvider('base', async provider => {
@@ -292,10 +494,34 @@ async function discoverAerodrome() {
       wallet,
       blockscoutBase: 'https://base.blockscout.com'
     });
+    const acq = await acquisitionEventsForCurrentIds({
+      chain: 'base', provider,
+      contract: ADDR.aerodrome.votingEscrow,
+      wallet,
+      tokenIds: positions.map(x => x.tokenId),
+      blockscoutBase: 'https://base.blockscout.com'
+    });
+
+    // Owner-confirmed acquisition classification:
+    // 64985 = market-purchased capital; 69194 = airdrop, therefore $0 cost basis.
+    const acquisitionByTokenId = {
+      '64985': { type: 'market-purchased', costBasisRule: 'historical AERO price at first verified lock' },
+      '69194': { type: 'airdrop', costBasisRule: 'zero' }
+    };
+    for (const p of positions) {
+      p.acquisition = acquisitionByTokenId[p.tokenId] || { type: 'unknown', costBasisRule: 'requires-owner-or-onchain-review' };
+      p.acquisitionEvent = acq.events[p.tokenId] || null;
+    }
+
     let entryPrice = null;
-    if (mint.first?.foundedISO) {
-      try { entryPrice = await cgHistory('aerodrome-finance', mint.first.foundedISO); }
-      catch (e) { entryPrice = { coingeckoId: 'aerodrome-finance', date: mint.first.foundedISO, usd: null, status: 'unavailable', error: errMsg(e) }; }
+    if (mint.first?.timestamp) {
+      entryPrice = await marketHistory({
+        coingeckoId: 'aerodrome-finance',
+        llamaChain: 'base',
+        token: ADDR.aerodrome.token,
+        event: mint.first,
+        symbol: 'AERO'
+      });
     }
     return {
       wallet,
@@ -306,8 +532,14 @@ async function discoverAerodrome() {
       economicPrincipalAero: Number(formatUnits(economicPrincipalRaw, 18)),
       firstLock: mint.first,
       firstLockCandidates: mint.candidates,
+      currentNftAcquisitionEvents: acq.events,
       entryPrice,
-      discoveryDiagnostics: mint.diagnostics
+      acquisitionPolicy: {
+        publicPresentation: 'aggregate both current veAERO NFTs into one AERO / veAERO balance line',
+        tokenId64985: 'market-purchased; historical lock-date price is paid-capital cost basis',
+        tokenId69194: 'owner-confirmed airdrop; cost basis = 0; current value contributes fully to company performance'
+      },
+      discoveryDiagnostics: [...mint.diagnostics, ...acq.diagnostics]
     };
   });
 }
@@ -331,9 +563,14 @@ async function discoverYieldBasis() {
       blockscoutBase: 'https://eth.blockscout.com'
     });
     let entryPrice = null;
-    if (mint.first?.foundedISO) {
-      try { entryPrice = await cgHistory('yield-basis', mint.first.foundedISO); }
-      catch (e) { entryPrice = { coingeckoId: 'yield-basis', date: mint.first.foundedISO, usd: null, status: 'unavailable', error: errMsg(e) }; }
+    if (mint.first?.timestamp) {
+      entryPrice = await marketHistory({
+        coingeckoId: 'yield-basis',
+        llamaChain: 'ethereum',
+        token: ADDR.yieldBasis.token,
+        event: mint.first,
+        symbol: 'YB'
+      });
     }
     return {
       wallet,
@@ -352,54 +589,125 @@ async function discoverYieldBasis() {
   });
 }
 
-function buildProposedBook(aero, yb, currentPrices) {
-  const aQty = safeNumber(aero?.result?.economicPrincipalAero);
-  const yQty = safeNumber(yb?.result?.economicPrincipalYb);
-  const aEntry = safeNumber(aero?.result?.entryPrice?.usd);
-  const yEntry = safeNumber(yb?.result?.entryPrice?.usd);
+function buildProposedBook(aero, velo, yb, currentPrices) {
+  const a = aero?.result || null;
+  const v = velo?.result || null;
+  const y = yb?.result || null;
+
+  const aQty = safeNumber(a?.economicPrincipalAero);
+  const vQty = safeNumber(v?.economicPrincipalVelo);
+  const yQty = safeNumber(y?.economicPrincipalYb);
+  const aMarketEntry = safeNumber(a?.entryPrice?.usd);
+  const vEntry = safeNumber(v?.entryPrice?.usd);
+  const yEntry = safeNumber(y?.entryPrice?.usd);
+
+  const aeroPaidPosition = (a?.positions || []).find(x => x.tokenId === '64985') || null;
+  const aeroAirdropPosition = (a?.positions || []).find(x => x.tokenId === '69194') || null;
+  const aeroPaidQty = safeNumber(aeroPaidPosition?.economicPrincipalAero);
+  const aeroAirdropQty = safeNumber(aeroAirdropPosition?.economicPrincipalAero);
+
   const rows = [];
-  if (aQty !== null && aQty > 0) rows.push({
-    id: 'aerodrome-finance', symbol: 'AERO / veAERO', qty: aQty,
-    entry: aEntry, classification: 'productive', walletAlias: COMPANY.wallets.aerodrome.alias,
-    entryMethod: 'daily AERO market price on first verified veAERO lock date'
+
+  if (aQty !== null && aQty > 0) {
+    const paidCost = (aeroPaidQty !== null && aMarketEntry !== null) ? aeroPaidQty * aMarketEntry : null;
+    const effectiveEntry = paidCost !== null && aQty > 0 ? paidCost / aQty : null;
+    rows.push({
+      id: 'aerodrome-finance',
+      symbol: 'AERO / veAERO',
+      qty: aQty,
+      entry: effectiveEntry,
+      costBasisOverrideUsd: paidCost,
+      classification: 'productive',
+      walletAlias: COMPANY.wallets.aerodrome.alias,
+      publicAggregation: 'one AERO / veAERO line',
+      acquisitionBreakdown: [
+        {
+          tokenId: '64985',
+          qty: aeroPaidQty,
+          acquisition: 'market-purchased',
+          entry: aMarketEntry,
+          costBasisUsd: paidCost,
+          entryMethod: 'historical AERO market price at first verified veAERO lock'
+        },
+        {
+          tokenId: '69194',
+          qty: aeroAirdropQty,
+          acquisition: 'airdrop',
+          entry: 0,
+          costBasisUsd: 0,
+          entryMethod: 'owner-confirmed airdrop; zero acquisition cost'
+        }
+      ],
+      entryMethod: 'weighted effective entry for one public AERO line; internal paid + airdrop cost basis preserved'
+    });
+  }
+
+  if (vQty !== null && vQty > 0) rows.push({
+    id: 'velodrome-finance',
+    symbol: 'VELO / veVELO',
+    qty: vQty,
+    entry: vEntry,
+    classification: 'productive',
+    walletAlias: COMPANY.wallets.aerodrome.alias,
+    entryMethod: 'historical VELO market price at first verified veVELO lock/acquisition'
   });
+
   if (yQty !== null && yQty > 0) rows.push({
-    id: 'yield-basis', symbol: 'YB / veYB', qty: yQty,
-    entry: yEntry, classification: 'productive', walletAlias: COMPANY.wallets.yieldBasis.alias,
-    entryMethod: 'daily YB market price on first verified veYB lock date'
+    id: 'yield-basis',
+    symbol: 'YB / veYB',
+    qty: yQty,
+    entry: yEntry,
+    classification: 'productive',
+    walletAlias: COMPANY.wallets.yieldBasis.alias,
+    entryMethod: 'historical YB market price at first verified veYB lock'
   });
+
   const enriched = rows.map(r => {
     const px = safeNumber(currentPrices?.[r.id]);
     const currentValue = px !== null ? r.qty * px : null;
-    const costBasis = r.entry !== null ? r.qty * r.entry : null;
-    return { ...r, currentPriceUsdAtDiscovery: px, currentValueUsdAtDiscovery: currentValue, costBasisUsd: costBasis, performanceUsdAtDiscovery: currentValue !== null && costBasis !== null ? currentValue - costBasis : null };
+    const costBasis = r.costBasisOverrideUsd !== undefined
+      ? safeNumber(r.costBasisOverrideUsd)
+      : (r.entry !== null ? r.qty * r.entry : null);
+    return {
+      ...r,
+      currentPriceUsdAtDiscovery: px,
+      currentValueUsdAtDiscovery: currentValue,
+      costBasisUsd: costBasis,
+      performanceUsdAtDiscovery: currentValue !== null && costBasis !== null ? currentValue - costBasis : null
+    };
   });
-  const totalCurrent = enriched.reduce((s,r)=>s+(r.currentValueUsdAtDiscovery || 0),0);
-  const totalCost = enriched.reduce((s,r)=>s+(r.costBasisUsd || 0),0);
+
+  const valued = enriched.filter(r => r.currentValueUsdAtDiscovery !== null);
+  const costed = enriched.filter(r => r.costBasisUsd !== null);
+  const totalCurrent = valued.length === enriched.length ? enriched.reduce((s,r)=>s+r.currentValueUsdAtDiscovery,0) : null;
+  const totalCost = costed.length === enriched.length ? enriched.reduce((s,r)=>s+r.costBasisUsd,0) : null;
+
   return {
     positions: enriched,
-    totalCurrentValueUsdAtDiscovery: totalCurrent || null,
-    totalCostBasisUsd: totalCost || null,
-    performanceUsdAtDiscovery: totalCurrent && totalCost ? totalCurrent - totalCost : null,
-    performancePctAtDiscovery: totalCurrent && totalCost ? (totalCurrent / totalCost - 1) * 100 : null
+    totalCurrentValueUsdAtDiscovery: totalCurrent,
+    totalCostBasisUsd: totalCost,
+    performanceUsdAtDiscovery: totalCurrent !== null && totalCost !== null ? totalCurrent - totalCost : null,
+    performancePctAtDiscovery: totalCurrent !== null && totalCost !== null && totalCost > 0
+      ? (totalCurrent / totalCost - 1) * 100 : null
   };
 }
 
 async function main() {
   const startedAt = new Date().toISOString();
   const errors = {};
-  let aerodrome = null, yieldBasis = null;
+  let aerodrome = null, velodrome = null, yieldBasis = null;
   try { aerodrome = await discoverAerodrome(); } catch (e) { errors.aerodrome = errMsg(e); }
+  try { velodrome = await discoverVelodrome(); } catch (e) { errors.velodrome = errMsg(e); }
   try { yieldBasis = await discoverYieldBasis(); } catch (e) { errors.yieldBasis = errMsg(e); }
-  const currentPrices = await cgCurrent(['aerodrome-finance','yield-basis']);
-  const proposedCompanyBook = buildProposedBook(aerodrome, yieldBasis, currentPrices);
+  const currentPrices = await cgCurrent(['aerodrome-finance','velodrome-finance','yield-basis']);
+  const proposedCompanyBook = buildProposedBook(aerodrome, velodrome, yieldBasis, currentPrices);
   const founded = aerodrome?.result?.firstLock || null;
 
   const output = {
     version: VERSION,
     generatedAt: new Date().toISOString(),
     startedAt,
-    purpose: 'Company #006 deterministic onboarding discovery; no production metrics are changed by this file.',
+    purpose: 'Company #006 deterministic onboarding discovery v1.1: AERO paid/airdrop cost basis + veVELO + veYB; no production metrics are changed by this file.',
     company: {
       registry: COMPANY.registry,
       name: COMPANY.name,
@@ -409,12 +717,14 @@ async function main() {
       wallets: Object.values(COMPANY.wallets)
     },
     aerodrome: aerodrome?.result || null,
+    velodrome: velodrome?.result || null,
     yieldBasis: yieldBasis?.result || null,
     proposedCompanyBook,
     knownAdapterReuse: {
-      productivity: ['aerodrome_veaero','yieldbasis_veyb'],
+      productivity: ['aerodrome_veaero','velodrome_vevelo','yieldbasis_veyb'],
       rewards: [
         { route: 'aerodrome-ve', walletAlias: COMPANY.wallets.aerodrome.alias },
+        { route: 'velodrome-ve-direct', walletAlias: COMPANY.wallets.aerodrome.alias },
         { route: 'yield-basis-fees', walletAlias: COMPANY.wallets.yieldBasis.alias }
       ],
       note: 'Company #006 should use wallet-scoped reward routes rather than running every route against every company wallet.'
@@ -427,6 +737,7 @@ async function main() {
   console.log(`Company #006 discovery written: ${OUTPUT}`);
   console.log(`Founding date: ${output.company.foundedISO || 'unresolved'}`);
   console.log(`AERO principal: ${output.aerodrome?.economicPrincipalAero ?? 'unresolved'}`);
+  console.log(`VELO principal: ${output.velodrome?.economicPrincipalVelo ?? 'unresolved'}`);
   console.log(`YB principal: ${output.yieldBasis?.economicPrincipalYb ?? 'unresolved'}`);
   if (Object.keys(errors).length) console.warn('Discovery errors:', errors);
 }
