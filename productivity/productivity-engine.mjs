@@ -32,7 +32,7 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.12-pendle-lkg-resilience';
+const COLLECTOR_VERSION = '1.13-company-007-yblp-bridge';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const PENDLE_SPENDLE_TOKEN = '0x999999999991e178d52cd95afd4b00d066664144';
 const PENDLE_SURVIVOR_CAMPAIGNS = 3;
@@ -109,6 +109,8 @@ const ENGINE_META = {
   pendle_spendle:   { protocol:'Pendle', principalSymbol:'PENDLE', sourceUrl:'https://api-v2.pendle.finance/core/v1/spendle/data', nativeCadence:'14d' },
   fx_vefxn:         { protocol:'f(x)', principalSymbol:'FXN', sourceUrl:'https://fx.aladdin.club/v2/lock', nativeCadence:'weekly' },
   yieldbasis_veyb:  { protocol:'Yield Basis', principalSymbol:'YB', sourceUrl:'https://yieldbasis.com/analytics', nativeCadence:'epoch' },
+  yieldbasis_yblp_wbtc: { protocol:'Yield Basis', principalSymbol:'BTC', sourceUrl:'companies/company-007-resolve.json', nativeCadence:'30d' },
+  yieldbasis_yblp_weth: { protocol:'Yield Basis', principalSymbol:'ETH', sourceUrl:'companies/company-007-resolve.json', nativeCadence:'30d' },
   frax_vefrax:      { protocol:'Frax', principalSymbol:'FRAX', sourceUrl:'https://app.frax.finance/fxtl-vefxs', nativeCadence:'epoch' },
   venice_svvv:      { protocol:'Venice', principalSymbol:'VVV', sourceUrl:'https://venice.ai/token', nativeCadence:'continuous' },
   liquity_lqty:     { protocol:'Liquity', principalSymbol:'LQTY', sourceUrl:'https://www.liquity.org/stake', nativeCadence:'continuous/week-sampled' },
@@ -1371,6 +1373,18 @@ async function discoverCompany005Foundation(previousMeta={}) {
   return {address:COMPANY_005_ADDRESS,foundedISO:null,foundedAt:null,source:'onchain+blockscout: veVELO foundation discovery',method:null,confidence:'unresolved',discoveryErrors:errors};
 }
 
+
+async function collectCompany007YieldBasisLp(market) {
+  const file=path.resolve('companies/company-007-resolve.json');
+  const j=await readJson(file,{});
+  const yb=j?.results?.yieldBasis;
+  const p=Array.isArray(yb?.positions) ? yb.positions.find(x=>x?.market===market) : null;
+  const apr=Number(p?.fundamentalTradingApy30dPct);
+  if (!(yb?.status==='ok' && Number.isFinite(apr) && apr>=0 && apr<=MAX_REASONABLE_APR)) {
+    return {notReady:true,source:file,sourceType:'local-verified-resolver',sourceMetric:'Yield Basis FT APY (30D) pending reproducible historical PPS',details:{market,resolverStatus:yb?.status||'missing',resolverVersion:yb?.yieldBasisResolverVersion||null,productivityStatus:p?.productivityStatus||null}};
+  }
+  return {apr:round(apr),source:file,sourceType:'local-verified-resolver',sourceMetric:'Yield Basis FT APY (30D) · fundamental PPS growth · emissions excluded',periodStart:p?.historicalTimestamp?new Date(Number(p.historicalTimestamp)*1000).toISOString():null,periodEnd:j?.generatedAt||nowIso(),details:{market,ppsNow:p?.ppsNow??null,pps30dAgo:p?.pps30dAgo??null,historicalProvider:p?.historicalProvider??null,resolverVersion:yb?.yieldBasisResolverVersion||null}};
+}
 async function runAdapter(engineId,{browser,prices,previous}) {
   switch(engineId) {
     case 'aerodrome_veaero': return collect40Acres(browser,'Aerodrome');
@@ -1380,6 +1394,8 @@ async function runAdapter(engineId,{browser,prices,previous}) {
     case 'pendle_spendle': return collectPendle(previous);
     case 'fx_vefxn': return collectFx(browser);
     case 'yieldbasis_veyb': return collectYieldBasis(browser);
+    case 'yieldbasis_yblp_wbtc': return collectCompany007YieldBasisLp('yb-WBTC');
+    case 'yieldbasis_yblp_weth': return collectCompany007YieldBasisLp('yb-WETH');
     case 'frax_vefrax': return collectFrax(browser);
     case 'venice_svvv': return collectVenice();
     case 'liquity_lqty': return collectLiquity(prices,previous);
@@ -1461,7 +1477,7 @@ async function main() {
 
   const priceIds=new Set(['ethereum','liquity']);
   for (const positions of Object.values(companyBook)) {
-    for (const p of positions) if (ENGINE_BY_CG_ID[p.id] && p.fixed===undefined) priceIds.add(p.id);
+    for (const p of positions) if ((p.engineId || ENGINE_BY_CG_ID[p.id]) && p.fixed===undefined) priceIds.add(p.id);
   }
   let prices={};
   try { prices=await getCoinGeckoPrices([...priceIds]); }
@@ -1585,13 +1601,13 @@ async function main() {
   const historyCompanies={...(previous?.history?.companies||{})};
 
   for (const [name,positions] of Object.entries(companyBook)) {
-    const productive=positions.filter(p=>ENGINE_BY_CG_ID[p.id]);
+    const productive=positions.filter(p=>p.engineId || ENGINE_BY_CG_ID[p.id]);
     let total=0, weighted=0, covered=0;
     const breakdown=[];
     let complete=productive.length>0;
 
     for (const p of productive) {
-      const engineId=ENGINE_BY_CG_ID[p.id];
+      const engineId=p.engineId || ENGINE_BY_CG_ID[p.id];
       const e=engines[engineId];
       const price=p.fixed!==undefined ? Number(p.fixed) : Number(prices[p.id]);
       const value=Number(p.qty)*price;
@@ -1649,7 +1665,7 @@ async function main() {
   }
 
   const output={
-    version:'1.12',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.13',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions with valid Reference APRs. coverage shows the share of productive capital currently included; unknown engines are excluded, never treated as 0%. Canonical historical company averages use full-coverage observations only.',
     engines,companies,companyMetadata,
     history:{engines:historyEngines,companies:historyCompanies},
