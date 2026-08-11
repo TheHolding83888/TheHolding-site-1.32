@@ -79,7 +79,7 @@ const LINK = {
 };
 
 const ZK = {
-  token: getAddress('0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3'),
+  token: getAddress('0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E'),
   coingeckoId: 'zksync'
 };
 
