@@ -1,8 +1,8 @@
 {
-  "version": "1.0",
-  "generatedAt": "2026-08-11T07:25:48.806Z",
-  "startedAt": "2026-08-11T07:25:46.259Z",
-  "purpose": "Company #006 deterministic onboarding discovery; no production metrics are changed by this file.",
+  "version": "1.1",
+  "generatedAt": "2026-08-11T07:46:46.677Z",
+  "startedAt": "2026-08-11T07:45:51.675Z",
+  "purpose": "Company #006 deterministic onboarding discovery v1.1: AERO paid/airdrop cost basis + veVELO + veYB; no production metrics are changed by this file.",
   "company": {
     "registry": "006",
     "name": "aerocrvyb.eth",
@@ -11,16 +11,25 @@
     "foundedISO": "2024-12-22",
     "wallets": [
       {
-        "alias": "Aerodrome wallet",
+        "alias": "Aero / Velo wallet",
         "address": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
-        "chain": "Base",
-        "route": "aerodrome-ve"
+        "chains": [
+          "Base",
+          "Optimism"
+        ],
+        "routes": [
+          "aerodrome-ve",
+          "velodrome-ve-direct"
+        ]
       },
       {
         "alias": "Yield Basis wallet",
         "address": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
         "chain": "Ethereum",
-        "route": "yield-basis-fees"
+        "route": "yield-basis-fees",
+        "routes": [
+          "yield-basis-fees"
+        ]
       }
     ]
   },
@@ -38,7 +47,24 @@
         "managedWeightAero": 0,
         "economicPrincipalAero": 6912.385265110832,
         "lockEnd": "2028-12-21T00:00:00.000Z",
-        "isPermanent": false
+        "isPermanent": false,
+        "acquisition": {
+          "type": "market-purchased",
+          "costBasisRule": "historical AERO price at first verified lock"
+        },
+        "acquisitionEvent": {
+          "blockNumber": 24033558,
+          "txHash": "0x914527ab4526b2df7313d59a013398009897eeaf90936c636694857a3f4f01a6",
+          "tokenId": "64985",
+          "from": "0x0000000000000000000000000000000000000000",
+          "to": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "timestamp": 1734856463,
+          "eventType": "mint-to-wallet",
+          "source": "base-blockscout: first inbound current veNFT transfer",
+          "confidence": "high",
+          "acquiredAt": "2024-12-22T08:34:23.000Z",
+          "acquiredISO": "2024-12-22"
+        }
       },
       {
         "tokenId": "69194",
@@ -48,7 +74,24 @@
         "managedWeightAero": 0,
         "economicPrincipalAero": 2317.8628541935973,
         "lockEnd": null,
-        "isPermanent": true
+        "isPermanent": true,
+        "acquisition": {
+          "type": "airdrop",
+          "costBasisRule": "zero"
+        },
+        "acquisitionEvent": {
+          "blockNumber": 25654842,
+          "txHash": "0x21fcc93dfd2ea7ac32dca009a6befafc39bf69081eeb3a0418d840269fe97cc5",
+          "tokenId": "69194",
+          "from": "0xc27c8b3ce02349f4916bfc8fd45a586d8787ee5e",
+          "to": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "timestamp": 1738099031,
+          "eventType": "transfer-to-wallet",
+          "source": "base-blockscout: first inbound current veNFT transfer",
+          "confidence": "high",
+          "acquiredAt": "2025-01-28T21:17:11.000Z",
+          "acquiredISO": "2025-01-28"
+        }
       }
     ],
     "economicPrincipalAero": 9230.248119304428,
@@ -76,17 +119,59 @@
         "confidence": "high"
       }
     ],
+    "currentNftAcquisitionEvents": {
+      "64985": {
+        "blockNumber": 24033558,
+        "txHash": "0x914527ab4526b2df7313d59a013398009897eeaf90936c636694857a3f4f01a6",
+        "tokenId": "64985",
+        "from": "0x0000000000000000000000000000000000000000",
+        "to": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+        "timestamp": 1734856463,
+        "eventType": "mint-to-wallet",
+        "source": "base-blockscout: first inbound current veNFT transfer",
+        "confidence": "high",
+        "acquiredAt": "2024-12-22T08:34:23.000Z",
+        "acquiredISO": "2024-12-22"
+      },
+      "69194": {
+        "blockNumber": 25654842,
+        "txHash": "0x21fcc93dfd2ea7ac32dca009a6befafc39bf69081eeb3a0418d840269fe97cc5",
+        "tokenId": "69194",
+        "from": "0xc27c8b3ce02349f4916bfc8fd45a586d8787ee5e",
+        "to": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+        "timestamp": 1738099031,
+        "eventType": "transfer-to-wallet",
+        "source": "base-blockscout: first inbound current veNFT transfer",
+        "confidence": "high",
+        "acquiredAt": "2025-01-28T21:17:11.000Z",
+        "acquiredISO": "2025-01-28"
+      }
+    },
     "entryPrice": {
+      "chain": "base",
+      "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+      "symbol": "AERO",
+      "timestamp": 1734856463,
+      "at": "2024-12-22T08:34:23.000Z",
+      "usd": 1.53,
+      "method": "DeFiLlama contract historical price at verified onchain event timestamp",
+      "source": "coins.llama.fi/prices/historical",
+      "confidence": 0.99,
+      "status": "ok",
       "coingeckoId": "aerodrome-finance",
-      "date": "2024-12-22",
-      "usd": null,
-      "status": "unavailable",
-      "error": "HTTP 401"
+      "date": "2024-12-22"
+    },
+    "acquisitionPolicy": {
+      "publicPresentation": "aggregate both current veAERO NFTs into one AERO / veAERO balance line",
+      "tokenId64985": "market-purchased; historical lock-date price is paid-capital cost basis",
+      "tokenId69194": "owner-confirmed airdrop; cost basis = 0; current value contributes fully to company performance"
     },
     "discoveryDiagnostics": [
-      "Blockscout mint candidates: 1"
+      "Blockscout mint candidates: 1",
+      "Blockscout transfer rows for current NFTs: 6"
     ]
   },
+  "velodrome": null,
   "yieldBasis": {
     "wallet": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
     "token": "0x01791F726B4103694969820be083196cC7c045fF",
@@ -121,11 +206,18 @@
       }
     ],
     "entryPrice": {
+      "chain": "ethereum",
+      "token": "0x01791F726B4103694969820be083196cC7c045fF",
+      "symbol": "YB",
+      "timestamp": 1782136511,
+      "at": "2026-06-22T13:55:11.000Z",
+      "usd": 0.08061164888740173,
+      "method": "DeFiLlama contract historical price at verified onchain event timestamp",
+      "source": "coins.llama.fi/prices/historical",
+      "confidence": 0.99,
+      "status": "ok",
       "coingeckoId": "yield-basis",
-      "date": "2026-06-22",
-      "usd": 0.07815009781089512,
-      "method": "CoinGecko daily history market_data.current_price.usd",
-      "status": "ok"
+      "date": "2026-06-22"
     },
     "discoveryDiagnostics": [
       "Blockscout mint candidates: 1"
@@ -137,43 +229,68 @@
         "id": "aerodrome-finance",
         "symbol": "AERO / veAERO",
         "qty": 9230.248119304428,
-        "entry": 0,
+        "entry": 1.1457925419686936,
+        "costBasisOverrideUsd": 10575.949455619573,
         "classification": "productive",
-        "walletAlias": "Aerodrome wallet",
-        "entryMethod": "daily AERO market price on first verified veAERO lock date",
-        "currentPriceUsdAtDiscovery": 0.416996,
-        "currentValueUsdAtDiscovery": 3848.976544757469,
-        "costBasisUsd": 0,
-        "performanceUsdAtDiscovery": 3848.976544757469
+        "walletAlias": "Aero / Velo wallet",
+        "publicAggregation": "one AERO / veAERO line",
+        "acquisitionBreakdown": [
+          {
+            "tokenId": "64985",
+            "qty": 6912.385265110832,
+            "acquisition": "market-purchased",
+            "entry": 1.53,
+            "costBasisUsd": 10575.949455619573,
+            "entryMethod": "historical AERO market price at first verified veAERO lock"
+          },
+          {
+            "tokenId": "69194",
+            "qty": 2317.8628541935973,
+            "acquisition": "airdrop",
+            "entry": 0,
+            "costBasisUsd": 0,
+            "entryMethod": "owner-confirmed airdrop; zero acquisition cost"
+          }
+        ],
+        "entryMethod": "weighted effective entry for one public AERO line; internal paid + airdrop cost basis preserved",
+        "currentPriceUsdAtDiscovery": 0.417929,
+        "currentValueUsdAtDiscovery": 3857.5883662527804,
+        "costBasisUsd": 10575.949455619573,
+        "performanceUsdAtDiscovery": -6718.361089366793
       },
       {
         "id": "yield-basis",
         "symbol": "YB / veYB",
         "qty": 12499.999999999958,
-        "entry": 0.07815009781089512,
+        "entry": 0.08061164888740173,
         "classification": "productive",
         "walletAlias": "Yield Basis wallet",
-        "entryMethod": "daily YB market price on first verified veYB lock date",
-        "currentPriceUsdAtDiscovery": 0.076739,
-        "currentValueUsdAtDiscovery": 959.2374999999968,
-        "costBasisUsd": 976.8762226361857,
-        "performanceUsdAtDiscovery": -17.63872263618896
+        "entryMethod": "historical YB market price at first verified veYB lock",
+        "currentPriceUsdAtDiscovery": 0.076611,
+        "currentValueUsdAtDiscovery": 957.6374999999967,
+        "costBasisUsd": 1007.6456110925183,
+        "performanceUsdAtDiscovery": -50.00811109252152
       }
     ],
-    "totalCurrentValueUsdAtDiscovery": 4808.214044757466,
-    "totalCostBasisUsd": 976.8762226361857,
-    "performanceUsdAtDiscovery": 3831.3378221212797,
-    "performancePctAtDiscovery": 392.2029969960862
+    "totalCurrentValueUsdAtDiscovery": 4815.225866252777,
+    "totalCostBasisUsd": 11583.595066712092,
+    "performanceUsdAtDiscovery": -6768.369200459315,
+    "performancePctAtDiscovery": -58.43064403994623
   },
   "knownAdapterReuse": {
     "productivity": [
       "aerodrome_veaero",
+      "velodrome_vevelo",
       "yieldbasis_veyb"
     ],
     "rewards": [
       {
         "route": "aerodrome-ve",
-        "walletAlias": "Aerodrome wallet"
+        "walletAlias": "Aero / Velo wallet"
+      },
+      {
+        "route": "velodrome-ve-direct",
+        "walletAlias": "Aero / Velo wallet"
       },
       {
         "route": "yield-basis-fees",
@@ -182,5 +299,7 @@
     ],
     "note": "Company #006 should use wallet-scoped reward routes rather than running every route against every company wallet."
   },
-  "errors": {}
+  "errors": {
+    "velodrome": "optimism providers exhausted: optimism:optimism-rpc.publicnode.com: could not coalesce error | optimism:mainnet.optimism.io: could not coalesce error | optimism:optimism.drpc.org: could not coalesce error"
+  }
 }
