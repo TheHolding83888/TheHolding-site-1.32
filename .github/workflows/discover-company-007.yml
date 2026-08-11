@@ -1,0 +1,86 @@
+name: Discover Company #007
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: discover-company-007
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install discovery dependency
+        run: npm install --no-save ethers@6
+
+      - name: Discover Company #007 current state
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          ZKSYNC_RPC_URL: ${{ secrets.ZKSYNC_RPC_URL }}
+          COMPANY_007_DISCOVERY_OUTPUT: companies/company-007-discovery.json
+        run: node onboarding/company-007-discovery.mjs
+
+      - name: Validate generated JSON
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'companies/company-007-discovery.json';
+          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (d.version !== '1.0-current-state-fast') throw new Error('unexpected discovery version');
+          if (d.company?.registry !== '007') throw new Error('registry mismatch');
+          if (d.company?.name !== "Rook's portfolio") throw new Error('name mismatch');
+          if (d.company?.foundedAt !== '2026-01-08') throw new Error('founding mismatch');
+          if (!Array.isArray(d.company?.wallets) || d.company.wallets.length !== 2) throw new Error('wallet count mismatch');
+          if (!Array.isArray(d.proposedCompanyBook) || d.proposedCompanyBook.length !== 7) throw new Error('Company Book row count mismatch');
+          const syms = d.proposedCompanyBook.map(x => x.symbol).join(',');
+          if (syms !== 'BTC,ETH,AERO,CVX,CRV,LINK,ZK') throw new Error('Company Book symbols mismatch: ' + syms);
+          console.log('Discovery JSON validation passed');
+          NODE
+
+      - name: Commit discovery output
+        run: |
+          # `git diff` does not report a brand-new untracked file.
+          # `git status --porcelain` correctly detects both new and modified JSON.
+          if [ -z "$(git status --porcelain -- companies/company-007-discovery.json)" ]; then
+            echo "No discovery changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add companies/company-007-discovery.json
+          git commit -m "Update Company #007 discovery"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+
+          echo "Failed to push discovery output after retries."
+          exit 1
