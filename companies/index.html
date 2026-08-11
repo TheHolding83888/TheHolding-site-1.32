@@ -5,6 +5,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!-- companies.html · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -2791,7 +2792,66 @@
         .ipx-passport-close{width:100%;margin-top:1.35rem;padding:.85rem 1rem;border:0;border-top:1px solid var(--line);background:transparent;color:var(--text-3);font:500 .68rem/1 'Space Grotesk',sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:color .2s ease,background .2s ease}
         .ipx-passport-close:hover,.ipx-passport-close:focus-visible{color:var(--gold);background:var(--gold-soft);outline:none}
         @media(max-width:760px){.filter-popover{position:fixed;left:18px;right:18px;top:auto;bottom:24px;width:auto;max-height:min(42vh,260px);overflow:auto}.ipx-passport-close{padding:1rem}}
-    </style>
+    
+        /* ══ Production polish v1.15 · Votium / taxonomy / Passport / mobile Index ══ */
+        .filter-tabs {
+            position: relative;
+            z-index: 80;
+            overflow: visible;
+        }
+        /* .reveal's transform creates a stacking context. Once revealed, release it so
+           desktop taxonomy popovers can layer above the cards and mobile fixed popovers
+           remain viewport-fixed. */
+        .filter-tabs.reveal.in { transform: none; }
+        .filter-taxonomy { z-index: 1; }
+        .filter-taxonomy:hover,
+        .filter-taxonomy.open,
+        .filter-taxonomy:focus-within { z-index: 90; }
+        .filter-popover { z-index: 120; }
+        #companiesGrid { position: relative; z-index: 1; }
+
+        .ipx-inner {
+            transform-origin: 50% 100%;
+            transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.22,1,0.36,1);
+        }
+        .ib-item.passport-closing-in-place .ipx-inner {
+            opacity: 0;
+            transform: translateY(6px) scale(0.998);
+            pointer-events: none;
+        }
+
+        @media (max-width: 460px) {
+            .index-comp-legend {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 0.72rem;
+                align-items: center;
+            }
+            .icl-item {
+                width: 100%;
+                display: grid;
+                grid-template-columns: 10px minmax(0,1fr) 3.1rem;
+                align-items: center;
+                column-gap: 0.55rem;
+                font-size: 0.7rem;
+                white-space: normal;
+            }
+            .icl-swatch { grid-column: 1; margin: 0; }
+            .icl-item b {
+                grid-column: 2;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .icl-item .icl-w {
+                grid-column: 3;
+                min-width: 3.1rem;
+                text-align: right;
+                justify-self: end;
+            }
+        }
+</style>
 </head>
 <body>
 
@@ -4070,7 +4130,7 @@ function renderIndex(lang) {
                 lonNote:'в работе', sigCap:'Сигнатура компании',
                 axC:'КАПИТАЛ', axL:'ВОЗРАСТ', axP:'ПРОИЗВ.', axF:'РЕЗУЛЬТАТ',
                 perfFactor:'Результат', sinceInception:'С момента запуска',
-                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы', balanceSheet:'Баланс компании', positions:'Ончейн-позиции', positionCount:'позиций', capitalDeployed:'Капитал размещён ончейн', accruedRewards:'Накопленные rewards', rewardsCaption:'Заработано ончейн · Пока внутри протоколов', measuringOnchain:'Измеряется ончейн', valuePending:'Оценка в $ рассчитывается', noAccrued:'На этом снимке накопленных rewards нет', compounded:'Компаунд', unclaimed:'Не заклеймлено', measuredTotal:'Измеренная сумма', routeNotIncluded:'маршрут ещё не закрыт полностью', routesNotIncluded:'маршрута ещё не закрыты полностью', valuationPending:'Оценка ожидается', rewardToken:'reward-токен', rewardTokens:'reward-токена', rewardComposition:'Состав rewards', close:'Закрыть', closePassport:'Свернуть паспорт', measuring:'Измеряется' }
+                companyTVL:'TVL компании', indicativeApr:'Ориентировочный APR', averageApr:'Средний APR', latestApr:'Последний APR', averageShort:'Средний', latestShort:'Последний', coveredShort:'Покрытый', coverage:'Покрытие', performance:'Performance', operatingHistory:'История работы', balanceSheet:'Баланс компании', positions:'Ончейн-позиции', positionCount:'позиций', capitalDeployed:'Капитал размещён ончейн', accruedRewards:'Накопленные rewards', rewardsCaption:'Заработано ончейн · Пока внутри протоколов', measuringOnchain:'Измеряется ончейн', valuePending:'Оценка в $ рассчитывается', noAccrued:'На этом снимке накопленных rewards нет', compounded:'Компаунд', unclaimed:'Не заклеймлено', measuredTotal:'Измеренная сумма', routeNotIncluded:'маршрут ещё не закрыт полностью', routesNotIncluded:'маршрута ещё не закрыты полностью', valuationPending:'Оценка ожидается', rewardToken:'reward-токен', rewardTokens:'reward-токена', rewardComposition:'Состав rewards', close:'Закрыть', closePassport:'Свернуть паспорт', noCurrentClaimables:'Сейчас нечего клеймить', measuring:'Измеряется' }
             : { registry:'Registry', founded:'Founded', age:'Age', weight:'Index Weight', tvlWeight:'TVL Weight',
                 arch:'Architecture', protocols:'Protocols', explore:'Explore Company', days:'days',
                 comp:'Composite breakdown', inView:'In view',
@@ -4080,7 +4140,7 @@ function renderIndex(lang) {
                 lonNote:'operating', sigCap:'Company signature',
                 axC:'CAPITAL', axL:'LONGEVITY', axP:'PRODUCTIVITY', axF:'PERFORMANCE',
                 perfFactor:'Performance', sinceInception:'Since inception',
-                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', valuePending:'USD valuation pending', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not fully closed yet', routesNotIncluded:'routes not fully closed yet', valuationPending:'Valuation pending', rewardToken:'reward token', rewardTokens:'reward tokens', rewardComposition:'Reward composition', close:'Close', closePassport:'Close Passport', measuring:'Measuring' };
+                companyTVL:'Company TVL', indicativeApr:'Indicative APR', averageApr:'Average APR', latestApr:'Latest APR', averageShort:'Average', latestShort:'Latest', coveredShort:'Covered', coverage:'Coverage', performance:'Performance', operatingHistory:'Operating History', balanceSheet:'Balance Sheet', positions:'Onchain Positions', positionCount:'positions', capitalDeployed:'Capital deployed onchain', accruedRewards:'Accrued Rewards', rewardsCaption:'Earned onchain · Still inside protocols', measuringOnchain:'Measuring onchain', valuePending:'USD valuation pending', noAccrued:'No accrued rewards at this snapshot', compounded:'Compounded', unclaimed:'Unclaimed', measuredTotal:'Measured total', routeNotIncluded:'route not fully closed yet', routesNotIncluded:'routes not fully closed yet', valuationPending:'Valuation pending', rewardToken:'reward token', rewardTokens:'reward tokens', rewardComposition:'Reward composition', close:'Close', closePassport:'Close Passport', noCurrentClaimables:'No current claimables', measuring:'Measuring' };
         const wfld = (label, value, active) =>
             '<div class="ipx-field"><span class="ipx-label">' + label
             + (active ? '<span class="ipx-chip">' + L.inView + '</span>' : '') + '</span>'
@@ -4164,6 +4224,7 @@ function renderIndex(lang) {
             (rewards || []).forEach((x, index) => {
                 const classification = x.classification || 'unclaimed';
                 const isVoteMarket = x.route === 'votemarket-vecrv' || x.route === 'votemarket-vefxn';
+                const isVotium = x.route === 'votium-union';
                 const isAerodrome = x.route === 'aerodrome-ve';
                 const isVelodrome = x.route === 'velodrome-ve' || x.route === 'velodrome-ve-direct';
                 const isDirectVe = isAerodrome || isVelodrome;
@@ -4175,15 +4236,17 @@ function renderIndex(lang) {
                 // Only dense direct-ve Unclaimed records collapse to one route row.
                 const key = isVoteMarket
                     ? ['votemarket', x.route || '', classification].join('|')
-                    : (isVeUnclaimed
-                        ? ['ve-unclaimed', isAerodrome ? 'aerodrome-ve' : 'velodrome-ve'].join('|')
-                        : (isVeCompounded
-                            ? ['ve-compounded', isAerodrome ? 'aerodrome-ve' : 'velodrome-ve',
-                               x.token || x.symbol || 'TOKEN', classification].join('|')
-                            : (preserveOtherRows
-                                ? ['raw', index].join('|')
-                                : [x.protocol || '', x.route || '', x.chain || '',
-                                   x.token || x.symbol || '', classification].join('|'))));
+                    : (isVotium
+                        ? ['votium', 'votium-union', classification].join('|')
+                        : (isVeUnclaimed
+                            ? ['ve-unclaimed', isAerodrome ? 'aerodrome-ve' : 'velodrome-ve'].join('|')
+                            : (isVeCompounded
+                                ? ['ve-compounded', isAerodrome ? 'aerodrome-ve' : 'velodrome-ve',
+                                   x.token || x.symbol || 'TOKEN', classification].join('|')
+                                : (preserveOtherRows
+                                    ? ['raw', index].join('|')
+                                    : [x.protocol || '', x.route || '', x.chain || '',
+                                       x.token || x.symbol || '', classification].join('|')))));
 
                 if (!grouped.has(key)) {
                     grouped.set(key, {
@@ -4197,6 +4260,7 @@ function renderIndex(lang) {
                         assetSymbols: new Set(),
                         rewardCount: 0,
                         voteMarketRollup: isVoteMarket,
+                        votiumRollup: isVotium,
                         veUnclaimedRollup: isVeUnclaimed,
                         veCompoundedRollup: isVeCompounded,
                         aerodromeRollup: isAerodrome,
@@ -4205,7 +4269,7 @@ function renderIndex(lang) {
                 }
 
                 const g = grouped.get(key);
-                if (!isVoteMarket && !isVeUnclaimed) {
+                if (!isVoteMarket && !isVotium && !isVeUnclaimed) {
                     g.amount += hasRewardNumber(x.amount) ? Number(x.amount) : 0;
                 }
 
@@ -4221,7 +4285,7 @@ function renderIndex(lang) {
 
             return [...grouped.values()].map(g => ({
                 ...g,
-                amount: (g.voteMarketRollup || g.veUnclaimedRollup)
+                amount: (g.voteMarketRollup || g.votiumRollup || g.veUnclaimedRollup)
                     ? null
                     : Number(g.amount.toFixed(10)),
                 usdValue: g.usdComplete
@@ -4373,6 +4437,25 @@ function renderIndex(lang) {
                     return;
                 }
 
+                if (x.votiumRollup) {
+                    const routeLabel = REWARD_ROUTE_LABELS[x.route] || 'Votium · vlCVX';
+                    const symbols = Array.isArray(x.assetSymbols) ? x.assetSymbols.filter(Boolean) : [];
+                    const compactSymbols = symbols.slice(0, 8);
+                    const symbolTail = symbols.length > compactSymbols.length
+                        ? ' · +' + (symbols.length - compactSymbols.length) : '';
+                    const tokenMeta = compactSymbols.length ? compactSymbols.join(' · ') + symbolTail : L.noCurrentClaimables;
+                    const assetCount = symbols.length;
+                    const assetCountLabel = lang === 'ru'
+                        ? (assetCount === 1 ? '1 токен' : assetCount + ' токенов')
+                        : (assetCount === 1 ? '1 reward asset' : assetCount + ' reward assets');
+                    rows += '<div class="ipx-reward-row ipx-votium-rollup">'
+                        + '<div><div class="ipx-reward-protocol">' + routeLabel
+                        + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
+                        + '<div class="ipx-reward-meta">' + chainLabel + ' · ' + tokenMeta + pendingHint + '</div></div>'
+                        + '<div class="ipx-reward-right"><div class="ipx-reward-amount">' + usdLabel + '</div>'
+                        + '<div class="ipx-reward-usd">' + assetCountLabel + '</div></div></div>';
+                    return;
+                }
                 if (isDefitea && x.voteMarketRollup) {
                     const routeLabel = REWARD_ROUTE_LABELS[x.route] || x.protocol || 'VoteMarket';
                     const symbols = Array.isArray(x.assetSymbols) ? x.assetSymbols.filter(Boolean) : [];
@@ -4423,6 +4506,16 @@ function renderIndex(lang) {
                     + '<div class="ipx-reward-right"><div class="ipx-reward-amount">—</div></div></div>';
             });
 
+            const votiumSource = sources.find(s => s && s.route === 'votium-union' && s.status === 'ok');
+            const hasVotiumRewardRow = displayRewards.some(x => x && x.votiumRollup);
+            if (votiumSource && !hasVotiumRewardRow) {
+                const chainLabel = votiumSource.chain || routeChain('votium-union');
+                rows += '<div class="ipx-reward-row ipx-votium-rollup ipx-reward-row-zero">'
+                    + '<div><div class="ipx-reward-protocol">Votium · vlCVX</div>'
+                    + '<div class="ipx-reward-meta">' + chainLabel + ' · ' + L.noCurrentClaimables + '</div></div>'
+                    + '<div class="ipx-reward-right"><div class="ipx-reward-amount">$0.00</div>'
+                    + '<div class="ipx-reward-usd">0 ' + (lang === 'ru' ? 'токенов' : 'reward assets') + '</div></div></div>';
+            }
             if (!rows) rows = '<div class="ipx-reward-empty">' + (liveMeasured ? L.noAccrued : L.measuringOnchain) + '</div>';
             let note = '';
             const pendingRouteCount = Number(r && r.pendingRoutes || 0);
@@ -4820,18 +4913,46 @@ function renderIndex(lang) {
             const toggle = () => {
                 const open = item.classList.toggle('open');
                 rowEl.setAttribute('aria-expanded', open ? 'true' : 'false');
-                // ease the page to the row so the passport is fully in view on open,
-                // and so the layout doesn't leave you stranded on close
-                const offset = window.innerWidth < 760 ? 72 : 104;
-                setTimeout(() => {
-                    const top = rowEl.getBoundingClientRect().top;
-                    if (open || top < offset) {
+                // Opening may gently bring the company row into context. Closing never
+                // drags the reader back to the top of the Passport.
+                if (open) {
+                    const offset = window.innerWidth < 760 ? 72 : 104;
+                    setTimeout(() => {
+                        const top = rowEl.getBoundingClientRect().top;
                         window.scrollTo({ top: top + window.pageYOffset - offset, behavior: 'smooth' });
-                    }
-                }, open ? 220 : 170);
+                    }, 220);
+                }
+            };
+            const closePassportInPlace = () => {
+                if (!item.classList.contains('open')) return;
+                const passport = item.querySelector('.ib-passport');
+                if (!passport) { toggle(); return; }
+                const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                rowEl.setAttribute('aria-expanded', 'false');
+                const finish = () => {
+                    const height = passport.getBoundingClientRect().height;
+                    const compensation = Math.min(height, Math.max(0, window.scrollY));
+                    const oldTransition = passport.style.transition;
+                    const oldAnchor = document.documentElement.style.overflowAnchor;
+                    document.documentElement.style.overflowAnchor = 'none';
+                    passport.style.transition = 'none';
+                    item.classList.remove('open');
+                    if (compensation > 0) window.scrollBy(0, -compensation);
+                    void passport.offsetHeight;
+                    passport.style.transition = oldTransition;
+                    document.documentElement.style.overflowAnchor = oldAnchor;
+                    item.classList.remove('passport-closing-in-place');
+                };
+                if (reduceMotion) { finish(); return; }
+                item.classList.add('passport-closing-in-place');
+                window.setTimeout(finish, 190);
             };
             const passportClose = item.querySelector('.ipx-passport-close');
-            if (passportClose) passportClose.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); if (item.classList.contains('open')) toggle(); });
+            if (passportClose) passportClose.addEventListener('click', ev => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                closePassportInPlace();
+            });
             rowEl.addEventListener('click', toggle);
             rowEl.addEventListener('keydown', ev => {
                 if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(); }
