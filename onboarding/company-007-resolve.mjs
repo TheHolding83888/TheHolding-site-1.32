@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { Interface, formatUnits, getAddress, toBeHex } from 'ethers';
+import { Interface, formatUnits, getAddress } from 'ethers';
 
 const VERSION = '1.1-targeted-resolver';
-const YB_RESOLVER_VERSION = '1.7-historical-source-mesh';
+const YB_RESOLVER_VERSION = '1.8-canonical-quantity-source-mesh';
 const OUTPUT_PATH = process.env.COMPANY_007_RESOLVE_OUTPUT
   || path.resolve('companies/company-007-resolve.json');
 
@@ -31,7 +31,11 @@ function errorText(e) {
 function stableHash(value) {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
-function blockTag(n) { return toBeHex(Number(n)); }
+function blockTag(n) {
+  const b = BigInt(n);
+  if (b < 0n) throw new Error(`negative block number: ${n}`);
+  return `0x${b.toString(16)}`; // Ethereum JSON-RPC QUANTITY: minimal hex, no leading zero digits.
+}
 function positiveBigInt(x) {
   try {
     const b = BigInt(x);
@@ -78,7 +82,7 @@ async function rpc(url, method, params = [], timeoutMs = 7000) {
       headers: {
         'content-type': 'application/json',
         accept: 'application/json',
-        'user-agent': 'The-Holding-Company-007-YB-History/1.7'
+        'user-agent': 'The-Holding-Company-007-YB-History/1.8'
       },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
       signal: ctrl.signal,
@@ -111,7 +115,7 @@ async function etherscanHistoricalCall(market, blockNumber) {
   const timer = setTimeout(() => ctrl.abort(), 9000);
   try {
     const r = await fetch(`https://api.etherscan.io/v2/api?${q.toString()}`, {
-      headers: { accept: 'application/json', 'user-agent': 'The-Holding-Company-007-YB-History/1.7' },
+      headers: { accept: 'application/json', 'user-agent': 'The-Holding-Company-007-YB-History/1.8' },
       signal: ctrl.signal,
       cache: 'no-store'
     });
@@ -252,7 +256,7 @@ async function resolveHistoryOnly(baseline) {
       ...prior,
       status: 'warming',
       yieldBasisResolverVersion: YB_RESOLVER_VERSION,
-      recoveryMode: 'historical-source-mesh diagnostic-safe; validated current PPS preserved',
+      recoveryMode: 'historical-source-mesh canonical-quantity diagnostic-safe; validated current PPS preserved',
       historicalBlockProvider: null,
       historicalBlockDiagnostics: blockLookup.diagnostics,
       sourceMeshExhausted: true,
@@ -302,10 +306,11 @@ async function resolveHistoryOnly(baseline) {
     status: ok ? 'ok' : 'warming',
     positions,
     yieldBasisResolverVersion: YB_RESOLVER_VERSION,
-    recoveryMode: 'historical-source-mesh; configured RPCs + official public Merkle/Blockscout + optional Etherscan proxy; validated current PPS preserved',
+    recoveryMode: 'historical-source-mesh + canonical JSON-RPC quantity block tags; configured RPCs + official public Merkle/Blockscout + optional Etherscan proxy; validated current PPS preserved',
     historicalBlockProvider: blockLookup.provider,
     historicalBlockDiagnostics: blockLookup.diagnostics,
     sourceMeshExhausted: !ok,
+    blockTagEncoding: 'ethereum-json-rpc-quantity-no-leading-zero',
     methodology: {
       ...prior.methodology,
       emissionsIncluded: false,
