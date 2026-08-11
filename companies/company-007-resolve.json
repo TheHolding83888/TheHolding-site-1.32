@@ -1,0 +1,471 @@
+{
+  "version": "1.1-targeted-resolver",
+  "generatedAt": "2026-08-11T14:45:12.223Z",
+  "startedAt": "2026-08-11T14:45:07.083Z",
+  "company": {
+    "registry": "007",
+    "name": "Rook's portfolio",
+    "foundedAt": "2026-01-08",
+    "wallets": [
+      "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+      "0x9c548960bd053C8465F298a711b6343Ae0360309"
+    ]
+  },
+  "purpose": "targeted resolution only: CRV, LINK, ZK current price, Yield Basis unstaked yb-LP Productivity, Votium current unclaimed",
+  "noHistoricalArchaeology": true,
+  "results": {
+    "crv": {
+      "status": "ok",
+      "chain": "Ethereum",
+      "crvToken": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+      "votingEscrow": "0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2",
+      "rows": [
+        {
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "directCRV": 0,
+          "veCRVLockedPrincipal": 1368.677426931635,
+          "veCRVLockEndUnix": 1906934400,
+          "cvxCRVCandidate": 0
+        },
+        {
+          "wallet": "0x9c548960bd053C8465F298a711b6343Ae0360309",
+          "directCRV": 0,
+          "veCRVLockedPrincipal": 0,
+          "veCRVLockEndUnix": null,
+          "cvxCRVCandidate": 0
+        }
+      ],
+      "directCRV": 0,
+      "veCRVLockedPrincipal": 1368.677426931635,
+      "publicCandidateQuantity": 1368.677426931635,
+      "entryUsd": 0.2129,
+      "costBasisUsd": 291.391424,
+      "cvxCRVCandidateNotAggregated": 0,
+      "classificationDecision": "veCRV exists; resolver reports it separately. Do not change #007 productivity policy until final integration review.",
+      "note": "cvxCRV is intentionally not collapsed into CRV without explicit economic-normalization approval.",
+      "diagnostics": [],
+      "provider": "ethereum:ethereum-rpc.publicnode.com"
+    },
+    "link": {
+      "status": "ok",
+      "chainsExpected": 5,
+      "chainsMeasured": 5,
+      "rows": [
+        {
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "chain": "Ethereum",
+          "token": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+          "amount": 0
+        },
+        {
+          "wallet": "0x9c548960bd053C8465F298a711b6343Ae0360309",
+          "chain": "Ethereum",
+          "token": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+          "amount": 0
+        },
+        {
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "chain": "Base",
+          "token": "0x88Fb150BDc53A65fe94Dea0c9BA0a6dAf8C6e196",
+          "amount": 0
+        },
+        {
+          "wallet": "0x9c548960bd053C8465F298a711b6343Ae0360309",
+          "chain": "Base",
+          "token": "0x88Fb150BDc53A65fe94Dea0c9BA0a6dAf8C6e196",
+          "amount": 0
+        },
+        {
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "chain": "Arbitrum",
+          "token": "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4",
+          "amount": 0
+        },
+        {
+          "wallet": "0x9c548960bd053C8465F298a711b6343Ae0360309",
+          "chain": "Arbitrum",
+          "token": "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4",
+          "amount": 0
+        },
+        {
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "chain": "Optimism",
+          "token": "0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6",
+          "amount": 0
+        },
+        {
+          "wallet": "0x9c548960bd053C8465F298a711b6343Ae0360309",
+          "chain": "Optimism",
+          "token": "0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6",
+          "amount": 0
+        },
+        {
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "chain": "ZKsync Era",
+          "token": "0x52869bae3E091e36b0915941577F2D47d8d8B534",
+          "amount": 0
+        },
+        {
+          "wallet": "0x9c548960bd053C8465F298a711b6343Ae0360309",
+          "chain": "ZKsync Era",
+          "token": "0x52869bae3E091e36b0915941577F2D47d8d8B534",
+          "amount": 0
+        }
+      ],
+      "quantity": 0,
+      "entryUsd": 14.9,
+      "costBasisUsd": 0,
+      "diagnostics": []
+    },
+    "zk": {
+      "status": "ok",
+      "chain": "ZKsync Era",
+      "token": "0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E",
+      "coingeckoId": "zksync",
+      "quantity": 8573.908961603593,
+      "entryUsd": 0.14,
+      "currentPriceUsd": 0.00779806,
+      "costBasisUsd": 1200.347255,
+      "currentValueUsd": 66.859857,
+      "performanceUsd": -1133.487398,
+      "performancePct": -94.429957,
+      "walletRows": [
+        {
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "amount": 8573.908961603593
+        },
+        {
+          "wallet": "0x9c548960bd053C8465F298a711b6343Ae0360309",
+          "amount": 0
+        }
+      ],
+      "diagnostics": []
+    },
+    "yieldBasis": {
+      "status": "warming",
+      "chain": "Ethereum",
+      "latestBlock": 25732435,
+      "latestTimestamp": 1786459499,
+      "referenceWindowDays": 30,
+      "positions": [
+        {
+          "market": "yb-WBTC",
+          "family": "BTC",
+          "lt": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "directShares": 0.003333574880477841,
+          "mode": "unstaked-plain",
+          "ppsNow": 1.007081414011,
+          "pps30dAgo": null,
+          "historicalBlock": null,
+          "historicalTimestamp": null,
+          "elapsedDays": 30,
+          "fundamentalTradingApy30dPct": null,
+          "redemptionPerShareUnderlying": 1.00719983,
+          "trdPct": 0.011758,
+          "productivityStatus": "warming",
+          "productivityMethod": "onchain LT.pricePerShare growth over bounded 30-day block interval; annualized; emissions excluded",
+          "historyError": "missing revert data"
+        },
+        {
+          "market": "yb-WETH",
+          "family": "ETH",
+          "lt": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
+          "directShares": 0.28998705319949025,
+          "mode": "unstaked-plain",
+          "ppsNow": 1.010892221379,
+          "pps30dAgo": null,
+          "historicalBlock": null,
+          "historicalTimestamp": null,
+          "elapsedDays": 30,
+          "fundamentalTradingApy30dPct": null,
+          "redemptionPerShareUnderlying": 1.010711368991,
+          "trdPct": -0.01789,
+          "productivityStatus": "warming",
+          "productivityMethod": "onchain LT.pricePerShare growth over bounded 30-day block interval; annualized; emissions excluded",
+          "historyError": "missing revert data"
+        }
+      ],
+      "methodology": {
+        "canonicalMetric": "FT APY (30D) / Fundamental Trading APY",
+        "formula": "(PPS_now / PPS_30d_ago)^(365 / elapsed_days) - 1",
+        "emissionsIncluded": false,
+        "redemptionPpsUsedForApr": false,
+        "note": "pricePerShare is fundamental value. preview_withdraw is used for current redemption/TRD, not for Fundamental Trading APY."
+      },
+      "diagnostics": [],
+      "provider": "ethereum:ethereum-rpc.publicnode.com",
+      "discoveryCrossCheck": [
+        {
+          "market": "yb-WBTC",
+          "custody": "wallet",
+          "directLtShares": 0.003333574880477841,
+          "gaugeShares": 0,
+          "totalUnderlying": 0.00335757,
+          "productivityMode": {
+            "unstaked": "PPS / fee-growth productive",
+            "staked": null
+          }
+        },
+        {
+          "market": "yb-WETH",
+          "custody": "wallet",
+          "directLtShares": 0.28998705319949025,
+          "gaugeShares": 0,
+          "totalUnderlying": 0.29309327939659907,
+          "productivityMode": {
+            "unstaked": "PPS / fee-growth productive",
+            "staked": null
+          }
+        }
+      ]
+    },
+    "votium": {
+      "status": "ok",
+      "protocol": "Votium",
+      "chain": "Ethereum",
+      "stash": "0x378Ba9B73309bE80BF4C2c027aAD799766a7ED5A",
+      "activeTokens": 72,
+      "rootedTokens": 72,
+      "currentAggregateFilesScanned": 72,
+      "currentAggregateFilesExpected": 72,
+      "budgetExceeded": false,
+      "codeSearchHintedSymbols": [],
+      "searchDiagnostics": [],
+      "stateErrors": [],
+      "scanErrors": [],
+      "rewards": [
+        {
+          "token": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+          "symbol": "CRV",
+          "label": "curve-dao-token",
+          "decimals": 18,
+          "update": 177,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "1588",
+          "amountRaw": "157369184124470944",
+          "amount": 0.15736918412447096,
+          "onchainRoot": "0x6d338a35600aa68aaa65645e443bdcf8674574dee8c151e7743f805e88424781",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 0.26668,
+          "usdValue": 0.041967
+        },
+        {
+          "token": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+          "symbol": "ALCX",
+          "label": "alchemix",
+          "decimals": 18,
+          "update": 255,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "1895",
+          "amountRaw": "150983725695697888",
+          "amount": 0.1509837256956979,
+          "onchainRoot": "0x5f10f91c1633256f5b978da3ddcbad095d8f5d179c79e548873d38d20c3e8f44",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 1.96,
+          "usdValue": 0.295928
+        },
+        {
+          "token": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+          "symbol": "CVX",
+          "label": "convex-finance",
+          "decimals": 18,
+          "update": 255,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "2121",
+          "amountRaw": "2074893317114764544",
+          "amount": 2.0748933171147645,
+          "onchainRoot": "0x443f61be5dbd97ee2b857f1e7843dac38163e2e71cfdb11182573513d3d8cda3",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 1.68,
+          "usdValue": 3.485821
+        },
+        {
+          "token": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "symbol": "USDC",
+          "label": "usd-coin",
+          "decimals": 6,
+          "update": 110,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "1212",
+          "amountRaw": "19653",
+          "amount": 0.019653,
+          "onchainRoot": "0x5fe68944dfc00e301ba55a0e8e3527372b12b1007b0826891f3ab92621336cd9",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 0.999705,
+          "usdValue": 0.019647
+        },
+        {
+          "token": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+          "symbol": "FXN",
+          "label": "fxn-token",
+          "decimals": 18,
+          "update": 116,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "524",
+          "amountRaw": "1667933431687580",
+          "amount": 0.00166793343168758,
+          "onchainRoot": "0xd9c82b19d47517f2c80745f1c0938be6c00ba5f4ee26451d42d1a7a19d72099e",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 13.16,
+          "usdValue": 0.02195
+        },
+        {
+          "token": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+          "symbol": "RSUP",
+          "label": "resupply",
+          "decimals": 18,
+          "update": 72,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "274",
+          "amountRaw": "4078389454109091328",
+          "amount": 4.078389454109091,
+          "onchainRoot": "0x41b61d4c6956d211ab501188b7f2fe62b1969edeabe5e78f82a182d3df722fda",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 0.119569,
+          "usdValue": 0.487649
+        },
+        {
+          "token": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "symbol": "DOLA",
+          "label": "dola-usd",
+          "decimals": 18,
+          "update": 30,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "231",
+          "amountRaw": "118520634715081488",
+          "amount": 0.1185206347150815,
+          "onchainRoot": "0x91120217601325fe98c8fab21a543805200ac86a1323772adabf576ede098652",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 0.996599,
+          "usdValue": 0.118118
+        },
+        {
+          "token": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+          "symbol": "WFRAX",
+          "label": "wrapped-frax",
+          "decimals": 18,
+          "update": 38,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "233",
+          "amountRaw": "1027171055246087808",
+          "amount": 1.0271710552460878,
+          "onchainRoot": "0x9e734518ddecfebae3bb6be39d7604c46e6eac601a467cd13b322a6cd3337ae6",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 0.313603,
+          "usdValue": 0.322124
+        },
+        {
+          "token": "0xC0c17dD08263C16f6b64E772fB9B723Bf1344DdF",
+          "symbol": "pmUSD",
+          "label": "precious-metals-usd",
+          "decimals": 18,
+          "update": 16,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "213",
+          "amountRaw": "1125558792917141376",
+          "amount": 1.1255587929171413,
+          "onchainRoot": "0xceeda143fe160773d2d88368e61d0376cd494f7be5e54ebd986ede80fc1b6a2e",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 0.650299,
+          "usdValue": 0.73195
+        },
+        {
+          "token": "0x01791F726B4103694969820be083196cC7c045fF",
+          "symbol": "YB",
+          "label": "yield-basis",
+          "decimals": 18,
+          "update": 42,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "232",
+          "amountRaw": "5426455601889682432",
+          "amount": 5.426455601889683,
+          "onchainRoot": "0xa3a4ace2916ffcfcb652a8f16f4ca43a26e73cbde721bae5d468b06c832177a5",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 0.077539,
+          "usdValue": 0.420762
+        },
+        {
+          "token": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
+          "symbol": "tBTC",
+          "label": "tbtc",
+          "decimals": 18,
+          "update": 2,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "145",
+          "amountRaw": "272288531459",
+          "amount": 2.72288531459e-7,
+          "onchainRoot": "0x28118d3a201dd83072896195551511c1770289b68d763c6abba6ce4b85d7533f",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 63802,
+          "usdValue": 0.017373
+        },
+        {
+          "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
+          "symbol": "reUSD",
+          "label": "resupply-usd",
+          "decimals": 18,
+          "update": 2,
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "index": "150",
+          "amountRaw": "9911547273689770",
+          "amount": 0.00991154727368977,
+          "onchainRoot": "0x6e7ae64ec56d033f522de5dd64115dec3fec2e57879b76021f3387ed68fd35c6",
+          "proofValid": true,
+          "claimed": false,
+          "priceUsd": 0.989244,
+          "usdValue": 0.009805
+        }
+      ],
+      "rewardCount": 12,
+      "rewardSymbols": [
+        "CRV",
+        "ALCX",
+        "CVX",
+        "USDC",
+        "FXN",
+        "RSUP",
+        "DOLA",
+        "WFRAX",
+        "pmUSD",
+        "YB",
+        "tBTC",
+        "reUSD"
+      ],
+      "pricedUsd": 5.973094,
+      "unpricedRewards": 0,
+      "completeCurrentRootScan": true,
+      "zeroIsDefensible": false,
+      "methodology": [
+        "official oo-00/Votium activeTokens current set",
+        "onchain MultiMerkleStash merkleRoot/update",
+        "current aggregate Merkle file",
+        "file root must equal onchain root",
+        "local keccak256(index, account, amount) Merkle proof verification",
+        "onchain isClaimed(token,index) must be false",
+        "only then count as current Accrued Rewards"
+      ],
+      "diagnostics": [],
+      "provider": "ethereum:ethereum-rpc.publicnode.com"
+    }
+  },
+  "productionReadiness": {
+    "crvResolved": true,
+    "linkResolved": true,
+    "zkResolved": true,
+    "yieldBasisProductivityResolved": false,
+    "votiumResolved": true,
+    "readyForFinalIntegrator": false,
+    "note": "A partial Votium or warming Yield Basis result must not be silently converted to zero/APR. Known Company #007 balance and existing known adapters remain valid."
+  }
+}
