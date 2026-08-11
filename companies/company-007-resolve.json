@@ -1,7 +1,7 @@
 {
   "version": "1.1-targeted-resolver",
-  "generatedAt": "2026-08-11T17:17:05.744Z",
-  "startedAt": "2026-08-11T17:17:04.422Z",
+  "generatedAt": "2026-08-11T17:24:29.785Z",
+  "startedAt": "2026-08-11T17:24:25.036Z",
   "company": {
     "registry": "007",
     "name": "Rook's portfolio",
@@ -142,7 +142,7 @@
       "diagnostics": []
     },
     "yieldBasis": {
-      "status": "warming",
+      "status": "ok",
       "chain": "Ethereum",
       "latestBlock": 25732435,
       "latestTimestamp": 1786459499,
@@ -155,21 +155,19 @@
           "directShares": 0.003333574880477841,
           "mode": "unstaked-plain",
           "ppsNow": 1.007081414011,
-          "pps30dAgo": null,
-          "historicalBlock": null,
-          "historicalTimestamp": null,
+          "pps30dAgo": 1.007419079525,
+          "historicalBlock": 25517221,
+          "historicalTimestamp": 1783867499,
           "elapsedDays": 30,
-          "fundamentalTradingApy30dPct": null,
+          "fundamentalTradingApy30dPct": -0.407039,
           "redemptionPerShareUnderlying": 1.00719983,
           "trdPct": 0.011758,
-          "productivityStatus": "warming",
+          "productivityStatus": "ok",
           "productivityMethod": "validated baseline PPS_now vs historical LT.pricePerShare over bounded trailing-30-day interval; annualized; emissions excluded",
-          "historyError": "historical PPS source mesh exhausted: ethereum-history:eth.merkle.io: HTTP 429 Too Many Requests | ethereum-history:eth.blockscout.com: RPC -32602: hex number with leading zero digits | ethereum-history:etherscan-proxy: ETHERSCAN_API_KEY not configured",
-          "historicalProvider": null,
+          "historyError": null,
+          "historicalProvider": "ethereum-history:eth.blockscout.com",
           "historicalDiagnostics": [
-            "ethereum-history:eth.merkle.io: HTTP 429 Too Many Requests",
-            "ethereum-history:eth.blockscout.com: RPC -32602: hex number with leading zero digits",
-            "ethereum-history:etherscan-proxy: ETHERSCAN_API_KEY not configured"
+            "ethereum-history:eth.merkle.io: HTTP 429 Too Many Requests"
           ]
         },
         {
@@ -179,21 +177,19 @@
           "directShares": 0.28998705319949025,
           "mode": "unstaked-plain",
           "ppsNow": 1.010892221379,
-          "pps30dAgo": null,
-          "historicalBlock": null,
-          "historicalTimestamp": null,
+          "pps30dAgo": 1.01240802867,
+          "historicalBlock": 25517221,
+          "historicalTimestamp": 1783867499,
           "elapsedDays": 30,
-          "fundamentalTradingApy30dPct": null,
+          "fundamentalTradingApy30dPct": -1.806478,
           "redemptionPerShareUnderlying": 1.010711368991,
           "trdPct": -0.01789,
-          "productivityStatus": "warming",
+          "productivityStatus": "ok",
           "productivityMethod": "validated baseline PPS_now vs historical LT.pricePerShare over bounded trailing-30-day interval; annualized; emissions excluded",
-          "historyError": "historical PPS source mesh exhausted: ethereum-history:eth.merkle.io: HTTP 429 Too Many Requests | ethereum-history:eth.blockscout.com: RPC -32602: hex number with leading zero digits | ethereum-history:etherscan-proxy: ETHERSCAN_API_KEY not configured",
-          "historicalProvider": null,
+          "historyError": null,
+          "historicalProvider": "ethereum-history:eth.blockscout.com",
           "historicalDiagnostics": [
-            "ethereum-history:eth.merkle.io: HTTP 429 Too Many Requests",
-            "ethereum-history:eth.blockscout.com: RPC -32602: hex number with leading zero digits",
-            "ethereum-history:etherscan-proxy: ETHERSCAN_API_KEY not configured"
+            "ethereum-history:eth.merkle.io: HTTP 429 Too Many Requests"
           ]
         }
       ],
@@ -230,14 +226,14 @@
           }
         }
       ],
-      "yieldBasisResolverVersion": "1.7-historical-source-mesh",
-      "recoveryMode": "historical-source-mesh; configured RPCs + official public Merkle/Blockscout + optional Etherscan proxy; validated current PPS preserved",
-      "historicalBlockProvider": "ethereum-header:rpc.flashbots.net",
+      "yieldBasisResolverVersion": "1.8-canonical-quantity-source-mesh",
+      "recoveryMode": "historical-source-mesh + canonical JSON-RPC quantity block tags; configured RPCs + official public Merkle/Blockscout + optional Etherscan proxy; validated current PPS preserved",
+      "historicalBlockProvider": "ethereum-header:eth.blockscout.com",
       "historicalBlockDiagnostics": [
-        "ethereum-header:eth.merkle.io: HTTP 429 Too Many Requests",
-        "ethereum-header:eth.blockscout.com: RPC -32602: hex number with leading zero digits"
+        "ethereum-header:eth.merkle.io: HTTP 429 Too Many Requests"
       ],
-      "sourceMeshExhausted": true
+      "sourceMeshExhausted": false,
+      "blockTagEncoding": "ethereum-json-rpc-quantity-no-leading-zero"
     },
     "votium": {
       "status": "ok",
@@ -483,14 +479,14 @@
     "crvResolved": true,
     "linkResolved": true,
     "zkResolved": true,
-    "yieldBasisProductivityResolved": false,
+    "yieldBasisProductivityResolved": true,
     "votiumResolved": true,
-    "readyForFinalIntegrator": false,
-    "note": "YB source mesh exhausted without a reproducible historical PPS. CRV/LINK/ZK/Votium preserved exactly; warming retained rather than inventing a value."
+    "readyForFinalIntegrator": true,
+    "note": "YB historical source mesh resolved both markets. CRV/LINK/ZK/Votium preserved exactly."
   },
   "recovery": {
     "mode": "yield-basis-history-only-source-mesh",
-    "resolverVersion": "1.7-historical-source-mesh",
+    "resolverVersion": "1.8-canonical-quantity-source-mesh",
     "preservedResultSha256": {
       "crv": "f02b72a1fc6a743f8e7aa9a586380a1042bbc4ecb4f772b48702c0f056a871c9",
       "link": "52e4968bf6c25a3f08df9111e26fb9cb1ab6c96c1f93a7c2b6e0d1437546c61a",
