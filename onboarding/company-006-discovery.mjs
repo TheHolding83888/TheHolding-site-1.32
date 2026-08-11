@@ -12,7 +12,7 @@ import {
   toBeHex
 } from 'ethers';
 
-const VERSION = '1.1';
+const VERSION = '1.2';
 const OUTPUT = process.env.COMPANY_006_DISCOVERY_OUTPUT || path.resolve('companies/company-006-discovery.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
 
@@ -85,7 +85,7 @@ function positiveBigInt(x) { try { const n = BigInt(x); return n > 0n ? n : 0n; 
 async function withProvider(chain, fn) {
   const errors = [];
   for (const url of RPC[chain] || []) {
-    const provider = new JsonRpcProvider(url, undefined, { staticNetwork: false });
+    const provider = new JsonRpcProvider(url);
     try {
       const result = await fn(provider);
       return { result, providerLabel: `${chain}:${new URL(url).hostname}`, errors };
@@ -239,6 +239,82 @@ async function blockscoutLegacyNftTransfers(baseUrl, wallet, contract) {
   } catch { return []; }
 }
 
+function blockscoutAddress(v) {
+  if (typeof v === 'string') return v.toLowerCase();
+  return String(v?.hash || v?.address_hash || v?.address || '').toLowerCase();
+}
+
+async function blockscoutV2InstanceTransfers(baseUrl, contract, tokenId) {
+  const out = [];
+  let next = null;
+  for (let page = 0; page < 20; page++) {
+    const qs = new URLSearchParams();
+    if (next && typeof next === 'object') {
+      for (const [k,v] of Object.entries(next)) if (v !== null && v !== undefined) qs.set(k, String(v));
+    }
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    const data = await fetchJson(`${baseUrl}/api/v2/tokens/${contract}/instances/${tokenId}/transfers${suffix}`, {}, 30000);
+    const items = Array.isArray(data?.items) ? data.items : [];
+    out.push(...items);
+    next = data?.next_page_params && Object.keys(data.next_page_params).length ? data.next_page_params : null;
+    if (!next) break;
+  }
+  return out;
+}
+
+async function currentNftHistoryV2({ baseUrl, contract, wallet, tokenIds, provider = null, chain }) {
+  const events = {};
+  const mintCandidates = [];
+  const diagnostics = [];
+  for (const tokenId of tokenIds || []) {
+    try {
+      const rows = await blockscoutV2InstanceTransfers(baseUrl, contract, tokenId);
+      diagnostics.push(`Blockscout v2 instance ${tokenId}: ${rows.length} transfer rows`);
+      const normalized = [];
+      for (const x of rows) {
+        const from = blockscoutAddress(x?.from);
+        const to = blockscoutAddress(x?.to);
+        const blockNumber = Number(x?.block_number ?? x?.blockNumber ?? 0) || null;
+        const txHash = x?.transaction_hash || x?.transactionHash || x?.hash || null;
+        let timestamp = null;
+        const rawTs = x?.timestamp || x?.block_timestamp || null;
+        if (rawTs) {
+          const parsed = Date.parse(rawTs);
+          if (Number.isFinite(parsed)) timestamp = Math.floor(parsed / 1000);
+          else if (Number.isFinite(Number(rawTs))) timestamp = Number(rawTs);
+        }
+        if (!timestamp && blockNumber && provider) {
+          try { timestamp = Number((await provider.getBlock(blockNumber))?.timestamp || 0) || null; } catch {}
+        }
+        normalized.push({ tokenId:String(tokenId), from, to, blockNumber, txHash, timestamp });
+      }
+      normalized.sort((a,b)=>(a.blockNumber||0)-(b.blockNumber||0));
+      const mint = normalized.find(x => x.from === ZeroAddress.toLowerCase()) || null;
+      if (mint) mintCandidates.push(mint);
+      const inbound = normalized.find(x => x.to === wallet.toLowerCase()) || null;
+      if (inbound) {
+        events[String(tokenId)] = {
+          blockNumber: inbound.blockNumber, txHash: inbound.txHash, tokenId: String(tokenId),
+          from: inbound.from, to: wallet, timestamp: inbound.timestamp,
+          eventType: inbound.from === ZeroAddress.toLowerCase() ? 'mint-to-wallet' : 'transfer-to-wallet',
+          source: `${chain}-blockscout-v2: first inbound current veNFT transfer`, confidence: 'high',
+          ...(inbound.timestamp ? { acquiredAt: isoFromTs(inbound.timestamp), acquiredISO: isoFromTs(inbound.timestamp).slice(0,10) } : {})
+        };
+      }
+    } catch (e) { diagnostics.push(`Blockscout v2 instance ${tokenId} failed: ${errMsg(e)}`); }
+  }
+  mintCandidates.sort((a,b)=>(a.blockNumber||0)-(b.blockNumber||0));
+  const mint = mintCandidates[0] || null;
+  let first = null;
+  if (mint) {
+    first = { blockNumber: mint.blockNumber, txHash: mint.txHash, tokenId: mint.tokenId,
+      timestamp: mint.timestamp, source: `${chain}-blockscout-v2: veNFT instance mint history`,
+      method: 'veNFT-zero-address-mint-history', confidence: 'high' };
+    if (first.timestamp) { first.foundedAt = isoFromTs(first.timestamp); first.foundedISO = first.foundedAt.slice(0,10); }
+  }
+  return { first, candidates: mintCandidates, events, diagnostics };
+}
+
 const TRANSFER_IFACE = new Interface(['event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)']);
 const TRANSFER_TOPIC = TRANSFER_IFACE.getEvent('Transfer').topicHash;
 
@@ -390,16 +466,23 @@ async function discoverStandardVe({
       });
     }
 
-    const mint = await earliestMintToWallet({
-      chain: providerKey, provider, contract: votingEscrow, wallet, blockscoutBase
-    });
-    const acq = await acquisitionEventsForCurrentIds({
-      chain: providerKey, provider, contract: votingEscrow, wallet,
-      tokenIds: positions.map(x => x.tokenId), blockscoutBase
-    });
+    // Keep successfully read current veVELO state even if historical discovery is unavailable.
+    // Use sparse Blockscout v2 per-instance history instead of a full-chain Transfer backfill.
+    let mint = { first: null, candidates: [], diagnostics: [] };
+    let acq = { events: {}, diagnostics: [] };
+    try {
+      const hist = await currentNftHistoryV2({
+        baseUrl: blockscoutBase, contract: votingEscrow, wallet,
+        tokenIds: positions.map(x => x.tokenId), provider, chain: providerKey
+      });
+      mint = { first: hist.first, candidates: hist.candidates, diagnostics: hist.diagnostics };
+      acq = { events: hist.events, diagnostics: hist.diagnostics };
+    } catch (e) {
+      mint.diagnostics.push(`Non-fatal historical discovery error: ${errMsg(e)}`);
+    }
 
     let entryPrice = null;
-    const eventForEntry = mint.first || Object.values(acq.events).sort((a,b)=>(a.blockNumber||0)-(b.blockNumber||0))[0] || null;
+    const eventForEntry = Object.values(acq.events).sort((a,b)=>(a.blockNumber||0)-(b.blockNumber||0))[0] || mint.first || null;
     if (eventForEntry?.timestamp) {
       const normalizedEvent = {
         ...eventForEntry,
@@ -423,7 +506,7 @@ async function discoverStandardVe({
       firstLockCandidates: mint.candidates,
       currentNftAcquisitionEvents: acq.events,
       entryPrice,
-      discoveryDiagnostics: [...mint.diagnostics, ...acq.diagnostics]
+      discoveryDiagnostics: [...new Set([...(mint.diagnostics || []), ...(acq.diagnostics || [])])]
     };
   });
 }
@@ -435,7 +518,7 @@ async function discoverVelodrome() {
     wallet: COMPANY.wallets.aerodrome.address,
     token: ADDR.velodrome.token,
     votingEscrow: ADDR.velodrome.votingEscrow,
-    blockscoutBase: 'https://explorer.optimism.io',
+    blockscoutBase: 'https://optimism.blockscout.com',
     symbol: 'Velo',
     amountField: 'VELO',
     cgId: 'velodrome-finance',
@@ -539,7 +622,7 @@ async function discoverAerodrome() {
         tokenId64985: 'market-purchased; historical lock-date price is paid-capital cost basis',
         tokenId69194: 'owner-confirmed airdrop; cost basis = 0; current value contributes fully to company performance'
       },
-      discoveryDiagnostics: [...mint.diagnostics, ...acq.diagnostics]
+      discoveryDiagnostics: [...new Set([...(mint.diagnostics || []), ...(acq.diagnostics || [])])]
     };
   });
 }
@@ -707,7 +790,7 @@ async function main() {
     version: VERSION,
     generatedAt: new Date().toISOString(),
     startedAt,
-    purpose: 'Company #006 deterministic onboarding discovery v1.1: AERO paid/airdrop cost basis + veVELO + veYB; no production metrics are changed by this file.',
+    purpose: 'Company #006 deterministic onboarding discovery v1.2: resilient veVELO current-state + Blockscout-v2 history; AERO paid/airdrop + veYB; no production metrics are changed by this file.',
     company: {
       registry: COMPANY.registry,
       name: COMPANY.name,
