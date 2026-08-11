@@ -13,7 +13,7 @@ concurrency:
 jobs:
   resolve:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
       - name: Checkout
@@ -21,13 +21,41 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify discovery input exists
+      - name: Restore validated Company #007 resolver baseline
+        shell: bash
         run: |
-          test -s companies/company-007-discovery.json || {
-            echo "ERROR: companies/company-007-discovery.json is absent."
-            echo "Run Discover Company #007 successfully first."
-            exit 1
+          set -euo pipefail
+          FILE="companies/company-007-resolve.json"
+          BASELINE_COMMIT="0e841d2606efe07ad4624ae5d0b32009ebed9c51"
+
+          mkdir -p companies
+
+          if [ ! -s "$FILE" ]; then
+            echo "Current resolver JSON absent; restoring validated baseline from $BASELINE_COMMIT"
+            git cat-file -e "$BASELINE_COMMIT:$FILE"
+            git show "$BASELINE_COMMIT:$FILE" > "$FILE"
+          else
+            echo "Using current resolver JSON as baseline."
+          fi
+
+          cp "$FILE" /tmp/company-007-resolve.before-yb.json
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = '/tmp/company-007-resolve.before-yb.json';
+          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (d.version !== '1.1-targeted-resolver') throw new Error('baseline resolver version mismatch');
+          if (d.company?.registry !== '007') throw new Error('baseline registry mismatch');
+          if (d.company?.name !== "Rook's portfolio") throw new Error('baseline company mismatch');
+          for (const key of ['crv','link','zk','votium']) {
+            if (d.results?.[key]?.status !== 'ok') throw new Error(`baseline ${key} is not ok`);
           }
+          if (d.results?.votium?.completeCurrentRootScan !== true) {
+            throw new Error('baseline Votium current-root scan is not complete');
+          }
+          console.log('Validated #007 last-known-good baseline');
+          console.log('Baseline generatedAt:', d.generatedAt);
+          NODE
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -37,46 +65,59 @@ jobs:
       - name: Install resolver dependency
         run: npm install --no-save ethers@6
 
-      - name: "Resolve Company #007 targeted unknowns"
+      - name: "Resolve Company #007 Yield Basis only"
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
-          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
-          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
-          ZKSYNC_RPC_URL: ${{ secrets.ZKSYNC_RPC_URL }}
-          COMPANY_007_DISCOVERY_INPUT: companies/company-007-discovery.json
+          ETH_ARCHIVE_RPC_URL: ${{ secrets.ETH_ARCHIVE_RPC_URL }}
+          ETH_ARCHIVE_RPC_URL_2: ${{ secrets.ETH_ARCHIVE_RPC_URL_2 }}
           COMPANY_007_RESOLVE_OUTPUT: companies/company-007-resolve.json
         run: node onboarding/company-007-resolve.mjs
 
-      - name: Validate resolver JSON
+      - name: Validate YB-only resolver JSON and preservation guard
+        shell: bash
         run: |
+          set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
-          const p = 'companies/company-007-resolve.json';
-          if (!fs.existsSync(p)) throw new Error('resolver JSON was not created');
-          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+          const crypto = require('crypto');
+          const before = JSON.parse(fs.readFileSync('/tmp/company-007-resolve.before-yb.json', 'utf8'));
+          const after = JSON.parse(fs.readFileSync('companies/company-007-resolve.json', 'utf8'));
+          const hash = x => crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex');
 
-          if (d.version !== '1.1-targeted-resolver') throw new Error('resolver version mismatch');
-          if (d.company?.registry !== '007') throw new Error('registry mismatch');
-          if (d.company?.name !== "Rook's portfolio") throw new Error('name mismatch');
+          if (after.version !== '1.1-targeted-resolver') throw new Error('resolver version mismatch');
+          if (after.company?.registry !== '007') throw new Error('registry mismatch');
+          if (after.company?.name !== "Rook's portfolio") throw new Error('name mismatch');
 
-          for (const key of ['crv','link','zk','yieldBasis','votium']) {
-            if (!d.results?.[key]) throw new Error('missing result: ' + key);
+          for (const key of ['crv','link','zk','votium']) {
+            if (hash(before.results?.[key]) !== hash(after.results?.[key])) {
+              throw new Error(`preservation guard failed: ${key} changed`);
+            }
           }
 
-          if (d.results.zk?.coingeckoId !== 'zksync') {
-            throw new Error('ZK CoinGecko mapping is not zksync');
+          const yb = after.results?.yieldBasis;
+          if (!yb) throw new Error('Yield Basis result missing');
+          if (yb.yieldBasisResolverVersion !== '1.3-yb-only-bounded-recovery') {
+            throw new Error('Yield Basis resolver sub-version mismatch');
+          }
+          if (yb.methodology?.emissionsIncluded !== false) {
+            throw new Error('Yield Basis methodology must exclude emissions');
+          }
+          if (!Array.isArray(yb.positions) || yb.positions.length !== 2) {
+            throw new Error('expected exactly two Yield Basis markets');
           }
 
-          if (d.results.yieldBasis?.methodology?.emissionsIncluded !== false) {
-            throw new Error('Yield Basis unstaked methodology must exclude emissions');
+          if (yb.status === 'ok') {
+            for (const p of yb.positions) {
+              if (!(Number(p.pps30dAgo) > 0)) throw new Error(`${p.market}: missing historical PPS`);
+              if (!Number.isFinite(Number(p.fundamentalTradingApy30dPct))) throw new Error(`${p.market}: missing FT APY`);
+              if (!p.historicalProvider) throw new Error(`${p.market}: missing historical provider`);
+            }
           }
 
-          console.log('Company #007 resolver JSON validation passed');
-          console.log('Production readiness:', JSON.stringify(d.productionReadiness));
+          console.log('YB-only resolver validation passed');
+          console.log('Yield Basis status:', yb.status);
+          console.log('Production readiness:', JSON.stringify(after.productionReadiness));
           NODE
 
       - name: Publish resolver JSON to main
@@ -95,9 +136,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add -f "$FILE"
-
           if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Resolve Company #007 targeted routes"
+            git commit -m "Resolve Company #007 Yield Basis historical PPS"
           else
             echo "Generated resolver matches currently tracked content."
           fi
@@ -112,7 +152,6 @@ jobs:
             fi
 
             git rebase --abort || true
-
             if [ "$attempt" -eq 3 ]; then
               echo "ERROR: failed to publish resolver JSON after retries."
               exit 1
