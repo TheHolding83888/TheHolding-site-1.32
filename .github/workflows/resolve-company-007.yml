@@ -47,6 +47,19 @@ jobs:
           console.log('Validated #007 LKG baseline:', d.generatedAt);
           NODE
 
+      - name: Require Ethereum archive RPC secret
+        shell: bash
+        env:
+          ETH_ARCHIVE_RPC_URL: ${{ secrets.ETH_ARCHIVE_RPC_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ETH_ARCHIVE_RPC_URL:-}" ]; then
+            echo "ERROR: GitHub Actions secret ETH_ARCHIVE_RPC_URL is missing."
+            echo "Add a verified Ethereum archive endpoint, then rerun Resolve Company #007."
+            exit 1
+          fi
+          echo "Archive secret is configured; worker will verify historical state before publish."
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -55,7 +68,7 @@ jobs:
       - name: Install resolver dependency
         run: npm install --no-save ethers@6
 
-      - name: "Resolve Company #007 Yield Basis historical PPS only"
+      - name: "Resolve Company #007 Yield Basis via verified archive RPC"
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
@@ -83,19 +96,18 @@ jobs:
           }
           const yb = after.results?.yieldBasis;
           if (!yb) throw new Error('Yield Basis result missing');
-          if (yb.yieldBasisResolverVersion !== '1.4-history-only-diagnostic-safe') throw new Error('YB sub-version mismatch');
+          if (yb.yieldBasisResolverVersion !== '1.5-archive-secret-gated') throw new Error('YB sub-version mismatch');
           if (yb.methodology?.emissionsIncluded !== false) throw new Error('YB emissions must be excluded');
           if (!Array.isArray(yb.positions) || yb.positions.length !== 2) throw new Error('expected two YB markets');
 
-          if (yb.status === 'ok') {
-            for (const p of yb.positions) {
-              if (!(Number(p.pps30dAgo) > 0)) throw new Error(`${p.market}: historical PPS missing`);
-              if (!Number.isFinite(Number(p.fundamentalTradingApy30dPct))) throw new Error(`${p.market}: FT APY missing`);
-              if (!p.historicalProvider) throw new Error(`${p.market}: historical provider missing`);
-            }
+          if (yb.status !== 'ok') throw new Error(`Yield Basis is not ok: ${yb.status}`);
+          for (const p of yb.positions) {
+            if (!(Number(p.pps30dAgo) > 0)) throw new Error(`${p.market}: historical PPS missing`);
+            if (!Number.isFinite(Number(p.fundamentalTradingApy30dPct))) throw new Error(`${p.market}: FT APY missing`);
+            if (!p.historicalProvider) throw new Error(`${p.market}: historical provider missing`);
           }
 
-          console.log('History-only validation passed. Yield Basis:', yb.status);
+          console.log('Archive-gated validation passed. Yield Basis:', yb.status);
           NODE
 
       - name: Publish resolver JSON to main
