@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING · STABLE COMPANIES INDEX BRIDGE v0.2 · STRATEGY PERFORMANCE
+ * THE HOLDING · STABLE COMPANIES INDEX BRIDGE v0.2.1 · STRATEGY PERFORMANCE LOAD FIX
  *
  * Converts the detailed Stable Capital Intelligence artifacts into a compact,
  * UI-facing index/passport dataset.
@@ -70,12 +70,14 @@ function aggregateBy(rows, keyFn) {
 }
 
 async function main() {
-  const [stableText, ledgerText] = await Promise.all([
+  const [stableText, ledgerText, strategyEntryText] = await Promise.all([
     fs.readFile(STABLE_FILE,'utf8'),
-    fs.readFile(LEDGER_FILE,'utf8')
+    fs.readFile(LEDGER_FILE,'utf8'),
+    fs.readFile(STRATEGY_ENTRY_FILE,'utf8')
   ]);
   const stable = JSON.parse(stableText);
   const ledger = JSON.parse(ledgerText);
+  const strategyEntry = JSON.parse(strategyEntryText);
 
   if (stable?.company?.registry !== '008' || stable?.company?.name !== 'Monetra.eth') {
     throw new Error('Stable Index bridge expects Registry #008 Monetra.eth');
