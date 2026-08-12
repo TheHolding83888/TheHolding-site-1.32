@@ -1,0 +1,150 @@
+# THE HOLDING · MONETRA CONTRIBUTION LEDGER v0.1 · ONE-TIME HISTORICAL BACKFILL
+name: "Resolve Monetra Contribution Ledger"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resolve-monetra-contribution-ledger
+  cancel-in-progress: false
+
+jobs:
+  contribution-ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check stable-capital/monetra-contribution-ledger.mjs
+          test -s companies/company-008-resolve.json
+          test -s companies/stable-capital-data.json
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const r = JSON.parse(fs.readFileSync('companies/company-008-resolve.json','utf8'));
+          const d = JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
+
+          if (r.company?.registry !== '008' || r.company?.name !== 'Monetra.eth') {
+            throw new Error('Monetra resolver identity mismatch');
+          }
+          if ((r.stableCapital?.positions || []).length < 9) {
+            throw new Error('Monetra resolver Stable Capital book unexpectedly incomplete');
+          }
+          if (d.company?.registry !== '008' || (d.positions || []).length !== 10) {
+            throw new Error('Stable Capital data identity/count regression');
+          }
+          if (!(Number(d.summary?.stableCapitalUsd) > 90)) {
+            throw new Error('Stable Capital implausibly low');
+          }
+          console.log('Contribution-ledger preflight OK.');
+          console.log('Resolver:', r.version);
+          console.log('Stable Capital:', d.version, d.summary?.stableCapitalUsd);
+          NODE
+
+      - name: Install dependency
+        run: npm install --no-save ethers@6
+
+      - name: Reconstruct Monetra boundary flows
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          FRAXTAL_RPC_URL: ${{ secrets.FRAXTAL_RPC_URL }}
+          FRAXTAL_RPC_URL_2: ${{ secrets.FRAXTAL_RPC_URL_2 }}
+        run: node stable-capital/monetra-contribution-ledger.mjs
+
+      - name: Validate diagnostic artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s companies/company-008-contribution-ledger.json
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const d = JSON.parse(fs.readFileSync('companies/company-008-contribution-ledger.json','utf8'));
+
+          if (d.version !== '0.1-monetra-contribution-ledger-diagnostic') {
+            throw new Error('unexpected contribution-ledger version: ' + d.version);
+          }
+          if (d.methodologyVersion !== '0.1-boundary-flow-backfill') {
+            throw new Error('unexpected methodology version');
+          }
+          if (d.company?.registry !== '008' || d.company?.name !== 'Monetra.eth') {
+            throw new Error('identity mismatch');
+          }
+          if (d.company?.wallet?.toLowerCase() !== '0x888d39aee2aec979c81f125ea94bb3ceb60f6bbb') {
+            throw new Error('wallet mismatch');
+          }
+          if (!Array.isArray(d.candidateLedger) || !Array.isArray(d.reviewQueue)) {
+            throw new Error('missing ledger/review arrays');
+          }
+          if (!(Number(d.summary?.currentStableCapitalUsd) > 90)) {
+            throw new Error('current Stable Capital missing');
+          }
+
+          // Diagnostic GREEN is intentional. Ambiguity is data, not a workflow failure.
+          console.log('Contribution ledger structural validation OK.');
+          console.log(JSON.stringify(d.summary, null, 2));
+          if (d.summary?.manualReviewRequired) {
+            console.log('DIAGNOSTIC GREEN: reviewQueue must be inspected before publishing Invested/Performance.');
+          } else {
+            console.log('AUTO-READY: all boundary flows classified and valued.');
+          }
+          NODE
+
+      - name: Publish contribution-ledger diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="companies/company-008-contribution-ledger.json"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$FILE"
+
+          if ! git diff --cached --quiet -- "$FILE"; then
+            git commit -m "Resolve Monetra contribution ledger"
+          else
+            echo "No contribution-ledger changes to publish."
+          fi
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              break
+            fi
+            git rebase --abort || true
+            if [ "$attempt" -eq 3 ]; then
+              echo "ERROR: failed to publish after retries"
+              exit 1
+            fi
+            sleep $((attempt * 2))
+          done
+
+          git fetch origin main
+          git cat-file -e "origin/main:$FILE"
+
+          REMOTE_VERSION="$(git show origin/main:$FILE | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+          test "$REMOTE_VERSION" = "0.1-monetra-contribution-ledger-diagnostic" || {
+            echo "ERROR: remote contribution-ledger version mismatch: $REMOTE_VERSION"
+            exit 1
+          }
+
+          echo "Remote main contribution-ledger publish verified."
