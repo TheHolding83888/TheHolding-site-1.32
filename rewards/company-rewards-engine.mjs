@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress, keccak256, solidityPackedKeccak256, concat } from 'ethers';
 
-const VERSION = '0.3.7';
-const COLLECTOR_VERSION = '0.3.7-company-007-votium-current-root';
+const VERSION = '0.3.8';
+const COLLECTOR_VERSION = '0.3.8-company-009-reuse';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -195,7 +195,7 @@ const COMPANIES = [
     routes: ['aerodrome-ve', 'velodrome-ve-direct']
   },
   {
-    name: 'aerocrvyb.eth',
+    name: 'aerocvxyb.eth',
     wallets: [
       { alias: 'Aero / Velo wallet', address: '0xA641752824d512FA8683758c6b2D8A04ea46dcD0' },
       { alias: 'Yield Basis wallet', address: '0x6c6543eBA07946706Fd10a1064FA773326B5f5a9' }
@@ -218,6 +218,11 @@ const COMPANIES = [
       { route: 'curve-fees', wallets: ['Wallet 1'] },
       { route: 'votium-union', wallets: ['Wallet 1','Wallet 2'] }
     ]
+  },
+  {
+    name: '1milliondollar.eth',
+    wallets: [{ alias: '1milliondollar.eth', ens: '1milliondollar.eth', fallbackAddress: '0xe4b9c9ced406baffe406e63f83d39daaef150596' }],
+    routes: ['aerodrome-relay', 'yield-basis-fees']
   }
 ];
 
