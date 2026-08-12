@@ -1,4 +1,4 @@
-# THE HOLDING COMPANY #008 TARGETED RESOLVER v1.0.1
+# THE HOLDING COMPANY #008 TARGETED RESOLVER v1.1 — VEDA + HOLDINGS
 name: "Resolve Company #008"
 
 on:
@@ -29,8 +29,8 @@ jobs:
 
       - name: Verify resolver source/workflow sync
         run: |
-          grep -F "const VERSION = '1.0.1-company-008-address-normalization';" onboarding/company-008-resolve.mjs
-          echo "Resolver/source sync OK: Company #008 targeted resolver v1.0.1"
+          grep -F "const VERSION = '1.1-company-008-veda-accountant-holdings-mesh';" onboarding/company-008-resolve.mjs
+          echo "Resolver/source sync OK: Company #008 targeted resolver v1.1"
 
       - name: Install dependency
         run: npm install --no-save ethers@6
@@ -40,20 +40,22 @@ jobs:
           node - <<'NODE'
           const { getAddress } = require('ethers');
           const addresses = [
-            '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
-            '0x89a415b3d20098e6a6c8f7a59001c67bd3129821',
+            '0xe4b9c9ced406baffe406e63f83d39daaef150596',
             '0x5401b8620e5fb570064ca9114fd1e135fd77d57c',
-            '0x3a4baabf4dc9910596821615e848f0e6545762f3',
+            '0x28634d0c5edc67cf2450e74dea49b90a4ff93dce',
             '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
             '0x0555e30da8f98308edb960aa94c0db47230d2b9c',
-            '0x4200000000000000000000000000000000000006'
+            '0x4200000000000000000000000000000000000006',
+            '0xf0bb20865277abd641a307ece5ee04e79073416c',
+            '0x0d05d94a5f1e76c18fbeb7a13d17c8a314088198',
+            '0x152b9d0fdc40c096757f570a51e494bd4b943e50'
           ];
-          for (const a of addresses) {
-            console.log(a, '->', getAddress(a));
+          for (const address of addresses) {
+            console.log(address, '->', getAddress(address));
           }
           NODE
 
-      - name: Resolve only unresolved Company #008 components
+      - name: Resolve remaining Company #008 components
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
@@ -72,17 +74,27 @@ jobs:
 
           const d = JSON.parse(fs.readFileSync(p, 'utf8'));
 
-          if (d.version !== '1.0.1-company-008-address-normalization') {
+          if (d.version !== '1.1-company-008-veda-accountant-holdings-mesh') {
             throw new Error('resolver version mismatch: ' + d.version);
           }
           if (d.company?.registry !== '008') throw new Error('registry mismatch');
           if (d.company?.name !== '1milliondollar.eth') throw new Error('company mismatch');
+
+          const required = [
+            d.results?.lombardEthereum,
+            d.results?.lombardBase,
+            d.results?.baseWethVedaCandidate,
+            d.results?.avalancheBtcBCurrentHoldings
+          ];
+          if (required.some(x => !x)) throw new Error('required resolver result missing');
+
           if (!d.resolution || !Array.isArray(d.resolution.unresolved)) {
             throw new Error('resolution schema missing');
           }
 
-          console.log('Validated Company #008 targeted resolver v1.0.1');
+          console.log('Validated Company #008 targeted resolver v1.1');
           console.log('Resolution:', d.resolution);
+          console.log('Provisional totals:', d.provisionalTotals);
           NODE
 
       - name: Publish resolver JSON to main
@@ -102,7 +114,7 @@ jobs:
           git add -f "$FILE"
 
           if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Resolve Company #008 remaining balances"
+            git commit -m "Resolve Company #008 Veda and remaining balances"
           else
             echo "Resolver output unchanged."
           fi
@@ -129,4 +141,15 @@ jobs:
             exit 1
           }
 
+          REMOTE_VERSION="$(
+            git show "origin/main:$FILE" |
+            node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))"
+          )"
+
+          test "$REMOTE_VERSION" = "1.1-company-008-veda-accountant-holdings-mesh" || {
+            echo "ERROR: remote resolver version mismatch: $REMOTE_VERSION"
+            exit 1
+          }
+
           echo "Verified on origin/main: $FILE"
+          echo "Remote resolver version: $REMOTE_VERSION"
