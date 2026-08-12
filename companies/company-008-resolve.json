@@ -1,635 +1,119 @@
 {
-  "version": "1.1-company-008-veda-accountant-holdings-mesh",
-  "generatedAt": "2026-08-12T07:25:08.069Z",
-  "startedAt": "2026-08-12T07:25:05.729Z",
+  "version": "1.2-company-008-atoken-base-holdings-final-delta",
+  "generatedAt": "2026-08-12T07:36:49.035Z",
+  "startedAt": "2026-08-12T07:36:47.627Z",
   "company": {
     "registry": "008",
     "name": "1milliondollar.eth",
     "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596"
   },
-  "purpose": "resolve only remaining Company #008 BTC/ETH reconciliation delta via verified Veda Accountant rates and current holdings enumeration; no broad archaeology",
+  "purpose": "close only final Company #008 BTC/ETH delta: verify Avalanche Aave aToken and enumerate Base WETH receipt holdings using Routescan all-chain endpoint",
   "methodology": {
-    "boringVault": "share balance × Accountant rate per ONE_SHARE; verify Accountant.vault() before accepting",
-    "currentHoldings": "Routescan keyless current ERC20 holdings; receipt probes only on material/current candidates",
-    "ownerObserved": "rounded owner values are reconciliation targets only, never accounting source",
-    "antiDoubleCount": "do not add direct underlying and receipt-equivalent for the same economic position"
+    "preserveSolvedState": "Lombard v1.1 results reused as already-resolved state; not re-researched",
+    "avalancheAave": "aToken balanceOf accepted only after UNDERLYING_ASSET_ADDRESS and POOL contract verification",
+    "baseHoldings": "Routescan documented all-chain ERC20 holdings endpoint; filter Base chainId client-side to avoid chain-specific endpoint failure",
+    "baseWeth": "resolve only receipt tokens whose onchain underlying relation is Base WETH; use Aave current balance or reproducible redemption conversion",
+    "ownerObserved": "rounded owner values are reconciliation targets only, never accounting source"
   },
-  "knownFromDiscovery": {
-    "discoveryVersion": "1.3.2-company-008-owner-reconciliation-official-aave",
-    "btcFromDiscovery": 0.02160392,
-    "ethFromDiscovery": 0.006426130614
+  "preservedResolved": {
+    "previousResolverVersion": "1.1-company-008-veda-accountant-holdings-mesh",
+    "lombardEthereum": {
+      "quoteEquivalent": 0.00279874,
+      "shareBalance": 0.00273187,
+      "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
+      "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+      "rateMethod": "Accountant.getRateInQuoteSafe(quote)"
+    },
+    "lombardBase": {
+      "quoteEquivalent": 0.0047785,
+      "shareBalance": 0.00466433,
+      "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
+      "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+      "rateMethod": "Accountant.getRateInQuoteSafe(quote)"
+    }
+  },
+  "discoveryBaseline": {
+    "status": "ok",
+    "version": "1.3.2-company-008-owner-reconciliation-official-aave",
+    "btcSubtotal": 0.02160392,
+    "ethNativeSubtotal": 0.006426130614
   },
   "expectedApprox": {
     "avalancheBtcB": 0.0435,
-    "lombardEthereumWbtc": 0.0028,
-    "lombardBaseWbtc": 0.0048,
     "baseWeth": 0.1606
   },
   "results": {
-    "lombardEthereum": {
-      "label": "Lombard LBTCv",
-      "chain": "ethereum",
-      "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-      "vaultCodeExists": true,
-      "share": {
-        "address": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-        "symbol": "LBTCv",
-        "name": "Lombard BTC Vault",
+    "avalancheAaveBtcB": {
+      "protocol": "Aave",
+      "chain": "Avalanche",
+      "aToken": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
+      "aTokenMeta": {
+        "address": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
+        "symbol": "aAvaBTC.b",
+        "name": "Aave Avalanche BTC.b",
         "decimals": 8,
-        "raw": "273187",
-        "balance": 0.00273187
+        "raw": "4346456",
+        "balance": 0.04346456
       },
-      "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
-      "accountantCodeExists": true,
-      "accountantVault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-      "vaultMatch": true,
-      "base": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-      "accountantDecimals": 8,
-      "isPaused": false,
-      "quote": {
-        "address": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-        "symbol": "WBTC",
-        "decimals": 8
-      },
-      "rateMethod": "Accountant.getRateInQuoteSafe(quote)",
-      "quoteRateRaw": "102447782",
-      "quoteEquivalent": 0.00279874,
-      "ownerObservedApprox": 0.0028,
-      "tolerance": 0.00015,
-      "deltaVsOwnerObserved": -0.00000126,
+      "underlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
+      "expectedUnderlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
+      "underlyingMatch": true,
+      "pool": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+      "poolCodeExists": true,
+      "scaledBalanceRaw": "4330819",
+      "btcBEquivalent": 0.04346456,
+      "accountingMethod": "Aave aToken balanceOf(wallet), after UNDERLYING_ASSET_ADDRESS + POOL verification",
+      "ownerObservedApprox": 0.0435,
+      "tolerance": 0.00087,
+      "deltaVsOwnerObserved": -0.00003544,
       "matched": true,
       "status": "ok",
       "probes": {
-        "vault": {
+        "underlying": {
           "ok": true,
-          "value": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c"
+          "value": "0x152b9d0FdC40C096757F570A51E494bd4b943E50"
         },
-        "base": {
+        "pool": {
           "ok": true,
-          "value": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"
+          "value": "0x794a61358D6845594F94dc1DB02A252b5b4814aD"
         },
-        "decimals": {
+        "scaledBalance": {
           "ok": true,
-          "value": "8"
-        },
-        "getRate": {
-          "ok": true,
-          "value": "102447782"
-        },
-        "getRateSafe": {
-          "ok": true,
-          "value": "102447782"
-        },
-        "getRateInQuote": {
-          "ok": true,
-          "value": "102447782"
-        },
-        "getRateInQuoteSafe": {
-          "ok": true,
-          "value": "102447782"
-        },
-        "accountantState": {
-          "ok": true,
-          "value": [
-            "0x68eC1FdD4Bb202B2e07aE751CB5553644aA48cFA",
-            "102447782",
-            "7895613",
-            "93413782712",
-            "102447782",
-            "10050",
-            "9950",
-            "1786406171",
-            "false",
-            "21600",
-            "50",
-            "0"
-          ]
+          "value": "4330819"
         }
       }
     },
-    "lombardBase": {
-      "label": "Lombard LBTCv",
-      "chain": "base",
-      "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-      "vaultCodeExists": true,
-      "share": {
-        "address": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-        "symbol": "LBTCv",
-        "name": "Lombard BTC Vault",
-        "decimals": 8,
-        "raw": "466433",
-        "balance": 0.00466433
-      },
-      "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
-      "accountantCodeExists": true,
-      "accountantVault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-      "vaultMatch": true,
-      "base": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
-      "accountantDecimals": 8,
-      "isPaused": false,
-      "quote": {
-        "address": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
-        "symbol": "WBTC",
-        "decimals": 8
-      },
-      "rateMethod": "Accountant.getRateInQuoteSafe(quote)",
-      "quoteRateRaw": "102447782",
-      "quoteEquivalent": 0.0047785,
-      "ownerObservedApprox": 0.0048,
-      "tolerance": 0.00015,
-      "deltaVsOwnerObserved": -0.0000215,
-      "matched": true,
-      "status": "ok",
-      "probes": {
-        "vault": {
-          "ok": true,
-          "value": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c"
-        },
-        "base": {
-          "ok": true,
-          "value": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c"
-        },
-        "decimals": {
-          "ok": true,
-          "value": "8"
-        },
-        "getRate": {
-          "ok": true,
-          "value": "102447782"
-        },
-        "getRateSafe": {
-          "ok": true,
-          "value": "102447782"
-        },
-        "getRateInQuote": {
-          "ok": true,
-          "value": "102447782"
-        },
-        "getRateInQuoteSafe": {
-          "ok": true,
-          "value": "102447782"
-        },
-        "accountantState": {
-          "ok": true,
-          "value": [
-            "0x68eC1FdD4Bb202B2e07aE751CB5553644aA48cFA",
-            "102447782",
-            "117350",
-            "1789949157",
-            "102447782",
-            "10050",
-            "9950",
-            "1786406205",
-            "false",
-            "21600",
-            "50",
-            "0"
-          ]
-        }
-      }
-    },
-    "baseWethVedaCandidate": {
-      "label": "Veda Liquid ETH candidate",
-      "chain": "base",
-      "vault": "0xf0bb20865277aBd641a307eCe5Ee04E79073416C",
-      "vaultCodeExists": true,
-      "share": {
-        "address": "0xf0bb20865277aBd641a307eCe5Ee04E79073416C",
-        "symbol": "liquidETH",
-        "name": "Ether.Fi Liquid ETH",
-        "decimals": 18,
-        "raw": "0",
-        "balance": 0
-      },
-      "accountant": "0x0d05D94a5F1E76C18fbeB7A13d17C8a314088198",
-      "accountantCodeExists": true,
-      "accountantVault": "0xf0bb20865277aBd641a307eCe5Ee04E79073416C",
-      "vaultMatch": true,
-      "base": "0x4200000000000000000000000000000000000006",
-      "accountantDecimals": 18,
-      "isPaused": false,
-      "quote": {
-        "address": "0x4200000000000000000000000000000000000006",
-        "symbol": "WETH",
-        "decimals": 18
-      },
-      "rateMethod": "Accountant.getRateInQuoteSafe(quote)",
-      "quoteRateRaw": "1035070497999746896",
-      "quoteEquivalent": 0,
+    "baseWethCurrentHoldings": {
+      "chain": "Base",
+      "targetUnderlying": "0x4200000000000000000000000000000000000006",
       "ownerObservedApprox": 0.1606,
+      "routescanEndpointMode": "all-chain endpoint, client-side filter chainId=8453",
+      "allChainHoldingsDiagnostics": [],
+      "baseHoldingCount": 0,
+      "baseHoldings": [],
+      "probedCandidates": [],
+      "resolvedComponents": [],
+      "wethEquivalent": 0,
       "tolerance": 0.004818,
       "deltaVsOwnerObserved": null,
       "matched": false,
-      "status": "unresolved",
-      "probes": {
-        "vault": {
-          "ok": true,
-          "value": "0xf0bb20865277aBd641a307eCe5Ee04E79073416C"
-        },
-        "base": {
-          "ok": true,
-          "value": "0x4200000000000000000000000000000000000006"
-        },
-        "decimals": {
-          "ok": true,
-          "value": "18"
-        },
-        "getRate": {
-          "ok": true,
-          "value": "1035070497999746896"
-        },
-        "getRateSafe": {
-          "ok": true,
-          "value": "1035070497999746896"
-        },
-        "getRateInQuote": {
-          "ok": true,
-          "value": "1035070497999746896"
-        },
-        "getRateInQuoteSafe": {
-          "ok": true,
-          "value": "1035070497999746896"
-        },
-        "accountantState": {
-          "ok": true,
-          "value": [
-            "0x43730F2A3FA41F18aD5E67A9568E28a67bF00920",
-            "1035070497999746896",
-            "1823966916405",
-            "972067146630469",
-            "1035070497999746896",
-            "10050",
-            "9950",
-            "1727230879",
-            "false",
-            "21600",
-            "200",
-            "0"
-          ]
-        }
-      }
-    },
-    "avalancheBtcBCurrentHoldings": {
-      "chain": "Avalanche",
-      "targetUnderlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
-      "ownerObservedApprox": 0.0435,
-      "benqiAlreadyEliminated": true,
-      "currentHoldings": {
-        "chain": "avalanche",
-        "chainId": 43114,
-        "source": "Routescan keyless current ERC20 holdings",
-        "itemCount": 9,
-        "diagnostics": [],
-        "items": [
-          {
-            "chainId": "43114",
-            "tokenAddress": "0xFCCf3cAbbe80101232d343252614b6A3eE81C989",
-            "tokenName": "Aave Avalanche Variable Debt USDC",
-            "tokenSymbol": "variableDebtAvaUSDC",
-            "tokenDecimals": 6,
-            "tokenQuantityRaw": "404208255",
-            "tokenQuantity": 404.208255,
-            "tokenPrice": null,
-            "tokenValueInUsd": null,
-            "updatedAtBlock": 87256218
-          },
-          {
-            "chainId": "43114",
-            "tokenAddress": "0xfb00AC187a8Eb5AFAE4eACE434F493Eb62672df7",
-            "tokenName": "Aave Avalanche Variable Debt USDT",
-            "tokenSymbol": "variableDebtAvaUSDT",
-            "tokenDecimals": 6,
-            "tokenQuantityRaw": "682822329",
-            "tokenQuantity": 682.822329,
-            "tokenPrice": null,
-            "tokenValueInUsd": null,
-            "updatedAtBlock": 87247172
-          },
-          {
-            "chainId": "43114",
-            "tokenAddress": "0xF9d922c055A3f1759299467dAfaFdf43BE844f7a",
-            "tokenName": "Minereum AVAX",
-            "tokenSymbol": "MNEAV",
-            "tokenDecimals": 8,
-            "tokenQuantityRaw": "30000000000000",
-            "tokenQuantity": 300000,
-            "tokenPrice": null,
-            "tokenValueInUsd": null,
-            "updatedAtBlock": 22949264
-          },
-          {
-            "chainId": "43114",
-            "tokenAddress": "0xDC1fad70953Bb3918592b6fCc374fe05F5811B6a",
-            "tokenName": "Aave Avalanche Variable Debt AUSD",
-            "tokenSymbol": "variableDebtAvaAUSD",
-            "tokenDecimals": 6,
-            "tokenQuantityRaw": "499031514",
-            "tokenQuantity": 499.031514,
-            "tokenPrice": null,
-            "tokenValueInUsd": null,
-            "updatedAtBlock": 79217529
-          },
-          {
-            "chainId": "43114",
-            "tokenAddress": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
-            "tokenName": "Aave Avalanche BTC.b",
-            "tokenSymbol": "aAvaBTC.b",
-            "tokenDecimals": 8,
-            "tokenQuantityRaw": "4346456",
-            "tokenQuantity": 0.04346456,
-            "tokenPrice": null,
-            "tokenValueInUsd": null,
-            "updatedAtBlock": 88729734
-          },
-          {
-            "chainId": "43114",
-            "tokenAddress": "0x6c718a70239fA548c0bD268fE88F37EBE8b6E2ea",
-            "tokenName": "EVK Vault eWAVAX-2",
-            "tokenSymbol": "eWAVAX-2",
-            "tokenDecimals": 18,
-            "tokenQuantityRaw": "21947372114541539145",
-            "tokenQuantity": 21.947372114542,
-            "tokenPrice": null,
-            "tokenValueInUsd": null,
-            "updatedAtBlock": 79302593
-          },
-          {
-            "chainId": "43114",
-            "tokenAddress": "0x6adC4e7e3a3aAe8108b87b8d19477200F731fc33",
-            "tokenName": "Onyx",
-            "tokenSymbol": "ecAVAX - https://investpulse.ink",
-            "tokenDecimals": 18,
-            "tokenQuantityRaw": "8378000000000000000",
-            "tokenQuantity": 8.378,
-            "tokenPrice": null,
-            "tokenValueInUsd": null,
-            "updatedAtBlock": 86564863
-          },
-          {
-            "chainId": "43114",
-            "tokenAddress": "0x5D37a146dDF998792D16991597E45Ee11D6aB95A",
-            "tokenName": "MEOW",
-            "tokenSymbol": "Claim on: airdrop.avax-meowcat.com",
-            "tokenDecimals": 0,
-            "tokenQuantityRaw": "470000",
-            "tokenQuantity": 470000,
-            "tokenPrice": null,
-            "tokenValueInUsd": null,
-            "updatedAtBlock": 46146061
-          },
-          {
-            "chainId": "43114",
-            "tokenAddress": "0x4a1c3aD6Ed28a636ee1751C69071f6be75DEb8B8",
-            "tokenName": "Aave Avalanche Variable Debt WAVAX",
-            "tokenSymbol": "variableDebtAvaWAVAX",
-            "tokenDecimals": 18,
-            "tokenQuantityRaw": "3748769210977024406",
-            "tokenQuantity": 3.748769210977,
-            "tokenPrice": null,
-            "tokenValueInUsd": null,
-            "updatedAtBlock": 79216564
-          }
-        ]
-      },
-      "probedCandidates": [
-        {
-          "chainId": "43114",
-          "tokenAddress": "0xFCCf3cAbbe80101232d343252614b6A3eE81C989",
-          "tokenName": "Aave Avalanche Variable Debt USDC",
-          "tokenSymbol": "variableDebtAvaUSDC",
-          "tokenDecimals": 6,
-          "tokenQuantityRaw": "404208255",
-          "tokenQuantity": 404.208255,
-          "tokenPrice": null,
-          "tokenValueInUsd": null,
-          "updatedAtBlock": 87256218,
-          "onchainShareMeta": {
-            "address": "0xFCCf3cAbbe80101232d343252614b6A3eE81C989",
-            "symbol": "variableDebtAvaUSDC",
-            "name": "Aave Avalanche Variable Debt USDC",
-            "decimals": 6,
-            "raw": "404208255",
-            "balance": 404.208255
-          },
-          "assetProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "underlyingProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "resolvedUnderlyingAddress": null,
-          "pointsToTarget": false,
-          "resolvedUnderlyingRaw": "0",
-          "resolvedUnderlyingAmount": null,
-          "conversionMethod": null,
-          "probeStatus": "not-target-underlying"
-        },
-        {
-          "chainId": "43114",
-          "tokenAddress": "0xfb00AC187a8Eb5AFAE4eACE434F493Eb62672df7",
-          "tokenName": "Aave Avalanche Variable Debt USDT",
-          "tokenSymbol": "variableDebtAvaUSDT",
-          "tokenDecimals": 6,
-          "tokenQuantityRaw": "682822329",
-          "tokenQuantity": 682.822329,
-          "tokenPrice": null,
-          "tokenValueInUsd": null,
-          "updatedAtBlock": 87247172,
-          "onchainShareMeta": {
-            "address": "0xfb00AC187a8Eb5AFAE4eACE434F493Eb62672df7",
-            "symbol": "variableDebtAvaUSDT",
-            "name": "Aave Avalanche Variable Debt USDT",
-            "decimals": 6,
-            "raw": "682822330",
-            "balance": 682.82233
-          },
-          "assetProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "underlyingProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "resolvedUnderlyingAddress": null,
-          "pointsToTarget": false,
-          "resolvedUnderlyingRaw": "0",
-          "resolvedUnderlyingAmount": null,
-          "conversionMethod": null,
-          "probeStatus": "not-target-underlying"
-        },
-        {
-          "chainId": "43114",
-          "tokenAddress": "0xDC1fad70953Bb3918592b6fCc374fe05F5811B6a",
-          "tokenName": "Aave Avalanche Variable Debt AUSD",
-          "tokenSymbol": "variableDebtAvaAUSD",
-          "tokenDecimals": 6,
-          "tokenQuantityRaw": "499031514",
-          "tokenQuantity": 499.031514,
-          "tokenPrice": null,
-          "tokenValueInUsd": null,
-          "updatedAtBlock": 79217529,
-          "onchainShareMeta": {
-            "address": "0xDC1fad70953Bb3918592b6fCc374fe05F5811B6a",
-            "symbol": "variableDebtAvaAUSD",
-            "name": "Aave Avalanche Variable Debt AUSD",
-            "decimals": 6,
-            "raw": "499031514",
-            "balance": 499.031514
-          },
-          "assetProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "underlyingProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "resolvedUnderlyingAddress": null,
-          "pointsToTarget": false,
-          "resolvedUnderlyingRaw": "0",
-          "resolvedUnderlyingAmount": null,
-          "conversionMethod": null,
-          "probeStatus": "not-target-underlying"
-        },
-        {
-          "chainId": "43114",
-          "tokenAddress": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
-          "tokenName": "Aave Avalanche BTC.b",
-          "tokenSymbol": "aAvaBTC.b",
-          "tokenDecimals": 8,
-          "tokenQuantityRaw": "4346456",
-          "tokenQuantity": 0.04346456,
-          "tokenPrice": null,
-          "tokenValueInUsd": null,
-          "updatedAtBlock": 88729734,
-          "onchainShareMeta": {
-            "address": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
-            "symbol": "aAvaBTC.b",
-            "name": "Aave Avalanche BTC.b",
-            "decimals": 8,
-            "raw": "4346456",
-            "balance": 0.04346456
-          },
-          "assetProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "underlyingProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "resolvedUnderlyingAddress": null,
-          "pointsToTarget": false,
-          "resolvedUnderlyingRaw": "0",
-          "resolvedUnderlyingAmount": null,
-          "conversionMethod": null,
-          "probeStatus": "not-target-underlying"
-        },
-        {
-          "chainId": "43114",
-          "tokenAddress": "0x6c718a70239fA548c0bD268fE88F37EBE8b6E2ea",
-          "tokenName": "EVK Vault eWAVAX-2",
-          "tokenSymbol": "eWAVAX-2",
-          "tokenDecimals": 18,
-          "tokenQuantityRaw": "21947372114541539145",
-          "tokenQuantity": 21.947372114542,
-          "tokenPrice": null,
-          "tokenValueInUsd": null,
-          "updatedAtBlock": 79302593,
-          "onchainShareMeta": {
-            "address": "0x6c718a70239fA548c0bD268fE88F37EBE8b6E2ea",
-            "symbol": "eWAVAX-2",
-            "name": "EVK Vault eWAVAX-2",
-            "decimals": 18,
-            "raw": "21947372114541539145",
-            "balance": 21.94737211454154
-          },
-          "assetProbe": {
-            "ok": true,
-            "value": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"
-          },
-          "underlyingProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "resolvedUnderlyingAddress": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
-          "pointsToTarget": false,
-          "resolvedUnderlyingRaw": "0",
-          "resolvedUnderlyingAmount": null,
-          "conversionMethod": null,
-          "probeStatus": "not-target-underlying"
-        },
-        {
-          "chainId": "43114",
-          "tokenAddress": "0x4a1c3aD6Ed28a636ee1751C69071f6be75DEb8B8",
-          "tokenName": "Aave Avalanche Variable Debt WAVAX",
-          "tokenSymbol": "variableDebtAvaWAVAX",
-          "tokenDecimals": 18,
-          "tokenQuantityRaw": "3748769210977024406",
-          "tokenQuantity": 3.748769210977,
-          "tokenPrice": null,
-          "tokenValueInUsd": null,
-          "updatedAtBlock": 79216564,
-          "onchainShareMeta": {
-            "address": "0x4a1c3aD6Ed28a636ee1751C69071f6be75DEb8B8",
-            "symbol": "variableDebtAvaWAVAX",
-            "name": "Aave Avalanche Variable Debt WAVAX",
-            "decimals": 18,
-            "raw": "3748769217748708639",
-            "balance": 3.7487692177487086
-          },
-          "assetProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "underlyingProbe": {
-            "ok": false,
-            "error": "missing revert data"
-          },
-          "resolvedUnderlyingAddress": null,
-          "pointsToTarget": false,
-          "resolvedUnderlyingRaw": "0",
-          "resolvedUnderlyingAmount": null,
-          "conversionMethod": null,
-          "probeStatus": "not-target-underlying"
-        }
-      ],
-      "resolvedComponents": [],
-      "btcBEquivalent": 0,
-      "tolerance": 0.001305,
-      "matched": false,
-      "status": "unresolved",
-      "diagnostics": []
-    },
-    "baseCurrentHoldings": {
-      "chain": "base",
-      "chainId": 8453,
-      "source": "Routescan keyless current ERC20 holdings",
-      "itemCount": 0,
-      "diagnostics": [
-        "HTTP 400"
-      ],
-      "items": []
+      "status": "unresolved"
     }
   },
   "resolution": {
-    "avalancheBtcB": false,
     "lombardEthereumWbtc": true,
     "lombardBaseWbtc": true,
+    "avalancheBtcB": true,
     "baseWeth": false,
     "unresolved": [
-      "avalancheBtcB",
       "baseWeth"
     ],
     "allResolved": false
   },
-  "provisionalTotals": {
-    "btcIfCurrentResolvedComponentsAccepted": 0.02918116,
-    "ethIfCurrentResolvedComponentsAccepted": 0.006426130614,
+  "finalCandidateTotals": {
+    "btc": 0.07264572,
+    "eth": 0.006426130614,
     "authoritative": false
   },
-  "nextStep": "target only remaining unresolved mechanism(s) using the current-holdings evidence emitted by this resolver"
+  "nextStep": "target only the exact still-unresolved component(s)"
 }
