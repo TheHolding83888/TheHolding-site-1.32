@@ -1,0 +1,273 @@
+{
+  "version": "1.0-company-008-monetra-stable-capital-discovery",
+  "generatedAt": "2026-08-12T10:07:38.410Z",
+  "startedAt": "2026-08-12T10:07:18.734Z",
+  "company": {
+    "registry": "008",
+    "name": "Monetra.eth",
+    "wallet": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+    "category": "Stable Capital",
+    "architecture": "Stable Capital",
+    "debank": "https://debank.com/profile/0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+    "founding": {
+      "foundedAt": "2026-05-27T05:46:11.000Z",
+      "date": "2026-05-27",
+      "method": "first-reproducible-economic-funding",
+      "confidence": "high",
+      "evidence": {
+        "status": "ok",
+        "selected": {
+          "kind": "native-funding",
+          "timestamp": "2026-05-27T05:46:11.000Z",
+          "block": 25184669,
+          "txHash": "0xfd22c33885f2590dd807de28cdb2e007d8c26ef90935e4cf32fb2f73082d20fd",
+          "amountEth": 0.01,
+          "from": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3"
+        },
+        "firstNative": {
+          "kind": "native-funding",
+          "timestamp": "2026-05-27T05:46:11.000Z",
+          "block": 25184669,
+          "txHash": "0xfd22c33885f2590dd807de28cdb2e007d8c26ef90935e4cf32fb2f73082d20fd",
+          "amountEth": 0.01,
+          "from": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3"
+        },
+        "firstStable": {
+          "kind": "stable-token-funding",
+          "timestamp": "2026-07-12T12:10:59.000Z",
+          "block": 25516455,
+          "txHash": "0x35b0dcd250434336f57a557e2d4aece5f61eba381274f61b292c0cc34dde80a9",
+          "token": null,
+          "symbol": "CRVUSD",
+          "from": "0xF5C56A4068bDd4122C499e0fE176141CC688ad3a"
+        },
+        "rule": "earliest reproducible positive inbound native funding or stable-token funding on Ethereum; gas funding is allowed to establish company origin even though gas ETH is excluded from Stable Capital TVL",
+        "confidence": "high"
+      }
+    }
+  },
+  "mandate": {
+    "family": "Stable Capital",
+    "stableOnly": true,
+    "allowedPositionFamilies": [
+      "Liquid Stable Principal",
+      "Embedded Yield / Savings Stable",
+      "Stable Lending",
+      "Stable LP / Vault",
+      "Claimable Stable Rewards",
+      "Agent-Managed Stable Strategy"
+    ],
+    "gasEthTreatment": "excluded from Stable Capital TVL",
+    "principle": "track economic mechanism, not token label alone"
+  },
+  "accountingPolicy": {
+    "referenceApy": "current productive capacity; never treated as earned historical income",
+    "embeddedYield": "change in redeemable underlying/NAV adjusted for net contributions and withdrawals",
+    "accruedRewards": "separate claimable protocol rewards only",
+    "realisedCashFlow": "value actually withdrawn/claimed/received into treasury",
+    "stablePriceEffect": "stablecoin depeg/price P&L must remain separate from strategy yield",
+    "monthlyHistory": "exact checkpoint boundaries; never sum overlapping rolling APY windows"
+  },
+  "discovery": {
+    "founding": {
+      "status": "ok",
+      "selected": {
+        "kind": "native-funding",
+        "timestamp": "2026-05-27T05:46:11.000Z",
+        "block": 25184669,
+        "txHash": "0xfd22c33885f2590dd807de28cdb2e007d8c26ef90935e4cf32fb2f73082d20fd",
+        "amountEth": 0.01,
+        "from": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3"
+      },
+      "firstNative": {
+        "kind": "native-funding",
+        "timestamp": "2026-05-27T05:46:11.000Z",
+        "block": 25184669,
+        "txHash": "0xfd22c33885f2590dd807de28cdb2e007d8c26ef90935e4cf32fb2f73082d20fd",
+        "amountEth": 0.01,
+        "from": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3"
+      },
+      "firstStable": {
+        "kind": "stable-token-funding",
+        "timestamp": "2026-07-12T12:10:59.000Z",
+        "block": 25516455,
+        "txHash": "0x35b0dcd250434336f57a557e2d4aece5f61eba381274f61b292c0cc34dde80a9",
+        "token": null,
+        "symbol": "CRVUSD",
+        "from": "0xF5C56A4068bDd4122C499e0fE176141CC688ad3a"
+      },
+      "rule": "earliest reproducible positive inbound native funding or stable-token funding on Ethereum; gas funding is allowed to establish company origin even though gas ETH is excluded from Stable Capital TVL",
+      "confidence": "high"
+    },
+    "gas": {
+      "excludedFromStableCapitalTvl": true,
+      "rows": [
+        {
+          "chain": "Ethereum",
+          "symbol": "ETH",
+          "amount": 0.003833803908536219
+        },
+        {
+          "chain": "Base",
+          "symbol": "ETH",
+          "amount": 0.000025391960942453
+        }
+      ],
+      "treatment": "gas/reserve only; excluded from Monetra Stable Capital TVL unless explicitly reclassified later"
+    },
+    "walletStable": {
+      "positions": [],
+      "unresolved": [],
+      "diagnostics": []
+    },
+    "aave": {
+      "positions": [
+        {
+          "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "chain": "Base",
+          "protocol": "Aave v3",
+          "positionType": "Stable Lending",
+          "underlying": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "underlyingSymbol": "USDC",
+          "aToken": "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
+          "currentUnderlyingEquivalent": 10.009703,
+          "currentATokenBalanceRaw": "10009703",
+          "scaledBalanceRaw": "8764974",
+          "normalizedIncomeRay": "1142011815777664576611929299",
+          "liquidityRateRay": "36165255679610362129774425",
+          "referenceApyPct": 3.682717,
+          "price": {
+            "status": "ok",
+            "priceUsd": 0.9996337662589685,
+            "source": "defillama-contract:base"
+          },
+          "valueUsd": 10.006037,
+          "incomeMode": "lending-embedded",
+          "claimableBoundary": "supplier interest accrues inside aToken/underlying-equivalent balance; external incentives must be tracked separately",
+          "collateralEnabled": true,
+          "history": {
+            "firstObservedInboundATokenTransfer": null,
+            "currentCheckpoint": {
+              "timestamp": "2026-08-12T10:07:29.701Z",
+              "underlyingEquivalent": 10.009703,
+              "scaledBalanceRaw": "8764974",
+              "normalizedIncomeRay": "1142011815777664576611929299",
+              "underlyingPriceUsd": 0.9996337662589685
+            }
+          }
+        }
+      ],
+      "unresolved": [],
+      "diagnostics": []
+    },
+    "historyCoverage": {
+      "ethereum": {
+        "transactions": {
+          "pages": 1,
+          "truncated": false
+        },
+        "tokenTransfers": {
+          "pages": 1,
+          "truncated": false
+        }
+      },
+      "diagnostics": []
+    }
+  },
+  "stableCapital": {
+    "positions": [
+      {
+        "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "chain": "Base",
+        "protocol": "Aave v3",
+        "positionType": "Stable Lending",
+        "underlying": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "underlyingSymbol": "USDC",
+        "aToken": "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
+        "currentUnderlyingEquivalent": 10.009703,
+        "currentATokenBalanceRaw": "10009703",
+        "scaledBalanceRaw": "8764974",
+        "normalizedIncomeRay": "1142011815777664576611929299",
+        "liquidityRateRay": "36165255679610362129774425",
+        "referenceApyPct": 3.682717,
+        "price": {
+          "status": "ok",
+          "priceUsd": 0.9996337662589685,
+          "source": "defillama-contract:base"
+        },
+        "valueUsd": 10.006037,
+        "incomeMode": "lending-embedded",
+        "claimableBoundary": "supplier interest accrues inside aToken/underlying-equivalent balance; external incentives must be tracked separately",
+        "collateralEnabled": true,
+        "history": {
+          "firstObservedInboundATokenTransfer": null,
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T10:07:29.701Z",
+            "underlyingEquivalent": 10.009703,
+            "scaledBalanceRaw": "8764974",
+            "normalizedIncomeRay": "1142011815777664576611929299",
+            "underlyingPriceUsd": 0.9996337662589685
+          }
+        }
+      }
+    ],
+    "summary": {
+      "totalUsd": 10.006037,
+      "productiveUsd": 10.006037,
+      "liquidUsd": 0,
+      "pricedPositions": 1,
+      "positionCount": 1,
+      "byType": {
+        "Stable Lending": 10.006037
+      },
+      "byProtocol": {
+        "Aave v3": 10.006037
+      },
+      "byStable": {
+        "USDC": 10.006037
+      }
+    },
+    "sanity": {
+      "ownerObserved": {
+        "walletAndDefiUsdApprox": 108,
+        "stableStrategyUsdApprox": 100,
+        "note": "Sanity target only; never force discovery values to match owner observation."
+      },
+      "discoveredStableCapitalUsd": 10.006037,
+      "deltaVsOwnerStableApproxUsd": -89.993963,
+      "withinLoose20UsdBand": false,
+      "note": "Mismatch is diagnostic only; discovery values are never forced to owner target."
+    },
+    "unresolved": []
+  },
+  "checkpointSeed": {
+    "methodology": "position-level current checkpoint for future capital-flow-adjusted Embedded Yield ledger",
+    "positions": [
+      {
+        "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "protocol": "Aave v3",
+        "positionType": "Stable Lending",
+        "incomeMode": "lending-embedded",
+        "firstObservedActivity": null,
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:07:29.701Z",
+          "underlyingEquivalent": 10.009703,
+          "scaledBalanceRaw": "8764974",
+          "normalizedIncomeRay": "1142011815777664576611929299",
+          "underlyingPriceUsd": 0.9996337662589685
+        }
+      }
+    ]
+  },
+  "productionReadiness": {
+    "foundingResolved": true,
+    "currentPositionsFound": true,
+    "stableCapitalUsdPriced": true,
+    "stableCapitalCurrentStateComplete": true,
+    "pageIntegrationReady": false,
+    "productivityIntegrationReady": false,
+    "rewardsIntegrationReady": false,
+    "note": "This is data-only discovery. Integrate UI/Productivity/Rewards only after mechanisms and current-value reconciliation are reviewed."
+  },
+  "nextStep": "Review exact stable positions and founding evidence. Reconcile roughly $100 stable strategy capital, then promote only verified mechanisms into reusable Stable Capital Productivity/Rewards/Reporting adapters."
+}
