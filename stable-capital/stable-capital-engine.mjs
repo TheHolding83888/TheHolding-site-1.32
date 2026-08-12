@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.4
+ * THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.4.1
  *
  * Registry #008 / Monetra.eth reference implementation.
  *
@@ -30,7 +30,7 @@ import {
 } from 'ethers';
 import { AaveV3Base } from '@aave-dao/aave-address-book';
 
-const VERSION = '0.4-monetra-recurring-full-coverage';
+const VERSION = '0.4.1-monetra-recurring-stable-index-semantics';
 const METHODOLOGY = '1.3-stable-capital-recurring-full-coverage';
 const LEDGER_VERSION = '0.4-flow-aware-recurring-checkpoints';
 const RESOLVER_REQUIRED = '1.4-company-008-fraxtal-sfrxusd-close';
@@ -1277,7 +1277,7 @@ function buildStableData(resolver, rates, snapshots, prior) {
       formula: 'capital-weighted current annualized yield across productive Stable Capital positions with valid reference rates',
       productiveCorrection: 'Stable Lending is productive even when an older resolver row omitted productive:true.',
       unknownTreatment: 'warming/error positions are excluded from numerator and denominator; never treated as 0%',
-      fullCoverageGate: 'Monetra enters the weighted Composite Index only after all 10 current Stable Capital positions have valid reference annual yield.',
+      fullCoverageGate: 'The Stable Company Passport may publish a current Reference APY only when all 10 current Stable Capital positions have valid reference annual yield. Stable Capital remains a separate measurement universe and never enters the general Composite Index.',
       rateConvention: 'Protocol APY is used directly. Protocol APR is preserved and used as one-year annual yield only when no compounding is assumed; no arbitrary compounding frequency is invented.',
       embeddedBoundary: 'Reference APY is capacity, not earned income. Earned Embedded Yield comes only from checkpoint deltas adjusted for flows.',
       fxSaveCanonicalNav: 'fxSAVE economic NAV = convertToAssets(fxSAVE shares) into FxUSDBasePool shares, then previewRedeem into fxUSD + USDC. Reference APY uses nominal stable units so depeg is excluded; current TVL applies current component prices.'
@@ -1299,13 +1299,13 @@ function buildStableData(resolver, rates, snapshots, prior) {
     },
     history,
     readiness: {
-      centralProductivityBridgeReady: fullCoverage,
-      compositeIndexAdmissionReady: fullCoverage,
-      removeMeasuringFromPassport: fullCoverage,
-      firstFullCoverageObservationRecorded: fullCoverage,
+      stableIndexPublicationReady: fullCoverage,
+      stablePassportLiveReady: fullCoverage,
+      fullCoverageObservationRecorded: fullCoverage,
+      generalCompositeExcludedByPolicy: true,
       note: fullCoverage
-        ? 'Stable Capital Reference APY is complete; next patch may bridge Monetra into central Productivity and Composite Index.'
-        : 'Collector executed, but one or more rate adapters remain warming. Fix only listed adapters; do not restart wallet discovery.'
+        ? 'Stable Capital Reference APY is complete and may publish to the dedicated Stable Companies Index and Stable Company Passport. The general Composite Index remains intentionally separate.'
+        : 'Collector executed, but one or more rate adapters remain warming. Keep the dedicated Stable Index on the latest full observation where available; fix only listed adapters and do not restart wallet discovery.'
     }
   };
 }
