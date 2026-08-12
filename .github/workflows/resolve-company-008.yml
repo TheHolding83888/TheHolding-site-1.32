@@ -1,4 +1,4 @@
-# THE HOLDING COMPANY #008 TARGETED RESOLVER v1.1 — VEDA + HOLDINGS
+# THE HOLDING COMPANY #008 TARGETED RESOLVER v1.2 — ATOKEN + BASE HOLDINGS
 name: "Resolve Company #008"
 
 on:
@@ -29,8 +29,8 @@ jobs:
 
       - name: Verify resolver source/workflow sync
         run: |
-          grep -F "const VERSION = '1.1-company-008-veda-accountant-holdings-mesh';" onboarding/company-008-resolve.mjs
-          echo "Resolver/source sync OK: Company #008 targeted resolver v1.1"
+          grep -F "const VERSION = '1.2-company-008-atoken-base-holdings-final-delta';" onboarding/company-008-resolve.mjs
+          echo "Resolver/source sync OK: Company #008 targeted resolver v1.2"
 
       - name: Install dependency
         run: npm install --no-save ethers@6
@@ -41,24 +41,17 @@ jobs:
           const { getAddress } = require('ethers');
           const addresses = [
             '0xe4b9c9ced406baffe406e63f83d39daaef150596',
-            '0x5401b8620e5fb570064ca9114fd1e135fd77d57c',
-            '0x28634d0c5edc67cf2450e74dea49b90a4ff93dce',
-            '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
-            '0x0555e30da8f98308edb960aa94c0db47230d2b9c',
-            '0x4200000000000000000000000000000000000006',
-            '0xf0bb20865277abd641a307ece5ee04e79073416c',
-            '0x0d05d94a5f1e76c18fbeb7a13d17c8a314088198',
-            '0x152b9d0fdc40c096757f570a51e494bd4b943e50'
+            '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
+            '0x8ffdf2de812095b1d19cb146e4c004587c0a0692',
+            '0x4200000000000000000000000000000000000006'
           ];
           for (const address of addresses) {
             console.log(address, '->', getAddress(address));
           }
           NODE
 
-      - name: Resolve remaining Company #008 components
+      - name: Resolve final Company #008 BTC ETH delta
         env:
-          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
-          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
           AVALANCHE_RPC_URL: ${{ secrets.AVALANCHE_RPC_URL }}
@@ -69,32 +62,57 @@ jobs:
         run: |
           node - <<'NODE'
           const fs = require('fs');
+
           const p = 'companies/company-008-resolve.json';
-          if (!fs.existsSync(p)) throw new Error('resolver JSON missing');
 
-          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
-
-          if (d.version !== '1.1-company-008-veda-accountant-holdings-mesh') {
-            throw new Error('resolver version mismatch: ' + d.version);
+          if (!fs.existsSync(p)) {
+            throw new Error('resolver JSON missing');
           }
-          if (d.company?.registry !== '008') throw new Error('registry mismatch');
-          if (d.company?.name !== '1milliondollar.eth') throw new Error('company mismatch');
 
-          const required = [
-            d.results?.lombardEthereum,
-            d.results?.lombardBase,
-            d.results?.baseWethVedaCandidate,
-            d.results?.avalancheBtcBCurrentHoldings
-          ];
-          if (required.some(x => !x)) throw new Error('required resolver result missing');
+          const d = JSON.parse(
+            fs.readFileSync(p, 'utf8')
+          );
 
-          if (!d.resolution || !Array.isArray(d.resolution.unresolved)) {
+          if (
+            d.version !==
+            '1.2-company-008-atoken-base-holdings-final-delta'
+          ) {
+            throw new Error(
+              'resolver version mismatch: ' + d.version
+            );
+          }
+
+          if (d.company?.registry !== '008') {
+            throw new Error('registry mismatch');
+          }
+
+          if (d.company?.name !== '1milliondollar.eth') {
+            throw new Error('company mismatch');
+          }
+
+          if (!d.results?.avalancheAaveBtcB) {
+            throw new Error('Avalanche Aave result missing');
+          }
+
+          if (!d.results?.baseWethCurrentHoldings) {
+            throw new Error('Base WETH result missing');
+          }
+
+          if (
+            !d.resolution
+            || !Array.isArray(d.resolution.unresolved)
+          ) {
             throw new Error('resolution schema missing');
           }
 
-          console.log('Validated Company #008 targeted resolver v1.1');
+          console.log(
+            'Validated Company #008 targeted resolver v1.2'
+          );
           console.log('Resolution:', d.resolution);
-          console.log('Provisional totals:', d.provisionalTotals);
+          console.log(
+            'Final candidate totals:',
+            d.finalCandidateTotals
+          );
           NODE
 
       - name: Publish resolver JSON to main
@@ -111,16 +129,18 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add -f "$FILE"
 
           if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Resolve Company #008 Veda and remaining balances"
+            git commit -m "Resolve Company #008 final BTC ETH delta"
           else
             echo "Resolver output unchanged."
           fi
 
           for attempt in 1 2 3; do
             git fetch origin main
+
             if git rebase origin/main && git push origin HEAD:main; then
               break
             fi
@@ -136,8 +156,9 @@ jobs:
           done
 
           git fetch origin main
+
           git cat-file -e "origin/main:$FILE" || {
-            echo "ERROR: workflow green guard failed; resolver absent from origin/main"
+            echo "ERROR: resolver absent from origin/main"
             exit 1
           }
 
@@ -146,7 +167,7 @@ jobs:
             node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))"
           )"
 
-          test "$REMOTE_VERSION" = "1.1-company-008-veda-accountant-holdings-mesh" || {
+          test "$REMOTE_VERSION" = "1.2-company-008-atoken-base-holdings-final-delta" || {
             echo "ERROR: remote resolver version mismatch: $REMOTE_VERSION"
             exit 1
           }
