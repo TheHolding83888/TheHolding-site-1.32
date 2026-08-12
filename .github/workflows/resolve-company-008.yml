@@ -1,0 +1,128 @@
+# THE HOLDING · MONETRA COMPANY #008 STABLE WRAPPER RESOLVER v1.1
+name: "Resolve Company #008"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resolve-company-008
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify resolver source/workflow sync
+        run: |
+          grep -F "const VERSION = '1.1-company-008-stable-wrapper-reconciliation';" onboarding/company-008-resolve.mjs
+          test -s companies/company-008-discovery.json
+          echo "Workflow/source sync OK: Monetra Company #008 Stable Wrapper resolver v1.1"
+
+      - name: Install resolver dependencies
+        run: npm install --no-save ethers@6
+
+      - name: Resolve Monetra Stable Capital wrapper layer
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          COMPANY_008_DISCOVERY_INPUT: companies/company-008-discovery.json
+          COMPANY_008_RESOLVE_OUTPUT: companies/company-008-resolve.json
+        run: node onboarding/company-008-resolve.mjs
+
+      - name: Validate generated JSON
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'companies/company-008-resolve.json';
+          if (!fs.existsSync(p)) throw new Error('Monetra resolver JSON missing');
+          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (d.version !== '1.1-company-008-stable-wrapper-reconciliation') {
+            throw new Error('unexpected resolver version: ' + d.version);
+          }
+          if (d.company?.registry !== '008') throw new Error('registry mismatch');
+          if (d.company?.name !== 'Monetra.eth') throw new Error('company mismatch');
+          if ((d.company?.wallet || '').toLowerCase() !== '0x888d39aee2aec979c81f125ea94bb3ceb60f6bbb') {
+            throw new Error('wallet mismatch');
+          }
+          if (d.company?.founding?.date !== '2026-05-27') throw new Error('founding regression');
+          if (!d.preservation?.foundingEvidencePreserved) throw new Error('founding preservation guard failed');
+          if (!(d.preservation?.priorAaveStablePositionsPreserved >= 1)) throw new Error('Aave preservation guard failed');
+          if (!Array.isArray(d.stableCapital?.positions)) throw new Error('stable positions missing');
+          if (!Array.isArray(d.nonStableDiagnostics)) throw new Error('non-stable diagnostics missing');
+          if (!d.ownerHintCoverage?.checks) throw new Error('owner hint coverage missing');
+          if (!d.parserFix?.historicalTransferAddressFixApplied) throw new Error('address_hash parser fix missing');
+          console.log('Monetra resolver structurally valid.');
+          console.log('Stable summary:', d.stableCapital.summary);
+          console.log('Hint checks:', d.ownerHintCoverage.checks);
+          console.log('Missing hints:', d.ownerHintCoverage.missingHints);
+          console.log('Non-stable diagnostics:', d.nonStableDiagnostics.map(x => [x.protocol, x.symbol, x.valueUsd]));
+          console.log('Unresolved:', d.stableCapital.unresolved.map(x => [x.ownerHintMatched, x.symbol, x.approxUsd, x.reason]));
+          console.log('Book ready:', d.productionReadiness.stableCapitalBookReady);
+          NODE
+
+      - name: Publish resolver JSON to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="companies/company-008-resolve.json"
+          test -s "$FILE" || {
+            echo "ERROR: resolver output missing or empty"
+            exit 1
+          }
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$FILE"
+
+          if ! git diff --cached --quiet -- "$FILE"; then
+            git commit -m "Resolve Monetra Company #008 Stable Capital wrappers"
+          else
+            echo "Resolver output unchanged."
+          fi
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              break
+            fi
+            git rebase --abort || true
+            if [ "$attempt" -eq 3 ]; then
+              echo "ERROR: failed to publish resolver after retries"
+              exit 1
+            fi
+            sleep $((attempt * 2))
+          done
+
+          git fetch origin main
+          git cat-file -e "origin/main:$FILE" || {
+            echo "ERROR: resolver absent from origin/main"
+            exit 1
+          }
+
+          REMOTE_VERSION="$(
+            git show "origin/main:$FILE" |
+            node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))"
+          )"
+          test "$REMOTE_VERSION" = "1.1-company-008-stable-wrapper-reconciliation" || {
+            echo "ERROR: remote resolver version mismatch: $REMOTE_VERSION"
+            exit 1
+          }
+          echo "Verified on origin/main: $FILE"
+          echo "Remote resolver version: $REMOTE_VERSION"
