@@ -3,7 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { Contract, JsonRpcProvider, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '1.2-company-008-stable-final-three-reconciliation';
+const VERSION = '1.2.1-company-008-stable-final-three-checksum-fix';
 const INPUT = process.env.COMPANY_008_RESOLVE_INPUT || path.resolve('companies/company-008-resolve.json');
 const OUTPUT = process.env.COMPANY_008_RESOLVE_OUTPUT || path.resolve('companies/company-008-resolve.json');
 const WALLET = getAddress('0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB');
@@ -12,7 +12,7 @@ const EXPECTED_PRIOR = '1.1-company-008-stable-wrapper-reconciliation';
 const ADDR = Object.freeze({
   bold: getAddress('0x6440f144b7e50D6a8439336510312d2F54beB01D'),
   weth: getAddress('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'),
-  wsteth: getAddress('0x7f39C581F595B53c5cb19BD0b3f8dA6c935E2Ca0'),
+  wsteth: getAddress('0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0'),
   reth: getAddress('0xae78736Cd615f374D3085123A210448E74Fc6393'),
   liquitySpWeth: getAddress('0x5721cbbd64fc7ae3ef44a0a3f9a790a9264cf9bf'),
   liquitySpWsteth: getAddress('0x9502b7c397e9aa22fe9db7ef7daf21cd2aebe56b'),
