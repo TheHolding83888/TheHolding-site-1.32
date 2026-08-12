@@ -1,0 +1,445 @@
+{
+  "version": "0.1-flow-aware-checkpoint-ledger",
+  "generatedAt": "2026-08-12T11:57:52.890Z",
+  "company": {
+    "registry": "008",
+    "name": "Monetra.eth",
+    "wallet": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB"
+  },
+  "methodology": {
+    "identity": "Embedded Yield Ledger",
+    "equation": "Ending redeemable NAV − Beginning redeemable NAV − Contributions + Withdrawals",
+    "firstRunRule": "First run seeds checkpoints only. It does not fabricate MTD/QTD/YTD income from current APY.",
+    "noOverlapRule": "Never add overlapping rolling APY windows to manufacture quarterly/yearly earned income.",
+    "depegRule": "Stable price/depeg effect is reported separately from strategy yield.",
+    "claimableRule": "Separately claimable rewards remain Accrued Rewards and are not embedded income."
+  },
+  "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+  "positions": {
+    "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": {
+      "positionId": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "protocol": "Aave v3",
+      "chain": "Base",
+      "positionType": "Stable Lending",
+      "incomeMode": "lending-embedded",
+      "firstObservedActivity": null,
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": true,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": true
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 10.009779,
+          "underlyingAmount": 10.009779,
+          "terminalSymbol": "USDC",
+          "terminalPriceUsd": 0.9996090407866206,
+          "economicValueUsd": 10.005865584676059,
+          "flowFingerprint": "scaled:8764974",
+          "ledgerComparable": true,
+          "valuationCanonical": true,
+          "referenceAnnualYieldPct": 3.69454
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    },
+    "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367": {
+      "positionId": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
+      "protocol": "Curve",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "firstObservedActivity": {
+        "timestamp": "2026-07-12T13:41:35.000Z",
+        "block": 25516906,
+        "txHash": "0x77ccad5307efe5772a305ba2effccef6a31aae2b88a4a30d0d6fe8b9fc668881",
+        "from": "0x0000000000000000000000000000000000000000",
+        "token": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367"
+      },
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": true,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": true
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 9.051902138134,
+          "underlyingAmount": 10.011052162588,
+          "terminalSymbol": "crvUSD",
+          "terminalPriceUsd": 0.9988628126931683,
+          "economicValueUsd": 9.99966772,
+          "flowFingerprint": "shares:9051902138134393473",
+          "ledgerComparable": true,
+          "valuationCanonical": true,
+          "referenceAnnualYieldPct": null
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    },
+    "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39": {
+      "positionId": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+      "protocol": "f(x) Protocol",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "firstObservedActivity": {
+        "timestamp": "2026-07-12T13:10:35.000Z",
+        "block": 25516751,
+        "txHash": "0xb2552e61eb09fe0928eccde740b11ebfbcd27c860a8ec78ad434cf1721436797",
+        "from": "0x7f54F05635d15Cde17A49502fEdB9D1803A3Be8A",
+        "token": "0x7743e50F534a7f9F1791DdE7dCD89F7783Eefc39"
+      },
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": true,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": false
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 9.039272056076,
+          "underlyingAmount": 9.951230460843,
+          "terminalSymbol": "fxSP",
+          "terminalPriceUsd": 1.0101818410838004,
+          "economicValueUsd": 10.05255231,
+          "flowFingerprint": "shares:9039272056075505098",
+          "ledgerComparable": false,
+          "valuationCanonical": false,
+          "referenceAnnualYieldPct": null
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    },
+    "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305": {
+      "positionId": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
+      "protocol": "Inverse",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "firstObservedActivity": {
+        "timestamp": "2026-07-12T13:54:59.000Z",
+        "block": 25516972,
+        "txHash": "0x9c4c53b6d3905721bd868b60a98e80847558a54b0d9dd247e3986c3c633bce00",
+        "from": "0x0000000000000000000000000000000000000000",
+        "token": "0xb45ad160634c528Cc3D2926d9807104FA3157305"
+      },
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": true,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": true
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 7.147332299449,
+          "underlyingAmount": 10.065553349315,
+          "terminalSymbol": "DOLA",
+          "terminalPriceUsd": 0.9970359303222525,
+          "economicValueUsd": 10.03571835,
+          "flowFingerprint": "shares:7147332299449399358",
+          "ledgerComparable": true,
+          "valuationCanonical": true,
+          "referenceAnnualYieldPct": 5.93
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    },
+    "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd": {
+      "positionId": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+      "protocol": "Sky",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "firstObservedActivity": {
+        "timestamp": "2026-07-12T13:51:35.000Z",
+        "block": 25516955,
+        "txHash": "0xd5d94637443f793f76e9242b950126a8a90d661abc216e197fc05681146e6de6",
+        "from": "0x0000000000000000000000000000000000000000",
+        "token": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+      },
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": true,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": true
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 9.068189220503,
+          "underlyingAmount": 10.029583962736,
+          "terminalSymbol": "USDS",
+          "terminalPriceUsd": 0.9999305810437837,
+          "economicValueUsd": 10.02888772,
+          "flowFingerprint": "shares:9068189220502831604",
+          "ledgerComparable": true,
+          "valuationCanonical": true,
+          "referenceAnnualYieldPct": 3.52
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    },
+    "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d": {
+      "positionId": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
+      "protocol": "Aave",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "firstObservedActivity": {
+        "timestamp": "2026-07-12T13:48:59.000Z",
+        "block": 25516942,
+        "txHash": "0x08ee49bef7607d82b24772b60146207636486a53d6c49fcd7663ef3ecbff6374",
+        "from": "0x0000000000000000000000000000000000000000",
+        "token": "0xE1753F2e00940cC31213dd92013cF019DFE4ca1d"
+      },
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": true,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": true
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 9.93402298004,
+          "underlyingAmount": 10.036037908556,
+          "terminalSymbol": "GHO",
+          "terminalPriceUsd": 0.9982630807499379,
+          "economicValueUsd": 10.01860612,
+          "flowFingerprint": "shares:9934022980039927959",
+          "ledgerComparable": true,
+          "valuationCanonical": true,
+          "referenceAnnualYieldPct": null
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    },
+    "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd": {
+      "positionId": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
+      "protocol": "Yearn V3",
+      "chain": "Ethereum",
+      "positionType": "Auto-Compounding Stable Vault",
+      "incomeMode": "embedded-yield",
+      "firstObservedActivity": {
+        "timestamp": "2026-08-02T02:13:23.000Z",
+        "block": 25664134,
+        "txHash": "0xd71c52adfbe3e4a72be1c916ce274088673aa45f9b9b546d78813b4184829911",
+        "from": "0x0000000000000000000000000000000000000000",
+        "token": "0x23346B04a7f55b8760E5860AA5A77383D63491cD"
+      },
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": true,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": true
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 9.20846854886,
+          "underlyingAmount": 10.015979710922,
+          "terminalSymbol": "BOLD",
+          "terminalPriceUsd": 0.9999570407474352,
+          "economicValueUsd": 10.01554943,
+          "flowFingerprint": "shares:9208468548860078928",
+          "ledgerComparable": true,
+          "valuationCanonical": true,
+          "referenceAnnualYieldPct": null
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    },
+    "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981": {
+      "positionId": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+      "protocol": "Lido Earn",
+      "chain": "Ethereum",
+      "positionType": "Agent / Curator Managed Stable Vault",
+      "incomeMode": "agent-managed-embedded-yield",
+      "firstObservedActivity": {
+        "timestamp": "2026-08-04T06:31:11.000000Z",
+        "block": 25679768,
+        "txHash": "0x96abd29b45cee3800d49ffb79180110b23543144f8144d9c4b94ba054b9e022a",
+        "from": "0x0000000000000000000000000000000000000000",
+        "token": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981"
+      },
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": true,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": false
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 9.762818840756086,
+          "underlyingAmount": null,
+          "terminalSymbol": "USD strategy NAV",
+          "terminalPriceUsd": null,
+          "economicValueUsd": 9.992151196186816,
+          "flowFingerprint": "shares:9762818840756086776",
+          "ledgerComparable": false,
+          "valuationCanonical": true,
+          "referenceAnnualYieldPct": null
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    },
+    "ethereum:liquity-v2-sp:weth": {
+      "positionId": "ethereum:liquity-v2-sp:weth",
+      "protocol": "Liquity V2",
+      "chain": "Ethereum",
+      "positionType": "Stability Pool Deposit",
+      "incomeMode": "stability-pool-yield-with-separate-claimables",
+      "firstObservedActivity": {
+        "timestamp": "2026-07-12T13:44:23.000000Z",
+        "block": 25516919,
+        "txHash": "0x78c58724e88d3cf46a7a528711f02fd06a4851820502adc615a19938f3d1e4f0",
+        "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+        "to": "0x5721cbbd64fc7Ae3Ef44A0A3F9a790A9264Cf9BF"
+      },
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": false,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": false
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 10.000024744824552,
+          "underlyingAmount": 10.000024744824552,
+          "terminalSymbol": "BOLD",
+          "terminalPriceUsd": 0.9999570407474352,
+          "economicValueUsd": 9.999595151235885,
+          "flowFingerprint": "spPrincipal:10000024744824552135",
+          "ledgerComparable": false,
+          "valuationCanonical": true,
+          "referenceAnnualYieldPct": 4.707574
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    },
+    "fraxtal:0xfc00000000000000000000000000000000000008": {
+      "positionId": "fraxtal:0xfc00000000000000000000000000000000000008",
+      "protocol": "Frax Finance",
+      "chain": "Fraxtal",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "firstObservedActivity": null,
+      "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+      "accounting": {
+        "embeddedYieldEligible": true,
+        "flowRule": "Income is computed only when share/scaled-balance fingerprint is unchanged. Changed fingerprint requires deposit/withdrawal reconciliation before income is recognized.",
+        "stablePriceRule": "Stablecoin/depeg price effect is separate from strategy income.",
+        "currentComparable": false
+      },
+      "checkpoints": [
+        {
+          "date": "2026-08-12",
+          "timestamp": "2026-08-12T11:57:52.890Z",
+          "sharesOrBalance": 8.32174967673456,
+          "underlyingAmount": null,
+          "terminalSymbol": "frxUSD",
+          "terminalPriceUsd": null,
+          "economicValueUsd": 10.029852710924018,
+          "flowFingerprint": "shares:8321749676734561340",
+          "ledgerComparable": false,
+          "valuationCanonical": false,
+          "referenceAnnualYieldPct": null
+        }
+      ],
+      "latestInterval": {
+        "status": "warming-first-checkpoint",
+        "incomeUsd": null,
+        "stablePriceEffectUsd": null
+      }
+    }
+  },
+  "accruedClaimable": [
+    {
+      "protocol": "Liquity V2",
+      "route": "liquity-v2-sp-weth",
+      "kind": "BOLD yield gain",
+      "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+      "symbol": "BOLD",
+      "amount": 0.037584819841,
+      "price": {
+        "status": "ok",
+        "priceUsd": 1.0001385883986134,
+        "source": "defillama-contract:ethereum"
+      },
+      "usdValue": 0.03759,
+      "classification": "accrued-claimable",
+      "snapshotAt": "2026-08-12T11:57:52.890Z"
+    }
+  ],
+  "aggregate": {
+    "status": "warming",
+    "embeddedIncomeMtdUsd": null,
+    "embeddedIncomeQtdUsd": null,
+    "embeddedIncomeYtdUsd": null,
+    "embeddedIncomeSinceTrackingUsd": null,
+    "stablePriceEffectSinceTrackingUsd": null,
+    "note": "Initial checkpoint established. Earned income remains null until a second comparable observation exists."
+  }
+}
