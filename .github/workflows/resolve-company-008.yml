@@ -1,4 +1,4 @@
-# THE HOLDING COMPANY #008 TARGETED RESOLVER v1.2 — ATOKEN + BASE HOLDINGS
+# THE HOLDING COMPANY #008 TARGETED RESOLVER v1.3 — AERODROME SUGAR WETH
 name: "Resolve Company #008"
 
 on:
@@ -29,8 +29,8 @@ jobs:
 
       - name: Verify resolver source/workflow sync
         run: |
-          grep -F "const VERSION = '1.2-company-008-atoken-base-holdings-final-delta';" onboarding/company-008-resolve.mjs
-          echo "Resolver/source sync OK: Company #008 targeted resolver v1.2"
+          grep -F "const VERSION = '1.3-company-008-aerodrome-sugar-base-weth-final';" onboarding/company-008-resolve.mjs
+          echo "Resolver/source sync OK: Company #008 targeted resolver v1.3"
 
       - name: Install dependency
         run: npm install --no-save ethers@6
@@ -41,20 +41,20 @@ jobs:
           const { getAddress } = require('ethers');
           const addresses = [
             '0xe4b9c9ced406baffe406e63f83d39daaef150596',
-            '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
-            '0x8ffdf2de812095b1d19cb146e4c004587c0a0692',
-            '0x4200000000000000000000000000000000000006'
+            '0x4200000000000000000000000000000000000006',
+            '0x69dd9db6d8f8e7d83887a704f447b1a584b599a1',
+            '0x827922686190790b37229fd06084350e74485b72',
+            '0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59'
           ];
           for (const address of addresses) {
             console.log(address, '->', getAddress(address));
           }
           NODE
 
-      - name: Resolve final Company #008 BTC ETH delta
+      - name: Resolve final Company #008 Base WETH via Aerodrome Sugar
         env:
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
-          AVALANCHE_RPC_URL: ${{ secrets.AVALANCHE_RPC_URL }}
           COMPANY_008_RESOLVE_OUTPUT: companies/company-008-resolve.json
         run: node onboarding/company-008-resolve.mjs
 
@@ -69,13 +69,11 @@ jobs:
             throw new Error('resolver JSON missing');
           }
 
-          const d = JSON.parse(
-            fs.readFileSync(p, 'utf8')
-          );
+          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
 
           if (
             d.version !==
-            '1.2-company-008-atoken-base-holdings-final-delta'
+            '1.3-company-008-aerodrome-sugar-base-weth-final'
           ) {
             throw new Error(
               'resolver version mismatch: ' + d.version
@@ -90,12 +88,8 @@ jobs:
             throw new Error('company mismatch');
           }
 
-          if (!d.results?.avalancheAaveBtcB) {
-            throw new Error('Avalanche Aave result missing');
-          }
-
-          if (!d.results?.baseWethCurrentHoldings) {
-            throw new Error('Base WETH result missing');
+          if (!d.results?.baseWethAerodromeSlipstream) {
+            throw new Error('Aerodrome WETH result missing');
           }
 
           if (
@@ -106,9 +100,13 @@ jobs:
           }
 
           console.log(
-            'Validated Company #008 targeted resolver v1.2'
+            'Validated Company #008 targeted resolver v1.3'
           );
           console.log('Resolution:', d.resolution);
+          console.log(
+            'Aerodrome WETH:',
+            d.results.baseWethAerodromeSlipstream?.totals
+          );
           console.log(
             'Final candidate totals:',
             d.finalCandidateTotals
@@ -133,7 +131,7 @@ jobs:
           git add -f "$FILE"
 
           if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Resolve Company #008 final BTC ETH delta"
+            git commit -m "Resolve Company #008 Aerodrome Base WETH"
           else
             echo "Resolver output unchanged."
           fi
@@ -167,7 +165,7 @@ jobs:
             node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))"
           )"
 
-          test "$REMOTE_VERSION" = "1.2-company-008-atoken-base-holdings-final-delta" || {
+          test "$REMOTE_VERSION" = "1.3-company-008-aerodrome-sugar-base-weth-final" || {
             echo "ERROR: remote resolver version mismatch: $REMOTE_VERSION"
             exit 1
           }
