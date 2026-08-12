@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · v1.21.5 · Stable Core Metrics · Capital / APY / Performance / Claimable / Strategy Book -->
+<!-- companies.html · v1.21.6 · Stable Verified Performance · Invested / Current Capital / Performance / APY / Claimable -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -4913,6 +4913,60 @@
             }
         }
 
+
+        /* ═══════════════════════════════════════════════════════════════
+           Stable Verified Performance v1.21.6
+           ═══════════════════════════════════════════════════════════════ */
+        #stable-index .stable-passport .scp-headline-final{
+            grid-template-columns:repeat(5,minmax(0,1fr))!important;
+            padding:.88rem .92rem!important;
+        }
+        #stable-index .stable-passport .scp-headline-final>.scp-final-metric{
+            display:grid!important;
+            grid-template-rows:38px 1fr auto;
+            min-height:138px;
+            align-content:center;
+            justify-items:center;
+            text-align:center;
+            padding:1rem .72rem!important;
+            border-top:0!important;
+        }
+        #stable-index .stable-passport .scp-headline-final>.scp-final-metric:first-child{border-left:0!important}
+        #stable-index .stable-passport .scp-headline-final>.scp-final-metric:not(:first-child){border-left:1px solid var(--line)!important}
+        #stable-index .stable-passport .scp-headline-final>.scp-final-metric>span{
+            min-height:38px!important;
+            display:flex;align-items:center;justify-content:center;
+            width:100%;font-size:.66rem!important;line-height:1.22;letter-spacing:.085em;
+        }
+        #stable-index .stable-passport .scp-headline-final>.scp-final-metric>b{
+            align-self:center;margin:.18rem 0 0!important;
+            font-size:1.82rem!important;line-height:1.05;letter-spacing:-.025em;white-space:nowrap;
+        }
+        #stable-index .stable-passport .scp-headline-final>.scp-final-performance>b{
+            font-size:1.34rem!important;white-space:normal;
+        }
+        #stable-index .stable-passport .scp-headline-final>.scp-final-metric:last-child>b{color:var(--green)}
+        @media(max-width:760.98px){
+            #stable-index .stable-passport .scp-headline-final{
+                grid-template-columns:repeat(2,minmax(0,1fr))!important;
+                padding:.58rem!important;
+            }
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric{
+                min-height:116px;padding:.76rem .48rem!important;
+            }
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric:nth-child(odd){border-left:0!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric:nth-child(even){border-left:1px solid var(--line)!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric:nth-child(n+3){border-top:1px solid var(--line)!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric:last-child{
+                grid-column:1/-1;min-height:100px;border-left:0!important;
+            }
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>span{
+                min-height:31px!important;font-size:.62rem!important;
+            }
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>b{font-size:1.55rem!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-performance>b{font-size:1.18rem!important}
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -5465,31 +5519,27 @@
                 </div>
             </div>
 
-            <div class="scp-headline">
-                <div>
-                    <span data-i18n="stable.passport.capital">Capital</span>
-                    <b class="gold" id="scpCapital">—</b>
+            <div class="scp-headline scp-headline-final">
+                <div class="scp-final-metric">
+                    <span class="sc-label-with-help"><span data-i18n="stable.passport.invested">Invested</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.invested">Net external capital contributed to the company after withdrawals.</span></span></span>
+                    <b class="gold" id="scpInvested">—</b>
                 </div>
-                <div>
-                    <span data-i18n="stable.passport.productive">Productive Capital</span>
-                    <b id="scpProductive">—</b>
+                <div class="scp-final-metric">
+                    <span class="sc-label-with-help"><span data-i18n="stable.passport.capital">Current Capital</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.capital">Current value of the stable strategy book. Claimable rewards are shown separately.</span></span></span>
+                    <b id="scpCapital">—</b>
                 </div>
-                <div>
-                    <span class="sc-label-with-help"><span data-i18n="stable.passport.apy">APY</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.apy">Current normalized productive capacity. It is not realised return and is not a promise of future yield.</span></span></span>
-                    <b id="scpApy">—</b>
-                </div>
-                <div>
-                    <span class="sc-label-with-help"><span data-i18n="stable.passport.embedded">Performance</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.embedded">Income already capitalized inside a lending, savings or vault position. It is recognized only from flow-safe checkpoints, never estimated as TVL × current APY.</span></span></span>
-                    <b id="scpEmbedded">—</b>
+                <div class="scp-final-metric scp-final-performance">
+                    <span class="sc-label-with-help"><span data-i18n="stable.passport.performance">Performance</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.performance">Since-inception economic result versus net invested capital, including current claimable value.</span></span></span>
+                    <b id="scpPerformance">—</b>
                     <button class="scp-metric-detail" type="button" data-stable-focus="income" data-i18n="stable.performance.details">View details</button>
                 </div>
-                <div>
+                <div class="scp-final-metric">
+                    <span class="sc-label-with-help"><span data-i18n="stable.passport.apy">APY</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.apy">Current annualized productive rate of the strategy book. It is not historical return.</span></span></span>
+                    <b id="scpApy">—</b>
+                </div>
+                <div class="scp-final-metric">
                     <span class="sc-label-with-help"><span data-i18n="stable.passport.claimable">Claimable</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.claimable">Rewards already earned inside a protocol but not yet received by the company wallet.</span></span></span>
                     <b id="scpClaimable">—</b>
-                </div>
-                <div>
-                    <span data-i18n="stable.passport.since">Operating Since</span>
-                    <b id="scpFounded">May 27, 2026</b>
                 </div>
             </div>
 
@@ -5940,7 +5990,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
 const STABLE_INDEX_DATA_URL = './stable-index-data.json';
-const STABLE_INDEX_UI_VERSION = '1.21.5-stable-core-metrics';
+const STABLE_INDEX_UI_VERSION = '1.21.6-stable-verified-performance';
 let STABLE_INDEX_SNAPSHOT = null;
 let STABLE_UI_LANG = 'en';
 
@@ -6057,10 +6107,11 @@ function renderStableCompanies(lang) {
         }).join('');
     }
 
-    // Passport headline.
+    // Passport headline — verified owner capital + since-inception performance.
+    set('scpInvested', stableMoney(c.investedUsd, lang, 2));
     set('scpCapital', stableMoney(c.stableCapitalUsd, lang, 2));
-    set('scpProductive', stableMoney(c.productiveStableCapitalUsd, lang, 2));
     set('scpApy', stablePct(c.displayReferenceApyPct, 2));
+
     const performanceUsdRaw =
         c.performance?.sinceInceptionUsd ??
         c.performance?.usd ??
@@ -6071,9 +6122,11 @@ function renderStableCompanies(lang) {
         c.performance?.pct ??
         c.performancePct ??
         null;
+
     const performanceUsd = Number(performanceUsdRaw);
     const performancePct = Number(performancePctRaw);
     const hasPerformance =
+        c.performance?.status === 'verified-since-inception' &&
         performanceUsdRaw !== null && performanceUsdRaw !== undefined &&
         performancePctRaw !== null && performancePctRaw !== undefined &&
         Number.isFinite(performanceUsd) && Number.isFinite(performancePct);
@@ -6090,11 +6143,10 @@ function renderStableCompanies(lang) {
         return (value > 0 ? '+' : value < 0 ? '−' : '') + abs;
     };
 
-    set('scpEmbedded', hasPerformance
+    set('scpPerformance', hasPerformance
         ? signedMoney(performanceUsd) + ' · ' + signedPct(performancePct)
         : (lang==='ru' ? 'История накапливается' : 'Building history'));
     set('scpClaimable', stableMoney(c.accruedClaimableUsd || 0, lang, 4));
-    set('scpFounded', stableDate(c.foundedAt || c.foundedDate, lang));
     set('scpMeasured', (c.currentFullCoverage ? c.strategyCount : Math.round((c.currentCoverage||0)*c.strategyCount)) + ' / ' + c.strategyCount);
     set('scpProtocols', String(c.protocolCount || 0));
     set('scpChains', String(c.chainCount || 0));
@@ -8400,7 +8452,7 @@ function renderFramework(lang) {
     } else if (kind === 'income') {
       source = document.querySelector('#stablePassportMonetra .scp-side .scp-panel');
       k = isRu() ? 'MONETRA · РЕЗУЛЬТАТ' : 'MONETRA · PERFORMANCE';
-      h = isRu() ? 'Результат и начисленные награды' : 'Performance and claimable';
+      h = isRu() ? 'Детали результата' : 'Performance details';
     } else {
       source = document.querySelector('#stablePassportMonetra .scp-explain');
       k = isRu() ? 'STABLE INDEX · ПОЯСНЕНИЕ МЕТРИК' : 'STABLE INDEX · METRIC GUIDE';
@@ -8544,6 +8596,9 @@ function renderFramework(lang) {
             'stable.method.title': 'Stable Index methodology',
             'stable.method.text': 'No synthetic Stable Composite score is invented yet. The index reports the measurable fundamentals directly: capital, current productive capacity, earned Embedded Yield, claimable rewards and operating history. A richer stable-company score can be introduced only after a meaningful multi-company history exists.',
             'stable.help.apy': 'The book’s current annualized yield rate. It is not historical return and it is not a promise of future yield.',
+            'stable.help.invested': 'Net external capital contributed to the company after withdrawals.',
+            'stable.help.capital': 'Current value of the stable strategy book. Claimable rewards are shown separately.',
+            'stable.help.performance': 'Since-inception economic result versus net invested capital, including current claimable value.',
             'stable.help.embedded': 'Yield that stays inside a position and increases its value automatically. Historical income is recorded only after verified checkpoints confirm the change.',
             'stable.help.claimable': 'Rewards already earned inside a protocol but not yet received by the company wallet.',
             'stable.help.price': 'Stablecoin/depeg price movement is separated from strategy income. A stable asset moving away from $1 should not be mislabeled as yield.',
@@ -8551,7 +8606,9 @@ function renderFramework(lang) {
             'stable.passport.live': 'Live',
             'stable.passport.lede': 'A diversified stable-only company earning across lending, savings and vault strategies. Gas assets are excluded.',
             'stable.passport.category': 'Stable Capital Company',
-            'stable.passport.capital': 'Капитал',
+            'stable.passport.capital': 'Current Capital',
+            'stable.passport.invested': 'Invested',
+            'stable.passport.performance': 'Performance',
             'stable.passport.productive': 'Productive Capital',
             'stable.passport.apy': 'APY',
             'stable.passport.embedded': 'Performance',
@@ -8768,6 +8825,9 @@ function renderFramework(lang) {
             'stable.method.title': 'Методология Stable Index',
             'stable.method.text': 'Синтетический Stable Composite Score пока не придумывается. Индекс напрямую показывает измеримые основы: капитал, текущую производительность, фактически заработанный Embedded Yield, claimable rewards и операционную историю. Более сложный score имеет смысл вводить только после появления достаточной истории у нескольких стейбл-компаний.',
             'stable.help.apy': 'Текущая годовая доходность книги стратегий. Это не исторический результат и не обещание будущей доходности.',
+            'stable.help.invested': 'Чистый внешний капитал, внесённый в компанию за вычетом выводов.',
+            'stable.help.capital': 'Текущая стоимость книги стейбл-стратегий. Доступные к получению награды показаны отдельно.',
+            'stable.help.performance': 'Результат с начала работы относительно чистого вложенного капитала с учётом текущих начисленных наград.',
             'stable.help.embedded': 'Доход остаётся внутри позиции и автоматически увеличивает её стоимость. В историю он попадает только после подтверждённых checkpoint.',
             'stable.help.claimable': 'Награды уже заработаны внутри протокола, но ещё не поступили в кошелёк компании.',
             'stable.help.price': 'Изменение цены или depeg стейблкоина отделяется от дохода стратегии. Движение стейбл-актива относительно $1 не должно маскироваться под yield.',
@@ -8775,7 +8835,9 @@ function renderFramework(lang) {
             'stable.passport.live': 'Live',
             'stable.passport.lede': 'Диверсифицированная стейбл-компания, которая зарабатывает через лендинг, сберегательные и vault-стратегии. Газовые активы не учитываются.',
             'stable.passport.category': 'Компания Stable Capital',
-            'stable.passport.capital': 'Stable Capital',
+            'stable.passport.capital': 'Текущий капитал',
+            'stable.passport.invested': 'Вложено',
+            'stable.passport.performance': 'Результат',
             'stable.passport.productive': 'Продуктивный капитал',
             'stable.passport.apy': 'APY',
             'stable.passport.embedded': 'Результат',
