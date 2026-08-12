@@ -5930,6 +5930,171 @@
             #stableFocusLayer .stable-performance-note{font-size:.64rem}
         }
 
+
+        /* ═══════════════════════════════════════════════════════════════
+           Monetra v1.21.14 · "Where the stable capital works"
+           Dedicated strategy detail table.
+           Desktop: Strategy · Chain · APY · Invested · Current · Income Mode
+           Mobile:  Strategy · APY · Invested · Current
+           ═══════════════════════════════════════════════════════════════ */
+        .stable-focus-layer.strategy-focus .stable-focus-card{
+            width:min(900px,calc(100vw - 42px))!important;
+        }
+        .stable-strategy-focus{
+            width:100%;
+            margin-top:.18rem;
+        }
+        .stable-strategy-focus-head,
+        .stable-strategy-focus-row{
+            display:grid;
+            grid-template-columns:
+                minmax(205px,1.62fr)
+                minmax(72px,.62fr)
+                minmax(70px,.62fr)
+                minmax(86px,.76fr)
+                minmax(86px,.76fr)
+                minmax(132px,1.12fr);
+            align-items:center;
+            column-gap:.7rem;
+        }
+        .stable-strategy-focus-head{
+            padding:.18rem .42rem .54rem;
+            color:var(--text-3);
+            font-size:.58rem;
+            line-height:1.15;
+            letter-spacing:.075em;
+            font-weight:700;
+            text-transform:uppercase;
+        }
+        .stable-strategy-focus-row{
+            min-height:54px;
+            padding:.62rem .42rem;
+            border-top:1px solid rgba(15,23,42,.065);
+            font-variant-numeric:tabular-nums;
+        }
+        .stable-strategy-focus-row:first-of-type{
+            border-top:1px solid rgba(15,23,42,.075);
+        }
+        .stable-strategy-focus-head>span:not(:first-child),
+        .stable-strategy-focus-row>span:not(:first-child){
+            text-align:center;
+        }
+        .stable-strategy-focus-row .ssf-strategy{
+            min-width:0;
+            text-align:left;
+        }
+        .stable-strategy-focus-row .ssf-strategy strong{
+            display:block;
+            font-size:.73rem;
+            line-height:1.24;
+            font-weight:650;
+            color:var(--text);
+            overflow-wrap:anywhere;
+        }
+        .stable-strategy-focus-row .ssf-strategy small{
+            display:block;
+            margin-top:.14rem;
+            color:var(--text-3);
+            font-size:.58rem;
+            line-height:1.24;
+        }
+        .stable-strategy-focus-row .ssf-chain{
+            color:var(--text-2);
+            font-size:.67rem;
+            text-transform:capitalize;
+        }
+        .stable-strategy-focus-row .ssf-apy{
+            color:var(--green);
+            font-size:.72rem;
+            font-weight:700;
+            white-space:nowrap;
+        }
+        .stable-strategy-focus-row .ssf-invested,
+        .stable-strategy-focus-row .ssf-current{
+            font-family:'Cormorant Garamond',serif;
+            font-size:.9rem;
+            line-height:1;
+            font-weight:600;
+            white-space:nowrap;
+        }
+        .stable-strategy-focus-row .ssf-current{
+            color:var(--text);
+        }
+        .stable-strategy-focus-row .ssf-mode{
+            color:var(--text-2);
+            font-size:.62rem;
+            line-height:1.32;
+        }
+        .stable-strategy-focus-note{
+            margin:.68rem .42rem 0;
+            padding-top:.62rem;
+            border-top:1px solid var(--line);
+            color:var(--text-3);
+            font-size:.59rem;
+            line-height:1.5;
+        }
+
+        @media(max-width:760.98px){
+            .stable-focus-layer.strategy-focus .stable-focus-card{
+                width:auto!important;
+                left:12px!important;
+                right:12px!important;
+            }
+            .stable-strategy-focus-head{
+                display:none!important;
+            }
+            .stable-strategy-focus-row{
+                grid-template-columns:
+                    minmax(0,1.48fr)
+                    minmax(56px,.66fr)
+                    minmax(62px,.78fr)
+                    minmax(62px,.78fr);
+                column-gap:.34rem;
+                min-height:50px;
+                padding:.56rem .14rem;
+            }
+            .stable-strategy-focus-row .ssf-chain,
+            .stable-strategy-focus-row .ssf-mode{
+                display:none!important;
+            }
+            .stable-strategy-focus-row .ssf-strategy strong{
+                font-size:.66rem;
+                line-height:1.2;
+            }
+            .stable-strategy-focus-row .ssf-strategy small{
+                font-size:.52rem;
+                line-height:1.2;
+            }
+            .stable-strategy-focus-row .ssf-apy{
+                font-size:.67rem;
+            }
+            .stable-strategy-focus-row .ssf-invested,
+            .stable-strategy-focus-row .ssf-current{
+                font-size:.78rem;
+            }
+            .stable-strategy-focus-note{
+                margin:.58rem .14rem 0;
+                padding-top:.55rem;
+                font-size:.53rem;
+            }
+        }
+
+        @media(max-width:390px){
+            .stable-strategy-focus-row{
+                grid-template-columns:
+                    minmax(0,1.38fr)
+                    minmax(52px,.64fr)
+                    minmax(58px,.76fr)
+                    minmax(58px,.76fr);
+                column-gap:.28rem;
+            }
+            .stable-strategy-focus-row .ssf-strategy strong{font-size:.63rem}
+            .stable-strategy-focus-row .ssf-strategy small{font-size:.49rem}
+            .stable-strategy-focus-row .ssf-apy{font-size:.64rem}
+            .stable-strategy-focus-row .ssf-invested,
+            .stable-strategy-focus-row .ssf-current{font-size:.74rem}
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -6996,7 +7161,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
 const STABLE_INDEX_DATA_URL = './stable-index-data.json';
-const STABLE_INDEX_UI_VERSION = '1.21.13-performance-live-claude-reload-sizing';
+const STABLE_INDEX_UI_VERSION = '1.21.14-strategy-detail-columns';
 let STABLE_INDEX_SNAPSHOT = null;
 let STABLE_UI_LANG = 'en';
 
@@ -9460,6 +9625,71 @@ function renderFramework(lang) {
     return clone;
   }
 
+
+  function buildStrategyFocusTable() {
+    const company =
+      (typeof STABLE_INDEX_SNAPSHOT !== 'undefined' && STABLE_INDEX_SNAPSHOT?.companies)
+        ? (STABLE_INDEX_SNAPSHOT.companies.find(x => x?.registry === '008') || STABLE_INDEX_SNAPSHOT.companies[0])
+        : null;
+    const positions = Array.isArray(company?.positions) ? company.positions : [];
+    if (!positions.length) return null;
+
+    const moneyLike = value => {
+      const n = Number(value);
+      return Number.isFinite(n)
+        ? '$' + n.toLocaleString(isRu()?'ru-RU':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2})
+        : '—';
+    };
+    const apyLike = value => {
+      const n = Number(value);
+      return Number.isFinite(n)
+        ? n.toLocaleString(isRu()?'ru-RU':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) + '%'
+        : '—';
+    };
+
+    const shell = document.createElement('div');
+    shell.className = 'stable-strategy-focus';
+
+    const head = document.createElement('div');
+    head.className = 'stable-strategy-focus-head';
+    head.innerHTML =
+      '<span>' + (isRu()?'Стратегия':'Strategy') + '</span>'
+      + '<span>' + (isRu()?'Сеть':'Chain') + '</span>'
+      + '<span>APY</span>'
+      + '<span>' + (isRu()?'Вложено':'Invested') + '</span>'
+      + '<span>' + (isRu()?'Сейчас':'Current') + '</span>'
+      + '<span>' + (isRu()?'Режим дохода':'Income Mode') + '</span>';
+    shell.appendChild(head);
+
+    positions.forEach(p => {
+      const proto = p.protocolFamily || p.protocol || 'Protocol';
+      const asset = p.asset || p.wrapperSymbol || p.underlyingSymbol || 'Stable';
+      const entry = p.strategyEntry || {};
+      const invested = Number(entry.principalNominalStable);
+      const current = Number(entry.currentNominalStable);
+
+      const row = document.createElement('div');
+      row.className = 'stable-strategy-focus-row';
+      row.innerHTML =
+        '<span class="ssf-strategy"><strong>' + proto + ' · ' + asset + '</strong><small>' + (p.positionType || '') + '</small></span>'
+        + '<span class="ssf-chain">' + (p.chain || '—') + '</span>'
+        + '<span class="ssf-apy">' + apyLike(p.referenceApyPct) + '</span>'
+        + '<span class="ssf-invested">' + moneyLike(invested) + '</span>'
+        + '<span class="ssf-current">' + moneyLike(current) + '</span>'
+        + '<span class="ssf-mode">' + stableIncomeMode(p.incomeMode, isRu()?'ru':'en') + '</span>';
+      shell.appendChild(row);
+    });
+
+    const note = document.createElement('p');
+    note.className = 'stable-strategy-focus-note';
+    note.textContent = isRu()
+      ? 'Invested и Current показаны на проверенной номинальной stable-базе каждой стратегии. Stable Price Effect учитывается отдельно.'
+      : 'Invested and Current use each strategy’s verified nominal stable basis. Stable Price Effect is measured separately.';
+    shell.appendChild(note);
+
+    return shell;
+  }
+
   function openStableFocus(kind) {
     let source = null;
     let k = 'MONETRA · STABLE CAPITAL';
@@ -9482,10 +9712,17 @@ function renderFramework(lang) {
     if (!source) return;
     const clone = cleanClone(source);
 
+    layer.classList.toggle('strategy-focus', kind === 'strategies');
     kicker.textContent = k;
     title.textContent = h;
     body.innerHTML = '';
-    body.appendChild(clone);
+
+    if (kind === 'strategies') {
+      const strategyTable = buildStrategyFocusTable();
+      body.appendChild(strategyTable || clone);
+    } else {
+      body.appendChild(clone);
+    }
 
     if (kind === 'income') {
       const stableCompany =
