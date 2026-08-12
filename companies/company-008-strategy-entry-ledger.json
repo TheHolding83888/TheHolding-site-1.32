@@ -1,8 +1,8 @@
 {
-  "version": "0.4-monetra-strategy-entry-targeted-close",
-  "methodologyVersion": "0.4-strategy-entry-provider-rotation-and-protocol-fixes",
-  "generatedAt": "2026-08-12T19:16:07.636Z",
-  "startedAt": "2026-08-12T19:11:00.500Z",
+  "version": "0.5-monetra-lido-share-oracle-close",
+  "methodologyVersion": "0.5-lido-depositqueue-sharemanager-oracle",
+  "generatedAt": "2026-08-12T19:43:28.043Z",
+  "startedAt": "2026-08-12T19:43:03.460Z",
   "company": {
     "registry": "008",
     "name": "Monetra.eth",
@@ -174,7 +174,7 @@
     "fullPerformanceReady": false,
     "publicInvestedReady": false,
     "publicPerformanceReady": false,
-    "note": "Do not publish aggregate Performance yet. Resolve only the listed strategy gaps; wallet boundary-flow archaeology is no longer the Performance basis."
+    "note": "Lido targeted close remains unresolved; inspect lidoTargetedClose only."
   },
   "strategies": [
     {
@@ -606,5 +606,28 @@
     "publicPerformanceBasis": "strategy-entry-nominal-stable",
     "require": "summary.fullPerformanceReady === true",
     "desiredPassport": "Invested · Current Capital · Performance $/% · APY · Claimable"
+  },
+  "lidoTargetedClose": {
+    "status": "diagnostic-unresolved",
+    "attempts": [
+      {
+        "url": "https://ethereum-rpc.publicnode.com",
+        "error": "server response 403 Forbidden"
+      },
+      {
+        "url": "https://eth.llamarpc.com",
+        "error": "server response 403 Forbidden"
+      },
+      {
+        "url": "https://eth.blockscout.com/api/eth-rpc",
+        "error": "no effective Monetra DepositRequested event found in dynamic Lido queues"
+      }
+    ],
+    "error": "all providers failed",
+    "officialMechanics": [
+      "ShareManager.sharesOf(account) includes active + claimable shares.",
+      "DepositQueue DepositRequested is the exact strategy-entry principal.",
+      "Oracle invariant: shares = assets * priceD18 / 1e18."
+    ]
   }
 }
