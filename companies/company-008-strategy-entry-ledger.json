@@ -1,0 +1,439 @@
+{
+  "version": "0.3-monetra-strategy-entry-ledger",
+  "methodologyVersion": "0.3-strategy-deposit-basis-nominal-stable",
+  "generatedAt": "2026-08-12T18:46:54.426Z",
+  "startedAt": "2026-08-12T18:46:31.395Z",
+  "company": {
+    "registry": "008",
+    "name": "Monetra.eth",
+    "wallet": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+    "foundedAt": "2026-05-27T05:46:11.000Z"
+  },
+  "correction": {
+    "supersedesPublicPerformanceFromBoundaryFlowLedger": true,
+    "reason": "Wallet boundary inflows/outflows are not the correct cost basis for this Stable Company because the wallet was also used for routing, swaps and temporary capital movement. Performance must begin when capital enters each productive strategy.",
+    "previousBoundaryLedgerTreatment": "retain as diagnostic capital-routing history only; do not use its netInvestedUsd as public Stable strategy Performance basis.",
+    "userIntent": "Track the approximately 10 stable tokens deployed into each of 10 productive strategies, then measure what those strategy positions have produced."
+  },
+  "methodology": {
+    "invested": "Sum of stable units actually deposited/staked into the 10 productive strategies, reconstructed from protocol deposit/stake transactions.",
+    "currentStrategyValue": "Canonical redeemable nominal stable units in each strategy. Stablecoin market/depeg movement is excluded from strategy income.",
+    "performance": "Current nominal stable units + separately claimable strategy rewards - strategy entry principal.",
+    "priceEffect": "USD market-price/depeg movement remains a separate Stable Price Effect and does not masquerade as strategy yield.",
+    "walletFlows": "External wallet funding, bridging, swaps and unrelated withdrawals are ignored unless they are themselves the protocol entry transaction.",
+    "apy": "Reference APY remains current productive capacity and is never used to backfill historical Performance."
+  },
+  "sourceDiagnostics": {
+    "ethereum": {
+      "status": "ok",
+      "provider": "ethereum-rpc.publicnode.com",
+      "foundedBlock": 25184669
+    },
+    "base": {
+      "status": "ok",
+      "provider": "base-rpc.publicnode.com",
+      "foundedBlock": 46535712
+    },
+    "fraxtal": {
+      "status": "ok",
+      "provider": "fraxtal.gateway.tenderly.co",
+      "foundedBlock": 36525030
+    }
+  },
+  "summary": {
+    "strategyCount": 10,
+    "entryResolvedCount": 6,
+    "currentNominalComparableCount": 6,
+    "ownerApproxTenMatchedCount": 5,
+    "entryPrincipalNominalStableResolvedTotal": 71.208416432978,
+    "comparablePrincipalNominalStable": 71.208416432978,
+    "comparableCurrentNominalStable": 60.214623658538,
+    "comparableIncomeNominalStable": -10.99379277444,
+    "comparableReturnPct": -15.43889518,
+    "fullEntryReady": false,
+    "fullPerformanceReady": false,
+    "publicInvestedReady": false,
+    "publicPerformanceReady": false,
+    "note": "Do not publish aggregate Performance yet. Resolve only the listed strategy gaps; wallet boundary-flow archaeology is no longer the Performance basis."
+  },
+  "strategies": [
+    {
+      "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "protocol": "Aave v3",
+      "chain": "base",
+      "mode": "aave-supply",
+      "entry": {
+        "status": "error",
+        "error": "server response 403 Forbidden"
+      },
+      "current": {
+        "comparable": true,
+        "nominal": 10.009919,
+        "principalInsidePosition": 10.009919,
+        "claimableAdded": 0,
+        "symbol": "USDC",
+        "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
+      },
+      "performance": {
+        "status": "pending",
+        "incomeNominalStable": null,
+        "returnPct": null
+      },
+      "ownerTargetApproximatelyTen": null
+    },
+    {
+      "id": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
+      "protocol": "Curve",
+      "chain": "ethereum",
+      "mode": "erc4626",
+      "entry": {
+        "txHash": "0x77ccad5307efe5772a305ba2effccef6a31aae2b88a4a30d0d6fe8b9fc668881",
+        "block": 25516906,
+        "timestamp": "2026-07-12T13:41:35.000Z",
+        "principalNominalStable": 10,
+        "principalSymbol": "crvUSD",
+        "confidence": "high",
+        "evidence": {
+          "type": "ERC4626-Deposit",
+          "contract": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+          "sender": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "owner": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "assetsRaw": "10000000000000000000",
+          "sharesRaw": "9051902138134393473",
+          "logIndex": 160
+        },
+        "receiptDiagnostics": {
+          "transferCount": 2,
+          "depositEventCount": 1
+        }
+      },
+      "current": {
+        "comparable": true,
+        "nominal": 10.011096042762,
+        "principalInsidePosition": 10.011096042762,
+        "claimableAdded": 0,
+        "symbol": "crvUSD",
+        "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
+      },
+      "performance": {
+        "status": "comparable",
+        "incomeNominalStable": 0.011096042762,
+        "returnPct": 0.11096043
+      },
+      "ownerTargetApproximatelyTen": true
+    },
+    {
+      "id": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+      "protocol": "f(x) Protocol",
+      "chain": "ethereum",
+      "mode": "fxsave",
+      "entry": {
+        "status": "error",
+        "error": "fxSAVE Deposit event not found"
+      },
+      "current": {
+        "comparable": true,
+        "nominal": 10.053046428745,
+        "principalInsidePosition": 10.053046428745,
+        "claimableAdded": 0,
+        "symbol": "fxUSD+USDC",
+        "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
+      },
+      "performance": {
+        "status": "pending",
+        "incomeNominalStable": null,
+        "returnPct": null
+      },
+      "ownerTargetApproximatelyTen": null
+    },
+    {
+      "id": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
+      "protocol": "Inverse",
+      "chain": "ethereum",
+      "mode": "erc4626",
+      "entry": {
+        "txHash": "0x9c4c53b6d3905721bd868b60a98e80847558a54b0d9dd247e3986c3c633bce00",
+        "block": 25516972,
+        "timestamp": "2026-07-12T13:54:59.000Z",
+        "principalNominalStable": 9.999965284263,
+        "principalSymbol": "DOLA",
+        "confidence": "high",
+        "evidence": {
+          "type": "ERC4626-Deposit",
+          "contract": "0xb45ad160634c528Cc3D2926d9807104FA3157305",
+          "sender": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "owner": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "assetsRaw": "9999965284262904640",
+          "sharesRaw": "7147332299449399358",
+          "logIndex": 131
+        },
+        "receiptDiagnostics": {
+          "transferCount": 3,
+          "depositEventCount": 1
+        }
+      },
+      "current": {
+        "comparable": true,
+        "nominal": 10.065775338141,
+        "principalInsidePosition": 10.065775338141,
+        "claimableAdded": 0,
+        "symbol": "DOLA",
+        "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
+      },
+      "performance": {
+        "status": "comparable",
+        "incomeNominalStable": 0.065810053878,
+        "returnPct": 0.65810282
+      },
+      "ownerTargetApproximatelyTen": true
+    },
+    {
+      "id": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+      "protocol": "Sky",
+      "chain": "ethereum",
+      "mode": "erc4626",
+      "entry": {
+        "txHash": "0xd5d94637443f793f76e9242b950126a8a90d661abc216e197fc05681146e6de6",
+        "block": 25516955,
+        "timestamp": "2026-07-12T13:51:35.000Z",
+        "principalNominalStable": 10,
+        "principalSymbol": "USDS",
+        "confidence": "high",
+        "evidence": {
+          "type": "ERC4626-Deposit",
+          "contract": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD",
+          "sender": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "owner": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "assetsRaw": "10000000000000000000",
+          "sharesRaw": "9068189220502831604",
+          "logIndex": 317
+        },
+        "receiptDiagnostics": {
+          "transferCount": 3,
+          "depositEventCount": 1
+        }
+      },
+      "current": {
+        "comparable": true,
+        "nominal": 10.029716783902,
+        "principalInsidePosition": 10.029716783902,
+        "claimableAdded": 0,
+        "symbol": "USDS",
+        "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
+      },
+      "performance": {
+        "status": "comparable",
+        "incomeNominalStable": 0.029716783902,
+        "returnPct": 0.29716784
+      },
+      "ownerTargetApproximatelyTen": true
+    },
+    {
+      "id": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
+      "protocol": "Aave · sGHO",
+      "chain": "ethereum",
+      "mode": "erc4626",
+      "entry": {
+        "txHash": "0x08ee49bef7607d82b24772b60146207636486a53d6c49fcd7663ef3ecbff6374",
+        "block": 25516942,
+        "timestamp": "2026-07-12T13:48:59.000Z",
+        "principalNominalStable": 9.999967485057,
+        "principalSymbol": "GHO",
+        "confidence": "high",
+        "evidence": {
+          "type": "ERC4626-Deposit",
+          "contract": "0xE1753F2e00940cC31213dd92013cF019DFE4ca1d",
+          "sender": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "owner": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "assetsRaw": "9999967485057450799",
+          "sharesRaw": "9934022980039927959",
+          "logIndex": 665
+        },
+        "receiptDiagnostics": {
+          "transferCount": 2,
+          "depositEventCount": 1
+        }
+      },
+      "current": {
+        "comparable": true,
+        "nominal": 10.036201348194,
+        "principalInsidePosition": 10.036201348194,
+        "claimableAdded": 0,
+        "symbol": "GHO",
+        "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
+      },
+      "performance": {
+        "status": "comparable",
+        "incomeNominalStable": 0.036233863137,
+        "returnPct": 0.36233981
+      },
+      "ownerTargetApproximatelyTen": true
+    },
+    {
+      "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
+      "protocol": "Yearn V3",
+      "chain": "ethereum",
+      "mode": "nested-erc4626",
+      "entry": {
+        "status": "error",
+        "error": "server response 403 Forbidden"
+      },
+      "current": {
+        "comparable": true,
+        "nominal": 10.01602109645,
+        "principalInsidePosition": 10.01602109645,
+        "claimableAdded": 0,
+        "symbol": "BOLD",
+        "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
+      },
+      "performance": {
+        "status": "pending",
+        "incomeNominalStable": null,
+        "returnPct": null
+      },
+      "ownerTargetApproximatelyTen": null
+    },
+    {
+      "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+      "protocol": "Lido Earn",
+      "chain": "ethereum",
+      "mode": "lido-deposit-queue",
+      "entry": {
+        "status": "error",
+        "error": "server response 403 Forbidden"
+      },
+      "current": {
+        "comparable": false,
+        "nominal": null,
+        "symbol": "USD strategy NAV",
+        "reason": "Current Lido EarnUSD position still needs canonical Mellow/Lido share-oracle NAV adapter; market-price approximation is not used for strategy Performance."
+      },
+      "performance": {
+        "status": "pending",
+        "incomeNominalStable": null,
+        "returnPct": null
+      },
+      "ownerTargetApproximatelyTen": null
+    },
+    {
+      "id": "ethereum:liquity-v2-sp:weth",
+      "protocol": "Liquity V2",
+      "chain": "ethereum",
+      "mode": "liquity-sp",
+      "entry": {
+        "txHash": "0x78c58724e88d3cf46a7a528711f02fd06a4851820502adc615a19938f3d1e4f0",
+        "block": 25516919,
+        "timestamp": "2026-07-12T13:44:23.000Z",
+        "principalNominalStable": 21.208427062113,
+        "principalSymbol": "BOLD",
+        "confidence": "high",
+        "evidence": {
+          "type": "Liquity-StabilityPool-transfer",
+          "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+          "symbol": "BOLD",
+          "decimals": 18,
+          "from": "0x0000000000000000000000000000000000000000",
+          "to": "0x5721cbbd64fc7Ae3Ef44A0A3F9a790A9264Cf9BF",
+          "amount": 21.20842706211275,
+          "logIndex": 128
+        },
+        "receiptDiagnostics": {
+          "transferCount": 3,
+          "depositEventCount": 0
+        }
+      },
+      "current": {
+        "comparable": true,
+        "nominal": 10.03781884137,
+        "principalInsidePosition": 10.000024744825,
+        "claimableAdded": 0.037794096546,
+        "symbol": "BOLD",
+        "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
+      },
+      "performance": {
+        "status": "comparable",
+        "incomeNominalStable": -11.170608220743,
+        "returnPct": -52.67061149
+      },
+      "ownerTargetApproximatelyTen": false
+    },
+    {
+      "id": "fraxtal:0xfc00000000000000000000000000000000000008",
+      "protocol": "Frax Finance",
+      "chain": "fraxtal",
+      "mode": "frax-sfrxusd",
+      "entry": {
+        "txHash": "0xc44fdbc23db12732c130ca30e646f4280ff568a74296dcbe4cdeef1093a882a5",
+        "block": 38526655,
+        "timestamp": "2026-07-12T13:47:01.000Z",
+        "principalNominalStable": 10.000056601545,
+        "principalSymbol": "frxUSD",
+        "confidence": "high",
+        "evidence": {
+          "type": "frxUSD-stake-transfer",
+          "token": "0xFc00000000000000000000000000000000000001",
+          "symbol": "frxUSD",
+          "decimals": 18,
+          "from": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "to": "0xBFc4D34Db83553725eC6c768da71D2D9c1456B55",
+          "amount": 10.000056601545326,
+          "logIndex": 0
+        },
+        "receiptDiagnostics": {
+          "transferCount": 2,
+          "depositEventCount": 1
+        }
+      },
+      "current": {
+        "comparable": true,
+        "nominal": 10.034015304169,
+        "principalInsidePosition": 10.034015304169,
+        "claimableAdded": 0,
+        "symbol": "frxUSD",
+        "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
+      },
+      "performance": {
+        "status": "comparable",
+        "incomeNominalStable": 0.033958702624,
+        "returnPct": 0.3395851
+      },
+      "ownerTargetApproximatelyTen": true
+    }
+  ],
+  "unresolved": [
+    {
+      "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "protocol": "Aave v3",
+      "entryResolved": false,
+      "currentComparable": true,
+      "reason": "server response 403 Forbidden"
+    },
+    {
+      "id": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+      "protocol": "f(x) Protocol",
+      "entryResolved": false,
+      "currentComparable": true,
+      "reason": "fxSAVE Deposit event not found"
+    },
+    {
+      "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
+      "protocol": "Yearn V3",
+      "entryResolved": false,
+      "currentComparable": true,
+      "reason": "server response 403 Forbidden"
+    },
+    {
+      "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+      "protocol": "Lido Earn",
+      "entryResolved": false,
+      "currentComparable": false,
+      "reason": "server response 403 Forbidden"
+    }
+  ],
+  "integrationContract": {
+    "publicInvestedField": "strategyInvestedNominalStable",
+    "publicPerformanceBasis": "strategy-entry-nominal-stable",
+    "require": "summary.fullPerformanceReady === true",
+    "desiredPassport": "Invested · Current Capital · Performance $/% · APY · Claimable"
+  }
+}
