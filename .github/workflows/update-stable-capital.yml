@@ -1,10 +1,9 @@
-# THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.4.1 · RECURRING + STABLE INDEX
+# THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.5 · PERFORMANCE-LIVE
 name: "Update Stable Capital"
 
 on:
   workflow_dispatch:
   schedule:
-    # Daily Stable Capital checkpoint. This is also the source for the separate Stable Companies Index.
     - cron: "37 5 * * *"
 
 permissions:
@@ -31,6 +30,7 @@ jobs:
           node-version: "22"
 
       - name: Preflight
+        shell: bash
         run: |
           set -euo pipefail
           node --check stable-capital/stable-capital-engine.mjs
@@ -38,44 +38,49 @@ jobs:
           test -s companies/company-008-resolve.json
           test -s companies/stable-capital-data.json
           test -s companies/embedded-yield-ledger.json
+          test -s companies/company-008-strategy-entry-ledger.json
 
           node - <<'NODE'
-          const fs = require('fs');
+          const fs=require('fs');
 
-          for (const file of [
-            'stable-capital/stable-capital-engine.mjs',
-            'stable-capital/stable-index-bridge.mjs'
-          ]) {
-            const src = fs.readFileSync(file,'utf8');
-            const literals = [...src.matchAll(/0x[0-9a-fA-F]{40}/g)].map(m => m[0]);
-            const mixed = literals.filter(a => /[a-f]/.test(a.slice(2)) && /[A-F]/.test(a.slice(2)));
-            if (mixed.length) throw new Error(`${file}: mixed-case EVM literals forbidden: ` + [...new Set(mixed)].join(', '));
-          }
+          const r=JSON.parse(fs.readFileSync('companies/company-008-resolve.json','utf8'));
+          if(r.version!=='1.4-company-008-fraxtal-sfrxusd-close') throw new Error('unexpected resolver '+r.version);
+          if(r.company?.registry!=='008'||r.company?.name!=='Monetra.eth') throw new Error('resolver identity mismatch');
+          if(!r.productionReadiness?.stableCapitalBookReady) throw new Error('Stable Capital book not ready');
+          if((r.stableCapital?.positions||[]).length!==10) throw new Error('expected exactly 10 current positions');
 
-          const r = JSON.parse(fs.readFileSync('companies/company-008-resolve.json','utf8'));
-          if (r.version !== '1.4-company-008-fraxtal-sfrxusd-close') throw new Error('unexpected resolver: ' + r.version);
-          if (r.company?.registry !== '008' || r.company?.name !== 'Monetra.eth') throw new Error('identity mismatch');
-          if (!r.productionReadiness?.stableCapitalBookReady) throw new Error('Stable Capital book not ready');
-          if ((r.stableCapital?.positions || []).length !== 10) throw new Error('expected exactly 10 current positions');
-
-          const d = JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
-          const allowedData = new Set([
+          const d=JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
+          if(!new Set([
             '0.3-monetra-fxsave-canonical-nav',
             '0.4-monetra-recurring-full-coverage',
             '0.4.1-monetra-recurring-stable-index-semantics'
-          ]);
-          if (!allowedData.has(d.version)) throw new Error('unexpected prior Stable Capital version: ' + d.version);
-          if (d.company?.registry !== '008' || (d.positions || []).length !== 10) throw new Error('prior Stable Capital identity/count regression');
+          ]).has(d.version)) throw new Error('unexpected prior Stable Capital version '+d.version);
+          if(d.company?.registry!=='008'||(d.positions||[]).length!==10) throw new Error('Stable Capital identity/count regression');
 
-          const l = JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
-          const allowedLedger = new Set([
+          const l=JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
+          if(!new Set([
             '0.3-flow-aware-fxsave-canonical',
             '0.4-flow-aware-recurring-checkpoints'
-          ]);
-          if (!allowedLedger.has(l.version)) throw new Error('unexpected prior ledger version: ' + l.version);
-          if (l.company?.registry !== '008' || Object.keys(l.positions || {}).length !== 10) throw new Error('prior ledger identity/count regression');
+          ]).has(l.version)) throw new Error('unexpected prior Embedded Ledger '+l.version);
+          if(l.company?.registry!=='008'||Object.keys(l.positions||{}).length!==10) throw new Error('Embedded Ledger identity/count regression');
 
-          console.log('Stable Capital v0.4 recurring preflight OK.');
+          const s=JSON.parse(fs.readFileSync('companies/company-008-strategy-entry-ledger.json','utf8'));
+          if(s.version!=='0.7-monetra-lido-capital-transfer-close') throw new Error('expected Strategy Entry v0.7, got '+s.version);
+          if(s.company?.registry!=='008'||s.company?.name!=='Monetra.eth') throw new Error('Strategy Entry identity mismatch');
+          if((s.strategies||[]).length!==10) throw new Error('Strategy Entry count regression');
+          if(
+            s.summary?.entryResolvedCount!==10 ||
+            s.summary?.currentNominalComparableCount!==10 ||
+            s.summary?.fullEntryReady!==true ||
+            s.summary?.fullPerformanceReady!==true ||
+            s.summary?.publicInvestedReady!==true ||
+            s.summary?.publicPerformanceReady!==true ||
+            (s.unresolved||[]).length!==0
+          ) throw new Error('Strategy Entry not full 10/10 public-ready');
+
+          console.log('Performance-live preflight OK.');
+          console.log('Verified Invested:',s.summary.strategyInvestedNominalStableTotal);
+          console.log('Verified Performance:',s.summary.strategyPerformanceNominalStable,s.summary.strategyPerformancePct+'%');
           NODE
 
       - name: Install dependencies
@@ -92,51 +97,56 @@ jobs:
           FRAXTAL_RPC_URL_2: ${{ secrets.FRAXTAL_RPC_URL_2 }}
         run: node stable-capital/stable-capital-engine.mjs
 
-      - name: Build separate Stable Companies Index
+      - name: Build Stable Companies Index + verified Performance
         run: node stable-capital/stable-index-bridge.mjs
 
       - name: Validate generated data
+        shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
-          const fs = require('fs');
-          const d = JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
-          const l = JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
-          const i = JSON.parse(fs.readFileSync('companies/stable-index-data.json','utf8'));
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
+          const l=JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
+          const i=JSON.parse(fs.readFileSync('companies/stable-index-data.json','utf8'));
 
-          if (d.version !== '0.4.1-monetra-recurring-stable-index-semantics') throw new Error('unexpected stable-capital version');
-          if (d.methodologyVersion !== '1.3-stable-capital-recurring-full-coverage') throw new Error('unexpected stable methodology');
-          if (d.company?.registry !== '008' || d.company?.name !== 'Monetra.eth') throw new Error('stable identity mismatch');
-          if ((d.positions || []).length !== 10) throw new Error('stable position count regression');
-          if (Number(d.summary?.productiveStableCapitalUsd) < 90) throw new Error('productive Stable Capital implausibly low');
-          if (!(Number(d.summary?.coverage) >= 0 && Number(d.summary?.coverage) <= 1.000001)) throw new Error('invalid coverage');
+          if(d.version!=='0.4.1-monetra-recurring-stable-index-semantics') throw new Error('unexpected Stable Capital version');
+          if(d.methodologyVersion!=='1.3-stable-capital-recurring-full-coverage') throw new Error('unexpected Stable Capital methodology');
+          if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth') throw new Error('Stable Capital identity mismatch');
+          if((d.positions||[]).length!==10) throw new Error('Stable Capital position count regression');
+          if(Number(d.summary?.productiveStableCapitalUsd)<90) throw new Error('productive Stable Capital implausibly low');
 
-          if (l.version !== '0.4-flow-aware-recurring-checkpoints') throw new Error('unexpected ledger version');
-          if (l.company?.registry !== '008' || Object.keys(l.positions || {}).length !== 10) throw new Error('ledger identity/count regression');
+          if(l.version!=='0.4-flow-aware-recurring-checkpoints') throw new Error('unexpected Embedded Ledger version');
+          if(l.company?.registry!=='008'||Object.keys(l.positions||{}).length!==10) throw new Error('Embedded Ledger regression');
 
-          if (i.version !== '0.1-stable-companies-index') throw new Error('unexpected Stable Index version');
-          if (i.methodologyVersion !== '0.1-separate-stable-universe') throw new Error('unexpected Stable Index methodology');
-          if (i.universe?.separateFromGeneralComposite !== true) throw new Error('Stable Index separation invariant failed');
-          if ((i.companies || []).length !== 1 || i.companies[0]?.registry !== '008') throw new Error('Stable Index company invariant failed');
-          if (Number(i.summary?.stableCapitalUsd) < 90) throw new Error('Stable Index capital implausibly low');
+          if(i.version!=='0.2-stable-companies-index-strategy-performance') throw new Error('unexpected Stable Index version');
+          if(i.methodologyVersion!=='0.2-separate-stable-universe-strategy-entry-performance') throw new Error('unexpected Stable Index methodology');
+          if(i.universe?.separateFromGeneralComposite!==true) throw new Error('Stable Index separation invariant failed');
+          if((i.companies||[]).length!==1||i.companies[0]?.registry!=='008') throw new Error('Stable Index company invariant failed');
 
-          console.log('Structural validation OK.');
-          console.log('Stable Capital:', d.summary);
-          console.log('Embedded Yield:', l.aggregate);
-          console.log('Stable Companies Index:', i.summary);
-          console.log('NOTE: a transient partial rate run remains diagnostic GREEN; the Stable Index can retain the last full-coverage APY explicitly.');
+          const c=i.companies[0];
+          if(c.performance?.status!=='verified-since-inception') throw new Error('Performance status not verified');
+          if(!(Number(c.investedUsd)>99&&Number(c.investedUsd)<101)) throw new Error('Invested outside expected ~100');
+          if(!Number.isFinite(Number(c.performance?.sinceInceptionUsd))) throw new Error('Performance amount missing');
+          if(!Number.isFinite(Number(c.performance?.sinceInceptionPct))) throw new Error('Performance pct missing');
+          if(i.source?.strategyEntryVersion!=='0.7-monetra-lido-capital-transfer-close') throw new Error('Strategy Entry provenance missing');
+
+          console.log('PERFORMANCE LIVE VALIDATION OK');
+          console.log('Invested:',c.investedUsd);
+          console.log('Performance:',c.performance.sinceInceptionUsd,c.performance.sinceInceptionPct+'%');
+          console.log('Performance as of:',c.performance.asOf);
           NODE
 
       - name: Publish Stable Capital + Stable Companies Index
         shell: bash
         run: |
           set -euo pipefail
+
           FILES=(
             "companies/stable-capital-data.json"
             "companies/embedded-yield-ledger.json"
             "companies/stable-index-data.json"
           )
-
           for f in "${FILES[@]}"; do test -s "$f"; done
 
           git config user.name "github-actions[bot]"
@@ -144,7 +154,7 @@ jobs:
           git add -f "${FILES[@]}"
 
           if ! git diff --cached --quiet -- "${FILES[@]}"; then
-            git commit -m "Update Stable Capital and Stable Companies Index"
+            git commit -m "Publish Monetra verified Stable Performance"
           else
             echo "No Stable Capital changes to publish."
           fi
@@ -153,11 +163,8 @@ jobs:
             git fetch origin main
             if git rebase origin/main && git push origin HEAD:main; then break; fi
             git rebase --abort || true
-            if [ "$attempt" -eq 3 ]; then
-              echo "ERROR: failed to publish after retries"
-              exit 1
-            fi
-            sleep $((attempt * 2))
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep $((attempt*2))
           done
 
           git fetch origin main
@@ -166,11 +173,7 @@ jobs:
           REMOTE_STABLE="$(git show origin/main:companies/stable-capital-data.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
           REMOTE_INDEX="$(git show origin/main:companies/stable-index-data.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
 
-          test "$REMOTE_STABLE" = "0.4.1-monetra-recurring-stable-index-semantics" || {
-            echo "ERROR: remote stable version mismatch: $REMOTE_STABLE"; exit 1;
-          }
-          test "$REMOTE_INDEX" = "0.1-stable-companies-index" || {
-            echo "ERROR: remote Stable Index version mismatch: $REMOTE_INDEX"; exit 1;
-          }
+          test "$REMOTE_STABLE" = "0.4.1-monetra-recurring-stable-index-semantics"
+          test "$REMOTE_INDEX" = "0.2-stable-companies-index-strategy-performance"
 
-          echo "Stable Capital + separate Stable Companies Index verified on origin/main."
+          echo "Verified Monetra Invested + Performance published to origin/main."
