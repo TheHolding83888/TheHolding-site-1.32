@@ -34,8 +34,8 @@ import {
   zeroPadValue
 } from 'ethers';
 
-const VERSION = '0.3-monetra-strategy-entry-ledger';
-const METHODOLOGY = '0.3-strategy-deposit-basis-nominal-stable';
+const VERSION = '0.4-monetra-strategy-entry-targeted-close';
+const METHODOLOGY = '0.4-strategy-entry-provider-rotation-and-protocol-fixes';
 const ROOT = path.resolve(process.cwd());
 
 const RESOLVER_FILE =
@@ -345,6 +345,7 @@ async function decodeReceipt(provider,txHash){
       const m=await tokenMeta(provider,token,cache);
       transfers.push({
         token,symbol:m.symbol,decimals:m.decimals,from,to,
+        raw:safeBig(l.data).toString(),
         amount:Number(formatUnits(safeBig(l.data),m.decimals)),
         logIndex:Number(l.index??l.logIndex??0)
       });
@@ -456,10 +457,33 @@ async function resolveEntry(provider,strategy,hint,foundedBlock){
 
   if(strategy.mode==='fxsave'){
     const dep=depositForWrapper(decoded,strategy.wrapper);
-    if(!dep)throw new Error('fxSAVE Deposit event not found');
-    const nav=await fxBasePoolToNominal(provider,BigInt(dep.assetsRaw),blockTag);
-    principal=nav.nominal; principalSymbol='fxUSD+USDC';
-    evidence={type:'fxSAVE-Deposit-terminalized',...dep,terminalBreakdown:nav.breakdown};
+    if(dep){
+      const nav=await fxBasePoolToNominal(provider,BigInt(dep.assetsRaw),blockTag);
+      principal=nav.nominal; principalSymbol='fxUSD+USDC';
+      evidence={type:'fxSAVE-Deposit-terminalized',...dep,terminalBreakdown:nav.breakdown};
+    }else{
+      const inbound=decoded.transfers.find(x=>
+        lower(x.token)===lower(strategy.wrapper) &&
+        lower(x.to)===lower(WALLET) &&
+        finite(x.amount)
+      );
+      if(!inbound?.raw)throw new Error('fxSAVE inbound share transfer not found');
+      const fxsave=new Contract(ADDR.fxsave,[
+        'function convertToAssets(uint256) view returns (uint256)'
+      ],provider);
+      const basePoolRaw=safeBig(await fxsave.convertToAssets(BigInt(inbound.raw),{blockTag}));
+      const nav=await fxBasePoolToNominal(provider,basePoolRaw,blockTag);
+      principal=nav.nominal; principalSymbol='fxUSD+USDC';
+      evidence={
+        type:'fxSAVE-inbound-shares-terminalized-at-entry',
+        sharesRaw:inbound.raw,
+        shares:inbound.amount,
+        from:inbound.from,
+        basePoolRaw:basePoolRaw.toString(),
+        terminalBreakdown:nav.breakdown
+      };
+      confidence='high';
+    }
   }
 
   if(strategy.mode==='nested-erc4626'){
@@ -484,11 +508,12 @@ async function resolveEntry(provider,strategy,hint,foundedBlock){
   if(strategy.mode==='liquity-sp'){
     const t=decoded.transfers.find(x=>
       lower(x.token)===lower(ADDR.bold) &&
+      lower(x.from)===lower(WALLET) &&
       lower(x.to)===lower(ADDR.liquitySpWeth)
     );
-    if(!t)throw new Error('Liquity BOLD Stability Pool transfer not found');
+    if(!t)throw new Error('Liquity user BOLD deposit transfer not found');
     principal=t.amount; principalSymbol='BOLD';
-    evidence={type:'Liquity-StabilityPool-transfer',...t};
+    evidence={type:'Liquity-user-to-StabilityPool-transfer',...t};
   }
 
   if(strategy.mode==='lido-deposit-queue'){
@@ -601,62 +626,54 @@ async function main(){
 
   const stableById=Object.fromEntries((stable.positions||[]).map(p=>[p.id,p]));
   const rows=[];
-  const sourceDiagnostics={};
+  const sourceDiagnostics={ethereum:[],base:[],fraxtal:[]};
 
-  for(const chain of ['ethereum','base','fraxtal']){
-    const subset=STRATEGIES.filter(s=>s.chain===chain);
-    const r=await withProvider(chain,async(provider,url)=>{
+  for(const s of STRATEGIES){
+    const r=await withProvider(s.chain,async(provider,url)=>{
       const foundedBlockObj=await findBlockAtOrBefore(provider,foundedTs);
-      const chainRows=[];
-      for(const s of subset){
-        const hint=resolverEntryHint(resolver,s.id);
-        try{
-          const entry=await resolveEntry(provider,s,hint,Number(foundedBlockObj.number));
-          const current=currentNominalFor(s,stableById[s.id]);
-          const performance=
-            current.comparable && finite(entry.principalNominalStable)
-              ? {
-                  status:'comparable',
-                  incomeNominalStable:round(Number(current.nominal)-Number(entry.principalNominalStable),12),
-                  returnPct:round((Number(current.nominal)/Number(entry.principalNominalStable)-1)*100,8)
-                }
-              : {status:'pending',incomeNominalStable:null,returnPct:null};
-
-          chainRows.push({
-            id:s.id,protocol:s.protocol,chain,
-            mode:s.mode,entry,current,performance,
-            ownerTargetApproximatelyTen:
-              Math.abs(Number(entry.principalNominalStable)-10)<=0.25
-          });
-        }catch(e){
-          chainRows.push({
-            id:s.id,protocol:s.protocol,chain,mode:s.mode,
-            entry:{status:'error',error:errorText(e)},
-            current:currentNominalFor(s,stableById[s.id]),
-            performance:{status:'pending',incomeNominalStable:null,returnPct:null},
-            ownerTargetApproximatelyTen:null
-          });
-        }
-      }
+      const hint=resolverEntryHint(resolver,s.id);
+      const entry=await resolveEntry(provider,s,hint,Number(foundedBlockObj.number));
       return {
         provider:new URL(url).hostname,
         foundedBlock:Number(foundedBlockObj.number),
-        rows:chainRows
+        entry
       };
     });
 
-    sourceDiagnostics[chain]=r.ok
-      ? {status:'ok',provider:r.value.provider,foundedBlock:r.value.foundedBlock}
-      : {status:'failed',attempts:r.attempts,error:r.error};
+    if(r.ok){
+      sourceDiagnostics[s.chain].push({
+        id:s.id,status:'ok',provider:r.value.provider,
+        foundedBlock:r.value.foundedBlock,
+        failedProviderAttempts:r.attempts
+      });
+      const current=currentNominalFor(s,stableById[s.id]);
+      const performance=
+        current.comparable && finite(r.value.entry.principalNominalStable)
+          ? {
+              status:'comparable',
+              incomeNominalStable:round(Number(current.nominal)-Number(r.value.entry.principalNominalStable),12),
+              returnPct:round((Number(current.nominal)/Number(r.value.entry.principalNominalStable)-1)*100,8)
+            }
+          : {status:'pending',incomeNominalStable:null,returnPct:null};
 
-    if(r.ok)rows.push(...r.value.rows);
-    else for(const s of subset)rows.push({
-      id:s.id,protocol:s.protocol,chain,mode:s.mode,
-      entry:{status:'error',error:'all chain providers failed'},
-      current:currentNominalFor(s,stableById[s.id]),
-      performance:{status:'pending',incomeNominalStable:null,returnPct:null},
-      ownerTargetApproximatelyTen:null
-    });
+      rows.push({
+        id:s.id,protocol:s.protocol,chain:s.chain,mode:s.mode,
+        entry:r.value.entry,current,performance,
+        ownerTargetApproximatelyTen:
+          Math.abs(Number(r.value.entry.principalNominalStable)-10)<=0.25
+      });
+    }else{
+      sourceDiagnostics[s.chain].push({
+        id:s.id,status:'failed',attempts:r.attempts,error:r.error
+      });
+      rows.push({
+        id:s.id,protocol:s.protocol,chain:s.chain,mode:s.mode,
+        entry:{status:'error',error:r.error||'all chain providers failed',attempts:r.attempts},
+        current:currentNominalFor(s,stableById[s.id]),
+        performance:{status:'pending',incomeNominalStable:null,returnPct:null},
+        ownerTargetApproximatelyTen:null
+      });
+    }
   }
 
   // Restore canonical strategy ordering.
@@ -697,7 +714,13 @@ async function main(){
       supersedesPublicPerformanceFromBoundaryFlowLedger:true,
       reason:'Wallet boundary inflows/outflows are not the correct cost basis for this Stable Company because the wallet was also used for routing, swaps and temporary capital movement. Performance must begin when capital enters each productive strategy.',
       previousBoundaryLedgerTreatment:'retain as diagnostic capital-routing history only; do not use its netInvestedUsd as public Stable strategy Performance basis.',
-      userIntent:'Track the approximately 10 stable tokens deployed into each of 10 productive strategies, then measure what those strategy positions have produced.'
+      userIntent:'Track the approximately 10 stable tokens deployed into each of 10 productive strategies, then measure what those strategy positions have produced.',
+      v04TargetedFixes:[
+        'Rotate RPC provider per strategy when a provider returns 403 or another strategy-specific failure.',
+        'Reconstruct fxSAVE entry from inbound fxSAVE shares when there is no local ERC4626 Deposit event.',
+        'For Liquity use only the user BOLD transfer into the Stability Pool; ignore protocol mint events from the zero address.',
+        'Keep Lido current nominal NAV fail-closed until the canonical Mellow/Lido oracle path is reproduced.'
+      ]
     },
     methodology:{
       invested:'Sum of stable units actually deposited/staked into the 10 productive strategies, reconstructed from protocol deposit/stake transactions.',
