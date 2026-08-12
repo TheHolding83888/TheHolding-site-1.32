@@ -6,8 +6,16 @@ import {
   formatUnits,
   getAddress
 } from 'ethers';
+import {
+  AaveV3Ethereum,
+  AaveV3Base,
+  AaveV3Arbitrum,
+  AaveV3Optimism,
+  AaveV3Avalanche,
+  AaveV3Polygon
+} from '@bgd-labs/aave-address-book';
 
-const VERSION = '1.1-company-008-wrapper-candidate-safe';
+const VERSION = '1.3-company-008-owner-reconciliation-multichain';
 const OUTPUT = process.env.COMPANY_008_DISCOVERY_OUTPUT
   || path.resolve('companies/company-008-discovery.json');
 
@@ -122,6 +130,35 @@ const RPC = {
     process.env.AVALANCHE_RPC_URL,
     'https://avalanche-c-chain-rpc.publicnode.com',
     'https://api.avax.network/ext/bc/C/rpc'
+  ]),
+  polygon: unique([
+    process.env.POLYGON_RPC_URL,
+    'https://polygon-bor-rpc.publicnode.com',
+    'https://polygon-rpc.com'
+  ]),
+  zksync: unique([
+    process.env.ZKSYNC_RPC_URL,
+    'https://mainnet.era.zksync.io'
+  ]),
+  linea: unique([
+    process.env.LINEA_RPC_URL,
+    'https://rpc.linea.build'
+  ]),
+  scroll: unique([
+    process.env.SCROLL_RPC_URL,
+    'https://rpc.scroll.io'
+  ]),
+  blast: unique([
+    process.env.BLAST_RPC_URL,
+    'https://rpc.blast.io'
+  ]),
+  mode: unique([
+    process.env.MODE_RPC_URL,
+    'https://mainnet.mode.network'
+  ]),
+  zora: unique([
+    process.env.ZORA_RPC_URL,
+    'https://rpc.zora.energy'
   ])
 };
 
@@ -130,7 +167,14 @@ const CHAIN = {
   base: { id: 8453, label: 'Base' },
   arbitrum: { id: 42161, label: 'Arbitrum' },
   optimism: { id: 10, label: 'Optimism' },
-  avalanche: { id: 43114, label: 'Avalanche' }
+  avalanche: { id: 43114, label: 'Avalanche' },
+  polygon: { id: 137, label: 'Polygon' },
+  zksync: { id: 324, label: 'ZKsync Era' },
+  linea: { id: 59144, label: 'Linea' },
+  scroll: { id: 534352, label: 'Scroll' },
+  blast: { id: 81457, label: 'Blast' },
+  mode: { id: 34443, label: 'Mode' },
+  zora: { id: 7777777, label: 'Zora' }
 };
 
 const BLOCKSCOUT = {
@@ -218,6 +262,7 @@ const TOKENS = {
   ],
   base: [
     { symbol: 'cbBTC', family: 'BTC', address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', conversion: 'one-to-one' },
+    { symbol: 'WBTC', family: 'BTC', address: '0x0555e30da8f98308EdB960aa94c0Db47230d2B9c', conversion: 'one-to-one' },
     { symbol: 'LBTC', family: 'BTC', address: '0xecAc9C5F704e954931349Da37F60E39f515c11c1', conversion: 'lbtc-ratio' },
     { symbol: 'WETH', family: 'ETH', address: '0x4200000000000000000000000000000000000006', conversion: 'one-to-one' },
     { symbol: 'cbETH', family: 'ETH', address: '0x2Ae3F1Ec7F1F5012CFEab0185bfcA38d5a61E4F', conversion: 'cbeth' },
@@ -233,15 +278,28 @@ const TOKENS = {
   ],
   avalanche: [
     { symbol: 'BTC.b', family: 'BTC', address: '0x152b9d0FdC40C096757F570A51E494bD4B943E50', conversion: 'one-to-one' },
+    { symbol: 'LBTC', family: 'BTC', address: '0xecAc9C5F704e954931349Da37F60E39f515c11c1', conversion: 'lbtc-ratio' },
     { symbol: 'WBTC.e', family: 'BTC', address: '0x50b7545627a5162F82A992c33b87aDc75187B218', conversion: 'one-to-one' }
-  ]
+  ],
+  polygon: [
+    { symbol: 'WBTC', family: 'BTC', address: '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6', conversion: 'one-to-one' },
+    { symbol: 'WETH', family: 'ETH', address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', conversion: 'one-to-one' }
+  ],
+  zksync: [],
+  linea: [],
+  scroll: [],
+  blast: [],
+  mode: [],
+  zora: []
 };
 
 const AAVE_DATA_PROVIDER = {
-  ethereum: '0x0a16f2FCC0D44FaE41cc54e079281D84A363bECD',
-  base: '0x0F43731EB8d45A581f4a36DD74F5f358bc90C73A',
-  arbitrum: '0x243Aa95cAC2a25651eda86e80bEe66114413c43b',
-  optimism: '0x243Aa95cAC2a25651eda86e80bEe66114413c43b'
+  ethereum: AaveV3Ethereum.AAVE_PROTOCOL_DATA_PROVIDER,
+  base: AaveV3Base.AAVE_PROTOCOL_DATA_PROVIDER,
+  arbitrum: AaveV3Arbitrum.AAVE_PROTOCOL_DATA_PROVIDER,
+  optimism: AaveV3Optimism.AAVE_PROTOCOL_DATA_PROVIDER,
+  avalanche: AaveV3Avalanche.AAVE_PROTOCOL_DATA_PROVIDER,
+  polygon: AaveV3Polygon.AAVE_PROTOCOL_DATA_PROVIDER
 };
 
 const AERODROME = {
@@ -366,22 +424,25 @@ async function discoverDirectBalances(lbtc) {
   for (const chain of Object.keys(RPC)) {
     const r = await safeProvider(chain, async provider => {
       const out = [];
-      // Native ETH on EVM chains counts as ETH economic exposure.
-      try {
-        const raw = positiveBigInt(await provider.getBalance(COMPANY.wallet));
-        if (raw > 0n) {
-          out.push({
-            chain: CHAIN[chain].label,
-            protocol: 'Wallet',
-            source: 'wallet-native',
-            family: 'ETH',
-            symbol: 'ETH',
-            amount: Number(formatUnits(raw, 18)),
-            equivalentAmount: Number(formatUnits(raw, 18)),
-            conversion: { status: 'ok', rate: 1, method: 'native ETH' }
-          });
-        }
-      } catch {}
+      // Count native balance as ETH only on networks whose native gas asset is ETH.
+      // Avalanche native balance is AVAX and must never enter the ETH Company Book row.
+      if (['ethereum', 'base', 'arbitrum', 'optimism', 'zksync', 'linea', 'scroll', 'blast', 'mode', 'zora'].includes(chain)) {
+        try {
+          const raw = positiveBigInt(await provider.getBalance(COMPANY.wallet));
+          if (raw > 0n) {
+            out.push({
+              chain: CHAIN[chain].label,
+              protocol: 'Wallet',
+              source: 'wallet-native',
+              family: 'ETH',
+              symbol: 'ETH',
+              amount: Number(formatUnits(raw, 18)),
+              equivalentAmount: Number(formatUnits(raw, 18)),
+              conversion: { status: 'ok', rate: 1, method: 'native ETH' }
+            });
+          }
+        } catch {}
+      }
       for (const def of TOKENS[chain] || []) {
         try {
           const b = await erc20Balance(provider, def.address, COMPANY.wallet);
@@ -1034,6 +1095,91 @@ function aggregateFamily(rows, family) {
   };
 }
 
+
+const OWNER_OBSERVED_RECONCILIATION = Object.freeze([
+  {
+    family: 'BTC', chain: 'Avalanche', symbol: 'BTC.b',
+    token: '0x152b9d0FdC40C096757F570A51E494bD4B943E50',
+    observedApprox: 0.0435,
+    note: 'owner-observed current component'
+  },
+  {
+    family: 'BTC', chain: 'Base', symbol: 'cbBTC',
+    token: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
+    observedApprox: 0.0090,
+    note: 'owner sees two current components around 0.0070 + 0.0020'
+  },
+  {
+    family: 'BTC', chain: 'Base', symbol: 'WBTC',
+    token: '0x0555e30da8f98308EdB960aa94c0Db47230d2B9c',
+    observedApprox: 0.0048,
+    note: 'owner labels this component Lombard'
+  },
+  {
+    family: 'BTC', chain: 'Ethereum', symbol: 'WBTC',
+    token: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
+    observedApprox: 0.0028,
+    note: 'owner labels this component Lombard'
+  },
+  {
+    family: 'BTC', chain: 'Polygon', symbol: 'WBTC',
+    token: '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6',
+    observedApprox: 0.0053,
+    note: 'owner-observed current Polygon WBTC'
+  },
+  {
+    family: 'BTC', chain: 'Arbitrum', symbol: 'WBTC',
+    token: '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f',
+    observedApprox: 0.0073,
+    note: 'owner-observed current Arbitrum WBTC'
+  },
+  {
+    family: 'ETH', chain: 'Base', symbol: 'WETH',
+    token: '0x4200000000000000000000000000000000000006',
+    observedApprox: 0.1606,
+    note: 'owner-observed current Base WETH'
+  }
+]);
+
+function reconcileOwnerObserved(rows) {
+  const items = OWNER_OBSERVED_RECONCILIATION.map(item => {
+    const matchedRows = (rows || []).filter(r =>
+      r.family === item.family &&
+      r.chain === item.chain &&
+      lower(r.token) === lower(item.token)
+    );
+    const discovered = sum(matchedRows.map(r => r.amount));
+    const tolerance = Math.max(0.00015, item.observedApprox * 0.02);
+    const delta = discovered - item.observedApprox;
+    const matched = Math.abs(delta) <= tolerance;
+    return {
+      ...item,
+      discovered: round(discovered),
+      deltaVsObservedApprox: round(delta),
+      tolerance: round(tolerance),
+      matched,
+      matchedRows: matchedRows.map(r => ({
+        protocol: r.protocol,
+        source: r.source,
+        amount: r.amount,
+        equivalentAmount: r.equivalentAmount
+      }))
+    };
+  });
+  return {
+    expectedApproxBtcFromOwnerList: round(sum(
+      OWNER_OBSERVED_RECONCILIATION.filter(x => x.family === 'BTC').map(x => x.observedApprox)
+    )),
+    expectedApproxEthTokenFromOwnerList: round(sum(
+      OWNER_OBSERVED_RECONCILIATION.filter(x => x.family === 'ETH').map(x => x.observedApprox)
+    )),
+    items,
+    unresolved: items.filter(x => !x.matched),
+    btcMatched: items.filter(x => x.family === 'BTC').every(x => x.matched),
+    ethMatched: items.filter(x => x.family === 'ETH').every(x => x.matched)
+  };
+}
+
 function buildCompanyBook({ allAssetRows, btcoc, aerodrome, yieldBasis, beefy, prices }) {
   const rows = [...allAssetRows];
   if (btcoc?.btcEquivalent > 0) {
@@ -1197,6 +1343,16 @@ async function main() {
     prices
   });
 
+  const ownerObservedReconciliation = reconcileOwnerObserved(normalizedRows);
+  const btcBookForReconcile = proposedCompanyBook.find(x => x.symbol === 'BTC');
+  const ethBookForReconcile = proposedCompanyBook.find(x => x.symbol === 'ETH');
+  if (btcBookForReconcile && !ownerObservedReconciliation.btcMatched) {
+    btcBookForReconcile.quantityComplete = false;
+  }
+  if (ethBookForReconcile && !ownerObservedReconciliation.ethMatched) {
+    ethBookForReconcile.quantityComplete = false;
+  }
+
   const ignoredLiabilities = [
     ...(aave.ignoredLiabilities || []),
     ...(morpho.ignoredLiabilities || [])
@@ -1220,7 +1376,7 @@ async function main() {
     version: VERSION,
     generatedAt: new Date().toISOString(),
     startedAt,
-    purpose: 'bounded current-state fingerprint for Company #008; aggregate all discovered BTC/ETH economic exposure; isolate only new Morpho/Lombard/Beefy mechanics; no entry-price invention',
+    purpose: 'bounded current-state fingerprint for Company #008; aggregate all discovered BTC/ETH economic exposure; reconcile owner-observed components; Polygon + Avalanche Aave coverage; native-ETH multichain sweep; isolate unresolved Lombard/Beefy mechanics; no entry-price invention',
     company: {
       registry: COMPANY.registry,
       name: COMPANY.name,
@@ -1257,7 +1413,8 @@ async function main() {
       aerodrome,
       yieldBasisVeYb: yieldBasis,
       beefyCvxCrv: beefy,
-      currentPrices
+      currentPrices,
+      ownerObservedReconciliation
     },
     proposedCompanyBook,
     protocolFingerprint,
@@ -1308,11 +1465,15 @@ async function main() {
     },
     productionReadiness: {
       btcQuantityComplete: Boolean(btcBook?.quantityComplete)
+        && ownerObservedReconciliation.btcMatched
         && !(wrapperCandidates?.candidates || []).some(x => x.familyCandidate === 'BTC')
         && !(morpho?.unresolvedWrapperCandidates || []).some(x => x.familyCandidate === 'BTC'),
       ethQuantityComplete: Boolean(ethBook?.quantityComplete)
+        && ownerObservedReconciliation.ethMatched
         && !(wrapperCandidates?.candidates || []).some(x => x.familyCandidate === 'ETH')
         && !(morpho?.unresolvedWrapperCandidates || []).some(x => x.familyCandidate === 'ETH'),
+      ownerObservedBtcReconciliationMatched: ownerObservedReconciliation.btcMatched,
+      ownerObservedEthReconciliationMatched: ownerObservedReconciliation.ethMatched,
       aerodromeResolved: safeNum(aerodrome?.totalAeroExposure) !== null,
       yieldBasisResolved: safeNum(yieldBasis?.totalYbExposure) !== null,
       beefyResolved: beefy?.status === 'ok' || (beefy?.status === 'no-position'),
@@ -1344,6 +1505,11 @@ async function main() {
   console.log(`YB / veYB: ${proposedCompanyBook.find(x => x.symbol === 'YB / veYB')?.quantity ?? 'unresolved'}`);
   console.log(`Ignored liabilities: ${ignoredLiabilities.length}`);
   console.log(`Protocols: ${protocolFingerprint.join(', ')}`);
+  console.log(`Owner-observed BTC reconciliation: ${ownerObservedReconciliation.btcMatched ? 'MATCHED' : 'UNRESOLVED'}`);
+  console.log(`Owner-observed ETH reconciliation: ${ownerObservedReconciliation.ethMatched ? 'MATCHED' : 'UNRESOLVED'}`);
+  for (const x of ownerObservedReconciliation.unresolved) {
+    console.log(`UNRESOLVED ${x.family} ${x.chain} ${x.symbol}: observed≈${x.observedApprox}, discovered=${x.discovered}`);
+  }
 }
 
 main().catch(err => {
