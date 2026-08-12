@@ -1,7 +1,7 @@
 {
-  "version": "0.2-monetra-six-adapters-history-fix",
-  "methodologyVersion": "1.1-stable-capital-machine-safe-reference-yield",
-  "generatedAt": "2026-08-12T12:14:47.550Z",
+  "version": "0.3-monetra-fxsave-canonical-nav",
+  "methodologyVersion": "1.2-stable-capital-fxsave-economic-nav",
+  "generatedAt": "2026-08-12T12:28:09.368Z",
   "company": {
     "registry": "008",
     "name": "Monetra.eth",
@@ -23,7 +23,8 @@
     "unknownTreatment": "warming/error positions are excluded from numerator and denominator; never treated as 0%",
     "fullCoverageGate": "Monetra enters the weighted Composite Index only after all 10 current Stable Capital positions have valid reference annual yield.",
     "rateConvention": "Protocol APY is used directly. Protocol APR is preserved and used as one-year annual yield only when no compounding is assumed; no arbitrary compounding frequency is invented.",
-    "embeddedBoundary": "Reference APY is capacity, not earned income. Earned Embedded Yield comes only from checkpoint deltas adjusted for flows."
+    "embeddedBoundary": "Reference APY is capacity, not earned income. Earned Embedded Yield comes only from checkpoint deltas adjusted for flows.",
+    "fxSaveCanonicalNav": "fxSAVE economic NAV = convertToAssets(fxSAVE shares) into FxUSDBasePool shares, then previewRedeem into fxUSD + USDC. Reference APY uses nominal stable units so depeg is excluded; current TVL applies current component prices."
   },
   "positions": [
     {
@@ -38,7 +39,7 @@
       "valueUsd": 10.00623629,
       "resolverValueUsd": 10.006037,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
+        "timestamp": "2026-08-12T12:28:09.368Z",
         "sharesOrBalance": 10.009791,
         "underlyingAmount": 10.009791,
         "terminalSymbol": "USDC",
@@ -48,7 +49,7 @@
         "ledgerComparable": true,
         "valuationCanonical": true,
         "accruedClaimable": null,
-        "note": null
+        "note": "Preserved from Stable Capital v0.2; v0.3 scope is f(x) only."
       },
       "reference": {
         "status": "ok",
@@ -62,7 +63,8 @@
         "provider": "base-rpc.publicnode.com",
         "currentUnderlyingEquivalent": 10.009791,
         "liquidityRateRay": "36279070525967637967195856",
-        "methodology": "Aave liquidityRate RAY normalized with per-second compounding, matching existing The Holding Aave adapter."
+        "methodology": "Aave liquidityRate RAY normalized with per-second compounding, matching existing The Holding Aave adapter.",
+        "preservation": "accepted-v0.2-reference-preserved-by-v0.3"
       }
     },
     {
@@ -77,7 +79,7 @@
       "valueUsd": 9.99931136,
       "resolverValueUsd": 10.001043,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
+        "timestamp": "2026-08-12T12:28:09.368Z",
         "sharesOrBalance": 9.051902138134,
         "underlyingAmount": 10.011055736955,
         "terminalSymbol": "crvUSD",
@@ -87,7 +89,7 @@
         "ledgerComparable": true,
         "valuationCanonical": true,
         "accruedClaimable": null,
-        "note": null
+        "note": "Preserved from Stable Capital v0.2; v0.3 scope is f(x) only."
       },
       "reference": {
         "status": "ok",
@@ -107,7 +109,8 @@
         "historicalTimestamp": 1785932039,
         "elapsedDays": 7.0001388888888885,
         "provider": "eth.blockscout.com",
-        "canonicalProduct": "scrvUSD"
+        "canonicalProduct": "scrvUSD",
+        "preservation": "accepted-v0.2-reference-preserved-by-v0.3"
       }
     },
     {
@@ -119,28 +122,47 @@
       "underlyingSymbol": "fxSP",
       "incomeMode": "embedded-yield",
       "productive": true,
-      "valueUsd": 10.05258778,
+      "valueUsd": 10.05183571,
       "resolverValueUsd": 10.052621,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
-        "sharesOrBalance": 9.039272056076,
-        "underlyingAmount": 9.951230460843,
-        "terminalSymbol": "fxSP",
-        "terminalPriceUsd": 1.010185405740876,
-        "economicValueUsd": 10.05258778,
+        "timestamp": "2026-08-12T12:28:09.368Z",
+        "sharesOrBalance": 9.039272056075506,
+        "underlyingAmount": 10.052357323345,
+        "terminalSymbol": "fxUSD+USDC",
+        "terminalPriceUsd": 0.9999481106,
+        "economicValueUsd": 10.05183571,
         "flowFingerprint": "shares:9039272056075505098",
-        "ledgerComparable": false,
-        "valuationCanonical": false,
+        "ledgerComparable": true,
+        "valuationCanonical": true,
         "accruedClaimable": null,
-        "note": "fxSAVE remains non-comparable for Embedded Yield until fxSP terminal economic redemption is canonical."
+        "note": "Canonical economic NAV from the same read path used by the official AladdinDAO fx-sdk. Reference yield uses nominal stable units; current USD book value applies current fxUSD/USDC prices separately."
       },
       "reference": {
-        "status": "warming-official-rate-unavailable",
+        "status": "ok",
         "protocol": "f(x) Protocol",
-        "annualYieldPct": null,
-        "candidates": [],
-        "source": "https://fx.aladdin.club/v2/fxsave",
-        "note": "No guess: fxSAVE must expose one unambiguous official APY. Canonical fxSAVE→fxSP→stable economic NAV remains required for Embedded Yield history."
+        "annualYieldPct": 5.304394615002783,
+        "rawRatePct": 5.304395,
+        "rawRateType": "7d-economic-NAV-growth-annualized",
+        "normalizedRateType": "APY",
+        "sourceType": "onchain-historical-dual-stable-economic-nav",
+        "source": "https://github.com/AladdinDAO/fx-sdk/blob/main/src/core/fxsave.ts",
+        "contractsSource": "https://github.com/AladdinDAO/fx-sdk/blob/main/src/configs/contracts.ts",
+        "methodology": "Annualized growth of nominal stable redemption value per one fxSAVE share: fxSAVE.convertToAssets → FxUSDBasePool.previewRedeem → fxUSD + USDC. Stablecoin market-price/depeg movement is excluded from Reference APY.",
+        "elapsedDays": 7,
+        "latestBlock": 25738915,
+        "historicalBlock": 25688724,
+        "historicalTimestamp": 1785932879,
+        "provider": "eth.blockscout.com",
+        "currentNominalStableNavPerShare": 1.112075783747533,
+        "historicalNominalStableNavPerShare": 1.1109740197519753,
+        "currentBreakdown": {
+          "fxUSD": 1.0679417837475331,
+          "USDC": 0.044134
+        },
+        "historicalBreakdown": {
+          "fxUSD": 1.0578770197519753,
+          "USDC": 0.053097
+        }
       }
     },
     {
@@ -155,7 +177,7 @@
       "valueUsd": 10.03573639,
       "resolverValueUsd": 10.037109,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
+        "timestamp": "2026-08-12T12:28:09.368Z",
         "sharesOrBalance": 7.147332299449,
         "underlyingAmount": 10.065571443832,
         "terminalSymbol": "DOLA",
@@ -165,7 +187,7 @@
         "ledgerComparable": true,
         "valuationCanonical": true,
         "accruedClaimable": null,
-        "note": null
+        "note": "Preserved from Stable Capital v0.2; v0.3 scope is f(x) only."
       },
       "reference": {
         "status": "ok",
@@ -176,7 +198,8 @@
         "normalizedRateType": "annual-yield",
         "sourceType": "official-frontend",
         "source": "https://www.inverse.finance/",
-        "note": "Official Inverse sDOLA APY; ambiguous hydration values are rejected."
+        "note": "Official Inverse sDOLA APY; ambiguous hydration values are rejected.",
+        "preservation": "accepted-v0.2-reference-preserved-by-v0.3"
       }
     },
     {
@@ -191,7 +214,7 @@
       "valueUsd": 10.02926432,
       "resolverValueUsd": 10.029517,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
+        "timestamp": "2026-08-12T12:28:09.368Z",
         "sharesOrBalance": 9.068189220503,
         "underlyingAmount": 10.029594921076,
         "terminalSymbol": "USDS",
@@ -201,7 +224,7 @@
         "ledgerComparable": true,
         "valuationCanonical": true,
         "accruedClaimable": null,
-        "note": null
+        "note": "Preserved from Stable Capital v0.2; v0.3 scope is f(x) only."
       },
       "reference": {
         "status": "ok",
@@ -212,7 +235,8 @@
         "normalizedRateType": "annual-yield",
         "sourceType": "official-frontend",
         "source": "https://sky.money/susds",
-        "note": "Governance-set current Sky Savings Rate for sUSDS."
+        "note": "Governance-set current Sky Savings Rate for sUSDS.",
+        "preservation": "accepted-v0.2-reference-preserved-by-v0.3"
       }
     },
     {
@@ -227,7 +251,7 @@
       "valueUsd": 10.01854259,
       "resolverValueUsd": 10.018976,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
+        "timestamp": "2026-08-12T12:28:09.368Z",
         "sharesOrBalance": 9.93402298004,
         "underlyingAmount": 10.036051379672,
         "terminalSymbol": "GHO",
@@ -237,7 +261,7 @@
         "ledgerComparable": true,
         "valuationCanonical": true,
         "accruedClaimable": null,
-        "note": null
+        "note": "Preserved from Stable Capital v0.2; v0.3 scope is f(x) only."
       },
       "reference": {
         "status": "ok",
@@ -258,7 +282,8 @@
         "elapsedDays": 7.0001388888888885,
         "provider": "eth.blockscout.com",
         "canonicalProduct": "sGHO",
-        "note": "Reference APY from canonical sGHO redeemable-GHO share growth; avoids brittle application scraping."
+        "note": "Reference APY from canonical sGHO redeemable-GHO share growth; avoids brittle application scraping.",
+        "preservation": "accepted-v0.2-reference-preserved-by-v0.3"
       }
     },
     {
@@ -273,7 +298,7 @@
       "valueUsd": 10.01555283,
       "resolverValueUsd": 10.017803,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
+        "timestamp": "2026-08-12T12:28:09.368Z",
         "sharesOrBalance": 9.20846854886,
         "underlyingAmount": 10.015983111704,
         "terminalSymbol": "BOLD",
@@ -283,7 +308,7 @@
         "ledgerComparable": true,
         "valuationCanonical": true,
         "accruedClaimable": null,
-        "note": null
+        "note": "Preserved from Stable Capital v0.2; v0.3 scope is f(x) only."
       },
       "reference": {
         "status": "ok",
@@ -304,7 +329,8 @@
         "elapsedDays": 7.0001388888888885,
         "provider": "eth.blockscout.com",
         "canonicalProduct": "ysyBOLD / yBOLD Auto-Compounder",
-        "note": "Nested canonical share growth in terminal BOLD."
+        "note": "Nested canonical share growth in terminal BOLD.",
+        "preservation": "accepted-v0.2-reference-preserved-by-v0.3"
       }
     },
     {
@@ -319,7 +345,7 @@
       "valueUsd": 9.9921512,
       "resolverValueUsd": 9.99831,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
+        "timestamp": "2026-08-12T12:28:09.368Z",
         "sharesOrBalance": 9.762818840756086,
         "underlyingAmount": null,
         "terminalSymbol": "USD strategy NAV",
@@ -340,7 +366,8 @@
         "normalizedRateType": "APY",
         "sourceType": "official-lido-product-page",
         "source": "https://lido.fi/",
-        "note": "Official EarnUSD trailing-average APY. The product page explicitly labels this as APY and the Earn app describes it as a 14-day average."
+        "note": "Official EarnUSD trailing-average APY. The product page explicitly labels this as APY and the Earn app describes it as a 14-day average.",
+        "preservation": "accepted-v0.2-reference-preserved-by-v0.3"
       }
     },
     {
@@ -355,7 +382,7 @@
       "valueUsd": 9.99959515,
       "resolverValueUsd": 10.001411,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
+        "timestamp": "2026-08-12T12:28:09.368Z",
         "sharesOrBalance": 10.000024744824552,
         "underlyingAmount": 10.000024744824552,
         "terminalSymbol": "BOLD",
@@ -393,7 +420,8 @@
           "userYield": 0.037596856585463745,
           "userCollGain": 0,
           "aprPct": 4.707574080318508
-        }
+        },
+        "preservation": "accepted-v0.2-reference-preserved-by-v0.3"
       }
     },
     {
@@ -408,7 +436,7 @@
       "valueUsd": 9.94437738,
       "resolverValueUsd": 10.029382,
       "currentSnapshot": {
-        "timestamp": "2026-08-12T12:14:47.550Z",
+        "timestamp": "2026-08-12T12:28:09.368Z",
         "sharesOrBalance": 8.32174967673456,
         "underlyingAmount": 10.0338685346884,
         "terminalSymbol": "frxUSD",
@@ -436,32 +464,44 @@
         "latestBlock": 39863088,
         "historicalBlock": 39560685,
         "provider": "fraxtal.gateway.tenderly.co",
-        "method": "pricePerShare"
+        "method": "pricePerShare",
+        "preservation": "accepted-v0.2-reference-preserved-by-v0.3"
       }
     }
   ],
   "summary": {
-    "stableCapitalUsd": 100.093355,
-    "productiveStableCapitalUsd": 100.093355,
-    "coveredProductiveStableCapitalUsd": 90.040768,
-    "uncoveredProductiveStableCapitalUsd": 10.052588,
-    "coverage": 0.89956788,
-    "fullCoverage": false,
-    "referenceAnnualYieldPct": 4.449249,
-    "referenceApyPct": null,
+    "stableCapitalUsd": 100.092603,
+    "productiveStableCapitalUsd": 100.092603,
+    "coveredProductiveStableCapitalUsd": 100.092603,
+    "uncoveredProductiveStableCapitalUsd": 0,
+    "coverage": 1,
+    "fullCoverage": true,
+    "referenceAnnualYieldPct": 4.535127,
+    "referenceApyPct": 4.535127,
     "positionCount": 10,
     "productivePositionCount": 10,
-    "coveredPositionCount": 9,
-    "warmingPositionIds": [
-      "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39"
-    ]
+    "coveredPositionCount": 10,
+    "warmingPositionIds": []
   },
-  "history": [],
+  "history": [
+    {
+      "date": "2026-08-12",
+      "timestamp": "2026-08-12T12:28:09.368Z",
+      "registry": "008",
+      "company": "Monetra.eth",
+      "referenceAnnualYieldPct": 4.535127,
+      "referenceApyPct": 4.535127,
+      "productiveStableCapitalUsd": 100.092603,
+      "coverage": 1,
+      "positionCount": 10,
+      "methodologyVersion": "1.2-stable-capital-fxsave-economic-nav"
+    }
+  ],
   "readiness": {
-    "centralProductivityBridgeReady": false,
-    "compositeIndexAdmissionReady": false,
-    "removeMeasuringFromPassport": false,
-    "firstFullCoverageObservationRecorded": false,
-    "note": "Collector executed, but one or more rate adapters remain warming. Fix only listed adapters; do not restart wallet discovery."
+    "centralProductivityBridgeReady": true,
+    "compositeIndexAdmissionReady": true,
+    "removeMeasuringFromPassport": true,
+    "firstFullCoverageObservationRecorded": true,
+    "note": "Stable Capital Reference APY is complete; next patch may bridge Monetra into central Productivity and Composite Index."
   }
 }
