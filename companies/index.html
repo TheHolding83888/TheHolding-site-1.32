@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · v1.21.11 · Monetra Passport Polished · clean action cards -->
+<!-- companies.html · v1.21.12 · Monetra Current Capital Reconciliation · claimable-in-capital + net market P&L -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -5806,7 +5806,6 @@
             #stable-index .scp-essential-footer .scp-quick-open{font-size:.54rem!important}
         }
 
-
         /* ═══════ Monetra KPI cards — layout for the nested structure ═══════
            The markup moved to topline / main / footer wrappers, while every rule
            still addressed direct children (> span, > b). Nothing matched, so the
@@ -5901,198 +5900,435 @@
             #stable-index .scp-essential-actions-paired .scp-essential-card { min-height: 98px !important; }
             #stable-index .scp-essential-actions-paired .scp-essential-main > b { font-size: 1.36rem !important; }
         }
+        /* ═══════ Metric tooltips — one stable state ═══════
+           Hover, focus and the open class each drove visibility with their own
+           transform, so a tip could be mid-way between two of them. Below, the
+           open state wins outright and animates only opacity and transform. */
+        .sc-tip { transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.24s cubic-bezier(0.22,1,0.36,1); }
+        .sc-help { cursor: pointer; }
+        .sc-help-wrap.open .sc-tip { pointer-events: auto; }
 
-        /* Monetra v1.21.12 · verified since-inception Performance detail */
-        #stableFocusLayer .stable-performance-summary{
-            display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
-            gap:.52rem;margin:0 0 .82rem;padding:0 0 .82rem;border-bottom:1px solid var(--line)
+        @media (hover: none) {
+            /* On touch there is no hover; only an explicit tap should open a tip. */
+            .sc-help-wrap:hover .sc-tip,
+            .sc-help-wrap:focus-within .sc-tip {
+                opacity: 0; visibility: hidden;
+            }
+            .sc-help-wrap.open .sc-tip { opacity: 1 !important; visibility: visible !important; }
         }
-        #stableFocusLayer .stable-performance-summary>div{
-            min-width:0;padding:.62rem .66rem;border:1px solid rgba(10,124,78,.10);
-            border-radius:12px;background:rgba(255,255,255,.72)
+
+        @media (max-width: 760.98px) {
+            /* A centred sheet needs something behind it, or it floats over the
+               passport with no sense of layer. */
+            /* the veil is a real element (see JS) so a tap on it can close */
+            .sc-tip-veil {
+                display: none;
+                position: fixed; inset: 0; z-index: 190;
+                background: rgba(16,19,23,0.34);
+                backdrop-filter: blur(2px);
+                opacity: 0;
+                transition: opacity 0.22s ease;
+            }
+            .sc-tip-veil.on { opacity: 1; }
+            .sc-tip { z-index: 80; }
         }
-        #stableFocusLayer .stable-performance-summary span{
-            display:block;color:var(--text-3);font-size:.56rem;line-height:1.2;
-            letter-spacing:.065em;text-transform:uppercase;font-weight:700
+        /* ═══════ Passport open / close ═══════
+           The panel animates max-height between 0 and 7200px while its real
+           height is a fraction of that, so the visible part of the travel is over
+           almost instantly and the rest of the duration is spent on empty range —
+           which reads as a snap. Splitting the timing lets the closing motion
+           carry the eye: opacity and lift ease out first, the height follows on a
+           curve that decelerates into place. */
+        .stable-passport {
+            transition:
+                max-height 0.52s cubic-bezier(0.33, 0, 0.12, 1),
+                opacity 0.26s ease,
+                transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+                margin-top 0.34s ease;
+            will-change: max-height, opacity, transform;
         }
-        #stableFocusLayer .stable-performance-summary b{
-            display:block;margin-top:.28rem;font-family:'Cormorant Garamond',serif;
-            font-size:1.22rem;line-height:1;font-weight:600;font-variant-numeric:tabular-nums
+        .stable-passport.is-open {
+            transition:
+                max-height 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.34s ease 0.06s,
+                transform 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+                margin-top 0.34s ease;
         }
-        #stableFocusLayer .stable-performance-summary .perf-positive b{color:var(--green)}
-        #stableFocusLayer .stable-performance-note{
-            margin:.1rem 0 .75rem;color:var(--text-3);font-size:.68rem;line-height:1.52
+        @media (prefers-reduced-motion: reduce) {
+            .stable-passport { transition: opacity 0.15s ease; }
         }
-        @media(max-width:760.98px){
-            #stableFocusLayer .stable-performance-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:.42rem}
-            #stableFocusLayer .stable-performance-summary>div{padding:.56rem .58rem}
-            #stableFocusLayer .stable-performance-summary b{font-size:1.12rem}
-            #stableFocusLayer .stable-performance-note{font-size:.64rem}
+        /* ═══════ Metric tooltips — one geometry, one motion ═══════
+           Two separate faults produced the erratic behaviour.
+
+           On a phone the open state was a centred fixed sheet
+           (left:50% / translate(-50%,-50%)) while the closed state still carried
+           the anchored geometry (left:0 / translate(0,6px)). A transition between
+           two different origins is what sent the panel flying to the right on
+           dismissal. Both states now share the same origin, so it only fades and
+           scales in place.
+
+           On desktop the tip opened upward (bottom:100%), which slid it under the
+           block above once it appeared inside the passport header. It now opens
+           downward, where the space actually is. */
+
+        @media (min-width: 761px) {
+            .sc-tip {
+                bottom: auto !important;
+                top: calc(100% + 10px) !important;
+                left: 50% !important;
+                right: auto !important;
+                transform: translate(-50%, -6px) !important;
+                z-index: 200 !important;
+            }
+            .sc-help-wrap:hover .sc-tip,
+            .sc-help-wrap:focus-within .sc-tip,
+            .sc-help-wrap.open .sc-tip {
+                transform: translate(-50%, 0) !important;
+            }
+            /* a trigger in the last column would push the panel past the edge */
+            .scp-headline > div:last-child .sc-tip,
+            .scp-headline-final > .scp-final-metric:last-child .sc-tip,
+            .sc-board-row > *:last-child .sc-tip {
+                left: auto !important;
+                right: 0 !important;
+                transform: translate(0, -6px) !important;
+            }
+            .scp-headline > div:last-child .sc-help-wrap:hover .sc-tip,
+            .scp-headline > div:last-child .sc-help-wrap.open .sc-tip,
+            .scp-headline-final > .scp-final-metric:last-child .sc-help-wrap:hover .sc-tip,
+            .scp-headline-final > .scp-final-metric:last-child .sc-help-wrap.open .sc-tip,
+            .sc-board-row > *:last-child .sc-help-wrap:hover .sc-tip,
+            .sc-board-row > *:last-child .sc-help-wrap.open .sc-tip {
+                transform: translate(0, 0) !important;
+            }
+        }
+
+        @media (max-width: 760.98px) {
+            /* closed and open share one origin — nothing to travel across */
+            .sc-tip {
+                position: fixed !important;
+                left: 50% !important;
+                right: auto !important;
+                top: 50% !important;
+                bottom: auto !important;
+                transform: translate(-50%, -50%) scale(0.96) !important;
+                width: min(330px, calc(100vw - 2.6rem)) !important;
+                max-width: min(330px, calc(100vw - 2.6rem)) !important;
+                max-height: min(56vh, 420px);
+                overflow-y: auto;
+                z-index: 200 !important;
+                opacity: 0;
+                visibility: hidden;
+            }
+            .sc-help-wrap.open .sc-tip {
+                transform: translate(-50%, -50%) scale(1) !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            /* hover and focus must not resurrect a dismissed sheet on touch */
+            .sc-help-wrap:hover .sc-tip,
+            .sc-help-wrap:focus-within .sc-tip {
+                opacity: 0;
+                visibility: hidden;
+                transform: translate(-50%, -50%) scale(0.96) !important;
+            }
+            .sc-help-wrap.open:hover .sc-tip,
+            .sc-help-wrap.open:focus-within .sc-tip {
+                opacity: 1 !important;
+                visibility: visible !important;
+                transform: translate(-50%, -50%) scale(1) !important;
+            }
         }
 
 
         /* ═══════════════════════════════════════════════════════════════
-           Monetra v1.21.14 · "Where the stable capital works"
-           Dedicated strategy detail table.
-           Desktop: Strategy · Chain · APY · Invested · Current · Income Mode
-           Mobile:  Strategy · APY · Invested · Current
+           Monetra Current Capital Reconciliation · v1.21.12
+           Current Capital = Market Value + Claimable
+           Net Market P&L = Current Capital - Invested
+           Strategy P&L + Stable Price Effect = Net Market P&L
            ═══════════════════════════════════════════════════════════════ */
-        .stable-focus-layer.strategy-focus .stable-focus-card{
-            width:min(900px,calc(100vw - 42px))!important;
+
+        /* Headline: four equal, optically centered cards on desktop/laptop. */
+        #stable-index .stable-passport .scp-headline-final{
+            grid-template-columns:repeat(4,minmax(0,1fr))!important;
+            grid-template-areas:"invested capital apy claimable"!important;
+            gap:.72rem!important;
         }
-        .stable-strategy-focus{
-            width:100%;
-            margin-top:.18rem;
+        #stable-index .stable-passport .scp-headline-final>.scp-final-metric{
+            min-height:118px!important;
+            display:grid!important;
+            grid-template-rows:34px 1fr!important;
+            align-content:center!important;
+            align-items:center!important;
+            justify-items:center!important;
+            justify-content:stretch!important;
+            padding:.92rem .82rem .9rem!important;
+            text-align:center!important;
         }
-        .stable-strategy-focus-head,
-        .stable-strategy-focus-row{
-            display:grid;
-            grid-template-columns:
-                minmax(205px,1.62fr)
-                minmax(72px,.62fr)
-                minmax(70px,.62fr)
-                minmax(86px,.76fr)
-                minmax(86px,.76fr)
-                minmax(132px,1.12fr);
-            align-items:center;
-            column-gap:.7rem;
+        #stable-index .stable-passport .scp-headline-final>.scp-final-metric>span{
+            width:100%!important;
+            min-height:34px!important;
+            display:flex!important;
+            align-items:center!important;
+            justify-content:center!important;
+            text-align:center!important;
+            margin:0!important;
         }
-        .stable-strategy-focus-head{
-            padding:.18rem .42rem .54rem;
+        #stable-index .stable-passport .scp-headline-final>.scp-final-metric>b{
+            align-self:center!important;
+            justify-self:center!important;
+            margin:.34rem 0 0!important;
+            text-align:center!important;
+        }
+
+        /* Performance + Strategy Book: equal geometry and centered baselines. */
+        #stable-index .scp-essential-actions-paired{
+            grid-template-columns:repeat(2,minmax(0,1fr))!important;
+            align-items:stretch!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-card{
+            min-height:128px!important;
+            display:grid!important;
+            grid-template-rows:30px minmax(46px,1fr) 30px!important;
+            align-items:center!important;
+            justify-items:center!important;
+            align-content:center!important;
+            text-align:center!important;
+            padding:.86rem .9rem .76rem!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-topline,
+        #stable-index .scp-essential-actions-paired .scp-essential-main,
+        #stable-index .scp-essential-actions-paired .scp-essential-footer{
+            width:100%!important;
+            margin:0!important;
+            padding:0!important;
+            display:flex!important;
+            align-items:center!important;
+            justify-content:center!important;
+            text-align:center!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-topline .sc-label-with-help,
+        #stable-index .scp-essential-actions-paired .scp-essential-topline>span{
+            justify-content:center!important;
+            text-align:center!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-main>b{
+            margin:0!important;
+            text-align:center!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-footer .scp-quick-open{
+            justify-content:center!important;
+            text-align:center!important;
+            padding:.28rem 0!important;
+        }
+
+        /* Hidden source lives in the Passport only as data/markup for the focus layer. */
+        #stablePassportMonetra>.scp-performance-detail{display:none!important}
+        .stable-focus-layer .stable-focus-clone.scp-performance-detail{
+            display:block!important;
+            width:100%!important;
+        }
+        .stable-focus-layer[data-kind="income"] .stable-focus-card{
+            width:min(760px,calc(100vw - 34px));
+        }
+        .scp-performance-detail .scp-perf-detail-head{
+            padding:.08rem 0 .78rem;
+            text-align:left;
+        }
+        .scp-performance-detail .scp-perf-detail-head h4{
+            margin:.14rem 0 .36rem;
+            font-family:'Cormorant Garamond',serif;
+            font-size:1.28rem;
+            font-weight:560;
+            line-height:1.08;
+            letter-spacing:-.012em;
+        }
+        .scp-performance-detail .scp-perf-detail-head p{
+            max-width:640px;
+            color:var(--text-2);
+            font-size:.72rem;
+            line-height:1.58;
+        }
+        .scp-performance-detail .scp-perf-section{
+            margin-top:.78rem;
+        }
+        .scp-performance-detail .scp-perf-section-label{
+            margin-bottom:.48rem;
             color:var(--text-3);
-            font-size:.58rem;
-            line-height:1.15;
-            letter-spacing:.075em;
+            font-size:.56rem;
+            line-height:1;
+            letter-spacing:.14em;
             font-weight:700;
             text-transform:uppercase;
         }
-        .stable-strategy-focus-row{
-            min-height:54px;
-            padding:.62rem .42rem;
-            border-top:1px solid rgba(15,23,42,.065);
+        .scp-performance-detail .scp-perf-now-grid,
+        .scp-performance-detail .scp-perf-bridge-grid{
+            display:grid;
+            gap:.52rem;
+            align-items:stretch;
+        }
+        .scp-performance-detail .scp-perf-now-grid{
+            grid-template-columns:repeat(4,minmax(0,1fr));
+        }
+        .scp-performance-detail .scp-perf-bridge-grid{
+            grid-template-columns:repeat(3,minmax(0,1fr));
+        }
+        .scp-performance-detail .scp-perf-cell{
+            min-width:0;
+            min-height:104px;
+            display:grid;
+            grid-template-rows:30px 1fr auto;
+            align-items:center;
+            justify-items:center;
+            padding:.76rem .7rem .68rem;
+            border:1px solid rgba(15,23,42,.075);
+            border-radius:14px;
+            background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(249,251,249,.96));
+            text-align:center;
+            box-shadow:0 12px 28px -26px rgba(15,23,42,.28);
+        }
+        .scp-performance-detail .scp-perf-cell>span{
+            min-height:30px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--text-3);
+            font-size:.56rem;
+            line-height:1.18;
+            letter-spacing:.08em;
+            font-weight:700;
+            text-transform:uppercase;
+        }
+        .scp-performance-detail .scp-perf-cell>b{
+            align-self:center;
+            font-family:'Cormorant Garamond',serif;
+            font-size:1.52rem;
+            line-height:1;
+            font-weight:650;
+            letter-spacing:-.02em;
             font-variant-numeric:tabular-nums;
+            white-space:nowrap;
         }
-        .stable-strategy-focus-row:first-of-type{
-            border-top:1px solid rgba(15,23,42,.075);
-        }
-        .stable-strategy-focus-head>span:not(:first-child),
-        .stable-strategy-focus-row>span:not(:first-child){
+        .scp-performance-detail .scp-perf-cell>small{
+            min-height:1.35em;
+            margin-top:.26rem;
+            color:var(--text-3);
+            font-size:.54rem;
+            line-height:1.35;
+            font-style:normal;
             text-align:center;
         }
-        .stable-strategy-focus-row .ssf-strategy{
-            min-width:0;
-            text-align:left;
+        .scp-performance-detail .scp-perf-cell>small i{font-style:normal;color:var(--text-2)}
+        .scp-performance-detail .scp-perf-cell-claimable>b{color:var(--green)}
+        .scp-performance-detail .scp-perf-cell-current{
+            border-color:rgba(10,124,78,.15);
+            background:linear-gradient(180deg,rgba(10,124,78,.055),rgba(255,255,255,.99));
         }
-        .stable-strategy-focus-row .ssf-strategy strong{
-            display:block;
-            font-size:.73rem;
-            line-height:1.24;
-            font-weight:650;
-            color:var(--text);
-            overflow-wrap:anywhere;
+        .scp-performance-detail .scp-perf-cell-current>b{font-size:1.66rem}
+        .scp-performance-detail .scp-perf-cell-net{
+            border-color:rgba(10,124,78,.18);
+            background:
+                radial-gradient(circle at 100% 0,rgba(10,124,78,.065),transparent 45%),
+                linear-gradient(180deg,rgba(255,255,255,.995),rgba(247,251,248,.98));
         }
-        .stable-strategy-focus-row .ssf-strategy small{
-            display:block;
-            margin-top:.14rem;
-            color:var(--text-3);
-            font-size:.58rem;
-            line-height:1.24;
-        }
-        .stable-strategy-focus-row .ssf-chain{
-            color:var(--text-2);
-            font-size:.67rem;
-            text-transform:capitalize;
-        }
-        .stable-strategy-focus-row .ssf-apy{
-            color:var(--green);
-            font-size:.72rem;
-            font-weight:700;
-            white-space:nowrap;
-        }
-        .stable-strategy-focus-row .ssf-invested,
-        .stable-strategy-focus-row .ssf-current{
-            font-family:'Cormorant Garamond',serif;
-            font-size:.9rem;
-            line-height:1;
-            font-weight:600;
-            white-space:nowrap;
-        }
-        .stable-strategy-focus-row .ssf-current{
-            color:var(--text);
-        }
-        .stable-strategy-focus-row .ssf-mode{
-            color:var(--text-2);
-            font-size:.62rem;
-            line-height:1.32;
-        }
-        .stable-strategy-focus-note{
-            margin:.68rem .42rem 0;
-            padding-top:.62rem;
+        .scp-performance-detail .scp-perf-cell-net>b{color:var(--green)}
+        .scp-performance-detail .scp-perf-cell-net>small{color:var(--green);font-weight:650}
+        .scp-performance-detail .scp-perf-identity{
+            margin-top:.7rem;
+            padding:.68rem .76rem;
             border-top:1px solid var(--line);
             color:var(--text-3);
-            font-size:.59rem;
-            line-height:1.5;
+            font-size:.62rem;
+            line-height:1.52;
+            text-align:center;
         }
 
-        @media(max-width:760.98px){
-            .stable-focus-layer.strategy-focus .stable-focus-card{
-                width:auto!important;
-                left:12px!important;
-                right:12px!important;
+        @media (min-width:761px) and (max-width:1180px){
+            #stable-index .stable-passport .scp-headline-final{gap:.58rem!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric{
+                min-height:110px!important;
+                padding:.82rem .68rem .78rem!important;
             }
-            .stable-strategy-focus-head{
-                display:none!important;
-            }
-            .stable-strategy-focus-row{
-                grid-template-columns:
-                    minmax(0,1.48fr)
-                    minmax(56px,.66fr)
-                    minmax(62px,.78fr)
-                    minmax(62px,.78fr);
-                column-gap:.34rem;
-                min-height:50px;
-                padding:.56rem .14rem;
-            }
-            .stable-strategy-focus-row .ssf-chain,
-            .stable-strategy-focus-row .ssf-mode{
-                display:none!important;
-            }
-            .stable-strategy-focus-row .ssf-strategy strong{
-                font-size:.66rem;
-                line-height:1.2;
-            }
-            .stable-strategy-focus-row .ssf-strategy small{
-                font-size:.52rem;
-                line-height:1.2;
-            }
-            .stable-strategy-focus-row .ssf-apy{
-                font-size:.67rem;
-            }
-            .stable-strategy-focus-row .ssf-invested,
-            .stable-strategy-focus-row .ssf-current{
-                font-size:.78rem;
-            }
-            .stable-strategy-focus-note{
-                margin:.58rem .14rem 0;
-                padding-top:.55rem;
-                font-size:.53rem;
-            }
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>b{font-size:1.78rem!important}
+            #stable-index .stable-passport .scp-final-capital>b{font-size:1.94rem!important}
+            #stable-index .scp-essential-actions-paired{gap:.58rem!important}
+            #stable-index .scp-essential-actions-paired .scp-essential-card{min-height:122px!important}
         }
 
-        @media(max-width:390px){
-            .stable-strategy-focus-row{
-                grid-template-columns:
-                    minmax(0,1.38fr)
-                    minmax(52px,.64fr)
-                    minmax(58px,.76fr)
-                    minmax(58px,.76fr);
-                column-gap:.28rem;
+        @media (max-width:760.98px){
+            /* Mobile: exact 2 × 2 headline geometry. */
+            #stable-index .stable-passport .scp-headline-final{
+                grid-template-columns:repeat(2,minmax(0,1fr))!important;
+                grid-template-areas:"invested capital" "apy claimable"!important;
+                gap:.54rem!important;
+                padding:.64rem!important;
             }
-            .stable-strategy-focus-row .ssf-strategy strong{font-size:.63rem}
-            .stable-strategy-focus-row .ssf-strategy small{font-size:.49rem}
-            .stable-strategy-focus-row .ssf-apy{font-size:.64rem}
-            .stable-strategy-focus-row .ssf-invested,
-            .stable-strategy-focus-row .ssf-current{font-size:.74rem}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric{
+                min-height:102px!important;
+                grid-template-rows:30px 1fr!important;
+                padding:.74rem .58rem .7rem!important;
+            }
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>span{
+                min-height:30px!important;
+                font-size:.57rem!important;
+            }
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>b{
+                font-size:1.5rem!important;
+                margin:.3rem 0 0!important;
+            }
+            #stable-index .stable-passport .scp-final-capital>b{font-size:1.66rem!important}
+
+            /* Performance + Strategy Book stay two equal cards. */
+            #stable-index .scp-essential-actions-paired{
+                grid-template-columns:repeat(2,minmax(0,1fr))!important;
+                gap:.54rem!important;
+            }
+            #stable-index .scp-essential-actions-paired .scp-essential-card{
+                min-height:108px!important;
+                grid-template-rows:28px minmax(40px,1fr) 26px!important;
+                padding:.7rem .58rem .62rem!important;
+            }
+            #stable-index .scp-essential-actions-paired .scp-essential-main>b{font-size:1.28rem!important}
+            #stable-index .scp-essential-actions-paired .scp-essential-card-performance .scp-essential-main>b{
+                font-size:.9rem!important;
+                line-height:1.2!important;
+            }
+
+            .stable-focus-layer[data-kind="income"] .stable-focus-card{
+                width:auto;
+                left:12px;
+                right:12px;
+            }
+            .scp-performance-detail .scp-perf-detail-head{text-align:center}
+            .scp-performance-detail .scp-perf-detail-head p{margin-left:auto;margin-right:auto;font-size:.68rem}
+            .scp-performance-detail .scp-perf-section-label{text-align:center}
+            .scp-performance-detail .scp-perf-now-grid{
+                grid-template-columns:repeat(2,minmax(0,1fr));
+            }
+            .scp-performance-detail .scp-perf-bridge-grid{
+                grid-template-columns:repeat(2,minmax(0,1fr));
+            }
+            .scp-performance-detail .scp-perf-cell{
+                min-height:92px;
+                padding:.64rem .5rem .58rem;
+            }
+            .scp-performance-detail .scp-perf-cell>span{font-size:.52rem}
+            .scp-performance-detail .scp-perf-cell>b{font-size:1.3rem}
+            .scp-performance-detail .scp-perf-cell-current>b{font-size:1.42rem}
+            .scp-performance-detail .scp-perf-cell-net{
+                grid-column:1 / -1;
+                min-height:86px;
+            }
+            .scp-performance-detail .scp-perf-cell-net>b{font-size:1.44rem}
+        }
+
+        @media (max-width:390px){
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric{min-height:96px!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>span{font-size:.53rem!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>b{font-size:1.38rem!important}
+            #stable-index .stable-passport .scp-final-capital>b{font-size:1.5rem!important}
+            #stable-index .scp-essential-actions-paired .scp-essential-card{min-height:102px!important}
+            .scp-performance-detail .scp-perf-cell>b{font-size:1.2rem}
         }
 
 </style>
@@ -6654,7 +6890,7 @@
                     <b class="gold" id="scpInvested">—</b>
                 </div>
                 <div class="scp-final-metric scp-final-capital">
-                    <span class="sc-label-with-help"><span data-i18n="stable.passport.capital">Current Capital</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.capital">Current value of the productive stable strategy book. Claimable rewards are shown separately.</span></span></span>
+                    <span class="sc-label-with-help"><span data-i18n="stable.passport.capital">Current Capital</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.capital">Current Capital equals the current market value of the productive stable strategy book plus separately accrued Claimable rewards. Claimable is included exactly once and remains disclosed as a subset.</span></span></span>
                     <b id="scpCapital">—</b>
                 </div>
                 <div class="scp-final-metric scp-final-apy">
@@ -6674,7 +6910,7 @@
                             <span data-i18n="stable.passport.performance">Performance</span>
                             <span class="sc-help-wrap">
                                 <button class="sc-help" type="button" aria-label="Performance information">?</button>
-                                <span class="sc-tip" data-i18n="stable.help.performance">Strategy performance from verified protocol entry principal to current productive value. Stable price effects are tracked separately.</span>
+                                <span class="sc-tip" data-i18n="stable.help.performance">Headline Performance is Net Market P&L: Current Capital minus verified Invested principal. Strategy P&L and Stable Price Effect are reconciled separately in the detail view.</span>
                             </span>
                         </span>
                     </div>
@@ -6704,6 +6940,60 @@
                     </div>
                 </article>
             </div>
+
+            <!-- Dedicated Performance reconciliation source. Hidden in the Passport;
+                 cloned into the premium focus layer by the Performance card. -->
+            <section class="scp-panel scp-performance-detail" aria-hidden="true">
+                <div class="scp-perf-detail-head">
+                    <div class="scp-panel-k" data-i18n="stable.performance.detailKicker">PERFORMANCE RECONCILIATION</div>
+                    <h4 data-i18n="stable.performance.detailTitle">From Invested to Current Capital</h4>
+                    <p data-i18n="stable.performance.detailLead">Current Capital includes Claimable exactly once. Strategy P&amp;L is measured in nominal stable units; Stable Price Effect bridges that nominal result to current USD market value.</p>
+                </div>
+
+                <div class="scp-perf-section">
+                    <div class="scp-perf-section-label" data-i18n="stable.performance.currentPosition">Current position</div>
+                    <div class="scp-perf-now-grid">
+                        <div class="scp-perf-cell">
+                            <span data-i18n="stable.passport.invested">Invested</span>
+                            <b id="scpPerfInvested">—</b>
+                        </div>
+                        <div class="scp-perf-cell">
+                            <span data-i18n="stable.performance.marketValue">Market Value</span>
+                            <b id="scpPerfMarketValue">—</b>
+                        </div>
+                        <div class="scp-perf-cell scp-perf-cell-claimable">
+                            <span data-i18n="stable.passport.claimable">Claimable</span>
+                            <b id="scpPerfClaimable">—</b>
+                        </div>
+                        <div class="scp-perf-cell scp-perf-cell-current">
+                            <span data-i18n="stable.passport.capital">Current Capital</span>
+                            <b id="scpPerfCurrentCapital">—</b>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scp-perf-section scp-perf-section-reconciliation">
+                    <div class="scp-perf-section-label" data-i18n="stable.performance.reconciliation">Performance reconciliation</div>
+                    <div class="scp-perf-bridge-grid">
+                        <div class="scp-perf-cell">
+                            <span data-i18n="stable.performance.strategyPnl">Strategy P&amp;L</span>
+                            <b id="scpPerfStrategyPnl">—</b>
+                            <small><span data-i18n="stable.performance.nominalValue">Nominal strategy value</span> · <i id="scpPerfNominalValue">—</i></small>
+                        </div>
+                        <div class="scp-perf-cell">
+                            <span data-i18n="stable.performance.stablePriceEffect">Stable Price Effect</span>
+                            <b id="scpPerfStablePriceEffect">—</b>
+                        </div>
+                        <div class="scp-perf-cell scp-perf-cell-net">
+                            <span data-i18n="stable.performance.netMarketPnl">Net Market P&amp;L</span>
+                            <b id="scpPerfNetPnl">—</b>
+                            <small id="scpPerfNetPct">—</small>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="scp-perf-identity" data-i18n="stable.performance.identity">Strategy P&amp;L + Stable Price Effect = Net Market P&amp;L. Claimable remains visible as part of Current Capital and is never counted twice.</p>
+            </section>
 
             <div class="scp-quality">
                 <span><i></i><b id="scpMeasured">10 / 10</b><small data-i18n="stable.passport.measured">strategies with Reference APY</small></span>
@@ -7161,7 +7451,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
 const STABLE_INDEX_DATA_URL = './stable-index-data.json';
-const STABLE_INDEX_UI_VERSION = '1.21.14-strategy-detail-columns';
+const STABLE_INDEX_UI_VERSION = '1.21.12-current-capital-reconciliation';
 let STABLE_INDEX_SNAPSHOT = null;
 let STABLE_UI_LANG = 'en';
 
@@ -7175,10 +7465,8 @@ async function loadStableIndexSnapshot() {
         clearTimeout(timer);
         if (!res.ok) return null;
         const data = await res.json();
-        if (!data || ![
-            '0.1-stable-companies-index',
-            '0.2-stable-companies-index-strategy-performance'
-        ].includes(data.version)) return null;
+        const acceptedStableVersions = new Set(['0.1-stable-companies-index','0.2-stable-companies-index-strategy-performance']);
+        if (!data || !acceptedStableVersions.has(data.version)) return null;
         if (data.universe?.separateFromGeneralComposite !== true) return null;
         if (!Array.isArray(data.companies)) return null;
         STABLE_INDEX_SNAPSHOT = data;
@@ -7242,8 +7530,11 @@ function renderStableCompanies(lang) {
 
     const set = (id, value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
     const apy = Number(c.displayReferenceApyPct);
-    const cap = Number(c.stableCapitalUsd);
-    const claimable = Number(c.accruedClaimableUsd || 0);
+    const marketPrincipal = Number(c.marketPrincipalUsd ?? c.performance?.marketPrincipalUsd ?? c.stableCapitalUsd);
+    const claimable = Number(c.accruedClaimableUsd ?? c.performance?.claimableUsd ?? 0);
+    const currentCapital = Number(c.currentCapitalUsd ?? c.performance?.currentCapitalUsd ??
+        ((Number.isFinite(marketPrincipal) ? marketPrincipal : 0) + (Number.isFinite(claimable) ? claimable : 0)));
+    const cap = marketPrincipal; // Stable Capital / deployed principal remains a distinct metric.
     const embedded = c.embeddedYield || {};
 
     // Registry card.
@@ -7283,27 +7574,47 @@ function renderStableCompanies(lang) {
 
     // Passport headline — verified owner capital + since-inception performance.
     set('scpInvested', stableMoney(c.investedUsd, lang, 2));
-    set('scpCapital', stableMoney(c.stableCapitalUsd, lang, 2));
+    set('scpCapital', stableMoney(currentCapital, lang, 2));
     set('scpApy', stablePct(c.displayReferenceApyPct, 2));
 
-    const performanceUsdRaw =
+    const strategyPnlUsdRaw =
         c.performance?.sinceInceptionUsd ??
         c.performance?.usd ??
         c.performanceUsd ??
         null;
-    const performancePctRaw =
+    const strategyPnlPctRaw =
         c.performance?.sinceInceptionPct ??
         c.performance?.pct ??
         c.performancePct ??
         null;
 
-    const performanceUsd = Number(performanceUsdRaw);
-    const performancePct = Number(performancePctRaw);
+    const investedUsd = Number(c.investedUsd);
+    const strategyPnlUsd = Number(strategyPnlUsdRaw);
+    const strategyPnlPct = Number(strategyPnlPctRaw);
+    const nominalCurrentRaw = c.currentStrategyNominalStable ??
+        (Number.isFinite(investedUsd) && Number.isFinite(strategyPnlUsd) ? investedUsd + strategyPnlUsd : null);
+    const nominalCurrent = Number(nominalCurrentRaw);
+
+    const netMarketPnlUsdRaw = c.performance?.netMarketPnlUsd ??
+        (Number.isFinite(currentCapital) && Number.isFinite(investedUsd) ? currentCapital - investedUsd : null);
+    const netMarketPnlUsd = Number(netMarketPnlUsdRaw);
+    const netMarketPnlPctRaw = c.performance?.netMarketPnlPct ??
+        (Number.isFinite(netMarketPnlUsd) && Number.isFinite(investedUsd) && investedUsd !== 0
+            ? netMarketPnlUsd / investedUsd * 100 : null);
+    const netMarketPnlPct = Number(netMarketPnlPctRaw);
+
+    const stablePriceEffectUsdRaw = c.performance?.stablePriceEffectUsd ??
+        (Number.isFinite(currentCapital) && Number.isFinite(nominalCurrent) ? currentCapital - nominalCurrent : null);
+    const stablePriceEffectUsd = Number(stablePriceEffectUsdRaw);
+
     const hasPerformance =
         c.performance?.status === 'verified-since-inception' &&
-        performanceUsdRaw !== null && performanceUsdRaw !== undefined &&
-        performancePctRaw !== null && performancePctRaw !== undefined &&
-        Number.isFinite(performanceUsd) && Number.isFinite(performancePct);
+        Number.isFinite(investedUsd) &&
+        Number.isFinite(strategyPnlUsd) &&
+        Number.isFinite(nominalCurrent) &&
+        Number.isFinite(netMarketPnlUsd) &&
+        Number.isFinite(netMarketPnlPct) &&
+        Number.isFinite(stablePriceEffectUsd);
 
     const signedMoney = (value) => {
         const abs = stableMoney(Math.abs(value), lang, 2);
@@ -7318,9 +7629,20 @@ function renderStableCompanies(lang) {
     };
 
     set('scpPerformance', hasPerformance
-        ? signedMoney(performanceUsd) + ' · ' + signedPct(performancePct)
+        ? signedMoney(netMarketPnlUsd) + ' · ' + signedPct(netMarketPnlPct)
         : (lang==='ru' ? 'История накапливается' : 'Building history'));
-    set('scpClaimable', stableMoney(c.accruedClaimableUsd || 0, lang, 4));
+    set('scpClaimable', stableMoney(claimable, lang, 4));
+
+    // Performance reconciliation detail — all values come from one economic identity.
+    set('scpPerfInvested', stableMoney(investedUsd, lang, 2));
+    set('scpPerfMarketValue', stableMoney(marketPrincipal, lang, 2));
+    set('scpPerfClaimable', stableMoney(claimable, lang, 4));
+    set('scpPerfCurrentCapital', stableMoney(currentCapital, lang, 2));
+    set('scpPerfStrategyPnl', hasPerformance ? signedMoney(strategyPnlUsd) + ' · ' + signedPct(strategyPnlPct) : '—');
+    set('scpPerfNominalValue', Number.isFinite(nominalCurrent) ? stableMoney(nominalCurrent, lang, 2) : '—');
+    set('scpPerfStablePriceEffect', hasPerformance ? signedMoney(stablePriceEffectUsd) : '—');
+    set('scpPerfNetPnl', hasPerformance ? signedMoney(netMarketPnlUsd) : '—');
+    set('scpPerfNetPct', hasPerformance ? signedPct(netMarketPnlPct) : '—');
     set('scpMeasured', (c.currentFullCoverage ? c.strategyCount : Math.round((c.currentCoverage||0)*c.strategyCount)) + ' / ' + c.strategyCount);
     set('scpProtocols', String(c.protocolCount || 0));
     set('scpChains', String(c.chainCount || 0));
@@ -9619,75 +9941,11 @@ function renderFramework(lang) {
   function cleanClone(source) {
     const clone = source.cloneNode(true);
     clone.removeAttribute('id');
+    clone.removeAttribute('aria-hidden');
     clone.classList.add('stable-focus-clone');
     clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
     clone.querySelectorAll('.sc-help-wrap').forEach(el => el.remove());
     return clone;
-  }
-
-
-  function buildStrategyFocusTable() {
-    const company =
-      (typeof STABLE_INDEX_SNAPSHOT !== 'undefined' && STABLE_INDEX_SNAPSHOT?.companies)
-        ? (STABLE_INDEX_SNAPSHOT.companies.find(x => x?.registry === '008') || STABLE_INDEX_SNAPSHOT.companies[0])
-        : null;
-    const positions = Array.isArray(company?.positions) ? company.positions : [];
-    if (!positions.length) return null;
-
-    const moneyLike = value => {
-      const n = Number(value);
-      return Number.isFinite(n)
-        ? '$' + n.toLocaleString(isRu()?'ru-RU':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2})
-        : '—';
-    };
-    const apyLike = value => {
-      const n = Number(value);
-      return Number.isFinite(n)
-        ? n.toLocaleString(isRu()?'ru-RU':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) + '%'
-        : '—';
-    };
-
-    const shell = document.createElement('div');
-    shell.className = 'stable-strategy-focus';
-
-    const head = document.createElement('div');
-    head.className = 'stable-strategy-focus-head';
-    head.innerHTML =
-      '<span>' + (isRu()?'Стратегия':'Strategy') + '</span>'
-      + '<span>' + (isRu()?'Сеть':'Chain') + '</span>'
-      + '<span>APY</span>'
-      + '<span>' + (isRu()?'Вложено':'Invested') + '</span>'
-      + '<span>' + (isRu()?'Сейчас':'Current') + '</span>'
-      + '<span>' + (isRu()?'Режим дохода':'Income Mode') + '</span>';
-    shell.appendChild(head);
-
-    positions.forEach(p => {
-      const proto = p.protocolFamily || p.protocol || 'Protocol';
-      const asset = p.asset || p.wrapperSymbol || p.underlyingSymbol || 'Stable';
-      const entry = p.strategyEntry || {};
-      const invested = Number(entry.principalNominalStable);
-      const current = Number(entry.currentNominalStable);
-
-      const row = document.createElement('div');
-      row.className = 'stable-strategy-focus-row';
-      row.innerHTML =
-        '<span class="ssf-strategy"><strong>' + proto + ' · ' + asset + '</strong><small>' + (p.positionType || '') + '</small></span>'
-        + '<span class="ssf-chain">' + (p.chain || '—') + '</span>'
-        + '<span class="ssf-apy">' + apyLike(p.referenceApyPct) + '</span>'
-        + '<span class="ssf-invested">' + moneyLike(invested) + '</span>'
-        + '<span class="ssf-current">' + moneyLike(current) + '</span>'
-        + '<span class="ssf-mode">' + stableIncomeMode(p.incomeMode, isRu()?'ru':'en') + '</span>';
-      shell.appendChild(row);
-    });
-
-    const note = document.createElement('p');
-    note.className = 'stable-strategy-focus-note';
-    note.textContent = isRu()
-      ? 'Invested и Current показаны на проверенной номинальной stable-базе каждой стратегии. Stable Price Effect учитывается отдельно.'
-      : 'Invested and Current use each strategy’s verified nominal stable basis. Stable Price Effect is measured separately.';
-    shell.appendChild(note);
-
-    return shell;
   }
 
   function openStableFocus(kind) {
@@ -9700,9 +9958,9 @@ function renderFramework(lang) {
       k = isRu() ? 'MONETRA · КНИГА СТРАТЕГИЙ' : 'MONETRA · STRATEGY BOOK';
       h = isRu() ? 'Где работает стейбл-капитал' : 'Where the stable capital works';
     } else if (kind === 'income') {
-      source = document.querySelector('#stablePassportMonetra .scp-side .scp-panel');
+      source = document.querySelector('#stablePassportMonetra .scp-performance-detail');
       k = isRu() ? 'MONETRA · РЕЗУЛЬТАТ' : 'MONETRA · PERFORMANCE';
-      h = isRu() ? 'Детали результата' : 'Performance details';
+      h = isRu() ? 'Сверка результата' : 'Performance reconciliation';
     } else {
       source = document.querySelector('#stablePassportMonetra .scp-explain');
       k = isRu() ? 'STABLE INDEX · ПОЯСНЕНИЕ МЕТРИК' : 'STABLE INDEX · METRIC GUIDE';
@@ -9712,66 +9970,13 @@ function renderFramework(lang) {
     if (!source) return;
     const clone = cleanClone(source);
 
-    layer.classList.toggle('strategy-focus', kind === 'strategies');
     kicker.textContent = k;
     title.textContent = h;
     body.innerHTML = '';
+    body.appendChild(clone);
 
-    if (kind === 'strategies') {
-      const strategyTable = buildStrategyFocusTable();
-      body.appendChild(strategyTable || clone);
-    } else {
-      body.appendChild(clone);
-    }
 
-    if (kind === 'income') {
-      const stableCompany =
-        (typeof STABLE_INDEX_SNAPSHOT !== 'undefined' && STABLE_INDEX_SNAPSHOT?.companies)
-          ? (STABLE_INDEX_SNAPSHOT.companies.find(x => x?.registry === '008') || STABLE_INDEX_SNAPSHOT.companies[0])
-          : null;
-      const perf = stableCompany?.performance || {};
-      const invested = Number(stableCompany?.investedUsd);
-      const currentNominal = Number(stableCompany?.currentStrategyNominalStable);
-      const perfUsd = Number(perf?.sinceInceptionUsd);
-      const perfPct = Number(perf?.sinceInceptionPct);
-      const verified = perf?.status === 'verified-since-inception'
-        && [invested,currentNominal,perfUsd,perfPct].every(Number.isFinite);
-
-      if (verified) {
-        const signMoney = v => (v>0?'+':v<0?'−':'') + stableMoney(Math.abs(v), isRu()?'ru':'en', 2);
-        const signPct = v => (v>0?'+':v<0?'−':'') + Math.abs(v).toLocaleString(isRu()?'ru-RU':'en-US',{
-          minimumFractionDigits:2, maximumFractionDigits:2
-        }) + '%';
-
-        const summary = document.createElement('div');
-        summary.className = 'stable-performance-summary';
-        summary.innerHTML =
-          '<div><span>' + (isRu()?'Инвестировано':'Invested') + '</span><b>' + stableMoney(invested,isRu()?'ru':'en',2) + '</b></div>'
-          + '<div><span>' + (isRu()?'Текущая база':'Current basis') + '</span><b>' + stableMoney(currentNominal,isRu()?'ru':'en',2) + '</b></div>'
-          + '<div class="perf-positive"><span>' + (isRu()?'Результат':'Performance') + '</span><b>' + signMoney(perfUsd) + '</b></div>'
-          + '<div class="perf-positive"><span>' + (isRu()?'Доходность':'Return') + '</span><b>' + signPct(perfPct) + '</b></div>';
-        body.insertBefore(summary, body.firstChild);
-
-        const note = document.createElement('p');
-        note.className = 'stable-performance-note';
-        note.textContent = isRu()
-          ? 'Результат с момента входа восстановлен по проверенному principal каждой из 10 продуктивных стратегий. Stable Price Effect отделён; claimable учитывается в результате только там, где он уже экономически заработан.'
-          : 'Since-inception Performance is reconstructed from the verified entry principal of all 10 productive strategies. Stable Price Effect is separated; claimable is included only where it is already economically earned.';
-        body.insertBefore(note, body.children[1] || null);
-      }
-
-      const track = document.createElement('div');
-      track.className = 'stable-focus-track';
-      const date = document.getElementById('scpTrackingStarted')?.textContent || '—';
-      track.innerHTML =
-        '<span>' + (isRu() ? 'Embedded Yield наблюдается с' : 'Embedded Yield tracking since') + '</span>'
-        + '<b>' + date + '</b>'
-        + '<small>' + (isRu()
-            ? 'Помесячный Embedded Yield остаётся отдельным checkpoint-учётом и не подменяет Performance с момента входа.'
-            : 'Periodic Embedded Yield remains a separate checkpoint ledger and does not replace since-inception Performance.') + '</small>';
-      body.appendChild(track);
-    }
-
+    layer.dataset.kind = kind;
     layer.classList.add('open');
     layer.setAttribute('aria-hidden', 'false');
     document.body.classList.add('stable-focus-open');
@@ -9779,6 +9984,7 @@ function renderFramework(lang) {
 
   function closeStableFocus() {
     layer.classList.remove('open');
+    layer.removeAttribute('data-kind');
     layer.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('stable-focus-open');
     body.innerHTML = '';
@@ -9808,16 +10014,53 @@ function renderFramework(lang) {
 
 /* Stable metric help · hover on desktop, tap on mobile */
 (function(){
+  /* The button keeps focus after a tap, and the show rule also reacts to
+     :focus-within — so a second tap removed the class while focus alone kept the
+     tip on screen. Blurring on close makes the two states agree, and the tip
+     opens and closes exactly once per tap. */
+  let veil = null;
+  const veilEl = () => {
+    if (!veil) {
+      veil = document.createElement('div');
+      veil.className = 'sc-tip-veil';
+      veil.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); closeAll(null); });
+      document.body.appendChild(veil);
+    }
+    return veil;
+  };
+  const showVeil = on => {
+    const v = veilEl();
+    if (on) { v.style.display = 'block'; requestAnimationFrame(() => v.classList.add('on')); }
+    else {
+      v.classList.remove('on');
+      setTimeout(() => { if (!document.querySelector('.sc-help-wrap.open')) v.style.display = 'none'; }, 230);
+    }
+  };
+  const closeAll = except => {
+    document.querySelectorAll('.sc-help-wrap.open').forEach(w => {
+      if (w !== except) {
+        w.classList.remove('open');
+        const b = w.querySelector('.sc-help');
+        if (b) b.blur();
+      }
+    });
+    if (!document.querySelector('.sc-help-wrap.open')) showVeil(false);
+  };
   document.addEventListener('click', ev => {
     const btn = ev.target.closest('.sc-help');
-    document.querySelectorAll('.sc-help-wrap.open').forEach(w => {
-      if (!btn || w !== btn.closest('.sc-help-wrap')) w.classList.remove('open');
-    });
-    if (!btn) return;
+    if (!btn) { closeAll(null); return; }
     ev.preventDefault();
     ev.stopPropagation();
     const wrap = btn.closest('.sc-help-wrap');
-    if (wrap) wrap.classList.toggle('open');
+    if (!wrap) return;
+    closeAll(wrap);
+    const willOpen = !wrap.classList.contains('open');
+    wrap.classList.toggle('open', willOpen);
+    if (!willOpen) btn.blur();
+    if (window.matchMedia('(max-width: 760.98px)').matches) showVeil(willOpen);
+  });
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape') closeAll(null);
   });
 })();
 
@@ -9889,8 +10132,8 @@ function renderFramework(lang) {
             'stable.method.text': 'No synthetic Stable Composite score is invented yet. The index reports the measurable fundamentals directly: capital, current productive capacity, earned Embedded Yield, claimable rewards and operating history. A richer stable-company score can be introduced only after a meaningful multi-company history exists.',
             'stable.help.apy': 'The book’s current annualized yield rate. It is not historical return and it is not a promise of future yield.',
             'stable.help.invested': 'Stable principal verified at entry into the productive strategy book.',
-            'stable.help.capital': 'Current value of the productive stable strategy book. Claimable rewards are shown separately.',
-            'stable.help.performance': 'Strategy performance from verified protocol entry principal to current productive value. Stable price effects are tracked separately.',
+            'stable.help.capital': 'Current Capital equals the current market value of the productive stable strategy book plus separately accrued Claimable rewards. Claimable is included exactly once and remains disclosed as a subset.',
+            'stable.help.performance': 'Headline Performance is Net Market P&L: Current Capital minus verified Invested principal. Strategy P&L and Stable Price Effect are reconciled separately in the detail view.',
             'stable.help.embedded': 'Yield that stays inside a position and increases its value automatically. Historical income is recorded only after verified checkpoints confirm the change.',
             'stable.help.claimable': 'Rewards already earned inside a protocol but not yet received by the company wallet.',
             'stable.help.price': 'Stablecoin/depeg price movement is separated from strategy income. A stable asset moving away from $1 should not be mislabeled as yield.',
@@ -9926,6 +10169,17 @@ function renderFramework(lang) {
             'stable.quick.income': 'Income',
             'stable.quick.open': 'View details',
             'stable.performance.details': 'View details',
+            'stable.performance.detailKicker': 'PERFORMANCE RECONCILIATION',
+            'stable.performance.detailTitle': 'From Invested to Current Capital',
+            'stable.performance.detailLead': 'Current Capital includes Claimable exactly once. Strategy P&L is measured in nominal stable units; Stable Price Effect bridges that nominal result to current USD market value.',
+            'stable.performance.currentPosition': 'Current position',
+            'stable.performance.marketValue': 'Market Value',
+            'stable.performance.reconciliation': 'Performance reconciliation',
+            'stable.performance.strategyPnl': 'Strategy P&L',
+            'stable.performance.nominalValue': 'Nominal strategy value',
+            'stable.performance.stablePriceEffect': 'Stable Price Effect',
+            'stable.performance.netMarketPnl': 'Net Market P&L',
+            'stable.performance.identity': 'Strategy P&L + Stable Price Effect = Net Market P&L. Claimable remains visible as part of Current Capital and is never counted twice.',
             'stable.table.strategy': 'Strategy',
             'stable.table.chain': 'Chain',
             'stable.table.capital': 'Capital',
@@ -10118,8 +10372,8 @@ function renderFramework(lang) {
             'stable.method.text': 'Синтетический Stable Composite Score пока не придумывается. Индекс напрямую показывает измеримые основы: капитал, текущую производительность, фактически заработанный Embedded Yield, claimable rewards и операционную историю. Более сложный score имеет смысл вводить только после появления достаточной истории у нескольких стейбл-компаний.',
             'stable.help.apy': 'Текущая годовая доходность книги стратегий. Это не исторический результат и не обещание будущей доходности.',
             'stable.help.invested': 'Стейбл-капитал, подтверждённый в момент входа в продуктивные стратегии.',
-            'stable.help.capital': 'Текущая стоимость продуктивной книги стейбл-стратегий. Доступные награды показаны отдельно.',
-            'stable.help.performance': 'Результат стратегий от подтверждённой точки входа до текущей продуктивной стоимости. Эффект цены стейблов учитывается отдельно.',
+            'stable.help.capital': 'Текущий капитал равен рыночной стоимости продуктивной книги стейбл-стратегий плюс отдельно начисленные Claimable-награды. Claimable включается ровно один раз и остаётся видимой отдельной частью капитала.',
+            'stable.help.performance': 'Главный Результат — это Net Market P&L: Текущий капитал минус подтверждённый Вложенный капитал. Strategy P&L и эффект цены стейблов отдельно сверяются в деталях.',
             'stable.help.embedded': 'Доход остаётся внутри позиции и автоматически увеличивает её стоимость. В историю он попадает только после подтверждённых checkpoint.',
             'stable.help.claimable': 'Награды уже заработаны внутри протокола, но ещё не поступили в кошелёк компании.',
             'stable.help.price': 'Изменение цены или depeg стейблкоина отделяется от дохода стратегии. Движение стейбл-актива относительно $1 не должно маскироваться под yield.',
@@ -10155,6 +10409,17 @@ function renderFramework(lang) {
             'stable.quick.income': 'Доход',
             'stable.quick.open': 'Подробнее',
             'stable.performance.details': 'Подробнее',
+            'stable.performance.detailKicker': 'СВЕРКА РЕЗУЛЬТАТА',
+            'stable.performance.detailTitle': 'От вложенного капитала к текущему',
+            'stable.performance.detailLead': 'Текущий капитал включает Claimable ровно один раз. Strategy P&L измеряется в номинальных стейбл-единицах, а Stable Price Effect связывает этот номинальный результат с текущей рыночной стоимостью в USD.',
+            'stable.performance.currentPosition': 'Текущая позиция',
+            'stable.performance.marketValue': 'Рыночная стоимость',
+            'stable.performance.reconciliation': 'Сверка результата',
+            'stable.performance.strategyPnl': 'Strategy P&L',
+            'stable.performance.nominalValue': 'Номинальная стоимость стратегий',
+            'stable.performance.stablePriceEffect': 'Stable Price Effect',
+            'stable.performance.netMarketPnl': 'Net Market P&L',
+            'stable.performance.identity': 'Strategy P&L + Stable Price Effect = Net Market P&L. Claimable остаётся видимой частью Текущего капитала и нигде не учитывается дважды.',
             'os.eyebrow': 'The Holding OS · В разработке',
             'collection.next': 'Перейти к индексу The Holding',
             'stable.table.strategy': 'Стратегия',
