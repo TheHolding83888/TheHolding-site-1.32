@@ -11,13 +11,14 @@ function canonicalAddress(value) {
   return getAddress(String(value).toLowerCase());
 }
 
-const VERSION = '1.3-company-008-aerodrome-sugar-base-weth-final';
+const VERSION = '1.4-company-008-aerodrome-ve-rewards-weth-final-pass';
 const WALLET = canonicalAddress('0xe4b9c9ced406baffe406e63f83d39daaef150596');
 
 const OUTPUT = process.env.COMPANY_008_RESOLVE_OUTPUT
   || path.resolve('companies/company-008-resolve.json');
 
 const PREVIOUS_RESOLVER_FILE = path.resolve('companies/company-008-resolve.json');
+const DISCOVERY_FILE = path.resolve('companies/company-008-discovery.json');
 
 const BASE_RPC_URLS = [
   process.env.BASE_RPC_URL,
@@ -28,21 +29,23 @@ const BASE_RPC_URLS = [
 
 const TARGET = Object.freeze({
   baseWeth: canonicalAddress('0x4200000000000000000000000000000000000006'),
-  sugar: canonicalAddress('0x69dd9db6d8f8e7d83887a704f447b1a584b599a1'),
-  knownSlipstreamNfpmV1: canonicalAddress('0x827922686190790b37229fd06084350e74485b72'),
-  knownWethUsdcPool: canonicalAddress('0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59')
+  lpSugar: canonicalAddress('0x69dd9db6d8f8e7d83887a704f447b1a584b599a1'),
+  rewardsSugar: canonicalAddress('0x1b121efdaf4abb8785a315c51d29bce0552a7678')
 });
 
 const EXPECTED_BASE_WETH = 0.1606;
-const ZERO = canonicalAddress('0x0000000000000000000000000000000000000000');
+const TOLERANCE = Math.max(0.001, EXPECTED_BASE_WETH * 0.03);
+const MATERIAL_WETH = 0.001;
+const PAGE_SIZE = 250;
+const MAX_POOLS_SCAN = 1000;
 
-const POSITION_TUPLE =
-  '(uint256 id,address lp,uint256 liquidity,uint256 staked,uint256 amount0,uint256 amount1,uint256 staked0,uint256 staked1,uint256 unstaked_earned0,uint256 unstaked_earned1,uint256 emissions_earned,int24 tick_lower,int24 tick_upper,uint160 sqrt_ratio_lower,uint160 sqrt_ratio_upper,address locker,uint32 unlocks_at,address alm)';
+const REWARD_TUPLE =
+  '(uint256 venft_id,address lp,uint256 amount,address token,address fee,address bribe)';
 
 function errMsg(e) {
   return String(e?.shortMessage || e?.message || e || 'unknown error')
     .replace(/https?:\/\/[^\s)]+/g, '[url-redacted]')
-    .slice(0, 1000);
+    .slice(0, 1200);
 }
 
 function lower(value) {
@@ -54,69 +57,87 @@ function round(value, digits = 12) {
   return Number.isFinite(n) ? Number(n.toFixed(digits)) : null;
 }
 
-function positiveBigInt(value) {
-  try {
-    const n = BigInt(value);
-    return n > 0n ? n : 0n;
-  } catch {
-    return 0n;
-  }
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-function readPreviousV12() {
+function readPreviousV13() {
   try {
-    const d = JSON.parse(fs.readFileSync(PREVIOUS_RESOLVER_FILE, 'utf8'));
+    const d = readJson(PREVIOUS_RESOLVER_FILE);
 
-    if (d?.version !== '1.2-company-008-atoken-base-holdings-final-delta') {
+    if (d?.version !== '1.3-company-008-aerodrome-sugar-base-weth-final') {
       return {
         status: 'unexpected-version',
         version: d?.version || null
       };
     }
 
-    if (d?.resolution?.avalancheBtcB !== true) {
-      return {
-        status: 'avalanche-not-resolved',
-        version: d.version
-      };
+    const btc = Number(d?.finalCandidateTotals?.btc);
+    const ethNativeSubtotal = Number(d?.preservedResolved?.ethNativeSubtotal);
+
+    if (!Number.isFinite(btc) || btc <= 0) {
+      return { status: 'btc-invalid', version: d.version };
+    }
+
+    if (!Number.isFinite(ethNativeSubtotal) || ethNativeSubtotal < 0) {
+      return { status: 'eth-native-invalid', version: d.version };
     }
 
     if (
       d?.resolution?.lombardEthereumWbtc !== true
       || d?.resolution?.lombardBaseWbtc !== true
+      || d?.resolution?.avalancheBtcB !== true
     ) {
-      return {
-        status: 'lombard-not-preserved',
-        version: d.version
-      };
-    }
-
-    const btc = Number(d?.finalCandidateTotals?.btc);
-
-    if (!Number.isFinite(btc) || btc <= 0) {
-      return {
-        status: 'btc-total-invalid',
-        version: d.version
-      };
+      return { status: 'previous-resolutions-not-preserved', version: d.version };
     }
 
     return {
       status: 'ok',
       version: d.version,
       btc,
-      ethNativeSubtotal: Number(d?.discoveryBaseline?.ethNativeSubtotal) || 0,
-      preservedResolved: {
-        lombardEthereum: d?.preservedResolved?.lombardEthereum || null,
-        lombardBase: d?.preservedResolved?.lombardBase || null,
-        avalancheAaveBtcB: d?.results?.avalancheAaveBtcB || null
-      }
+      ethNativeSubtotal,
+      previousResolution: d.resolution,
+      previousAerodromeSlipstream: d?.results?.baseWethAerodromeSlipstream || null,
+      preservedResolved: d?.preservedResolved || null
     };
   } catch (e) {
-    return {
-      status: 'unavailable',
-      error: errMsg(e)
-    };
+    return { status: 'unavailable', error: errMsg(e) };
   }
+}
+
+function readAerodromeIdsFromDiscovery() {
+  const d = readJson(DISCOVERY_FILE);
+
+  if (d?.company?.registry !== '008') {
+    throw new Error('Company #008 discovery registry mismatch');
+  }
+
+  const positions = Array.isArray(d?.discovery?.aerodrome?.positions)
+    ? d.discovery.aerodrome.positions
+    : [];
+
+  const directVenftIds = [...new Set(
+    positions
+      .map(x => String(x?.tokenId || ''))
+      .filter(x => /^\d+$/.test(x) && BigInt(x) > 0n)
+  )];
+
+  const managedVenftIds = [...new Set(
+    positions
+      .map(x => String(x?.managedTokenId || ''))
+      .filter(x => /^\d+$/.test(x) && BigInt(x) > 0n)
+  )];
+
+  if (directVenftIds.length === 0) {
+    throw new Error('No Aerodrome veNFT ids found in discovery');
+  }
+
+  return {
+    discoveryVersion: d.version,
+    directVenftIds,
+    managedVenftIds,
+    aerodrome: d.discovery.aerodrome
+  };
 }
 
 async function withBaseProvider(fn) {
@@ -124,371 +145,289 @@ async function withBaseProvider(fn) {
 
   for (const url of BASE_RPC_URLS) {
     const provider = new JsonRpcProvider(url);
-
     try {
-      return {
-        result: await fn(provider),
-        errors
-      };
+      const result = await fn(provider);
+      return { result, errors };
     } catch (e) {
       errors.push(errMsg(e));
     }
   }
 
+  return { result: null, errors };
+}
+
+function normalizeReward(raw, sourceVenftId) {
+  const venftId = BigInt(raw.venft_id ?? raw[0]).toString();
+  const lp = canonicalAddress(raw.lp ?? raw[1]);
+  const amountRaw = BigInt(raw.amount ?? raw[2]).toString();
+  const token = canonicalAddress(raw.token ?? raw[3]);
+  const fee = canonicalAddress(raw.fee ?? raw[4]);
+  const bribe = canonicalAddress(raw.bribe ?? raw[5]);
+
   return {
-    result: null,
-    errors
+    sourceVenftId: String(sourceVenftId),
+    venftId,
+    lp,
+    amountRaw,
+    token,
+    fee,
+    bribe,
+    kind: lower(fee) !== '0x0000000000000000000000000000000000000000'
+      ? 'fees'
+      : 'incentives'
   };
 }
 
-async function callMaybe(contract, method, args = []) {
-  try {
-    const value = await contract[method](...args);
-    return { ok: true, value };
-  } catch (e) {
-    return {
-      ok: false,
-      error: errMsg(e)
-    };
-  }
-}
-
-async function tokenMeta(provider, address) {
-  const c = new Contract(address, [
-    'function symbol() view returns (string)',
-    'function name() view returns (string)',
-    'function decimals() view returns (uint8)'
-  ], provider);
-
-  let symbol = null;
-  let name = null;
-  let decimals = 18;
-
-  try { symbol = await c.symbol(); } catch {}
-  try { name = await c.name(); } catch {}
-  try { decimals = Number(await c.decimals()); } catch {}
-
-  return {
-    address: canonicalAddress(address),
-    symbol,
-    name,
-    decimals
-  };
-}
-
-async function poolMeta(provider, poolAddress) {
-  const pool = new Contract(poolAddress, [
-    'function token0() view returns (address)',
-    'function token1() view returns (address)',
-    'function tickSpacing() view returns (int24)'
-  ], provider);
-
-  let token0 = null;
-  let token1 = null;
-  let tickSpacing = null;
-
-  try { token0 = canonicalAddress(await pool.token0()); } catch {}
-  try { token1 = canonicalAddress(await pool.token1()); } catch {}
-  try { tickSpacing = Number(await pool.tickSpacing()); } catch {}
-
-  const token0Meta = token0 ? await tokenMeta(provider, token0) : null;
-  const token1Meta = token1 ? await tokenMeta(provider, token1) : null;
-
-  return {
-    pool: canonicalAddress(poolAddress),
-    token0,
-    token1,
-    token0Meta,
-    token1Meta,
-    tickSpacing
-  };
-}
-
-function normalizePosition(raw, sourceMethod) {
-  return {
-    sourceMethod,
-    id: positiveBigInt(raw.id ?? raw[0]).toString(),
-    lp: canonicalAddress(raw.lp ?? raw[1]),
-    liquidity: positiveBigInt(raw.liquidity ?? raw[2]).toString(),
-    staked: positiveBigInt(raw.staked ?? raw[3]).toString(),
-    amount0Raw: positiveBigInt(raw.amount0 ?? raw[4]).toString(),
-    amount1Raw: positiveBigInt(raw.amount1 ?? raw[5]).toString(),
-    staked0Raw: positiveBigInt(raw.staked0 ?? raw[6]).toString(),
-    staked1Raw: positiveBigInt(raw.staked1 ?? raw[7]).toString(),
-    unstakedEarned0Raw: positiveBigInt(raw.unstaked_earned0 ?? raw[8]).toString(),
-    unstakedEarned1Raw: positiveBigInt(raw.unstaked_earned1 ?? raw[9]).toString(),
-    emissionsEarnedRaw: positiveBigInt(raw.emissions_earned ?? raw[10]).toString(),
-    tickLower: Number(raw.tick_lower ?? raw[11]),
-    tickUpper: Number(raw.tick_upper ?? raw[12]),
-    sqrtRatioLower: positiveBigInt(raw.sqrt_ratio_lower ?? raw[13]).toString(),
-    sqrtRatioUpper: positiveBigInt(raw.sqrt_ratio_upper ?? raw[14]).toString(),
-    locker: canonicalAddress(raw.locker ?? raw[15]),
-    unlocksAt: Number(raw.unlocks_at ?? raw[16]),
-    alm: canonicalAddress(raw.alm ?? raw[17])
-  };
-}
-
-function richness(position) {
-  return [
-    position.liquidity,
-    position.staked,
-    position.amount0Raw,
-    position.amount1Raw,
-    position.staked0Raw,
-    position.staked1Raw,
-    position.unstakedEarned0Raw,
-    position.unstakedEarned1Raw
-  ].reduce((sum, x) => sum + positiveBigInt(x), 0n);
-}
-
-function dedupePositions(positions) {
+function dedupeRewards(rows) {
   const map = new Map();
 
-  for (const p of positions) {
-    const key = `${lower(p.lp)}:${p.id}`;
+  for (const row of rows) {
+    const key = [
+      row.venftId,
+      lower(row.lp),
+      lower(row.token),
+      lower(row.fee),
+      lower(row.bribe)
+    ].join(':');
 
     const current = map.get(key);
-
-    if (!current || richness(p) > richness(current)) {
-      map.set(key, p);
+    if (!current || BigInt(row.amountRaw) > BigInt(current.amountRaw)) {
+      map.set(key, row);
     }
   }
 
   return [...map.values()];
 }
 
-async function fetchSugarPositions(provider) {
-  const sugarCode = await provider.getCode(TARGET.sugar);
+async function getPoolCount() {
+  const wrapped = await withBaseProvider(async provider => {
+    const code = await provider.getCode(TARGET.lpSugar);
+    if (code === '0x') throw new Error('LpSugar has no bytecode');
 
-  if (sugarCode === '0x') {
-    throw new Error('Aerodrome Sugar contract has no bytecode');
-  }
+    const sugar = new Contract(
+      TARGET.lpSugar,
+      ['function count() view returns (uint256)'],
+      provider
+    );
 
-  const sugar = new Contract(TARGET.sugar, [
-    `function positions(uint256,uint256,address) view returns (${POSITION_TUPLE}[])`,
-    `function positionsUnstakedConcentrated(uint256,uint256,address) view returns (${POSITION_TUPLE}[])`
-  ], provider);
+    return Number(await sugar.count());
+  });
 
-  const probes = {
-    positions: await callMaybe(sugar, 'positions', [250, 0, WALLET]),
-    legacyUnstaked: await callMaybe(
-      sugar,
-      'positionsUnstakedConcentrated',
-      [250, 0, WALLET]
-    )
-  };
-
-  const rows = [];
-
-  if (probes.positions.ok && Array.isArray(probes.positions.value)) {
-    for (const raw of probes.positions.value) {
-      rows.push(normalizePosition(raw, 'LpSugar.positions'));
-    }
-  }
-
-  if (probes.legacyUnstaked.ok && Array.isArray(probes.legacyUnstaked.value)) {
-    for (const raw of probes.legacyUnstaked.value) {
-      rows.push(
-        normalizePosition(
-          raw,
-          'LpSugar.positionsUnstakedConcentrated'
-        )
-      );
-    }
+  if (!Number.isFinite(wrapped.result) || wrapped.result <= 0) {
+    return {
+      status: 'unavailable',
+      count: null,
+      diagnostics: wrapped.errors
+    };
   }
 
   return {
-    sugar: TARGET.sugar,
-    sugarCodeExists: true,
-    probes: {
-      positions: probes.positions.ok
-        ? { ok: true, count: probes.positions.value.length }
-        : { ok: false, error: probes.positions.error },
-      legacyUnstaked: probes.legacyUnstaked.ok
-        ? { ok: true, count: probes.legacyUnstaked.value.length }
-        : { ok: false, error: probes.legacyUnstaked.error }
-    },
-    positions: dedupePositions(rows)
+    status: 'ok',
+    count: wrapped.result,
+    diagnostics: wrapped.errors
   };
 }
 
-async function resolveAerodromeWeth() {
-  const wrapped = await withBaseProvider(async provider => {
-    const sugar = await fetchSugarPositions(provider);
+async function scanVenftRewards(venftId, poolCount) {
+  const scanLimit = Math.min(poolCount, MAX_POOLS_SCAN);
+  const rows = [];
+  const pages = [];
+  let complete = true;
 
-    const poolCache = new Map();
-    const enriched = [];
+  for (let offset = 0; offset < scanLimit; offset += PAGE_SIZE) {
+    const limit = Math.min(PAGE_SIZE, scanLimit - offset);
 
-    for (const position of sugar.positions) {
-      const key = lower(position.lp);
+    const wrapped = await withBaseProvider(async provider => {
+      const code = await provider.getCode(TARGET.rewardsSugar);
+      if (code === '0x') throw new Error('RewardsSugar has no bytecode');
 
-      let meta = poolCache.get(key);
+      const sugar = new Contract(
+        TARGET.rewardsSugar,
+        [`function rewards(uint256,uint256,uint256) view returns (${REWARD_TUPLE}[])`],
+        provider
+      );
 
-      if (!meta) {
-        meta = await poolMeta(provider, position.lp);
-        poolCache.set(key, meta);
-      }
+      return await sugar.rewards(limit, offset, BigInt(venftId));
+    });
 
-      const token0Decimals = meta?.token0Meta?.decimals ?? 18;
-      const token1Decimals = meta?.token1Meta?.decimals ?? 18;
-
-      const amount0 =
-        Number(formatUnits(BigInt(position.amount0Raw), token0Decimals));
-      const amount1 =
-        Number(formatUnits(BigInt(position.amount1Raw), token1Decimals));
-      const staked0 =
-        Number(formatUnits(BigInt(position.staked0Raw), token0Decimals));
-      const staked1 =
-        Number(formatUnits(BigInt(position.staked1Raw), token1Decimals));
-      const fee0 =
-        Number(formatUnits(BigInt(position.unstakedEarned0Raw), token0Decimals));
-      const fee1 =
-        Number(formatUnits(BigInt(position.unstakedEarned1Raw), token1Decimals));
-
-      let principalWeth = 0;
-      let unclaimedFeeWeth = 0;
-
-      if (meta?.token0 && lower(meta.token0) === lower(TARGET.baseWeth)) {
-        principalWeth += amount0 + staked0;
-        unclaimedFeeWeth += fee0;
-      }
-
-      if (meta?.token1 && lower(meta.token1) === lower(TARGET.baseWeth)) {
-        principalWeth += amount1 + staked1;
-        unclaimedFeeWeth += fee1;
-      }
-
-      enriched.push({
-        ...position,
-        poolMeta: meta,
-        amounts: {
-          amount0: round(amount0),
-          amount1: round(amount1),
-          staked0: round(staked0),
-          staked1: round(staked1),
-          unstakedEarned0: round(fee0),
-          unstakedEarned1: round(fee1)
-        },
-        weth: {
-          principal: round(principalWeth),
-          unclaimedFees: round(unclaimedFeeWeth),
-          grossIncludingUnclaimedFees: round(
-            principalWeth + unclaimedFeeWeth
-          )
-        },
-        knownWethUsdcPool:
-          lower(position.lp) === lower(TARGET.knownWethUsdcPool)
+    if (!wrapped.result) {
+      complete = false;
+      pages.push({
+        offset,
+        limit,
+        ok: false,
+        errors: wrapped.errors
       });
+      continue;
     }
 
-    const wethPositions = enriched.filter(
-      x => Number(x?.weth?.principal) > 0
-        || Number(x?.weth?.unclaimedFees) > 0
+    const pageRows = Array.from(wrapped.result).map(raw =>
+      normalizeReward(raw, venftId)
     );
 
-    const principalWeth = wethPositions.reduce(
-      (sum, x) => sum + Number(x.weth.principal || 0),
-      0
-    );
+    rows.push(...pageRows);
+    pages.push({
+      offset,
+      limit,
+      ok: true,
+      rewardRows: pageRows.length,
+      providerErrorsBeforeSuccess: wrapped.errors
+    });
+  }
 
-    const unclaimedFeeWeth = wethPositions.reduce(
-      (sum, x) => sum + Number(x.weth.unclaimedFees || 0),
-      0
-    );
+  if (poolCount > MAX_POOLS_SCAN) {
+    complete = false;
+  }
 
-    const grossIncludingFees = principalWeth + unclaimedFeeWeth;
+  return {
+    venftId: String(venftId),
+    poolCount,
+    scannedPools: scanLimit,
+    maxPoolsScan: MAX_POOLS_SCAN,
+    complete,
+    pages,
+    rewards: dedupeRewards(rows)
+  };
+}
 
-    const tolerance = Math.max(
-      0.001,
-      EXPECTED_BASE_WETH * 0.03
-    );
+async function enrichRewardRows(rows) {
+  const uniqueTokens = [...new Set(rows.map(x => lower(x.token)))];
+  const meta = new Map();
 
-    const principalMatched =
-      principalWeth > 0
-      && Math.abs(principalWeth - EXPECTED_BASE_WETH) <= tolerance;
+  await withBaseProvider(async provider => {
+    for (const tokenLower of uniqueTokens) {
+      const token = canonicalAddress(tokenLower);
+      const c = new Contract(token, [
+        'function symbol() view returns (string)',
+        'function decimals() view returns (uint8)'
+      ], provider);
 
-    const grossMatched =
-      grossIncludingFees > 0
-      && Math.abs(grossIncludingFees - EXPECTED_BASE_WETH) <= tolerance;
+      let symbol = null;
+      let decimals = 18;
+      try { symbol = await c.symbol(); } catch {}
+      try { decimals = Number(await c.decimals()); } catch {}
 
-    const status = principalMatched
-      ? 'ok'
-      : (
-          grossMatched
-            ? 'boundary-review-principal-vs-unclaimed-fees'
-            : 'unresolved'
-        );
-
-    return {
-      chain: 'Base',
-      protocol: 'Aerodrome Slipstream',
-      ownerObservedApprox: EXPECTED_BASE_WETH,
-      methodology: {
-        source:
-          'official Aerodrome/Velodrome LpSugar onchain positions API',
-        principal:
-          'WETH principal = amount side + staked side for each current position',
-        accruedFees:
-          'unstaked_earned WETH is tracked separately and NOT added to Company Balance principal',
-        antiDoubleCount:
-          'legacy and current Sugar position methods are deduplicated by pool + NFT id'
-      },
-      knownContext: {
-        slipstreamNfpmV1: TARGET.knownSlipstreamNfpmV1,
-        wethUsdcPool: TARGET.knownWethUsdcPool
-      },
-      sugar,
-      wethPositions,
-      totals: {
-        principalWeth: round(principalWeth),
-        unclaimedFeeWeth: round(unclaimedFeeWeth),
-        grossIncludingUnclaimedFees: round(grossIncludingFees)
-      },
-      tolerance: round(tolerance),
-      deltaPrincipalVsOwnerObserved: principalWeth > 0
-        ? round(principalWeth - EXPECTED_BASE_WETH)
-        : null,
-      deltaGrossVsOwnerObserved: grossIncludingFees > 0
-        ? round(grossIncludingFees - EXPECTED_BASE_WETH)
-        : null,
-      principalMatched,
-      grossMatched,
-      matched: principalMatched,
-      status
-    };
+      meta.set(tokenLower, { symbol, decimals });
+    }
+    return true;
   });
 
-  return wrapped.result || {
-    chain: 'Base',
-    protocol: 'Aerodrome Slipstream',
-    matched: false,
-    status: 'unavailable',
-    diagnostics: wrapped.errors
-  };
+  return rows.map(row => {
+    const m = meta.get(lower(row.token)) || { symbol: null, decimals: 18 };
+    const amount = Number(formatUnits(BigInt(row.amountRaw), m.decimals));
+
+    return {
+      ...row,
+      symbol: m.symbol,
+      decimals: m.decimals,
+      amount: round(amount)
+    };
+  });
+}
+
+function sumWeth(rows) {
+  return rows
+    .filter(x => lower(x.token) === lower(TARGET.baseWeth))
+    .reduce((sum, x) => sum + Number(x.amount || 0), 0);
 }
 
 async function main() {
   const startedAt = new Date().toISOString();
 
-  const previous = readPreviousV12();
-
+  const previous = readPreviousV13();
   if (previous.status !== 'ok') {
     throw new Error(
-      `Previous v1.2 resolver state unavailable: ${JSON.stringify(previous)}`
+      `Previous v1.3 resolver state unavailable: ${JSON.stringify(previous)}`
     );
   }
 
-  const aerodromeWeth = await resolveAerodromeWeth();
+  const ids = readAerodromeIdsFromDiscovery();
+  const poolCountResult = await getPoolCount();
 
-  const baseWethResolved = aerodromeWeth?.matched === true;
+  if (poolCountResult.status !== 'ok') {
+    throw new Error(
+      `Aerodrome LpSugar pool count unavailable: ${JSON.stringify(poolCountResult)}`
+    );
+  }
 
-  const finalEth =
-    previous.ethNativeSubtotal
-    + Number(aerodromeWeth?.totals?.principalWeth || 0);
+  const directScans = [];
+  for (const id of ids.directVenftIds) {
+    directScans.push(await scanVenftRewards(id, poolCountResult.count));
+  }
 
-  const unresolved = baseWethResolved
-    ? []
-    : ['baseWeth'];
+  const managedScans = [];
+  for (const id of ids.managedVenftIds) {
+    managedScans.push(await scanVenftRewards(id, poolCountResult.count));
+  }
+
+  const directRowsRaw = dedupeRewards(directScans.flatMap(x => x.rewards));
+  const managedRowsRaw = dedupeRewards(managedScans.flatMap(x => x.rewards));
+
+  const directRows = await enrichRewardRows(directRowsRaw);
+  const managedRows = await enrichRewardRows(managedRowsRaw);
+
+  const directWeth = sumWeth(directRows);
+  const managedWeth = sumWeth(managedRows);
+
+  const directComplete = directScans.every(x => x.complete);
+  const managedComplete = managedScans.every(x => x.complete);
+  const completeScan = directComplete && managedComplete;
+
+  const directMatched =
+    directWeth > 0
+    && Math.abs(directWeth - EXPECTED_BASE_WETH) <= TOLERANCE;
+
+  const managedMatched =
+    managedWeth > 0
+    && Math.abs(managedWeth - EXPECTED_BASE_WETH) <= TOLERANCE;
+
+  const materialDirect = directWeth >= MATERIAL_WETH;
+  const materialManaged = managedWeth >= MATERIAL_WETH;
+
+  let accountingMode = 'unresolved';
+  let fallbackFoundationWeth = 0;
+  let accruedWethCandidate = 0;
+  let finalEth = previous.ethNativeSubtotal;
+  let companyBookReady = false;
+  let authoritativeOnchain = false;
+  let unresolved = ['baseWeth'];
+
+  if (completeScan && directMatched) {
+    accountingMode = 'aerodrome-direct-venft-accrued-rewards';
+    accruedWethCandidate = directWeth;
+    finalEth = previous.ethNativeSubtotal;
+    companyBookReady = true;
+    authoritativeOnchain = true;
+    unresolved = [];
+  } else if (completeScan && managedMatched) {
+    accountingMode = 'managed-relay-level-weth-boundary-review';
+    accruedWethCandidate = 0;
+    finalEth = previous.ethNativeSubtotal;
+    companyBookReady = false;
+    authoritativeOnchain = false;
+    unresolved = ['baseWethManagedRelayAttribution'];
+  } else if (
+    completeScan
+    && !materialDirect
+    && !materialManaged
+  ) {
+    // Explicit owner-authorized final fallback:
+    // after one final Aerodrome reward pass, treat the observed WETH as
+    // owner-declared foundation exposure if no material onchain reward source explains it.
+    accountingMode = 'owner-declared-foundation-fallback';
+    fallbackFoundationWeth = EXPECTED_BASE_WETH;
+    finalEth = previous.ethNativeSubtotal + fallbackFoundationWeth;
+    companyBookReady = true;
+    authoritativeOnchain = false;
+    unresolved = [];
+  } else if (completeScan && (materialDirect || materialManaged)) {
+    accountingMode = 'material-weth-rewards-found-but-no-exact-reconciliation';
+    accruedWethCandidate = directWeth;
+    finalEth = previous.ethNativeSubtotal;
+    companyBookReady = false;
+    authoritativeOnchain = false;
+    unresolved = ['baseWethAccountingBoundary'];
+  }
 
   const output = {
     version: VERSION,
@@ -502,24 +441,89 @@ async function main() {
     },
 
     purpose:
-      'close only final Company #008 Base WETH delta by reading current Aerodrome Slipstream LP positions from the official onchain Sugar contract',
+      'one final bounded Company #008 Base WETH pass: test whether the DeBank-observed Aerodrome WETH is current veNFT fee/incentive rewards; if a complete official RewardsSugar scan finds no material WETH source, apply the owner-authorized foundation fallback',
+
+    officialSources: {
+      lpSugar: TARGET.lpSugar,
+      rewardsSugar: TARGET.rewardsSugar,
+      sourceFamily: 'official velodrome-finance/sugar Base deployments + onchain RewardsSugar'
+    },
 
     preservedResolved: {
       previousResolverVersion: previous.version,
       btc: previous.btc,
       ethNativeSubtotal: previous.ethNativeSubtotal,
-      ...previous.preservedResolved
+      previousResolution: previous.previousResolution,
+      previousAerodromeSlipstream: previous.previousAerodromeSlipstream,
+      previousPreservedResolved: previous.preservedResolved
+    },
+
+    aerodromeContext: {
+      discoveryVersion: ids.discoveryVersion,
+      directVenftIds: ids.directVenftIds,
+      managedVenftIds: ids.managedVenftIds,
+      expectedBaseWethOwnerObserved: EXPECTED_BASE_WETH,
+      tolerance: round(TOLERANCE),
+      poolCount: poolCountResult.count,
+      scanCap: MAX_POOLS_SCAN
     },
 
     results: {
-      baseWethAerodromeSlipstream: aerodromeWeth
+      directVenftRewards: {
+        complete: directComplete,
+        scans: directScans.map(x => ({
+          venftId: x.venftId,
+          poolCount: x.poolCount,
+          scannedPools: x.scannedPools,
+          complete: x.complete,
+          pages: x.pages,
+          rewardCount: x.rewards.length
+        })),
+        rewards: directRows,
+        wethTotal: round(directWeth),
+        matchedOwnerObserved: directMatched
+      },
+      managedRelayDiagnostic: {
+        note:
+          'Managed veNFT rewards are diagnostic only. Relay-level WETH must not be assigned to the company as claimable without a reproducible per-account attribution path.',
+        complete: managedComplete,
+        scans: managedScans.map(x => ({
+          venftId: x.venftId,
+          poolCount: x.poolCount,
+          scannedPools: x.scannedPools,
+          complete: x.complete,
+          pages: x.pages,
+          rewardCount: x.rewards.length
+        })),
+        rewards: managedRows,
+        wethTotal: round(managedWeth),
+        matchedOwnerObserved: managedMatched
+      }
+    },
+
+    classification: {
+      completeOfficialRewardScan: completeScan,
+      accountingMode,
+      directWethRewards: round(directWeth),
+      managedRelayWethDiagnostic: round(managedWeth),
+      ownerDeclaredFoundationFallbackWeth: round(fallbackFoundationWeth),
+      accruedRewardsWethCandidate: round(accruedWethCandidate),
+      explanation: accountingMode === 'aerodrome-direct-venft-accrued-rewards'
+        ? 'Observed WETH is explained by current direct veNFT Aerodrome fee/incentive rewards; keep it out of foundation ETH and carry it into Accrued Rewards.'
+        : accountingMode === 'owner-declared-foundation-fallback'
+          ? 'A complete final official Aerodrome reward scan found no material WETH source. Per explicit owner instruction, carry 0.1606 WETH as owner-declared foundation ETH exposure, clearly marked as owner-observed rather than onchain-reproduced.'
+          : accountingMode === 'managed-relay-level-weth-boundary-review'
+            ? 'The WETH appears at managed Relay level. Do not classify it as company principal or claimable reward until per-account attribution is reproducible.'
+            : accountingMode === 'material-weth-rewards-found-but-no-exact-reconciliation'
+              ? 'Material WETH rewards exist but do not reconcile to the owner-observed amount. Do not silently combine principal and rewards.'
+              : 'The final scan was incomplete or inconclusive; no fallback applied.'
     },
 
     resolution: {
       lombardEthereumWbtc: true,
       lombardBaseWbtc: true,
       avalancheBtcB: true,
-      baseWeth: baseWethResolved,
+      baseWethAccountingResolved: unresolved.length === 0,
       unresolved,
       allResolved: unresolved.length === 0
     },
@@ -527,60 +531,48 @@ async function main() {
     finalCandidateTotals: {
       btc: round(previous.btc),
       eth: round(finalEth),
-      authoritativeBalanceDiscovery: unresolved.length === 0
+      companyBookQuantityReady: companyBookReady,
+      authoritativeOnchainBalanceDiscovery: authoritativeOnchain,
+      ethSource: accountingMode === 'owner-declared-foundation-fallback'
+        ? 'verified native ETH subtotal + owner-declared Base WETH fallback'
+        : 'verified native ETH subtotal only'
     },
 
     metricBoundary: {
-      companyBalance:
-        'Aerodrome LP WETH principal is included in ETH economic exposure only when principal reconciliation passes',
+      foundationBalance:
+        'Only WETH classified as principal/foundation enters ETH Company Balance. Direct veNFT rewards never enter foundation principal.',
       accruedRewards:
-        'unclaimed Slipstream trading fees are separate accrued protocol value and are not included in Company Balance principal',
-      emissions:
-        'any Sugar emissions_earned value is a separate reward candidate and must not be folded into ETH principal'
+        'Direct veNFT WETH fees/incentives are Accrued Rewards candidates, separate from ETH foundation balance.',
+      managedRelay:
+        'Managed Relay-level rewards are diagnostic until per-account attribution is reproducible.',
+      fallback:
+        'Owner-declared fallback is permitted only after a complete final official Aerodrome reward scan finds no material WETH source; it remains explicitly labeled owner-observed, not onchain-reproduced.'
     },
 
     nextStep: unresolved.length === 0
-      ? 'Company #008 BTC/ETH balance discovery closed; carry Aerodrome LP fee/emission findings into Rewards/Productivity integration'
-      : (
-          aerodromeWeth?.status === 'boundary-review-principal-vs-unclaimed-fees'
-            ? 'resolve accounting boundary using emitted principal and fee components; do not combine them silently'
-            : 'target only Base WETH using the exact Aerodrome/Sugar evidence emitted here'
+      ? (
+          accountingMode === 'aerodrome-direct-venft-accrued-rewards'
+            ? 'Company #008 Base WETH classification closed as Aerodrome Accrued Rewards; integrate reward candidate and keep foundation ETH at native subtotal.'
+            : 'Company #008 BTC/ETH Company Book quantities can close using the explicit owner-declared WETH foundation fallback; preserve the provenance label in production integration.'
         )
+      : 'Do not run another broad discovery pass. Review only the emitted Aerodrome WETH reward boundary evidence.'
   };
 
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
+  fs.writeFileSync(OUTPUT, JSON.stringify(output, null, 2) + '\n');
 
-  fs.writeFileSync(
-    OUTPUT,
-    JSON.stringify(output, null, 2) + '\n'
-  );
-
-  console.log(
-    `Company #008 targeted resolver v1.3 written: ${OUTPUT}`
-  );
-  console.log(
-    `Aerodrome WETH principal: ${aerodromeWeth?.totals?.principalWeth ?? null}`
-  );
-  console.log(
-    `Aerodrome WETH unclaimed fees: ${aerodromeWeth?.totals?.unclaimedFeeWeth ?? null}`
-  );
-  console.log(
-    `Base WETH matched: ${baseWethResolved}`
-  );
-  console.log(
-    `Final BTC: ${output.finalCandidateTotals.btc}`
-  );
-  console.log(
-    `Final ETH: ${output.finalCandidateTotals.eth}`
-  );
-  console.log(
-    `Unresolved: ${unresolved.join(', ') || 'none'}`
-  );
+  console.log(`Company #008 targeted resolver v1.4 written: ${OUTPUT}`);
+  console.log(`Aerodrome pools: ${poolCountResult.count}`);
+  console.log(`Direct veNFT WETH rewards: ${round(directWeth)}`);
+  console.log(`Managed Relay WETH diagnostic: ${round(managedWeth)}`);
+  console.log(`Accounting mode: ${accountingMode}`);
+  console.log(`Final BTC: ${output.finalCandidateTotals.btc}`);
+  console.log(`Final ETH: ${output.finalCandidateTotals.eth}`);
+  console.log(`Company Book quantity ready: ${companyBookReady}`);
+  console.log(`Unresolved: ${unresolved.join(', ') || 'none'}`);
 }
 
 main().catch(err => {
-  console.error(
-    `Company #008 targeted resolver v1.3 failed: ${errMsg(err)}`
-  );
+  console.error(`Company #008 targeted resolver v1.4 failed: ${errMsg(err)}`);
   process.exitCode = 1;
 });
