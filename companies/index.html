@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- companies.html · Monetra Stable Capital live card + Passport v1.18 · resolver-driven · Composite Index gating preserved -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -77,7 +78,7 @@
       "@type": "ItemList",
       "name": "The Holding Index constituents",
       "description": "Companies currently included in The Holding Index registry.",
-      "numberOfItems": 8,
+      "numberOfItems": 9,
       "itemListElement": [
         { "@type": "ListItem", "position": 1, "name": "05081966.eth", "url": "https://theholding.ai/05081966" },
         { "@type": "ListItem", "position": 2, "name": "YieldRing.eth", "url": "https://theholding.ai/yieldring" },
@@ -86,7 +87,8 @@
         { "@type": "ListItem", "position": 5, "name": "0x58...ca8.eth" },
         { "@type": "ListItem", "position": 6, "name": "aerocvxyb.eth" },
         { "@type": "ListItem", "position": 7, "name": "Rook's portfolio" },
-        { "@type": "ListItem", "position": 8, "name": "1milliondollar.eth" }
+        { "@type": "ListItem", "position": 8, "name": "Monetra.eth", "url": "https://theholding.ai/monetra/" },
+        { "@type": "ListItem", "position": 9, "name": "1milliondollar.eth" }
       ]
     }
     </script>
@@ -3160,6 +3162,60 @@
             .intel-flow::-webkit-scrollbar { display: none; }
             .intel-flow span { font-size: 0.54rem; letter-spacing: 0.1em; }
         }
+
+        /* ══ Monetra Stable Capital Passport · v1.18 ══ */
+        .monetra-passport {
+            margin-top: 2.6rem;
+            border: 1px solid rgba(168,132,44,0.20);
+            border-radius: 22px;
+            padding: 1.55rem;
+            background:
+                radial-gradient(circle at 96% 0%, rgba(10,124,78,0.055), transparent 34%),
+                linear-gradient(180deg, rgba(255,255,255,0.86), rgba(249,250,247,0.96));
+            box-shadow: 0 24px 58px -44px rgba(15,23,42,0.34);
+        }
+        .mp-head { display:flex; justify-content:space-between; gap:1.4rem; align-items:flex-start; padding-bottom:1.2rem; border-bottom:1px solid var(--line); }
+        .mp-kicker { color:var(--gold); font-size:.56rem; letter-spacing:.17em; text-transform:uppercase; font-weight:650; margin-bottom:.36rem; }
+        .mp-head h3 { font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:450; line-height:1; letter-spacing:-.02em; }
+        .mp-head p { max-width:610px; margin-top:.55rem; color:var(--text-2); font-size:.75rem; line-height:1.6; }
+        .mp-status { display:inline-flex; align-items:center; gap:.45rem; white-space:nowrap; color:var(--green); font-size:.58rem; letter-spacing:.12em; text-transform:uppercase; font-weight:650; }
+        .mp-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0; padding:1.2rem 0; border-bottom:1px solid var(--line); }
+        .mp-metrics > div { padding:0 1rem; border-left:1px solid var(--line); text-align:center; }
+        .mp-metrics > div:first-child { border-left:0; }
+        .mp-metrics span { display:block; min-height:2.2em; color:var(--text-3); font-size:.5rem; letter-spacing:.12em; text-transform:uppercase; font-weight:650; line-height:1.2; }
+        .mp-metrics b { display:block; margin-top:.34rem; font-family:'Cormorant Garamond',serif; font-size:1.62rem; line-height:1; color:var(--text); font-weight:550; font-variant-numeric:tabular-nums; }
+        .mp-metrics b:first-letter {}
+        .mp-metrics > div:first-child b { color:var(--gold); }
+        .mp-metrics .mp-measuring { color:var(--text-2); font-size:1.25rem; }
+        .mp-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr); gap:.8rem; margin-top:1rem; }
+        .mp-card { border:1px solid rgba(15,23,42,.07); border-radius:16px; padding:.92rem; background:rgba(255,255,255,.66); }
+        .mp-card-head { display:flex; justify-content:space-between; align-items:center; gap:.8rem; margin-bottom:.65rem; color:var(--text-3); font-size:.52rem; letter-spacing:.12em; text-transform:uppercase; font-weight:700; }
+        .mp-card-head small { font:500 .56rem/1.2 'Space Grotesk',sans-serif; color:var(--text-3); text-transform:none; letter-spacing:0; }
+        .mp-positions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.35rem; }
+        .mp-position { min-width:0; padding:.5rem .52rem; border:1px solid rgba(15,23,42,.06); border-radius:10px; background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(248,251,249,.88)); }
+        .mp-position strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--green); font-size:.59rem; line-height:1.2; }
+        .mp-position b { display:block; margin-top:.22rem; font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:600; font-variant-numeric:tabular-nums; }
+        .mp-position em { display:block; margin-top:.18rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-3); font-style:normal; font-size:.5rem; }
+        .mp-rewards { display:grid; gap:.4rem; }
+        .mp-reward { display:flex; justify-content:space-between; gap:.75rem; align-items:baseline; padding:.58rem .62rem; border:1px solid rgba(10,124,78,.09); border-radius:11px; background:rgba(10,124,78,.035); }
+        .mp-reward strong { color:var(--text); font-size:.68rem; }
+        .mp-reward span { color:var(--green); font-size:.68rem; font-weight:650; white-space:nowrap; font-variant-numeric:tabular-nums; }
+        .mp-empty { color:var(--text-3); font-size:.68rem; line-height:1.5; }
+        .mp-note { margin-top:.62rem; padding-top:.6rem; border-top:1px solid var(--line); color:var(--text-3); font-size:.57rem; line-height:1.5; }
+        .mp-foot { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-top:1rem; padding-top:.85rem; border-top:1px solid var(--line); color:var(--text-3); font-size:.62rem; line-height:1.5; }
+        .mp-foot a { color:var(--gold); text-decoration:none; white-space:nowrap; font-weight:600; }
+        @media (max-width:760.98px) {
+            .monetra-passport { padding:1.05rem; border-radius:18px; }
+            .mp-head { flex-direction:column; gap:.8rem; }
+            .mp-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .mp-metrics > div { padding:.75rem .45rem; border-top:1px solid var(--line); }
+            .mp-metrics > div:nth-child(odd) { border-left:0; }
+            .mp-metrics > div:nth-child(-n+2) { border-top:0; }
+            .mp-grid { grid-template-columns:1fr; }
+            .mp-positions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .mp-foot { align-items:flex-start; flex-direction:column; }
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -3501,20 +3557,20 @@
                 </span>
             </div>
 
-            <!-- ═══ Company #008 · Monetra.eth · Stable Capital registry placeholder ═══ -->
+            <!-- ═══ Company #008 · Monetra.eth · Stable Capital ═══ -->
             <div class="company-card company-card-008 reveal" data-category="stable">
-                <div class="cc-regnum"><span><span class="cc-reg-label" data-i18n="card.registry">Registry</span> · 008</span><span class="cc-founded" data-i18n="card8.founded">Est. · Pending</span></div>
+                <div class="cc-regnum"><span><span class="cc-reg-label" data-i18n="card.registry">Registry</span> · 008</span><span class="cc-founded" id="founded-monetra" data-i18n="card8.founded">Est. May 27, 2026</span></div>
                 <div class="cc-top">
                     <div class="cc-seal"><span class="cc-seal-mark" role="img" aria-label="The Holding registry seal"></span></div>
-                    <div class="cc-status cc-status-registered"><span data-i18n="card.registered">Registered</span></div>
+                    <div class="cc-status"><span class="cc-dot"></span><span data-i18n="card.live">Live</span></div>
                 </div>
                 <div class="cc-name">Monetra.eth</div>
-                <div class="cc-sub" data-i18n="card8.sub">A Stable Capital company registered for future stablecoin, liquidity, capital-preservation and sustainable-yield strategies.</div>
+                <div class="cc-sub" data-i18n="card8.sub">A Stable Capital company deploying diversified stablecoin strategies across lending, savings vaults, auto-compounding liquidity and curated onchain yield.</div>
                 <div class="cc-metrics">
-                    <div><div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div><div class="cc-metric-value gold">—</div></div>
-                    <div><div class="cc-metric-label" data-i18n="card.cashflow">APR</div><div class="cc-metric-value">—</div></div>
+                    <div><div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div><div class="cc-metric-value gold" id="tvl-monetra">Live</div></div>
+                    <div><div class="cc-metric-label" data-i18n="card8.yield">Reference APY</div><div class="cc-metric-value" id="apy-monetra" data-i18n="card8.measuring">Measuring</div></div>
                 </div>
-                <span class="cc-extlink cc-extlink-static" aria-disabled="true"><span class="cc-ext-label" data-i18n="card.dataPending">Data · Pending</span></span>
+                <span class="cc-extlink cc-extlink-static" aria-disabled="true"><span class="cc-ext-label" data-i18n="card.debankTracking">DeBank · Tracking</span></span>
             </div>
 
             <!-- ═══ Company #009 · 1milliondollar.eth ═══ -->
@@ -3619,6 +3675,41 @@
         </div>
 
         <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.</b> <span id="idxNoteBody" data-i18n="index.note.body">Below the weights sits a growing history of balances, productive engines, accrued rewards and operating time. As that history deepens, resilience, cash-flow quality and reputation can be measured from evidence rather than invented.</span></p>
+
+        <!-- Registry #008 has a live Company Passport while Stable Capital
+             Reference APY history is being established. It is intentionally
+             not forced into Composite Index Weight before that measurement exists. -->
+        <section class="monetra-passport reveal" id="monetraPassport" aria-label="Monetra Stable Capital Company Passport">
+            <div class="mp-head">
+                <div>
+                    <div class="mp-kicker" data-i18n="monetra.passport.kicker">Company Passport · Registry 008</div>
+                    <h3>Monetra.eth</h3>
+                    <p data-i18n="monetra.passport.lede">Stable Capital measured directly from the company’s onchain strategy positions. Gas assets are excluded from Stable Capital TVL.</p>
+                </div>
+                <span class="mp-status"><span class="cc-dot"></span><span data-i18n="monetra.passport.live">Live Stable Capital</span></span>
+            </div>
+            <div class="mp-metrics">
+                <div><span data-i18n="monetra.passport.capital">Stable Capital</span><b id="mpCapital">Live</b></div>
+                <div><span data-i18n="monetra.passport.strategies">Strategies</span><b id="mpStrategies">—</b></div>
+                <div><span data-i18n="monetra.passport.founded">Operating since</span><b id="mpFounded">May 27, 2026</b></div>
+                <div><span data-i18n="monetra.passport.apy">Reference APY</span><b class="mp-measuring" data-i18n="monetra.passport.measuring">Measuring</b></div>
+            </div>
+            <div class="mp-grid">
+                <div class="mp-card">
+                    <div class="mp-card-head"><span data-i18n="monetra.passport.positions">Stable strategy positions</span><small id="mpPositionCount">—</small></div>
+                    <div class="mp-positions" id="mpPositions"><span class="mp-empty" data-i18n="monetra.passport.loading">Loading verified onchain positions…</span></div>
+                </div>
+                <div class="mp-card">
+                    <div class="mp-card-head"><span data-i18n="monetra.passport.rewards">Accrued claimable rewards</span><small data-i18n="monetra.passport.separate">Separate from principal</small></div>
+                    <div class="mp-rewards" id="mpRewards"><span class="mp-empty" data-i18n="monetra.passport.loadingRewards">Reading current protocol-side rewards…</span></div>
+                    <div class="mp-note" data-i18n="monetra.passport.rewardNote">Embedded yield remains inside savings, lending and vault positions. Only separately claimable protocol value appears here.</div>
+                </div>
+            </div>
+            <div class="mp-foot">
+                <span data-i18n="monetra.passport.indexGate">Composite Index inclusion remains measurement-gated until Stable Capital Reference APY is normalized by the Productivity Intelligence Layer.</span>
+                <a href="https://theholding.ai/monetra/" data-i18n="monetra.passport.open">Open Monetra →</a>
+            </div>
+        </section>
     </div>
 </section>
 
@@ -3917,6 +4008,7 @@ const COMPANY_PROTOCOLS = {
     'aerocvxyb.eth': ['Aero','Velodrome','Yield Basis']
 ,
     "Rook's portfolio": ['Bitcoin','Ethereum','Aave','Aero','Convex','Curve','Yield Basis'],
+    'Monetra.eth': ['Aave','Curve','f(x) Protocol','Inverse','Sky','Yearn','Lido','Liquity','Frax'],
     '1milliondollar.eth': ['Bitcoin','Ethereum','Aave','Morpho','Lombard','Aero','Beefy','Convex','Curve','Yield Basis']
 };
 /* Stable canonical IDs keep every data join intact; compact public labels are
@@ -3936,6 +4028,95 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    existing manual APRs as a safe fallback. If the collector, a protocol, or the
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
+const MONETRA_RESOLVE_DATA_URL = './company-008-resolve.json';
+const MONETRA_UI_VERSION = '1.18-stable-capital-live-passport';
+let MONETRA_RESOLVE_SNAPSHOT = null;
+
+async function loadMonetraResolveSnapshot() {
+    try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 4500);
+        const res = await fetch(MONETRA_RESOLVE_DATA_URL + '?t=' + Date.now(), {
+            cache: 'no-store', signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data || data.company?.registry !== '008' || data.company?.name !== 'Monetra.eth') return null;
+        if (!Array.isArray(data.stableCapital?.positions) || !data.stableCapital?.summary) return null;
+        MONETRA_RESOLVE_SNAPSHOT = data;
+        return data;
+    } catch (e) {
+        return null;
+    }
+}
+
+function renderMonetraPassport(lang) {
+    const d = MONETRA_RESOLVE_SNAPSHOT;
+    if (!d) return;
+    const money = v => Number.isFinite(Number(v))
+        ? '$' + Number(v).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : '—';
+    const cap = document.getElementById('mpCapital');
+    const strategies = document.getElementById('mpStrategies');
+    const founded = document.getElementById('mpFounded');
+    const count = document.getElementById('mpPositionCount');
+    const positionsEl = document.getElementById('mpPositions');
+    const rewardsEl = document.getElementById('mpRewards');
+    const tvlCard = document.getElementById('tvl-monetra');
+    const foundedCard = document.getElementById('founded-monetra');
+
+    const positions = d.stableCapital.positions.filter(p => Number.isFinite(Number(p.valueUsd)));
+    const total = Number(d.stableCapital.summary.totalUsd);
+    const uniqueProtocols = new Set(positions.map(p => p.protocol).filter(Boolean));
+    const foundedDate = d.company?.founding?.date || '2026-05-27';
+
+    if (cap) cap.textContent = money(total);
+    if (strategies) strategies.textContent = String(positions.length);
+    if (count) count.textContent = positions.length + (lang === 'ru' ? ' позиций' : ' positions');
+    if (founded) founded.textContent = lang === 'ru' ? '27 мая 2026' : 'May 27, 2026';
+    if (tvlCard) tvlCard.textContent = Number.isFinite(total) ? '$' + Math.round(total).toLocaleString('en-US') : 'Live';
+    if (foundedCard) foundedCard.textContent = lang === 'ru' ? 'Осн. 27 мая 2026' : 'Est. May 27, 2026';
+
+    const shortProtocol = p => ({
+        'Aave v3': 'Aave',
+        'Frax Finance': 'Frax',
+        'f(x) Protocol': 'f(x)',
+        'Liquity V2': 'Liquity',
+        'Yearn V3': 'Yearn',
+        'Lido Earn': 'Lido'
+    }[p] || p || 'Protocol');
+
+    if (positionsEl) {
+        positionsEl.innerHTML = positions.map(p => {
+            const asset = p.wrapperSymbol || p.underlyingSymbol || p.symbol || p.name || 'Stable';
+            const modeRaw = String(p.incomeMode || p.positionType || '');
+            const mode = lang === 'ru'
+                ? (modeRaw.includes('lending') ? 'Lending yield' : modeRaw.includes('agent') ? 'Agent managed' : 'Embedded yield')
+                : (modeRaw.includes('lending') ? 'Lending yield' : modeRaw.includes('agent') ? 'Agent managed' : 'Embedded yield');
+            return '<span class="mp-position">'
+                + '<strong>' + shortProtocol(p.protocol) + ' · ' + asset + '</strong>'
+                + '<b>' + money(p.valueUsd) + '</b>'
+                + '<em>' + mode + '</em>'
+                + '</span>';
+        }).join('');
+    }
+
+    const rewards = Array.isArray(d.stableCapital.accruedRewardsCandidates)
+        ? d.stableCapital.accruedRewardsCandidates.filter(r => Number(r.amount || r.quantity || 0) > 0 || Number(r.valueUsd || 0) > 0)
+        : [];
+    if (rewardsEl) {
+        rewardsEl.innerHTML = rewards.length ? rewards.map(r => {
+            const sym = r.symbol || r.tokenSymbol || 'TOKEN';
+            const qty = Number(r.amount ?? r.quantity ?? 0);
+            const usd = Number(r.valueUsd ?? r.usdValue ?? 0);
+            const q = Number.isFinite(qty) && qty > 0 ? qty.toLocaleString('en-US', { maximumFractionDigits: 6 }) + ' ' + sym : sym;
+            return '<div class="mp-reward"><strong>' + (r.protocol || 'Liquity V2') + ' · ' + q + '</strong><span>' + (usd > 0 ? money(usd) : 'Claimable') + '</span></div>';
+        }).join('') : '<span class="mp-empty">' + (lang === 'ru' ? 'Текущие отдельные claimable rewards не обнаружены.' : 'No separate claimable rewards detected at the current snapshot.') + '</span>';
+    }
+}
+window.renderMonetraPassport = renderMonetraPassport;
+
 const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.13-company-007';
 const PASSPORT_NULL_SAFE_FIX = '0.1.3-defitea-null-average';
 let PRODUCTIVITY_SNAPSHOT = null;
@@ -5864,9 +6045,10 @@ function renderFramework(lang) {
     const el5    = document.getElementById('tvl-5860');
     const el6    = document.getElementById('tvl-aerocvxyb');
     const el7    = document.getElementById('tvl-rook');
+    const el8    = document.getElementById('tvl-monetra');
     const el9    = document.getElementById('tvl-1million');
     const statEl = document.getElementById('statTVL');
-    if (!el1 && !el2 && !el3 && !el4 && !el5 && !el6 && !el7 && !el9 && !statEl) return;
+    if (!el1 && !el2 && !el3 && !el4 && !el5 && !el6 && !el7 && !el8 && !el9 && !statEl) return;
 
     // 05081966.eth: AERO 202 / FRAX 393 / CRV 480
     // YieldRing.eth: BTC 0.03 / veAERO 480 / vlCVX 240 / veFRAX 800
@@ -5883,13 +6065,20 @@ function renderFramework(lang) {
 
     // Price data and protocol-productivity data are independent. Fetch them in
     // parallel so the new engine cannot slow down or block the existing TVL path.
-    const [prices] = await Promise.all([
+    const [prices, _productivity, _rewards, monetra] = await Promise.all([
         cgPrices(IDS),
         loadProductivitySnapshot(),
-        loadCompanyRewardsSnapshot()
+        loadCompanyRewardsSnapshot(),
+        loadMonetraResolveSnapshot()
     ]);
+
+    const tvl8 = Number(monetra?.stableCapital?.summary?.totalUsd || 0);
+    if (el8) el8.textContent = tvl8 > 0 ? fmtMoney(tvl8) : 'Live';
+    if (monetra) renderMonetraPassport(idxLang());
+
     if (!prices || Object.keys(prices).length === 0) {
-        [el1, el2, el3, el4, el5, el6, el7, el9, statEl].forEach(el => { if (el) el.textContent = 'Live'; });
+        [el1, el2, el3, el4, el5, el6, el7, el9].forEach(el => { if (el) el.textContent = 'Live'; });
+        if (statEl) statEl.textContent = tvl8 > 0 ? fmtMoney(tvl8) : 'Live';
         return;
     }
 
@@ -5910,8 +6099,9 @@ function renderFramework(lang) {
     if (el5)    el5.textContent = fmt(tvl5);
     if (el6)    el6.textContent = fmt(tvl6);
     if (el7)    el7.textContent = fmt(tvl7);
+    if (el8)    el8.textContent = tvl8 > 0 ? fmt(tvl8) : 'Live';
     if (el9)    el9.textContent = fmt(tvl9);
-    if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3 + tvl4 + tvl5 + tvl6 + tvl7 + tvl9);
+    if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3 + tvl4 + tvl5 + tvl6 + tvl7 + tvl8 + tvl9);
 
     // Feed the live index with real per-company values
     // Adding a company: append an entry here AND to MEMBERSHIP inside buildGraph().
@@ -6120,8 +6310,26 @@ function renderFramework(lang) {
             'card.live': 'Live',
             'card.registered': 'Registered',
             'card.dataPending': 'Data · Pending',
-            'card8.founded': 'Est. · Pending',
-            'card8.sub': 'A Stable Capital company registered for future stablecoin, liquidity, capital-preservation and sustainable-yield strategies.',
+            'card8.founded': 'Est. May 27, 2026',
+            'card8.sub': 'A Stable Capital company deploying diversified stablecoin strategies across lending, savings vaults, auto-compounding liquidity and curated onchain yield.',
+            'card8.yield': 'Reference APY',
+            'card8.measuring': 'Measuring',
+            'monetra.passport.kicker': 'Company Passport · Registry 008',
+            'monetra.passport.lede': 'Stable Capital measured directly from the company’s onchain strategy positions. Gas assets are excluded from Stable Capital TVL.',
+            'monetra.passport.live': 'Live Stable Capital',
+            'monetra.passport.capital': 'Stable Capital',
+            'monetra.passport.strategies': 'Strategies',
+            'monetra.passport.founded': 'Operating since',
+            'monetra.passport.apy': 'Reference APY',
+            'monetra.passport.measuring': 'Measuring',
+            'monetra.passport.positions': 'Stable strategy positions',
+            'monetra.passport.rewards': 'Accrued claimable rewards',
+            'monetra.passport.separate': 'Separate from principal',
+            'monetra.passport.loading': 'Loading verified onchain positions…',
+            'monetra.passport.loadingRewards': 'Reading current protocol-side rewards…',
+            'monetra.passport.rewardNote': 'Embedded yield remains inside savings, lending and vault positions. Only separately claimable protocol value appears here.',
+            'monetra.passport.indexGate': 'Composite Index inclusion remains measurement-gated until Stable Capital Reference APY is normalized by the Productivity Intelligence Layer.',
+            'monetra.passport.open': 'Open Monetra →',
             'card9.sub': 'A long-term onchain company combining BTC and ETH foundation capital with productive veAERO, Beefy cvxCRV and veYB positions.',
             'card.registry': 'Registry',
             'card.founded': 'Est. Jul 17, 2026',
@@ -6246,8 +6454,26 @@ function renderFramework(lang) {
             'card.live': 'Онлайн',
             'card.registered': 'Зарегистрирована',
             'card.dataPending': 'Данные · ожидаются',
-            'card8.founded': 'Осн. · ожидается',
-            'card8.sub': 'Компания категории «Стабильный капитал», зарегистрированная для будущих стратегий со стейблкоинами, ликвидностью, сохранением капитала и устойчивой доходностью.',
+            'card8.founded': 'Осн. 27 мая 2026',
+            'card8.sub': 'Компания Stable Capital с диверсифицированными стейбл-стратегиями: lending, savings vaults, автокомпаундинг ликвидности и курируемая ончейн-доходность.',
+            'card8.yield': 'Reference APY',
+            'card8.measuring': 'Измеряется',
+            'monetra.passport.kicker': 'Company Passport · Реестр 008',
+            'monetra.passport.lede': 'Stable Capital измеряется напрямую по ончейн-позициям компании. Газовые активы не входят в TVL Stable Capital.',
+            'monetra.passport.live': 'Stable Capital · Live',
+            'monetra.passport.capital': 'Stable Capital',
+            'monetra.passport.strategies': 'Стратегий',
+            'monetra.passport.founded': 'Работает с',
+            'monetra.passport.apy': 'Reference APY',
+            'monetra.passport.measuring': 'Измеряется',
+            'monetra.passport.positions': 'Стейбл-стратегии',
+            'monetra.passport.rewards': 'Начисленные claimable rewards',
+            'monetra.passport.separate': 'Отдельно от principal',
+            'monetra.passport.loading': 'Загружаем подтверждённые ончейн-позиции…',
+            'monetra.passport.loadingRewards': 'Читаем текущие protocol-side rewards…',
+            'monetra.passport.rewardNote': 'Embedded yield остаётся внутри savings, lending и vault-позиций. Здесь показывается только отдельно доступная к claim стоимость.',
+            'monetra.passport.indexGate': 'Включение в Composite Index остаётся gated до нормализации Stable Capital Reference APY через Productivity Intelligence Layer.',
+            'monetra.passport.open': 'Открыть Monetra →',
             'card9.sub': 'Долгосрочная ончейн-компания: BTC и ETH в фундаменте, продуктивные позиции veAERO, Beefy cvxCRV и veYB.',
             'card.registry': 'Реестр',
             'card.founded': 'Осн. 17 июля 2026',
@@ -6366,6 +6592,7 @@ function renderFramework(lang) {
         });
         syncCompanyAprDisplays(lang);
         syncDynamicCompanyMetadata(lang);
+        if (window.renderMonetraPassport && MONETRA_RESOLVE_SNAPSHOT) window.renderMonetraPassport(lang);
         document.documentElement.lang = lang;
         document.documentElement.classList.toggle('is-ru', lang === 'ru');
         if (document.body) document.body.classList.toggle('is-ru', lang === 'ru');
