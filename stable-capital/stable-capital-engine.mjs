@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.1
+ * THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.3
  *
  * Registry #008 / Monetra.eth reference implementation.
  *
@@ -30,10 +30,11 @@ import {
 } from 'ethers';
 import { AaveV3Base } from '@aave-dao/aave-address-book';
 
-const VERSION = '0.2-monetra-six-adapters-history-fix';
-const METHODOLOGY = '1.1-stable-capital-machine-safe-reference-yield';
-const LEDGER_VERSION = '0.2-flow-aware-same-run-claimables';
+const VERSION = '0.3-monetra-fxsave-canonical-nav';
+const METHODOLOGY = '1.2-stable-capital-fxsave-economic-nav';
+const LEDGER_VERSION = '0.3-flow-aware-fxsave-canonical';
 const RESOLVER_REQUIRED = '1.4-company-008-fraxtal-sfrxusd-close';
+const PRIOR_STABLE_DATA_REQUIRED = '0.2-monetra-six-adapters-history-fix';
 
 const ROOT = path.resolve(process.cwd());
 const RESOLVER_FILE = process.env.MONETRA_RESOLVER_FILE || path.join(ROOT, 'companies', 'company-008-resolve.json');
@@ -50,6 +51,9 @@ const ADDR = Object.freeze({
   baseUsdc: addr('0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'),
   scrvusd: addr('0x0655977feb2f289a4ab78af67bab0d17aab84367'),
   fxsave: addr('0x7743e50f534a7f9f1791dde7dcd89f7783eefc39'),
+  fxusdBasePool: addr('0x65c9a641afceb9c0e6034e558a319488fa0fa3be'),
+  fxusd: addr('0x085780639cc2cacd35e474e71f4d000e2405d8f6'),
+  usdc: addr('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'),
   sdola: addr('0xb45ad160634c528cc3d2926d9807104fa3157305'),
   susds: addr('0xa3931d71877c0e7a3148cb7eb4463524fec27fbd'),
   sgho: addr('0xe1753f2e00940cc31213dd92013cf019dfe4ca1d'),
@@ -65,6 +69,8 @@ const ADDR = Object.freeze({
 const OFFICIAL = Object.freeze({
   curve: 'https://www.curve.finance/crvusd/ethereum/scrvUSD',
   fx: 'https://fx.aladdin.club/v2/fxsave',
+  fxSdk: 'https://github.com/AladdinDAO/fx-sdk/blob/main/src/core/fxsave.ts',
+  fxSdkContracts: 'https://github.com/AladdinDAO/fx-sdk/blob/main/src/configs/contracts.ts',
   inverse: 'https://www.inverse.finance/',
   inverseSdola: 'https://www.inverse.finance/sDOLA',
   sky: 'https://sky.money/susds',
@@ -591,55 +597,156 @@ async function rateCurve() {
   return { ...hist, protocol: 'Curve', officialFallback: OFFICIAL.curve };
 }
 
+
+async function fxSaveEconomicNavAt(provider, shareRaw, blockTag = 'latest') {
+  const fxSave = new Contract(ADDR.fxsave, [
+    'function convertToAssets(uint256) view returns (uint256)'
+  ], provider);
+  const basePool = new Contract(ADDR.fxusdBasePool, [
+    'function previewRedeem(uint256) view returns (uint256 amountYieldOut,uint256 amountStableOut)'
+  ], provider);
+
+  const ov = blockTag === 'latest' ? {} : { blockTag };
+  const basePoolRaw = safeBig(await fxSave.convertToAssets(shareRaw, ov));
+  if (basePoolRaw <= 0n) throw new Error('fxSAVE convertToAssets returned zero');
+
+  const preview = await basePool.previewRedeem(basePoolRaw, ov);
+  const fxUsdRaw = safeBig(preview.amountYieldOut ?? preview[0]);
+  const usdcRaw = safeBig(preview.amountStableOut ?? preview[1]);
+
+  const fxUsdAmount = Number(formatUnits(fxUsdRaw, 18));
+  const usdcAmount = Number(formatUnits(usdcRaw, 6));
+  const nominalStableNav = fxUsdAmount + usdcAmount;
+  if (!(nominalStableNav > 0)) throw new Error('fxSAVE terminal stable NAV is zero');
+
+  return {
+    shareRaw: shareRaw.toString(),
+    basePoolRaw: basePoolRaw.toString(),
+    basePoolAmount: Number(formatUnits(basePoolRaw, 18)),
+    fxUsdRaw: fxUsdRaw.toString(),
+    fxUsdAmount,
+    usdcRaw: usdcRaw.toString(),
+    usdcAmount,
+    nominalStableNav,
+    terminal: 'fxUSD+USDC',
+    source: 'fxSAVE.convertToAssets → FxUSDBasePool.previewRedeem'
+  };
+}
+
+async function fxSaveHistoricalEconomicRate(days = 7) {
+  const targetTs = Math.floor(Date.now() / 1000) - days * 86400;
+  const call = await withArchiveProvider(async (provider, url) => {
+    const histBlock = await findBlockAtOrBefore(provider, targetTs);
+    const latestBlock = await provider.getBlock('latest');
+    const unitShare = 10n ** 18n; // official SDK documents fxSAVE shares as 18 decimals.
+
+    const [nowNav, thenNav] = await Promise.all([
+      fxSaveEconomicNavAt(provider, unitShare, 'latest'),
+      fxSaveEconomicNavAt(provider, unitShare, Number(histBlock.number))
+    ]);
+
+    const elapsedDays = (Number(latestBlock.timestamp) - Number(histBlock.timestamp)) / 86400;
+    if (!(elapsedDays > 0.5)) throw new Error('fxSAVE historical interval too short');
+
+    const annualYieldPct = (Math.pow(nowNav.nominalStableNav / thenNav.nominalStableNav, 365 / elapsedDays) - 1) * 100;
+    return {
+      annualYieldPct,
+      elapsedDays,
+      latestBlock: Number(latestBlock.number),
+      historicalBlock: Number(histBlock.number),
+      historicalTimestamp: Number(histBlock.timestamp),
+      provider: new URL(url).hostname,
+      currentNominalStableNavPerShare: nowNav.nominalStableNav,
+      historicalNominalStableNavPerShare: thenNav.nominalStableNav,
+      currentBreakdown: { fxUSD: nowNav.fxUsdAmount, USDC: nowNav.usdcAmount },
+      historicalBreakdown: { fxUSD: thenNav.fxUsdAmount, USDC: thenNav.usdcAmount }
+    };
+  });
+
+  if (!call.ok) {
+    return {
+      status: 'warming-fxsave-archive-unavailable',
+      protocol: 'f(x) Protocol',
+      annualYieldPct: null,
+      attempts: call.attempts,
+      source: OFFICIAL.fxSdk
+    };
+  }
+
+  const r = call.value;
+  if (!finite(r.annualYieldPct) || r.annualYieldPct < -50 || r.annualYieldPct > 200) {
+    return { status: 'warming-rate-out-of-bounds', protocol: 'f(x) Protocol', annualYieldPct: null, ...r };
+  }
+
+  return {
+    status: 'ok',
+    protocol: 'f(x) Protocol',
+    annualYieldPct: round(r.annualYieldPct, 6),
+    rawRatePct: round(r.annualYieldPct, 6),
+    rawRateType: `${round(r.elapsedDays, 3)}d-economic-NAV-growth-annualized`,
+    normalizedRateType: 'APY',
+    sourceType: 'onchain-historical-dual-stable-economic-nav',
+    source: OFFICIAL.fxSdk,
+    contractsSource: OFFICIAL.fxSdkContracts,
+    methodology: 'Annualized growth of nominal stable redemption value per one fxSAVE share: fxSAVE.convertToAssets → FxUSDBasePool.previewRedeem → fxUSD + USDC. Stablecoin market-price/depeg movement is excluded from Reference APY.',
+    ...r
+  };
+}
+
+async function currentFxSaveCanonicalSnapshot(provider) {
+  const token = new Contract(ADDR.fxsave, ['function balanceOf(address) view returns (uint256)'], provider);
+  const shareRaw = safeBig(await token.balanceOf(WALLET));
+  if (shareRaw <= 0n) throw new Error('Monetra fxSAVE balance is zero');
+
+  const nav = await fxSaveEconomicNavAt(provider, shareRaw, 'latest');
+  const [fxUsdPrice, usdcPrice] = await Promise.all([
+    llamaPrice('ethereum', ADDR.fxusd),
+    llamaPrice('ethereum', ADDR.usdc)
+  ]);
+
+  const fxPx = finite(fxUsdPrice.priceUsd) ? Number(fxUsdPrice.priceUsd) : 1;
+  const usdcPx = finite(usdcPrice.priceUsd) ? Number(usdcPrice.priceUsd) : 1;
+  const economicValueUsd = nav.fxUsdAmount * fxPx + nav.usdcAmount * usdcPx;
+  const effectiveBasketPrice = nav.nominalStableNav > 0 ? economicValueUsd / nav.nominalStableNav : 1;
+
+  return {
+    sharesOrBalance: Number(formatUnits(shareRaw, 18)),
+    shareRaw: shareRaw.toString(),
+    underlyingAmount: round(nav.nominalStableNav, 12),
+    terminalSymbol: 'fxUSD+USDC',
+    terminalPriceUsd: round(effectiveBasketPrice, 10),
+    economicValueUsd: round(economicValueUsd, 8),
+    flowFingerprint: `shares:${shareRaw.toString()}`,
+    ledgerComparable: true,
+    valuationCanonical: true,
+    stableComponents: {
+      fxUSD: { amount: round(nav.fxUsdAmount, 12), priceUsd: fxUsdPrice.priceUsd, priceSource: fxUsdPrice.source },
+      USDC: { amount: round(nav.usdcAmount, 12), priceUsd: usdcPrice.priceUsd, priceSource: usdcPrice.source }
+    },
+    basePoolAmount: round(nav.basePoolAmount, 12),
+    redemptionPath: [
+      { from: 'fxSAVE', method: 'convertToAssets', to: 'fxSP / FxUSDBasePool', amount: round(nav.basePoolAmount, 12) },
+      { from: 'fxSP / FxUSDBasePool', method: 'previewRedeem', to: 'fxUSD + USDC', fxUSD: round(nav.fxUsdAmount, 12), USDC: round(nav.usdcAmount, 12) }
+    ],
+    note: 'Canonical economic NAV from the same read path used by the official AladdinDAO fx-sdk. Reference yield uses nominal stable units; current USD book value applies current fxUSD/USDC prices separately.'
+  };
+}
+
 async function rateFx() {
+  const canonical = await fxSaveHistoricalEconomicRate(7);
+  if (canonical.status === 'ok') return canonical;
+
+  // Do not promote an HTML number to full coverage if the canonical economic-NAV
+  // history cannot be reproduced. Keep the official page only as a diagnostic hint.
   try {
     const raw = await fetchText(OFFICIAL.fx);
     const visible = stripHtml(raw);
-
-    let values = contextualRateCandidates(raw, 'fxSAVE', {
-      percentPatterns: [
-        /(?:fxSAVE|fxsave)[\s\S]{0,2400}?APY[^0-9]{0,100}([0-9]+(?:\.[0-9]+)?)\s*%/gi,
-        /APY[^0-9]{0,80}([0-9]+(?:\.[0-9]+)?)\s*%/gi
-      ],
-      decimalPatterns: [
-        /["']?(?:apy|apyRate|annualPercentageYield)["']?\s*:\s*["']?(0\.[0-9]{3,})/gi
-      ]
-    });
-    values.push(...contextualRateCandidates(visible, 'fxSAVE', {
+    const candidates = contextualRateCandidates(visible, 'fxSAVE', {
       percentPatterns: [/(?:fxSAVE|fxsave)[\s\S]{0,1800}?APY[^0-9]{0,80}([0-9]+(?:\.[0-9]+)?)\s*%/gi]
-    }));
-    values = [...new Set(values)].filter(v => v > 0 && v < 50);
-
-    if (values.length === 1) {
-      return {
-        status: 'ok',
-        protocol: 'f(x) Protocol',
-        annualYieldPct: values[0],
-        rawRatePct: values[0],
-        rawRateType: 'APY',
-        normalizedRateType: 'APY',
-        sourceType: 'official-application-payload',
-        source: OFFICIAL.fx,
-        note: 'Unambiguous fxSAVE APY parsed from the official application payload/metadata. Wrapper market price is not used.'
-      };
-    }
-    return {
-      status: values.length > 1 ? 'warming-ambiguous' : 'warming-official-rate-unavailable',
-      protocol: 'f(x) Protocol',
-      annualYieldPct: null,
-      candidates: values,
-      source: OFFICIAL.fx,
-      note: 'No guess: fxSAVE must expose one unambiguous official APY. Canonical fxSAVE→fxSP→stable economic NAV remains required for Embedded Yield history.'
-    };
-  } catch (e) {
-    return {
-      status: 'warming-official-rate-unavailable',
-      protocol: 'f(x) Protocol',
-      annualYieldPct: null,
-      source: OFFICIAL.fx,
-      error: errorText(e),
-      note: 'Do not substitute fxSAVE market-price drift for protocol yield.'
-    };
+    }).filter(v => v > 0 && v < 50);
+    return { ...canonical, officialPageCandidates: [...new Set(candidates)], officialPage: OFFICIAL.fx };
+  } catch {
+    return { ...canonical, officialPage: OFFICIAL.fx };
   }
 }
 
@@ -856,176 +963,26 @@ async function rateFrax() {
   return { ...hist, protocol: 'Frax Finance', officialFallback: OFFICIAL.frax };
 }
 
-async function currentSnapshots(resolver) {
-  const byId = Object.fromEntries(resolver.stableCapital.positions.map(p => [p.id, p]));
+async function currentSnapshots(resolver, priorData) {
   const result = {};
+  const priorRows = Array.isArray(priorData?.positions) ? priorData.positions : [];
 
-  // Aave lending: current user reserve data and stable price.
-  {
-    const r = await withProvider('base', async provider => {
-      const dp = new Contract(AaveV3Base.AAVE_PROTOCOL_DATA_PROVIDER, [
-        'function getUserReserveData(address asset,address user) view returns (uint256 currentATokenBalance,uint256 currentStableDebt,uint256 currentVariableDebt,uint256 principalStableDebt,uint256 scaledVariableDebt,uint256 stableBorrowRate,uint256 liquidityRate,uint40 stableRateLastUpdated,bool usageAsCollateralEnabled)',
-        'function getReserveTokensAddresses(address asset) view returns (address aTokenAddress,address stableDebtTokenAddress,address variableDebtTokenAddress)'
-      ], provider);
-      const user = await dp.getUserReserveData(ADDR.baseUsdc, WALLET);
-      const tokens = await dp.getReserveTokensAddresses(ADDR.baseUsdc);
-      const aToken = addr(tokens.aTokenAddress ?? tokens[0]);
-      const a = new Contract(aToken, ['function scaledBalanceOf(address) view returns (uint256)'], provider);
-      const scaled = safeBig(await a.scaledBalanceOf(WALLET));
-      const balRaw = safeBig(user.currentATokenBalance ?? user[0]);
-      const amount = Number(formatUnits(balRaw, 6));
-      const price = await llamaPrice('base', ADDR.baseUsdc);
-      return {
-        sharesOrBalance: amount,
-        underlyingAmount: amount,
-        terminalSymbol: 'USDC',
-        terminalPriceUsd: price.priceUsd,
-        economicValueUsd: finite(price.priceUsd) ? amount * price.priceUsd : null,
-        flowFingerprint: `scaled:${scaled.toString()}`,
-        scaledBalanceRaw: scaled.toString(),
-        rawBalance: balRaw.toString(),
-        ledgerComparable: true,
-        valuationCanonical: true
-      };
-    });
-    const id = 'base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913';
-    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Aave refresh unavailable', r.attempts);
+  // v0.3 is intentionally narrow. Preserve the nine v0.2 accepted checkpoints exactly,
+  // and replace only the f(x) row with canonical dual-stable NAV.
+  for (const row of priorRows) {
+    if (row.id === 'ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39') continue;
+    result[row.id] = {
+      ...(row.currentSnapshot || {}),
+      note: row.currentSnapshot?.note || 'Preserved from Stable Capital v0.2; v0.3 scope is f(x) only.'
+    };
   }
 
-  const generic = [
-    ['ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367', ADDR.scrvusd],
-    ['ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39', ADDR.fxsave],
-    ['ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305', ADDR.sdola],
-    ['ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd', ADDR.susds],
-    ['ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d', ADDR.sgho],
-    ['ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd', ADDR.ysybold]
-  ];
-  const eth = await withProvider('ethereum', async provider => {
-    const rows = {};
-    for (const [id, token] of generic) {
-      try {
-        const s = await currentErc4626Snapshot(provider, token, WALLET, 'ethereum', 3);
-        const fx = lower(token) === lower(ADDR.fxsave);
-        rows[id] = {
-          sharesOrBalance: s.sharesOrBalance,
-          shareRaw: s.shareRaw,
-          underlyingAmount: s.terminalAmount,
-          terminalSymbol: s.terminalSymbol,
-          terminalPriceUsd: s.terminalPriceUsd,
-          economicValueUsd: s.valueUsd,
-          flowFingerprint: s.flowFingerprint,
-          ledgerComparable: s.redemptionCanonical && !fx,
-          valuationCanonical: s.redemptionCanonical && !fx,
-          path: s.path,
-          note: fx ? 'fxSAVE remains non-comparable for Embedded Yield until fxSP terminal economic redemption is canonical.' : null
-        };
-      } catch (e) {
-        rows[id] = snapshotFallback(byId[id], errorText(e));
-      }
-    }
-    return rows;
-  });
-  for (const [id] of generic) {
-    result[id] = eth.ok ? eth.value[id] : snapshotFallback(byId[id], 'Ethereum refresh unavailable', eth.attempts);
-  }
-
-  // Lido Earn: current share token balance + market price. First checkpoint only;
-  // embedded income waits for canonical Mellow/Lido share-oracle accounting.
-  {
-    const r = await withProvider('ethereum', async provider => {
-      const m = await tokenMeta(provider, ADDR.lidoEarnUsd);
-      const c = new Contract(ADDR.lidoEarnUsd, ['function balanceOf(address) view returns (uint256)'], provider);
-      const raw = safeBig(await c.balanceOf(WALLET));
-      const shares = Number(formatUnits(raw, m.decimals));
-      const p = await llamaPrice('ethereum', ADDR.lidoEarnUsd);
-      return {
-        sharesOrBalance: shares, shareRaw: raw.toString(),
-        underlyingAmount: null, terminalSymbol: 'USD strategy NAV',
-        terminalPriceUsd: null, economicValueUsd: finite(p.priceUsd) ? shares * p.priceUsd : null,
-        flowFingerprint: `shares:${raw.toString()}`,
-        ledgerComparable: false, valuationCanonical: true,
-        note: 'Checkpoint seeded; future Embedded Yield uses official Lido/Mellow share-oracle accounting, not wrapper market-price movement.'
-      };
-    });
-    const id = 'ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981';
-    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Lido refresh unavailable', r.attempts);
-  }
-
-  // Liquity direct WETH SP. Yield is separate claimable; principal checkpoint is not Embedded Yield.
-  {
-    const r = await withProvider('ethereum', async provider => {
-      const sp = new Contract(ADDR.liquitySpWeth, [
-        'function getCompoundedBoldDeposit(address) view returns (uint256)',
-        'function getDepositorYieldGain(address) view returns (uint256)',
-        'function getDepositorCollGain(address) view returns (uint256)'
-      ], provider);
-      const dep = safeBig(await sp.getCompoundedBoldDeposit(WALLET));
-      const yieldGain = safeBig(await sp.getDepositorYieldGain(WALLET));
-      const collGain = safeBig(await sp.getDepositorCollGain(WALLET));
-      const amount = Number(formatUnits(dep, 18));
-      const p = await llamaPrice('ethereum', ADDR.bold);
-      return {
-        sharesOrBalance: amount, underlyingAmount: amount, terminalSymbol: 'BOLD',
-        terminalPriceUsd: p.priceUsd, economicValueUsd: finite(p.priceUsd) ? amount * p.priceUsd : null,
-        flowFingerprint: `spPrincipal:${dep.toString()}`,
-        ledgerComparable: false, valuationCanonical: true,
-        accruedClaimable: {
-          protocol: 'Liquity V2', symbol: 'BOLD',
-          amount: Number(formatUnits(yieldGain, 18)),
-          usdValue: finite(p.priceUsd) ? Number(formatUnits(yieldGain, 18)) * p.priceUsd : null,
-          collateralGainRaw: collGain.toString()
-        },
-        note: 'Direct Stability Pool interest/liquidation gains are separate Accrued Rewards, not Embedded Yield inside principal.'
-      };
-    });
-    const id = 'ethereum:liquity-v2-sp:weth';
-    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Liquity refresh unavailable', r.attempts);
-  }
-
-  // Fraxtal sfrxUSD: the token itself is bridged, while canonical ERC-4626
-  // conversion lives in FraxtalERC4626MintRedeemer.
-  {
-    const r = await withProvider('fraxtal', async provider => {
-      const m = await tokenMeta(provider, ADDR.fraxtalSfrxusd);
-      const token = new Contract(ADDR.fraxtalSfrxusd, ['function balanceOf(address) view returns (uint256)'], provider);
-      const raw = safeBig(await token.balanceOf(WALLET));
-      const shares = Number(formatUnits(raw, m.decimals));
-
-      const redeemer = new Contract(ADDR.fraxtalStakeUnstake, [
-        'function pricePerShare() view returns (uint256)',
-        'function convertToAssets(uint256) view returns (uint256)',
-        'function previewRedeem(uint256) view returns (uint256)'
-      ], provider);
-      let assetsRaw = 0n, method = null;
-      try { assetsRaw = safeBig(await redeemer.convertToAssets(raw)); method = 'convertToAssets'; }
-      catch {
-        try { assetsRaw = safeBig(await redeemer.previewRedeem(raw)); method = 'previewRedeem'; }
-        catch {
-          const pps = safeBig(await redeemer.pricePerShare());
-          assetsRaw = raw * pps / ONE;
-          method = 'pricePerShare';
-        }
-      }
-
-      const underlyingAmount = Number(formatUnits(assetsRaw, 18));
-      const px = await llamaPrice('fraxtal', ADDR.fraxtalFrxusd);
-      return {
-        sharesOrBalance: shares,
-        shareRaw: raw.toString(),
-        underlyingAmount,
-        terminalSymbol: 'frxUSD',
-        terminalPriceUsd: px.priceUsd,
-        economicValueUsd: finite(px.priceUsd) ? underlyingAmount * px.priceUsd : underlyingAmount,
-        flowFingerprint: `shares:${raw.toString()}`,
-        ledgerComparable: true,
-        valuationCanonical: true,
-        redemptionMethod: method,
-        note: 'Canonical current NAV via official FraxtalERC4626MintRedeemer; no sfrxUSD market price used.'
-      };
-    });
-    const id = 'fraxtal:0xfc00000000000000000000000000000000000008';
-    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Frax canonical refresh unavailable', r.attempts);
-  }
+  const fx = await withProvider('ethereum', async provider => currentFxSaveCanonicalSnapshot(provider));
+  const id = 'ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39';
+  const resolverFx = resolver.stableCapital.positions.find(p => p.id === id);
+  result[id] = fx.ok
+    ? fx.value
+    : snapshotFallback(resolverFx, 'Canonical f(x) NAV refresh unavailable', fx.attempts);
 
   return result;
 }
@@ -1050,24 +1007,25 @@ function snapshotFallback(position, note, diagnostics = null) {
   };
 }
 
-async function collectRates() {
-  const specs = [
-    ['base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', rateAaveBaseUsdc],
-    ['ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367', rateCurve],
-    ['ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39', rateFx],
-    ['ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305', rateInverse],
-    ['ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd', rateSky],
-    ['ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d', rateSGho],
-    ['ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd', rateYearn],
-    ['ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981', rateLido],
-    ['ethereum:liquity-v2-sp:weth', rateLiquity],
-    ['fraxtal:0xfc00000000000000000000000000000000000008', rateFrax]
-  ];
-  const rows = {};
-  for (const [id, fn] of specs) {
-    try { rows[id] = await fn(); }
-    catch (e) { rows[id] = { status: 'error', annualYieldPct: null, error: errorText(e) }; }
+async function collectRates(priorData) {
+  if (!priorData || priorData.version !== PRIOR_STABLE_DATA_REQUIRED) {
+    throw new Error(`v0.3 requires published ${PRIOR_STABLE_DATA_REQUIRED}`);
   }
+
+  const rows = {};
+  for (const row of priorData.positions || []) {
+    if (row.id === 'ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39') continue;
+    if (!row.reference || row.reference.status !== 'ok' || !finite(row.reference.annualYieldPct)) {
+      throw new Error(`cannot preserve non-ok v0.2 reference row ${row.id}`);
+    }
+    rows[row.id] = {
+      ...row.reference,
+      preservation: 'accepted-v0.2-reference-preserved-by-v0.3'
+    };
+  }
+
+  const fxId = 'ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39';
+  rows[fxId] = await rateFx();
   return rows;
 }
 
@@ -1166,7 +1124,8 @@ function buildStableData(resolver, rates, snapshots, prior) {
       unknownTreatment: 'warming/error positions are excluded from numerator and denominator; never treated as 0%',
       fullCoverageGate: 'Monetra enters the weighted Composite Index only after all 10 current Stable Capital positions have valid reference annual yield.',
       rateConvention: 'Protocol APY is used directly. Protocol APR is preserved and used as one-year annual yield only when no compounding is assumed; no arbitrary compounding frequency is invented.',
-      embeddedBoundary: 'Reference APY is capacity, not earned income. Earned Embedded Yield comes only from checkpoint deltas adjusted for flows.'
+      embeddedBoundary: 'Reference APY is capacity, not earned income. Earned Embedded Yield comes only from checkpoint deltas adjusted for flows.',
+      fxSaveCanonicalNav: 'fxSAVE economic NAV = convertToAssets(fxSAVE shares) into FxUSDBasePool shares, then previewRedeem into fxUSD + USDC. Reference APY uses nominal stable units so depeg is excluded; current TVL applies current component prices.'
     },
     positions: rows,
     summary: {
@@ -1352,11 +1311,14 @@ async function main() {
   }
 
   const priorData = fs.existsSync(DATA_FILE) ? JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) : null;
+  if (!priorData || priorData.version !== PRIOR_STABLE_DATA_REQUIRED) {
+    throw new Error(`Expected prior Stable Capital ${PRIOR_STABLE_DATA_REQUIRED}, got ${priorData?.version || 'missing'}`);
+  }
   const priorLedger = fs.existsSync(LEDGER_FILE) ? JSON.parse(fs.readFileSync(LEDGER_FILE, 'utf8')) : null;
 
   const [rates, snapshots] = await Promise.all([
-    collectRates(),
-    currentSnapshots(resolver)
+    collectRates(priorData),
+    currentSnapshots(resolver, priorData)
   ]);
 
   const stableData = buildStableData(resolver, rates, snapshots, priorData);
