@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · v1.21.8 · Monetra Passport Layout · performance + strategy pair -->
+<!-- companies.html · v1.21.9 · Monetra Passport Rows · explicit laptop + mobile order -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -5446,6 +5446,77 @@
             }
         }
 
+
+        /* ═══════════════════════════════════════════════════════════════
+           Monetra Passport Rows v1.21.9
+           Explicit visual order requested by owner.
+           Desktop/laptop:
+             Row 1 — Invested | Current Capital | APY | Claimable
+             Row 2 — Performance | Strategy Book
+           Mobile:
+             Row 1 — Invested | Current Capital
+             Row 2 — APY | Claimable
+             Row 3 — Performance | Strategy Book
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* Laptop / desktop: explicit four-card first row. */
+        #stable-index .stable-passport .scp-headline-final{
+            display:grid!important;
+            grid-template-columns:repeat(4,minmax(0,1fr))!important;
+            grid-template-areas:"invested capital apy claimable"!important;
+            gap:.72rem!important;
+        }
+        #stable-index .stable-passport .scp-headline-final>.scp-final-invested{grid-area:invested!important}
+        #stable-index .stable-passport .scp-headline-final>.scp-final-capital{grid-area:capital!important}
+        #stable-index .stable-passport .scp-headline-final>.scp-final-apy{grid-area:apy!important}
+        #stable-index .stable-passport .scp-headline-final>.scp-final-claimable{grid-area:claimable!important}
+
+        /* Second row: two equal action cards. */
+        #stable-index .scp-essential-actions-paired{
+            display:grid!important;
+            grid-template-columns:repeat(2,minmax(0,1fr))!important;
+            grid-template-areas:"performance strategy"!important;
+            gap:.72rem!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-card-performance{grid-area:performance!important}
+        #stable-index .scp-essential-actions-paired .scp-essential-card-strategy{grid-area:strategy!important}
+
+        @media (min-width:761px) and (max-width:1180px){
+            #stable-index .stable-passport .scp-headline-final{
+                grid-template-columns:repeat(4,minmax(0,1fr))!important;
+                grid-template-areas:"invested capital apy claimable"!important;
+            }
+            #stable-index .scp-essential-actions-paired{
+                grid-template-columns:repeat(2,minmax(0,1fr))!important;
+                grid-template-areas:"performance strategy"!important;
+            }
+        }
+
+        /* Mobile: strict 3-row reading order. */
+        @media (max-width:760.98px){
+            #stable-index .stable-passport .scp-headline-final{
+                display:grid!important;
+                grid-template-columns:repeat(2,minmax(0,1fr))!important;
+                grid-template-areas:
+                    "invested capital"
+                    "apy claimable"!important;
+                gap:.54rem!important;
+            }
+            #stable-index .stable-passport .scp-headline-final>.scp-final-invested{grid-area:invested!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-capital{grid-area:capital!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-apy{grid-area:apy!important}
+            #stable-index .stable-passport .scp-headline-final>.scp-final-claimable{grid-area:claimable!important}
+
+            #stable-index .scp-essential-actions-paired{
+                display:grid!important;
+                grid-template-columns:repeat(2,minmax(0,1fr))!important;
+                grid-template-areas:"performance strategy"!important;
+                gap:.54rem!important;
+            }
+            #stable-index .scp-essential-actions-paired .scp-essential-card-performance{grid-area:performance!important}
+            #stable-index .scp-essential-actions-paired .scp-essential-card-strategy{grid-area:strategy!important}
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -6472,7 +6543,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
 const STABLE_INDEX_DATA_URL = './stable-index-data.json';
-const STABLE_INDEX_UI_VERSION = '1.21.8-performance-strategy-pair';
+const STABLE_INDEX_UI_VERSION = '1.21.9-explicit-financial-rows';
 let STABLE_INDEX_SNAPSHOT = null;
 let STABLE_UI_LANG = 'en';
 
