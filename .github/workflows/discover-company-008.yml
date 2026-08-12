@@ -1,3 +1,4 @@
+# THE HOLDING COMPANY #008 WORKFLOW v1.3.2
 name: "Discover Company #008"
 
 on:
@@ -26,9 +27,14 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Verify discovery source/workflow sync
+        run: |
+          grep -F "const VERSION = '1.3.2-company-008-owner-reconciliation-official-aave';" onboarding/company-008-discovery.mjs
+          echo "Workflow/source sync OK: Company #008 discovery v1.3.2"
+
       - name: Install discovery dependencies
         run: |
-          npm install --no-save ethers@6 @lombard.finance/sdk viem axios bignumber.js @bitcoinerlab/secp256k1 bitcoinjs-lib
+          npm install --no-save ethers@6 @lombard.finance/sdk @aave-dao/aave-address-book viem axios bignumber.js @bitcoinerlab/secp256k1 bitcoinjs-lib
 
       - name: "Discover Company #008 current state"
         env:
@@ -39,6 +45,13 @@ jobs:
           ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
           AVALANCHE_RPC_URL: ${{ secrets.AVALANCHE_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          ZKSYNC_RPC_URL: ${{ secrets.ZKSYNC_RPC_URL }}
+          LINEA_RPC_URL: ${{ secrets.LINEA_RPC_URL }}
+          SCROLL_RPC_URL: ${{ secrets.SCROLL_RPC_URL }}
+          BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
+          MODE_RPC_URL: ${{ secrets.MODE_RPC_URL }}
+          ZORA_RPC_URL: ${{ secrets.ZORA_RPC_URL }}
           COMPANY_008_DISCOVERY_OUTPUT: companies/company-008-discovery.json
         run: node onboarding/company-008-discovery.mjs
 
@@ -50,7 +63,8 @@ jobs:
           if (!fs.existsSync(p)) throw new Error('discovery JSON was not created');
           const d = JSON.parse(fs.readFileSync(p, 'utf8'));
 
-          if (d.version !== '1.1-company-008-wrapper-candidate-safe') throw new Error('unexpected discovery version');
+          if (d.version !== '1.3.2-company-008-owner-reconciliation-official-aave') throw new Error('unexpected discovery version: ' + d.version);
+          console.log('Validated discovery version:', d.version);
           if (d.company?.registry !== '008') throw new Error('registry mismatch');
           if (d.company?.name !== '1milliondollar.eth') throw new Error('name mismatch');
           if (d.company?.foundedAt !== '2024-12-12') throw new Error('founding mismatch');
@@ -79,6 +93,12 @@ jobs:
           console.log('ETH:', d.proposedCompanyBook.find(x => x.symbol === 'ETH')?.quantity,
                       'complete=', d.productionReadiness?.ethQuantityComplete);
           console.log('Beefy:', d.discovery?.beefyCvxCrv?.status);
+          console.log('Owner-observed BTC reconciliation:', d.discovery?.ownerObservedReconciliation?.btcMatched);
+          console.log('Owner-observed ETH reconciliation:', d.discovery?.ownerObservedReconciliation?.ethMatched);
+          for (const x of d.discovery?.ownerObservedReconciliation?.unresolved || []) {
+            console.log('UNRESOLVED OWNER COMPONENT:', x.family, x.chain, x.symbol,
+              'observed≈', x.observedApprox, 'discovered=', x.discovered);
+          }
           NODE
 
       - name: Publish discovery JSON to main
