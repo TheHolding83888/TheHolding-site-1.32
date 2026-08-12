@@ -32,7 +32,7 @@ const SECONDS_YEAR = 365 * 24 * 60 * 60;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_REASONABLE_APR = 500;
 const METHODOLOGY_VERSION = '1.1-simple-safe';
-const COLLECTOR_VERSION = '1.14-company-007-yblp-signed-resolver';
+const COLLECTOR_VERSION = '1.15-company-009-beefy-cvxcrv';
 const PENDLE_EPOCH_SECONDS = 14 * 24 * 60 * 60;
 const PENDLE_SPENDLE_TOKEN = '0x999999999991e178d52cd95afd4b00d066664144';
 const PENDLE_SURVIVOR_CAMPAIGNS = 3;
@@ -54,6 +54,8 @@ const API_TIMEOUT_MS = 15000;
 // the collector derives the earliest verifiable veVELO lock/mint on Optimism.
 const COMPANY_005_NAME = '0x5860...83CA8.eth';
 const COMPANY_005_ADDRESS = '0x58603461149Fc2A800a56d421e77DcbBA2D83CA8';
+const COMPANY_006_OLD_NAME = 'aerocrvyb.eth';
+const COMPANY_006_NAME = 'aerocvxyb.eth';
 const VELODROME_V1_ESCROW = '0x9c7305eb78a432ced5c4d14cac27e8ed569a2e26';
 const VELODROME_V2_ESCROW = '0xFAf8FD17D9840595845582fCB047DF13f006787d';
 const OPTIMISM_BLOCKSCOUT_URLS = ['https://explorer.optimism.io','https://optimism.blockscout.com'];
@@ -98,13 +100,15 @@ const ENGINE_BY_CG_ID = {
   'venice-token':      'venice_svvv',
   'liquity':           'liquity_lqty',
   'resupply':          'resupply_rsup',
-  'internet-computer': 'icp_nns'
+  'internet-computer': 'icp_nns',
+  'convex-crv':        'beefy_cvxcrv'
 };
 
 const ENGINE_META = {
   aerodrome_veaero: { protocol:'Aerodrome', principalSymbol:'AERO', sourceUrl:'https://www.40acres.finance/', nativeCadence:'weekly' },
   velodrome_vevelo: { protocol:'Velodrome', principalSymbol:'VELO', sourceUrl:'https://www.40acres.finance/', nativeCadence:'weekly' },
   convex_vlcvx:     { protocol:'Convex', principalSymbol:'CVX', sourceUrl:'https://www.convexfinance.com/lock-cvx', nativeCadence:'biweekly' },
+  beefy_cvxcrv:      { protocol:'Beefy / Convex', principalSymbol:'cvxCRV', sourceUrl:'https://api.beefy.finance/apy', nativeCadence:'continuous' },
   curve_vecrv:      { protocol:'Curve', principalSymbol:'CRV', sourceUrl:'https://classic.curve.finance/', nativeCadence:'weekly' },
   pendle_spendle:   { protocol:'Pendle', principalSymbol:'PENDLE', sourceUrl:'https://api-v2.pendle.finance/core/v1/spendle/data', nativeCadence:'14d' },
   fx_vefxn:         { protocol:'f(x)', principalSymbol:'FXN', sourceUrl:'https://fx.aladdin.club/v2/lock', nativeCadence:'weekly' },
@@ -1377,6 +1381,20 @@ async function discoverCompany005Foundation(previousMeta={}) {
 }
 
 
+async function collectBeefyCvxCrv() {
+  const url='https://api.beefy.finance/apy';
+  const vaultId='convex-staked-cvxCRV';
+  const j=await fetchJson(url);
+  const raw=j?.[vaultId];
+  const apr=normalizeAprNumber(raw);
+  if (!saneApr(apr)) throw new Error('Beefy cvxCRV: official vault APY unavailable or invalid');
+  return {
+    apr:round(apr), source:url, sourceType:'official-api',
+    sourceMetric:'Beefy convex-staked-cvxCRV vault APY · auto-compounded embedded yield',
+    details:{vaultId,rawApy:raw,incomeMode:'compounded-embedded',separateClaimableRewards:false}
+  };
+}
+
 async function collectCompany007YieldBasisLp(market) {
   const file=path.join(ROOT,'companies','company-007-resolve.json');
   const publicSource='companies/company-007-resolve.json';
@@ -1394,6 +1412,7 @@ async function runAdapter(engineId,{browser,prices,previous}) {
     case 'aerodrome_veaero': return collect40Acres(browser,'Aerodrome');
     case 'velodrome_vevelo': return collect40Acres(browser,'Velodrome');
     case 'convex_vlcvx': return collectConvex(browser);
+    case 'beefy_cvxcrv': return collectBeefyCvxCrv();
     case 'curve_vecrv': return collectCurve(browser,prices);
     case 'pendle_spendle': return collectPendle(previous);
     case 'fx_vefxn': return collectFx(browser);
@@ -1603,6 +1622,9 @@ async function main() {
 
   const companies={};
   const historyCompanies={...(previous?.history?.companies||{})};
+  // Preserve Company #006 productivity history across the canonical public rename.
+  if (!historyCompanies[COMPANY_006_NAME] && historyCompanies[COMPANY_006_OLD_NAME]) historyCompanies[COMPANY_006_NAME]=historyCompanies[COMPANY_006_OLD_NAME];
+  delete historyCompanies[COMPANY_006_OLD_NAME];
 
   for (const [name,positions] of Object.entries(companyBook)) {
     const productive=positions.filter(p=>p.engineId || ENGINE_BY_CG_ID[p.id]);
@@ -1646,7 +1668,7 @@ async function main() {
     }
     const observations=(historyCompanies[name]||[]).filter(x=>saneApr(aprValue(x?.apr)));
     const histAvg=avg(observations.map(x=>aprValue(x.apr)));
-    const oldCompany=previous?.companies?.[name];
+    const oldCompany=previous?.companies?.[name] || (name===COMPANY_006_NAME ? previous?.companies?.[COMPANY_006_OLD_NAME] : null);
     const usableAverage=saneApr(histAvg);
     const liveAprOk=saneApr(aprLatest);
 
@@ -1669,7 +1691,7 @@ async function main() {
   }
 
   const output={
-    version:'1.14',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
+    version:'1.15',methodologyVersion:METHODOLOGY_VERSION,collectorVersion:COLLECTOR_VERSION,generatedAt,snapshotKey:snapKey,
     note:'Reference APRs are normalized from official protocol APIs, onchain state, or official protocol frontends. Company APR is capital-weighted across productive positions with valid Reference APRs. coverage shows the share of productive capital currently included; unknown engines are excluded, never treated as 0%. Canonical historical company averages use full-coverage observations only.',
     engines,companies,companyMetadata,
     history:{engines:historyEngines,companies:historyCompanies},
