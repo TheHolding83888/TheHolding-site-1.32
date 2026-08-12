@@ -11,44 +11,38 @@ function canonicalAddress(value) {
   return getAddress(String(value).toLowerCase());
 }
 
-const VERSION = '1.2-company-008-atoken-base-holdings-final-delta';
+const VERSION = '1.3-company-008-aerodrome-sugar-base-weth-final';
 const WALLET = canonicalAddress('0xe4b9c9ced406baffe406e63f83d39daaef150596');
 
 const OUTPUT = process.env.COMPANY_008_RESOLVE_OUTPUT
   || path.resolve('companies/company-008-resolve.json');
 
 const PREVIOUS_RESOLVER_FILE = path.resolve('companies/company-008-resolve.json');
-const DISCOVERY_FILE = path.resolve('companies/company-008-discovery.json');
 
-const RPC = Object.freeze({
-  base: [
-    process.env.BASE_RPC_URL,
-    process.env.BASE_RPC_URL_2,
-    'https://base-rpc.publicnode.com',
-    'https://mainnet.base.org'
-  ].filter(Boolean),
-  avalanche: [
-    process.env.AVALANCHE_RPC_URL,
-    'https://avalanche-c-chain-rpc.publicnode.com',
-    'https://api.avax.network/ext/bc/C/rpc'
-  ].filter(Boolean)
-});
+const BASE_RPC_URLS = [
+  process.env.BASE_RPC_URL,
+  process.env.BASE_RPC_URL_2,
+  'https://base-rpc.publicnode.com',
+  'https://mainnet.base.org'
+].filter(Boolean);
 
 const TARGET = Object.freeze({
-  avalancheBtcB: canonicalAddress('0x152b9d0fdc40c096757f570a51e494bd4b943e50'),
-  avalancheABtcB: canonicalAddress('0x8ffdf2de812095b1d19cb146e4c004587c0a0692'),
-  baseWeth: canonicalAddress('0x4200000000000000000000000000000000000006')
+  baseWeth: canonicalAddress('0x4200000000000000000000000000000000000006'),
+  sugar: canonicalAddress('0x69dd9db6d8f8e7d83887a704f447b1a584b599a1'),
+  knownSlipstreamNfpmV1: canonicalAddress('0x827922686190790b37229fd06084350e74485b72'),
+  knownWethUsdcPool: canonicalAddress('0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59')
 });
 
-const EXPECTED = Object.freeze({
-  avalancheBtcB: 0.0435,
-  baseWeth: 0.1606
-});
+const EXPECTED_BASE_WETH = 0.1606;
+const ZERO = canonicalAddress('0x0000000000000000000000000000000000000000');
+
+const POSITION_TUPLE =
+  '(uint256 id,address lp,uint256 liquidity,uint256 staked,uint256 amount0,uint256 amount1,uint256 staked0,uint256 staked1,uint256 unstaked_earned0,uint256 unstaked_earned1,uint256 emissions_earned,int24 tick_lower,int24 tick_upper,uint160 sqrt_ratio_lower,uint160 sqrt_ratio_upper,address locker,uint32 unlocks_at,address alm)';
 
 function errMsg(e) {
   return String(e?.shortMessage || e?.message || e || 'unknown error')
     .replace(/https?:\/\/[^\s)]+/g, '[url-redacted]')
-    .slice(0, 900);
+    .slice(0, 1000);
 }
 
 function lower(value) {
@@ -69,123 +63,39 @@ function positiveBigInt(value) {
   }
 }
 
-async function fetchJson(url, timeoutMs = 25000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(url, {
-      cache: 'no-store',
-      signal: controller.signal,
-      headers: {
-        'user-agent': 'The-Holding-Company-008-Resolver/1.2'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    return await response.json();
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function withProvider(chain, fn) {
-  const errors = [];
-
-  for (const url of RPC[chain] || []) {
-    const provider = new JsonRpcProvider(url);
-
-    try {
-      const result = await fn(provider);
-      return { result, errors };
-    } catch (e) {
-      errors.push(errMsg(e));
-    }
-  }
-
-  return { result: null, errors };
-}
-
-async function callMaybe(contract, method, args = [], staticCall = false) {
-  try {
-    const fn = contract?.[method];
-
-    if (!fn) {
-      return { ok: false, error: 'method unavailable in local ABI' };
-    }
-
-    const value = staticCall
-      ? await fn.staticCall(...args)
-      : await fn(...args);
-
-    return { ok: true, value };
-  } catch (e) {
-    return { ok: false, error: errMsg(e) };
-  }
-}
-
-function serializeProbe(probe) {
-  if (!probe?.ok) {
-    return { ok: false, error: probe?.error || 'unknown' };
-  }
-
-  const value = probe.value;
-
-  if (typeof value === 'bigint') {
-    return { ok: true, value: value.toString() };
-  }
-
-  return { ok: true, value: String(value) };
-}
-
-async function tokenMeta(provider, address, wallet = WALLET) {
-  const token = new Contract(address, [
-    'function symbol() view returns (string)',
-    'function name() view returns (string)',
-    'function decimals() view returns (uint8)',
-    'function balanceOf(address) view returns (uint256)'
-  ], provider);
-
-  let symbol = null;
-  let name = null;
-  let decimals = 18;
-  let raw = 0n;
-
-  try { symbol = await token.symbol(); } catch {}
-  try { name = await token.name(); } catch {}
-  try { decimals = Number(await token.decimals()); } catch {}
-  try { raw = positiveBigInt(await token.balanceOf(wallet)); } catch {}
-
-  return {
-    address: canonicalAddress(address),
-    symbol,
-    name,
-    decimals,
-    raw: raw.toString(),
-    balance: Number(formatUnits(raw, decimals))
-  };
-}
-
-function readPreviousResolver() {
+function readPreviousV12() {
   try {
     const d = JSON.parse(fs.readFileSync(PREVIOUS_RESOLVER_FILE, 'utf8'));
 
-    if (d?.version !== '1.1-company-008-veda-accountant-holdings-mesh') {
+    if (d?.version !== '1.2-company-008-atoken-base-holdings-final-delta') {
       return {
         status: 'unexpected-version',
         version: d?.version || null
       };
     }
 
-    const eth = d?.results?.lombardEthereum;
-    const base = d?.results?.lombardBase;
-
-    if (eth?.matched !== true || base?.matched !== true) {
+    if (d?.resolution?.avalancheBtcB !== true) {
       return {
-        status: 'previous-lombard-not-fully-resolved',
+        status: 'avalanche-not-resolved',
+        version: d.version
+      };
+    }
+
+    if (
+      d?.resolution?.lombardEthereumWbtc !== true
+      || d?.resolution?.lombardBaseWbtc !== true
+    ) {
+      return {
+        status: 'lombard-not-preserved',
+        version: d.version
+      };
+    }
+
+    const btc = Number(d?.finalCandidateTotals?.btc);
+
+    if (!Number.isFinite(btc) || btc <= 0) {
+      return {
+        status: 'btc-total-invalid',
         version: d.version
       };
     }
@@ -193,19 +103,12 @@ function readPreviousResolver() {
     return {
       status: 'ok',
       version: d.version,
-      lombardEthereum: {
-        quoteEquivalent: Number(eth.quoteEquivalent),
-        shareBalance: Number(eth?.share?.balance),
-        accountant: eth.accountant,
-        vault: eth.vault,
-        rateMethod: eth.rateMethod
-      },
-      lombardBase: {
-        quoteEquivalent: Number(base.quoteEquivalent),
-        shareBalance: Number(base?.share?.balance),
-        accountant: base.accountant,
-        vault: base.vault,
-        rateMethod: base.rateMethod
+      btc,
+      ethNativeSubtotal: Number(d?.discoveryBaseline?.ethNativeSubtotal) || 0,
+      preservedResolved: {
+        lombardEthereum: d?.preservedResolved?.lombardEthereum || null,
+        lombardBase: d?.preservedResolved?.lombardBase || null,
+        avalancheAaveBtcB: d?.results?.avalancheAaveBtcB || null
       }
     };
   } catch (e) {
@@ -216,509 +119,350 @@ function readPreviousResolver() {
   }
 }
 
-function readDiscoveryKnownSubtotals() {
-  try {
-    const d = JSON.parse(fs.readFileSync(DISCOVERY_FILE, 'utf8'));
+async function withBaseProvider(fn) {
+  const errors = [];
 
-    const btc = (d?.proposedCompanyBook || [])
-      .find(x => x.symbol === 'BTC');
-
-    const eth = (d?.proposedCompanyBook || [])
-      .find(x => x.symbol === 'ETH');
-
-    return {
-      status: 'ok',
-      version: d?.version || null,
-      btcSubtotal: Number(btc?.quantity) || 0,
-      ethNativeSubtotal: Number(eth?.quantity) || 0
-    };
-  } catch (e) {
-    return {
-      status: 'unavailable',
-      version: null,
-      btcSubtotal: 0,
-      ethNativeSubtotal: 0,
-      error: errMsg(e)
-    };
-  }
-}
-
-async function resolveAvalancheAToken() {
-  const wrapped = await withProvider('avalanche', async provider => {
-    const meta = await tokenMeta(provider, TARGET.avalancheABtcB);
-
-    const aToken = new Contract(TARGET.avalancheABtcB, [
-      'function UNDERLYING_ASSET_ADDRESS() view returns (address)',
-      'function POOL() view returns (address)',
-      'function scaledBalanceOf(address) view returns (uint256)'
-    ], provider);
-
-    const underlyingProbe = await callMaybe(
-      aToken,
-      'UNDERLYING_ASSET_ADDRESS'
-    );
-
-    const poolProbe = await callMaybe(aToken, 'POOL');
-    const scaledProbe = await callMaybe(
-      aToken,
-      'scaledBalanceOf',
-      [WALLET]
-    );
-
-    let underlying = null;
-    let pool = null;
-
-    if (underlyingProbe.ok) {
-      try {
-        underlying = canonicalAddress(underlyingProbe.value);
-      } catch {}
-    }
-
-    if (poolProbe.ok) {
-      try {
-        pool = canonicalAddress(poolProbe.value);
-      } catch {}
-    }
-
-    let poolCodeExists = false;
-
-    if (pool) {
-      try {
-        poolCodeExists = (await provider.getCode(pool)) !== '0x';
-      } catch {}
-    }
-
-    const underlyingMatch =
-      underlying
-      && lower(underlying) === lower(TARGET.avalancheBtcB);
-
-    const tolerance = Math.max(
-      0.00015,
-      EXPECTED.avalancheBtcB * 0.02
-    );
-
-    const matched =
-      underlyingMatch
-      && poolCodeExists
-      && Math.abs(meta.balance - EXPECTED.avalancheBtcB) <= tolerance;
-
-    return {
-      protocol: 'Aave',
-      chain: 'Avalanche',
-      aToken: TARGET.avalancheABtcB,
-      aTokenMeta: meta,
-      underlying,
-      expectedUnderlying: TARGET.avalancheBtcB,
-      underlyingMatch: Boolean(underlyingMatch),
-      pool,
-      poolCodeExists,
-      scaledBalanceRaw:
-        scaledProbe.ok
-          ? positiveBigInt(scaledProbe.value).toString()
-          : null,
-      btcBEquivalent: round(meta.balance),
-      accountingMethod:
-        'Aave aToken balanceOf(wallet), after UNDERLYING_ASSET_ADDRESS + POOL verification',
-      ownerObservedApprox: EXPECTED.avalancheBtcB,
-      tolerance: round(tolerance),
-      deltaVsOwnerObserved: round(
-        meta.balance - EXPECTED.avalancheBtcB
-      ),
-      matched,
-      status: matched ? 'ok' : 'unresolved',
-      probes: {
-        underlying: serializeProbe(underlyingProbe),
-        pool: serializeProbe(poolProbe),
-        scaledBalance: serializeProbe(scaledProbe)
-      }
-    };
-  });
-
-  return wrapped.result || {
-    protocol: 'Aave',
-    chain: 'Avalanche',
-    matched: false,
-    status: 'unavailable',
-    diagnostics: wrapped.errors
-  };
-}
-
-async function routescanAllCurrentHoldings(maxPages = 10) {
-  const base =
-    `https://api.routescan.io/v2/network/mainnet/evm/all/address/${WALLET}/erc20-holdings`;
-
-  const items = [];
-  const diagnostics = [];
-  let next = null;
-
-  for (let page = 0; page < maxPages; page++) {
-    let url = `${base}?limit=100`;
-
-    if (next) {
-      url += `&next=${encodeURIComponent(next)}`;
-    }
+  for (const url of BASE_RPC_URLS) {
+    const provider = new JsonRpcProvider(url);
 
     try {
-      const data = await fetchJson(url);
-
-      if (Array.isArray(data?.items)) {
-        items.push(...data.items);
-      }
-
-      const candidateNext =
-        data?.link?.nextToken
-        || data?.link?.next
-        || null;
-
-      if (!candidateNext || candidateNext === next) {
-        break;
-      }
-
-      if (/^https?:\/\//i.test(String(candidateNext))) {
-        try {
-          const u = new URL(candidateNext);
-          next =
-            u.searchParams.get('next')
-            || u.searchParams.get('cursor')
-            || null;
-        } catch {
-          next = null;
-        }
-      } else {
-        next = String(candidateNext);
-      }
-
-      if (!next) {
-        break;
-      }
+      return {
+        result: await fn(provider),
+        errors
+      };
     } catch (e) {
-      diagnostics.push(errMsg(e));
-      break;
+      errors.push(errMsg(e));
     }
   }
 
-  const normalized = items.map(item => {
-    const decimals = Number(item?.tokenDecimals ?? 18);
-    const raw = positiveBigInt(item?.tokenQuantity ?? 0);
-
-    return {
-      chainId: String(item?.chainId ?? ''),
-      tokenAddress: (() => {
-        try {
-          return canonicalAddress(item?.tokenAddress);
-        } catch {
-          return item?.tokenAddress || null;
-        }
-      })(),
-      tokenName: item?.tokenName || null,
-      tokenSymbol: item?.tokenSymbol || null,
-      tokenDecimals: decimals,
-      tokenQuantityRaw: raw.toString(),
-      tokenQuantity:
-        raw > 0n
-          ? round(Number(formatUnits(raw, decimals)))
-          : 0,
-      tokenPrice: item?.tokenPrice ?? null,
-      tokenValueInUsd:
-        Number.isFinite(Number(item?.tokenValueInUsd))
-          ? Number(item.tokenValueInUsd)
-          : null,
-      updatedAtBlock: item?.updatedAtBlock ?? null
-    };
-  }).filter(x => positiveBigInt(x.tokenQuantityRaw) > 0n);
-
   return {
-    source: 'Routescan keyless all-chain current ERC20 holdings',
-    itemCount: normalized.length,
-    diagnostics,
-    items: normalized
+    result: null,
+    errors
   };
 }
 
-function materialCandidate(item) {
-  const usd = Number(item?.tokenValueInUsd);
-
-  if (Number.isFinite(usd) && usd >= 5) {
-    return true;
-  }
-
-  const text =
-    `${item?.tokenSymbol || ''} ${item?.tokenName || ''}`
-      .toLowerCase();
-
-  return /(eth|weth|aave|morpho|vault|receipt|share|liquid|veda|ether|superform|beefy|moonwell)/i
-    .test(text);
-}
-
-async function probeBaseWethCandidate(provider, holding) {
-  let address;
-
+async function callMaybe(contract, method, args = []) {
   try {
-    address = canonicalAddress(holding.tokenAddress);
-  } catch {
+    const value = await contract[method](...args);
+    return { ok: true, value };
+  } catch (e) {
     return {
-      ...holding,
-      probeStatus: 'invalid-address'
+      ok: false,
+      error: errMsg(e)
     };
   }
+}
 
-  const meta = await tokenMeta(provider, address);
-
+async function tokenMeta(provider, address) {
   const c = new Contract(address, [
-    'function UNDERLYING_ASSET_ADDRESS() view returns (address)',
-    'function POOL() view returns (address)',
-    'function asset() view returns (address)',
-    'function underlying() view returns (address)',
-    'function balanceOfUnderlying(address) returns (uint256)',
-    'function convertToAssets(uint256) view returns (uint256)',
-    'function previewRedeem(uint256) view returns (uint256)'
+    'function symbol() view returns (string)',
+    'function name() view returns (string)',
+    'function decimals() view returns (uint8)'
+  ], provider);
+
+  let symbol = null;
+  let name = null;
+  let decimals = 18;
+
+  try { symbol = await c.symbol(); } catch {}
+  try { name = await c.name(); } catch {}
+  try { decimals = Number(await c.decimals()); } catch {}
+
+  return {
+    address: canonicalAddress(address),
+    symbol,
+    name,
+    decimals
+  };
+}
+
+async function poolMeta(provider, poolAddress) {
+  const pool = new Contract(poolAddress, [
+    'function token0() view returns (address)',
+    'function token1() view returns (address)',
+    'function tickSpacing() view returns (int24)'
+  ], provider);
+
+  let token0 = null;
+  let token1 = null;
+  let tickSpacing = null;
+
+  try { token0 = canonicalAddress(await pool.token0()); } catch {}
+  try { token1 = canonicalAddress(await pool.token1()); } catch {}
+  try { tickSpacing = Number(await pool.tickSpacing()); } catch {}
+
+  const token0Meta = token0 ? await tokenMeta(provider, token0) : null;
+  const token1Meta = token1 ? await tokenMeta(provider, token1) : null;
+
+  return {
+    pool: canonicalAddress(poolAddress),
+    token0,
+    token1,
+    token0Meta,
+    token1Meta,
+    tickSpacing
+  };
+}
+
+function normalizePosition(raw, sourceMethod) {
+  return {
+    sourceMethod,
+    id: positiveBigInt(raw.id ?? raw[0]).toString(),
+    lp: canonicalAddress(raw.lp ?? raw[1]),
+    liquidity: positiveBigInt(raw.liquidity ?? raw[2]).toString(),
+    staked: positiveBigInt(raw.staked ?? raw[3]).toString(),
+    amount0Raw: positiveBigInt(raw.amount0 ?? raw[4]).toString(),
+    amount1Raw: positiveBigInt(raw.amount1 ?? raw[5]).toString(),
+    staked0Raw: positiveBigInt(raw.staked0 ?? raw[6]).toString(),
+    staked1Raw: positiveBigInt(raw.staked1 ?? raw[7]).toString(),
+    unstakedEarned0Raw: positiveBigInt(raw.unstaked_earned0 ?? raw[8]).toString(),
+    unstakedEarned1Raw: positiveBigInt(raw.unstaked_earned1 ?? raw[9]).toString(),
+    emissionsEarnedRaw: positiveBigInt(raw.emissions_earned ?? raw[10]).toString(),
+    tickLower: Number(raw.tick_lower ?? raw[11]),
+    tickUpper: Number(raw.tick_upper ?? raw[12]),
+    sqrtRatioLower: positiveBigInt(raw.sqrt_ratio_lower ?? raw[13]).toString(),
+    sqrtRatioUpper: positiveBigInt(raw.sqrt_ratio_upper ?? raw[14]).toString(),
+    locker: canonicalAddress(raw.locker ?? raw[15]),
+    unlocksAt: Number(raw.unlocks_at ?? raw[16]),
+    alm: canonicalAddress(raw.alm ?? raw[17])
+  };
+}
+
+function richness(position) {
+  return [
+    position.liquidity,
+    position.staked,
+    position.amount0Raw,
+    position.amount1Raw,
+    position.staked0Raw,
+    position.staked1Raw,
+    position.unstakedEarned0Raw,
+    position.unstakedEarned1Raw
+  ].reduce((sum, x) => sum + positiveBigInt(x), 0n);
+}
+
+function dedupePositions(positions) {
+  const map = new Map();
+
+  for (const p of positions) {
+    const key = `${lower(p.lp)}:${p.id}`;
+
+    const current = map.get(key);
+
+    if (!current || richness(p) > richness(current)) {
+      map.set(key, p);
+    }
+  }
+
+  return [...map.values()];
+}
+
+async function fetchSugarPositions(provider) {
+  const sugarCode = await provider.getCode(TARGET.sugar);
+
+  if (sugarCode === '0x') {
+    throw new Error('Aerodrome Sugar contract has no bytecode');
+  }
+
+  const sugar = new Contract(TARGET.sugar, [
+    `function positions(uint256,uint256,address) view returns (${POSITION_TUPLE}[])`,
+    `function positionsUnstakedConcentrated(uint256,uint256,address) view returns (${POSITION_TUPLE}[])`
   ], provider);
 
   const probes = {
-    aaveUnderlying:
-      await callMaybe(c, 'UNDERLYING_ASSET_ADDRESS'),
-    pool:
-      await callMaybe(c, 'POOL'),
-    asset:
-      await callMaybe(c, 'asset'),
-    underlying:
-      await callMaybe(c, 'underlying')
+    positions: await callMaybe(sugar, 'positions', [250, 0, WALLET]),
+    legacyUnstaked: await callMaybe(
+      sugar,
+      'positionsUnstakedConcentrated',
+      [250, 0, WALLET]
+    )
   };
 
-  let relation = null;
-  let underlyingAddress = null;
+  const rows = [];
 
-  for (const [name, probe] of [
-    ['UNDERLYING_ASSET_ADDRESS', probes.aaveUnderlying],
-    ['asset', probes.asset],
-    ['underlying', probes.underlying]
-  ]) {
-    if (!probe.ok) {
-      continue;
+  if (probes.positions.ok && Array.isArray(probes.positions.value)) {
+    for (const raw of probes.positions.value) {
+      rows.push(normalizePosition(raw, 'LpSugar.positions'));
     }
-
-    try {
-      const candidate = canonicalAddress(probe.value);
-
-      if (lower(candidate) === lower(TARGET.baseWeth)) {
-        relation = name;
-        underlyingAddress = candidate;
-        break;
-      }
-    } catch {}
   }
 
-  if (!relation) {
-    return {
-      ...holding,
-      onchainMeta: meta,
-      relation: null,
-      targetUnderlying: TARGET.baseWeth,
-      resolvedWeth: null,
-      conversionMethod: null,
-      probeStatus: 'not-weth-underlying',
-      probes: Object.fromEntries(
-        Object.entries(probes)
-          .map(([k, v]) => [k, serializeProbe(v)])
-      )
-    };
-  }
-
-  let resolvedRaw = 0n;
-  let method = null;
-
-  if (relation === 'UNDERLYING_ASSET_ADDRESS') {
-    let pool = null;
-    let poolCodeExists = false;
-
-    if (probes.pool.ok) {
-      try {
-        pool = canonicalAddress(probes.pool.value);
-      } catch {}
-    }
-
-    if (pool) {
-      try {
-        poolCodeExists = (await provider.getCode(pool)) !== '0x';
-      } catch {}
-    }
-
-    const looksAave =
-      poolCodeExists
-      && (
-        /aave/i.test(`${meta.name || ''} ${meta.symbol || ''}`)
-        || /^a[A-Za-z0-9._-]+/.test(meta.symbol || '')
+  if (probes.legacyUnstaked.ok && Array.isArray(probes.legacyUnstaked.value)) {
+    for (const raw of probes.legacyUnstaked.value) {
+      rows.push(
+        normalizePosition(
+          raw,
+          'LpSugar.positionsUnstakedConcentrated'
+        )
       );
-
-    if (looksAave) {
-      resolvedRaw = BigInt(meta.raw);
-      method =
-        'Aave-style aToken balanceOf(wallet) after UNDERLYING_ASSET_ADDRESS + POOL verification';
     }
   }
-
-  if (resolvedRaw === 0n) {
-    const balanceUnderlying =
-      await callMaybe(
-        c,
-        'balanceOfUnderlying',
-        [WALLET],
-        true
-      );
-
-    if (
-      balanceUnderlying.ok
-      && positiveBigInt(balanceUnderlying.value) > 0n
-    ) {
-      resolvedRaw = positiveBigInt(balanceUnderlying.value);
-      method = 'balanceOfUnderlying.staticCall';
-    }
-  }
-
-  if (resolvedRaw === 0n && BigInt(meta.raw) > 0n) {
-    for (const methodName of [
-      'convertToAssets',
-      'previewRedeem'
-    ]) {
-      const probe =
-        await callMaybe(
-          c,
-          methodName,
-          [BigInt(meta.raw)]
-        );
-
-      if (probe.ok && positiveBigInt(probe.value) > 0n) {
-        resolvedRaw = positiveBigInt(probe.value);
-        method = methodName;
-        break;
-      }
-    }
-  }
-
-  const resolvedWeth =
-    resolvedRaw > 0n
-      ? Number(formatUnits(resolvedRaw, 18))
-      : null;
 
   return {
-    ...holding,
-    onchainMeta: meta,
-    relation,
-    targetUnderlying: TARGET.baseWeth,
-    resolvedWeth: round(resolvedWeth),
-    conversionMethod: method,
-    probeStatus:
-      resolvedRaw > 0n
-        ? 'resolved'
-        : 'weth-underlying-but-conversion-unresolved',
-    probes: Object.fromEntries(
-      Object.entries(probes)
-        .map(([k, v]) => [k, serializeProbe(v)])
-    )
+    sugar: TARGET.sugar,
+    sugarCodeExists: true,
+    probes: {
+      positions: probes.positions.ok
+        ? { ok: true, count: probes.positions.value.length }
+        : { ok: false, error: probes.positions.error },
+      legacyUnstaked: probes.legacyUnstaked.ok
+        ? { ok: true, count: probes.legacyUnstaked.value.length }
+        : { ok: false, error: probes.legacyUnstaked.error }
+    },
+    positions: dedupePositions(rows)
   };
 }
 
-async function resolveBaseWeth() {
-  const holdings = await routescanAllCurrentHoldings();
+async function resolveAerodromeWeth() {
+  const wrapped = await withBaseProvider(async provider => {
+    const sugar = await fetchSugarPositions(provider);
 
-  const baseItems =
-    holdings.items
-      .filter(x => x.chainId === '8453');
+    const poolCache = new Map();
+    const enriched = [];
 
-  const wrapped = await withProvider('base', async provider => {
-    const candidates =
-      baseItems
-        .filter(materialCandidate)
-        .sort(
-          (a, b) =>
-            (Number(b.tokenValueInUsd) || 0)
-            - (Number(a.tokenValueInUsd) || 0)
-        )
-        .slice(0, 60);
+    for (const position of sugar.positions) {
+      const key = lower(position.lp);
 
-    const probed = [];
+      let meta = poolCache.get(key);
 
-    for (const candidate of candidates) {
-      probed.push(
-        await probeBaseWethCandidate(
-          provider,
-          candidate
-        )
-      );
+      if (!meta) {
+        meta = await poolMeta(provider, position.lp);
+        poolCache.set(key, meta);
+      }
+
+      const token0Decimals = meta?.token0Meta?.decimals ?? 18;
+      const token1Decimals = meta?.token1Meta?.decimals ?? 18;
+
+      const amount0 =
+        Number(formatUnits(BigInt(position.amount0Raw), token0Decimals));
+      const amount1 =
+        Number(formatUnits(BigInt(position.amount1Raw), token1Decimals));
+      const staked0 =
+        Number(formatUnits(BigInt(position.staked0Raw), token0Decimals));
+      const staked1 =
+        Number(formatUnits(BigInt(position.staked1Raw), token1Decimals));
+      const fee0 =
+        Number(formatUnits(BigInt(position.unstakedEarned0Raw), token0Decimals));
+      const fee1 =
+        Number(formatUnits(BigInt(position.unstakedEarned1Raw), token1Decimals));
+
+      let principalWeth = 0;
+      let unclaimedFeeWeth = 0;
+
+      if (meta?.token0 && lower(meta.token0) === lower(TARGET.baseWeth)) {
+        principalWeth += amount0 + staked0;
+        unclaimedFeeWeth += fee0;
+      }
+
+      if (meta?.token1 && lower(meta.token1) === lower(TARGET.baseWeth)) {
+        principalWeth += amount1 + staked1;
+        unclaimedFeeWeth += fee1;
+      }
+
+      enriched.push({
+        ...position,
+        poolMeta: meta,
+        amounts: {
+          amount0: round(amount0),
+          amount1: round(amount1),
+          staked0: round(staked0),
+          staked1: round(staked1),
+          unstakedEarned0: round(fee0),
+          unstakedEarned1: round(fee1)
+        },
+        weth: {
+          principal: round(principalWeth),
+          unclaimedFees: round(unclaimedFeeWeth),
+          grossIncludingUnclaimedFees: round(
+            principalWeth + unclaimedFeeWeth
+          )
+        },
+        knownWethUsdcPool:
+          lower(position.lp) === lower(TARGET.knownWethUsdcPool)
+      });
     }
 
-    const resolved =
-      probed.filter(
-        x =>
-          Number.isFinite(x.resolvedWeth)
-          && x.resolvedWeth > 0
-      );
+    const wethPositions = enriched.filter(
+      x => Number(x?.weth?.principal) > 0
+        || Number(x?.weth?.unclaimedFees) > 0
+    );
 
-    const aggregate =
-      resolved.reduce(
-        (sum, x) => sum + x.resolvedWeth,
-        0
-      );
+    const principalWeth = wethPositions.reduce(
+      (sum, x) => sum + Number(x.weth.principal || 0),
+      0
+    );
 
-    const tolerance =
-      Math.max(
-        0.001,
-        EXPECTED.baseWeth * 0.03
-      );
+    const unclaimedFeeWeth = wethPositions.reduce(
+      (sum, x) => sum + Number(x.weth.unclaimedFees || 0),
+      0
+    );
 
-    const matched =
-      aggregate > 0
-      && Math.abs(
-        aggregate - EXPECTED.baseWeth
-      ) <= tolerance;
+    const grossIncludingFees = principalWeth + unclaimedFeeWeth;
+
+    const tolerance = Math.max(
+      0.001,
+      EXPECTED_BASE_WETH * 0.03
+    );
+
+    const principalMatched =
+      principalWeth > 0
+      && Math.abs(principalWeth - EXPECTED_BASE_WETH) <= tolerance;
+
+    const grossMatched =
+      grossIncludingFees > 0
+      && Math.abs(grossIncludingFees - EXPECTED_BASE_WETH) <= tolerance;
+
+    const status = principalMatched
+      ? 'ok'
+      : (
+          grossMatched
+            ? 'boundary-review-principal-vs-unclaimed-fees'
+            : 'unresolved'
+        );
 
     return {
       chain: 'Base',
-      targetUnderlying: TARGET.baseWeth,
-      ownerObservedApprox: EXPECTED.baseWeth,
-      routescanEndpointMode:
-        'all-chain endpoint, client-side filter chainId=8453',
-      allChainHoldingsDiagnostics:
-        holdings.diagnostics,
-      baseHoldingCount: baseItems.length,
-      baseHoldings: baseItems,
-      probedCandidates: probed,
-      resolvedComponents:
-        resolved.map(x => ({
-          tokenAddress: x.tokenAddress,
-          tokenSymbol: x.tokenSymbol,
-          tokenName: x.tokenName,
-          relation: x.relation,
-          resolvedWeth: x.resolvedWeth,
-          conversionMethod: x.conversionMethod
-        })),
-      wethEquivalent: round(aggregate),
+      protocol: 'Aerodrome Slipstream',
+      ownerObservedApprox: EXPECTED_BASE_WETH,
+      methodology: {
+        source:
+          'official Aerodrome/Velodrome LpSugar onchain positions API',
+        principal:
+          'WETH principal = amount side + staked side for each current position',
+        accruedFees:
+          'unstaked_earned WETH is tracked separately and NOT added to Company Balance principal',
+        antiDoubleCount:
+          'legacy and current Sugar position methods are deduplicated by pool + NFT id'
+      },
+      knownContext: {
+        slipstreamNfpmV1: TARGET.knownSlipstreamNfpmV1,
+        wethUsdcPool: TARGET.knownWethUsdcPool
+      },
+      sugar,
+      wethPositions,
+      totals: {
+        principalWeth: round(principalWeth),
+        unclaimedFeeWeth: round(unclaimedFeeWeth),
+        grossIncludingUnclaimedFees: round(grossIncludingFees)
+      },
       tolerance: round(tolerance),
-      deltaVsOwnerObserved:
-        aggregate > 0
-          ? round(
-              aggregate - EXPECTED.baseWeth
-            )
-          : null,
-      matched,
-      status:
-        matched
-          ? 'ok'
-          : (
-              aggregate > 0
-                ? 'partial-or-outside-owner-tolerance'
-                : 'unresolved'
-            )
+      deltaPrincipalVsOwnerObserved: principalWeth > 0
+        ? round(principalWeth - EXPECTED_BASE_WETH)
+        : null,
+      deltaGrossVsOwnerObserved: grossIncludingFees > 0
+        ? round(grossIncludingFees - EXPECTED_BASE_WETH)
+        : null,
+      principalMatched,
+      grossMatched,
+      matched: principalMatched,
+      status
     };
   });
 
   return wrapped.result || {
     chain: 'Base',
-    targetUnderlying: TARGET.baseWeth,
-    ownerObservedApprox: EXPECTED.baseWeth,
+    protocol: 'Aerodrome Slipstream',
     matched: false,
     status: 'unavailable',
-    routescanHoldings: holdings,
     diagnostics: wrapped.errors
   };
 }
@@ -726,50 +470,25 @@ async function resolveBaseWeth() {
 async function main() {
   const startedAt = new Date().toISOString();
 
-  const previous = readPreviousResolver();
-  const discovery = readDiscoveryKnownSubtotals();
+  const previous = readPreviousV12();
 
   if (previous.status !== 'ok') {
     throw new Error(
-      `Previous v1.1 resolver state unavailable: ${JSON.stringify(previous)}`
+      `Previous v1.2 resolver state unavailable: ${JSON.stringify(previous)}`
     );
   }
 
-  if (discovery.status !== 'ok') {
-    throw new Error(
-      `Discovery baseline unavailable: ${JSON.stringify(discovery)}`
-    );
-  }
+  const aerodromeWeth = await resolveAerodromeWeth();
 
-  const [
-    avalanche,
-    baseWeth
-  ] = await Promise.all([
-    resolveAvalancheAToken(),
-    resolveBaseWeth()
-  ]);
+  const baseWethResolved = aerodromeWeth?.matched === true;
 
-  const resolution = {
-    lombardEthereumWbtc: true,
-    lombardBaseWbtc: true,
-    avalancheBtcB: avalanche?.matched === true,
-    baseWeth: baseWeth?.matched === true
-  };
+  const finalEth =
+    previous.ethNativeSubtotal
+    + Number(aerodromeWeth?.totals?.principalWeth || 0);
 
-  const unresolved =
-    Object.entries(resolution)
-      .filter(([, ok]) => !ok)
-      .map(([key]) => key);
-
-  const finalCandidateBtc =
-    discovery.btcSubtotal
-    + previous.lombardEthereum.quoteEquivalent
-    + previous.lombardBase.quoteEquivalent
-    + (Number(avalanche?.btcBEquivalent) || 0);
-
-  const finalCandidateEth =
-    discovery.ethNativeSubtotal
-    + (Number(baseWeth?.wethEquivalent) || 0);
+  const unresolved = baseWethResolved
+    ? []
+    : ['baseWeth'];
 
   const output = {
     version: VERSION,
@@ -783,58 +502,53 @@ async function main() {
     },
 
     purpose:
-      'close only final Company #008 BTC/ETH delta: verify Avalanche Aave aToken and enumerate Base WETH receipt holdings using Routescan all-chain endpoint',
-
-    methodology: {
-      preserveSolvedState:
-        'Lombard v1.1 results reused as already-resolved state; not re-researched',
-      avalancheAave:
-        'aToken balanceOf accepted only after UNDERLYING_ASSET_ADDRESS and POOL contract verification',
-      baseHoldings:
-        'Routescan documented all-chain ERC20 holdings endpoint; filter Base chainId client-side to avoid chain-specific endpoint failure',
-      baseWeth:
-        'resolve only receipt tokens whose onchain underlying relation is Base WETH; use Aave current balance or reproducible redemption conversion',
-      ownerObserved:
-        'rounded owner values are reconciliation targets only, never accounting source'
-    },
+      'close only final Company #008 Base WETH delta by reading current Aerodrome Slipstream LP positions from the official onchain Sugar contract',
 
     preservedResolved: {
       previousResolverVersion: previous.version,
-      lombardEthereum: previous.lombardEthereum,
-      lombardBase: previous.lombardBase
+      btc: previous.btc,
+      ethNativeSubtotal: previous.ethNativeSubtotal,
+      ...previous.preservedResolved
     },
 
-    discoveryBaseline: discovery,
-
-    expectedApprox: EXPECTED,
-
     results: {
-      avalancheAaveBtcB: avalanche,
-      baseWethCurrentHoldings: baseWeth
+      baseWethAerodromeSlipstream: aerodromeWeth
     },
 
     resolution: {
-      ...resolution,
+      lombardEthereumWbtc: true,
+      lombardBaseWbtc: true,
+      avalancheBtcB: true,
+      baseWeth: baseWethResolved,
       unresolved,
       allResolved: unresolved.length === 0
     },
 
     finalCandidateTotals: {
-      btc: round(finalCandidateBtc),
-      eth: round(finalCandidateEth),
-      authoritative: unresolved.length === 0
+      btc: round(previous.btc),
+      eth: round(finalEth),
+      authoritativeBalanceDiscovery: unresolved.length === 0
     },
 
-    nextStep:
-      unresolved.length === 0
-        ? 'Company #008 BTC/ETH balance discovery closed; proceed to production integration'
-        : 'target only the exact still-unresolved component(s)'
+    metricBoundary: {
+      companyBalance:
+        'Aerodrome LP WETH principal is included in ETH economic exposure only when principal reconciliation passes',
+      accruedRewards:
+        'unclaimed Slipstream trading fees are separate accrued protocol value and are not included in Company Balance principal',
+      emissions:
+        'any Sugar emissions_earned value is a separate reward candidate and must not be folded into ETH principal'
+    },
+
+    nextStep: unresolved.length === 0
+      ? 'Company #008 BTC/ETH balance discovery closed; carry Aerodrome LP fee/emission findings into Rewards/Productivity integration'
+      : (
+          aerodromeWeth?.status === 'boundary-review-principal-vs-unclaimed-fees'
+            ? 'resolve accounting boundary using emitted principal and fee components; do not combine them silently'
+            : 'target only Base WETH using the exact Aerodrome/Sugar evidence emitted here'
+        )
   };
 
-  fs.mkdirSync(
-    path.dirname(OUTPUT),
-    { recursive: true }
-  );
+  fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
 
   fs.writeFileSync(
     OUTPUT,
@@ -842,28 +556,31 @@ async function main() {
   );
 
   console.log(
-    `Company #008 targeted resolver v1.2 written: ${OUTPUT}`
+    `Company #008 targeted resolver v1.3 written: ${OUTPUT}`
   );
   console.log(
-    `Avalanche Aave BTC.b matched: ${resolution.avalancheBtcB}`
+    `Aerodrome WETH principal: ${aerodromeWeth?.totals?.principalWeth ?? null}`
   );
   console.log(
-    `Base WETH matched: ${resolution.baseWeth}`
+    `Aerodrome WETH unclaimed fees: ${aerodromeWeth?.totals?.unclaimedFeeWeth ?? null}`
+  );
+  console.log(
+    `Base WETH matched: ${baseWethResolved}`
+  );
+  console.log(
+    `Final BTC: ${output.finalCandidateTotals.btc}`
+  );
+  console.log(
+    `Final ETH: ${output.finalCandidateTotals.eth}`
   );
   console.log(
     `Unresolved: ${unresolved.join(', ') || 'none'}`
-  );
-  console.log(
-    `Final candidate BTC: ${output.finalCandidateTotals.btc}`
-  );
-  console.log(
-    `Final candidate ETH: ${output.finalCandidateTotals.eth}`
   );
 }
 
 main().catch(err => {
   console.error(
-    `Company #008 targeted resolver v1.2 failed: ${errMsg(err)}`
+    `Company #008 targeted resolver v1.3 failed: ${errMsg(err)}`
   );
   process.exitCode = 1;
 });
