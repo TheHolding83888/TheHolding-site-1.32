@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<!-- companies.html · v1.21.13 · Monetra Performance Reconciliation Polish · Current Capital + Claimable clarity -->
+<!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -3287,8 +3288,8 @@
         .scp-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,.72fr);gap:.9rem;padding:1rem}
         .scp-side{display:grid;gap:.9rem;align-content:start}.scp-panel{border:1px solid rgba(15,23,42,.07);border-radius:17px;background:rgba(251,252,250,.9);padding:.95rem}
         .scp-panel-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:.7rem}.scp-panel-k{font-size:.46rem;color:var(--gold);letter-spacing:.13em;font-weight:700}.scp-panel h4{font-family:'Cormorant Garamond',serif;font-size:1.35rem;line-height:1;margin:.22rem 0 0;font-weight:550}.scp-panel-head>span{color:var(--text-3);font-size:.53rem}
-        .scp-table-wrap{overflow-x:auto}.scp-table{min-width:660px}.scp-tr{display:grid;grid-template-columns:minmax(175px,1.5fr) 78px 88px 78px minmax(125px,1fr);align-items:center;gap:.6rem;padding:.56rem .45rem;border-top:1px solid rgba(15,23,42,.055)}
-        .scp-th{border-top:0;color:var(--text-3);font-size:.45rem;text-transform:uppercase;letter-spacing:.09em;font-weight:700;padding-top:.2rem;padding-bottom:.45rem}.scp-row{font-size:.59rem}.scp-row strong{display:block;font-size:.63rem}.scp-row small{display:block;color:var(--text-3);font-size:.49rem;margin-top:.12rem}.scp-row .scp-chain{color:var(--text-2)}.scp-row .scp-value,.scp-row .scp-apy{text-align:right;font-variant-numeric:tabular-nums}.scp-row .scp-apy{color:var(--green);font-weight:700}.scp-mode{font-size:.51rem;color:var(--text-2)}
+        .scp-table-wrap{overflow-x:auto}.scp-table{min-width:790px}.scp-tr{display:grid;grid-template-columns:minmax(180px,1.55fr) 72px 70px 82px 82px minmax(118px,1fr);align-items:center;gap:.52rem;padding:.56rem .4rem;border-top:1px solid rgba(15,23,42,.055)}
+        .scp-th{border-top:0;color:var(--text-3);font-size:.45rem;text-transform:uppercase;letter-spacing:.085em;font-weight:700;padding-top:.2rem;padding-bottom:.45rem}.scp-th>span{text-align:center;white-space:nowrap}.scp-th>.scp-h-strategy{text-align:center}.scp-row{font-size:.59rem}.scp-row .scp-strategy{text-align:center}.scp-row strong{display:block;font-size:.63rem}.scp-row small{display:block;color:var(--text-3);font-size:.49rem;margin-top:.12rem}.scp-row .scp-chain{color:var(--text-2)}.scp-row .scp-chain,.scp-row .scp-apy,.scp-row .scp-invested,.scp-row .scp-current,.scp-row .scp-mode{text-align:center;font-variant-numeric:tabular-nums}.scp-row .scp-apy{color:var(--green);font-weight:700}.scp-row .scp-invested,.scp-row .scp-current{font-weight:650;color:var(--text);white-space:nowrap}.scp-mode{font-size:.51rem;color:var(--text-2);line-height:1.25}
         .scp-small-note{color:var(--text-3);font-size:.52rem;line-height:1.5;margin-top:.65rem;padding-top:.6rem;border-top:1px solid var(--line)}
         .scp-status-pill{border:1px solid rgba(168,132,44,.15);border-radius:999px;padding:.28rem .5rem;background:rgba(168,132,44,.04);font-size:.48rem!important}
         .scp-income-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid rgba(15,23,42,.06);border-radius:12px;overflow:hidden}.scp-income-grid>div{padding:.65rem;border-left:1px solid var(--line);border-top:1px solid var(--line)}.scp-income-grid>div:nth-child(odd){border-left:0}.scp-income-grid>div:nth-child(-n+2){border-top:0}.scp-income-grid span{display:block;color:var(--text-3);font-size:.46rem;text-transform:uppercase;letter-spacing:.08em}.scp-income-grid b{display:block;font-family:'Cormorant Garamond',serif;font-size:1.08rem;margin-top:.22rem}
@@ -3451,25 +3452,30 @@
             .scp-panel-k{font-size:.4rem}.scp-panel h4{font-size:1.13rem}
             .scp-panel-head>span{font-size:.46rem}
 
-            /* Ten strategy rows are stacked, dense and fully vertical. */
+            /* Strategy Book mobile: four explicit, aligned columns. */
             .scp-table-wrap{overflow:visible!important}
             .scp-table{min-width:0!important}
-            .scp-tr.scp-th{display:none}
+            .scp-tr.scp-th{
+                display:grid;min-width:0!important;
+                grid-template-columns:minmax(0,1.55fr) minmax(44px,.62fr) minmax(58px,.78fr) minmax(58px,.78fr);
+                gap:.18rem .28rem;padding:.2rem .08rem .38rem;border-bottom:1px solid var(--line)
+            }
+            .scp-tr.scp-th .scp-h-chain,.scp-tr.scp-th .scp-h-mode{display:none}
+            .scp-tr.scp-th>span{font-size:.39rem;letter-spacing:.055em;text-align:center;white-space:nowrap;line-height:1.15}
+            .scp-tr.scp-th>.scp-h-strategy{text-align:center}
             .scp-tr.scp-row{
                 display:grid;min-width:0!important;
-                grid-template-columns:minmax(0,1fr) auto auto;
-                grid-template-areas:
-                  "strategy apy value"
-                  "strategy chain mode";
-                gap:.18rem .48rem;padding:.52rem .12rem
+                grid-template-columns:minmax(0,1.55fr) minmax(44px,.62fr) minmax(58px,.78fr) minmax(58px,.78fr);
+                grid-template-areas:"strategy apy invested current";
+                gap:.18rem .28rem;padding:.54rem .08rem
             }
-            .scp-strategy{grid-area:strategy;min-width:0}
-            .scp-strategy strong{font-size:.57rem;overflow-wrap:anywhere}
-            .scp-strategy small{font-size:.43rem;line-height:1.25}
-            .scp-chain{grid-area:chain;font-size:.44rem!important;text-align:right}
-            .scp-value{grid-area:value;font-size:.54rem!important;text-align:right!important;white-space:nowrap}
-            .scp-apy{grid-area:apy;font-size:.56rem!important;text-align:right!important;white-space:nowrap}
-            .scp-mode{grid-area:mode;font-size:.42rem!important;text-align:right;max-width:110px;line-height:1.2}
+            .scp-strategy{grid-area:strategy;min-width:0;text-align:center}
+            .scp-strategy strong{font-size:.55rem;overflow-wrap:anywhere;line-height:1.18}
+            .scp-strategy small{font-size:.41rem;line-height:1.2}
+            .scp-chain,.scp-mode{display:none!important}
+            .scp-apy{grid-area:apy;font-size:.53rem!important;text-align:center!important;white-space:nowrap}
+            .scp-invested{grid-area:invested;font-size:.51rem!important;text-align:center!important;white-space:nowrap}
+            .scp-current{grid-area:current;font-size:.51rem!important;text-align:center!important;white-space:nowrap}
             .scp-small-note{font-size:.45rem;margin-top:.45rem;padding-top:.42rem}
 
             .scp-income-grid>div{padding:.5rem}
@@ -3496,6 +3502,10 @@
             .scp-headline>div>span{font-size:.365rem}.scp-headline>div>b{font-size:1rem}
             .sc-board-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"company action" "capital apy" "embedded claimable" "strategies strategies"}
             .sc-strategy-cell{max-width:100%}
+            .scp-tr.scp-th,.scp-tr.scp-row{grid-template-columns:minmax(0,1.45fr) minmax(40px,.58fr) minmax(54px,.75fr) minmax(54px,.75fr)!important;gap:.14rem .2rem!important}
+            .scp-tr.scp-th>span{font-size:.355rem!important;letter-spacing:.035em!important}
+            .scp-strategy strong{font-size:.51rem}.scp-strategy small{font-size:.38rem}
+            .scp-apy,.scp-invested,.scp-current{font-size:.47rem!important}
         }
 
         /* ═══════ Ported refinements ═══════ */
@@ -3739,6 +3749,14 @@
         .stable-focus-layer .scp-panel-head{margin-bottom:.55rem}
         .stable-focus-layer .scp-panel-k{display:none}
         .stable-focus-layer .scp-panel h4{font-size:1.18rem}
+        /* Strategy Book gets a wider laptop canvas so six columns remain calm,
+           centered and fully visible without forcing a horizontal swipe. */
+        .stable-focus-layer[data-kind="strategies"] .stable-focus-card{width:min(900px,calc(100vw - 34px))}
+        .stable-focus-layer[data-kind="strategies"] .scp-table{min-width:0}
+        .stable-focus-layer[data-kind="strategies"] .scp-tr{
+            grid-template-columns:minmax(160px,1.55fr) 64px 62px 76px 76px minmax(110px,1fr);
+            gap:.48rem
+        }
         .stable-focus-layer .scp-small-note{font-size:.52rem}
         .stable-focus-layer .scp-explain{
             display:grid!important;grid-template-columns:1fr!important;gap:0!important;
@@ -3792,20 +3810,27 @@
                 width:auto;max-height:min(84vh,740px);transform:translateY(14px) scale(.985);
                 border-radius:20px;padding:.9rem .82rem
             }
+            .stable-focus-layer[data-kind="strategies"] .stable-focus-card{width:auto;left:12px;right:12px}
             .stable-focus-layer.open .stable-focus-card{transform:translateY(0) scale(1)}
             .stable-focus-card>h3{font-size:1.32rem}
-            .stable-focus-layer .scp-tr.scp-th{display:none!important}
+            .stable-focus-layer .scp-tr.scp-th{
+                display:grid!important;min-width:0!important;
+                grid-template-columns:minmax(0,1.55fr) minmax(44px,.62fr) minmax(58px,.78fr) minmax(58px,.78fr)!important;
+                gap:.16rem .26rem!important;padding:.18rem .06rem .36rem!important;border-bottom:1px solid var(--line)!important
+            }
+            .stable-focus-layer .scp-tr.scp-th .scp-h-chain,.stable-focus-layer .scp-tr.scp-th .scp-h-mode{display:none!important}
+            .stable-focus-layer .scp-tr.scp-th>span{font-size:.39rem!important;letter-spacing:.05em!important;text-align:center!important;white-space:nowrap!important}
             .stable-focus-layer .scp-tr.scp-row{
                 display:grid!important;min-width:0!important;
-                grid-template-columns:minmax(0,1fr) auto auto!important;
-                grid-template-areas:"strategy apy value" "strategy chain mode"!important;
-                gap:.16rem .4rem!important;padding:.48rem .08rem!important
+                grid-template-columns:minmax(0,1.55fr) minmax(44px,.62fr) minmax(58px,.78fr) minmax(58px,.78fr)!important;
+                grid-template-areas:"strategy apy invested current"!important;
+                gap:.16rem .26rem!important;padding:.5rem .06rem!important
             }
-            .stable-focus-layer .scp-strategy{grid-area:strategy!important;min-width:0}
-            .stable-focus-layer .scp-chain{grid-area:chain!important;text-align:right;font-size:.42rem!important}
-            .stable-focus-layer .scp-value{grid-area:value!important;text-align:right!important;font-size:.5rem!important}
-            .stable-focus-layer .scp-apy{grid-area:apy!important;text-align:right!important;font-size:.52rem!important}
-            .stable-focus-layer .scp-mode{grid-area:mode!important;text-align:right;font-size:.4rem!important;max-width:110px}
+            .stable-focus-layer .scp-strategy{grid-area:strategy!important;min-width:0;text-align:center!important}
+            .stable-focus-layer .scp-chain,.stable-focus-layer .scp-mode{display:none!important}
+            .stable-focus-layer .scp-apy{grid-area:apy!important;text-align:center!important;font-size:.51rem!important}
+            .stable-focus-layer .scp-invested{grid-area:invested!important;text-align:center!important;font-size:.49rem!important;white-space:nowrap!important}
+            .stable-focus-layer .scp-current{grid-area:current!important;text-align:center!important;font-size:.49rem!important;white-space:nowrap!important}
             .stable-focus-layer .scp-income-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
         }
 
@@ -7013,11 +7038,12 @@
                     <div class="scp-table-wrap">
                         <div class="scp-table">
                             <div class="scp-tr scp-th">
-                                <span data-i18n="stable.table.strategy">Strategy</span>
-                                <span data-i18n="stable.table.chain">Chain</span>
-                                <span data-i18n="stable.table.capital">Capital</span>
-                                <span data-i18n="stable.table.apy">Ref. APY</span>
-                                <span data-i18n="stable.table.mode">Income Mode</span>
+                                <span class="scp-h-strategy" data-i18n="stable.table.strategy">Strategy</span>
+                                <span class="scp-h-chain" data-i18n="stable.table.chain">Chain</span>
+                                <span class="scp-h-apy" data-i18n="stable.table.apy">APY</span>
+                                <span class="scp-h-invested" data-i18n="stable.table.invested">Invested</span>
+                                <span class="scp-h-current" data-i18n="stable.table.current">Current</span>
+                                <span class="scp-h-mode" data-i18n="stable.table.mode">Income Mode</span>
                             </div>
                             <div id="scpStrategyRows"></div>
                         </div>
@@ -7649,17 +7675,53 @@ function renderStableCompanies(lang) {
     set('scpEssentialStrategyText',
         c.strategyCount + (lang==='ru' ? ' стратегий' : ' strategies'));
 
-    // Strategy table.
+    // Strategy table. Invested is the verified entry principal. Current uses the
+    // live market value and adds a claimable only when it maps unambiguously to
+    // one protocol-family position, so row Current reconciles to company Current Capital.
     const rows = document.getElementById('scpStrategyRows');
     if (rows) {
-        rows.innerHTML = (c.positions || []).map(p => {
+        const strategyPositions = Array.isArray(c.positions) ? c.positions : [];
+        const protocolFamily = (name) => {
+            const x = String(name || '');
+            if (/^Aave\b/i.test(x)) return 'Aave';
+            if (/^Frax\b/i.test(x)) return 'Frax';
+            if (/^Lido\b/i.test(x)) return 'Lido';
+            if (/^Liquity\b/i.test(x)) return 'Liquity';
+            if (/^Yearn\b/i.test(x)) return 'Yearn';
+            return x.trim();
+        };
+        const familyCounts = new Map();
+        strategyPositions.forEach(p => {
+            const family = protocolFamily(p.protocolFamily || p.protocol);
+            familyCounts.set(family, (familyCounts.get(family) || 0) + 1);
+        });
+        const claimableByFamily = new Map();
+        (Array.isArray(c.accruedClaimable) ? c.accruedClaimable : []).forEach(r => {
+            const family = protocolFamily(r.protocol);
+            const usd = Number(r.usdValue);
+            if (family && familyCounts.get(family) === 1 && Number.isFinite(usd)) {
+                claimableByFamily.set(family, (claimableByFamily.get(family) || 0) + usd);
+            }
+        });
+
+        rows.innerHTML = strategyPositions.map(p => {
             const proto = p.protocolFamily || p.protocol || 'Protocol';
             const asset = p.asset || p.wrapperSymbol || p.underlyingSymbol || 'Stable';
+            const family = protocolFamily(proto);
+            const investedRaw = p.strategyEntry?.principalNominalStable;
+            const marketValueRaw = p.valueUsd;
+            const invested = investedRaw !== null && investedRaw !== undefined && investedRaw !== ''
+                ? Number(investedRaw) : NaN;
+            const marketValue = marketValueRaw !== null && marketValueRaw !== undefined && marketValueRaw !== ''
+                ? Number(marketValueRaw) : NaN;
+            const allocatedClaimable = familyCounts.get(family) === 1 ? Number(claimableByFamily.get(family) || 0) : 0;
+            const current = Number.isFinite(marketValue) ? marketValue + allocatedClaimable : null;
             return '<div class="scp-tr scp-row">'
                 + '<span class="scp-strategy"><strong>' + proto + ' · ' + asset + '</strong><small>' + (p.positionType || '') + '</small></span>'
                 + '<span class="scp-chain">' + (p.chain || '—') + '</span>'
-                + '<span class="scp-value">' + stableMoney(p.valueUsd, lang, 2) + '</span>'
                 + '<span class="scp-apy">' + stablePct(p.referenceApyPct, 2) + '</span>'
+                + '<span class="scp-invested">' + stableMoney(invested, lang, 2) + '</span>'
+                + '<span class="scp-current">' + stableMoney(current, lang, 2) + '</span>'
                 + '<span class="scp-mode">' + stableIncomeMode(p.incomeMode, lang) + '</span>'
                 + '</div>';
         }).join('');
@@ -10181,7 +10243,9 @@ function renderFramework(lang) {
             'stable.table.strategy': 'Strategy',
             'stable.table.chain': 'Chain',
             'stable.table.capital': 'Capital',
-            'stable.table.apy': 'Ref. APY',
+            'stable.table.apy': 'APY',
+            'stable.table.invested': 'Invested',
+            'stable.table.current': 'Current',
             'stable.table.mode': 'Income Mode',
             'stable.income.mtd': 'Embedded MTD',
             'stable.income.qtd': 'Embedded QTD',
@@ -10423,7 +10487,9 @@ function renderFramework(lang) {
             'stable.table.strategy': 'Стратегия',
             'stable.table.chain': 'Сеть',
             'stable.table.capital': 'Капитал',
-            'stable.table.apy': 'Ref. APY',
+            'stable.table.apy': 'APY',
+            'stable.table.invested': 'Вложено',
+            'stable.table.current': 'Сейчас',
             'stable.table.mode': 'Режим дохода',
             'stable.income.mtd': 'Embedded MTD',
             'stable.income.qtd': 'Embedded QTD',
