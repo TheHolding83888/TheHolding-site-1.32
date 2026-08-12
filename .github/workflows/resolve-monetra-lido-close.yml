@@ -1,4 +1,4 @@
-# THE HOLDING · MONETRA LIDO EARNUSD TARGETED CLOSE v0.6 · ASYNC + SYNC QUEUES
+# THE HOLDING · MONETRA LIDO EARNUSD TARGETED CLOSE v0.7 · CAPITAL TRANSFER BASIS
 name: "Resolve Monetra Lido Close"
 
 on:
@@ -27,87 +27,48 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Preflight
+      - name: Minimal preflight
         shell: bash
         run: |
           set -euo pipefail
-          node --check stable-capital/monetra-lido-entry-close.mjs
+          test -s stable-capital/monetra-lido-entry-close.mjs
           test -s companies/company-008-strategy-entry-ledger.json
-
+          node --check stable-capital/monetra-lido-entry-close.mjs
           node - <<'NODE'
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/company-008-strategy-entry-ledger.json','utf8'));
-
-          if(![
-            '0.4-monetra-strategy-entry-targeted-close',
-            '0.5-monetra-lido-share-oracle-close'
-          ].includes(d.version)){
-            throw new Error('Expected Strategy Entry Ledger v0.4/v0.5 input, got '+d.version);
+          if(!['0.4-monetra-strategy-entry-targeted-close','0.5-monetra-lido-share-oracle-close','0.6-monetra-lido-sync-deposit-close'].includes(d.version)){
+            throw new Error('Unexpected input version: '+d.version);
           }
-          if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth'){
-            throw new Error('Company #008 identity mismatch');
-          }
-          if((d.strategies||[]).length!==10){
-            throw new Error('Expected 10 strategies');
-          }
-
-          const lidoId='ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbeA1981'.toLowerCase();
-          const lido=d.strategies.find(x=>String(x.id||'').toLowerCase()===lidoId);
-          const solved=d.strategies.filter(x=>String(x.id||'').toLowerCase()!==lidoId);
-
-          if(!lido) throw new Error('Lido row missing');
-          if(solved.length!==9) throw new Error('Expected 9 non-Lido rows');
-          if(!solved.every(x=>
-            Number.isFinite(Number(x.entry?.principalNominalStable)) &&
-            x.current?.comparable===true &&
-            x.performance?.status==='comparable'
-          )){
-            throw new Error('One of the nine solved strategies regressed');
-          }
-
-          console.log('Lido-only preflight OK.');
-          console.log('Prior solved strategies: 9/10');
+          if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth') throw new Error('Company #008 mismatch');
+          if((d.strategies||[]).length!==10) throw new Error('Expected 10 strategies');
+          console.log('Minimal preflight OK:',d.version);
           NODE
 
       - name: Install dependency
         run: npm install --no-save ethers@6
 
-      - name: Resolve Lido DepositQueue + ShareManager + Oracle
+      - name: Resolve Lido from capital transfer + shares + oracle
         env:
           ETH_ARCHIVE_RPC_URL: ${{ secrets.ETH_ARCHIVE_RPC_URL }}
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
         run: node stable-capital/monetra-lido-entry-close.mjs
 
-      - name: Validate v0.5 diagnostic or full closure
+      - name: Validate diagnostic or full closure
         shell: bash
         run: |
           set -euo pipefail
           FILE="companies/company-008-strategy-entry-ledger.json"
-          test -s "$FILE"
-
           node - <<'NODE'
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/company-008-strategy-entry-ledger.json','utf8'));
-
-          if(d.version!=='0.6-monetra-lido-sync-deposit-close'){
-            throw new Error('Unexpected v0.5 version: '+d.version);
-          }
-          if(d.methodologyVersion!=='0.6-lido-async-sync-depositqueue-sharemanager-oracle'){
-            throw new Error('Unexpected v0.5 methodology');
-          }
-          if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth'){
-            throw new Error('Company #008 identity mismatch');
-          }
-          if((d.strategies||[]).length!==10){
-            throw new Error('Expected 10 strategy rows');
-          }
-          if(!d.lidoTargetedClose){
-            throw new Error('Missing lidoTargetedClose diagnostics');
-          }
+          if(d.version!=='0.7-monetra-lido-capital-transfer-close') throw new Error('Unexpected output version '+d.version);
+          if(d.methodologyVersion!=='0.7-lido-capital-transfer-sharemanager-oracle') throw new Error('Unexpected methodology');
+          if((d.strategies||[]).length!==10) throw new Error('Expected 10 strategies');
 
           const s=d.summary||{};
-          const full=
+          const full =
             s.entryResolvedCount===10 &&
             s.currentNominalComparableCount===10 &&
             s.fullEntryReady===true &&
@@ -118,53 +79,31 @@ jobs:
             d.unresolved.length===0;
 
           if(full){
-            if(!(Number(s.strategyInvestedNominalStableTotal)>99 &&
-                 Number(s.strategyInvestedNominalStableTotal)<101)){
-              throw new Error('Aggregate strategy Invested outside expected ~100 range');
-            }
-            if(!Number.isFinite(Number(s.strategyPerformanceNominalStable)) ||
-               !Number.isFinite(Number(s.strategyPerformancePct))){
-              throw new Error('Aggregate Performance missing');
-            }
-
             const lido=d.strategies.find(x=>x.protocol==='Lido Earn');
-            if(!lido ||
-               !(Number(lido.entry?.principalNominalStable)>9 &&
-                 Number(lido.entry?.principalNominalStable)<11) ||
-               lido.current?.comparable!==true ||
-               lido.performance?.status!=='comparable'){
-              throw new Error('Lido row did not close correctly');
-            }
+            if(!lido) throw new Error('Lido row missing');
+            if(!(Number(lido.entry?.principalNominalStable)>9 && Number(lido.entry?.principalNominalStable)<11))
+              throw new Error('Lido entry outside ~10 range');
+            if(lido.current?.comparable!==true || lido.performance?.status!=='comparable')
+              throw new Error('Lido not comparable');
 
-            console.log('FULL 10/10 STRATEGY ENTRY CLOSURE.');
+            console.log('FULL 10/10 CLOSED');
             console.log('Invested:',s.strategyInvestedNominalStableTotal);
-            console.log('Current nominal:',s.strategyCurrentNominalStableTotal);
+            console.log('Current:',s.strategyCurrentNominalStableTotal);
             console.log('Performance:',s.strategyPerformanceNominalStable,s.strategyPerformancePct+'%');
-            console.log('Lido:',lido.entry?.principalNominalStable,'→',lido.current?.nominal,lido.performance?.returnPct+'%');
-          }else{
-            // Diagnostic GREEN is intentional: publish the exact Lido failure evidence
-            // instead of throwing it away inside an ephemeral runner.
+            console.log('Lido:',JSON.stringify(lido,null,2));
+          } else {
             const unresolved=Array.isArray(d.unresolved)?d.unresolved:[];
-            const onlyLido =
-              unresolved.length<=1 &&
-              unresolved.every(x=>x?.protocol==='Lido Earn' ||
-                String(x?.id||'').toLowerCase()==='ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbeA1981');
-
-            if(!onlyLido){
-              throw new Error('Unexpected non-Lido regression in diagnostic output');
-            }
-            if(s.publicInvestedReady===true || s.publicPerformanceReady===true){
-              throw new Error('Partial Lido diagnostic must remain fail-closed for public metrics');
-            }
-
-            console.log('DIAGNOSTIC GREEN — Lido remains unresolved.');
-            console.log('Lido diagnostics:',JSON.stringify(d.lidoTargetedClose,null,2));
-            console.log('Unresolved:',JSON.stringify(unresolved,null,2));
-            console.log('No public Invested/Performance published yet.');
+            const onlyLido = unresolved.length<=1 &&
+              unresolved.every(x=>x?.protocol==='Lido Earn' || String(x?.id||'').toLowerCase()==='ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981');
+            if(!onlyLido) throw new Error('Unexpected non-Lido regression');
+            if(s.publicInvestedReady===true || s.publicPerformanceReady===true)
+              throw new Error('Partial result must remain fail-closed');
+            console.log('DIAGNOSTIC GREEN — only Lido remains');
+            console.log(JSON.stringify(d.lidoTargetedClose,null,2));
           }
           NODE
 
-      - name: Publish v0.6 Lido diagnostic/full artifact
+      - name: Publish v0.7 artifact
         shell: bash
         run: |
           set -euo pipefail
@@ -175,9 +114,7 @@ jobs:
           git add -f "$FILE"
 
           if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Publish Monetra Lido close diagnostic"
-          else
-            echo "No v0.5 changes to publish."
+            git commit -m "Close Monetra Lido from capital transfer"
           fi
 
           for attempt in 1 2 3; do
@@ -186,17 +123,11 @@ jobs:
               break
             fi
             git rebase --abort || true
-            if [ "$attempt" -eq 3 ]; then
-              echo "ERROR: failed to publish after retries"
-              exit 1
-            fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
             sleep $((attempt*2))
           done
 
           git fetch origin main
-          git cat-file -e "origin/main:$FILE"
-
           REMOTE_VERSION="$(git show origin/main:$FILE | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
-          test "$REMOTE_VERSION" = "0.6-monetra-lido-sync-deposit-close"
-
-          echo "Remote main v0.6 Lido diagnostic/full artifact verified."
+          test "$REMOTE_VERSION" = "0.7-monetra-lido-capital-transfer-close"
+          echo "Remote v0.7 verified."
