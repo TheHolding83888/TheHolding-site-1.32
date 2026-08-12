@@ -1,931 +1,635 @@
 {
-  "version": "1.0.1-company-008-address-normalization",
-  "generatedAt": "2026-08-12T07:02:39.696Z",
-  "startedAt": "2026-08-12T07:02:30.687Z",
+  "version": "1.1-company-008-veda-accountant-holdings-mesh",
+  "generatedAt": "2026-08-12T07:25:08.069Z",
+  "startedAt": "2026-08-12T07:25:05.729Z",
   "company": {
     "registry": "008",
     "name": "1milliondollar.eth",
     "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596"
   },
-  "purpose": "target only the four unresolved owner-reconciliation components from discovery v1.3.2; no broad archaeology",
+  "purpose": "resolve only remaining Company #008 BTC/ETH reconciliation delta via verified Veda Accountant rates and current holdings enumeration; no broad archaeology",
+  "methodology": {
+    "boringVault": "share balance × Accountant rate per ONE_SHARE; verify Accountant.vault() before accepting",
+    "currentHoldings": "Routescan keyless current ERC20 holdings; receipt probes only on material/current candidates",
+    "ownerObserved": "rounded owner values are reconciliation targets only, never accounting source",
+    "antiDoubleCount": "do not add direct underlying and receipt-equivalent for the same economic position"
+  },
+  "knownFromDiscovery": {
+    "discoveryVersion": "1.3.2-company-008-owner-reconciliation-official-aave",
+    "btcFromDiscovery": 0.02160392,
+    "ethFromDiscovery": 0.006426130614
+  },
   "expectedApprox": {
     "avalancheBtcB": 0.0435,
-    "lombardBaseWbtc": 0.0048,
     "lombardEthereumWbtc": 0.0028,
+    "lombardBaseWbtc": 0.0048,
     "baseWeth": 0.1606
   },
   "results": {
-    "benqiAvalancheBtcB": {
-      "status": "no-position",
-      "protocol": "BENQI",
-      "chain": "Avalanche",
-      "qiToken": "0x89a415b3D20098E6A6C8f7a59001C67BD3129821",
-      "qiSymbol": "qiBTC.b",
-      "underlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
-      "expectedUnderlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
-      "qTokenShares": 0,
-      "exchangeRateRaw": "20422433187704150",
-      "btcBEquivalent": 0,
-      "balanceMethod": null,
-      "ownerObservedApprox": 0.0435,
-      "deltaVsOwnerObserved": -0.0435,
-      "matched": false,
-      "diagnostics": []
-    },
     "lombardEthereum": {
-      "chain": "Ethereum",
-      "protocol": "Lombard / Veda",
-      "officialContracts": {
-        "LBTCv": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-        "BTCe": "0x3a4baaBf4DC9910596821615e848f0e6545762F3"
+      "label": "Lombard LBTCv",
+      "chain": "ethereum",
+      "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+      "vaultCodeExists": true,
+      "share": {
+        "address": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+        "symbol": "LBTCv",
+        "name": "Lombard BTC Vault",
+        "decimals": 8,
+        "raw": "273187",
+        "balance": 0.00273187
       },
-      "depositAsset": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-      "directDepositTokenBalance": 0,
-      "receiptTokens": [
-        {
-          "kind": "LBTCv",
-          "address": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-          "symbol": "LBTCv",
-          "decimals": 8,
-          "raw": "273187",
-          "balance": 0.00273187,
-          "status": "shares-found-needs-conversion",
-          "underlyingAddress": null,
-          "underlyingSymbol": null,
-          "resolvedUnderlyingAmount": null,
-          "conversionMethod": null,
-          "probes": {
-            "asset": {
-              "ok": false,
-              "error": "execution reverted (no data present; likely require(false) occurred"
-            },
-            "underlying": {
-              "ok": false,
-              "error": "execution reverted (no data present; likely require(false) occurred"
-            },
-            "pricePerShare": {
-              "ok": false,
-              "error": "execution reverted (no data present; likely require(false) occurred"
-            },
-            "getPricePerFullShare": {
-              "ok": false,
-              "error": "execution reverted (no data present; likely require(false) occurred"
-            },
-            "getRate": {
-              "ok": false,
-              "error": "execution reverted (no data present; likely require(false) occurred"
-            },
-            "totalAssets": {
-              "ok": false,
-              "error": "execution reverted (no data present; likely require(false) occurred"
-            },
-            "totalSupply": {
-              "ok": true,
-              "value": "93313316770"
-            },
-            "convertToAssets": {
-              "ok": false,
-              "error": "execution reverted (no data present; likely require(false) occurred"
-            },
-            "previewRedeem": {
-              "ok": false,
-              "error": "execution reverted (no data present; likely require(false) occurred"
-            }
-          }
-        },
-        {
-          "kind": "BTCe",
-          "address": "0x3a4baaBf4DC9910596821615e848f0e6545762F3",
-          "symbol": "BTCe",
-          "decimals": 8,
-          "raw": "0",
-          "balance": 0,
-          "status": "zero"
-        }
-      ],
-      "resolvedUnderlying": 0,
-      "multipleResolvedCandidates": false,
+      "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
+      "accountantCodeExists": true,
+      "accountantVault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+      "vaultMatch": true,
+      "base": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "accountantDecimals": 8,
+      "isPaused": false,
+      "quote": {
+        "address": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+        "symbol": "WBTC",
+        "decimals": 8
+      },
+      "rateMethod": "Accountant.getRateInQuoteSafe(quote)",
+      "quoteRateRaw": "102447782",
+      "quoteEquivalent": 0.00279874,
       "ownerObservedApprox": 0.0028,
-      "matched": false,
-      "diagnostics": []
+      "tolerance": 0.00015,
+      "deltaVsOwnerObserved": -0.00000126,
+      "matched": true,
+      "status": "ok",
+      "probes": {
+        "vault": {
+          "ok": true,
+          "value": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c"
+        },
+        "base": {
+          "ok": true,
+          "value": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"
+        },
+        "decimals": {
+          "ok": true,
+          "value": "8"
+        },
+        "getRate": {
+          "ok": true,
+          "value": "102447782"
+        },
+        "getRateSafe": {
+          "ok": true,
+          "value": "102447782"
+        },
+        "getRateInQuote": {
+          "ok": true,
+          "value": "102447782"
+        },
+        "getRateInQuoteSafe": {
+          "ok": true,
+          "value": "102447782"
+        },
+        "accountantState": {
+          "ok": true,
+          "value": [
+            "0x68eC1FdD4Bb202B2e07aE751CB5553644aA48cFA",
+            "102447782",
+            "7895613",
+            "93413782712",
+            "102447782",
+            "10050",
+            "9950",
+            "1786406171",
+            "false",
+            "21600",
+            "50",
+            "0"
+          ]
+        }
+      }
     },
     "lombardBase": {
-      "chain": "Base",
-      "protocol": "Lombard / Veda",
-      "officialContracts": {
-        "LBTCv": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-        "BTCe": "0x3a4baaBf4DC9910596821615e848f0e6545762F3"
+      "label": "Lombard LBTCv",
+      "chain": "base",
+      "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+      "vaultCodeExists": true,
+      "share": {
+        "address": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+        "symbol": "LBTCv",
+        "name": "Lombard BTC Vault",
+        "decimals": 8,
+        "raw": "466433",
+        "balance": 0.00466433
       },
-      "depositAsset": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
-      "directDepositTokenBalance": 0,
-      "receiptTokens": [
+      "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
+      "accountantCodeExists": true,
+      "accountantVault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+      "vaultMatch": true,
+      "base": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
+      "accountantDecimals": 8,
+      "isPaused": false,
+      "quote": {
+        "address": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
+        "symbol": "WBTC",
+        "decimals": 8
+      },
+      "rateMethod": "Accountant.getRateInQuoteSafe(quote)",
+      "quoteRateRaw": "102447782",
+      "quoteEquivalent": 0.0047785,
+      "ownerObservedApprox": 0.0048,
+      "tolerance": 0.00015,
+      "deltaVsOwnerObserved": -0.0000215,
+      "matched": true,
+      "status": "ok",
+      "probes": {
+        "vault": {
+          "ok": true,
+          "value": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c"
+        },
+        "base": {
+          "ok": true,
+          "value": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c"
+        },
+        "decimals": {
+          "ok": true,
+          "value": "8"
+        },
+        "getRate": {
+          "ok": true,
+          "value": "102447782"
+        },
+        "getRateSafe": {
+          "ok": true,
+          "value": "102447782"
+        },
+        "getRateInQuote": {
+          "ok": true,
+          "value": "102447782"
+        },
+        "getRateInQuoteSafe": {
+          "ok": true,
+          "value": "102447782"
+        },
+        "accountantState": {
+          "ok": true,
+          "value": [
+            "0x68eC1FdD4Bb202B2e07aE751CB5553644aA48cFA",
+            "102447782",
+            "117350",
+            "1789949157",
+            "102447782",
+            "10050",
+            "9950",
+            "1786406205",
+            "false",
+            "21600",
+            "50",
+            "0"
+          ]
+        }
+      }
+    },
+    "baseWethVedaCandidate": {
+      "label": "Veda Liquid ETH candidate",
+      "chain": "base",
+      "vault": "0xf0bb20865277aBd641a307eCe5Ee04E79073416C",
+      "vaultCodeExists": true,
+      "share": {
+        "address": "0xf0bb20865277aBd641a307eCe5Ee04E79073416C",
+        "symbol": "liquidETH",
+        "name": "Ether.Fi Liquid ETH",
+        "decimals": 18,
+        "raw": "0",
+        "balance": 0
+      },
+      "accountant": "0x0d05D94a5F1E76C18fbeB7A13d17C8a314088198",
+      "accountantCodeExists": true,
+      "accountantVault": "0xf0bb20865277aBd641a307eCe5Ee04E79073416C",
+      "vaultMatch": true,
+      "base": "0x4200000000000000000000000000000000000006",
+      "accountantDecimals": 18,
+      "isPaused": false,
+      "quote": {
+        "address": "0x4200000000000000000000000000000000000006",
+        "symbol": "WETH",
+        "decimals": 18
+      },
+      "rateMethod": "Accountant.getRateInQuoteSafe(quote)",
+      "quoteRateRaw": "1035070497999746896",
+      "quoteEquivalent": 0,
+      "ownerObservedApprox": 0.1606,
+      "tolerance": 0.004818,
+      "deltaVsOwnerObserved": null,
+      "matched": false,
+      "status": "unresolved",
+      "probes": {
+        "vault": {
+          "ok": true,
+          "value": "0xf0bb20865277aBd641a307eCe5Ee04E79073416C"
+        },
+        "base": {
+          "ok": true,
+          "value": "0x4200000000000000000000000000000000000006"
+        },
+        "decimals": {
+          "ok": true,
+          "value": "18"
+        },
+        "getRate": {
+          "ok": true,
+          "value": "1035070497999746896"
+        },
+        "getRateSafe": {
+          "ok": true,
+          "value": "1035070497999746896"
+        },
+        "getRateInQuote": {
+          "ok": true,
+          "value": "1035070497999746896"
+        },
+        "getRateInQuoteSafe": {
+          "ok": true,
+          "value": "1035070497999746896"
+        },
+        "accountantState": {
+          "ok": true,
+          "value": [
+            "0x43730F2A3FA41F18aD5E67A9568E28a67bF00920",
+            "1035070497999746896",
+            "1823966916405",
+            "972067146630469",
+            "1035070497999746896",
+            "10050",
+            "9950",
+            "1727230879",
+            "false",
+            "21600",
+            "200",
+            "0"
+          ]
+        }
+      }
+    },
+    "avalancheBtcBCurrentHoldings": {
+      "chain": "Avalanche",
+      "targetUnderlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
+      "ownerObservedApprox": 0.0435,
+      "benqiAlreadyEliminated": true,
+      "currentHoldings": {
+        "chain": "avalanche",
+        "chainId": 43114,
+        "source": "Routescan keyless current ERC20 holdings",
+        "itemCount": 9,
+        "diagnostics": [],
+        "items": [
+          {
+            "chainId": "43114",
+            "tokenAddress": "0xFCCf3cAbbe80101232d343252614b6A3eE81C989",
+            "tokenName": "Aave Avalanche Variable Debt USDC",
+            "tokenSymbol": "variableDebtAvaUSDC",
+            "tokenDecimals": 6,
+            "tokenQuantityRaw": "404208255",
+            "tokenQuantity": 404.208255,
+            "tokenPrice": null,
+            "tokenValueInUsd": null,
+            "updatedAtBlock": 87256218
+          },
+          {
+            "chainId": "43114",
+            "tokenAddress": "0xfb00AC187a8Eb5AFAE4eACE434F493Eb62672df7",
+            "tokenName": "Aave Avalanche Variable Debt USDT",
+            "tokenSymbol": "variableDebtAvaUSDT",
+            "tokenDecimals": 6,
+            "tokenQuantityRaw": "682822329",
+            "tokenQuantity": 682.822329,
+            "tokenPrice": null,
+            "tokenValueInUsd": null,
+            "updatedAtBlock": 87247172
+          },
+          {
+            "chainId": "43114",
+            "tokenAddress": "0xF9d922c055A3f1759299467dAfaFdf43BE844f7a",
+            "tokenName": "Minereum AVAX",
+            "tokenSymbol": "MNEAV",
+            "tokenDecimals": 8,
+            "tokenQuantityRaw": "30000000000000",
+            "tokenQuantity": 300000,
+            "tokenPrice": null,
+            "tokenValueInUsd": null,
+            "updatedAtBlock": 22949264
+          },
+          {
+            "chainId": "43114",
+            "tokenAddress": "0xDC1fad70953Bb3918592b6fCc374fe05F5811B6a",
+            "tokenName": "Aave Avalanche Variable Debt AUSD",
+            "tokenSymbol": "variableDebtAvaAUSD",
+            "tokenDecimals": 6,
+            "tokenQuantityRaw": "499031514",
+            "tokenQuantity": 499.031514,
+            "tokenPrice": null,
+            "tokenValueInUsd": null,
+            "updatedAtBlock": 79217529
+          },
+          {
+            "chainId": "43114",
+            "tokenAddress": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
+            "tokenName": "Aave Avalanche BTC.b",
+            "tokenSymbol": "aAvaBTC.b",
+            "tokenDecimals": 8,
+            "tokenQuantityRaw": "4346456",
+            "tokenQuantity": 0.04346456,
+            "tokenPrice": null,
+            "tokenValueInUsd": null,
+            "updatedAtBlock": 88729734
+          },
+          {
+            "chainId": "43114",
+            "tokenAddress": "0x6c718a70239fA548c0bD268fE88F37EBE8b6E2ea",
+            "tokenName": "EVK Vault eWAVAX-2",
+            "tokenSymbol": "eWAVAX-2",
+            "tokenDecimals": 18,
+            "tokenQuantityRaw": "21947372114541539145",
+            "tokenQuantity": 21.947372114542,
+            "tokenPrice": null,
+            "tokenValueInUsd": null,
+            "updatedAtBlock": 79302593
+          },
+          {
+            "chainId": "43114",
+            "tokenAddress": "0x6adC4e7e3a3aAe8108b87b8d19477200F731fc33",
+            "tokenName": "Onyx",
+            "tokenSymbol": "ecAVAX - https://investpulse.ink",
+            "tokenDecimals": 18,
+            "tokenQuantityRaw": "8378000000000000000",
+            "tokenQuantity": 8.378,
+            "tokenPrice": null,
+            "tokenValueInUsd": null,
+            "updatedAtBlock": 86564863
+          },
+          {
+            "chainId": "43114",
+            "tokenAddress": "0x5D37a146dDF998792D16991597E45Ee11D6aB95A",
+            "tokenName": "MEOW",
+            "tokenSymbol": "Claim on: airdrop.avax-meowcat.com",
+            "tokenDecimals": 0,
+            "tokenQuantityRaw": "470000",
+            "tokenQuantity": 470000,
+            "tokenPrice": null,
+            "tokenValueInUsd": null,
+            "updatedAtBlock": 46146061
+          },
+          {
+            "chainId": "43114",
+            "tokenAddress": "0x4a1c3aD6Ed28a636ee1751C69071f6be75DEb8B8",
+            "tokenName": "Aave Avalanche Variable Debt WAVAX",
+            "tokenSymbol": "variableDebtAvaWAVAX",
+            "tokenDecimals": 18,
+            "tokenQuantityRaw": "3748769210977024406",
+            "tokenQuantity": 3.748769210977,
+            "tokenPrice": null,
+            "tokenValueInUsd": null,
+            "updatedAtBlock": 79216564
+          }
+        ]
+      },
+      "probedCandidates": [
         {
-          "kind": "LBTCv",
-          "address": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-          "symbol": "LBTCv",
-          "decimals": 8,
-          "raw": "466433",
-          "balance": 0.00466433,
-          "status": "shares-found-needs-conversion",
-          "underlyingAddress": null,
-          "underlyingSymbol": null,
+          "chainId": "43114",
+          "tokenAddress": "0xFCCf3cAbbe80101232d343252614b6A3eE81C989",
+          "tokenName": "Aave Avalanche Variable Debt USDC",
+          "tokenSymbol": "variableDebtAvaUSDC",
+          "tokenDecimals": 6,
+          "tokenQuantityRaw": "404208255",
+          "tokenQuantity": 404.208255,
+          "tokenPrice": null,
+          "tokenValueInUsd": null,
+          "updatedAtBlock": 87256218,
+          "onchainShareMeta": {
+            "address": "0xFCCf3cAbbe80101232d343252614b6A3eE81C989",
+            "symbol": "variableDebtAvaUSDC",
+            "name": "Aave Avalanche Variable Debt USDC",
+            "decimals": 6,
+            "raw": "404208255",
+            "balance": 404.208255
+          },
+          "assetProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "underlyingProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "resolvedUnderlyingAddress": null,
+          "pointsToTarget": false,
+          "resolvedUnderlyingRaw": "0",
           "resolvedUnderlyingAmount": null,
           "conversionMethod": null,
-          "probes": {
-            "asset": {
-              "ok": false,
-              "error": "missing revert data"
-            },
-            "underlying": {
-              "ok": false,
-              "error": "missing revert data"
-            },
-            "pricePerShare": {
-              "ok": false,
-              "error": "missing revert data"
-            },
-            "getPricePerFullShare": {
-              "ok": false,
-              "error": "missing revert data"
-            },
-            "getRate": {
-              "ok": false,
-              "error": "missing revert data"
-            },
-            "totalAssets": {
-              "ok": false,
-              "error": "missing revert data"
-            },
-            "totalSupply": {
-              "ok": true,
-              "value": "1717012690"
-            },
-            "convertToAssets": {
-              "ok": false,
-              "error": "missing revert data"
-            },
-            "previewRedeem": {
-              "ok": false,
-              "error": "missing revert data"
-            }
-          }
+          "probeStatus": "not-target-underlying"
         },
         {
-          "kind": "BTCe",
-          "address": "0x3a4baaBf4DC9910596821615e848f0e6545762F3",
-          "symbol": "BTCe",
-          "decimals": 8,
-          "raw": "0",
-          "balance": 0,
-          "status": "zero"
+          "chainId": "43114",
+          "tokenAddress": "0xfb00AC187a8Eb5AFAE4eACE434F493Eb62672df7",
+          "tokenName": "Aave Avalanche Variable Debt USDT",
+          "tokenSymbol": "variableDebtAvaUSDT",
+          "tokenDecimals": 6,
+          "tokenQuantityRaw": "682822329",
+          "tokenQuantity": 682.822329,
+          "tokenPrice": null,
+          "tokenValueInUsd": null,
+          "updatedAtBlock": 87247172,
+          "onchainShareMeta": {
+            "address": "0xfb00AC187a8Eb5AFAE4eACE434F493Eb62672df7",
+            "symbol": "variableDebtAvaUSDT",
+            "name": "Aave Avalanche Variable Debt USDT",
+            "decimals": 6,
+            "raw": "682822330",
+            "balance": 682.82233
+          },
+          "assetProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "underlyingProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "resolvedUnderlyingAddress": null,
+          "pointsToTarget": false,
+          "resolvedUnderlyingRaw": "0",
+          "resolvedUnderlyingAmount": null,
+          "conversionMethod": null,
+          "probeStatus": "not-target-underlying"
+        },
+        {
+          "chainId": "43114",
+          "tokenAddress": "0xDC1fad70953Bb3918592b6fCc374fe05F5811B6a",
+          "tokenName": "Aave Avalanche Variable Debt AUSD",
+          "tokenSymbol": "variableDebtAvaAUSD",
+          "tokenDecimals": 6,
+          "tokenQuantityRaw": "499031514",
+          "tokenQuantity": 499.031514,
+          "tokenPrice": null,
+          "tokenValueInUsd": null,
+          "updatedAtBlock": 79217529,
+          "onchainShareMeta": {
+            "address": "0xDC1fad70953Bb3918592b6fCc374fe05F5811B6a",
+            "symbol": "variableDebtAvaAUSD",
+            "name": "Aave Avalanche Variable Debt AUSD",
+            "decimals": 6,
+            "raw": "499031514",
+            "balance": 499.031514
+          },
+          "assetProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "underlyingProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "resolvedUnderlyingAddress": null,
+          "pointsToTarget": false,
+          "resolvedUnderlyingRaw": "0",
+          "resolvedUnderlyingAmount": null,
+          "conversionMethod": null,
+          "probeStatus": "not-target-underlying"
+        },
+        {
+          "chainId": "43114",
+          "tokenAddress": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
+          "tokenName": "Aave Avalanche BTC.b",
+          "tokenSymbol": "aAvaBTC.b",
+          "tokenDecimals": 8,
+          "tokenQuantityRaw": "4346456",
+          "tokenQuantity": 0.04346456,
+          "tokenPrice": null,
+          "tokenValueInUsd": null,
+          "updatedAtBlock": 88729734,
+          "onchainShareMeta": {
+            "address": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
+            "symbol": "aAvaBTC.b",
+            "name": "Aave Avalanche BTC.b",
+            "decimals": 8,
+            "raw": "4346456",
+            "balance": 0.04346456
+          },
+          "assetProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "underlyingProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "resolvedUnderlyingAddress": null,
+          "pointsToTarget": false,
+          "resolvedUnderlyingRaw": "0",
+          "resolvedUnderlyingAmount": null,
+          "conversionMethod": null,
+          "probeStatus": "not-target-underlying"
+        },
+        {
+          "chainId": "43114",
+          "tokenAddress": "0x6c718a70239fA548c0bD268fE88F37EBE8b6E2ea",
+          "tokenName": "EVK Vault eWAVAX-2",
+          "tokenSymbol": "eWAVAX-2",
+          "tokenDecimals": 18,
+          "tokenQuantityRaw": "21947372114541539145",
+          "tokenQuantity": 21.947372114542,
+          "tokenPrice": null,
+          "tokenValueInUsd": null,
+          "updatedAtBlock": 79302593,
+          "onchainShareMeta": {
+            "address": "0x6c718a70239fA548c0bD268fE88F37EBE8b6E2ea",
+            "symbol": "eWAVAX-2",
+            "name": "EVK Vault eWAVAX-2",
+            "decimals": 18,
+            "raw": "21947372114541539145",
+            "balance": 21.94737211454154
+          },
+          "assetProbe": {
+            "ok": true,
+            "value": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"
+          },
+          "underlyingProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "resolvedUnderlyingAddress": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+          "pointsToTarget": false,
+          "resolvedUnderlyingRaw": "0",
+          "resolvedUnderlyingAmount": null,
+          "conversionMethod": null,
+          "probeStatus": "not-target-underlying"
+        },
+        {
+          "chainId": "43114",
+          "tokenAddress": "0x4a1c3aD6Ed28a636ee1751C69071f6be75DEb8B8",
+          "tokenName": "Aave Avalanche Variable Debt WAVAX",
+          "tokenSymbol": "variableDebtAvaWAVAX",
+          "tokenDecimals": 18,
+          "tokenQuantityRaw": "3748769210977024406",
+          "tokenQuantity": 3.748769210977,
+          "tokenPrice": null,
+          "tokenValueInUsd": null,
+          "updatedAtBlock": 79216564,
+          "onchainShareMeta": {
+            "address": "0x4a1c3aD6Ed28a636ee1751C69071f6be75DEb8B8",
+            "symbol": "variableDebtAvaWAVAX",
+            "name": "Aave Avalanche Variable Debt WAVAX",
+            "decimals": 18,
+            "raw": "3748769217748708639",
+            "balance": 3.7487692177487086
+          },
+          "assetProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "underlyingProbe": {
+            "ok": false,
+            "error": "missing revert data"
+          },
+          "resolvedUnderlyingAddress": null,
+          "pointsToTarget": false,
+          "resolvedUnderlyingRaw": "0",
+          "resolvedUnderlyingAmount": null,
+          "conversionMethod": null,
+          "probeStatus": "not-target-underlying"
         }
       ],
-      "resolvedUnderlying": 0,
-      "multipleResolvedCandidates": false,
-      "ownerObservedApprox": 0.0048,
+      "resolvedComponents": [],
+      "btcBEquivalent": 0,
+      "tolerance": 0.001305,
       "matched": false,
+      "status": "unresolved",
       "diagnostics": []
     },
-    "baseWethGenericReceipts": {
-      "protocol": "generic receipt-token probe",
-      "chain": "Base",
-      "WETH": "0x4200000000000000000000000000000000000006",
-      "ownerObservedApprox": 0.1606,
-      "candidates": [],
-      "uniquelyResolvedWethEquivalent": null,
-      "diagnostics": []
-    },
-    "transferContext": {
-      "baseWbtc": {
-        "items": [],
-        "diagnostics": []
-      },
-      "ethereumWbtc": {
-        "items": [
-          {
-            "counterparty": "0x89c6340B1a1f4b25D36cd8B063D49045caF3f818",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x89c6340B1a1f4b25D36cd8B063D49045caF3f818",
-            "txHash": "0xb542cba2c93a9902bffc63e18a07751e5a8c6e72cd88b95b242888d076e99439",
-            "timestamp": "2025-09-14T09:44:11.000000Z",
-            "method": "callDiamondWithPermit2",
-            "tokenSymbol": "WBTC",
-            "total": {
-              "decimals": "8",
-              "value": "389961"
-            }
-          },
-          {
-            "counterparty": "0x3c6E5f55cF60A372c65386E9D2fd7fbc27d73D8C",
-            "from": "0x3c6E5f55cF60A372c65386E9D2fd7fbc27d73D8C",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xa594e548ca0e14e0cfde073803784f9b63868c857a21f18fbd4a3c455d9e4e77",
-            "timestamp": "2025-09-10T04:36:11.000000Z",
-            "method": "claimAssets",
-            "tokenSymbol": "WBTC",
-            "total": {
-              "decimals": "8",
-              "value": "389961"
-            }
-          },
-          {
-            "counterparty": "0x000010036C0190E009a000d0fc3541100A07380A",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x000010036C0190E009a000d0fc3541100A07380A",
-            "txHash": "0x161e9d2378969b8c8427c0a9c7f17b4af4e9a78ea4bad3f9028ecefe0e1e4ed8",
-            "timestamp": "2024-12-31T03:31:47.000000Z",
-            "method": "swapExactAmountIn",
-            "tokenSymbol": "WBTC",
-            "total": {
-              "decimals": "8",
-              "value": "279461"
-            }
-          },
-          {
-            "counterparty": "0x15652636f3898F550b257B89926d5566821c32E1",
-            "from": "0x15652636f3898F550b257B89926d5566821c32E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xe1a6e066312c97f7e918b1044d49aacffdcdc8a095fe82b6b2c109ccc1527f90",
-            "timestamp": "2024-12-30T13:34:11.000000Z",
-            "method": "fillV3Relay",
-            "tokenSymbol": "WBTC",
-            "total": {
-              "decimals": "8",
-              "value": "279461"
-            }
-          }
-        ],
-        "diagnostics": []
-      },
-      "baseWeth": {
-        "items": [
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xaa3170d5a0909d4442b0d28e71ccdf2b9005379cffec8e991579714b15fa8887",
-            "timestamp": "2026-03-02T18:34:03.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "87384146693754"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xc9d2711a0025d1e31da3da12f330e923026847a0482bdae21e47af0b2b81e14d",
-            "timestamp": "2026-03-01T09:01:41.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "3844"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x61a8e2218f88726ea45de19c87d542285cd88a4d200a8982bb0a36aba2769a46",
-            "timestamp": "2026-03-01T08:47:11.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "3701"
-            }
-          },
-          {
-            "counterparty": "0x88A43bbDF9D098eEC7bCEda4e2494615dfD9bB9C",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x88A43bbDF9D098eEC7bCEda4e2494615dfD9bB9C",
-            "txHash": "0xb6ab6d3b4d99d8a93e2abc4ac9b49bb5d767dd3904eb4975885aa2ec782cd513",
-            "timestamp": "2026-02-15T05:16:17.000000Z",
-            "method": "exec",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1644827238463"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x0dbf69c36b84b2395ce7b292116558da72256ba9888b1c8b5e20cb546d0b608b",
-            "timestamp": "2026-02-14T16:37:43.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "738"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xb7ee72bda9df89a46173418116f6d968675d6c16e62ce6b2ef30ec8e298f74bb",
-            "timestamp": "2026-02-04T05:42:41.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "3251"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x43ca36055127cc2816a9334906a3fd3f6e826b5d11818d1a0157b9b96902ecff",
-            "timestamp": "2026-01-14T05:41:43.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1311231979297"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xf98c9072b4ea97ac47cbb7c85699b1b522fc8e8ffd3d3077c228be9d72daf9db",
-            "timestamp": "2026-01-05T04:05:27.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "333595255158"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "txHash": "0xccb75579b9aa548c9995cfd881ab0a1e91798a0b12e3aac00c9f04883cc47c17",
-            "timestamp": "2026-01-05T04:02:57.000000Z",
-            "method": "increaseLiquidity",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1259421678402920"
-            }
-          },
-          {
-            "counterparty": "0x4e829F8A5213c42535AB84AA40BD4aDCCE9cBa02",
-            "from": "0x4e829F8A5213c42535AB84AA40BD4aDCCE9cBa02",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x331f00211e28185bb3087712f13e49039464fe3771c78ebf7fb55023d9e309e2",
-            "timestamp": "2026-01-05T04:01:29.000000Z",
-            "method": "execute",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1254509025655420"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x32b924b9ba8d0eefb158d6586d92b9c29665be5a5fd0245388a7ac88a30ee596",
-            "timestamp": "2026-01-05T03:34:57.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "27427469720"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x9cfb4f50c0d3d90e8690336c70736e352c68adf442fb2b7b3cbf620f3538f471",
-            "timestamp": "2026-01-05T03:33:05.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "18"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x715b1d84288e4312ad472376b50f2e8716686229dc65202076d9fa3cfff2a47d",
-            "timestamp": "2026-01-02T08:16:19.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "80386256049"
-            }
-          },
-          {
-            "counterparty": "0xb0717286fca964cb7315A95A003e1C3F0313b6dE",
-            "from": "0xb0717286fca964cb7315A95A003e1C3F0313b6dE",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x91aba472bb9effa48d292372befe72237e23b13a08944a619116db4e7347b20d",
-            "timestamp": "2026-01-02T08:13:15.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "4804839021077"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "txHash": "0x436fead8cf6310d09b2bc9521bb1b45c203853571e9ec31f3a08bdf8a90d34cd",
-            "timestamp": "2025-12-17T19:24:01.000000Z",
-            "method": "mint",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "124061841665847804"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x493e809f29c39f7b0529b53ec19368297635257423840c647601bf62e1faed17",
-            "timestamp": "2025-12-17T18:58:23.000000Z",
-            "method": "multicall",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "124061841665848459"
-            }
-          },
-          {
-            "counterparty": "0x411d2C093e4c2e69Bf0D8E94be1bF13DaDD879c6",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x411d2C093e4c2e69Bf0D8E94be1bF13DaDD879c6",
-            "txHash": "0xf2242051874249692bfda672880f29cc98a6bcea4bfb8799754f5b8814a1fc90",
-            "timestamp": "2025-11-09T14:17:09.000000Z",
-            "method": "smartSwapByOrderId",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "150737096476015"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xf362567bf5e7836a38ed8a214cda5daba68d8a29a3837309ddacfdac0d874ab8",
-            "timestamp": "2025-10-17T13:04:43.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "5"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x0f03ad1722b7196ff20dda0f1ed068235f22942354c942748e2fdd2aaf1c596f",
-            "timestamp": "2025-10-12T17:10:07.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "150737096475861"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x5fb006261ff6898ce3180f99e2cea0a04bdb38b62c33e1169851a744d7d7c1cc",
-            "timestamp": "2025-10-12T07:30:15.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "149"
-            }
-          },
-          {
-            "counterparty": "0x5E766616AaBFB588E23a8EA854e9dbd1042afFD3",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x5E766616AaBFB588E23a8EA854e9dbd1042afFD3",
-            "txHash": "0x198733ae765e2af4c949c7291baaf7adcae4c57a6e73f6a6bd1f8582c227014a",
-            "timestamp": "2025-09-30T03:40:15.000000Z",
-            "method": "swapWithMagpieSignature",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "140995970980874"
-            }
-          },
-          {
-            "counterparty": "0xcD6b980029E6E6e0733ac8eC3E02be9410D09799",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0xcD6b980029E6E6e0733ac8eC3E02be9410D09799",
-            "txHash": "0x198733ae765e2af4c949c7291baaf7adcae4c57a6e73f6a6bd1f8582c227014a",
-            "timestamp": "2025-09-30T03:40:15.000000Z",
-            "method": "swapWithMagpieSignature",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "353373360854"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x23a60cbd66f0d2751698b1fd0bc968ee28dffda174623c0460972886868c5248",
-            "timestamp": "2025-09-21T15:44:15.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "19549407"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x144568b0011a5b86b0ab65cb5c496371fea5e1b055d419f0cee2d7ea386e50eb",
-            "timestamp": "2025-09-21T15:43:43.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "194"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x1d26a2e5d828e876dc340a1db59f378e6c69d5e2af0df2680e6ec63d24732def",
-            "timestamp": "2025-09-21T15:42:33.000000Z",
-            "method": "swapAndIncreaseLiquidity",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1024916677639"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x96fa7bebdfaf6610dadfa21eacaecebe463f969bcf89bc77b9238f6682414e13",
-            "timestamp": "2025-08-08T06:45:23.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "2074441"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x834baaadfb18600fef1022d798ac41e0a15f5d7809e1138c7f3af7ce6c8226fd",
-            "timestamp": "2025-08-08T06:42:09.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "83021721589394"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x1fa081d49adbf1d453ae52e54bd19e6d7e0267382ed3a14661c0800c392a28c3",
-            "timestamp": "2025-08-03T16:04:11.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "245527598164"
-            }
-          },
-          {
-            "counterparty": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "from": "0x7D1F9FC22beD0798cDA3Fdb18b14a96fc838B9E1",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xb821d072548b4399c9ee02e3e0fbc42753a4fd2110a870570882936fc87840ce",
-            "timestamp": "2025-08-03T16:00:37.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "57057156852489"
-            }
-          },
-          {
-            "counterparty": "0x000010036C0190E009a000d0fc3541100A07380A",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x000010036C0190E009a000d0fc3541100A07380A",
-            "txHash": "0x823e326c8321af670f666aae3d71e3cb0d799451cf3eec988e24f35d595bbb3f",
-            "timestamp": "2025-07-13T17:46:15.000000Z",
-            "method": "swapExactAmountIn",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "5284495224612877"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xbea00ad78fe0ea69fff712aaaf859b57b3ac16ea82b6621aff9cc505f91e9fb1",
-            "timestamp": "2025-07-13T17:43:47.000000Z",
-            "method": "deposit",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "2097244997"
-            }
-          },
-          {
-            "counterparty": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0xb2cc224c1c9feE385f8ad6a55b4d94E92359DC59",
-            "txHash": "0x206100aa5492f7e3cac514d730b856c90b941666dd697dd51fe913fdb4611ae1",
-            "timestamp": "2025-07-13T17:39:31.000000Z",
-            "method": "mint",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "77799999999999953"
-            }
-          },
-          {
-            "counterparty": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
-            "from": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xa70cfbaea050c3c6988ab47494a61de716cd581d6b495e00a78e977b625c321b",
-            "timestamp": "2025-07-13T17:29:41.000000Z",
-            "method": "settle",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "83084493127367833"
-            }
-          },
-          {
-            "counterparty": "0x0000000000000000000000000000000000000000",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x0000000000000000000000000000000000000000",
-            "txHash": "0x94341ba3e566d3c1ae68f3796d6cad17d5dc87573dd4ac234d2ac048fc32461e",
-            "timestamp": "2025-07-11T03:33:05.000000Z",
-            "method": "withdraw",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "5651492536896835"
-            }
-          },
-          {
-            "counterparty": "0x98eC492942090364AC0736Ef1A741AE6C92ec790",
-            "from": "0x98eC492942090364AC0736Ef1A741AE6C92ec790",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xf39167083e9607cce4a198a281c361273739cb2105e2afb8cdf6b78c6eac447b",
-            "timestamp": "2025-07-10T04:41:21.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "5628461204472746"
-            }
-          },
-          {
-            "counterparty": "0x5b2f7CC65f8eB6222289C714547B9ab22dB86be5",
-            "from": "0x5b2f7CC65f8eB6222289C714547B9ab22dB86be5",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xedc9cb6ad2f25507711e0ebf46da4fffcb995043214b6973520c46197e4d5fc7",
-            "timestamp": "2025-03-04T04:13:17.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "23031332424089"
-            }
-          },
-          {
-            "counterparty": "0xdeC876911cBE9428265af0D12132c52ee8642a99",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0xdeC876911cBE9428265af0D12132c52ee8642a99",
-            "txHash": "0x234df76c5c913a54e61966b632edbcf19a3190b77aca42c44929102e420f39fe",
-            "timestamp": "2024-10-30T03:57:43.000000Z",
-            "method": "swap",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "3763606038283318"
-            }
-          },
-          {
-            "counterparty": "0x5b2f7CC65f8eB6222289C714547B9ab22dB86be5",
-            "from": "0x5b2f7CC65f8eB6222289C714547B9ab22dB86be5",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xd37b4e279e7e0c84176dca6f9610d2d87b6d895ab0b98ccee2ab932f9b78b226",
-            "timestamp": "2024-10-27T07:17:43.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1116202303504845"
-            }
-          },
-          {
-            "counterparty": "0x5b2f7CC65f8eB6222289C714547B9ab22dB86be5",
-            "from": "0x5b2f7CC65f8eB6222289C714547B9ab22dB86be5",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x0bca13827e06e5d842141dfea70fd32c3e60035017dfe8db683aa9516c421a07",
-            "timestamp": "2024-10-27T05:05:43.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1189777768619329"
-            }
-          },
-          {
-            "counterparty": "0x5b2f7CC65f8eB6222289C714547B9ab22dB86be5",
-            "from": "0x5b2f7CC65f8eB6222289C714547B9ab22dB86be5",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x6b8d40fb15a844f2816e9055cf6003ef39a2b8a83b0b2c3ddf8e4d88976b0096",
-            "timestamp": "2024-10-25T18:54:45.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1457625966159144"
-            }
-          },
-          {
-            "counterparty": "0x0000000000000000000000000000000000000000",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x0000000000000000000000000000000000000000",
-            "txHash": "0x8b452644bb35a5b1bf63e0c5d1c7136beb9cb998e6f1ab6dfd9404dce6c14e30",
-            "timestamp": "2024-09-16T09:16:23.000000Z",
-            "method": "withdraw",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "50529925056580860"
-            }
-          },
-          {
-            "counterparty": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "from": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x82afca223f507ebb5fd26cc101c18eb8a99c1cc846056bfd82a541a1d2156c01",
-            "timestamp": "2024-09-16T09:13:15.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "50529925056580860"
-            }
-          },
-          {
-            "counterparty": "0xE37e799D5077682FA0a244D46E5649F71457BD09",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0xE37e799D5077682FA0a244D46E5649F71457BD09",
-            "txHash": "0xc1c9385c8aefcf86310ee6aec8094b5baefa6cab8413245cd860751f0b0c1f7f",
-            "timestamp": "2024-07-21T13:47:31.000000Z",
-            "method": "swap",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1710735764657763"
-            }
-          },
-          {
-            "counterparty": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "from": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x21cabc10c3809fcf76a4b076b12ed9482f47b049c79c7d4362062ce6c53cc7c5",
-            "timestamp": "2024-07-20T16:08:39.000000Z",
-            "method": "swapAndMint",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "1710735764657763"
-            }
-          },
-          {
-            "counterparty": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "txHash": "0x21cabc10c3809fcf76a4b076b12ed9482f47b049c79c7d4362062ce6c53cc7c5",
-            "timestamp": "2024-07-20T16:08:39.000000Z",
-            "method": "swapAndMint",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "108672711349702739"
-            }
-          },
-          {
-            "counterparty": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "from": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0xd554632947750c3823bfc6587c4d7bfc827a31c0adbe59d3749021acfebc5a42",
-            "timestamp": "2024-07-20T15:56:01.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "108177292014202467"
-            }
-          },
-          {
-            "counterparty": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "from": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x860d689d83a624bb0ab740fbaa94c0b47e73d05d86e15c7eb724051976b9d342",
-            "timestamp": "2024-07-19T20:29:31.000000Z",
-            "method": "swapAndMint",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "495419335500272"
-            }
-          },
-          {
-            "counterparty": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "from": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "to": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "txHash": "0x860d689d83a624bb0ab740fbaa94c0b47e73d05d86e15c7eb724051976b9d342",
-            "timestamp": "2024-07-19T20:29:31.000000Z",
-            "method": "swapAndMint",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "104656610214084390"
-            }
-          },
-          {
-            "counterparty": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "from": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x6bd675f07ca54ba83ca11692c52b8f21c01e6e81b7cf339919effc357d7c610d",
-            "timestamp": "2024-07-19T20:23:17.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "103051632530790826"
-            }
-          },
-          {
-            "counterparty": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "from": "0x3EB0FFfa1470cDD3725B9EB29ADEd2736144B078",
-            "to": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
-            "txHash": "0x7fac0a06a9c8bfe34de69d4b936a9dc872accca41e3e36110749d1e6b800732e",
-            "timestamp": "2024-07-19T20:17:19.000000Z",
-            "method": "safeTransferFrom",
-            "tokenSymbol": "WETH",
-            "total": {
-              "decimals": "18",
-              "value": "61706242207242"
-            }
-          }
-        ],
-        "diagnostics": []
-      }
+    "baseCurrentHoldings": {
+      "chain": "base",
+      "chainId": 8453,
+      "source": "Routescan keyless current ERC20 holdings",
+      "itemCount": 0,
+      "diagnostics": [
+        "HTTP 400"
+      ],
+      "items": []
     }
   },
   "resolution": {
     "avalancheBtcB": false,
-    "lombardEthereumWbtc": false,
-    "lombardBaseWbtc": false,
+    "lombardEthereumWbtc": true,
+    "lombardBaseWbtc": true,
     "baseWeth": false,
     "unresolved": [
       "avalancheBtcB",
-      "lombardEthereumWbtc",
-      "lombardBaseWbtc",
       "baseWeth"
     ],
     "allResolved": false
   },
-  "nextStep": "use transfer counterparties / receipt-token probes to target only remaining protocol contracts"
+  "provisionalTotals": {
+    "btcIfCurrentResolvedComponentsAccepted": 0.02918116,
+    "ethIfCurrentResolvedComponentsAccepted": 0.006426130614,
+    "authoritative": false
+  },
+  "nextStep": "target only remaining unresolved mechanism(s) using the current-holdings evidence emitted by this resolver"
 }
