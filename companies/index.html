@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<!-- companies.html · v1.21.12 · Monetra Current Capital Reconciliation · claimable-in-capital + net market P&L -->
+<!-- companies.html · v1.21.13 · Monetra Performance Reconciliation Polish · Current Capital + Claimable clarity -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -6042,7 +6041,7 @@
 
 
         /* ═══════════════════════════════════════════════════════════════
-           Monetra Current Capital Reconciliation · v1.21.12
+           Monetra Performance Reconciliation Polish · v1.21.13
            Current Capital = Market Value + Claimable
            Net Market P&L = Current Capital - Invested
            Strategy P&L + Stable Price Effect = Net Market P&L
@@ -6168,7 +6167,7 @@
             align-items:stretch;
         }
         .scp-performance-detail .scp-perf-now-grid{
-            grid-template-columns:repeat(4,minmax(0,1fr));
+            grid-template-columns:repeat(3,minmax(0,1fr));
         }
         .scp-performance-detail .scp-perf-bridge-grid{
             grid-template-columns:repeat(3,minmax(0,1fr));
@@ -6304,6 +6303,10 @@
             .scp-performance-detail .scp-perf-section-label{text-align:center}
             .scp-performance-detail .scp-perf-now-grid{
                 grid-template-columns:repeat(2,minmax(0,1fr));
+            }
+            .scp-performance-detail .scp-perf-now-grid .scp-perf-cell-claimable{
+                grid-column:1 / -1;
+                min-height:86px;
             }
             .scp-performance-detail .scp-perf-bridge-grid{
                 grid-template-columns:repeat(2,minmax(0,1fr));
@@ -6947,7 +6950,7 @@
                 <div class="scp-perf-detail-head">
                     <div class="scp-panel-k" data-i18n="stable.performance.detailKicker">PERFORMANCE RECONCILIATION</div>
                     <h4 data-i18n="stable.performance.detailTitle">From Invested to Current Capital</h4>
-                    <p data-i18n="stable.performance.detailLead">Current Capital includes Claimable exactly once. Strategy P&amp;L is measured in nominal stable units; Stable Price Effect bridges that nominal result to current USD market value.</p>
+                    <p data-i18n="stable.performance.detailLead">Current Capital is the actual current economic value of the stable strategy book, including Claimable exactly once. Strategy P&amp;L is measured in nominal stable units; Stable Price Effect reconciles that nominal result to Net Market P&amp;L.</p>
                 </div>
 
                 <div class="scp-perf-section">
@@ -6956,10 +6959,6 @@
                         <div class="scp-perf-cell">
                             <span data-i18n="stable.passport.invested">Invested</span>
                             <b id="scpPerfInvested">—</b>
-                        </div>
-                        <div class="scp-perf-cell">
-                            <span data-i18n="stable.performance.marketValue">Market Value</span>
-                            <b id="scpPerfMarketValue">—</b>
                         </div>
                         <div class="scp-perf-cell scp-perf-cell-claimable">
                             <span data-i18n="stable.passport.claimable">Claimable</span>
@@ -7635,7 +7634,6 @@ function renderStableCompanies(lang) {
 
     // Performance reconciliation detail — all values come from one economic identity.
     set('scpPerfInvested', stableMoney(investedUsd, lang, 2));
-    set('scpPerfMarketValue', stableMoney(marketPrincipal, lang, 2));
     set('scpPerfClaimable', stableMoney(claimable, lang, 4));
     set('scpPerfCurrentCapital', stableMoney(currentCapital, lang, 2));
     set('scpPerfStrategyPnl', hasPerformance ? signedMoney(strategyPnlUsd) + ' · ' + signedPct(strategyPnlPct) : '—');
@@ -10171,7 +10169,7 @@ function renderFramework(lang) {
             'stable.performance.details': 'View details',
             'stable.performance.detailKicker': 'PERFORMANCE RECONCILIATION',
             'stable.performance.detailTitle': 'From Invested to Current Capital',
-            'stable.performance.detailLead': 'Current Capital includes Claimable exactly once. Strategy P&L is measured in nominal stable units; Stable Price Effect bridges that nominal result to current USD market value.',
+            'stable.performance.detailLead': 'Current Capital is the actual current economic value of the stable strategy book, including Claimable exactly once. Strategy P&L is measured in nominal stable units; Stable Price Effect reconciles that nominal result to Net Market P&L.',
             'stable.performance.currentPosition': 'Current position',
             'stable.performance.marketValue': 'Market Value',
             'stable.performance.reconciliation': 'Performance reconciliation',
@@ -10411,7 +10409,7 @@ function renderFramework(lang) {
             'stable.performance.details': 'Подробнее',
             'stable.performance.detailKicker': 'СВЕРКА РЕЗУЛЬТАТА',
             'stable.performance.detailTitle': 'От вложенного капитала к текущему',
-            'stable.performance.detailLead': 'Текущий капитал включает Claimable ровно один раз. Strategy P&L измеряется в номинальных стейбл-единицах, а Stable Price Effect связывает этот номинальный результат с текущей рыночной стоимостью в USD.',
+            'stable.performance.detailLead': 'Текущий капитал — это фактическая текущая экономическая стоимость stable-стратегий с учётом Claimable ровно один раз. Strategy P&L измеряется в номинальных стейбл-единицах, а Stable Price Effect сводит этот результат к Net Market P&L.',
             'stable.performance.currentPosition': 'Текущая позиция',
             'stable.performance.marketValue': 'Рыночная стоимость',
             'stable.performance.reconciliation': 'Сверка результата',
