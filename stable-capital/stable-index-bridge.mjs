@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING · STABLE COMPANIES INDEX BRIDGE v0.1
+ * THE HOLDING · STABLE COMPANIES INDEX BRIDGE v0.2 · STRATEGY PERFORMANCE
  *
  * Converts the detailed Stable Capital Intelligence artifacts into a compact,
  * UI-facing index/passport dataset.
@@ -19,11 +19,13 @@ const STABLE_FILE = process.env.STABLE_CAPITAL_DATA_FILE
   || path.join(ROOT, 'companies', 'stable-capital-data.json');
 const LEDGER_FILE = process.env.EMBEDDED_YIELD_LEDGER_FILE
   || path.join(ROOT, 'companies', 'embedded-yield-ledger.json');
+const STRATEGY_ENTRY_FILE = process.env.MONETRA_STRATEGY_ENTRY_LEDGER_FILE
+  || path.join(ROOT, 'companies', 'company-008-strategy-entry-ledger.json');
 const OUT_FILE = process.env.STABLE_INDEX_DATA_FILE
   || path.join(ROOT, 'companies', 'stable-index-data.json');
 
-const VERSION = '0.1-stable-companies-index';
-const METHODOLOGY_VERSION = '0.1-separate-stable-universe';
+const VERSION = '0.2-stable-companies-index-strategy-performance';
+const METHODOLOGY_VERSION = '0.2-separate-stable-universe-strategy-entry-performance';
 
 const finite = x => x !== null && x !== undefined && x !== '' && typeof x !== 'boolean' && Number.isFinite(Number(x));
 const round = (x,d=8) => finite(x) ? Number(Number(x).toFixed(d)) : null;
@@ -84,6 +86,26 @@ async function main() {
   if (!Array.isArray(stable.positions) || stable.positions.length !== 10) {
     throw new Error(`Expected 10 Monetra Stable Capital positions, got ${stable.positions?.length}`);
   }
+  if (strategyEntry?.version !== '0.7-monetra-lido-capital-transfer-close') {
+    throw new Error(`Stable Index requires Strategy Entry v0.7, got ${strategyEntry?.version}`);
+  }
+  if (strategyEntry?.company?.registry !== '008' || strategyEntry?.company?.name !== 'Monetra.eth') {
+    throw new Error('Strategy Entry Ledger identity mismatch');
+  }
+  if (!Array.isArray(strategyEntry.strategies) || strategyEntry.strategies.length !== 10) {
+    throw new Error('Strategy Entry Ledger must contain exactly 10 strategies');
+  }
+  if (
+    strategyEntry.summary?.entryResolvedCount !== 10 ||
+    strategyEntry.summary?.currentNominalComparableCount !== 10 ||
+    strategyEntry.summary?.fullEntryReady !== true ||
+    strategyEntry.summary?.fullPerformanceReady !== true ||
+    strategyEntry.summary?.publicInvestedReady !== true ||
+    strategyEntry.summary?.publicPerformanceReady !== true ||
+    (strategyEntry.unresolved || []).length !== 0
+  ) {
+    throw new Error('Strategy Entry Ledger is not full 10/10 public-ready');
+  }
 
   const lastFull = latestFullObservation(stable);
   const currentFull = stable.summary?.fullCoverage === true
@@ -98,6 +120,7 @@ async function main() {
   const claimableUsd = sum(claimables.map(x=>finite(x.usdValue)?Number(x.usdValue):0));
 
   const ledgerPositions = ledger.positions || {};
+  const strategyRows = new Map((strategyEntry.strategies || []).map(x => [x.id, x]));
   const embeddedEligible = Object.values(ledgerPositions).filter(x=>x?.accounting?.embeddedYieldEligible === true);
   const embeddedComparable = embeddedEligible.filter(x=>x?.accounting?.currentComparable === true);
 
@@ -123,12 +146,38 @@ async function main() {
       embeddedYieldEligible: lp?.accounting?.embeddedYieldEligible === true,
       embeddedYieldComparable: lp?.accounting?.currentComparable === true,
       latestIntervalStatus: lp?.latestInterval?.status || null,
-      methodologyNote: p.reference?.methodology || p.reference?.note || p.currentSnapshot?.note || null
+      methodologyNote: p.reference?.methodology || p.reference?.note || p.currentSnapshot?.note || null,
+      strategyEntry: (() => {
+        const sr = strategyRows.get(p.id);
+        if (!sr) return null;
+        return {
+          principalNominalStable: finite(sr.entry?.principalNominalStable) ? round(sr.entry.principalNominalStable,12) : null,
+          principalSymbol: sr.entry?.principalSymbol || null,
+          currentNominalStable: finite(sr.current?.nominal) ? round(sr.current.nominal,12) : null,
+          incomeNominalStable: finite(sr.performance?.incomeNominalStable) ? round(sr.performance.incomeNominalStable,12) : null,
+          returnPct: finite(sr.performance?.returnPct) ? round(sr.performance.returnPct,8) : null,
+          status: sr.performance?.status || null,
+          entryTxHash: sr.entry?.txHash || null,
+          entryTimestamp: sr.entry?.timestamp || null
+        };
+      })()
     };
   });
 
   const protocols = [...new Set(positions.map(p=>p.protocolFamily).filter(Boolean))].sort();
   const chains = [...new Set(positions.map(p=>p.chain).filter(Boolean))].sort();
+
+  const investedNominal = Number(strategyEntry.summary.strategyInvestedNominalStableTotal);
+  const currentNominal = Number(strategyEntry.summary.strategyCurrentNominalStableTotal);
+  const performanceNominal = Number(strategyEntry.summary.strategyPerformanceNominalStable);
+  const performancePct = Number(strategyEntry.summary.strategyPerformancePct);
+
+  if (![investedNominal,currentNominal,performanceNominal,performancePct].every(Number.isFinite)) {
+    throw new Error('Strategy Entry public aggregate fields are not finite');
+  }
+  if (!(investedNominal > 99 && investedNominal < 101)) {
+    throw new Error(`Strategy Invested outside expected ~100 nominal stable units: ${investedNominal}`);
+  }
 
   const company = {
     registry: '008',
@@ -139,6 +188,20 @@ async function main() {
     foundedDate: stable.company.foundedDate,
     stableCapitalUsd: round(stable.summary.stableCapitalUsd,6),
     productiveStableCapitalUsd: round(stable.summary.productiveStableCapitalUsd,6),
+    investedUsd: round(investedNominal,8),
+    investedNominalStable: round(investedNominal,12),
+    currentStrategyNominalStable: round(currentNominal,12),
+    performance: {
+      status: 'verified-since-inception',
+      sinceInceptionUsd: round(performanceNominal,8),
+      sinceInceptionNominalStable: round(performanceNominal,12),
+      sinceInceptionPct: round(performancePct,8),
+      asOf: strategyEntry.generatedAt,
+      basis: 'verified-strategy-entry-principal-to-current-nominal-stable',
+      includesClaimableWhereApplicable: true,
+      stablePriceEffectSeparated: true,
+      sourceVersion: strategyEntry.version
+    },
     currentCoverage: round(stable.summary.coverage,8),
     currentFullCoverage: currentFull,
     currentReferenceApyPct: currentFull ? round(stable.summary.referenceApyPct,6) : null,
@@ -189,7 +252,10 @@ async function main() {
       stableCapitalMethodologyVersion: stable.methodologyVersion,
       stableCapitalGeneratedAt: stable.generatedAt,
       ledgerVersion: ledger.version,
-      ledgerGeneratedAt: ledger.generatedAt
+      ledgerGeneratedAt: ledger.generatedAt,
+      strategyEntryVersion: strategyEntry.version,
+      strategyEntryMethodologyVersion: strategyEntry.methodologyVersion,
+      strategyEntryGeneratedAt: strategyEntry.generatedAt
     },
     universe: {
       id: 'stable-companies',
@@ -204,7 +270,9 @@ async function main() {
       referenceApy: 'Capital-weighted normalized current annualized productive capacity across the company stable strategy book. It is not realised return.',
       embeddedYield: 'Flow-adjusted growth already capitalized inside lending, savings or vault positions. The ledger starts from verified checkpoints and does not backfill income from current APY.',
       claimableRewards: 'Protocol-side value earned and separately claimable. It is not merged with principal or Embedded Yield.',
-      stablePriceEffect: 'Stablecoin/depeg price movement is measured separately from strategy income where comparable checkpoints exist.'
+      stablePriceEffect: 'Stablecoin/depeg price movement is measured separately from strategy income where comparable checkpoints exist.',
+      invested: 'Verified nominal stable principal actually deployed into productive strategies. Wallet funding, routing, swaps and temporary capital are not the cost basis.',
+      performance: 'Verified since-inception strategy result from protocol-entry principal to current nominal stable value, including separately earned claimable strategy rewards where applicable. Stablecoin market/depeg movement is excluded and remains a separate Stable Price Effect.'
     },
     summary: {
       companyCount: 1,
@@ -215,6 +283,11 @@ async function main() {
       currentFullCoverage: company.currentFullCoverage,
       accruedClaimableUsd: company.accruedClaimableUsd,
       embeddedIncomeSinceTrackingUsd: company.embeddedYield.sinceTrackingUsd,
+      investedUsd: company.investedUsd,
+      strategyCurrentNominalStable: company.currentStrategyNominalStable,
+      strategyPerformanceUsd: company.performance.sinceInceptionUsd,
+      strategyPerformancePct: company.performance.sinceInceptionPct,
+      strategyPerformanceStatus: company.performance.status,
       strategyCount: company.strategyCount,
       protocolCount: company.protocolCount,
       chainCount: company.chainCount,
@@ -232,6 +305,10 @@ async function main() {
     referenceApyStatus: out.summary.referenceApyStatus,
     claimableUsd: out.summary.accruedClaimableUsd,
     embeddedComparable: `${company.embeddedYield.comparablePositionCount}/${company.embeddedYield.eligiblePositionCount}`,
+    investedUsd: company.investedUsd,
+    performanceUsd: company.performance.sinceInceptionUsd,
+    performancePct: company.performance.sinceInceptionPct,
+    performanceStatus: company.performance.status,
     separateFromGeneralComposite: out.universe.separateFromGeneralComposite
   },null,2));
 }
