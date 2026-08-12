@@ -1,7 +1,7 @@
 {
-  "version": "1.1-company-008-stable-wrapper-reconciliation",
-  "generatedAt": "2026-08-12T10:40:37.052Z",
-  "startedAt": "2026-08-12T10:40:29.322Z",
+  "version": "1.3-company-008-stable-diagnostic-safe-sbold",
+  "generatedAt": "2026-08-12T11:11:46.842Z",
+  "startedAt": "2026-08-12T11:11:45.298Z",
   "company": {
     "registry": "008",
     "name": "Monetra.eth",
@@ -50,7 +50,10 @@
     "foundedDatePreserved": "2026-05-27",
     "foundingEvidencePreserved": true,
     "priorAaveStablePositionsPreserved": 1,
-    "principle": "v1.1 does not reopen solved founding/Aave work; it resolves the missing stable-wrapper layer"
+    "principle": "known v1.1 positions are immutable inputs to this narrow resolver; protocol-specific misses are diagnostics, not fatal workflow errors",
+    "priorResolverVersion": "1.1-company-008-stable-wrapper-reconciliation",
+    "priorResolverSha256": "319f4d1083845c4151ab7a330eabf00d3e926d5f6a6bf8786f9dd2a1b6290530",
+    "priorStablePositionCount": 7
   },
   "ownerEvidence": {
     "source": "owner-supplied DeBank screenshots + owner note, 2026-08-12",
@@ -588,8 +591,8 @@
       {
         "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
         "chain": "Ethereum",
-        "protocol": "ERC-4626 Vault",
-        "positionType": "Stable Vault",
+        "protocol": "Yearn V3",
+        "positionType": "Auto-Compounding Stable Vault",
         "wrapper": "0x23346B04a7f55b8760E5860AA5A77383D63491cD",
         "token": null,
         "wrapperSymbol": "ysyBOLD",
@@ -661,7 +664,7 @@
         "valuationCanonical": true,
         "incomeMode": "embedded-yield",
         "productive": true,
-        "ownerHintMatched": null,
+        "ownerHintMatched": "Yearn V3",
         "history": {
           "firstObservedInbound": {
             "timestamp": "2026-08-02T02:13:23.000Z",
@@ -678,15 +681,123 @@
             "terminalUnderlyingSymbol": "BOLD",
             "terminalUnderlyingAmount": 10.015966034701757
           }
-        }
+        },
+        "methodologyNote": "ysyBOLD is Yearn yBOLD Auto-Compounder; yBOLD routes BOLD across Liquity V2 Stability Pools; value accrues through auto-compounding."
+      },
+      {
+        "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+        "chain": "Ethereum",
+        "protocol": "Lido Earn",
+        "positionType": "Agent / Curator Managed Stable Vault",
+        "wrapper": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+        "token": null,
+        "wrapperSymbol": "earnUSD",
+        "symbol": null,
+        "name": "Lido Earn USD",
+        "sharesOrBalance": 9.762818840756,
+        "shareRaw": "9762818840756086776",
+        "underlying": null,
+        "underlyingSymbol": "USD-denominated strategy basket",
+        "redeemableUnderlying": null,
+        "economicValuation": {
+          "status": "ok-current-market",
+          "terminalType": "stable-strategy-share",
+          "terminal": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+          "terminalSymbol": "earnUSD",
+          "terminalAmount": 9.762818840756,
+          "price": {
+            "status": "ok",
+            "priceUsd": 1.0241211936413286,
+            "source": "defillama-contract:ethereum"
+          },
+          "valueUsd": 9.998309684499
+        },
+        "valueUsd": 9.99831,
+        "valuationStatus": "ok-current-market",
+        "valuationCanonical": true,
+        "incomeMode": "agent-managed-embedded-yield",
+        "productive": true,
+        "ownerHintMatched": "Lido",
+        "history": {
+          "firstObservedInbound": {
+            "timestamp": "2026-08-04T06:31:11.000000Z",
+            "block": 25679768,
+            "txHash": "0x96abd29b45cee3800d49ffb79180110b23543144f8144d9c4b94ba054b9e022a",
+            "from": "0x0000000000000000000000000000000000000000",
+            "token": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981"
+          },
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T11:11:46.504Z",
+            "sharesOrBalance": 9.762818840756,
+            "economicValueUsd": 9.99831,
+            "priceSource": "defillama-contract:ethereum"
+          }
+        },
+        "officialArchitecture": {
+          "vault": "0x014e6DA8F283C4aF65B2AA0f201438680A004452",
+          "shareManager": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+          "oracle": "0x827044735c9708a2cf850e7Ea37EBa43bc786028",
+          "balanceMethod": "ShareManager.sharesOf"
+        },
+        "methodology": "current Stable Capital uses current earnUSD share value; Embedded Yield history will use official Lido/Mellow share/oracle accounting"
+      },
+      {
+        "id": "ethereum:liquity-v2-sp:weth",
+        "chain": "Ethereum",
+        "protocol": "Liquity V2",
+        "positionType": "Stability Pool Deposit",
+        "wrapper": null,
+        "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+        "wrapperSymbol": null,
+        "symbol": "BOLD",
+        "name": "Liquity V2 WETH Stability Pool",
+        "sharesOrBalance": 10.000024744825,
+        "shareRaw": "10000024744824552135",
+        "underlying": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+        "underlyingSymbol": "BOLD",
+        "redeemableUnderlying": 10.000024744825,
+        "economicValuation": {
+          "status": "ok",
+          "terminalType": "stable-asset",
+          "terminal": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+          "terminalSymbol": "BOLD",
+          "terminalAmount": 10.000024744825,
+          "price": {
+            "status": "ok",
+            "priceUsd": 1.0001385883986134,
+            "source": "defillama-contract:ethereum"
+          },
+          "valueUsd": 10.00141063224
+        },
+        "valueUsd": 10.001411,
+        "valuationStatus": "ok",
+        "valuationCanonical": true,
+        "incomeMode": "stability-pool-yield-with-separate-claimables",
+        "productive": true,
+        "ownerHintMatched": "Liquity V2",
+        "history": {
+          "firstObservedActivity": {
+            "timestamp": "2026-07-12T13:44:23.000000Z",
+            "block": 25516919,
+            "txHash": "0x78c58724e88d3cf46a7a528711f02fd06a4851820502adc615a19938f3d1e4f0",
+            "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+            "to": "0x5721cbbd64fc7Ae3Ef44A0A3F9a790A9264Cf9BF"
+          },
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T11:11:46.709Z",
+            "compoundedBoldDeposit": 10.000024744825,
+            "economicValueUsd": 10.001411
+          }
+        },
+        "rewardBoundary": "direct SP BOLD yield and collateral liquidation gains are tracked as separate Accrued Rewards"
       }
     ],
     "summary": {
-      "totalUsd": 70.163106,
-      "productiveUsd": 70.163106,
-      "liquidUsd": 0,
-      "positionCount": 7,
-      "pricedPositions": 7,
+      "totalUsd": 90.162827,
+      "productiveUsd": 80.15679,
+      "liquidUsd": 10.006037,
+      "positionCount": 9,
+      "pricedPositions": 9,
       "byProtocol": {
         "Aave v3": 10.006037,
         "Curve": 10.001043,
@@ -694,12 +805,16 @@
         "Inverse": 10.037109,
         "Sky": 10.029517,
         "Aave": 10.018976,
-        "ERC-4626 Vault": 10.017803
+        "Yearn V3": 10.017803,
+        "Lido Earn": 9.99831,
+        "Liquity V2": 10.001411
       },
       "byType": {
         "Stable Lending": 10.006037,
         "Savings Stable": 50.139266,
-        "Stable Vault": 10.017803
+        "Auto-Compounding Stable Vault": 10.017803,
+        "Agent / Curator Managed Stable Vault": 9.99831,
+        "Stability Pool Deposit": 10.001411
       },
       "byStable": {
         "USDC": 10.006037,
@@ -708,15 +823,17 @@
         "DOLA": 10.037109,
         "USDS": 10.029517,
         "GHO": 10.018976,
-        "yBOLD": 10.017803
+        "yBOLD": 10.017803,
+        "USD-denominated strategy basket": 9.99831,
+        "BOLD": 10.001411
       }
     },
     "reconciliation": {
       "ownerStableStrategyUsdApprox": 100,
-      "reproducedStableCapitalUsd": 70.163106,
-      "deltaVsOwnerApproxUsd": -29.836894,
-      "withinLoose15UsdBand": false,
-      "note": "owner target is diagnostic only. If Lido is ETH-denominated it is correctly excluded even if this makes Stable Capital lower than the DeBank total."
+      "reproducedStableCapitalUsd": 90.162827,
+      "deltaVsOwnerApproxUsd": -9.837173,
+      "withinLoose15UsdBand": true,
+      "note": "owner target is diagnostic only; no value is forced to the target"
     },
     "provisionalValuations": [
       {
@@ -728,62 +845,65 @@
     ],
     "unresolved": [
       {
-        "chain": "Ethereum",
-        "token": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
-        "symbol": "earnUSD",
-        "name": "Lido Earn USD",
-        "amount": 9.762818840756,
-        "wrapperMarketPrice": {
+        "mechanism": "Frax Finance",
+        "status": "absent",
+        "error": null
+      },
+      {
+        "mechanism": "Liquity sBOLD",
+        "status": "absent",
+        "error": null
+      }
+    ],
+    "accruedRewardsCandidates": [
+      {
+        "protocol": "Liquity V2",
+        "route": "liquity-v2-sp-weth",
+        "kind": "BOLD yield gain",
+        "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+        "symbol": "BOLD",
+        "amount": 0.037584819841,
+        "price": {
           "status": "ok",
-          "priceUsd": 1.0231706300474783,
+          "priceUsd": 1.0001385883986134,
           "source": "defillama-contract:ethereum"
         },
-        "approxUsd": 9.98903,
-        "ownerHintMatched": null,
-        "reason": "execution reverted (no data present; likely require(false) occurred",
-        "valuation": {
-          "status": "unresolved",
-          "terminal": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
-          "terminalSymbol": "earnUSD",
-          "terminalAmount": 9.762818840756086,
-          "path": [
-            {
-              "token": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
-              "symbol": "earnUSD",
-              "amount": 9.762818840756086
-            }
-          ],
-          "reason": "execution reverted (no data present; likely require(false) occurred"
-        }
+        "usdValue": 0.03759,
+        "classification": "accrued-claimable"
       }
     ]
   },
   "nonStableDiagnostics": [],
   "mandateReview": {
-    "lidoPositions": [],
-    "rule": "stETH/wstETH are ETH-denominated productive assets, not stable capital; exclude unless the Stable Capital mandate is intentionally changed.",
-    "lidoClassified": false
+    "lidoPositions": [
+      {
+        "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+        "protocol": "Lido Earn",
+        "symbol": "earnUSD",
+        "valueUsd": 9.99831,
+        "stableCapitalEligible": true
+      }
+    ],
+    "rule": "Lido earnUSD is USD-denominated Stable Capital; stETH/wstETH would remain excluded if encountered separately.",
+    "lidoClassified": true
   },
   "ownerHintCoverage": {
     "checks": {
       "f(x) Protocol": true,
-      "Liquity V2": false,
+      "Liquity V2": true,
       "Inverse": true,
-      "Yearn V3": false,
+      "Yearn V3": true,
       "Sky": true,
       "Aave V3": true,
       "Curve": true,
-      "Lido": false,
+      "Lido": true,
       "Frax Finance": false
     },
     "missingHints": [
-      "Liquity V2",
-      "Yearn V3",
-      "Lido",
       "Frax Finance"
     ],
     "aaveEvidenceCount": 2,
-    "note": "Aave screenshot family is complete only when both the preserved lending deposit and the separate savings/other Aave position are reproduced/classified."
+    "note": "A green resolver run means the diagnostic collector executed and published; economic completeness is expressed by stableCapitalBookReady, not by workflow color."
   },
   "history": {
     "ethereumTokenTransfers": {
@@ -934,19 +1054,413 @@
           "terminalUnderlyingAmount": 10.015966034701757
         }
       }
+    ],
+    "v13CheckpointSeed": [
+      {
+        "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "protocol": "Aave v3",
+        "positionType": "Stable Lending",
+        "incomeMode": "lending-embedded",
+        "firstObservedActivity": null,
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:07:29.701Z",
+          "underlyingEquivalent": 10.009703,
+          "scaledBalanceRaw": "8764974",
+          "normalizedIncomeRay": "1142011815777664576611929299",
+          "underlyingPriceUsd": 0.9996337662589685
+        }
+      },
+      {
+        "id": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
+        "protocol": "Curve",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:41:35.000Z",
+          "block": 25516906,
+          "txHash": "0x77ccad5307efe5772a305ba2effccef6a31aae2b88a4a30d0d6fe8b9fc668881",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:31.079Z",
+          "sharesOrBalance": 9.051902138134,
+          "economicValueUsd": 10.001043,
+          "terminalUnderlying": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "terminalUnderlyingSymbol": "crvUSD",
+          "terminalUnderlyingAmount": 10.01103533526837
+        }
+      },
+      {
+        "id": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+        "protocol": "f(x) Protocol",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:10:35.000Z",
+          "block": 25516751,
+          "txHash": "0xb2552e61eb09fe0928eccde740b11ebfbcd27c860a8ec78ad434cf1721436797",
+          "from": "0x7f54F05635d15Cde17A49502fEdB9D1803A3Be8A",
+          "token": "0x7743e50F534a7f9F1791DdE7dCD89F7783Eefc39"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:31.573Z",
+          "sharesOrBalance": 9.039272056076,
+          "economicValueUsd": 10.052621,
+          "terminalUnderlying": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+          "terminalUnderlyingSymbol": "fxSP",
+          "terminalUnderlyingAmount": 9.951230460843378
+        }
+      },
+      {
+        "id": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
+        "protocol": "Inverse",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:54:59.000Z",
+          "block": 25516972,
+          "txHash": "0x9c4c53b6d3905721bd868b60a98e80847558a54b0d9dd247e3986c3c633bce00",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0xb45ad160634c528Cc3D2926d9807104FA3157305"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:32.388Z",
+          "sharesOrBalance": 7.147332299449,
+          "economicValueUsd": 10.037109,
+          "terminalUnderlying": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "terminalUnderlyingSymbol": "DOLA",
+          "terminalUnderlyingAmount": 10.065468172340868
+        }
+      },
+      {
+        "id": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+        "protocol": "Sky",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:51:35.000Z",
+          "block": 25516955,
+          "txHash": "0xd5d94637443f793f76e9242b950126a8a90d661abc216e197fc05681146e6de6",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:33.832Z",
+          "sharesOrBalance": 9.068189220503,
+          "economicValueUsd": 10.029517,
+          "terminalUnderlying": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+          "terminalUnderlyingSymbol": "USDS",
+          "terminalUnderlyingAmount": 10.029533000011684
+        }
+      },
+      {
+        "id": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
+        "protocol": "Aave",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:48:59.000Z",
+          "block": 25516942,
+          "txHash": "0x08ee49bef7607d82b24772b60146207636486a53d6c49fcd7663ef3ecbff6374",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0xE1753F2e00940cC31213dd92013cF019DFE4ca1d"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:34.318Z",
+          "sharesOrBalance": 9.93402298004,
+          "economicValueUsd": 10.018976,
+          "terminalUnderlying": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+          "terminalUnderlyingSymbol": "GHO",
+          "terminalUnderlyingAmount": 10.035975260123198
+        }
+      },
+      {
+        "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
+        "protocol": "Yearn V3",
+        "positionType": "Auto-Compounding Stable Vault",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-08-02T02:13:23.000Z",
+          "block": 25664134,
+          "txHash": "0xd71c52adfbe3e4a72be1c916ce274088673aa45f9b9b546d78813b4184829911",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0x23346B04a7f55b8760E5860AA5A77383D63491cD"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:35.442Z",
+          "sharesOrBalance": 9.20846854886,
+          "economicValueUsd": 10.017803,
+          "terminalUnderlying": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+          "terminalUnderlyingSymbol": "BOLD",
+          "terminalUnderlyingAmount": 10.015966034701757
+        }
+      },
+      {
+        "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+        "protocol": "Lido Earn",
+        "positionType": "Agent / Curator Managed Stable Vault",
+        "incomeMode": "agent-managed-embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-08-04T06:31:11.000000Z",
+          "block": 25679768,
+          "txHash": "0x96abd29b45cee3800d49ffb79180110b23543144f8144d9c4b94ba054b9e022a",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T11:11:46.504Z",
+          "sharesOrBalance": 9.762818840756,
+          "economicValueUsd": 9.99831,
+          "priceSource": "defillama-contract:ethereum"
+        }
+      },
+      {
+        "id": "ethereum:liquity-v2-sp:weth",
+        "protocol": "Liquity V2",
+        "positionType": "Stability Pool Deposit",
+        "incomeMode": "stability-pool-yield-with-separate-claimables",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:44:23.000000Z",
+          "block": 25516919,
+          "txHash": "0x78c58724e88d3cf46a7a528711f02fd06a4851820502adc615a19938f3d1e4f0",
+          "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+          "to": "0x5721cbbd64fc7Ae3Ef44A0A3F9a790A9264Cf9BF"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T11:11:46.709Z",
+          "compoundedBoldDeposit": 10.000024744825,
+          "economicValueUsd": 10.001411
+        }
+      }
     ]
   },
   "diagnostics": [],
   "productionReadiness": {
-    "foundingResolved": true,
-    "preservedAaveResolved": true,
-    "ownerHintsAllClassified": false,
     "stableCapitalBookReady": false,
-    "pageIntegrationReady": false,
+    "currentStateReconciled": false,
+    "embeddedYieldLedgerSeedReady": false,
+    "embeddedYieldHistoryReady": false,
     "productivityIntegrationReady": false,
     "rewardsIntegrationReady": false,
+    "pageIntegrationReady": false,
     "reportingIntegrationReady": false,
-    "note": "Keep public analytical integration closed. Resolve remaining owner-hinted wrappers/provisional economic valuation first."
+    "rationale": "diagnostic resolver completed but current book remains open; inspect missingHints/unresolved instead of rerunning archaeology blindly"
   },
-  "nextStep": "Use only the unresolved/provisional rows for the next narrow pass; do not repeat founding or Aave lending discovery."
+  "nextStep": "Use only the unresolved/provisional rows for the next narrow pass; do not repeat founding or Aave lending discovery.",
+  "purpose": "diagnostic-safe close of Monetra Stable Capital current book: preserve solved v1.1 positions, add sBOLD, Frax, Lido and direct Liquity evidence without turning unresolved economics into a red workflow",
+  "resolutionV13": {
+    "provider": "ethereum-rpc.publicnode.com",
+    "providerBlock": 25738535,
+    "providerErrorsBeforeSuccess": [],
+    "tokenHistory": {
+      "pages": 1,
+      "error": null
+    },
+    "yearn": {
+      "status": "ok",
+      "wrapper": "0x23346B04a7f55b8760E5860AA5A77383D63491cD",
+      "canonicalIdentity": "Yearn yBOLD Auto-Compounder / ysyBOLD"
+    },
+    "frax": {
+      "status": "absent",
+      "wrapper": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6"
+    },
+    "lido": {
+      "status": "ok-current-market",
+      "source": "fresh-rpc",
+      "position": {
+        "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+        "chain": "Ethereum",
+        "protocol": "Lido Earn",
+        "positionType": "Agent / Curator Managed Stable Vault",
+        "wrapper": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+        "token": null,
+        "wrapperSymbol": "earnUSD",
+        "symbol": null,
+        "name": "Lido Earn USD",
+        "sharesOrBalance": 9.762818840756,
+        "shareRaw": "9762818840756086776",
+        "underlying": null,
+        "underlyingSymbol": "USD-denominated strategy basket",
+        "redeemableUnderlying": null,
+        "economicValuation": {
+          "status": "ok-current-market",
+          "terminalType": "stable-strategy-share",
+          "terminal": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+          "terminalSymbol": "earnUSD",
+          "terminalAmount": 9.762818840756,
+          "price": {
+            "status": "ok",
+            "priceUsd": 1.0241211936413286,
+            "source": "defillama-contract:ethereum"
+          },
+          "valueUsd": 9.998309684499
+        },
+        "valueUsd": 9.99831,
+        "valuationStatus": "ok-current-market",
+        "valuationCanonical": true,
+        "incomeMode": "agent-managed-embedded-yield",
+        "productive": true,
+        "ownerHintMatched": "Lido",
+        "history": {
+          "firstObservedInbound": {
+            "timestamp": "2026-08-04T06:31:11.000000Z",
+            "block": 25679768,
+            "txHash": "0x96abd29b45cee3800d49ffb79180110b23543144f8144d9c4b94ba054b9e022a",
+            "from": "0x0000000000000000000000000000000000000000",
+            "token": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981"
+          },
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T11:11:46.504Z",
+            "sharesOrBalance": 9.762818840756,
+            "economicValueUsd": 9.99831,
+            "priceSource": "defillama-contract:ethereum"
+          }
+        },
+        "officialArchitecture": {
+          "vault": "0x014e6DA8F283C4aF65B2AA0f201438680A004452",
+          "shareManager": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+          "oracle": "0x827044735c9708a2cf850e7Ea37EBa43bc786028",
+          "balanceMethod": "ShareManager.sharesOf"
+        },
+        "methodology": "current Stable Capital uses current earnUSD share value; Embedded Yield history will use official Lido/Mellow share/oracle accounting"
+      },
+      "liveErrors": []
+    },
+    "liquity": {
+      "sBold": {
+        "status": "absent",
+        "wrapper": "0x50Bd66D59911F5e086Ec87aE43C811e0D059DD11"
+      },
+      "direct": {
+        "status": "ok",
+        "branches": [
+          {
+            "branch": "WETH",
+            "stabilityPool": "0x5721cbbd64fc7Ae3Ef44A0A3F9a790A9264Cf9BF",
+            "compoundedBoldDeposit": 10.000024744825,
+            "probes": {
+              "deposit": "ok",
+              "yieldGain": "ok",
+              "collateralGain": "ok"
+            }
+          },
+          {
+            "branch": "wstETH",
+            "stabilityPool": "0x9502b7c397E9aa22FE9dB7EF7DAF21cD2AEBe56B",
+            "compoundedBoldDeposit": 0,
+            "probes": {
+              "deposit": "ok",
+              "yieldGain": "ok",
+              "collateralGain": "ok"
+            }
+          },
+          {
+            "branch": "rETH",
+            "stabilityPool": "0xd442E41019B7F5C4dD78F50dc03726C446148695",
+            "compoundedBoldDeposit": 0,
+            "probes": {
+              "deposit": "ok",
+              "yieldGain": "ok",
+              "collateralGain": "ok"
+            }
+          }
+        ],
+        "positions": [
+          {
+            "id": "ethereum:liquity-v2-sp:weth",
+            "chain": "Ethereum",
+            "protocol": "Liquity V2",
+            "positionType": "Stability Pool Deposit",
+            "wrapper": null,
+            "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+            "wrapperSymbol": null,
+            "symbol": "BOLD",
+            "name": "Liquity V2 WETH Stability Pool",
+            "sharesOrBalance": 10.000024744825,
+            "shareRaw": "10000024744824552135",
+            "underlying": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+            "underlyingSymbol": "BOLD",
+            "redeemableUnderlying": 10.000024744825,
+            "economicValuation": {
+              "status": "ok",
+              "terminalType": "stable-asset",
+              "terminal": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+              "terminalSymbol": "BOLD",
+              "terminalAmount": 10.000024744825,
+              "price": {
+                "status": "ok",
+                "priceUsd": 1.0001385883986134,
+                "source": "defillama-contract:ethereum"
+              },
+              "valueUsd": 10.00141063224
+            },
+            "valueUsd": 10.001411,
+            "valuationStatus": "ok",
+            "valuationCanonical": true,
+            "incomeMode": "stability-pool-yield-with-separate-claimables",
+            "productive": true,
+            "ownerHintMatched": "Liquity V2",
+            "history": {
+              "firstObservedActivity": {
+                "timestamp": "2026-07-12T13:44:23.000000Z",
+                "block": 25516919,
+                "txHash": "0x78c58724e88d3cf46a7a528711f02fd06a4851820502adc615a19938f3d1e4f0",
+                "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+                "to": "0x5721cbbd64fc7Ae3Ef44A0A3F9a790A9264Cf9BF"
+              },
+              "currentCheckpoint": {
+                "timestamp": "2026-08-12T11:11:46.709Z",
+                "compoundedBoldDeposit": 10.000024744825,
+                "economicValueUsd": 10.001411
+              }
+            },
+            "rewardBoundary": "direct SP BOLD yield and collateral liquidation gains are tracked as separate Accrued Rewards"
+          }
+        ],
+        "accruedRewards": [
+          {
+            "protocol": "Liquity V2",
+            "route": "liquity-v2-sp-weth",
+            "kind": "BOLD yield gain",
+            "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+            "symbol": "BOLD",
+            "amount": 0.037584819841,
+            "price": {
+              "status": "ok",
+              "priceUsd": 1.0001385883986134,
+              "source": "defillama-contract:ethereum"
+            },
+            "usdValue": 0.03759,
+            "classification": "accrued-claimable"
+          }
+        ],
+        "boldPrice": {
+          "status": "ok",
+          "priceUsd": 1.0001385883986134,
+          "source": "defillama-contract:ethereum"
+        }
+      }
+    },
+    "moduleExecution": {
+      "frax": {
+        "ok": true,
+        "error": null
+      },
+      "sBold": {
+        "ok": true,
+        "error": null
+      },
+      "lido": {
+        "ok": true,
+        "error": null
+      },
+      "liquityDirect": {
+        "ok": true,
+        "error": null
+      }
+    },
+    "engineeringGuard": "all literal EVM addresses are canonicalized from lowercase; each special protocol resolver is failure-isolated; diagnostic output is always publishable if structural invariants hold"
+  }
 }
