@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <!-- companies.html · Stable Essential UX v1.21 · Claude baseline · progressive disclosure · language audit -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
@@ -3823,6 +3822,135 @@
             .stable-focus-layer .scp-income-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
         }
 
+        /* ═══════ Stable Index & Passport — legibility and alignment ═══════
+           Much of this block sat between 0.43rem and 0.55rem — roughly 7–9px on a
+           default root. That is below comfortable reading size for anyone not
+           leaning into the screen, and it made a genuinely dense section feel
+           harder than it is. The scale below lifts the small type toward ~10–12px
+           while keeping the same hierarchy: nothing changes rank, everything
+           becomes readable. */
+
+        /* The summary was reduced to two cards but kept a left-aligned grid, so it
+           hung off to one side of a full-width section. */
+        .sc-summary { margin-left: auto; margin-right: auto; }
+        .sc-summary-item { text-align: left; }
+
+        @media (min-width: 761px) {
+            .sc-eyebrow { font-size: 0.63rem; letter-spacing: 0.15em; }
+            .sc-head h2 { letter-spacing: -0.03em; }
+            .sc-head p { font-size: 0.86rem; line-height: 1.72; }
+            .sc-universe-badge span { font-size: 0.55rem; letter-spacing: 0.1em; }
+            .sc-universe-badge b { font-size: 0.78rem; }
+
+            .sc-summary-item > span { font-size: 0.63rem; line-height: 1.45; margin-top: 0.42rem; }
+            .sc-summary-item > b { font-size: 2.15rem; }
+            .sc-summary-item h4 { font-size: 0.63rem; letter-spacing: 0.12em; }
+
+            .sc-board-head { font-size: 0.62rem; letter-spacing: 0.1em; }
+            .sc-board-row { font-size: 0.75rem; padding: 1rem 1.1rem; }
+            .sc-board-row .sc-company-meta { font-size: 0.6rem; margin-top: 0.22rem; }
+            .sc-board-row strong { font-size: 0.86rem; }
+            .sc-capital-cell b, .sc-apy-cell b { font-size: 0.86rem; }
+            .sc-embedded-cell b, .sc-embedded-cell > span,
+            .sc-claimable-cell b, .sc-claimable-cell > span { font-size: 0.7rem; }
+            .sc-method-note, .sc-method-note > div { font-size: 0.75rem; line-height: 1.7; }
+            .sc-small-note, .scp-small-note { font-size: 0.7rem; line-height: 1.65; }
+        }
+
+        /* The passport kicker was gold in a section built on greens and ivory —
+           one more gold voice competing with the accents that carry meaning. */
+        .scp-kicker { color: var(--green); opacity: 0.85; }
+
+        @media (min-width: 761px) {
+            .scp-kicker { font-size: 0.62rem; letter-spacing: 0.14em; }
+            .scp-hero p, .scp-headline { font-size: 0.82rem; line-height: 1.7; }
+            .scp-live { font-size: 0.6rem; }
+            .scp-identity span { font-size: 0.58rem; }
+            .scp-panel-k { font-size: 0.62rem; letter-spacing: 0.12em; }
+            .scp-panel-head h4 { font-size: 0.95rem; }
+            .scp-quality { font-size: 0.68rem; line-height: 1.5; }
+            .scp-table { font-size: 0.75rem; }
+            .scp-income-grid { font-size: 0.75rem; }
+            .scp-explain { font-size: 0.72rem; line-height: 1.65; }
+            .scp-essential-card span { font-size: 0.62rem; letter-spacing: 0.1em; }
+            .scp-essential-card b { font-size: 0.95rem; }
+            .scp-quick-open { font-size: 0.62rem; }
+        }
+
+        /* Phone: the same lift, one step smaller than desktop. */
+        @media (max-width: 760.98px) {
+            .sc-eyebrow { font-size: 0.6rem; }
+            .sc-head p { font-size: 0.78rem; line-height: 1.68; }
+            .sc-summary-item > span { font-size: 0.6rem; line-height: 1.4; }
+            .sc-board-row { font-size: 0.72rem; }
+            .sc-board-row .sc-company-meta { font-size: 0.56rem; }
+            .sc-board-row strong { font-size: 0.82rem; }
+            .sc-board-metric small { font-size: 0.53rem !important; letter-spacing: 0.08em; }
+            .sc-board-metric b, .sc-board-metric > span { font-size: 0.74rem !important; }
+            .scp-kicker { font-size: 0.55rem; }
+            .scp-headline, .scp-hero p { font-size: 0.76rem; line-height: 1.65; }
+            .scp-panel-k { font-size: 0.58rem; }
+            .scp-quality { font-size: 0.64rem; }
+            .scp-income-grid, .scp-table { font-size: 0.72rem; }
+            .scp-essential-card b { font-size: 0.88rem; }
+            .scp-quick-open { font-size: 0.58rem; }
+        }
+
+        /* The quick-action arrow is inline SVG so it keeps the weight of the type
+           around it instead of rendering as a platform emoji. */
+        .scp-quick-open {
+            display: inline-flex; align-items: center; gap: 0.32rem;
+            color: var(--green); letter-spacing: 0.08em;
+        }
+        .scp-quick-arrow { flex-shrink: 0; }
+        .scp-essential-card:hover .scp-quick-arrow { transform: translate(1px, -1px); }
+        .scp-quick-arrow { transition: transform 0.25s cubic-bezier(0.22,1,0.36,1); }
+
+        /* Every button in this block should read as a target: comfortable hit
+           area, visible keyboard focus, no sub-10px labels. */
+        .sc-board-action, .scp-close-bottom, .scp-essential-card {
+            min-height: 34px;
+        }
+        .sc-board-action { font-size: 0.66rem; padding: 0.42rem 0.72rem; }
+        .sc-board-action:focus-visible, .scp-close-bottom:focus-visible,
+        .scp-essential-card:focus-visible, .sc-help:focus-visible {
+            outline: 2px solid rgba(10,124,78,0.35); outline-offset: 2px;
+        }
+        .scp-close, .scp-close-top { min-width: 34px; min-height: 34px; }
+        /* ═══════ Explanatory tooltips — presented, not tucked away ═══════
+           Anchored to a cell, a 260px panel lands wherever the cell happens to
+           sit: clipped at the right edge, or pinned under the fold on a phone.
+           These are definitions the reader deliberately asked for, so on touch
+           they become a centred sheet, and on desktop they stay clear of the
+           viewport edges. */
+        @media (min-width: 761px) {
+            .sc-tip {
+                width: 300px;
+                max-width: min(300px, calc(100vw - 3rem));
+                font-size: 0.72rem;
+                line-height: 1.6;
+                padding: 0.9rem 1rem;
+            }
+        }
+        @media (max-width: 760.98px) {
+            .sc-tip {
+                position: fixed;
+                left: 50%; right: auto;
+                top: 50%; bottom: auto;
+                width: min(330px, calc(100vw - 2.6rem));
+                max-width: min(330px, calc(100vw - 2.6rem));
+                max-height: min(54vh, 400px);
+                overflow-y: auto;
+                transform: translate(-50%, -46%) scale(0.97);
+                padding: 1.05rem 1.1rem;
+                border-radius: 16px;
+                font-size: 0.76rem;
+                line-height: 1.62;
+                box-shadow: 0 24px 60px -22px rgba(10,50,33,0.4), 0 2px 6px rgba(15,23,42,0.06);
+            }
+            .sc-help-wrap:focus-within .sc-tip,
+            .sc-help-wrap.open .sc-tip { transform: translate(-50%, -50%) scale(1); }
+        }
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -4410,12 +4538,12 @@
                 <button class="scp-essential-card" type="button" data-stable-focus="strategies">
                     <span data-i18n="stable.quick.strategies">Strategy Book</span>
                     <b id="scpEssentialStrategyText">—</b>
-                    <small data-i18n="stable.quick.open">Open details ↗</small>
+                    <small class="scp-quick-open"><span data-i18n="stable.quick.open">Open details</span><svg class="scp-quick-arrow" viewBox="0 0 16 16" width="11" height="11" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></small>
                 </button>
                 <button class="scp-essential-card" type="button" data-stable-focus="income">
                     <span data-i18n="stable.quick.income">Income</span>
                     <b id="scpEssentialIncomeText">—</b>
-                    <small data-i18n="stable.quick.open">Open details ↗</small>
+                    <small class="scp-quick-open"><span data-i18n="stable.quick.open">Open details</span><svg class="scp-quick-arrow" viewBox="0 0 16 16" width="11" height="11" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></small>
                 </button>
             </div>
 
@@ -4712,11 +4840,16 @@ let TH_SCROLL_SAVE_ENABLED = false;
    re-opened BEFORE the scroll position is applied, which makes the page the same
    height it was — only then does the offset mean the same thing again. */
 const TH_OPEN_KEY = 'th_companies_open_passports';
+const TH_STABLE_OPEN_KEY = 'th_companies_stable_passport_open';
 function rememberOpenPassports() {
     try {
         const open = Array.prototype.map.call(
             document.querySelectorAll('.ib-item.open'), el => el.dataset.nm || '');
         sessionStorage.setItem(TH_OPEN_KEY, JSON.stringify(open.filter(Boolean)));
+        // The Stable Capital passport is a separate, much taller panel; leaving it
+        // out of the record was why a reload from inside it jumped the page.
+        const sp = document.getElementById('stablePassportMonetra');
+        sessionStorage.setItem(TH_STABLE_OPEN_KEY, sp && sp.classList.contains('is-open') ? '1' : '0');
     } catch (_) {}
 }
 function restoreOpenPassports() {
@@ -4730,6 +4863,16 @@ function restoreOpenPassports() {
         const row = item.querySelector('.ib-row');
         if (row) row.setAttribute('aria-expanded', 'true');
     });
+}
+function restoreStablePassport() {
+    let wasOpen = '0';
+    try { wasOpen = sessionStorage.getItem(TH_STABLE_OPEN_KEY) || '0'; } catch (_) {}
+    if (wasOpen !== '1') return;
+    const sp = document.getElementById('stablePassportMonetra');
+    if (!sp || sp.classList.contains('is-open')) return;
+    if (typeof window.stablePassportSet === 'function') { window.stablePassportSet(true, false); return; }
+    sp.classList.add('is-open');
+    sp.setAttribute('aria-hidden', 'false');
 }
 function rememberCompaniesScroll() {
     if (!TH_SCROLL_SAVE_ENABLED) return;
@@ -4745,9 +4888,28 @@ function restoreCompaniesReloadScroll() {
         const prevBehavior = root.style.scrollBehavior;
         root.style.scrollBehavior = 'auto';
         restoreOpenPassports();      // height first, then the offset means the same thing
+        restoreStablePassport();
         window.scrollTo(0, TH_RELOAD_SCROLL_Y);
-        root.style.scrollBehavior = prevBehavior;
-        requestAnimationFrame(() => { TH_SCROLL_SAVE_ENABLED = true; });
+
+        /* Live figures, the stable dataset and lazy images all land after this
+           frame and each one changes the document height. Re-assert the offset
+           for a short window so the reader stays where they were instead of
+           drifting as content fills in. */
+        let settles = 0;
+        const hold = () => {
+            if (Math.abs(window.scrollY - TH_RELOAD_SCROLL_Y) > 1) {
+                window.scrollTo(0, TH_RELOAD_SCROLL_Y);
+            }
+            if (++settles < 26) requestAnimationFrame(hold);
+            else {
+                root.style.scrollBehavior = prevBehavior;
+                TH_SCROLL_SAVE_ENABLED = true;
+            }
+        };
+        requestAnimationFrame(hold);
+        window.addEventListener('load', () => {
+            if (!TH_SCROLL_SAVE_ENABLED) window.scrollTo(0, TH_RELOAD_SCROLL_Y);
+        }, { once: true });
     });
 }
 try {
@@ -7228,6 +7390,8 @@ function renderFramework(lang) {
     if (!passport) return;
     passport.classList.toggle('is-open', open);
     passport.setAttribute('aria-hidden', open ? 'false' : 'true');
+    // keep the reload record in step with the panel's actual state
+    if (typeof rememberOpenPassports === 'function') setTimeout(rememberOpenPassports, 0);
     document.querySelectorAll('[data-stable-passport-open]').forEach(btn => {
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       const lang = (document.documentElement.lang || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
@@ -7445,7 +7609,7 @@ function renderFramework(lang) {
             'stable.guide': 'How it works',
             'stable.quick.strategies': 'Strategy Book',
             'stable.quick.income': 'Income',
-            'stable.quick.open': 'Open details ↗',
+            'stable.quick.open': 'Open details',
             'card.debank': 'DeBank',
             'stable.table.strategy': 'Strategy',
             'stable.table.chain': 'Chain',
@@ -7669,7 +7833,7 @@ function renderFramework(lang) {
             'stable.guide': 'Как это считается',
             'stable.quick.strategies': 'Книга стратегий',
             'stable.quick.income': 'Доход',
-            'stable.quick.open': 'Открыть детали ↗',
+            'stable.quick.open': 'Открыть детали',
             'os.eyebrow': 'The Holding OS · В разработке',
             'collection.next': 'Перейти к индексу The Holding',
             'card.debank': 'DeBank',
