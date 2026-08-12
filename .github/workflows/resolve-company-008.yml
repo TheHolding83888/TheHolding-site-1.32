@@ -1,4 +1,4 @@
-# THE HOLDING · MONETRA COMPANY #008 STABLE FINAL-THREE RESOLVER v1.2
+# THE HOLDING · MONETRA COMPANY #008 STABLE FINAL-THREE RESOLVER v1.2.1
 name: "Resolve Company #008"
 
 on:
@@ -30,7 +30,7 @@ jobs:
       - name: Verify resolver source/input sync
         run: |
           set -euo pipefail
-          grep -F "const VERSION = '1.2-company-008-stable-final-three-reconciliation';" onboarding/company-008-resolve.mjs
+          grep -F "const VERSION = '1.2.1-company-008-stable-final-three-checksum-fix';" onboarding/company-008-resolve.mjs
           test -s companies/company-008-resolve.json
           node - <<'NODE'
           const fs = require('fs');
@@ -59,7 +59,7 @@ jobs:
           const fs = require('fs');
           const p = 'companies/company-008-resolve.json';
           const d = JSON.parse(fs.readFileSync(p, 'utf8'));
-          if (d.version !== '1.2-company-008-stable-final-three-reconciliation') throw new Error('unexpected version: ' + d.version);
+          if (d.version !== '1.2.1-company-008-stable-final-three-checksum-fix') throw new Error('unexpected version: ' + d.version);
           if (d.company?.registry !== '008' || d.company?.name !== 'Monetra.eth') throw new Error('identity mismatch');
           if (d.company?.founding?.date !== '2026-05-27') throw new Error('founding regression');
           if (d.preservation?.priorResolverVersion !== '1.1-company-008-stable-wrapper-reconciliation') throw new Error('prior-version preservation failed');
@@ -104,5 +104,5 @@ jobs:
           git fetch origin main
           git cat-file -e "origin/main:$FILE"
           REMOTE_VERSION="$(git show "origin/main:$FILE" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
-          test "$REMOTE_VERSION" = "1.2-company-008-stable-final-three-reconciliation" || { echo "remote version mismatch: $REMOTE_VERSION"; exit 1; }
+          test "$REMOTE_VERSION" = "1.2.1-company-008-stable-final-three-checksum-fix" || { echo "remote version mismatch: $REMOTE_VERSION"; exit 1; }
           echo "Verified on origin/main: $FILE @ $REMOTE_VERSION"
