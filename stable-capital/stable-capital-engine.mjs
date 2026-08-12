@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.3
+ * THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.4
  *
  * Registry #008 / Monetra.eth reference implementation.
  *
@@ -30,11 +30,10 @@ import {
 } from 'ethers';
 import { AaveV3Base } from '@aave-dao/aave-address-book';
 
-const VERSION = '0.3-monetra-fxsave-canonical-nav';
-const METHODOLOGY = '1.2-stable-capital-fxsave-economic-nav';
-const LEDGER_VERSION = '0.3-flow-aware-fxsave-canonical';
+const VERSION = '0.4-monetra-recurring-full-coverage';
+const METHODOLOGY = '1.3-stable-capital-recurring-full-coverage';
+const LEDGER_VERSION = '0.4-flow-aware-recurring-checkpoints';
 const RESOLVER_REQUIRED = '1.4-company-008-fraxtal-sfrxusd-close';
-const PRIOR_STABLE_DATA_REQUIRED = '0.2-monetra-six-adapters-history-fix';
 
 const ROOT = path.resolve(process.cwd());
 const RESOLVER_FILE = process.env.MONETRA_RESOLVER_FILE || path.join(ROOT, 'companies', 'company-008-resolve.json');
@@ -597,7 +596,6 @@ async function rateCurve() {
   return { ...hist, protocol: 'Curve', officialFallback: OFFICIAL.curve };
 }
 
-
 async function fxSaveEconomicNavAt(provider, shareRaw, blockTag = 'latest') {
   const fxSave = new Contract(ADDR.fxsave, [
     'function convertToAssets(uint256) view returns (uint256)'
@@ -963,26 +961,184 @@ async function rateFrax() {
   return { ...hist, protocol: 'Frax Finance', officialFallback: OFFICIAL.frax };
 }
 
-async function currentSnapshots(resolver, priorData) {
+async function currentSnapshots(resolver) {
+  const byId = Object.fromEntries(resolver.stableCapital.positions.map(p => [p.id, p]));
   const result = {};
-  const priorRows = Array.isArray(priorData?.positions) ? priorData.positions : [];
 
-  // v0.3 is intentionally narrow. Preserve the nine v0.2 accepted checkpoints exactly,
-  // and replace only the f(x) row with canonical dual-stable NAV.
-  for (const row of priorRows) {
-    if (row.id === 'ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39') continue;
-    result[row.id] = {
-      ...(row.currentSnapshot || {}),
-      note: row.currentSnapshot?.note || 'Preserved from Stable Capital v0.2; v0.3 scope is f(x) only.'
-    };
+  // Aave lending: current user reserve data and stable price.
+  {
+    const r = await withProvider('base', async provider => {
+      const dp = new Contract(AaveV3Base.AAVE_PROTOCOL_DATA_PROVIDER, [
+        'function getUserReserveData(address asset,address user) view returns (uint256 currentATokenBalance,uint256 currentStableDebt,uint256 currentVariableDebt,uint256 principalStableDebt,uint256 scaledVariableDebt,uint256 stableBorrowRate,uint256 liquidityRate,uint40 stableRateLastUpdated,bool usageAsCollateralEnabled)',
+        'function getReserveTokensAddresses(address asset) view returns (address aTokenAddress,address stableDebtTokenAddress,address variableDebtTokenAddress)'
+      ], provider);
+      const user = await dp.getUserReserveData(ADDR.baseUsdc, WALLET);
+      const tokens = await dp.getReserveTokensAddresses(ADDR.baseUsdc);
+      const aToken = addr(tokens.aTokenAddress ?? tokens[0]);
+      const a = new Contract(aToken, ['function scaledBalanceOf(address) view returns (uint256)'], provider);
+      const scaled = safeBig(await a.scaledBalanceOf(WALLET));
+      const balRaw = safeBig(user.currentATokenBalance ?? user[0]);
+      const amount = Number(formatUnits(balRaw, 6));
+      const price = await llamaPrice('base', ADDR.baseUsdc);
+      return {
+        sharesOrBalance: amount,
+        underlyingAmount: amount,
+        terminalSymbol: 'USDC',
+        terminalPriceUsd: price.priceUsd,
+        economicValueUsd: finite(price.priceUsd) ? amount * price.priceUsd : null,
+        flowFingerprint: `scaled:${scaled.toString()}`,
+        scaledBalanceRaw: scaled.toString(),
+        rawBalance: balRaw.toString(),
+        ledgerComparable: true,
+        valuationCanonical: true
+      };
+    });
+    const id = 'base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913';
+    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Aave refresh unavailable', r.attempts);
   }
 
-  const fx = await withProvider('ethereum', async provider => currentFxSaveCanonicalSnapshot(provider));
-  const id = 'ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39';
-  const resolverFx = resolver.stableCapital.positions.find(p => p.id === id);
-  result[id] = fx.ok
-    ? fx.value
-    : snapshotFallback(resolverFx, 'Canonical f(x) NAV refresh unavailable', fx.attempts);
+  const generic = [
+    ['ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367', ADDR.scrvusd],
+    ['ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305', ADDR.sdola],
+    ['ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd', ADDR.susds],
+    ['ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d', ADDR.sgho],
+    ['ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd', ADDR.ysybold]
+  ];
+  const eth = await withProvider('ethereum', async provider => {
+    const rows = {};
+    for (const [id, token] of generic) {
+      try {
+        const s = await currentErc4626Snapshot(provider, token, WALLET, 'ethereum', 3);
+        const fx = lower(token) === lower(ADDR.fxsave);
+        rows[id] = {
+          sharesOrBalance: s.sharesOrBalance,
+          shareRaw: s.shareRaw,
+          underlyingAmount: s.terminalAmount,
+          terminalSymbol: s.terminalSymbol,
+          terminalPriceUsd: s.terminalPriceUsd,
+          economicValueUsd: s.valueUsd,
+          flowFingerprint: s.flowFingerprint,
+          ledgerComparable: s.redemptionCanonical && !fx,
+          valuationCanonical: s.redemptionCanonical && !fx,
+          path: s.path,
+          note: fx ? 'fxSAVE remains non-comparable for Embedded Yield until fxSP terminal economic redemption is canonical.' : null
+        };
+      } catch (e) {
+        rows[id] = snapshotFallback(byId[id], errorText(e));
+      }
+    }
+    return rows;
+  });
+  for (const [id] of generic) {
+    result[id] = eth.ok ? eth.value[id] : snapshotFallback(byId[id], 'Ethereum refresh unavailable', eth.attempts);
+  }
+
+  // f(x) fxSAVE: canonical dual-stable economic NAV.
+  {
+    const r = await withProvider('ethereum', async provider => currentFxSaveCanonicalSnapshot(provider));
+    const id = 'ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39';
+    result[id] = r.ok
+      ? r.value
+      : snapshotFallback(byId[id], 'Canonical f(x) NAV refresh unavailable', r.attempts);
+  }
+
+  // Lido Earn: current share token balance + market price. First checkpoint only;
+  // embedded income waits for canonical Mellow/Lido share-oracle accounting.
+  {
+    const r = await withProvider('ethereum', async provider => {
+      const m = await tokenMeta(provider, ADDR.lidoEarnUsd);
+      const c = new Contract(ADDR.lidoEarnUsd, ['function balanceOf(address) view returns (uint256)'], provider);
+      const raw = safeBig(await c.balanceOf(WALLET));
+      const shares = Number(formatUnits(raw, m.decimals));
+      const p = await llamaPrice('ethereum', ADDR.lidoEarnUsd);
+      return {
+        sharesOrBalance: shares, shareRaw: raw.toString(),
+        underlyingAmount: null, terminalSymbol: 'USD strategy NAV',
+        terminalPriceUsd: null, economicValueUsd: finite(p.priceUsd) ? shares * p.priceUsd : null,
+        flowFingerprint: `shares:${raw.toString()}`,
+        ledgerComparable: false, valuationCanonical: true,
+        note: 'Checkpoint seeded; future Embedded Yield uses official Lido/Mellow share-oracle accounting, not wrapper market-price movement.'
+      };
+    });
+    const id = 'ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981';
+    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Lido refresh unavailable', r.attempts);
+  }
+
+  // Liquity direct WETH SP. Yield is separate claimable; principal checkpoint is not Embedded Yield.
+  {
+    const r = await withProvider('ethereum', async provider => {
+      const sp = new Contract(ADDR.liquitySpWeth, [
+        'function getCompoundedBoldDeposit(address) view returns (uint256)',
+        'function getDepositorYieldGain(address) view returns (uint256)',
+        'function getDepositorCollGain(address) view returns (uint256)'
+      ], provider);
+      const dep = safeBig(await sp.getCompoundedBoldDeposit(WALLET));
+      const yieldGain = safeBig(await sp.getDepositorYieldGain(WALLET));
+      const collGain = safeBig(await sp.getDepositorCollGain(WALLET));
+      const amount = Number(formatUnits(dep, 18));
+      const p = await llamaPrice('ethereum', ADDR.bold);
+      return {
+        sharesOrBalance: amount, underlyingAmount: amount, terminalSymbol: 'BOLD',
+        terminalPriceUsd: p.priceUsd, economicValueUsd: finite(p.priceUsd) ? amount * p.priceUsd : null,
+        flowFingerprint: `spPrincipal:${dep.toString()}`,
+        ledgerComparable: false, valuationCanonical: true,
+        accruedClaimable: {
+          protocol: 'Liquity V2', symbol: 'BOLD',
+          amount: Number(formatUnits(yieldGain, 18)),
+          usdValue: finite(p.priceUsd) ? Number(formatUnits(yieldGain, 18)) * p.priceUsd : null,
+          collateralGainRaw: collGain.toString()
+        },
+        note: 'Direct Stability Pool interest/liquidation gains are separate Accrued Rewards, not Embedded Yield inside principal.'
+      };
+    });
+    const id = 'ethereum:liquity-v2-sp:weth';
+    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Liquity refresh unavailable', r.attempts);
+  }
+
+  // Fraxtal sfrxUSD: the token itself is bridged, while canonical ERC-4626
+  // conversion lives in FraxtalERC4626MintRedeemer.
+  {
+    const r = await withProvider('fraxtal', async provider => {
+      const m = await tokenMeta(provider, ADDR.fraxtalSfrxusd);
+      const token = new Contract(ADDR.fraxtalSfrxusd, ['function balanceOf(address) view returns (uint256)'], provider);
+      const raw = safeBig(await token.balanceOf(WALLET));
+      const shares = Number(formatUnits(raw, m.decimals));
+
+      const redeemer = new Contract(ADDR.fraxtalStakeUnstake, [
+        'function pricePerShare() view returns (uint256)',
+        'function convertToAssets(uint256) view returns (uint256)',
+        'function previewRedeem(uint256) view returns (uint256)'
+      ], provider);
+      let assetsRaw = 0n, method = null;
+      try { assetsRaw = safeBig(await redeemer.convertToAssets(raw)); method = 'convertToAssets'; }
+      catch {
+        try { assetsRaw = safeBig(await redeemer.previewRedeem(raw)); method = 'previewRedeem'; }
+        catch {
+          const pps = safeBig(await redeemer.pricePerShare());
+          assetsRaw = raw * pps / ONE;
+          method = 'pricePerShare';
+        }
+      }
+
+      const underlyingAmount = Number(formatUnits(assetsRaw, 18));
+      const px = await llamaPrice('fraxtal', ADDR.fraxtalFrxusd);
+      return {
+        sharesOrBalance: shares,
+        shareRaw: raw.toString(),
+        underlyingAmount,
+        terminalSymbol: 'frxUSD',
+        terminalPriceUsd: px.priceUsd,
+        economicValueUsd: finite(px.priceUsd) ? underlyingAmount * px.priceUsd : underlyingAmount,
+        flowFingerprint: `shares:${raw.toString()}`,
+        ledgerComparable: true,
+        valuationCanonical: true,
+        redemptionMethod: method,
+        note: 'Canonical current NAV via official FraxtalERC4626MintRedeemer; no sfrxUSD market price used.'
+      };
+    });
+    const id = 'fraxtal:0xfc00000000000000000000000000000000000008';
+    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Frax canonical refresh unavailable', r.attempts);
+  }
 
   return result;
 }
@@ -1007,25 +1163,24 @@ function snapshotFallback(position, note, diagnostics = null) {
   };
 }
 
-async function collectRates(priorData) {
-  if (!priorData || priorData.version !== PRIOR_STABLE_DATA_REQUIRED) {
-    throw new Error(`v0.3 requires published ${PRIOR_STABLE_DATA_REQUIRED}`);
-  }
-
+async function collectRates() {
+  const specs = [
+    ['base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', rateAaveBaseUsdc],
+    ['ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367', rateCurve],
+    ['ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39', rateFx],
+    ['ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305', rateInverse],
+    ['ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd', rateSky],
+    ['ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d', rateSGho],
+    ['ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd', rateYearn],
+    ['ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981', rateLido],
+    ['ethereum:liquity-v2-sp:weth', rateLiquity],
+    ['fraxtal:0xfc00000000000000000000000000000000000008', rateFrax]
+  ];
   const rows = {};
-  for (const row of priorData.positions || []) {
-    if (row.id === 'ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39') continue;
-    if (!row.reference || row.reference.status !== 'ok' || !finite(row.reference.annualYieldPct)) {
-      throw new Error(`cannot preserve non-ok v0.2 reference row ${row.id}`);
-    }
-    rows[row.id] = {
-      ...row.reference,
-      preservation: 'accepted-v0.2-reference-preserved-by-v0.3'
-    };
+  for (const [id, fn] of specs) {
+    try { rows[id] = await fn(); }
+    catch (e) { rows[id] = { status: 'error', annualYieldPct: null, error: errorText(e) }; }
   }
-
-  const fxId = 'ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39';
-  rows[fxId] = await rateFx();
   return rows;
 }
 
@@ -1252,7 +1407,7 @@ function buildLedger(resolver, stableData, priorLedger) {
     .filter(x => x.status === 'ok' && finite(x.incomeUsd));
 
   function sumWindow(start) {
-    // v0.2 recognizes only flow-safe latest intervals; Historical daily interval aggregation
+    // v0.4 records recurring daily checkpoints and recognizes only flow-safe comparable intervals; Historical daily interval aggregation
     // grows automatically as checkpoints accumulate; no pre-tracking history is invented.
     const eligible = allIntervals.filter(x => new Date(x.timestamp) >= start);
     if (!eligible.length) return null;
@@ -1311,14 +1466,11 @@ async function main() {
   }
 
   const priorData = fs.existsSync(DATA_FILE) ? JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) : null;
-  if (!priorData || priorData.version !== PRIOR_STABLE_DATA_REQUIRED) {
-    throw new Error(`Expected prior Stable Capital ${PRIOR_STABLE_DATA_REQUIRED}, got ${priorData?.version || 'missing'}`);
-  }
   const priorLedger = fs.existsSync(LEDGER_FILE) ? JSON.parse(fs.readFileSync(LEDGER_FILE, 'utf8')) : null;
 
   const [rates, snapshots] = await Promise.all([
-    collectRates(priorData),
-    currentSnapshots(resolver, priorData)
+    collectRates(),
+    currentSnapshots(resolver)
   ]);
 
   const stableData = buildStableData(resolver, rates, snapshots, priorData);
