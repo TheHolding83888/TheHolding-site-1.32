@@ -1,4 +1,4 @@
-# THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.4 · RECURRING + STABLE INDEX
+# THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.4.1 · RECURRING + STABLE INDEX
 name: "Update Stable Capital"
 
 on:
@@ -61,7 +61,8 @@ jobs:
           const d = JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
           const allowedData = new Set([
             '0.3-monetra-fxsave-canonical-nav',
-            '0.4-monetra-recurring-full-coverage'
+            '0.4-monetra-recurring-full-coverage',
+            '0.4.1-monetra-recurring-stable-index-semantics'
           ]);
           if (!allowedData.has(d.version)) throw new Error('unexpected prior Stable Capital version: ' + d.version);
           if (d.company?.registry !== '008' || (d.positions || []).length !== 10) throw new Error('prior Stable Capital identity/count regression');
@@ -103,7 +104,7 @@ jobs:
           const l = JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
           const i = JSON.parse(fs.readFileSync('companies/stable-index-data.json','utf8'));
 
-          if (d.version !== '0.4-monetra-recurring-full-coverage') throw new Error('unexpected stable-capital version');
+          if (d.version !== '0.4.1-monetra-recurring-stable-index-semantics') throw new Error('unexpected stable-capital version');
           if (d.methodologyVersion !== '1.3-stable-capital-recurring-full-coverage') throw new Error('unexpected stable methodology');
           if (d.company?.registry !== '008' || d.company?.name !== 'Monetra.eth') throw new Error('stable identity mismatch');
           if ((d.positions || []).length !== 10) throw new Error('stable position count regression');
@@ -165,7 +166,7 @@ jobs:
           REMOTE_STABLE="$(git show origin/main:companies/stable-capital-data.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
           REMOTE_INDEX="$(git show origin/main:companies/stable-index-data.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
 
-          test "$REMOTE_STABLE" = "0.4-monetra-recurring-full-coverage" || {
+          test "$REMOTE_STABLE" = "0.4.1-monetra-recurring-stable-index-semantics" || {
             echo "ERROR: remote stable version mismatch: $REMOTE_STABLE"; exit 1;
           }
           test "$REMOTE_INDEX" = "0.1-stable-companies-index" || {
