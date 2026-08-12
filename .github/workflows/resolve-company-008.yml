@@ -1,5 +1,4 @@
-# THE HOLDING COMPANY #008 TARGETED RESOLVER v1.3 — AERODROME SUGAR WETH
-name: "Resolve Company #008"
+ame: "Resolve Company #008"
 
 on:
   workflow_dispatch:
@@ -14,7 +13,7 @@ concurrency:
 jobs:
   resolve:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -29,29 +28,13 @@ jobs:
 
       - name: Verify resolver source/workflow sync
         run: |
-          grep -F "const VERSION = '1.3-company-008-aerodrome-sugar-base-weth-final';" onboarding/company-008-resolve.mjs
-          echo "Resolver/source sync OK: Company #008 targeted resolver v1.3"
+          grep -F "const VERSION = '1.4-company-008-aerodrome-ve-rewards-weth-final-pass';" onboarding/company-008-resolve.mjs
+          echo "Resolver/source sync OK: Company #008 targeted resolver v1.4"
 
       - name: Install dependency
         run: npm install --no-save ethers@6
 
-      - name: Address normalization preflight
-        run: |
-          node - <<'NODE'
-          const { getAddress } = require('ethers');
-          const addresses = [
-            '0xe4b9c9ced406baffe406e63f83d39daaef150596',
-            '0x4200000000000000000000000000000000000006',
-            '0x69dd9db6d8f8e7d83887a704f447b1a584b599a1',
-            '0x827922686190790b37229fd06084350e74485b72',
-            '0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59'
-          ];
-          for (const address of addresses) {
-            console.log(address, '->', getAddress(address));
-          }
-          NODE
-
-      - name: Resolve final Company #008 Base WETH via Aerodrome Sugar
+      - name: Resolve final Company #008 Aerodrome WETH classification
         env:
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
@@ -62,55 +45,31 @@ jobs:
         run: |
           node - <<'NODE'
           const fs = require('fs');
-
           const p = 'companies/company-008-resolve.json';
 
-          if (!fs.existsSync(p)) {
-            throw new Error('resolver JSON missing');
-          }
-
+          if (!fs.existsSync(p)) throw new Error('resolver JSON missing');
           const d = JSON.parse(fs.readFileSync(p, 'utf8'));
 
-          if (
-            d.version !==
-            '1.3-company-008-aerodrome-sugar-base-weth-final'
-          ) {
-            throw new Error(
-              'resolver version mismatch: ' + d.version
-            );
+          if (d.version !== '1.4-company-008-aerodrome-ve-rewards-weth-final-pass') {
+            throw new Error('resolver version mismatch: ' + d.version);
           }
-
-          if (d.company?.registry !== '008') {
-            throw new Error('registry mismatch');
+          if (d.company?.registry !== '008') throw new Error('registry mismatch');
+          if (d.company?.name !== '1milliondollar.eth') throw new Error('company mismatch');
+          if (Number(d.finalCandidateTotals?.btc) !== 0.07264572) {
+            throw new Error('preserved BTC mismatch: ' + d.finalCandidateTotals?.btc);
           }
+          if (!d.results?.directVenftRewards) throw new Error('direct veNFT reward result missing');
+          if (!d.results?.managedRelayDiagnostic) throw new Error('managed Relay diagnostic missing');
+          if (!d.classification?.accountingMode) throw new Error('accounting classification missing');
+          if (!Array.isArray(d.resolution?.unresolved)) throw new Error('resolution schema missing');
 
-          if (d.company?.name !== '1milliondollar.eth') {
-            throw new Error('company mismatch');
-          }
-
-          if (!d.results?.baseWethAerodromeSlipstream) {
-            throw new Error('Aerodrome WETH result missing');
-          }
-
-          if (
-            !d.resolution
-            || !Array.isArray(d.resolution.unresolved)
-          ) {
-            throw new Error('resolution schema missing');
-          }
-
-          console.log(
-            'Validated Company #008 targeted resolver v1.3'
-          );
+          console.log('Validated Company #008 targeted resolver v1.4');
+          console.log('Accounting mode:', d.classification.accountingMode);
+          console.log('Direct WETH rewards:', d.classification.directWethRewards);
+          console.log('Managed WETH diagnostic:', d.classification.managedRelayWethDiagnostic);
+          console.log('Fallback WETH:', d.classification.ownerDeclaredFoundationFallbackWeth);
+          console.log('Final totals:', d.finalCandidateTotals);
           console.log('Resolution:', d.resolution);
-          console.log(
-            'Aerodrome WETH:',
-            d.results.baseWethAerodromeSlipstream?.totals
-          );
-          console.log(
-            'Final candidate totals:',
-            d.finalCandidateTotals
-          );
           NODE
 
       - name: Publish resolver JSON to main
@@ -131,7 +90,7 @@ jobs:
           git add -f "$FILE"
 
           if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Resolve Company #008 Aerodrome Base WETH"
+            git commit -m "Resolve Company #008 Aerodrome WETH rewards boundary"
           else
             echo "Resolver output unchanged."
           fi
@@ -165,7 +124,7 @@ jobs:
             node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))"
           )"
 
-          test "$REMOTE_VERSION" = "1.3-company-008-aerodrome-sugar-base-weth-final" || {
+          test "$REMOTE_VERSION" = "1.4-company-008-aerodrome-ve-rewards-weth-final-pass" || {
             echo "ERROR: remote resolver version mismatch: $REMOTE_VERSION"
             exit 1
           }
