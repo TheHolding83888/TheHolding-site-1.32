@@ -1,0 +1,869 @@
+{
+  "version": "1.1-company-008-wrapper-candidate-safe",
+  "generatedAt": "2026-08-12T05:20:45.734Z",
+  "startedAt": "2026-08-12T05:20:40.039Z",
+  "purpose": "bounded current-state fingerprint for Company #008; aggregate all discovered BTC/ETH economic exposure; isolate only new Morpho/Lombard/Beefy mechanics; no entry-price invention",
+  "company": {
+    "registry": "008",
+    "name": "1milliondollar.eth",
+    "foundedAt": "2024-12-12",
+    "founding": {
+      "date": "2024-12-12",
+      "method": "owner-declared",
+      "confidence": "declared",
+      "note": "Owner-declared founding date; do not overwrite with wallet or protocol history."
+    },
+    "architecture": "The Holding Standard",
+    "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
+    "debank": "https://debank.com/profile/0xe4b9c9ced406baffe406e63f83d39daaef150596"
+  },
+  "accountingPolicy": {
+    "publicArchitecture": "The Holding Standard",
+    "foundationAssets": [
+      "BTC",
+      "ETH"
+    ],
+    "publicBalanceRows": [
+      "BTC",
+      "ETH",
+      "AERO / veAERO",
+      "CRV / cvxCRV",
+      "YB / veYB"
+    ],
+    "btcAggregation": "one BTC-equivalent public row across direct canonical wrappers, Aave, Morpho, Lombard and recognized yield-bearing wrappers using verified conversion rates",
+    "ethAggregation": "one ETH-equivalent public row across direct/native ETH, canonical wrappers, Aave and Morpho using verified conversion rates",
+    "liabilities": "Aave/Morpho borrow positions are diagnostic only and are NOT subtracted from gross public balance",
+    "aaveMorphoProductivity": "lending/borrow yield is excluded from Reference APR by current owner instruction; supplied/collateral principal remains part of gross balance",
+    "beefyCvxCrv": "current underlying cvxCRV is represented as CRV / cvxCRV economic exposure; current valuation uses cvxCRV market price; auto-compounded rewards are embedded in vault share value",
+    "entryPrices": {
+      "BTC": null,
+      "ETH": null,
+      "AERO": null,
+      "CRV": null,
+      "YB": null
+    },
+    "performance": "pending until owner supplies average entry prices for BTC, ETH, AERO, CRV and YB"
+  },
+  "discovery": {
+    "lombardExchangeRatio": {
+      "source": "official Lombard SDK api.exchangeRatio()",
+      "status": "unavailable",
+      "btcPerLbtc": null,
+      "lbtcPerBtc": null,
+      "error": "Cannot read properties of undefined (reading 'exchangeRatio')"
+    },
+    "directSelectedBalances": {
+      "rows": [
+        {
+          "chain": "Ethereum",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.002102236949495346,
+          "equivalentAmount": 0.002102236949495346,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        },
+        {
+          "chain": "Base",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.002811995161108249,
+          "equivalentAmount": 0.002811995161108249,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        },
+        {
+          "chain": "Arbitrum",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.001253038637790969,
+          "equivalentAmount": 0.001253038637790969,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        },
+        {
+          "chain": "Optimism",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.000019332725575512,
+          "equivalentAmount": 0.000019332725575512,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        },
+        {
+          "chain": "Avalanche",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.2575696941500402,
+          "equivalentAmount": 0.2575696941500402,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        }
+      ],
+      "chainStatus": {
+        "ethereum": {
+          "ok": true,
+          "provider": "ethereum:ethereum-rpc.publicnode.com",
+          "errors": []
+        },
+        "base": {
+          "ok": true,
+          "provider": "base:base-rpc.publicnode.com",
+          "errors": []
+        },
+        "arbitrum": {
+          "ok": true,
+          "provider": "arbitrum:arbitrum-one-rpc.publicnode.com",
+          "errors": []
+        },
+        "optimism": {
+          "ok": true,
+          "provider": "optimism:optimism-rpc.publicnode.com",
+          "errors": []
+        },
+        "avalanche": {
+          "ok": true,
+          "provider": "avalanche:avalanche-c-chain-rpc.publicnode.com",
+          "errors": []
+        }
+      },
+      "diagnostics": []
+    },
+    "walletWrapperCandidates": {
+      "candidates": [],
+      "diagnostics": []
+    },
+    "aave": {
+      "rows": [
+        {
+          "chain": "Arbitrum",
+          "protocol": "Aave",
+          "source": "aave-supplied",
+          "usageAsCollateralEnabled": true,
+          "productiveForHoldingReferenceApr": false,
+          "family": "BTC",
+          "symbol": "WBTC",
+          "token": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
+          "amount": 0.00734151,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "1:1 canonical wrapper"
+          },
+          "equivalentAmount": 0.00734151
+        }
+      ],
+      "ignoredLiabilities": [],
+      "chainStatus": {
+        "ethereum": {
+          "ok": true,
+          "provider": "ethereum:ethereum-rpc.publicnode.com",
+          "errors": []
+        },
+        "base": {
+          "ok": true,
+          "provider": "base:base-rpc.publicnode.com",
+          "errors": []
+        },
+        "arbitrum": {
+          "ok": true,
+          "provider": "arbitrum:arbitrum-one-rpc.publicnode.com",
+          "errors": []
+        },
+        "optimism": {
+          "ok": true,
+          "provider": "optimism:optimism-rpc.publicnode.com",
+          "errors": []
+        }
+      },
+      "diagnostics": []
+    },
+    "morpho": {
+      "source": "official Morpho GraphQL userByAddress",
+      "rows": [
+        {
+          "chain": "Base",
+          "protocol": "Morpho",
+          "source": "morpho-market-collateral",
+          "marketId": "0x9103c3b4e834476c9a62ea009ba2c884ee42e94e6e314a26f04d312434191836",
+          "usdValueApi": 127.3125875157716,
+          "productiveForHoldingReferenceApr": false,
+          "family": "BTC",
+          "symbol": "cbBTC",
+          "token": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+          "amount": 0.00199735,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "1:1 canonical wrapper"
+          },
+          "equivalentAmount": 0.00199735
+        },
+        {
+          "chain": "Base",
+          "protocol": "Morpho",
+          "source": "morpho-market-collateral",
+          "marketId": "0x67ebd84b2fb39e3bc5a13d97e4c07abe1ea617e40654826e9abce252e95f049e",
+          "usdValueApi": 446.6977273958134,
+          "productiveForHoldingReferenceApr": false,
+          "family": "BTC",
+          "symbol": "cbBTC",
+          "token": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+          "amount": 0.00700804,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "1:1 canonical wrapper"
+          },
+          "equivalentAmount": 0.00700804
+        }
+      ],
+      "ignoredLiabilities": [
+        {
+          "chain": "Base",
+          "protocol": "Morpho",
+          "marketId": "0x9103c3b4e834476c9a62ea009ba2c884ee42e94e6e314a26f04d312434191836",
+          "asset": "USDC",
+          "amount": 90.433601,
+          "usdValueApi": 90.3938274168564,
+          "treatment": "diagnostic-only; NOT subtracted from public gross asset balance"
+        },
+        {
+          "chain": "Base",
+          "protocol": "Morpho",
+          "marketId": "0x67ebd84b2fb39e3bc5a13d97e4c07abe1ea617e40654826e9abce252e95f049e",
+          "asset": "EURC",
+          "amount": 101.451484,
+          "usdValueApi": 116.9634407612783,
+          "treatment": "diagnostic-only; NOT subtracted from public gross asset balance"
+        }
+      ],
+      "unresolvedWrapperCandidates": [],
+      "rawByChain": {
+        "ethereum": {
+          "marketPositionCount": 0,
+          "vaultPositionCount": 0,
+          "vaultV2PositionCount": 0
+        },
+        "base": {
+          "marketPositionCount": 2,
+          "vaultPositionCount": 0,
+          "vaultV2PositionCount": 0
+        },
+        "arbitrum": {
+          "marketPositionCount": 0,
+          "vaultPositionCount": 0,
+          "vaultV2PositionCount": 0
+        },
+        "optimism": {
+          "marketPositionCount": 0,
+          "vaultPositionCount": 0,
+          "vaultV2PositionCount": 0
+        }
+      },
+      "diagnostics": []
+    },
+    "lombardBtcoc": {
+      "chain": "Ethereum",
+      "protocol": "Lombard",
+      "product": "Bitcoin Onchain Credit",
+      "vault": "0xf14F678d9c05798ba61652a950a05D74aD2E0A6C",
+      "shares": 0,
+      "underlying": null,
+      "btcEquivalent": 0,
+      "incomeMode": "ERC-4626 share-value compounding",
+      "status": "no-position",
+      "diagnostics": []
+    },
+    "aerodrome": {
+      "chain": "Base",
+      "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
+      "freeAero": 0,
+      "productiveVeAero": 214.79808830532596,
+      "totalAeroExposure": 214.79808830532596,
+      "veNftCount": 6,
+      "positions": [
+        {
+          "tokenId": "63363",
+          "custodyMode": "managed-veNFT",
+          "managedTokenId": "10298",
+          "directLockedAero": 0,
+          "managedWeightAero": 19.039885284429012,
+          "economicPrincipalAero": 19.039885284429012,
+          "escrowType": 1,
+          "lockEndUnix": null,
+          "isPermanent": false
+        },
+        {
+          "tokenId": "67086",
+          "custodyMode": "managed-veNFT",
+          "managedTokenId": "10298",
+          "directLockedAero": 0,
+          "managedWeightAero": 25.01400192936,
+          "economicPrincipalAero": 25.01400192936,
+          "escrowType": 1,
+          "lockEndUnix": null,
+          "isPermanent": false
+        },
+        {
+          "tokenId": "71320",
+          "custodyMode": "managed-veNFT",
+          "managedTokenId": "10298",
+          "directLockedAero": 0,
+          "managedWeightAero": 25.50449859166498,
+          "economicPrincipalAero": 25.50449859166498,
+          "escrowType": 1,
+          "lockEndUnix": null,
+          "isPermanent": false
+        },
+        {
+          "tokenId": "83028",
+          "custodyMode": "managed-veNFT",
+          "managedTokenId": "10298",
+          "directLockedAero": 0,
+          "managedWeightAero": 55.335621853376146,
+          "economicPrincipalAero": 55.335621853376146,
+          "escrowType": 1,
+          "lockEndUnix": null,
+          "isPermanent": false
+        },
+        {
+          "tokenId": "86521",
+          "custodyMode": "managed-veNFT",
+          "managedTokenId": "10298",
+          "directLockedAero": 0,
+          "managedWeightAero": 38.72709334719059,
+          "economicPrincipalAero": 38.72709334719059,
+          "escrowType": 1,
+          "lockEndUnix": null,
+          "isPermanent": false
+        },
+        {
+          "tokenId": "130161",
+          "custodyMode": "managed-veNFT",
+          "managedTokenId": "10298",
+          "directLockedAero": 0,
+          "managedWeightAero": 51.17698729930523,
+          "economicPrincipalAero": 51.17698729930523,
+          "escrowType": 1,
+          "lockEndUnix": null,
+          "isPermanent": false
+        }
+      ],
+      "productivityAdapters": {
+        "direct": "known:aerodrome_veaero",
+        "managed": "known:aerodrome_veaero / Relay-compatible custody adapter"
+      },
+      "rewardsRoutes": {
+        "direct": "known:aerodrome-ve",
+        "managed": "known:aerodrome-relay"
+      },
+      "diagnostics": []
+    },
+    "yieldBasisVeYb": {
+      "chain": "Ethereum",
+      "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
+      "freeYb": 1.122449e-10,
+      "productiveVeYb": 3737.585758274581,
+      "totalYbExposure": 3737.5857582746935,
+      "veNftBalance": 1,
+      "lockEndUnix": 1910563200,
+      "token": "0x01791F726B4103694969820be083196cC7c045fF",
+      "votingEscrow": "0x8235c179E9e84688FBd8B12295EfC26834dAC211",
+      "feeDistributor": "0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90",
+      "productivityAdapter": "known:yieldbasis_veyb",
+      "rewardsRoute": "known:yield-basis-fees",
+      "rewardUiLabel": "Yield Basis · veYB",
+      "diagnostics": []
+    },
+    "beefyCvxCrv": {
+      "source": "official Beefy API + Ethereum vault onchain reads",
+      "status": "ok",
+      "vaultId": "convex-staked-cvxCRV",
+      "vaultMeta": {
+        "id": "convex-staked-cvxCRV",
+        "name": "cvxCRV",
+        "chain": "ethereum",
+        "status": "active",
+        "earnContractAddress": "0x4115150523599D1F6C6Fa27F5A4C27D578Fd8ce5",
+        "tokenAddress": "0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7",
+        "token": "cvxCRV",
+        "oracleId": "cvxCRV"
+      },
+      "shares": 276.049119332507,
+      "underlyingCvxCrv": 468.390991181449,
+      "ppfs": 1.6967668374165752,
+      "currentApy": 0.10918504277765528,
+      "incomeMode": "compounded-embedded",
+      "separateClaimableRewards": false,
+      "diagnostics": [],
+      "vaultAddress": "0x4115150523599D1F6C6Fa27F5A4C27D578Fd8ce5",
+      "wantToken": "0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7",
+      "wantSymbol": "cvxCRV",
+      "valuationMethod": "share balance × getPricePerFullShare()",
+      "wantMatchesCanonicalCvxCrv": true,
+      "productivityPlan": {
+        "classification": "Beefy auto-compounded cvxCRV",
+        "currentState": "vault shares are redeemable for underlying cvxCRV; harvested Convex rewards are reinvested back into the vault",
+        "accounting": "current underlying cvxCRV belongs on the company balance sheet as CRV / cvxCRV economic exposure",
+        "rewards": "do NOT add harvested rewards as separate Accrued Rewards when they are already compounded into vault share value",
+        "nextMeasurement": "store PPFS/share checkpoints and measure non-overlapping share-value growth; historical deposit-flow adjustment is required to quantify cumulative compounded cvxCRV since inception"
+      }
+    }
+  },
+  "proposedCompanyBook": [
+    {
+      "symbol": "BTC",
+      "id": "bitcoin",
+      "quantity": 0.0163469,
+      "quantityComplete": true,
+      "entryUsd": null,
+      "costBasisUsd": null,
+      "currentPriceUsdAtDiscovery": 63765,
+      "currentValueUsdAtDiscovery": 1042.360079,
+      "classification": "foundation / reserve",
+      "productiveQuantity": 0,
+      "internalBreakdown": [
+        {
+          "chain": "Arbitrum",
+          "protocol": "Aave",
+          "source": "aave-supplied",
+          "usageAsCollateralEnabled": true,
+          "productiveForHoldingReferenceApr": false,
+          "family": "BTC",
+          "symbol": "WBTC",
+          "token": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
+          "amount": 0.00734151,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "1:1 canonical wrapper"
+          },
+          "equivalentAmount": 0.00734151
+        },
+        {
+          "chain": "Base",
+          "protocol": "Morpho",
+          "source": "morpho-market-collateral",
+          "marketId": "0x9103c3b4e834476c9a62ea009ba2c884ee42e94e6e314a26f04d312434191836",
+          "usdValueApi": 127.3125875157716,
+          "productiveForHoldingReferenceApr": false,
+          "family": "BTC",
+          "symbol": "cbBTC",
+          "token": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+          "amount": 0.00199735,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "1:1 canonical wrapper"
+          },
+          "equivalentAmount": 0.00199735
+        },
+        {
+          "chain": "Base",
+          "protocol": "Morpho",
+          "source": "morpho-market-collateral",
+          "marketId": "0x67ebd84b2fb39e3bc5a13d97e4c07abe1ea617e40654826e9abce252e95f049e",
+          "usdValueApi": 446.6977273958134,
+          "productiveForHoldingReferenceApr": false,
+          "family": "BTC",
+          "symbol": "cbBTC",
+          "token": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+          "amount": 0.00700804,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "1:1 canonical wrapper"
+          },
+          "equivalentAmount": 0.00700804
+        }
+      ],
+      "unresolvedConversions": [],
+      "performanceUsdAtDiscovery": null,
+      "performancePctAtDiscovery": null,
+      "entryStatus": "waiting-for-owner-average-entry"
+    },
+    {
+      "symbol": "ETH",
+      "id": "ethereum",
+      "quantity": 0.263756297624,
+      "quantityComplete": true,
+      "entryUsd": null,
+      "costBasisUsd": null,
+      "currentPriceUsdAtDiscovery": 1888.8,
+      "currentValueUsdAtDiscovery": 498.182895,
+      "classification": "foundation / reserve",
+      "productiveQuantity": 0,
+      "internalBreakdown": [
+        {
+          "chain": "Ethereum",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.002102236949495346,
+          "equivalentAmount": 0.002102236949495346,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        },
+        {
+          "chain": "Base",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.002811995161108249,
+          "equivalentAmount": 0.002811995161108249,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        },
+        {
+          "chain": "Arbitrum",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.001253038637790969,
+          "equivalentAmount": 0.001253038637790969,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        },
+        {
+          "chain": "Optimism",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.000019332725575512,
+          "equivalentAmount": 0.000019332725575512,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        },
+        {
+          "chain": "Avalanche",
+          "protocol": "Wallet",
+          "source": "wallet-native",
+          "family": "ETH",
+          "symbol": "ETH",
+          "amount": 0.2575696941500402,
+          "equivalentAmount": 0.2575696941500402,
+          "conversion": {
+            "status": "ok",
+            "rate": 1,
+            "method": "native ETH"
+          }
+        }
+      ],
+      "unresolvedConversions": [],
+      "performanceUsdAtDiscovery": null,
+      "performancePctAtDiscovery": null,
+      "entryStatus": "waiting-for-owner-average-entry"
+    },
+    {
+      "symbol": "AERO / veAERO",
+      "id": "aerodrome-finance",
+      "quantity": 214.798088305326,
+      "quantityComplete": true,
+      "entryUsd": null,
+      "costBasisUsd": null,
+      "currentPriceUsdAtDiscovery": 0.417851,
+      "currentValueUsdAtDiscovery": 89.753596,
+      "classification": "productive",
+      "productiveQuantity": 214.798088305326,
+      "internalBreakdown": {
+        "freeAero": 0,
+        "veAero": 214.798088305326,
+        "positions": [
+          {
+            "tokenId": "63363",
+            "custodyMode": "managed-veNFT",
+            "managedTokenId": "10298",
+            "directLockedAero": 0,
+            "managedWeightAero": 19.039885284429012,
+            "economicPrincipalAero": 19.039885284429012,
+            "escrowType": 1,
+            "lockEndUnix": null,
+            "isPermanent": false
+          },
+          {
+            "tokenId": "67086",
+            "custodyMode": "managed-veNFT",
+            "managedTokenId": "10298",
+            "directLockedAero": 0,
+            "managedWeightAero": 25.01400192936,
+            "economicPrincipalAero": 25.01400192936,
+            "escrowType": 1,
+            "lockEndUnix": null,
+            "isPermanent": false
+          },
+          {
+            "tokenId": "71320",
+            "custodyMode": "managed-veNFT",
+            "managedTokenId": "10298",
+            "directLockedAero": 0,
+            "managedWeightAero": 25.50449859166498,
+            "economicPrincipalAero": 25.50449859166498,
+            "escrowType": 1,
+            "lockEndUnix": null,
+            "isPermanent": false
+          },
+          {
+            "tokenId": "83028",
+            "custodyMode": "managed-veNFT",
+            "managedTokenId": "10298",
+            "directLockedAero": 0,
+            "managedWeightAero": 55.335621853376146,
+            "economicPrincipalAero": 55.335621853376146,
+            "escrowType": 1,
+            "lockEndUnix": null,
+            "isPermanent": false
+          },
+          {
+            "tokenId": "86521",
+            "custodyMode": "managed-veNFT",
+            "managedTokenId": "10298",
+            "directLockedAero": 0,
+            "managedWeightAero": 38.72709334719059,
+            "economicPrincipalAero": 38.72709334719059,
+            "escrowType": 1,
+            "lockEndUnix": null,
+            "isPermanent": false
+          },
+          {
+            "tokenId": "130161",
+            "custodyMode": "managed-veNFT",
+            "managedTokenId": "10298",
+            "directLockedAero": 0,
+            "managedWeightAero": 51.17698729930523,
+            "economicPrincipalAero": 51.17698729930523,
+            "escrowType": 1,
+            "lockEndUnix": null,
+            "isPermanent": false
+          }
+        ]
+      },
+      "performanceUsdAtDiscovery": null,
+      "performancePctAtDiscovery": null,
+      "entryStatus": "waiting-for-owner-average-entry"
+    },
+    {
+      "symbol": "CRV / cvxCRV",
+      "id": "convex-crv",
+      "economicAsset": "CRV",
+      "currentValuationAsset": "cvxCRV",
+      "quantity": 468.390991181449,
+      "quantityComplete": true,
+      "entryUsd": null,
+      "costBasisUsd": null,
+      "currentPriceUsdAtDiscovery": 0.131008,
+      "currentCrvSpotUsdAtDiscovery": 0.271764,
+      "currentValueUsdAtDiscovery": 61.362967,
+      "classification": "productive / auto-compounded",
+      "productiveQuantity": 468.390991181449,
+      "valuationRule": "quantity is underlying cvxCRV economic principal; current value uses cvxCRV market value, not an assumed 1:1 CRV spot price",
+      "internalBreakdown": {
+        "source": "official Beefy API + Ethereum vault onchain reads",
+        "status": "ok",
+        "vaultId": "convex-staked-cvxCRV",
+        "vaultMeta": {
+          "id": "convex-staked-cvxCRV",
+          "name": "cvxCRV",
+          "chain": "ethereum",
+          "status": "active",
+          "earnContractAddress": "0x4115150523599D1F6C6Fa27F5A4C27D578Fd8ce5",
+          "tokenAddress": "0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7",
+          "token": "cvxCRV",
+          "oracleId": "cvxCRV"
+        },
+        "shares": 276.049119332507,
+        "underlyingCvxCrv": 468.390991181449,
+        "ppfs": 1.6967668374165752,
+        "currentApy": 0.10918504277765528,
+        "incomeMode": "compounded-embedded",
+        "separateClaimableRewards": false,
+        "diagnostics": [],
+        "vaultAddress": "0x4115150523599D1F6C6Fa27F5A4C27D578Fd8ce5",
+        "wantToken": "0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7",
+        "wantSymbol": "cvxCRV",
+        "valuationMethod": "share balance × getPricePerFullShare()",
+        "wantMatchesCanonicalCvxCrv": true,
+        "productivityPlan": {
+          "classification": "Beefy auto-compounded cvxCRV",
+          "currentState": "vault shares are redeemable for underlying cvxCRV; harvested Convex rewards are reinvested back into the vault",
+          "accounting": "current underlying cvxCRV belongs on the company balance sheet as CRV / cvxCRV economic exposure",
+          "rewards": "do NOT add harvested rewards as separate Accrued Rewards when they are already compounded into vault share value",
+          "nextMeasurement": "store PPFS/share checkpoints and measure non-overlapping share-value growth; historical deposit-flow adjustment is required to quantify cumulative compounded cvxCRV since inception"
+        }
+      },
+      "performanceUsdAtDiscovery": null,
+      "performancePctAtDiscovery": null,
+      "entryStatus": "waiting-for-owner-average-entry"
+    },
+    {
+      "symbol": "YB / veYB",
+      "id": "yield-basis",
+      "quantity": 3737.585758274693,
+      "quantityComplete": true,
+      "entryUsd": null,
+      "costBasisUsd": null,
+      "currentPriceUsdAtDiscovery": 0.07856,
+      "currentValueUsdAtDiscovery": 293.624737,
+      "classification": "productive",
+      "productiveQuantity": 3737.585758274581,
+      "internalBreakdown": {
+        "freeYb": 1.12e-10,
+        "veYb": 3737.585758274581,
+        "lockEndUnix": 1910563200
+      },
+      "performanceUsdAtDiscovery": null,
+      "performancePctAtDiscovery": null,
+      "entryStatus": "waiting-for-owner-average-entry"
+    }
+  ],
+  "protocolFingerprint": [
+    "Bitcoin",
+    "Ethereum",
+    "Aave",
+    "Morpho",
+    "Aero",
+    "Yield Basis",
+    "Beefy",
+    "Convex",
+    "Curve"
+  ],
+  "ignoredLiabilities": [
+    {
+      "chain": "Base",
+      "protocol": "Morpho",
+      "marketId": "0x9103c3b4e834476c9a62ea009ba2c884ee42e94e6e314a26f04d312434191836",
+      "asset": "USDC",
+      "amount": 90.433601,
+      "usdValueApi": 90.3938274168564,
+      "treatment": "diagnostic-only; NOT subtracted from public gross asset balance"
+    },
+    {
+      "chain": "Base",
+      "protocol": "Morpho",
+      "marketId": "0x67ebd84b2fb39e3bc5a13d97e4c07abe1ea617e40654826e9abce252e95f049e",
+      "asset": "EURC",
+      "amount": 101.451484,
+      "usdValueApi": 116.9634407612783,
+      "treatment": "diagnostic-only; NOT subtracted from public gross asset balance"
+    }
+  ],
+  "knownAdapterReuse": {
+    "productivity": [
+      "Aero: reuse known direct/managed veAERO adapter based on discovered custody mode",
+      "Yield Basis veYB: reuse yieldbasis_veyb",
+      "BTC/ETH Aave and Morpho: balance only; Reference APR excluded by owner instruction"
+    ],
+    "rewards": [
+      "Aero: reuse aerodrome-ve or aerodrome-relay based on custody mode",
+      "Yield Basis veYB: reuse yield-basis-fees with UI label Yield Basis · veYB"
+    ]
+  },
+  "newMechanismDelta": {
+    "morpho": {
+      "lane": "A/B",
+      "status": "current position discovery via official Morpho API; debt diagnostic-only",
+      "graphNode": "Morpho"
+    },
+    "lombard": {
+      "lane": "B",
+      "status": "LBTC is normalized with official BTC-per-LBTC exchange rate; BTCoc is ERC-4626 share-value compounding",
+      "graphNode": "Lombard"
+    },
+    "beefyCvxCrv": {
+      "lane": "C",
+      "status": "ok",
+      "mechanism": "Beefy vault auto-compounds Convex cvxCRV rewards back into cvxCRV",
+      "currentTracking": "vault shares + current underlying cvxCRV + current PPFS",
+      "nextNarrowTask": "derive reproducible historical compounded cvxCRV / trailing PPFS return without double-counting deposits and withdrawals"
+    }
+  },
+  "pageIntegrationPlan": {
+    "companyCard": "Registry 008 · 1milliondollar.eth · The Holding Standard",
+    "passport": "The Holding Standard; foundation BTC + ETH; productive veAERO, Beefy cvxCRV, veYB as discovered",
+    "graph": {
+      "newCompanyNode": "1milliondollar.eth",
+      "companyProtocolsFromDiscovery": [
+        "Bitcoin",
+        "Ethereum",
+        "Aave",
+        "Morpho",
+        "Aero",
+        "Yield Basis",
+        "Beefy",
+        "Convex",
+        "Curve"
+      ],
+      "addYellowNode": [
+        "Morpho"
+      ],
+      "independentExistingGraphPatch": {
+        "yellowNode": "Llamalend",
+        "connectToCompany": "YieldRing.eth"
+      }
+    },
+    "waitForOwnerEntryPricesBeforePerformance": true
+  },
+  "productionReadiness": {
+    "btcQuantityComplete": true,
+    "ethQuantityComplete": true,
+    "aerodromeResolved": true,
+    "yieldBasisResolved": true,
+    "beefyResolved": true,
+    "entryPricesComplete": false,
+    "readyForFinalPageIntegration": false,
+    "note": "Final page/index Performance integration intentionally waits for owner average entries. A partial source is never silently treated as zero."
+  },
+  "diagnostics": {
+    "direct": [],
+    "walletWrapperCandidates": [],
+    "aave": [],
+    "morpho": [],
+    "lombard": [
+      "Cannot read properties of undefined (reading 'exchangeRatio')"
+    ],
+    "aerodrome": [],
+    "yieldBasis": [],
+    "beefy": []
+  }
+}
