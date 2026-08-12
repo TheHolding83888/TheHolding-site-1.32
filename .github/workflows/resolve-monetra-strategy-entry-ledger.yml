@@ -1,4 +1,4 @@
-# THE HOLDING · MONETRA STRATEGY ENTRY LEDGER v0.3 · PRODUCTIVE ENTRY BASIS
+# THE HOLDING · MONETRA STRATEGY ENTRY LEDGER v0.4 · TARGETED CLOSE
 name: "Resolve Monetra Strategy Entry Ledger"
 
 on:
@@ -68,8 +68,8 @@ jobs:
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/company-008-strategy-entry-ledger.json','utf8'));
 
-          if(d.version!=='0.3-monetra-strategy-entry-ledger')throw new Error('unexpected version');
-          if(d.methodologyVersion!=='0.3-strategy-deposit-basis-nominal-stable')throw new Error('unexpected methodology');
+          if(d.version!=='0.4-monetra-strategy-entry-targeted-close')throw new Error('unexpected version');
+          if(d.methodologyVersion!=='0.4-strategy-entry-provider-rotation-and-protocol-fixes')throw new Error('unexpected methodology');
           if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth')throw new Error('identity mismatch');
           if((d.strategies||[]).length!==10)throw new Error('expected 10 strategy rows');
           if(!Array.isArray(d.unresolved))throw new Error('missing unresolved list');
@@ -112,6 +112,6 @@ jobs:
           git cat-file -e "origin/main:$FILE"
 
           REMOTE_VERSION="$(git show origin/main:$FILE | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
-          test "$REMOTE_VERSION" = "0.3-monetra-strategy-entry-ledger"
+          test "$REMOTE_VERSION" = "0.4-monetra-strategy-entry-targeted-close"
 
           echo "Remote main Strategy Entry Ledger verified."
