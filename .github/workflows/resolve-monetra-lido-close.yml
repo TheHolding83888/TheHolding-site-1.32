@@ -1,4 +1,4 @@
-# THE HOLDING · MONETRA LIDO EARNUSD TARGETED CLOSE v0.5.1 · DIAGNOSTIC PUBLISH
+# THE HOLDING · MONETRA LIDO EARNUSD TARGETED CLOSE v0.6 · ASYNC + SYNC QUEUES
 name: "Resolve Monetra Lido Close"
 
 on:
@@ -38,8 +38,11 @@ jobs:
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/company-008-strategy-entry-ledger.json','utf8'));
 
-          if(d.version!=='0.4-monetra-strategy-entry-targeted-close'){
-            throw new Error('Expected Strategy Entry Ledger v0.4 input, got '+d.version);
+          if(![
+            '0.4-monetra-strategy-entry-targeted-close',
+            '0.5-monetra-lido-share-oracle-close'
+          ].includes(d.version)){
+            throw new Error('Expected Strategy Entry Ledger v0.4/v0.5 input, got '+d.version);
           }
           if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth'){
             throw new Error('Company #008 identity mismatch');
@@ -87,10 +90,10 @@ jobs:
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/company-008-strategy-entry-ledger.json','utf8'));
 
-          if(d.version!=='0.5-monetra-lido-share-oracle-close'){
+          if(d.version!=='0.6-monetra-lido-sync-deposit-close'){
             throw new Error('Unexpected v0.5 version: '+d.version);
           }
-          if(d.methodologyVersion!=='0.5-lido-depositqueue-sharemanager-oracle'){
+          if(d.methodologyVersion!=='0.6-lido-async-sync-depositqueue-sharemanager-oracle'){
             throw new Error('Unexpected v0.5 methodology');
           }
           if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth'){
@@ -161,7 +164,7 @@ jobs:
           }
           NODE
 
-      - name: Publish v0.5 Lido diagnostic/full artifact
+      - name: Publish v0.6 Lido diagnostic/full artifact
         shell: bash
         run: |
           set -euo pipefail
@@ -194,6 +197,6 @@ jobs:
           git cat-file -e "origin/main:$FILE"
 
           REMOTE_VERSION="$(git show origin/main:$FILE | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
-          test "$REMOTE_VERSION" = "0.5-monetra-lido-share-oracle-close"
+          test "$REMOTE_VERSION" = "0.6-monetra-lido-sync-deposit-close"
 
-          echo "Remote main v0.5 Lido diagnostic/full artifact verified."
+          echo "Remote main v0.6 Lido diagnostic/full artifact verified."
