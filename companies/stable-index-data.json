@@ -1,13 +1,16 @@
 {
-  "version": "0.1-stable-companies-index",
-  "methodologyVersion": "0.1-separate-stable-universe",
-  "generatedAt": "2026-08-12T15:19:43.029Z",
+  "version": "0.2-stable-companies-index-strategy-performance",
+  "methodologyVersion": "0.2-separate-stable-universe-strategy-entry-performance",
+  "generatedAt": "2026-08-12T20:53:05.620Z",
   "source": {
     "stableCapitalVersion": "0.4.1-monetra-recurring-stable-index-semantics",
     "stableCapitalMethodologyVersion": "1.3-stable-capital-recurring-full-coverage",
-    "stableCapitalGeneratedAt": "2026-08-12T15:19:42.975Z",
+    "stableCapitalGeneratedAt": "2026-08-12T20:53:05.564Z",
     "ledgerVersion": "0.4-flow-aware-recurring-checkpoints",
-    "ledgerGeneratedAt": "2026-08-12T15:19:42.975Z"
+    "ledgerGeneratedAt": "2026-08-12T20:53:05.564Z",
+    "strategyEntryVersion": "0.7-monetra-lido-capital-transfer-close",
+    "strategyEntryMethodologyVersion": "0.7-lido-capital-transfer-sharemanager-oracle",
+    "strategyEntryGeneratedAt": "2026-08-12T20:06:12.616Z"
   },
   "universe": {
     "id": "stable-companies",
@@ -22,21 +25,28 @@
     "referenceApy": "Capital-weighted normalized current annualized productive capacity across the company stable strategy book. It is not realised return.",
     "embeddedYield": "Flow-adjusted growth already capitalized inside lending, savings or vault positions. The ledger starts from verified checkpoints and does not backfill income from current APY.",
     "claimableRewards": "Protocol-side value earned and separately claimable. It is not merged with principal or Embedded Yield.",
-    "stablePriceEffect": "Stablecoin/depeg price movement is measured separately from strategy income where comparable checkpoints exist."
+    "stablePriceEffect": "Stablecoin/depeg price movement is measured separately from strategy income where comparable checkpoints exist.",
+    "invested": "Verified nominal stable principal actually deployed into productive strategies. Wallet funding, routing, swaps and temporary capital are not the cost basis.",
+    "performance": "Verified since-inception strategy result from protocol-entry principal to current nominal stable value, including separately earned claimable strategy rewards where applicable. Stablecoin market/depeg movement is excluded and remains a separate Stable Price Effect."
   },
   "summary": {
     "companyCount": 1,
-    "stableCapitalUsd": 100.096067,
-    "productiveStableCapitalUsd": 100.096067,
-    "capitalWeightedReferenceApyPct": 4.535506,
+    "stableCapitalUsd": 100.106929,
+    "productiveStableCapitalUsd": 100.106929,
+    "capitalWeightedReferenceApyPct": 4.518582,
     "referenceApyStatus": "current-full-coverage",
     "currentFullCoverage": true,
-    "accruedClaimableUsd": 0.03779826,
+    "accruedClaimableUsd": 0.03809208,
     "embeddedIncomeSinceTrackingUsd": null,
+    "investedUsd": 99.99833671,
+    "strategyCurrentNominalStable": 100.309383183733,
+    "strategyPerformanceUsd": 0.31104647,
+    "strategyPerformancePct": 0.31105164,
+    "strategyPerformanceStatus": "verified-since-inception",
     "strategyCount": 10,
     "protocolCount": 9,
     "chainCount": 3,
-    "firstFullCoverageObservationAt": "2026-08-12T15:19:42.975Z"
+    "firstFullCoverageObservationAt": "2026-08-12T20:53:05.564Z"
   },
   "companies": [
     {
@@ -46,21 +56,35 @@
       "wallet": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
       "foundedAt": "2026-05-27T05:46:11.000Z",
       "foundedDate": "2026-05-27",
-      "stableCapitalUsd": 100.096067,
-      "productiveStableCapitalUsd": 100.096067,
+      "stableCapitalUsd": 100.106929,
+      "productiveStableCapitalUsd": 100.106929,
+      "investedUsd": 99.99833671,
+      "investedNominalStable": 99.998336714575,
+      "currentStrategyNominalStable": 100.309383183733,
+      "performance": {
+        "status": "verified-since-inception",
+        "sinceInceptionUsd": 0.31104647,
+        "sinceInceptionNominalStable": 0.311046469158,
+        "sinceInceptionPct": 0.31105164,
+        "asOf": "2026-08-12T20:06:12.616Z",
+        "basis": "verified-strategy-entry-principal-to-current-nominal-stable",
+        "includesClaimableWhereApplicable": true,
+        "stablePriceEffectSeparated": true,
+        "sourceVersion": "0.7-monetra-lido-capital-transfer-close"
+      },
       "currentCoverage": 1,
       "currentFullCoverage": true,
-      "currentReferenceApyPct": 4.535506,
-      "displayReferenceApyPct": 4.535506,
+      "currentReferenceApyPct": 4.518582,
+      "displayReferenceApyPct": 4.518582,
       "referenceApyStatus": "current-full-coverage",
       "lastFullCoverageObservation": {
         "date": "2026-08-12",
-        "timestamp": "2026-08-12T15:19:42.975Z",
+        "timestamp": "2026-08-12T20:53:05.564Z",
         "registry": "008",
         "company": "Monetra.eth",
-        "referenceAnnualYieldPct": 4.535506,
-        "referenceApyPct": 4.535506,
-        "productiveStableCapitalUsd": 100.096067,
+        "referenceAnnualYieldPct": 4.518582,
+        "referenceApyPct": 4.518582,
+        "productiveStableCapitalUsd": 100.106929,
         "coverage": 1,
         "positionCount": 10,
         "methodologyVersion": "1.3-stable-capital-recurring-full-coverage"
@@ -84,16 +108,16 @@
         "Ethereum",
         "Fraxtal"
       ],
-      "accruedClaimableUsd": 0.03779826,
+      "accruedClaimableUsd": 0.03809208,
       "accruedClaimable": [
         {
           "protocol": "Liquity V2",
           "symbol": "BOLD",
-          "amount": 0.037794096546,
-          "usdValue": 0.03779826,
+          "amount": 0.03808236502,
+          "usdValue": 0.03809208,
           "classification": "accrued-claimable",
           "source": "same-run-liquity-stability-pool",
-          "snapshotAt": "2026-08-12T15:19:42.975Z"
+          "snapshotAt": "2026-08-12T20:53:05.564Z"
         }
       ],
       "embeddedYield": {
@@ -112,53 +136,53 @@
         "byChain": [
           {
             "label": "Ethereum",
-            "valueUsd": 80.148134,
+            "valueUsd": 80.157947,
             "positionCount": 8,
-            "share": 0.80071212
+            "share": 0.80072327
           },
           {
             "label": "Base",
-            "valueUsd": 10.00558,
+            "valueUsd": 10.005627,
             "positionCount": 1,
-            "share": 0.09995977
+            "share": 0.0999494
           },
           {
             "label": "Fraxtal",
-            "valueUsd": 9.942353,
+            "valueUsd": 9.943355,
             "positionCount": 1,
-            "share": 0.09932811
+            "share": 0.09932734
           }
         ],
         "byStrategyType": [
           {
             "label": "Savings Stable",
-            "valueUsd": 60.07533,
+            "valueUsd": 60.088843,
             "positionCount": 6,
-            "share": 0.60017673
+            "share": 0.60024659
           },
           {
             "label": "Auto-Compounding Stable Vault",
-            "valueUsd": 10.017125,
+            "valueUsd": 10.018645,
             "positionCount": 1,
-            "share": 0.10007511
+            "share": 0.10007943
           },
           {
             "label": "Stable Lending",
-            "valueUsd": 10.00558,
+            "valueUsd": 10.005627,
             "positionCount": 1,
-            "share": 0.09995977
+            "share": 0.0999494
           },
           {
             "label": "Stability Pool Deposit",
-            "valueUsd": 10.001127,
+            "valueUsd": 10.002576,
             "positionCount": 1,
-            "share": 0.09991528
+            "share": 0.09991891
           },
           {
             "label": "Agent / Curator Managed Stable Vault",
-            "valueUsd": 9.996905,
+            "valueUsd": 9.991239,
             "positionCount": 1,
-            "share": 0.09987311
+            "share": 0.09980567
           }
         ]
       },
@@ -174,8 +198,8 @@
           "underlyingSymbol": "USDC",
           "terminalSymbol": "USDC",
           "incomeMode": "lending-embedded",
-          "valueUsd": 10.00557982,
-          "referenceApyPct": 3.695325,
+          "valueUsd": 10.0056271,
+          "referenceApyPct": 3.707218,
           "referenceStatus": "ok",
           "referenceRateType": "APY",
           "referenceSourceType": "onchain-current-liquidity-rate",
@@ -183,7 +207,17 @@
           "embeddedYieldEligible": true,
           "embeddedYieldComparable": true,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "Aave liquidityRate RAY normalized with per-second compounding, matching existing The Holding Aave adapter."
+          "methodologyNote": "Aave liquidityRate RAY normalized with per-second compounding, matching existing The Holding Aave adapter.",
+          "strategyEntry": {
+            "principalNominalStable": 10,
+            "principalSymbol": "USDC",
+            "currentNominalStable": 10.009919,
+            "incomeNominalStable": 0.009919,
+            "returnPct": 0.09919,
+            "status": "comparable",
+            "entryTxHash": "0xfbbeb80a040bd15c8c32b3c8bff1fa84dd25335a4ad31c5b2391c19551503d7a",
+            "entryTimestamp": "2026-08-02T02:26:45.000Z"
+          }
         },
         {
           "id": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
@@ -196,8 +230,8 @@
           "underlyingSymbol": "crvUSD",
           "terminalSymbol": "crvUSD",
           "incomeMode": "embedded-yield",
-          "valueUsd": 9.99511353,
-          "referenceApyPct": 1.292427,
+          "valueUsd": 10.00577345,
+          "referenceApyPct": 1.294041,
           "referenceStatus": "ok",
           "referenceRateType": "7d-share-growth-annualized",
           "referenceSourceType": "onchain-historical-share-growth",
@@ -205,7 +239,17 @@
           "embeddedYieldEligible": true,
           "embeddedYieldComparable": true,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "Annualized growth in redeemable terminal stable units per one vault share; token market price excluded. Historical block resolved directly by RPC timestamp binary search."
+          "methodologyNote": "Annualized growth in redeemable terminal stable units per one vault share; token market price excluded. Historical block resolved directly by RPC timestamp binary search.",
+          "strategyEntry": {
+            "principalNominalStable": 10,
+            "principalSymbol": "crvUSD",
+            "currentNominalStable": 10.011096042762,
+            "incomeNominalStable": 0.011096042762,
+            "returnPct": 0.11096043,
+            "status": "comparable",
+            "entryTxHash": "0x77ccad5307efe5772a305ba2effccef6a31aae2b88a4a30d0d6fe8b9fc668881",
+            "entryTimestamp": "2026-07-12T13:41:35.000Z"
+          }
         },
         {
           "id": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
@@ -218,8 +262,8 @@
           "underlyingSymbol": "fxSP",
           "terminalSymbol": "fxUSD+USDC",
           "incomeMode": "embedded-yield",
-          "valueUsd": 10.05183691,
-          "referenceApyPct": 5.439507,
+          "valueUsd": 10.05314359,
+          "referenceApyPct": 5.439617,
           "referenceStatus": "ok",
           "referenceRateType": "7d-economic-NAV-growth-annualized",
           "referenceSourceType": "onchain-historical-dual-stable-economic-nav",
@@ -227,7 +271,17 @@
           "embeddedYieldEligible": true,
           "embeddedYieldComparable": true,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "Annualized growth of nominal stable redemption value per one fxSAVE share: fxSAVE.convertToAssets → FxUSDBasePool.previewRedeem → fxUSD + USDC. Stablecoin market-price/depeg movement is excluded from Reference APY."
+          "methodologyNote": "Annualized growth of nominal stable redemption value per one fxSAVE share: fxSAVE.convertToAssets → FxUSDBasePool.previewRedeem → fxUSD + USDC. Stablecoin market-price/depeg movement is excluded from Reference APY.",
+          "strategyEntry": {
+            "principalNominalStable": 9.998322598885,
+            "principalSymbol": "fxUSD+USDC",
+            "currentNominalStable": 10.053046428745,
+            "incomeNominalStable": 0.05472382986,
+            "returnPct": 0.54733011,
+            "status": "comparable",
+            "entryTxHash": "0xb2552e61eb09fe0928eccde740b11ebfbcd27c860a8ec78ad434cf1721436797",
+            "entryTimestamp": "2026-07-12T13:10:35.000Z"
+          }
         },
         {
           "id": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
@@ -240,8 +294,8 @@
           "underlyingSymbol": "DOLA",
           "terminalSymbol": "DOLA",
           "incomeMode": "embedded-yield",
-          "valueUsd": 10.03518813,
-          "referenceApyPct": 5.93,
+          "valueUsd": 10.03564571,
+          "referenceApyPct": 5.86,
           "referenceStatus": "ok",
           "referenceRateType": "APY",
           "referenceSourceType": "official-frontend",
@@ -249,7 +303,17 @@
           "embeddedYieldEligible": true,
           "embeddedYieldComparable": true,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "Official Inverse sDOLA APY; ambiguous hydration values are rejected."
+          "methodologyNote": "Official Inverse sDOLA APY; ambiguous hydration values are rejected.",
+          "strategyEntry": {
+            "principalNominalStable": 9.999965284263,
+            "principalSymbol": "DOLA",
+            "currentNominalStable": 10.065775338141,
+            "incomeNominalStable": 0.065810053878,
+            "returnPct": 0.65810282,
+            "status": "comparable",
+            "entryTxHash": "0x9c4c53b6d3905721bd868b60a98e80847558a54b0d9dd247e3986c3c633bce00",
+            "entryTimestamp": "2026-07-12T13:54:59.000Z"
+          }
         },
         {
           "id": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
@@ -262,7 +326,7 @@
           "underlyingSymbol": "USDS",
           "terminalSymbol": "USDS",
           "incomeMode": "embedded-yield",
-          "valueUsd": 10.02986553,
+          "valueUsd": 10.02981162,
           "referenceApyPct": 3.52,
           "referenceStatus": "ok",
           "referenceRateType": "APY",
@@ -271,7 +335,17 @@
           "embeddedYieldEligible": true,
           "embeddedYieldComparable": true,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "Governance-set current Sky Savings Rate for sUSDS."
+          "methodologyNote": "Governance-set current Sky Savings Rate for sUSDS.",
+          "strategyEntry": {
+            "principalNominalStable": 10,
+            "principalSymbol": "USDS",
+            "currentNominalStable": 10.029716783902,
+            "incomeNominalStable": 0.029716783902,
+            "returnPct": 0.29716784,
+            "status": "comparable",
+            "entryTxHash": "0xd5d94637443f793f76e9242b950126a8a90d661abc216e197fc05681146e6de6",
+            "entryTimestamp": "2026-07-12T13:51:35.000Z"
+          }
         },
         {
           "id": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
@@ -284,8 +358,8 @@
           "underlyingSymbol": "GHO",
           "terminalSymbol": "GHO",
           "incomeMode": "embedded-yield",
-          "valueUsd": 10.02097293,
-          "referenceApyPct": 4.341589,
+          "valueUsd": 10.02111352,
+          "referenceApyPct": 4.341501,
           "referenceStatus": "ok",
           "referenceRateType": "7d-share-growth-annualized",
           "referenceSourceType": "onchain-historical-share-growth",
@@ -293,7 +367,17 @@
           "embeddedYieldEligible": true,
           "embeddedYieldComparable": true,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "Annualized growth in redeemable terminal stable units per one vault share; token market price excluded. Historical block resolved directly by RPC timestamp binary search."
+          "methodologyNote": "Annualized growth in redeemable terminal stable units per one vault share; token market price excluded. Historical block resolved directly by RPC timestamp binary search.",
+          "strategyEntry": {
+            "principalNominalStable": 9.999967485057,
+            "principalSymbol": "GHO",
+            "currentNominalStable": 10.036201348194,
+            "incomeNominalStable": 0.036233863137,
+            "returnPct": 0.36233981,
+            "status": "comparable",
+            "entryTxHash": "0x08ee49bef7607d82b24772b60146207636486a53d6c49fcd7663ef3ecbff6374",
+            "entryTimestamp": "2026-07-12T13:48:59.000Z"
+          }
         },
         {
           "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
@@ -306,8 +390,8 @@
           "underlyingSymbol": "yBOLD",
           "terminalSymbol": "BOLD",
           "incomeMode": "embedded-yield",
-          "valueUsd": 10.01712483,
-          "referenceApyPct": 5.379531,
+          "valueUsd": 10.01864453,
+          "referenceApyPct": 5.214003,
           "referenceStatus": "ok",
           "referenceRateType": "7d-share-growth-annualized",
           "referenceSourceType": "onchain-historical-share-growth",
@@ -315,7 +399,17 @@
           "embeddedYieldEligible": true,
           "embeddedYieldComparable": true,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "Annualized growth in redeemable terminal stable units per one vault share; token market price excluded. Historical block resolved directly by RPC timestamp binary search."
+          "methodologyNote": "Annualized growth in redeemable terminal stable units per one vault share; token market price excluded. Historical block resolved directly by RPC timestamp binary search.",
+          "strategyEntry": {
+            "principalNominalStable": 10,
+            "principalSymbol": "BOLD",
+            "currentNominalStable": 10.01602109645,
+            "incomeNominalStable": 0.01602109645,
+            "returnPct": 0.16021096,
+            "status": "comparable",
+            "entryTxHash": "0xd71c52adfbe3e4a72be1c916ce274088673aa45f9b9b546d78813b4184829911",
+            "entryTimestamp": "2026-08-02T02:13:23.000Z"
+          }
         },
         {
           "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
@@ -328,7 +422,7 @@
           "underlyingSymbol": "USD-denominated strategy basket",
           "terminalSymbol": "USD strategy NAV",
           "incomeMode": "agent-managed-embedded-yield",
-          "valueUsd": 9.99690541,
+          "valueUsd": 9.99123873,
           "referenceApyPct": 6.9,
           "referenceStatus": "ok",
           "referenceRateType": "14d avg APY",
@@ -337,7 +431,17 @@
           "embeddedYieldEligible": true,
           "embeddedYieldComparable": false,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "Official EarnUSD trailing-average APY. The product page explicitly labels this as APY and the Earn app describes it as a 14-day average."
+          "methodologyNote": "Official EarnUSD trailing-average APY. The product page explicitly labels this as APY and the Earn app describes it as a 14-day average.",
+          "strategyEntry": {
+            "principalNominalStable": 10,
+            "principalSymbol": "USDT",
+            "currentNominalStable": 10.015773,
+            "incomeNominalStable": 0.015773,
+            "returnPct": 0.15773,
+            "status": "comparable",
+            "entryTxHash": "0x96abd29b45cee3800d49ffb79180110b23543144f8144d9c4b94ba054b9e022a",
+            "entryTimestamp": "2026-08-04T06:31:11.000Z"
+          }
         },
         {
           "id": "ethereum:liquity-v2-sp:weth",
@@ -350,8 +454,8 @@
           "underlyingSymbol": "BOLD",
           "terminalSymbol": "BOLD",
           "incomeMode": "stability-pool-yield-with-separate-claimables",
-          "valueUsd": 10.00112671,
-          "referenceApyPct": 4.732489,
+          "valueUsd": 10.00257555,
+          "referenceApyPct": 4.779226,
           "referenceStatus": "ok",
           "referenceRateType": "APR",
           "referenceSourceType": "onchain-current-borrower-interest-component",
@@ -359,7 +463,17 @@
           "embeddedYieldEligible": false,
           "embeddedYieldComparable": false,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "75% of WETH branch borrower annual interest (aggWeightedDebtSum) divided by current Stability Pool BOLD deposits. Liquidation collateral gains are variable and excluded from this conservative reference rate."
+          "methodologyNote": "75% of WETH branch borrower annual interest (aggWeightedDebtSum) divided by current Stability Pool BOLD deposits. Liquidation collateral gains are variable and excluded from this conservative reference rate.",
+          "strategyEntry": {
+            "principalNominalStable": 10.000024744825,
+            "principalSymbol": "BOLD",
+            "currentNominalStable": 10.03781884137,
+            "incomeNominalStable": 0.037794096545,
+            "returnPct": 0.37794003,
+            "status": "comparable",
+            "entryTxHash": "0x78c58724e88d3cf46a7a528711f02fd06a4851820502adc615a19938f3d1e4f0",
+            "entryTimestamp": "2026-07-12T13:44:23.000Z"
+          }
         },
         {
           "id": "fraxtal:0xfc00000000000000000000000000000000000008",
@@ -372,8 +486,8 @@
           "underlyingSymbol": "frxUSD",
           "terminalSymbol": "frxUSD",
           "incomeMode": "embedded-yield",
-          "valueUsd": 9.94235316,
-          "referenceApyPct": 4.11376,
+          "valueUsd": 9.94335472,
+          "referenceApyPct": 4.124704,
           "referenceStatus": "ok",
           "referenceRateType": "7d-fraxtal-pps-growth-annualized",
           "referenceSourceType": "onchain-fraxtal-redeemer-pps-growth",
@@ -381,7 +495,17 @@
           "embeddedYieldEligible": true,
           "embeddedYieldComparable": true,
           "latestIntervalStatus": "warming-first-checkpoint",
-          "methodologyNote": "Annualized growth of the official FraxtalERC4626MintRedeemer sfrxUSD/frxUSD price-per-share. No wrapper market price is used."
+          "methodologyNote": "Annualized growth of the official FraxtalERC4626MintRedeemer sfrxUSD/frxUSD price-per-share. No wrapper market price is used.",
+          "strategyEntry": {
+            "principalNominalStable": 10.000056601545,
+            "principalSymbol": "frxUSD",
+            "currentNominalStable": 10.034015304169,
+            "incomeNominalStable": 0.033958702624,
+            "returnPct": 0.3395851,
+            "status": "comparable",
+            "entryTxHash": "0xc44fdbc23db12732c130ca30e646f4280ff568a74296dcbe4cdeef1093a882a5",
+            "entryTimestamp": "2026-07-12T13:47:01.000Z"
+          }
         }
       ]
     }
