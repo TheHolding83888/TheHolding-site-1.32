@@ -1,8 +1,8 @@
 {
   "version": "0.4-monetra-strategy-entry-targeted-close",
   "methodologyVersion": "0.4-strategy-entry-provider-rotation-and-protocol-fixes",
-  "generatedAt": "2026-08-12T19:06:36.083Z",
-  "startedAt": "2026-08-12T19:02:02.385Z",
+  "generatedAt": "2026-08-12T19:16:07.636Z",
+  "startedAt": "2026-08-12T19:11:00.500Z",
   "company": {
     "registry": "008",
     "name": "Monetra.eth",
@@ -64,16 +64,34 @@
       {
         "id": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
         "status": "ok",
-        "provider": "ethereum-rpc.publicnode.com",
+        "provider": "eth.blockscout.com",
         "foundedBlock": 25184669,
-        "failedProviderAttempts": []
+        "failedProviderAttempts": [
+          {
+            "url": "https://ethereum-rpc.publicnode.com",
+            "error": "receipt unavailable 0xd5d94637443f793f76e9242b950126a8a90d661abc216e197fc05681146e6de6"
+          },
+          {
+            "url": "https://eth.llamarpc.com",
+            "error": "server response 403 Forbidden"
+          }
+        ]
       },
       {
         "id": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
         "status": "ok",
-        "provider": "ethereum-rpc.publicnode.com",
+        "provider": "eth.blockscout.com",
         "foundedBlock": 25184669,
-        "failedProviderAttempts": []
+        "failedProviderAttempts": [
+          {
+            "url": "https://ethereum-rpc.publicnode.com",
+            "error": "receipt unavailable 0x08ee49bef7607d82b24772b60146207636486a53d6c49fcd7663ef3ecbff6374"
+          },
+          {
+            "url": "https://eth.llamarpc.com",
+            "error": "server response 403 Forbidden"
+          }
+        ]
       },
       {
         "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
@@ -83,7 +101,7 @@
         "failedProviderAttempts": [
           {
             "url": "https://ethereum-rpc.publicnode.com",
-            "error": "server response 403 Forbidden"
+            "error": "could not coalesce error"
           },
           {
             "url": "https://eth.llamarpc.com",
