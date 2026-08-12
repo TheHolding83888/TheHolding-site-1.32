@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <!-- companies.html · v1.21.11 · Monetra Passport Polished · clean action cards -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
@@ -5806,6 +5805,155 @@
             #stable-index .scp-essential-footer .scp-quick-open{font-size:.54rem!important}
         }
 
+        /* ═══════ Monetra KPI cards — layout for the nested structure ═══════
+           The markup moved to topline / main / footer wrappers, while every rule
+           still addressed direct children (> span, > b). Nothing matched, so the
+           three parts lost their spacing and stacked on top of each other. These
+           rules restore the flow and, while doing it, give the block the scale it
+           deserves: this is the first thing a reader sees inside the passport. */
+        #stable-index .scp-essential-actions-paired .scp-essential-card {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-start !important;
+            gap: 0 !important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-topline {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.38rem !important;
+            min-height: 2.1em !important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-topline .sc-label-with-help,
+        #stable-index .scp-essential-actions-paired .scp-essential-topline > span {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.38rem !important;
+            color: var(--text-3) !important;
+            font-size: 0.66rem !important;
+            letter-spacing: 0.09em !important;
+            text-transform: uppercase !important;
+            font-weight: 700 !important;
+            line-height: 1.3 !important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-main {
+            display: block !important;
+            margin-top: 0.42rem !important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-main > b {
+            display: block !important;
+            font-family: 'Cormorant Garamond', serif !important;
+            font-size: 1.92rem !important;
+            line-height: 1.04 !important;
+            font-weight: 600 !important;
+            font-variant-numeric: tabular-nums !important;
+            overflow-wrap: anywhere !important;
+        }
+        /* Performance carries words, not a figure — it needs the sans face at a
+           size that sits beside the numbers without shouting over them. */
+        #stable-index .scp-essential-actions-paired .scp-essential-card-performance .scp-essential-main > b {
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-size: 1.02rem !important;
+            line-height: 1.28 !important;
+            font-weight: 500 !important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-footer {
+            margin-top: auto !important;
+            padding-top: 0.6rem !important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-footer .scp-quick-open,
+        #stable-index .scp-essential-actions-paired .scp-quick-open {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.34rem !important;
+            margin-top: 0 !important;
+            color: var(--green) !important;
+            font-size: 0.64rem !important;
+            letter-spacing: 0.07em !important;
+        }
+        #stable-index .scp-essential-actions-paired .sc-help {
+            width: 17px !important; height: 17px !important; flex: 0 0 17px !important;
+            font-size: 0.58rem !important;
+        }
+
+        @media (max-width: 760.98px) {
+            /* Shorter cards: the value and its label are what matter on a phone,
+               so the card stops reserving desktop-sized breathing room. */
+            #stable-index .scp-essential-actions-paired .scp-essential-card {
+                min-height: 104px !important;
+                padding: 0.72rem 0.72rem 0.62rem !important;
+            }
+            #stable-index .scp-essential-actions-paired .scp-essential-topline .sc-label-with-help,
+            #stable-index .scp-essential-actions-paired .scp-essential-topline > span {
+                font-size: 0.6rem !important; letter-spacing: 0.07em !important;
+            }
+            #stable-index .scp-essential-actions-paired .scp-essential-topline { min-height: 1.9em !important; }
+            #stable-index .scp-essential-actions-paired .scp-essential-main { margin-top: 0.3rem !important; }
+            #stable-index .scp-essential-actions-paired .scp-essential-main > b { font-size: 1.52rem !important; }
+            #stable-index .scp-essential-actions-paired .scp-essential-card-performance .scp-essential-main > b {
+                font-size: 0.92rem !important; line-height: 1.24 !important;
+            }
+            #stable-index .scp-essential-actions-paired .scp-essential-footer { padding-top: 0.45rem !important; }
+            #stable-index .scp-essential-actions-paired .scp-quick-open { font-size: 0.6rem !important; }
+        }
+        @media (max-width: 380px) {
+            #stable-index .scp-essential-actions-paired .scp-essential-card { min-height: 98px !important; }
+            #stable-index .scp-essential-actions-paired .scp-essential-main > b { font-size: 1.36rem !important; }
+        }
+        /* ═══════ Metric tooltips — one stable state ═══════
+           Hover, focus and the open class each drove visibility with their own
+           transform, so a tip could be mid-way between two of them. Below, the
+           open state wins outright and animates only opacity and transform. */
+        .sc-tip { transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.24s cubic-bezier(0.22,1,0.36,1); }
+        .sc-help { cursor: pointer; }
+        .sc-help-wrap.open .sc-tip { pointer-events: auto; }
+
+        @media (hover: none) {
+            /* On touch there is no hover; only an explicit tap should open a tip. */
+            .sc-help-wrap:hover .sc-tip,
+            .sc-help-wrap:focus-within .sc-tip {
+                opacity: 0; visibility: hidden;
+            }
+            .sc-help-wrap.open .sc-tip { opacity: 1 !important; visibility: visible !important; }
+        }
+
+        @media (max-width: 760.98px) {
+            /* A centred sheet needs something behind it, or it floats over the
+               passport with no sense of layer. */
+            .sc-help-wrap.open::before {
+                content: '';
+                position: fixed; inset: 0; z-index: 79;
+                background: rgba(16,19,23,0.32);
+                backdrop-filter: blur(2px);
+                animation: scTipVeil 0.22s ease both;
+            }
+            @keyframes scTipVeil { from { opacity: 0; } to { opacity: 1; } }
+            .sc-tip { z-index: 80; }
+        }
+        /* ═══════ Passport open / close ═══════
+           The panel animates max-height between 0 and 7200px while its real
+           height is a fraction of that, so the visible part of the travel is over
+           almost instantly and the rest of the duration is spent on empty range —
+           which reads as a snap. Splitting the timing lets the closing motion
+           carry the eye: opacity and lift ease out first, the height follows on a
+           curve that decelerates into place. */
+        .stable-passport {
+            transition:
+                max-height 0.52s cubic-bezier(0.33, 0, 0.12, 1),
+                opacity 0.26s ease,
+                transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+                margin-top 0.34s ease;
+            will-change: max-height, opacity, transform;
+        }
+        .stable-passport.is-open {
+            transition:
+                max-height 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.34s ease 0.06s,
+                transform 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+                margin-top 0.34s ease;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .stable-passport { transition: opacity 0.15s ease; }
+        }
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -6709,7 +6857,23 @@ let TH_SCROLL_SAVE_ENABLED = false;
    re-opened BEFORE the scroll position is applied, which makes the page the same
    height it was — only then does the offset mean the same thing again. */
 const TH_OPEN_KEY = 'th_companies_open_passports';
+const TH_STABLE_OPEN_KEY = 'th_companies_stable_passport_open';
+function restoreStablePassport() {
+    let wasOpen = '0';
+    try { wasOpen = sessionStorage.getItem(TH_STABLE_OPEN_KEY) || '0'; } catch (_) {}
+    if (wasOpen !== '1') return;
+    const sp = document.getElementById('stablePassportMonetra');
+    if (!sp || sp.classList.contains('is-open')) return;
+    // open without the courtesy scroll — the reload restore owns the position
+    if (typeof window.stablePassportSet === 'function') { window.stablePassportSet(true, false); return; }
+    sp.classList.add('is-open');
+    sp.setAttribute('aria-hidden', 'false');
+}
 function rememberOpenPassports() {
+    try {
+        const sp = document.getElementById('stablePassportMonetra');
+        sessionStorage.setItem(TH_STABLE_OPEN_KEY, sp && sp.classList.contains('is-open') ? '1' : '0');
+    } catch (_) {}
     try {
         const open = Array.prototype.map.call(
             document.querySelectorAll('.ib-item.open'), el => el.dataset.nm || '');
@@ -6741,7 +6905,8 @@ function restoreCompaniesReloadScroll() {
         const root = document.documentElement;
         const prevBehavior = root.style.scrollBehavior;
         root.style.scrollBehavior = 'auto';
-        restoreOpenPassports();      // height first, then the offset means the same thing
+        restoreOpenPassports();
+        restoreStablePassport();      // height first, then the offset means the same thing
         window.scrollTo(0, TH_RELOAD_SCROLL_Y);
         root.style.scrollBehavior = prevBehavior;
         requestAnimationFrame(() => { TH_SCROLL_SAVE_ENABLED = true; });
@@ -9255,19 +9420,30 @@ function renderFramework(lang) {
     if (!passport) return;
     passport.classList.toggle('is-open', open);
     passport.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if (typeof rememberOpenPassports === 'function') setTimeout(rememberOpenPassports, 0);
     document.querySelectorAll('[data-stable-passport-open]').forEach(btn => {
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       const lang = (typeof STABLE_UI_LANG !== 'undefined' && STABLE_UI_LANG === 'ru') ? 'ru' : 'en';
       btn.textContent = open ? (lang === 'ru' ? 'Открыт ↑' : 'Open ↑') : (lang === 'ru' ? 'Паспорт ↓' : 'Passport ↓');
     });
     if (!scroll) return;
-    const target = open ? passport : (board || document.getElementById('stable-index'));
-    window.setTimeout(() => {
-      if (!target) return;
-      const offset = window.innerWidth <= 760 ? 76 : 96;
-      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    const offset = window.innerWidth <= 760 ? 76 : 96;
+    if (open) {
+      window.setTimeout(() => {
+        const top = passport.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      }, 90);
+      return;
+    }
+    /* Closing collapses a very tall panel. Measuring the destination first and
+       starting the scroll in the same frame lets the page travel with the
+       collapse instead of being yanked after it. */
+    const anchorEl = board || document.getElementById('stable-index');
+    if (!anchorEl) return;
+    const top = anchorEl.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.requestAnimationFrame(() => {
       window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-    }, open ? 90 : 120);
+    });
   }
   window.stablePassportSet = stablePassportSet;
   document.addEventListener('click', ev => {
@@ -9381,16 +9557,33 @@ function renderFramework(lang) {
 
 /* Stable metric help · hover on desktop, tap on mobile */
 (function(){
+  /* The button keeps focus after a tap, and the show rule also reacts to
+     :focus-within — so a second tap removed the class while focus alone kept the
+     tip on screen. Blurring on close makes the two states agree, and the tip
+     opens and closes exactly once per tap. */
+  const closeAll = except => {
+    document.querySelectorAll('.sc-help-wrap.open').forEach(w => {
+      if (w !== except) {
+        w.classList.remove('open');
+        const b = w.querySelector('.sc-help');
+        if (b) b.blur();
+      }
+    });
+  };
   document.addEventListener('click', ev => {
     const btn = ev.target.closest('.sc-help');
-    document.querySelectorAll('.sc-help-wrap.open').forEach(w => {
-      if (!btn || w !== btn.closest('.sc-help-wrap')) w.classList.remove('open');
-    });
-    if (!btn) return;
+    if (!btn) { closeAll(null); return; }
     ev.preventDefault();
     ev.stopPropagation();
     const wrap = btn.closest('.sc-help-wrap');
-    if (wrap) wrap.classList.toggle('open');
+    if (!wrap) return;
+    closeAll(wrap);
+    const willOpen = !wrap.classList.contains('open');
+    wrap.classList.toggle('open', willOpen);
+    if (!willOpen) btn.blur();
+  });
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape') closeAll(null);
   });
 })();
 
