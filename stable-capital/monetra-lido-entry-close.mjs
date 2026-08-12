@@ -1,3 +1,4 @@
+
 #!/usr/bin/env node
 /**
  * THE HOLDING · MONETRA LIDO EARNUSD TARGETED CLOSE v0.5
@@ -34,8 +35,8 @@ import {
   zeroPadValue
 } from 'ethers';
 
-const VERSION = '0.5-monetra-lido-share-oracle-close';
-const METHODOLOGY = '0.5-lido-depositqueue-sharemanager-oracle';
+const VERSION = '0.6-monetra-lido-sync-deposit-close';
+const METHODOLOGY = '0.6-lido-async-sync-depositqueue-sharemanager-oracle';
 const ROOT = path.resolve(process.cwd());
 
 const IN_FILE =
@@ -51,12 +52,14 @@ const LIDO_ID = 'ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981';
 const ONE = 10n ** 18n;
 const DEPOSIT_REQUESTED_TOPIC = id('DepositRequested(address,address,uint224,uint32)');
 const DEPOSIT_CANCELED_TOPIC = id('DepositRequestCanceled(address,uint256,uint32)');
+const SYNC_DEPOSITED_TOPIC = id('Deposited(address,address,uint224,uint256,uint256)');
 const BURN_TOPIC = id('Burn(address,uint256)');
 const TRANSFER_TOPIC = id('Transfer(address,address,uint256)');
 
 const DEPOSIT_IFACE = new Interface([
   'event DepositRequested(address indexed account,address indexed referral,uint224 assets,uint32 timestamp)',
-  'event DepositRequestCanceled(address indexed account,uint256 assets,uint32 timestamp)'
+  'event DepositRequestCanceled(address indexed account,uint256 assets,uint32 timestamp)',
+  'event Deposited(address indexed account,address indexed referral,uint224 assets,uint256 shares,uint256 feeShares)'
 ]);
 
 const RPCS = unique([
@@ -199,7 +202,14 @@ async function discoverArchitecture(provider) {
       const q = addr(await module.queueAt(asset, j));
       if (!q) continue;
       const isDeposit = Boolean(await module.isDepositQueue(q));
-      if (isDeposit) queues.push(q);
+      if (isDeposit) {
+        let queueName = null;
+        try {
+          const qc = new Contract(q, ['function name() view returns (string)'], provider);
+          queueName = await qc.name();
+        } catch {}
+        queues.push({ address: q, name: queueName });
+      }
     }
     assets.push({ asset, ...meta, queues });
   }
@@ -229,7 +239,10 @@ async function discoverArchitecture(provider) {
   };
 }
 
-async function scanQueueLifecycle(provider, queue, fromBlock, toBlock) {
+async function scanQueueLifecycle(provider, queueInfo, fromBlock, toBlock) {
+  const queue = queueInfo.address || queueInfo;
+
+  // 1) Asynchronous DepositQueue path.
   const requestLogs = await getLogsAdaptive(provider, {
     address: queue,
     topics: [DEPOSIT_REQUESTED_TOPIC, topicAddress(WALLET)]
@@ -240,19 +253,22 @@ async function scanQueueLifecycle(provider, queue, fromBlock, toBlock) {
     topics: [DEPOSIT_CANCELED_TOPIC, topicAddress(WALLET)]
   }, fromBlock, toBlock);
 
-  const requests = [];
+  const asyncRequests = [];
   for (const l of requestLogs) {
     const p = DEPOSIT_IFACE.parseLog({ topics: l.topics, data: l.data });
     if (!p || p.name !== 'DepositRequested') continue;
     const b = await provider.getBlock(l.blockNumber);
-    requests.push({
+    asyncRequests.push({
+      entryType: 'async-DepositRequested',
       txHash: l.transactionHash,
       block: Number(l.blockNumber),
       logIndex: Number(l.index ?? l.logIndex ?? 0),
       chainTimestamp: b ? new Date(Number(b.timestamp) * 1000).toISOString() : null,
       requestTimestamp: Number(p.args.timestamp),
       assetsRaw: safeBig(p.args.assets).toString(),
-      referral: addr(p.args.referral)
+      referral: addr(p.args.referral),
+      queue,
+      queueName: queueInfo.name || null
     });
   }
 
@@ -273,55 +289,129 @@ async function scanQueueLifecycle(provider, queue, fromBlock, toBlock) {
     cancels.map(c => `${c.requestTimestamp}:${c.assetsRaw}`)
   );
 
-  const effective = requests.filter(r =>
+  const effectiveAsync = asyncRequests.filter(r =>
     !canceledKeys.has(`${r.requestTimestamp}:${r.assetsRaw}`)
   );
 
-  return { requests, cancels, effective };
+  // 2) Synchronous SyncDepositQueue path.
+  // Official Mellow SyncDepositQueue does NOT emit DepositRequested.
+  // It transfers assets + mints shares immediately and emits Deposited(...).
+  const syncLogs = await getLogsAdaptive(provider, {
+    address: queue,
+    topics: [SYNC_DEPOSITED_TOPIC, topicAddress(WALLET)]
+  }, fromBlock, toBlock);
+
+  const syncDeposits = [];
+  for (const l of syncLogs) {
+    const p = DEPOSIT_IFACE.parseLog({ topics: l.topics, data: l.data });
+    if (!p || p.name !== 'Deposited') continue;
+    const b = await provider.getBlock(l.blockNumber);
+    syncDeposits.push({
+      entryType: 'sync-Deposited',
+      txHash: l.transactionHash,
+      block: Number(l.blockNumber),
+      logIndex: Number(l.index ?? l.logIndex ?? 0),
+      chainTimestamp: b ? new Date(Number(b.timestamp) * 1000).toISOString() : null,
+      requestTimestamp: b ? Number(b.timestamp) : null,
+      assetsRaw: safeBig(p.args.assets).toString(),
+      sharesRaw: safeBig(p.args.shares).toString(),
+      feeSharesRaw: safeBig(p.args.feeShares).toString(),
+      referral: addr(p.args.referral),
+      queue,
+      queueName: queueInfo.name || null
+    });
+  }
+
+  return {
+    asyncRequests,
+    cancels,
+    effectiveAsync,
+    syncDeposits,
+    effective: [...effectiveAsync, ...syncDeposits]
+  };
 }
 
 async function discoverEntry(provider, architecture, fromBlock) {
   const latest = await provider.getBlockNumber();
   const candidates = [];
+  const queueDiagnostics = [];
 
   for (const a of architecture.assets) {
-    for (const queue of a.queues) {
-      const life = await scanQueueLifecycle(provider, queue, fromBlock, latest);
+    for (const queueInfo of a.queues) {
+      const life = await scanQueueLifecycle(provider, queueInfo, fromBlock, latest);
+
+      queueDiagnostics.push({
+        asset: a.asset,
+        symbol: a.symbol,
+        queue: queueInfo.address,
+        queueName: queueInfo.name || null,
+        asyncRequestCount: life.asyncRequests.length,
+        asyncCanceledCount: life.cancels.length,
+        syncDepositCount: life.syncDeposits.length,
+        effectiveCount: life.effective.length
+      });
+
       for (const r of life.effective) {
         candidates.push({
           ...r,
           asset: a.asset,
           symbol: a.symbol,
           decimals: a.decimals,
-          queue,
           principalNominalStable: Number(formatUnits(BigInt(r.assetsRaw), a.decimals)),
-          requestCountOnQueue: life.requests.length,
-          canceledCountOnQueue: life.cancels.length
+          asyncRequestCountOnQueue: life.asyncRequests.length,
+          asyncCanceledCountOnQueue: life.cancels.length,
+          syncDepositCountOnQueue: life.syncDeposits.length
         });
       }
     }
   }
 
-  candidates.sort((a, b) =>
+  // Deduplicate only exact same economic event.
+  const dedup = new Map();
+  for (const c of candidates) {
+    const key = [
+      c.txHash,
+      lower(c.asset),
+      c.assetsRaw,
+      c.entryType
+    ].join(':');
+    if (!dedup.has(key)) dedup.set(key, c);
+  }
+
+  const all = [...dedup.values()].sort((a, b) =>
     a.block - b.block || a.logIndex - b.logIndex
   );
 
-  if (!candidates.length) {
-    throw new Error('no effective Monetra DepositRequested event found in dynamic Lido queues');
+  // User's recollection of ~10 stable units is a bounded sanity filter, not
+  // the primary source of truth. It prevents unrelated queue traffic from
+  // becoming Invested if there are multiple historical events.
+  const bounded = all.filter(x =>
+    x.principalNominalStable > 9 &&
+    x.principalNominalStable < 11
+  );
+
+  if (!all.length) {
+    const diag = JSON.stringify(queueDiagnostics);
+    throw new Error(`no Monetra async DepositRequested or sync Deposited event found; queues=${diag}`);
   }
 
-  // Monetra was intentionally seeded with ~10 units once. Fail closed if the live
-  // history no longer matches that bounded architecture.
-  if (candidates.length !== 1) {
-    throw new Error(`expected exactly one effective Lido deposit, found ${candidates.length}`);
+  if (bounded.length !== 1) {
+    throw new Error(
+      `expected exactly one ~10-unit effective Lido deposit; total=${all.length} bounded=${bounded.length}; ` +
+      `candidates=${JSON.stringify(all.map(x => ({
+        type:x.entryType, tx:x.txHash, symbol:x.symbol,
+        amount:x.principalNominalStable, queue:x.queue, queueName:x.queueName
+      })))}`
+    );
   }
 
-  const entry = candidates[0];
-  if (!(entry.principalNominalStable > 9 && entry.principalNominalStable < 11)) {
-    throw new Error(`Lido entry principal outside expected ~10 stable range: ${entry.principalNominalStable}`);
-  }
+  const entry = bounded[0];
 
-  return { entry, allEffectiveDeposits: candidates };
+  return {
+    entry,
+    allEffectiveDeposits: all,
+    queueDiagnostics
+  };
 }
 
 async function scanShareOutflows(provider, fromBlock) {
@@ -457,8 +547,11 @@ async function main() {
   const startedAt = nowIso();
   const prior = readJson(IN_FILE);
 
-  if (prior?.version !== '0.4-monetra-strategy-entry-targeted-close') {
-    throw new Error(`expected v0.4 input, got ${prior?.version}`);
+  if (![
+    '0.4-monetra-strategy-entry-targeted-close',
+    '0.5-monetra-lido-share-oracle-close'
+  ].includes(prior?.version)) {
+    throw new Error(`expected v0.4/v0.5 input, got ${prior?.version}`);
   }
   if (prior?.company?.registry !== '008' || prior?.company?.name !== 'Monetra.eth') {
     throw new Error('Company #008 identity mismatch');
@@ -532,14 +625,20 @@ async function main() {
         principalSymbol: entry.symbol || 'stable asset',
         confidence: 'high',
         evidence: {
-          type: 'Mellow-DepositQueue-DepositRequested',
+          type: entry.entryType === 'sync-Deposited'
+            ? 'Mellow-SyncDepositQueue-Deposited'
+            : 'Mellow-DepositQueue-DepositRequested',
           asset: entry.asset,
           queue: entry.queue,
+          queueName: entry.queueName || null,
           referral: entry.referral,
           assetsRaw: entry.assetsRaw,
           assetDecimals: entry.decimals,
-          requestCountOnQueue: entry.requestCountOnQueue,
-          canceledCountOnQueue: entry.canceledCountOnQueue
+          sharesRaw: entry.sharesRaw || null,
+          feeSharesRaw: entry.feeSharesRaw || null,
+          asyncRequestCountOnQueue: entry.asyncRequestCountOnQueue ?? null,
+          asyncCanceledCountOnQueue: entry.asyncCanceledCountOnQueue ?? null,
+          syncDepositCountOnQueue: entry.syncDepositCountOnQueue ?? null
         },
         receiptDiagnostics: null
       },
@@ -548,7 +647,8 @@ async function main() {
       ownerTargetApproximatelyTen:
         Math.abs(Number(entry.principalNominalStable) - 10) <= 0.25,
       shareOutflows,
-      allEffectiveDeposits
+      allEffectiveDeposits,
+      queueDiagnostics
     };
   });
 
@@ -565,7 +665,7 @@ async function main() {
         error: resolved.error,
         officialMechanics: [
           'ShareManager.sharesOf(account) includes active + claimable shares.',
-          'DepositQueue DepositRequested is the exact strategy-entry principal.',
+          'Async DepositQueue emits DepositRequested; SyncDepositQueue emits Deposited and mints shares immediately.',
           'Oracle invariant: shares = assets * priceD18 / 1e18.'
         ]
       },
@@ -612,10 +712,10 @@ async function main() {
     startedAt,
     correction: {
       ...prior.correction,
-      v05LidoClose: [
+      v06LidoClose: [
         'Nine v0.4 strategy rows are copied unchanged and guarded against regression.',
-        'Lido deposit asset and DepositQueue are discovered dynamically from the live ShareModule.',
-        'Entry principal comes from the effective DepositRequested event, not wallet funding history.',
+        'Lido deposit asset and deposit queues are discovered dynamically from the live ShareModule.',
+        'Entry principal supports both asynchronous DepositRequested and synchronous Deposited queue events.',
         'Current nominal value uses ShareManager.sharesOf and inverse Oracle priceD18 conversion.',
         'Share burns/outgoing transfers fail closed because they would require flow-adjusted performance.',
         'No market price is used for Lido strategy Performance.'
@@ -646,11 +746,12 @@ async function main() {
       performance: resolved.value.performance,
       shareOutflows: resolved.value.shareOutflows,
       allEffectiveDeposits: resolved.value.allEffectiveDeposits,
+      queueDiagnostics: resolved.value.queueDiagnostics,
       officialSourceCanon: {
         shareManager:
           'Mellow flexible-vaults ShareManager.sharesOf(account) = activeSharesOf + claimableSharesOf.',
         depositQueue:
-          'Mellow DepositQueue emits DepositRequested(account, referral, assets, timestamp) and later converts request assets into shares.',
+          'Mellow supports both asynchronous DepositQueue (DepositRequested) and synchronous SyncDepositQueue (Deposited). Both expose exact deposited assets.',
         oracle:
           'Mellow IOracle defines shares = assets * priceD18 / 1e18.'
       }
