@@ -1,0 +1,133 @@
+# THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.1
+name: "Update Stable Capital"
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily checkpoint for Embedded Yield history. Central Productivity remains independently scheduled.
+    - cron: "37 5 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-stable-capital
+  cancel-in-progress: false
+
+jobs:
+  stable-capital:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Preflight
+        run: |
+          set -euo pipefail
+          node --check stable-capital/stable-capital-engine.mjs
+          test -s companies/company-008-resolve.json
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const src = fs.readFileSync('stable-capital/stable-capital-engine.mjs','utf8');
+          const literals = [...src.matchAll(/0x[0-9a-fA-F]{40}/g)].map(m => m[0]);
+          const mixed = literals.filter(a => /[a-f]/.test(a.slice(2)) && /[A-F]/.test(a.slice(2)));
+          if (mixed.length) throw new Error('mixed-case EVM literals forbidden: ' + [...new Set(mixed)].join(', '));
+
+          const r = JSON.parse(fs.readFileSync('companies/company-008-resolve.json','utf8'));
+          if (r.version !== '1.4-company-008-fraxtal-sfrxusd-close') throw new Error('unexpected resolver: ' + r.version);
+          if (r.company?.registry !== '008' || r.company?.name !== 'Monetra.eth') throw new Error('identity mismatch');
+          if (!r.productionReadiness?.stableCapitalBookReady) throw new Error('Stable Capital book not ready');
+          if ((r.stableCapital?.positions || []).length !== 10) throw new Error('expected exactly 10 current positions');
+          console.log('Stable Capital preflight OK.');
+          NODE
+
+      - name: Install dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+
+      - name: Collect Stable Capital reference yield + checkpoint ledger
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          ETH_ARCHIVE_RPC_URL: ${{ secrets.ETH_ARCHIVE_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          FRAXTAL_RPC_URL: ${{ secrets.FRAXTAL_RPC_URL }}
+          FRAXTAL_RPC_URL_2: ${{ secrets.FRAXTAL_RPC_URL_2 }}
+        run: node stable-capital/stable-capital-engine.mjs
+
+      - name: Validate generated diagnostics
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const d = JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
+          const l = JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
+
+          if (d.version !== '0.1-monetra-stable-capital-reference-yield') throw new Error('unexpected stable-capital version');
+          if (d.methodologyVersion !== '1.0-stable-capital-annual-yield-capital-weighted') throw new Error('unexpected methodology');
+          if (d.company?.registry !== '008' || d.company?.name !== 'Monetra.eth') throw new Error('identity mismatch');
+          if ((d.positions || []).length !== 10) throw new Error('position count regression');
+          if (Number(d.summary?.productiveStableCapitalUsd) < 90) throw new Error('productive stable capital implausibly low');
+          if (!(Number(d.summary?.coverage) >= 0 && Number(d.summary?.coverage) <= 1.000001)) throw new Error('invalid coverage');
+
+          if (l.version !== '0.1-flow-aware-checkpoint-ledger') throw new Error('unexpected ledger version');
+          if (l.company?.registry !== '008') throw new Error('ledger identity mismatch');
+          if (Object.keys(l.positions || {}).length !== 10) throw new Error('ledger position count regression');
+
+          console.log('Structural validation OK.');
+          console.log('Reference summary:', d.summary);
+          console.log('Ledger aggregate:', l.aggregate);
+          console.log('NOTE: fullCoverage=false is diagnostic GREEN, not CI failure.');
+          NODE
+
+      - name: Publish Stable Capital data
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILES=(
+            "companies/stable-capital-data.json"
+            "companies/embedded-yield-ledger.json"
+          )
+
+          for f in "${FILES[@]}"; do test -s "$f"; done
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "${FILES[@]}"
+
+          if ! git diff --cached --quiet -- "${FILES[@]}"; then
+            git commit -m "Update Monetra Stable Capital Intelligence"
+          else
+            echo "No Stable Capital changes to publish."
+          fi
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then break; fi
+            git rebase --abort || true
+            if [ "$attempt" -eq 3 ]; then
+              echo "ERROR: failed to publish after retries"
+              exit 1
+            fi
+            sleep $((attempt * 2))
+          done
+
+          git fetch origin main
+          for f in "${FILES[@]}"; do git cat-file -e "origin/main:$f"; done
+
+          REMOTE_VERSION="$(git show origin/main:companies/stable-capital-data.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+          test "$REMOTE_VERSION" = "0.1-monetra-stable-capital-reference-yield" || {
+            echo "ERROR: remote stable-capital version mismatch: $REMOTE_VERSION"
+            exit 1
+          }
+          echo "Stable Capital diagnostics verified on origin/main."
