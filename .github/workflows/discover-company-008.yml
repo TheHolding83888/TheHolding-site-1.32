@@ -1,0 +1,130 @@
+# THE HOLDING · MONETRA COMPANY #008 STABLE CAPITAL DISCOVERY v1.0
+name: "Discover Company #008"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: discover-company-008
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify discovery source/workflow sync
+        run: |
+          grep -F "const VERSION = '1.0-company-008-monetra-stable-capital-discovery';" onboarding/company-008-discovery.mjs
+          echo "Workflow/source sync OK: Monetra Company #008 Stable Capital discovery v1.0"
+
+      - name: Install discovery dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+
+      - name: Discover Monetra Company #008 current state
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          AVALANCHE_RPC_URL: ${{ secrets.AVALANCHE_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          COMPANY_008_DISCOVERY_OUTPUT: companies/company-008-discovery.json
+        run: node onboarding/company-008-discovery.mjs
+
+      - name: Validate generated JSON
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'companies/company-008-discovery.json';
+          if (!fs.existsSync(p)) throw new Error('Monetra discovery JSON missing');
+          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (d.version !== '1.0-company-008-monetra-stable-capital-discovery') {
+            throw new Error('unexpected discovery version: ' + d.version);
+          }
+          if (d.company?.registry !== '008') throw new Error('registry mismatch');
+          if (d.company?.name !== 'Monetra.eth') throw new Error('company mismatch');
+          if ((d.company?.wallet || '').toLowerCase() !== '0x888d39aee2aec979c81f125ea94bb3ceb60f6bbb') {
+            throw new Error('wallet mismatch');
+          }
+          if (d.company?.category !== 'Stable Capital') throw new Error('category mismatch');
+          if (!Array.isArray(d.stableCapital?.positions)) throw new Error('positions missing');
+          if (!d.stableCapital?.summary) throw new Error('summary missing');
+          if (!d.checkpointSeed?.positions) throw new Error('checkpoint seed missing');
+          if (!d.accountingPolicy?.embeddedYield) throw new Error('Embedded Yield policy missing');
+          console.log('Monetra discovery structurally valid.');
+          console.log('Founded:', d.company?.founding);
+          console.log('Stable Capital summary:', d.stableCapital?.summary);
+          console.log('Sanity:', d.stableCapital?.sanity);
+          console.log('Positions:');
+          for (const p of d.stableCapital.positions) {
+            console.log('-', p.protocol, '|', p.positionType, '|', p.underlyingSymbol || p.symbol || p.wrapperSymbol, '| $', p.valueUsd, '|', p.incomeMode);
+          }
+          console.log('Unresolved:', d.stableCapital?.unresolved?.length || 0);
+          NODE
+
+      - name: Publish discovery JSON to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="companies/company-008-discovery.json"
+          test -s "$FILE" || {
+            echo "ERROR: discovery output missing or empty"
+            exit 1
+          }
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$FILE"
+
+          if ! git diff --cached --quiet -- "$FILE"; then
+            git commit -m "Discover Monetra Company #008 Stable Capital"
+          else
+            echo "Discovery output unchanged."
+          fi
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              break
+            fi
+            git rebase --abort || true
+            if [ "$attempt" -eq 3 ]; then
+              echo "ERROR: failed to publish discovery after retries"
+              exit 1
+            fi
+            sleep $((attempt * 2))
+          done
+
+          git fetch origin main
+          git cat-file -e "origin/main:$FILE" || {
+            echo "ERROR: discovery absent from origin/main"
+            exit 1
+          }
+
+          REMOTE_VERSION="$(
+            git show "origin/main:$FILE" |
+            node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))"
+          )"
+          test "$REMOTE_VERSION" = "1.0-company-008-monetra-stable-capital-discovery" || {
+            echo "ERROR: remote discovery version mismatch: $REMOTE_VERSION"
+            exit 1
+          }
+          echo "Verified on origin/main: $FILE"
+          echo "Remote discovery version: $REMOTE_VERSION"
