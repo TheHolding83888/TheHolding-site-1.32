@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Contract, Interface, JsonRpcProvider, ZeroAddress, formatUnits, getAddress, keccak256, solidityPackedKeccak256, concat } from 'ethers';
 
-const VERSION = '0.3.8';
-const COLLECTOR_VERSION = '0.3.8-company-009-reuse';
+const VERSION = '0.3.9';
+const COLLECTOR_VERSION = '0.3.9-pricing-cache-defillama-resilience';
 const METHODOLOGY_VERSION = '0.2.2-earned-inside-protocols-multiwallet';
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const CG_KEY = process.env.COINGECKO_API_KEY || '';
@@ -1944,7 +1944,7 @@ async function collectAerodromeRelay(address, registry) {
     rewards: total > 0n ? [rewardBase({
       protocol: 'Aerodrome', route: 'aerodrome-relay', chain: 'Base', token: ADDR.aerodrome.baseToken,
       amountRaw: total, decimals: 18, amount: n(formatUnits(total, 18)), classification: 'compounded-locked',
-      source: 'onchain: LockedManagedReward.earned', details: { symbol: 'AERO', veNfts: positions, coingeckoId: 'aerodrome-finance' }
+      source: 'onchain: LockedManagedReward.earned', details: { symbol: 'AERO', veNfts: positions, coingeckoId: 'aerodrome-finance', pricePlatform: 'base', priceContract: ADDR.aerodrome.baseToken }
     })] : [],
     details: { veNftCount: nftCount, managedPositions: positions.length }
   };
@@ -2917,17 +2917,104 @@ async function collectRouteAcrossWallets(route, wallets, registry) {
   return { source: mergeRouteSource(route, walletResults), rewards };
 }
 
+const REWARD_PRICE_ID_CACHE = new Map();
+const REWARD_PRICE_CONTRACT_CACHE = new Map();
+const LLAMA_PLATFORM = Object.freeze({
+  ethereum: 'ethereum',
+  base: 'base',
+  'optimistic-ethereum': 'optimism',
+  'arbitrum-one': 'arbitrum',
+  'polygon-pos': 'polygon',
+  'binance-smart-chain': 'bsc'
+});
+
+function priceContractCacheKey(platform, contract) {
+  return `${String(platform || '').toLowerCase()}:${String(contract || '').toLowerCase()}`;
+}
+function setIdPrice(id, price, method) {
+  if (!id || !hasFiniteNumber(price) || Number(price) <= 0) return;
+  REWARD_PRICE_ID_CACHE.set(String(id), { price: Number(price), method });
+}
+function setContractPrice(platform, contract, price, method) {
+  if (!platform || !isAddressLike(contract) || !hasFiniteNumber(price) || Number(price) <= 0) return;
+  REWARD_PRICE_CONTRACT_CACHE.set(priceContractCacheKey(platform, contract), { price: Number(price), method });
+}
+function llamaCoinRow(data, key) {
+  const coins = data?.coins && typeof data.coins === 'object' ? data.coins : {};
+  const exact = coins[key];
+  if (exact) return exact;
+  const wanted = String(key).toLowerCase();
+  const hit = Object.entries(coins).find(([k]) => String(k).toLowerCase() === wanted);
+  return hit ? hit[1] : null;
+}
+async function fillIdPriceCache(ids, headers) {
+  const missing = [...new Set(ids)].filter(id => id && !REWARD_PRICE_ID_CACHE.has(id));
+  if (!missing.length) return;
+
+  try {
+    const url = 'https://api.coingecko.com/api/v3/simple/price?ids=' + encodeURIComponent(missing.join(',')) + '&vs_currencies=usd';
+    const data = await fetchJsonRetry(url, headers, 18000, 3);
+    for (const id of missing) {
+      if (hasFiniteNumber(data?.[id]?.usd)) setIdPrice(id, data[id].usd, `coingecko:${id}`);
+    }
+  } catch (e) {
+    console.warn('CoinGecko id pricing failed after retries:', e.message);
+  }
+
+  const stillMissing = missing.filter(id => !REWARD_PRICE_ID_CACHE.has(id));
+  if (!stillMissing.length) return;
+  try {
+    const keys = stillMissing.map(id => `coingecko:${id}`);
+    const url = 'https://coins.llama.fi/prices/current/' + keys.join(',');
+    const data = await fetchJsonRetry(url, {}, 18000, 3);
+    for (let i = 0; i < stillMissing.length; i++) {
+      const id = stillMissing[i];
+      const row = llamaCoinRow(data, keys[i]);
+      if (hasFiniteNumber(row?.price)) setIdPrice(id, row.price, `defillama:coingecko:${id}`);
+    }
+  } catch (e) {
+    console.warn('DefiLlama id pricing fallback failed:', e.message);
+  }
+}
+async function fillContractPriceCache(platform, contracts, headers) {
+  const unique = [...new Set(contracts.map(x => String(x).toLowerCase()))].filter(isAddressLike);
+  const missing = unique.filter(contract => !REWARD_PRICE_CONTRACT_CACHE.has(priceContractCacheKey(platform, contract)));
+  if (!missing.length) return;
+
+  try {
+    const url = `https://api.coingecko.com/api/v3/simple/token_price/${platform}?contract_addresses=${encodeURIComponent(missing.join(','))}&vs_currencies=usd`;
+    const data = await fetchJsonRetry(url, headers, 18000, 3);
+    for (const contract of missing) {
+      if (hasFiniteNumber(data?.[contract]?.usd)) {
+        setContractPrice(platform, contract, data[contract].usd, `coingecko-contract:${platform}`);
+      }
+    }
+  } catch (e) {
+    console.warn(`CoinGecko ${platform} contract pricing failed after retries:`, e.message);
+  }
+
+  const stillMissing = missing.filter(contract => !REWARD_PRICE_CONTRACT_CACHE.has(priceContractCacheKey(platform, contract)));
+  const llamaChain = LLAMA_PLATFORM[String(platform || '').toLowerCase()];
+  if (!stillMissing.length || !llamaChain) return;
+  try {
+    const keys = stillMissing.map(contract => `${llamaChain}:${contract}`);
+    const url = 'https://coins.llama.fi/prices/current/' + keys.join(',');
+    const data = await fetchJsonRetry(url, {}, 18000, 3);
+    for (let i = 0; i < stillMissing.length; i++) {
+      const contract = stillMissing[i];
+      const row = llamaCoinRow(data, keys[i]);
+      if (hasFiniteNumber(row?.price)) {
+        setContractPrice(platform, contract, row.price, `defillama-contract:${llamaChain}`);
+      }
+    }
+  } catch (e) {
+    console.warn(`DefiLlama ${llamaChain} contract pricing fallback failed:`, e.message);
+  }
+}
 async function applyPrices(rewards) {
   const headers = CG_KEY ? { 'x-cg-demo-api-key': CG_KEY } : {};
   const ids = [...new Set(rewards.flatMap(r => [r.details?.coingeckoId, r.details?.redemptionCoingeckoId]).filter(Boolean))];
-  const idPrices = {};
-  if (ids.length) {
-    try {
-      const url = 'https://api.coingecko.com/api/v3/simple/price?ids=' + encodeURIComponent(ids.join(',')) + '&vs_currencies=usd';
-      const data = await fetchJson(url, headers, 15000);
-      ids.forEach(id => { if (hasFiniteNumber(data?.[id]?.usd)) idPrices[id] = Number(data[id].usd); });
-    } catch (e) { console.warn('CoinGecko id pricing failed:', e.message); }
-  }
+  await fillIdPriceCache(ids, headers);
 
   const byPlatform = new Map();
   function addContract(platform, contract) {
@@ -2938,26 +3025,13 @@ async function applyPrices(rewards) {
   for (const r of rewards) {
     addContract(r.details?.pricePlatform, r.details?.priceContract);
     addContract(r.details?.redemptionPricePlatform || r.details?.pricePlatform || 'ethereum', r.details?.redemptionPriceContract);
-    // Backward compatibility for v0.1.1 YB objects if old history/data is ever reused.
     addContract('ethereum', r.details?.priceByEthereumContract);
   }
-
-  const contractPrices = new Map();
   for (const [platform, contracts] of byPlatform.entries()) {
-    const arr = [...contracts];
-    if (!arr.length) continue;
-    try {
-      const url = `https://api.coingecko.com/api/v3/simple/token_price/${platform}?contract_addresses=${encodeURIComponent(arr.join(','))}&vs_currencies=usd`;
-      const data = await fetchJson(url, headers, 15000);
-      const prices = {};
-      for (const a of arr) if (hasFiniteNumber(data?.[a]?.usd)) prices[a] = Number(data[a].usd);
-      contractPrices.set(platform, prices);
-    } catch (e) { console.warn(`CoinGecko ${platform} contract pricing failed:`, e.message); }
+    await fillContractPriceCache(platform, [...contracts], headers);
   }
 
   for (const r of rewards) {
-    // reUSD is treated at explicit 1:1 USD parity across every reward route,
-    // including dynamically enumerated Resupply GovStaker rewards.
     const fixed = String(r.symbol || r.details?.symbol || '').toUpperCase() === 'REUSD'
       ? 1
       : r.details?.fixedUsdPrice;
@@ -2968,27 +3042,35 @@ async function applyPrices(rewards) {
     const redemptionPlatform = r.details?.redemptionPricePlatform || r.details?.pricePlatform || 'ethereum';
     const redemptionCgId = r.details?.redemptionCoingeckoId;
     const redeemAmount = r.details?.redeemAmount;
+    const idHit = cgId ? REWARD_PRICE_ID_CACHE.get(cgId) : null;
+    const directHit = directPlatform && directContract
+      ? REWARD_PRICE_CONTRACT_CACHE.get(priceContractCacheKey(directPlatform, directContract))
+      : null;
+    const redemptionHit = redemptionContract
+      ? REWARD_PRICE_CONTRACT_CACHE.get(priceContractCacheKey(redemptionPlatform, redemptionContract))
+      : null;
+    const redemptionIdHit = redemptionCgId ? REWARD_PRICE_ID_CACHE.get(redemptionCgId) : null;
 
     if (hasFiniteNumber(fixed)) {
       r.priceUsd = Number(fixed);
       r.usdValue = round(r.amount * r.priceUsd, 6);
       r.priceMethod = 'fixed-usd-assumption';
-    } else if (cgId && hasFiniteNumber(idPrices[cgId])) {
-      r.priceUsd = idPrices[cgId];
+    } else if (idHit && hasFiniteNumber(idHit.price)) {
+      r.priceUsd = idHit.price;
       r.usdValue = round(r.amount * r.priceUsd, 6);
-      r.priceMethod = `coingecko:${cgId}`;
-    } else if (directPlatform && directContract && hasFiniteNumber(contractPrices.get(directPlatform)?.[directContract])) {
-      r.priceUsd = contractPrices.get(directPlatform)[directContract];
+      r.priceMethod = idHit.method;
+    } else if (directHit && hasFiniteNumber(directHit.price)) {
+      r.priceUsd = directHit.price;
       r.usdValue = round(r.amount * r.priceUsd, 6);
-      r.priceMethod = `coingecko-contract:${directPlatform}`;
-    } else if (redemptionContract && hasFiniteNumber(contractPrices.get(redemptionPlatform)?.[redemptionContract]) && hasFiniteNumber(redeemAmount)) {
-      r.priceUsd = contractPrices.get(redemptionPlatform)[redemptionContract];
+      r.priceMethod = directHit.method;
+    } else if (redemptionHit && hasFiniteNumber(redemptionHit.price) && hasFiniteNumber(redeemAmount)) {
+      r.priceUsd = redemptionHit.price;
       r.usdValue = round(Number(redeemAmount) * r.priceUsd, 6);
-      r.priceMethod = `redemption-value:${r.details.redeemSymbol || 'asset'}@coingecko-contract`;
-    } else if (redemptionCgId && hasFiniteNumber(idPrices[redemptionCgId]) && hasFiniteNumber(redeemAmount)) {
-      r.priceUsd = idPrices[redemptionCgId];
+      r.priceMethod = `redemption-value:${r.details.redeemSymbol || 'asset'}@${redemptionHit.method}`;
+    } else if (redemptionIdHit && hasFiniteNumber(redemptionIdHit.price) && hasFiniteNumber(redeemAmount)) {
+      r.priceUsd = redemptionIdHit.price;
       r.usdValue = round(Number(redeemAmount) * r.priceUsd, 6);
-      r.priceMethod = `redemption-value:${r.details.redeemSymbol || 'asset'}@coingecko:${redemptionCgId}`;
+      r.priceMethod = `redemption-value:${r.details.redeemSymbol || 'asset'}@${redemptionIdHit.method}`;
     }
   }
 }
