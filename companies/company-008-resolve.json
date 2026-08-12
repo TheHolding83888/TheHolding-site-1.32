@@ -1,7 +1,7 @@
 {
-  "version": "1.3-company-008-stable-diagnostic-safe-sbold",
-  "generatedAt": "2026-08-12T11:11:46.842Z",
-  "startedAt": "2026-08-12T11:11:45.298Z",
+  "version": "1.4-company-008-fraxtal-sfrxusd-close",
+  "generatedAt": "2026-08-12T11:28:19.981Z",
+  "startedAt": "2026-08-12T11:28:16.698Z",
   "company": {
     "registry": "008",
     "name": "Monetra.eth",
@@ -50,10 +50,10 @@
     "foundedDatePreserved": "2026-05-27",
     "foundingEvidencePreserved": true,
     "priorAaveStablePositionsPreserved": 1,
-    "principle": "known v1.1 positions are immutable inputs to this narrow resolver; protocol-specific misses are diagnostics, not fatal workflow errors",
-    "priorResolverVersion": "1.1-company-008-stable-wrapper-reconciliation",
-    "priorResolverSha256": "319f4d1083845c4151ab7a330eabf00d3e926d5f6a6bf8786f9dd2a1b6290530",
-    "priorStablePositionCount": 7
+    "principle": "v1.4 is Fraxtal-only; all v1.3 positions and founding evidence are preserved",
+    "priorResolverVersion": "1.3-company-008-stable-diagnostic-safe-sbold",
+    "priorResolverSha256": "7d471886ad38d11607b86c6dbd95b6764e19b298d03a3cfe2ef747982ebef38a",
+    "priorStablePositionCount": 9
   },
   "ownerEvidence": {
     "source": "owner-supplied DeBank screenshots + owner note, 2026-08-12",
@@ -790,14 +790,73 @@
           }
         },
         "rewardBoundary": "direct SP BOLD yield and collateral liquidation gains are tracked as separate Accrued Rewards"
+      },
+      {
+        "id": "fraxtal:0xfc00000000000000000000000000000000000008",
+        "chain": "Fraxtal",
+        "protocol": "Frax Finance",
+        "positionType": "Savings Stable",
+        "wrapper": "0xfc00000000000000000000000000000000000008",
+        "wrapperSymbol": "sfrxUSD",
+        "name": "Staked Frax USD",
+        "sharesOrBalance": 8.321749676735,
+        "shareRaw": "8321749676734561340",
+        "underlying": "0xFc00000000000000000000000000000000000001",
+        "underlyingSymbol": "frxUSD",
+        "redeemableUnderlying": null,
+        "economicValuation": {
+          "status": "ok",
+          "terminalType": "stable-asset",
+          "terminal": "0xFc00000000000000000000000000000000000001",
+          "terminalSymbol": "frxUSD",
+          "terminalAmount": null,
+          "price": {
+            "status": "ok",
+            "priceUsd": 0.9910198421005891,
+            "source": "defillama-contract:fraxtal"
+          },
+          "wrapperPriceFallback": {
+            "status": "ok",
+            "priceUsd": 1.2052011606241135,
+            "source": "defillama-contract:fraxtal"
+          },
+          "crossChainPriceFallback": false,
+          "valueUsd": 10.029382368824,
+          "path": [
+            {
+              "token": "0xfc00000000000000000000000000000000000008",
+              "symbol": "sfrxUSD",
+              "amount": 8.321749676735,
+              "standard": "ERC-4626-like",
+              "redeemMethod": null,
+              "error": "missing revert data | missing revert data"
+            }
+          ]
+        },
+        "valueUsd": 10.029382,
+        "valuationStatus": "ok",
+        "valuationCanonical": false,
+        "incomeMode": "embedded-yield",
+        "productive": true,
+        "ownerHintMatched": "Frax Finance",
+        "methodologyNote": "Fraxtal-native sfrxUSD. Embedded Yield is exchange-rate/share-value growth; current-book value uses redeemable frxUSD when reproducible. Historical income must be flow-adjusted.",
+        "history": {
+          "firstObservedInbound": null,
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T11:28:19.980Z",
+            "sharesOrBalance": 8.321749676735,
+            "redeemableUnderlying": null,
+            "economicValueUsd": 10.029382
+          }
+        }
       }
     ],
     "summary": {
-      "totalUsd": 90.162827,
-      "productiveUsd": 80.15679,
+      "totalUsd": 100.192209,
+      "productiveUsd": 90.186172,
       "liquidUsd": 10.006037,
-      "positionCount": 9,
-      "pricedPositions": 9,
+      "positionCount": 10,
+      "pricedPositions": 10,
       "byProtocol": {
         "Aave v3": 10.006037,
         "Curve": 10.001043,
@@ -807,11 +866,12 @@
         "Aave": 10.018976,
         "Yearn V3": 10.017803,
         "Lido Earn": 9.99831,
-        "Liquity V2": 10.001411
+        "Liquity V2": 10.001411,
+        "Frax Finance": 10.029382
       },
       "byType": {
         "Stable Lending": 10.006037,
-        "Savings Stable": 50.139266,
+        "Savings Stable": 60.168648,
         "Auto-Compounding Stable Vault": 10.017803,
         "Agent / Curator Managed Stable Vault": 9.99831,
         "Stability Pool Deposit": 10.001411
@@ -825,15 +885,16 @@
         "GHO": 10.018976,
         "yBOLD": 10.017803,
         "USD-denominated strategy basket": 9.99831,
-        "BOLD": 10.001411
+        "BOLD": 10.001411,
+        "frxUSD": 10.029382
       }
     },
     "reconciliation": {
       "ownerStableStrategyUsdApprox": 100,
-      "reproducedStableCapitalUsd": 90.162827,
-      "deltaVsOwnerApproxUsd": -9.837173,
+      "reproducedStableCapitalUsd": 100.192209,
+      "deltaVsOwnerApproxUsd": 0.192209,
       "withinLoose15UsdBand": true,
-      "note": "owner target is diagnostic only; no value is forced to the target"
+      "note": "owner target is diagnostic only; no value is forced"
     },
     "provisionalValuations": [
       {
@@ -844,11 +905,6 @@
       }
     ],
     "unresolved": [
-      {
-        "mechanism": "Frax Finance",
-        "status": "absent",
-        "error": null
-      },
       {
         "mechanism": "Liquity sBOLD",
         "status": "absent",
@@ -897,13 +953,11 @@
       "Aave V3": true,
       "Curve": true,
       "Lido": true,
-      "Frax Finance": false
+      "Frax Finance": true
     },
-    "missingHints": [
-      "Frax Finance"
-    ],
+    "missingHints": [],
     "aaveEvidenceCount": 2,
-    "note": "A green resolver run means the diagnostic collector executed and published; economic completeness is expressed by stableCapitalBookReady, not by workflow color."
+    "note": "Frax hint closes only if the Fraxtal sfrxUSD balance is reproduced; green workflow indicates diagnostic execution, not forced economic completeness."
   },
   "history": {
     "ethereumTokenTransfers": {
@@ -1233,22 +1287,34 @@
           "economicValueUsd": 10.001411
         }
       }
-    ]
+    ],
+    "v14CheckpointSeed": {
+      "id": "fraxtal:0xfc00000000000000000000000000000000000008",
+      "protocol": "Frax Finance",
+      "chain": "Fraxtal",
+      "incomeMode": "embedded-yield",
+      "currentCheckpoint": {
+        "timestamp": "2026-08-12T11:28:19.980Z",
+        "sharesOrBalance": 8.321749676735,
+        "redeemableUnderlying": null,
+        "economicValueUsd": 10.029382
+      }
+    }
   },
   "diagnostics": [],
   "productionReadiness": {
-    "stableCapitalBookReady": false,
-    "currentStateReconciled": false,
-    "embeddedYieldLedgerSeedReady": false,
+    "stableCapitalBookReady": true,
+    "currentStateReconciled": true,
+    "embeddedYieldLedgerSeedReady": true,
     "embeddedYieldHistoryReady": false,
     "productivityIntegrationReady": false,
     "rewardsIntegrationReady": false,
-    "pageIntegrationReady": false,
+    "pageIntegrationReady": true,
     "reportingIntegrationReady": false,
-    "rationale": "diagnostic resolver completed but current book remains open; inspect missingHints/unresolved instead of rerunning archaeology blindly"
+    "rationale": "current Stable Capital book reconciled including Fraxtal sfrxUSD; next phase is Reference APY normalization + Embedded Yield history"
   },
   "nextStep": "Use only the unresolved/provisional rows for the next narrow pass; do not repeat founding or Aave lending discovery.",
-  "purpose": "diagnostic-safe close of Monetra Stable Capital current book: preserve solved v1.1 positions, add sBOLD, Frax, Lido and direct Liquity evidence without turning unresolved economics into a red workflow",
+  "purpose": "narrow Fraxtal-only closure of owner-confirmed sfrxUSD; preserve all v1.3 Stable Capital positions and avoid reopening solved Ethereum/Base mechanisms",
   "resolutionV13": {
     "provider": "ethereum-rpc.publicnode.com",
     "providerBlock": 25738535,
@@ -1462,5 +1528,84 @@
       }
     },
     "engineeringGuard": "all literal EVM addresses are canonicalized from lowercase; each special protocol resolver is failure-isolated; diagnostic output is always publishable if structural invariants hold"
+  },
+  "resolutionV14": {
+    "target": "Frax Finance / sfrxUSD",
+    "chain": "Fraxtal",
+    "chainId": 252,
+    "officialTokenAddresses": {
+      "sfrxUSD": "0xfc00000000000000000000000000000000000008",
+      "frxUSD": "0xFc00000000000000000000000000000000000001"
+    },
+    "provider": "fraxtal.gateway.tenderly.co",
+    "providerBlock": 39861692,
+    "providerErrorsBeforeSuccess": [],
+    "frax": {
+      "status": "ok",
+      "position": {
+        "id": "fraxtal:0xfc00000000000000000000000000000000000008",
+        "chain": "Fraxtal",
+        "protocol": "Frax Finance",
+        "positionType": "Savings Stable",
+        "wrapper": "0xfc00000000000000000000000000000000000008",
+        "wrapperSymbol": "sfrxUSD",
+        "name": "Staked Frax USD",
+        "sharesOrBalance": 8.321749676735,
+        "shareRaw": "8321749676734561340",
+        "underlying": "0xFc00000000000000000000000000000000000001",
+        "underlyingSymbol": "frxUSD",
+        "redeemableUnderlying": null,
+        "economicValuation": {
+          "status": "ok",
+          "terminalType": "stable-asset",
+          "terminal": "0xFc00000000000000000000000000000000000001",
+          "terminalSymbol": "frxUSD",
+          "terminalAmount": null,
+          "price": {
+            "status": "ok",
+            "priceUsd": 0.9910198421005891,
+            "source": "defillama-contract:fraxtal"
+          },
+          "wrapperPriceFallback": {
+            "status": "ok",
+            "priceUsd": 1.2052011606241135,
+            "source": "defillama-contract:fraxtal"
+          },
+          "crossChainPriceFallback": false,
+          "valueUsd": 10.029382368824,
+          "path": [
+            {
+              "token": "0xfc00000000000000000000000000000000000008",
+              "symbol": "sfrxUSD",
+              "amount": 8.321749676735,
+              "standard": "ERC-4626-like",
+              "redeemMethod": null,
+              "error": "missing revert data | missing revert data"
+            }
+          ]
+        },
+        "valueUsd": 10.029382,
+        "valuationStatus": "ok",
+        "valuationCanonical": false,
+        "incomeMode": "embedded-yield",
+        "productive": true,
+        "ownerHintMatched": "Frax Finance",
+        "methodologyNote": "Fraxtal-native sfrxUSD. Embedded Yield is exchange-rate/share-value growth; current-book value uses redeemable frxUSD when reproducible. Historical income must be flow-adjusted.",
+        "history": {
+          "firstObservedInbound": null,
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T11:28:19.980Z",
+            "sharesOrBalance": 8.321749676735,
+            "redeemableUnderlying": null,
+            "economicValueUsd": 10.029382
+          }
+        }
+      }
+    },
+    "moduleExecution": {
+      "fraxtalProviderAvailable": true,
+      "fraxStatus": "ok"
+    },
+    "engineeringGuard": "technical success and economic completeness remain separate; missing Fraxtal data publishes diagnostics instead of discarding them"
   }
 }
