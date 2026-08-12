@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<!-- companies.html · Monetra Stable Capital live card + Passport v1.18 · resolver-driven · Composite Index gating preserved -->
+<!-- companies.html · Stable Companies Index v1.19 · Monetra Passport · separate stable universe · recurring Stable Capital data -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -3216,6 +3217,106 @@
             .mp-foot { align-items:flex-start; flex-direction:column; }
         }
 
+
+        /* ═══════════════════════════════════════════════════════════════
+           Stable Companies Index · v1.19
+           Separate measurement universe: stable-only companies do not
+           enter the general Composite Index.
+           ═══════════════════════════════════════════════════════════════ */
+        .index-separation-note{
+            margin-top:1rem;padding:.9rem 1rem;border:1px solid rgba(10,124,78,.12);
+            border-radius:13px;background:rgba(10,124,78,.035);display:flex;justify-content:space-between;
+            align-items:center;gap:1rem;color:var(--text-2);font-size:.66rem;line-height:1.55
+        }
+        .index-separation-note a{color:var(--green);text-decoration:none;font-weight:650;white-space:nowrap}
+        .stable-index-sec{
+            position:relative;padding:6.2rem 0 6.6rem;overflow:visible;
+            background:
+              radial-gradient(circle at 8% 0%, rgba(10,124,78,.07), transparent 34%),
+              radial-gradient(circle at 92% 9%, rgba(168,132,44,.055), transparent 27%),
+              linear-gradient(180deg,#f8faf7 0%,#fbfcfa 45%,#f7f9f6 100%);
+            border-top:1px solid rgba(15,23,42,.055);border-bottom:1px solid rgba(15,23,42,.055)
+        }
+        .stable-index-sec:before{
+            content:"";position:absolute;left:50%;top:0;width:min(92%,1180px);height:1px;
+            transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(10,124,78,.28),transparent)
+        }
+        .sc-head{display:flex;justify-content:space-between;gap:2rem;align-items:flex-end;margin-bottom:2rem}
+        .sc-eyebrow{display:flex;align-items:center;gap:.55rem;color:var(--green);font-size:.57rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin-bottom:.65rem}
+        .sc-live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px rgba(10,124,78,.08)}
+        .sc-head h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,4.8vw,4.35rem);font-weight:450;line-height:.94;letter-spacing:-.035em;margin:0;color:var(--text)}
+        .sc-head p{max-width:790px;color:var(--text-2);font-size:.78rem;line-height:1.7;margin-top:.85rem}
+        .sc-universe-badge{min-width:170px;border:1px solid rgba(10,124,78,.15);border-radius:15px;padding:.8rem .95rem;background:rgba(255,255,255,.68);text-align:right}
+        .sc-universe-badge span{display:block;color:var(--text-3);font-size:.47rem;letter-spacing:.12em;text-transform:uppercase}
+        .sc-universe-badge b{display:block;color:var(--green);font-size:.68rem;margin-top:.2rem;font-weight:650}
+        .sc-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid rgba(15,23,42,.075);border-radius:18px;background:rgba(255,255,255,.76);overflow:visible;box-shadow:0 18px 50px -44px rgba(15,23,42,.34)}
+        .sc-summary-item{position:relative;padding:1.15rem 1.2rem;border-left:1px solid var(--line);min-width:0}
+        .sc-summary-item:first-child{border-left:0}
+        .sc-summary-item>b{display:block;font-family:'Cormorant Garamond',serif;font-size:2rem;line-height:1;font-weight:600;font-variant-numeric:tabular-nums;margin-top:.38rem}
+        .sc-summary-item>span{display:block;color:var(--text-3);font-size:.53rem;margin-top:.35rem}
+        .sc-label{color:var(--text-3);font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+        .sc-label-with-help{display:inline-flex!important;align-items:center;gap:.36rem;position:relative}
+        .sc-help-wrap{display:inline-flex;position:relative;vertical-align:middle}
+        .sc-help{width:17px;height:17px;border-radius:50%;border:1px solid rgba(10,124,78,.24);background:rgba(10,124,78,.035);color:var(--green);font:700 .56rem/1 'Space Grotesk',sans-serif;cursor:pointer;padding:0;display:grid;place-items:center}
+        .sc-tip{position:absolute;z-index:80;bottom:calc(100% + 8px);left:50%;width:260px;transform:translate(-50%,6px);opacity:0;visibility:hidden;pointer-events:none;padding:.72rem .78rem;border-radius:10px;background:#13201a;color:#eef6f0;box-shadow:0 14px 38px rgba(0,0,0,.22);font:.56rem/1.5 'Space Grotesk',sans-serif;letter-spacing:0;text-transform:none;font-weight:450;transition:.18s ease}
+        .sc-help-wrap:hover .sc-tip,.sc-help-wrap:focus-within .sc-tip,.sc-help-wrap.open .sc-tip{opacity:1;visibility:visible;transform:translate(-50%,0)}
+        .sc-board{margin-top:1rem;border:1px solid rgba(15,23,42,.075);border-radius:18px;background:rgba(255,255,255,.74);overflow:hidden}
+        .sc-board-head,.sc-board-row{display:grid;grid-template-columns:42px minmax(140px,1.35fr) minmax(105px,.85fr) minmax(100px,.82fr) minmax(105px,.9fr) minmax(90px,.78fr) 78px 120px;align-items:center;gap:.6rem}
+        .sc-board-head{padding:.72rem 1rem;background:rgba(15,23,42,.025);border-bottom:1px solid var(--line);color:var(--text-3);font-size:.48rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+        .sc-board-row{padding:.88rem 1rem;border-top:1px solid rgba(15,23,42,.055);font-size:.67rem}
+        .sc-board-row:first-child{border-top:0}.sc-board-row strong{font-weight:650}.sc-board-row b{font-variant-numeric:tabular-nums}.sc-board-row .sc-rank{color:var(--text-3)}
+        .sc-board-row .sc-company-meta{display:block;color:var(--text-3);font-size:.52rem;margin-top:.17rem}.sc-board-row .sc-green{color:var(--green)}
+        .sc-board-action{justify-self:end;border:1px solid rgba(10,124,78,.17);border-radius:999px;padding:.42rem .68rem;color:var(--green);text-decoration:none;font-size:.53rem;font-weight:650;white-space:nowrap;background:rgba(10,124,78,.025)}
+        .sc-board-loading{padding:1rem;color:var(--text-3);font-size:.66rem}
+        .sc-method-note{margin-top:1rem;padding:.95rem 1.05rem;border:1px solid rgba(168,132,44,.13);border-radius:14px;background:rgba(255,255,255,.56);display:flex;justify-content:space-between;gap:1.5rem;align-items:center}
+        .sc-method-note>div{max-width:760px}.sc-method-note b{display:block;font-size:.63rem;color:var(--text);margin-bottom:.2rem}.sc-method-note span{color:var(--text-2);font-size:.59rem;line-height:1.55}
+        .sc-method-flow{display:flex;align-items:center;gap:.4rem;white-space:nowrap}.sc-method-flow i{font-style:normal;color:var(--green);font-size:.52rem;font-weight:650}.sc-method-flow em{font-style:normal;color:var(--gold);font-size:.62rem}
+        .stable-passport{margin-top:2.3rem;border:1px solid rgba(10,124,78,.15);border-radius:26px;background:rgba(255,255,255,.84);box-shadow:0 30px 80px -58px rgba(10,50,33,.48);overflow:visible}
+        .scp-hero{display:flex;justify-content:space-between;gap:2rem;padding:1.6rem 1.65rem 1.35rem;border-bottom:1px solid var(--line);background:linear-gradient(135deg,rgba(10,124,78,.055),rgba(255,255,255,.72) 50%,rgba(168,132,44,.045));border-radius:26px 26px 0 0}
+        .scp-kicker{font-size:.51rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:.48rem}
+        .scp-name-row{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}.scp-name-row h3{font-family:'Cormorant Garamond',serif;font-size:2.75rem;line-height:.9;font-weight:500;letter-spacing:-.03em;margin:0}
+        .scp-live{display:inline-flex;align-items:center;gap:.45rem;color:var(--green);font-size:.52rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+        .scp-hero p{max-width:720px;color:var(--text-2);font-size:.72rem;line-height:1.65;margin-top:.65rem}
+        .scp-identity{align-self:flex-start;text-align:right;border-left:1px solid rgba(10,124,78,.12);padding-left:1.15rem}.scp-identity span{display:block;color:var(--text-3);font-size:.48rem;text-transform:uppercase;letter-spacing:.11em}.scp-identity b{font-family:'Cormorant Garamond',serif;color:var(--green);font-size:2rem;line-height:1;margin-top:.2rem;display:block}
+        .scp-headline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:1rem 1.15rem;border-bottom:1px solid var(--line)}
+        .scp-headline>div{padding:.3rem .75rem;border-left:1px solid var(--line);min-width:0}.scp-headline>div:first-child{border-left:0}
+        .scp-headline>div>span{display:flex;align-items:center;min-height:2.1em;color:var(--text-3);font-size:.47rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;line-height:1.2}
+        .scp-headline>div>b{display:block;font-family:'Cormorant Garamond',serif;font-size:1.55rem;line-height:1;font-weight:600;margin-top:.28rem;font-variant-numeric:tabular-nums}
+        .scp-quality{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:.75rem 1.15rem;border-bottom:1px solid var(--line);background:rgba(10,124,78,.018)}
+        .scp-quality>span{display:grid;grid-template-columns:8px auto 1fr;align-items:center;gap:.38rem;padding:.15rem .7rem;border-left:1px solid var(--line)}.scp-quality>span:first-child{border-left:0}
+        .scp-quality i{width:6px;height:6px;border-radius:50%;background:var(--green)}.scp-quality b{font-size:.61rem;color:var(--green);font-weight:700}.scp-quality small{font-size:.49rem;color:var(--text-3)}
+        .scp-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,.72fr);gap:.9rem;padding:1rem}
+        .scp-side{display:grid;gap:.9rem;align-content:start}.scp-panel{border:1px solid rgba(15,23,42,.07);border-radius:17px;background:rgba(251,252,250,.9);padding:.95rem}
+        .scp-panel-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:.7rem}.scp-panel-k{font-size:.46rem;color:var(--gold);letter-spacing:.13em;font-weight:700}.scp-panel h4{font-family:'Cormorant Garamond',serif;font-size:1.35rem;line-height:1;margin:.22rem 0 0;font-weight:550}.scp-panel-head>span{color:var(--text-3);font-size:.53rem}
+        .scp-table-wrap{overflow-x:auto}.scp-table{min-width:660px}.scp-tr{display:grid;grid-template-columns:minmax(175px,1.5fr) 78px 88px 78px minmax(125px,1fr);align-items:center;gap:.6rem;padding:.56rem .45rem;border-top:1px solid rgba(15,23,42,.055)}
+        .scp-th{border-top:0;color:var(--text-3);font-size:.45rem;text-transform:uppercase;letter-spacing:.09em;font-weight:700;padding-top:.2rem;padding-bottom:.45rem}.scp-row{font-size:.59rem}.scp-row strong{display:block;font-size:.63rem}.scp-row small{display:block;color:var(--text-3);font-size:.49rem;margin-top:.12rem}.scp-row .scp-chain{color:var(--text-2)}.scp-row .scp-value,.scp-row .scp-apy{text-align:right;font-variant-numeric:tabular-nums}.scp-row .scp-apy{color:var(--green);font-weight:700}.scp-mode{font-size:.51rem;color:var(--text-2)}
+        .scp-small-note{color:var(--text-3);font-size:.52rem;line-height:1.5;margin-top:.65rem;padding-top:.6rem;border-top:1px solid var(--line)}
+        .scp-status-pill{border:1px solid rgba(168,132,44,.15);border-radius:999px;padding:.28rem .5rem;background:rgba(168,132,44,.04);font-size:.48rem!important}
+        .scp-income-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid rgba(15,23,42,.06);border-radius:12px;overflow:hidden}.scp-income-grid>div{padding:.65rem;border-left:1px solid var(--line);border-top:1px solid var(--line)}.scp-income-grid>div:nth-child(odd){border-left:0}.scp-income-grid>div:nth-child(-n+2){border-top:0}.scp-income-grid span{display:block;color:var(--text-3);font-size:.46rem;text-transform:uppercase;letter-spacing:.08em}.scp-income-grid b{display:block;font-family:'Cormorant Garamond',serif;font-size:1.08rem;margin-top:.22rem}
+        .scp-price-effect{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.66rem .1rem;border-bottom:1px solid var(--line);margin-top:.55rem;font-size:.55rem}.scp-price-effect>b{font-size:.64rem}
+        .scp-rewards{padding-top:.65rem}.scp-rewards-title{color:var(--text-3);font-size:.47rem;text-transform:uppercase;letter-spacing:.09em;font-weight:700;margin-bottom:.42rem}.scp-reward-row{display:flex;justify-content:space-between;align-items:baseline;gap:.7rem;padding:.5rem .55rem;border:1px solid rgba(10,124,78,.08);border-radius:10px;background:rgba(10,124,78,.028);margin-top:.35rem}.scp-reward-row strong{font-size:.59rem}.scp-reward-row span{color:var(--green);font-size:.58rem;font-weight:700}.scp-muted{color:var(--text-3);font-size:.55rem}
+        .scp-alloc-title{font-size:.47rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.09em;font-weight:700;margin-bottom:.4rem}.scp-alloc-title.second{margin-top:.8rem}
+        .scp-allocation{display:grid;gap:.42rem}.scp-alloc-row{display:grid;grid-template-columns:minmax(95px,1fr) 46px;gap:.5rem;align-items:center}.scp-alloc-row span{font-size:.56rem;color:var(--text-2)}.scp-alloc-row b{font-size:.53rem;text-align:right}.scp-alloc-bar{grid-column:1/-1;height:4px;background:rgba(15,23,42,.06);border-radius:99px;overflow:hidden;margin-top:-.22rem}.scp-alloc-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),rgba(168,132,44,.72));border-radius:inherit}
+        .scp-explain{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem;padding:0 1rem 1rem}.scp-explain>div{border:1px solid rgba(15,23,42,.065);border-radius:14px;padding:.75rem;background:rgba(255,255,255,.66)}.scp-explain-num{font-family:'Cormorant Garamond',serif;color:var(--gold);font-size:1.1rem}.scp-explain b{display:block;font-size:.59rem;margin:.25rem 0}.scp-explain p{color:var(--text-3);font-size:.51rem;line-height:1.5}
+        .scp-foot{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.9rem 1.15rem;border-top:1px solid var(--line);background:rgba(15,23,42,.015);border-radius:0 0 26px 26px}.scp-foot b{display:block;font-size:.56rem}.scp-foot span{display:inline-block;color:var(--text-2);font-size:.56rem;margin-top:.1rem}.scp-foot small{display:block;color:var(--text-3);font-size:.48rem;margin-top:.18rem}.scp-foot-actions a{color:var(--green);text-decoration:none;font-size:.59rem;font-weight:700}
+        @media(max-width:900px){
+          .sc-head{align-items:flex-start}.sc-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.sc-summary-item:nth-child(odd){border-left:0}.sc-summary-item:nth-child(n+3){border-top:1px solid var(--line)}
+          .sc-board{overflow-x:auto}.sc-board-head,.sc-board-row{min-width:880px}
+          .scp-headline{grid-template-columns:repeat(3,minmax(0,1fr))}.scp-headline>div:nth-child(4){border-left:0}.scp-headline>div:nth-child(n+4){border-top:1px solid var(--line)}
+          .scp-grid{grid-template-columns:1fr}.scp-explain{grid-template-columns:repeat(2,minmax(0,1fr))}
+        }
+        @media(max-width:760.98px){
+          .stable-index-sec{padding:4.5rem 0}.index-separation-note{align-items:flex-start;flex-direction:column}
+          .sc-head{flex-direction:column;gap:1.1rem}.sc-head h2{font-size:2.65rem}.sc-head p{font-size:.7rem}.sc-universe-badge{align-self:stretch;text-align:left}
+          .sc-summary-item{padding:.9rem}.sc-summary-item>b{font-size:1.65rem}
+          .sc-method-note{align-items:flex-start;flex-direction:column}.sc-method-flow{flex-wrap:wrap}
+          .stable-passport{border-radius:20px}.scp-hero{flex-direction:column;padding:1.2rem;border-radius:20px 20px 0 0}.scp-name-row h3{font-size:2.25rem}.scp-identity{text-align:left;border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:.65rem}
+          .scp-headline{grid-template-columns:repeat(2,minmax(0,1fr));padding:.75rem}.scp-headline>div{padding:.65rem .55rem;border-top:1px solid var(--line)}.scp-headline>div:nth-child(odd){border-left:0}.scp-headline>div:nth-child(-n+2){border-top:0}.scp-headline>div:nth-child(4){border-left:1px solid var(--line)}
+          .scp-quality{grid-template-columns:repeat(2,minmax(0,1fr));padding:.65rem}.scp-quality>span:nth-child(odd){border-left:0}.scp-quality>span:nth-child(n+3){border-top:1px solid var(--line);padding-top:.55rem}
+          .scp-grid{padding:.7rem}.scp-explain{grid-template-columns:1fr;padding:.2rem .7rem .7rem}.scp-foot{align-items:flex-start;flex-direction:column;border-radius:0 0 20px 20px}
+          .sc-tip{left:0;transform:translate(0,6px);width:min(250px,75vw)}.sc-help-wrap:hover .sc-tip,.sc-help-wrap:focus-within .sc-tip,.sc-help-wrap.open .sc-tip{transform:translate(0,0)}
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -3568,7 +3669,7 @@
                 <div class="cc-sub" data-i18n="card8.sub">A Stable Capital company deploying diversified stablecoin strategies across lending, savings vaults, auto-compounding liquidity and curated onchain yield.</div>
                 <div class="cc-metrics">
                     <div><div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div><div class="cc-metric-value gold" id="tvl-monetra">Live</div></div>
-                    <div><div class="cc-metric-label" data-i18n="card8.yield">Reference APY</div><div class="cc-metric-value" id="apy-monetra" data-i18n="card8.measuring">Measuring</div></div>
+                    <div><div class="cc-metric-label" data-i18n="card8.yield">Reference APY</div><div class="cc-metric-value" id="apy-monetra">Live</div></div>
                 </div>
                 <span class="cc-extlink cc-extlink-static" aria-disabled="true"><span class="cc-ext-label" data-i18n="card.debankTracking">DeBank · Tracking</span></span>
             </div>
@@ -3625,7 +3726,7 @@
         <div class="index-head">
             <div class="index-eyebrow reveal"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">The Index · Live</span></div>
             <h2 class="index-title reveal" data-i18n="index.title">The Holding Index</h2>
-            <p class="index-sub reveal" data-i18n="index.sub">The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance into one Index Weight; TVL shows pure economic scale. Both views are calculated from the same living company records.</p>
+            <p class="index-sub reveal" data-i18n="index.sub">The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance for general onchain companies; TVL shows pure economic scale. Stable Capital companies are measured separately in the dedicated Stable Companies Index below.</p>
         </div>
 
         <div class="index-metrics reveal">
@@ -3675,41 +3776,233 @@
         </div>
 
         <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.</b> <span id="idxNoteBody" data-i18n="index.note.body">Below the weights sits a growing history of balances, productive engines, accrued rewards and operating time. As that history deepens, resilience, cash-flow quality and reputation can be measured from evidence rather than invented.</span></p>
+        <div class="index-separation-note reveal">
+            <span data-i18n="index.stableSeparate">Stable Capital companies do not compete in this Composite. Their objective, risk profile and return mechanics are different, so they are tracked in a dedicated Stable Companies Index.</span>
+            <a href="#stable-index" data-i18n="index.stableLink">View Stable Companies ↓</a>
+        </div>
+    </div>
+</section>
 
-        <!-- Registry #008 has a live Company Passport while Stable Capital
-             Reference APY history is being established. It is intentionally
-             not forced into Composite Index Weight before that measurement exists. -->
-        <section class="monetra-passport reveal" id="monetraPassport" aria-label="Monetra Stable Capital Company Passport">
-            <div class="mp-head">
+<!-- ── STABLE COMPANIES INDEX · separate measurement universe ─────────── -->
+<section class="stable-index-sec" id="stable-index">
+    <div class="container">
+        <div class="sc-head reveal">
+            <div>
+                <div class="sc-eyebrow"><span class="sc-live-dot"></span><span data-i18n="stable.eyebrow">Stable Capital · Separate Universe</span></div>
+                <h2 data-i18n="stable.title">The Holding Stable Companies Index</h2>
+                <p data-i18n="stable.sub">Stable-only companies are measured against the economics they are actually built for: preservation of capital, productive stable yield, embedded income, claimable rewards and operating history. They are intentionally not ranked against companies carrying BTC, ETH, volatile assets or long-lock governance positions.</p>
+            </div>
+            <div class="sc-universe-badge">
+                <span data-i18n="stable.badgeTop">Independent measurement</span>
+                <b data-i18n="stable.badgeBottom">Stable-only universe</b>
+            </div>
+        </div>
+
+        <div class="sc-summary reveal">
+            <div class="sc-summary-item">
+                <div class="sc-label" data-i18n="stable.metric.capital">Stable Capital</div>
+                <b class="gold" id="scTotalCapital">—</b>
+                <span data-i18n="stable.metric.capitalSub">current economic value</span>
+            </div>
+            <div class="sc-summary-item">
+                <div class="sc-label-with-help">
+                    <div class="sc-label" data-i18n="stable.metric.apy">Reference APY</div>
+                    <span class="sc-help-wrap"><button class="sc-help" type="button" aria-label="Reference APY information">?</button><span class="sc-tip" data-i18n="stable.help.apy">Current normalized productive capacity. It is not realised return and is not a promise of future yield.</span></span>
+                </div>
+                <b id="scReferenceApy">—</b>
+                <span id="scApyStatus" data-i18n="stable.metric.apySub">capital-weighted · full book</span>
+            </div>
+            <div class="sc-summary-item">
+                <div class="sc-label-with-help">
+                    <div class="sc-label" data-i18n="stable.metric.claimable">Accrued Claimable</div>
+                    <span class="sc-help-wrap"><button class="sc-help" type="button" aria-label="Claimable rewards information">?</button><span class="sc-tip" data-i18n="stable.help.claimable">Protocol-side value already earned and separately claimable. It is kept separate from principal and Embedded Yield.</span></span>
+                </div>
+                <b id="scClaimable">—</b>
+                <span data-i18n="stable.metric.claimableSub">outside principal</span>
+            </div>
+            <div class="sc-summary-item">
+                <div class="sc-label" data-i18n="stable.metric.companies">Stable Companies</div>
+                <b id="scCompanyCount">—</b>
+                <span data-i18n="stable.metric.companiesSub">dedicated index universe</span>
+            </div>
+        </div>
+
+        <div class="sc-board reveal">
+            <div class="sc-board-head">
+                <div>#</div>
+                <div data-i18n="stable.board.company">Company</div>
+                <div data-i18n="stable.board.capital">Stable Capital</div>
+                <div data-i18n="stable.board.apy">Reference APY</div>
+                <div data-i18n="stable.board.embedded">Embedded Yield</div>
+                <div data-i18n="stable.board.claimable">Claimable</div>
+                <div data-i18n="stable.board.strategies">Strategies</div>
+                <div></div>
+            </div>
+            <div id="stableCompanyBoard">
+                <div class="sc-board-loading" data-i18n="stable.loading">Loading the verified Stable Capital dataset…</div>
+            </div>
+        </div>
+
+        <div class="sc-method-note reveal">
+            <div>
+                <b data-i18n="stable.method.title">Stable Index methodology</b>
+                <span data-i18n="stable.method.text">No synthetic Stable Composite score is invented yet. The index reports the measurable fundamentals directly: capital, current productive capacity, earned Embedded Yield, claimable rewards and operating history. A richer stable-company score can be introduced only after a meaningful multi-company history exists.</span>
+            </div>
+            <span class="sc-method-flow"><i>Capital</i><em>→</em><i>Productivity</i><em>→</em><i>Earned Yield</i><em>→</em><i>History</i></span>
+        </div>
+
+        <!-- Monetra · Stable Company Passport -->
+        <article class="stable-passport reveal" id="stablePassportMonetra">
+            <div class="scp-hero">
                 <div>
-                    <div class="mp-kicker" data-i18n="monetra.passport.kicker">Company Passport · Registry 008</div>
-                    <h3>Monetra.eth</h3>
-                    <p data-i18n="monetra.passport.lede">Stable Capital measured directly from the company’s onchain strategy positions. Gas assets are excluded from Stable Capital TVL.</p>
+                    <div class="scp-kicker" data-i18n="stable.passport.kicker">Company Passport · Registry 008 · Stable Capital</div>
+                    <div class="scp-name-row">
+                        <h3>Monetra.eth</h3>
+                        <span class="scp-live"><span class="cc-dot"></span><span data-i18n="stable.passport.live">Live · Fully Measured</span></span>
+                    </div>
+                    <p data-i18n="stable.passport.lede">A stable-only onchain company built as a diversified operating book across lending, savings wrappers, auto-compounding vaults, curated strategies and a Stability Pool. Gas assets are excluded from Stable Capital.</p>
                 </div>
-                <span class="mp-status"><span class="cc-dot"></span><span data-i18n="monetra.passport.live">Live Stable Capital</span></span>
-            </div>
-            <div class="mp-metrics">
-                <div><span data-i18n="monetra.passport.capital">Stable Capital</span><b id="mpCapital">Live</b></div>
-                <div><span data-i18n="monetra.passport.strategies">Strategies</span><b id="mpStrategies">—</b></div>
-                <div><span data-i18n="monetra.passport.founded">Operating since</span><b id="mpFounded">May 27, 2026</b></div>
-                <div><span data-i18n="monetra.passport.apy">Reference APY</span><b class="mp-measuring" data-i18n="monetra.passport.measuring">Measuring</b></div>
-            </div>
-            <div class="mp-grid">
-                <div class="mp-card">
-                    <div class="mp-card-head"><span data-i18n="monetra.passport.positions">Stable strategy positions</span><small id="mpPositionCount">—</small></div>
-                    <div class="mp-positions" id="mpPositions"><span class="mp-empty" data-i18n="monetra.passport.loading">Loading verified onchain positions…</span></div>
-                </div>
-                <div class="mp-card">
-                    <div class="mp-card-head"><span data-i18n="monetra.passport.rewards">Accrued claimable rewards</span><small data-i18n="monetra.passport.separate">Separate from principal</small></div>
-                    <div class="mp-rewards" id="mpRewards"><span class="mp-empty" data-i18n="monetra.passport.loadingRewards">Reading current protocol-side rewards…</span></div>
-                    <div class="mp-note" data-i18n="monetra.passport.rewardNote">Embedded yield remains inside savings, lending and vault positions. Only separately claimable protocol value appears here.</div>
+                <div class="scp-identity">
+                    <span data-i18n="stable.passport.category">Stable Capital Company</span>
+                    <b>008</b>
                 </div>
             </div>
-            <div class="mp-foot">
-                <span data-i18n="monetra.passport.indexGate">Composite Index inclusion remains measurement-gated until Stable Capital Reference APY is normalized by the Productivity Intelligence Layer.</span>
-                <a href="https://theholding.ai/monetra/" data-i18n="monetra.passport.open">Open Monetra →</a>
+
+            <div class="scp-headline">
+                <div>
+                    <span data-i18n="stable.passport.capital">Stable Capital</span>
+                    <b class="gold" id="scpCapital">—</b>
+                </div>
+                <div>
+                    <span data-i18n="stable.passport.productive">Productive Capital</span>
+                    <b id="scpProductive">—</b>
+                </div>
+                <div>
+                    <span class="sc-label-with-help"><span data-i18n="stable.passport.apy">Reference APY</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.apy">Current normalized productive capacity. It is not realised return and is not a promise of future yield.</span></span></span>
+                    <b id="scpApy">—</b>
+                </div>
+                <div>
+                    <span class="sc-label-with-help"><span data-i18n="stable.passport.embedded">Embedded Yield</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.embedded">Income already capitalized inside a lending, savings or vault position. It is recognized only from flow-safe checkpoints, never estimated as TVL × current APY.</span></span></span>
+                    <b id="scpEmbedded">—</b>
+                </div>
+                <div>
+                    <span data-i18n="stable.passport.claimable">Claimable Rewards</span>
+                    <b id="scpClaimable">—</b>
+                </div>
+                <div>
+                    <span data-i18n="stable.passport.since">Operating Since</span>
+                    <b id="scpFounded">May 27, 2026</b>
+                </div>
             </div>
-        </section>
+
+            <div class="scp-quality">
+                <span><i></i><b id="scpMeasured">10 / 10</b><small data-i18n="stable.passport.measured">strategies with Reference APY</small></span>
+                <span><i></i><b id="scpProtocols">—</b><small data-i18n="stable.passport.protocols">protocol families</small></span>
+                <span><i></i><b id="scpChains">—</b><small data-i18n="stable.passport.chains">chains</small></span>
+                <span><i></i><b id="scpEmbeddedCoverage">—</b><small data-i18n="stable.passport.embeddedCoverage">embedded-yield paths comparable</small></span>
+            </div>
+
+            <div class="scp-grid">
+                <section class="scp-panel scp-strategies">
+                    <div class="scp-panel-head">
+                        <div>
+                            <div class="scp-panel-k" data-i18n="stable.passport.bookKicker">01 · COMPANY BOOK</div>
+                            <h4 data-i18n="stable.passport.bookTitle">Stable Strategy Book</h4>
+                        </div>
+                        <span id="scpStrategyCount">—</span>
+                    </div>
+                    <div class="scp-table-wrap">
+                        <div class="scp-table">
+                            <div class="scp-tr scp-th">
+                                <span data-i18n="stable.table.strategy">Strategy</span>
+                                <span data-i18n="stable.table.chain">Chain</span>
+                                <span data-i18n="stable.table.capital">Capital</span>
+                                <span data-i18n="stable.table.apy">Ref. APY</span>
+                                <span data-i18n="stable.table.mode">Income Mode</span>
+                            </div>
+                            <div id="scpStrategyRows"></div>
+                        </div>
+                    </div>
+                    <p class="scp-small-note" data-i18n="stable.passport.bookNote">Each strategy keeps its own economic mechanism. The company-level Reference APY is capital-weighted; the ten protocol rates are never simply averaged.</p>
+                </section>
+
+                <aside class="scp-side">
+                    <section class="scp-panel">
+                        <div class="scp-panel-head">
+                            <div>
+                                <div class="scp-panel-k" data-i18n="stable.passport.incomeKicker">02 · INCOME ACCOUNTING</div>
+                                <h4 data-i18n="stable.passport.incomeTitle">Earned vs. Claimable</h4>
+                            </div>
+                            <span class="scp-status-pill" id="scpLedgerStatus">Warming</span>
+                        </div>
+
+                        <div class="scp-income-grid">
+                            <div><span data-i18n="stable.income.mtd">Embedded MTD</span><b id="scpMtd">—</b></div>
+                            <div><span data-i18n="stable.income.qtd">Embedded QTD</span><b id="scpQtd">—</b></div>
+                            <div><span data-i18n="stable.income.ytd">Embedded YTD</span><b id="scpYtd">—</b></div>
+                            <div><span data-i18n="stable.income.since">Since Tracking</span><b id="scpSinceYield">—</b></div>
+                        </div>
+
+                        <div class="scp-price-effect">
+                            <span class="sc-label-with-help"><span data-i18n="stable.income.priceEffect">Stable Price Effect</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.price">Stablecoin/depeg price movement is separated from strategy income. A stable asset moving away from $1 should not be mislabeled as yield.</span></span></span>
+                            <b id="scpPriceEffect">—</b>
+                        </div>
+
+                        <div class="scp-rewards">
+                            <div class="scp-rewards-title" data-i18n="stable.income.claimableTitle">Accrued Claimable Rewards</div>
+                            <div id="scpRewardRows"><span class="scp-muted" data-i18n="stable.income.noRewards">No separate claimable rewards at this snapshot.</span></div>
+                        </div>
+                    </section>
+
+                    <section class="scp-panel">
+                        <div class="scp-panel-head">
+                            <div>
+                                <div class="scp-panel-k" data-i18n="stable.passport.allocKicker">03 · ALLOCATION</div>
+                                <h4 data-i18n="stable.passport.allocTitle">Where Stable Capital Works</h4>
+                            </div>
+                        </div>
+                        <div class="scp-alloc-title" data-i18n="stable.alloc.chain">By chain</div>
+                        <div id="scpChainAllocation" class="scp-allocation"></div>
+                        <div class="scp-alloc-title second" data-i18n="stable.alloc.type">By strategy type</div>
+                        <div id="scpTypeAllocation" class="scp-allocation"></div>
+                    </section>
+                </aside>
+            </div>
+
+            <section class="scp-explain">
+                <div>
+                    <span class="scp-explain-num">01</span>
+                    <b data-i18n="stable.explain.apyTitle">Reference APY</b>
+                    <p data-i18n="stable.explain.apyText">A current normalized measure of productive capacity. It tells what the strategy book is producing now, not what the company has already earned historically.</p>
+                </div>
+                <div>
+                    <span class="scp-explain-num">02</span>
+                    <b data-i18n="stable.explain.embeddedTitle">Embedded Yield</b>
+                    <p data-i18n="stable.explain.embeddedText">Yield that stays inside aToken, ERC-4626, PPS or other share value. It becomes historical income only after verified, flow-adjusted checkpoints can be compared.</p>
+                </div>
+                <div>
+                    <span class="scp-explain-num">03</span>
+                    <b data-i18n="stable.explain.claimableTitle">Claimable Rewards</b>
+                    <p data-i18n="stable.explain.claimableText">Income that has accrued protocol-side but remains separately claimable. Once received by the company wallet it becomes realised cash flow / treasury, not accrued rewards.</p>
+                </div>
+                <div>
+                    <span class="scp-explain-num">04</span>
+                    <b data-i18n="stable.explain.priceTitle">Stable Price Effect</b>
+                    <p data-i18n="stable.explain.priceText">Depeg or market-price movement is kept outside strategy income, so a change in the dollar price of a stable asset cannot masquerade as yield.</p>
+                </div>
+            </section>
+
+            <div class="scp-foot">
+                <div>
+                    <b data-i18n="stable.passport.tracking">Embedded Yield tracking began</b>
+                    <span id="scpTrackingStarted">—</span>
+                    <small data-i18n="stable.passport.trackingNote">No pre-tracking income is reconstructed from current APY.</small>
+                </div>
+                <div class="scp-foot-actions">
+                    <a href="https://theholding.ai/monetra/" data-i18n="stable.passport.open">Open Monetra →</a>
+                </div>
+            </div>
+        </article>
     </div>
 </section>
 
@@ -4028,94 +4321,189 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    existing manual APRs as a safe fallback. If the collector, a protocol, or the
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
-const MONETRA_RESOLVE_DATA_URL = './company-008-resolve.json';
-const MONETRA_UI_VERSION = '1.18-stable-capital-live-passport';
-let MONETRA_RESOLVE_SNAPSHOT = null;
+const STABLE_INDEX_DATA_URL = './stable-index-data.json';
+const STABLE_INDEX_UI_VERSION = '1.19-separate-stable-companies-index';
+let STABLE_INDEX_SNAPSHOT = null;
 
-async function loadMonetraResolveSnapshot() {
+async function loadStableIndexSnapshot() {
     try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 4500);
-        const res = await fetch(MONETRA_RESOLVE_DATA_URL + '?t=' + Date.now(), {
+        const res = await fetch(STABLE_INDEX_DATA_URL + '?t=' + Date.now(), {
             cache: 'no-store', signal: controller.signal
         });
         clearTimeout(timer);
         if (!res.ok) return null;
         const data = await res.json();
-        if (!data || data.company?.registry !== '008' || data.company?.name !== 'Monetra.eth') return null;
-        if (!Array.isArray(data.stableCapital?.positions) || !data.stableCapital?.summary) return null;
-        MONETRA_RESOLVE_SNAPSHOT = data;
+        if (!data || data.version !== '0.1-stable-companies-index') return null;
+        if (data.universe?.separateFromGeneralComposite !== true) return null;
+        if (!Array.isArray(data.companies)) return null;
+        STABLE_INDEX_SNAPSHOT = data;
         return data;
     } catch (e) {
         return null;
     }
 }
 
-function renderMonetraPassport(lang) {
-    const d = MONETRA_RESOLVE_SNAPSHOT;
-    if (!d) return;
-    const money = v => Number.isFinite(Number(v))
-        ? '$' + Number(v).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+function stableMoney(v, lang, digits = 2) {
+    if (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) return '—';
+    return '$' + Number(v).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', {
+        minimumFractionDigits: digits, maximumFractionDigits: digits
+    });
+}
+function stablePct(v, digits = 2) {
+    return (v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v))) ? Number(v).toFixed(digits) + '%' : '—';
+}
+function stableDate(iso, lang) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (!Number.isFinite(d.getTime())) return '—';
+    return d.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
+        year:'numeric', month:'short', day:'numeric', timeZone:'UTC'
+    });
+}
+function stableIncomeMode(mode, lang) {
+    const ru = lang === 'ru';
+    const map = {
+        'lending-embedded': ru ? 'Lending · встроенная' : 'Lending · Embedded',
+        'embedded-yield': ru ? 'Встроенная доходность' : 'Embedded Yield',
+        'agent-managed-embedded-yield': ru ? 'Управляемая · встроенная' : 'Agent Managed · Embedded',
+        'stability-pool-yield-with-separate-claimables': ru ? 'Stability Pool · Claimable' : 'Stability Pool · Claimable'
+    };
+    return map[mode] || mode || '—';
+}
+function stableTypeLabel(label, lang) {
+    const ru = lang === 'ru';
+    const map = {
+        'Stable Lending': ru ? 'Стейбл-лендинг' : 'Stable Lending',
+        'Savings Stable': ru ? 'Доходные стейблы' : 'Savings Stable',
+        'Auto-Compounding Stable Vault': ru ? 'Автокомпаунд vault' : 'Auto-Compounding Vault',
+        'Agent / Curator Managed Stable Vault': ru ? 'Управляемый vault' : 'Curated Vault',
+        'Stability Pool Deposit': 'Stability Pool'
+    };
+    return map[label] || label;
+}
+function stableEmbeddedDisplay(v, status, lang) {
+    if (v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v))) return stableMoney(v, lang, 4);
+    return status === 'warming'
+        ? (lang === 'ru' ? 'Наблюдается' : 'Warming')
         : '—';
-    const cap = document.getElementById('mpCapital');
-    const strategies = document.getElementById('mpStrategies');
-    const founded = document.getElementById('mpFounded');
-    const count = document.getElementById('mpPositionCount');
-    const positionsEl = document.getElementById('mpPositions');
-    const rewardsEl = document.getElementById('mpRewards');
-    const tvlCard = document.getElementById('tvl-monetra');
-    const foundedCard = document.getElementById('founded-monetra');
+}
 
-    const positions = d.stableCapital.positions.filter(p => Number.isFinite(Number(p.valueUsd)));
-    const total = Number(d.stableCapital.summary.totalUsd);
-    const uniqueProtocols = new Set(positions.map(p => p.protocol).filter(Boolean));
-    const foundedDate = d.company?.founding?.date || '2026-05-27';
+function renderStableCompanies(lang) {
+    const d = STABLE_INDEX_SNAPSHOT;
+    if (!d) return;
+    const c = d.companies.find(x => x && x.registry === '008') || d.companies[0];
+    if (!c) return;
 
-    if (cap) cap.textContent = money(total);
-    if (strategies) strategies.textContent = String(positions.length);
-    if (count) count.textContent = positions.length + (lang === 'ru' ? ' позиций' : ' positions');
-    if (founded) founded.textContent = lang === 'ru' ? '27 мая 2026' : 'May 27, 2026';
-    if (tvlCard) tvlCard.textContent = Number.isFinite(total) ? '$' + Math.round(total).toLocaleString('en-US') : 'Live';
-    if (foundedCard) foundedCard.textContent = lang === 'ru' ? 'Осн. 27 мая 2026' : 'Est. May 27, 2026';
+    const set = (id, value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
+    const apy = Number(c.displayReferenceApyPct);
+    const cap = Number(c.stableCapitalUsd);
+    const claimable = Number(c.accruedClaimableUsd || 0);
+    const embedded = c.embeddedYield || {};
 
-    const shortProtocol = p => ({
-        'Aave v3': 'Aave',
-        'Frax Finance': 'Frax',
-        'f(x) Protocol': 'f(x)',
-        'Liquity V2': 'Liquity',
-        'Yearn V3': 'Yearn',
-        'Lido Earn': 'Lido'
-    }[p] || p || 'Protocol');
+    // Registry card.
+    set('tvl-monetra', Number.isFinite(cap) ? stableMoney(cap, lang, 0) : 'Live');
+    set('apy-monetra', Number.isFinite(apy) ? stablePct(apy, 2) : (lang === 'ru' ? 'Live' : 'Live'));
+    set('founded-monetra', lang === 'ru' ? 'Осн. 27 мая 2026' : 'Est. May 27, 2026');
 
-    if (positionsEl) {
-        positionsEl.innerHTML = positions.map(p => {
-            const asset = p.wrapperSymbol || p.underlyingSymbol || p.symbol || p.name || 'Stable';
-            const modeRaw = String(p.incomeMode || p.positionType || '');
-            const mode = lang === 'ru'
-                ? (modeRaw.includes('lending') ? 'Lending yield' : modeRaw.includes('agent') ? 'Agent managed' : 'Embedded yield')
-                : (modeRaw.includes('lending') ? 'Lending yield' : modeRaw.includes('agent') ? 'Agent managed' : 'Embedded yield');
-            return '<span class="mp-position">'
-                + '<strong>' + shortProtocol(p.protocol) + ' · ' + asset + '</strong>'
-                + '<b>' + money(p.valueUsd) + '</b>'
-                + '<em>' + mode + '</em>'
-                + '</span>';
+    // Stable Index summary.
+    set('scTotalCapital', stableMoney(d.summary?.stableCapitalUsd, lang, 2));
+    set('scReferenceApy', stablePct(d.summary?.capitalWeightedReferenceApyPct, 2));
+    set('scClaimable', stableMoney(d.summary?.accruedClaimableUsd || 0, lang, 4));
+    set('scCompanyCount', String(d.summary?.companyCount || d.companies.length || 0));
+    set('scApyStatus', c.referenceApyStatus === 'current-full-coverage'
+        ? (lang === 'ru' ? 'взвешено по капиталу · 100% книги' : 'capital-weighted · 100% of book')
+        : (lang === 'ru' ? 'последнее полное наблюдение' : 'latest full observation'));
+
+    // Stable universe board.
+    const board = document.getElementById('stableCompanyBoard');
+    if (board) {
+        const total = Number(d.summary?.stableCapitalUsd || 0);
+        board.innerHTML = d.companies.map((x, i) => {
+            const share = total > 0 ? Number(x.stableCapitalUsd || 0) / total * 100 : 0;
+            const e = x.embeddedYield || {};
+            const eText = stableEmbeddedDisplay(e.sinceTrackingUsd, e.status, lang);
+            return '<div class="sc-board-row">'
+                + '<span class="sc-rank">' + String(i+1).padStart(2,'0') + '</span>'
+                + '<span><strong>' + x.name + '</strong><small class="sc-company-meta">' + (lang==='ru'?'Реестр ':'Registry ') + x.registry + ' · Stable Capital</small></span>'
+                + '<b>' + stableMoney(x.stableCapitalUsd, lang, 2) + '</b>'
+                + '<b class="sc-green">' + stablePct(x.displayReferenceApyPct, 2) + '</b>'
+                + '<span>' + eText + '</span>'
+                + '<span>' + stableMoney(x.accruedClaimableUsd || 0, lang, 4) + '</span>'
+                + '<span>' + x.strategyCount + '</span>'
+                + '<a class="sc-board-action" href="#stablePassportMonetra">' + (lang==='ru'?'Паспорт ↓':'Passport ↓') + '</a>'
+                + '</div>';
         }).join('');
     }
 
-    const rewards = Array.isArray(d.stableCapital.accruedRewardsCandidates)
-        ? d.stableCapital.accruedRewardsCandidates.filter(r => Number(r.amount || r.quantity || 0) > 0 || Number(r.valueUsd || 0) > 0)
-        : [];
-    if (rewardsEl) {
-        rewardsEl.innerHTML = rewards.length ? rewards.map(r => {
-            const sym = r.symbol || r.tokenSymbol || 'TOKEN';
-            const qty = Number(r.amount ?? r.quantity ?? 0);
-            const usd = Number(r.valueUsd ?? r.usdValue ?? 0);
-            const q = Number.isFinite(qty) && qty > 0 ? qty.toLocaleString('en-US', { maximumFractionDigits: 6 }) + ' ' + sym : sym;
-            return '<div class="mp-reward"><strong>' + (r.protocol || 'Liquity V2') + ' · ' + q + '</strong><span>' + (usd > 0 ? money(usd) : 'Claimable') + '</span></div>';
-        }).join('') : '<span class="mp-empty">' + (lang === 'ru' ? 'Текущие отдельные claimable rewards не обнаружены.' : 'No separate claimable rewards detected at the current snapshot.') + '</span>';
+    // Passport headline.
+    set('scpCapital', stableMoney(c.stableCapitalUsd, lang, 2));
+    set('scpProductive', stableMoney(c.productiveStableCapitalUsd, lang, 2));
+    set('scpApy', stablePct(c.displayReferenceApyPct, 2));
+    set('scpEmbedded', stableEmbeddedDisplay(embedded.sinceTrackingUsd, embedded.status, lang));
+    set('scpClaimable', stableMoney(c.accruedClaimableUsd || 0, lang, 4));
+    set('scpFounded', stableDate(c.foundedAt || c.foundedDate, lang));
+    set('scpMeasured', (c.currentFullCoverage ? c.strategyCount : Math.round((c.currentCoverage||0)*c.strategyCount)) + ' / ' + c.strategyCount);
+    set('scpProtocols', String(c.protocolCount || 0));
+    set('scpChains', String(c.chainCount || 0));
+    set('scpEmbeddedCoverage', (embedded.comparablePositionCount || 0) + ' / ' + (embedded.eligiblePositionCount || 0));
+    set('scpStrategyCount', c.strategyCount + (lang==='ru' ? ' стратегий' : ' strategies'));
+
+    // Strategy table.
+    const rows = document.getElementById('scpStrategyRows');
+    if (rows) {
+        rows.innerHTML = (c.positions || []).map(p => {
+            const proto = p.protocolFamily || p.protocol || 'Protocol';
+            const asset = p.asset || p.wrapperSymbol || p.underlyingSymbol || 'Stable';
+            return '<div class="scp-tr scp-row">'
+                + '<span><strong>' + proto + ' · ' + asset + '</strong><small>' + (p.positionType || '') + '</small></span>'
+                + '<span class="scp-chain">' + (p.chain || '—') + '</span>'
+                + '<span class="scp-value">' + stableMoney(p.valueUsd, lang, 2) + '</span>'
+                + '<span class="scp-apy">' + stablePct(p.referenceApyPct, 2) + '</span>'
+                + '<span class="scp-mode">' + stableIncomeMode(p.incomeMode, lang) + '</span>'
+                + '</div>';
+        }).join('');
     }
+
+    // Embedded Yield accounting.
+    set('scpLedgerStatus', embedded.status === 'warming'
+        ? (lang==='ru' ? 'Наблюдается' : 'Warming')
+        : (lang==='ru' ? 'Измеряется' : 'Observed'));
+    set('scpMtd', stableEmbeddedDisplay(embedded.mtdUsd, embedded.status, lang));
+    set('scpQtd', stableEmbeddedDisplay(embedded.qtdUsd, embedded.status, lang));
+    set('scpYtd', stableEmbeddedDisplay(embedded.ytdUsd, embedded.status, lang));
+    set('scpSinceYield', stableEmbeddedDisplay(embedded.sinceTrackingUsd, embedded.status, lang));
+    set('scpPriceEffect', Number.isFinite(Number(embedded.stablePriceEffectSinceTrackingUsd))
+        ? stableMoney(embedded.stablePriceEffectSinceTrackingUsd, lang, 4)
+        : (lang==='ru' ? 'Наблюдается' : 'Warming'));
+    set('scpTrackingStarted', stableDate(embedded.trackingStartedAt, lang));
+
+    // Rewards.
+    const rewardsEl = document.getElementById('scpRewardRows');
+    if (rewardsEl) {
+        const rs = Array.isArray(c.accruedClaimable) ? c.accruedClaimable : [];
+        rewardsEl.innerHTML = rs.length ? rs.map(r => {
+            const q = Number.isFinite(Number(r.amount))
+                ? Number(r.amount).toLocaleString(lang==='ru'?'ru-RU':'en-US',{maximumFractionDigits:6}) + ' ' + (r.symbol||'')
+                : (r.symbol||'Reward');
+            return '<div class="scp-reward-row"><strong>' + (r.protocol||'Protocol') + ' · ' + q + '</strong><span>' + stableMoney(r.usdValue||0, lang, 4) + '</span></div>';
+        }).join('') : '<span class="scp-muted">' + (lang==='ru'?'Отдельных claimable rewards сейчас нет.':'No separate claimable rewards at this snapshot.') + '</span>';
+    }
+
+    // Allocation.
+    const renderAllocation = (id, items, typeMode=false) => {
+        const el=document.getElementById(id); if(!el) return;
+        el.innerHTML=(items||[]).map(x=>{
+            const label=typeMode?stableTypeLabel(x.label,lang):x.label;
+            const pct=Number(x.share||0)*100;
+            return '<div class="scp-alloc-row"><span>'+label+'</span><b>'+pct.toFixed(1)+'%</b><div class="scp-alloc-bar"><i style="width:'+Math.max(0,Math.min(100,pct)).toFixed(2)+'%"></i></div></div>';
+        }).join('');
+    };
+    renderAllocation('scpChainAllocation', c.allocation?.byChain, false);
+    renderAllocation('scpTypeAllocation', c.allocation?.byStrategyType, true);
 }
-window.renderMonetraPassport = renderMonetraPassport;
+window.renderStableCompanies = renderStableCompanies;
 
 const PASSPORT_PRODUCTIVITY_UI_VERSION = '1.13-company-007';
 const PASSPORT_NULL_SAFE_FIX = '0.1.3-defitea-null-average';
@@ -6065,16 +6453,17 @@ function renderFramework(lang) {
 
     // Price data and protocol-productivity data are independent. Fetch them in
     // parallel so the new engine cannot slow down or block the existing TVL path.
-    const [prices, _productivity, _rewards, monetra] = await Promise.all([
+    const [prices, _productivity, _rewards, stableIndex] = await Promise.all([
         cgPrices(IDS),
         loadProductivitySnapshot(),
         loadCompanyRewardsSnapshot(),
-        loadMonetraResolveSnapshot()
+        loadStableIndexSnapshot()
     ]);
 
-    const tvl8 = Number(monetra?.stableCapital?.summary?.totalUsd || 0);
+    const monetraStable = stableIndex?.companies?.find(x => x && x.registry === '008') || null;
+    const tvl8 = Number(monetraStable?.stableCapitalUsd || 0);
     if (el8) el8.textContent = tvl8 > 0 ? fmtMoney(tvl8) : 'Live';
-    if (monetra) renderMonetraPassport(idxLang());
+    if (stableIndex) renderStableCompanies(idxLang());
 
     if (!prices || Object.keys(prices).length === 0) {
         [el1, el2, el3, el4, el5, el6, el7, el9].forEach(el => { if (el) el.textContent = 'Live'; });
@@ -6272,6 +6661,21 @@ function renderFramework(lang) {
   infos.forEach(btn=>btn.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();const w=btn.closest('.filter-taxonomy');const next=!w.classList.contains('open');document.querySelectorAll('.filter-taxonomy.open').forEach(x=>x.classList.remove('open'));w.classList.toggle('open',next);btn.setAttribute('aria-expanded',next?'true':'false');}));
   document.addEventListener('click',()=>document.querySelectorAll('.filter-taxonomy.open').forEach(x=>{x.classList.remove('open');const b=x.querySelector('.filter-info');if(b)b.setAttribute('aria-expanded','false');}));
 })();
+/* Stable metric help · hover on desktop, tap on mobile */
+(function(){
+  document.addEventListener('click', ev => {
+    const btn = ev.target.closest('.sc-help');
+    document.querySelectorAll('.sc-help-wrap.open').forEach(w => {
+      if (!btn || w !== btn.closest('.sc-help-wrap')) w.classList.remove('open');
+    });
+    if (!btn) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    const wrap = btn.closest('.sc-help-wrap');
+    if (wrap) wrap.classList.toggle('open');
+  });
+})();
+
 /* ── i18n: EN / RU ─────────────────────────────────── */
 (function () {
     const I18N = {
@@ -6314,6 +6718,80 @@ function renderFramework(lang) {
             'card8.sub': 'A Stable Capital company deploying diversified stablecoin strategies across lending, savings vaults, auto-compounding liquidity and curated onchain yield.',
             'card8.yield': 'Reference APY',
             'card8.measuring': 'Measuring',
+            'index.stableSeparate': 'Stable Capital companies do not compete in this Composite. Their objective, risk profile and return mechanics are different, so they are tracked in a dedicated Stable Companies Index.',
+            'index.stableLink': 'View Stable Companies ↓',
+            'stable.eyebrow': 'Stable Capital · Separate Universe',
+            'stable.title': 'The Holding Stable Companies Index',
+            'stable.sub': 'Stable-only companies are measured against the economics they are actually built for: preservation of capital, productive stable yield, embedded income, claimable rewards and operating history. They are intentionally not ranked against companies carrying BTC, ETH, volatile assets or long-lock governance positions.',
+            'stable.badgeTop': 'Independent measurement',
+            'stable.badgeBottom': 'Stable-only universe',
+            'stable.metric.capital': 'Stable Capital',
+            'stable.metric.capitalSub': 'current economic value',
+            'stable.metric.apy': 'Reference APY',
+            'stable.metric.apySub': 'capital-weighted · full book',
+            'stable.metric.claimable': 'Accrued Claimable',
+            'stable.metric.claimableSub': 'outside principal',
+            'stable.metric.companies': 'Stable Companies',
+            'stable.metric.companiesSub': 'dedicated index universe',
+            'stable.board.company': 'Company',
+            'stable.board.capital': 'Stable Capital',
+            'stable.board.apy': 'Reference APY',
+            'stable.board.embedded': 'Embedded Yield',
+            'stable.board.claimable': 'Claimable',
+            'stable.board.strategies': 'Strategies',
+            'stable.loading': 'Loading the verified Stable Capital dataset…',
+            'stable.method.title': 'Stable Index methodology',
+            'stable.method.text': 'No synthetic Stable Composite score is invented yet. The index reports the measurable fundamentals directly: capital, current productive capacity, earned Embedded Yield, claimable rewards and operating history. A richer stable-company score can be introduced only after a meaningful multi-company history exists.',
+            'stable.help.apy': 'Current normalized productive capacity. It is not realised return and is not a promise of future yield.',
+            'stable.help.embedded': 'Income already capitalized inside a lending, savings or vault position. It is recognized only from flow-safe checkpoints, never estimated as TVL × current APY.',
+            'stable.help.claimable': 'Protocol-side value already earned and separately claimable. It is kept separate from principal and Embedded Yield.',
+            'stable.help.price': 'Stablecoin/depeg price movement is separated from strategy income. A stable asset moving away from $1 should not be mislabeled as yield.',
+            'stable.passport.kicker': 'Company Passport · Registry 008 · Stable Capital',
+            'stable.passport.live': 'Live · Fully Measured',
+            'stable.passport.lede': 'A stable-only onchain company built as a diversified operating book across lending, savings wrappers, auto-compounding vaults, curated strategies and a Stability Pool. Gas assets are excluded from Stable Capital.',
+            'stable.passport.category': 'Stable Capital Company',
+            'stable.passport.capital': 'Stable Capital',
+            'stable.passport.productive': 'Productive Capital',
+            'stable.passport.apy': 'Reference APY',
+            'stable.passport.embedded': 'Embedded Yield',
+            'stable.passport.claimable': 'Claimable Rewards',
+            'stable.passport.since': 'Operating Since',
+            'stable.passport.measured': 'strategies with Reference APY',
+            'stable.passport.protocols': 'protocol families',
+            'stable.passport.chains': 'chains',
+            'stable.passport.embeddedCoverage': 'embedded-yield paths comparable',
+            'stable.passport.bookKicker': '01 · COMPANY BOOK',
+            'stable.passport.bookTitle': 'Stable Strategy Book',
+            'stable.passport.bookNote': 'Each strategy keeps its own economic mechanism. The company-level Reference APY is capital-weighted; the ten protocol rates are never simply averaged.',
+            'stable.passport.incomeKicker': '02 · INCOME ACCOUNTING',
+            'stable.passport.incomeTitle': 'Earned vs. Claimable',
+            'stable.passport.allocKicker': '03 · ALLOCATION',
+            'stable.passport.allocTitle': 'Where Stable Capital Works',
+            'stable.passport.tracking': 'Embedded Yield tracking began',
+            'stable.passport.trackingNote': 'No pre-tracking income is reconstructed from current APY.',
+            'stable.passport.open': 'Open Monetra →',
+            'stable.table.strategy': 'Strategy',
+            'stable.table.chain': 'Chain',
+            'stable.table.capital': 'Capital',
+            'stable.table.apy': 'Ref. APY',
+            'stable.table.mode': 'Income Mode',
+            'stable.income.mtd': 'Embedded MTD',
+            'stable.income.qtd': 'Embedded QTD',
+            'stable.income.ytd': 'Embedded YTD',
+            'stable.income.since': 'Since Tracking',
+            'stable.income.priceEffect': 'Stable Price Effect',
+            'stable.income.claimableTitle': 'Accrued Claimable Rewards',
+            'stable.income.noRewards': 'No separate claimable rewards at this snapshot.',
+            'stable.alloc.chain': 'By chain',
+            'stable.alloc.type': 'By strategy type',
+            'stable.explain.apyTitle': 'Reference APY',
+            'stable.explain.apyText': 'A current normalized measure of productive capacity. It tells what the strategy book is producing now, not what the company has already earned historically.',
+            'stable.explain.embeddedTitle': 'Embedded Yield',
+            'stable.explain.embeddedText': 'Yield that stays inside aToken, ERC-4626, PPS or other share value. It becomes historical income only after verified, flow-adjusted checkpoints can be compared.',
+            'stable.explain.claimableTitle': 'Claimable Rewards',
+            'stable.explain.claimableText': 'Income that has accrued protocol-side but remains separately claimable. Once received by the company wallet it becomes realised cash flow / treasury, not accrued rewards.',
+            'stable.explain.priceTitle': 'Stable Price Effect',
+            'stable.explain.priceText': 'Depeg or market-price movement is kept outside strategy income, so a change in the dollar price of a stable asset cannot masquerade as yield.',
             'monetra.passport.kicker': 'Company Passport · Registry 008',
             'monetra.passport.lede': 'Stable Capital measured directly from the company’s onchain strategy positions. Gas assets are excluded from Stable Capital TVL.',
             'monetra.passport.live': 'Live Stable Capital',
@@ -6321,14 +6799,14 @@ function renderFramework(lang) {
             'monetra.passport.strategies': 'Strategies',
             'monetra.passport.founded': 'Operating since',
             'monetra.passport.apy': 'Reference APY',
-            'monetra.passport.measuring': 'Measuring',
+            'monetra.passport.measuring': 'Live',
             'monetra.passport.positions': 'Stable strategy positions',
             'monetra.passport.rewards': 'Accrued claimable rewards',
             'monetra.passport.separate': 'Separate from principal',
             'monetra.passport.loading': 'Loading verified onchain positions…',
             'monetra.passport.loadingRewards': 'Reading current protocol-side rewards…',
             'monetra.passport.rewardNote': 'Embedded yield remains inside savings, lending and vault positions. Only separately claimable protocol value appears here.',
-            'monetra.passport.indexGate': 'Composite Index inclusion remains measurement-gated until Stable Capital Reference APY is normalized by the Productivity Intelligence Layer.',
+            'monetra.passport.indexGate': 'Stable Capital is measured in the dedicated Stable Companies Index and is intentionally separate from the general Composite Index.',
             'monetra.passport.open': 'Open Monetra →',
             'card9.sub': 'A long-term onchain company combining BTC and ETH foundation capital with productive veAERO, Beefy cvxCRV and veYB positions.',
             'card.registry': 'Registry',
@@ -6458,6 +6936,80 @@ function renderFramework(lang) {
             'card8.sub': 'Компания Stable Capital с диверсифицированными стейбл-стратегиями: lending, savings vaults, автокомпаундинг ликвидности и курируемая ончейн-доходность.',
             'card8.yield': 'Reference APY',
             'card8.measuring': 'Измеряется',
+            'index.stableSeparate': 'Компании Stable Capital не участвуют в этом Composite. Их цель, риск-профиль и механика доходности отличаются, поэтому они отслеживаются в отдельном индексе стейбл-компаний.',
+            'index.stableLink': 'К стейбл-компаниям ↓',
+            'stable.eyebrow': 'Stable Capital · Отдельная категория',
+            'stable.title': 'Индекс стейбл-компаний The Holding',
+            'stable.sub': 'Стейбл-компании оцениваются по той экономике, ради которой они создаются: сохранение капитала, продуктивная стейбл-доходность, встроенный доход, claimable rewards и операционная история. Они намеренно не соревнуются с компаниями, где на балансе BTC, ETH, волатильные активы или долгосрочные governance-lock позиции.',
+            'stable.badgeTop': 'Независимое измерение',
+            'stable.badgeBottom': 'Отдельная stable-категория',
+            'stable.metric.capital': 'Stable Capital',
+            'stable.metric.capitalSub': 'текущая экономическая стоимость',
+            'stable.metric.apy': 'Reference APY',
+            'stable.metric.apySub': 'взвешено по капиталу · вся книга',
+            'stable.metric.claimable': 'Accrued Claimable',
+            'stable.metric.claimableSub': 'отдельно от principal',
+            'stable.metric.companies': 'Стейбл-компании',
+            'stable.metric.companiesSub': 'отдельная индексная категория',
+            'stable.board.company': 'Компания',
+            'stable.board.capital': 'Stable Capital',
+            'stable.board.apy': 'Reference APY',
+            'stable.board.embedded': 'Embedded Yield',
+            'stable.board.claimable': 'Claimable',
+            'stable.board.strategies': 'Стратегии',
+            'stable.loading': 'Загружаем подтверждённые данные Stable Capital…',
+            'stable.method.title': 'Методология Stable Index',
+            'stable.method.text': 'Синтетический Stable Composite Score пока не придумывается. Индекс напрямую показывает измеримые основы: капитал, текущую производительность, фактически заработанный Embedded Yield, claimable rewards и операционную историю. Более сложный score имеет смысл вводить только после появления достаточной истории у нескольких стейбл-компаний.',
+            'stable.help.apy': 'Текущая нормализованная производительная способность капитала. Это не реализованная доходность и не обещание будущего результата.',
+            'stable.help.embedded': 'Доход, который уже капитализируется внутри lending, savings или vault-позиции. Он признаётся только по сопоставимым checkpoint с учётом потоков, а не рассчитывается как TVL × текущий APY.',
+            'stable.help.claimable': 'Уже заработанная protocol-side стоимость, которую можно claim отдельно. Она не смешивается с principal и Embedded Yield.',
+            'stable.help.price': 'Изменение цены или depeg стейблкоина отделяется от дохода стратегии. Движение стейбл-актива относительно $1 не должно маскироваться под yield.',
+            'stable.passport.kicker': 'Company Passport · Реестр 008 · Stable Capital',
+            'stable.passport.live': 'Live · Полностью измерена',
+            'stable.passport.lede': 'Стейбл-компания с диверсифицированной операционной книгой: lending, savings wrappers, auto-compounding vaults, управляемые стратегии и Stability Pool. Газовые активы не входят в Stable Capital.',
+            'stable.passport.category': 'Компания Stable Capital',
+            'stable.passport.capital': 'Stable Capital',
+            'stable.passport.productive': 'Productive Capital',
+            'stable.passport.apy': 'Reference APY',
+            'stable.passport.embedded': 'Embedded Yield',
+            'stable.passport.claimable': 'Claimable Rewards',
+            'stable.passport.since': 'Работает с',
+            'stable.passport.measured': 'стратегий с Reference APY',
+            'stable.passport.protocols': 'семейств протоколов',
+            'stable.passport.chains': 'сети',
+            'stable.passport.embeddedCoverage': 'сопоставимых путей Embedded Yield',
+            'stable.passport.bookKicker': '01 · COMPANY BOOK',
+            'stable.passport.bookTitle': 'Книга стейбл-стратегий',
+            'stable.passport.bookNote': 'Каждая стратегия сохраняет собственную экономическую механику. Reference APY компании взвешивается по капиталу — десять ставок протоколов никогда не усредняются простым средним.',
+            'stable.passport.incomeKicker': '02 · УЧЁТ ДОХОДА',
+            'stable.passport.incomeTitle': 'Заработано vs. Claimable',
+            'stable.passport.allocKicker': '03 · РАСПРЕДЕЛЕНИЕ',
+            'stable.passport.allocTitle': 'Где работает Stable Capital',
+            'stable.passport.tracking': 'Отслеживание Embedded Yield началось',
+            'stable.passport.trackingNote': 'Доход до начала наблюдений не восстанавливается из текущего APY.',
+            'stable.passport.open': 'Открыть Monetra →',
+            'stable.table.strategy': 'Стратегия',
+            'stable.table.chain': 'Сеть',
+            'stable.table.capital': 'Капитал',
+            'stable.table.apy': 'Ref. APY',
+            'stable.table.mode': 'Режим дохода',
+            'stable.income.mtd': 'Embedded MTD',
+            'stable.income.qtd': 'Embedded QTD',
+            'stable.income.ytd': 'Embedded YTD',
+            'stable.income.since': 'С начала трекинга',
+            'stable.income.priceEffect': 'Stable Price Effect',
+            'stable.income.claimableTitle': 'Accrued Claimable Rewards',
+            'stable.income.noRewards': 'Отдельных claimable rewards на этом snapshot нет.',
+            'stable.alloc.chain': 'По сетям',
+            'stable.alloc.type': 'По типу стратегии',
+            'stable.explain.apyTitle': 'Reference APY',
+            'stable.explain.apyText': 'Текущая нормализованная оценка производительной способности. Она показывает, что книга стратегий производит сейчас, а не сколько компания уже заработала исторически.',
+            'stable.explain.embeddedTitle': 'Embedded Yield',
+            'stable.explain.embeddedText': 'Доход, который остаётся внутри aToken, ERC-4626, PPS или другой стоимости доли. Историческим доходом он становится только после сравнения подтверждённых checkpoint с учётом потоков.',
+            'stable.explain.claimableTitle': 'Claimable Rewards',
+            'stable.explain.claimableText': 'Доход, уже начисленный внутри протокола, но доступный отдельным claim. После поступления в кошелёк компании это уже realised cash flow / treasury, а не accrued rewards.',
+            'stable.explain.priceTitle': 'Stable Price Effect',
+            'stable.explain.priceText': 'Depeg или изменение рыночной цены отделяется от дохода стратегии, чтобы изменение долларовой цены стейбл-актива не выглядело как yield.',
             'monetra.passport.kicker': 'Company Passport · Реестр 008',
             'monetra.passport.lede': 'Stable Capital измеряется напрямую по ончейн-позициям компании. Газовые активы не входят в TVL Stable Capital.',
             'monetra.passport.live': 'Stable Capital · Live',
@@ -6465,14 +7017,14 @@ function renderFramework(lang) {
             'monetra.passport.strategies': 'Стратегий',
             'monetra.passport.founded': 'Работает с',
             'monetra.passport.apy': 'Reference APY',
-            'monetra.passport.measuring': 'Измеряется',
+            'monetra.passport.measuring': 'Live',
             'monetra.passport.positions': 'Стейбл-стратегии',
             'monetra.passport.rewards': 'Начисленные claimable rewards',
             'monetra.passport.separate': 'Отдельно от principal',
             'monetra.passport.loading': 'Загружаем подтверждённые ончейн-позиции…',
             'monetra.passport.loadingRewards': 'Читаем текущие protocol-side rewards…',
             'monetra.passport.rewardNote': 'Embedded yield остаётся внутри savings, lending и vault-позиций. Здесь показывается только отдельно доступная к claim стоимость.',
-            'monetra.passport.indexGate': 'Включение в Composite Index остаётся gated до нормализации Stable Capital Reference APY через Productivity Intelligence Layer.',
+            'monetra.passport.indexGate': 'Stable Capital измеряется в отдельном индексе стейбл-компаний и намеренно не смешивается с общим Composite Index.',
             'monetra.passport.open': 'Открыть Monetra →',
             'card9.sub': 'Долгосрочная ончейн-компания: BTC и ETH в фундаменте, продуктивные позиции veAERO, Beefy cvxCRV и veYB.',
             'card.registry': 'Реестр',
@@ -6592,7 +7144,7 @@ function renderFramework(lang) {
         });
         syncCompanyAprDisplays(lang);
         syncDynamicCompanyMetadata(lang);
-        if (window.renderMonetraPassport && MONETRA_RESOLVE_SNAPSHOT) window.renderMonetraPassport(lang);
+        if (window.renderStableCompanies && STABLE_INDEX_SNAPSHOT) window.renderStableCompanies(lang);
         document.documentElement.lang = lang;
         document.documentElement.classList.toggle('is-ru', lang === 'ru');
         if (document.body) document.body.classList.toggle('is-ru', lang === 'ru');
