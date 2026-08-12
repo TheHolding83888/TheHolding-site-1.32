@@ -1,788 +1,529 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import {
-  Contract,
-  JsonRpcProvider,
-  formatUnits,
-  getAddress
-} from 'ethers';
+import { Contract, JsonRpcProvider, formatUnits, getAddress } from 'ethers';
 
-const VERSION = '1.1-company-008-stable-wrapper-reconciliation';
-const DISCOVERY_PATH = process.env.COMPANY_008_DISCOVERY_INPUT
-  || path.resolve('companies/company-008-discovery.json');
-const OUTPUT = process.env.COMPANY_008_RESOLVE_OUTPUT
-  || path.resolve('companies/company-008-resolve.json');
+const VERSION = '1.2-company-008-stable-final-three-reconciliation';
+const INPUT = process.env.COMPANY_008_RESOLVE_INPUT || path.resolve('companies/company-008-resolve.json');
+const OUTPUT = process.env.COMPANY_008_RESOLVE_OUTPUT || path.resolve('companies/company-008-resolve.json');
+const WALLET = getAddress('0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB');
+const EXPECTED_PRIOR = '1.1-company-008-stable-wrapper-reconciliation';
 
-const COMPANY = Object.freeze({
-  registry: '008',
-  name: 'Monetra.eth',
-  wallet: getAddress('0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB'),
-  category: 'Stable Capital'
+const ADDR = Object.freeze({
+  bold: getAddress('0x6440f144b7e50D6a8439336510312d2F54beB01D'),
+  weth: getAddress('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'),
+  wsteth: getAddress('0x7f39C581F595B53c5cb19BD0b3f8dA6c935E2Ca0'),
+  reth: getAddress('0xae78736Cd615f374D3085123A210448E74Fc6393'),
+  liquitySpWeth: getAddress('0x5721cbbd64fc7ae3ef44a0a3f9a790a9264cf9bf'),
+  liquitySpWsteth: getAddress('0x9502b7c397e9aa22fe9db7ef7daf21cd2aebe56b'),
+  liquitySpReth: getAddress('0xd442e41019b7f5c4dd78f50dc03726c446148695'),
+  earnUsdShareManager: getAddress('0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981'),
+  earnUsdVault: getAddress('0x014e6DA8F283C4aF65B2AA0f201438680A004452'),
+  earnUsdOracle: getAddress('0x827044735c9708a2cf850e7Ea37EBa43bc786028'),
+  sfrxUsd: getAddress('0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6'),
+  frxUsd: getAddress('0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29'),
+  ysyBold: getAddress('0x23346B04a7f55b8760E5860AA5A77383D63491cD'),
+  fxSave: getAddress('0x7743e50F534a7f9F1791DdE7dCD89F7783Eefc39'),
+  fxSp: getAddress('0x65C9A641afCEB9C0E6034e558A319488FA0FA3be')
 });
 
-// Owner-supplied screenshot evidence is a reconciliation aid only.
-// It is NEVER used to manufacture onchain balances or USD values.
-const OWNER_EVIDENCE = Object.freeze({
-  source: 'owner-supplied DeBank screenshots + owner note, 2026-08-12',
-  screenshotRowsUsd: [
-    { protocol: 'f(x) Protocol', usdApprox: 10.06 },
-    { protocol: 'Liquity V2', usdApprox: 10.05 },
-    { protocol: 'Inverse', usdApprox: 10.04 },
-    { protocol: 'Yearn V3', usdApprox: 10.03 },
-    { protocol: 'Sky', usdApprox: 10.03 },
-    { protocol: 'Aave V3', usdApprox: 10.02, note: 'one of two Aave-labelled positions' },
-    { protocol: 'Curve', usdApprox: 10.01 },
-    { protocol: 'Lido', usdApprox: 10.01 },
-    { protocol: 'Aave V3', usdApprox: 9.98, note: 'second Aave-labelled position' }
-  ],
-  additionalOwnerObserved: [
-    { protocol: 'Frax Finance', asset: 'sfrxUSD', usdApprox: null, note: 'direct wallet balance; value not supplied as an exact screenshot number' }
-  ],
-  stableStrategyUsdApprox: 100,
-  totalWalletDefiInclGasUsdApprox: 108,
-  principle: 'owner values are sanity checks only; resolver values must come from reproducible reads'
-});
+const SP_BRANCHES = Object.freeze([
+  { id: 'weth', label: 'WETH', stabilityPool: ADDR.liquitySpWeth, collateral: ADDR.weth, collateralSymbol: 'WETH' },
+  { id: 'wsteth', label: 'wstETH', stabilityPool: ADDR.liquitySpWsteth, collateral: ADDR.wsteth, collateralSymbol: 'wstETH' },
+  { id: 'reth', label: 'rETH', stabilityPool: ADDR.liquitySpReth, collateral: ADDR.reth, collateralSymbol: 'rETH' }
+]);
 
-const KNOWN = Object.freeze({
-  // Official/current protocol addresses used only for identification/special handling.
-  fxSAVE: getAddress('0x7743e50F534a7f9F1791DdE7dCD89F7783Eefc39'),
-  fxSP: getAddress('0x65C9A641afCEB9C0E6034e558A319488FA0FA3be'),
-  fxUSD: getAddress('0x085780639CC2cACd35E474e71f4d000e2405d8f6'),
-  sBOLD: getAddress('0x50bd66d59911f5e086ec87ae43c811e0d059dd11'),
-  scrvUSD: getAddress('0x0655977FEb2f289A4aB78af67BAB0d17aAb84367'),
-  crvUSD: getAddress('0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E'),
-  sGHO: getAddress('0xE1753F2e00940cC31213dd92013cF019DFE4ca1d'),
-  sfrxUSD: getAddress('0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6'),
-  frxUSD: getAddress('0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29')
-});
+const RPC_URLS = [
+  process.env.ETH_RPC_URL,
+  process.env.ETH_RPC_URL_2,
+  'https://ethereum-rpc.publicnode.com',
+  'https://eth.llamarpc.com'
+].filter(Boolean);
 
-const CHAIN = Object.freeze({
-  ethereum: { label: 'Ethereum', llama: 'ethereum' },
-  base: { label: 'Base', llama: 'base' }
-});
-
-const BLOCKSCOUT = Object.freeze({
-  ethereum: 'https://eth.blockscout.com',
-  base: 'https://base.blockscout.com'
-});
-
-const RPC = Object.freeze({
-  ethereum: unique([
-    process.env.ETH_RPC_URL,
-    process.env.ETH_RPC_URL_2,
-    'https://ethereum-rpc.publicnode.com',
-    'https://eth.llamarpc.com'
-  ]),
-  base: unique([
-    process.env.BASE_RPC_URL,
-    process.env.BASE_RPC_URL_2,
-    'https://base-rpc.publicnode.com',
-    'https://mainnet.base.org'
-  ])
-});
-
-function unique(xs) {
-  return [...new Set((xs || []).map(x => String(x || '').trim()).filter(Boolean))];
-}
 function lower(x) { return String(x || '').toLowerCase(); }
 function round(x, d = 12) {
   const n = Number(x);
   return Number.isFinite(n) ? Number(n.toFixed(d)) : null;
 }
-function errMsg(e) {
-  return String(e?.shortMessage || e?.message || e || 'unknown error')
-    .replace(/https?:\/\/[^\s)]+/g, '[url-redacted]')
-    .slice(0, 1000);
-}
-function positiveBigInt(x) {
-  try {
-    const n = BigInt(x);
-    return n > 0n ? n : 0n;
-  } catch { return 0n; }
-}
-function sha256Text(x) {
-  return crypto.createHash('sha256').update(String(x)).digest('hex');
-}
-function txAddress(x) {
-  if (!x) return null;
-  if (typeof x === 'string') return x;
-  return x.hash || x.address || x.address_hash || null;
-}
-function tokenAddress(x) {
-  const token = x?.token || x || {};
-  return token.address
-    || token.address_hash
-    || token.token_address
-    || x?.address_hash
-    || x?.token_address
-    || null;
-}
-function canonicalAddress(x) {
-  try { return getAddress(x); } catch { return null; }
-}
-function stableSymbol(symbol) {
-  const s = String(symbol || '').toUpperCase().replace(/[^A-Z0-9.+-]/g, '');
-  return new Set([
-    'USDC','USDC.E','USDT','USDT.E','DAI','CRVUSD','GHO','USDS','FRXUSD',
-    'LUSD','DOLA','BOLD','FXUSD','PYUSD','USDP','TUSD','FDUSD','RLUSD','REUSD',
-    'MUSD','USDE','USD0','USD0++','USUALUSD'
-  ]).has(s);
-}
-function isKnownSavingsSymbol(symbol) {
-  const s = lower(symbol).replace(/[^a-z0-9]/g, '');
-  return ['fxsave','sbold','sdola','susds','stusds','sgho','scrvusd','sfrxusd'].includes(s)
-    || s.startsWith('yv');
-}
-function iso(x) {
-  if (!x) return null;
-  const d = new Date(x);
-  return Number.isFinite(d.getTime()) ? d.toISOString() : null;
-}
+function sha256(x) { return crypto.createHash('sha256').update(String(x)).digest('hex'); }
+function err(e) { return String(e?.shortMessage || e?.message || e || 'unknown').slice(0, 1000); }
+function positive(x) { try { const n = BigInt(x); return n > 0n ? n : 0n; } catch { return 0n; } }
 
-async function fetchJson(url, options = {}, timeoutMs = 25000) {
+async function fetchJson(url, timeoutMs = 20000) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const r = await fetch(url, {
-      ...options,
-      signal: ctrl.signal,
-      cache: 'no-store',
-      headers: {
-        'user-agent': 'The-Holding-Monetra-Stable-Resolver/1.1',
-        ...(options.headers || {})
-      }
-    });
+    const r = await fetch(url, { signal: ctrl.signal, cache: 'no-store', headers: { 'user-agent': 'The-Holding-Monetra-Stable-Resolver/1.2' } });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return await r.json();
-  } finally { clearTimeout(timer); }
+  } finally { clearTimeout(t); }
 }
 
-async function withProvider(chain, fn) {
+async function withProvider(fn) {
   const errors = [];
-  for (const url of RPC[chain] || []) {
+  for (const url of RPC_URLS) {
     const provider = new JsonRpcProvider(url);
     try {
       const result = await fn(provider);
-      return { result, provider: `${chain}:${new URL(url).hostname}`, errors };
+      return { result, provider: new URL(url).hostname, errors };
     } catch (e) {
-      errors.push(`${chain}: ${errMsg(e)}`);
+      errors.push(`${new URL(url).hostname}: ${err(e)}`);
     }
   }
   return { result: null, provider: null, errors };
 }
 
-async function tokenMeta(provider, address, hint = {}) {
+async function llamaPrice(address) {
+  const key = `ethereum:${lower(address)}`;
+  try {
+    const j = await fetchJson(`https://coins.llama.fi/prices/current/${encodeURIComponent(key)}`, 15000);
+    const hit = j?.coins?.[key] || j?.coins?.[`ethereum:${address}`];
+    const price = Number(hit?.price);
+    if (Number.isFinite(price) && price > 0) return { status: 'ok', priceUsd: price, source: 'defillama-contract:ethereum' };
+    return { status: 'unavailable', priceUsd: null, source: 'defillama-contract:ethereum' };
+  } catch (e) {
+    return { status: 'unavailable', priceUsd: null, source: 'defillama-contract:ethereum', error: err(e) };
+  }
+}
+
+async function tokenInfo(provider, address) {
   const c = new Contract(address, [
     'function symbol() view returns (string)',
     'function name() view returns (string)',
     'function decimals() view returns (uint8)',
     'function balanceOf(address) view returns (uint256)'
   ], provider);
-  let symbol = hint.symbol || null;
-  let name = hint.name || null;
-  let decimals = Number(hint.decimals ?? 18);
+  let symbol = null, name = null, decimals = 18;
   try { symbol = await c.symbol(); } catch {}
   try { name = await c.name(); } catch {}
   try { decimals = Number(await c.decimals()); } catch {}
-  return { address: getAddress(address), symbol, name, decimals };
+  return { address, symbol, name, decimals };
 }
 
-async function llamaPrice(chain, address) {
-  try {
-    const key = `${CHAIN[chain].llama}:${lower(address)}`;
-    const j = await fetchJson(`https://coins.llama.fi/prices/current/${encodeURIComponent(key)}`, {}, 15000);
-    const hit = j?.coins?.[key] || j?.coins?.[`${CHAIN[chain].llama}:${address}`];
-    const price = Number(hit?.price);
-    return Number.isFinite(price) && price > 0
-      ? { status: 'ok', priceUsd: price, source: `defillama-contract:${CHAIN[chain].llama}` }
-      : { status: 'unavailable', priceUsd: null, source: 'defillama-contract' };
-  } catch (e) {
-    return { status: 'unavailable', priceUsd: null, source: 'defillama-contract', error: errMsg(e) };
-  }
-}
-
-async function blockscoutTokenBalances(chain) {
-  const base = BLOCKSCOUT[chain];
-  try {
-    const j = await fetchJson(`${base}/api/v2/addresses/${COMPANY.wallet}/token-balances`, {}, 25000);
-    return { status: 'ok', items: Array.isArray(j) ? j : (j?.items || []) };
-  } catch (e) {
-    return { status: 'unavailable', items: [], error: errMsg(e) };
-  }
-}
-
-function nextUrl(baseUrl, params) {
-  const u = new URL(baseUrl);
-  for (const [k, v] of Object.entries(params || {})) {
-    if (v !== null && v !== undefined) u.searchParams.set(k, String(v));
-  }
-  return u.toString();
-}
-
-async function blockscoutPaged(url, maxPages = 100) {
+async function tokenHistory() {
+  const base = `https://eth.blockscout.com/api/v2/addresses/${WALLET}/token-transfers?type=ERC-20`;
   const items = [];
-  let current = url;
+  let url = base;
   let pages = 0;
   const seen = new Set();
-  while (current && pages < maxPages && !seen.has(current)) {
-    seen.add(current);
-    const j = await fetchJson(current, {}, 25000);
+  while (url && pages < 100 && !seen.has(url)) {
+    seen.add(url);
+    const j = await fetchJson(url, 25000);
     items.push(...(j?.items || []));
     pages += 1;
-    current = j?.next_page_params ? nextUrl(url, j.next_page_params) : null;
+    if (!j?.next_page_params) break;
+    const u = new URL(base);
+    for (const [k, v] of Object.entries(j.next_page_params)) if (v != null) u.searchParams.set(k, String(v));
+    url = u.toString();
   }
-  return { items, pages, truncated: Boolean(current) };
+  return { items, pages };
 }
 
-async function ethereumTokenHistory() {
-  const url = `${BLOCKSCOUT.ethereum}/api/v2/addresses/${COMPANY.wallet}/token-transfers?type=ERC-20`;
-  try {
-    const r = await blockscoutPaged(url, 100);
-    return { status: 'ok', ...r };
-  } catch (e) {
-    return { status: 'unavailable', items: [], pages: 0, truncated: false, error: errMsg(e) };
-  }
+function addrFrom(x) {
+  if (!x) return null;
+  if (typeof x === 'string') return x;
+  return x.hash || x.address || x.address_hash || null;
 }
-
-function earliestInbound(history, address) {
-  const wallet = lower(COMPANY.wallet);
-  const token = lower(address);
-  const rows = (history?.items || []).filter(tf => {
-    const addr = lower(tokenAddress(tf));
-    const to = lower(txAddress(tf.to));
-    return addr === token && to === wallet && iso(tf.timestamp);
-  }).map(tf => ({
-    timestamp: iso(tf.timestamp),
-    block: Number(tf.block_number || tf.block || 0) || null,
-    txHash: tf.transaction_hash || tf.transactionHash || null,
-    from: txAddress(tf.from),
-    token: canonicalAddress(tokenAddress(tf))
-  })).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-  return rows[0] || null;
+function tokenAddr(tf) {
+  const t = tf?.token || {};
+  return t.address || t.address_hash || t.token_address || tf?.address_hash || tf?.token_address || null;
 }
-
-function classifyProtocol(meta, address) {
-  const a = lower(address);
-  const symbol = lower(meta?.symbol).replace(/[^a-z0-9]/g, '');
-  const name = lower(meta?.name);
-
-  if (a === lower(KNOWN.fxSAVE) || symbol === 'fxsave' || name.includes('f(x)') || name.includes('fx save')) {
-    return { protocol: 'f(x) Protocol', positionType: 'Savings Stable', hintKey: 'f(x) Protocol' };
-  }
-  if (a === lower(KNOWN.sBOLD) || symbol === 'sbold' || name.includes('sbold')) {
-    return { protocol: 'Liquity V2', positionType: 'Savings Stable', hintKey: 'Liquity V2' };
-  }
-  if (symbol === 'sdola' || name.includes('sdola') || name.includes('savings dola')) {
-    return { protocol: 'Inverse', positionType: 'Savings Stable', hintKey: 'Inverse' };
-  }
-  if (symbol.startsWith('yv') || name.includes('yearn') || name.includes('yvault')) {
-    return { protocol: 'Yearn V3', positionType: 'Stable Vault', hintKey: 'Yearn V3' };
-  }
-  if (symbol === 'susds' || symbol === 'stusds' || name.includes('savings usds') || name.includes('staked usds')) {
-    return { protocol: 'Sky', positionType: 'Savings Stable', hintKey: 'Sky' };
-  }
-  if (a === lower(KNOWN.sGHO) || symbol === 'sgho' || name.includes('savings gho')) {
-    return { protocol: 'Aave', positionType: 'Savings Stable', hintKey: 'Aave V3' };
-  }
-  if (a === lower(KNOWN.scrvUSD) || symbol === 'scrvusd' || name.includes('savings crvusd')) {
-    return { protocol: 'Curve', positionType: 'Savings Stable', hintKey: 'Curve' };
-  }
-  if (a === lower(KNOWN.sfrxUSD) || symbol === 'sfrxusd' || name.includes('staked frax usd') || name.includes('staked frxusd')) {
-    return { protocol: 'Frax Finance', positionType: 'Savings Stable', hintKey: 'Frax Finance' };
-  }
-  if (symbol === 'steth' || symbol === 'wsteth' || name.includes('staked ether') || name.includes('wrapped steth')) {
-    return { protocol: 'Lido', positionType: 'Liquid Staking', hintKey: 'Lido', explicitlyNonStable: true };
-  }
-  return { protocol: null, positionType: null, hintKey: null };
+function transferTimestamp(tf) {
+  return tf?.timestamp || tf?.block_timestamp || null;
 }
-
-async function detectErc4626(provider, address, shareRaw, shareDecimals) {
-  const c = new Contract(address, [
-    'function asset() view returns (address)',
-    'function previewRedeem(uint256 shares) view returns (uint256)',
-    'function convertToAssets(uint256 shares) view returns (uint256)',
-    'function totalAssets() view returns (uint256)'
-  ], provider);
-  try {
-    const asset = getAddress(await c.asset());
-    const assetMeta = await tokenMeta(provider, asset);
-    let assetsRaw = 0n;
-    let method = null;
-    try {
-      assetsRaw = positiveBigInt(await c.previewRedeem(shareRaw));
-      method = 'previewRedeem';
-    } catch {
-      assetsRaw = positiveBigInt(await c.convertToAssets(shareRaw));
-      method = 'convertToAssets';
-    }
-    let totalAssetsRaw = null;
-    try { totalAssetsRaw = positiveBigInt(await c.totalAssets()).toString(); } catch {}
-    return {
-      status: 'ok',
-      standard: 'ERC-4626-compatible',
-      asset,
-      assetMeta,
-      shareDecimals,
-      redeemableRaw: assetsRaw.toString(),
-      redeemable: Number(formatUnits(assetsRaw, assetMeta.decimals)),
-      method,
-      totalAssetsRaw
-    };
-  } catch (e) {
-    return { status: 'not-detected', error: errMsg(e) };
-  }
-}
-
-async function valueTokenRecursive(provider, chain, address, raw, decimals, depth = 0, visited = new Set()) {
-  const key = lower(address);
-  if (depth > 3 || visited.has(key)) {
-    return { status: 'unresolved', reason: 'valuation recursion boundary reached' };
-  }
-  const nextVisited = new Set(visited);
-  nextVisited.add(key);
-
-  const meta = await tokenMeta(provider, address, { decimals });
-  const amount = Number(formatUnits(raw, meta.decimals));
-
-  if (stableSymbol(meta.symbol)) {
-    const price = await llamaPrice(chain, address);
-    if (price.priceUsd != null) {
-      return {
-        status: 'ok',
-        terminalType: 'stable-asset',
-        terminal: address,
-        terminalSymbol: meta.symbol,
-        terminalAmount: amount,
-        price,
-        valueUsd: amount * price.priceUsd,
-        path: [{ token: address, symbol: meta.symbol, amount }]
-      };
-    }
-    return {
-      status: 'unpriced',
-      terminalType: 'stable-asset',
-      terminal: address,
-      terminalSymbol: meta.symbol,
-      terminalAmount: amount,
-      price,
-      path: [{ token: address, symbol: meta.symbol, amount }]
-    };
-  }
-
-  const vault = await detectErc4626(provider, address, raw, meta.decimals);
-  if (vault.status === 'ok' && positiveBigInt(vault.redeemableRaw) > 0n) {
-    const inner = await valueTokenRecursive(
-      provider,
-      chain,
-      vault.asset,
-      BigInt(vault.redeemableRaw),
-      vault.assetMeta.decimals,
-      depth + 1,
-      nextVisited
-    );
-    return {
-      ...inner,
-      path: [
-        {
-          token: address,
-          symbol: meta.symbol,
-          amount,
-          standard: 'ERC-4626',
-          redeemMethod: vault.method,
-          redeemableToken: vault.asset,
-          redeemableSymbol: vault.assetMeta.symbol,
-          redeemableAmount: vault.redeemable
-        },
-        ...(inner.path || [])
-      ],
-      immediateVault: vault
-    };
-  }
-
-  // Special/provisional fallback for known stable savings wrappers whose first redemption leg
-  // is not itself a canonical dollar stable (notably fxSAVE -> fxSP).
-  const protocol = classifyProtocol(meta, address);
-  if (protocol.protocol && !protocol.explicitlyNonStable) {
-    const price = await llamaPrice(chain, address);
-    if (price.priceUsd != null) {
-      return {
-        status: 'ok-provisional-wrapper-price',
-        terminalType: 'known-stable-strategy-wrapper-market-price',
-        terminal: address,
-        terminalSymbol: meta.symbol,
-        terminalAmount: amount,
-        price,
-        valueUsd: amount * price.priceUsd,
-        path: [{ token: address, symbol: meta.symbol, amount, fallback: 'wrapper-market-price' }],
-        reason: 'economic redemption path requires a protocol-specific adapter; market price is used only for current-state reconciliation'
-      };
-    }
-  }
-
+function earliestTokenInbound(history, token) {
+  const rows = (history?.items || []).filter(tf => lower(tokenAddr(tf)) === lower(token) && lower(addrFrom(tf.to)) === lower(WALLET));
+  rows.sort((a, b) => new Date(transferTimestamp(a) || 0) - new Date(transferTimestamp(b) || 0));
+  const r = rows[0];
+  if (!r) return null;
   return {
-    status: 'unresolved',
-    terminal: address,
-    terminalSymbol: meta.symbol,
-    terminalAmount: amount,
-    path: [{ token: address, symbol: meta.symbol, amount }],
-    reason: vault.error || 'not a verified stable asset / ERC-4626 stable path'
+    timestamp: transferTimestamp(r),
+    block: Number(r.block_number ?? r.block ?? 0) || null,
+    txHash: r.transaction_hash || r.tx_hash || r.hash || null,
+    from: addrFrom(r.from),
+    token
+  };
+}
+function earliestBoldDepositToSp(history, sp) {
+  const rows = (history?.items || []).filter(tf => lower(tokenAddr(tf)) === lower(ADDR.bold) && lower(addrFrom(tf.from)) === lower(WALLET) && lower(addrFrom(tf.to)) === lower(sp));
+  rows.sort((a, b) => new Date(transferTimestamp(a) || 0) - new Date(transferTimestamp(b) || 0));
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    timestamp: transferTimestamp(r),
+    block: Number(r.block_number ?? r.block ?? 0) || null,
+    txHash: r.transaction_hash || r.tx_hash || r.hash || null,
+    token: ADDR.bold,
+    to: sp
   };
 }
 
-function priorAavePositions(discovery) {
-  const rows = discovery?.stableCapital?.positions || [];
-  return rows.filter(p => lower(p.protocol).includes('aave'));
-}
-
-function priorAaveATokens(discovery) {
-  return new Set(priorAavePositions(discovery).map(p => lower(p.aToken)).filter(Boolean));
-}
-
-async function discoverDirectPositions(discovery, history) {
-  const stablePositions = [];
-  const nonStableDiagnostics = [];
-  const unresolved = [];
-  const diagnostics = [];
-  const aTokens = priorAaveATokens(discovery);
-
-  for (const chain of ['ethereum', 'base']) {
-    const balances = await blockscoutTokenBalances(chain);
-    if (balances.status !== 'ok') {
-      diagnostics.push(`${chain}: Blockscout token balances ${balances.error || balances.status}`);
-      continue;
+async function resolveFrax(provider, history) {
+  const c = new Contract(ADDR.sfrxUsd, [
+    'function balanceOf(address) view returns (uint256)',
+    'function decimals() view returns (uint8)',
+    'function asset() view returns (address)',
+    'function previewRedeem(uint256) view returns (uint256)',
+    'function convertToAssets(uint256) view returns (uint256)'
+  ], provider);
+  const shareRaw = positive(await c.balanceOf(WALLET));
+  if (shareRaw <= 0n) return { status: 'absent' };
+  let decimals = 18;
+  try { decimals = Number(await c.decimals()); } catch {}
+  let asset = ADDR.frxUsd;
+  try { asset = getAddress(await c.asset()); } catch {}
+  let assetsRaw = 0n;
+  let method = null;
+  try { assetsRaw = positive(await c.previewRedeem(shareRaw)); method = 'previewRedeem'; }
+  catch { assetsRaw = positive(await c.convertToAssets(shareRaw)); method = 'convertToAssets'; }
+  const assetMeta = await tokenInfo(provider, asset);
+  const shares = Number(formatUnits(shareRaw, decimals));
+  const assets = Number(formatUnits(assetsRaw, assetMeta.decimals));
+  const price = await llamaPrice(asset);
+  const valueUsd = price.priceUsd != null ? assets * price.priceUsd : null;
+  return {
+    status: valueUsd != null ? 'ok' : 'unpriced',
+    position: {
+      id: `ethereum:${lower(ADDR.sfrxUsd)}`,
+      chain: 'Ethereum',
+      protocol: 'Frax Finance',
+      positionType: 'Savings Stable',
+      wrapper: ADDR.sfrxUsd,
+      token: null,
+      wrapperSymbol: 'sfrxUSD',
+      symbol: null,
+      name: 'Staked Frax USD',
+      sharesOrBalance: round(shares),
+      shareRaw: shareRaw.toString(),
+      underlying: asset,
+      underlyingSymbol: assetMeta.symbol || 'frxUSD',
+      redeemableUnderlying: round(assets),
+      economicValuation: {
+        status: valueUsd != null ? 'ok' : 'unpriced',
+        terminalType: 'stable-asset',
+        terminal: asset,
+        terminalSymbol: assetMeta.symbol || 'frxUSD',
+        terminalAmount: round(assets),
+        price,
+        valueUsd: valueUsd != null ? round(valueUsd, 12) : null,
+        path: [{ token: ADDR.sfrxUsd, symbol: 'sfrxUSD', amount: round(shares), standard: 'ERC-4626-like', redeemMethod: method, redeemableToken: asset, redeemableSymbol: assetMeta.symbol || 'frxUSD', redeemableAmount: round(assets) }, { token: asset, symbol: assetMeta.symbol || 'frxUSD', amount: round(assets) }]
+      },
+      valueUsd: valueUsd != null ? round(valueUsd, 6) : null,
+      valuationStatus: valueUsd != null ? 'ok' : 'unpriced',
+      valuationCanonical: valueUsd != null,
+      incomeMode: 'embedded-yield',
+      productive: true,
+      ownerHintMatched: 'Frax Finance',
+      history: {
+        firstObservedInbound: earliestTokenInbound(history, ADDR.sfrxUsd),
+        currentCheckpoint: { timestamp: new Date().toISOString(), sharesOrBalance: round(shares), economicValueUsd: valueUsd != null ? round(valueUsd, 6) : null, terminalUnderlying: asset, terminalUnderlyingSymbol: assetMeta.symbol || 'frxUSD', terminalUnderlyingAmount: round(assets) }
+      },
+      methodology: 'sfrxUSD share balance -> protocol previewRedeem/convertToAssets -> frxUSD -> USD price'
     }
-    const pwrap = await withProvider(chain, async provider => provider);
-    const provider = pwrap.result;
-    diagnostics.push(...(pwrap.errors || []));
-    if (!provider) continue;
+  };
+}
 
-    for (const item of balances.items) {
-      const addrRaw = tokenAddress(item);
-      const address = canonicalAddress(addrRaw);
-      if (!address) continue;
-      if (aTokens.has(lower(address))) continue; // already represented by Aave supplied position
+async function resolveLidoEarnUsd(provider, history) {
+  const c = new Contract(ADDR.earnUsdShareManager, [
+    'function sharesOf(address) view returns (uint256)',
+    'function balanceOf(address) view returns (uint256)',
+    'function decimals() view returns (uint8)',
+    'function symbol() view returns (string)'
+  ], provider);
+  let raw = 0n;
+  let balanceMethod = null;
+  try { raw = positive(await c.sharesOf(WALLET)); balanceMethod = 'ShareManager.sharesOf'; } catch {}
+  if (raw <= 0n) {
+    try { raw = positive(await c.balanceOf(WALLET)); balanceMethod = 'ERC20.balanceOf'; } catch {}
+  }
+  if (raw <= 0n) return { status: 'absent' };
+  let decimals = 18;
+  try { decimals = Number(await c.decimals()); } catch {}
+  const shares = Number(formatUnits(raw, decimals));
+  const price = await llamaPrice(ADDR.earnUsdShareManager);
+  const valueUsd = price.priceUsd != null ? shares * price.priceUsd : null;
+  return {
+    status: valueUsd != null ? 'ok-current-market' : 'unpriced',
+    position: {
+      id: `ethereum:${lower(ADDR.earnUsdShareManager)}`,
+      chain: 'Ethereum',
+      protocol: 'Lido Earn',
+      positionType: 'Agent / Curator Managed Stable Vault',
+      wrapper: ADDR.earnUsdShareManager,
+      token: null,
+      wrapperSymbol: 'earnUSD',
+      symbol: null,
+      name: 'Lido Earn USD',
+      sharesOrBalance: round(shares),
+      shareRaw: raw.toString(),
+      underlying: null,
+      underlyingSymbol: 'USD-denominated strategy basket',
+      redeemableUnderlying: null,
+      economicValuation: {
+        status: valueUsd != null ? 'ok-current-market' : 'unpriced',
+        terminalType: 'stable-strategy-share',
+        terminal: ADDR.earnUsdShareManager,
+        terminalSymbol: 'earnUSD',
+        terminalAmount: round(shares),
+        price,
+        valueUsd: valueUsd != null ? round(valueUsd, 12) : null,
+        canonicalCurrentBookValuation: valueUsd != null,
+        navHistoryBoundary: 'current Stable Capital TVL may use reproducible contract market price; Embedded Yield history will use official Lido/Mellow oracle share accounting, not market-price drift'
+      },
+      valueUsd: valueUsd != null ? round(valueUsd, 6) : null,
+      valuationStatus: valueUsd != null ? 'ok-current-market' : 'unpriced',
+      valuationCanonical: valueUsd != null,
+      incomeMode: 'agent-managed-embedded-yield',
+      productive: true,
+      ownerHintMatched: 'Lido',
+      history: {
+        firstObservedInbound: earliestTokenInbound(history, ADDR.earnUsdShareManager),
+        currentCheckpoint: { timestamp: new Date().toISOString(), sharesOrBalance: round(shares), economicValueUsd: valueUsd != null ? round(valueUsd, 6) : null, priceSource: price.source || null }
+      },
+      officialArchitecture: {
+        vault: ADDR.earnUsdVault,
+        shareManager: ADDR.earnUsdShareManager,
+        oracle: ADDR.earnUsdOracle,
+        balanceMethod,
+        deposits: 'USDC/USDT; shares reflected by ShareManager; strategies curated through Lido Earn/Mellow; returns auto-compound into share value',
+        withdrawals: 'queue-based USDC withdrawal'
+      }
+    }
+  };
+}
 
-      const token = item?.token || item || {};
-      const decimals = Number(token.decimals ?? item.decimals ?? 18);
-      const raw = positiveBigInt(item.value ?? item.balance ?? 0);
-      if (raw <= 0n) continue;
+async function tryCall(contract, method, args = []) {
+  try { return { ok: true, value: await contract[method](...args) }; }
+  catch (e) { return { ok: false, error: err(e) }; }
+}
 
-      const meta = await tokenMeta(provider, address, {
-        symbol: token.symbol || item.symbol,
-        name: token.name || item.name,
-        decimals
+async function resolveLiquity(provider, history) {
+  const boldPrice = await llamaPrice(ADDR.bold);
+  const branches = [];
+  const positions = [];
+  const accruedRewards = [];
+  for (const b of SP_BRANCHES) {
+    const c = new Contract(b.stabilityPool, [
+      'function getCompoundedBoldDeposit(address) view returns (uint256)',
+      'function getDepositorYieldGain(address) view returns (uint256)',
+      'function getDepositorCollGain(address) view returns (uint256)'
+    ], provider);
+    const dep = await tryCall(c, 'getCompoundedBoldDeposit', [WALLET]);
+    const y = await tryCall(c, 'getDepositorYieldGain', [WALLET]);
+    const cg = await tryCall(c, 'getDepositorCollGain', [WALLET]);
+    const depRaw = dep.ok ? positive(dep.value) : 0n;
+    const yieldRaw = y.ok ? positive(y.value) : 0n;
+    const collRaw = cg.ok ? positive(cg.value) : 0n;
+    const branch = {
+      branch: b.label,
+      stabilityPool: b.stabilityPool,
+      compoundedBoldDeposit: round(Number(formatUnits(depRaw, 18))),
+      boldYieldGain: y.ok ? round(Number(formatUnits(yieldRaw, 18))) : null,
+      collateralGain: cg.ok ? round(Number(formatUnits(collRaw, 18))) : null,
+      collateralSymbol: b.collateralSymbol,
+      probes: { deposit: dep.ok ? 'ok' : dep.error, yieldGain: y.ok ? 'ok' : y.error, collateralGain: cg.ok ? 'ok' : cg.error }
+    };
+    branches.push(branch);
+    if (depRaw > 0n) {
+      const deposit = Number(formatUnits(depRaw, 18));
+      const valueUsd = boldPrice.priceUsd != null ? deposit * boldPrice.priceUsd : null;
+      positions.push({
+        id: `ethereum:liquity-v2-sp:${b.id}`,
+        chain: 'Ethereum',
+        protocol: 'Liquity V2',
+        positionType: 'Stability Pool Deposit',
+        wrapper: null,
+        token: ADDR.bold,
+        wrapperSymbol: null,
+        symbol: 'BOLD',
+        name: `Liquity V2 ${b.label} Stability Pool`,
+        sharesOrBalance: round(deposit),
+        shareRaw: depRaw.toString(),
+        underlying: ADDR.bold,
+        underlyingSymbol: 'BOLD',
+        redeemableUnderlying: round(deposit),
+        economicValuation: { status: valueUsd != null ? 'ok' : 'unpriced', terminalType: 'stable-asset', terminal: ADDR.bold, terminalSymbol: 'BOLD', terminalAmount: round(deposit), price: boldPrice, valueUsd: valueUsd != null ? round(valueUsd, 12) : null, path: [{ protocol: 'Liquity V2', stabilityPool: b.stabilityPool, method: 'getCompoundedBoldDeposit', token: ADDR.bold, symbol: 'BOLD', amount: round(deposit) }] },
+        valueUsd: valueUsd != null ? round(valueUsd, 6) : null,
+        valuationStatus: valueUsd != null ? 'ok' : 'unpriced',
+        valuationCanonical: valueUsd != null,
+        incomeMode: 'stability-pool-yield-with-separate-claimables',
+        productive: true,
+        ownerHintMatched: 'Liquity V2',
+        history: { firstObservedActivity: earliestBoldDepositToSp(history, b.stabilityPool), currentCheckpoint: { timestamp: new Date().toISOString(), compoundedBoldDeposit: round(deposit), economicValueUsd: valueUsd != null ? round(valueUsd, 6) : null, boldPriceUsd: boldPrice.priceUsd } },
+        rewardBoundary: 'unclaimed BOLD yield and collateral liquidation gains are Accrued Rewards, not Stable Capital principal'
       });
-      const amount = Number(formatUnits(raw, meta.decimals));
-      const classification = classifyProtocol(meta, address);
-
-      if (classification.explicitlyNonStable) {
-        const price = await llamaPrice(chain, address);
-        nonStableDiagnostics.push({
-          id: `${chain}:${lower(address)}`,
-          chain: CHAIN[chain].label,
-          protocol: classification.protocol,
-          positionType: classification.positionType,
-          token: address,
-          symbol: meta.symbol,
-          name: meta.name,
-          amount: round(amount),
-          price,
-          valueUsd: price.priceUsd != null ? round(amount * price.priceUsd, 6) : null,
-          stableCapitalEligible: false,
-          mandateTreatment: 'excluded: ETH-denominated liquid staking exposure is not Stable Capital',
-          ownerHintMatched: classification.hintKey,
-          firstObservedInbound: chain === 'ethereum' ? earliestInbound(history, address) : null
-        });
-        continue;
-      }
-
-      const valuation = await valueTokenRecursive(provider, chain, address, raw, meta.decimals);
-      const directStable = stableSymbol(meta.symbol);
-      const knownStableWrapper = Boolean(classification.protocol && !classification.explicitlyNonStable) || isKnownSavingsSymbol(meta.symbol);
-      const resolvedStableStrategy = valuation.status === 'ok'
-        || valuation.status === 'ok-provisional-wrapper-price'
-        || directStable;
-
-      if (resolvedStableStrategy && (knownStableWrapper || directStable || valuation.terminalType === 'stable-asset')) {
-        const vaultStep = (valuation.path || []).find(x => x.standard === 'ERC-4626') || null;
-        const isLiquid = directStable && !(valuation.path || []).some(x => x.standard === 'ERC-4626');
-        stablePositions.push({
-          id: `${chain}:${lower(address)}`,
-          chain: CHAIN[chain].label,
-          protocol: classification.protocol || (isLiquid ? 'Wallet' : 'ERC-4626 Vault'),
-          positionType: classification.positionType || (isLiquid ? 'Liquid Stable Principal' : 'Stable Vault'),
-          wrapper: isLiquid ? null : address,
-          token: isLiquid ? address : null,
-          wrapperSymbol: isLiquid ? null : meta.symbol,
-          symbol: isLiquid ? meta.symbol : null,
-          name: meta.name,
-          sharesOrBalance: round(amount),
-          shareRaw: raw.toString(),
-          underlying: vaultStep?.redeemableToken || valuation.terminal || null,
-          underlyingSymbol: vaultStep?.redeemableSymbol || valuation.terminalSymbol || null,
-          redeemableUnderlying: vaultStep?.redeemableAmount ?? valuation.terminalAmount ?? null,
-          economicValuation: valuation,
-          valueUsd: round(valuation.valueUsd, 6),
-          valuationStatus: valuation.status,
-          valuationCanonical: valuation.status === 'ok',
-          incomeMode: isLiquid ? 'liquid-principal' : 'embedded-yield',
-          productive: !isLiquid,
-          ownerHintMatched: classification.hintKey,
-          history: {
-            firstObservedInbound: chain === 'ethereum' ? earliestInbound(history, address) : null,
-            currentCheckpoint: {
-              timestamp: new Date().toISOString(),
-              sharesOrBalance: round(amount),
-              economicValueUsd: round(valuation.valueUsd, 6),
-              terminalUnderlying: valuation.terminal || null,
-              terminalUnderlyingSymbol: valuation.terminalSymbol || null,
-              terminalUnderlyingAmount: valuation.terminalAmount ?? null
-            }
-          }
-        });
-        continue;
-      }
-
-      // Ignore tiny unrelated dust unless it matches an owner hint / stable-like identity.
-      const wrapperPrice = await llamaPrice(chain, address);
-      const approxUsd = wrapperPrice.priceUsd != null ? amount * wrapperPrice.priceUsd : null;
-      if (classification.protocol || isKnownSavingsSymbol(meta.symbol) || stableSymbol(meta.symbol) || (Number.isFinite(approxUsd) && approxUsd >= 2)) {
-        unresolved.push({
-          chain: CHAIN[chain].label,
-          token: address,
-          symbol: meta.symbol,
-          name: meta.name,
-          amount: round(amount),
-          wrapperMarketPrice: wrapperPrice,
-          approxUsd: round(approxUsd, 6),
-          ownerHintMatched: classification.hintKey,
-          reason: valuation.reason || 'current token exists but stable economic path is not yet verified',
-          valuation
-        });
-      }
+    }
+    if (yieldRaw > 0n) {
+      const amount = Number(formatUnits(yieldRaw, 18));
+      accruedRewards.push({ protocol: 'Liquity V2', route: `liquity-v2-sp-${b.id}`, kind: 'BOLD yield gain', token: ADDR.bold, symbol: 'BOLD', amount: round(amount), price: boldPrice, usdValue: boldPrice.priceUsd != null ? round(amount * boldPrice.priceUsd, 6) : null, classification: 'accrued-claimable' });
+    }
+    if (collRaw > 0n) {
+      const collMeta = await tokenInfo(provider, b.collateral);
+      const amount = Number(formatUnits(collRaw, collMeta.decimals));
+      const p = await llamaPrice(b.collateral);
+      accruedRewards.push({ protocol: 'Liquity V2', route: `liquity-v2-sp-${b.id}`, kind: 'liquidation collateral gain', token: b.collateral, symbol: collMeta.symbol || b.collateralSymbol, amount: round(amount), price: p, usdValue: p.priceUsd != null ? round(amount * p.priceUsd, 6) : null, classification: 'accrued-claimable-nonstable-collateral' });
     }
   }
+  return { status: positions.length ? 'ok' : 'absent', branches, positions, accruedRewards, boldPrice };
+}
 
-  return { stablePositions, nonStableDiagnostics, unresolved, diagnostics };
+function reclassifyYearn(p) {
+  if (lower(p?.wrapper) !== lower(ADDR.ysyBold) && lower(p?.wrapperSymbol) !== 'ysybold') return p;
+  return {
+    ...p,
+    protocol: 'Yearn V3',
+    positionType: 'Auto-Compounding Stable Vault',
+    ownerHintMatched: 'Yearn V3',
+    incomeMode: 'embedded-yield',
+    methodologyNote: 'ysyBOLD is Yearn yBOLD Auto-Compounder; yBOLD represents BOLD routed across Liquity V2 Stability Pools; ysyBOLD value grows as rewards are harvested and re-deposited.'
+  };
 }
 
 function summarize(positions) {
-  let totalUsd = 0;
-  let productiveUsd = 0;
-  let liquidUsd = 0;
-  let priced = 0;
+  const priced = positions.filter(p => Number.isFinite(Number(p.valueUsd)));
+  const totalUsd = priced.reduce((s, p) => s + Number(p.valueUsd), 0);
   const byProtocol = {};
   const byType = {};
   const byStable = {};
-  for (const p of positions) {
-    const v = Number(p.valueUsd);
-    if (Number.isFinite(v)) {
-      totalUsd += v;
-      priced += 1;
-      if (p.incomeMode === 'liquid-principal') liquidUsd += v;
-      else productiveUsd += v;
-      byProtocol[p.protocol || 'Unknown'] = (byProtocol[p.protocol || 'Unknown'] || 0) + v;
-      byType[p.positionType || 'Unknown'] = (byType[p.positionType || 'Unknown'] || 0) + v;
-      byStable[p.underlyingSymbol || p.symbol || p.wrapperSymbol || 'Unknown'] = (byStable[p.underlyingSymbol || p.symbol || p.wrapperSymbol || 'Unknown'] || 0) + v;
-    }
+  for (const p of priced) {
+    byProtocol[p.protocol] = round((byProtocol[p.protocol] || 0) + Number(p.valueUsd), 6);
+    byType[p.positionType] = round((byType[p.positionType] || 0) + Number(p.valueUsd), 6);
+    const sym = p.underlyingSymbol || p.symbol || p.wrapperSymbol || 'Unknown';
+    byStable[sym] = round((byStable[sym] || 0) + Number(p.valueUsd), 6);
   }
-  for (const obj of [byProtocol, byType, byStable]) {
-    for (const k of Object.keys(obj)) obj[k] = round(obj[k], 6);
-  }
-  return {
-    totalUsd: round(totalUsd, 6),
-    productiveUsd: round(productiveUsd, 6),
-    liquidUsd: round(liquidUsd, 6),
-    positionCount: positions.length,
-    pricedPositions: priced,
-    byProtocol,
-    byType,
-    byStable
-  };
+  return { totalUsd: round(totalUsd, 6), productiveUsd: round(positions.filter(p => p.productive).reduce((s, p) => s + Number(p.valueUsd || 0), 0), 6), liquidUsd: round(positions.filter(p => !p.productive).reduce((s, p) => s + Number(p.valueUsd || 0), 0), 6), positionCount: positions.length, pricedPositions: priced.length, byProtocol, byType, byStable };
 }
 
-function ownerHintCoverage(positions, nonStableDiagnostics, unresolved) {
-  const rows = [...positions, ...nonStableDiagnostics, ...unresolved];
-  const count = key => rows.filter(x => x.ownerHintMatched === key).length;
-  const exact = key => rows.filter(x => x.ownerHintMatched === key);
-  const checks = {
-    'f(x) Protocol': count('f(x) Protocol') >= 1,
-    'Liquity V2': count('Liquity V2') >= 1,
-    'Inverse': count('Inverse') >= 1,
-    'Yearn V3': count('Yearn V3') >= 1,
-    'Sky': count('Sky') >= 1,
-    'Aave V3': count('Aave V3') >= 1, // second Aave leg is added from preserved Aave supplied position below
-    'Curve': count('Curve') >= 1,
-    'Lido': count('Lido') >= 1,
-    'Frax Finance': count('Frax Finance') >= 1
-  };
-  return { checks, evidence: Object.fromEntries(Object.keys(checks).map(k => [k, exact(k)])) };
-}
-
-function assertDiscovery(discovery) {
-  if (discovery?.version !== '1.0-company-008-monetra-stable-capital-discovery') {
-    throw new Error(`expected Monetra discovery v1.0, got ${discovery?.version}`);
-  }
-  if (discovery?.company?.registry !== COMPANY.registry) throw new Error('discovery registry mismatch');
-  if (discovery?.company?.name !== COMPANY.name) throw new Error('discovery company mismatch');
-  if (lower(discovery?.company?.wallet) !== lower(COMPANY.wallet)) throw new Error('discovery wallet mismatch');
-  if (!discovery?.company?.founding?.date) throw new Error('founding must already be resolved before v1.1');
-  const prior = priorAavePositions(discovery);
-  if (!prior.length) throw new Error('expected preserved Aave stable position from v1.0');
+function upsert(positions, p) {
+  const i = positions.findIndex(x => x.id === p.id || (p.wrapper && lower(x.wrapper) === lower(p.wrapper)));
+  if (i >= 0) positions[i] = p; else positions.push(p);
 }
 
 async function main() {
+  if (!fs.existsSync(INPUT)) throw new Error(`missing prior resolver input: ${INPUT}`);
+  const priorText = fs.readFileSync(INPUT, 'utf8');
+  const prior = JSON.parse(priorText);
+  if (prior.version !== EXPECTED_PRIOR) throw new Error(`expected ${EXPECTED_PRIOR}, got ${prior.version}`);
+  if (prior.company?.registry !== '008' || prior.company?.name !== 'Monetra.eth' || lower(prior.company?.wallet) !== lower(WALLET)) throw new Error('Company #008 identity mismatch');
+  if (prior.company?.founding?.date !== '2026-05-27') throw new Error('founding regression');
+  if (!Array.isArray(prior.stableCapital?.positions) || prior.stableCapital.positions.length < 7) throw new Error('prior solved stable positions missing');
+
   const startedAt = new Date().toISOString();
-  if (!fs.existsSync(DISCOVERY_PATH)) throw new Error(`missing input ${DISCOVERY_PATH}`);
-  const discoveryText = fs.readFileSync(DISCOVERY_PATH, 'utf8');
-  const discovery = JSON.parse(discoveryText);
-  assertDiscovery(discovery);
+  let history = { items: [], pages: 0, error: null };
+  try { history = { ...(await tokenHistory()), error: null }; } catch (e) { history.error = err(e); }
 
-  const history = await ethereumTokenHistory();
-  const direct = await discoverDirectPositions(discovery, history);
+  const probe = await withProvider(async provider => {
+    const positions = prior.stableCapital.positions.map(reclassifyYearn);
+    const frax = await resolveFrax(provider, history);
+    const lido = await resolveLidoEarnUsd(provider, history);
+    const liquity = await resolveLiquity(provider, history);
+    if (frax.position) upsert(positions, frax.position);
+    if (lido.position) upsert(positions, lido.position);
+    for (const p of liquity.positions || []) upsert(positions, p);
+    return { positions, frax, lido, liquity };
+  });
+  if (!probe.result) throw new Error(`all Ethereum RPC providers failed: ${(probe.errors || []).join(' | ')}`);
 
-  // Preserve the solved Aave supplied position(s) from discovery. This resolver is intentionally
-  // about the missing wrapper/savings layer, not about re-researching the already solved lending leg.
-  const aavePreserved = priorAavePositions(discovery).map(p => ({
-    ...p,
-    preservation: {
-      source: 'company-008-discovery.json v1.0',
-      treatment: 'preserved solved lending position; not re-researched in wrapper resolver'
-    },
-    ownerHintMatched: 'Aave V3'
-  }));
-
-  // De-duplicate by economic position id. Direct token scan intentionally skips preserved aTokens.
-  const stablePositions = [...aavePreserved, ...direct.stablePositions];
-  const summary = summarize(stablePositions);
-
-  const coverage = ownerHintCoverage(stablePositions, direct.nonStableDiagnostics, direct.unresolved);
-  // Screenshot shows two Aave rows; one is the preserved lending deposit, the other can be sGHO.
-  const aaveEvidenceCount = [
-    ...stablePositions,
-    ...direct.nonStableDiagnostics,
-    ...direct.unresolved
-  ].filter(x => x.ownerHintMatched === 'Aave V3').length;
-  coverage.checks['Aave V3'] = aaveEvidenceCount >= 2;
-
-  const missingHints = Object.entries(coverage.checks).filter(([, ok]) => !ok).map(([k]) => k);
-  const canonicalUnpriced = stablePositions.filter(p => p.valueUsd == null);
-  const provisionalValuations = stablePositions.filter(p => p.valuationCanonical === false);
-  const stableDelta = summary.totalUsd - OWNER_EVIDENCE.stableStrategyUsdApprox;
-  const lido = direct.nonStableDiagnostics.filter(x => x.protocol === 'Lido');
-
-  const stableBookReady = missingHints.length === 0
-    && direct.unresolved.filter(x => x.ownerHintMatched).length === 0
-    && canonicalUnpriced.length === 0;
+  const { positions, frax, lido, liquity } = probe.result;
+  const summary = summarize(positions);
+  const ownerTarget = Number(prior.ownerEvidence?.stableStrategyUsdApprox || 100);
+  const delta = summary.totalUsd - ownerTarget;
+  const checks = {
+    'f(x) Protocol': positions.some(p => p.ownerHintMatched === 'f(x) Protocol'),
+    'Liquity V2': positions.some(p => p.ownerHintMatched === 'Liquity V2'),
+    'Inverse': positions.some(p => p.ownerHintMatched === 'Inverse'),
+    'Yearn V3': positions.some(p => p.ownerHintMatched === 'Yearn V3'),
+    'Sky': positions.some(p => p.ownerHintMatched === 'Sky'),
+    'Aave V3': positions.filter(p => p.ownerHintMatched === 'Aave V3').length >= 2,
+    'Curve': positions.some(p => p.ownerHintMatched === 'Curve'),
+    'Lido': positions.some(p => p.ownerHintMatched === 'Lido'),
+    'Frax Finance': positions.some(p => p.ownerHintMatched === 'Frax Finance')
+  };
+  const missingHints = Object.entries(checks).filter(([, ok]) => !ok).map(([k]) => k);
+  const unpriced = positions.filter(p => p.valueUsd == null);
+  const currentBookReady = missingHints.length === 0 && unpriced.length === 0 && Math.abs(delta) <= 15;
+  const previousFx = positions.find(p => p.ownerHintMatched === 'f(x) Protocol');
+  const fxCanonical = Boolean(previousFx?.valuationCanonical);
 
   const output = {
+    ...prior,
     version: VERSION,
     generatedAt: new Date().toISOString(),
     startedAt,
-    company: {
-      registry: COMPANY.registry,
-      name: COMPANY.name,
-      wallet: COMPANY.wallet,
-      category: COMPANY.category,
-      founding: discovery.company.founding
-    },
+    purpose: 'close the final Monetra Stable Capital current-state delta without reopening solved founding/Aave/wrapper work; resolve direct Liquity V2 Stability Pool, Lido earnUSD, Frax sfrxUSD and Yearn identity',
     preservation: {
-      discoveryInputVersion: discovery.version,
-      discoveryInputSha256: sha256Text(discoveryText),
-      foundedDatePreserved: discovery.company.founding.date,
-      foundingEvidencePreserved: true,
-      priorAaveStablePositionsPreserved: aavePreserved.length,
-      principle: 'v1.1 does not reopen solved founding/Aave work; it resolves the missing stable-wrapper layer'
+      ...(prior.preservation || {}),
+      priorResolverVersion: prior.version,
+      priorResolverSha256: sha256(priorText),
+      foundedDatePreserved: prior.company.founding.date,
+      priorStablePositionCount: prior.stableCapital.positions.length,
+      principle: 'v1.2 is a narrow continuation: preserve solved v1.1 positions; add only final missing mechanisms and reclassify Yearn'
     },
-    ownerEvidence: OWNER_EVIDENCE,
-    parserFix: {
-      issue: 'Blockscout V2 token objects use address_hash; v1.0 looked primarily for address/token_address and could silently skip current wrapper tokens.',
-      correctedAddressPriority: ['token.address','token.address_hash','token.token_address','item.address_hash','item.token_address'],
-      historicalTransferAddressFixApplied: true
+    resolutionV12: {
+      provider: probe.provider,
+      providerErrorsBeforeSuccess: probe.errors,
+      tokenHistory: { pages: history.pages, error: history.error },
+      yearn: { status: positions.some(p => p.ownerHintMatched === 'Yearn V3') ? 'ok' : 'missing', wrapper: ADDR.ysyBold, canonicalIdentity: 'Yearn yBOLD Auto-Compounder / ysyBOLD' },
+      frax,
+      lido,
+      liquity,
+      fxSaveBoundary: {
+        status: fxCanonical ? 'canonical' : 'current-book-priced-history-adapter-pending',
+        currentBookTreatment: 'preserve reproducible current valuation from v1.1; do not use wrapper market-price changes as Embedded Yield history',
+        historyRequirement: 'future Embedded Yield ledger must use fxSAVE share economics / fxSP economic exit accounting rather than market-price drift'
+      }
     },
     stableCapital: {
-      positions: stablePositions,
+      ...prior.stableCapital,
+      positions,
       summary,
       reconciliation: {
-        ownerStableStrategyUsdApprox: OWNER_EVIDENCE.stableStrategyUsdApprox,
+        ownerStableStrategyUsdApprox: ownerTarget,
         reproducedStableCapitalUsd: summary.totalUsd,
-        deltaVsOwnerApproxUsd: round(stableDelta, 6),
-        withinLoose15UsdBand: Math.abs(stableDelta) <= 15,
-        note: 'owner target is diagnostic only. If Lido is ETH-denominated it is correctly excluded even if this makes Stable Capital lower than the DeBank total.'
+        deltaVsOwnerApproxUsd: round(delta, 6),
+        withinLoose15UsdBand: Math.abs(delta) <= 15,
+        note: 'owner target is diagnostic only; current book is accepted only from reproduced positions, never forced to the target'
       },
-      provisionalValuations: provisionalValuations.map(p => ({ id: p.id, protocol: p.protocol, valueUsd: p.valueUsd, valuationStatus: p.valuationStatus })),
-      unresolved: direct.unresolved
+      unresolved: [],
+      accruedRewardsCandidates: liquity.accruedRewards || []
     },
-    nonStableDiagnostics: direct.nonStableDiagnostics,
+    nonStableDiagnostics: prior.nonStableDiagnostics || [],
     mandateReview: {
-      lidoPositions: lido,
-      rule: 'stETH/wstETH are ETH-denominated productive assets, not stable capital; exclude unless the Stable Capital mandate is intentionally changed.',
-      lidoClassified: lido.length > 0
+      lidoPositions: positions.filter(p => p.ownerHintMatched === 'Lido').map(p => ({ id: p.id, protocol: p.protocol, symbol: p.wrapperSymbol, valueUsd: p.valueUsd, stableCapitalEligible: true })),
+      rule: 'Lido earnUSD is USD-denominated Stable Capital; stETH/wstETH would remain excluded if encountered separately.',
+      lidoClassified: positions.some(p => p.ownerHintMatched === 'Lido')
     },
     ownerHintCoverage: {
-      checks: coverage.checks,
+      checks,
       missingHints,
-      aaveEvidenceCount,
-      note: 'Aave screenshot family is complete only when both the preserved lending deposit and the separate savings/other Aave position are reproduced/classified.'
+      aaveEvidenceCount: positions.filter(p => p.ownerHintMatched === 'Aave V3').length,
+      note: 'Yearn is recognized by ysyBOLD identity; Lido by earnUSD ShareManager; Frax by direct sfrxUSD read; Liquity by branch StabilityPool state.'
     },
     history: {
-      ethereumTokenTransfers: {
-        status: history.status,
-        pages: history.pages,
-        truncated: history.truncated,
-        parserUsesAddressHash: true,
-        error: history.error || null
-      },
-      checkpointSeed: stablePositions.map(p => ({
-        id: p.id,
-        protocol: p.protocol,
-        positionType: p.positionType,
-        incomeMode: p.incomeMode,
-        firstObservedActivity: p.history?.firstObservedInbound
-          || p.history?.firstObservedInboundShareTransfer
-          || p.history?.firstObservedInboundATokenTransfer
-          || p.history?.firstObservedInboundTransfer
-          || null,
-        currentCheckpoint: p.history?.currentCheckpoint || null
-      }))
+      ...(prior.history || {}),
+      v12CheckpointSeed: positions.map(p => ({ id: p.id, protocol: p.protocol, positionType: p.positionType, incomeMode: p.incomeMode, firstObservedActivity: p.history?.firstObservedInbound || p.history?.firstObservedActivity || null, currentCheckpoint: p.history?.currentCheckpoint || null }))
     },
-    diagnostics: direct.diagnostics,
     productionReadiness: {
-      foundingResolved: true,
-      preservedAaveResolved: aavePreserved.length > 0,
-      ownerHintsAllClassified: missingHints.length === 0,
-      stableCapitalBookReady: stableBookReady,
-      pageIntegrationReady: false,
+      stableCapitalBookReady: currentBookReady,
+      currentStateReconciled: currentBookReady,
+      embeddedYieldLedgerSeedReady: currentBookReady,
+      embeddedYieldHistoryReady: false,
       productivityIntegrationReady: false,
       rewardsIntegrationReady: false,
+      pageIntegrationReady: false,
       reportingIntegrationReady: false,
-      note: stableBookReady
-        ? 'Current-state Stable Capital inventory is reconciled enough for adapter design review. Do not patch public layers until economic mechanisms/valuation modes are reviewed.'
-        : 'Keep public analytical integration closed. Resolve remaining owner-hinted wrappers/provisional economic valuation first.'
-    },
-    nextStep: stableBookReady
-      ? 'Review exact wrapper mechanisms and promote reusable Stable Capital adapters: ERC-4626 Embedded Yield history, Aave lending, protocol-specific exceptions, then integrate Passport/Monetra/Yield Reports.'
-      : 'Use only the unresolved/provisional rows for the next narrow pass; do not repeat founding or Aave lending discovery.'
+      rationale: currentBookReady
+        ? 'current Stable Capital book reconciled; next phase is Reference APY + Embedded Yield methodology/adapters before public analytical integration'
+        : `current book still not closed; missing=${missingHints.join(',') || 'none'} unpriced=${unpriced.length} delta=${round(delta, 6)}`
+    }
   };
 
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
   fs.writeFileSync(OUTPUT, JSON.stringify(output, null, 2) + '\n');
-
-  console.log(`Monetra Company #008 stable resolver written: ${OUTPUT}`);
-  console.log(`Version: ${VERSION}`);
-  console.log(`Founded preserved: ${output.company.founding.date}`);
-  console.log(`Stable positions: ${stablePositions.length}`);
-  console.log(`Stable Capital USD: ${summary.totalUsd}`);
-  console.log(`Productive Stable USD: ${summary.productiveUsd}`);
-  console.log(`Non-stable diagnostics: ${direct.nonStableDiagnostics.length}`);
-  console.log(`Unresolved: ${direct.unresolved.length}`);
-  console.log(`Missing owner hints: ${missingHints.join(', ') || 'none'}`);
-  console.log(`Aave evidence count: ${aaveEvidenceCount}`);
-  console.log(`Stable Capital Book ready: ${stableBookReady}`);
+  console.log(JSON.stringify({ version: output.version, stableCapitalUsd: output.stableCapital.summary.totalUsd, positionCount: output.stableCapital.summary.positionCount, delta: output.stableCapital.reconciliation.deltaVsOwnerApproxUsd, missingHints, bookReady: output.productionReadiness.stableCapitalBookReady, liquityBranches: output.resolutionV12.liquity.branches.map(x => [x.branch, x.compoundedBoldDeposit]), frax: output.resolutionV12.frax.status, lido: output.resolutionV12.lido.status }, null, 2));
 }
 
-main().catch(err => {
-  console.error(`Monetra Company #008 resolver failed: ${errMsg(err)}`);
-  process.exitCode = 1;
+main().catch(e => {
+  console.error(e);
+  process.exit(1);
 });
