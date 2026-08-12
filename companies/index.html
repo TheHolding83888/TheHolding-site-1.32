@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<!-- companies.html · Passport UX v1.20 · close controls · compact vertical mobile · separate Stable Companies Index -->
+<!-- companies.html · merged build · stable-index overflow fix + hierarchy pass · Passport UX v1.20 · close controls · compact vertical mobile · separate Stable Companies Index -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -3512,6 +3511,148 @@
             .sc-strategy-cell{max-width:100%}
         }
 
+        /* ═══════ Ported refinements ═══════ */
+        .filter-tab[data-filter="all"] { font-size: 0.78rem; padding: 0.56rem 1.35rem; font-weight: 500; }
+        .filter-info {
+            width: 15px; height: 15px; font-size: 9px; opacity: 0.55;
+            transition: opacity 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+        .filter-info:hover, .filter-info[aria-expanded="true"] { opacity: 1; color: var(--gold); border-color: var(--gold-line); }
+
+        .cc-extlink-dual { flex-wrap: wrap; gap: 0.55rem; }
+        .cc-ext-sep { width: 1px; height: 11px; background: var(--line-strong); opacity: 0.7; flex-shrink: 0; }
+        .cc-ext-debank { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+        .cc-ext-debank:hover .cc-ext-label, .cc-ext-debank:focus-visible .cc-ext-label { color: var(--gold); opacity: 1; }
+        .cc-ext-debank:focus-visible { outline: 1px solid var(--gold-line); outline-offset: 3px; border-radius: 4px; }
+
+        /* Continuation into the Index — the reader who reaches the end of the
+           collection is met by the next step instead of scrolling back up. */
+        .collection-next {
+            display: none; align-items: center; justify-content: center; gap: 0.6rem;
+            margin: 1.7rem auto 0; padding: 0.95rem 1.4rem;
+            border: 1px solid var(--line-strong); border-radius: 100px;
+            text-decoration: none; background: rgba(255,255,255,0.55);
+            transition: border-color 0.25s ease, background 0.25s ease;
+        }
+        .collection-next .cn-label {
+            font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
+            font-weight: 600; color: var(--gold);
+        }
+        .collection-next .cn-arrow { display: inline-flex; color: var(--gold); opacity: 0.8; }
+        .collection-next:hover { border-color: var(--gold-line); background: var(--gold-soft); }
+
+        /* ═══════ Stable Index — overflow guard ═══════
+           The section keeps overflow visible so tooltips can escape their cell,
+           which also let a 260px tip and an 880px board push the whole document
+           sideways. `clip` stops the horizontal escape without creating a scroll
+           container, so the sticky subnav keeps working. */
+        .stable-index-sec { overflow-x: clip; }
+        .sc-tip { max-width: calc(100vw - 2.4rem); }
+
+        @media (max-width: 760.98px) {
+            .filter-tab[data-filter="all"] { font-size: 0.71rem; padding-left: 0.9rem; padding-right: 0.9rem; }
+            .filter-info { width: 13px; height: 13px; font-size: 8px; }
+            .collection-next { display: flex; }
+
+            /* Info popovers become a centred sheet rather than drifting to the
+               screen edge — a definition deserves to be presented. */
+            .filter-popover {
+                position: fixed; left: 50%; right: auto; top: 50%; bottom: auto;
+                transform: translate(-50%, -46%) scale(0.97);
+                width: min(340px, calc(100vw - 2.6rem));
+                max-height: min(56vh, 420px); overflow-y: auto;
+                padding: 1.15rem 1.2rem; border-radius: 16px;
+                font-size: 0.79rem; line-height: 1.62;
+                box-shadow: 0 24px 60px -22px rgba(22,21,15,0.42), 0 2px 6px rgba(22,21,15,0.06);
+                transition: opacity 0.22s ease, visibility 0.22s ease, transform 0.26s cubic-bezier(0.22,1,0.36,1);
+            }
+            .filter-taxonomy.open .filter-popover,
+            .filter-info:focus-visible + .filter-popover { transform: translate(-50%, -50%) scale(1); }
+        }
+        @media (max-width: 460px) { .cc-extlink-dual { gap: 0.4rem; } .cc-ext-sep { display: none; } }
+        @media (max-width: 400px) { .collection-next .cn-label { font-size: 0.57rem; letter-spacing: 0.13em; } }
+        /* ═══════ Stable Index — reducing what competes for attention ═══════
+           The section carried four KPI tooltips, an eight-column table and a
+           methodology note. Everything is still true, but a reader cannot weigh
+           six numbers per row at a glance. The hierarchy below keeps the two
+           figures the index is actually built on — capital and productive rate —
+           in the foreground, and lets the rest recede without disappearing. */
+
+        /* The "?" affordances repeated four times across the summary; the
+           methodology note underneath already carries these definitions. */
+        .sc-summary .sc-help { display: none; }
+        .sc-summary-item h4, .sc-summary-item > span:first-child { padding-right: 0; }
+
+        /* Desktop: secondary columns step back so the eye lands on capital and
+           rate first, instead of six equally loud values. */
+        @media (min-width: 901px) {
+            .sc-embedded-cell, .sc-claimable-cell { opacity: 0.62; }
+            .sc-embedded-cell b, .sc-embedded-cell > span,
+            .sc-claimable-cell b, .sc-claimable-cell > span { font-size: 0.62rem; }
+            .sc-capital-cell b, .sc-apy-cell b { font-size: 0.76rem; }
+        }
+
+        /* Phone: a stacked row of six labelled metrics becomes a wall. Capital and
+           rate stay; the remainder is available in the company's own passport. */
+        @media (max-width: 560px) {
+            .sc-board-row .sc-embedded-cell,
+            .sc-board-row .sc-claimable-cell { display: none !important; }
+            .sc-board-row {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                grid-template-areas: "company action" "capital apy" "strategies strategies";
+                row-gap: 0.55rem;
+            }
+            .sc-board-row .sc-capital-cell b { font-size: 0.72rem; }
+            .sc-board-row .sc-apy-cell b { font-size: 0.72rem; }
+        }
+
+        /* The opening paragraph is a full methodological statement; on a phone it
+           reads as a wall before the reader reaches a single number. */
+        @media (max-width: 760.98px) {
+            .sc-head { flex-direction: column; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+            .sc-head p { font-size: 0.72rem; line-height: 1.62; }
+            .sc-universe-badge { min-width: 0; width: 100%; text-align: left; }
+            .stable-index-sec { padding: 4.4rem 0 4.6rem; }
+        }
+        /* ═══════ Monetra passport — same content, calmer hierarchy ═══════
+           The passport carries a hero, six KPIs, a quality row, three numbered
+           panels and a closing glossary. Nothing here is wrong, but four of those
+           layers compete at the same volume, and the glossary repeats definitions
+           the inline "?" markers already give. The rules below re-rank them
+           rather than delete anything. */
+
+        /* The closing glossary duplicates the inline tooltips, so it recedes into
+           a quiet footnote instead of reading as a fourth panel. */
+        .scp-explain {
+            opacity: 0.78;
+            font-size: 0.66rem;
+            padding-top: 1.1rem;
+            border-top: 1px solid var(--line);
+        }
+        .scp-explain-num { opacity: 0.6; }
+
+        /* Four income periods all reading "—" while the book warms up is four
+           times the noise for the same information. */
+        .scp-income-grid { gap: 0.5rem 0.9rem; }
+
+        /* The quality row is context, not headline data. */
+        .scp-quality { opacity: 0.82; }
+
+        @media (max-width: 760.98px) {
+            /* On a phone the glossary arrives after the reader already met every
+               definition inline; it is the first thing that can go. */
+            .scp-explain { display: none; }
+            .scp-hero { gap: 0.9rem; }
+            .scp-headline { font-size: 0.7rem; line-height: 1.6; }
+            .scp-quality { font-size: 0.58rem; }
+            .scp-panel-head { margin-bottom: 0.7rem; }
+            .scp-small-note { font-size: 0.6rem; line-height: 1.55; }
+        }
+        @media (max-width: 460px) {
+            /* Two periods answer "is it producing yet"; the full series lives in
+               the reports rather than in a pocket-sized card. */
+            .scp-income-grid > *:nth-child(n+3) { display: none; }
+        }
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -3635,14 +3776,14 @@
                 <span class="filter-popover" role="tooltip" data-i18n="filter.standard.info">Layered capital architecture inspired by The Holding – a foundation/reserve layer separated from productive, dividend and other functional layers.</span>
             </span>
             <span class="filter-taxonomy">
-                <button type="button" class="filter-tab" data-filter="stable"><span class="ft-full" data-i18n="filter.stable">Stable Capital</span><span class="ft-short" data-i18n="filter.stable.short">Stable</span></button>
-                <button class="filter-info" type="button" aria-label="About Stable Capital" aria-expanded="false">i</button>
-                <span class="filter-popover" role="tooltip" data-i18n="filter.stable.info">Companies built around stable assets, liquidity, capital preservation and sustainable yield.</span>
-            </span>
-            <span class="filter-taxonomy">
                 <button type="button" class="filter-tab" data-filter="onchain"><span class="ft-full" data-i18n="filter.custom">Custom Build</span><span class="ft-short" data-i18n="filter.custom.short">Custom</span></button>
                 <button class="filter-info" type="button" aria-label="About Custom Build" aria-expanded="false">i</button>
                 <span class="filter-popover" role="tooltip" data-i18n="filter.custom.info">A freer, individual company structure – assets and strategies assembled around the owner or case without a required layered capital architecture.</span>
+            </span>
+            <span class="filter-taxonomy">
+                <button type="button" class="filter-tab" data-filter="stable"><span class="ft-full" data-i18n="filter.stable">Stable Capital</span><span class="ft-short" data-i18n="filter.stable.short">Stable</span></button>
+                <button class="filter-info" type="button" aria-label="About Stable Capital" aria-expanded="false">i</button>
+                <span class="filter-popover" role="tooltip" data-i18n="filter.stable.info">Companies built around stable assets, liquidity, capital preservation and sustainable yield.</span>
             </span>
         </div>
 
@@ -3854,7 +3995,7 @@
             </div>
 
             <!-- ═══ Company #008 · Monetra.eth · Stable Capital ═══ -->
-            <div class="company-card company-card-008 reveal" data-category="stable">
+            <a class="company-card company-card-008 reveal" data-category="stable" href="https://theholding.ai/monetra/" target="_blank" rel="noopener">
                 <div class="cc-regnum"><span><span class="cc-reg-label" data-i18n="card.registry">Registry</span> · 008</span><span class="cc-founded" id="founded-monetra" data-i18n="card8.founded">Est. May 27, 2026</span></div>
                 <div class="cc-top">
                     <div class="cc-seal"><span class="cc-seal-mark" role="img" aria-label="The Holding registry seal"></span></div>
@@ -3866,11 +4007,11 @@
                     <div><div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div><div class="cc-metric-value gold" id="tvl-monetra">Live</div></div>
                     <div><div class="cc-metric-label" data-i18n="card8.yield">Reference APY</div><div class="cc-metric-value" id="apy-monetra">Live</div></div>
                 </div>
-                <span class="cc-extlink cc-extlink-static" aria-disabled="true"><span class="cc-ext-label" data-i18n="card.debankTracking">DeBank · Tracking</span></span>
-            </div>
+                <span class="cc-extlink cc-extlink-dual"><span class="cc-ext-label" data-i18n="card.explore">Explore Company</span><svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="cc-ext-sep" aria-hidden="true"></span><span class="cc-ext-debank" role="link" tabindex="0" data-href="https://debank.com/profile/0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB"><span class="cc-ext-label" data-i18n="card.debank">View on DeBank</span><svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>
+            </a>
 
             <!-- ═══ Company #009 · 1milliondollar.eth ═══ -->
-            <div class="company-card company-card-009 reveal" data-category="standard">
+            <a class="company-card company-card-009 reveal" data-category="standard" href="https://debank.com/profile/0xe4b9c9ced406baffe406e63f83d39daaef150596" target="_blank" rel="noopener">
                 <div class="cc-regnum"><span><span class="cc-reg-label" data-i18n="card.registry">Registry</span> · 009</span><span class="cc-founded" id="founded-1million">Est. · Onchain</span></div>
                 <div class="cc-top">
                     <div class="cc-seal"><span class="cc-seal-mark" role="img" aria-label="The Holding registry seal"></span></div>
@@ -3882,8 +4023,8 @@
                     <div><div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div><div class="cc-metric-value gold" id="tvl-1million">—</div></div>
                     <div><div class="cc-metric-label" data-i18n="card.cashflow">APR</div><div class="cc-metric-value" id="apr-1million">~9.7%</div></div>
                 </div>
-                <span class="cc-extlink cc-extlink-static" aria-disabled="true"><span class="cc-ext-label" data-i18n="card.debankTracking">DeBank · Tracking</span></span>
-            </div>
+                <span class="cc-extlink"><span class="cc-ext-label" data-i18n="card.debank">View on DeBank</span><svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </a>
 
             <div class="company-card placeholder reveal">
                 <div class="placeholder-mark">◇</div>
@@ -3892,6 +4033,11 @@
             </div>
 
         </div>
+
+        <a class="collection-next" href="#index">
+            <span class="cn-label" data-i18n="collection.next">Continue to The Holding Index</span>
+            <span class="cn-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M8 3.5v9M4.5 9l3.5 3.5L11.5 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
     </div>
 </section>
 
@@ -5171,7 +5317,7 @@ function updateLensInPlace(lang) {
     const nb = document.getElementById('idxNoteBody');
     if (nb) nb.style.display = (IDX_MODE === 'tvl') ? 'none' : '';
     const ld = document.getElementById('idxLeader');
-    if (ld && list[0]) ld.textContent = list[0].nm;
+    if (ld && list[0]) ld.textContent = companyDisplayName(list[0].nm);
 
     // FLIP: remember where every row sits before the reorder
     const rows = Array.prototype.slice.call(board.children);
@@ -5271,7 +5417,7 @@ function renderIndex(lang) {
     const ld = document.getElementById('idxLeader');
     if (nv) nv.textContent = total > 0 ? money(total) : 'Live';
     if (cn) cn.textContent = list.length;
-    if (ld) ld.textContent = list[0] ? list[0].nm : '—';
+    if (ld) ld.textContent = list[0] ? companyDisplayName(list[0].nm) : '—';
 
     const bar = document.getElementById('idxCompBar');
     if (bar) {
@@ -6836,6 +6982,19 @@ function renderFramework(lang) {
     });
 })();
 
+/* A nested target inside a linked card: intercept before the card's own
+   navigation so each area goes where the reader expects. */
+(function () {
+    document.querySelectorAll('.cc-ext-debank[data-href]').forEach(el => {
+        const go = ev => {
+            ev.preventDefault(); ev.stopPropagation();
+            window.open(el.dataset.href, '_blank', 'noopener');
+        };
+        el.addEventListener('click', go);
+        el.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') go(ev); });
+    });
+})();
+
 /* ── Filter tabs ───────────────────────────────────── */
 (function () {
     const tabs = document.querySelectorAll('.filter-tab:not(.disabled)');
@@ -7121,7 +7280,9 @@ function renderFramework(lang) {
             'process.4.title': 'Autonomy',
             'process.4.text': 'The company begins to operate: productive positions accrue cash flow while its onchain activity starts building a measurable operating history.',
             'os.eyebrow': 'The Holding OS · In development',
+            'collection.next': 'Continue to The Holding Index',
             'os.eyebrow': 'The Holding OS · В разработке',
+            'collection.next': 'Перейти к индексу The Holding',
             'os.statement.dim': 'Not a custodian. Not a broker. Not a fund manager.',
             'os.statement.bright': 'An operating system for sovereign onchain capital.',
             'os.body': 'The Holding OS connects creation, registry, operation, measurement and history. A company can be built once, remain independently owned, and then accumulate a living record as its capital works onchain.',
