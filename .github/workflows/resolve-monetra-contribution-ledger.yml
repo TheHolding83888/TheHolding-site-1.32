@@ -1,4 +1,4 @@
-# THE HOLDING · MONETRA CONTRIBUTION LEDGER v0.1 · ONE-TIME HISTORICAL BACKFILL
+# THE HOLDING · MONETRA CONTRIBUTION LEDGER v0.2 · TARGETED DIAGNOSTIC CLOSE
 name: "Resolve Monetra Contribution Ledger"
 
 on:
@@ -80,10 +80,10 @@ jobs:
           const fs = require('fs');
           const d = JSON.parse(fs.readFileSync('companies/company-008-contribution-ledger.json','utf8'));
 
-          if (d.version !== '0.1-monetra-contribution-ledger-diagnostic') {
+          if (d.version !== '0.2-monetra-contribution-ledger-targeted-close') {
             throw new Error('unexpected contribution-ledger version: ' + d.version);
           }
-          if (d.methodologyVersion !== '0.1-boundary-flow-backfill') {
+          if (d.methodologyVersion !== '0.2-boundary-flow-targeted-close-net-invested') {
             throw new Error('unexpected methodology version');
           }
           if (d.company?.registry !== '008' || d.company?.name !== 'Monetra.eth') {
@@ -97,6 +97,13 @@ jobs:
           }
           if (!(Number(d.summary?.currentStableCapitalUsd) > 90)) {
             throw new Error('current Stable Capital missing');
+          }
+          if (!Array.isArray(d.matchedExternalStableConversions) ||
+              !Array.isArray(d.matchedInternalBridges)) {
+            throw new Error('missing v0.2 route-resolution arrays');
+          }
+          if (!('netInvestedUsd' in (d.summary || {}))) {
+            throw new Error('missing v0.2 netInvestedUsd field');
           }
 
           // Diagnostic GREEN is intentional. Ambiguity is data, not a workflow failure.
@@ -142,7 +149,7 @@ jobs:
           git cat-file -e "origin/main:$FILE"
 
           REMOTE_VERSION="$(git show origin/main:$FILE | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
-          test "$REMOTE_VERSION" = "0.1-monetra-contribution-ledger-diagnostic" || {
+          test "$REMOTE_VERSION" = "0.2-monetra-contribution-ledger-targeted-close" || {
             echo "ERROR: remote contribution-ledger version mismatch: $REMOTE_VERSION"
             exit 1
           }
