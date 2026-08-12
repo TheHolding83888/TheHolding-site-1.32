@@ -30,9 +30,9 @@ import {
 } from 'ethers';
 import { AaveV3Base } from '@aave-dao/aave-address-book';
 
-const VERSION = '0.1-monetra-stable-capital-reference-yield';
-const METHODOLOGY = '1.0-stable-capital-annual-yield-capital-weighted';
-const LEDGER_VERSION = '0.1-flow-aware-checkpoint-ledger';
+const VERSION = '0.2-monetra-six-adapters-history-fix';
+const METHODOLOGY = '1.1-stable-capital-machine-safe-reference-yield';
+const LEDGER_VERSION = '0.2-flow-aware-same-run-claimables';
 const RESOLVER_REQUIRED = '1.4-company-008-fraxtal-sfrxusd-close';
 
 const ROOT = path.resolve(process.cwd());
@@ -71,6 +71,7 @@ const OFFICIAL = Object.freeze({
   sgho: 'https://app.aave.com/sgho/',
   yearn: 'https://yearn.fi/vaults/1/0x9f4330700a36b29952869fac9b33f45eedd8a3d8',
   lido: 'https://stake.lido.fi/earn/usd',
+  lidoHome: 'https://lido.fi/',
   frax: 'https://frax.com/earn',
   fraxDocs: 'https://docs.frax.com/frxusd/stake-and-unstake-quickstart-fraxtal',
   liquityDocs: 'https://docs.liquity.org/v2-faq/bold-and-earn'
@@ -317,19 +318,44 @@ async function currentErc4626Snapshot(provider, wrapper, wallet, chain = 'ethere
   };
 }
 
+
+async function findBlockAtOrBefore(provider, targetTs) {
+  const latest = await provider.getBlock('latest');
+  if (!latest) throw new Error('latest block unavailable');
+  if (Number(latest.timestamp) <= targetTs) return latest;
+
+  let low = 0;
+  let high = Number(latest.number);
+  let best = 0;
+
+  // Binary search is deliberately RPC-native. v0.1 depended on a Blockscout
+  // timestamp endpoint which can be unavailable even while archive eth_call works.
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const block = await provider.getBlock(mid);
+    if (!block) {
+      high = mid - 1;
+      continue;
+    }
+    const ts = Number(block.timestamp);
+    if (ts <= targetTs) {
+      best = mid;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  const out = await provider.getBlock(best);
+  if (!out) throw new Error(`historical block ${best} unavailable`);
+  return out;
+}
+
 async function historicalUnitRate(wrapper, days = 7, maxDepth = 3) {
   const targetTs = Math.floor(Date.now() / 1000) - days * 86400;
-  let targetBlock = null;
-  try {
-    const j = await fetchJson(`https://eth.blockscout.com/api?module=block&action=getblocknobytime&timestamp=${targetTs}&closest=before`);
-    const b = Number(j?.result);
-    if (Number.isFinite(b) && b > 0) targetBlock = b;
-  } catch {}
-  if (!targetBlock) {
-    return { status: 'warming-no-historical-block', annualYieldPct: null, days, targetBlock: null };
-  }
 
   const call = await withArchiveProvider(async (provider, url) => {
+    const histBlock = await findBlockAtOrBefore(provider, targetTs);
+    const targetBlock = Number(histBlock.number);
     const wMetaNow = await tokenMeta(provider, wrapper);
     const unit = 10n ** BigInt(wMetaNow.decimals);
 
@@ -361,23 +387,31 @@ async function historicalUnitRate(wrapper, days = 7, maxDepth = 3) {
     if (!(nowAmt > 0 && thenAmt > 0)) throw new Error('invalid historical redemption amounts');
 
     const latestBlock = await provider.getBlock('latest');
-    const histBlock = await provider.getBlock(targetBlock);
     const elapsedDays = (Number(latestBlock.timestamp) - Number(histBlock.timestamp)) / 86400;
+    if (!(elapsedDays > 0.5)) throw new Error('historical interval too short');
+
     const annualYieldPct = (Math.pow(nowAmt / thenAmt, 365 / elapsedDays) - 1) * 100;
     return {
       annualYieldPct,
       nowTerminalPerUnitShare: nowAmt,
       historicalTerminalPerUnitShare: thenAmt,
       terminalSymbol: now.meta.symbol,
-      latestBlock: latestBlock.number,
+      latestBlock: Number(latestBlock.number),
       historicalBlock: targetBlock,
+      historicalTimestamp: Number(histBlock.timestamp),
       elapsedDays,
       provider: new URL(url).hostname
     };
   });
 
   if (!call.ok) {
-    return { status: 'warming-archive-unavailable', annualYieldPct: null, days, targetBlock, attempts: call.attempts };
+    return {
+      status: 'warming-archive-unavailable',
+      annualYieldPct: null,
+      days,
+      targetTimestamp: targetTs,
+      attempts: call.attempts
+    };
   }
   const r = call.value;
   if (!finite(r.annualYieldPct) || r.annualYieldPct < -50 || r.annualYieldPct > 200) {
@@ -392,7 +426,74 @@ async function historicalUnitRate(wrapper, days = 7, maxDepth = 3) {
     normalizedRateType: 'APY',
     sourceType: 'onchain-historical-share-growth',
     source: `ethereum-history:${r.provider}`,
-    methodology: 'annualized growth in redeemable terminal stable units per one vault share; token market price excluded',
+    methodology: 'Annualized growth in redeemable terminal stable units per one vault share; token market price excluded. Historical block resolved directly by RPC timestamp binary search.',
+    ...r
+  };
+}
+
+async function historicalFraxtalSfrxUsdRate(days = 7) {
+  const targetTs = Math.floor(Date.now() / 1000) - days * 86400;
+  const res = await withProvider('fraxtal', async (provider, url) => {
+    const histBlock = await findBlockAtOrBefore(provider, targetTs);
+    const latest = await provider.getBlock('latest');
+    const redeemer = new Contract(ADDR.fraxtalStakeUnstake, [
+      'function pricePerShare() view returns (uint256)',
+      'function previewRedeem(uint256) view returns (uint256)',
+      'function convertToAssets(uint256) view returns (uint256)'
+    ], provider);
+
+    let nowPps = null, thenPps = null, method = null;
+    try {
+      nowPps = safeBig(await redeemer.pricePerShare());
+      thenPps = safeBig(await redeemer.pricePerShare({ blockTag: Number(histBlock.number) }));
+      method = 'pricePerShare';
+    } catch {
+      try {
+        nowPps = safeBig(await redeemer.convertToAssets(ONE));
+        thenPps = safeBig(await redeemer.convertToAssets(ONE, { blockTag: Number(histBlock.number) }));
+        method = 'convertToAssets(1e18)';
+      } catch {
+        nowPps = safeBig(await redeemer.previewRedeem(ONE));
+        thenPps = safeBig(await redeemer.previewRedeem(ONE, { blockTag: Number(histBlock.number) }));
+        method = 'previewRedeem(1e18)';
+      }
+    }
+
+    if (nowPps <= 0n || thenPps <= 0n) throw new Error('invalid Fraxtal sfrxUSD PPS');
+    const now = Number(formatUnits(nowPps, 18));
+    const then = Number(formatUnits(thenPps, 18));
+    const elapsedDays = (Number(latest.timestamp) - Number(histBlock.timestamp)) / 86400;
+    const apy = (Math.pow(now / then, 365 / elapsedDays) - 1) * 100;
+
+    return {
+      annualYieldPct: apy,
+      nowPps: now,
+      historicalPps: then,
+      elapsedDays,
+      latestBlock: Number(latest.number),
+      historicalBlock: Number(histBlock.number),
+      provider: new URL(url).hostname,
+      method
+    };
+  });
+
+  if (!res.ok) {
+    return { status: 'warming-fraxtal-history', protocol: 'Frax Finance', annualYieldPct: null, attempts: res.attempts };
+  }
+  const r = res.value;
+  if (!finite(r.annualYieldPct) || r.annualYieldPct < -50 || r.annualYieldPct > 200) {
+    return { status: 'warming-rate-out-of-bounds', protocol: 'Frax Finance', annualYieldPct: null, ...r };
+  }
+  return {
+    status: 'ok',
+    protocol: 'Frax Finance',
+    annualYieldPct: round(r.annualYieldPct, 6),
+    rawRatePct: round(r.annualYieldPct, 6),
+    rawRateType: `${round(r.elapsedDays, 3)}d-fraxtal-pps-growth-annualized`,
+    normalizedRateType: 'APY',
+    sourceType: 'onchain-fraxtal-redeemer-pps-growth',
+    source: OFFICIAL.fraxDocs,
+    methodology: 'Annualized growth of the official FraxtalERC4626MintRedeemer sfrxUSD/frxUSD price-per-share. No wrapper market price is used.',
     ...r
   };
 }
@@ -433,10 +534,48 @@ async function rateAaveBaseUsdc() {
   };
 }
 
+
+function contextualRateCandidates(raw, needle, {
+  span = 24000,
+  percentPatterns = [],
+  decimalPatterns = []
+} = {}) {
+  const text = String(raw || '');
+  const lowerText = text.toLowerCase();
+  const n = lowerText.indexOf(String(needle).toLowerCase());
+  const contexts = [];
+  if (n >= 0) {
+    contexts.push(text.slice(Math.max(0, n - 2500), Math.min(text.length, n + span)));
+  }
+  contexts.push(text);
+
+  const pct = [];
+  for (const ctx of contexts) {
+    for (const rx of percentPatterns) {
+      for (const m of ctx.matchAll(rx)) {
+        const v = Number(m[1]);
+        if (Number.isFinite(v) && v > 0 && v < 100) pct.push(round(v, 6));
+      }
+    }
+    for (const rx of decimalPatterns) {
+      for (const m of ctx.matchAll(rx)) {
+        const v = Number(m[1]);
+        if (Number.isFinite(v) && v > 0 && v < 1) pct.push(round(v * 100, 6));
+      }
+    }
+  }
+  return [...new Set(pct)];
+}
+
 async function rateCurve() {
+  // scrvUSD is an unmodified Yearn V3 vault. Its economically clean reference
+  // rate is share growth in redeemable crvUSD, not wrapper market-price movement.
+  const hist = await historicalUnitRate(ADDR.scrvusd, 7, 2);
+  if (hist.status === 'ok') return { ...hist, protocol: 'Curve', canonicalProduct: 'scrvUSD' };
+
   try {
     const text = await fetchText(OFFICIAL.curve);
-    return selectedOfficialRate({
+    const r = selectedOfficialRate({
       protocol: 'Curve',
       url: OFFICIAL.curve,
       text,
@@ -445,37 +584,63 @@ async function rateCurve() {
         /Current projected APY\s*([0-9]+(?:\.[0-9]+)?)\s*%/gi,
         /projected APY\s*([0-9]+(?:\.[0-9]+)?)\s*%/gi
       ],
-      note: 'Current projected scrvUSD APY from the official Curve savings page.'
+      note: 'Official projected APY fallback when archive share-growth is unavailable.'
     });
-  } catch (e) {
-    const hist = await historicalUnitRate(ADDR.scrvusd, 7, 2);
-    return { ...hist, protocol: 'Curve', fallbackReason: errorText(e) };
-  }
+    if (r.status === 'ok') return r;
+  } catch {}
+  return { ...hist, protocol: 'Curve', officialFallback: OFFICIAL.curve };
 }
 
 async function rateFx() {
   try {
-    const text = await fetchText(OFFICIAL.fx);
-    const r = selectedOfficialRate({
-      protocol: 'f(x) Protocol',
-      url: OFFICIAL.fx,
-      text,
-      rateType: 'APY',
-      patterns: [
-        /fxSAVE.{0,220}?APY\s*([0-9]+(?:\.[0-9]+)?)\s*%/gi,
-        /\bAPY\s*([0-9]+(?:\.[0-9]+)?)\s*%/gi
+    const raw = await fetchText(OFFICIAL.fx);
+    const visible = stripHtml(raw);
+
+    let values = contextualRateCandidates(raw, 'fxSAVE', {
+      percentPatterns: [
+        /(?:fxSAVE|fxsave)[\s\S]{0,2400}?APY[^0-9]{0,100}([0-9]+(?:\.[0-9]+)?)\s*%/gi,
+        /APY[^0-9]{0,80}([0-9]+(?:\.[0-9]+)?)\s*%/gi
       ],
-      note: 'Official fxSAVE current auto-compounding vault APY. Zero/placeholder values are rejected.'
+      decimalPatterns: [
+        /["']?(?:apy|apyRate|annualPercentageYield)["']?\s*:\s*["']?(0\.[0-9]{3,})/gi
+      ]
     });
-    if (r.status === 'ok') return r;
-  } catch {}
-  return {
-    status: 'warming-official-rate-unavailable',
-    protocol: 'f(x) Protocol',
-    annualYieldPct: null,
-    source: OFFICIAL.fx,
-    note: 'Do not substitute fxSAVE market-price drift for protocol yield. Canonical fxSAVE → fxSP economic redemption history remains a separate adapter.'
-  };
+    values.push(...contextualRateCandidates(visible, 'fxSAVE', {
+      percentPatterns: [/(?:fxSAVE|fxsave)[\s\S]{0,1800}?APY[^0-9]{0,80}([0-9]+(?:\.[0-9]+)?)\s*%/gi]
+    }));
+    values = [...new Set(values)].filter(v => v > 0 && v < 50);
+
+    if (values.length === 1) {
+      return {
+        status: 'ok',
+        protocol: 'f(x) Protocol',
+        annualYieldPct: values[0],
+        rawRatePct: values[0],
+        rawRateType: 'APY',
+        normalizedRateType: 'APY',
+        sourceType: 'official-application-payload',
+        source: OFFICIAL.fx,
+        note: 'Unambiguous fxSAVE APY parsed from the official application payload/metadata. Wrapper market price is not used.'
+      };
+    }
+    return {
+      status: values.length > 1 ? 'warming-ambiguous' : 'warming-official-rate-unavailable',
+      protocol: 'f(x) Protocol',
+      annualYieldPct: null,
+      candidates: values,
+      source: OFFICIAL.fx,
+      note: 'No guess: fxSAVE must expose one unambiguous official APY. Canonical fxSAVE→fxSP→stable economic NAV remains required for Embedded Yield history.'
+    };
+  } catch (e) {
+    return {
+      status: 'warming-official-rate-unavailable',
+      protocol: 'f(x) Protocol',
+      annualYieldPct: null,
+      source: OFFICIAL.fx,
+      error: errorText(e),
+      note: 'Do not substitute fxSAVE market-price drift for protocol yield.'
+    };
+  }
 }
 
 async function rateInverse() {
@@ -516,56 +681,101 @@ async function rateSky() {
 }
 
 async function rateSGho() {
-  try {
-    const text = await fetchText(OFFICIAL.sgho);
-    const r = selectedOfficialRate({
+  const hist = await historicalUnitRate(ADDR.sgho, 7, 2);
+  if (hist.status === 'ok') {
+    return {
+      ...hist,
       protocol: 'Aave · sGHO',
-      url: OFFICIAL.sgho,
-      text,
-      rateType: 'APR',
-      patterns: [/earn\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*APR/gi],
-      note: 'Official sGHO application quotes APR. For Stable Capital aggregation the numeric one-year non-compounded annual yield is preserved; no arbitrary compounding frequency is invented.'
+      canonicalProduct: 'sGHO',
+      note: 'Reference APY from canonical sGHO redeemable-GHO share growth; avoids brittle application scraping.'
+    };
+  }
+  try {
+    const raw = await fetchText(OFFICIAL.sgho);
+    const values = contextualRateCandidates(raw, 'sGHO', {
+      percentPatterns: [/earn[^0-9]{0,80}([0-9]+(?:\.[0-9]+)?)\s*%\s*APR/gi]
     });
-    if (r.status === 'ok') {
-      r.normalization = 'APR used as one-year annual yield with no invented compounding';
-      return r;
+    if (values.length === 1) {
+      return {
+        status: 'ok', protocol: 'Aave · sGHO', annualYieldPct: values[0],
+        rawRatePct: values[0], rawRateType: 'APR', normalizedRateType: 'annual-yield',
+        normalization: 'APR used as one-year annual yield with no invented compounding.',
+        sourceType: 'official-application-payload', source: OFFICIAL.sgho
+      };
     }
   } catch {}
-  const hist = await historicalUnitRate(ADDR.sgho, 7, 2);
   return { ...hist, protocol: 'Aave · sGHO', fallbackFrom: OFFICIAL.sgho };
 }
 
 async function rateYearn() {
-  try {
-    const text = await fetchText(OFFICIAL.yearn);
-    const r = selectedOfficialRate({
-      protocol: 'Yearn V3',
-      url: OFFICIAL.yearn,
-      text,
-      rateType: 'APY',
-      patterns: [/Est\.?\s*APY\s*([0-9]+(?:\.[0-9]+)?)\s*%/gi],
-      note: 'Official Yearn estimated APY for yBOLD; zero loading placeholders are ignored.'
-    });
-    if (r.status === 'ok') return r;
-  } catch {}
+  // ysyBOLD is nested: ysyBOLD → yBOLD → BOLD. The nested redemption engine
+  // measures the full terminal BOLD-per-share growth, including auto-compounding.
   const hist = await historicalUnitRate(ADDR.ysybold, 7, 3);
+  if (hist.status === 'ok') {
+    return {
+      ...hist,
+      protocol: 'Yearn V3',
+      canonicalProduct: 'ysyBOLD / yBOLD Auto-Compounder',
+      note: 'Nested canonical share growth in terminal BOLD.'
+    };
+  }
+  try {
+    const raw = await fetchText(OFFICIAL.yearn);
+    const visible = stripHtml(raw);
+    const values = contextualRateCandidates(visible, 'APY', {
+      percentPatterns: [/Est\.?\s*APY[^0-9]{0,60}([0-9]+(?:\.[0-9]+)?)\s*%/gi]
+    });
+    if (values.length === 1) {
+      return {
+        status: 'ok', protocol: 'Yearn V3', annualYieldPct: values[0],
+        rawRatePct: values[0], rawRateType: 'Est. APY', normalizedRateType: 'APY',
+        sourceType: 'official-frontend', source: OFFICIAL.yearn
+      };
+    }
+  } catch {}
   return { ...hist, protocol: 'Yearn V3', fallbackFrom: OFFICIAL.yearn };
 }
 
 async function rateLido() {
-  try {
-    const text = await fetchText(OFFICIAL.lido);
-    return selectedOfficialRate({
-      protocol: 'Lido Earn',
-      url: OFFICIAL.lido,
-      text,
-      rateType: 'APY',
-      patterns: [/APY\*?\s*\([^)]*avg\.\)\s*([0-9]+(?:\.[0-9]+)?)\s*%/gi],
-      note: 'Official EarnUSD trailing-average APY; current page specifies the averaging window.'
-    });
-  } catch (e) {
-    return { status: 'warming-official-rate-unavailable', protocol: 'Lido Earn', annualYieldPct: null, source: OFFICIAL.lido, error: errorText(e) };
+  // lido.fi exposes the EarnUSD APY server-side more reliably than the app shell.
+  for (const url of [OFFICIAL.lidoHome, OFFICIAL.lido]) {
+    try {
+      const raw = await fetchText(url);
+      const visible = stripHtml(raw);
+      let values = contextualRateCandidates(visible, 'EarnUSD', {
+        span: 5000,
+        percentPatterns: [
+          /EarnUSD[\s\S]{0,1200}?([0-9]+(?:\.[0-9]+)?)\s*%\s*APY/gi,
+          /APY\*?\s*\([^)]*avg\.\)[^0-9]{0,80}([0-9]+(?:\.[0-9]+)?)\s*%/gi
+        ]
+      });
+      values.push(...contextualRateCandidates(raw, 'EarnUSD', {
+        span: 10000,
+        percentPatterns: [/EarnUSD[\s\S]{0,3000}?([0-9]+(?:\.[0-9]+)?)\s*%[\s\S]{0,120}?APY/gi]
+      }));
+      values = [...new Set(values)].filter(v => v > 0 && v < 50);
+      if (values.length === 1) {
+        return {
+          status: 'ok',
+          protocol: 'Lido Earn',
+          annualYieldPct: values[0],
+          rawRatePct: values[0],
+          rawRateType: '14d avg APY',
+          normalizedRateType: 'APY',
+          sourceType: 'official-lido-product-page',
+          source: url,
+          note: 'Official EarnUSD trailing-average APY. The product page explicitly labels this as APY and the Earn app describes it as a 14-day average.'
+        };
+      }
+    } catch {}
   }
+  return {
+    status: 'warming-official-rate-unavailable',
+    protocol: 'Lido Earn',
+    annualYieldPct: null,
+    source: OFFICIAL.lidoHome,
+    note: 'No unambiguous EarnUSD APY could be reproduced from official Lido pages.'
+  };
 }
 
 async function rateLiquity() {
@@ -622,33 +832,28 @@ async function rateLiquity() {
 }
 
 async function rateFrax() {
+  const hist = await historicalFraxtalSfrxUsdRate(7);
+  if (hist.status === 'ok') return hist;
+
+  // Official frontend remains only a fallback; if it exposes multiple percentages,
+  // do not guess between them.
   try {
-    const text = await fetchText(OFFICIAL.frax);
-    const hay = stripHtml(text);
-    const values = allPercentMatches(hay, /sfrxUSD.{0,180}?([0-9]+(?:\.[0-9]+)?)\s*%/gi);
+    const raw = await fetchText(OFFICIAL.frax);
+    const visible = stripHtml(raw);
+    const values = contextualRateCandidates(visible, 'sfrxUSD', {
+      span: 3500,
+      percentPatterns: [/sfrxUSD[\s\S]{0,1200}?([0-9]+(?:\.[0-9]+)?)\s*%/gi]
+    }).filter(v => v > 0 && v < 50);
     if (values.length === 1) {
       return {
         status: 'ok', protocol: 'Frax Finance', annualYieldPct: values[0],
-        rawRatePct: values[0], rawRateType: 'APY', normalizedRateType: 'annual-yield',
+        rawRatePct: values[0], rawRateType: 'APY', normalizedRateType: 'APY',
         sourceType: 'official-frontend', source: OFFICIAL.frax,
-        note: 'Unambiguous current sfrxUSD rate from Frax Earn.'
+        note: 'Official Frax Earn fallback; primary Fraxtal PPS history was unavailable.'
       };
     }
-    if (values.length > 1) {
-      return {
-        status: 'warming-ambiguous', protocol: 'Frax Finance', annualYieldPct: null,
-        candidates: values, source: OFFICIAL.frax,
-        note: 'Frax Earn exposes multiple sfrxUSD percentages without sufficient machine-readable labels; refusing to guess which is canonical Reference APY.'
-      };
-    }
-  } catch (e) {
-    return { status: 'warming-official-rate-unavailable', protocol: 'Frax Finance', annualYieldPct: null, source: OFFICIAL.frax, error: errorText(e) };
-  }
-  return {
-    status: 'warming-official-rate-unavailable', protocol: 'Frax Finance',
-    annualYieldPct: null, source: OFFICIAL.frax,
-    note: 'Fraxtal sfrxUSD current book is solved. Reference APY remains warming until the rate is unambiguous or a canonical Fraxtal share/exchange-rate history adapter is available.'
-  };
+  } catch {}
+  return { ...hist, protocol: 'Frax Finance', officialFallback: OFFICIAL.frax };
 }
 
 async function currentSnapshots(resolver) {
@@ -777,26 +982,49 @@ async function currentSnapshots(resolver) {
     result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Liquity refresh unavailable', r.attempts);
   }
 
-  // Fraxtal sfrxUSD: current balance/value; history comparison remains warming until
-  // a canonical view quote/exchange-rate path is available on Fraxtal.
+  // Fraxtal sfrxUSD: the token itself is bridged, while canonical ERC-4626
+  // conversion lives in FraxtalERC4626MintRedeemer.
   {
     const r = await withProvider('fraxtal', async provider => {
       const m = await tokenMeta(provider, ADDR.fraxtalSfrxusd);
-      const c = new Contract(ADDR.fraxtalSfrxusd, ['function balanceOf(address) view returns (uint256)'], provider);
-      const raw = safeBig(await c.balanceOf(WALLET));
+      const token = new Contract(ADDR.fraxtalSfrxusd, ['function balanceOf(address) view returns (uint256)'], provider);
+      const raw = safeBig(await token.balanceOf(WALLET));
       const shares = Number(formatUnits(raw, m.decimals));
-      const p = await llamaPrice('fraxtal', ADDR.fraxtalSfrxusd);
+
+      const redeemer = new Contract(ADDR.fraxtalStakeUnstake, [
+        'function pricePerShare() view returns (uint256)',
+        'function convertToAssets(uint256) view returns (uint256)',
+        'function previewRedeem(uint256) view returns (uint256)'
+      ], provider);
+      let assetsRaw = 0n, method = null;
+      try { assetsRaw = safeBig(await redeemer.convertToAssets(raw)); method = 'convertToAssets'; }
+      catch {
+        try { assetsRaw = safeBig(await redeemer.previewRedeem(raw)); method = 'previewRedeem'; }
+        catch {
+          const pps = safeBig(await redeemer.pricePerShare());
+          assetsRaw = raw * pps / ONE;
+          method = 'pricePerShare';
+        }
+      }
+
+      const underlyingAmount = Number(formatUnits(assetsRaw, 18));
+      const px = await llamaPrice('fraxtal', ADDR.fraxtalFrxusd);
       return {
-        sharesOrBalance: shares, shareRaw: raw.toString(),
-        underlyingAmount: null, terminalSymbol: 'frxUSD',
-        terminalPriceUsd: null, economicValueUsd: finite(p.priceUsd) ? shares * p.priceUsd : null,
+        sharesOrBalance: shares,
+        shareRaw: raw.toString(),
+        underlyingAmount,
+        terminalSymbol: 'frxUSD',
+        terminalPriceUsd: px.priceUsd,
+        economicValueUsd: finite(px.priceUsd) ? underlyingAmount * px.priceUsd : underlyingAmount,
         flowFingerprint: `shares:${raw.toString()}`,
-        ledgerComparable: false, valuationCanonical: false,
-        note: `Fraxtal stake/unstake quote path is protocol-specific (${ADDR.fraxtalStakeUnstake}); market price is current-book fallback only.`
+        ledgerComparable: true,
+        valuationCanonical: true,
+        redemptionMethod: method,
+        note: 'Canonical current NAV via official FraxtalERC4626MintRedeemer; no sfrxUSD market price used.'
       };
     });
     const id = 'fraxtal:0xfc00000000000000000000000000000000000008';
-    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Frax refresh unavailable', r.attempts);
+    result[id] = r.ok ? r.value : snapshotFallback(byId[id], 'Frax canonical refresh unavailable', r.attempts);
   }
 
   return result;
@@ -878,6 +1106,7 @@ function buildStableData(resolver, rates, snapshots, prior) {
         flowFingerprint: snap.flowFingerprint ?? null,
         ledgerComparable: !!snap.ledgerComparable,
         valuationCanonical: !!snap.valuationCanonical,
+        accruedClaimable: snap.accruedClaimable || null,
         note: snap.note || null
       },
       reference
@@ -1041,19 +1270,30 @@ function buildLedger(resolver, stableData, priorLedger) {
 
   const accruedClaimable = [];
   const liq = stableData.positions.find(p => p.id === 'ethereum:liquity-v2-sp:weth')?.currentSnapshot;
-  // Current daily Liquity claimable is refreshed separately if available in source snapshot;
-  // resolver candidate remains a valid seed if live refresh detail is absent.
-  const resolverRewards = Array.isArray(resolver.stableCapital?.accruedRewardsCandidates)
-    ? resolver.stableCapital.accruedRewardsCandidates
-    : [];
-  for (const r of resolverRewards) accruedClaimable.push({ ...r, snapshotAt: now });
+  if (liq?.accruedClaimable && Number(liq.accruedClaimable.amount || 0) > 0) {
+    accruedClaimable.push({
+      ...liq.accruedClaimable,
+      classification: 'accrued-claimable',
+      source: 'same-run-liquity-stability-pool',
+      snapshotAt: now
+    });
+  } else {
+    const resolverRewards = Array.isArray(resolver.stableCapital?.accruedRewardsCandidates)
+      ? resolver.stableCapital.accruedRewardsCandidates
+      : [];
+    for (const r of resolverRewards) accruedClaimable.push({
+      ...r,
+      source: 'resolver-fallback',
+      snapshotAt: now
+    });
+  }
 
   const allIntervals = Object.values(positions)
     .map(p => ({ ...p.latestInterval, timestamp: now, positionId: p.positionId }))
     .filter(x => x.status === 'ok' && finite(x.incomeUsd));
 
   function sumWindow(start) {
-    // v0.1 only has per-position latest intervals. Historical daily interval aggregation
+    // v0.2 recognizes only flow-safe latest intervals; Historical daily interval aggregation
     // grows automatically as checkpoints accumulate; no pre-tracking history is invented.
     const eligible = allIntervals.filter(x => new Date(x.timestamp) >= start);
     if (!eligible.length) return null;
