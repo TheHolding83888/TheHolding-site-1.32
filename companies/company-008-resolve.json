@@ -1,0 +1,952 @@
+{
+  "version": "1.1-company-008-stable-wrapper-reconciliation",
+  "generatedAt": "2026-08-12T10:40:37.052Z",
+  "startedAt": "2026-08-12T10:40:29.322Z",
+  "company": {
+    "registry": "008",
+    "name": "Monetra.eth",
+    "wallet": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+    "category": "Stable Capital",
+    "founding": {
+      "foundedAt": "2026-05-27T05:46:11.000Z",
+      "date": "2026-05-27",
+      "method": "first-reproducible-economic-funding",
+      "confidence": "high",
+      "evidence": {
+        "status": "ok",
+        "selected": {
+          "kind": "native-funding",
+          "timestamp": "2026-05-27T05:46:11.000Z",
+          "block": 25184669,
+          "txHash": "0xfd22c33885f2590dd807de28cdb2e007d8c26ef90935e4cf32fb2f73082d20fd",
+          "amountEth": 0.01,
+          "from": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3"
+        },
+        "firstNative": {
+          "kind": "native-funding",
+          "timestamp": "2026-05-27T05:46:11.000Z",
+          "block": 25184669,
+          "txHash": "0xfd22c33885f2590dd807de28cdb2e007d8c26ef90935e4cf32fb2f73082d20fd",
+          "amountEth": 0.01,
+          "from": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3"
+        },
+        "firstStable": {
+          "kind": "stable-token-funding",
+          "timestamp": "2026-07-12T12:10:59.000Z",
+          "block": 25516455,
+          "txHash": "0x35b0dcd250434336f57a557e2d4aece5f61eba381274f61b292c0cc34dde80a9",
+          "token": null,
+          "symbol": "CRVUSD",
+          "from": "0xF5C56A4068bDd4122C499e0fE176141CC688ad3a"
+        },
+        "rule": "earliest reproducible positive inbound native funding or stable-token funding on Ethereum; gas funding is allowed to establish company origin even though gas ETH is excluded from Stable Capital TVL",
+        "confidence": "high"
+      }
+    }
+  },
+  "preservation": {
+    "discoveryInputVersion": "1.0-company-008-monetra-stable-capital-discovery",
+    "discoveryInputSha256": "e1262f940a468fd1c2c4cd6857dae0cd1bd4b5172ba258bdd19bc1a4ce81e9ea",
+    "foundedDatePreserved": "2026-05-27",
+    "foundingEvidencePreserved": true,
+    "priorAaveStablePositionsPreserved": 1,
+    "principle": "v1.1 does not reopen solved founding/Aave work; it resolves the missing stable-wrapper layer"
+  },
+  "ownerEvidence": {
+    "source": "owner-supplied DeBank screenshots + owner note, 2026-08-12",
+    "screenshotRowsUsd": [
+      {
+        "protocol": "f(x) Protocol",
+        "usdApprox": 10.06
+      },
+      {
+        "protocol": "Liquity V2",
+        "usdApprox": 10.05
+      },
+      {
+        "protocol": "Inverse",
+        "usdApprox": 10.04
+      },
+      {
+        "protocol": "Yearn V3",
+        "usdApprox": 10.03
+      },
+      {
+        "protocol": "Sky",
+        "usdApprox": 10.03
+      },
+      {
+        "protocol": "Aave V3",
+        "usdApprox": 10.02,
+        "note": "one of two Aave-labelled positions"
+      },
+      {
+        "protocol": "Curve",
+        "usdApprox": 10.01
+      },
+      {
+        "protocol": "Lido",
+        "usdApprox": 10.01
+      },
+      {
+        "protocol": "Aave V3",
+        "usdApprox": 9.98,
+        "note": "second Aave-labelled position"
+      }
+    ],
+    "additionalOwnerObserved": [
+      {
+        "protocol": "Frax Finance",
+        "asset": "sfrxUSD",
+        "usdApprox": null,
+        "note": "direct wallet balance; value not supplied as an exact screenshot number"
+      }
+    ],
+    "stableStrategyUsdApprox": 100,
+    "totalWalletDefiInclGasUsdApprox": 108,
+    "principle": "owner values are sanity checks only; resolver values must come from reproducible reads"
+  },
+  "parserFix": {
+    "issue": "Blockscout V2 token objects use address_hash; v1.0 looked primarily for address/token_address and could silently skip current wrapper tokens.",
+    "correctedAddressPriority": [
+      "token.address",
+      "token.address_hash",
+      "token.token_address",
+      "item.address_hash",
+      "item.token_address"
+    ],
+    "historicalTransferAddressFixApplied": true
+  },
+  "stableCapital": {
+    "positions": [
+      {
+        "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "chain": "Base",
+        "protocol": "Aave v3",
+        "positionType": "Stable Lending",
+        "underlying": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "underlyingSymbol": "USDC",
+        "aToken": "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
+        "currentUnderlyingEquivalent": 10.009703,
+        "currentATokenBalanceRaw": "10009703",
+        "scaledBalanceRaw": "8764974",
+        "normalizedIncomeRay": "1142011815777664576611929299",
+        "liquidityRateRay": "36165255679610362129774425",
+        "referenceApyPct": 3.682717,
+        "price": {
+          "status": "ok",
+          "priceUsd": 0.9996337662589685,
+          "source": "defillama-contract:base"
+        },
+        "valueUsd": 10.006037,
+        "incomeMode": "lending-embedded",
+        "claimableBoundary": "supplier interest accrues inside aToken/underlying-equivalent balance; external incentives must be tracked separately",
+        "collateralEnabled": true,
+        "history": {
+          "firstObservedInboundATokenTransfer": null,
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T10:07:29.701Z",
+            "underlyingEquivalent": 10.009703,
+            "scaledBalanceRaw": "8764974",
+            "normalizedIncomeRay": "1142011815777664576611929299",
+            "underlyingPriceUsd": 0.9996337662589685
+          }
+        },
+        "preservation": {
+          "source": "company-008-discovery.json v1.0",
+          "treatment": "preserved solved lending position; not re-researched in wrapper resolver"
+        },
+        "ownerHintMatched": "Aave V3"
+      },
+      {
+        "id": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
+        "chain": "Ethereum",
+        "protocol": "Curve",
+        "positionType": "Savings Stable",
+        "wrapper": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+        "token": null,
+        "wrapperSymbol": "scrvUSD",
+        "symbol": null,
+        "name": "Savings crvUSD",
+        "sharesOrBalance": 9.051902138134,
+        "shareRaw": "9051902138134393473",
+        "underlying": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+        "underlyingSymbol": "crvUSD",
+        "redeemableUnderlying": 10.01103533526837,
+        "economicValuation": {
+          "status": "ok",
+          "terminalType": "stable-asset",
+          "terminal": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "terminalSymbol": "crvUSD",
+          "terminalAmount": 10.01103533526837,
+          "price": {
+            "status": "ok",
+            "priceUsd": 0.9990018986800435,
+            "source": "defillama-contract:ethereum"
+          },
+          "valueUsd": 10.001043307686107,
+          "path": [
+            {
+              "token": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+              "symbol": "scrvUSD",
+              "amount": 9.051902138134393,
+              "standard": "ERC-4626",
+              "redeemMethod": "previewRedeem",
+              "redeemableToken": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+              "redeemableSymbol": "crvUSD",
+              "redeemableAmount": 10.01103533526837
+            },
+            {
+              "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+              "symbol": "crvUSD",
+              "amount": 10.01103533526837
+            }
+          ],
+          "immediateVault": {
+            "status": "ok",
+            "standard": "ERC-4626-compatible",
+            "asset": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+            "assetMeta": {
+              "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+              "symbol": "crvUSD",
+              "name": "Curve.Fi USD Stablecoin",
+              "decimals": 18
+            },
+            "shareDecimals": 18,
+            "redeemableRaw": "10011035335268369261",
+            "redeemable": 10.01103533526837,
+            "method": "previewRedeem",
+            "totalAssetsRaw": "17059142404362128900165259"
+          }
+        },
+        "valueUsd": 10.001043,
+        "valuationStatus": "ok",
+        "valuationCanonical": true,
+        "incomeMode": "embedded-yield",
+        "productive": true,
+        "ownerHintMatched": "Curve",
+        "history": {
+          "firstObservedInbound": {
+            "timestamp": "2026-07-12T13:41:35.000Z",
+            "block": 25516906,
+            "txHash": "0x77ccad5307efe5772a305ba2effccef6a31aae2b88a4a30d0d6fe8b9fc668881",
+            "from": "0x0000000000000000000000000000000000000000",
+            "token": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367"
+          },
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T10:40:31.079Z",
+            "sharesOrBalance": 9.051902138134,
+            "economicValueUsd": 10.001043,
+            "terminalUnderlying": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+            "terminalUnderlyingSymbol": "crvUSD",
+            "terminalUnderlyingAmount": 10.01103533526837
+          }
+        }
+      },
+      {
+        "id": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+        "chain": "Ethereum",
+        "protocol": "f(x) Protocol",
+        "positionType": "Savings Stable",
+        "wrapper": "0x7743e50F534a7f9F1791DdE7dCD89F7783Eefc39",
+        "token": null,
+        "wrapperSymbol": "fxSAVE",
+        "symbol": null,
+        "name": "f(x) USD Saving",
+        "sharesOrBalance": 9.039272056076,
+        "shareRaw": "9039272056075505098",
+        "underlying": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+        "underlyingSymbol": "fxSP",
+        "redeemableUnderlying": 9.951230460843378,
+        "economicValuation": {
+          "status": "ok-provisional-wrapper-price",
+          "terminalType": "known-stable-strategy-wrapper-market-price",
+          "terminal": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+          "terminalSymbol": "fxSP",
+          "terminalAmount": 9.951230460843378,
+          "price": {
+            "status": "ok",
+            "priceUsd": 1.0101887746245652,
+            "source": "defillama-contract:ethereum"
+          },
+          "valueUsd": 10.05262130524602,
+          "path": [
+            {
+              "token": "0x7743e50F534a7f9F1791DdE7dCD89F7783Eefc39",
+              "symbol": "fxSAVE",
+              "amount": 9.039272056075506,
+              "standard": "ERC-4626",
+              "redeemMethod": "previewRedeem",
+              "redeemableToken": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+              "redeemableSymbol": "fxSP",
+              "redeemableAmount": 9.951230460843378
+            },
+            {
+              "token": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+              "symbol": "fxSP",
+              "amount": 9.951230460843378,
+              "fallback": "wrapper-market-price"
+            }
+          ],
+          "reason": "economic redemption path requires a protocol-specific adapter; market price is used only for current-state reconciliation",
+          "immediateVault": {
+            "status": "ok",
+            "standard": "ERC-4626-compatible",
+            "asset": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+            "assetMeta": {
+              "address": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+              "symbol": "fxSP",
+              "name": " f(x) Stability Pool",
+              "decimals": 18
+            },
+            "shareDecimals": 18,
+            "redeemableRaw": "9951230460843378644",
+            "redeemable": 9.951230460843378,
+            "method": "previewRedeem",
+            "totalAssetsRaw": "58311236640622455030784301"
+          }
+        },
+        "valueUsd": 10.052621,
+        "valuationStatus": "ok-provisional-wrapper-price",
+        "valuationCanonical": false,
+        "incomeMode": "embedded-yield",
+        "productive": true,
+        "ownerHintMatched": "f(x) Protocol",
+        "history": {
+          "firstObservedInbound": {
+            "timestamp": "2026-07-12T13:10:35.000Z",
+            "block": 25516751,
+            "txHash": "0xb2552e61eb09fe0928eccde740b11ebfbcd27c860a8ec78ad434cf1721436797",
+            "from": "0x7f54F05635d15Cde17A49502fEdB9D1803A3Be8A",
+            "token": "0x7743e50F534a7f9F1791DdE7dCD89F7783Eefc39"
+          },
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T10:40:31.573Z",
+            "sharesOrBalance": 9.039272056076,
+            "economicValueUsd": 10.052621,
+            "terminalUnderlying": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+            "terminalUnderlyingSymbol": "fxSP",
+            "terminalUnderlyingAmount": 9.951230460843378
+          }
+        }
+      },
+      {
+        "id": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
+        "chain": "Ethereum",
+        "protocol": "Inverse",
+        "positionType": "Savings Stable",
+        "wrapper": "0xb45ad160634c528Cc3D2926d9807104FA3157305",
+        "token": null,
+        "wrapperSymbol": "sDOLA",
+        "symbol": null,
+        "name": "Staked Dola",
+        "sharesOrBalance": 7.147332299449,
+        "shareRaw": "7147332299449399358",
+        "underlying": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+        "underlyingSymbol": "DOLA",
+        "redeemableUnderlying": 10.065468172340868,
+        "economicValuation": {
+          "status": "ok",
+          "terminalType": "stable-asset",
+          "terminal": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "terminalSymbol": "DOLA",
+          "terminalAmount": 10.065468172340868,
+          "price": {
+            "status": "ok",
+            "priceUsd": 0.9971825294755539,
+            "source": "defillama-contract:ethereum"
+          },
+          "valueUsd": 10.037109012450546,
+          "path": [
+            {
+              "token": "0xb45ad160634c528Cc3D2926d9807104FA3157305",
+              "symbol": "sDOLA",
+              "amount": 7.147332299449399,
+              "standard": "ERC-4626",
+              "redeemMethod": "previewRedeem",
+              "redeemableToken": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+              "redeemableSymbol": "DOLA",
+              "redeemableAmount": 10.065468172340868
+            },
+            {
+              "token": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+              "symbol": "DOLA",
+              "amount": 10.065468172340868
+            }
+          ],
+          "immediateVault": {
+            "status": "ok",
+            "standard": "ERC-4626-compatible",
+            "asset": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+            "assetMeta": {
+              "address": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+              "symbol": "DOLA",
+              "name": "Dola USD Stablecoin",
+              "decimals": 18
+            },
+            "shareDecimals": 18,
+            "redeemableRaw": "10065468172340867709",
+            "redeemable": 10.065468172340868,
+            "method": "previewRedeem",
+            "totalAssetsRaw": "7697283966700811124270768"
+          }
+        },
+        "valueUsd": 10.037109,
+        "valuationStatus": "ok",
+        "valuationCanonical": true,
+        "incomeMode": "embedded-yield",
+        "productive": true,
+        "ownerHintMatched": "Inverse",
+        "history": {
+          "firstObservedInbound": {
+            "timestamp": "2026-07-12T13:54:59.000Z",
+            "block": 25516972,
+            "txHash": "0x9c4c53b6d3905721bd868b60a98e80847558a54b0d9dd247e3986c3c633bce00",
+            "from": "0x0000000000000000000000000000000000000000",
+            "token": "0xb45ad160634c528Cc3D2926d9807104FA3157305"
+          },
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T10:40:32.388Z",
+            "sharesOrBalance": 7.147332299449,
+            "economicValueUsd": 10.037109,
+            "terminalUnderlying": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+            "terminalUnderlyingSymbol": "DOLA",
+            "terminalUnderlyingAmount": 10.065468172340868
+          }
+        }
+      },
+      {
+        "id": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+        "chain": "Ethereum",
+        "protocol": "Sky",
+        "positionType": "Savings Stable",
+        "wrapper": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD",
+        "token": null,
+        "wrapperSymbol": "sUSDS",
+        "symbol": null,
+        "name": "Savings USDS",
+        "sharesOrBalance": 9.068189220503,
+        "shareRaw": "9068189220502831604",
+        "underlying": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+        "underlyingSymbol": "USDS",
+        "redeemableUnderlying": 10.029533000011684,
+        "economicValuation": {
+          "status": "ok",
+          "terminalType": "stable-asset",
+          "terminal": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+          "terminalSymbol": "USDS",
+          "terminalAmount": 10.029533000011684,
+          "price": {
+            "status": "ok",
+            "priceUsd": 0.9999983911255985,
+            "source": "defillama-contract:ethereum"
+          },
+          "valueUsd": 10.02951686375278,
+          "path": [
+            {
+              "token": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD",
+              "symbol": "sUSDS",
+              "amount": 9.068189220502832,
+              "standard": "ERC-4626",
+              "redeemMethod": "previewRedeem",
+              "redeemableToken": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+              "redeemableSymbol": "USDS",
+              "redeemableAmount": 10.029533000011684
+            },
+            {
+              "token": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+              "symbol": "USDS",
+              "amount": 10.029533000011684
+            }
+          ],
+          "immediateVault": {
+            "status": "ok",
+            "standard": "ERC-4626-compatible",
+            "asset": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+            "assetMeta": {
+              "address": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+              "symbol": "USDS",
+              "name": "USDS Stablecoin",
+              "decimals": 18
+            },
+            "shareDecimals": 18,
+            "redeemableRaw": "10029533000011683586",
+            "redeemable": 10.029533000011684,
+            "method": "previewRedeem",
+            "totalAssetsRaw": "4728559296557102998637800721"
+          }
+        },
+        "valueUsd": 10.029517,
+        "valuationStatus": "ok",
+        "valuationCanonical": true,
+        "incomeMode": "embedded-yield",
+        "productive": true,
+        "ownerHintMatched": "Sky",
+        "history": {
+          "firstObservedInbound": {
+            "timestamp": "2026-07-12T13:51:35.000Z",
+            "block": 25516955,
+            "txHash": "0xd5d94637443f793f76e9242b950126a8a90d661abc216e197fc05681146e6de6",
+            "from": "0x0000000000000000000000000000000000000000",
+            "token": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+          },
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T10:40:33.832Z",
+            "sharesOrBalance": 9.068189220503,
+            "economicValueUsd": 10.029517,
+            "terminalUnderlying": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+            "terminalUnderlyingSymbol": "USDS",
+            "terminalUnderlyingAmount": 10.029533000011684
+          }
+        }
+      },
+      {
+        "id": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
+        "chain": "Ethereum",
+        "protocol": "Aave",
+        "positionType": "Savings Stable",
+        "wrapper": "0xE1753F2e00940cC31213dd92013cF019DFE4ca1d",
+        "token": null,
+        "wrapperSymbol": "sGho",
+        "symbol": null,
+        "name": "sGho",
+        "sharesOrBalance": 9.93402298004,
+        "shareRaw": "9934022980039927959",
+        "underlying": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+        "underlyingSymbol": "GHO",
+        "redeemableUnderlying": 10.035975260123198,
+        "economicValuation": {
+          "status": "ok",
+          "terminalType": "stable-asset",
+          "terminal": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+          "terminalSymbol": "GHO",
+          "terminalAmount": 10.035975260123198,
+          "price": {
+            "status": "ok",
+            "priceUsd": 0.9983061415946094,
+            "source": "defillama-contract:ethereum"
+          },
+          "valueUsd": 10.018975739072546,
+          "path": [
+            {
+              "token": "0xE1753F2e00940cC31213dd92013cF019DFE4ca1d",
+              "symbol": "sGho",
+              "amount": 9.934022980039927,
+              "standard": "ERC-4626",
+              "redeemMethod": "previewRedeem",
+              "redeemableToken": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+              "redeemableSymbol": "GHO",
+              "redeemableAmount": 10.035975260123198
+            },
+            {
+              "token": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+              "symbol": "GHO",
+              "amount": 10.035975260123198
+            }
+          ],
+          "immediateVault": {
+            "status": "ok",
+            "standard": "ERC-4626-compatible",
+            "asset": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+            "assetMeta": {
+              "address": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+              "symbol": "GHO",
+              "name": "Gho Token",
+              "decimals": 18
+            },
+            "shareDecimals": 18,
+            "redeemableRaw": "10035975260123197872",
+            "redeemable": 10.035975260123198,
+            "method": "previewRedeem",
+            "totalAssetsRaw": "150827803938824796377274207"
+          }
+        },
+        "valueUsd": 10.018976,
+        "valuationStatus": "ok",
+        "valuationCanonical": true,
+        "incomeMode": "embedded-yield",
+        "productive": true,
+        "ownerHintMatched": "Aave V3",
+        "history": {
+          "firstObservedInbound": {
+            "timestamp": "2026-07-12T13:48:59.000Z",
+            "block": 25516942,
+            "txHash": "0x08ee49bef7607d82b24772b60146207636486a53d6c49fcd7663ef3ecbff6374",
+            "from": "0x0000000000000000000000000000000000000000",
+            "token": "0xE1753F2e00940cC31213dd92013cF019DFE4ca1d"
+          },
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T10:40:34.318Z",
+            "sharesOrBalance": 9.93402298004,
+            "economicValueUsd": 10.018976,
+            "terminalUnderlying": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+            "terminalUnderlyingSymbol": "GHO",
+            "terminalUnderlyingAmount": 10.035975260123198
+          }
+        }
+      },
+      {
+        "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
+        "chain": "Ethereum",
+        "protocol": "ERC-4626 Vault",
+        "positionType": "Stable Vault",
+        "wrapper": "0x23346B04a7f55b8760E5860AA5A77383D63491cD",
+        "token": null,
+        "wrapperSymbol": "ysyBOLD",
+        "symbol": null,
+        "name": "Staked yBOLD",
+        "sharesOrBalance": 9.20846854886,
+        "shareRaw": "9208468548860078928",
+        "underlying": "0x9F4330700a36B29952869fac9b33f45EEdd8A3d8",
+        "underlyingSymbol": "yBOLD",
+        "redeemableUnderlying": 10.015966034701757,
+        "economicValuation": {
+          "status": "ok",
+          "terminalType": "stable-asset",
+          "terminal": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+          "terminalSymbol": "BOLD",
+          "terminalAmount": 10.015966034701757,
+          "price": {
+            "status": "ok",
+            "priceUsd": 1.000183424227423,
+            "source": "defillama-contract:ethereum"
+          },
+          "valueUsd": 10.017803205533568,
+          "path": [
+            {
+              "token": "0x23346B04a7f55b8760E5860AA5A77383D63491cD",
+              "symbol": "ysyBOLD",
+              "amount": 9.208468548860079,
+              "standard": "ERC-4626",
+              "redeemMethod": "previewRedeem",
+              "redeemableToken": "0x9F4330700a36B29952869fac9b33f45EEdd8A3d8",
+              "redeemableSymbol": "yBOLD",
+              "redeemableAmount": 10.015966034701757
+            },
+            {
+              "token": "0x9F4330700a36B29952869fac9b33f45EEdd8A3d8",
+              "symbol": "yBOLD",
+              "amount": 10.015966034701757,
+              "standard": "ERC-4626",
+              "redeemMethod": "previewRedeem",
+              "redeemableToken": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+              "redeemableSymbol": "BOLD",
+              "redeemableAmount": 10.015966034701757
+            },
+            {
+              "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+              "symbol": "BOLD",
+              "amount": 10.015966034701757
+            }
+          ],
+          "immediateVault": {
+            "status": "ok",
+            "standard": "ERC-4626-compatible",
+            "asset": "0x9F4330700a36B29952869fac9b33f45EEdd8A3d8",
+            "assetMeta": {
+              "address": "0x9F4330700a36B29952869fac9b33f45EEdd8A3d8",
+              "symbol": "yBOLD",
+              "name": "Yearn BOLD",
+              "decimals": 18
+            },
+            "shareDecimals": 18,
+            "redeemableRaw": "10015966034701756299",
+            "redeemable": 10.015966034701757,
+            "method": "previewRedeem",
+            "totalAssetsRaw": "5821719411547947880752747"
+          }
+        },
+        "valueUsd": 10.017803,
+        "valuationStatus": "ok",
+        "valuationCanonical": true,
+        "incomeMode": "embedded-yield",
+        "productive": true,
+        "ownerHintMatched": null,
+        "history": {
+          "firstObservedInbound": {
+            "timestamp": "2026-08-02T02:13:23.000Z",
+            "block": 25664134,
+            "txHash": "0xd71c52adfbe3e4a72be1c916ce274088673aa45f9b9b546d78813b4184829911",
+            "from": "0x0000000000000000000000000000000000000000",
+            "token": "0x23346B04a7f55b8760E5860AA5A77383D63491cD"
+          },
+          "currentCheckpoint": {
+            "timestamp": "2026-08-12T10:40:35.442Z",
+            "sharesOrBalance": 9.20846854886,
+            "economicValueUsd": 10.017803,
+            "terminalUnderlying": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+            "terminalUnderlyingSymbol": "BOLD",
+            "terminalUnderlyingAmount": 10.015966034701757
+          }
+        }
+      }
+    ],
+    "summary": {
+      "totalUsd": 70.163106,
+      "productiveUsd": 70.163106,
+      "liquidUsd": 0,
+      "positionCount": 7,
+      "pricedPositions": 7,
+      "byProtocol": {
+        "Aave v3": 10.006037,
+        "Curve": 10.001043,
+        "f(x) Protocol": 10.052621,
+        "Inverse": 10.037109,
+        "Sky": 10.029517,
+        "Aave": 10.018976,
+        "ERC-4626 Vault": 10.017803
+      },
+      "byType": {
+        "Stable Lending": 10.006037,
+        "Savings Stable": 50.139266,
+        "Stable Vault": 10.017803
+      },
+      "byStable": {
+        "USDC": 10.006037,
+        "crvUSD": 10.001043,
+        "fxSP": 10.052621,
+        "DOLA": 10.037109,
+        "USDS": 10.029517,
+        "GHO": 10.018976,
+        "yBOLD": 10.017803
+      }
+    },
+    "reconciliation": {
+      "ownerStableStrategyUsdApprox": 100,
+      "reproducedStableCapitalUsd": 70.163106,
+      "deltaVsOwnerApproxUsd": -29.836894,
+      "withinLoose15UsdBand": false,
+      "note": "owner target is diagnostic only. If Lido is ETH-denominated it is correctly excluded even if this makes Stable Capital lower than the DeBank total."
+    },
+    "provisionalValuations": [
+      {
+        "id": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+        "protocol": "f(x) Protocol",
+        "valueUsd": 10.052621,
+        "valuationStatus": "ok-provisional-wrapper-price"
+      }
+    ],
+    "unresolved": [
+      {
+        "chain": "Ethereum",
+        "token": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+        "symbol": "earnUSD",
+        "name": "Lido Earn USD",
+        "amount": 9.762818840756,
+        "wrapperMarketPrice": {
+          "status": "ok",
+          "priceUsd": 1.0231706300474783,
+          "source": "defillama-contract:ethereum"
+        },
+        "approxUsd": 9.98903,
+        "ownerHintMatched": null,
+        "reason": "execution reverted (no data present; likely require(false) occurred",
+        "valuation": {
+          "status": "unresolved",
+          "terminal": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+          "terminalSymbol": "earnUSD",
+          "terminalAmount": 9.762818840756086,
+          "path": [
+            {
+              "token": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+              "symbol": "earnUSD",
+              "amount": 9.762818840756086
+            }
+          ],
+          "reason": "execution reverted (no data present; likely require(false) occurred"
+        }
+      }
+    ]
+  },
+  "nonStableDiagnostics": [],
+  "mandateReview": {
+    "lidoPositions": [],
+    "rule": "stETH/wstETH are ETH-denominated productive assets, not stable capital; exclude unless the Stable Capital mandate is intentionally changed.",
+    "lidoClassified": false
+  },
+  "ownerHintCoverage": {
+    "checks": {
+      "f(x) Protocol": true,
+      "Liquity V2": false,
+      "Inverse": true,
+      "Yearn V3": false,
+      "Sky": true,
+      "Aave V3": true,
+      "Curve": true,
+      "Lido": false,
+      "Frax Finance": false
+    },
+    "missingHints": [
+      "Liquity V2",
+      "Yearn V3",
+      "Lido",
+      "Frax Finance"
+    ],
+    "aaveEvidenceCount": 2,
+    "note": "Aave screenshot family is complete only when both the preserved lending deposit and the separate savings/other Aave position are reproduced/classified."
+  },
+  "history": {
+    "ethereumTokenTransfers": {
+      "status": "ok",
+      "pages": 1,
+      "truncated": false,
+      "parserUsesAddressHash": true,
+      "error": null
+    },
+    "checkpointSeed": [
+      {
+        "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "protocol": "Aave v3",
+        "positionType": "Stable Lending",
+        "incomeMode": "lending-embedded",
+        "firstObservedActivity": null,
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:07:29.701Z",
+          "underlyingEquivalent": 10.009703,
+          "scaledBalanceRaw": "8764974",
+          "normalizedIncomeRay": "1142011815777664576611929299",
+          "underlyingPriceUsd": 0.9996337662589685
+        }
+      },
+      {
+        "id": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
+        "protocol": "Curve",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:41:35.000Z",
+          "block": 25516906,
+          "txHash": "0x77ccad5307efe5772a305ba2effccef6a31aae2b88a4a30d0d6fe8b9fc668881",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:31.079Z",
+          "sharesOrBalance": 9.051902138134,
+          "economicValueUsd": 10.001043,
+          "terminalUnderlying": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "terminalUnderlyingSymbol": "crvUSD",
+          "terminalUnderlyingAmount": 10.01103533526837
+        }
+      },
+      {
+        "id": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+        "protocol": "f(x) Protocol",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:10:35.000Z",
+          "block": 25516751,
+          "txHash": "0xb2552e61eb09fe0928eccde740b11ebfbcd27c860a8ec78ad434cf1721436797",
+          "from": "0x7f54F05635d15Cde17A49502fEdB9D1803A3Be8A",
+          "token": "0x7743e50F534a7f9F1791DdE7dCD89F7783Eefc39"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:31.573Z",
+          "sharesOrBalance": 9.039272056076,
+          "economicValueUsd": 10.052621,
+          "terminalUnderlying": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+          "terminalUnderlyingSymbol": "fxSP",
+          "terminalUnderlyingAmount": 9.951230460843378
+        }
+      },
+      {
+        "id": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
+        "protocol": "Inverse",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:54:59.000Z",
+          "block": 25516972,
+          "txHash": "0x9c4c53b6d3905721bd868b60a98e80847558a54b0d9dd247e3986c3c633bce00",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0xb45ad160634c528Cc3D2926d9807104FA3157305"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:32.388Z",
+          "sharesOrBalance": 7.147332299449,
+          "economicValueUsd": 10.037109,
+          "terminalUnderlying": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "terminalUnderlyingSymbol": "DOLA",
+          "terminalUnderlyingAmount": 10.065468172340868
+        }
+      },
+      {
+        "id": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+        "protocol": "Sky",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:51:35.000Z",
+          "block": 25516955,
+          "txHash": "0xd5d94637443f793f76e9242b950126a8a90d661abc216e197fc05681146e6de6",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:33.832Z",
+          "sharesOrBalance": 9.068189220503,
+          "economicValueUsd": 10.029517,
+          "terminalUnderlying": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+          "terminalUnderlyingSymbol": "USDS",
+          "terminalUnderlyingAmount": 10.029533000011684
+        }
+      },
+      {
+        "id": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
+        "protocol": "Aave",
+        "positionType": "Savings Stable",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-07-12T13:48:59.000Z",
+          "block": 25516942,
+          "txHash": "0x08ee49bef7607d82b24772b60146207636486a53d6c49fcd7663ef3ecbff6374",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0xE1753F2e00940cC31213dd92013cF019DFE4ca1d"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:34.318Z",
+          "sharesOrBalance": 9.93402298004,
+          "economicValueUsd": 10.018976,
+          "terminalUnderlying": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+          "terminalUnderlyingSymbol": "GHO",
+          "terminalUnderlyingAmount": 10.035975260123198
+        }
+      },
+      {
+        "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
+        "protocol": "ERC-4626 Vault",
+        "positionType": "Stable Vault",
+        "incomeMode": "embedded-yield",
+        "firstObservedActivity": {
+          "timestamp": "2026-08-02T02:13:23.000Z",
+          "block": 25664134,
+          "txHash": "0xd71c52adfbe3e4a72be1c916ce274088673aa45f9b9b546d78813b4184829911",
+          "from": "0x0000000000000000000000000000000000000000",
+          "token": "0x23346B04a7f55b8760E5860AA5A77383D63491cD"
+        },
+        "currentCheckpoint": {
+          "timestamp": "2026-08-12T10:40:35.442Z",
+          "sharesOrBalance": 9.20846854886,
+          "economicValueUsd": 10.017803,
+          "terminalUnderlying": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+          "terminalUnderlyingSymbol": "BOLD",
+          "terminalUnderlyingAmount": 10.015966034701757
+        }
+      }
+    ]
+  },
+  "diagnostics": [],
+  "productionReadiness": {
+    "foundingResolved": true,
+    "preservedAaveResolved": true,
+    "ownerHintsAllClassified": false,
+    "stableCapitalBookReady": false,
+    "pageIntegrationReady": false,
+    "productivityIntegrationReady": false,
+    "rewardsIntegrationReady": false,
+    "reportingIntegrationReady": false,
+    "note": "Keep public analytical integration closed. Resolve remaining owner-hinted wrappers/provisional economic valuation first."
+  },
+  "nextStep": "Use only the unresolved/provisional rows for the next narrow pass; do not repeat founding or Aave lending discovery."
+}
