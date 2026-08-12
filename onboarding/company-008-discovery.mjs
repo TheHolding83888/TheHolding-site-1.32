@@ -13,9 +13,9 @@ import {
   AaveV3Optimism,
   AaveV3Avalanche,
   AaveV3Polygon
-} from '@bgd-labs/aave-address-book';
+} from '@aave-dao/aave-address-book';
 
-const VERSION = '1.3-company-008-owner-reconciliation-multichain';
+const VERSION = '1.3.2-company-008-owner-reconciliation-official-aave';
 const OUTPUT = process.env.COMPANY_008_DISCOVERY_OUTPUT
   || path.resolve('companies/company-008-discovery.json');
 
