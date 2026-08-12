@@ -1,74 +1,33 @@
 {
-  "version": "1.3-company-008-aerodrome-sugar-base-weth-final",
-  "generatedAt": "2026-08-12T07:49:24.182Z",
-  "startedAt": "2026-08-12T07:49:21.928Z",
+  "version": "1.4-company-008-aerodrome-ve-rewards-weth-final-pass",
+  "generatedAt": "2026-08-12T08:06:22.964Z",
+  "startedAt": "2026-08-12T08:06:09.700Z",
   "company": {
     "registry": "008",
     "name": "1milliondollar.eth",
     "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596"
   },
-  "purpose": "close only final Company #008 Base WETH delta by reading current Aerodrome Slipstream LP positions from the official onchain Sugar contract",
+  "purpose": "one final bounded Company #008 Base WETH pass: test whether the DeBank-observed Aerodrome WETH is current veNFT fee/incentive rewards; if a complete official RewardsSugar scan finds no material WETH source, apply the owner-authorized foundation fallback",
+  "officialSources": {
+    "lpSugar": "0x69dD9db6d8f8E7d83887A704f447b1a584b599A1",
+    "rewardsSugar": "0x1b121EfDaF4ABb8785a315C51D29BCE0552A7678",
+    "sourceFamily": "official velodrome-finance/sugar Base deployments + onchain RewardsSugar"
+  },
   "preservedResolved": {
-    "previousResolverVersion": "1.2-company-008-atoken-base-holdings-final-delta",
+    "previousResolverVersion": "1.3-company-008-aerodrome-sugar-base-weth-final",
     "btc": 0.07264572,
     "ethNativeSubtotal": 0.006426130614,
-    "lombardEthereum": {
-      "quoteEquivalent": 0.00279874,
-      "shareBalance": 0.00273187,
-      "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
-      "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-      "rateMethod": "Accountant.getRateInQuoteSafe(quote)"
+    "previousResolution": {
+      "lombardEthereumWbtc": true,
+      "lombardBaseWbtc": true,
+      "avalancheBtcB": true,
+      "baseWeth": false,
+      "unresolved": [
+        "baseWeth"
+      ],
+      "allResolved": false
     },
-    "lombardBase": {
-      "quoteEquivalent": 0.0047785,
-      "shareBalance": 0.00466433,
-      "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
-      "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
-      "rateMethod": "Accountant.getRateInQuoteSafe(quote)"
-    },
-    "avalancheAaveBtcB": {
-      "protocol": "Aave",
-      "chain": "Avalanche",
-      "aToken": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
-      "aTokenMeta": {
-        "address": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
-        "symbol": "aAvaBTC.b",
-        "name": "Aave Avalanche BTC.b",
-        "decimals": 8,
-        "raw": "4346456",
-        "balance": 0.04346456
-      },
-      "underlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
-      "expectedUnderlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
-      "underlyingMatch": true,
-      "pool": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
-      "poolCodeExists": true,
-      "scaledBalanceRaw": "4330819",
-      "btcBEquivalent": 0.04346456,
-      "accountingMethod": "Aave aToken balanceOf(wallet), after UNDERLYING_ASSET_ADDRESS + POOL verification",
-      "ownerObservedApprox": 0.0435,
-      "tolerance": 0.00087,
-      "deltaVsOwnerObserved": -0.00003544,
-      "matched": true,
-      "status": "ok",
-      "probes": {
-        "underlying": {
-          "ok": true,
-          "value": "0x152b9d0FdC40C096757F570A51E494bd4b943E50"
-        },
-        "pool": {
-          "ok": true,
-          "value": "0x794a61358D6845594F94dc1DB02A252b5b4814aD"
-        },
-        "scaledBalance": {
-          "ok": true,
-          "value": "4330819"
-        }
-      }
-    }
-  },
-  "results": {
-    "baseWethAerodromeSlipstream": {
+    "previousAerodromeSlipstream": {
       "chain": "Base",
       "protocol": "Aerodrome Slipstream",
       "ownerObservedApprox": 0.1606,
@@ -300,13 +259,385 @@
       "grossMatched": false,
       "matched": false,
       "status": "unresolved"
+    },
+    "previousPreservedResolved": {
+      "previousResolverVersion": "1.2-company-008-atoken-base-holdings-final-delta",
+      "btc": 0.07264572,
+      "ethNativeSubtotal": 0.006426130614,
+      "lombardEthereum": {
+        "quoteEquivalent": 0.00279874,
+        "shareBalance": 0.00273187,
+        "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
+        "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+        "rateMethod": "Accountant.getRateInQuoteSafe(quote)"
+      },
+      "lombardBase": {
+        "quoteEquivalent": 0.0047785,
+        "shareBalance": 0.00466433,
+        "accountant": "0x28634D0c5edC67CF2450E74deA49B90a4FF93dCE",
+        "vault": "0x5401b8620E5FB570064CA9114fd1e135fd77D57c",
+        "rateMethod": "Accountant.getRateInQuoteSafe(quote)"
+      },
+      "avalancheAaveBtcB": {
+        "protocol": "Aave",
+        "chain": "Avalanche",
+        "aToken": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
+        "aTokenMeta": {
+          "address": "0x8ffDf2DE812095b1D19CB146E4c004587C0A0692",
+          "symbol": "aAvaBTC.b",
+          "name": "Aave Avalanche BTC.b",
+          "decimals": 8,
+          "raw": "4346456",
+          "balance": 0.04346456
+        },
+        "underlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
+        "expectedUnderlying": "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
+        "underlyingMatch": true,
+        "pool": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+        "poolCodeExists": true,
+        "scaledBalanceRaw": "4330819",
+        "btcBEquivalent": 0.04346456,
+        "accountingMethod": "Aave aToken balanceOf(wallet), after UNDERLYING_ASSET_ADDRESS + POOL verification",
+        "ownerObservedApprox": 0.0435,
+        "tolerance": 0.00087,
+        "deltaVsOwnerObserved": -0.00003544,
+        "matched": true,
+        "status": "ok",
+        "probes": {
+          "underlying": {
+            "ok": true,
+            "value": "0x152b9d0FdC40C096757F570A51E494bd4b943E50"
+          },
+          "pool": {
+            "ok": true,
+            "value": "0x794a61358D6845594F94dc1DB02A252b5b4814aD"
+          },
+          "scaledBalance": {
+            "ok": true,
+            "value": "4330819"
+          }
+        }
+      }
     }
+  },
+  "aerodromeContext": {
+    "discoveryVersion": "1.3.2-company-008-owner-reconciliation-official-aave",
+    "directVenftIds": [
+      "63363",
+      "67086",
+      "71320",
+      "83028",
+      "86521",
+      "130161"
+    ],
+    "managedVenftIds": [
+      "10298"
+    ],
+    "expectedBaseWethOwnerObserved": 0.1606,
+    "tolerance": 0.004818,
+    "poolCount": 34782,
+    "scanCap": 1000
+  },
+  "results": {
+    "directVenftRewards": {
+      "complete": false,
+      "scans": [
+        {
+          "venftId": "63363",
+          "poolCount": 34782,
+          "scannedPools": 1000,
+          "complete": false,
+          "pages": [
+            {
+              "offset": 0,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 250,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 500,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 750,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            }
+          ],
+          "rewardCount": 0
+        },
+        {
+          "venftId": "67086",
+          "poolCount": 34782,
+          "scannedPools": 1000,
+          "complete": false,
+          "pages": [
+            {
+              "offset": 0,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 250,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 500,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 750,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            }
+          ],
+          "rewardCount": 0
+        },
+        {
+          "venftId": "71320",
+          "poolCount": 34782,
+          "scannedPools": 1000,
+          "complete": false,
+          "pages": [
+            {
+              "offset": 0,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 250,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 500,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 750,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            }
+          ],
+          "rewardCount": 0
+        },
+        {
+          "venftId": "83028",
+          "poolCount": 34782,
+          "scannedPools": 1000,
+          "complete": false,
+          "pages": [
+            {
+              "offset": 0,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 250,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 500,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 750,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            }
+          ],
+          "rewardCount": 0
+        },
+        {
+          "venftId": "86521",
+          "poolCount": 34782,
+          "scannedPools": 1000,
+          "complete": false,
+          "pages": [
+            {
+              "offset": 0,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 250,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 500,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 750,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            }
+          ],
+          "rewardCount": 0
+        },
+        {
+          "venftId": "130161",
+          "poolCount": 34782,
+          "scannedPools": 1000,
+          "complete": false,
+          "pages": [
+            {
+              "offset": 0,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 250,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 500,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            },
+            {
+              "offset": 750,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": []
+            }
+          ],
+          "rewardCount": 0
+        }
+      ],
+      "rewards": [],
+      "wethTotal": 0,
+      "matchedOwnerObserved": false
+    },
+    "managedRelayDiagnostic": {
+      "note": "Managed veNFT rewards are diagnostic only. Relay-level WETH must not be assigned to the company as claimable without a reproducible per-account attribution path.",
+      "complete": false,
+      "scans": [
+        {
+          "venftId": "10298",
+          "poolCount": 34782,
+          "scannedPools": 1000,
+          "complete": false,
+          "pages": [
+            {
+              "offset": 0,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": [
+                "missing revert data"
+              ]
+            },
+            {
+              "offset": 250,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": [
+                "missing revert data"
+              ]
+            },
+            {
+              "offset": 500,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": [
+                "missing revert data"
+              ]
+            },
+            {
+              "offset": 750,
+              "limit": 250,
+              "ok": true,
+              "rewardRows": 0,
+              "providerErrorsBeforeSuccess": [
+                "missing revert data"
+              ]
+            }
+          ],
+          "rewardCount": 0
+        }
+      ],
+      "rewards": [],
+      "wethTotal": 0,
+      "matchedOwnerObserved": false
+    }
+  },
+  "classification": {
+    "completeOfficialRewardScan": false,
+    "accountingMode": "unresolved",
+    "directWethRewards": 0,
+    "managedRelayWethDiagnostic": 0,
+    "ownerDeclaredFoundationFallbackWeth": 0,
+    "accruedRewardsWethCandidate": 0,
+    "explanation": "The final scan was incomplete or inconclusive; no fallback applied."
   },
   "resolution": {
     "lombardEthereumWbtc": true,
     "lombardBaseWbtc": true,
     "avalancheBtcB": true,
-    "baseWeth": false,
+    "baseWethAccountingResolved": false,
     "unresolved": [
       "baseWeth"
     ],
@@ -315,12 +646,15 @@
   "finalCandidateTotals": {
     "btc": 0.07264572,
     "eth": 0.006426130614,
-    "authoritativeBalanceDiscovery": false
+    "companyBookQuantityReady": false,
+    "authoritativeOnchainBalanceDiscovery": false,
+    "ethSource": "verified native ETH subtotal only"
   },
   "metricBoundary": {
-    "companyBalance": "Aerodrome LP WETH principal is included in ETH economic exposure only when principal reconciliation passes",
-    "accruedRewards": "unclaimed Slipstream trading fees are separate accrued protocol value and are not included in Company Balance principal",
-    "emissions": "any Sugar emissions_earned value is a separate reward candidate and must not be folded into ETH principal"
+    "foundationBalance": "Only WETH classified as principal/foundation enters ETH Company Balance. Direct veNFT rewards never enter foundation principal.",
+    "accruedRewards": "Direct veNFT WETH fees/incentives are Accrued Rewards candidates, separate from ETH foundation balance.",
+    "managedRelay": "Managed Relay-level rewards are diagnostic until per-account attribution is reproducible.",
+    "fallback": "Owner-declared fallback is permitted only after a complete final official Aerodrome reward scan finds no material WETH source; it remains explicitly labeled owner-observed, not onchain-reproduced."
   },
-  "nextStep": "target only Base WETH using the exact Aerodrome/Sugar evidence emitted here"
+  "nextStep": "Do not run another broad discovery pass. Review only the emitted Aerodrome WETH reward boundary evidence."
 }
