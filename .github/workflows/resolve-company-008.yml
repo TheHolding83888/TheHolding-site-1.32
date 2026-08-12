@@ -1,4 +1,4 @@
-# THE HOLDING COMPANY #008 TARGETED RESOLVER v1.0
+# THE HOLDING COMPANY #008 TARGETED RESOLVER v1.0.1
 name: "Resolve Company #008"
 
 on:
@@ -29,11 +29,29 @@ jobs:
 
       - name: Verify resolver source/workflow sync
         run: |
-          grep -F "const VERSION = '1.0-company-008-targeted-unresolved';" onboarding/company-008-resolve.mjs
-          echo "Resolver/source sync OK: Company #008 targeted resolver v1.0"
+          grep -F "const VERSION = '1.0.1-company-008-address-normalization';" onboarding/company-008-resolve.mjs
+          echo "Resolver/source sync OK: Company #008 targeted resolver v1.0.1"
 
       - name: Install dependency
         run: npm install --no-save ethers@6
+
+      - name: Address normalization preflight
+        run: |
+          node - <<'NODE'
+          const { getAddress } = require('ethers');
+          const addresses = [
+            '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
+            '0x89a415b3d20098e6a6c8f7a59001c67bd3129821',
+            '0x5401b8620e5fb570064ca9114fd1e135fd77d57c',
+            '0x3a4baabf4dc9910596821615e848f0e6545762f3',
+            '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
+            '0x0555e30da8f98308edb960aa94c0db47230d2b9c',
+            '0x4200000000000000000000000000000000000006'
+          ];
+          for (const a of addresses) {
+            console.log(a, '->', getAddress(a));
+          }
+          NODE
 
       - name: Resolve only unresolved Company #008 components
         env:
@@ -51,12 +69,19 @@ jobs:
           const fs = require('fs');
           const p = 'companies/company-008-resolve.json';
           if (!fs.existsSync(p)) throw new Error('resolver JSON missing');
+
           const d = JSON.parse(fs.readFileSync(p, 'utf8'));
-          if (d.version !== '1.0-company-008-targeted-unresolved') throw new Error('resolver version mismatch: ' + d.version);
+
+          if (d.version !== '1.0.1-company-008-address-normalization') {
+            throw new Error('resolver version mismatch: ' + d.version);
+          }
           if (d.company?.registry !== '008') throw new Error('registry mismatch');
           if (d.company?.name !== '1milliondollar.eth') throw new Error('company mismatch');
-          if (!d.resolution || !Array.isArray(d.resolution.unresolved)) throw new Error('resolution schema missing');
-          console.log('Validated Company #008 targeted resolver');
+          if (!d.resolution || !Array.isArray(d.resolution.unresolved)) {
+            throw new Error('resolution schema missing');
+          }
+
+          console.log('Validated Company #008 targeted resolver v1.0.1');
           console.log('Resolution:', d.resolution);
           NODE
 
@@ -64,6 +89,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           FILE="companies/company-008-resolve.json"
 
           test -s "$FILE" || {
@@ -86,11 +112,14 @@ jobs:
             if git rebase origin/main && git push origin HEAD:main; then
               break
             fi
+
             git rebase --abort || true
+
             if [ "$attempt" -eq 3 ]; then
               echo "ERROR: failed to publish resolver after retries"
               exit 1
             fi
+
             sleep $((attempt * 2))
           done
 
