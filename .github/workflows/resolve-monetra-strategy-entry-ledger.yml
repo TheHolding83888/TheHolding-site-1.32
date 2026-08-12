@@ -1,0 +1,117 @@
+# THE HOLDING · MONETRA STRATEGY ENTRY LEDGER v0.3 · PRODUCTIVE ENTRY BASIS
+name: "Resolve Monetra Strategy Entry Ledger"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resolve-monetra-strategy-entry-ledger
+  cancel-in-progress: false
+
+jobs:
+  strategy-entry-ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check stable-capital/monetra-strategy-entry-ledger.mjs
+          test -s companies/company-008-resolve.json
+          test -s companies/stable-capital-data.json
+
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('companies/company-008-resolve.json','utf8'));
+          const d=JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
+          if(r.company?.registry!=='008'||r.company?.name!=='Monetra.eth')throw new Error('resolver identity mismatch');
+          if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth')throw new Error('Stable Capital identity mismatch');
+          if((d.positions||[]).length!==10)throw new Error('expected exactly 10 Stable Capital positions');
+          console.log('Strategy-entry preflight OK.');
+          NODE
+
+      - name: Install dependency
+        run: npm install --no-save ethers@6
+
+      - name: Reconstruct productive strategy entry basis
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          ETH_ARCHIVE_RPC_URL: ${{ secrets.ETH_ARCHIVE_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          FRAXTAL_RPC_URL: ${{ secrets.FRAXTAL_RPC_URL }}
+          FRAXTAL_RPC_URL_2: ${{ secrets.FRAXTAL_RPC_URL_2 }}
+        run: node stable-capital/monetra-strategy-entry-ledger.mjs
+
+      - name: Validate diagnostic artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s companies/company-008-strategy-entry-ledger.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-008-strategy-entry-ledger.json','utf8'));
+
+          if(d.version!=='0.3-monetra-strategy-entry-ledger')throw new Error('unexpected version');
+          if(d.methodologyVersion!=='0.3-strategy-deposit-basis-nominal-stable')throw new Error('unexpected methodology');
+          if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth')throw new Error('identity mismatch');
+          if((d.strategies||[]).length!==10)throw new Error('expected 10 strategy rows');
+          if(!Array.isArray(d.unresolved))throw new Error('missing unresolved list');
+
+          // GREEN is diagnostic-safe. A narrow unresolved strategy is data, not a workflow failure.
+          console.log('Strategy Entry Ledger validation OK.');
+          console.log(JSON.stringify(d.summary,null,2));
+          if(d.summary?.fullPerformanceReady!==true){
+            console.log('DIAGNOSTIC GREEN: inspect only unresolved strategy rows before public integration.');
+          }else{
+            console.log('FULL READY: all 10 strategy entry bases and current nominal values are comparable.');
+          }
+          NODE
+
+      - name: Publish Strategy Entry Ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="companies/company-008-strategy-entry-ledger.json"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$FILE"
+
+          if ! git diff --cached --quiet -- "$FILE"; then
+            git commit -m "Resolve Monetra strategy entry ledger"
+          else
+            echo "No strategy-entry changes to publish."
+          fi
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then break; fi
+            git rebase --abort || true
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep $((attempt*2))
+          done
+
+          git fetch origin main
+          git cat-file -e "origin/main:$FILE"
+
+          REMOTE_VERSION="$(git show origin/main:$FILE | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+          test "$REMOTE_VERSION" = "0.3-monetra-strategy-entry-ledger"
+
+          echo "Remote main Strategy Entry Ledger verified."
