@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · v1.21.9 · Monetra Passport Rows · explicit laptop + mobile order -->
+<!-- companies.html · v1.21.10 · Monetra Passport DOM Fix · valid detail cards -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -5517,6 +5517,67 @@
             #stable-index .scp-essential-actions-paired .scp-essential-card-strategy{grid-area:strategy!important}
         }
 
+
+        /* ═══════════════════════════════════════════════════════════════
+           Monetra DOM Fix v1.21.10
+           Detail cards are containers; only View details is interactive.
+           Prevents browser HTML-repair from ejecting content out of cards.
+           ═══════════════════════════════════════════════════════════════ */
+        #stable-index .scp-essential-actions-paired .scp-essential-card{
+            cursor:default!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-card:hover{
+            transform:none!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-card .scp-quick-open{
+            appearance:none!important;
+            -webkit-appearance:none!important;
+            border:0!important;
+            background:transparent!important;
+            padding:.28rem 0!important;
+            margin-top:.56rem!important;
+            display:inline-flex!important;
+            align-items:center!important;
+            gap:.38rem!important;
+            color:var(--green)!important;
+            cursor:pointer!important;
+            font:650 .62rem/1 'Space Grotesk',sans-serif!important;
+            letter-spacing:.035em!important;
+            text-align:left!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-card .scp-quick-open:hover,
+        #stable-index .scp-essential-actions-paired .scp-essential-card .scp-quick-open:focus-visible{
+            color:var(--green)!important;
+            outline:none!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-card .scp-quick-open:hover .scp-quick-arrow,
+        #stable-index .scp-essential-actions-paired .scp-essential-card .scp-quick-open:focus-visible .scp-quick-arrow{
+            transform:translate(1px,-1px)!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-card .scp-quick-arrow{
+            flex:0 0 auto!important;
+            transition:transform .16s ease!important;
+        }
+
+        /* Performance content is contained and never allowed to overflow its card. */
+        #stable-index .scp-essential-actions-paired .scp-essential-card-performance,
+        #stable-index .scp-essential-actions-paired .scp-essential-card-strategy{
+            overflow:visible!important;
+        }
+        #stable-index .scp-essential-actions-paired .scp-essential-card-performance>b,
+        #stable-index .scp-essential-actions-paired .scp-essential-card-strategy>b{
+            max-width:100%!important;
+            overflow-wrap:anywhere!important;
+        }
+
+        @media(max-width:760.98px){
+            #stable-index .scp-essential-actions-paired .scp-essential-card .scp-quick-open{
+                margin-top:.45rem!important;
+                font-size:.58rem!important;
+                padding:.25rem 0!important;
+            }
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -6090,17 +6151,20 @@
             </div>
 
             <div class="scp-essential-actions scp-essential-actions-paired">
-                <button class="scp-essential-card scp-essential-card-performance" type="button" data-stable-focus="income">
+                <div class="scp-essential-card scp-essential-card-performance">
                     <span class="sc-label-with-help"><span data-i18n="stable.passport.performance">Performance</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.performance">Strategy performance from verified protocol entry principal to current productive value. Stable price effects are tracked separately.</span></span></span>
+                    <b id="scpPerformance">—</b>
+                    <button class="scp-quick-open" type="button" data-stable-focus="income"><span data-i18n="stable.performance.details">View details</span><svg class="scp-quick-arrow" viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </div><span class="sc-tip" data-i18n="stable.help.performance">Strategy performance from verified protocol entry principal to current productive value. Stable price effects are tracked separately.</span></span></span>
                     <b id="scpPerformance">—</b>
                     <small class="scp-quick-open"><span data-i18n="stable.performance.details">View details</span><svg class="scp-quick-arrow" viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg></small>
                 </button>
 
-                <button class="scp-essential-card scp-essential-card-strategy" type="button" data-stable-focus="strategies">
+                <div class="scp-essential-card scp-essential-card-strategy">
                     <span data-i18n="stable.quick.strategies">Strategy Book</span>
                     <b id="scpEssentialStrategyText">—</b>
-                    <small class="scp-quick-open"><span data-i18n="stable.quick.open">View details</span><svg class="scp-quick-arrow" viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg></small>
-                </button>
+                    <button class="scp-quick-open" type="button" data-stable-focus="strategies"><span data-i18n="stable.quick.open">View details</span><svg class="scp-quick-arrow" viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </div>
             </div>
 
 
@@ -6543,7 +6607,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
 const STABLE_INDEX_DATA_URL = './stable-index-data.json';
-const STABLE_INDEX_UI_VERSION = '1.21.9-explicit-financial-rows';
+const STABLE_INDEX_UI_VERSION = '1.21.10-valid-detail-cards';
 let STABLE_INDEX_SNAPSHOT = null;
 let STABLE_UI_LANG = 'en';
 
