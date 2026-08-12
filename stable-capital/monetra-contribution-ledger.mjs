@@ -36,8 +36,8 @@ import {
   formatUnits
 } from 'ethers';
 
-const VERSION = '0.1-monetra-contribution-ledger-diagnostic';
-const METHODOLOGY = '0.1-boundary-flow-backfill';
+const VERSION = '0.2-monetra-contribution-ledger-targeted-close';
+const METHODOLOGY = '0.2-boundary-flow-targeted-close-net-invested';
 const ROOT = path.resolve(process.cwd());
 
 const RESOLVER_FILE =
@@ -108,6 +108,32 @@ const MAX_RPC_LOG_ADDRESSES_PER_CHAIN = 40;
 const BRIDGE_WINDOW_MS = 6 * 60 * 60 * 1000;
 const BRIDGE_AMOUNT_TOLERANCE = 0.02; // 2%
 const MIN_MEANINGFUL_STABLE = 0.000001;
+
+// Bounded spam/address-poisoning tokens observed in the fresh v0.1 diagnostic.
+// These are explicitly outside the Stable Capital book and are never Invested.
+const IGNORE_TOKEN_ADDRESSES = new Set([
+  '0x9a508f4ad6d667892aed6cb53c6a32a85823dfd5', // fake "Token"
+  '0x53fdca91fd33b9131b5ceade42a3edbd9b38edff', // CAT
+  '0x60e2d3aad146f978dc0b103a2d29229560c1c02d', // ARB | t.me/s/arb_pool
+  '0x3b91dd79102dcc37e565c8e94b0bb36438198e91', // ARB | t.me/s/arb_pool
+  '0xf82d598ce6fce9f2d46f046fc46653e3284040aa', // DOG
+  '0xf0a15e9082df01936d335a7a8557a4f694f94f65', // lookalike ÚЅDТ, NOT canonical USDT
+  '0x27d24125c875516a8981d853fe8058ce08f84a81', // DRC
+  '0x58bdc4310db1b19854ca9066deed7e3df4f2ec9b', // lookalike EṬH
+  '0x486f662020286e17e7469df4e5f2cf2415f36662'  // AI
+]);
+
+// Bridge/router identities independently verified after v0.1:
+// - Squid Multicall: 0xaD6C...
+// - Across Ethereum Spoke Pool V2: 0x5c7B...
+// - Across Multicall Handler: 0x0F7A...
+const KNOWN_BRIDGE_ENDPOINTS = new Set([
+  '0xad6cea45f98444a922a2b4fe96b8c90f0862d2f4',
+  '0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5',
+  '0x0f7ae28de1c8532170ad4ee566b5801485c13a0e'
+]);
+
+const EXTERNAL_ROUTE_SWAP_WINDOW_MS = 10 * 60 * 1000;
 
 function addr(x) {
   try { return getAddress(String(x).toLowerCase()); }
@@ -598,6 +624,14 @@ function preliminaryClassification(row, txRows, bookAddressesByChain) {
   const tokenClass = classifyToken(row, bookAddressesByChain);
   const cp = lower(row.counterparty);
 
+  if (IGNORE_TOKEN_ADDRESSES.has(lower(row.token))) {
+    return {
+      classification: 'ignored-spam-or-address-poisoning',
+      confidence: 'high',
+      tokenClass: 'outside-book-token'
+    };
+  }
+
   if (!row.amount || Math.abs(row.amount) < MIN_MEANINGFUL_STABLE) {
     return { classification: 'dust-or-zero', confidence: 'high', tokenClass };
   }
@@ -678,15 +712,86 @@ function isBoundaryCandidate(c) {
 }
 
 function bridgeSymbolEquivalent(a, b) {
-  return symbolKey(a.symbol) === symbolKey(b.symbol);
+  if (symbolKey(a.symbol) === symbolKey(b.symbol)) return true;
+
+  // v0.1 exposed a real Squid route: CRVUSD leaves Ethereum through the
+  // verified Squid Multicall and near-equal frxUSD arrives on Fraxtal.
+  // Cross-asset stable matching is allowed ONLY when at least one side is
+  // a verified bridge/router endpoint.
+  const bridgeEndpointInvolved =
+    KNOWN_BRIDGE_ENDPOINTS.has(lower(a.counterparty)) ||
+    KNOWN_BRIDGE_ENDPOINTS.has(lower(b.counterparty));
+
+  return (
+    bridgeEndpointInvolved &&
+    a.tokenClass === 'nominal-stable' &&
+    b.tokenClass === 'nominal-stable'
+  );
 }
 
 function bridgeAmountsMatch(a, b) {
-  if (!finite(a.nominalUsd) || !finite(b.nominalUsd)) return false;
-  const x = Math.abs(Number(a.nominalUsd));
-  const y = Math.abs(Number(b.nominalUsd));
+  if (!finite(a.nominalStableUsd) || !finite(b.nominalStableUsd)) return false;
+  const x = Math.abs(Number(a.nominalStableUsd));
+  const y = Math.abs(Number(b.nominalStableUsd));
   if (!(x > 0 && y > 0)) return false;
   return Math.abs(x - y) / Math.max(x, y) <= BRIDGE_AMOUNT_TOLERANCE;
+}
+
+
+function matchExternalRouteStableConversions(classified) {
+  const candidates = classified.filter(x =>
+    ['external-contribution-candidate', 'external-distribution-candidate'].includes(x.classification) &&
+    x.tokenClass === 'nominal-stable' &&
+    x.timestamp &&
+    x.counterparty
+  );
+
+  const matched = [];
+  const used = new Set();
+
+  for (let i = 0; i < candidates.length; i++) {
+    const a = candidates[i];
+    if (used.has(a.id)) continue;
+
+    for (let j = i + 1; j < candidates.length; j++) {
+      const b = candidates[j];
+      if (used.has(b.id)) continue;
+      if (a.chain !== b.chain) continue;
+      if (a.direction === b.direction) continue;
+      if (lower(a.counterparty) !== lower(b.counterparty)) continue;
+      if (!bridgeAmountsMatch(a, b)) continue;
+
+      const dt = Math.abs(new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      if (dt > EXTERNAL_ROUTE_SWAP_WINDOW_MS) continue;
+
+      used.add(a.id);
+      used.add(b.id);
+
+      a.classification = 'internal-external-route-stable-conversion';
+      b.classification = 'internal-external-route-stable-conversion';
+      a.confidence = 'high';
+      b.confidence = 'high';
+      a.routePairId = b.id;
+      b.routePairId = a.id;
+
+      matched.push({
+        id: `stable-route:${a.id}:${b.id}`,
+        counterparty: a.counterparty,
+        chain: a.chainLabel,
+        assetA: a.symbol,
+        amountA: a.amount,
+        directionA: a.direction,
+        assetB: b.symbol,
+        amountB: b.amount,
+        directionB: b.direction,
+        timestampA: a.timestamp,
+        timestampB: b.timestamp,
+        reason: 'Opposite-direction near-equal nominal stable flows through the same external counterparty within 10 minutes; treated as a conversion route, not owner capital movement.'
+      });
+      break;
+    }
+  }
+  return matched;
 }
 
 function matchCrossChainBridges(classified) {
@@ -732,7 +837,7 @@ function matchCrossChainBridges(classified) {
         timestampB: b.timestamp,
         txA: a.txHash,
         txB: b.txHash,
-        reason: 'Opposite-direction same-stable flows across different chains within 6h and 2% amount tolerance.'
+        reason: 'Opposite-direction near-equal stable flows across different chains within 6h and 2% amount tolerance; same-symbol or verified bridge-endpoint route.'
       });
       break;
     }
@@ -877,6 +982,8 @@ async function main() {
     };
   });
 
+  const matchedExternalStableConversions =
+    matchExternalRouteStableConversions(classified);
   const matchedBridges = matchCrossChainBridges(classified);
 
   const highConfidenceContributions = classified.filter(r =>
@@ -936,6 +1043,15 @@ async function main() {
     8
   );
 
+  // Public Invested = net owner capital still economically contributed:
+  // gross contributions minus external distributions/withdrawals.
+  // This is the intuitive denominator for the desired Passport:
+  // Invested / Current Capital / Performance $ / Performance %.
+  const netInvestedUsd =
+    finite(grossContributionsUsd) && finite(externalDistributionsUsd)
+      ? round(Number(grossContributionsUsd) - Number(externalDistributionsUsd), 8)
+      : null;
+
   const currentStableCapitalUsd = round(stableData?.summary?.stableCapitalUsd, 8);
   const currentClaimableUsd = sumCurrentClaimable(stableData);
   const currentEconomicValueUsd =
@@ -948,22 +1064,17 @@ async function main() {
     reviewQueue.length === 0 &&
     allContributionCandidatesValued &&
     allDistributionCandidatesValued &&
-    finite(grossContributionsUsd) &&
-    Number(grossContributionsUsd) > 0 &&
+    finite(netInvestedUsd) &&
+    Number(netInvestedUsd) > 0 &&
     finite(currentEconomicValueUsd);
 
   const performanceUsd = autoReady
-    ? round(
-        Number(currentEconomicValueUsd) +
-        Number(externalDistributionsUsd || 0) -
-        Number(grossContributionsUsd || 0),
-        8
-      )
+    ? round(Number(currentEconomicValueUsd) - Number(netInvestedUsd), 8)
     : null;
 
   const performancePct =
-    autoReady && Number(grossContributionsUsd) > 0
-      ? round((Number(performanceUsd) / Number(grossContributionsUsd)) * 100, 6)
+    autoReady && Number(netInvestedUsd) > 0
+      ? round((Number(performanceUsd) / Number(netInvestedUsd)) * 100, 6)
       : null;
 
   const foundingNative = resolverFoundingNative(resolver);
@@ -997,7 +1108,7 @@ async function main() {
       nativeGas:
         'Native ETH / chain gas funding is excluded from Stable Capital Invested. It is retained only as company-origin evidence.',
       performance:
-        'Performance = Current Stable Capital + Current Claimable + external distributions - gross external contributions. Current APY is never used to backfill historical performance.'
+        'Net Invested = gross external contributions - external distributions. Performance = Current Stable Capital + Current Claimable - Net Invested. Current APY is never used to backfill historical performance.'
     },
     foundingOriginEvidence: {
       nativeFunding: foundingNative
@@ -1021,11 +1132,13 @@ async function main() {
       sourceFailed,
       transferRowsObserved: classified.length,
       matchedInternalBridgePairs: matchedBridges.length,
+      matchedExternalStableConversionPairs: matchedExternalStableConversions.length,
       highConfidenceContributionCount: highConfidenceContributions.length,
       highConfidenceDistributionCount: highConfidenceDistributions.length,
       reviewQueueCount: reviewQueue.length,
       grossContributionsUsd: autoReady ? grossContributionsUsd : null,
       externalDistributionsUsd: autoReady ? externalDistributionsUsd : null,
+      netInvestedUsd: autoReady ? netInvestedUsd : null,
       currentStableCapitalUsd,
       currentClaimableUsd,
       currentEconomicValueUsd,
@@ -1058,13 +1171,27 @@ async function main() {
       bridgePairId: r.bridgePairId || null,
       source: r.source
     })),
+    matchedExternalStableConversions,
     matchedInternalBridges: matchedBridges,
     reviewQueue,
+    targetedResolution: {
+      basis: 'Fresh production v0.1 reviewQueue generated 2026-08-12T18:08:24.658Z.',
+      fixes: [
+        'Fixed v0.1 bridge matcher field mismatch: nominalUsd -> nominalStableUsd.',
+        'Verified Squid Multicall and Across bridge endpoint identities.',
+        'Allows near-equal cross-asset stable pairing only when a verified bridge endpoint is involved.',
+        'Pairs same-counterparty near-equal opposite stable flows within 10 minutes as an external conversion route.',
+        'Ignores only the explicit spam/address-poisoning token addresses observed in v0.1.',
+        'Public Invested uses net contributed capital, not gross historical deposits.'
+      ],
+      knownBridgeEndpoints: [...KNOWN_BRIDGE_ENDPOINTS],
+      ignoredTokenAddresses: [...IGNORE_TOKEN_ADDRESSES]
+    },
     integrationContract: {
       publishInvestedOnlyWhen: 'summary.publicInvestedReady === true',
       publishPerformanceOnlyWhen: 'summary.publicPerformanceReady === true',
       futureStableIndexFields: {
-        investedUsd: autoReady ? grossContributionsUsd : null,
+        investedUsd: autoReady ? netInvestedUsd : null,
         currentCapitalUsd: currentStableCapitalUsd,
         claimableUsd: currentClaimableUsd,
         performanceUsd,
@@ -1088,6 +1215,7 @@ async function main() {
   console.log('Transfers:', out.summary.transferRowsObserved);
   console.log('High-confidence contributions:', out.summary.highConfidenceContributionCount);
   console.log('High-confidence distributions:', out.summary.highConfidenceDistributionCount);
+  console.log('Stable conversion pairs:', out.summary.matchedExternalStableConversionPairs);
   console.log('Bridge pairs:', out.summary.matchedInternalBridgePairs);
   console.log('Review queue:', out.summary.reviewQueueCount);
   console.log('Current Stable Capital:', out.summary.currentStableCapitalUsd);
