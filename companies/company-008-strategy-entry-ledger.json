@@ -1,8 +1,8 @@
 {
-  "version": "0.5-monetra-lido-share-oracle-close",
-  "methodologyVersion": "0.5-lido-depositqueue-sharemanager-oracle",
-  "generatedAt": "2026-08-12T19:43:28.043Z",
-  "startedAt": "2026-08-12T19:43:03.460Z",
+  "version": "0.7-monetra-lido-capital-transfer-close",
+  "methodologyVersion": "0.7-lido-capital-transfer-sharemanager-oracle",
+  "generatedAt": "2026-08-12T20:06:12.616Z",
+  "startedAt": "2026-08-12T20:05:55.058Z",
   "company": {
     "registry": "008",
     "name": "Monetra.eth",
@@ -19,6 +19,14 @@
       "Reconstruct fxSAVE entry from inbound fxSAVE shares when there is no local ERC4626 Deposit event.",
       "For Liquity use only the user BOLD transfer into the Stability Pool; ignore protocol mint events from the zero address.",
       "Keep Lido current nominal NAV fail-closed until the canonical Mellow/Lido oracle path is reproduced."
+    ],
+    "v07LidoClose": [
+      "Nine v0.4 strategy rows are copied unchanged and guarded against regression.",
+      "Lido supported assets and deposit queues are discovered dynamically from the live ShareModule.",
+      "Entry principal is the actual supported stable-token Transfer from Monetra into the live Mellow vault/queue, independent of queue ABI.",
+      "Current nominal value uses ShareManager.sharesOf and inverse Oracle priceD18 conversion.",
+      "Share burns/outgoing transfers fail closed because they would require flow-adjusted performance.",
+      "No market price is used for Lido strategy Performance."
     ]
   },
   "methodology": {
@@ -27,7 +35,8 @@
     "performance": "Current nominal stable units + separately claimable strategy rewards - strategy entry principal.",
     "priceEffect": "USD market-price/depeg movement remains a separate Stable Price Effect and does not masquerade as strategy yield.",
     "walletFlows": "External wallet funding, bridging, swaps and unrelated withdrawals are ignored unless they are themselves the protocol entry transaction.",
-    "apy": "Reference APY remains current productive capacity and is never used to backfill historical Performance."
+    "apy": "Reference APY remains current productive capacity and is never used to backfill historical Performance.",
+    "lido": "Lido/Mellow entry from actual supported stable-token capital transfer from Monetra into the live vault/deposit queue; current nominal value from ShareManager.sharesOf and Oracle.getReport using shares = assets × priceD18 / 1e18."
   },
   "sourceDiagnostics": {
     "ethereum": [
@@ -158,23 +167,42 @@
         "foundedBlock": 36525030,
         "failedProviderAttempts": []
       }
-    ]
+    ],
+    "lidoV05": {
+      "status": "ok",
+      "provider": "eth.blockscout.com",
+      "foundedBlock": 25184669,
+      "priorProviderAttempts": [
+        {
+          "url": "https://ethereum-rpc.publicnode.com",
+          "error": "could not coalesce error"
+        },
+        {
+          "url": "https://eth.llamarpc.com",
+          "error": "server response 403 Forbidden"
+        }
+      ]
+    }
   },
   "summary": {
     "strategyCount": 10,
-    "entryResolvedCount": 9,
-    "currentNominalComparableCount": 9,
-    "ownerApproxTenMatchedCount": 9,
-    "entryPrincipalNominalStableResolvedTotal": 89.998336714575,
-    "comparablePrincipalNominalStable": 89.998336714575,
-    "comparableCurrentNominalStable": 90.293610183733,
-    "comparableIncomeNominalStable": 0.295273469158,
-    "comparableReturnPct": 0.3280877,
-    "fullEntryReady": false,
-    "fullPerformanceReady": false,
-    "publicInvestedReady": false,
-    "publicPerformanceReady": false,
-    "note": "Lido targeted close remains unresolved; inspect lidoTargetedClose only."
+    "entryResolvedCount": 10,
+    "currentNominalComparableCount": 10,
+    "ownerApproxTenMatchedCount": 10,
+    "entryPrincipalNominalStableResolvedTotal": 99.998336714575,
+    "comparablePrincipalNominalStable": 99.998336714575,
+    "comparableCurrentNominalStable": 100.309383183733,
+    "comparableIncomeNominalStable": 0.311046469158,
+    "comparableReturnPct": 0.31105164,
+    "strategyInvestedNominalStableTotal": 99.998336714575,
+    "strategyCurrentNominalStableTotal": 100.309383183733,
+    "strategyPerformanceNominalStable": 0.311046469158,
+    "strategyPerformancePct": 0.31105164,
+    "fullEntryReady": true,
+    "fullPerformanceReady": true,
+    "publicInvestedReady": true,
+    "publicPerformanceReady": true,
+    "note": "All 10 productive strategy entry principals and current nominal stable values are reproducibly comparable. Public Invested and Performance are ready for integration."
   },
   "strategies": [
     {
@@ -475,35 +503,48 @@
       "chain": "ethereum",
       "mode": "lido-deposit-queue",
       "entry": {
-        "status": "error",
-        "error": "all providers failed",
-        "attempts": [
-          {
-            "url": "https://ethereum-rpc.publicnode.com",
-            "error": "server response 403 Forbidden"
-          },
-          {
-            "url": "https://eth.llamarpc.com",
-            "error": "server response 403 Forbidden"
-          },
-          {
-            "url": "https://eth.blockscout.com/api/eth-rpc",
-            "error": "Lido deposit amount unresolved"
-          }
-        ]
+        "txHash": "0x96abd29b45cee3800d49ffb79180110b23543144f8144d9c4b94ba054b9e022a",
+        "block": 25679768,
+        "timestamp": "2026-08-04T06:31:11.000Z",
+        "requestTimestamp": 1785825071,
+        "requestTimestampIso": "2026-08-04T06:31:11.000Z",
+        "principalNominalStable": 10,
+        "principalSymbol": "USDT",
+        "confidence": "high",
+        "evidence": {
+          "type": "Mellow-supported-stable-capital-transfer",
+          "asset": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "queue": "0x534d0bEb82C47cf703BFb9E959297658b65Ec8E9",
+          "vault": "0x014e6DA8F283C4aF65B2AA0f201438680A004452",
+          "assetsRaw": "10000000",
+          "assetDecimals": 6,
+          "sameTxMintToMonetra": true
+        },
+        "receiptDiagnostics": null
       },
       "current": {
-        "comparable": false,
-        "nominal": null,
-        "symbol": "USD strategy NAV",
-        "reason": "Current Lido EarnUSD position still needs canonical Mellow/Lido share-oracle NAV adapter; market-price approximation is not used for strategy Performance."
+        "comparable": true,
+        "nominal": 10.015773,
+        "principalInsidePosition": 10.015773,
+        "claimableAdded": 0,
+        "symbol": "USDT",
+        "basis": "Mellow ShareManager.sharesOf / Oracle.getReport inverse conversion; wrapper market price excluded",
+        "sharesRaw": "9762818840756086776",
+        "activeSharesRaw": "9762818840756086776",
+        "claimableSharesRaw": "0",
+        "oracle": "0x827044735c9708a2cf850e7Ea37EBa43bc786028",
+        "oracleAsset": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "oraclePriceD18": "974744329583049036512907511870",
+        "oracleReportTimestamp": 1786515179,
+        "oracleReportIso": "2026-08-12T06:12:59.000Z",
+        "oracleSuspicious": false
       },
       "performance": {
-        "status": "pending",
-        "incomeNominalStable": null,
-        "returnPct": null
+        "status": "comparable",
+        "incomeNominalStable": 0.015773,
+        "returnPct": 0.15773
       },
-      "ownerTargetApproximatelyTen": null
+      "ownerTargetApproximatelyTen": true
     },
     {
       "id": "ethereum:liquity-v2-sp:weth",
@@ -592,42 +633,175 @@
       "ownerTargetApproximatelyTen": true
     }
   ],
-  "unresolved": [
-    {
-      "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
-      "protocol": "Lido Earn",
-      "entryResolved": false,
-      "currentComparable": false,
-      "reason": "all providers failed"
-    }
-  ],
+  "unresolved": [],
   "integrationContract": {
-    "publicInvestedField": "strategyInvestedNominalStable",
+    "publicInvestedField": "summary.strategyInvestedNominalStableTotal",
     "publicPerformanceBasis": "strategy-entry-nominal-stable",
-    "require": "summary.fullPerformanceReady === true",
-    "desiredPassport": "Invested · Current Capital · Performance $/% · APY · Claimable"
+    "require": "summary.fullPerformanceReady === true && summary.publicInvestedReady === true && summary.publicPerformanceReady === true",
+    "desiredPassport": "Invested · Current Capital · APY · Claimable / Performance + Strategy Book details",
+    "publicPerformanceUsdLikeField": "summary.strategyPerformanceNominalStable",
+    "publicPerformancePctField": "summary.strategyPerformancePct"
   },
   "lidoTargetedClose": {
-    "status": "diagnostic-unresolved",
-    "attempts": [
-      {
-        "url": "https://ethereum-rpc.publicnode.com",
-        "error": "server response 403 Forbidden"
+    "status": "closed",
+    "architecture": {
+      "shareManager": "0x4Ce1ac8F43E0E5BD7A346A98aF777bF8fbeA1981",
+      "vault": "0x014e6DA8F283C4aF65B2AA0f201438680A004452",
+      "oracle": "0x827044735c9708a2cf850e7Ea37EBa43bc786028",
+      "assets": [
+        {
+          "asset": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "symbol": "USDC",
+          "decimals": 6,
+          "queues": [
+            {
+              "address": "0xC75E7E73B25fEa8bB23EB55CC48BA55067b5be76",
+              "name": null
+            },
+            {
+              "address": "0xf6AFAf6afcAe116dD37A779D50fE6c5fa6f8C8f5",
+              "name": "SyncDepositQueue"
+            }
+          ]
+        },
+        {
+          "asset": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "symbol": "USDT",
+          "decimals": 6,
+          "queues": [
+            {
+              "address": "0xEeC5041c47Cba1e31321AC6941Bf09Ad60645B73",
+              "name": null
+            },
+            {
+              "address": "0x534d0bEb82C47cf703BFb9E959297658b65Ec8E9",
+              "name": "SyncDepositQueue"
+            }
+          ]
+        },
+        {
+          "asset": "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
+          "symbol": "USDe",
+          "decimals": 18,
+          "queues": [
+            {
+              "address": "0xeEc37568b01e0C4d5028501A49E024B475E2D7cA",
+              "name": null
+            }
+          ]
+        }
+      ],
+      "sharesRaw": "9762818840756086776",
+      "activeSharesRaw": "9762818840756086776",
+      "claimableSharesRaw": "0"
+    },
+    "entry": {
+      "txHash": "0x96abd29b45cee3800d49ffb79180110b23543144f8144d9c4b94ba054b9e022a",
+      "block": 25679768,
+      "timestamp": "2026-08-04T06:31:11.000Z",
+      "requestTimestamp": 1785825071,
+      "requestTimestampIso": "2026-08-04T06:31:11.000Z",
+      "principalNominalStable": 10,
+      "principalSymbol": "USDT",
+      "confidence": "high",
+      "evidence": {
+        "type": "Mellow-supported-stable-capital-transfer",
+        "asset": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "queue": "0x534d0bEb82C47cf703BFb9E959297658b65Ec8E9",
+        "vault": "0x014e6DA8F283C4aF65B2AA0f201438680A004452",
+        "assetsRaw": "10000000",
+        "assetDecimals": 6,
+        "sameTxMintToMonetra": true
       },
+      "receiptDiagnostics": null
+    },
+    "current": {
+      "comparable": true,
+      "nominal": 10.015773,
+      "principalInsidePosition": 10.015773,
+      "claimableAdded": 0,
+      "symbol": "USDT",
+      "basis": "Mellow ShareManager.sharesOf / Oracle.getReport inverse conversion; wrapper market price excluded",
+      "sharesRaw": "9762818840756086776",
+      "activeSharesRaw": "9762818840756086776",
+      "claimableSharesRaw": "0",
+      "oracle": "0x827044735c9708a2cf850e7Ea37EBa43bc786028",
+      "oracleAsset": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "oraclePriceD18": "974744329583049036512907511870",
+      "oracleReportTimestamp": 1786515179,
+      "oracleReportIso": "2026-08-12T06:12:59.000Z",
+      "oracleSuspicious": false
+    },
+    "performance": {
+      "status": "comparable",
+      "incomeNominalStable": 0.015773,
+      "returnPct": 0.15773
+    },
+    "shareOutflows": {
+      "burnCount": 0,
+      "outgoingTransferCount": 0,
+      "burns": [],
+      "outgoingTransfers": []
+    },
+    "allEffectiveDeposits": [
       {
-        "url": "https://eth.llamarpc.com",
-        "error": "server response 403 Forbidden"
-      },
-      {
-        "url": "https://eth.blockscout.com/api/eth-rpc",
-        "error": "no effective Monetra DepositRequested event found in dynamic Lido queues"
+        "txHash": "0x96abd29b45cee3800d49ffb79180110b23543144f8144d9c4b94ba054b9e022a",
+        "block": 25679768,
+        "logIndex": 215,
+        "timestamp": "2026-08-04T06:31:11.000Z",
+        "asset": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "symbol": "USDT",
+        "decimals": 6,
+        "to": "0x534d0bEb82C47cf703BFb9E959297658b65Ec8E9",
+        "raw": "10000000",
+        "principalNominalStable": 10,
+        "destinationType": "deposit-queue"
       }
     ],
-    "error": "all providers failed",
-    "officialMechanics": [
-      "ShareManager.sharesOf(account) includes active + claimable shares.",
-      "DepositQueue DepositRequested is the exact strategy-entry principal.",
-      "Oracle invariant: shares = assets * priceD18 / 1e18."
-    ]
+    "queueDiagnostics": [
+      {
+        "asset": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "symbol": "USDC",
+        "queues": [
+          {
+            "address": "0xC75E7E73B25fEa8bB23EB55CC48BA55067b5be76",
+            "name": null
+          },
+          {
+            "address": "0xf6AFAf6afcAe116dD37A779D50fE6c5fa6f8C8f5",
+            "name": "SyncDepositQueue"
+          }
+        ]
+      },
+      {
+        "asset": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "symbol": "USDT",
+        "queues": [
+          {
+            "address": "0xEeC5041c47Cba1e31321AC6941Bf09Ad60645B73",
+            "name": null
+          },
+          {
+            "address": "0x534d0bEb82C47cf703BFb9E959297658b65Ec8E9",
+            "name": "SyncDepositQueue"
+          }
+        ]
+      },
+      {
+        "asset": "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
+        "symbol": "USDe",
+        "queues": [
+          {
+            "address": "0xeEc37568b01e0C4d5028501A49E024B475E2D7cA",
+            "name": null
+          }
+        ]
+      }
+    ],
+    "officialSourceCanon": {
+      "shareManager": "Mellow flexible-vaults ShareManager.sharesOf(account) = activeSharesOf + claimableSharesOf.",
+      "depositQueue": "Queue ABI is not required for principal reconstruction: the supported stable-token Transfer from Monetra into the live Mellow vault/queue is the capital entry itself.",
+      "oracle": "Mellow IOracle defines shares = assets * priceD18 / 1e18."
+    }
   }
 }
