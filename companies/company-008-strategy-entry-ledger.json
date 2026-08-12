@@ -1,8 +1,8 @@
 {
-  "version": "0.3-monetra-strategy-entry-ledger",
-  "methodologyVersion": "0.3-strategy-deposit-basis-nominal-stable",
-  "generatedAt": "2026-08-12T18:46:54.426Z",
-  "startedAt": "2026-08-12T18:46:31.395Z",
+  "version": "0.4-monetra-strategy-entry-targeted-close",
+  "methodologyVersion": "0.4-strategy-entry-provider-rotation-and-protocol-fixes",
+  "generatedAt": "2026-08-12T19:06:36.083Z",
+  "startedAt": "2026-08-12T19:02:02.385Z",
   "company": {
     "registry": "008",
     "name": "Monetra.eth",
@@ -13,7 +13,13 @@
     "supersedesPublicPerformanceFromBoundaryFlowLedger": true,
     "reason": "Wallet boundary inflows/outflows are not the correct cost basis for this Stable Company because the wallet was also used for routing, swaps and temporary capital movement. Performance must begin when capital enters each productive strategy.",
     "previousBoundaryLedgerTreatment": "retain as diagnostic capital-routing history only; do not use its netInvestedUsd as public Stable strategy Performance basis.",
-    "userIntent": "Track the approximately 10 stable tokens deployed into each of 10 productive strategies, then measure what those strategy positions have produced."
+    "userIntent": "Track the approximately 10 stable tokens deployed into each of 10 productive strategies, then measure what those strategy positions have produced.",
+    "v04TargetedFixes": [
+      "Rotate RPC provider per strategy when a provider returns 403 or another strategy-specific failure.",
+      "Reconstruct fxSAVE entry from inbound fxSAVE shares when there is no local ERC4626 Deposit event.",
+      "For Liquity use only the user BOLD transfer into the Stability Pool; ignore protocol mint events from the zero address.",
+      "Keep Lido current nominal NAV fail-closed until the canonical Mellow/Lido oracle path is reproduced."
+    ]
   },
   "methodology": {
     "invested": "Sum of stable units actually deposited/staked into the 10 productive strategies, reconstructed from protocol deposit/stake transactions.",
@@ -24,32 +30,128 @@
     "apy": "Reference APY remains current productive capacity and is never used to backfill historical Performance."
   },
   "sourceDiagnostics": {
-    "ethereum": {
-      "status": "ok",
-      "provider": "ethereum-rpc.publicnode.com",
-      "foundedBlock": 25184669
-    },
-    "base": {
-      "status": "ok",
-      "provider": "base-rpc.publicnode.com",
-      "foundedBlock": 46535712
-    },
-    "fraxtal": {
-      "status": "ok",
-      "provider": "fraxtal.gateway.tenderly.co",
-      "foundedBlock": 36525030
-    }
+    "ethereum": [
+      {
+        "id": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
+        "status": "ok",
+        "provider": "ethereum-rpc.publicnode.com",
+        "foundedBlock": 25184669,
+        "failedProviderAttempts": []
+      },
+      {
+        "id": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+        "status": "ok",
+        "provider": "eth.blockscout.com",
+        "foundedBlock": 25184669,
+        "failedProviderAttempts": [
+          {
+            "url": "https://ethereum-rpc.publicnode.com",
+            "error": "server response 403 Forbidden"
+          },
+          {
+            "url": "https://eth.llamarpc.com",
+            "error": "server response 403 Forbidden"
+          }
+        ]
+      },
+      {
+        "id": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
+        "status": "ok",
+        "provider": "ethereum-rpc.publicnode.com",
+        "foundedBlock": 25184669,
+        "failedProviderAttempts": []
+      },
+      {
+        "id": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+        "status": "ok",
+        "provider": "ethereum-rpc.publicnode.com",
+        "foundedBlock": 25184669,
+        "failedProviderAttempts": []
+      },
+      {
+        "id": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
+        "status": "ok",
+        "provider": "ethereum-rpc.publicnode.com",
+        "foundedBlock": 25184669,
+        "failedProviderAttempts": []
+      },
+      {
+        "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
+        "status": "ok",
+        "provider": "eth.blockscout.com",
+        "foundedBlock": 25184669,
+        "failedProviderAttempts": [
+          {
+            "url": "https://ethereum-rpc.publicnode.com",
+            "error": "server response 403 Forbidden"
+          },
+          {
+            "url": "https://eth.llamarpc.com",
+            "error": "server response 403 Forbidden"
+          }
+        ]
+      },
+      {
+        "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+        "status": "failed",
+        "attempts": [
+          {
+            "url": "https://ethereum-rpc.publicnode.com",
+            "error": "server response 403 Forbidden"
+          },
+          {
+            "url": "https://eth.llamarpc.com",
+            "error": "server response 403 Forbidden"
+          },
+          {
+            "url": "https://eth.blockscout.com/api/eth-rpc",
+            "error": "Lido deposit amount unresolved"
+          }
+        ],
+        "error": "all providers failed"
+      },
+      {
+        "id": "ethereum:liquity-v2-sp:weth",
+        "status": "ok",
+        "provider": "ethereum-rpc.publicnode.com",
+        "foundedBlock": 25184669,
+        "failedProviderAttempts": []
+      }
+    ],
+    "base": [
+      {
+        "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "status": "ok",
+        "provider": "mainnet.base.org",
+        "foundedBlock": 46535712,
+        "failedProviderAttempts": [
+          {
+            "url": "https://base-rpc.publicnode.com",
+            "error": "server response 403 Forbidden"
+          }
+        ]
+      }
+    ],
+    "fraxtal": [
+      {
+        "id": "fraxtal:0xfc00000000000000000000000000000000000008",
+        "status": "ok",
+        "provider": "fraxtal.gateway.tenderly.co",
+        "foundedBlock": 36525030,
+        "failedProviderAttempts": []
+      }
+    ]
   },
   "summary": {
     "strategyCount": 10,
-    "entryResolvedCount": 6,
-    "currentNominalComparableCount": 6,
-    "ownerApproxTenMatchedCount": 5,
-    "entryPrincipalNominalStableResolvedTotal": 71.208416432978,
-    "comparablePrincipalNominalStable": 71.208416432978,
-    "comparableCurrentNominalStable": 60.214623658538,
-    "comparableIncomeNominalStable": -10.99379277444,
-    "comparableReturnPct": -15.43889518,
+    "entryResolvedCount": 9,
+    "currentNominalComparableCount": 9,
+    "ownerApproxTenMatchedCount": 9,
+    "entryPrincipalNominalStableResolvedTotal": 89.998336714575,
+    "comparablePrincipalNominalStable": 89.998336714575,
+    "comparableCurrentNominalStable": 90.293610183733,
+    "comparableIncomeNominalStable": 0.295273469158,
+    "comparableReturnPct": 0.3280877,
     "fullEntryReady": false,
     "fullPerformanceReady": false,
     "publicInvestedReady": false,
@@ -63,8 +165,27 @@
       "chain": "base",
       "mode": "aave-supply",
       "entry": {
-        "status": "error",
-        "error": "server response 403 Forbidden"
+        "txHash": "0xfbbeb80a040bd15c8c32b3c8bff1fa84dd25335a4ad31c5b2391c19551503d7a",
+        "block": 49424129,
+        "timestamp": "2026-08-02T02:26:45.000Z",
+        "principalNominalStable": 10,
+        "principalSymbol": "USDC",
+        "confidence": "high",
+        "evidence": {
+          "type": "Aave-underlying-supply-transfer",
+          "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "symbol": "USDC",
+          "decimals": 6,
+          "from": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "to": "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
+          "raw": "10000000",
+          "amount": 10,
+          "logIndex": 179
+        },
+        "receiptDiagnostics": {
+          "transferCount": 2,
+          "depositEventCount": 0
+        }
       },
       "current": {
         "comparable": true,
@@ -75,11 +196,11 @@
         "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
       },
       "performance": {
-        "status": "pending",
-        "incomeNominalStable": null,
-        "returnPct": null
+        "status": "comparable",
+        "incomeNominalStable": 0.009919,
+        "returnPct": 0.09919
       },
-      "ownerTargetApproximatelyTen": null
+      "ownerTargetApproximatelyTen": true
     },
     {
       "id": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
@@ -128,8 +249,27 @@
       "chain": "ethereum",
       "mode": "fxsave",
       "entry": {
-        "status": "error",
-        "error": "fxSAVE Deposit event not found"
+        "txHash": "0xb2552e61eb09fe0928eccde740b11ebfbcd27c860a8ec78ad434cf1721436797",
+        "block": 25516751,
+        "timestamp": "2026-07-12T13:10:35.000Z",
+        "principalNominalStable": 9.998322598885,
+        "principalSymbol": "fxUSD+USDC",
+        "confidence": "high",
+        "evidence": {
+          "type": "fxSAVE-inbound-shares-terminalized-at-entry",
+          "sharesRaw": "9039272056075505098",
+          "shares": 9.039272056075506,
+          "from": "0x7f54F05635d15Cde17A49502fEdB9D1803A3Be8A",
+          "basePoolRaw": "9897810582788058315",
+          "terminalBreakdown": {
+            "fxUSD": 9.870622598884708,
+            "USDC": 0.1277
+          }
+        },
+        "receiptDiagnostics": {
+          "transferCount": 7,
+          "depositEventCount": 1
+        }
       },
       "current": {
         "comparable": true,
@@ -140,11 +280,11 @@
         "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
       },
       "performance": {
-        "status": "pending",
-        "incomeNominalStable": null,
-        "returnPct": null
+        "status": "comparable",
+        "incomeNominalStable": 0.05472382986,
+        "returnPct": 0.54733011
       },
-      "ownerTargetApproximatelyTen": null
+      "ownerTargetApproximatelyTen": true
     },
     {
       "id": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
@@ -275,8 +415,26 @@
       "chain": "ethereum",
       "mode": "nested-erc4626",
       "entry": {
-        "status": "error",
-        "error": "server response 403 Forbidden"
+        "txHash": "0xd71c52adfbe3e4a72be1c916ce274088673aa45f9b9b546d78813b4184829911",
+        "block": 25664134,
+        "timestamp": "2026-08-02T02:13:23.000Z",
+        "principalNominalStable": 10,
+        "principalSymbol": "BOLD",
+        "confidence": "high",
+        "evidence": {
+          "type": "ysyBOLD-Deposit-terminalized",
+          "contract": "0x23346B04a7f55b8760E5860AA5A77383D63491cD",
+          "sender": "0xE7099092533A3FB693Bb123cD96B8e53b4d83C58",
+          "owner": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "assetsRaw": "10000000000000000000",
+          "sharesRaw": "9208468548860078928",
+          "logIndex": 133,
+          "terminalRaw": "10000000000000000000"
+        },
+        "receiptDiagnostics": {
+          "transferCount": 10,
+          "depositEventCount": 3
+        }
       },
       "current": {
         "comparable": true,
@@ -287,11 +445,11 @@
         "basis": "canonical redeemable nominal stable units; market/depeg price excluded"
       },
       "performance": {
-        "status": "pending",
-        "incomeNominalStable": null,
-        "returnPct": null
+        "status": "comparable",
+        "incomeNominalStable": 0.01602109645,
+        "returnPct": 0.16021096
       },
-      "ownerTargetApproximatelyTen": null
+      "ownerTargetApproximatelyTen": true
     },
     {
       "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
@@ -300,7 +458,21 @@
       "mode": "lido-deposit-queue",
       "entry": {
         "status": "error",
-        "error": "server response 403 Forbidden"
+        "error": "all providers failed",
+        "attempts": [
+          {
+            "url": "https://ethereum-rpc.publicnode.com",
+            "error": "server response 403 Forbidden"
+          },
+          {
+            "url": "https://eth.llamarpc.com",
+            "error": "server response 403 Forbidden"
+          },
+          {
+            "url": "https://eth.blockscout.com/api/eth-rpc",
+            "error": "Lido deposit amount unresolved"
+          }
+        ]
       },
       "current": {
         "comparable": false,
@@ -324,18 +496,19 @@
         "txHash": "0x78c58724e88d3cf46a7a528711f02fd06a4851820502adc615a19938f3d1e4f0",
         "block": 25516919,
         "timestamp": "2026-07-12T13:44:23.000Z",
-        "principalNominalStable": 21.208427062113,
+        "principalNominalStable": 10.000024744825,
         "principalSymbol": "BOLD",
         "confidence": "high",
         "evidence": {
-          "type": "Liquity-StabilityPool-transfer",
+          "type": "Liquity-user-to-StabilityPool-transfer",
           "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
           "symbol": "BOLD",
           "decimals": 18,
-          "from": "0x0000000000000000000000000000000000000000",
+          "from": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
           "to": "0x5721cbbd64fc7Ae3Ef44A0A3F9a790A9264Cf9BF",
-          "amount": 21.20842706211275,
-          "logIndex": 128
+          "raw": "10000024744824552135",
+          "amount": 10.000024744824552,
+          "logIndex": 132
         },
         "receiptDiagnostics": {
           "transferCount": 3,
@@ -352,10 +525,10 @@
       },
       "performance": {
         "status": "comparable",
-        "incomeNominalStable": -11.170608220743,
-        "returnPct": -52.67061149
+        "incomeNominalStable": 0.037794096545,
+        "returnPct": 0.37794003
       },
-      "ownerTargetApproximatelyTen": false
+      "ownerTargetApproximatelyTen": true
     },
     {
       "id": "fraxtal:0xfc00000000000000000000000000000000000008",
@@ -376,6 +549,7 @@
           "decimals": 18,
           "from": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
           "to": "0xBFc4D34Db83553725eC6c768da71D2D9c1456B55",
+          "raw": "10000056601545325637",
           "amount": 10.000056601545326,
           "logIndex": 0
         },
@@ -402,32 +576,11 @@
   ],
   "unresolved": [
     {
-      "id": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "protocol": "Aave v3",
-      "entryResolved": false,
-      "currentComparable": true,
-      "reason": "server response 403 Forbidden"
-    },
-    {
-      "id": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
-      "protocol": "f(x) Protocol",
-      "entryResolved": false,
-      "currentComparable": true,
-      "reason": "fxSAVE Deposit event not found"
-    },
-    {
-      "id": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
-      "protocol": "Yearn V3",
-      "entryResolved": false,
-      "currentComparable": true,
-      "reason": "server response 403 Forbidden"
-    },
-    {
       "id": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
       "protocol": "Lido Earn",
       "entryResolved": false,
       "currentComparable": false,
-      "reason": "server response 403 Forbidden"
+      "reason": "all providers failed"
     }
   ],
   "integrationContract": {
