@@ -1,4 +1,4 @@
-# THE HOLDING · MONETRA COMPANY #008 STABLE WRAPPER RESOLVER v1.1
+# THE HOLDING · MONETRA COMPANY #008 STABLE FINAL-THREE RESOLVER v1.2
 name: "Resolve Company #008"
 
 on:
@@ -14,7 +14,7 @@ concurrency:
 jobs:
   resolve:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -27,22 +27,29 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Verify resolver source/workflow sync
+      - name: Verify resolver source/input sync
         run: |
-          grep -F "const VERSION = '1.1-company-008-stable-wrapper-reconciliation';" onboarding/company-008-resolve.mjs
-          test -s companies/company-008-discovery.json
-          echo "Workflow/source sync OK: Monetra Company #008 Stable Wrapper resolver v1.1"
+          set -euo pipefail
+          grep -F "const VERSION = '1.2-company-008-stable-final-three-reconciliation';" onboarding/company-008-resolve.mjs
+          test -s companies/company-008-resolve.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const d = JSON.parse(fs.readFileSync('companies/company-008-resolve.json','utf8'));
+          if (d.version !== '1.1-company-008-stable-wrapper-reconciliation') throw new Error('v1.2 requires fresh v1.1 resolver input, got ' + d.version);
+          if (d.company?.registry !== '008' || d.company?.name !== 'Monetra.eth') throw new Error('Company #008 identity mismatch');
+          if (d.company?.founding?.date !== '2026-05-27') throw new Error('founding regression');
+          if ((d.stableCapital?.positions || []).length < 7) throw new Error('expected solved v1.1 stable positions');
+          console.log('Fresh v1.1 input verified.');
+          NODE
 
       - name: Install resolver dependencies
         run: npm install --no-save ethers@6
 
-      - name: Resolve Monetra Stable Capital wrapper layer
+      - name: Resolve final Monetra Stable Capital delta
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
-          COMPANY_008_DISCOVERY_INPUT: companies/company-008-discovery.json
+          COMPANY_008_RESOLVE_INPUT: companies/company-008-resolve.json
           COMPANY_008_RESOLVE_OUTPUT: companies/company-008-resolve.json
         run: node onboarding/company-008-resolve.mjs
 
@@ -51,30 +58,26 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const p = 'companies/company-008-resolve.json';
-          if (!fs.existsSync(p)) throw new Error('Monetra resolver JSON missing');
           const d = JSON.parse(fs.readFileSync(p, 'utf8'));
-          if (d.version !== '1.1-company-008-stable-wrapper-reconciliation') {
-            throw new Error('unexpected resolver version: ' + d.version);
-          }
-          if (d.company?.registry !== '008') throw new Error('registry mismatch');
-          if (d.company?.name !== 'Monetra.eth') throw new Error('company mismatch');
-          if ((d.company?.wallet || '').toLowerCase() !== '0x888d39aee2aec979c81f125ea94bb3ceb60f6bbb') {
-            throw new Error('wallet mismatch');
-          }
+          if (d.version !== '1.2-company-008-stable-final-three-reconciliation') throw new Error('unexpected version: ' + d.version);
+          if (d.company?.registry !== '008' || d.company?.name !== 'Monetra.eth') throw new Error('identity mismatch');
           if (d.company?.founding?.date !== '2026-05-27') throw new Error('founding regression');
-          if (!d.preservation?.foundingEvidencePreserved) throw new Error('founding preservation guard failed');
-          if (!(d.preservation?.priorAaveStablePositionsPreserved >= 1)) throw new Error('Aave preservation guard failed');
-          if (!Array.isArray(d.stableCapital?.positions)) throw new Error('stable positions missing');
-          if (!Array.isArray(d.nonStableDiagnostics)) throw new Error('non-stable diagnostics missing');
-          if (!d.ownerHintCoverage?.checks) throw new Error('owner hint coverage missing');
-          if (!d.parserFix?.historicalTransferAddressFixApplied) throw new Error('address_hash parser fix missing');
-          console.log('Monetra resolver structurally valid.');
-          console.log('Stable summary:', d.stableCapital.summary);
-          console.log('Hint checks:', d.ownerHintCoverage.checks);
-          console.log('Missing hints:', d.ownerHintCoverage.missingHints);
-          console.log('Non-stable diagnostics:', d.nonStableDiagnostics.map(x => [x.protocol, x.symbol, x.valueUsd]));
-          console.log('Unresolved:', d.stableCapital.unresolved.map(x => [x.ownerHintMatched, x.symbol, x.approxUsd, x.reason]));
-          console.log('Book ready:', d.productionReadiness.stableCapitalBookReady);
+          if (d.preservation?.priorResolverVersion !== '1.1-company-008-stable-wrapper-reconciliation') throw new Error('prior-version preservation failed');
+          if (!(d.preservation?.priorStablePositionCount >= 7)) throw new Error('prior stable positions not preserved');
+          if (!d.ownerHintCoverage?.checks?.['Yearn V3']) throw new Error('Yearn ysyBOLD classification missing');
+          if (!d.ownerHintCoverage?.checks?.['Lido']) throw new Error('Lido earnUSD missing');
+          if (!d.ownerHintCoverage?.checks?.['Frax Finance']) throw new Error('Frax sfrxUSD missing');
+          if (!d.ownerHintCoverage?.checks?.['Liquity V2']) throw new Error('Liquity V2 direct SP position missing');
+          if ((d.ownerHintCoverage?.aaveEvidenceCount || 0) < 2) throw new Error('Aave two-position regression');
+          const total = Number(d.stableCapital?.summary?.totalUsd);
+          if (!(total > 85 && total < 120)) throw new Error('Stable Capital total outside broad evidence band: ' + total);
+          if (!Array.isArray(d.stableCapital?.accruedRewardsCandidates)) throw new Error('Liquity reward-boundary candidates missing');
+          console.log('Monetra v1.2 structurally valid.');
+          console.log('Stable Capital:', d.stableCapital.summary);
+          console.log('Delta:', d.stableCapital.reconciliation);
+          console.log('Hints:', d.ownerHintCoverage);
+          console.log('Liquity:', d.resolutionV12.liquity.branches);
+          console.log('Readiness:', d.productionReadiness);
           NODE
 
       - name: Publish resolver JSON to main
@@ -82,47 +85,24 @@ jobs:
         run: |
           set -euo pipefail
           FILE="companies/company-008-resolve.json"
-          test -s "$FILE" || {
-            echo "ERROR: resolver output missing or empty"
-            exit 1
-          }
-
+          test -s "$FILE"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f "$FILE"
-
           if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Resolve Monetra Company #008 Stable Capital wrappers"
+            git commit -m "Resolve Monetra Company #008 final Stable Capital delta"
           else
             echo "Resolver output unchanged."
           fi
-
           for attempt in 1 2 3; do
             git fetch origin main
-            if git rebase origin/main && git push origin HEAD:main; then
-              break
-            fi
+            if git rebase origin/main && git push origin HEAD:main; then break; fi
             git rebase --abort || true
-            if [ "$attempt" -eq 3 ]; then
-              echo "ERROR: failed to publish resolver after retries"
-              exit 1
-            fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
             sleep $((attempt * 2))
           done
-
           git fetch origin main
-          git cat-file -e "origin/main:$FILE" || {
-            echo "ERROR: resolver absent from origin/main"
-            exit 1
-          }
-
-          REMOTE_VERSION="$(
-            git show "origin/main:$FILE" |
-            node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))"
-          )"
-          test "$REMOTE_VERSION" = "1.1-company-008-stable-wrapper-reconciliation" || {
-            echo "ERROR: remote resolver version mismatch: $REMOTE_VERSION"
-            exit 1
-          }
-          echo "Verified on origin/main: $FILE"
-          echo "Remote resolver version: $REMOTE_VERSION"
+          git cat-file -e "origin/main:$FILE"
+          REMOTE_VERSION="$(git show "origin/main:$FILE" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+          test "$REMOTE_VERSION" = "1.2-company-008-stable-final-three-reconciliation" || { echo "remote version mismatch: $REMOTE_VERSION"; exit 1; }
+          echo "Verified on origin/main: $FILE @ $REMOTE_VERSION"
