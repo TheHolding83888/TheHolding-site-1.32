@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · Stable Companies Index v1.19 · Monetra Passport · separate stable universe · recurring Stable Capital data -->
+<!-- companies.html · Passport UX v1.20 · close controls · compact vertical mobile · separate Stable Companies Index -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
 <head>
@@ -77,8 +77,8 @@
     {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      "name": "The Holding Index constituents",
-      "description": "Companies currently included in The Holding Index registry.",
+      "name": "The Holding Companies Registry",
+      "description": "Registered Personal Onchain Companies across the general and Stable Capital measurement universes.",
       "numberOfItems": 9,
       "itemListElement": [
         { "@type": "ListItem", "position": 1, "name": "05081966.eth", "url": "https://theholding.ai/05081966" },
@@ -3317,6 +3317,201 @@
           .sc-tip{left:0;transform:translate(0,6px);width:min(250px,75vw)}.sc-help-wrap:hover .sc-tip,.sc-help-wrap:focus-within .sc-tip,.sc-help-wrap.open .sc-tip{transform:translate(0,0)}
         }
 
+
+        /* ═══════════════════════════════════════════════════════════════
+           Passport UX v1.20 · close controls + compact vertical mobile
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* General Company Passports: close is available at the top and bottom. */
+        .ipx-inner { position: relative; }
+        .ipx-passport-close-top{
+            position:absolute;z-index:18;top:.6rem;right:0;
+            width:34px;height:34px;border:1px solid var(--line-strong);border-radius:50%;
+            background:rgba(252,252,250,.94);color:var(--text-3);
+            font:400 1.18rem/1 'Space Grotesk',sans-serif;cursor:pointer;
+            display:grid;place-items:center;box-shadow:0 8px 24px -18px rgba(15,23,42,.5);
+            transition:color .18s ease,border-color .18s ease,background .18s ease,transform .18s ease;
+        }
+        .ipx-passport-close-top:hover,.ipx-passport-close-top:focus-visible{
+            color:var(--gold);border-color:var(--gold-line);background:var(--gold-soft);outline:none;transform:translateY(-1px)
+        }
+
+        /* Stable Passport is a true disclosure now instead of permanently occupying the page. */
+        .stable-passport{
+            max-height:0;opacity:0;transform:translateY(-8px);margin-top:0!important;
+            overflow:hidden!important;pointer-events:none;border-color:transparent!important;box-shadow:none!important;
+            transition:max-height .58s cubic-bezier(.22,1,.36,1),opacity .22s ease,transform .32s ease,margin-top .32s ease,border-color .2s ease,box-shadow .2s ease;
+        }
+        .stable-passport.is-open{
+            max-height:12000px;opacity:1;transform:none;margin-top:1.45rem!important;
+            overflow:visible!important;pointer-events:auto;border-color:rgba(10,124,78,.15)!important;
+            box-shadow:0 30px 80px -58px rgba(10,50,33,.48)!important;
+        }
+        .scp-hero{position:relative;padding-right:4.2rem}
+        .scp-close{
+            position:absolute;z-index:20;top:.86rem;right:.9rem;width:34px;height:34px;
+            border:1px solid rgba(10,124,78,.17);border-radius:50%;background:rgba(255,255,255,.86);
+            color:var(--text-3);font:400 1.15rem/1 'Space Grotesk',sans-serif;cursor:pointer;
+            display:grid;place-items:center;transition:.18s ease
+        }
+        .scp-close:hover,.scp-close:focus-visible{color:var(--green);border-color:rgba(10,124,78,.34);background:rgba(10,124,78,.05);outline:none}
+        .scp-foot-actions{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;justify-content:flex-end}
+        .scp-close-bottom{
+            border:1px solid rgba(10,124,78,.16);border-radius:999px;padding:.48rem .72rem;
+            background:rgba(10,124,78,.025);color:var(--green);
+            font:650 .55rem/1 'Space Grotesk',sans-serif;cursor:pointer
+        }
+        .sc-board-action{font-family:'Space Grotesk',sans-serif;cursor:pointer}
+        .sc-board-metric small{display:none}
+        .sc-board-metric>b,.sc-board-metric>span{font-variant-numeric:tabular-nums}
+
+        /* Mobile: both Passport families become vertical-only and materially shorter. */
+        @media (max-width:760.98px){
+            /* Hard no-horizontal-scroll boundary inside Passports. */
+            .ib-passport,.ipx-inner,.ipx-live-ledger,.ipx-grid,.ipx-perf,.ipx-composite,
+            .stable-passport,.scp-grid,.scp-side,.scp-panel,.scp-table-wrap,.scp-table{
+                width:100%;max-width:100%;min-width:0!important;overflow-x:hidden!important;
+            }
+
+            /* General Passport compaction. */
+            .ipx-passport-close-top{top:.26rem;right:.1rem;width:32px;height:32px;background:rgba(252,252,250,.98)}
+            .ipx-inner{padding:.18rem 0 .75rem}
+            .ipx-economic{margin:.12rem 0 .72rem;padding:.82rem 0}
+            .ipx-economic-item{padding:0 .35rem}
+            .ipx-economic-label{font-size:.41rem;letter-spacing:.075em;margin-bottom:.3rem;min-height:2.2em}
+            .ipx-economic-value{font-size:1.24rem}
+            .ipx-live-ledger{gap:.38rem;margin:0 0 .65rem}
+            .ipx-grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:.7rem}
+            .ipx-field{display:block;min-width:0;padding:.46rem 0;gap:0}
+            .ipx-label{display:block;font-size:.58rem;line-height:1.25;margin-bottom:.16rem;overflow-wrap:anywhere}
+            .ipx-value{display:block;text-align:left;font-size:.72rem;line-height:1.3;overflow-wrap:anywhere;word-break:break-word}
+            .ipx-apr-field{grid-column:1/-1}
+            .ipx-apr-pair{justify-content:flex-start;flex-wrap:wrap}
+            .ipx-perf{margin-top:.68rem;padding-top:.58rem}
+            .ipx-composite{grid-template-columns:1fr;gap:.35rem;margin-top:.72rem;padding-top:.62rem}
+            .ipx-c-head{margin-bottom:.62rem}
+            .ipx-factor{margin-bottom:.62rem}
+            .ipx-f-top{font-size:.68rem;margin-bottom:.25rem}
+            .ipx-f-note{font-size:.56rem;margin-top:.24rem}
+            .ipx-c-sig{display:none}
+            .ipx-link{margin-top:.72rem}
+            .ipx-passport-close{margin-top:.7rem;padding:.78rem .7rem}
+            .ib-item.open .ib-passport{max-height:4800px}
+
+            /* Stable Index board becomes a native vertical card — no side swipe. */
+            .sc-board{overflow:visible}
+            .sc-board-head{display:none}
+            .sc-board-row{
+                min-width:0!important;display:grid;
+                grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;
+                grid-template-areas:
+                  "company company action"
+                  "capital apy strategies"
+                  "embedded claimable claimable";
+                gap:.5rem .65rem;padding:.82rem;border-top:0
+            }
+            .sc-rank{display:none}
+            .sc-company-cell{grid-area:company;min-width:0}
+            .sc-board-action{grid-area:action;align-self:start;justify-self:end;padding:.4rem .6rem}
+            .sc-capital-cell{grid-area:capital}
+            .sc-apy-cell{grid-area:apy}
+            .sc-embedded-cell{grid-area:embedded}
+            .sc-claimable-cell{grid-area:claimable}
+            .sc-strategy-cell{grid-area:strategies}
+            .sc-board-metric{display:block!important;min-width:0}
+            .sc-board-metric small{
+                display:block;color:var(--text-3);font-size:.41rem;line-height:1.15;
+                letter-spacing:.075em;text-transform:uppercase;margin-bottom:.12rem
+            }
+            .sc-board-metric b,.sc-board-metric>span{display:block;font-size:.62rem;line-height:1.25}
+            .sc-board-row .sc-company-meta{font-size:.47rem}
+
+            /* Stable Passport density. */
+            .stable-passport.is-open{max-height:7200px;margin-top:.9rem!important;border-radius:18px}
+            .scp-hero{padding:.9rem 3.15rem .82rem .86rem;border-radius:18px 18px 0 0;gap:.65rem}
+            .scp-close{top:.62rem;right:.62rem;width:31px;height:31px}
+            .scp-kicker{font-size:.43rem;margin-bottom:.3rem}
+            .scp-name-row{gap:.5rem}.scp-name-row h3{font-size:1.95rem}.scp-live{font-size:.43rem}
+            .scp-hero p{
+                font-size:.61rem;line-height:1.48;margin-top:.4rem;
+                display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden
+            }
+            .scp-identity{
+                display:flex;align-items:center;justify-content:space-between;text-align:left;
+                border-left:0;border-top:1px solid var(--line);padding:.52rem 0 0;margin-top:.1rem
+            }
+            .scp-identity span{font-size:.42rem}.scp-identity b{font-size:1.45rem;margin:0}
+
+            .scp-headline{
+                grid-template-columns:repeat(3,minmax(0,1fr));padding:.45rem .5rem
+            }
+            .scp-headline>div{
+                padding:.5rem .38rem;border-left:1px solid var(--line);border-top:1px solid var(--line)
+            }
+            .scp-headline>div:nth-child(3n+1){border-left:0}
+            .scp-headline>div:nth-child(-n+3){border-top:0}
+            .scp-headline>div:nth-child(4){border-left:0}
+            .scp-headline>div>span{font-size:.39rem;letter-spacing:.065em;min-height:2.05em}
+            .scp-headline>div>b{font-size:1.12rem;margin-top:.18rem}
+
+            .scp-quality{grid-template-columns:repeat(2,minmax(0,1fr));padding:.42rem .5rem}
+            .scp-quality>span{padding:.36rem .4rem;grid-template-columns:7px auto 1fr}
+            .scp-quality b{font-size:.53rem}.scp-quality small{font-size:.43rem;line-height:1.25}
+
+            .scp-grid{grid-template-columns:1fr;gap:.5rem;padding:.52rem}
+            .scp-side{gap:.5rem}
+            .scp-panel{padding:.68rem;border-radius:13px}
+            .scp-panel-head{margin-bottom:.48rem}
+            .scp-panel-k{font-size:.4rem}.scp-panel h4{font-size:1.13rem}
+            .scp-panel-head>span{font-size:.46rem}
+
+            /* Ten strategy rows are stacked, dense and fully vertical. */
+            .scp-table-wrap{overflow:visible!important}
+            .scp-table{min-width:0!important}
+            .scp-tr.scp-th{display:none}
+            .scp-tr.scp-row{
+                display:grid;min-width:0!important;
+                grid-template-columns:minmax(0,1fr) auto auto;
+                grid-template-areas:
+                  "strategy apy value"
+                  "strategy chain mode";
+                gap:.18rem .48rem;padding:.52rem .12rem
+            }
+            .scp-strategy{grid-area:strategy;min-width:0}
+            .scp-strategy strong{font-size:.57rem;overflow-wrap:anywhere}
+            .scp-strategy small{font-size:.43rem;line-height:1.25}
+            .scp-chain{grid-area:chain;font-size:.44rem!important;text-align:right}
+            .scp-value{grid-area:value;font-size:.54rem!important;text-align:right!important;white-space:nowrap}
+            .scp-apy{grid-area:apy;font-size:.56rem!important;text-align:right!important;white-space:nowrap}
+            .scp-mode{grid-area:mode;font-size:.42rem!important;text-align:right;max-width:110px;line-height:1.2}
+            .scp-small-note{font-size:.45rem;margin-top:.45rem;padding-top:.42rem}
+
+            .scp-income-grid>div{padding:.5rem}
+            .scp-income-grid span{font-size:.4rem}.scp-income-grid b{font-size:.92rem}
+            .scp-price-effect{padding:.52rem .08rem;margin-top:.4rem}
+            .scp-rewards{padding-top:.48rem}.scp-reward-row{padding:.42rem .45rem}
+            .scp-allocation{gap:.34rem}.scp-alloc-row span{font-size:.5rem}
+            .scp-alloc-title.second{margin-top:.62rem}
+
+            /* Help popovers already explain the accounting. Hide the four large
+               repeated explanation cards on phones to keep the Passport concise. */
+            .scp-explain{display:none}
+
+            .scp-foot{padding:.68rem .76rem;border-radius:0 0 18px 18px;gap:.55rem}
+            .scp-foot b,.scp-foot span{font-size:.5rem}.scp-foot small{font-size:.43rem}
+            .scp-foot-actions{width:100%;justify-content:space-between;gap:.45rem}
+            .scp-foot-actions a,.scp-close-bottom{font-size:.5rem}
+            .scp-close-bottom{padding:.46rem .62rem}
+        }
+
+        @media (max-width:360px){
+            .ipx-grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:.48rem}
+            .ipx-label{font-size:.54rem}.ipx-value{font-size:.68rem}
+            .scp-headline>div>span{font-size:.365rem}.scp-headline>div>b{font-size:1rem}
+            .sc-board-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"company action" "capital apy" "embedded claimable" "strategies strategies"}
+            .sc-strategy-cell{max-width:100%}
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -3852,8 +4047,9 @@
         </div>
 
         <!-- Monetra · Stable Company Passport -->
-        <article class="stable-passport reveal" id="stablePassportMonetra">
+        <article class="stable-passport reveal" id="stablePassportMonetra" aria-hidden="true">
             <div class="scp-hero">
+                <button class="scp-close scp-close-top" type="button" data-stable-passport-close aria-label="Close Passport" title="Close Passport">×</button>
                 <div>
                     <div class="scp-kicker" data-i18n="stable.passport.kicker">Company Passport · Registry 008 · Stable Capital</div>
                     <div class="scp-name-row">
@@ -4000,6 +4196,7 @@
                 </div>
                 <div class="scp-foot-actions">
                     <a href="https://theholding.ai/monetra/" data-i18n="stable.passport.open">Open Monetra →</a>
+                    <button class="scp-close-bottom" type="button" data-stable-passport-close data-i18n="stable.passport.close">Close Passport ↑</button>
                 </div>
             </div>
         </article>
@@ -4322,7 +4519,7 @@ let IDX_MODE = 'composite';   // 'composite' (The Holding methodology) | 'tvl' (
    JSON file is unavailable, the page continues to work exactly as before. */
 const PRODUCTIVITY_DATA_URL = './productivity-data.json';
 const STABLE_INDEX_DATA_URL = './stable-index-data.json';
-const STABLE_INDEX_UI_VERSION = '1.19-separate-stable-companies-index';
+const STABLE_INDEX_UI_VERSION = '1.20-passport-close-compact-mobile';
 let STABLE_INDEX_SNAPSHOT = null;
 
 async function loadStableIndexSnapshot() {
@@ -4426,13 +4623,13 @@ function renderStableCompanies(lang) {
             const eText = stableEmbeddedDisplay(e.sinceTrackingUsd, e.status, lang);
             return '<div class="sc-board-row">'
                 + '<span class="sc-rank">' + String(i+1).padStart(2,'0') + '</span>'
-                + '<span><strong>' + x.name + '</strong><small class="sc-company-meta">' + (lang==='ru'?'Реестр ':'Registry ') + x.registry + ' · Stable Capital</small></span>'
-                + '<b>' + stableMoney(x.stableCapitalUsd, lang, 2) + '</b>'
-                + '<b class="sc-green">' + stablePct(x.displayReferenceApyPct, 2) + '</b>'
-                + '<span>' + eText + '</span>'
-                + '<span>' + stableMoney(x.accruedClaimableUsd || 0, lang, 4) + '</span>'
-                + '<span>' + x.strategyCount + '</span>'
-                + '<a class="sc-board-action" href="#stablePassportMonetra">' + (lang==='ru'?'Паспорт ↓':'Passport ↓') + '</a>'
+                + '<span class="sc-company-cell"><strong>' + x.name + '</strong><small class="sc-company-meta">' + (lang==='ru'?'Реестр ':'Registry ') + x.registry + ' · Stable Capital</small></span>'
+                + '<span class="sc-board-metric sc-capital-cell"><small>' + (lang==='ru'?'Stable Capital':'Stable Capital') + '</small><b>' + stableMoney(x.stableCapitalUsd, lang, 2) + '</b></span>'
+                + '<span class="sc-board-metric sc-apy-cell"><small>Reference APY</small><b class="sc-green">' + stablePct(x.displayReferenceApyPct, 2) + '</b></span>'
+                + '<span class="sc-board-metric sc-embedded-cell"><small>Embedded Yield</small><span>' + eText + '</span></span>'
+                + '<span class="sc-board-metric sc-claimable-cell"><small>Claimable</small><span>' + stableMoney(x.accruedClaimableUsd || 0, lang, 4) + '</span></span>'
+                + '<span class="sc-board-metric sc-strategy-cell"><small>' + (lang==='ru'?'Стратегии':'Strategies') + '</small><span>' + x.strategyCount + '</span></span>'
+                + '<button class="sc-board-action" type="button" data-stable-passport-open aria-controls="stablePassportMonetra" aria-expanded="false">' + (lang==='ru'?'Паспорт ↓':'Passport ↓') + '</button>'
                 + '</div>';
         }).join('');
     }
@@ -4457,7 +4654,7 @@ function renderStableCompanies(lang) {
             const proto = p.protocolFamily || p.protocol || 'Protocol';
             const asset = p.asset || p.wrapperSymbol || p.underlyingSymbol || 'Stable';
             return '<div class="scp-tr scp-row">'
-                + '<span><strong>' + proto + ' · ' + asset + '</strong><small>' + (p.positionType || '') + '</small></span>'
+                + '<span class="scp-strategy"><strong>' + proto + ' · ' + asset + '</strong><small>' + (p.positionType || '') + '</small></span>'
                 + '<span class="scp-chain">' + (p.chain || '—') + '</span>'
                 + '<span class="scp-value">' + stableMoney(p.valueUsd, lang, 2) + '</span>'
                 + '<span class="scp-apy">' + stablePct(p.referenceApyPct, 2) + '</span>'
@@ -4502,6 +4699,8 @@ function renderStableCompanies(lang) {
     };
     renderAllocation('scpChainAllocation', c.allocation?.byChain, false);
     renderAllocation('scpTypeAllocation', c.allocation?.byStrategyType, true);
+    const sp = document.getElementById('stablePassportMonetra');
+    if (sp && window.stablePassportSet) window.stablePassportSet(sp.classList.contains('is-open'), false);
 }
 window.renderStableCompanies = renderStableCompanies;
 
@@ -5596,6 +5795,7 @@ function renderIndex(lang) {
                 +   '<span class="ib-chev">' + chev + '</span>'
                 + '</div>'
                 + '<div class="ib-passport"><div class="ipx-inner">'
+                +   '<button class="ipx-passport-close-top" type="button" aria-label="' + L.closePassport + '" title="' + L.closePassport + '">×</button>'
                 +   '<div class="ipx-economic">'
                 +     econ(L.companyTVL, c.val > 0 ? money(c.val) : 'Live', 'gold')
                 +     econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : '—')
@@ -5932,11 +6132,12 @@ function renderIndex(lang) {
                 item.classList.add('passport-closing-in-place');
                 window.setTimeout(finish, 190);
             };
-            const passportClose = item.querySelector('.ipx-passport-close');
-            if (passportClose) passportClose.addEventListener('click', ev => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                closePassportInPlace();
+            item.querySelectorAll('.ipx-passport-close, .ipx-passport-close-top').forEach(passportClose => {
+                passportClose.addEventListener('click', ev => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    closePassportInPlace();
+                });
             });
             rowEl.addEventListener('click', toggle);
             rowEl.addEventListener('keydown', ev => {
@@ -6661,6 +6862,45 @@ function renderFramework(lang) {
   infos.forEach(btn=>btn.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();const w=btn.closest('.filter-taxonomy');const next=!w.classList.contains('open');document.querySelectorAll('.filter-taxonomy.open').forEach(x=>x.classList.remove('open'));w.classList.toggle('open',next);btn.setAttribute('aria-expanded',next?'true':'false');}));
   document.addEventListener('click',()=>document.querySelectorAll('.filter-taxonomy.open').forEach(x=>{x.classList.remove('open');const b=x.querySelector('.filter-info');if(b)b.setAttribute('aria-expanded','false');}));
 })();
+/* Stable Company Passport · open/close without horizontal movement */
+(function(){
+  function stablePassportSet(open, scroll = true) {
+    const passport = document.getElementById('stablePassportMonetra');
+    const board = document.getElementById('stableCompanyBoard');
+    if (!passport) return;
+    passport.classList.toggle('is-open', open);
+    passport.setAttribute('aria-hidden', open ? 'false' : 'true');
+    document.querySelectorAll('[data-stable-passport-open]').forEach(btn => {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      const lang = (document.documentElement.lang || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
+      btn.textContent = open ? (lang === 'ru' ? 'Открыт ↑' : 'Open ↑') : (lang === 'ru' ? 'Паспорт ↓' : 'Passport ↓');
+    });
+    if (!scroll) return;
+    const target = open ? passport : (board || document.getElementById('stable-index'));
+    window.setTimeout(() => {
+      if (!target) return;
+      const offset = window.innerWidth <= 760 ? 76 : 96;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }, open ? 90 : 120);
+  }
+  window.stablePassportSet = stablePassportSet;
+  document.addEventListener('click', ev => {
+    const opener = ev.target.closest('[data-stable-passport-open]');
+    if (opener) {
+      ev.preventDefault();
+      stablePassportSet(true, true);
+      return;
+    }
+    const closer = ev.target.closest('[data-stable-passport-close]');
+    if (closer) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      stablePassportSet(false, true);
+    }
+  });
+})();
+
 /* Stable metric help · hover on desktop, tap on mobile */
 (function(){
   document.addEventListener('click', ev => {
@@ -6770,6 +7010,7 @@ function renderFramework(lang) {
             'stable.passport.tracking': 'Embedded Yield tracking began',
             'stable.passport.trackingNote': 'No pre-tracking income is reconstructed from current APY.',
             'stable.passport.open': 'Open Monetra →',
+            'stable.passport.close': 'Close Passport ↑',
             'stable.table.strategy': 'Strategy',
             'stable.table.chain': 'Chain',
             'stable.table.capital': 'Capital',
@@ -6988,6 +7229,7 @@ function renderFramework(lang) {
             'stable.passport.tracking': 'Отслеживание Embedded Yield началось',
             'stable.passport.trackingNote': 'Доход до начала наблюдений не восстанавливается из текущего APY.',
             'stable.passport.open': 'Открыть Monetra →',
+            'stable.passport.close': 'Закрыть паспорт ↑',
             'stable.table.strategy': 'Стратегия',
             'stable.table.chain': 'Сеть',
             'stable.table.capital': 'Капитал',
