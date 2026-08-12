@@ -1,0 +1,70 @@
+name: "Resolve Company #009"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resolve-company-009
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify resolver source/workflow sync
+        run: |
+          grep -F "const VERSION = '1.5-company-009-owner-foundation-weth-accounting-closure';" onboarding/company-009-resolve.mjs
+          echo "Resolver/source sync OK: Company #009 v1.5 accounting closure"
+      - name: Resolve Company #009 final accounting boundary
+        env:
+          COMPANY_009_RESOLVE_OUTPUT: companies/company-009-resolve.json
+        run: node onboarding/company-009-resolve.mjs
+      - name: Validate resolver JSON
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='companies/company-009-resolve.json';
+          if(!fs.existsSync(p)) throw new Error('resolver JSON missing');
+          const d=JSON.parse(fs.readFileSync(p,'utf8'));
+          if(d.version!=='1.5-company-009-owner-foundation-weth-accounting-closure') throw new Error('version mismatch: '+d.version);
+          if(d.company?.registry!=='009'||d.company?.name!=='1milliondollar.eth') throw new Error('identity mismatch');
+          if(Number(d.finalCandidateTotals?.btc)!==0.07264572) throw new Error('BTC mismatch');
+          if(Math.abs(Number(d.finalCandidateTotals?.eth)-0.167026130614)>1e-12) throw new Error('ETH mismatch');
+          if(d.resolution?.allResolved!==true||d.finalCandidateTotals?.companyBookQuantityReady!==true) throw new Error('closure not complete');
+          if(Number(d.accountingClosure?.ownerObservedBaseWeth)!==0.1606||d.accountingClosure?.onchainReproduced!==false) throw new Error('owner fallback provenance mismatch');
+          console.log('Validated Company #009 v1.5 final accounting closure');
+          NODE
+      - name: Publish resolver JSON to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="companies/company-009-resolve.json"
+          test -s "$FILE" || { echo "ERROR: resolver output missing"; exit 1; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$FILE"
+          if ! git diff --cached --quiet -- "$FILE"; then git commit -m "Close Company #009 WETH accounting boundary"; else echo "Resolver output unchanged."; fi
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then break; fi
+            git rebase --abort || true
+            if [ "$attempt" -eq 3 ]; then echo "ERROR: failed to publish resolver"; exit 1; fi
+            sleep $((attempt * 2))
+          done
+          git fetch origin main
+          git cat-file -e "origin/main:$FILE" || { echo "ERROR: resolver absent from origin/main"; exit 1; }
+          REMOTE_VERSION="$(git show "origin/main:$FILE" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+          test "$REMOTE_VERSION" = "1.5-company-009-owner-foundation-weth-accounting-closure" || { echo "ERROR: remote version mismatch: $REMOTE_VERSION"; exit 1; }
+          echo "Verified on origin/main: $FILE"
