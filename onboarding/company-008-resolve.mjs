@@ -8,8 +8,12 @@ import {
   id
 } from 'ethers';
 
-const VERSION = '1.0-company-008-targeted-unresolved';
-const WALLET = getAddress('0xe4b9c9ced406baffe406e63f83d39daaef150596');
+function canonicalAddress(value) {
+  return getAddress(String(value).toLowerCase());
+}
+
+const VERSION = '1.0.1-company-008-address-normalization';
+const WALLET = canonicalAddress('0xe4b9c9ced406baffe406e63f83d39daaef150596');
 const OUTPUT = process.env.COMPANY_008_RESOLVE_OUTPUT
   || path.resolve('companies/company-008-resolve.json');
 
@@ -36,21 +40,21 @@ const RPC = {
 const TARGETS = {
   avalancheBtcB: {
     chain: 'avalanche',
-    underlying: getAddress('0x152b9d0FdC40C096757F570A51E494bD4B943E50'),
+    underlying: canonicalAddress('0x152b9d0fdc40c096757f570a51e494bd4b943e50'),
     expectedApprox: 0.0435,
     // Snowtrace labels this current market as BENQI qiBTC.b.
-    qiToken: getAddress('0x89a415b3D20098E6A6C8f7a59001C67BD3129821')
+    qiToken: canonicalAddress('0x89a415b3d20098e6a6c8f7a59001c67bd3129821')
   },
   lombard: {
-    lbtcv: getAddress('0x5401b8620E5FB570064CA9114fd1e135fd77D57c'),
-    btce: getAddress('0x3a4baaBf4DC9910596821615e848f0e6545762F3'),
-    ethereumWbtc: getAddress('0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599'),
-    baseWbtc: getAddress('0x0555e30da8f98308EdB960aa94c0Db47230d2B9c'),
+    lbtcv: canonicalAddress('0x5401b8620e5fb570064ca9114fd1e135fd77d57c'),
+    btce: canonicalAddress('0x3a4baabf4dc9910596821615e848f0e6545762f3'),
+    ethereumWbtc: canonicalAddress('0x2260fac5e5542a773aa44fbcfedf7c193bc2c599'),
+    baseWbtc: canonicalAddress('0x0555e30da8f98308edb960aa94c0db47230d2b9c'),
     ethereumExpectedApprox: 0.0028,
     baseExpectedApprox: 0.0048
   },
   baseWeth: {
-    token: getAddress('0x4200000000000000000000000000000000000006'),
+    token: canonicalAddress('0x4200000000000000000000000000000000000006'),
     expectedApprox: 0.1606
   }
 };
@@ -84,7 +88,7 @@ async function fetchJson(url, timeoutMs = 25000) {
     const r = await fetch(url, {
       cache: 'no-store',
       signal: ctrl.signal,
-      headers: { 'user-agent': 'The-Holding-Company-008-Resolver/1.0' }
+      headers: { 'user-agent': 'The-Holding-Company-008-Resolver/1.0.1' }
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return await r.json();
@@ -119,7 +123,7 @@ async function tokenMeta(provider, address) {
   let raw = 0n;
   try { raw = positive(await c.balanceOf(WALLET)); } catch {}
   return {
-    address: getAddress(address),
+    address: canonicalAddress(address),
     symbol,
     decimals,
     raw: raw.toString(),
@@ -148,7 +152,7 @@ async function resolveBenqiBtcB() {
 
     try { symbol = await qi.symbol(); } catch {}
     try { qDecimals = Number(await qi.decimals()); } catch {}
-    try { underlying = getAddress(await qi.underlying()); } catch {}
+    try { underlying = canonicalAddress(await qi.underlying()); } catch {}
     try { sharesRaw = positive(await qi.balanceOf(WALLET)); } catch {}
     try { exchangeRateRaw = positive(await qi.exchangeRateStored()); } catch {}
 
@@ -256,7 +260,7 @@ async function resolveLombardOn(chain, expectedApprox, depositToken) {
       let underlyingAddress = null;
       for (const k of ['asset','underlying']) {
         if (probes[k]?.ok) {
-          try { underlyingAddress = getAddress(probes[k].value); } catch {}
+          try { underlyingAddress = canonicalAddress(probes[k].value); } catch {}
           if (underlyingAddress) break;
         }
       }
@@ -341,7 +345,7 @@ async function resolveBaseWethGenericReceipts() {
       if (!address) continue;
 
       let checksum;
-      try { checksum = getAddress(address); } catch { continue; }
+      try { checksum = canonicalAddress(address); } catch { continue; }
       if (lower(checksum) === lower(TARGETS.baseWeth.token)) continue;
 
       const meta = await tokenMeta(provider, checksum);
@@ -359,7 +363,7 @@ async function resolveBaseWethGenericReceipts() {
       for (const m of ['asset','underlying']) {
         const p = await tryCall(c, m);
         if (p.ok) {
-          try { underlying = getAddress(p.value); } catch {}
+          try { underlying = canonicalAddress(p.value); } catch {}
           if (underlying) break;
         }
       }
