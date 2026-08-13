@@ -39,8 +39,12 @@ jobs:
           test -s intelligence/brain-chatgpt-bridge-policy.json
           test -s intelligence/brain-chatgpt-bridge-schema.json
           test -s intelligence/brain-upstream-guard.mjs
+          test -s intelligence/cognitive-release-guard.mjs
+          test -s intelligence/cognitive-stack-release.json
 
           node --check intelligence/brain-chatgpt-bridge.mjs
+          node --check intelligence/cognitive-release-guard.mjs
+          node intelligence/cognitive-release-guard.mjs
           node intelligence/brain-chatgpt-bridge.mjs --self-test
 
       - name: Build zero-cost ChatGPT Bridge
