@@ -4,12 +4,13 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
-const OBSERVER_VERSION = '0.2-deterministic-memory-vault';
-const LAYER_VERSION = '0.2-autonomous-change-intelligence-memory-vault';
-const MEMORY_VERSION = '0.2-system-memory';
-const HISTORY_VERSION = '0.2-change-history';
+const OBSERVER_VERSION = '0.2.1-deterministic-memory-vault-corrections';
+const LAYER_VERSION = '0.2.1-autonomous-change-intelligence-memory-vault';
+const MEMORY_VERSION = '0.2.1-system-memory';
+const HISTORY_VERSION = '0.2.1-change-history';
 const VAULT_MANIFEST_VERSION = '0.2-memory-vault-manifest';
 const VAULT_RECORD_VERSION = '0.2-memory-vault-record';
+const VAULT_CORRECTIONS_VERSION = '0.2.1-memory-vault-corrections';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -27,6 +28,7 @@ const PATHS = {
   brief: process.env.CHANGE_BRIEF_FILE || path.join(ROOT, 'intelligence', 'daily-brief.md'),
   vaultRoot: process.env.MEMORY_VAULT_ROOT || path.join(ROOT, 'intelligence', 'memory-vault'),
   vaultManifest: process.env.MEMORY_VAULT_MANIFEST || path.join(ROOT, 'intelligence', 'memory-vault', 'manifest.json'),
+  vaultCorrections: process.env.MEMORY_VAULT_CORRECTIONS || path.join(ROOT, 'intelligence', 'memory-vault', 'corrections.json'),
 };
 
 function ensureDir(file) { fs.mkdirSync(path.dirname(file), { recursive: true }); }
@@ -497,6 +499,41 @@ function buildVaultRecord({
   };
 }
 function safeArray(v) { return Array.isArray(v) ? v : []; }
+function deepEqual(a, b) { return stableStringify(a) === stableStringify(b); }
+function validateCorrectionLedger(ledger) {
+  if (!ledger || typeof ledger !== 'object') throw new Error('Memory Vault correction ledger is invalid.');
+  if (ledger.version !== VAULT_CORRECTIONS_VERSION) throw new Error(`Unexpected Memory Vault correction version: ${ledger.version}`);
+  if (!Array.isArray(ledger.entries)) throw new Error('Memory Vault corrections entries[] missing.');
+  if (ledger.entryCount !== ledger.entries.length) throw new Error('Memory Vault correction entryCount mismatch.');
+  if (ledger.policy?.originalRecordsImmutable !== true) throw new Error('Memory Vault correction policy must preserve original records.');
+  const core = {...ledger};
+  delete core.integrity;
+  const expected = ledger?.integrity?.ledgerHash;
+  if (typeof expected !== 'string' || expected.length !== 64) throw new Error('Memory Vault correction ledger hash missing.');
+  const actual = hashObject(core);
+  if (actual !== expected) throw new Error(`Memory Vault correction ledger integrity mismatch: expected ${expected}, got ${actual}`);
+  for (const entry of ledger.entries) {
+    if (!entry?.targetRecord?.path || !entry?.targetRecord?.hash) throw new Error(`Correction ${entry?.id || 'unknown'} target record missing.`);
+    if (!entry?.evidenceRecord?.path || !entry?.evidenceRecord?.hash) throw new Error(`Correction ${entry?.id || 'unknown'} evidence record missing.`);
+    const target = readJson(vaultAbsPath(entry.targetRecord.path));
+    const evidence = readJson(vaultAbsPath(entry.evidenceRecord.path));
+    verifyVaultRecord(target);
+    verifyVaultRecord(evidence);
+    if (target.integrity.recordHash !== entry.targetRecord.hash) throw new Error(`Correction ${entry.id} target record hash mismatch.`);
+    if (evidence.integrity.recordHash !== entry.evidenceRecord.hash) throw new Error(`Correction ${entry.id} evidence record hash mismatch.`);
+    if (target.sourceCompositeHash !== entry.sourceCompositeHash || evidence.sourceCompositeHash !== entry.sourceCompositeHash) {
+      throw new Error(`Correction ${entry.id} source-composite evidence mismatch.`);
+    }
+    for (const field of safeArray(entry.fields)) {
+      if (!Array.isArray(field.path) || !field.path.length) throw new Error(`Correction ${entry.id} contains invalid field path.`);
+      const targetValue = safeGet(target, field.path);
+      const evidenceValue = safeGet(evidence, field.path);
+      if (!deepEqual(targetValue, field.recordedValue)) throw new Error(`Correction ${entry.id} target value mismatch at ${field.path.join('.')}.`);
+      if (!deepEqual(evidenceValue, field.canonicalInterpretation)) throw new Error(`Correction ${entry.id} evidence value mismatch at ${field.path.join('.')}.`);
+    }
+  }
+  return true;
+}
 function verifyVaultRecord(record) {
   if (!record || typeof record !== 'object') throw new Error('Memory Vault record is not an object.');
   const expected = record?.integrity?.recordHash;
@@ -616,6 +653,9 @@ let vaultManifest = readJson(PATHS.vaultManifest, false);
 if (vaultManifest) validateVaultManifest(vaultManifest);
 else vaultManifest = emptyVaultManifest();
 
+const vaultCorrections = readJson(PATHS.vaultCorrections);
+validateCorrectionLedger(vaultCorrections);
+
 // v0.2 bootstraps the already-verified v0.1 Observer memory into the permanent Vault.
 // This imports only data that already physically existed in canonical Observer artifacts.
 if (vaultManifest.runCount === 0 && previousMemory?.currentSnapshot && previousMemory?.generatedAt) {
@@ -678,6 +718,14 @@ latest.bridge.memoryVault = {
   chainRootHash: vaultManifest.chainRootHash,
   latestRecordHash: vaultManifest.latestRecord.recordHash,
   previousRecordHash: vaultManifest.latestRecord.previousRecordHash,
+  corrections: {
+    version: vaultCorrections.version,
+    policy: vaultCorrections.policy.mode,
+    entryCount: vaultCorrections.entryCount,
+    ledgerPath: relPath(PATHS.vaultCorrections),
+    ledgerHash: vaultCorrections.integrity.ledgerHash,
+    interpretationPrecedence: vaultCorrections.policy.interpretationPrecedence,
+  },
 };
 
 memory.memoryVault = {
@@ -688,6 +736,12 @@ memory.memoryVault = {
   latestRecordPath: vaultManifest.latestRecord.recordPath,
   chainRootHash: vaultManifest.chainRootHash,
   latestRecordHash: vaultManifest.latestRecord.recordHash,
+  corrections: {
+    version: vaultCorrections.version,
+    entryCount: vaultCorrections.entryCount,
+    ledgerPath: relPath(PATHS.vaultCorrections),
+    ledgerHash: vaultCorrections.integrity.ledgerHash,
+  },
 };
 
 const eventById = new Map((oldHistory.events||[]).map(e=>[e.id,e]));
@@ -724,6 +778,7 @@ const history = {
     vaultRunCount: vaultManifest.runCount,
     vaultEventCount: vaultManifest.eventCount,
     vaultStartedAt: vaultManifest.startedAt,
+    memoryCorrectionCount: vaultCorrections.entryCount,
   },
   runs:[...(oldHistory.runs||[]),run].slice(-730),
   events:[...eventById.values()].sort((a,b)=>String(a.detectedAt).localeCompare(String(b.detectedAt))).slice(-5000),
@@ -768,6 +823,7 @@ function buildBrief() {
   lines.push(`- Memory Vault: ${vaultManifest.runCount} immutable/hash-chained run record${vaultManifest.runCount===1?'':'s'} since ${vaultManifest.startedAt}.`);
   lines.push(`- Latest vault record: \`${vaultManifest.latestRecord.recordPath}\`.`);
   lines.push('- Operational history remains compact; the Memory Vault has no configured lifetime cap.');
+  lines.push(`- Memory correction ledger: ${vaultCorrections.entryCount} append-only annotation${vaultCorrections.entryCount===1?'':'s'}; original Vault records remain immutable.`);
   lines.push('');
   lines.push('---');
   lines.push('This brief is deterministic. It does not invent explanations or investment decisions. Higher-level reasoning should be performed from `change-intelligence.json` plus the cited source artifacts.');
@@ -775,7 +831,7 @@ function buildBrief() {
   return lines.join('\n');
 }
 
-for (const file of [PATHS.memory,PATHS.history,PATHS.latest,PATHS.brief,PATHS.vaultManifest]) ensureDir(file);
+for (const file of [PATHS.memory,PATHS.history,PATHS.latest,PATHS.brief,PATHS.vaultManifest,PATHS.vaultCorrections]) ensureDir(file);
 writeJson(PATHS.memory, memory);
 writeJson(PATHS.history, history);
 writeJson(PATHS.latest, latest);
