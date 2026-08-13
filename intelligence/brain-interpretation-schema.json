@@ -1,0 +1,204 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "executive": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "systemAssessment": {
+          "type": "string"
+        },
+        "strongestSignal": {
+          "type": "string"
+        },
+        "biggestUnknown": {
+          "type": "string"
+        },
+        "nextBestCaseId": {
+          "type": "string",
+          "enum": [
+            "__DYNAMIC_CASE_ID__"
+          ]
+        },
+        "nextBestRationale": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "__DYNAMIC_EVIDENCE_ID__"
+            ]
+          }
+        }
+      },
+      "required": [
+        "summary",
+        "systemAssessment",
+        "strongestSignal",
+        "biggestUnknown",
+        "nextBestCaseId",
+        "nextBestRationale",
+        "confidence",
+        "evidenceIds"
+      ]
+    },
+    "caseInterpretations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "enum": [
+              "__DYNAMIC_CASE_ID__"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "now",
+              "soon",
+              "watch"
+            ]
+          },
+          "interpretation": {
+            "type": "string"
+          },
+          "deeperImplication": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "__DYNAMIC_EVIDENCE_ID__"
+              ]
+            }
+          }
+        },
+        "required": [
+          "caseId",
+          "priority",
+          "interpretation",
+          "deeperImplication",
+          "confidence",
+          "evidenceIds"
+        ]
+      }
+    },
+    "crossCaseInsights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "insight": {
+            "type": "string"
+          },
+          "caseIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "__DYNAMIC_CASE_ID__"
+              ]
+            }
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "__DYNAMIC_EVIDENCE_ID__"
+              ]
+            }
+          }
+        },
+        "required": [
+          "title",
+          "insight",
+          "caseIds",
+          "confidence",
+          "evidenceIds"
+        ]
+      }
+    },
+    "humanReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "caseIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "__DYNAMIC_CASE_ID__"
+            ]
+          }
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "__DYNAMIC_EVIDENCE_ID__"
+            ]
+          }
+        }
+      },
+      "required": [
+        "required",
+        "reason",
+        "caseIds",
+        "evidenceIds"
+      ]
+    }
+  },
+  "required": [
+    "executive",
+    "caseInterpretations",
+    "crossCaseInsights",
+    "humanReview"
+  ]
+}
