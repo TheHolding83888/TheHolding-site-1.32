@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.1-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-13T19:27:05.968Z",
+  "lastUpdatedAt": "2026-08-13T19:28:07.516Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 35,
-    "vaultRunCount": 35,
+    "runCount": 36,
+    "vaultRunCount": 36,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -432,6 +432,18 @@
       "criticalCount": 0,
       "highCount": 1,
       "newFindingCount": 0,
+      "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-13T19:28:07.516Z",
+      "status": "green",
+      "snapshotHash": "791cb53d63a2ec811de7ae977390dd2cb3e521fe8207ab4fbad38bd6d746bd90",
+      "recordPath": "security/security-vault/2026/08/2026-08-13T19-28-07-516Z-791cb53d63.json",
+      "recordHash": "b9145b00d6f65394154b3ff9c55956d19f74a30af252e49d6ea92526e3923a3c",
+      "findingCount": 42,
+      "criticalCount": 0,
+      "highCount": 0,
+      "newFindingCount": 1,
       "resolvedFindingCount": 1
     }
   ],
@@ -3779,6 +3791,28 @@
       "summary": "Resolved: Potential openai-key detected in public repository text.",
       "file": "intelligence/brain-chatgpt-bridge.mjs",
       "entity": "openai-key"
+    },
+    {
+      "id": "1b822754e1666adbc2daf95ee021ecf31981fe3fc27bd39936ef23760c051176",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-13T19:28:07.516Z",
+      "findingId": "0d5d7403473d14a9ba733b233c24769d43ec85bb82feee6a90dd7b100d5b9c63",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-brain-chatgpt-bridge.yml.",
+      "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
+      "entity": null
+    },
+    {
+      "id": "e29ced0a2f276ef5b9c5cfd41a7ded08d9fdd5537e0e71a0df74038c95930538",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-13T19:28:07.516Z",
+      "findingId": "144385c737678a7b5f2a26f977e3e28b8f469354f0cc674d5d2856e86ade6ee4",
+      "severity": "high",
+      "category": "shell-eval",
+      "summary": "Resolved: Workflow contains shell eval.",
+      "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
+      "entity": null
     }
   ]
 }
