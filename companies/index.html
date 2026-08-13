@@ -1,8 +1,5 @@
-
 <!DOCTYPE html>
-<!-- companies.html · v1.23.6 · Registry Observatory Mobile Editorial Restore · Desktop Preserved -->
-<!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
-<!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
+<!-- companies.html · v2.0 · Monetra Passport rebuilt on the isolated .mpx-* financial grid · tooltip portal -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -129,22 +126,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
 
-
-    <!-- Registry Surface Switcher · first-paint state bootstrap -->
-    <script data-th-capital-mode-bootstrap>
-    (function(){
-        try {
-            var allowed = { collection:1, index:1, stable:1 };
-            var hash = String(location.hash || '').toLowerCase();
-            var fromHash = hash === '#index' ? 'index' : (hash === '#stable-index' ? 'stable' : (hash === '#collection' ? 'collection' : ''));
-            var saved = sessionStorage.getItem('thCapitalSurfaceMode') || '';
-            var mode = allowed[fromHash] ? fromHash : (allowed[saved] ? saved : 'collection');
-            document.documentElement.setAttribute('data-capital-mode', mode);
-        } catch (_) {
-            document.documentElement.setAttribute('data-capital-mode', 'collection');
-        }
-    })();
-    </script>
     <style>
         :root {
             --bg:          #fcfcfa;
@@ -6379,1379 +6360,345 @@
         }
 
 
-        /* ═══════════════════════════════════════════════════════════════
-           Monetra Passport · Editorial Metric Grid v1.22
-           One typographic system for the six passport cards.
-
-           What this fixes:
-             · Performance / Strategy Book inherited a two-column grid from an
-               earlier revision, so the label, the value and the action sat on
-               three different axes instead of one centred column.
-             · Labels and figures were set between 0.53rem and 0.7rem — under
-               10px on a phone — while the cards reserved desktop-sized height,
-               which read as small type floating in empty space.
-             · Long figures had no type scale, so a wider number could push its
-               own card.
-
-           CSS only. Markup, data bindings and scripts are untouched.
-           ═══════════════════════════════════════════════════════════════ */
-
-        /* ── Shared shells ─────────────────────────────────────────────── */
-        #stable-index .stable-passport .scp-headline-final{
-            display:grid!important;
-            grid-template-columns:repeat(4,minmax(0,1fr))!important;
-            grid-template-areas:"invested capital apy claimable"!important;
-            gap:.72rem!important;
-            align-items:stretch!important;
-            padding:1rem 1.1rem .6rem!important;
-            border-bottom:0!important;
-            background:transparent!important;
-        }
-        #stable-index .scp-essential-actions-paired{
-            display:grid!important;
-            grid-template-columns:repeat(2,minmax(0,1fr))!important;
-            grid-template-areas:"performance strategy"!important;
-            gap:.72rem!important;
-            align-items:stretch!important;
-            padding:0 1.1rem 1.05rem!important;
-            border-bottom:1px solid var(--line)!important;
-        }
-
-        /* ── Card surface: one material for all six ───────────────────── */
-        #stable-index .stable-passport .scp-headline-final>.scp-final-metric,
-        #stable-index .scp-essential-actions-paired .scp-essential-card{
-            position:relative!important;
-            overflow:visible!important;          /* help tooltips must escape */
-            min-width:0!important;
-            display:flex!important;
-            flex-direction:column!important;
-            align-items:center!important;
-            justify-content:flex-start!important;
-            text-align:center!important;
-            grid-template-columns:none!important;
-            grid-template-rows:none!important;
-            grid-template-areas:none!important;
-            border:1px solid rgba(15,23,42,.075)!important;
-            border-radius:18px!important;
-            background:linear-gradient(180deg,#ffffff,rgba(250,251,249,.93))!important;
-            box-shadow:
-                0 1px 1px rgba(15,23,42,.02),
-                0 18px 38px -32px rgba(15,23,42,.30)!important;
-            transition:
-                transform .34s cubic-bezier(.22,1,.36,1),
-                box-shadow .34s ease,
-                border-color .34s ease!important;
-        }
-        /* hairline that lights up on approach — the same gesture the company
-           cards use, so the passport belongs to the same family */
-        #stable-index .stable-passport .scp-headline-final>.scp-final-metric::after,
-        #stable-index .scp-essential-actions-paired .scp-essential-card::after{
-            content:'';
-            position:absolute;
-            left:1.15rem; right:1.15rem; top:0;
-            height:1.5px; border-radius:2px;
-            background:linear-gradient(90deg,transparent,rgba(10,124,78,.55),transparent);
-            opacity:0;
-            transition:opacity .35s ease;
-            pointer-events:none;
-        }
-        @media (hover:hover){
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric:hover,
-            #stable-index .scp-essential-actions-paired .scp-essential-card:hover{
-                transform:translateY(-2px)!important;
-                border-color:rgba(10,124,78,.18)!important;
-                box-shadow:
-                    0 2px 3px rgba(15,23,42,.03),
-                    0 26px 50px -30px rgba(15,23,42,.34)!important;
-            }
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric:hover::after,
-            #stable-index .scp-essential-actions-paired .scp-essential-card:hover::after{opacity:1}
-        }
-
-        #stable-index .stable-passport .scp-headline-final>.scp-final-metric{
-            min-height:138px!important;
-            padding:1.1rem .9rem 1.05rem!important;
-        }
-
-        /* ── Label rail: identical height, so every figure shares a baseline ── */
-        #stable-index .stable-passport .scp-headline-final>.scp-final-metric>span,
-        #stable-index .scp-essential-actions-paired .scp-essential-topline{
-            width:100%!important;
-            min-height:2.5em!important;
-            margin:0!important;
-            padding:0!important;
-            display:flex!important;
-            align-items:center!important;
-            justify-content:center!important;
-            gap:.42rem!important;
-            color:var(--text-3)!important;
-            font-family:'Space Grotesk',sans-serif!important;
-            font-size:.7rem!important;
-            font-weight:700!important;
-            letter-spacing:.145em!important;
-            line-height:1.22!important;
-            text-transform:uppercase!important;
-            text-align:center!important;
-        }
-        #stable-index .stable-passport .scp-headline-final .sc-label-with-help,
-        #stable-index .scp-essential-actions-paired .scp-essential-topline .sc-label-with-help,
-        #stable-index .scp-essential-actions-paired .scp-essential-topline>span{
-            display:inline-flex!important;
-            align-items:center!important;
-            justify-content:center!important;
-            gap:.42rem!important;
-            min-width:0!important;
-            color:inherit!important;
-            font-size:inherit!important;
-            font-weight:inherit!important;
-            letter-spacing:inherit!important;
-            line-height:inherit!important;
-            text-transform:inherit!important;
-        }
-        #stable-index .stable-passport .scp-headline-final .sc-help,
-        #stable-index .scp-essential-actions-paired .sc-help{
-            width:19px!important; height:19px!important; flex:0 0 19px!important;
-            font-size:.6rem!important;
-            opacity:.8!important;
-        }
-
-        /* ── Figures ───────────────────────────────────────────────────── */
-        #stable-index .stable-passport .scp-headline-final>.scp-final-metric>b{
-            flex:1 1 auto!important;
-            display:flex!important;
-            align-items:center!important;
-            justify-content:center!important;
-            width:100%!important;
-            max-width:100%!important;
-            margin:.25rem 0 0!important;
-            font-family:'Cormorant Garamond',serif!important;
-            font-size:clamp(1.5rem,1.95vw,2.1rem)!important;
-            font-weight:600!important;
-            line-height:1!important;
-            letter-spacing:-.022em!important;
-            font-variant-numeric:tabular-nums!important;
-            white-space:nowrap!important;
-            text-align:center!important;
-        }
-        /* Current Capital is the headline fact of the passport */
-        #stable-index .stable-passport .scp-final-capital{
-            border-color:rgba(10,124,78,.17)!important;
-            background:
-                radial-gradient(130% 105% at 100% 0,rgba(10,124,78,.075),transparent 55%),
-                linear-gradient(180deg,#ffffff,rgba(246,251,248,.96))!important;
-        }
-        #stable-index .stable-passport .scp-final-capital>b{
-            font-size:clamp(1.62rem,2.25vw,2.32rem)!important;
-        }
-        #stable-index .stable-passport .scp-final-claimable>b{color:var(--green)!important}
-        #stable-index .stable-passport .scp-final-invested>b{color:var(--text)!important}
-
-        /* ── Performance / Strategy Book: one centred column ───────────── */
-        #stable-index .scp-essential-actions-paired .scp-essential-card{
-            min-height:150px!important;
-            padding:1.1rem .95rem .9rem!important;
-            border-color:rgba(10,124,78,.14)!important;
-            background:
-                radial-gradient(125% 100% at 100% 0,rgba(10,124,78,.05),transparent 52%),
-                linear-gradient(180deg,#ffffff,rgba(250,252,249,.96))!important;
-        }
-        #stable-index .scp-essential-actions-paired .scp-essential-main{
-            flex:1 1 auto!important;
-            width:100%!important;
-            display:flex!important;
-            align-items:center!important;
-            justify-content:center!important;
-            margin:0!important;
-            padding:.18rem 0!important;
-        }
-        #stable-index .scp-essential-actions-paired .scp-essential-main>b{
-            display:block!important;
-            max-width:100%!important;
-            margin:0!important;
-            font-family:'Cormorant Garamond',serif!important;
-            font-size:clamp(1.45rem,1.85vw,1.95rem)!important;
-            font-weight:600!important;
-            line-height:1.06!important;
-            letter-spacing:-.02em!important;
-            font-variant-numeric:tabular-nums!important;
-            text-align:center!important;
-        }
-        /* Performance carries a sign, not a mood: no red, no green — the
-           direction is already in the number. */
-        #stable-index .scp-essential-card-performance .scp-essential-main>b{
-            font-family:'Space Grotesk',sans-serif!important;
-            font-size:clamp(1rem,1.28vw,1.24rem)!important;
-            font-weight:600!important;
-            line-height:1.28!important;
-            letter-spacing:-.008em!important;
-            color:var(--text)!important;
-            white-space:normal!important;
-            overflow-wrap:anywhere!important;
-        }
-        #stable-index .scp-essential-actions-paired .scp-essential-footer{
-            width:100%!important;
-            display:flex!important;
-            align-items:center!important;
-            justify-content:center!important;
-            margin:0!important;
-            padding:.12rem 0 0!important;
-        }
-        #stable-index .scp-essential-actions-paired .scp-quick-open{
-            display:inline-flex!important;
-            align-items:center!important;
-            justify-content:center!important;
-            gap:.42rem!important;
-            margin:0!important;
-            padding:.48rem .92rem!important;
-            border:1px solid rgba(10,124,78,.18)!important;
-            border-radius:999px!important;
-            background:rgba(10,124,78,.04)!important;
-            color:var(--green)!important;
-            font:650 .68rem/1 'Space Grotesk',sans-serif!important;
-            letter-spacing:.055em!important;
-            text-align:center!important;
-            transition:background .22s ease,border-color .22s ease,transform .22s ease!important;
-        }
-        @media (hover:hover){
-            #stable-index .scp-essential-actions-paired .scp-quick-open:hover{
-                background:rgba(10,124,78,.085)!important;
-                border-color:rgba(10,124,78,.3)!important;
-                transform:translateY(-1px)!important;
-            }
-        }
-        #stable-index .scp-essential-actions-paired .scp-quick-open:focus-visible{
-            outline:2px solid rgba(10,124,78,.32)!important;
-            outline-offset:3px!important;
-        }
-        #stable-index .scp-essential-actions-paired .scp-quick-arrow{
-            width:13px!important; height:13px!important; flex:0 0 auto!important;
-        }
-
-        /* ── Passport hero: the same scale as the grid beneath it ─────── */
-        #stable-index .stable-passport .scp-hero{
-            padding:1.5rem 4.3rem 1.35rem 1.5rem!important;
-        }
-        #stable-index .stable-passport .scp-kicker{
-            font-size:.66rem!important;
-            letter-spacing:.16em!important;
-            margin-bottom:.55rem!important;
-        }
-        #stable-index .stable-passport .scp-hero p{
-            max-width:640px!important;
-            margin-top:.7rem!important;
-            font-size:.88rem!important;
-            line-height:1.7!important;
-        }
-
-        /* ── Laptop: the same single row, slightly tighter ─────────────── */
-        @media (min-width:761px) and (max-width:1180px){
-            #stable-index .stable-passport .scp-headline-final{
-                gap:.58rem!important;
-                padding:.9rem .9rem .55rem!important;
-            }
-            #stable-index .scp-essential-actions-paired{
-                gap:.58rem!important;
-                padding:0 .9rem .95rem!important;
-            }
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric{
-                min-height:128px!important;
-                padding:1rem .68rem .95rem!important;
-            }
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>span,
-            #stable-index .scp-essential-actions-paired .scp-essential-topline{
-                font-size:.64rem!important;
-                letter-spacing:.115em!important;
-            }
-            #stable-index .scp-essential-actions-paired .scp-essential-card{
-                min-height:142px!important;
-            }
-        }
-
-        /* ── Phone: 2 × 2 figures, then the two action cards ───────────── */
-        @media (max-width:760.98px){
-            #stable-index .stable-passport .scp-headline-final{
-                grid-template-columns:repeat(2,minmax(0,1fr))!important;
-                grid-template-areas:"invested capital" "apy claimable"!important;
-                gap:.52rem!important;
-                padding:.72rem .72rem .4rem!important;
-            }
-            #stable-index .scp-essential-actions-paired{
-                grid-template-columns:repeat(2,minmax(0,1fr))!important;
-                grid-template-areas:"performance strategy"!important;
-                gap:.52rem!important;
-                padding:0 .72rem .8rem!important;
-            }
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric{
-                min-height:120px!important;
-                padding:.88rem .55rem .82rem!important;
-                border-radius:16px!important;
-            }
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>span,
-            #stable-index .scp-essential-actions-paired .scp-essential-topline{
-                min-height:2.6em!important;
-                font-size:.605rem!important;
-                letter-spacing:.1em!important;
-                line-height:1.25!important;
-            }
-            #stable-index .stable-passport .scp-headline-final .sc-help,
-            #stable-index .scp-essential-actions-paired .sc-help{
-                width:18px!important; height:18px!important; flex:0 0 18px!important;
-                font-size:.56rem!important;
-            }
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>b{
-                margin-top:.2rem!important;
-                font-size:clamp(1.34rem,7.2vw,1.86rem)!important;
-            }
-            #stable-index .stable-passport .scp-final-capital>b{
-                font-size:clamp(1.46rem,7.9vw,2rem)!important;
-            }
-
-            #stable-index .scp-essential-actions-paired .scp-essential-card{
-                min-height:136px!important;
-                padding:.88rem .58rem .74rem!important;
-                border-radius:16px!important;
-            }
-            #stable-index .scp-essential-actions-paired .scp-essential-main>b{
-                font-size:clamp(1.28rem,6.6vw,1.7rem)!important;
-            }
-            #stable-index .scp-essential-card-performance .scp-essential-main>b{
-                font-size:clamp(.88rem,4.1vw,1.06rem)!important;
-                line-height:1.3!important;
-            }
-            #stable-index .scp-essential-actions-paired .scp-quick-open{
-                padding:.42rem .68rem!important;
-                font-size:.62rem!important;
-                letter-spacing:.045em!important;
-            }
-
-            #stable-index .stable-passport .scp-hero{
-                padding:1.05rem 3.2rem .95rem 1rem!important;
-            }
-            #stable-index .stable-passport .scp-kicker{font-size:.6rem!important}
-            #stable-index .stable-passport .scp-hero p{
-                margin-top:.5rem!important;
-                font-size:.79rem!important;
-                line-height:1.66!important;
-            }
-        }
-
-        /* ── Small phones: one step down, still above the readable floor ── */
-        @media (max-width:390px){
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric{
-                min-height:112px!important;
-                padding:.8rem .45rem .74rem!important;
-            }
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric>span,
-            #stable-index .scp-essential-actions-paired .scp-essential-topline{
-                font-size:.565rem!important;
-                letter-spacing:.08em!important;
-            }
-            #stable-index .scp-essential-actions-paired .scp-essential-card{
-                min-height:128px!important;
-                padding:.8rem .5rem .68rem!important;
-            }
-            #stable-index .scp-essential-actions-paired .scp-quick-open{
-                padding:.4rem .58rem!important;
-                font-size:.585rem!important;
-            }
-        }
-
-        @media (prefers-reduced-motion:reduce){
-            #stable-index .stable-passport .scp-headline-final>.scp-final-metric,
-            #stable-index .scp-essential-actions-paired .scp-essential-card,
-            #stable-index .scp-essential-actions-paired .scp-quick-open{
-                transition-duration:.01ms!important;
-            }
-        }
-
-
 
         /* ═══════════════════════════════════════════════════════════════
-           Registry Observatory · v1.23.1
-           Collection / Holding Index / Stable Companies Index share one
-           premium stage. The rail is locally sticky on larger screens only;
-           mobile keeps the viewport clean beneath the existing sticky subnav.
+           Monetra Passport · Financial Grid  ·  mpx v2
+           ---------------------------------------------------------------
+           Why this exists as its own namespace:
+
+           The passport metrics had accumulated roughly fifteen successive
+           override layers (v1.20 → v1.21.14), all aimed at
+           .scp-headline / .scp-final-metric / .scp-essential-card, all using
+           !important, and several written as :nth-child rules for an older
+           six-cell markup. On the current four-card markup those rules landed
+           on cards 1, 3 and 4 but not on card 2 — one of them even forced
+           `min-height:auto !important` on the label. That is the actual reason
+           the labels kept sitting at different heights: it was never a spacing
+           value, it was two competing layouts inside one row.
+
+           Nothing below shares a class with those layers, so this grid is
+           governed by exactly one block. No !important is needed anywhere.
+
+           Alignment contract: every cell is a grid with the SAME three rows —
+           label (fixed, bottom-aligned) · figure (fixed, centred) · note
+           (fixed, top-aligned). Row heights come from the container, never
+           from the content, so a one-word label and a two-word label produce
+           identical geometry.
            ═══════════════════════════════════════════════════════════════ */
-        #capital-hub { scroll-margin-top: 76px; }
-        .capital-mode-hub {
+
+        .mpx-financials{
+            --mpx-label-h: 2.5em;
+            --mpx-value-h: 2.5rem;
+            --mpx-note-h: 2.4em;
             position: relative;
             border-top: 1px solid var(--line);
             border-bottom: 1px solid var(--line);
-            background: var(--bg);
-            isolation: isolate;
-        }
-        .capital-mode-rail-wrap {
-            position: sticky;
-            top: 55px;
-            z-index: 44;
-            padding: 0.78rem 0;
-            background: linear-gradient(180deg, rgba(252,252,250,0.97), rgba(252,252,250,0.88));
-            border-bottom: 1px solid rgba(22,21,15,0.065);
-            backdrop-filter: blur(18px) saturate(1.05);
-            -webkit-backdrop-filter: blur(18px) saturate(1.05);
-        }
-        .capital-mode-rail {
-            display: grid;
-            grid-template-columns: minmax(165px,0.58fr) minmax(0,1.42fr);
-            align-items: center;
-            gap: 1.25rem;
-            padding: 0.55rem 0.58rem 0.55rem 1.05rem;
-            border: 1px solid rgba(22,21,15,0.105);
-            border-radius: 18px;
             background:
-                radial-gradient(120% 160% at 0% 0%, rgba(168,132,44,0.075), transparent 44%),
-                rgba(255,255,255,0.82);
-            box-shadow:
-                0 1px 0 rgba(255,255,255,0.95) inset,
-                0 16px 42px -34px rgba(22,21,15,0.34);
+                radial-gradient(120% 90% at 100% 0, rgba(10,124,78,.035), transparent 58%),
+                linear-gradient(180deg, rgba(255,255,255,.96), rgba(250,251,249,.92));
         }
-        .capital-mode-intro { min-width: 0; }
-        .capital-mode-kicker {
-            display: block;
-            color: var(--gold);
-            font-size: 0.55rem;
-            line-height: 1;
-            font-weight: 700;
-            letter-spacing: 0.19em;
-            text-transform: uppercase;
-            margin-bottom: 0.38rem;
+
+        /* ── Row 1: the ledger strip ───────────────────────────────────── */
+        .mpx-strip{
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
-        .capital-mode-note {
-            display: block;
+        .mpx-metric,
+        .mpx-action{
+            position: relative;
+            min-width: 0;
+            display: grid;
+            grid-template-rows: var(--mpx-label-h) var(--mpx-value-h) var(--mpx-note-h);
+            justify-items: center;
+            text-align: center;
+        }
+        .mpx-metric{
+            padding: 1.5rem 1.1rem 1.35rem;
+            border-left: 1px solid var(--line);
+        }
+        .mpx-metric:first-child{ border-left: 0; }
+
+        /* Shared typographic rows — this is what keeps everything level. */
+        .mpx-label{
+            grid-row: 1;
+            align-self: end;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .42rem;
+            width: 100%;
+            min-width: 0;
+            padding-bottom: .5rem;
             color: var(--text-3);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .655rem;
+            font-weight: 700;
+            letter-spacing: .155em;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+        .mpx-value{
+            grid-row: 2;
+            align-self: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 100%;
             font-family: 'Cormorant Garamond', serif;
-            font-size: 0.96rem;
-            line-height: 1.15;
-            font-style: italic;
+            font-size: clamp(1.7rem, 2.15vw, 2.3rem);
+            font-weight: 600;
+            line-height: 1;
+            letter-spacing: -.022em;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
             white-space: nowrap;
         }
-        .capital-mode-tabs {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0,1fr));
-            gap: 0.28rem;
-            padding: 0.26rem;
-            border: 1px solid rgba(22,21,15,0.075);
-            border-radius: 14px;
-            background: rgba(22,21,15,0.032);
-        }
-        .capital-mode-btn {
-            position: relative;
-            min-width: 0;
-            min-height: 52px;
-            display: grid;
-            grid-template-columns: auto minmax(0,1fr);
-            align-items: center;
-            gap: 0.7rem;
-            padding: 0.62rem 0.78rem;
-            border: 0;
-            border-radius: 11px;
-            background: transparent;
-            color: var(--text-2);
-            font: inherit;
-            cursor: pointer;
-            text-align: left;
-            overflow: hidden;
-            transition:
-                color 0.24s ease,
-                background 0.28s ease,
-                box-shadow 0.28s ease,
-                transform 0.28s cubic-bezier(0.22,1,0.36,1);
-        }
-        .capital-mode-btn::after {
-            content: '';
-            position: absolute;
-            left: 12%; right: 12%; bottom: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(216,180,90,0.75), transparent);
-            opacity: 0;
-            transform: scaleX(0.5);
-            transition: opacity 0.28s ease, transform 0.34s cubic-bezier(0.22,1,0.36,1);
-        }
-        .capital-mode-btn:hover:not(.active) {
-            color: var(--text);
-            background: rgba(255,255,255,0.56);
-            transform: translateY(-1px);
-        }
-        .capital-mode-btn:focus-visible {
-            outline: 1px solid var(--gold);
-            outline-offset: 2px;
-        }
-        .capital-mode-btn.active {
-            color: #f6f2e8;
-            background:
-                radial-gradient(130% 130% at 0% 0%, rgba(168,132,44,0.22), transparent 48%),
-                #17150f;
-            box-shadow:
-                inset 0 0 0 1px rgba(216,180,90,0.20),
-                0 10px 26px -18px rgba(22,21,15,0.52);
-        }
-        .capital-mode-btn.active::after { opacity: 1; transform: scaleX(1); }
-        .capital-mode-btn-stable.active {
-            background:
-                radial-gradient(120% 130% at 0% 0%, rgba(74,166,116,0.22), transparent 48%),
-                #102019;
-            box-shadow:
-                inset 0 0 0 1px rgba(79,162,118,0.24),
-                0 10px 26px -18px rgba(10,70,43,0.45);
-        }
-        .capital-mode-btn-stable.active::after {
-            background: linear-gradient(90deg, transparent, rgba(84,183,131,0.8), transparent);
-        }
-        .capital-mode-num {
+        .mpx-note{
+            grid-row: 3;
+            align-self: start;
+            max-width: 20ch;
+            padding-top: .55rem;
             color: var(--text-3);
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 0.72rem;
-            font-weight: 500;
-            line-height: 1;
-            transition: color 0.25s ease;
-        }
-        .capital-mode-btn.active .capital-mode-num { color: #d8b45a; }
-        .capital-mode-btn-stable.active .capital-mode-num { color: #72c599; }
-        .capital-mode-label {
-            min-width: 0;
-            font-size: 0.67rem;
-            line-height: 1.25;
-            font-weight: 650;
-            letter-spacing: 0.035em;
-        }
-        .capital-mode-label-short { display: none; }
-        .capital-mode-stage { position: relative; min-height: 1px; }
-        .capital-mode-panel {
-            border-top: 0 !important;
-            transform-origin: 50% 0%;
-        }
-        .capital-mode-panel[hidden] { display: none !important; }
-        html[data-capital-mode="collection"] [data-capital-panel]:not([data-capital-panel="collection"]),
-        html[data-capital-mode="index"] [data-capital-panel]:not([data-capital-panel="index"]),
-        html[data-capital-mode="stable"] [data-capital-panel]:not([data-capital-panel="stable"]) {
-            display: none !important;
-        }
-        .capital-mode-panel.capital-panel-leaving {
-            opacity: 0;
-            transform: translateY(7px) scale(0.9985);
-            transition: opacity 0.14s ease, transform 0.18s ease;
-            pointer-events: none;
-        }
-        .capital-mode-panel.capital-panel-entering {
-            animation: capitalPanelIn 0.38s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        @keyframes capitalPanelIn {
-            from { opacity: 0; transform: translateY(10px) scale(0.998); }
-            to { opacity: 1; transform: none; }
-        }
-        .capital-mode-hub .collection { padding-top: 4.15rem; }
-        .capital-mode-hub .index-sec { padding-top: 4.45rem; padding-bottom: 5.65rem; }
-        .capital-mode-hub .stable-index-sec { padding-top: 4.45rem; padding-bottom: 5.8rem; }
-        .capital-mode-hub .collection-next { display: none !important; }
-        .capital-mode-a11y {
-            position: absolute;
-            width: 1px; height: 1px;
-            padding: 0; margin: -1px;
-            overflow: hidden; clip: rect(0,0,0,0);
-            white-space: nowrap; border: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .625rem;
+            font-weight: 400;
+            line-height: 1.4;
+            letter-spacing: .005em;
+            text-transform: none;
         }
 
-        /* The old Index→Stable link now switches the surface in place. */
-        .capital-mode-hub .index-separation-note a {
+        /* Hierarchy: what each figure means, expressed in colour and weight. */
+        .mpx-m-invested  .mpx-value{ color: var(--text-2); }
+        .mpx-m-capital   .mpx-value{ font-size: clamp(1.95rem, 2.6vw, 2.75rem); }
+        .mpx-m-apy       .mpx-value,
+        .mpx-m-claimable .mpx-value{ color: var(--green); }
+        .mpx-m-claimable .mpx-value{ font-size: clamp(1.5rem, 1.9vw, 2rem); }
+
+        /* Current Capital is the headline fact: a quiet column wash plus a
+           single gold hairline, rather than a competing box. */
+        .mpx-m-capital{
+            background: linear-gradient(180deg, rgba(10,124,78,.05), rgba(255,255,255,0) 78%);
+        }
+        .mpx-m-capital::before{
+            content: '';
+            position: absolute;
+            left: 1.35rem; right: 1.35rem; top: 0;
+            height: 2px; border-radius: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: .75;
+        }
+
+        /* ── Row 2: the two disclosures ────────────────────────────────── */
+        .mpx-actions{
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            border-top: 1px solid var(--line);
+        }
+        .mpx-action{
+            grid-template-rows: var(--mpx-label-h) var(--mpx-value-h) var(--mpx-note-h) auto;
+            padding: 1.5rem 1.2rem 1.35rem;
+            border-left: 1px solid var(--line);
+        }
+        .mpx-action:first-child{ border-left: 0; }
+        /* Performance carries a sign, not a mood — no red, no green.
+           The direction is already in the number. */
+        .mpx-value-sans{
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.02rem, 1.32vw, 1.28rem);
+            font-weight: 600;
+            letter-spacing: -.008em;
+            line-height: 1.25;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+        .mpx-open{
+            grid-row: 4;
+            align-self: start;
+            justify-self: center;
             display: inline-flex;
             align-items: center;
-            min-height: 34px;
-            padding: 0.4rem 0.72rem;
-            border: 1px solid rgba(10,124,78,0.14);
-            border-radius: 999px;
-            background: rgba(255,255,255,0.62);
-            transition: background 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
-        }
-        .capital-mode-hub .index-separation-note a:hover {
-            background: rgba(10,124,78,0.065);
-            border-color: rgba(10,124,78,0.26);
-            transform: translateY(-1px);
-        }
-
-        @media (min-width: 1181px) {
-            .capital-mode-rail-wrap { top: 57px; }
-        }
-        @media (min-width: 761px) and (max-width: 1180px) {
-            .capital-mode-rail-wrap { top: 56px; }
-            .capital-mode-rail { grid-template-columns: minmax(145px,0.48fr) minmax(0,1.52fr); }
-            .capital-mode-note { font-size: 0.9rem; }
-            .capital-mode-btn { gap: 0.5rem; padding-left: 0.62rem; padding-right: 0.62rem; }
-            .capital-mode-label { font-size: 0.62rem; }
-        }
-        @media (max-width: 760.98px) {
-            #capital-hub { scroll-margin-top: 68px; }
-            .capital-mode-rail-wrap {
-                position: relative;
-                top: auto;
-                z-index: 2;
-                padding: 0.75rem 0 0.5rem;
-                background: var(--bg);
-                border-bottom: 0;
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
-            }
-            .capital-mode-rail {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-                padding: 0.62rem;
-                border-radius: 17px;
-            }
-            .capital-mode-intro {
-                display: flex;
-                align-items: baseline;
-                justify-content: space-between;
-                gap: 1rem;
-                padding: 0.08rem 0.18rem 0.12rem;
-            }
-            .capital-mode-kicker { margin: 0; font-size: 0.49rem; }
-            .capital-mode-note { font-size: 0.78rem; }
-            .capital-mode-tabs { gap: 0.2rem; padding: 0.22rem; }
-            .capital-mode-btn {
-                min-height: 47px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                gap: 0.22rem;
-                padding: 0.46rem 0.24rem;
-                text-align: center;
-            }
-            .capital-mode-num { font-size: 0.58rem; }
-            .capital-mode-label { font-size: 0.59rem; line-height: 1.05; letter-spacing: 0.02em; }
-            .capital-mode-label-full { display: none; }
-            .capital-mode-label-short { display: block; }
-            .capital-mode-hub .collection { padding-top: 3.15rem; }
-            .capital-mode-hub .index-sec { padding-top: 3.4rem; padding-bottom: 4.4rem; }
-            .capital-mode-hub .stable-index-sec { padding-top: 3.45rem; padding-bottom: 4.5rem; }
-        }
-        @media (max-width: 420px) {
-            .capital-mode-note { display: none; }
-            .capital-mode-intro { justify-content: center; padding-bottom: 0.05rem; }
-            .capital-mode-kicker { letter-spacing: 0.17em; }
-            .capital-mode-btn { min-height: 45px; }
-            .capital-mode-label { font-size: 0.56rem; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .capital-mode-btn,
-            .capital-mode-panel.capital-panel-leaving,
-            .capital-mode-panel.capital-panel-entering,
-            .capital-mode-hub .index-separation-note a {
-                transition-duration: 0.01ms !important;
-                animation-duration: 0.01ms !important;
-            }
-        }
-
-
-
-        /* ═══════════════════════════════════════════════════════════════
-           Registry Observatory · v1.23.1
-           One institutional visual system across Collection / General / Stable.
-           ═══════════════════════════════════════════════════════════════ */
-        .capital-mode-hub{
-            --surface-accent: rgba(168,132,44,.10);
-            transition: background .5s ease;
-            background:
-                radial-gradient(86% 48% at 50% 0%, var(--surface-accent), transparent 72%),
-                linear-gradient(180deg,#fbfaf7 0%,#fcfcfa 48%,#faf9f6 100%);
-        }
-        html[data-capital-mode="collection"] .capital-mode-hub{--surface-accent:rgba(168,132,44,.075)}
-        html[data-capital-mode="index"] .capital-mode-hub{--surface-accent:rgba(168,132,44,.12)}
-        html[data-capital-mode="stable"] .capital-mode-hub{--surface-accent:rgba(10,124,78,.095)}
-        .capital-mode-hub .collection,
-        .capital-mode-hub .index-sec,
-        .capital-mode-hub .stable-index-sec{
-            background:transparent!important;
-            border-bottom:0!important;
-        }
-        .capital-mode-hub .index-sec::after{opacity:.34}
-        .capital-mode-hub .stable-index-sec::before{opacity:.55}
-
-        .capital-mode-rail-wrap{
-            padding:.94rem 0 .88rem;
-            background:linear-gradient(180deg,rgba(252,252,250,.985),rgba(249,248,244,.92));
-            border-bottom:1px solid rgba(22,21,15,.055);
-            box-shadow:0 14px 36px -34px rgba(22,21,15,.42);
-        }
-        .capital-mode-rail{
-            grid-template-columns:minmax(190px,.55fr) minmax(0,1.45fr);
-            gap:1.9rem;
-            padding:.12rem 0;
-            border:0;
-            border-radius:0;
-            background:transparent;
-            box-shadow:none;
-        }
-        .capital-mode-intro{padding-left:.08rem}
-        .capital-mode-kicker{
-            font-size:.54rem;
-            letter-spacing:.23em;
-            margin-bottom:.48rem;
-        }
-        .capital-mode-note{
-            font-size:1.03rem;
-            color:rgba(22,21,15,.48);
-            white-space:normal;
-            max-width:240px;
-        }
-        .capital-mode-tabs{
-            position:relative;
-            display:grid;
-            grid-template-columns:repeat(3,minmax(0,1fr));
-            gap:0;
-            padding:0;
-            border:0;
-            border-radius:0;
-            background:transparent;
-            isolation:isolate;
-        }
-        .capital-mode-tabs::before{
-            content:'';
-            position:absolute;
-            left:0;right:0;top:50%;
-            height:1px;
-            transform:translateY(-50%);
-            background:linear-gradient(90deg,transparent,rgba(22,21,15,.10) 7%,rgba(22,21,15,.10) 93%,transparent);
-            z-index:-1;
-        }
-        .capital-mode-btn{
-            min-height:72px;
-            grid-template-columns:1fr;
-            grid-template-rows:auto auto;
-            align-content:center;
-            gap:.3rem;
-            padding:.82rem 1.12rem .78rem;
-            border-radius:18px;
-            text-align:center;
-            overflow:visible;
-            color:rgba(22,21,15,.56);
-        }
-        .capital-mode-btn + .capital-mode-btn::before{
-            content:'';
-            position:absolute;
-            left:0;top:23%;bottom:23%;
-            width:1px;
-            background:rgba(22,21,15,.08);
-            transition:opacity .25s ease;
-        }
-        .capital-mode-btn.active + .capital-mode-btn::before,
-        .capital-mode-btn.active::before{opacity:0}
-        .capital-mode-btn::after{
-            left:23%;right:23%;bottom:5px;
-        }
-        .capital-mode-label{
-            font-family:'Cormorant Garamond',serif;
-            font-size:1.16rem;
-            line-height:1;
-            font-weight:500;
-            letter-spacing:-.012em;
-        }
-        .capital-mode-caption{
-            display:block;
-            font-size:.49rem;
-            line-height:1.2;
-            font-weight:650;
-            letter-spacing:.15em;
-            text-transform:uppercase;
-            color:var(--text-3);
-            transition:color .25s ease;
-            white-space:nowrap;
-        }
-        .capital-mode-btn:hover:not(.active){
-            background:rgba(255,255,255,.74);
-            box-shadow:0 10px 26px -23px rgba(22,21,15,.35);
-        }
-        .capital-mode-btn.active{
-            color:#f6f2e8;
-            transform:translateY(-1px);
-            background:
-                radial-gradient(120% 150% at 0% 0%,rgba(216,180,90,.19),transparent 50%),
-                linear-gradient(145deg,#1c1a13,#11100c);
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,.055),
-                inset 0 0 0 1px rgba(216,180,90,.18),
-                0 17px 34px -22px rgba(22,21,15,.65);
-        }
-        .capital-mode-btn.active .capital-mode-caption{color:rgba(246,242,232,.50)}
-        .capital-mode-btn-stable.active{
-            background:
-                radial-gradient(120% 150% at 0% 0%,rgba(82,177,128,.19),transparent 50%),
-                linear-gradient(145deg,#15251e,#0e1814);
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,.045),
-                inset 0 0 0 1px rgba(82,177,128,.20),
-                0 17px 34px -22px rgba(10,70,43,.55);
-        }
-        .capital-mode-num{display:none!important}
-
-        /* One editorial header system across all three surfaces. */
-        .capital-surface-head{
-            width:100%;
-            max-width:none!important;
-            display:grid!important;
-            grid-template-columns:minmax(0,1fr) auto;
-            grid-template-rows:auto auto auto;
-            column-gap:3rem;
-            row-gap:0;
-            align-items:end!important;
-            margin-bottom:2.85rem!important;
-        }
-        .capital-surface-copy{min-width:0}
-        .capital-surface-eyebrow,
-        .capital-mode-hub .index-eyebrow,
-        .capital-mode-hub .sc-eyebrow{
-            grid-column:1;
-            display:inline-flex;
-            align-items:center;
-            gap:.58rem;
-            margin-bottom:1rem!important;
-            color:var(--gold);
-            font-size:.57rem!important;
-            font-weight:700!important;
-            letter-spacing:.19em!important;
-            text-transform:uppercase;
-        }
-        .capital-mode-hub .sc-eyebrow{color:var(--green)}
-        .capital-surface-live-dot{
-            width:6px;height:6px;border-radius:50%;background:var(--green);
-            box-shadow:0 0 0 5px rgba(10,124,78,.07);
-            flex:0 0 auto;
-        }
-        .capital-surface-title,
-        .capital-mode-hub .collection-title,
-        .capital-mode-hub .index-title,
-        .capital-mode-hub .sc-head h2{
-            grid-column:1;
-            font-family:'Cormorant Garamond',serif!important;
-            font-size:clamp(2.7rem,4.7vw,4.05rem)!important;
-            font-weight:400!important;
-            line-height:.98!important;
-            letter-spacing:-.034em!important;
-            margin:0!important;
-            color:var(--text)!important;
-        }
-        .capital-surface-sub,
-        .capital-mode-hub .index-sub,
-        .capital-mode-hub .sc-head p{
-            grid-column:1;
-            max-width:720px!important;
-            margin:.98rem 0 0!important;
-            color:var(--text-2)!important;
-            font-size:.84rem!important;
-            line-height:1.72!important;
-            font-weight:300!important;
-        }
-        .capital-surface-side{
-            grid-column:2;
-            grid-row:1 / 4;
-            align-self:end;
-            justify-self:end;
-        }
-        .collection-meta.capital-surface-side{
-            display:flex;
-            align-items:center;
-            gap:1rem;
-            padding:.78rem 0 .18rem;
-        }
-        .collection-count{
-            display:flex;
-            flex-direction:column;
-            align-items:flex-end;
-            gap:.14rem;
-            line-height:1;
-            color:var(--text-3);
-            letter-spacing:.13em;
-        }
-        .collection-count b{
-            font-family:'Cormorant Garamond',serif;
-            font-size:1.8rem;
-            line-height:.92;
-            font-weight:500;
-            letter-spacing:-.02em;
-        }
-        .collection-count span{font-size:.5rem;text-transform:uppercase}
-        .collection-meta .view-switch{
-            border-color:rgba(22,21,15,.10);
-            background:rgba(255,255,255,.56);
-            box-shadow:0 10px 24px -22px rgba(22,21,15,.35);
-        }
-        .capital-surface-universe{
-            min-width:190px;
-            padding:.92rem 1.02rem .88rem;
-            border-top:1px solid var(--gold-line);
-            border-bottom:1px solid rgba(22,21,15,.08);
-            text-align:right;
-        }
-        .capital-surface-universe span,
-        .capital-surface-method small{
-            display:block;
-            margin-bottom:.3rem;
-            color:var(--text-3);
-            font-size:.48rem;
-            font-weight:650;
-            letter-spacing:.15em;
-            text-transform:uppercase;
-        }
-        .capital-surface-universe b{
-            display:block;
-            color:var(--gold);
-            font-family:'Cormorant Garamond',serif;
-            font-size:1.06rem;
-            line-height:1.1;
-            font-weight:500;
-        }
-        .capital-surface-method{
-            position:relative!important;
-            display:block!important;
-            min-width:176px!important;
-            min-height:auto!important;
-            padding:.88rem 2.6rem .86rem 1rem!important;
-            border:0!important;
-            border-top:1px solid rgba(10,124,78,.28)!important;
-            border-bottom:1px solid rgba(22,21,15,.08)!important;
-            border-radius:0!important;
-            background:transparent!important;
-            text-align:right!important;
-            box-shadow:none!important;
-        }
-        .capital-surface-method span{
-            display:block!important;
-            color:var(--green)!important;
-            font-family:'Cormorant Garamond',serif!important;
-            font-size:1.06rem!important;
-            font-weight:500!important;
-            letter-spacing:0!important;
-            text-transform:none!important;
-        }
-        .capital-surface-method i{
-            position:absolute!important;
-            right:.75rem!important;
-            top:50%!important;
-            transform:translateY(-50%)!important;
-        }
-        .capital-surface-method:hover{background:rgba(10,124,78,.035)!important}
-
-        .capital-mode-hub .collection{padding-top:4.5rem;padding-bottom:5.8rem}
-        .capital-mode-hub .index-sec{padding-top:4.5rem;padding-bottom:5.8rem}
-        .capital-mode-hub .stable-index-sec{padding-top:4.5rem;padding-bottom:5.8rem}
-
-        @media (min-width:761px) and (max-width:1180px){
-            .capital-mode-rail{grid-template-columns:minmax(170px,.45fr) minmax(0,1.55fr);gap:1.25rem}
-            .capital-mode-btn{min-height:68px;padding-left:.7rem;padding-right:.7rem}
-            .capital-mode-label{font-size:1.02rem}
-            .capital-mode-caption{font-size:.44rem;letter-spacing:.12em}
-            .capital-surface-head{column-gap:2rem}
-            .capital-surface-universe,.capital-surface-method{min-width:165px!important}
-        }
-        @media (max-width:760.98px){
-            .capital-mode-rail-wrap{padding:.72rem 0 .46rem;background:var(--bg)}
-            .capital-mode-rail{grid-template-columns:1fr;gap:.62rem;padding:0}
-            .capital-mode-intro{padding:0 .08rem .04rem;align-items:flex-end}
-            .capital-mode-note{max-width:none;font-size:.8rem;text-align:right}
-            .capital-mode-tabs{gap:.28rem}
-            .capital-mode-tabs::before{display:none}
-            .capital-mode-btn{
-                min-height:58px;
-                padding:.62rem .3rem .56rem;
-                border-radius:14px;
-                gap:.22rem;
-            }
-            .capital-mode-btn + .capital-mode-btn::before{display:none}
-            .capital-mode-label-full{display:none}
-            .capital-mode-label-short{display:block}
-            .capital-mode-label{font-size:.78rem;line-height:1}
-            .capital-mode-caption{font-size:.4rem;letter-spacing:.09em;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-            .capital-surface-head{
-                grid-template-columns:1fr!important;
-                grid-template-rows:auto!important;
-                gap:0!important;
-                margin-bottom:2.15rem!important;
-            }
-            .capital-surface-copy,
-            .capital-surface-eyebrow,
-            .capital-surface-title,
-            .capital-surface-sub,
-            .capital-mode-hub .index-eyebrow,
-            .capital-mode-hub .index-title,
-            .capital-mode-hub .index-sub,
-            .capital-surface-side{
-                grid-column:1!important;
-                grid-row:auto!important;
-            }
-            .capital-surface-title,
-            .capital-mode-hub .collection-title,
-            .capital-mode-hub .index-title,
-            .capital-mode-hub .sc-head h2{
-                font-size:clamp(2.35rem,11vw,3.15rem)!important;
-            }
-            .capital-surface-sub,
-            .capital-mode-hub .index-sub,
-            .capital-mode-hub .sc-head p{
-                font-size:.8rem!important;
-                line-height:1.68!important;
-                max-width:none!important;
-            }
-            .collection-meta.capital-surface-side{
-                width:100%;justify-content:space-between;margin-top:1.25rem;padding:.82rem 0 0;border-top:1px solid var(--line)
-            }
-            .collection-count{align-items:flex-start}
-            .capital-surface-universe,
-            .capital-surface-method{
-                width:100%!important;
-                min-width:0!important;
-                justify-self:stretch!important;
-                margin-top:1.2rem!important;
-                padding:.74rem 0!important;
-                text-align:left!important;
-                border-top:1px solid var(--line)!important;
-                border-bottom:0!important;
-            }
-            .capital-surface-method{padding-right:2.1rem!important}
-            .capital-surface-method i{right:.25rem!important}
-            .capital-mode-hub .collection,
-            .capital-mode-hub .index-sec,
-            .capital-mode-hub .stable-index-sec{padding-top:3.35rem;padding-bottom:4.45rem}
-        }
-        @media(max-width:420px){
-            .capital-mode-intro{justify-content:center}
-            .capital-mode-kicker{text-align:center}
-            .capital-mode-note{display:none}
-            .capital-mode-tabs{gap:.18rem}
-            .capital-mode-btn{min-height:55px;border-radius:12px}
-            .capital-mode-label{font-size:.71rem}
-            .capital-mode-caption{font-size:.36rem}
-        }
-
-        /* ══ Registry Observatory micro-polish · v1.23.2 ═══════════════════
-           Remove decorative rail lines, give Collection a cleaner brighter
-           stage, separate the registry count optically, and prevent the closed
-           desktop Index Framework drawer shadow from leaking into the viewport. */
-        .capital-mode-tabs::before,
-        .capital-mode-btn::after { display:none !important; }
-
-        html[data-capital-mode="collection"] .capital-mode-hub {
-            --surface-accent: rgba(168,132,44,.055);
-            background:
-                radial-gradient(82% 44% at 50% 0%, rgba(168,132,44,.055), transparent 72%),
-                linear-gradient(180deg,#fffefa 0%,#fff 46%,#fdfcf8 100%);
-        }
-
-        .collection-count { gap:.32rem; }
-        .collection-count b { line-height:.88; }
-        .collection-count span { line-height:1.15; }
-
-        @media (min-width:761px) {
-            .fw-drawer { box-shadow:none !important; }
-            .fw-drawer.open { box-shadow:-30px 0 80px -40px rgba(0,0,0,.7) !important; }
-        }
-
-
-        /* ══ Registry Observatory airspace polish · v1.23.3 ═══════════════
-           Give the Observatory its own editorial breathing room after the
-           ecosystem stats, dissolve the last rail borders, and let spacing
-           rather than separator lines define the three analytical modes. */
-        .stats-bar {
-            border-bottom-color: rgba(22,21,15,.055);
-        }
-        .capital-mode-hub {
-            margin-top: clamp(2.65rem, 4.5vw, 4.25rem);
-            border-top: 0 !important;
-            border-bottom: 0 !important;
-        }
-        .capital-mode-rail-wrap {
-            position: sticky;
-            border-bottom: 0 !important;
-            box-shadow: none !important;
-            background:
-                linear-gradient(180deg, rgba(252,252,250,.992) 0%, rgba(252,252,250,.965) 72%, rgba(252,252,250,.90) 100%);
-        }
-        .capital-mode-rail-wrap::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            bottom: -22px;
-            width: min(960px, 88vw);
-            height: 24px;
-            transform: translateX(-50%);
-            background: radial-gradient(70% 100% at 50% 0%, rgba(22,21,15,.055), rgba(22,21,15,0) 72%);
-            opacity: .34;
-            pointer-events: none;
-        }
-        .capital-mode-rail {
-            gap: clamp(2.25rem, 4vw, 4rem);
-            padding-top: .34rem;
-            padding-bottom: .38rem;
-        }
-        .capital-mode-intro {
-            padding-left: .12rem;
-        }
-        .capital-mode-note {
-            margin-top: .02rem;
-            line-height: 1.28;
-        }
-        .capital-mode-tabs {
-            gap: .55rem;
-        }
-        .capital-mode-btn {
-            min-height: 76px;
-            padding-top: .9rem;
-            padding-bottom: .86rem;
-        }
-        .capital-mode-btn + .capital-mode-btn::before {
-            display: none !important;
-        }
-        .capital-mode-label {
-            font-size: 1.2rem;
-        }
-        .capital-mode-btn.active {
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,.06),
-                inset 0 0 0 1px rgba(216,180,90,.16),
-                0 22px 44px -29px rgba(22,21,15,.68);
-        }
-        .capital-mode-btn-stable.active {
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,.05),
-                inset 0 0 0 1px rgba(82,177,128,.18),
-                0 22px 44px -29px rgba(10,70,43,.58);
-        }
-        .capital-mode-stage {
-            position: relative;
-        }
-
-        @media (min-width:761px) and (max-width:1180px) {
-            .capital-mode-hub { margin-top: 3.1rem; }
-            .capital-mode-rail { gap: 1.75rem; }
-            .capital-mode-tabs { gap: .34rem; }
-            .capital-mode-btn { min-height: 72px; }
-            .capital-mode-label { font-size: 1.06rem; }
-        }
-        @media (max-width:760.98px) {
-            .capital-mode-hub { margin-top: 2.15rem; }
-            .capital-mode-rail-wrap {
-                padding-top: .88rem;
-                padding-bottom: .72rem;
-                background: linear-gradient(180deg, rgba(252,252,250,.985), rgba(252,252,250,.94));
-            }
-            .capital-mode-rail-wrap::after {
-                bottom: -14px;
-                width: 86vw;
-                height: 16px;
-                opacity: .22;
-            }
-            .capital-mode-rail { gap: .72rem; }
-            .capital-mode-tabs { gap: .28rem; }
-            .capital-mode-btn { min-height: 60px; }
-            .capital-mode-label { font-size: .78rem; }
-        }
-        @media (max-width:420px) {
-            .capital-mode-hub { margin-top: 1.85rem; }
-            .capital-mode-rail-wrap { padding-top: .72rem; }
-        }
-
-
-        /* ══ Registry Observatory invitation scale · v1.23.4 ════════════
-           A slightly tighter hand-off from ecosystem stats, but a more
-           monumental invitation inside the Observatory itself. Scale does
-           the work here — not extra borders or empty vertical space. */
-        .capital-mode-hub {
-            margin-top: clamp(2.15rem, 3.6vw, 3.45rem);
-        }
-        .capital-mode-rail {
-            grid-template-columns: minmax(235px,.62fr) minmax(0,1.38fr);
-            gap: clamp(2.3rem, 4.2vw, 4.4rem);
-        }
-        .capital-mode-kicker {
-            font-size: .68rem;
-            letter-spacing: .245em;
-            margin-bottom: .62rem;
-        }
-        .capital-mode-note {
-            max-width: 310px;
-            font-size: 1.28rem;
-            line-height: 1.22;
-            color: rgba(22,21,15,.53);
-        }
-        .capital-mode-tabs { gap: .72rem; }
-        .capital-mode-btn {
-            min-height: 88px;
-            padding: 1.06rem 1.2rem 1rem;
-            border-radius: 20px;
+            justify-content: center;
             gap: .42rem;
+            margin-top: .1rem;
+            padding: .52rem 1.05rem;
+            border: 1px solid rgba(10,124,78,.2);
+            border-radius: 999px;
+            background: rgba(10,124,78,.035);
+            color: var(--green);
+            font: 650 .68rem/1 'Space Grotesk', sans-serif;
+            letter-spacing: .055em;
+            cursor: pointer;
+            transition: background .22s ease, border-color .22s ease, transform .22s ease;
         }
-        .capital-mode-label {
-            font-size: 1.46rem;
-            line-height: .98;
-            letter-spacing: -.018em;
+        .mpx-open-arrow{ flex: 0 0 auto; transition: transform .25s cubic-bezier(.22,1,.36,1); }
+        .mpx-open:focus-visible{
+            outline: 2px solid rgba(10,124,78,.32);
+            outline-offset: 3px;
         }
-        .capital-mode-caption {
-            font-size: .56rem;
-            line-height: 1.15;
-            letter-spacing: .165em;
-        }
-        .capital-mode-btn:hover:not(.active) {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 34px -28px rgba(22,21,15,.38);
-        }
-        .capital-mode-btn.active {
-            transform: translateY(-2px);
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,.065),
-                inset 0 0 0 1px rgba(216,180,90,.17),
-                0 26px 52px -32px rgba(22,21,15,.72);
-        }
-        .capital-mode-btn-stable.active {
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,.052),
-                inset 0 0 0 1px rgba(82,177,128,.19),
-                0 26px 52px -32px rgba(10,70,43,.62);
+        @media (hover: hover){
+            .mpx-open:hover{
+                background: rgba(10,124,78,.08);
+                border-color: rgba(10,124,78,.34);
+                transform: translateY(-1px);
+            }
+            .mpx-open:hover .mpx-open-arrow{ transform: translate(1px,-1px); }
+            .mpx-action:hover{ background: rgba(10,124,78,.018); }
         }
 
-        @media (min-width:761px) and (max-width:1180px) {
-            .capital-mode-hub { margin-top: 2.55rem; }
-            .capital-mode-rail {
-                grid-template-columns: minmax(205px,.55fr) minmax(0,1.45fr);
-                gap: 1.8rem;
-            }
-            .capital-mode-kicker { font-size: .62rem; }
-            .capital-mode-note { font-size: 1.14rem; max-width: 265px; }
-            .capital-mode-tabs { gap: .45rem; }
-            .capital-mode-btn { min-height: 82px; padding-left: .82rem; padding-right: .82rem; }
-            .capital-mode-label { font-size: 1.27rem; }
-            .capital-mode-caption { font-size: .5rem; letter-spacing: .14em; }
+        /* Help affordance sized for this grid; the tooltip itself is the
+           existing shared component. */
+        .mpx-label .sc-help{
+            width: 18px; height: 18px; flex: 0 0 18px;
+            font-size: .58rem;
+            opacity: .8;
         }
-        @media (max-width:760.98px) {
-            .capital-mode-hub { margin-top: 1.72rem; }
-            .capital-mode-rail-wrap { padding-top: .78rem; }
-            .capital-mode-intro {
-                align-items: flex-end;
-                padding-bottom: .16rem;
-            }
-            .capital-mode-kicker { font-size: .58rem; letter-spacing: .21em; }
-            .capital-mode-note { font-size: .94rem; line-height: 1.18; }
-            .capital-mode-tabs { gap: .32rem; }
-            .capital-mode-btn {
-                min-height: 68px;
-                padding: .72rem .32rem .66rem;
-                border-radius: 15px;
-                gap: .3rem;
-            }
-            .capital-mode-label { font-size: .92rem; }
-            .capital-mode-caption { font-size: .43rem; letter-spacing: .105em; }
-        }
-        @media (max-width:420px) {
-            .capital-mode-hub { margin-top: 1.5rem; }
-            .capital-mode-rail-wrap { padding-top: .62rem; }
-            .capital-mode-kicker { font-size: .55rem; }
-            .capital-mode-btn { min-height: 65px; }
-            .capital-mode-label { font-size: .86rem; }
-            .capital-mode-caption { font-size: .4rem; }
+        .mpx-label .sc-help-wrap{ flex: 0 0 auto; }
+
+        /* ── Laptop ─────────────────────────────────────────────────────── */
+        @media (min-width: 761px) and (max-width: 1180px){
+            .mpx-financials{ --mpx-value-h: 2.3rem; }
+            .mpx-metric{ padding: 1.3rem .8rem 1.15rem; }
+            .mpx-action{ padding: 1.3rem .9rem 1.2rem; }
+            .mpx-label{ font-size: .6rem; letter-spacing: .12em; }
+            .mpx-note{ font-size: .59rem; }
         }
 
+        /* ── Phone: 2 × 2 figures, then the two disclosures ─────────────── */
+        @media (max-width: 760.98px){
+            .mpx-financials{
+                --mpx-label-h: 2.7em;
+                --mpx-value-h: 2.1rem;
+                --mpx-note-h: 2.7em;
+            }
+            .mpx-strip{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .mpx-metric{ padding: 1.15rem .7rem 1rem; }
+            .mpx-metric:nth-child(odd){ border-left: 0; }
+            .mpx-metric:nth-child(n+3){ border-top: 1px solid var(--line); }
+            .mpx-m-capital::before{ left: .9rem; right: .9rem; }
 
-        /* ══ Registry Observatory mobile containment guard · v1.23.5 ═══════
-           Final cascade guard: v1.23.4 intentionally enlarges the desktop
-           rail, so mobile must explicitly reassert its single-column shell
-           after every desktop/global Observatory rule. This prevents future
-           desktop scale changes from squeezing the three mobile modes right. */
-        @media (max-width:760.98px) {
-            .capital-mode-rail {
-                grid-template-columns: minmax(0, 1fr) !important;
-                width: 100%;
-                min-width: 0;
-                max-width: 100%;
-            }
-            .capital-mode-intro,
-            .capital-mode-tabs {
-                width: 100%;
-                min-width: 0;
-                max-width: 100%;
-            }
-            .capital-mode-tabs {
-                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-            }
-            .capital-mode-btn {
-                width: 100%;
-                min-width: 0;
-                max-width: 100%;
-                overflow: hidden;
-            }
-            .capital-mode-label,
-            .capital-mode-caption {
-                min-width: 0;
-                max-width: 100%;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-
-
-        /* ══ Registry Observatory mobile editorial restore · v1.23.6 ═════
-           Restore the lighter v1.23.3 mobile proportions without touching
-           the accepted laptop/desktop Observatory. Typography is deliberately
-           larger than v1.23.3, while active surfaces stay compact and calm. */
-        @media (max-width:760.98px) {
-            .capital-mode-rail-wrap {
-                padding-top: .74rem;
-                padding-bottom: .54rem;
-            }
-            .capital-mode-rail {
-                gap: .62rem !important;
-            }
-            .capital-mode-intro {
-                padding: 0 .08rem .02rem;
-                align-items: flex-end;
-            }
-            .capital-mode-tabs {
-                gap: .24rem;
-                padding: .22rem;
-            }
-            .capital-mode-btn {
-                min-height: 58px;
-                padding: .58rem .24rem .54rem;
-                border-radius: 14px;
-                gap: .22rem;
-                transform: none !important;
-            }
-            .capital-mode-btn:hover:not(.active) {
-                transform: none !important;
-                box-shadow: none;
-            }
-            .capital-mode-btn.active {
-                transform: none !important;
-                box-shadow:
-                    inset 0 1px 0 rgba(255,255,255,.055),
-                    inset 0 0 0 1px rgba(216,180,90,.16),
-                    0 15px 30px -24px rgba(22,21,15,.62);
-            }
-            .capital-mode-btn-stable.active {
-                box-shadow:
-                    inset 0 1px 0 rgba(255,255,255,.05),
-                    inset 0 0 0 1px rgba(82,177,128,.18),
-                    0 15px 30px -24px rgba(10,70,43,.54);
-            }
-            .capital-mode-label {
-                font-size: .98rem;
-                line-height: 1;
-                letter-spacing: -.018em;
-            }
-            .capital-mode-caption {
-                font-size: .45rem;
-                line-height: 1.08;
+            .mpx-label{
+                font-size: .6rem;
                 letter-spacing: .105em;
+                padding-bottom: .42rem;
+            }
+            .mpx-value{ font-size: clamp(1.5rem, 7.6vw, 1.95rem); }
+            .mpx-m-capital .mpx-value{ font-size: clamp(1.62rem, 8.4vw, 2.15rem); }
+            .mpx-m-claimable .mpx-value{ font-size: clamp(1.34rem, 6.6vw, 1.7rem); }
+            .mpx-note{
+                max-width: 18ch;
+                padding-top: .42rem;
+                font-size: .585rem;
+                line-height: 1.35;
+            }
+
+            .mpx-actions{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .mpx-action{ padding: 1.15rem .7rem 1.1rem; }
+            .mpx-value-sans{ font-size: clamp(.9rem, 4.2vw, 1.08rem); line-height: 1.3; }
+            .mpx-open{
+                margin-top: .05rem;
+                padding: .46rem .72rem;
+                font-size: .615rem;
+                letter-spacing: .04em;
             }
         }
-        @media (max-width:420px) {
-            .capital-mode-rail-wrap { padding-top: .68rem; }
-            .capital-mode-rail { gap: .56rem !important; }
-            .capital-mode-tabs { gap: .18rem; padding: .2rem; }
-            .capital-mode-btn {
-                min-height: 56px;
-                padding: .54rem .18rem .5rem;
-                border-radius: 12px;
+
+        @media (max-width: 390px){
+            .mpx-financials{ --mpx-label-h: 2.8em; --mpx-value-h: 1.95rem; }
+            .mpx-metric{ padding: 1rem .5rem .9rem; }
+            .mpx-action{ padding: 1rem .55rem 1rem; }
+            .mpx-label{ font-size: .565rem; letter-spacing: .085em; }
+            .mpx-note{ font-size: .55rem; max-width: 16ch; }
+            .mpx-open{ padding: .42rem .6rem; font-size: .585rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce){
+            .mpx-open, .mpx-open-arrow, .mpx-action{ transition-duration: .01ms; }
+        }
+
+        /* ── Passport hero, tuned to the same scale ─────────────────────── */
+        #stable-index .stable-passport .scp-hero{
+            padding: 1.55rem 4.3rem 1.4rem 1.55rem !important;
+        }
+        #stable-index .stable-passport .scp-kicker{
+            font-size: .655rem !important;
+            letter-spacing: .16em !important;
+            margin-bottom: .55rem !important;
+        }
+        #stable-index .stable-passport .scp-hero p{
+            max-width: 660px !important;
+            margin-top: .7rem !important;
+            font-size: .88rem !important;
+            line-height: 1.7 !important;
+        }
+        @media (max-width: 760.98px){
+            #stable-index .stable-passport .scp-hero{
+                padding: 1.1rem 3.2rem 1rem 1.05rem !important;
             }
-            .capital-mode-label { font-size: .94rem; }
-            .capital-mode-caption { font-size: .42rem; letter-spacing: .09em; }
+            #stable-index .stable-passport .scp-kicker{ font-size: .6rem !important; }
+            #stable-index .stable-passport .scp-hero p{
+                margin-top: .52rem !important;
+                font-size: .79rem !important;
+                line-height: 1.66 !important;
+            }
+        }
+
+        /* ── Help tooltips: no page dimming, and no sideways drift ──────── */
+        /* The veil existed only to catch the dismissing tap. It does not need
+           to darken or blur the passport to do that. */
+        .sc-tip-veil{
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+        /* On a phone a `position: fixed` tip is laid out against the nearest
+           transformed ancestor, and .stable-passport carries will-change:
+           transform — which is why tips drifted off to the side. The script at
+           the end of the document moves an open tip to <body> and positions it
+           from the button's own rect; these rules describe that portalled state. */
+        .sc-tip.mpx-tip-portal{
+            position: fixed !important;
+            right: auto !important;
+            bottom: auto !important;
+            margin: 0 !important;
+            max-width: none !important;
+            max-height: min(52vh, 360px);
+            overflow-y: auto;
+            z-index: 3400 !important;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-4px) scale(.985) !important;
+            transition: opacity .2s ease, transform .24s cubic-bezier(.22,1,.36,1);
+            box-shadow: 0 24px 52px -20px rgba(10,30,22,.5);
+        }
+        @media (min-width: 761px){
+            .mpx-strip .mpx-metric:last-child .sc-tip,
+            .mpx-actions .mpx-action:last-child .sc-tip{
+                left: auto !important;
+                right: 0 !important;
+                transform: translate(0, -6px) !important;
+            }
+            .mpx-strip .mpx-metric:last-child .sc-help-wrap:hover .sc-tip,
+            .mpx-strip .mpx-metric:last-child .sc-help-wrap.open .sc-tip,
+            .mpx-actions .mpx-action:last-child .sc-help-wrap:hover .sc-tip,
+            .mpx-actions .mpx-action:last-child .sc-help-wrap.open .sc-tip{
+                transform: translate(0, 0) !important;
+            }
+            .mpx-strip .mpx-metric:first-child .sc-tip{
+                left: 0 !important;
+                right: auto !important;
+                transform: translate(0, -6px) !important;
+            }
+            .mpx-strip .mpx-metric:first-child .sc-help-wrap:hover .sc-tip,
+            .mpx-strip .mpx-metric:first-child .sc-help-wrap.open .sc-tip{
+                transform: translate(0, 0) !important;
+            }
+        }
+
+        .sc-tip.mpx-tip-portal.mpx-tip-on{
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: translateY(0) scale(1) !important;
         }
 </style>
 
@@ -7842,47 +6789,12 @@
     </div>
 </section>
 
-<!-- ══ REGISTRY SURFACE SWITCHER · v1.23.0 ═════════════════════ -->
-<section class="capital-mode-hub" id="capital-hub" aria-label="Registry views">
-    <div class="capital-mode-rail-wrap">
-        <div class="container">
-            <div class="capital-mode-rail">
-                <div class="capital-mode-intro">
-                    <span class="capital-mode-kicker" data-i18n="surface.eyebrow">Registry Observatory</span>
-                    <span class="capital-mode-note" data-i18n="surface.note">One registry. Three ways to read the network.</span>
-                </div>
-                <div class="capital-mode-tabs" role="tablist" aria-label="Registry views">
-                    <button class="capital-mode-btn" id="capitalModeCollection" type="button" role="tab" data-capital-mode-btn="collection" aria-controls="collection" aria-selected="true">
-                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.collection">The Collection</span>
-                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.collection.short">Collection</span>
-                        <span class="capital-mode-caption" data-i18n="surface.collection.caption">Live Registry</span>
-                    </button>
-                    <button class="capital-mode-btn" id="capitalModeIndex" type="button" role="tab" data-capital-mode-btn="index" aria-controls="index" aria-selected="false">
-                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.index">General Index</span>
-                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.index.short">General Index</span>
-                        <span class="capital-mode-caption" data-i18n="surface.index.caption">Composite &amp; TVL</span>
-                    </button>
-                    <button class="capital-mode-btn capital-mode-btn-stable" id="capitalModeStable" type="button" role="tab" data-capital-mode-btn="stable" aria-controls="stable-index" aria-selected="false">
-                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.stable">Stable Index</span>
-                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.stable.short">Stable Index</span>
-                        <span class="capital-mode-caption" data-i18n="surface.stable.caption">Stable Capital</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="capital-mode-stage">
 <!-- ── COLLECTION ───────────────────────────────────── -->
-<section class="collection capital-mode-panel" id="collection" data-capital-panel="collection" role="tabpanel" aria-labelledby="capitalModeCollection">
+<section class="collection" id="collection">
     <div class="container">
-        <div class="collection-head reveal capital-surface-head">
-            <div class="capital-surface-copy">
-                <div class="capital-surface-eyebrow"><span class="capital-surface-live-dot"></span><span data-i18n="surface.collection.eyebrow">Company Registry · Live</span></div>
-                <h2 class="collection-title capital-surface-title" data-i18n="collection.title">The Collection</h2>
-                <p class="capital-surface-sub" data-i18n="surface.collection.sub">The live registry of personal onchain companies. Browse the network, compare operating capital and productivity, then open a Company Passport for the detail behind each company.</p>
-            </div>
-            <div class="collection-meta capital-surface-side">
+        <div class="collection-head reveal">
+            <h2 class="collection-title" data-i18n="collection.title">The Collection</h2>
+            <div class="collection-meta">
                 <div class="collection-count"><b id="companyCount">9</b> <span data-i18n="collection.count">companies</span></div>
                 <div class="view-switch" role="group" aria-label="View">
                     <button class="view-btn active" type="button" data-view="grid" aria-label="Grid view" title="Grid">
@@ -8085,7 +6997,7 @@
                     <div class="cc-status"><span class="cc-dot"></span><span data-i18n="card.live">Live</span></div>
                 </div>
                 <div class="cc-name">Aerocvxyb.eth</div>
-                <div class="cc-sub" data-i18n="card6.sub">A long-lock productive company combining 2-year ICP NNS staking with Aerodrome, Velodrome and Yield Basis across multiple networks.</div>
+                <div class="cc-sub" data-i18n="card6.sub">A long-lock productive company combining Aerodrome, Velodrome and Yield Basis across Base, Optimism and Ethereum.</div>
                 <div class="cc-metrics">
                     <div>
                         <div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div>
@@ -8093,7 +7005,7 @@
                     </div>
                     <div>
                         <div class="cc-metric-label" data-i18n="card.cashflow">APR</div>
-                        <div class="cc-metric-value" id="apr-aerocvxyb">~16.5%</div>
+                        <div class="cc-metric-value" id="apr-aerocvxyb">~22.5%</div>
                     </div>
                 </div>
                 
@@ -8176,18 +7088,33 @@
     </div>
 </section>
 
+<!-- ── THE NEXT LAYER ───────────────────────────────── -->
+<section class="nextlayer" id="next-layer">
+    <div class="container">
+        <div class="nl-grid">
+            <div class="nl-head">
+                <div class="nl-eyebrow reveal" data-i18n="nextlayer.eyebrow">From Companies to Infrastructure</div>
+                <h2 class="nl-title reveal" data-i18n="nextlayer.title">A network that compounds more than capital.</h2>
+            </div>
+            <div class="nl-body reveal">
+                <p data-i18n="nextlayer.p1">Each company remains sovereign — its own owner, treasury, keys, strategy and history. What connects them is not custody, but a common architecture for measurement.</p>
+                <p data-i18n="nextlayer.p2">The Holding reads what can be verified onchain, normalizes it into a common company model, and preserves the resulting operating record over time.</p>
+                <p data-i18n="nextlayer.p3">Every new company adds another balance sheet, another cash-flow history and another set of protocol relationships to the shared data layer. Over time, the registry becomes a dataset; the dataset becomes intelligence; and that intelligence can support indices, ratings, discovery and eventually external data products.</p>
+            </div>
+        </div>
+        <div class="nl-statement reveal">
+            <p data-i18n="nextlayer.statement">The companies remain sovereign. The intelligence becomes shared infrastructure.</p>
+        </div>
+    </div>
+</section>
 
 <!-- ── THE HOLDING INDEX (live network index) ────────── -->
-<section class="index-sec capital-mode-panel" id="index" data-capital-panel="index" role="tabpanel" aria-labelledby="capitalModeIndex">
+<section class="index-sec" id="index">
     <div class="container">
-        <div class="index-head capital-surface-head">
-            <div class="index-eyebrow reveal capital-surface-eyebrow"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">General Companies · Live Index</span></div>
-            <h2 class="index-title reveal capital-surface-title" data-i18n="index.title">The Holding Index</h2>
-            <p class="index-sub reveal capital-surface-sub" data-i18n="index.sub">General onchain companies viewed through two lenses. Composite measures capital, longevity, productivity and performance; TVL isolates economic scale. The same live company records power both views.</p>
-            <div class="capital-surface-side capital-surface-universe reveal">
-                <span data-i18n="surface.general.kicker">Measurement universe</span>
-                <b data-i18n="surface.general.value">General · Composite + TVL</b>
-            </div>
+        <div class="index-head">
+            <div class="index-eyebrow reveal"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">The Index · Live</span></div>
+            <h2 class="index-title reveal" data-i18n="index.title">The Holding Index</h2>
+            <p class="index-sub reveal" data-i18n="index.sub">The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance for general onchain companies; TVL shows pure economic scale. Stable Capital companies are measured separately in the dedicated Stable Companies Index below.</p>
         </div>
 
         <div class="index-metrics reveal">
@@ -8239,23 +7166,21 @@
         <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.</b> <span id="idxNoteBody" data-i18n="index.note.body">Below the weights sits a growing history of balances, productive engines, accrued rewards and operating time. As that history deepens, resilience, cash-flow quality and reputation can be measured from evidence rather than invented.</span></p>
         <div class="index-separation-note reveal">
             <span data-i18n="index.stableSeparate">Stable Capital companies do not compete in this Composite. Their objective, risk profile and return mechanics are different, so they are tracked in a dedicated Stable Companies Index.</span>
-            <a href="#stable-index" data-i18n="index.stableLink">Open Stable Companies →</a>
+            <a href="#stable-index" data-i18n="index.stableLink">View Stable Companies ↓</a>
         </div>
     </div>
 </section>
 
-
 <!-- ── STABLE COMPANIES INDEX · separate measurement universe ─────────── -->
-<section class="stable-index-sec capital-mode-panel" id="stable-index" data-capital-panel="stable" role="tabpanel" aria-labelledby="capitalModeStable">
+<section class="stable-index-sec" id="stable-index">
     <div class="container">
-        <div class="sc-head reveal capital-surface-head capital-surface-head-stable">
-            <div class="capital-surface-copy">
-                <div class="sc-eyebrow capital-surface-eyebrow"><span class="sc-live-dot"></span><span data-i18n="stable.eyebrow">Stable Capital · Live Index</span></div>
-                <h2 class="capital-surface-title" data-i18n="stable.title">The Holding Stable Companies Index</h2>
-                <p class="capital-surface-sub" data-i18n="stable.sub">Stable-only companies are measured in their own economic universe – stable capital, productive yield, generated income, claimable rewards and operating history – without forcing them into the volatility profile of the general Index.</p>
+        <div class="sc-head reveal">
+            <div>
+                <div class="sc-eyebrow"><span class="sc-live-dot"></span><span data-i18n="stable.eyebrow">Stable Capital · Separate Universe</span></div>
+                <h2 data-i18n="stable.title">The Holding Stable Companies Index</h2>
+                <p data-i18n="stable.sub">Stable-only companies are measured against the economics they are actually built for: preservation of capital, productive stable yield, embedded income, claimable rewards and operating history. They are intentionally not ranked against companies carrying BTC, ETH, volatile assets or long-lock governance positions.</p>
             </div>
-            <button class="sc-method-mini capital-surface-method" type="button" data-stable-focus="methodology">
-                <small data-i18n="surface.stable.methodKicker">Separate universe</small>
+            <button class="sc-method-mini" type="button" data-stable-focus="methodology">
                 <span data-i18n="stable.guide">How it works</span><i>?</i>
             </button>
         </div>
@@ -8328,62 +7253,85 @@
             </div>
 
             
-            <div class="scp-headline scp-headline-final">
-                <div class="scp-final-metric scp-final-invested">
-                    <span class="sc-label-with-help"><span data-i18n="stable.passport.invested">Invested</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.invested">Stable principal verified at entry into the productive strategy book.</span></span></span>
-                    <b class="gold" id="scpInvested">—</b>
-                </div>
-                <div class="scp-final-metric scp-final-capital">
-                    <span class="sc-label-with-help"><span data-i18n="stable.passport.capital">Current Capital</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.capital">Current Capital equals the current market value of the productive stable strategy book plus separately accrued Claimable rewards. Claimable is included exactly once and remains disclosed as a subset.</span></span></span>
-                    <b id="scpCapital">—</b>
-                </div>
-                <div class="scp-final-metric scp-final-apy">
-                    <span class="sc-label-with-help"><span data-i18n="stable.passport.apy">APY</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.apy">Current annualized productive rate of the strategy book. It is not historical return.</span></span></span>
-                    <b id="scpApy">—</b>
-                </div>
-                <div class="scp-final-metric scp-final-claimable">
-                    <span class="sc-label-with-help"><span data-i18n="stable.passport.claimable">Claimable</span><span class="sc-help-wrap"><button class="sc-help" type="button">?</button><span class="sc-tip" data-i18n="stable.help.claimable">Rewards already earned inside a protocol but not yet received by the company wallet.</span></span></span>
-                    <b id="scpClaimable">—</b>
-                </div>
-            </div>
+            <!-- ═══════════════════════════════════════════════════════════
+                 Monetra financial grid · mpx v2
+                 Deliberately built on its own class namespace (.mpx-*).
+                 Roughly fifteen historical override layers still target
+                 .scp-headline / .scp-final-metric / .scp-essential-card with
+                 !important and with :nth-child selectors written for an older
+                 six-cell markup, so those layers landed on some cards and not
+                 on others — which is exactly why the labels sat at different
+                 heights. Nothing here shares a class with them, so this grid
+                 is governed by one stylesheet block and nothing else.
+                 IDs, data-i18n keys and data-stable-focus hooks are unchanged,
+                 so every existing script keeps working untouched.
+            ═══════════════════════════════════════════════════════════════ -->
+            <section class="mpx-financials">
+                <div class="mpx-strip">
+                    <article class="mpx-metric mpx-m-invested">
+                        <div class="mpx-label">
+                            <span data-i18n="stable.passport.invested">Invested</span>
+                            <span class="sc-help-wrap"><button class="sc-help" type="button" aria-label="Invested information">?</button><span class="sc-tip" data-i18n="stable.help.invested">Stable principal verified at entry into the productive strategy book.</span></span>
+                        </div>
+                        <div class="mpx-value" id="scpInvested">—</div>
+                        <div class="mpx-note" data-i18n="mpx.note.invested">Verified principal at entry</div>
+                    </article>
 
-            <div class="scp-essential-actions scp-essential-actions-paired">
-                <article class="scp-essential-card scp-essential-card-performance">
-                    <div class="scp-essential-topline">
-                        <span class="sc-label-with-help">
+                    <article class="mpx-metric mpx-m-capital">
+                        <div class="mpx-label">
+                            <span data-i18n="stable.passport.capital">Current Capital</span>
+                            <span class="sc-help-wrap"><button class="sc-help" type="button" aria-label="Current Capital information">?</button><span class="sc-tip" data-i18n="stable.help.capital">Current Capital equals the current market value of the productive stable strategy book plus separately accrued Claimable rewards. Claimable is included exactly once and remains disclosed as a subset.</span></span>
+                        </div>
+                        <div class="mpx-value" id="scpCapital">—</div>
+                        <div class="mpx-note" data-i18n="mpx.note.capital">Market value including claimable</div>
+                    </article>
+
+                    <article class="mpx-metric mpx-m-apy">
+                        <div class="mpx-label">
+                            <span data-i18n="stable.passport.apy">APY</span>
+                            <span class="sc-help-wrap"><button class="sc-help" type="button" aria-label="APY information">?</button><span class="sc-tip" data-i18n="stable.help.apy">Current annualized productive rate of the strategy book. It is not historical return.</span></span>
+                        </div>
+                        <div class="mpx-value" id="scpApy">—</div>
+                        <div class="mpx-note" data-i18n="mpx.note.apy">Capital-weighted, current rate</div>
+                    </article>
+
+                    <article class="mpx-metric mpx-m-claimable">
+                        <div class="mpx-label">
+                            <span data-i18n="stable.passport.claimable">Claimable</span>
+                            <span class="sc-help-wrap"><button class="sc-help" type="button" aria-label="Claimable information">?</button><span class="sc-tip" data-i18n="stable.help.claimable">Rewards already earned inside a protocol but not yet received by the company wallet.</span></span>
+                        </div>
+                        <div class="mpx-value" id="scpClaimable">—</div>
+                        <div class="mpx-note" data-i18n="mpx.note.claimable">Earned, not yet in the wallet</div>
+                    </article>
+                </div>
+
+                <div class="mpx-actions">
+                    <article class="mpx-action mpx-a-performance">
+                        <div class="mpx-label">
                             <span data-i18n="stable.passport.performance">Performance</span>
-                            <span class="sc-help-wrap">
-                                <button class="sc-help" type="button" aria-label="Performance information">?</button>
-                                <span class="sc-tip" data-i18n="stable.help.performance">Headline Performance is Net Market P&L: Current Capital minus verified Invested principal. Strategy P&L and Stable Price Effect are reconciled separately in the detail view.</span>
-                            </span>
-                        </span>
-                    </div>
-                    <div class="scp-essential-main">
-                        <b id="scpPerformance">—</b>
-                    </div>
-                    <div class="scp-essential-footer">
-                        <button class="scp-quick-open" type="button" data-stable-focus="income">
+                            <span class="sc-help-wrap"><button class="sc-help" type="button" aria-label="Performance information">?</button><span class="sc-tip" data-i18n="stable.help.performance">Headline Performance is Net Market P&amp;L: Current Capital minus verified Invested principal. Strategy P&amp;L and Stable Price Effect are reconciled separately in the detail view.</span></span>
+                        </div>
+                        <div class="mpx-value mpx-value-sans" id="scpPerformance">—</div>
+                        <div class="mpx-note" data-i18n="mpx.note.performance">Current capital against invested principal</div>
+                        <button class="mpx-open" type="button" data-stable-focus="income">
                             <span data-i18n="stable.performance.details">View details</span>
-                            <svg class="scp-quick-arrow" viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <svg class="mpx-open-arrow" viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
-                    </div>
-                </article>
+                    </article>
 
-                <article class="scp-essential-card scp-essential-card-strategy">
-                    <div class="scp-essential-topline">
-                        <span data-i18n="stable.quick.strategies">Strategy Book</span>
-                    </div>
-                    <div class="scp-essential-main">
-                        <b id="scpEssentialStrategyText">—</b>
-                    </div>
-                    <div class="scp-essential-footer">
-                        <button class="scp-quick-open" type="button" data-stable-focus="strategies">
+                    <article class="mpx-action mpx-a-strategy">
+                        <div class="mpx-label">
+                            <span data-i18n="stable.quick.strategies">Strategy Book</span>
+                        </div>
+                        <div class="mpx-value" id="scpEssentialStrategyText">—</div>
+                        <div class="mpx-note" data-i18n="mpx.note.strategy">Across protocol families and chains</div>
+                        <button class="mpx-open" type="button" data-stable-focus="strategies">
                             <span data-i18n="stable.quick.open">View details</span>
-                            <svg class="scp-quick-arrow" viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <svg class="mpx-open-arrow" viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
-                    </div>
-                </article>
-            </div>
+                    </article>
+                </div>
+            </section>
 
             <!-- Dedicated Performance reconciliation source. Hidden in the Passport;
                  cloned into the premium focus layer by the Performance card. -->
@@ -8565,32 +7513,6 @@
     <button class="fw-close" id="fwClose" type="button" aria-label="Close">×</button>
     <div class="fw-inner" id="fwBody"></div>
 </aside>
-
-
-    </div>
-    <div class="capital-mode-a11y" id="capitalModeA11y" aria-live="polite" aria-atomic="true"></div>
-</section>
-<!-- ══ /REGISTRY SURFACE SWITCHER ═════════════════════════════════ -->
-
-<!-- ── THE NEXT LAYER ───────────────────────────────── -->
-<section class="nextlayer" id="next-layer">
-    <div class="container">
-        <div class="nl-grid">
-            <div class="nl-head">
-                <div class="nl-eyebrow reveal" data-i18n="nextlayer.eyebrow">From Companies to Infrastructure</div>
-                <h2 class="nl-title reveal" data-i18n="nextlayer.title">A network that compounds more than capital.</h2>
-            </div>
-            <div class="nl-body reveal">
-                <p data-i18n="nextlayer.p1">Each company remains sovereign — its own owner, treasury, keys, strategy and history. What connects them is not custody, but a common architecture for measurement.</p>
-                <p data-i18n="nextlayer.p2">The Holding reads what can be verified onchain, normalizes it into a common company model, and preserves the resulting operating record over time.</p>
-                <p data-i18n="nextlayer.p3">Every new company adds another balance sheet, another cash-flow history and another set of protocol relationships to the shared data layer. Over time, the registry becomes a dataset; the dataset becomes intelligence; and that intelligence can support indices, ratings, discovery and eventually external data products.</p>
-            </div>
-        </div>
-        <div class="nl-statement reveal">
-            <p data-i18n="nextlayer.statement">The companies remain sovereign. The intelligence becomes shared infrastructure.</p>
-        </div>
-    </div>
-</section>
 
 <!-- ── THE HOLDING GRAPH (live capital map) ──────────── -->
 <section class="graph-sec" id="graph">
@@ -8894,7 +7816,7 @@ const COMPANY_PROTOCOLS = {
     '05081966.eth':  ['Curve','Aero','Frax'],
     'dinaz.eth':     ['Yield Basis'],
     '0x5860...83CA8.eth': ['Bitcoin','ICP','Aero','Velodrome'],
-    'aerocvxyb.eth': ['ICP','Aero','Velodrome','Yield Basis']
+    'aerocvxyb.eth': ['Aero','Velodrome','Yield Basis']
 ,
     "Rook's portfolio": ['Bitcoin','Ethereum','Aave','Aero','Convex','Curve','Yield Basis'],
     'Monetra.eth': ['Aave','Curve','f(x) Protocol','Inverse','Sky','Yearn','Lido','Liquity','Frax'],
@@ -9481,8 +8403,7 @@ const COMPANY_BOOK = {
             ]
         },
         { id: 'velodrome-finance', qty: 6971.925992122776, entry: 0.076936 },
-        { id: 'yield-basis', qty: 12499.999999999958, entry: 0.08061164888740173 },
-        { id: 'internet-computer', qty: 1296, entry: 1.133, costBasisUsd: 1468.368, incomeMode: 'nns-2y-voting-rewards' }
+        { id: 'yield-basis', qty: 12499.999999999958, entry: 0.08061164888740173 }
     ]
 ,
     "Rook's portfolio": [
@@ -10066,63 +8987,8 @@ function renderIndex(lang) {
                 : '<span class="ipx-reward-token">Onchain</span>';
 
             let rows = '';
+            const displayRewards = aggregateDisplayRewards(rewards, { preserveOtherRows: !isDefitea });
             const sources = r && Array.isArray(r.sources) ? r.sources : [];
-            let displayRewards = aggregateDisplayRewards(rewards, { preserveOtherRows: !isDefitea });
-
-            // Defitea Aerodrome has two economically distinct managed-reward lanes:
-            // 1) FreeManagedReward = claimable multi-token rewards passed through by the manager.
-            // 2) LockedManagedReward = AERO compounded back into the managed veNFT.
-            // Keep both visible as separate Passport rows. If the current FreeManagedReward
-            // balance is zero, retain an explicit $0 Unclaimed row so the tracked lane does
-            // not disappear from the accounting surface between reward distributions.
-            if (isDefitea) {
-                const aeroSource = sources.find(s => s && s.route === 'aerodrome-ve');
-                const aeroDetails = aeroSource && aeroSource.details ? aeroSource.details : null;
-                const managedAeroTracked = Boolean(
-                    aeroDetails
-                    && Number(aeroDetails.managedPositions || 0) > 0
-                    && Array.isArray(aeroDetails.positions)
-                    && aeroDetails.positions.some(p => p && p.mode === 'managed' && p.freeManagedReward)
-                );
-                const hasAeroUnclaimed = displayRewards.some(x =>
-                    x && x.aerodromeRollup && x.veUnclaimedRollup
-                );
-
-                if (managedAeroTracked && !hasAeroUnclaimed) {
-                    displayRewards.push({
-                        protocol: 'Aerodrome',
-                        route: 'aerodrome-ve',
-                        displayRoute: 'aerodrome-ve',
-                        chain: 'Base',
-                        classification: 'unclaimed',
-                        amount: null,
-                        usdValue: 0,
-                        usdComplete: true,
-                        assetSymbols: [],
-                        rewardCount: 0,
-                        veUnclaimedRollup: true,
-                        veCompoundedRollup: false,
-                        aerodromeRollup: true,
-                        velodromeRollup: false,
-                        syntheticNoClaimables: true
-                    });
-                }
-
-                // Stable visual order: Aerodrome Unclaimed first, Compounded second,
-                // then all other reward routes in their existing relative order.
-                displayRewards = displayRewards
-                    .map((x, i) => ({ x, i }))
-                    .sort((a, b) => {
-                        const priority = item => {
-                            if (item && item.aerodromeRollup && item.veUnclaimedRollup) return 0;
-                            if (item && item.aerodromeRollup && item.veCompoundedRollup) return 1;
-                            return 10;
-                        };
-                        return priority(a.x) - priority(b.x) || a.i - b.i;
-                    })
-                    .map(v => v.x);
-            }
-
             const pending = sources.filter(s => s && s.status !== 'ok');
             const pendingByRoute = new Map(pending.map(s => [s.route, s]));
             const annotatedRoutes = new Set();
@@ -10162,11 +9028,9 @@ function renderIndex(lang) {
                         ? ' · +' + (symbols.length - compactSymbols.length) : '';
                     const tokenMeta = compactSymbols.length ? compactSymbols.join(' · ') + symbolTail : '';
                     const assetCount = symbols.length;
-                    const assetCountLabel = x.syntheticNoClaimables
-                        ? L.noCurrentClaimables
-                        : (lang === 'ru'
-                            ? (assetCount === 1 ? '1 reward-актив' : assetCount + ' reward-активов')
-                            : (assetCount === 1 ? '1 reward asset' : assetCount + ' reward assets'));
+                    const assetCountLabel = lang === 'ru'
+                        ? (assetCount === 1 ? '1 reward-актив' : assetCount + ' reward-активов')
+                        : (assetCount === 1 ? '1 reward asset' : assetCount + ' reward assets');
                     const routeLabel = isDefitea && x.velodromeRollup
                         ? 'Velodrome · 40 Acres'
                         : (x.aerodromeRollup ? 'Aerodrome' : 'Velodrome');
@@ -11277,15 +10141,11 @@ function renderFramework(lang) {
     const apr5Fallback = pvSum > 0 ? (pvICP*ICP_NNS_UI_FALLBACK + pvAERO*27.04 + pvVELO*24.96) / pvSum : 17;
     const APR_5860 = resolvedCompanyApr('0x5860...83CA8.eth', apr5Fallback, { en:'~' + apr5Fallback.toFixed(1) + '%', ru:'~' + apr5Fallback.toFixed(1) + '%' });
     const FOUNDATION_5860 = companyFoundation('0x5860...83CA8.eth');
-    // Company #006 now includes a 2-year NNS ICP position. ICP_NNS_UI_FALLBACK
-    // is only a first-paint/failure fallback; the weekly Productivity Layer
-    // supplies the current official ICP Dashboard estimate after each run.
-    const pv6ICP  = 1296 * Number(prices['internet-computer'] || 0);
     const pv6AERO = 9230.248119304428 * Number(prices['aerodrome-finance'] || 0);
     const pv6VELO = 6971.925992122776 * Number(prices['velodrome-finance'] || 0);
     const pv6YB   = 12499.999999999958 * Number(prices['yield-basis'] || 0);
-    const pv6Sum  = pv6ICP + pv6AERO + pv6VELO + pv6YB;
-    const apr6Fallback = pv6Sum > 0 ? (pv6ICP*ICP_NNS_UI_FALLBACK + pv6AERO*27.04 + pv6VELO*24.96 + pv6YB*4.16) / pv6Sum : 16.5;
+    const pv6Sum  = pv6AERO + pv6VELO + pv6YB;
+    const apr6Fallback = pv6Sum > 0 ? (pv6AERO*27.04 + pv6VELO*24.96 + pv6YB*4.16) / pv6Sum : 22.5;
     const APR_AEROCRVYB = resolvedCompanyApr('aerocvxyb.eth', apr6Fallback, { en:'~' + apr6Fallback.toFixed(1) + '%', ru:'~' + apr6Fallback.toFixed(1) + '%' });
     const FOUNDATION_AEROCRVYB = companyFoundation('aerocvxyb.eth', '2023-08-18');
     const pv7AERO = 4330.755126048871 * Number(prices['aerodrome-finance'] || 0);
@@ -11321,7 +10181,7 @@ function renderFramework(lang) {
           reg:'005', ...APR_5860, foundedISO:FOUNDATION_5860.iso, founded:{ en:FOUNDATION_5860.en, ru:FOUNDATION_5860.ru }, arch:{ en:'The Holding Standard', ru:'Стандарт The Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'aerocvxyb.eth', val: tvl6, cost: F6.cost, pnl: F6.pnl, pct: F6.pct, href: null,
           cat: { en: 'The Holding Standard', ru: 'Стандарт The Holding' }, since: { en: FOUNDATION_AEROCRVYB.sinceEn, ru: FOUNDATION_AEROCRVYB.sinceRu },
-          reg:'006', ...APR_AEROCRVYB, foundedISO:FOUNDATION_AEROCRVYB.iso, founded:{ en:FOUNDATION_AEROCRVYB.en, ru:FOUNDATION_AEROCRVYB.ru }, arch:{ en:'The Holding Standard', ru:'Стандарт The Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
+          reg:'006', ...APR_AEROCRVYB, foundedISO:FOUNDATION_AEROCRVYB.iso, founded:{ en:FOUNDATION_AEROCRVYB.en, ru:FOUNDATION_AEROCRVYB.ru }, arch:{ en:'The Holding Standard', ru:'Стандарт The Holding' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
         { nm: "Rook's portfolio", val: tvl7, cost: F7.cost, pnl: F7.pnl, pct: F7.pct, href: null,
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: FOUNDATION_ROOK.sinceEn, ru: FOUNDATION_ROOK.sinceRu },
           reg:'007', ...APR_ROOK, foundedISO:FOUNDATION_ROOK.iso, founded:{ en:FOUNDATION_ROOK.en, ru: FOUNDATION_ROOK.ru }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:8, status:{ en:'Productive', ru:'Активна' } },
@@ -11652,22 +10512,6 @@ function renderFramework(lang) {
             'stats.since': 'Network Since',
             'collection.title': 'The Collection',
             'collection.count': 'companies',
-            'surface.eyebrow': 'Registry Observatory',
-            'surface.note': 'One registry. Three ways to read the network.',
-            'surface.collection': 'The Collection',
-            'surface.collection.short': 'Collection',
-            'surface.collection.caption': 'Live Registry',
-            'surface.collection.eyebrow': 'Company Registry · Live',
-            'surface.collection.sub': 'The live registry of personal onchain companies. Browse the network, compare operating capital and productivity, then open a Company Passport for the detail behind each company.',
-            'surface.index': 'General Index',
-            'surface.index.short': 'General Index',
-            'surface.index.caption': 'Composite & TVL',
-            'surface.stable': 'Stable Index',
-            'surface.stable.short': 'Stable Index',
-            'surface.stable.caption': 'Stable Capital',
-            'surface.general.kicker': 'Measurement universe',
-            'surface.general.value': 'General · Composite + TVL',
-            'surface.stable.methodKicker': 'Separate universe',
             'filter.all': 'All Companies',
             'filter.all.short': 'All',
             'filter.standard': 'The Holding Standard',
@@ -11687,10 +10531,10 @@ function renderFramework(lang) {
             'card8.yield': 'Reference APY',
             'card8.measuring': 'Measuring',
             'index.stableSeparate': 'Stable Capital companies do not compete in this Composite. Their objective, risk profile and return mechanics are different, so they are tracked in a dedicated Stable Companies Index.',
-            'index.stableLink': 'Open Stable Companies →',
-            'stable.eyebrow': 'Stable Capital · Live Index',
+            'index.stableLink': 'View Stable Companies ↓',
+            'stable.eyebrow': 'Stable Capital · Separate Index',
             'stable.title': 'The Holding Stable Companies Index',
-            'stable.sub': 'Stable-only companies are measured in their own economic universe – stable capital, productive yield, generated income, claimable rewards and operating history – without forcing them into the volatility profile of the general Index.',
+            'stable.sub': 'Stable-only companies are measured separately by capital, productive yield and operating history.',
             'stable.badgeTop': 'Independent measurement',
             'stable.badgeBottom': 'Stable-only universe',
             'stable.metric.capital': 'Stable Capital',
@@ -11748,6 +10592,12 @@ function renderFramework(lang) {
             'stable.quick.strategies': 'Strategy Book',
             'stable.quick.income': 'Income',
             'stable.quick.open': 'View details',
+            'mpx.note.invested': 'Verified principal at entry',
+            'mpx.note.capital': 'Market value including claimable',
+            'mpx.note.apy': 'Capital-weighted, current rate',
+            'mpx.note.claimable': 'Earned, not yet in the wallet',
+            'mpx.note.performance': 'Current capital against invested principal',
+            'mpx.note.strategy': 'Across protocol families and chains',
             'stable.performance.details': 'View details',
             'stable.performance.detailKicker': 'PERFORMANCE RECONCILIATION',
             'stable.performance.detailTitle': 'From Invested to Current Capital',
@@ -11811,7 +10661,7 @@ function renderFramework(lang) {
             'card4.founded': 'Est. Jan 3, 2025',
             'card4.sub': 'One of The Holding’s core onchain companies — a diversified system of long-term DeFi positions designed to generate durable cash flow onchain.',
             'card5.sub': 'A Bitcoin-reserve company combining maximum-term ICP staking with long-lock positions in Aerodrome and Velodrome.',
-            'card6.sub': 'A long-lock productive company combining 2-year ICP NNS staking with Aerodrome, Velodrome and Yield Basis across multiple networks.',
+            'card6.sub': 'A long-lock productive company combining Aerodrome, Velodrome and Yield Basis across Base, Optimism and Ethereum.',
             'card7.sub': 'A custom onchain company combining reserve capital with productive veAERO, vlCVX, veCRV and Yield Basis liquidity across multiple networks.',
             'card.tvl': 'Company TVL',
             'card.cashflow': 'APR',
@@ -11826,14 +10676,14 @@ function renderFramework(lang) {
             'nextlayer.p2': 'The Holding reads what can be verified onchain, normalizes it into a common company model, and preserves the resulting operating record over time.',
             'nextlayer.p3': 'Every new company adds another balance sheet, another cash-flow history and another set of protocol relationships to the shared data layer. Over time, the registry becomes a dataset; the dataset becomes intelligence; and that intelligence can support indices, ratings, discovery and eventually external data products.',
             'nextlayer.statement': 'The companies remain sovereign. The intelligence becomes shared infrastructure.',
-            'index.eyebrow': 'General Companies · Live Index',
+            'index.eyebrow': 'The Index · Live',
             'index.framework': 'Inside the Index',
             'index.weighting': 'Weighting',
             'index.mode.composite': 'Composite',
             'index.mode.tvl': 'TVL',
             'index.lens': 'Same companies. Different lens.',
             'index.title': 'The Holding Index',
-            'index.sub': 'General onchain companies viewed through two lenses. Composite measures capital, longevity, productivity and performance; TVL isolates economic scale. The same live company records power both views.',
+            'index.sub': 'The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance into one Index Weight; TVL shows pure economic scale. Both views are calculated from the same living company records.',
             'index.m.value': 'Network Value',
             'index.m.constituents': 'Constituents',
             'index.m.leader': 'Leading Company',
@@ -11910,22 +10760,6 @@ function renderFramework(lang) {
             'stats.since': 'Сеть с',
             'collection.title': 'Коллекция',
             'collection.count': 'компаний',
-            'surface.eyebrow': 'Registry Observatory',
-            'surface.note': 'Один реестр. Три способа читать сеть.',
-            'surface.collection': 'The Collection',
-            'surface.collection.short': 'Коллекция',
-            'surface.collection.caption': 'Живой реестр',
-            'surface.collection.eyebrow': 'Реестр компаний · Live',
-            'surface.collection.sub': 'Живой реестр персональных ончейн-компаний. Здесь можно увидеть всю сеть, сравнить капитал и производительность и открыть Company Passport с операционной детализацией каждой компании.',
-            'surface.index': 'General Index',
-            'surface.index.short': 'General Index',
-            'surface.index.caption': 'Composite и TVL',
-            'surface.stable': 'Stable Index',
-            'surface.stable.short': 'Stable Index',
-            'surface.stable.caption': 'Stable Capital',
-            'surface.general.kicker': 'Вселенная измерения',
-            'surface.general.value': 'General · Composite + TVL',
-            'surface.stable.methodKicker': 'Отдельная вселенная',
             'filter.all': 'Все компании',
             'filter.all.short': 'Все',
             'filter.standard': 'The Holding Standard',
@@ -11945,10 +10779,10 @@ function renderFramework(lang) {
             'card8.yield': 'Reference APY',
             'card8.measuring': 'Измеряется',
             'index.stableSeparate': 'Компании Stable Capital не участвуют в этом Composite. Их цель, риск-профиль и механика доходности отличаются, поэтому они отслеживаются в отдельном индексе стейбл-компаний.',
-            'index.stableLink': 'Открыть индекс stable-компаний →',
-            'stable.eyebrow': 'Stable Capital · Live Index',
+            'index.stableLink': 'К стейбл-компаниям ↓',
+            'stable.eyebrow': 'Stable Capital · Отдельный индекс',
             'stable.title': 'Индекс стейбл-компаний The Holding',
-            'stable.sub': 'Стейбл-компании измеряются в собственной экономической вселенной – stable capital, productive yield, generated income, claimable rewards и операционная история – без навязывания им волатильного профиля общего индекса.',
+            'stable.sub': 'Стейбл-компании измеряются отдельно: капитал, текущая доходность и операционная история.',
             'stable.badgeTop': 'Независимое измерение',
             'stable.badgeBottom': 'Отдельная stable-категория',
             'stable.metric.capital': 'Stable Capital',
@@ -12006,6 +10840,12 @@ function renderFramework(lang) {
             'stable.quick.strategies': 'Книга стратегий',
             'stable.quick.income': 'Доход',
             'stable.quick.open': 'Подробнее',
+            'mpx.note.invested': 'Подтверждено при входе',
+            'mpx.note.capital': 'Рыночная стоимость с учётом claimable',
+            'mpx.note.apy': 'Текущая ставка, взвешено по капиталу',
+            'mpx.note.claimable': 'Заработано, ещё не в кошельке',
+            'mpx.note.performance': 'Текущий капитал против вложенного',
+            'mpx.note.strategy': 'По семействам протоколов и сетям',
             'stable.performance.details': 'Подробнее',
             'stable.performance.detailKicker': 'СВЕРКА РЕЗУЛЬТАТА',
             'stable.performance.detailTitle': 'От вложенного капитала к текущему',
@@ -12071,7 +10911,7 @@ function renderFramework(lang) {
             'card4.founded': 'Осн. 3 января 2025',
             'card4.sub': 'Одна из ключевых ончейн-компаний The Holding — диверсифицированная система долгосрочных DeFi-позиций, созданная для устойчивой генерации денежного потока ончейн.',
             'card5.sub': 'Компания с резервом в Bitcoin, максимальным NNS-стейкингом ICP и долгосрочными ve-позициями в Aerodrome и Velodrome.',
-            'card6.sub': 'Продуктивная компания, сочетающая 2-летний NNS-стейкинг ICP с долгосрочными позициями в Aerodrome, Velodrome и Yield Basis.',
+            'card6.sub': 'Продуктивная компания с долгосрочными позициями в Aerodrome, Velodrome и Yield Basis на Base, Optimism и Ethereum.',
             'card7.sub': 'Индивидуальная ончейн-компания, сочетающая резервный капитал с продуктивными veAERO, vlCVX, veCRV и ликвидностью Yield Basis в нескольких сетях.',
             'card.tvl': 'TVL компании',
             'card.cashflow': 'APR',
@@ -12086,14 +10926,14 @@ function renderFramework(lang) {
             'nextlayer.p2': 'The Holding читает то, что можно подтвердить ончейн, приводит данные к единой модели компании и сохраняет её операционную историю во времени.',
             'nextlayer.p3': 'Каждая новая компания добавляет в общий слой данных ещё один баланс, ещё одну историю денежного потока и ещё один набор связей с протоколами. Со временем реестр превращается в собственный dataset, dataset — в intelligence layer, а этот слой может стать основой индексов, рейтингов, discovery и будущих внешних data products.',
             'nextlayer.statement': 'Компании остаются суверенными. Intelligence становится общей инфраструктурой.',
-            'index.eyebrow': 'General Companies · Live Index',
+            'index.eyebrow': 'Индекс · Live',
             'index.framework': 'Внутри индекса',
             'index.weighting': 'Взвешивание',
             'index.mode.composite': 'Композит',
             'index.mode.tvl': 'TVL',
             'index.lens': 'Те же компании. Другой взгляд.',
             'index.title': 'Индекс The Holding',
-            'index.sub': 'Общие ончейн-компании показаны через две линзы. Composite измеряет капитал, возраст, производительность и performance; TVL изолирует экономический масштаб. Оба режима работают на одной живой истории компаний.',
+            'index.sub': 'Аналитическая поверхность более глубокой системы данных. Composite объединяет капитал, возраст, производительность и performance в единый Index Weight; TVL показывает чистый экономический масштаб. Оба режима рассчитываются из одной живой истории компаний.',
             'index.m.value': 'Ценность сети',
             'index.m.constituents': 'Компаний в индексе',
             'index.m.leader': 'Ведущая компания',
@@ -12663,197 +11503,93 @@ function renderFramework(lang) {
     else start();
 })();</script>
 
-
-<script data-th-addon="registry-observatory-v1.23.1">(function(){
+<!-- Help tooltip portal · mpx v2 -->
+<script data-th-addon="mpx-tip-portal-v2">(function(){
     'use strict';
-    const VERSION = '1.23.1-registry-observatory';
-    const MODES = ['collection','index','stable'];
-    const root = document.documentElement;
-    const hub = document.getElementById('capital-hub');
-    const panels = Array.from(document.querySelectorAll('[data-capital-panel]'));
-    const buttons = Array.from(document.querySelectorAll('[data-capital-mode-btn]'));
-    const live = document.getElementById('capitalModeA11y');
-    const tablist = document.querySelector('.capital-mode-tabs');
-    const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    if (!hub || panels.length !== 3 || buttons.length !== 3) return;
+    /* A `position: fixed` element is laid out against the nearest ancestor that
+       carries a transform, a filter or will-change: transform — and the stable
+       passport carries will-change: transform while it animates open. That is
+       why an open tooltip could appear far to the side of the button that
+       opened it, and why it looked clipped at the screen edge.
 
-    function valid(mode) { return MODES.indexOf(mode) !== -1 ? mode : 'collection'; }
-    function hashMode() {
-        const h = String(location.hash || '').toLowerCase();
-        if (h === '#index') return 'index';
-        if (h === '#stable-index') return 'stable';
-        if (h === '#collection') return 'collection';
-        return '';
-    }
-    function storedMode() {
-        try { return sessionStorage.getItem('thCapitalSurfaceMode') || ''; } catch (_) { return ''; }
-    }
-    let current = valid(hashMode() || root.getAttribute('data-capital-mode') || storedMode() || 'collection');
-    let transitionTimer = 0;
-    let releaseTimer = 0;
+       The existing help script owns the open/closed state (it toggles .open on
+       .sc-help-wrap). This addon owns only *where* an open tip is drawn on a
+       phone: it moves the tip to <body> — where fixed means the viewport
+       again — and positions it from the button's own rectangle, clamped to the
+       screen. When the wrapper closes, the tip goes back exactly where it was. */
 
-    function labelFor(mode) {
-        const btn = buttons.find(b => b.dataset.capitalModeBtn === mode);
-        if (!btn) return mode;
-        const full = btn.querySelector('.capital-mode-label-full');
-        return full ? full.textContent.trim() : btn.textContent.trim();
-    }
+    var MOBILE = function(){ return window.matchMedia('(max-width: 760.98px)').matches; };
+    var home = new WeakMap();   // tip -> { parent, next }
+    var openTip = null, openBtn = null;
 
-    function normalizeState(mode) {
-        current = valid(mode);
-        root.setAttribute('data-capital-mode', current);
-        panels.forEach(panel => {
-            const on = panel.dataset.capitalPanel === current;
-            panel.hidden = !on;
-            panel.setAttribute('aria-hidden', on ? 'false' : 'true');
-            panel.classList.remove('capital-panel-leaving');
-        });
-        buttons.forEach(btn => {
-            const on = btn.dataset.capitalModeBtn === current;
-            btn.classList.toggle('active', on);
-            btn.setAttribute('aria-selected', on ? 'true' : 'false');
-            btn.tabIndex = on ? 0 : -1;
-        });
-        try { sessionStorage.setItem('thCapitalSurfaceMode', current); } catch (_) {}
-        updateSubnav();
-    }
-
-    function scrollToHub(behavior) {
-        const subnav = document.getElementById('subnav');
-        const clearance = (subnav ? subnav.offsetHeight : 0) + 8;
-        const top = Math.max(0, hub.getBoundingClientRect().top + window.scrollY - clearance);
-        window.scrollTo({ top: top, behavior: behavior || (reduceMotion ? 'auto' : 'smooth') });
-    }
-
-    function updateHash(mode) {
-        const h = mode === 'index' ? '#index' : (mode === 'stable' ? '#stable-index' : '#collection');
-        try { history.replaceState(history.state, '', h); } catch (_) {}
-    }
-
-    function refreshSurface(mode) {
-        try {
-            if (mode === 'index' && typeof window.renderIndex === 'function') window.renderIndex(typeof window.idxLang === 'function' ? window.idxLang() : undefined);
-            if (mode === 'stable' && typeof window.renderStableCompanies === 'function') window.renderStableCompanies(typeof window.idxLang === 'function' ? window.idxLang() : undefined);
-        } catch (_) {}
-        requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
-    }
-
-    function selectMode(mode, opts) {
-        opts = opts || {};
-        mode = valid(mode);
-        if (transitionTimer) clearTimeout(transitionTimer);
-        if (releaseTimer) clearTimeout(releaseTimer);
-
-        if (mode === current) {
-            if (opts.scroll !== false) scrollToHub(opts.behavior);
-            if (opts.hash !== false) updateHash(mode);
-            updateSubnav();
-            return;
+    function place(){
+        if (!openTip || !openBtn) return;
+        var vw = window.innerWidth, vh = window.innerHeight;
+        var w = Math.min(330, vw - 24);
+        openTip.style.setProperty('width', w + 'px', 'important');
+        var r = openBtn.getBoundingClientRect();
+        if (r.width === 0 && r.height === 0) { restore(); return; }
+        var h = openTip.offsetHeight;
+        var left = Math.round(r.left + r.width / 2 - w / 2);
+        left = Math.max(12, Math.min(left, vw - w - 12));
+        var top = Math.round(r.bottom + 10);
+        if (top + h > vh - 14) {
+            var above = Math.round(r.top - h - 10);
+            top = above >= 14 ? above : Math.max(14, vh - h - 14);
         }
-
-        const oldPanel = panels.find(p => p.dataset.capitalPanel === current && !p.hidden);
-        const newPanel = panels.find(p => p.dataset.capitalPanel === mode);
-        const oldHeight = hub.offsetHeight;
-        if (oldHeight > 0) hub.style.minHeight = oldHeight + 'px';
-
-        buttons.forEach(btn => {
-            const on = btn.dataset.capitalModeBtn === mode;
-            btn.classList.toggle('active', on);
-            btn.setAttribute('aria-selected', on ? 'true' : 'false');
-            btn.tabIndex = on ? 0 : -1;
-        });
-        if (oldPanel && !reduceMotion) oldPanel.classList.add('capital-panel-leaving');
-        if (opts.scroll !== false) scrollToHub(opts.behavior);
-
-        const delay = reduceMotion ? 0 : 135;
-        transitionTimer = window.setTimeout(() => {
-            current = mode;
-            root.setAttribute('data-capital-mode', current);
-            panels.forEach(panel => {
-                const on = panel.dataset.capitalPanel === current;
-                panel.hidden = !on;
-                panel.setAttribute('aria-hidden', on ? 'false' : 'true');
-                panel.classList.remove('capital-panel-leaving','capital-panel-entering');
-            });
-            if (newPanel && !reduceMotion) {
-                newPanel.classList.add('capital-panel-entering');
-                window.setTimeout(() => newPanel.classList.remove('capital-panel-entering'), 430);
-            }
-            try { sessionStorage.setItem('thCapitalSurfaceMode', current); } catch (_) {}
-            if (opts.hash !== false) updateHash(current);
-            if (live) live.textContent = labelFor(current);
-            refreshSurface(current);
-            updateSubnav();
-
-            releaseTimer = window.setTimeout(() => {
-                hub.style.minHeight = '';
-            }, reduceMotion ? 0 : 520);
-        }, delay);
+        openTip.style.setProperty('left', left + 'px', 'important');
+        openTip.style.setProperty('top', top + 'px', 'important');
     }
 
-    function modeFromAnchor(anchor) {
-        if (!anchor) return '';
-        const href = anchor.getAttribute('href');
-        if (href === '#collection') return 'collection';
-        if (href === '#index') return 'index';
-        if (href === '#stable-index') return 'stable';
-        return '';
+    function restore(){
+        if (!openTip) return;
+        var tip = openTip, slot = home.get(tip);
+        openTip = null; openBtn = null;
+        tip.classList.remove('mpx-tip-on');
+        window.setTimeout(function(){
+            if (tip.classList.contains('mpx-tip-on')) return;   // reopened meanwhile
+            tip.classList.remove('mpx-tip-portal');
+            tip.style.removeProperty('left');
+            tip.style.removeProperty('top');
+            tip.style.removeProperty('width');
+            if (slot && slot.parent) slot.parent.insertBefore(tip, slot.next || null);
+        }, 200);
     }
 
-    document.addEventListener('click', function(e){
-        const btn = e.target.closest('[data-capital-mode-btn]');
-        if (btn) {
-            e.preventDefault();
-            selectMode(btn.dataset.capitalModeBtn, { scroll:true, hash:true });
-            return;
-        }
-        const anchor = e.target.closest('a[href="#collection"],a[href="#index"],a[href="#stable-index"]');
-        const mode = modeFromAnchor(anchor);
-        if (mode) {
-            e.preventDefault();
-            selectMode(mode, { scroll:true, hash:true });
-        }
-    });
-
-    if (tablist) tablist.addEventListener('keydown', function(e){
-        if (!['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
-        e.preventDefault();
-        let i = MODES.indexOf(current);
-        if (e.key === 'ArrowRight') i = (i + 1) % MODES.length;
-        if (e.key === 'ArrowLeft') i = (i - 1 + MODES.length) % MODES.length;
-        if (e.key === 'Home') i = 0;
-        if (e.key === 'End') i = MODES.length - 1;
-        selectMode(MODES[i], { scroll:false, hash:true });
-        const target = buttons.find(b => b.dataset.capitalModeBtn === MODES[i]);
-        if (target) target.focus({ preventScroll:true });
-    });
-
-    /* The legacy scroll spy knows Collection and Index as separate vertical
-       sections. They now occupy one stage, so this late handler normalizes the
-       active subnav link to the selected surface while the reader is in the hub. */
-    function updateSubnav() {
-        const links = Array.from(document.querySelectorAll('.subnav a'));
-        if (!links.length) return;
-        const y = window.scrollY + 140;
-        const intelligence = document.getElementById('intelligence');
-        const build = document.getElementById('build');
-        let active = current === 'collection' ? 'collection' : 'index';
-        if (intelligence && y >= intelligence.offsetTop) active = 'intelligence';
-        if (build && y >= build.offsetTop) active = 'build';
-        links.forEach(a => a.classList.toggle('active', a.dataset.section === active));
+    function portal(wrap){
+        var tip = wrap.querySelector('.sc-tip');
+        var btn = wrap.querySelector('.sc-help');
+        if (!tip || !btn) return;
+        if (!home.has(tip)) home.set(tip, { parent: tip.parentNode, next: tip.nextSibling });
+        openTip = tip; openBtn = btn;
+        document.body.appendChild(tip);
+        tip.classList.add('mpx-tip-portal');
+        place();
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){
+            tip.classList.add('mpx-tip-on');
+            place();
+        }); });
     }
-    window.addEventListener('scroll', updateSubnav, { passive:true });
-    window.addEventListener('resize', updateSubnav, { passive:true });
 
-    window.addEventListener('hashchange', function(){
-        const mode = hashMode();
-        if (mode) selectMode(mode, { scroll:true, hash:false });
-    });
+    function sync(){
+        if (!MOBILE()) { if (openTip) restore(); return; }
+        var wrap = document.querySelector('.sc-help-wrap.open');
+        if (!wrap) { restore(); return; }
+        if (openTip && wrap.contains(openBtn)) { place(); return; }
+        if (openTip) restore();
+        portal(wrap);
+    }
 
-    normalizeState(current);
-    refreshSurface(current);
-    console.log('[The Holding] Registry Observatory', VERSION, '·', current);
+    function start(){
+        var mo = new MutationObserver(function(){ sync(); });
+        mo.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+        window.addEventListener('scroll', function(){ if (openTip) place(); }, { passive: true });
+        window.addEventListener('resize', function(){ if (openTip) { if (!MOBILE()) restore(); else place(); } });
+        document.documentElement.setAttribute('data-mpx-tip-portal', 'v2');
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+    else start();
 })();</script>
-
 </body>
 </html>
