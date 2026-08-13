@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -223,6 +224,436 @@
             letter-spacing: 0.1em;
             font-weight: 600;
         }
+
+
+        /* =========================================================
+           THE HOLDING OBSERVER · LIVE SYSTEM FEED v0.1
+           Read-only surface for Autonomous Change Intelligence
+           ========================================================= */
+        .observer-section {
+            padding: 0 0 5rem;
+        }
+
+        .observer-shell {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 82% -20%, rgba(212, 175, 55, 0.11), transparent 34%),
+                linear-gradient(145deg, #11110f 0%, #0c0d0b 62%, #10110e 100%);
+            border: 1px solid rgba(28, 25, 23, 0.82);
+            border-radius: 18px;
+            box-shadow:
+                0 32px 80px rgba(28, 25, 23, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.045);
+            color: #f5f5f4;
+        }
+
+        .observer-shell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(
+                    to bottom,
+                    transparent 0,
+                    transparent 3px,
+                    rgba(255,255,255,.012) 4px
+                );
+            opacity: .55;
+        }
+
+        .observer-topbar {
+            position: relative;
+            z-index: 1;
+            min-height: 58px;
+            padding: 0.9rem 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.085);
+            background: rgba(255,255,255,.018);
+        }
+
+        .observer-identity {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+        }
+
+        .observer-mark {
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(212, 175, 55, .42);
+            border-radius: 7px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            color: #d4af37;
+            font: 600 .72rem/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            box-shadow: inset 0 0 18px rgba(212,175,55,.055);
+        }
+
+        .observer-name {
+            color: rgba(250,250,249,.96);
+            font: 600 .75rem/1.25 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .observer-subname {
+            margin-top: .22rem;
+            color: rgba(168,162,158,.72);
+            font: 500 .61rem/1.25 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+        }
+
+        .observer-status {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: .48rem;
+            color: rgba(231,229,228,.78);
+            font: 600 .64rem/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+        }
+
+        .observer-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #34d399;
+            box-shadow: 0 0 0 4px rgba(52,211,153,.08), 0 0 16px rgba(52,211,153,.52);
+        }
+
+        .observer-shell[data-health="degraded"] .observer-status-dot {
+            background: #fbbf24;
+            box-shadow: 0 0 0 4px rgba(251,191,36,.08), 0 0 16px rgba(251,191,36,.42);
+        }
+
+        .observer-shell[data-health="offline"] .observer-status-dot {
+            background: #78716c;
+            box-shadow: none;
+        }
+
+        .observer-body {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: minmax(0, 1.72fr) minmax(250px, .72fr);
+        }
+
+        .observer-stream {
+            min-width: 0;
+            padding: 1.55rem 1.5rem 1.65rem;
+            border-right: 1px solid rgba(255,255,255,.075);
+        }
+
+        .observer-stream-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.15rem;
+        }
+
+        .observer-stream-title {
+            color: rgba(245,245,244,.94);
+            font: 600 .72rem/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .11em;
+            text-transform: uppercase;
+        }
+
+        .observer-stream-time {
+            color: rgba(168,162,158,.58);
+            font: 500 .61rem/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .observer-feed {
+            min-height: 260px;
+            max-height: 420px;
+            overflow: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(212,175,55,.28) transparent;
+        }
+
+        .observer-feed::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .observer-feed::-webkit-scrollbar-thumb {
+            background: rgba(212,175,55,.25);
+            border-radius: 10px;
+        }
+
+        .observer-entry {
+            display: grid;
+            grid-template-columns: 80px minmax(0, 1fr);
+            gap: .95rem;
+            padding: .77rem 0;
+            border-bottom: 1px solid rgba(255,255,255,.055);
+        }
+
+        .observer-entry:last-child {
+            border-bottom: 0;
+        }
+
+        .observer-entry-code {
+            padding-top: .08rem;
+            color: rgba(212,175,55,.78);
+            font: 600 .61rem/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+        }
+
+        .observer-entry[data-kind="watch"] .observer-entry-code {
+            color: rgba(251,191,36,.76);
+        }
+
+        .observer-entry[data-kind="baseline"] .observer-entry-code {
+            color: rgba(52,211,153,.78);
+        }
+
+        .observer-entry-summary {
+            color: rgba(250,250,249,.93);
+            font: 500 .77rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: -.01em;
+        }
+
+        .observer-entry-why {
+            margin-top: .26rem;
+            color: rgba(168,162,158,.7);
+            font: 400 .66rem/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .observer-side {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .observer-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            border-bottom: 1px solid rgba(255,255,255,.075);
+        }
+
+        .observer-metric {
+            min-width: 0;
+            padding: 1.25rem 1.05rem 1.1rem;
+            border-right: 1px solid rgba(255,255,255,.06);
+            border-bottom: 1px solid rgba(255,255,255,.06);
+        }
+
+        .observer-metric:nth-child(2n) {
+            border-right: 0;
+        }
+
+        .observer-metric:nth-last-child(-n+2) {
+            border-bottom: 0;
+        }
+
+        .observer-metric-value {
+            color: rgba(250,250,249,.96);
+            font: 500 1.28rem/1.15 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: -.04em;
+            overflow-wrap: anywhere;
+        }
+
+        .observer-metric-value.good {
+            color: #6ee7b7;
+        }
+
+        .observer-metric-label {
+            margin-top: .42rem;
+            color: rgba(168,162,158,.6);
+            font: 600 .55rem/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+        }
+
+        .observer-memory {
+            flex: 1;
+            padding: 1.2rem 1.05rem 1.15rem;
+        }
+
+        .observer-memory-kicker {
+            color: rgba(212,175,55,.72);
+            font: 600 .58rem/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+        }
+
+        .observer-memory-hash {
+            margin-top: .62rem;
+            color: rgba(214,211,209,.6);
+            font: 400 .6rem/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            word-break: break-all;
+        }
+
+        .observer-memory-note {
+            margin-top: .85rem;
+            color: rgba(168,162,158,.62);
+            font: 400 .64rem/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .observer-command {
+            position: relative;
+            z-index: 1;
+            min-height: 48px;
+            padding: .82rem 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-top: 1px solid rgba(255,255,255,.075);
+            color: rgba(214,211,209,.64);
+            font: 500 .62rem/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .observer-prompt {
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .observer-prompt::after {
+            content: '▌';
+            margin-left: .24rem;
+            color: rgba(212,175,55,.85);
+            animation: observerCursor 1s steps(1) infinite;
+        }
+
+        .observer-channel {
+            flex: 0 0 auto;
+            color: rgba(168,162,158,.44);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        @keyframes observerCursor {
+            0%, 48% { opacity: 1; }
+            49%, 100% { opacity: 0; }
+        }
+
+        @media (max-width: 900px) {
+            .observer-section {
+                padding-bottom: 4rem;
+            }
+
+            .observer-body {
+                grid-template-columns: 1fr;
+            }
+
+            .observer-stream {
+                border-right: 0;
+                border-bottom: 1px solid rgba(255,255,255,.075);
+            }
+
+            .observer-side {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .observer-metrics {
+                border-bottom: 0;
+                border-right: 1px solid rgba(255,255,255,.075);
+            }
+        }
+
+        @media (max-width: 620px) {
+            .observer-section {
+                padding-bottom: 3.25rem;
+            }
+
+            .observer-shell {
+                border-radius: 14px;
+            }
+
+            .observer-topbar {
+                align-items: flex-start;
+                padding: .9rem .9rem .82rem;
+            }
+
+            .observer-name {
+                font-size: .69rem;
+            }
+
+            .observer-subname {
+                font-size: .54rem;
+            }
+
+            .observer-status {
+                font-size: .56rem;
+                margin-top: .25rem;
+            }
+
+            .observer-stream {
+                padding: 1.25rem .95rem 1.35rem;
+            }
+
+            .observer-stream-head {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: .32rem;
+            }
+
+            .observer-feed {
+                min-height: 280px;
+                max-height: 430px;
+            }
+
+            .observer-entry {
+                grid-template-columns: 62px minmax(0,1fr);
+                gap: .62rem;
+                padding: .72rem 0;
+            }
+
+            .observer-entry-code {
+                font-size: .54rem;
+            }
+
+            .observer-entry-summary {
+                font-size: .7rem;
+                line-height: 1.55;
+            }
+
+            .observer-entry-why {
+                font-size: .59rem;
+            }
+
+            .observer-side {
+                grid-template-columns: 1fr;
+            }
+
+            .observer-metrics {
+                border-right: 0;
+                border-bottom: 1px solid rgba(255,255,255,.075);
+            }
+
+            .observer-command {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: .35rem;
+                padding: .78rem .9rem;
+            }
+
+            .observer-channel {
+                font-size: .54rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .observer-prompt::after {
+                animation: none;
+            }
+        }
+
 
         /* Agent Grid */
         .agents-section {
@@ -883,6 +1314,7 @@
     </style>
 </head>
 <body>
+    <!-- agents.html · Observer Feed v0.1 · Autonomous Change Intelligence live window -->
     <!-- Header -->
     <header id="header">
         <div class="container">
@@ -923,6 +1355,79 @@
                 <div class="stat">
                     <div class="stat-value serif">∞</div>
                     <div class="stat-label">Time Horizon</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- The Holding Observer · live read-only intelligence stream -->
+    <section class="observer-section" id="observer" aria-label="The Holding Observer">
+        <div class="container">
+            <div class="observer-shell" id="observerShell" data-health="offline">
+                <div class="observer-topbar">
+                    <div class="observer-identity">
+                        <div class="observer-mark" aria-hidden="true">TH</div>
+                        <div>
+                            <div class="observer-name">The Holding Observer</div>
+                            <div class="observer-subname">Autonomous Change Intelligence // System Memory</div>
+                        </div>
+                    </div>
+                    <div class="observer-status" aria-live="polite">
+                        <span class="observer-status-dot" aria-hidden="true"></span>
+                        <span id="observerStatus">CONNECTING</span>
+                    </div>
+                </div>
+
+                <div class="observer-body">
+                    <div class="observer-stream">
+                        <div class="observer-stream-head">
+                            <div class="observer-stream-title">System Stream</div>
+                            <div class="observer-stream-time" id="observerGeneratedAt">awaiting canonical memory…</div>
+                        </div>
+                        <div class="observer-feed" id="observerFeed" role="log" aria-live="polite">
+                            <div class="observer-entry" data-kind="baseline">
+                                <div class="observer-entry-code">BOOT</div>
+                                <div>
+                                    <div class="observer-entry-summary">Connecting to The Holding system memory.</div>
+                                    <div class="observer-entry-why">This surface is read-only. It publishes deterministic observations produced by the Observer.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <aside class="observer-side" aria-label="Observer memory status">
+                        <div class="observer-metrics">
+                            <div class="observer-metric">
+                                <div class="observer-metric-value" id="observerSources">—</div>
+                                <div class="observer-metric-label">Sources Fresh</div>
+                            </div>
+                            <div class="observer-metric">
+                                <div class="observer-metric-value" id="observerMode">—</div>
+                                <div class="observer-metric-label">Memory Mode</div>
+                            </div>
+                            <div class="observer-metric">
+                                <div class="observer-metric-value" id="observerRuns">—</div>
+                                <div class="observer-metric-label">Memory Runs</div>
+                            </div>
+                            <div class="observer-metric">
+                                <div class="observer-metric-value" id="observerEvents">—</div>
+                                <div class="observer-metric-label">Learned Events</div>
+                            </div>
+                        </div>
+                        <div class="observer-memory">
+                            <div class="observer-memory-kicker">Current Memory Anchor</div>
+                            <div class="observer-memory-hash" id="observerHash">snapshot://pending</div>
+                            <div class="observer-memory-note" id="observerMemoryNote">
+                                The Observer watches canonical production layers, remembers material changes and exposes a compact bridge for future reasoning.
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+
+                <div class="observer-command">
+                    <div class="observer-prompt" id="observerPrompt">&gt; intelligence stream initializing</div>
+                    <div class="observer-channel">Dialogue channel // reserved</div>
                 </div>
             </div>
         </div>
@@ -2050,5 +2555,197 @@
             }
         }
     </script>
+
+    <script data-th-addon="observer-live-feed-v0.1">
+        (() => {
+            const BRIDGE_URL = '/intelligence/change-intelligence.json';
+            const HISTORY_URL = '/intelligence/change-history.json';
+
+            const $ = (id) => document.getElementById(id);
+            const shell = $('observerShell');
+            if (!shell) return;
+
+            const safeArray = (value) => Array.isArray(value) ? value : [];
+            const safeInt = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
+
+            function formatTimestamp(value) {
+                if (!value) return 'timestamp unavailable';
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return String(value);
+                return date.toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            function shortHash(value) {
+                if (typeof value !== 'string' || !value.length) return 'pending';
+                return value.length > 22 ? `${value.slice(0, 12)}…${value.slice(-8)}` : value;
+            }
+
+            function addEntry(feed, kind, code, summary, why) {
+                const entry = document.createElement('div');
+                entry.className = 'observer-entry';
+                entry.dataset.kind = kind;
+
+                const codeEl = document.createElement('div');
+                codeEl.className = 'observer-entry-code';
+                codeEl.textContent = code;
+
+                const body = document.createElement('div');
+                const summaryEl = document.createElement('div');
+                summaryEl.className = 'observer-entry-summary';
+                summaryEl.textContent = summary || 'Observation recorded.';
+                body.appendChild(summaryEl);
+
+                if (why) {
+                    const whyEl = document.createElement('div');
+                    whyEl.className = 'observer-entry-why';
+                    whyEl.textContent = why;
+                    body.appendChild(whyEl);
+                }
+
+                entry.append(codeEl, body);
+                feed.appendChild(entry);
+            }
+
+            function render(bridge, history) {
+                const sourceHealth = bridge?.sourceHealth || {};
+                const allFresh = sourceHealth.allFresh === true;
+                const sourceCount = safeInt(sourceHealth.sourceCount);
+                const freshCount = safeInt(sourceHealth.freshCount);
+                const changed = safeArray(bridge?.whatChanged);
+                const watch = safeArray(bridge?.watchNext);
+                const runs = safeArray(history?.runs);
+                const historyEvents = safeArray(history?.events);
+
+                shell.dataset.health = allFresh ? 'healthy' : 'degraded';
+                $('observerStatus').textContent = allFresh ? 'LIVE / ALL SOURCES FRESH' : 'LIVE / WATCH REQUIRED';
+                $('observerGeneratedAt').textContent = `snapshot ${formatTimestamp(bridge?.generatedAt)}`;
+
+                $('observerSources').textContent = sourceCount ? `${freshCount}/${sourceCount}` : '—';
+                $('observerSources').classList.toggle('good', allFresh && sourceCount > 0);
+                $('observerMode').textContent = String(bridge?.mode || 'unknown').toUpperCase();
+                $('observerRuns').textContent = String(runs.length);
+                $('observerEvents').textContent = String(historyEvents.length);
+
+                const snapshotHash = bridge?.bridge?.snapshotHash;
+                $('observerHash').textContent = `snapshot://${shortHash(snapshotHash)}`;
+                $('observerMemoryNote').textContent =
+                    `${watch.length} active watch signal${watch.length === 1 ? '' : 's'} · ` +
+                    `${changed.length} material change${changed.length === 1 ? '' : 's'} in the latest run · ` +
+                    `persistent system memory online.`;
+
+                const feed = $('observerFeed');
+                feed.replaceChildren();
+
+                if (bridge?.mode === 'baseline') {
+                    addEntry(
+                        feed,
+                        'baseline',
+                        'BASELINE',
+                        bridge?.headline || 'The Holding Observer initialized system memory.',
+                        'The first run records the current system state without inventing prior changes.'
+                    );
+                } else if (bridge?.headline) {
+                    addEntry(feed, 'change', 'OBSERVER', bridge.headline, '');
+                }
+
+                changed.slice(0, 6).forEach((item) => {
+                    addEntry(
+                        feed,
+                        'change',
+                        String(item?.category || item?.severity || 'CHANGE').slice(0, 16),
+                        item?.summary || item?.headline || item?.message || 'Material system change recorded.',
+                        item?.whyItMatters || item?.why || ''
+                    );
+                });
+
+                const remainingSlots = Math.max(0, 8 - feed.children.length);
+                watch.slice(0, remainingSlots).forEach((item) => {
+                    addEntry(
+                        feed,
+                        'watch',
+                        String(item?.category || 'WATCH').slice(0, 16),
+                        item?.summary || 'System watch condition active.',
+                        item?.whyItMatters || ''
+                    );
+                });
+
+                if (!feed.children.length) {
+                    addEntry(feed, 'baseline', 'QUIET', 'No material changes detected in the latest run.', 'The Observer remains active and will publish only meaningful deltas.');
+                }
+
+                if (watch.length + changed.length > 8) {
+                    addEntry(
+                        feed,
+                        'baseline',
+                        'MEMORY',
+                        `${watch.length + changed.length - 8} additional signal(s) remain in canonical memory.`,
+                        'The public stream stays compact; the underlying intelligence files preserve the complete machine-readable state.'
+                    );
+                }
+
+                $('observerPrompt').textContent = allFresh
+                    ? '> observer online // waiting for next material change'
+                    : '> observer online // unresolved system edges under watch';
+            }
+
+            function renderOffline(error) {
+                shell.dataset.health = 'offline';
+                $('observerStatus').textContent = 'MEMORY UNAVAILABLE';
+                $('observerGeneratedAt').textContent = 'canonical feed could not be loaded';
+                $('observerPrompt').textContent = '> observer surface waiting for production memory';
+
+                const feed = $('observerFeed');
+                feed.replaceChildren();
+                addEntry(
+                    feed,
+                    'watch',
+                    'OFFLINE',
+                    'The public Observer surface could not reach the canonical intelligence files.',
+                    'No fallback values are invented. The window will recover automatically when the production memory endpoint is available.'
+                );
+
+                console.warn('[The Holding Observer] live feed unavailable', error);
+            }
+
+            async function loadObserver() {
+                try {
+                    const cacheBust = `v=${Date.now()}`;
+                    const [bridgeResponse, historyResponse] = await Promise.all([
+                        fetch(`${BRIDGE_URL}?${cacheBust}`, { cache: 'no-store' }),
+                        fetch(`${HISTORY_URL}?${cacheBust}`, { cache: 'no-store' })
+                    ]);
+
+                    if (!bridgeResponse.ok || !historyResponse.ok) {
+                        throw new Error(`Observer fetch failed: bridge=${bridgeResponse.status}, history=${historyResponse.status}`);
+                    }
+
+                    const [bridge, history] = await Promise.all([
+                        bridgeResponse.json(),
+                        historyResponse.json()
+                    ]);
+
+                    if (!bridge || typeof bridge !== 'object' || !bridge.bridge?.snapshotHash) {
+                        throw new Error('Observer bridge failed structural validation');
+                    }
+                    if (!history || typeof history !== 'object' || !Array.isArray(history.runs) || !Array.isArray(history.events)) {
+                        throw new Error('Observer history failed structural validation');
+                    }
+
+                    render(bridge, history);
+                } catch (error) {
+                    renderOffline(error);
+                }
+            }
+
+            loadObserver();
+        })();
+    </script>
+
 </body>
 </html>
