@@ -655,6 +655,459 @@
         }
 
 
+
+        /* =========================================================
+           THE HOLDING COGNITIVE STACK · LIVE PUBLIC SURFACE v0.2
+           Exact production state. Read-only. No invented fallbacks.
+           ========================================================= */
+        .cognitive-section {
+            padding: 1rem 0 6rem;
+        }
+
+        .cognitive-heading {
+            max-width: 920px;
+            margin: 0 auto 2rem;
+            text-align: center;
+        }
+
+        .cognitive-eyebrow {
+            margin-bottom: .75rem;
+            color: #8b7355;
+            font: 700 .68rem/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+        }
+
+        .cognitive-heading h2 {
+            margin: 0 0 .85rem;
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(2rem, 4vw, 3.1rem);
+            line-height: 1.12;
+            letter-spacing: -.025em;
+            font-weight: 600;
+        }
+
+        .cognitive-heading p {
+            max-width: 720px;
+            margin: 0 auto;
+            color: var(--text-secondary);
+            font-size: 1.02rem;
+            line-height: 1.8;
+        }
+
+        .cognitive-shell {
+            position: relative;
+            overflow: hidden;
+            color: #f5f5f4;
+            background:
+                radial-gradient(circle at 12% -15%, rgba(52, 211, 153, .075), transparent 28%),
+                radial-gradient(circle at 91% 0%, rgba(212, 175, 55, .095), transparent 30%),
+                linear-gradient(145deg, #11110f 0%, #0a0b0a 68%, #0d0e0c 100%);
+            border: 1px solid rgba(28, 25, 23, .86);
+            border-radius: 20px;
+            box-shadow:
+                0 36px 90px rgba(28, 25, 23, .18),
+                inset 0 1px 0 rgba(255,255,255,.04);
+        }
+
+        .cognitive-shell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: .4;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0,
+                transparent 4px,
+                rgba(255,255,255,.01) 5px
+            );
+        }
+
+        .cognitive-topbar,
+        .cognitive-flow,
+        .cognitive-metrics,
+        .cognitive-reasoning,
+        .cognitive-footer {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cognitive-topbar {
+            min-height: 54px;
+            padding: .9rem 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,.075);
+        }
+
+        .cognitive-system-label {
+            color: rgba(231,229,228,.65);
+            font: 600 .61rem/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .cognitive-status {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            color: rgba(245,245,244,.9);
+            font: 700 .62rem/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+        }
+
+        .cognitive-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #78716c;
+        }
+
+        .cognitive-shell[data-health="ready"] .cognitive-status-dot {
+            background: #34d399;
+            box-shadow: 0 0 0 4px rgba(52,211,153,.075), 0 0 16px rgba(52,211,153,.4);
+        }
+
+        .cognitive-shell[data-health="review"] .cognitive-status-dot {
+            background: #fbbf24;
+            box-shadow: 0 0 0 4px rgba(251,191,36,.075), 0 0 16px rgba(251,191,36,.35);
+        }
+
+        .cognitive-flow {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            border-bottom: 1px solid rgba(255,255,255,.075);
+        }
+
+        .cognitive-node {
+            position: relative;
+            min-width: 0;
+            padding: 1.08rem .85rem 1rem;
+            border-right: 1px solid rgba(255,255,255,.055);
+        }
+
+        .cognitive-node:last-child {
+            border-right: 0;
+        }
+
+        .cognitive-node::after {
+            content: '→';
+            position: absolute;
+            top: 50%;
+            right: -.32rem;
+            transform: translateY(-50%);
+            z-index: 2;
+            width: .64rem;
+            text-align: center;
+            color: rgba(212,175,55,.48);
+            background: #0c0d0b;
+            font: 500 .64rem/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cognitive-node:last-child::after {
+            display: none;
+        }
+
+        .cognitive-node-index {
+            color: rgba(212,175,55,.62);
+            font: 700 .52rem/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            letter-spacing: .1em;
+        }
+
+        .cognitive-node strong {
+            display: block;
+            margin-top: .42rem;
+            color: rgba(250,250,249,.95);
+            font: 600 .72rem/1.25 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cognitive-node small {
+            display: block;
+            margin-top: .26rem;
+            color: rgba(168,162,158,.55);
+            font: 500 .55rem/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cognitive-metrics {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            border-bottom: 1px solid rgba(255,255,255,.075);
+        }
+
+        .cognitive-metric {
+            min-width: 0;
+            padding: 1.15rem 1rem 1.05rem;
+            border-right: 1px solid rgba(255,255,255,.055);
+        }
+
+        .cognitive-metric:last-child {
+            border-right: 0;
+        }
+
+        .cognitive-metric-label {
+            color: rgba(168,162,158,.55);
+            font: 700 .52rem/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+        }
+
+        .cognitive-metric-value {
+            margin-top: .48rem;
+            color: rgba(250,250,249,.96);
+            font: 600 1.05rem/1.25 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            overflow-wrap: anywhere;
+        }
+
+        .cognitive-metric-value.good {
+            color: #6ee7b7;
+        }
+
+        .cognitive-metric-note {
+            margin-top: .32rem;
+            color: rgba(168,162,158,.58);
+            font: 400 .58rem/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cognitive-reasoning {
+            padding: 1.35rem 1.2rem 1.25rem;
+        }
+
+        .cognitive-reasoning-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: .95rem;
+        }
+
+        .cognitive-reasoning-title {
+            color: rgba(245,245,244,.9);
+            font: 700 .65rem/1.25 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            letter-spacing: .11em;
+            text-transform: uppercase;
+        }
+
+        .cognitive-case-count {
+            color: rgba(168,162,158,.55);
+            font: 500 .59rem/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cognitive-answer {
+            padding: .85rem .95rem;
+            margin-bottom: .95rem;
+            border: 1px solid rgba(212,175,55,.12);
+            border-radius: 10px;
+            background: rgba(212,175,55,.035);
+            color: rgba(214,211,209,.78);
+            font: 500 .66rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cognitive-cases {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: .75rem;
+        }
+
+        .cognitive-case {
+            min-width: 0;
+            padding: .9rem .9rem .85rem;
+            border: 1px solid rgba(255,255,255,.065);
+            border-radius: 10px;
+            background: rgba(255,255,255,.018);
+        }
+
+        .cognitive-case-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            margin-bottom: .55rem;
+        }
+
+        .cognitive-case-domain {
+            color: rgba(212,175,55,.72);
+            font: 700 .52rem/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .cognitive-case-severity {
+            padding: .18rem .42rem;
+            border-radius: 999px;
+            color: rgba(214,211,209,.68);
+            background: rgba(255,255,255,.05);
+            font: 700 .49rem/1.1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .cognitive-case-severity[data-severity="medium"] {
+            color: #fcd34d;
+            background: rgba(251,191,36,.08);
+        }
+
+        .cognitive-case-entity {
+            color: rgba(250,250,249,.94);
+            font: 600 .69rem/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            overflow-wrap: anywhere;
+        }
+
+        .cognitive-case-signal {
+            margin-top: .35rem;
+            color: rgba(168,162,158,.68);
+            font: 400 .61rem/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cognitive-case-action {
+            margin-top: .58rem;
+            padding-top: .55rem;
+            border-top: 1px solid rgba(255,255,255,.055);
+            color: rgba(214,211,209,.62);
+            font: 400 .57rem/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cognitive-case-action::before {
+            content: 'proposal · ';
+            color: rgba(110,231,183,.62);
+        }
+
+        .cognitive-footer {
+            padding: .85rem 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-top: 1px solid rgba(255,255,255,.075);
+            background: rgba(255,255,255,.012);
+        }
+
+        .cognitive-integrity,
+        .cognitive-boundary {
+            color: rgba(168,162,158,.52);
+            font: 500 .57rem/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cognitive-integrity code {
+            color: rgba(214,211,209,.7);
+            font: inherit;
+        }
+
+        .cognitive-boundary {
+            text-align: right;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 980px) {
+            .cognitive-flow {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .cognitive-node:nth-child(3) {
+                border-right: 0;
+            }
+
+            .cognitive-node:nth-child(3)::after {
+                display: none;
+            }
+
+            .cognitive-node:nth-child(-n+3) {
+                border-bottom: 1px solid rgba(255,255,255,.055);
+            }
+
+            .cognitive-metrics {
+                grid-template-columns: repeat(2, minmax(0,1fr));
+            }
+
+            .cognitive-metric {
+                border-bottom: 1px solid rgba(255,255,255,.055);
+            }
+
+            .cognitive-metric:nth-child(2n) {
+                border-right: 0;
+            }
+
+            .cognitive-metric:last-child {
+                grid-column: 1 / -1;
+                border-bottom: 0;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .cognitive-section {
+                padding: .25rem 0 4.25rem;
+            }
+
+            .cognitive-shell {
+                border-radius: 14px;
+            }
+
+            .cognitive-topbar,
+            .cognitive-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .cognitive-flow {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .cognitive-node,
+            .cognitive-node:nth-child(3) {
+                border-right: 1px solid rgba(255,255,255,.055);
+                border-bottom: 1px solid rgba(255,255,255,.055);
+            }
+
+            .cognitive-node:nth-child(2n) {
+                border-right: 0;
+            }
+
+            .cognitive-node:nth-child(2n)::after {
+                display: none;
+            }
+
+            .cognitive-node:nth-last-child(-n+2) {
+                border-bottom: 0;
+            }
+
+            .cognitive-metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .cognitive-metric,
+            .cognitive-metric:nth-child(2n) {
+                border-right: 0;
+                border-bottom: 1px solid rgba(255,255,255,.055);
+            }
+
+            .cognitive-metric:last-child {
+                grid-column: auto;
+                border-bottom: 0;
+            }
+
+            .cognitive-reasoning {
+                padding: 1.15rem .9rem 1rem;
+            }
+
+            .cognitive-reasoning-head {
+                flex-direction: column;
+                gap: .3rem;
+            }
+
+            .cognitive-cases {
+                grid-template-columns: 1fr;
+            }
+
+            .cognitive-boundary {
+                text-align: left;
+            }
+        }
+
+
         /* Agent Grid */
         .agents-section {
             padding: 6rem 0;
@@ -1314,7 +1767,7 @@
     </style>
 </head>
 <body>
-    <!-- agents.html · Observer Feed v0.1 · Autonomous Change Intelligence live window -->
+    <!-- agents.html · Cognitive Stack Surface v0.2 · Observer + Memory + Security + Grounded Brain + Bridge -->
     <!-- Header -->
     <header id="header">
         <div class="container">
@@ -1325,9 +1778,10 @@
                     <div class="brand-text">TheHolding.eth</div>
                 </div>
                 <nav class="nav-links">
+                    <a href="#cognitive" class="nav-link">Cognitive Stack</a>
                     <a href="#agents" class="nav-link">Agents</a>
-                    <a href="#demo" class="nav-link">Live Demo</a>
-                    <a href="#knowledge" class="nav-link">Knowledge Base</a>
+                    <a href="#demo" class="nav-link">Dialogue</a>
+                    <a href="#knowledge" class="nav-link">Infrastructure</a>
                     <span class="nav-badge">Layer 1</span>
                 </nav>
             </div>
@@ -1340,21 +1794,21 @@
             <div class="hero-eyebrow">Autonomous Intelligence Infrastructure</div>
             <h1 class="serif">The Agent Economy</h1>
             <p class="hero-subtitle">
-                Three specialized AI agents. One comprehensive knowledge base. 
-                Infinite institutional-grade intelligence.
+                Specialized agent intelligence built on a live observer, persistent memory,
+                security controls and evidence-bound reasoning.
             </p>
             <div class="hero-stats">
                 <div class="stat">
-                    <div class="stat-value serif">2.4 GB</div>
-                    <div class="stat-label">Knowledge Base</div>
+                    <div class="stat-value serif">LIVE</div>
+                    <div class="stat-label">Cognitive Stack</div>
                 </div>
                 <div class="stat">
                     <div class="stat-value serif">3</div>
-                    <div class="stat-label">AI Agents</div>
+                    <div class="stat-label">Specialist Agents</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value serif">∞</div>
-                    <div class="stat-label">Time Horizon</div>
+                    <div class="stat-value serif">0</div>
+                    <div class="stat-label">Execution Authority</div>
                 </div>
             </div>
         </div>
@@ -1433,14 +1887,129 @@
         </div>
     </section>
 
+
+    <!-- The Holding Cognitive Stack · live exact production readiness -->
+    <section class="cognitive-section" id="cognitive" aria-label="The Holding Cognitive Stack">
+        <div class="container">
+            <div class="cognitive-heading">
+                <div class="cognitive-eyebrow">Cognitive Stack · Live</div>
+                <h2>From observation to grounded reasoning.</h2>
+                <p>
+                    This is the production intelligence path beneath the agent concept:
+                    observe changes, preserve memory, check security, build evidence-bound cases,
+                    then hand a verified public packet to a replaceable human-triggered model.
+                </p>
+            </div>
+
+            <div class="cognitive-shell" id="cognitiveShell" data-health="offline">
+                <div class="cognitive-topbar">
+                    <div class="cognitive-system-label">Production cognition // read-only public telemetry</div>
+                    <div class="cognitive-status" aria-live="polite">
+                        <span class="cognitive-status-dot" aria-hidden="true"></span>
+                        <span id="cognitiveStatus">CONNECTING</span>
+                    </div>
+                </div>
+
+                <div class="cognitive-flow" aria-label="The Holding cognitive pipeline">
+                    <div class="cognitive-node">
+                        <span class="cognitive-node-index">01</span>
+                        <strong>Observe</strong>
+                        <small>change intelligence</small>
+                    </div>
+                    <div class="cognitive-node">
+                        <span class="cognitive-node-index">02</span>
+                        <strong>Remember</strong>
+                        <small>system + vault memory</small>
+                    </div>
+                    <div class="cognitive-node">
+                        <span class="cognitive-node-index">03</span>
+                        <strong>Defend</strong>
+                        <small>security sentinel</small>
+                    </div>
+                    <div class="cognitive-node">
+                        <span class="cognitive-node-index">04</span>
+                        <strong>Reason</strong>
+                        <small>grounded brain</small>
+                    </div>
+                    <div class="cognitive-node">
+                        <span class="cognitive-node-index">05</span>
+                        <strong>Bridge</strong>
+                        <small>verified handoff</small>
+                    </div>
+                    <div class="cognitive-node">
+                        <span class="cognitive-node-index">06</span>
+                        <strong>Interpret</strong>
+                        <small>human-triggered model</small>
+                    </div>
+                </div>
+
+                <div class="cognitive-metrics">
+                    <div class="cognitive-metric">
+                        <div class="cognitive-metric-label">Security</div>
+                        <div class="cognitive-metric-value" id="cognitiveSecurity">—</div>
+                        <div class="cognitive-metric-note" id="cognitiveSecurityNote">awaiting Sentinel state</div>
+                    </div>
+                    <div class="cognitive-metric">
+                        <div class="cognitive-metric-label">Grounded Brain</div>
+                        <div class="cognitive-metric-value" id="cognitiveBrain">—</div>
+                        <div class="cognitive-metric-note" id="cognitiveBrainNote">awaiting provenance</div>
+                    </div>
+                    <div class="cognitive-metric">
+                        <div class="cognitive-metric-label">Evidence</div>
+                        <div class="cognitive-metric-value" id="cognitiveEvidence">—</div>
+                        <div class="cognitive-metric-note" id="cognitiveEvidenceNote">awaiting reasoning packet</div>
+                    </div>
+                    <div class="cognitive-metric">
+                        <div class="cognitive-metric-label">Release</div>
+                        <div class="cognitive-metric-value" id="cognitiveRelease">—</div>
+                        <div class="cognitive-metric-note" id="cognitiveReleaseNote">awaiting coherence check</div>
+                    </div>
+                    <div class="cognitive-metric">
+                        <div class="cognitive-metric-label">Authority</div>
+                        <div class="cognitive-metric-value" id="cognitiveAuthority">—</div>
+                        <div class="cognitive-metric-note">proposal-only · bounded by design</div>
+                    </div>
+                </div>
+
+                <div class="cognitive-reasoning">
+                    <div class="cognitive-reasoning-head">
+                        <div class="cognitive-reasoning-title">Current reasoning queue</div>
+                        <div class="cognitive-case-count" id="cognitiveCaseSummary">awaiting Grounded Brain…</div>
+                    </div>
+
+                    <div class="cognitive-answer" id="cognitiveAnswer">
+                        Loading the current verified handoff. No fallback reasoning is invented.
+                    </div>
+
+                    <div class="cognitive-cases" id="cognitiveCases" aria-live="polite">
+                        <div class="cognitive-case">
+                            <div class="cognitive-case-entity">Awaiting canonical Bridge…</div>
+                            <div class="cognitive-case-signal">The public reasoning queue appears only after structural validation succeeds.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cognitive-footer">
+                    <div class="cognitive-integrity">
+                        chain integrity · <code id="cognitiveChainHash">pending</code>
+                        · <span id="cognitiveGeneratedAt">timestamp unavailable</span>
+                    </div>
+                    <div class="cognitive-boundary" id="cognitiveBoundary">
+                        no API · no model call · no execution
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Agents Section -->
     <section class="agents-section" id="agents">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title serif">Meet the Agents</h2>
                 <p class="section-subtitle">
-                    Each agent brings specialized expertise, distinctive personality, 
-                    and institutional-grade knowledge depth.
+                    Specialist perspectives are the application layer. They increasingly sit above
+                    the same shared observer, memory, security and grounded reasoning substrate.
                 </p>
             </div>
 
@@ -2174,16 +2743,16 @@
         <div class="container">
             <div class="demo-container">
                 <div class="demo-header">
-                    <h2 class="demo-title serif">Live Agent Dialogue</h2>
+                    <h2 class="demo-title serif">Agent Dialogue Preview</h2>
                     <p class="demo-subtitle">
-                        Watch how agents communicate, deliberate, and reach consensus in real-time
+                        Scenario playback for future specialist coordination. This is a static simulation — not a live model conversation or execution channel.
                     </p>
                 </div>
 
                 <div class="demo-controls">
-                    <button class="demo-button active" onclick="startDemo('rotation')">Capital Rotation</button>
-                    <button class="demo-button" onclick="startDemo('allocation')">Allocation Debate</button>
-                    <button class="demo-button" onclick="startDemo('market')">Market Analysis</button>
+                    <button class="demo-button active" onclick="startDemo('rotation', this)">Capital Rotation</button>
+                    <button class="demo-button" onclick="startDemo('allocation', this)">Allocation Debate</button>
+                    <button class="demo-button" onclick="startDemo('market', this)">Market Analysis</button>
                 </div>
 
                 <div class="conversation-window" id="conversationWindow">
@@ -2194,7 +2763,7 @@
                 <div class="ask-section">
                     <div class="ask-header">
                         <h3 class="ask-title serif">Ask Anything</h3>
-                        <p class="ask-subtitle">Query the agents directly — they'll respond with institutional-grade analysis</p>
+                        <p class="ask-subtitle">Public dialogue remains intentionally gated while the reasoning, review and permission layers mature.</p>
                     </div>
                     <div class="ask-input-container">
                         <input 
@@ -2207,92 +2776,96 @@
                             Ask
                         </button>
                     </div>
-                    <p class="ask-note">Interactive agent responses coming Q3 2026</p>
+                    <p class="ask-note">Current production Brain is read-only, evidence-bound and proposal-only. No public execution channel is enabled.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Knowledge Base Section -->
+    <!-- Intelligence Infrastructure Section -->
     <section class="knowledge-section" id="knowledge">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title serif">Knowledge Infrastructure</h2>
+                <h2 class="section-title serif">Intelligence Infrastructure</h2>
                 <p class="section-subtitle">
-                    Enterprise-grade big data center powering institutional intelligence. A comprehensive research foundation where curated knowledge, real-time market feeds, and on-chain transaction history converge into unified decision-making intelligence. Built for institutions that demand depth, precision, and scale.
+                    The production substrate beneath the agents: canonical data, persistent memory,
+                    security intelligence, grounded reasoning and a bounded handoff to replaceable models.
                 </p>
             </div>
 
             <div class="knowledge-grid">
                 <div class="knowledge-card">
-                    <h3 class="knowledge-card-title serif">Source Library</h3>
+                    <h3 class="knowledge-card-title serif">Canonical Data</h3>
                     <p class="knowledge-card-description">
-                        Deep collection spanning complete educational portals (21ideas.org), books, whitepapers, 
-                        research papers, expert interviews, podcast transcripts, and technical documentation 
-                        from leading thinkers in Bitcoin, DeFi, and frontier technologies.
+                        Reproducible onchain reads, protocol collectors, Company Books, productivity,
+                        rewards and reporting are normalized into machine-readable production state.
+                        Unknown or warming data remains explicit instead of being fabricated.
                     </p>
                     <div class="knowledge-stats">
                         <div class="knowledge-stat">
-                            <div class="knowledge-stat-value serif">35+</div>
-                            <div class="knowledge-stat-label">Books</div>
+                            <div class="knowledge-stat-value serif">LIVE</div>
+                            <div class="knowledge-stat-label">Production State</div>
                         </div>
                         <div class="knowledge-stat">
-                            <div class="knowledge-stat-value serif">125+</div>
-                            <div class="knowledge-stat-label">Sources</div>
+                            <div class="knowledge-stat-value serif">JSON</div>
+                            <div class="knowledge-stat-label">Machine Readable</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="knowledge-card">
-                    <h3 class="knowledge-card-title serif">Real-Time Data</h3>
+                    <h3 class="knowledge-card-title serif">Persistent Memory</h3>
                     <p class="knowledge-card-description">
-                        Live price feeds, on-chain metrics, protocol analytics, and market data 
-                        integrated seamlessly with historical knowledge for contextual intelligence.
+                        System Memory preserves what The Holding knows now. Append-only Memory Vaults
+                        preserve deeper history, while correction records can change interpretation
+                        without rewriting the original observation.
                     </p>
                     <div class="knowledge-stats">
                         <div class="knowledge-stat">
-                            <div class="knowledge-stat-value serif">30s</div>
-                            <div class="knowledge-stat-label">Update Cycle</div>
+                            <div class="knowledge-stat-value serif">∞</div>
+                            <div class="knowledge-stat-label">Vault Retention</div>
                         </div>
                         <div class="knowledge-stat">
-                            <div class="knowledge-stat-value serif">8</div>
-                            <div class="knowledge-stat-label">Protocols</div>
+                            <div class="knowledge-stat-value serif">HASH</div>
+                            <div class="knowledge-stat-label">Chained Records</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="knowledge-card">
-                    <h3 class="knowledge-card-title serif">Vector Database</h3>
+                    <h3 class="knowledge-card-title serif">Security Intelligence</h3>
                     <p class="knowledge-card-description">
-                        Advanced semantic search enabling agents to retrieve relevant context 
-                        from 2.4 GB knowledge base in milliseconds via RAG architecture.
+                        Security Sentinel scans repository and public surfaces, records findings in
+                        persistent security memory and fails closed on critical conditions. Protection
+                        remains deterministic rather than delegated to an unconstrained model.
                     </p>
                     <div class="knowledge-stats">
                         <div class="knowledge-stat">
-                            <div class="knowledge-stat-value serif">&lt;3s</div>
-                            <div class="knowledge-stat-label">Response Time</div>
+                            <div class="knowledge-stat-value serif">FAIL</div>
+                            <div class="knowledge-stat-label">Closed Gates</div>
                         </div>
                         <div class="knowledge-stat">
-                            <div class="knowledge-stat-value serif">4 GB</div>
-                            <div class="knowledge-stat-label">Embeddings</div>
+                            <div class="knowledge-stat-value serif">AUDIT</div>
+                            <div class="knowledge-stat-label">Persistent History</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="knowledge-card">
-                    <h3 class="knowledge-card-title serif">Transaction History</h3>
+                    <h3 class="knowledge-card-title serif">Grounded Reasoning</h3>
                     <p class="knowledge-card-description">
-                        Complete on-chain transaction log with reasoning documentation, 
-                        enabling agents to learn from historical decisions and maintain context.
+                        Grounded Brain converts current economic and security state into evidence-bound
+                        reasoning cases. ChatGPT Bridge preserves the exact Brain, evidence and allowed
+                        action boundary before human-triggered interpretation.
                     </p>
                     <div class="knowledge-stats">
                         <div class="knowledge-stat">
-                            <div class="knowledge-stat-value serif">100%</div>
-                            <div class="knowledge-stat-label">Transparency</div>
+                            <div class="knowledge-stat-value serif">EVIDENCE</div>
+                            <div class="knowledge-stat-label">Bound Reasoning</div>
                         </div>
                         <div class="knowledge-stat">
-                            <div class="knowledge-stat-value serif">3+</div>
-                            <div class="knowledge-stat-label">Years Data</div>
+                            <div class="knowledge-stat-value serif">PROPOSAL</div>
+                            <div class="knowledge-stat-label">Only</div>
                         </div>
                     </div>
                 </div>
@@ -2307,8 +2880,8 @@
             <p class="cta-subtitle">
                 Where patient capital meets sovereign infrastructure meets autonomous intelligence
             </p>
-            <button class="cta-button" onclick="alert('Layer 1 launching Q3 2026')">
-                Follow Development
+            <button class="cta-button" onclick="window.location.href='/companies/'">
+                Explore the live system
             </button>
         </div>
     </section>
@@ -2427,16 +3000,17 @@
         let messageIndex = 0;
         let intervalId = null;
 
-        function startDemo(scenario) {
+        function startDemo(scenario, sourceButton = null) {
             // Update button states
             document.querySelectorAll('.demo-button').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            const activeButton = sourceButton || document.querySelector(`.demo-button[onclick*="'${scenario}'"]`) || document.querySelector('.demo-button');
+            if (activeButton) activeButton.classList.add('active');
 
             // Clear current conversation
             const window = document.getElementById('conversationWindow');
-            window.innerHTML = '';
+            window.replaceChildren();
 
             // Reset and start new scenario
             currentScenario = scenario;
@@ -2467,16 +3041,32 @@
                 'var(--accent-purple)'
             );
 
-            messageEl.innerHTML = `
-                <div class="message-header">
-                    <div class="message-avatar">${msg.name[0]}</div>
-                    <div class="message-meta">
-                        <div class="message-author">${msg.name}</div>
-                        <div class="message-time">${msg.time}</div>
-                    </div>
-                </div>
-                <div class="message-content">${msg.content}</div>
-            `;
+            const messageHeader = document.createElement('div');
+            messageHeader.className = 'message-header';
+
+            const messageAvatar = document.createElement('div');
+            messageAvatar.className = 'message-avatar';
+            messageAvatar.textContent = String(msg.name || '?').slice(0, 1);
+
+            const messageMeta = document.createElement('div');
+            messageMeta.className = 'message-meta';
+
+            const messageAuthor = document.createElement('div');
+            messageAuthor.className = 'message-author';
+            messageAuthor.textContent = String(msg.name || 'Agent');
+
+            const messageTime = document.createElement('div');
+            messageTime.className = 'message-time';
+            messageTime.textContent = String(msg.time || '');
+
+            messageMeta.append(messageAuthor, messageTime);
+            messageHeader.append(messageAvatar, messageMeta);
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = String(msg.content || '');
+
+            messageEl.append(messageHeader, messageContent);
 
             window.appendChild(messageEl);
             window.scrollTop = window.scrollHeight;
@@ -2487,12 +3077,16 @@
             if (messageIndex < messages.length) {
                 const typingEl = document.createElement('div');
                 typingEl.className = 'typing-indicator';
-                typingEl.innerHTML = `
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <span style="margin-left: 0.5rem;">${messages[messageIndex].name} is typing...</span>
-                `;
+                for (let i = 0; i < 3; i += 1) {
+                    const dot = document.createElement('div');
+                    dot.className = 'typing-dot';
+                    typingEl.appendChild(dot);
+                }
+
+                const typingLabel = document.createElement('span');
+                typingLabel.style.marginLeft = '0.5rem';
+                typingLabel.textContent = `${String(messages[messageIndex].name || 'Agent')} is typing...`;
+                typingEl.appendChild(typingLabel);
                 window.appendChild(typingEl);
 
                 setTimeout(() => {
@@ -2744,6 +3338,285 @@
             }
 
             loadObserver();
+        })();
+    </script>
+
+    <script data-th-addon="cognitive-stack-live-v0.2">
+        (() => {
+            const STACK_URL = '/intelligence/cognitive-stack-state.json';
+            const BRIDGE_URL = '/intelligence/brain-chatgpt-bridge.json';
+            const EVAL_URL = '/intelligence/cognitive-stack-eval.json';
+
+            const $ = (id) => document.getElementById(id);
+            const shell = $('cognitiveShell');
+            if (!shell) return;
+
+            function safeArray(value) {
+                return Array.isArray(value) ? value : [];
+            }
+
+            function finiteNumber(value) {
+                const number = typeof value === 'number' ? value : Number(value);
+                return Number.isFinite(number) ? number : null;
+            }
+
+            function shortHash(value) {
+                if (typeof value !== 'string' || value.length < 1) return 'unavailable';
+                return value.length > 24 ? `${value.slice(0, 12)}…${value.slice(-10)}` : value;
+            }
+
+            function formatTimestamp(value) {
+                if (typeof value !== 'string' || !value) return 'timestamp unavailable';
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return 'timestamp unavailable';
+                return date.toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            function setMetric(id, value, good = false) {
+                const element = $(id);
+                if (!element) return;
+                element.textContent = value;
+                element.classList.toggle('good', good);
+            }
+
+            function appendCase(container, item) {
+                const card = document.createElement('article');
+                card.className = 'cognitive-case';
+
+                const top = document.createElement('div');
+                top.className = 'cognitive-case-top';
+
+                const domain = document.createElement('div');
+                domain.className = 'cognitive-case-domain';
+                domain.textContent = String(item?.domain || item?.category || 'case');
+
+                const severity = document.createElement('div');
+                severity.className = 'cognitive-case-severity';
+                severity.dataset.severity = String(item?.severity || 'watch').toLowerCase();
+                severity.textContent = String(item?.severity || 'watch');
+
+                top.append(domain, severity);
+
+                const entity = document.createElement('div');
+                entity.className = 'cognitive-case-entity';
+                entity.textContent = String(item?.entity || item?.category || 'Reasoning case');
+
+                const signal = document.createElement('div');
+                signal.className = 'cognitive-case-signal';
+                signal.textContent = String(item?.signal || 'Evidence-bound watch condition is active.');
+
+                card.append(top, entity, signal);
+
+                if (item?.deterministicAction) {
+                    const action = document.createElement('div');
+                    action.className = 'cognitive-case-action';
+                    action.textContent = String(item.deterministicAction);
+                    card.appendChild(action);
+                }
+
+                container.appendChild(card);
+            }
+
+            function validate(stack, bridge, evaluation) {
+                if (!stack || typeof stack !== 'object' || stack.version !== '0.1-cognitive-stack-state') {
+                    throw new Error('Unexpected Cognitive Stack state');
+                }
+
+                if (!bridge || typeof bridge !== 'object' || bridge.version !== '0.1-chatgpt-bridge') {
+                    throw new Error('Unexpected ChatGPT Bridge');
+                }
+
+                if (!evaluation || typeof evaluation !== 'object' || evaluation.status !== 'pass') {
+                    throw new Error('Cognitive Stack evaluation is not PASS');
+                }
+
+                if (typeof stack.integrity?.chainHash !== 'string' || stack.integrity.chainHash.length < 32) {
+                    throw new Error('Cognitive Stack chain hash missing');
+                }
+
+                if (bridge.sourceBrain?.sha256 !== stack.chain?.groundedBrain?.sha256) {
+                    throw new Error('Bridge is not bound to the current Grounded Brain SHA');
+                }
+
+                if (bridge.grounding?.upstreamCurrent !== true ||
+                    stack.chain?.groundedBrain?.exactCanonicalUpstreamBinding !== true ||
+                    stack.chain?.chatgptBridge?.exactCanonicalUpstreamBinding !== true) {
+                    throw new Error('Exact canonical upstream binding failed');
+                }
+
+                if (stack.release?.exactByteMatch !== true) {
+                    throw new Error('Static release coherence failed');
+                }
+
+                return true;
+            }
+
+            function render(stack, bridge, evaluation) {
+                validate(stack, bridge, evaluation);
+
+                const security = stack.chain.security || {};
+                const brain = stack.chain.groundedBrain || {};
+                const bridgeState = stack.chain.chatgptBridge || {};
+                const cases = safeArray(bridge.cases);
+
+                const critical = finiteNumber(security.critical);
+                const high = finiteNumber(security.high);
+                const medium = finiteNumber(security.medium);
+                const caseCount = finiteNumber(bridgeState.caseCount);
+                const evidenceCount = finiteNumber(bridgeState.evidenceCount);
+
+                const ready = stack.readyForManualInterpretation === true;
+                const review = stack.requiresImmediateHumanReview === true;
+
+                shell.dataset.health = ready && !review ? 'ready' : review ? 'review' : 'offline';
+                $('cognitiveStatus').textContent =
+                    ready && !review ? 'READY / CHAIN VERIFIED' :
+                    review ? 'HUMAN REVIEW REQUIRED' :
+                    'NOT READY';
+
+                setMetric(
+                    'cognitiveSecurity',
+                    String(security.status || 'unknown').toUpperCase(),
+                    security.status === 'green' && critical === 0 && high === 0
+                );
+                $('cognitiveSecurityNote').textContent =
+                    `critical ${critical ?? '—'} · high ${high ?? '—'} · medium ${medium ?? '—'}`;
+
+                setMetric(
+                    'cognitiveBrain',
+                    brain.exactCanonicalUpstreamBinding === true ? 'VERIFIED' : 'UNVERIFIED',
+                    brain.exactCanonicalUpstreamBinding === true
+                );
+                $('cognitiveBrainNote').textContent =
+                    `${String(brain.status || 'unknown').toUpperCase()} · exact canonical upstream`;
+
+                setMetric(
+                    'cognitiveEvidence',
+                    evidenceCount === null ? '—' : String(evidenceCount),
+                    evidenceCount !== null && evidenceCount > 0
+                );
+                $('cognitiveEvidenceNote').textContent =
+                    `${caseCount ?? '—'} active case${caseCount === 1 ? '' : 's'} · evidence mapped`;
+
+                setMetric(
+                    'cognitiveRelease',
+                    stack.release?.exactByteMatch === true ? 'COHERENT' : 'MISMATCH',
+                    stack.release?.exactByteMatch === true
+                );
+                $('cognitiveReleaseNote').textContent =
+                    String(stack.release?.releaseId || 'release unavailable');
+
+                const noExecution =
+                    bridgeState.noExecution === true &&
+                    bridgeState.noApiRequired === true &&
+                    bridgeState.noModelCall === true;
+                setMetric('cognitiveAuthority', noExecution ? 'NONE' : 'REVIEW', noExecution);
+
+                $('cognitiveCaseSummary').textContent =
+                    `${cases.length} evidence-bound case${cases.length === 1 ? '' : 's'} · eval ${String(evaluation.status).toUpperCase()}`;
+
+                $('cognitiveAnswer').textContent =
+                    String(bridge.whatChanged?.answer || bridge.sourceBrain?.headline || 'No current reasoning summary available.');
+
+                const caseContainer = $('cognitiveCases');
+                caseContainer.replaceChildren();
+
+                cases.slice(0, 4).forEach((item) => appendCase(caseContainer, item));
+
+                if (cases.length === 0) {
+                    const empty = document.createElement('article');
+                    empty.className = 'cognitive-case';
+                    const title = document.createElement('div');
+                    title.className = 'cognitive-case-entity';
+                    title.textContent = 'No active reasoning cases';
+                    const note = document.createElement('div');
+                    note.className = 'cognitive-case-signal';
+                    note.textContent = 'The current verified Bridge does not expose an active case queue.';
+                    empty.append(title, note);
+                    caseContainer.appendChild(empty);
+                }
+
+                $('cognitiveChainHash').textContent = shortHash(stack.integrity.chainHash);
+                $('cognitiveGeneratedAt').textContent = `stack ${formatTimestamp(stack.generatedAt)}`;
+
+                $('cognitiveBoundary').textContent =
+                    `${bridgeState.noApiRequired === true ? 'no API' : 'API present'} · ` +
+                    `${bridgeState.noModelCall === true ? 'no model call' : 'model call present'} · ` +
+                    `${bridgeState.noExecution === true ? 'no execution' : 'execution present'}`;
+            }
+
+            function renderUnavailable(error) {
+                shell.dataset.health = 'offline';
+                $('cognitiveStatus').textContent = 'COGNITIVE STATE UNAVAILABLE';
+
+                setMetric('cognitiveSecurity', '—', false);
+                setMetric('cognitiveBrain', '—', false);
+                setMetric('cognitiveEvidence', '—', false);
+                setMetric('cognitiveRelease', '—', false);
+                setMetric('cognitiveAuthority', '—', false);
+
+                $('cognitiveSecurityNote').textContent = 'canonical state unavailable';
+                $('cognitiveBrainNote').textContent = 'no fallback provenance invented';
+                $('cognitiveEvidenceNote').textContent = 'no fallback cases invented';
+                $('cognitiveReleaseNote').textContent = 'release state unavailable';
+                $('cognitiveCaseSummary').textContent = 'production handoff unavailable';
+                $('cognitiveAnswer').textContent =
+                    'The public Cognitive Stack could not be structurally verified. No fallback reasoning or readiness state is invented.';
+
+                const container = $('cognitiveCases');
+                container.replaceChildren();
+                const card = document.createElement('article');
+                card.className = 'cognitive-case';
+                const title = document.createElement('div');
+                title.className = 'cognitive-case-entity';
+                title.textContent = 'Fail-closed public surface';
+                const note = document.createElement('div');
+                note.className = 'cognitive-case-signal';
+                note.textContent = 'The interface will recover when the canonical production endpoints are available and coherent.';
+                card.append(title, note);
+                container.appendChild(card);
+
+                $('cognitiveChainHash').textContent = 'unavailable';
+                $('cognitiveGeneratedAt').textContent = 'timestamp unavailable';
+
+                console.warn('[The Holding Cognitive Stack] live surface unavailable', error);
+            }
+
+            async function loadCognitiveStack() {
+                try {
+                    const cacheBust = `v=${Date.now()}`;
+                    const [stackResponse, bridgeResponse, evalResponse] = await Promise.all([
+                        fetch(`${STACK_URL}?${cacheBust}`, { cache: 'no-store' }),
+                        fetch(`${BRIDGE_URL}?${cacheBust}`, { cache: 'no-store' }),
+                        fetch(`${EVAL_URL}?${cacheBust}`, { cache: 'no-store' })
+                    ]);
+
+                    if (!stackResponse.ok || !bridgeResponse.ok || !evalResponse.ok) {
+                        throw new Error(
+                            `Cognitive fetch failed: stack=${stackResponse.status}, ` +
+                            `bridge=${bridgeResponse.status}, eval=${evalResponse.status}`
+                        );
+                    }
+
+                    const [stack, bridge, evaluation] = await Promise.all([
+                        stackResponse.json(),
+                        bridgeResponse.json(),
+                        evalResponse.json()
+                    ]);
+
+                    render(stack, bridge, evaluation);
+                } catch (error) {
+                    renderUnavailable(error);
+                }
+            }
+
+            loadCognitiveStack();
         })();
     </script>
 
