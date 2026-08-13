@@ -1,0 +1,371 @@
+name: "The Holding Brain · Refresh Cognitive Stack"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Deliberately share the Sentinel group so a manual cognitive refresh cannot
+# race a push-triggered or scheduled Security Sentinel run.
+concurrency:
+  group: security-sentinel-main
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout canonical repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Preflight entire cognitive stack
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          REQUIRED=(
+            "security/security-sentinel.mjs"
+            "intelligence/brain-reasoning-engine.mjs"
+            "intelligence/brain-policy.json"
+            "intelligence/brain-chatgpt-bridge.mjs"
+            "intelligence/brain-chatgpt-bridge-policy.json"
+            "intelligence/brain-chatgpt-bridge-schema.json"
+            "intelligence/brain-upstream-guard.mjs"
+            "intelligence/cognitive-stack-verifier.mjs"
+            "intelligence/change-intelligence.json"
+            "intelligence/system-memory.json"
+          )
+
+          for f in "${REQUIRED[@]}"; do
+            test -s "$f"
+          done
+
+          node --check security/security-sentinel.mjs
+          node --check intelligence/brain-reasoning-engine.mjs
+          node --check intelligence/brain-chatgpt-bridge.mjs
+          node --check intelligence/brain-upstream-guard.mjs
+          node --check intelligence/cognitive-stack-verifier.mjs
+
+          node intelligence/brain-chatgpt-bridge.mjs --self-test
+
+      - name: Refresh Security Sentinel state
+        env:
+          SECURITY_SITE_BASE_URL: https://theholding.ai
+        run: node security/security-sentinel.mjs
+
+      - name: Validate fresh Security state
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const path = require('path');
+
+          const latest = JSON.parse(fs.readFileSync('security/security-intelligence.json', 'utf8'));
+          const memory = JSON.parse(fs.readFileSync('security/security-memory.json', 'utf8'));
+          const history = JSON.parse(fs.readFileSync('security/security-history.json', 'utf8'));
+          const manifest = JSON.parse(fs.readFileSync('security/security-vault/manifest.json', 'utf8'));
+
+          function stable(value) {
+            if (value === null || typeof value !== 'object') return JSON.stringify(value);
+            if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;
+            return `{${Object.keys(value).sort().map((k) => `${JSON.stringify(k)}:${stable(value[k])}`).join(',')}}`;
+          }
+
+          function hash(value) {
+            return crypto.createHash('sha256').update(stable(value)).digest('hex');
+          }
+
+          if (latest.version !== '0.1-autonomous-security-intelligence') {
+            throw new Error(`Unexpected Security Intelligence version: ${latest.version}`);
+          }
+
+          if (memory.version !== '0.1-security-memory') {
+            throw new Error(`Unexpected Security Memory version: ${memory.version}`);
+          }
+
+          if (history.version !== '0.1-security-history') {
+            throw new Error(`Unexpected Security History version: ${history.version}`);
+          }
+
+          if (manifest.version !== '0.1-security-vault-manifest') {
+            throw new Error(`Unexpected Security Vault version: ${manifest.version}`);
+          }
+
+          if (latest.bridge?.snapshotHash !== memory.snapshotHash) {
+            throw new Error('Security Intelligence / Memory snapshot mismatch');
+          }
+
+          if (!Array.isArray(manifest.runs) || manifest.runCount !== manifest.runs.length || manifest.runCount < 1) {
+            throw new Error('Security Vault run count invalid');
+          }
+
+          const rel = latest.bridge?.securityVault?.latestRecordPath;
+          if (!rel || !path.posix.normalize(rel).startsWith('security/security-vault/') || rel.includes('../')) {
+            throw new Error('Unsafe Security Vault record path');
+          }
+
+          if (!fs.existsSync(rel)) {
+            throw new Error('Latest Security Vault record missing');
+          }
+
+          const record = JSON.parse(fs.readFileSync(rel, 'utf8'));
+          const core = { ...record };
+          delete core.integrity;
+
+          if (hash(core) !== record.integrity?.recordHash) {
+            throw new Error('Security Vault latest record integrity mismatch');
+          }
+
+          const critical = Number(latest.severityCounts?.critical ?? 0);
+          const high = Number(latest.severityCounts?.high ?? 0);
+
+          if (!Number.isFinite(critical) || !Number.isFinite(high)) {
+            throw new Error('Security severity counts are invalid');
+          }
+
+          if (critical > 0) {
+            throw new Error(`Critical security gate blocked cognitive refresh: ${critical} finding(s)`);
+          }
+
+          console.log('Fresh Security state PASS', {
+            status: latest.status,
+            critical,
+            high,
+            medium: latest.severityCounts?.medium ?? null,
+            vaultRuns: manifest.runCount,
+            generatedAt: latest.generatedAt,
+          });
+          NODE
+
+      - name: Build Grounded Brain from fresh canonical state
+        run: node intelligence/brain-reasoning-engine.mjs
+
+      - name: Validate Grounded Brain
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node - <<'NODE'
+          const fs = require('fs');
+
+          const brain = JSON.parse(fs.readFileSync('intelligence/brain-intelligence.json', 'utf8'));
+          const history = JSON.parse(fs.readFileSync('intelligence/brain-history.json', 'utf8'));
+          const policy = JSON.parse(fs.readFileSync('intelligence/brain-policy.json', 'utf8'));
+
+          if (brain.version !== '0.1-grounded-reasoning-gateway') {
+            throw new Error(`Unexpected Brain version: ${brain.version}`);
+          }
+
+          if (brain.reasonerVersion !== '0.1-deterministic-evidence-bound-reasoner') {
+            throw new Error(`Unexpected reasoner version: ${brain.reasonerVersion}`);
+          }
+
+          if (policy.mode !== 'read-only-proposal-only') {
+            throw new Error('Grounded Brain policy escaped read-only-proposal-only');
+          }
+
+          if (brain.grounding?.allRequiredSourcesFresh !== true) {
+            throw new Error('Grounded Brain does not have all required sources fresh');
+          }
+
+          if (brain.constraints?.actionMode !== 'proposal-only') {
+            throw new Error('Grounded Brain escaped proposal-only');
+          }
+
+          for (const item of brain.reasoningCases ?? []) {
+            if (!item.evidence?.length) {
+              throw new Error(`Grounded Brain case ${item.id} has no evidence`);
+            }
+            if (item.actionMode !== 'proposal-only') {
+              throw new Error(`Grounded Brain case ${item.id} is executable`);
+            }
+          }
+
+          if (history.version !== '0.1-brain-history') {
+            throw new Error(`Unexpected Brain History version: ${history.version}`);
+          }
+
+          console.log('Grounded Brain PASS', {
+            generatedAt: brain.generatedAt,
+            status: brain.status,
+            cases: brain.reasoningCases.length,
+            historyObservations: history.observationCount,
+            snapshotHash: brain.bridge?.snapshotHash,
+          });
+          NODE
+
+      - name: Build exact-upstream ChatGPT Bridge
+        run: node intelligence/brain-chatgpt-bridge.mjs
+
+      - name: Validate exact-upstream Bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node intelligence/brain-chatgpt-bridge.mjs --verify-current
+
+          node - <<'NODE'
+          const fs = require('fs');
+
+          const bridge = JSON.parse(fs.readFileSync('intelligence/brain-chatgpt-bridge.json', 'utf8'));
+          const report = JSON.parse(fs.readFileSync('intelligence/brain-chatgpt-bridge-eval.json', 'utf8'));
+
+          if (report.status !== 'pass') {
+            throw new Error('Bridge validation report did not PASS');
+          }
+
+          if (bridge.grounding?.upstreamCurrent !== true) {
+            throw new Error('Bridge exact upstream binding is not current');
+          }
+
+          if (!(bridge.grounding?.upstreamValidation?.sources ?? []).every((x) => x.exactByteMatch === true)) {
+            throw new Error('Bridge upstream vector has a non-matching source');
+          }
+
+          if (bridge.constraints?.apiRequired !== false ||
+              bridge.constraints?.modelCallPerformed !== false ||
+              bridge.constraints?.executionAllowed !== false) {
+            throw new Error('Bridge zero-cost / no-execution boundary failed');
+          }
+
+          console.log('Exact-upstream Bridge PASS', {
+            generatedAt: bridge.generatedAt,
+            status: bridge.status,
+            cases: bridge.cases?.length ?? null,
+            evidence: bridge.evidenceCatalog?.length ?? null,
+            sourceBrainSha256: bridge.sourceBrain?.sha256 ?? null,
+          });
+          NODE
+
+      - name: Build Cognitive Stack readiness state
+        run: node intelligence/cognitive-stack-verifier.mjs
+
+      - name: Validate entire cognitive chain
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node intelligence/cognitive-stack-verifier.mjs --verify-current
+
+          node - <<'NODE'
+          const fs = require('fs');
+
+          const stack = JSON.parse(fs.readFileSync('intelligence/cognitive-stack-state.json', 'utf8'));
+          const report = JSON.parse(fs.readFileSync('intelligence/cognitive-stack-eval.json', 'utf8'));
+
+          if (report.status !== 'pass') {
+            throw new Error('Cognitive Stack validation report did not PASS');
+          }
+
+          if (stack.readyForManualInterpretation !== true) {
+            throw new Error('Cognitive Stack is not ready for manual interpretation');
+          }
+
+          if (stack.chain?.groundedBrain?.exactCanonicalUpstreamBinding !== true) {
+            throw new Error('Grounded Brain exact upstream binding failed');
+          }
+
+          if (stack.chain?.chatgptBridge?.exactCanonicalUpstreamBinding !== true) {
+            throw new Error('ChatGPT Bridge exact upstream binding failed');
+          }
+
+          console.log('Entire Cognitive Stack PASS', {
+            status: stack.status,
+            readyForManualInterpretation: stack.readyForManualInterpretation,
+            requiresImmediateHumanReview: stack.requiresImmediateHumanReview,
+            chainHash: stack.integrity?.chainHash,
+          });
+          NODE
+
+          git diff --check
+
+      - name: Publish coherent cognitive stack atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "The Holding Cognitive Stack"
+          git config user.email "cognitive-stack@theholding.ai"
+
+          git add \
+            security/security-memory.json \
+            security/security-history.json \
+            security/security-intelligence.json \
+            security/security-brief.md \
+            security/security-vault \
+            intelligence/brain-intelligence.json \
+            intelligence/brain-history.json \
+            intelligence/brain-brief.md \
+            intelligence/brain-chatgpt-bridge.json \
+            intelligence/brain-chatgpt-bridge.md \
+            intelligence/brain-chatgpt-bridge-history.json \
+            intelligence/brain-chatgpt-bridge-eval.json \
+            intelligence/cognitive-stack-state.json \
+            intelligence/cognitive-stack-brief.md \
+            intelligence/cognitive-stack-eval.json
+
+          staged_bad="$(
+            git diff --cached --name-only |
+              grep -Ev '^(security/(security-memory\.json|security-history\.json|security-intelligence\.json|security-brief\.md|security-vault/.*)|intelligence/(brain-intelligence\.json|brain-history\.json|brain-brief\.md|brain-chatgpt-bridge\.json|brain-chatgpt-bridge\.md|brain-chatgpt-bridge-history\.json|brain-chatgpt-bridge-eval\.json|cognitive-stack-state\.json|cognitive-stack-brief\.md|cognitive-stack-eval\.json))$' ||
+              true
+          )"
+
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Cognitive Stack attempted to stage files outside its generated-state boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "No generated cognitive-state changes to publish."
+            exit 0
+          fi
+
+          git commit -m "intelligence: refresh coherent cognitive stack"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Cognitive Stack publish conflict; refusing to guess."
+              exit 1
+            fi
+
+            # A rebase may introduce a newer Observer/Security/Brain source.
+            # Never publish a packet built against older bytes.
+            node intelligence/brain-chatgpt-bridge.mjs --verify-current
+            node intelligence/cognitive-stack-verifier.mjs --verify-current
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+
+              if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+                echo "ERROR: pushed Cognitive Stack commit is not current remote main."
+                exit 1
+              fi
+
+              echo "Verified coherent Cognitive Stack on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "ERROR: unable to publish coherent Cognitive Stack after 3 attempts."
+          exit 1
