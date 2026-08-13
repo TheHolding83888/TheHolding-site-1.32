@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T19:17:32.506Z",
+  "generatedAt": "2026-08-13T19:18:04.109Z",
   "status": "critical",
-  "snapshotHash": "85f0820a4893ad43b41779c2e567a48e3ac7754c4b479b431fa67e4362074078",
+  "snapshotHash": "a9a14f41c4f2fc10f3684cff156f308f3a271490a2d5a2d01025e87746bb6a98",
   "repository": {
-    "filesScanned": 105,
-    "bytesScanned": 4758177,
+    "filesScanned": 106,
+    "bytesScanned": 4764588,
     "criticalHashes": {
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
@@ -21,6 +21,7 @@
       ".github/workflows/security-hardening-actions.yml": "0353e44050c35c920c7d5e86dda4aeef15b4cb50ef432225ff7884d26ecc3704",
       ".github/workflows/security-sentinel.yml": "ae61c86bcdc27747ac61a22f6665fee285c7f36486dc71c09dde088cdec7d104",
       ".github/workflows/ui-regression-sentinel.yml": "7014d3760f0a77b6aee74b16b18af95394f95edd15535b6fc5927e89dc7cca20",
+      ".github/workflows/update-brain-chatgpt-bridge.yml": "4226cf1f4a2909bead7c361d5499165740d27c42be5afbd430b2feae78407c94",
       ".github/workflows/update-brain-intelligence.yml": "12bb6e7b76aa7c920448725e09bd327cd7a5f80e80c3f753d8631c87c2df96ac",
       ".github/workflows/update-brain-interpretation.yml": "3e7d8668c0185b04202f1ae88f4cc8f27f96a812f05787515e90051223f64d16",
       ".github/workflows/update-change-intelligence.yml": "51a176970cd47aa56aa194960b42863474b25eb50080efc896c3fcdbe7a64a28",
@@ -136,6 +137,17 @@
       "entity": "openai-key",
       "summary": "Potential openai-key detected in public repository text.",
       "whyItMatters": "Credentials committed to a public repository can be copied and abused. The Sentinel stores only the pattern type and location, never the matched secret.",
+      "evidence": null
+    },
+    {
+      "id": "144385c737678a7b5f2a26f977e3e28b8f469354f0cc674d5d2856e86ade6ee4",
+      "severity": "high",
+      "category": "shell-eval",
+      "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Workflow contains shell eval.",
+      "whyItMatters": "Eval can turn untrusted data into executable shell code.",
       "evidence": null
     },
     {
@@ -603,10 +615,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 31,
+    "runCount": 32,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T19-17-32-506Z-85f0820a48.json",
-    "latestRecordHash": "d9dc74542045a18617acf9a54bd7f2735a1ef0ab17d4a94c2f82c4f6b9a87f6f",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T19-18-04-109Z-a9a14f41c4.json",
+    "latestRecordHash": "cf04db5888c07160e08c9c4aed8151057a5f2a66bfd9d0c056e51f56d8c91061",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }

@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.1-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-13T19:17:32.506Z",
+  "lastUpdatedAt": "2026-08-13T19:18:04.109Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 31,
-    "vaultRunCount": 31,
+    "runCount": 32,
+    "vaultRunCount": 32,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -384,6 +384,18 @@
       "criticalCount": 1,
       "highCount": 1,
       "newFindingCount": 0,
+      "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-13T19:18:04.109Z",
+      "status": "critical",
+      "snapshotHash": "a9a14f41c4f2fc10f3684cff156f308f3a271490a2d5a2d01025e87746bb6a98",
+      "recordPath": "security/security-vault/2026/08/2026-08-13T19-18-04-109Z-a9a14f41c4.json",
+      "recordHash": "cf04db5888c07160e08c9c4aed8151057a5f2a66bfd9d0c056e51f56d8c91061",
+      "findingCount": 44,
+      "criticalCount": 1,
+      "highCount": 2,
+      "newFindingCount": 1,
       "resolvedFindingCount": 0
     }
   ],
@@ -3698,6 +3710,17 @@
       "summary": "Potential openai-key detected in public repository text.",
       "file": "intelligence/brain-chatgpt-bridge.mjs",
       "entity": "openai-key"
+    },
+    {
+      "id": "3f3d61d04b7092c3c5ccf02b0880df00e20e2d25a9634cf62227b6b75d4338d7",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-13T19:18:04.109Z",
+      "findingId": "144385c737678a7b5f2a26f977e3e28b8f469354f0cc674d5d2856e86ade6ee4",
+      "severity": "high",
+      "category": "shell-eval",
+      "summary": "Workflow contains shell eval.",
+      "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
+      "entity": null
     }
   ]
 }
