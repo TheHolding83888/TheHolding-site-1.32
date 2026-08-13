@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · v1.23.10 · Collection → General Index Continuation · Mobile Facade + Monetra mpx v2 -->
+<!-- companies.html · v1.23.11 · Registry Observatory Mobile Freedom · Collection → Index + Monetra mpx v2 -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
 <!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
@@ -7946,6 +7946,57 @@
             .capital-mode-label-short { display: block; }
             .capital-mode-label { font-size: .99rem; letter-spacing: -.03em; }
             .capital-mode-caption { font-size: .42rem; letter-spacing: .075em; }
+        }
+
+
+        /* ══ Registry Observatory mobile freedom · v1.23.11 ════════════
+           Cosmetic-only mobile refinement. Keep the accepted v1.23.9
+           scale and typography, but remove the segmented-control /
+           nested-card feeling: the tab group and inactive modes become
+           visually free, while the selected mode keeps its premium
+           lacquer state. Laptop/desktop remain untouched. */
+        @media (max-width:760.98px) {
+            .capital-mode-tabs {
+                gap: .3rem;
+                padding: 0;
+                border: 0;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
+                isolation: isolate;
+            }
+            .capital-mode-tabs::after {
+                display: none !important;
+            }
+            .capital-mode-btn {
+                background: transparent;
+                box-shadow: none;
+            }
+            .capital-mode-btn:hover:not(.active) {
+                background: transparent;
+                box-shadow: none;
+            }
+            .capital-mode-btn:not(.active) .capital-mode-label {
+                color: rgba(22,21,15,.66);
+            }
+            .capital-mode-btn:not(.active) .capital-mode-caption {
+                color: rgba(22,21,15,.46);
+            }
+            .capital-mode-btn.active {
+                box-shadow:
+                    inset 0 1px 0 rgba(255,255,255,.065),
+                    inset 0 0 0 1px rgba(216,180,90,.17),
+                    0 20px 38px -28px rgba(22,21,15,.70);
+            }
+            .capital-mode-btn-stable.active {
+                box-shadow:
+                    inset 0 1px 0 rgba(255,255,255,.055),
+                    inset 0 0 0 1px rgba(82,177,128,.19),
+                    0 20px 38px -28px rgba(10,70,43,.58);
+            }
+        }
+        @media (max-width:340px) {
+            .capital-mode-tabs { gap: .2rem; padding: 0; border-radius: 0; }
         }
 </style>
 
