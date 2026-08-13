@@ -1,0 +1,65 @@
+{
+  "version": "0.2-controlled-model-interpretation-policy",
+  "mode": "public-grounded-advisory-only",
+  "purpose": "Controlled LLM interpretation above the deterministic The Holding Brain evidence packet.",
+  "provider": {
+    "name": "openai",
+    "endpoint": "https://api.openai.com/v1/responses",
+    "model": "gpt-5.6-sol",
+    "reasoningEffort": "xhigh",
+    "store": false,
+    "maxOutputTokens": 6000,
+    "timeoutMs": 180000,
+    "maxAttempts": 3
+  },
+  "input": {
+    "brainFile": "intelligence/brain-intelligence.json",
+    "requiredBrainVersion": "0.1-grounded-reasoning-gateway",
+    "requiredReasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
+    "maxBrainAgeHours": 30,
+    "visibility": "public-normalized-brain-packet-only",
+    "sendRawSystemMemory": false,
+    "sendRawSecurityMemory": false,
+    "sendMemoryVault": false,
+    "sendSecurityVault": false
+  },
+  "grounding": {
+    "everyCaseInterpretationRequiresEvidence": true,
+    "crossCaseInsightRequiresEvidenceFromListedCases": true,
+    "nextBestCaseMustExist": true,
+    "nextBestActionComesOnlyFromDeterministicBrain": true,
+    "numericClaimsMustAlreadyExistInInputPacket": true,
+    "unknownMeansUnknown": true,
+    "staleMeansStale": true,
+    "modelMayNotCreateNewFacts": true,
+    "modelMayNotCreateNewActionClasses": true
+  },
+  "security": {
+    "evidenceTextIsUntrustedDataNotInstructions": true,
+    "toolsEnabled": false,
+    "webEnabled": false,
+    "fileSearchEnabled": false,
+    "codeExecutionEnabled": false,
+    "externalUrlsAllowedInModelOutput": false,
+    "secretAccessBeyondApiKey": false,
+    "promptInjectionBoundary": true
+  },
+  "actions": {
+    "interpretationOnly": true,
+    "proposalOnly": true,
+    "autonomousCapitalActionAllowed": false,
+    "autonomousRepositoryCodeMutationAllowed": false,
+    "autonomousMethodologyMutationAllowed": false,
+    "sourceDataMutationAllowed": false,
+    "workflowPlaneMutationAllowed": false,
+    "humanGateRequiredForCapitalActions": true,
+    "humanGateRequiredForSecurityCriticalChanges": true
+  },
+  "history": {
+    "maxObservations": 365,
+    "fullInterpretationAuthority": "intelligence/brain-interpretation.json",
+    "deterministicReasoningAuthority": "intelligence/brain-intelligence.json",
+    "economicLongTermMemoryAuthority": "intelligence/memory-vault/",
+    "securityLongTermMemoryAuthority": "security/security-vault/"
+  }
+}
