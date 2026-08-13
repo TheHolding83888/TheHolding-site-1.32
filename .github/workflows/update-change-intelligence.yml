@@ -18,6 +18,7 @@ jobs:
   observe-system:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,55 +42,129 @@ jobs:
           test -s companies/embedded-yield-ledger.json
           test -s reporting/reporting-data.json
 
-      - name: Observe, compare and update system memory
+      - name: Observe, compare and extend permanent memory
         run: node intelligence/change-intelligence-engine.mjs
 
-      - name: Validate intelligence artifacts
+      - name: Validate intelligence + Memory Vault
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
+          const path = require('path');
+          const crypto = require('crypto');
+
           const latest = JSON.parse(fs.readFileSync('intelligence/change-intelligence.json','utf8'));
           const memory = JSON.parse(fs.readFileSync('intelligence/system-memory.json','utf8'));
           const history = JSON.parse(fs.readFileSync('intelligence/change-history.json','utf8'));
-          if (latest.version !== '0.1-autonomous-change-intelligence') throw new Error('unexpected intelligence version');
-          if (latest.observerVersion !== '0.1-deterministic-system-watcher') throw new Error('unexpected Observer version');
+          const manifest = JSON.parse(fs.readFileSync('intelligence/memory-vault/manifest.json','utf8'));
+
+          function stableStringify(value) {
+            if (value === null || typeof value !== 'object') return JSON.stringify(value);
+            if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+            return `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
+          }
+          function sha256Text(text) {
+            return crypto.createHash('sha256').update(text).digest('hex');
+          }
+          function verifyRecord(record) {
+            if (!record?.integrity?.recordHash) throw new Error('vault record hash missing');
+            const core = {...record};
+            delete core.integrity;
+            const actual = sha256Text(stableStringify(core));
+            if (actual !== record.integrity.recordHash) throw new Error('vault record integrity mismatch');
+            if ((record.chain?.previousRecordHash ?? null) !== (record.integrity.previousRecordHash ?? null)) {
+              throw new Error('vault internal previous-hash mismatch');
+            }
+          }
+
+          if (latest.version !== '0.2-autonomous-change-intelligence-memory-vault') throw new Error('unexpected intelligence version');
+          if (latest.observerVersion !== '0.2-deterministic-memory-vault') throw new Error('unexpected Observer version');
+          if (memory.version !== '0.2-system-memory') throw new Error('unexpected memory version');
+          if (history.version !== '0.2-change-history') throw new Error('unexpected history version');
+          if (manifest.version !== '0.2-memory-vault-manifest') throw new Error('unexpected Memory Vault version');
+
           if (!latest.bridge?.snapshotHash || latest.bridge.snapshotHash !== memory.snapshotHash) throw new Error('snapshot hash mismatch');
           if (!Array.isArray(latest.whatChanged) || !Array.isArray(latest.watchNext)) throw new Error('latest intelligence arrays missing');
           if (!Array.isArray(history.runs) || !Array.isArray(history.events)) throw new Error('history arrays missing');
+          if (!Array.isArray(manifest.runs) || manifest.runCount !== manifest.runs.length || manifest.runCount < 1) {
+            throw new Error('Memory Vault manifest run count invalid');
+          }
+
           const requiredSources = ['productivity','rewards','stableCapital','stableIndex','embeddedLedger','reporting'];
           for (const key of requiredSources) {
             if (!memory.sources?.[key]?.sha256) throw new Error(`source provenance missing: ${key}`);
           }
-          console.log('Change Intelligence validation OK.');
+
+          const vaultBridge = latest.bridge?.memoryVault;
+          if (!vaultBridge?.latestRecordPath || !vaultBridge?.latestRecordHash) throw new Error('Memory Vault bridge missing');
+          if (vaultBridge.runCount !== manifest.runCount) throw new Error('Memory Vault bridge runCount mismatch');
+          if (history.lifetime?.vaultRunCount !== manifest.runCount) throw new Error('history/vault lifetime count mismatch');
+
+          const rel = vaultBridge.latestRecordPath;
+          const normalized = path.posix.normalize(rel);
+          if (!normalized.startsWith('intelligence/memory-vault/') || normalized.includes('../')) throw new Error('unsafe Memory Vault record path');
+          if (!fs.existsSync(rel)) throw new Error(`latest Memory Vault record missing: ${rel}`);
+
+          const record = JSON.parse(fs.readFileSync(rel,'utf8'));
+          verifyRecord(record);
+
+          if (record.integrity.recordHash !== vaultBridge.latestRecordHash) throw new Error('bridge/record hash mismatch');
+          if (record.integrity.recordHash !== manifest.latestRecord?.recordHash) throw new Error('manifest/record hash mismatch');
+          if (record.snapshotHash !== memory.snapshotHash) throw new Error('vault/current memory snapshot mismatch');
+
+          const runs = manifest.runs;
+          if (!manifest.chainRootHash || manifest.chainRootHash !== runs[0].recordHash) throw new Error('Memory Vault chain root mismatch');
+          for (let i = 0; i < runs.length; i++) {
+            const expectedPrev = i === 0 ? null : runs[i - 1].recordHash;
+            if ((runs[i].previousRecordHash ?? null) !== expectedPrev) throw new Error(`Memory Vault manifest chain broken at run ${i}`);
+          }
+
+          const last = runs[runs.length - 1];
+          if (last.recordPath !== rel || last.recordHash !== record.integrity.recordHash) throw new Error('manifest latest run mismatch');
+          if (runs.length > 1) {
+            const prev = runs[runs.length - 2];
+            if (record.integrity.previousRecordHash !== prev.recordHash) throw new Error('Memory Vault latest hash link broken');
+          } else if (record.integrity.previousRecordHash !== null) {
+            throw new Error('first Memory Vault record must have null previous hash');
+          }
+
+          console.log('Change Intelligence + Memory Vault validation OK.');
           console.log('Mode:', latest.mode);
           console.log('Changes:', latest.whatChanged.length);
           console.log('Watch:', latest.watchNext.length);
+          console.log('Vault runs:', manifest.runCount);
+          console.log('Vault events:', manifest.eventCount);
+          console.log('Vault latest:', rel);
           NODE
 
-      - name: Publish system memory + change intelligence
+      - name: Publish system memory + permanent Memory Vault
         shell: bash
         run: |
           set -euo pipefail
+
           FILES=(
             "intelligence/system-memory.json"
             "intelligence/change-history.json"
             "intelligence/change-intelligence.json"
             "intelligence/daily-brief.md"
+            "intelligence/memory-vault/manifest.json"
           )
+
           for f in "${FILES[@]}"; do test -s "$f"; done
 
           git config user.name "The Holding Observer"
           git config user.email "observer@theholding.ai"
+
           git add "${FILES[@]}"
+          git add intelligence/memory-vault
 
           if git diff --cached --quiet; then
             echo "No intelligence changes to publish."
             exit 0
           fi
 
-          git commit -m "intelligence: observe system changes and extend memory"
+          git commit -m "intelligence: extend permanent Memory Vault"
 
           for attempt in 1 2 3; do
             git fetch origin main
