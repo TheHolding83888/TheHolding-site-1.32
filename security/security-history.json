@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.1-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-13T22:13:38.737Z",
+  "lastUpdatedAt": "2026-08-13T22:14:25.343Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 79,
-    "vaultRunCount": 79,
+    "runCount": 80,
+    "vaultRunCount": 80,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -961,6 +961,18 @@
       "highCount": 1,
       "newFindingCount": 1,
       "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-13T22:14:25.343Z",
+      "status": "watch",
+      "snapshotHash": "eb5d8b1ec2b6de386253d779ea02d50899fe215d9866b341763632962d8812b0",
+      "recordPath": "security/security-vault/2026/08/2026-08-13T22-14-25-343Z-eb5d8b1ec2.json",
+      "recordHash": "3853064dd5860f1c5979ddc93c6cd816b627108ae113cec7babf183ece1112f5",
+      "findingCount": 39,
+      "criticalCount": 0,
+      "highCount": 1,
+      "newFindingCount": 0,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -4503,6 +4515,17 @@
       "severity": "medium",
       "category": "critical-surface-change",
       "summary": "Security-sensitive surface changed: .github/workflows/security-sentinel.yml.",
+      "file": ".github/workflows/security-sentinel.yml",
+      "entity": null
+    },
+    {
+      "id": "e1e8b4dedf14c2ffa78472443f12ca422dbc1de8ba712ebdcf02b2bf74d943cf",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-13T22:14:25.343Z",
+      "findingId": "e8032cfbfcf9cbafade2bd255e4ca07b196df029810d0f67b2abaad605dee601",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/security-sentinel.yml.",
       "file": ".github/workflows/security-sentinel.yml",
       "entity": null
     }
