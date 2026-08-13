@@ -38,6 +38,7 @@ jobs:
           test -s intelligence/brain-chatgpt-bridge.mjs
           test -s intelligence/brain-chatgpt-bridge-policy.json
           test -s intelligence/brain-chatgpt-bridge-schema.json
+          test -s intelligence/brain-upstream-guard.mjs
 
           node --check intelligence/brain-chatgpt-bridge.mjs
           node intelligence/brain-chatgpt-bridge.mjs --self-test
@@ -95,6 +96,14 @@ jobs:
 
           if (bridge.grounding?.publicContextOnly !== true) {
             throw new Error('Bridge context widened beyond public normalized Brain');
+          }
+
+          if (bridge.grounding?.upstreamCurrent !== true) {
+            throw new Error('Bridge Grounded Brain upstream binding is not current');
+          }
+
+          if (!(bridge.grounding?.upstreamValidation?.sources ?? []).every((x) => x.exactByteMatch === true)) {
+            throw new Error('Bridge exact upstream source binding failed');
           }
 
           for (const item of bridge.cases ?? []) {
