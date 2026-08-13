@@ -1,0 +1,109 @@
+name: Update The Holding Change Intelligence
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily Observer pass after Rewards (04:57), Stable Capital (05:37)
+    # and Reporting (06:07). Sunday Productivity (04:17) is also already complete.
+    - cron: '27 6 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: change-intelligence-daily
+  cancel-in-progress: false
+
+jobs:
+  observe-system:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/change-intelligence-engine.mjs
+          test -s companies/productivity-data.json
+          test -s companies/rewards-data.json
+          test -s companies/stable-capital-data.json
+          test -s companies/stable-index-data.json
+          test -s companies/embedded-yield-ledger.json
+          test -s reporting/reporting-data.json
+
+      - name: Observe, compare and update system memory
+        run: node intelligence/change-intelligence-engine.mjs
+
+      - name: Validate intelligence artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const latest = JSON.parse(fs.readFileSync('intelligence/change-intelligence.json','utf8'));
+          const memory = JSON.parse(fs.readFileSync('intelligence/system-memory.json','utf8'));
+          const history = JSON.parse(fs.readFileSync('intelligence/change-history.json','utf8'));
+          if (latest.version !== '0.1-autonomous-change-intelligence') throw new Error('unexpected intelligence version');
+          if (latest.observerVersion !== '0.1-deterministic-system-watcher') throw new Error('unexpected Observer version');
+          if (!latest.bridge?.snapshotHash || latest.bridge.snapshotHash !== memory.snapshotHash) throw new Error('snapshot hash mismatch');
+          if (!Array.isArray(latest.whatChanged) || !Array.isArray(latest.watchNext)) throw new Error('latest intelligence arrays missing');
+          if (!Array.isArray(history.runs) || !Array.isArray(history.events)) throw new Error('history arrays missing');
+          const requiredSources = ['productivity','rewards','stableCapital','stableIndex','embeddedLedger','reporting'];
+          for (const key of requiredSources) {
+            if (!memory.sources?.[key]?.sha256) throw new Error(`source provenance missing: ${key}`);
+          }
+          console.log('Change Intelligence validation OK.');
+          console.log('Mode:', latest.mode);
+          console.log('Changes:', latest.whatChanged.length);
+          console.log('Watch:', latest.watchNext.length);
+          NODE
+
+      - name: Publish system memory + change intelligence
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILES=(
+            "intelligence/system-memory.json"
+            "intelligence/change-history.json"
+            "intelligence/change-intelligence.json"
+            "intelligence/daily-brief.md"
+          )
+          for f in "${FILES[@]}"; do test -s "$f"; done
+
+          git config user.name "The Holding Observer"
+          git config user.email "observer@theholding.ai"
+          git add "${FILES[@]}"
+
+          if git diff --cached --quiet; then
+            echo "No intelligence changes to publish."
+            exit 0
+          fi
+
+          git commit -m "intelligence: observe system changes and extend memory"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Safe writer guard: main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
