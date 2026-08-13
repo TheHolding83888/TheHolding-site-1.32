@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · v1.23.5 · Registry Observatory Mobile Containment · Desktop Preserved -->
+<!-- companies.html · v1.23.6 · Registry Observatory Mobile Editorial Restore · Desktop Preserved -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
 <!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
@@ -7683,6 +7683,75 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
+        }
+
+
+        /* ══ Registry Observatory mobile editorial restore · v1.23.6 ═════
+           Restore the lighter v1.23.3 mobile proportions without touching
+           the accepted laptop/desktop Observatory. Typography is deliberately
+           larger than v1.23.3, while active surfaces stay compact and calm. */
+        @media (max-width:760.98px) {
+            .capital-mode-rail-wrap {
+                padding-top: .74rem;
+                padding-bottom: .54rem;
+            }
+            .capital-mode-rail {
+                gap: .62rem !important;
+            }
+            .capital-mode-intro {
+                padding: 0 .08rem .02rem;
+                align-items: flex-end;
+            }
+            .capital-mode-tabs {
+                gap: .24rem;
+                padding: .22rem;
+            }
+            .capital-mode-btn {
+                min-height: 58px;
+                padding: .58rem .24rem .54rem;
+                border-radius: 14px;
+                gap: .22rem;
+                transform: none !important;
+            }
+            .capital-mode-btn:hover:not(.active) {
+                transform: none !important;
+                box-shadow: none;
+            }
+            .capital-mode-btn.active {
+                transform: none !important;
+                box-shadow:
+                    inset 0 1px 0 rgba(255,255,255,.055),
+                    inset 0 0 0 1px rgba(216,180,90,.16),
+                    0 15px 30px -24px rgba(22,21,15,.62);
+            }
+            .capital-mode-btn-stable.active {
+                box-shadow:
+                    inset 0 1px 0 rgba(255,255,255,.05),
+                    inset 0 0 0 1px rgba(82,177,128,.18),
+                    0 15px 30px -24px rgba(10,70,43,.54);
+            }
+            .capital-mode-label {
+                font-size: .98rem;
+                line-height: 1;
+                letter-spacing: -.018em;
+            }
+            .capital-mode-caption {
+                font-size: .45rem;
+                line-height: 1.08;
+                letter-spacing: .105em;
+            }
+        }
+        @media (max-width:420px) {
+            .capital-mode-rail-wrap { padding-top: .68rem; }
+            .capital-mode-rail { gap: .56rem !important; }
+            .capital-mode-tabs { gap: .18rem; padding: .2rem; }
+            .capital-mode-btn {
+                min-height: 56px;
+                padding: .54rem .18rem .5rem;
+                border-radius: 12px;
+            }
+            .capital-mode-label { font-size: .94rem; }
+            .capital-mode-caption { font-size: .42rem; letter-spacing: .09em; }
         }
 </style>
 
