@@ -1,0 +1,57 @@
+{
+  "version": "0.1-grounded-brain-policy",
+  "mode": "read-only-proposal-only",
+  "purpose": "Deterministic grounding constitution for the first The Holding Brain reasoning layer.",
+  "grounding": {
+    "evidenceRequiredForEveryReasoningCase": true,
+    "unknownMeansUnknown": true,
+    "staleMeansStale": true,
+    "correctionLedgerPrecedence": true,
+    "maxSourceAgeHours": {
+      "change": 36,
+      "systemMemory": 36,
+      "security": 36,
+      "securityMemory": 36
+    }
+  },
+  "reasoning": {
+    "maxCases": 25,
+    "allowedDomains": [
+      "economic",
+      "system-change",
+      "security"
+    ],
+    "allowedRecommendationClasses": [
+      "data-gap-resolution",
+      "coverage-resolution",
+      "reward-route-resolution",
+      "stable-coverage-resolution",
+      "security-review",
+      "security-provenance-triage",
+      "third-party-trust-review",
+      "human-security-escalation",
+      "evidence-review"
+    ]
+  },
+  "actions": {
+    "autonomousCapitalActionAllowed": false,
+    "autonomousRepositoryCodeMutationAllowed": false,
+    "autonomousMethodologyMutationAllowed": false,
+    "sourceDataMutationAllowed": false,
+    "workflowPlaneMutationAllowed": false,
+    "proposalGenerationAllowed": true,
+    "humanGateRequiredForSecurityCriticalChanges": true,
+    "humanGateRequiredForCapitalActions": true
+  },
+  "history": {
+    "maxObservations": 730,
+    "economicLongTermMemoryAuthority": "intelligence/memory-vault/",
+    "securityLongTermMemoryAuthority": "security/security-vault/"
+  },
+  "futureModelContract": {
+    "status": "reserved",
+    "rule": "A future LLM may interpret this packet only if every material claim cites evidence from the packet and deterministic policy gates remain authoritative.",
+    "modelsAreReplaceable": true,
+    "modelMayBypassPolicy": false
+  }
+}
