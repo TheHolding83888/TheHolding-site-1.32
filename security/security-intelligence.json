@@ -1,26 +1,55 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T20:26:23.636Z",
+  "generatedAt": "2026-08-13T20:27:13.944Z",
   "status": "green",
   "headline": "No high or critical security findings detected in this scan.",
   "severityCounts": {
     "critical": 0,
     "high": 0,
-    "medium": 41,
+    "medium": 42,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 119,
-    "bytesScanned": 4865580,
+    "bytesScanned": 4865819,
     "siteProbes": 6
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "5830e87ed0ad40bc2cf8d284ad872db8fe2f445575f1ff2124a74e96a1d4b6c2",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-brain-chatgpt-bridge.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "8843b5dd01bf9187f60881a9c8e4aaad5f4574b13ee9ac31590e22c27f4b1cc3",
+          "currentSha256": "959aca516dff8a7f633191b02c9fd0115d869758c20d3d23fde09540dabaa4d4"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
+    {
+      "id": "5830e87ed0ad40bc2cf8d284ad872db8fe2f445575f1ff2124a74e96a1d4b6c2",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-brain-chatgpt-bridge.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "8843b5dd01bf9187f60881a9c8e4aaad5f4574b13ee9ac31590e22c27f4b1cc3",
+        "currentSha256": "959aca516dff8a7f633191b02c9fd0115d869758c20d3d23fde09540dabaa4d4"
+      }
+    },
     {
       "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
       "severity": "medium",
@@ -485,12 +514,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "bca66589c795570fee84f0a620c581558868252664e860536bed314f051d55b3",
+    "snapshotHash": "9579213b6f14ce8b4196bdddd9eabff2e6f44bc298ea963c546ca5cd1089328a",
     "securityVault": {
-      "runCount": 57,
+      "runCount": 58,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T20-26-23-636Z-bca66589c7.json",
-      "latestRecordHash": "d6c1069ae2dcae274fae0856b5d906fcf775510cfda2056d7ccb584e290ff100",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T20-27-13-944Z-9579213b6f.json",
+      "latestRecordHash": "6457b9d65eb7ea6e3b251fa6abad63bbbbfd46c8c6e3a58027f07185f22d49e9",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
