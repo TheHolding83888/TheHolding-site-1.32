@@ -43,6 +43,8 @@ jobs:
             "intelligence/brain-chatgpt-bridge-schema.json"
             "intelligence/brain-upstream-guard.mjs"
             "intelligence/cognitive-stack-verifier.mjs"
+            "intelligence/cognitive-release-guard.mjs"
+            "intelligence/cognitive-stack-release.json"
             "intelligence/change-intelligence.json"
             "intelligence/system-memory.json"
           )
@@ -56,8 +58,9 @@ jobs:
           node --check intelligence/brain-chatgpt-bridge.mjs
           node --check intelligence/brain-upstream-guard.mjs
           node --check intelligence/cognitive-stack-verifier.mjs
+          node --check intelligence/cognitive-release-guard.mjs
 
-          node intelligence/brain-chatgpt-bridge.mjs --self-test
+          node intelligence/cognitive-release-guard.mjs
 
       - name: Refresh Security Sentinel state
         env:
@@ -208,6 +211,9 @@ jobs:
           });
           NODE
 
+      - name: Self-test Bridge against fresh Grounded Brain
+        run: node intelligence/brain-chatgpt-bridge.mjs --self-test
+
       - name: Build exact-upstream ChatGPT Bridge
         run: node intelligence/brain-chatgpt-bridge.mjs
 
@@ -259,6 +265,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          node intelligence/cognitive-release-guard.mjs
           node intelligence/cognitive-stack-verifier.mjs --verify-current
 
           node - <<'NODE'
@@ -348,6 +355,7 @@ jobs:
 
             # A rebase may introduce a newer Observer/Security/Brain source.
             # Never publish a packet built against older bytes.
+            node intelligence/cognitive-release-guard.mjs
             node intelligence/brain-chatgpt-bridge.mjs --verify-current
             node intelligence/cognitive-stack-verifier.mjs --verify-current
 
