@@ -1,0 +1,867 @@
+{
+  "version": "0.1-grounded-reasoning-gateway",
+  "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
+  "generatedAt": "2026-08-13T18:17:57.680Z",
+  "mode": "baseline",
+  "status": "watch",
+  "headline": "9 evidence-bound reasoning case(s) are active across economic and security memory.",
+  "currentPosture": {
+    "observer": {
+      "mode": "delta",
+      "materialChangeCount": 0,
+      "watchCount": 7,
+      "snapshotHash": "a4d8ac7e95032c61eb6779a879d9c940f8fe96f27be372e3bdd37823882f3a57",
+      "sourceCompositeHash": "2c0d9f118a7b67dbfada8885e8a2ec64f5b6747a23f958dfa9b001d9d294a8c2"
+    },
+    "memory": {
+      "vaultRunCount": 3,
+      "vaultEventCount": 0,
+      "correctionEntryCount": 1,
+      "correctionPrecedence": "correction-ledger-over-target-record-field"
+    },
+    "security": {
+      "status": "green",
+      "critical": 0,
+      "high": 0,
+      "medium": 41,
+      "newFindingEvents": 0,
+      "resolvedFindingEvents": 0
+    }
+  },
+  "questions": {
+    "whatChanged": {
+      "answer": "No new material Observer or Security change events are present in the current canonical inputs. Existing watch items remain active.",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/whatChanged",
+          "value": [],
+          "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+          "observedAt": "2026-08-13T16:45:11.222Z",
+          "interpretation": "direct"
+        },
+        {
+          "source": "security/security-intelligence.json",
+          "pointer": "/whatChanged",
+          "value": {
+            "newFindings": [],
+            "resolvedFindings": []
+          },
+          "sourceSha256": "9f7f6a81af6544076daab5c18dbd97759241b5c370acca61483f3f5290df2890",
+          "observedAt": "2026-08-13T18:16:18.976Z",
+          "interpretation": "direct"
+        }
+      ]
+    },
+    "whyItMatters": [
+      {
+        "id": "809f9ea519a38bfe3908e96f",
+        "entity": "34 current findings",
+        "answer": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidenceRefs": [
+          {
+            "source": "security/security-intelligence.json",
+            "pointer": "/currentFindings",
+            "selector": "severity=medium&category=dom-innerhtml",
+            "sourceSha256": "9f7f6a81af6544076daab5c18dbd97759241b5c370acca61483f3f5290df2890"
+          }
+        ]
+      },
+      {
+        "id": "bd92163ceaf2983dcdb57151",
+        "entity": "7 current findings",
+        "answer": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
+        "evidenceRefs": [
+          {
+            "source": "security/security-intelligence.json",
+            "pointer": "/currentFindings",
+            "selector": "severity=medium&category=external-script-no-sri",
+            "sourceSha256": "9f7f6a81af6544076daab5c18dbd97759241b5c370acca61483f3f5290df2890"
+          }
+        ]
+      },
+      {
+        "id": "a2edb74a9d50a22d9e91e64a",
+        "entity": "liquity_lqty",
+        "answer": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/0",
+            "selector": null,
+            "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7"
+          }
+        ]
+      },
+      {
+        "id": "610968fa0e1f1675d6be4131",
+        "entity": "pendle_spendle",
+        "answer": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/1",
+            "selector": null,
+            "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7"
+          }
+        ]
+      },
+      {
+        "id": "29d41c97821adff643d62d32",
+        "entity": "defitea.eth",
+        "answer": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/2",
+            "selector": null,
+            "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7"
+          }
+        ]
+      },
+      {
+        "id": "752ad1fa5d5c4b4db1804346",
+        "entity": "0x5860...83CA8.eth",
+        "answer": "Unresolved reward routes reduce the completeness of earned-value memory.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/3",
+            "selector": null,
+            "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7"
+          }
+        ]
+      },
+      {
+        "id": "9407adbb1115d285937ffb3d",
+        "entity": "aerocvxyb.eth",
+        "answer": "Unresolved reward routes reduce the completeness of earned-value memory.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/4",
+            "selector": null,
+            "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7"
+          }
+        ]
+      },
+      {
+        "id": "d57ad616b19f94c0c5e8b6e7",
+        "entity": "defitea.eth",
+        "answer": "Unresolved reward routes reduce the completeness of earned-value memory.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/5",
+            "selector": null,
+            "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7"
+          }
+        ]
+      },
+      {
+        "id": "91a77cb6899cf6d34a8ea962",
+        "entity": "Stable Companies Index",
+        "answer": "The Stable layer intentionally carries the last full observation rather than inventing a current full rate.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/6",
+            "selector": null,
+            "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7"
+          }
+        ]
+      }
+    ],
+    "whatFollows": [
+      {
+        "id": "809f9ea519a38bfe3908e96f",
+        "entity": "34 current findings",
+        "answer": "A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.",
+        "confidence": "high"
+      },
+      {
+        "id": "bd92163ceaf2983dcdb57151",
+        "entity": "7 current findings",
+        "answer": "A third-party script origin is part of the browser trust boundary.",
+        "confidence": "high"
+      },
+      {
+        "id": "a2edb74a9d50a22d9e91e64a",
+        "entity": "liquity_lqty",
+        "answer": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+        "confidence": "high"
+      },
+      {
+        "id": "610968fa0e1f1675d6be4131",
+        "entity": "pendle_spendle",
+        "answer": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+        "confidence": "high"
+      },
+      {
+        "id": "29d41c97821adff643d62d32",
+        "entity": "defitea.eth",
+        "answer": "The covered productive rate remains useful only within its stated coverage; unresolved productive capital must stay excluded rather than be fabricated.",
+        "confidence": "high"
+      },
+      {
+        "id": "752ad1fa5d5c4b4db1804346",
+        "entity": "0x5860...83CA8.eth",
+        "answer": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
+        "confidence": "high"
+      },
+      {
+        "id": "9407adbb1115d285937ffb3d",
+        "entity": "aerocvxyb.eth",
+        "answer": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
+        "confidence": "high"
+      },
+      {
+        "id": "d57ad616b19f94c0c5e8b6e7",
+        "entity": "defitea.eth",
+        "answer": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
+        "confidence": "high"
+      },
+      {
+        "id": "91a77cb6899cf6d34a8ea962",
+        "entity": "Stable Companies Index",
+        "answer": "The current Stable Capital rate is not fully observed, so replacing the last verified full-coverage rate would overstate certainty.",
+        "confidence": "high"
+      }
+    ],
+    "whatShouldBeDone": [
+      {
+        "id": "809f9ea519a38bfe3908e96f",
+        "entity": "34 current findings",
+        "answer": "Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.",
+        "recommendationClass": "security-provenance-triage",
+        "riskTier": "medium",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "bd92163ceaf2983dcdb57151",
+        "entity": "7 current findings",
+        "answer": "Assess SRI feasibility, self-hosting, removal, or tighter CSP for the exact script. Preserve analytics behavior until the safer replacement is verified.",
+        "recommendationClass": "third-party-trust-review",
+        "riskTier": "medium",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "a2edb74a9d50a22d9e91e64a",
+        "entity": "liquity_lqty",
+        "answer": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+        "recommendationClass": "data-gap-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "610968fa0e1f1675d6be4131",
+        "entity": "pendle_spendle",
+        "answer": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+        "recommendationClass": "data-gap-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "29d41c97821adff643d62d32",
+        "entity": "defitea.eth",
+        "answer": "Prioritize the unresolved adapter(s) contributing to the coverage gap, preserve covered-rate semantics, and promote to full coverage only after reproducible evidence exists.",
+        "recommendationClass": "coverage-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "752ad1fa5d5c4b4db1804346",
+        "entity": "0x5860...83CA8.eth",
+        "answer": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
+        "recommendationClass": "reward-route-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "9407adbb1115d285937ffb3d",
+        "entity": "aerocvxyb.eth",
+        "answer": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
+        "recommendationClass": "reward-route-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "d57ad616b19f94c0c5e8b6e7",
+        "entity": "defitea.eth",
+        "answer": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
+        "recommendationClass": "reward-route-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "91a77cb6899cf6d34a8ea962",
+        "entity": "Stable Companies Index",
+        "answer": "Preserve last-full-coverage display semantics and resolve the current warming stable position before promoting a new full-current APY.",
+        "recommendationClass": "stable-coverage-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      }
+    ]
+  },
+  "reasoningCases": [
+    {
+      "id": "809f9ea519a38bfe3908e96f",
+      "domain": "security",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "entity": "34 current findings",
+      "signal": "34 current medium security finding(s) in category dom-innerhtml.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "whatFollows": "A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.",
+      "whatShouldBeDone": "Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.",
+      "recommendationClass": "security-provenance-triage",
+      "riskTier": "medium",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "security/security-intelligence.json",
+          "pointer": "/currentFindings",
+          "value": {
+            "derivedCount": 34,
+            "representative": [
+              {
+                "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
+                "file": "05081966_calculator/index.html",
+                "line": 102,
+                "summary": "Dynamic innerHTML assignment detected."
+              },
+              {
+                "id": "7a89164116aed3a575601c8def93fce5ecfa59c26a0f6362ec85a5d56b7d2ec5",
+                "file": "05081966_company/index.html",
+                "line": 159,
+                "summary": "Dynamic innerHTML assignment detected."
+              },
+              {
+                "id": "e85d5502b20749a485ba93e0822b12be30641a64b6a7adf7da7403380f5e6907",
+                "file": "05081966/index.html",
+                "line": 162,
+                "summary": "Dynamic innerHTML assignment detected."
+              }
+            ]
+          },
+          "sourceSha256": "9f7f6a81af6544076daab5c18dbd97759241b5c370acca61483f3f5290df2890",
+          "observedAt": "2026-08-13T18:16:18.976Z",
+          "interpretation": "derived-from-direct-findings",
+          "selector": "severity=medium&category=dom-innerhtml",
+          "note": "Count is derived deterministically from current Security Sentinel findings."
+        }
+      ]
+    },
+    {
+      "id": "bd92163ceaf2983dcdb57151",
+      "domain": "security",
+      "severity": "medium",
+      "category": "external-script-no-sri",
+      "entity": "7 current findings",
+      "signal": "7 current medium security finding(s) in category external-script-no-sri.",
+      "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
+      "whatFollows": "A third-party script origin is part of the browser trust boundary.",
+      "whatShouldBeDone": "Assess SRI feasibility, self-hosting, removal, or tighter CSP for the exact script. Preserve analytics behavior until the safer replacement is verified.",
+      "recommendationClass": "third-party-trust-review",
+      "riskTier": "medium",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "security/security-intelligence.json",
+          "pointer": "/currentFindings",
+          "value": {
+            "derivedCount": 7,
+            "representative": [
+              {
+                "id": "b8ee5415856ac8f15ad6439d6e7de14890e6088f694b13f73f19a2770fe0cc3c",
+                "file": "blog/index.html",
+                "line": 610,
+                "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
+              },
+              {
+                "id": "bdc0201496c52b165895ddfdd430be1010e6fc6dd4335adb97544e7efc79ea41",
+                "file": "defitea/index.html",
+                "line": 1950,
+                "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
+              },
+              {
+                "id": "b7dc99aad99780567e08c882e6d84fc25d6339404849c262ebd223d0b6fa66ed",
+                "file": "faq/index.html",
+                "line": 404,
+                "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
+              }
+            ]
+          },
+          "sourceSha256": "9f7f6a81af6544076daab5c18dbd97759241b5c370acca61483f3f5290df2890",
+          "observedAt": "2026-08-13T18:16:18.976Z",
+          "interpretation": "derived-from-direct-findings",
+          "selector": "severity=medium&category=external-script-no-sri",
+          "note": "Count is derived deterministically from current Security Sentinel findings."
+        }
+      ]
+    },
+    {
+      "id": "a2edb74a9d50a22d9e91e64a",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "adapter-state",
+      "entity": "liquity_lqty",
+      "signal": "Liquity / liquity_lqty remains warming.",
+      "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+      "whatFollows": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+      "whatShouldBeDone": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+      "recommendationClass": "data-gap-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/0",
+          "value": {
+            "severity": "watch",
+            "category": "adapter-state",
+            "entity": "liquity_lqty",
+            "summary": "Liquity / liquity_lqty remains warming.",
+            "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
+          },
+          "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+          "observedAt": "2026-08-13T16:45:11.222Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "610968fa0e1f1675d6be4131",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "adapter-state",
+      "entity": "pendle_spendle",
+      "signal": "Pendle / pendle_spendle remains warming.",
+      "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+      "whatFollows": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+      "whatShouldBeDone": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+      "recommendationClass": "data-gap-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/1",
+          "value": {
+            "severity": "watch",
+            "category": "adapter-state",
+            "entity": "pendle_spendle",
+            "summary": "Pendle / pendle_spendle remains warming.",
+            "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
+          },
+          "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+          "observedAt": "2026-08-13T16:45:11.222Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "29d41c97821adff643d62d32",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "productivity-coverage",
+      "entity": "defitea.eth",
+      "signal": "defitea.eth Productivity coverage is 89.8%.",
+      "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood.",
+      "whatFollows": "The covered productive rate remains useful only within its stated coverage; unresolved productive capital must stay excluded rather than be fabricated.",
+      "whatShouldBeDone": "Prioritize the unresolved adapter(s) contributing to the coverage gap, preserve covered-rate semantics, and promote to full coverage only after reproducible evidence exists.",
+      "recommendationClass": "coverage-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/2",
+          "value": {
+            "severity": "watch",
+            "category": "productivity-coverage",
+            "entity": "defitea.eth",
+            "summary": "defitea.eth Productivity coverage is 89.8%.",
+            "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood."
+          },
+          "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+          "observedAt": "2026-08-13T16:45:11.222Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "752ad1fa5d5c4b4db1804346",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "rewards-completeness",
+      "entity": "0x5860...83CA8.eth",
+      "signal": "0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
+      "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory.",
+      "whatFollows": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
+      "whatShouldBeDone": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
+      "recommendationClass": "reward-route-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/3",
+          "value": {
+            "severity": "watch",
+            "category": "rewards-completeness",
+            "entity": "0x5860...83CA8.eth",
+            "summary": "0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
+            "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+          },
+          "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+          "observedAt": "2026-08-13T16:45:11.222Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "9407adbb1115d285937ffb3d",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "rewards-completeness",
+      "entity": "aerocvxyb.eth",
+      "signal": "aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+      "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory.",
+      "whatFollows": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
+      "whatShouldBeDone": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
+      "recommendationClass": "reward-route-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/4",
+          "value": {
+            "severity": "watch",
+            "category": "rewards-completeness",
+            "entity": "aerocvxyb.eth",
+            "summary": "aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+            "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+          },
+          "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+          "observedAt": "2026-08-13T16:45:11.222Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "d57ad616b19f94c0c5e8b6e7",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "rewards-completeness",
+      "entity": "defitea.eth",
+      "signal": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+      "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory.",
+      "whatFollows": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
+      "whatShouldBeDone": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
+      "recommendationClass": "reward-route-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/5",
+          "value": {
+            "severity": "watch",
+            "category": "rewards-completeness",
+            "entity": "defitea.eth",
+            "summary": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+            "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+          },
+          "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+          "observedAt": "2026-08-13T16:45:11.222Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "91a77cb6899cf6d34a8ea962",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "stable-capital-coverage",
+      "entity": "Stable Companies Index",
+      "signal": "Stable Capital current coverage is not full; display APY is last-full-coverage.",
+      "whyItMatters": "The Stable layer intentionally carries the last full observation rather than inventing a current full rate.",
+      "whatFollows": "The current Stable Capital rate is not fully observed, so replacing the last verified full-coverage rate would overstate certainty.",
+      "whatShouldBeDone": "Preserve last-full-coverage display semantics and resolve the current warming stable position before promoting a new full-current APY.",
+      "recommendationClass": "stable-coverage-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/6",
+          "value": {
+            "severity": "watch",
+            "category": "stable-capital-coverage",
+            "entity": "Stable Companies Index",
+            "summary": "Stable Capital current coverage is not full; display APY is last-full-coverage.",
+            "whyItMatters": "The Stable layer intentionally carries the last full observation rather than inventing a current full rate."
+          },
+          "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+          "observedAt": "2026-08-13T16:45:11.222Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    }
+  ],
+  "evidenceLedger": [
+    {
+      "source": "security/security-intelligence.json",
+      "pointer": "/currentFindings",
+      "value": {
+        "derivedCount": 34,
+        "representative": [
+          {
+            "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
+            "file": "05081966_calculator/index.html",
+            "line": 102,
+            "summary": "Dynamic innerHTML assignment detected."
+          },
+          {
+            "id": "7a89164116aed3a575601c8def93fce5ecfa59c26a0f6362ec85a5d56b7d2ec5",
+            "file": "05081966_company/index.html",
+            "line": 159,
+            "summary": "Dynamic innerHTML assignment detected."
+          },
+          {
+            "id": "e85d5502b20749a485ba93e0822b12be30641a64b6a7adf7da7403380f5e6907",
+            "file": "05081966/index.html",
+            "line": 162,
+            "summary": "Dynamic innerHTML assignment detected."
+          }
+        ]
+      },
+      "sourceSha256": "9f7f6a81af6544076daab5c18dbd97759241b5c370acca61483f3f5290df2890",
+      "observedAt": "2026-08-13T18:16:18.976Z",
+      "interpretation": "derived-from-direct-findings",
+      "selector": "severity=medium&category=dom-innerhtml",
+      "note": "Count is derived deterministically from current Security Sentinel findings."
+    },
+    {
+      "source": "security/security-intelligence.json",
+      "pointer": "/currentFindings",
+      "value": {
+        "derivedCount": 7,
+        "representative": [
+          {
+            "id": "b8ee5415856ac8f15ad6439d6e7de14890e6088f694b13f73f19a2770fe0cc3c",
+            "file": "blog/index.html",
+            "line": 610,
+            "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
+          },
+          {
+            "id": "bdc0201496c52b165895ddfdd430be1010e6fc6dd4335adb97544e7efc79ea41",
+            "file": "defitea/index.html",
+            "line": 1950,
+            "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
+          },
+          {
+            "id": "b7dc99aad99780567e08c882e6d84fc25d6339404849c262ebd223d0b6fa66ed",
+            "file": "faq/index.html",
+            "line": 404,
+            "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
+          }
+        ]
+      },
+      "sourceSha256": "9f7f6a81af6544076daab5c18dbd97759241b5c370acca61483f3f5290df2890",
+      "observedAt": "2026-08-13T18:16:18.976Z",
+      "interpretation": "derived-from-direct-findings",
+      "selector": "severity=medium&category=external-script-no-sri",
+      "note": "Count is derived deterministically from current Security Sentinel findings."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/watchNext/0",
+      "value": {
+        "severity": "watch",
+        "category": "adapter-state",
+        "entity": "liquity_lqty",
+        "summary": "Liquity / liquity_lqty remains warming.",
+        "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
+      },
+      "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+      "observedAt": "2026-08-13T16:45:11.222Z",
+      "interpretation": "direct",
+      "note": "Direct normalized watch item emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/watchNext/1",
+      "value": {
+        "severity": "watch",
+        "category": "adapter-state",
+        "entity": "pendle_spendle",
+        "summary": "Pendle / pendle_spendle remains warming.",
+        "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
+      },
+      "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+      "observedAt": "2026-08-13T16:45:11.222Z",
+      "interpretation": "direct",
+      "note": "Direct normalized watch item emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/watchNext/2",
+      "value": {
+        "severity": "watch",
+        "category": "productivity-coverage",
+        "entity": "defitea.eth",
+        "summary": "defitea.eth Productivity coverage is 89.8%.",
+        "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood."
+      },
+      "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+      "observedAt": "2026-08-13T16:45:11.222Z",
+      "interpretation": "direct",
+      "note": "Direct normalized watch item emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/watchNext/3",
+      "value": {
+        "severity": "watch",
+        "category": "rewards-completeness",
+        "entity": "0x5860...83CA8.eth",
+        "summary": "0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
+        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+      },
+      "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+      "observedAt": "2026-08-13T16:45:11.222Z",
+      "interpretation": "direct",
+      "note": "Direct normalized watch item emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/watchNext/4",
+      "value": {
+        "severity": "watch",
+        "category": "rewards-completeness",
+        "entity": "aerocvxyb.eth",
+        "summary": "aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+      },
+      "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+      "observedAt": "2026-08-13T16:45:11.222Z",
+      "interpretation": "direct",
+      "note": "Direct normalized watch item emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/watchNext/5",
+      "value": {
+        "severity": "watch",
+        "category": "rewards-completeness",
+        "entity": "defitea.eth",
+        "summary": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+      },
+      "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+      "observedAt": "2026-08-13T16:45:11.222Z",
+      "interpretation": "direct",
+      "note": "Direct normalized watch item emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/watchNext/6",
+      "value": {
+        "severity": "watch",
+        "category": "stable-capital-coverage",
+        "entity": "Stable Companies Index",
+        "summary": "Stable Capital current coverage is not full; display APY is last-full-coverage.",
+        "whyItMatters": "The Stable layer intentionally carries the last full observation rather than inventing a current full rate."
+      },
+      "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+      "observedAt": "2026-08-13T16:45:11.222Z",
+      "interpretation": "direct",
+      "note": "Direct normalized watch item emitted by The Holding Observer."
+    }
+  ],
+  "grounding": {
+    "allRequiredSourcesFresh": true,
+    "sources": {
+      "change": {
+        "file": "intelligence/change-intelligence.json",
+        "sha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+        "generatedAt": "2026-08-13T16:45:11.222Z",
+        "ageHours": 1.546,
+        "expectedMaxAgeHours": 36,
+        "freshness": "fresh"
+      },
+      "systemMemory": {
+        "file": "intelligence/system-memory.json",
+        "sha256": "81f89a71d12590b94689998e6fa1dc05e81cfb3e791e7854f23cf9c5d4008174",
+        "generatedAt": "2026-08-13T16:45:11.222Z",
+        "ageHours": 1.546,
+        "expectedMaxAgeHours": 36,
+        "freshness": "fresh"
+      },
+      "security": {
+        "file": "security/security-intelligence.json",
+        "sha256": "9f7f6a81af6544076daab5c18dbd97759241b5c370acca61483f3f5290df2890",
+        "generatedAt": "2026-08-13T18:16:18.976Z",
+        "ageHours": 0.027,
+        "expectedMaxAgeHours": 36,
+        "freshness": "fresh"
+      },
+      "securityMemory": {
+        "file": "security/security-memory.json",
+        "sha256": "f96f67a08fd7ff3dd2c93d10af136cf139991195e13059c1f64ee2d472ef6c43",
+        "generatedAt": "2026-08-13T18:16:18.976Z",
+        "ageHours": 0.027,
+        "expectedMaxAgeHours": 36,
+        "freshness": "fresh"
+      }
+    },
+    "policy": {
+      "file": "intelligence/brain-policy.json",
+      "sha256": "6aeb062295cd236ff6b3faf09def98f33b8b4314e9d39222afedbef181a0cecb",
+      "version": "0.1-grounded-brain-policy",
+      "mode": "read-only-proposal-only"
+    },
+    "principles": [
+      "No reasoning case without evidence.",
+      "Unknown or stale remains unknown or stale.",
+      "Correction ledger interpretation takes precedence over superseded historical interpretation when applicable.",
+      "Recommendations are proposals, not executable actions.",
+      "Security-critical workflow-plane changes remain human-gated."
+    ]
+  },
+  "constraints": {
+    "actionMode": "proposal-only",
+    "autonomousCapitalActionAllowed": false,
+    "autonomousRepositoryCodeMutationAllowed": false,
+    "autonomousMethodologyMutationAllowed": false,
+    "sourceDataMutationAllowed": false,
+    "workflowPlaneMutationAllowed": false,
+    "secretAccessRequired": false
+  },
+  "bridge": {
+    "purpose": "Canonical evidence-bound reasoning packet for future human/AI interpretation. Read this before opening large memory artifacts.",
+    "inputCompositeHash": "fb34af51b3a8895f3c90cbc38f6e9a562d7e8765a487fe3e363b33462a348f6c",
+    "snapshotHash": "13ca0c49664034bbe89639cc2b14ff86acc8c4bfcb572a2b4f6260ab069d6b9c",
+    "previousInputCompositeHash": null
+  }
+}
