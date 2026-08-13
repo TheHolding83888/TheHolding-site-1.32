@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · v1.23.9 · Registry Observatory Mobile Facade · Monetra mpx v2 · Laptop Preserved -->
+<!-- companies.html · v1.23.10 · Collection → General Index Continuation · Mobile Facade + Monetra mpx v2 -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
 <!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
@@ -3556,6 +3556,108 @@
         }
         .collection-next .cn-arrow { display: inline-flex; color: var(--gold); opacity: 0.8; }
         .collection-next:hover { border-color: var(--gold-line); background: var(--gold-soft); }
+
+        /* ═══════ Collection → General Index continuation · v1.23.10 ═══════
+           Editorial next-step cue after the registry. It deliberately avoids
+           another boxed surface: a fine rule, a strong sentence and one action. */
+        .collection-index-invite {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0,1fr) auto;
+            align-items: end;
+            gap: clamp(1.5rem,4vw,3.5rem);
+            margin-top: 2.7rem;
+            padding: 1.75rem 0 .15rem;
+            border-top: 1px solid rgba(168,132,44,.18);
+        }
+        .collection-index-invite::before {
+            content: "";
+            position: absolute;
+            top: -1px; left: 0;
+            width: min(180px,32%); height: 1px;
+            background: linear-gradient(90deg,rgba(168,132,44,.62),rgba(168,132,44,0));
+        }
+        .cii-copy { max-width: 700px; }
+        .cii-eyebrow {
+            margin-bottom: .52rem;
+            color: var(--gold);
+            font-size: .58rem;
+            font-weight: 600;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+        }
+        .collection-index-invite h3 {
+            margin: 0;
+            font-family: 'Cormorant Garamond',serif;
+            font-size: clamp(1.55rem,2.4vw,2rem);
+            font-weight: 400;
+            line-height: 1.08;
+            letter-spacing: -.018em;
+            color: var(--text);
+        }
+        .collection-index-invite p {
+            margin: .55rem 0 0;
+            max-width: 620px;
+            color: var(--text-2);
+            font-size: .72rem;
+            line-height: 1.62;
+        }
+        .cii-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: .68rem 1.05rem;
+            border: 1px solid rgba(22,21,15,.11);
+            border-radius: 999px;
+            background: rgba(22,21,15,.965);
+            color: #fffdf7;
+            text-decoration: none;
+            white-space: nowrap;
+            font-size: .62rem;
+            font-weight: 600;
+            letter-spacing: .035em;
+            box-shadow: 0 10px 28px -19px rgba(22,21,15,.72);
+            transition: transform .22s ease, box-shadow .22s ease, background .22s ease;
+        }
+        .cii-action:hover, .cii-action:focus-visible {
+            transform: translateY(-1px);
+            background: #211f16;
+            box-shadow: 0 14px 34px -18px rgba(22,21,15,.74);
+        }
+        .cii-action:focus-visible { outline: 1px solid var(--gold-line); outline-offset: 3px; }
+
+        @media (max-width: 760.98px) {
+            .collection-index-invite {
+                grid-template-columns: minmax(0,1fr);
+                align-items: start;
+                gap: 1.05rem;
+                margin-top: 2.15rem;
+                padding-top: 1.45rem;
+            }
+            .cii-eyebrow { font-size: .56rem; margin-bottom: .48rem; }
+            .collection-index-invite h3 {
+                max-width: 330px;
+                font-size: clamp(1.42rem,6.2vw,1.72rem);
+                line-height: 1.06;
+            }
+            .collection-index-invite p {
+                max-width: 350px;
+                font-size: .74rem;
+                line-height: 1.58;
+            }
+            .cii-action {
+                justify-self: start;
+                min-height: 44px;
+                padding: .72rem 1.08rem;
+                font-size: .66rem;
+            }
+        }
+        @media (max-width: 340px) {
+            .collection-index-invite h3 { font-size: 1.4rem; }
+            .collection-index-invite p { font-size: .7rem; }
+            .cii-action { font-size: .62rem; padding-inline: .92rem; }
+        }
 
         /* ═══════ Stable Index — overflow guard ═══════
            The section keeps overflow visible so tooltips can escape their cell,
@@ -8261,10 +8363,14 @@
 
         </div>
 
-        <a class="collection-next" href="#index">
-            <span class="cn-label" data-i18n="collection.next">Continue to The Holding Index</span>
-            <span class="cn-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M8 3.5v9M4.5 9l3.5 3.5L11.5 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        </a>
+        <div class="collection-index-invite reveal">
+            <div class="cii-copy">
+                <div class="cii-eyebrow" data-i18n="collection.indexInvite.eyebrow">Next lens · General Index</div>
+                <h3 data-i18n="collection.indexInvite.title">You’ve seen the registry. Now see how the companies compare.</h3>
+                <p data-i18n="collection.indexInvite.body">The General Index measures the same network through capital, longevity, productivity and performance.</p>
+            </div>
+            <a class="cii-action" href="#index" data-i18n="collection.indexInvite.link">Open General Index →</a>
+        </div>
     </div>
 </section>
 
@@ -11980,6 +12086,10 @@ function renderFramework(lang) {
             'process.4.text': 'The company begins to operate: productive positions accrue cash flow while its onchain activity starts building a measurable operating history.',
             'os.eyebrow': 'The Holding OS · In development',
             'collection.next': 'Continue to The Holding Index',
+            'collection.indexInvite.eyebrow': 'Next lens · General Index',
+            'collection.indexInvite.title': 'You’ve seen the registry. Now see how the companies compare.',
+            'collection.indexInvite.body': 'The General Index measures the same network through capital, longevity, productivity and performance.',
+            'collection.indexInvite.link': 'Open General Index →',
             'os.statement.dim': 'Not a custodian. Not a broker. Not a fund manager.',
             'os.statement.bright': 'An operating system for sovereign onchain capital.',
             'os.body': 'The Holding OS connects creation, registry, operation, measurement and history. A company can be built once, remain independently owned, and then accumulate a living record as its capital works onchain.',
@@ -12133,6 +12243,10 @@ function renderFramework(lang) {
             'stable.performance.identity': 'Strategy P&L + Stable Price Effect = Net Market P&L. Claimable остаётся видимой частью Текущего капитала и нигде не учитывается дважды.',
             'os.eyebrow': 'The Holding OS · В разработке',
             'collection.next': 'Перейти к индексу The Holding',
+            'collection.indexInvite.eyebrow': 'Следующая линза · General Index',
+            'collection.indexInvite.title': 'Вы увидели реестр. Теперь посмотрите, как компании соотносятся между собой.',
+            'collection.indexInvite.body': 'General Index измеряет ту же сеть через капитал, возраст, производительность и результат.',
+            'collection.indexInvite.link': 'Открыть General Index →',
             'stable.table.strategy': 'Стратегия',
             'stable.table.chain': 'Сеть',
             'stable.table.capital': 'Капитал',
