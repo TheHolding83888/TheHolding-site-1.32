@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · v1.23.1 · Registry Observatory · Unified Collection + General Index + Stable Index -->
+<!-- companies.html · v1.23.2 · Registry Observatory Polish · Brighter Collection + Clean Rail + Drawer Edge Fix -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
 <!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
@@ -7420,6 +7420,29 @@
             .capital-mode-label{font-size:.71rem}
             .capital-mode-caption{font-size:.36rem}
         }
+
+        /* ══ Registry Observatory micro-polish · v1.23.2 ═══════════════════
+           Remove decorative rail lines, give Collection a cleaner brighter
+           stage, separate the registry count optically, and prevent the closed
+           desktop Index Framework drawer shadow from leaking into the viewport. */
+        .capital-mode-tabs::before,
+        .capital-mode-btn::after { display:none !important; }
+
+        html[data-capital-mode="collection"] .capital-mode-hub {
+            --surface-accent: rgba(168,132,44,.055);
+            background:
+                radial-gradient(82% 44% at 50% 0%, rgba(168,132,44,.055), transparent 72%),
+                linear-gradient(180deg,#fffefa 0%,#fff 46%,#fdfcf8 100%);
+        }
+
+        .collection-count { gap:.32rem; }
+        .collection-count b { line-height:.88; }
+        .collection-count span { line-height:1.15; }
+
+        @media (min-width:761px) {
+            .fw-drawer { box-shadow:none !important; }
+            .fw-drawer.open { box-shadow:-30px 0 80px -40px rgba(0,0,0,.7) !important; }
+        }
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -7522,7 +7545,7 @@
                     <button class="capital-mode-btn" id="capitalModeCollection" type="button" role="tab" data-capital-mode-btn="collection" aria-controls="collection" aria-selected="true">
                         <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.collection">The Collection</span>
                         <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.collection.short">Collection</span>
-                        <span class="capital-mode-caption" data-i18n="surface.collection.caption">Registry &amp; Passports</span>
+                        <span class="capital-mode-caption" data-i18n="surface.collection.caption">Live Registry</span>
                     </button>
                     <button class="capital-mode-btn" id="capitalModeIndex" type="button" role="tab" data-capital-mode-btn="index" aria-controls="index" aria-selected="false">
                         <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.index">General Index</span>
@@ -11323,7 +11346,7 @@ function renderFramework(lang) {
             'surface.note': 'One registry. Three ways to read the network.',
             'surface.collection': 'The Collection',
             'surface.collection.short': 'Collection',
-            'surface.collection.caption': 'Registry & Passports',
+            'surface.collection.caption': 'Live Registry',
             'surface.collection.eyebrow': 'Company Registry · Live',
             'surface.collection.sub': 'The live registry of personal onchain companies. Browse the network, compare operating capital and productivity, then open a Company Passport for the detail behind each company.',
             'surface.index': 'General Index',
@@ -11581,7 +11604,7 @@ function renderFramework(lang) {
             'surface.note': 'Один реестр. Три способа читать сеть.',
             'surface.collection': 'The Collection',
             'surface.collection.short': 'Коллекция',
-            'surface.collection.caption': 'Реестр и паспорта',
+            'surface.collection.caption': 'Живой реестр',
             'surface.collection.eyebrow': 'Реестр компаний · Live',
             'surface.collection.sub': 'Живой реестр персональных ончейн-компаний. Здесь можно увидеть всю сеть, сравнить капитал и производительность и открыть Company Passport с операционной детализацией каждой компании.',
             'surface.index': 'General Index',
