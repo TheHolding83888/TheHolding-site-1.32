@@ -1,11 +1,11 @@
 # The Holding — Autonomous Change Intelligence
 
-**Generated:** 2026-08-13T15:19:01.108Z
-**Observer:** 0.1-deterministic-system-watcher
+**Generated:** 2026-08-13T16:12:38.203Z
+**Observer:** 0.2-deterministic-memory-vault
 
-## The Holding Observer initialized its first system-memory baseline.
+## No material system changes crossed the Observer thresholds in this run.
 
-First deterministic baseline recorded. Future runs will compare the same normalized system state and append only material changes to the event memory.
+The source files were observed and normalized, but no configured material-change threshold was crossed.
 
 ## Watch next
 
@@ -23,6 +23,12 @@ First deterministic baseline recorded. Future runs will compare the same normali
 - Defitea current-month cash-flow/reference counter: $16.96.
 - Monetra Current Capital: $100.1197 · display Reference APY 4.515238% · claimable $0.0392.
 - Monetra current-month Generated Income: $0.0121.
+
+## Long-term memory
+
+- Memory Vault: 2 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
+- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-13T16-12-38-203Z-a4d8ac7e95.json`.
+- Operational history remains compact; the Memory Vault has no configured lifetime cap.
 
 ---
 This brief is deterministic. It does not invent explanations or investment decisions. Higher-level reasoning should be performed from `change-intelligence.json` plus the cited source artifacts.
