@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<!-- companies.html · v1.24.3 · Observatory rail mobile pin-then-dissolve -->
-<!-- companies.html · v1.24.2 · Observatory rail mobile dissolve on scroll -->
-<!-- companies.html · v1.24.1 · Reading room · bar gap, tighter nav, mobile rail unpinned -->
+<!-- companies.html · v1.24.4 · Reading room · compact bars + seam, original mobile rail mechanic -->
+<!-- companies.html · v1.24.1 · Reading room · bar gap, tighter nav -->
 <!-- companies.html · v1.24 · Reading room · compact section nav + Observatory rail -->
 <!-- companies.html · v1.23.11 · Registry Observatory Mobile Freedom · Collection → Index + Monetra mpx v2 -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
@@ -8128,10 +8127,11 @@
             .capital-mode-rail-wrap{ top: 50px; }
         }
 
-        /* Phone: the rail belongs to the page, not to the viewport. */
+        /* Phone: the original mechanic — the rail is part of the page and
+           scrolls away with it. Only laptop and desktop pin it. */
         @media (max-width: 760.98px){
             .capital-mode-rail-wrap{
-                position: relative !important;
+                position: sticky !important;
                 top: auto !important;
                 z-index: 2;
             }
@@ -8145,45 +8145,6 @@
             #collection, #next-layer, #index, #graph, #intelligence,
             #how-it-works, #platform, #build{ scroll-margin-top: 54px; }
             #capital-hub{ scroll-margin-top: 44px; }
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           Observatory rail · mobile dissolve · v1.24.2
-           On a phone the rail is part of the page, so once the reader moves
-           into a surface it should hand the screen over rather than sit at
-           the top edge. It dissolves with the scroll instead of cutting out:
-           opacity and a small upward drift are driven from the rail's own
-           position, so scrolling back up brings it right back.
-           Laptop and desktop keep the pinned rail exactly as it is.
-           ═══════════════════════════════════════════════════════════════ */
-        @media (max-width: 760.98px){
-            .capital-mode-rail-wrap{
-                transition: opacity .18s linear;
-            }
-            .capital-mode-rail-wrap[data-rail-dissolved="1"]{
-                pointer-events: none;
-            }
-        }
-        @media (max-width: 760.98px) and (prefers-reduced-motion: reduce){
-            .capital-mode-rail-wrap{
-                opacity: 1 !important;
-                transform: none !important;
-                transition: none;
-            }
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           Observatory rail · mobile pin-then-dissolve · v1.24.3
-           The rail first parks under the section nav like it does on a
-           laptop; only once the reader keeps going does it dissolve in
-           place. The parking offset is measured from the live nav height by
-           the script below, so it stays correct at every text size.
-           ═══════════════════════════════════════════════════════════════ */
-        @media (max-width: 760.98px){
-            .capital-mode-rail-wrap{
-                position: sticky !important;
-                z-index: 44;
-            }
         }
 
 </style>
@@ -13408,85 +13369,6 @@ function renderFramework(lang) {
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
     else start();
-})();</script>
-<!-- Observatory rail · mobile pin-then-dissolve · v1.24.3 -->
-<script data-th-addon="observatory-rail-dissolve-v2">(function(){
-    'use strict';
-    /* Phone behaviour, in two stages:
-         1. the rail travels with the page until it meets the section nav,
-            then parks under it — the same gesture as on a laptop;
-         2. from that moment every further pixel of scroll dissolves it in
-            place, so the surface below gets the whole screen.
-       Both stages are derived from the scroll position relative to the
-       parking point, which makes the effect exactly reversible on the way
-       back up, and immune to the surface switch changing page height. */
-
-    var wrap = document.querySelector('.capital-mode-rail-wrap');
-    var hub = document.getElementById('capital-hub');
-    var nav = document.getElementById('subnav');
-    if (!wrap || !hub) return;
-
-    var MOBILE = function(){ return window.matchMedia('(max-width: 760.98px)').matches; };
-    var REDUCED = function(){ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
-    var GAP = 8;              // the same deliberate seam the laptop rail keeps
-    var SPAN = 130;           // scroll distance the dissolve runs over
-    var ticking = false, cleared = true, pinnedTop = 0;
-
-    function clear(){
-        if (cleared) return;
-        wrap.style.opacity = '';
-        wrap.style.transform = '';
-        wrap.removeAttribute('data-rail-dissolved');
-        cleared = true;
-    }
-
-    function measure(){
-        if (!MOBILE()) { wrap.style.top = ''; return; }
-        var navH = nav ? Math.round(nav.getBoundingClientRect().height) : 40;
-        pinnedTop = navH + GAP;
-        wrap.style.top = pinnedTop + 'px';
-    }
-
-    function update(){
-        ticking = false;
-        if (!MOBILE() || REDUCED()) { clear(); return; }
-
-        /* Scroll position at which the rail becomes parked. offsetTop is read
-           from the hub, which is the sticky element's containing block, so it
-           does not move while the rail is pinned. */
-        var hubTop = hub.getBoundingClientRect().top + window.scrollY;
-        var parkAt = hubTop + wrap.offsetTop - pinnedTop;
-        var past = window.scrollY - parkAt;
-
-        if (past <= 0) { clear(); return; }      // stage 1 — still travelling
-
-        var p = past / SPAN;                      // stage 2 — dissolving in place
-        p = p > 1 ? 1 : p;
-        var eased = p * p * (3 - 2 * p);          // smoothstep
-
-        wrap.style.opacity = String(1 - eased);
-        wrap.style.transform = 'translate3d(0,' + (-6 * eased).toFixed(2) + 'px,0)';
-        if (eased > 0.85) wrap.setAttribute('data-rail-dissolved', '1');
-        else wrap.removeAttribute('data-rail-dissolved');
-        cleared = false;
-    }
-
-    function onScroll(){
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(update);
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', function(){ clear(); measure(); onScroll(); });
-    document.addEventListener('click', function(ev){
-        if (ev.target && ev.target.closest && ev.target.closest('[data-capital-mode-btn]')) {
-            window.setTimeout(function(){ measure(); onScroll(); }, 60);
-        }
-    }, true);
-
-    measure();
-    update();
 })();</script>
 
 </body>
