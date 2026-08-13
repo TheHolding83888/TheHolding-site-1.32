@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T22:16:53.002Z",
-  "status": "watch",
-  "snapshotHash": "855b22d50e395a5cdcee6d9179aaf32d066be173ff8a686384bec267a44438b0",
+  "generatedAt": "2026-08-13T22:23:21.961Z",
+  "status": "green",
+  "snapshotHash": "e8f4094b74616cf658fc40d7bfd5af77637b7edb412a2ffdc8871e76a5cff195",
   "repository": {
     "filesScanned": 131,
-    "bytesScanned": 5010185,
+    "bytesScanned": 5018782,
     "criticalHashes": {
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
@@ -28,7 +28,7 @@
       ".github/workflows/update-brain-intelligence.yml": "12bb6e7b76aa7c920448725e09bd327cd7a5f80e80c3f753d8631c87c2df96ac",
       ".github/workflows/update-change-intelligence.yml": "51a176970cd47aa56aa194960b42863474b25eb50080efc896c3fcdbe7a64a28",
       ".github/workflows/update-company-rewards.yml": "f48ec1a8994a2dfa90edec4dbdc21527ba409f2df7f5431ff3faf221dda36498",
-      ".github/workflows/update-learning-loop.yml": "d802b87b0c1c3267a48e353d61f1298dbf3d2212d1049cb15ebaacacfccf130b",
+      ".github/workflows/update-learning-loop.yml": "8fcd4c80f877ffd5e9934e0f19d37a4eb57334c99457dcb2088f907f75216478",
       ".github/workflows/update-productivity.yml": "68f0c508323e571692f5940200213d2e21d0134ce616060e1dde74bf4e584834",
       ".github/workflows/update-reporting.yml": "53bfa8be818c1e58b13f4660c5d9482dc0a6ad974db62e43901161a2ae2a66d2",
       ".github/workflows/update-stable-capital.yml": "a2383747017ac6e6522c668a6187a85afab7a9e257e92fb0d2ee2b16fdb6b5b0",
@@ -132,15 +132,18 @@
   },
   "findings": [
     {
-      "id": "40c1723d5c7e0f1e315242c970e5754d71a38af5cb08d25148e0d2677a11c2c1",
-      "severity": "high",
-      "category": "shell-eval",
+      "id": "2cd33e8cded6e719e28aa0d3e4ecf892070f33a730f5fb18878f3c6222c90f50",
+      "severity": "medium",
+      "category": "critical-surface-change",
       "file": ".github/workflows/update-learning-loop.yml",
       "line": null,
       "entity": null,
-      "summary": "Workflow contains shell eval.",
-      "whyItMatters": "Eval can turn untrusted data into executable shell code.",
-      "evidence": null
+      "summary": "Security-sensitive surface changed: .github/workflows/update-learning-loop.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "d802b87b0c1c3267a48e353d61f1298dbf3d2212d1049cb15ebaacacfccf130b",
+        "currentSha256": "8fcd4c80f877ffd5e9934e0f19d37a4eb57334c99457dcb2088f907f75216478"
+      }
     },
     {
       "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
@@ -563,10 +566,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 82,
+    "runCount": 83,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T22-16-53-002Z-855b22d50e.json",
-    "latestRecordHash": "c4f1ad3808a9a3242e52b453fc3642fb58ab7b92510d88e860f6380f07b239e8",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T22-23-21-961Z-e8f4094b74.json",
+    "latestRecordHash": "033629135db7b2f9616c769ad7b3dabea6980aaccf212b4c20e3150b16c7299e",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
