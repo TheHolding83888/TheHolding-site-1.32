@@ -1,5 +1,4 @@
 name: The Holding Security Sentinel
-
 on:
   workflow_dispatch:
   schedule:
@@ -23,7 +22,12 @@ on:
       - 'intelligence/cognitive-stack-state.json'
       - 'intelligence/cognitive-stack-brief.md'
       - 'intelligence/cognitive-stack-eval.json'
-
+      # Human decision memory is inert public JSON and the generated Learning
+      # state is independently reviewed. Ignore only these data outputs so the
+      # new downstream learning loop cannot invalidate its own Brain upstream.
+      # Learning engines, policy, release guard and workflows remain scanned.
+      - 'intelligence/learning/decision-ledger.json'
+      - 'intelligence/learning-state/**'
 permissions:
   contents: write
 
@@ -40,7 +44,6 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
-
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
@@ -53,12 +56,10 @@ jobs:
           set -euo pipefail
           node --check security/security-sentinel.mjs
           test -s security/README.md
-
       - name: Observe security state
         env:
           SECURITY_SITE_BASE_URL: https://theholding.ai
         run: node security/security-sentinel.mjs
-
       - name: Validate Security Intelligence
         shell: bash
         run: |
@@ -76,7 +77,7 @@ jobs:
           if (latest.version !== '0.1-autonomous-security-intelligence') throw new Error('unexpected security intelligence version');
           if (memory.version !== '0.1-security-memory') throw new Error('unexpected security memory version');
           if (history.version !== '0.1-security-history') throw new Error('unexpected security history version');
-          if (manifest.version !== '0.1-security-vault-manifest') throw new Error('unexpected security vault version');
+          if (manifest.version !== '0.1-security-vault-manifest') throw new Error('unexpected Security Vault version');
           if (latest.bridge?.snapshotHash !== memory.snapshotHash) throw new Error('security snapshot bridge mismatch');
           if (!Array.isArray(manifest.runs) || manifest.runCount !== manifest.runs.length || manifest.runCount < 1) throw new Error('security vault run count invalid');
           const rel=latest.bridge?.securityVault?.latestRecordPath;
@@ -93,7 +94,6 @@ jobs:
           console.log('High:', latest.severityCounts.high);
           console.log('Vault runs:', manifest.runCount);
           NODE
-
       - name: Publish security memory
         shell: bash
         run: |
@@ -121,7 +121,6 @@ jobs:
           done
           echo "Security Sentinel could not publish after 3 attempts."
           exit 1
-
       - name: Enforce critical security gate
         shell: bash
         run: |
