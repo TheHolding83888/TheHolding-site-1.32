@@ -1,5 +1,5 @@
-
 <!DOCTYPE html>
+<!-- companies.html · v1.24 · Reading room · compact section nav + Observatory rail -->
 <!-- companies.html · v1.23.11 · Registry Observatory Mobile Freedom · Collection → Index + Monetra mpx v2 -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
 <!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
@@ -7997,6 +7997,94 @@
         }
         @media (max-width:340px) {
             .capital-mode-tabs { gap: .2rem; padding: 0; border-radius: 0; }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           Reading room · v1.24
+           ---------------------------------------------------------------
+           Two sticky layers sit above the content: the section nav and the
+           Observatory rail. Together they were taking roughly a fifth of a
+           laptop viewport, so scrolling always felt like reading through a
+           letterbox. Every value below only removes vertical air — type
+           sizes, colours, borders and the composition itself are untouched.
+
+           The sticky offsets and scroll-margins are lowered by exactly the
+           same amount the bars lose, so anchored links still land correctly
+           and the rail still parks flush under the nav.
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* ── Section nav ───────────────────────────────────────────────── */
+        .subnav-inner{ padding-top: .86rem; padding-bottom: .82rem; }
+        .subnav a{ padding-bottom: .16rem; }
+
+        @media (max-width: 760.98px){
+            .subnav-inner,
+            .subnav > .subnav-inner{ padding-top: .76rem; padding-bottom: .72rem; }
+        }
+        @media (max-width: 460px){
+            .subnav .subnav-inner,
+            .subnav > .subnav-inner{ padding-top: .68rem; padding-bottom: .62rem; }
+            .subnav a{ padding-bottom: .26rem; }
+        }
+
+        /* ── Observatory rail ──────────────────────────────────────────── */
+        .capital-mode-rail-wrap{
+            top: 44px;
+            padding-top: .5rem;
+            padding-bottom: .5rem;
+        }
+        .capital-mode-rail{
+            padding-top: .22rem;
+            padding-bottom: .26rem;
+        }
+        .capital-mode-btn{
+            min-height: 74px;
+            padding-top: .82rem;
+            padding-bottom: .78rem;
+        }
+        .capital-mode-rail-wrap::after{ bottom: -18px; height: 20px; }
+        .capital-mode-hub{ margin-top: clamp(1.85rem, 3vw, 2.85rem); }
+
+        @media (min-width: 1181px){
+            .capital-mode-rail-wrap{ top: 46px; }
+        }
+        @media (min-width: 761px) and (max-width: 1180px){
+            .capital-mode-rail-wrap{ top: 45px; }
+            .capital-mode-btn{ min-height: 70px; }
+            .capital-mode-hub{ margin-top: 2.15rem; }
+        }
+
+        /* Anchors clear both bars at their new heights. */
+        #collection, #next-layer, #index, #graph, #intelligence,
+        #how-it-works, #platform, #build{ scroll-margin-top: 72px; }
+        #capital-hub{ scroll-margin-top: 64px; }
+        @media (max-width: 760.98px){
+            #collection, #next-layer, #index, #graph, #intelligence,
+            #how-it-works, #platform, #build{ scroll-margin-top: 62px; }
+            #capital-hub{ scroll-margin-top: 58px; }
+        }
+
+        /* ── Mobile Observatory: the same trim, proportionally ─────────── */
+        @media (max-width: 760.98px){
+            .capital-mode-rail-wrap{
+                padding-top: .6rem !important;
+                padding-bottom: .5rem !important;
+            }
+            .capital-mode-rail{ gap: .68rem !important; }
+            .capital-mode-intro{ padding-bottom: 0 !important; }
+            .capital-mode-kicker{ margin-bottom: .4rem !important; }
+            .capital-mode-btn{
+                min-height: 68px !important;
+                padding-top: .66rem !important;
+                padding-bottom: .6rem !important;
+            }
+            /* The first surface begins sooner now that the rail is shorter. */
+            .capital-mode-hub .collection{ padding-top: 2.4rem; }
+            .capital-mode-hub .index-sec{ padding-top: 2.6rem; }
+            .capital-mode-hub .stable-index-sec{ padding-top: 2.65rem; }
+        }
+        @media (max-width: 340px){
+            .capital-mode-btn{ min-height: 64px !important; }
         }
 </style>
 
