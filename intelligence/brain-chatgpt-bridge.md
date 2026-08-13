@@ -1,12 +1,12 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-13T20:42:11.699Z
+Generated: 2026-08-13T22:16:54.013Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-13T20:42:11.538Z
-Brain snapshot: b62983fa33f4789310471ff062241ccc36fc203c5769e2ab1cbae3ced1bbda2f
-Cases: 9
-Evidence objects: 11
+Brain generated: 2026-08-13T22:16:53.835Z
+Brain snapshot: f82d08a10728edba1261e6dafa1902a6b447179ec10cf49a44aa854e635c2aa0
+Cases: 10
+Evidence objects: 12
 
 ## What changed
 
@@ -14,12 +14,27 @@ No new material Observer or Security change events are present in the current ca
 
 ## Active deterministic cases
 
-### 1. 34 current findings
+### 1. .github/workflows/update-learning-loop.yml
 
-Case: `809f9ea519a38bfe3908e96f`
+Case: `security-40c1723d5c7e0f1e315242c9`
+Domain: security · Severity: high · Risk: high
+
+Signal: Workflow contains shell eval.
+
+Why it matters: Eval can turn untrusted data into executable shell code.
+
+What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+
+Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+
+Evidence: EV-b5d3e5afae85ddde
+
+### 2. 31 current findings
+
+Case: `353fd15f649ee569d551d74c`
 Domain: security · Severity: medium · Risk: medium
 
-Signal: 34 current medium security finding(s) in category dom-innerhtml.
+Signal: 31 current medium security finding(s) in category dom-innerhtml.
 
 Why it matters: If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.
 
@@ -27,9 +42,9 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-863ed365c4467658
+Evidence: EV-377957072e70f970
 
-### 2. 7 current findings
+### 3. 7 current findings
 
 Case: `bd92163ceaf2983dcdb57151`
 Domain: security · Severity: medium · Risk: medium
@@ -42,9 +57,9 @@ What follows: A third-party script origin is part of the browser trust boundary.
 
 Deterministic action: Assess SRI feasibility, self-hosting, removal, or tighter CSP for the exact script. Preserve analytics behavior until the safer replacement is verified.
 
-Evidence: EV-086415fe2cba4ef1
+Evidence: EV-6db03fb01982c4d3
 
-### 3. liquity_lqty
+### 4. liquity_lqty
 
 Case: `a2edb74a9d50a22d9e91e64a`
 Domain: economic · Severity: watch · Risk: low
@@ -59,7 +74,7 @@ Deterministic action: Keep the adapter explicitly warming/unknown and use the no
 
 Evidence: EV-da7a008ce8950852
 
-### 4. pendle_spendle
+### 5. pendle_spendle
 
 Case: `610968fa0e1f1675d6be4131`
 Domain: economic · Severity: watch · Risk: low
@@ -74,7 +89,7 @@ Deterministic action: Keep the adapter explicitly warming/unknown and use the no
 
 Evidence: EV-308bff7cec6f06b2
 
-### 5. defitea.eth
+### 6. defitea.eth
 
 Case: `29d41c97821adff643d62d32`
 Domain: economic · Severity: watch · Risk: low
@@ -89,7 +104,7 @@ Deterministic action: Prioritize the unresolved adapter(s) contributing to the c
 
 Evidence: EV-e024b9f1796137ea
 
-### 6. 0x5860...83CA8.eth
+### 7. 0x5860...83CA8.eth
 
 Case: `752ad1fa5d5c4b4db1804346`
 Domain: economic · Severity: watch · Risk: low
@@ -104,7 +119,7 @@ Deterministic action: Resolve only the pending reward route(s) with bounded curr
 
 Evidence: EV-96cad769529c2fbb
 
-### 7. aerocvxyb.eth
+### 8. aerocvxyb.eth
 
 Case: `9407adbb1115d285937ffb3d`
 Domain: economic · Severity: watch · Risk: low
@@ -119,7 +134,7 @@ Deterministic action: Resolve only the pending reward route(s) with bounded curr
 
 Evidence: EV-06ebfae2ba92609c
 
-### 8. defitea.eth
+### 9. defitea.eth
 
 Case: `d57ad616b19f94c0c5e8b6e7`
 Domain: economic · Severity: watch · Risk: low
@@ -134,7 +149,7 @@ Deterministic action: Resolve only the pending reward route(s) with bounded curr
 
 Evidence: EV-6edd5b129e52af3d
 
-### 9. Stable Companies Index
+### 10. Stable Companies Index
 
 Case: `91a77cb6899cf6d34a8ea962`
 Domain: economic · Severity: watch · Risk: low
