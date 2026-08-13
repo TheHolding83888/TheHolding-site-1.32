@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.1-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-13T22:23:21.961Z",
+  "lastUpdatedAt": "2026-08-13T22:25:03.209Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 83,
-    "vaultRunCount": 83,
+    "runCount": 84,
+    "vaultRunCount": 84,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -1008,6 +1008,18 @@
       "criticalCount": 0,
       "highCount": 0,
       "newFindingCount": 1,
+      "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-13T22:25:03.209Z",
+      "status": "green",
+      "snapshotHash": "ea3bd3ef2d704760a750842185f2e26ee5b12ce2dc3ebc7b6e6d9cf2b47fd82a",
+      "recordPath": "security/security-vault/2026/08/2026-08-13T22-25-03-209Z-ea3bd3ef2d.json",
+      "recordHash": "ede5628aa1743cb41cd33962f7e6dc0031c756a34d47f607a6af782378ac5af7",
+      "findingCount": 38,
+      "criticalCount": 0,
+      "highCount": 0,
+      "newFindingCount": 0,
       "resolvedFindingCount": 1
     }
   ],
@@ -4584,6 +4596,17 @@
       "severity": "high",
       "category": "shell-eval",
       "summary": "Resolved: Workflow contains shell eval.",
+      "file": ".github/workflows/update-learning-loop.yml",
+      "entity": null
+    },
+    {
+      "id": "d88eb21822c9013ea5f9ad71503636fc823441ae22643c94348f8038056d18f9",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-13T22:25:03.209Z",
+      "findingId": "2cd33e8cded6e719e28aa0d3e4ecf892070f33a730f5fb18878f3c6222c90f50",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/update-learning-loop.yml.",
       "file": ".github/workflows/update-learning-loop.yml",
       "entity": null
     }

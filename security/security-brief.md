@@ -1,14 +1,14 @@
 # The Holding — Autonomous Security Intelligence
 
-**Generated:** 2026-08-13T22:23:21.961Z
+**Generated:** 2026-08-13T22:25:03.209Z
 **Sentinel:** 0.1-security-sentinel
 
 ## No high or critical security findings detected in this scan.
 
 - Critical: 0
 - High: 0
-- Medium: 39
-- New findings: 1
+- Medium: 38
+- New findings: 0
 - Resolved findings: 1
 
 ## Protect next
@@ -18,8 +18,8 @@
 
 ## Permanent security memory
 
-- Security Vault runs: 83.
-- Latest record: `security/security-vault/2026/08/2026-08-13T22-23-21-961Z-e8f4094b74.json`.
+- Security Vault runs: 84.
+- Latest record: `security/security-vault/2026/08/2026-08-13T22-25-03-209Z-ea3bd3ef2d.json`.
 - Vault retention: indefinite / append-only hash chain.
 
 ---
