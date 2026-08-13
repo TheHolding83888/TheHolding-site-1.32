@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.1-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-13T17:45:05.842Z",
+  "lastUpdatedAt": "2026-08-13T18:02:56.760Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 11,
-    "vaultRunCount": 11,
+    "runCount": 12,
+    "vaultRunCount": 12,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -145,6 +145,18 @@
       "highCount": 0,
       "newFindingCount": 17,
       "resolvedFindingCount": 17
+    },
+    {
+      "generatedAt": "2026-08-13T18:02:56.760Z",
+      "status": "green",
+      "snapshotHash": "9581e3a6f1a800e531fddbba69fe732cf9e5f2c38dfafe0b2f68b31274852b45",
+      "recordPath": "security/security-vault/2026/08/2026-08-13T18-02-56-760Z-9581e3a6f1.json",
+      "recordHash": "7706cc1fc43454e120ec9c85a7bf9d455ea5c3309f11505185a335469c178558",
+      "findingCount": 41,
+      "criticalCount": 0,
+      "highCount": 0,
+      "newFindingCount": 0,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -3423,6 +3435,17 @@
       "severity": "medium",
       "category": "dom-innerhtml",
       "summary": "Resolved: Dynamic innerHTML assignment detected.",
+      "file": "companies/index.html",
+      "entity": null
+    },
+    {
+      "id": "e5727d486989407b2057404f1ba2f277025cbc03df8b5d2e15c01ba901b6ae5b",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-13T18:02:56.760Z",
+      "findingId": "0a9e45a0d8b1e60666c8030c7df012c3ca70d272651cbf7f2ee3f99c413f68fe",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: companies/index.html.",
       "file": "companies/index.html",
       "entity": null
     }
