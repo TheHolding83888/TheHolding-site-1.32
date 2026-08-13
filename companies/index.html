@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<!-- companies.html · v1.23.0 · Registry Surface Switcher · Collection + Holding Index + Stable Index -->
+<!-- companies.html · v1.23.1 · Registry Observatory · Unified Collection + General Index + Stable Index -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
 <!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
@@ -6767,7 +6767,7 @@
 
 
         /* ═══════════════════════════════════════════════════════════════
-           Registry Surface Switcher · v1.23.0
+           Registry Observatory · v1.23.1
            Collection / Holding Index / Stable Companies Index share one
            premium stage. The rail is locally sticky on larger screens only;
            mobile keeps the viewport clean beneath the existing sticky subnav.
@@ -7041,6 +7041,385 @@
             }
         }
 
+
+
+        /* ═══════════════════════════════════════════════════════════════
+           Registry Observatory · v1.23.1
+           One institutional visual system across Collection / General / Stable.
+           ═══════════════════════════════════════════════════════════════ */
+        .capital-mode-hub{
+            --surface-accent: rgba(168,132,44,.10);
+            transition: background .5s ease;
+            background:
+                radial-gradient(86% 48% at 50% 0%, var(--surface-accent), transparent 72%),
+                linear-gradient(180deg,#fbfaf7 0%,#fcfcfa 48%,#faf9f6 100%);
+        }
+        html[data-capital-mode="collection"] .capital-mode-hub{--surface-accent:rgba(168,132,44,.075)}
+        html[data-capital-mode="index"] .capital-mode-hub{--surface-accent:rgba(168,132,44,.12)}
+        html[data-capital-mode="stable"] .capital-mode-hub{--surface-accent:rgba(10,124,78,.095)}
+        .capital-mode-hub .collection,
+        .capital-mode-hub .index-sec,
+        .capital-mode-hub .stable-index-sec{
+            background:transparent!important;
+            border-bottom:0!important;
+        }
+        .capital-mode-hub .index-sec::after{opacity:.34}
+        .capital-mode-hub .stable-index-sec::before{opacity:.55}
+
+        .capital-mode-rail-wrap{
+            padding:.94rem 0 .88rem;
+            background:linear-gradient(180deg,rgba(252,252,250,.985),rgba(249,248,244,.92));
+            border-bottom:1px solid rgba(22,21,15,.055);
+            box-shadow:0 14px 36px -34px rgba(22,21,15,.42);
+        }
+        .capital-mode-rail{
+            grid-template-columns:minmax(190px,.55fr) minmax(0,1.45fr);
+            gap:1.9rem;
+            padding:.12rem 0;
+            border:0;
+            border-radius:0;
+            background:transparent;
+            box-shadow:none;
+        }
+        .capital-mode-intro{padding-left:.08rem}
+        .capital-mode-kicker{
+            font-size:.54rem;
+            letter-spacing:.23em;
+            margin-bottom:.48rem;
+        }
+        .capital-mode-note{
+            font-size:1.03rem;
+            color:rgba(22,21,15,.48);
+            white-space:normal;
+            max-width:240px;
+        }
+        .capital-mode-tabs{
+            position:relative;
+            display:grid;
+            grid-template-columns:repeat(3,minmax(0,1fr));
+            gap:0;
+            padding:0;
+            border:0;
+            border-radius:0;
+            background:transparent;
+            isolation:isolate;
+        }
+        .capital-mode-tabs::before{
+            content:'';
+            position:absolute;
+            left:0;right:0;top:50%;
+            height:1px;
+            transform:translateY(-50%);
+            background:linear-gradient(90deg,transparent,rgba(22,21,15,.10) 7%,rgba(22,21,15,.10) 93%,transparent);
+            z-index:-1;
+        }
+        .capital-mode-btn{
+            min-height:72px;
+            grid-template-columns:1fr;
+            grid-template-rows:auto auto;
+            align-content:center;
+            gap:.3rem;
+            padding:.82rem 1.12rem .78rem;
+            border-radius:18px;
+            text-align:center;
+            overflow:visible;
+            color:rgba(22,21,15,.56);
+        }
+        .capital-mode-btn + .capital-mode-btn::before{
+            content:'';
+            position:absolute;
+            left:0;top:23%;bottom:23%;
+            width:1px;
+            background:rgba(22,21,15,.08);
+            transition:opacity .25s ease;
+        }
+        .capital-mode-btn.active + .capital-mode-btn::before,
+        .capital-mode-btn.active::before{opacity:0}
+        .capital-mode-btn::after{
+            left:23%;right:23%;bottom:5px;
+        }
+        .capital-mode-label{
+            font-family:'Cormorant Garamond',serif;
+            font-size:1.16rem;
+            line-height:1;
+            font-weight:500;
+            letter-spacing:-.012em;
+        }
+        .capital-mode-caption{
+            display:block;
+            font-size:.49rem;
+            line-height:1.2;
+            font-weight:650;
+            letter-spacing:.15em;
+            text-transform:uppercase;
+            color:var(--text-3);
+            transition:color .25s ease;
+            white-space:nowrap;
+        }
+        .capital-mode-btn:hover:not(.active){
+            background:rgba(255,255,255,.74);
+            box-shadow:0 10px 26px -23px rgba(22,21,15,.35);
+        }
+        .capital-mode-btn.active{
+            color:#f6f2e8;
+            transform:translateY(-1px);
+            background:
+                radial-gradient(120% 150% at 0% 0%,rgba(216,180,90,.19),transparent 50%),
+                linear-gradient(145deg,#1c1a13,#11100c);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.055),
+                inset 0 0 0 1px rgba(216,180,90,.18),
+                0 17px 34px -22px rgba(22,21,15,.65);
+        }
+        .capital-mode-btn.active .capital-mode-caption{color:rgba(246,242,232,.50)}
+        .capital-mode-btn-stable.active{
+            background:
+                radial-gradient(120% 150% at 0% 0%,rgba(82,177,128,.19),transparent 50%),
+                linear-gradient(145deg,#15251e,#0e1814);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.045),
+                inset 0 0 0 1px rgba(82,177,128,.20),
+                0 17px 34px -22px rgba(10,70,43,.55);
+        }
+        .capital-mode-num{display:none!important}
+
+        /* One editorial header system across all three surfaces. */
+        .capital-surface-head{
+            width:100%;
+            max-width:none!important;
+            display:grid!important;
+            grid-template-columns:minmax(0,1fr) auto;
+            grid-template-rows:auto auto auto;
+            column-gap:3rem;
+            row-gap:0;
+            align-items:end!important;
+            margin-bottom:2.85rem!important;
+        }
+        .capital-surface-copy{min-width:0}
+        .capital-surface-eyebrow,
+        .capital-mode-hub .index-eyebrow,
+        .capital-mode-hub .sc-eyebrow{
+            grid-column:1;
+            display:inline-flex;
+            align-items:center;
+            gap:.58rem;
+            margin-bottom:1rem!important;
+            color:var(--gold);
+            font-size:.57rem!important;
+            font-weight:700!important;
+            letter-spacing:.19em!important;
+            text-transform:uppercase;
+        }
+        .capital-mode-hub .sc-eyebrow{color:var(--green)}
+        .capital-surface-live-dot{
+            width:6px;height:6px;border-radius:50%;background:var(--green);
+            box-shadow:0 0 0 5px rgba(10,124,78,.07);
+            flex:0 0 auto;
+        }
+        .capital-surface-title,
+        .capital-mode-hub .collection-title,
+        .capital-mode-hub .index-title,
+        .capital-mode-hub .sc-head h2{
+            grid-column:1;
+            font-family:'Cormorant Garamond',serif!important;
+            font-size:clamp(2.7rem,4.7vw,4.05rem)!important;
+            font-weight:400!important;
+            line-height:.98!important;
+            letter-spacing:-.034em!important;
+            margin:0!important;
+            color:var(--text)!important;
+        }
+        .capital-surface-sub,
+        .capital-mode-hub .index-sub,
+        .capital-mode-hub .sc-head p{
+            grid-column:1;
+            max-width:720px!important;
+            margin:.98rem 0 0!important;
+            color:var(--text-2)!important;
+            font-size:.84rem!important;
+            line-height:1.72!important;
+            font-weight:300!important;
+        }
+        .capital-surface-side{
+            grid-column:2;
+            grid-row:1 / 4;
+            align-self:end;
+            justify-self:end;
+        }
+        .collection-meta.capital-surface-side{
+            display:flex;
+            align-items:center;
+            gap:1rem;
+            padding:.78rem 0 .18rem;
+        }
+        .collection-count{
+            display:flex;
+            flex-direction:column;
+            align-items:flex-end;
+            gap:.14rem;
+            line-height:1;
+            color:var(--text-3);
+            letter-spacing:.13em;
+        }
+        .collection-count b{
+            font-family:'Cormorant Garamond',serif;
+            font-size:1.8rem;
+            line-height:.92;
+            font-weight:500;
+            letter-spacing:-.02em;
+        }
+        .collection-count span{font-size:.5rem;text-transform:uppercase}
+        .collection-meta .view-switch{
+            border-color:rgba(22,21,15,.10);
+            background:rgba(255,255,255,.56);
+            box-shadow:0 10px 24px -22px rgba(22,21,15,.35);
+        }
+        .capital-surface-universe{
+            min-width:190px;
+            padding:.92rem 1.02rem .88rem;
+            border-top:1px solid var(--gold-line);
+            border-bottom:1px solid rgba(22,21,15,.08);
+            text-align:right;
+        }
+        .capital-surface-universe span,
+        .capital-surface-method small{
+            display:block;
+            margin-bottom:.3rem;
+            color:var(--text-3);
+            font-size:.48rem;
+            font-weight:650;
+            letter-spacing:.15em;
+            text-transform:uppercase;
+        }
+        .capital-surface-universe b{
+            display:block;
+            color:var(--gold);
+            font-family:'Cormorant Garamond',serif;
+            font-size:1.06rem;
+            line-height:1.1;
+            font-weight:500;
+        }
+        .capital-surface-method{
+            position:relative!important;
+            display:block!important;
+            min-width:176px!important;
+            min-height:auto!important;
+            padding:.88rem 2.6rem .86rem 1rem!important;
+            border:0!important;
+            border-top:1px solid rgba(10,124,78,.28)!important;
+            border-bottom:1px solid rgba(22,21,15,.08)!important;
+            border-radius:0!important;
+            background:transparent!important;
+            text-align:right!important;
+            box-shadow:none!important;
+        }
+        .capital-surface-method span{
+            display:block!important;
+            color:var(--green)!important;
+            font-family:'Cormorant Garamond',serif!important;
+            font-size:1.06rem!important;
+            font-weight:500!important;
+            letter-spacing:0!important;
+            text-transform:none!important;
+        }
+        .capital-surface-method i{
+            position:absolute!important;
+            right:.75rem!important;
+            top:50%!important;
+            transform:translateY(-50%)!important;
+        }
+        .capital-surface-method:hover{background:rgba(10,124,78,.035)!important}
+
+        .capital-mode-hub .collection{padding-top:4.5rem;padding-bottom:5.8rem}
+        .capital-mode-hub .index-sec{padding-top:4.5rem;padding-bottom:5.8rem}
+        .capital-mode-hub .stable-index-sec{padding-top:4.5rem;padding-bottom:5.8rem}
+
+        @media (min-width:761px) and (max-width:1180px){
+            .capital-mode-rail{grid-template-columns:minmax(170px,.45fr) minmax(0,1.55fr);gap:1.25rem}
+            .capital-mode-btn{min-height:68px;padding-left:.7rem;padding-right:.7rem}
+            .capital-mode-label{font-size:1.02rem}
+            .capital-mode-caption{font-size:.44rem;letter-spacing:.12em}
+            .capital-surface-head{column-gap:2rem}
+            .capital-surface-universe,.capital-surface-method{min-width:165px!important}
+        }
+        @media (max-width:760.98px){
+            .capital-mode-rail-wrap{padding:.72rem 0 .46rem;background:var(--bg)}
+            .capital-mode-rail{grid-template-columns:1fr;gap:.62rem;padding:0}
+            .capital-mode-intro{padding:0 .08rem .04rem;align-items:flex-end}
+            .capital-mode-note{max-width:none;font-size:.8rem;text-align:right}
+            .capital-mode-tabs{gap:.28rem}
+            .capital-mode-tabs::before{display:none}
+            .capital-mode-btn{
+                min-height:58px;
+                padding:.62rem .3rem .56rem;
+                border-radius:14px;
+                gap:.22rem;
+            }
+            .capital-mode-btn + .capital-mode-btn::before{display:none}
+            .capital-mode-label-full{display:none}
+            .capital-mode-label-short{display:block}
+            .capital-mode-label{font-size:.78rem;line-height:1}
+            .capital-mode-caption{font-size:.4rem;letter-spacing:.09em;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+            .capital-surface-head{
+                grid-template-columns:1fr!important;
+                grid-template-rows:auto!important;
+                gap:0!important;
+                margin-bottom:2.15rem!important;
+            }
+            .capital-surface-copy,
+            .capital-surface-eyebrow,
+            .capital-surface-title,
+            .capital-surface-sub,
+            .capital-mode-hub .index-eyebrow,
+            .capital-mode-hub .index-title,
+            .capital-mode-hub .index-sub,
+            .capital-surface-side{
+                grid-column:1!important;
+                grid-row:auto!important;
+            }
+            .capital-surface-title,
+            .capital-mode-hub .collection-title,
+            .capital-mode-hub .index-title,
+            .capital-mode-hub .sc-head h2{
+                font-size:clamp(2.35rem,11vw,3.15rem)!important;
+            }
+            .capital-surface-sub,
+            .capital-mode-hub .index-sub,
+            .capital-mode-hub .sc-head p{
+                font-size:.8rem!important;
+                line-height:1.68!important;
+                max-width:none!important;
+            }
+            .collection-meta.capital-surface-side{
+                width:100%;justify-content:space-between;margin-top:1.25rem;padding:.82rem 0 0;border-top:1px solid var(--line)
+            }
+            .collection-count{align-items:flex-start}
+            .capital-surface-universe,
+            .capital-surface-method{
+                width:100%!important;
+                min-width:0!important;
+                justify-self:stretch!important;
+                margin-top:1.2rem!important;
+                padding:.74rem 0!important;
+                text-align:left!important;
+                border-top:1px solid var(--line)!important;
+                border-bottom:0!important;
+            }
+            .capital-surface-method{padding-right:2.1rem!important}
+            .capital-surface-method i{right:.25rem!important}
+            .capital-mode-hub .collection,
+            .capital-mode-hub .index-sec,
+            .capital-mode-hub .stable-index-sec{padding-top:3.35rem;padding-bottom:4.45rem}
+        }
+        @media(max-width:420px){
+            .capital-mode-intro{justify-content:center}
+            .capital-mode-kicker{text-align:center}
+            .capital-mode-note{display:none}
+            .capital-mode-tabs{gap:.18rem}
+            .capital-mode-btn{min-height:55px;border-radius:12px}
+            .capital-mode-label{font-size:.71rem}
+            .capital-mode-caption{font-size:.36rem}
+        }
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -7136,24 +7515,24 @@
         <div class="container">
             <div class="capital-mode-rail">
                 <div class="capital-mode-intro">
-                    <span class="capital-mode-kicker" data-i18n="surface.eyebrow">Registry Views</span>
-                    <span class="capital-mode-note" data-i18n="surface.note">One live registry · three analytical surfaces</span>
+                    <span class="capital-mode-kicker" data-i18n="surface.eyebrow">Registry Observatory</span>
+                    <span class="capital-mode-note" data-i18n="surface.note">One registry. Three ways to read the network.</span>
                 </div>
                 <div class="capital-mode-tabs" role="tablist" aria-label="Registry views">
                     <button class="capital-mode-btn" id="capitalModeCollection" type="button" role="tab" data-capital-mode-btn="collection" aria-controls="collection" aria-selected="true">
-                        <span class="capital-mode-num">01</span>
                         <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.collection">The Collection</span>
                         <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.collection.short">Collection</span>
+                        <span class="capital-mode-caption" data-i18n="surface.collection.caption">Registry &amp; Passports</span>
                     </button>
                     <button class="capital-mode-btn" id="capitalModeIndex" type="button" role="tab" data-capital-mode-btn="index" aria-controls="index" aria-selected="false">
-                        <span class="capital-mode-num">02</span>
-                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.index">The Holding Index</span>
-                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.index.short">Index</span>
+                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.index">General Index</span>
+                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.index.short">General Index</span>
+                        <span class="capital-mode-caption" data-i18n="surface.index.caption">Composite &amp; TVL</span>
                     </button>
                     <button class="capital-mode-btn capital-mode-btn-stable" id="capitalModeStable" type="button" role="tab" data-capital-mode-btn="stable" aria-controls="stable-index" aria-selected="false">
-                        <span class="capital-mode-num">03</span>
-                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.stable">Stable Companies Index</span>
-                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.stable.short">Stable</span>
+                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.stable">Stable Index</span>
+                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.stable.short">Stable Index</span>
+                        <span class="capital-mode-caption" data-i18n="surface.stable.caption">Stable Capital</span>
                     </button>
                 </div>
             </div>
@@ -7164,9 +7543,13 @@
 <!-- ── COLLECTION ───────────────────────────────────── -->
 <section class="collection capital-mode-panel" id="collection" data-capital-panel="collection" role="tabpanel" aria-labelledby="capitalModeCollection">
     <div class="container">
-        <div class="collection-head reveal">
-            <h2 class="collection-title" data-i18n="collection.title">The Collection</h2>
-            <div class="collection-meta">
+        <div class="collection-head reveal capital-surface-head">
+            <div class="capital-surface-copy">
+                <div class="capital-surface-eyebrow"><span class="capital-surface-live-dot"></span><span data-i18n="surface.collection.eyebrow">Company Registry · Live</span></div>
+                <h2 class="collection-title capital-surface-title" data-i18n="collection.title">The Collection</h2>
+                <p class="capital-surface-sub" data-i18n="surface.collection.sub">The live registry of personal onchain companies. Browse the network, compare operating capital and productivity, then open a Company Passport for the detail behind each company.</p>
+            </div>
+            <div class="collection-meta capital-surface-side">
                 <div class="collection-count"><b id="companyCount">9</b> <span data-i18n="collection.count">companies</span></div>
                 <div class="view-switch" role="group" aria-label="View">
                     <button class="view-btn active" type="button" data-view="grid" aria-label="Grid view" title="Grid">
@@ -7464,10 +7847,14 @@
 <!-- ── THE HOLDING INDEX (live network index) ────────── -->
 <section class="index-sec capital-mode-panel" id="index" data-capital-panel="index" role="tabpanel" aria-labelledby="capitalModeIndex">
     <div class="container">
-        <div class="index-head">
-            <div class="index-eyebrow reveal"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">The Index · Live</span></div>
-            <h2 class="index-title reveal" data-i18n="index.title">The Holding Index</h2>
-            <p class="index-sub reveal" data-i18n="index.sub">The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance for general onchain companies; TVL shows pure economic scale. Stable Capital companies are measured separately in the dedicated Stable Companies Index mode.</p>
+        <div class="index-head capital-surface-head">
+            <div class="index-eyebrow reveal capital-surface-eyebrow"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">General Companies · Live Index</span></div>
+            <h2 class="index-title reveal capital-surface-title" data-i18n="index.title">The Holding Index</h2>
+            <p class="index-sub reveal capital-surface-sub" data-i18n="index.sub">General onchain companies viewed through two lenses. Composite measures capital, longevity, productivity and performance; TVL isolates economic scale. The same live company records power both views.</p>
+            <div class="capital-surface-side capital-surface-universe reveal">
+                <span data-i18n="surface.general.kicker">Measurement universe</span>
+                <b data-i18n="surface.general.value">General · Composite + TVL</b>
+            </div>
         </div>
 
         <div class="index-metrics reveal">
@@ -7528,13 +7915,14 @@
 <!-- ── STABLE COMPANIES INDEX · separate measurement universe ─────────── -->
 <section class="stable-index-sec capital-mode-panel" id="stable-index" data-capital-panel="stable" role="tabpanel" aria-labelledby="capitalModeStable">
     <div class="container">
-        <div class="sc-head reveal">
-            <div>
-                <div class="sc-eyebrow"><span class="sc-live-dot"></span><span data-i18n="stable.eyebrow">Stable Capital · Separate Universe</span></div>
-                <h2 data-i18n="stable.title">The Holding Stable Companies Index</h2>
-                <p data-i18n="stable.sub">Stable-only companies are measured against the economics they are actually built for: preservation of capital, productive stable yield, embedded income, claimable rewards and operating history. They are intentionally not ranked against companies carrying BTC, ETH, volatile assets or long-lock governance positions.</p>
+        <div class="sc-head reveal capital-surface-head capital-surface-head-stable">
+            <div class="capital-surface-copy">
+                <div class="sc-eyebrow capital-surface-eyebrow"><span class="sc-live-dot"></span><span data-i18n="stable.eyebrow">Stable Capital · Live Index</span></div>
+                <h2 class="capital-surface-title" data-i18n="stable.title">The Holding Stable Companies Index</h2>
+                <p class="capital-surface-sub" data-i18n="stable.sub">Stable-only companies are measured in their own economic universe – stable capital, productive yield, generated income, claimable rewards and operating history – without forcing them into the volatility profile of the general Index.</p>
             </div>
-            <button class="sc-method-mini" type="button" data-stable-focus="methodology">
+            <button class="sc-method-mini capital-surface-method" type="button" data-stable-focus="methodology">
+                <small data-i18n="surface.stable.methodKicker">Separate universe</small>
                 <span data-i18n="stable.guide">How it works</span><i>?</i>
             </button>
         </div>
@@ -10931,14 +11319,22 @@ function renderFramework(lang) {
             'stats.since': 'Network Since',
             'collection.title': 'The Collection',
             'collection.count': 'companies',
-            'surface.eyebrow': 'Registry Views',
-            'surface.note': 'One live registry · three analytical surfaces',
+            'surface.eyebrow': 'Registry Observatory',
+            'surface.note': 'One registry. Three ways to read the network.',
             'surface.collection': 'The Collection',
             'surface.collection.short': 'Collection',
-            'surface.index': 'The Holding Index',
-            'surface.index.short': 'Index',
-            'surface.stable': 'Stable Companies Index',
-            'surface.stable.short': 'Stable',
+            'surface.collection.caption': 'Registry & Passports',
+            'surface.collection.eyebrow': 'Company Registry · Live',
+            'surface.collection.sub': 'The live registry of personal onchain companies. Browse the network, compare operating capital and productivity, then open a Company Passport for the detail behind each company.',
+            'surface.index': 'General Index',
+            'surface.index.short': 'General Index',
+            'surface.index.caption': 'Composite & TVL',
+            'surface.stable': 'Stable Index',
+            'surface.stable.short': 'Stable Index',
+            'surface.stable.caption': 'Stable Capital',
+            'surface.general.kicker': 'Measurement universe',
+            'surface.general.value': 'General · Composite + TVL',
+            'surface.stable.methodKicker': 'Separate universe',
             'filter.all': 'All Companies',
             'filter.all.short': 'All',
             'filter.standard': 'The Holding Standard',
@@ -10959,9 +11355,9 @@ function renderFramework(lang) {
             'card8.measuring': 'Measuring',
             'index.stableSeparate': 'Stable Capital companies do not compete in this Composite. Their objective, risk profile and return mechanics are different, so they are tracked in a dedicated Stable Companies Index.',
             'index.stableLink': 'Open Stable Companies →',
-            'stable.eyebrow': 'Stable Capital · Separate Index',
+            'stable.eyebrow': 'Stable Capital · Live Index',
             'stable.title': 'The Holding Stable Companies Index',
-            'stable.sub': 'Stable-only companies are measured separately by capital, productive yield and operating history.',
+            'stable.sub': 'Stable-only companies are measured in their own economic universe – stable capital, productive yield, generated income, claimable rewards and operating history – without forcing them into the volatility profile of the general Index.',
             'stable.badgeTop': 'Independent measurement',
             'stable.badgeBottom': 'Stable-only universe',
             'stable.metric.capital': 'Stable Capital',
@@ -11097,14 +11493,14 @@ function renderFramework(lang) {
             'nextlayer.p2': 'The Holding reads what can be verified onchain, normalizes it into a common company model, and preserves the resulting operating record over time.',
             'nextlayer.p3': 'Every new company adds another balance sheet, another cash-flow history and another set of protocol relationships to the shared data layer. Over time, the registry becomes a dataset; the dataset becomes intelligence; and that intelligence can support indices, ratings, discovery and eventually external data products.',
             'nextlayer.statement': 'The companies remain sovereign. The intelligence becomes shared infrastructure.',
-            'index.eyebrow': 'The Index · Live',
+            'index.eyebrow': 'General Companies · Live Index',
             'index.framework': 'Inside the Index',
             'index.weighting': 'Weighting',
             'index.mode.composite': 'Composite',
             'index.mode.tvl': 'TVL',
             'index.lens': 'Same companies. Different lens.',
             'index.title': 'The Holding Index',
-            'index.sub': 'The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance into one Index Weight; TVL shows pure economic scale. Both views are calculated from the same living company records.',
+            'index.sub': 'General onchain companies viewed through two lenses. Composite measures capital, longevity, productivity and performance; TVL isolates economic scale. The same live company records power both views.',
             'index.m.value': 'Network Value',
             'index.m.constituents': 'Constituents',
             'index.m.leader': 'Leading Company',
@@ -11181,14 +11577,22 @@ function renderFramework(lang) {
             'stats.since': 'Сеть с',
             'collection.title': 'Коллекция',
             'collection.count': 'компаний',
-            'surface.eyebrow': 'Режимы реестра',
-            'surface.note': 'Один живой реестр · три аналитических слоя',
+            'surface.eyebrow': 'Registry Observatory',
+            'surface.note': 'Один реестр. Три способа читать сеть.',
             'surface.collection': 'The Collection',
-            'surface.collection.short': 'Компании',
-            'surface.index': 'The Holding Index',
-            'surface.index.short': 'Индекс',
-            'surface.stable': 'Индекс stable-компаний',
-            'surface.stable.short': 'Stable',
+            'surface.collection.short': 'Коллекция',
+            'surface.collection.caption': 'Реестр и паспорта',
+            'surface.collection.eyebrow': 'Реестр компаний · Live',
+            'surface.collection.sub': 'Живой реестр персональных ончейн-компаний. Здесь можно увидеть всю сеть, сравнить капитал и производительность и открыть Company Passport с операционной детализацией каждой компании.',
+            'surface.index': 'General Index',
+            'surface.index.short': 'General Index',
+            'surface.index.caption': 'Composite и TVL',
+            'surface.stable': 'Stable Index',
+            'surface.stable.short': 'Stable Index',
+            'surface.stable.caption': 'Stable Capital',
+            'surface.general.kicker': 'Вселенная измерения',
+            'surface.general.value': 'General · Composite + TVL',
+            'surface.stable.methodKicker': 'Отдельная вселенная',
             'filter.all': 'Все компании',
             'filter.all.short': 'Все',
             'filter.standard': 'The Holding Standard',
@@ -11209,9 +11613,9 @@ function renderFramework(lang) {
             'card8.measuring': 'Измеряется',
             'index.stableSeparate': 'Компании Stable Capital не участвуют в этом Composite. Их цель, риск-профиль и механика доходности отличаются, поэтому они отслеживаются в отдельном индексе стейбл-компаний.',
             'index.stableLink': 'Открыть индекс stable-компаний →',
-            'stable.eyebrow': 'Stable Capital · Отдельный индекс',
+            'stable.eyebrow': 'Stable Capital · Live Index',
             'stable.title': 'Индекс стейбл-компаний The Holding',
-            'stable.sub': 'Стейбл-компании измеряются отдельно: капитал, текущая доходность и операционная история.',
+            'stable.sub': 'Стейбл-компании измеряются в собственной экономической вселенной – stable capital, productive yield, generated income, claimable rewards и операционная история – без навязывания им волатильного профиля общего индекса.',
             'stable.badgeTop': 'Независимое измерение',
             'stable.badgeBottom': 'Отдельная stable-категория',
             'stable.metric.capital': 'Stable Capital',
@@ -11349,14 +11753,14 @@ function renderFramework(lang) {
             'nextlayer.p2': 'The Holding читает то, что можно подтвердить ончейн, приводит данные к единой модели компании и сохраняет её операционную историю во времени.',
             'nextlayer.p3': 'Каждая новая компания добавляет в общий слой данных ещё один баланс, ещё одну историю денежного потока и ещё один набор связей с протоколами. Со временем реестр превращается в собственный dataset, dataset — в intelligence layer, а этот слой может стать основой индексов, рейтингов, discovery и будущих внешних data products.',
             'nextlayer.statement': 'Компании остаются суверенными. Intelligence становится общей инфраструктурой.',
-            'index.eyebrow': 'Индекс · Live',
+            'index.eyebrow': 'General Companies · Live Index',
             'index.framework': 'Внутри индекса',
             'index.weighting': 'Взвешивание',
             'index.mode.composite': 'Композит',
             'index.mode.tvl': 'TVL',
             'index.lens': 'Те же компании. Другой взгляд.',
             'index.title': 'Индекс The Holding',
-            'index.sub': 'Аналитическая поверхность более глубокой системы данных. Composite объединяет капитал, возраст, производительность и performance в единый Index Weight; TVL показывает чистый экономический масштаб. Оба режима рассчитываются из одной живой истории компаний.',
+            'index.sub': 'Общие ончейн-компании показаны через две линзы. Composite измеряет капитал, возраст, производительность и performance; TVL изолирует экономический масштаб. Оба режима работают на одной живой истории компаний.',
             'index.m.value': 'Ценность сети',
             'index.m.constituents': 'Компаний в индексе',
             'index.m.leader': 'Ведущая компания',
@@ -11927,9 +12331,9 @@ function renderFramework(lang) {
 })();</script>
 
 
-<script data-th-addon="registry-surface-switcher-v1.23.0">(function(){
+<script data-th-addon="registry-observatory-v1.23.1">(function(){
     'use strict';
-    const VERSION = '1.23.0-registry-surface-switcher';
+    const VERSION = '1.23.1-registry-observatory';
     const MODES = ['collection','index','stable'];
     const root = document.documentElement;
     const hub = document.getElementById('capital-hub');
@@ -12115,7 +12519,7 @@ function renderFramework(lang) {
 
     normalizeState(current);
     refreshSurface(current);
-    console.log('[The Holding] Registry Surface Switcher', VERSION, '·', current);
+    console.log('[The Holding] Registry Observatory', VERSION, '·', current);
 })();</script>
 
 </body>
