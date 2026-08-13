@@ -1,11 +1,11 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T19:25:27.142Z",
-  "status": "critical",
-  "headline": "1 critical security finding require immediate attention.",
+  "generatedAt": "2026-08-13T19:27:05.968Z",
+  "status": "watch",
+  "headline": "1 high-signal security watch item detected; no critical secret exposure found.",
   "severityCounts": {
-    "critical": 1,
+    "critical": 0,
     "high": 1,
     "medium": 41,
     "low": 0,
@@ -13,37 +13,26 @@
   },
   "source": {
     "filesScanned": 106,
-    "bytesScanned": 4760268,
+    "bytesScanned": 4760266,
     "siteProbes": 6
   },
   "whatChanged": {
     "newFindings": [],
     "resolvedFindings": [
       {
-        "id": "ab6acd743cb5a77a3979770c488fafbb5d0b4254c944d4f291284a0931459847",
-        "severity": "high",
-        "category": "shell-eval",
-        "file": ".github/workflows/update-brain-interpretation.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Workflow contains shell eval.",
-        "whyItMatters": "Eval can turn untrusted data into executable shell code.",
+        "id": "476f67b5278bbc3342d6e14f82be6576f486608efe7b0d0e5938a9ae18292ab4",
+        "severity": "critical",
+        "category": "secret-exposure",
+        "file": "intelligence/brain-chatgpt-bridge.mjs",
+        "line": 953,
+        "entity": "openai-key",
+        "summary": "Potential openai-key detected in public repository text.",
+        "whyItMatters": "Credentials committed to a public repository can be copied and abused. The Sentinel stores only the pattern type and location, never the matched secret.",
         "evidence": null
       }
     ]
   },
   "currentFindings": [
-    {
-      "id": "476f67b5278bbc3342d6e14f82be6576f486608efe7b0d0e5938a9ae18292ab4",
-      "severity": "critical",
-      "category": "secret-exposure",
-      "file": "intelligence/brain-chatgpt-bridge.mjs",
-      "line": 953,
-      "entity": "openai-key",
-      "summary": "Potential openai-key detected in public repository text.",
-      "whyItMatters": "Credentials committed to a public repository can be copied and abused. The Sentinel stores only the pattern type and location, never the matched secret.",
-      "evidence": null
-    },
     {
       "id": "144385c737678a7b5f2a26f977e3e28b8f469354f0cc674d5d2856e86ade6ee4",
       "severity": "high",
@@ -509,10 +498,6 @@
   ],
   "protectNext": [
     {
-      "priority": "critical",
-      "action": "Investigate critical findings before any expansion of write-capable automation."
-    },
-    {
       "priority": "medium",
       "action": "Keep external/user-controlled data out of HTML execution sinks; prefer textContent for Observer/Brain surfaces."
     },
@@ -523,12 +508,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "bfe559d4cc4cac8210ae0f0e94e92be499acf04b5856579ca75b12a85dc8644d",
+    "snapshotHash": "aec36bf8fb3960de4cd446d0fdefdcfa398cba8c1ec725aee067ced5e4343228",
     "securityVault": {
-      "runCount": 34,
+      "runCount": 35,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T19-25-27-142Z-bfe559d4cc.json",
-      "latestRecordHash": "fb10cfd4b12dff7641e0da67690ae1fb606b57fd583e061060b22a2b1e8f4e53",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T19-27-05-968Z-aec36bf8fb.json",
+      "latestRecordHash": "6d6cbdcee89643c328d623f36dc8cd8efecfbd7050f8a023465fb0a182c13827",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }

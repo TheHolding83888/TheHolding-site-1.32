@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.1-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-13T19:25:27.142Z",
+  "lastUpdatedAt": "2026-08-13T19:27:05.968Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 34,
-    "vaultRunCount": 34,
+    "runCount": 35,
+    "vaultRunCount": 35,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -418,6 +418,18 @@
       "recordHash": "fb10cfd4b12dff7641e0da67690ae1fb606b57fd583e061060b22a2b1e8f4e53",
       "findingCount": 43,
       "criticalCount": 1,
+      "highCount": 1,
+      "newFindingCount": 0,
+      "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-13T19:27:05.968Z",
+      "status": "watch",
+      "snapshotHash": "aec36bf8fb3960de4cd446d0fdefdcfa398cba8c1ec725aee067ced5e4343228",
+      "recordPath": "security/security-vault/2026/08/2026-08-13T19-27-05-968Z-aec36bf8fb.json",
+      "recordHash": "6d6cbdcee89643c328d623f36dc8cd8efecfbd7050f8a023465fb0a182c13827",
+      "findingCount": 42,
+      "criticalCount": 0,
       "highCount": 1,
       "newFindingCount": 0,
       "resolvedFindingCount": 1
@@ -3756,6 +3768,17 @@
       "summary": "Resolved: Workflow contains shell eval.",
       "file": ".github/workflows/update-brain-interpretation.yml",
       "entity": null
+    },
+    {
+      "id": "b9463ffe08146e2e41fc44276e1c6bee424cf29c0909727f6fe96a8045dc8410",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-13T19:27:05.968Z",
+      "findingId": "476f67b5278bbc3342d6e14f82be6576f486608efe7b0d0e5938a9ae18292ab4",
+      "severity": "critical",
+      "category": "secret-exposure",
+      "summary": "Resolved: Potential openai-key detected in public repository text.",
+      "file": "intelligence/brain-chatgpt-bridge.mjs",
+      "entity": "openai-key"
     }
   ]
 }
