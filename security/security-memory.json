@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T20:05:04.079Z",
+  "generatedAt": "2026-08-13T20:06:07.287Z",
   "status": "green",
-  "snapshotHash": "bed4257ad0dc20ef4f27f6b8bd7e39763bac291f301cb916bdf0b5b1569a3cda",
+  "snapshotHash": "0762a09a49f67a182a77f4d24824cd88d1e240ba011a97a1e7e1197ae1123775",
   "repository": {
     "filesScanned": 115,
-    "bytesScanned": 4842538,
+    "bytesScanned": 4842954,
     "criticalHashes": {
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
@@ -22,7 +22,7 @@
       ".github/workflows/security-hardening-actions.yml": "0353e44050c35c920c7d5e86dda4aeef15b4cb50ef432225ff7884d26ecc3704",
       ".github/workflows/security-sentinel.yml": "ae61c86bcdc27747ac61a22f6665fee285c7f36486dc71c09dde088cdec7d104",
       ".github/workflows/ui-regression-sentinel.yml": "7014d3760f0a77b6aee74b16b18af95394f95edd15535b6fc5927e89dc7cca20",
-      ".github/workflows/update-brain-chatgpt-bridge.yml": "f2511127a5f2b4256478964ae380d257537ab9b46c7d05f1a35186e1377abfd2",
+      ".github/workflows/update-brain-chatgpt-bridge.yml": "8843b5dd01bf9187f60881a9c8e4aaad5f4574b13ee9ac31590e22c27f4b1cc3",
       ".github/workflows/update-brain-intelligence.yml": "12bb6e7b76aa7c920448725e09bd327cd7a5f80e80c3f753d8631c87c2df96ac",
       ".github/workflows/update-change-intelligence.yml": "51a176970cd47aa56aa194960b42863474b25eb50080efc896c3fcdbe7a64a28",
       ".github/workflows/update-company-rewards.yml": "f48ec1a8994a2dfa90edec4dbdc21527ba409f2df7f5431ff3faf221dda36498",
@@ -128,6 +128,20 @@
     ]
   },
   "findings": [
+    {
+      "id": "d8aacdb4d2ceaaeb98c3fbb74fbc1d25db85dba06921053899d9e36f730978c7",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-brain-chatgpt-bridge.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "f2511127a5f2b4256478964ae380d257537ab9b46c7d05f1a35186e1377abfd2",
+        "currentSha256": "8843b5dd01bf9187f60881a9c8e4aaad5f4574b13ee9ac31590e22c27f4b1cc3"
+      }
+    },
     {
       "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
       "severity": "medium",
@@ -582,10 +596,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 46,
+    "runCount": 47,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T20-05-04-079Z-bed4257ad0.json",
-    "latestRecordHash": "3d3f3fc4400df26d3c02db4afe09687467c0d98f0a2191912b940e0965c40e6c",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T20-06-07-287Z-0762a09a49.json",
+    "latestRecordHash": "0c7b6f0d5cd6e565e6f64a2ea14e7832f94638a5623ea116c8169cb8bdcc8473",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
