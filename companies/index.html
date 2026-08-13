@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<!-- companies.html · v1.22 · Monetra Passport Editorial Metric Grid · centred cards, larger type -->
+<!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
 <html lang="en">
@@ -9009,8 +9010,63 @@ function renderIndex(lang) {
                 : '<span class="ipx-reward-token">Onchain</span>';
 
             let rows = '';
-            const displayRewards = aggregateDisplayRewards(rewards, { preserveOtherRows: !isDefitea });
             const sources = r && Array.isArray(r.sources) ? r.sources : [];
+            let displayRewards = aggregateDisplayRewards(rewards, { preserveOtherRows: !isDefitea });
+
+            // Defitea Aerodrome has two economically distinct managed-reward lanes:
+            // 1) FreeManagedReward = claimable multi-token rewards passed through by the manager.
+            // 2) LockedManagedReward = AERO compounded back into the managed veNFT.
+            // Keep both visible as separate Passport rows. If the current FreeManagedReward
+            // balance is zero, retain an explicit $0 Unclaimed row so the tracked lane does
+            // not disappear from the accounting surface between reward distributions.
+            if (isDefitea) {
+                const aeroSource = sources.find(s => s && s.route === 'aerodrome-ve');
+                const aeroDetails = aeroSource && aeroSource.details ? aeroSource.details : null;
+                const managedAeroTracked = Boolean(
+                    aeroDetails
+                    && Number(aeroDetails.managedPositions || 0) > 0
+                    && Array.isArray(aeroDetails.positions)
+                    && aeroDetails.positions.some(p => p && p.mode === 'managed' && p.freeManagedReward)
+                );
+                const hasAeroUnclaimed = displayRewards.some(x =>
+                    x && x.aerodromeRollup && x.veUnclaimedRollup
+                );
+
+                if (managedAeroTracked && !hasAeroUnclaimed) {
+                    displayRewards.push({
+                        protocol: 'Aerodrome',
+                        route: 'aerodrome-ve',
+                        displayRoute: 'aerodrome-ve',
+                        chain: 'Base',
+                        classification: 'unclaimed',
+                        amount: null,
+                        usdValue: 0,
+                        usdComplete: true,
+                        assetSymbols: [],
+                        rewardCount: 0,
+                        veUnclaimedRollup: true,
+                        veCompoundedRollup: false,
+                        aerodromeRollup: true,
+                        velodromeRollup: false,
+                        syntheticNoClaimables: true
+                    });
+                }
+
+                // Stable visual order: Aerodrome Unclaimed first, Compounded second,
+                // then all other reward routes in their existing relative order.
+                displayRewards = displayRewards
+                    .map((x, i) => ({ x, i }))
+                    .sort((a, b) => {
+                        const priority = item => {
+                            if (item && item.aerodromeRollup && item.veUnclaimedRollup) return 0;
+                            if (item && item.aerodromeRollup && item.veCompoundedRollup) return 1;
+                            return 10;
+                        };
+                        return priority(a.x) - priority(b.x) || a.i - b.i;
+                    })
+                    .map(v => v.x);
+            }
+
             const pending = sources.filter(s => s && s.status !== 'ok');
             const pendingByRoute = new Map(pending.map(s => [s.route, s]));
             const annotatedRoutes = new Set();
@@ -9050,9 +9106,11 @@ function renderIndex(lang) {
                         ? ' · +' + (symbols.length - compactSymbols.length) : '';
                     const tokenMeta = compactSymbols.length ? compactSymbols.join(' · ') + symbolTail : '';
                     const assetCount = symbols.length;
-                    const assetCountLabel = lang === 'ru'
-                        ? (assetCount === 1 ? '1 reward-актив' : assetCount + ' reward-активов')
-                        : (assetCount === 1 ? '1 reward asset' : assetCount + ' reward assets');
+                    const assetCountLabel = x.syntheticNoClaimables
+                        ? L.noCurrentClaimables
+                        : (lang === 'ru'
+                            ? (assetCount === 1 ? '1 reward-актив' : assetCount + ' reward-активов')
+                            : (assetCount === 1 ? '1 reward asset' : assetCount + ' reward assets'));
                     const routeLabel = isDefitea && x.velodromeRollup
                         ? 'Velodrome · 40 Acres'
                         : (x.aerodromeRollup ? 'Aerodrome' : 'Velodrome');
