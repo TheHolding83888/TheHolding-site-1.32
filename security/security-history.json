@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.1-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-13T19:28:07.516Z",
+  "lastUpdatedAt": "2026-08-13T19:55:50.327Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 36,
-    "vaultRunCount": 36,
+    "runCount": 37,
+    "vaultRunCount": 37,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -444,6 +444,18 @@
       "criticalCount": 0,
       "highCount": 0,
       "newFindingCount": 1,
+      "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-13T19:55:50.327Z",
+      "status": "green",
+      "snapshotHash": "53dff5ecd4c449a9aadccc2cee873c6e5cc891cd87e47023881d62d465510cdd",
+      "recordPath": "security/security-vault/2026/08/2026-08-13T19-55-50-327Z-53dff5ecd4.json",
+      "recordHash": "b6288d2f81062cf90db71268fa9695938845a3d03a85ee82019f8fc74f711872",
+      "findingCount": 41,
+      "criticalCount": 0,
+      "highCount": 0,
+      "newFindingCount": 0,
       "resolvedFindingCount": 1
     }
   ],
@@ -3811,6 +3823,17 @@
       "severity": "high",
       "category": "shell-eval",
       "summary": "Resolved: Workflow contains shell eval.",
+      "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
+      "entity": null
+    },
+    {
+      "id": "0fd1e81922f7fe2f66f578c04c174f763de5cc057b2145558437967d3520d7e6",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-13T19:55:50.327Z",
+      "findingId": "0d5d7403473d14a9ba733b233c24769d43ec85bb82feee6a90dd7b100d5b9c63",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/update-brain-chatgpt-bridge.yml.",
       "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
       "entity": null
     }
