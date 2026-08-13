@@ -1,0 +1,30 @@
+{
+  "version": "0.1-critical-production-contract",
+  "purpose": "Stable critical-surface contract for The Holding repository integrity observer. Intentional architecture changes should update this contract in the same patch.",
+  "requiredDirectories": [
+    ".github/workflows",
+    "companies",
+    "intelligence",
+    "security",
+    "productivity",
+    "rewards",
+    "reporting",
+    "stable-capital",
+    "onboarding",
+    "ui-regression"
+  ],
+  "criticalFiles": [
+    {"path": "companies/index.html", "kind": "html"},
+    {"path": "companies/productivity-data.json", "kind": "json", "requiredTopLevelKeys": ["version", "methodologyVersion", "collectorVersion", "generatedAt", "engines"]},
+    {"path": "companies/rewards-data.json", "kind": "json", "requiredTopLevelKeys": ["version", "collectorVersion", "methodologyVersion", "generatedAt"]},
+    {"path": "companies/stable-capital-data.json", "kind": "json", "requiredTopLevelKeys": ["version", "methodologyVersion", "generatedAt", "company", "positions"]},
+    {"path": "companies/stable-index-data.json", "kind": "json", "requiredTopLevelKeys": ["version", "methodologyVersion", "generatedAt", "universe"]},
+    {"path": "companies/embedded-yield-ledger.json", "kind": "json", "requiredTopLevelKeys": ["version", "generatedAt", "company", "positions"]},
+    {"path": "reporting/reporting-data.json", "kind": "json", "requiredTopLevelKeys": ["version", "methodologyVersion", "generatedAt", "funds"]},
+    {"path": "intelligence/change-intelligence.json", "kind": "json", "requiredTopLevelKeys": ["version", "observerVersion", "generatedAt", "sourceHealth"]},
+    {"path": "intelligence/brain-intelligence.json", "kind": "json", "requiredTopLevelKeys": ["version", "reasonerVersion", "generatedAt", "status"]},
+    {"path": "security/security-intelligence.json", "kind": "json", "requiredTopLevelKeys": ["version", "sentinelVersion", "generatedAt", "status", "severityCounts"]},
+    {"path": "ui-regression/ui-regression-sentinel-v0.1.mjs", "kind": "mjs"},
+    {"path": ".github/workflows/ui-regression-sentinel.yml", "kind": "workflow"}
+  ]
+}
