@@ -1,0 +1,222 @@
+name: "The Holding Brain · Grounded Reasoning"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7 7 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-brain-reasoning
+  cancel-in-progress: false
+
+jobs:
+  reason:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Preflight canonical memory
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s intelligence/brain-reasoning-engine.mjs
+          test -s intelligence/brain-policy.json
+
+          test -s intelligence/change-intelligence.json
+          test -s intelligence/system-memory.json
+          test -s security/security-intelligence.json
+          test -s security/security-memory.json
+
+          node --check intelligence/brain-reasoning-engine.mjs
+
+      - name: Build grounded reasoning packet
+        run: node intelligence/brain-reasoning-engine.mjs
+
+      - name: Validate Brain contract
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node - <<'NODE'
+          const fs = require('fs');
+
+          const brain = JSON.parse(fs.readFileSync('intelligence/brain-intelligence.json', 'utf8'));
+          const history = JSON.parse(fs.readFileSync('intelligence/brain-history.json', 'utf8'));
+          const policy = JSON.parse(fs.readFileSync('intelligence/brain-policy.json', 'utf8'));
+
+          if (brain.version !== '0.1-grounded-reasoning-gateway') {
+            throw new Error(`Unexpected Brain version: ${brain.version}`);
+          }
+
+          if (brain.reasonerVersion !== '0.1-deterministic-evidence-bound-reasoner') {
+            throw new Error(`Unexpected Reasoner version: ${brain.reasonerVersion}`);
+          }
+
+          if (policy.mode !== 'read-only-proposal-only') {
+            throw new Error('Brain policy is not read-only-proposal-only');
+          }
+
+          if (brain.constraints?.actionMode !== 'proposal-only') {
+            throw new Error('Brain output escaped proposal-only mode');
+          }
+
+          const forbidden = [
+            'autonomousCapitalActionAllowed',
+            'autonomousRepositoryCodeMutationAllowed',
+            'autonomousMethodologyMutationAllowed',
+            'sourceDataMutationAllowed',
+            'workflowPlaneMutationAllowed',
+          ];
+
+          for (const key of forbidden) {
+            if (brain.constraints?.[key] !== false) {
+              throw new Error(`Forbidden capability became enabled: ${key}`);
+            }
+          }
+
+          if (!Array.isArray(brain.reasoningCases)) {
+            throw new Error('reasoningCases missing');
+          }
+
+          for (const item of brain.reasoningCases) {
+            if (!Array.isArray(item.evidence) || item.evidence.length === 0) {
+              throw new Error(`Reasoning case ${item.id} has no evidence`);
+            }
+            if (item.actionMode !== 'proposal-only') {
+              throw new Error(`Reasoning case ${item.id} is executable`);
+            }
+            for (const ev of item.evidence) {
+              if (!ev.source || !ev.pointer || !ev.sourceSha256) {
+                throw new Error(`Incomplete evidence reference in case ${item.id}`);
+              }
+            }
+          }
+
+          if (history.version !== '0.1-brain-history') {
+            throw new Error(`Unexpected history version: ${history.version}`);
+          }
+
+          if (!Array.isArray(history.observations)) {
+            throw new Error('Brain history observations missing');
+          }
+
+          if (!brain.bridge?.inputCompositeHash || !brain.bridge?.snapshotHash) {
+            throw new Error('Brain bridge hashes missing');
+          }
+
+          console.log('Brain contract PASS', {
+            status: brain.status,
+            mode: brain.mode,
+            reasoningCases: brain.reasoningCases.length,
+            evidence: brain.evidenceLedger.length,
+            historyObservations: history.observationCount,
+          });
+          NODE
+
+          git diff --check
+
+      - name: Publish Brain memory safely
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "The Holding Brain"
+          git config user.email "actions@users.noreply.github.com"
+
+          publish_once() {
+            node intelligence/brain-reasoning-engine.mjs
+
+            git add \
+              intelligence/brain-intelligence.json \
+              intelligence/brain-history.json \
+              intelligence/brain-brief.md
+
+            if git diff --cached --quiet; then
+              echo "No Brain output changes to publish."
+              return 0
+            fi
+
+            staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/(brain-intelligence\.json|brain-history\.json|brain-brief\.md)$' || true)"
+            if [ -n "$staged_bad" ]; then
+              echo "ERROR: Brain staged a file outside its generated-output boundary:"
+              echo "$staged_bad"
+              exit 1
+            fi
+
+            git commit -m "intelligence: extend grounded Brain reasoning"
+          }
+
+          before_commit="$(git rev-parse HEAD)"
+          publish_once
+          after_commit="$(git rev-parse HEAD)"
+
+          # Exact no-op guard. Usually the generated timestamp changes, but this
+          # prevents any accidental push of an unrelated pre-existing HEAD.
+          if [ "$before_commit" = "$after_commit" ]; then
+            echo "Brain produced no publishable output change."
+            exit 0
+          fi
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "ERROR: main changed with a real conflict; refusing to guess."
+              exit 1
+            fi
+
+            # Main may have moved while the Brain was running. Recompute from the
+            # rebased canonical sources before any remote write.
+            node intelligence/brain-reasoning-engine.mjs
+
+            git add \
+              intelligence/brain-intelligence.json \
+              intelligence/brain-history.json \
+              intelligence/brain-brief.md
+
+            if ! git diff --cached --quiet; then
+              git commit --amend --no-edit
+            fi
+
+            # Final evidence-bound contract check after rebase/recompute.
+            node - <<'NODE'
+            const fs = require('fs');
+            const brain = JSON.parse(fs.readFileSync('intelligence/brain-intelligence.json', 'utf8'));
+            if (brain.constraints?.actionMode !== 'proposal-only') throw new Error('proposal-only invariant failed');
+            for (const item of brain.reasoningCases ?? []) {
+              if (!item.evidence?.length) throw new Error(`case ${item.id} missing evidence`);
+            }
+            console.log('Post-rebase Brain contract PASS');
+            NODE
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || {
+                echo "ERROR: pushed Brain commit is not current remote main."
+                exit 1
+              }
+              echo "Verified grounded Brain output on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "ERROR: unable to publish Brain output after retries."
+          exit 1
