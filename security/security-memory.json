@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T22:12:01.658Z",
-  "status": "green",
-  "snapshotHash": "f4fd879147397c61292b9a83fd812593c4f018cafa8fc8d662b8eedccf637607",
+  "generatedAt": "2026-08-13T22:12:52.172Z",
+  "status": "watch",
+  "snapshotHash": "f55d8a16889cbb1b28ccb3c112c68e14aad3afcd762113d60b9e322d1681f01c",
   "repository": {
-    "filesScanned": 130,
-    "bytesScanned": 4999646,
+    "filesScanned": 131,
+    "bytesScanned": 5009784,
     "criticalHashes": {
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
@@ -28,6 +28,7 @@
       ".github/workflows/update-brain-intelligence.yml": "12bb6e7b76aa7c920448725e09bd327cd7a5f80e80c3f753d8631c87c2df96ac",
       ".github/workflows/update-change-intelligence.yml": "51a176970cd47aa56aa194960b42863474b25eb50080efc896c3fcdbe7a64a28",
       ".github/workflows/update-company-rewards.yml": "f48ec1a8994a2dfa90edec4dbdc21527ba409f2df7f5431ff3faf221dda36498",
+      ".github/workflows/update-learning-loop.yml": "d802b87b0c1c3267a48e353d61f1298dbf3d2212d1049cb15ebaacacfccf130b",
       ".github/workflows/update-productivity.yml": "68f0c508323e571692f5940200213d2e21d0134ce616060e1dde74bf4e584834",
       ".github/workflows/update-reporting.yml": "53bfa8be818c1e58b13f4660c5d9482dc0a6ad974db62e43901161a2ae2a66d2",
       ".github/workflows/update-stable-capital.yml": "a2383747017ac6e6522c668a6187a85afab7a9e257e92fb0d2ee2b16fdb6b5b0",
@@ -130,6 +131,17 @@
     ]
   },
   "findings": [
+    {
+      "id": "40c1723d5c7e0f1e315242c970e5754d71a38af5cb08d25148e0d2677a11c2c1",
+      "severity": "high",
+      "category": "shell-eval",
+      "file": ".github/workflows/update-learning-loop.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Workflow contains shell eval.",
+      "whyItMatters": "Eval can turn untrusted data into executable shell code.",
+      "evidence": null
+    },
     {
       "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
       "severity": "medium",
@@ -551,10 +563,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 77,
+    "runCount": 78,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T22-12-01-658Z-f4fd879147.json",
-    "latestRecordHash": "6084e190cfd216910a48e81d27a53918075a52ce0649f414a1b5b0740ce18271",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T22-12-52-172Z-f55d8a1688.json",
+    "latestRecordHash": "63957a565e2fcab122be63d26e0adaeffe9210dedaf12e31cbc7dca446aa62bc",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }

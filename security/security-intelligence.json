@@ -1,26 +1,49 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T22:12:01.658Z",
-  "status": "green",
-  "headline": "No high or critical security findings detected in this scan.",
+  "generatedAt": "2026-08-13T22:12:52.172Z",
+  "status": "watch",
+  "headline": "1 high-signal security watch item detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
-    "high": 0,
+    "high": 1,
     "medium": 38,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 130,
-    "bytesScanned": 4999646,
+    "filesScanned": 131,
+    "bytesScanned": 5009784,
     "siteProbes": 6
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "40c1723d5c7e0f1e315242c970e5754d71a38af5cb08d25148e0d2677a11c2c1",
+        "severity": "high",
+        "category": "shell-eval",
+        "file": ".github/workflows/update-learning-loop.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Workflow contains shell eval.",
+        "whyItMatters": "Eval can turn untrusted data into executable shell code.",
+        "evidence": null
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
+    {
+      "id": "40c1723d5c7e0f1e315242c970e5754d71a38af5cb08d25148e0d2677a11c2c1",
+      "severity": "high",
+      "category": "shell-eval",
+      "file": ".github/workflows/update-learning-loop.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Workflow contains shell eval.",
+      "whyItMatters": "Eval can turn untrusted data into executable shell code.",
+      "evidence": null
+    },
     {
       "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
       "severity": "medium",
@@ -452,12 +475,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "f4fd879147397c61292b9a83fd812593c4f018cafa8fc8d662b8eedccf637607",
+    "snapshotHash": "f55d8a16889cbb1b28ccb3c112c68e14aad3afcd762113d60b9e322d1681f01c",
     "securityVault": {
-      "runCount": 77,
+      "runCount": 78,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T22-12-01-658Z-f4fd879147.json",
-      "latestRecordHash": "6084e190cfd216910a48e81d27a53918075a52ce0649f414a1b5b0740ce18271",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T22-12-52-172Z-f55d8a1688.json",
+      "latestRecordHash": "63957a565e2fcab122be63d26e0adaeffe9210dedaf12e31cbc7dca446aa62bc",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
