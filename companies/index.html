@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- companies.html · v1.24.2 · Observatory rail mobile dissolve on scroll -->
 <!-- companies.html · v1.24.1 · Reading room · bar gap, tighter nav, mobile rail unpinned -->
 <!-- companies.html · v1.24 · Reading room · compact section nav + Observatory rail -->
 <!-- companies.html · v1.23.11 · Registry Observatory Mobile Freedom · Collection → Index + Monetra mpx v2 -->
@@ -8145,6 +8146,31 @@
             #capital-hub{ scroll-margin-top: 44px; }
         }
 
+        /* ═══════════════════════════════════════════════════════════════
+           Observatory rail · mobile dissolve · v1.24.2
+           On a phone the rail is part of the page, so once the reader moves
+           into a surface it should hand the screen over rather than sit at
+           the top edge. It dissolves with the scroll instead of cutting out:
+           opacity and a small upward drift are driven from the rail's own
+           position, so scrolling back up brings it right back.
+           Laptop and desktop keep the pinned rail exactly as it is.
+           ═══════════════════════════════════════════════════════════════ */
+        @media (max-width: 760.98px){
+            .capital-mode-rail-wrap{
+                transition: opacity .18s linear;
+            }
+            .capital-mode-rail-wrap[data-rail-dissolved="1"]{
+                pointer-events: none;
+            }
+        }
+        @media (max-width: 760.98px) and (prefers-reduced-motion: reduce){
+            .capital-mode-rail-wrap{
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none;
+            }
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -13368,5 +13394,71 @@ function renderFramework(lang) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
     else start();
 })();</script>
+<!-- Observatory rail · mobile dissolve · v1.24.2 -->
+<script data-th-addon="observatory-rail-dissolve-v1">(function(){
+    'use strict';
+    /* Phone only. The rail scrolls with the page here, so rather than letting
+       it clip away under the section nav it fades out across its own height:
+       full strength while it is in place, gone by the time it reaches the nav.
+       Everything is derived from the element's current rect, so the effect is
+       perfectly reversible on the way back up and survives surface switches. */
+
+    var wrap = document.querySelector('.capital-mode-rail-wrap');
+    var nav = document.getElementById('subnav');
+    if (!wrap) return;
+
+    var MOBILE = function(){ return window.matchMedia('(max-width: 760.98px)').matches; };
+    var REDUCED = function(){ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
+    var ticking = false;
+    var cleared = true;
+
+    function clear(){
+        if (cleared) return;
+        wrap.style.opacity = '';
+        wrap.style.transform = '';
+        wrap.removeAttribute('data-rail-dissolved');
+        cleared = true;
+    }
+
+    function update(){
+        ticking = false;
+        if (!MOBILE() || REDUCED()) { clear(); return; }
+
+        var navH = nav ? nav.getBoundingClientRect().height : 40;
+        var r = wrap.getBoundingClientRect();
+        /* The dissolve runs over the rail's own height, capped so a tall rail
+           does not make the fade feel slow. */
+        var span = Math.max(90, Math.min(r.height, 170));
+        var travelled = navH - r.top;          // negative while fully in place
+        var p = travelled / span;
+        p = p < 0 ? 0 : (p > 1 ? 1 : p);
+
+        if (p <= 0) { clear(); return; }
+
+        var eased = p * p * (3 - 2 * p);       // smoothstep
+        wrap.style.opacity = String(1 - eased);
+        wrap.style.transform = 'translate3d(0,' + (-8 * eased).toFixed(2) + 'px,0)';
+        if (eased > 0.85) wrap.setAttribute('data-rail-dissolved', '1');
+        else wrap.removeAttribute('data-rail-dissolved');
+        cleared = false;
+    }
+
+    function onScroll(){
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function(){ clear(); onScroll(); });
+    /* Switching surface changes the document height under the reader. */
+    document.addEventListener('click', function(ev){
+        if (ev.target && ev.target.closest && ev.target.closest('[data-capital-mode-btn]')) {
+            window.setTimeout(onScroll, 60);
+        }
+    }, true);
+    update();
+})();</script>
+
 </body>
 </html>
