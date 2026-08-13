@@ -1,0 +1,138 @@
+{
+  "version": "0.1-autonomous-change-intelligence",
+  "observerVersion": "0.1-deterministic-system-watcher",
+  "generatedAt": "2026-08-13T15:19:01.108Z",
+  "mode": "baseline",
+  "headline": "The Holding Observer initialized its first system-memory baseline.",
+  "sourceHealth": {
+    "allFresh": true,
+    "freshCount": 6,
+    "sourceCount": 6,
+    "sources": {
+      "productivity": {
+        "file": "companies/productivity-data.json",
+        "version": "1.15",
+        "methodologyVersion": "1.1-simple-safe",
+        "collectorVersion": "1.15-company-009-beefy-cvxcrv",
+        "generatedAt": "2026-08-13T06:38:11.428Z",
+        "sha256": "a29f3354b8fede61d575a7cbf9ef6952f261af7720551d18774349dffa535150",
+        "ageHours": 8.68,
+        "freshness": "fresh",
+        "expectedMaxAgeHours": 192
+      },
+      "rewards": {
+        "file": "companies/rewards-data.json",
+        "version": "0.3.9",
+        "methodologyVersion": "0.2.2-earned-inside-protocols-multiwallet",
+        "collectorVersion": "0.3.9-pricing-cache-defillama-resilience",
+        "generatedAt": "2026-08-13T06:12:18.342Z",
+        "sha256": "09cd1a079b6859e6d65e380c9373d4bcc6c226309e303dc90ce2cbb101545f19",
+        "ageHours": 9.11,
+        "freshness": "fresh",
+        "expectedMaxAgeHours": 36
+      },
+      "stableCapital": {
+        "file": "companies/stable-capital-data.json",
+        "version": "0.4.1-monetra-recurring-stable-index-semantics",
+        "methodologyVersion": "1.3-stable-capital-recurring-full-coverage",
+        "collectorVersion": null,
+        "generatedAt": "2026-08-13T07:02:42.592Z",
+        "sha256": "8d67df57eea36dfabf5880537a42b4b27e30e018cac8e2db78be16f32fa568e0",
+        "ageHours": 8.27,
+        "freshness": "fresh",
+        "expectedMaxAgeHours": 36
+      },
+      "stableIndex": {
+        "file": "companies/stable-index-data.json",
+        "version": "0.2-stable-companies-index-strategy-performance",
+        "methodologyVersion": "0.2-separate-stable-universe-strategy-entry-performance",
+        "collectorVersion": null,
+        "generatedAt": "2026-08-13T07:02:42.661Z",
+        "sha256": "82b040acaa12ba203ebb305f6062e52a09b6579b75b784205e5a23dce0707f98",
+        "ageHours": 8.27,
+        "freshness": "fresh",
+        "expectedMaxAgeHours": 36
+      },
+      "embeddedLedger": {
+        "file": "companies/embedded-yield-ledger.json",
+        "version": "0.4-flow-aware-recurring-checkpoints",
+        "methodologyVersion": null,
+        "collectorVersion": null,
+        "generatedAt": "2026-08-13T07:02:42.592Z",
+        "sha256": "ff1cdeede2e8e93448b70d14f30bdf1e4aa11e4178bff0e17951d13fca7421b0",
+        "ageHours": 8.27,
+        "freshness": "fresh",
+        "expectedMaxAgeHours": 36
+      },
+      "reporting": {
+        "file": "reporting/reporting-data.json",
+        "version": "1.1.0-dual-fund-monetra",
+        "methodologyVersion": "1.1-dual-fund-daily-reference-model",
+        "collectorVersion": null,
+        "generatedAt": "2026-08-13T07:54:11.363Z",
+        "sha256": "c490e6ffbd4d4e0854580afb1cf827736ed95bf49aef3a2e4bc40b4d81a73338",
+        "ageHours": 7.41,
+        "freshness": "fresh",
+        "expectedMaxAgeHours": 36
+      }
+    }
+  },
+  "whatChanged": [],
+  "watchNext": [
+    {
+      "severity": "watch",
+      "category": "adapter-state",
+      "entity": "liquity_lqty",
+      "summary": "Liquity / liquity_lqty remains warming.",
+      "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
+    },
+    {
+      "severity": "watch",
+      "category": "adapter-state",
+      "entity": "pendle_spendle",
+      "summary": "Pendle / pendle_spendle remains warming.",
+      "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
+    },
+    {
+      "severity": "watch",
+      "category": "productivity-coverage",
+      "entity": "defitea.eth",
+      "summary": "defitea.eth Productivity coverage is 89.8%.",
+      "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood."
+    },
+    {
+      "severity": "watch",
+      "category": "rewards-completeness",
+      "entity": "0x5860...83CA8.eth",
+      "summary": "0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
+      "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+    },
+    {
+      "severity": "watch",
+      "category": "rewards-completeness",
+      "entity": "aerocvxyb.eth",
+      "summary": "aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+      "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+    },
+    {
+      "severity": "watch",
+      "category": "rewards-completeness",
+      "entity": "defitea.eth",
+      "summary": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+      "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+    },
+    {
+      "severity": "watch",
+      "category": "stable-capital-coverage",
+      "entity": "Stable Companies Index",
+      "summary": "Stable Capital current coverage is not full; display APY is last-full-coverage.",
+      "whyItMatters": "The Stable layer intentionally carries the last full observation rather than inventing a current full rate."
+    }
+  ],
+  "bridge": {
+    "purpose": "Compact canonical handoff for human/AI reasoning. Read this file first before opening large source artifacts.",
+    "snapshotHash": "80c44429619880f30d14fff69b048684919fb64b3ca57ceca6199be2654da940",
+    "sourceCompositeHash": "2c0d9f118a7b67dbfada8885e8a2ec64f5b6747a23f958dfa9b001d9d294a8c2",
+    "previousSnapshotAt": null
+  }
+}
