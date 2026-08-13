@@ -3,9 +3,10 @@ name: Update The Holding Reporting Data
 on:
   workflow_dispatch:
   schedule:
-    # Lightweight daily capital snapshot.
-    # On Sundays this runs 20 minutes after the weekly Productivity workflow.
-    - cron: '37 4 * * *'
+    # One daily reporting snapshot for Defitea + Monetra.
+    # Runs after the 05:37 UTC Stable Capital workflow so Monetra always uses
+    # the newest Stable Capital / Reference APY snapshot from the same day.
+    - cron: '7 6 * * *'
 
 permissions:
   contents: write
@@ -29,23 +30,64 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Update daily TVL and monthly reporting state
+      - name: Preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/reporting-engine.mjs
+          test -s companies/index.html
+          test -s companies/productivity-data.json
+          test -s companies/stable-index-data.json
+          test -s companies/embedded-yield-ledger.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const i=JSON.parse(fs.readFileSync('companies/stable-index-data.json','utf8'));
+          const c=(i.companies||[]).find(x=>x.registry==='008'||x.name==='Monetra.eth');
+          if(!c) throw new Error('Monetra missing from Stable Index');
+          if(!(Number(c.productiveStableCapitalUsd)>90)) throw new Error('Monetra Stable Capital implausibly low');
+          if(!Number.isFinite(Number(c.displayReferenceApyPct))) throw new Error('Monetra display Reference APY missing');
+          const l=JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
+          if(l.company?.registry!=='008') throw new Error('Monetra Embedded Yield Ledger identity mismatch');
+          console.log('Dual-fund reporting preflight OK.');
+          NODE
+
+      - name: Update Defitea + Monetra daily reporting state
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           COMPANY_PAGE_FILE: ./companies/index.html
           PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          STABLE_INDEX_DATA_FILE: ./companies/stable-index-data.json
+          EMBEDDED_LEDGER_FILE: ./companies/embedded-yield-ledger.json
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
         run: node reporting/reporting-engine.mjs
 
+      - name: Validate generated reporting data
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('reporting/reporting-data.json','utf8'));
+          if(r.version!=='1.1.0-dual-fund-monetra') throw new Error('unexpected reporting version '+r.version);
+          if(!r.funds?.['defitea.eth']) throw new Error('Defitea reporting regression');
+          const m=r.funds?.['Monetra.eth'];
+          if(!m) throw new Error('Monetra reporting missing');
+          if(!(Number(m.latestSnapshot?.stableCapitalUsd)>90)) throw new Error('Monetra Stable Capital missing');
+          if(!Number.isFinite(Number(m.latestSnapshot?.referenceApyPct))) throw new Error('Monetra APY missing');
+          if(!Number.isFinite(Number(m.latestSnapshot?.modeledDailyGeneratedIncomeUsd))) throw new Error('Monetra daily generated income missing');
+          console.log('Dual-fund reporting validation OK.');
+          NODE
+
       - name: Commit reporting snapshot
         run: |
+          set -euo pipefail
           git config user.name "The Holding Data Engine"
           git config user.email "data-engine@theholding.ai"
           git add reporting/reporting-data.json
           if git diff --cached --quiet; then
             echo "No reporting data changes."
           else
-            git commit -m "data: update daily reporting snapshot"
+            git commit -m "data: update Defitea and Monetra reporting snapshot"
             for attempt in 1 2 3; do
               git fetch origin main
               if ! git rebase origin/main; then
