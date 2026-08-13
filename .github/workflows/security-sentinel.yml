@@ -9,6 +9,20 @@ on:
     branches: [main]
     paths-ignore:
       - 'security/**'
+      # Deterministic generated cognitive outputs are already validated by their
+      # own fail-closed writers. Re-scanning these generated artifacts on push
+      # would create a self-invalidating Sentinel -> Brain -> Sentinel loop.
+      # Static engines, policies, schemas and workflows remain fully scanned.
+      - 'intelligence/brain-intelligence.json'
+      - 'intelligence/brain-history.json'
+      - 'intelligence/brain-brief.md'
+      - 'intelligence/brain-chatgpt-bridge.json'
+      - 'intelligence/brain-chatgpt-bridge.md'
+      - 'intelligence/brain-chatgpt-bridge-history.json'
+      - 'intelligence/brain-chatgpt-bridge-eval.json'
+      - 'intelligence/cognitive-stack-state.json'
+      - 'intelligence/cognitive-stack-brief.md'
+      - 'intelligence/cognitive-stack-eval.json'
 
 permissions:
   contents: write
