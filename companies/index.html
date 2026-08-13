@@ -1,5 +1,6 @@
 
 <!DOCTYPE html>
+<!-- companies.html · v1.23.0 · Registry Surface Switcher · Collection + Holding Index + Stable Index -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
 <!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
@@ -128,6 +129,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
 
+
+    <!-- Registry Surface Switcher · first-paint state bootstrap -->
+    <script data-th-capital-mode-bootstrap>
+    (function(){
+        try {
+            var allowed = { collection:1, index:1, stable:1 };
+            var hash = String(location.hash || '').toLowerCase();
+            var fromHash = hash === '#index' ? 'index' : (hash === '#stable-index' ? 'stable' : (hash === '#collection' ? 'collection' : ''));
+            var saved = sessionStorage.getItem('thCapitalSurfaceMode') || '';
+            var mode = allowed[fromHash] ? fromHash : (allowed[saved] ? saved : 'collection');
+            document.documentElement.setAttribute('data-capital-mode', mode);
+        } catch (_) {
+            document.documentElement.setAttribute('data-capital-mode', 'collection');
+        }
+    })();
+    </script>
     <style>
         :root {
             --bg:          #fcfcfa;
@@ -6747,6 +6764,283 @@
             }
         }
 
+
+
+        /* ═══════════════════════════════════════════════════════════════
+           Registry Surface Switcher · v1.23.0
+           Collection / Holding Index / Stable Companies Index share one
+           premium stage. The rail is locally sticky on larger screens only;
+           mobile keeps the viewport clean beneath the existing sticky subnav.
+           ═══════════════════════════════════════════════════════════════ */
+        #capital-hub { scroll-margin-top: 76px; }
+        .capital-mode-hub {
+            position: relative;
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+            background: var(--bg);
+            isolation: isolate;
+        }
+        .capital-mode-rail-wrap {
+            position: sticky;
+            top: 55px;
+            z-index: 44;
+            padding: 0.78rem 0;
+            background: linear-gradient(180deg, rgba(252,252,250,0.97), rgba(252,252,250,0.88));
+            border-bottom: 1px solid rgba(22,21,15,0.065);
+            backdrop-filter: blur(18px) saturate(1.05);
+            -webkit-backdrop-filter: blur(18px) saturate(1.05);
+        }
+        .capital-mode-rail {
+            display: grid;
+            grid-template-columns: minmax(165px,0.58fr) minmax(0,1.42fr);
+            align-items: center;
+            gap: 1.25rem;
+            padding: 0.55rem 0.58rem 0.55rem 1.05rem;
+            border: 1px solid rgba(22,21,15,0.105);
+            border-radius: 18px;
+            background:
+                radial-gradient(120% 160% at 0% 0%, rgba(168,132,44,0.075), transparent 44%),
+                rgba(255,255,255,0.82);
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.95) inset,
+                0 16px 42px -34px rgba(22,21,15,0.34);
+        }
+        .capital-mode-intro { min-width: 0; }
+        .capital-mode-kicker {
+            display: block;
+            color: var(--gold);
+            font-size: 0.55rem;
+            line-height: 1;
+            font-weight: 700;
+            letter-spacing: 0.19em;
+            text-transform: uppercase;
+            margin-bottom: 0.38rem;
+        }
+        .capital-mode-note {
+            display: block;
+            color: var(--text-3);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.96rem;
+            line-height: 1.15;
+            font-style: italic;
+            white-space: nowrap;
+        }
+        .capital-mode-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 0.28rem;
+            padding: 0.26rem;
+            border: 1px solid rgba(22,21,15,0.075);
+            border-radius: 14px;
+            background: rgba(22,21,15,0.032);
+        }
+        .capital-mode-btn {
+            position: relative;
+            min-width: 0;
+            min-height: 52px;
+            display: grid;
+            grid-template-columns: auto minmax(0,1fr);
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.62rem 0.78rem;
+            border: 0;
+            border-radius: 11px;
+            background: transparent;
+            color: var(--text-2);
+            font: inherit;
+            cursor: pointer;
+            text-align: left;
+            overflow: hidden;
+            transition:
+                color 0.24s ease,
+                background 0.28s ease,
+                box-shadow 0.28s ease,
+                transform 0.28s cubic-bezier(0.22,1,0.36,1);
+        }
+        .capital-mode-btn::after {
+            content: '';
+            position: absolute;
+            left: 12%; right: 12%; bottom: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(216,180,90,0.75), transparent);
+            opacity: 0;
+            transform: scaleX(0.5);
+            transition: opacity 0.28s ease, transform 0.34s cubic-bezier(0.22,1,0.36,1);
+        }
+        .capital-mode-btn:hover:not(.active) {
+            color: var(--text);
+            background: rgba(255,255,255,0.56);
+            transform: translateY(-1px);
+        }
+        .capital-mode-btn:focus-visible {
+            outline: 1px solid var(--gold);
+            outline-offset: 2px;
+        }
+        .capital-mode-btn.active {
+            color: #f6f2e8;
+            background:
+                radial-gradient(130% 130% at 0% 0%, rgba(168,132,44,0.22), transparent 48%),
+                #17150f;
+            box-shadow:
+                inset 0 0 0 1px rgba(216,180,90,0.20),
+                0 10px 26px -18px rgba(22,21,15,0.52);
+        }
+        .capital-mode-btn.active::after { opacity: 1; transform: scaleX(1); }
+        .capital-mode-btn-stable.active {
+            background:
+                radial-gradient(120% 130% at 0% 0%, rgba(74,166,116,0.22), transparent 48%),
+                #102019;
+            box-shadow:
+                inset 0 0 0 1px rgba(79,162,118,0.24),
+                0 10px 26px -18px rgba(10,70,43,0.45);
+        }
+        .capital-mode-btn-stable.active::after {
+            background: linear-gradient(90deg, transparent, rgba(84,183,131,0.8), transparent);
+        }
+        .capital-mode-num {
+            color: var(--text-3);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.72rem;
+            font-weight: 500;
+            line-height: 1;
+            transition: color 0.25s ease;
+        }
+        .capital-mode-btn.active .capital-mode-num { color: #d8b45a; }
+        .capital-mode-btn-stable.active .capital-mode-num { color: #72c599; }
+        .capital-mode-label {
+            min-width: 0;
+            font-size: 0.67rem;
+            line-height: 1.25;
+            font-weight: 650;
+            letter-spacing: 0.035em;
+        }
+        .capital-mode-label-short { display: none; }
+        .capital-mode-stage { position: relative; min-height: 1px; }
+        .capital-mode-panel {
+            border-top: 0 !important;
+            transform-origin: 50% 0%;
+        }
+        .capital-mode-panel[hidden] { display: none !important; }
+        html[data-capital-mode="collection"] [data-capital-panel]:not([data-capital-panel="collection"]),
+        html[data-capital-mode="index"] [data-capital-panel]:not([data-capital-panel="index"]),
+        html[data-capital-mode="stable"] [data-capital-panel]:not([data-capital-panel="stable"]) {
+            display: none !important;
+        }
+        .capital-mode-panel.capital-panel-leaving {
+            opacity: 0;
+            transform: translateY(7px) scale(0.9985);
+            transition: opacity 0.14s ease, transform 0.18s ease;
+            pointer-events: none;
+        }
+        .capital-mode-panel.capital-panel-entering {
+            animation: capitalPanelIn 0.38s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes capitalPanelIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.998); }
+            to { opacity: 1; transform: none; }
+        }
+        .capital-mode-hub .collection { padding-top: 4.15rem; }
+        .capital-mode-hub .index-sec { padding-top: 4.45rem; padding-bottom: 5.65rem; }
+        .capital-mode-hub .stable-index-sec { padding-top: 4.45rem; padding-bottom: 5.8rem; }
+        .capital-mode-hub .collection-next { display: none !important; }
+        .capital-mode-a11y {
+            position: absolute;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0);
+            white-space: nowrap; border: 0;
+        }
+
+        /* The old Index→Stable link now switches the surface in place. */
+        .capital-mode-hub .index-separation-note a {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 0.4rem 0.72rem;
+            border: 1px solid rgba(10,124,78,0.14);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.62);
+            transition: background 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+        }
+        .capital-mode-hub .index-separation-note a:hover {
+            background: rgba(10,124,78,0.065);
+            border-color: rgba(10,124,78,0.26);
+            transform: translateY(-1px);
+        }
+
+        @media (min-width: 1181px) {
+            .capital-mode-rail-wrap { top: 57px; }
+        }
+        @media (min-width: 761px) and (max-width: 1180px) {
+            .capital-mode-rail-wrap { top: 56px; }
+            .capital-mode-rail { grid-template-columns: minmax(145px,0.48fr) minmax(0,1.52fr); }
+            .capital-mode-note { font-size: 0.9rem; }
+            .capital-mode-btn { gap: 0.5rem; padding-left: 0.62rem; padding-right: 0.62rem; }
+            .capital-mode-label { font-size: 0.62rem; }
+        }
+        @media (max-width: 760.98px) {
+            #capital-hub { scroll-margin-top: 68px; }
+            .capital-mode-rail-wrap {
+                position: relative;
+                top: auto;
+                z-index: 2;
+                padding: 0.75rem 0 0.5rem;
+                background: var(--bg);
+                border-bottom: 0;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
+            .capital-mode-rail {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                padding: 0.62rem;
+                border-radius: 17px;
+            }
+            .capital-mode-intro {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.08rem 0.18rem 0.12rem;
+            }
+            .capital-mode-kicker { margin: 0; font-size: 0.49rem; }
+            .capital-mode-note { font-size: 0.78rem; }
+            .capital-mode-tabs { gap: 0.2rem; padding: 0.22rem; }
+            .capital-mode-btn {
+                min-height: 47px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 0.22rem;
+                padding: 0.46rem 0.24rem;
+                text-align: center;
+            }
+            .capital-mode-num { font-size: 0.58rem; }
+            .capital-mode-label { font-size: 0.59rem; line-height: 1.05; letter-spacing: 0.02em; }
+            .capital-mode-label-full { display: none; }
+            .capital-mode-label-short { display: block; }
+            .capital-mode-hub .collection { padding-top: 3.15rem; }
+            .capital-mode-hub .index-sec { padding-top: 3.4rem; padding-bottom: 4.4rem; }
+            .capital-mode-hub .stable-index-sec { padding-top: 3.45rem; padding-bottom: 4.5rem; }
+        }
+        @media (max-width: 420px) {
+            .capital-mode-note { display: none; }
+            .capital-mode-intro { justify-content: center; padding-bottom: 0.05rem; }
+            .capital-mode-kicker { letter-spacing: 0.17em; }
+            .capital-mode-btn { min-height: 45px; }
+            .capital-mode-label { font-size: 0.56rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .capital-mode-btn,
+            .capital-mode-panel.capital-panel-leaving,
+            .capital-mode-panel.capital-panel-entering,
+            .capital-mode-hub .index-separation-note a {
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+            }
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -6836,8 +7130,39 @@
     </div>
 </section>
 
+<!-- ══ REGISTRY SURFACE SWITCHER · v1.23.0 ═════════════════════ -->
+<section class="capital-mode-hub" id="capital-hub" aria-label="Registry views">
+    <div class="capital-mode-rail-wrap">
+        <div class="container">
+            <div class="capital-mode-rail">
+                <div class="capital-mode-intro">
+                    <span class="capital-mode-kicker" data-i18n="surface.eyebrow">Registry Views</span>
+                    <span class="capital-mode-note" data-i18n="surface.note">One live registry · three analytical surfaces</span>
+                </div>
+                <div class="capital-mode-tabs" role="tablist" aria-label="Registry views">
+                    <button class="capital-mode-btn" id="capitalModeCollection" type="button" role="tab" data-capital-mode-btn="collection" aria-controls="collection" aria-selected="true">
+                        <span class="capital-mode-num">01</span>
+                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.collection">The Collection</span>
+                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.collection.short">Collection</span>
+                    </button>
+                    <button class="capital-mode-btn" id="capitalModeIndex" type="button" role="tab" data-capital-mode-btn="index" aria-controls="index" aria-selected="false">
+                        <span class="capital-mode-num">02</span>
+                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.index">The Holding Index</span>
+                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.index.short">Index</span>
+                    </button>
+                    <button class="capital-mode-btn capital-mode-btn-stable" id="capitalModeStable" type="button" role="tab" data-capital-mode-btn="stable" aria-controls="stable-index" aria-selected="false">
+                        <span class="capital-mode-num">03</span>
+                        <span class="capital-mode-label capital-mode-label-full" data-i18n="surface.stable">Stable Companies Index</span>
+                        <span class="capital-mode-label capital-mode-label-short" data-i18n="surface.stable.short">Stable</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="capital-mode-stage">
 <!-- ── COLLECTION ───────────────────────────────────── -->
-<section class="collection" id="collection">
+<section class="collection capital-mode-panel" id="collection" data-capital-panel="collection" role="tabpanel" aria-labelledby="capitalModeCollection">
     <div class="container">
         <div class="collection-head reveal">
             <h2 class="collection-title" data-i18n="collection.title">The Collection</h2>
@@ -7135,33 +7460,14 @@
     </div>
 </section>
 
-<!-- ── THE NEXT LAYER ───────────────────────────────── -->
-<section class="nextlayer" id="next-layer">
-    <div class="container">
-        <div class="nl-grid">
-            <div class="nl-head">
-                <div class="nl-eyebrow reveal" data-i18n="nextlayer.eyebrow">From Companies to Infrastructure</div>
-                <h2 class="nl-title reveal" data-i18n="nextlayer.title">A network that compounds more than capital.</h2>
-            </div>
-            <div class="nl-body reveal">
-                <p data-i18n="nextlayer.p1">Each company remains sovereign — its own owner, treasury, keys, strategy and history. What connects them is not custody, but a common architecture for measurement.</p>
-                <p data-i18n="nextlayer.p2">The Holding reads what can be verified onchain, normalizes it into a common company model, and preserves the resulting operating record over time.</p>
-                <p data-i18n="nextlayer.p3">Every new company adds another balance sheet, another cash-flow history and another set of protocol relationships to the shared data layer. Over time, the registry becomes a dataset; the dataset becomes intelligence; and that intelligence can support indices, ratings, discovery and eventually external data products.</p>
-            </div>
-        </div>
-        <div class="nl-statement reveal">
-            <p data-i18n="nextlayer.statement">The companies remain sovereign. The intelligence becomes shared infrastructure.</p>
-        </div>
-    </div>
-</section>
 
 <!-- ── THE HOLDING INDEX (live network index) ────────── -->
-<section class="index-sec" id="index">
+<section class="index-sec capital-mode-panel" id="index" data-capital-panel="index" role="tabpanel" aria-labelledby="capitalModeIndex">
     <div class="container">
         <div class="index-head">
             <div class="index-eyebrow reveal"><span class="index-live-dot"></span><span data-i18n="index.eyebrow">The Index · Live</span></div>
             <h2 class="index-title reveal" data-i18n="index.title">The Holding Index</h2>
-            <p class="index-sub reveal" data-i18n="index.sub">The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance for general onchain companies; TVL shows pure economic scale. Stable Capital companies are measured separately in the dedicated Stable Companies Index below.</p>
+            <p class="index-sub reveal" data-i18n="index.sub">The analytical surface of a deeper data system. Composite combines capital, longevity, productivity and performance for general onchain companies; TVL shows pure economic scale. Stable Capital companies are measured separately in the dedicated Stable Companies Index mode.</p>
         </div>
 
         <div class="index-metrics reveal">
@@ -7213,13 +7519,14 @@
         <p class="index-note reveal"><b id="idxNoteLead">The Holding methodology · 35% Capital + 25% Longevity + 20% Productivity + 20% Performance.</b> <span id="idxNoteBody" data-i18n="index.note.body">Below the weights sits a growing history of balances, productive engines, accrued rewards and operating time. As that history deepens, resilience, cash-flow quality and reputation can be measured from evidence rather than invented.</span></p>
         <div class="index-separation-note reveal">
             <span data-i18n="index.stableSeparate">Stable Capital companies do not compete in this Composite. Their objective, risk profile and return mechanics are different, so they are tracked in a dedicated Stable Companies Index.</span>
-            <a href="#stable-index" data-i18n="index.stableLink">View Stable Companies ↓</a>
+            <a href="#stable-index" data-i18n="index.stableLink">Open Stable Companies →</a>
         </div>
     </div>
 </section>
 
+
 <!-- ── STABLE COMPANIES INDEX · separate measurement universe ─────────── -->
-<section class="stable-index-sec" id="stable-index">
+<section class="stable-index-sec capital-mode-panel" id="stable-index" data-capital-panel="stable" role="tabpanel" aria-labelledby="capitalModeStable">
     <div class="container">
         <div class="sc-head reveal">
             <div>
@@ -7537,6 +7844,32 @@
     <button class="fw-close" id="fwClose" type="button" aria-label="Close">×</button>
     <div class="fw-inner" id="fwBody"></div>
 </aside>
+
+
+    </div>
+    <div class="capital-mode-a11y" id="capitalModeA11y" aria-live="polite" aria-atomic="true"></div>
+</section>
+<!-- ══ /REGISTRY SURFACE SWITCHER ═════════════════════════════════ -->
+
+<!-- ── THE NEXT LAYER ───────────────────────────────── -->
+<section class="nextlayer" id="next-layer">
+    <div class="container">
+        <div class="nl-grid">
+            <div class="nl-head">
+                <div class="nl-eyebrow reveal" data-i18n="nextlayer.eyebrow">From Companies to Infrastructure</div>
+                <h2 class="nl-title reveal" data-i18n="nextlayer.title">A network that compounds more than capital.</h2>
+            </div>
+            <div class="nl-body reveal">
+                <p data-i18n="nextlayer.p1">Each company remains sovereign — its own owner, treasury, keys, strategy and history. What connects them is not custody, but a common architecture for measurement.</p>
+                <p data-i18n="nextlayer.p2">The Holding reads what can be verified onchain, normalizes it into a common company model, and preserves the resulting operating record over time.</p>
+                <p data-i18n="nextlayer.p3">Every new company adds another balance sheet, another cash-flow history and another set of protocol relationships to the shared data layer. Over time, the registry becomes a dataset; the dataset becomes intelligence; and that intelligence can support indices, ratings, discovery and eventually external data products.</p>
+            </div>
+        </div>
+        <div class="nl-statement reveal">
+            <p data-i18n="nextlayer.statement">The companies remain sovereign. The intelligence becomes shared infrastructure.</p>
+        </div>
+    </div>
+</section>
 
 <!-- ── THE HOLDING GRAPH (live capital map) ──────────── -->
 <section class="graph-sec" id="graph">
@@ -10598,6 +10931,14 @@ function renderFramework(lang) {
             'stats.since': 'Network Since',
             'collection.title': 'The Collection',
             'collection.count': 'companies',
+            'surface.eyebrow': 'Registry Views',
+            'surface.note': 'One live registry · three analytical surfaces',
+            'surface.collection': 'The Collection',
+            'surface.collection.short': 'Collection',
+            'surface.index': 'The Holding Index',
+            'surface.index.short': 'Index',
+            'surface.stable': 'Stable Companies Index',
+            'surface.stable.short': 'Stable',
             'filter.all': 'All Companies',
             'filter.all.short': 'All',
             'filter.standard': 'The Holding Standard',
@@ -10617,7 +10958,7 @@ function renderFramework(lang) {
             'card8.yield': 'Reference APY',
             'card8.measuring': 'Measuring',
             'index.stableSeparate': 'Stable Capital companies do not compete in this Composite. Their objective, risk profile and return mechanics are different, so they are tracked in a dedicated Stable Companies Index.',
-            'index.stableLink': 'View Stable Companies ↓',
+            'index.stableLink': 'Open Stable Companies →',
             'stable.eyebrow': 'Stable Capital · Separate Index',
             'stable.title': 'The Holding Stable Companies Index',
             'stable.sub': 'Stable-only companies are measured separately by capital, productive yield and operating history.',
@@ -10840,6 +11181,14 @@ function renderFramework(lang) {
             'stats.since': 'Сеть с',
             'collection.title': 'Коллекция',
             'collection.count': 'компаний',
+            'surface.eyebrow': 'Режимы реестра',
+            'surface.note': 'Один живой реестр · три аналитических слоя',
+            'surface.collection': 'The Collection',
+            'surface.collection.short': 'Компании',
+            'surface.index': 'The Holding Index',
+            'surface.index.short': 'Индекс',
+            'surface.stable': 'Индекс stable-компаний',
+            'surface.stable.short': 'Stable',
             'filter.all': 'Все компании',
             'filter.all.short': 'Все',
             'filter.standard': 'The Holding Standard',
@@ -10859,7 +11208,7 @@ function renderFramework(lang) {
             'card8.yield': 'Reference APY',
             'card8.measuring': 'Измеряется',
             'index.stableSeparate': 'Компании Stable Capital не участвуют в этом Composite. Их цель, риск-профиль и механика доходности отличаются, поэтому они отслеживаются в отдельном индексе стейбл-компаний.',
-            'index.stableLink': 'К стейбл-компаниям ↓',
+            'index.stableLink': 'Открыть индекс stable-компаний →',
             'stable.eyebrow': 'Stable Capital · Отдельный индекс',
             'stable.title': 'Индекс стейбл-компаний The Holding',
             'stable.sub': 'Стейбл-компании измеряются отдельно: капитал, текущая доходность и операционная история.',
@@ -11576,5 +11925,198 @@ function renderFramework(lang) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
     else start();
 })();</script>
+
+
+<script data-th-addon="registry-surface-switcher-v1.23.0">(function(){
+    'use strict';
+    const VERSION = '1.23.0-registry-surface-switcher';
+    const MODES = ['collection','index','stable'];
+    const root = document.documentElement;
+    const hub = document.getElementById('capital-hub');
+    const panels = Array.from(document.querySelectorAll('[data-capital-panel]'));
+    const buttons = Array.from(document.querySelectorAll('[data-capital-mode-btn]'));
+    const live = document.getElementById('capitalModeA11y');
+    const tablist = document.querySelector('.capital-mode-tabs');
+    const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (!hub || panels.length !== 3 || buttons.length !== 3) return;
+
+    function valid(mode) { return MODES.indexOf(mode) !== -1 ? mode : 'collection'; }
+    function hashMode() {
+        const h = String(location.hash || '').toLowerCase();
+        if (h === '#index') return 'index';
+        if (h === '#stable-index') return 'stable';
+        if (h === '#collection') return 'collection';
+        return '';
+    }
+    function storedMode() {
+        try { return sessionStorage.getItem('thCapitalSurfaceMode') || ''; } catch (_) { return ''; }
+    }
+    let current = valid(hashMode() || root.getAttribute('data-capital-mode') || storedMode() || 'collection');
+    let transitionTimer = 0;
+    let releaseTimer = 0;
+
+    function labelFor(mode) {
+        const btn = buttons.find(b => b.dataset.capitalModeBtn === mode);
+        if (!btn) return mode;
+        const full = btn.querySelector('.capital-mode-label-full');
+        return full ? full.textContent.trim() : btn.textContent.trim();
+    }
+
+    function normalizeState(mode) {
+        current = valid(mode);
+        root.setAttribute('data-capital-mode', current);
+        panels.forEach(panel => {
+            const on = panel.dataset.capitalPanel === current;
+            panel.hidden = !on;
+            panel.setAttribute('aria-hidden', on ? 'false' : 'true');
+            panel.classList.remove('capital-panel-leaving');
+        });
+        buttons.forEach(btn => {
+            const on = btn.dataset.capitalModeBtn === current;
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+            btn.tabIndex = on ? 0 : -1;
+        });
+        try { sessionStorage.setItem('thCapitalSurfaceMode', current); } catch (_) {}
+        updateSubnav();
+    }
+
+    function scrollToHub(behavior) {
+        const subnav = document.getElementById('subnav');
+        const clearance = (subnav ? subnav.offsetHeight : 0) + 8;
+        const top = Math.max(0, hub.getBoundingClientRect().top + window.scrollY - clearance);
+        window.scrollTo({ top: top, behavior: behavior || (reduceMotion ? 'auto' : 'smooth') });
+    }
+
+    function updateHash(mode) {
+        const h = mode === 'index' ? '#index' : (mode === 'stable' ? '#stable-index' : '#collection');
+        try { history.replaceState(history.state, '', h); } catch (_) {}
+    }
+
+    function refreshSurface(mode) {
+        try {
+            if (mode === 'index' && typeof window.renderIndex === 'function') window.renderIndex(typeof window.idxLang === 'function' ? window.idxLang() : undefined);
+            if (mode === 'stable' && typeof window.renderStableCompanies === 'function') window.renderStableCompanies(typeof window.idxLang === 'function' ? window.idxLang() : undefined);
+        } catch (_) {}
+        requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+    }
+
+    function selectMode(mode, opts) {
+        opts = opts || {};
+        mode = valid(mode);
+        if (transitionTimer) clearTimeout(transitionTimer);
+        if (releaseTimer) clearTimeout(releaseTimer);
+
+        if (mode === current) {
+            if (opts.scroll !== false) scrollToHub(opts.behavior);
+            if (opts.hash !== false) updateHash(mode);
+            updateSubnav();
+            return;
+        }
+
+        const oldPanel = panels.find(p => p.dataset.capitalPanel === current && !p.hidden);
+        const newPanel = panels.find(p => p.dataset.capitalPanel === mode);
+        const oldHeight = hub.offsetHeight;
+        if (oldHeight > 0) hub.style.minHeight = oldHeight + 'px';
+
+        buttons.forEach(btn => {
+            const on = btn.dataset.capitalModeBtn === mode;
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+            btn.tabIndex = on ? 0 : -1;
+        });
+        if (oldPanel && !reduceMotion) oldPanel.classList.add('capital-panel-leaving');
+        if (opts.scroll !== false) scrollToHub(opts.behavior);
+
+        const delay = reduceMotion ? 0 : 135;
+        transitionTimer = window.setTimeout(() => {
+            current = mode;
+            root.setAttribute('data-capital-mode', current);
+            panels.forEach(panel => {
+                const on = panel.dataset.capitalPanel === current;
+                panel.hidden = !on;
+                panel.setAttribute('aria-hidden', on ? 'false' : 'true');
+                panel.classList.remove('capital-panel-leaving','capital-panel-entering');
+            });
+            if (newPanel && !reduceMotion) {
+                newPanel.classList.add('capital-panel-entering');
+                window.setTimeout(() => newPanel.classList.remove('capital-panel-entering'), 430);
+            }
+            try { sessionStorage.setItem('thCapitalSurfaceMode', current); } catch (_) {}
+            if (opts.hash !== false) updateHash(current);
+            if (live) live.textContent = labelFor(current);
+            refreshSurface(current);
+            updateSubnav();
+
+            releaseTimer = window.setTimeout(() => {
+                hub.style.minHeight = '';
+            }, reduceMotion ? 0 : 520);
+        }, delay);
+    }
+
+    function modeFromAnchor(anchor) {
+        if (!anchor) return '';
+        const href = anchor.getAttribute('href');
+        if (href === '#collection') return 'collection';
+        if (href === '#index') return 'index';
+        if (href === '#stable-index') return 'stable';
+        return '';
+    }
+
+    document.addEventListener('click', function(e){
+        const btn = e.target.closest('[data-capital-mode-btn]');
+        if (btn) {
+            e.preventDefault();
+            selectMode(btn.dataset.capitalModeBtn, { scroll:true, hash:true });
+            return;
+        }
+        const anchor = e.target.closest('a[href="#collection"],a[href="#index"],a[href="#stable-index"]');
+        const mode = modeFromAnchor(anchor);
+        if (mode) {
+            e.preventDefault();
+            selectMode(mode, { scroll:true, hash:true });
+        }
+    });
+
+    if (tablist) tablist.addEventListener('keydown', function(e){
+        if (!['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
+        e.preventDefault();
+        let i = MODES.indexOf(current);
+        if (e.key === 'ArrowRight') i = (i + 1) % MODES.length;
+        if (e.key === 'ArrowLeft') i = (i - 1 + MODES.length) % MODES.length;
+        if (e.key === 'Home') i = 0;
+        if (e.key === 'End') i = MODES.length - 1;
+        selectMode(MODES[i], { scroll:false, hash:true });
+        const target = buttons.find(b => b.dataset.capitalModeBtn === MODES[i]);
+        if (target) target.focus({ preventScroll:true });
+    });
+
+    /* The legacy scroll spy knows Collection and Index as separate vertical
+       sections. They now occupy one stage, so this late handler normalizes the
+       active subnav link to the selected surface while the reader is in the hub. */
+    function updateSubnav() {
+        const links = Array.from(document.querySelectorAll('.subnav a'));
+        if (!links.length) return;
+        const y = window.scrollY + 140;
+        const intelligence = document.getElementById('intelligence');
+        const build = document.getElementById('build');
+        let active = current === 'collection' ? 'collection' : 'index';
+        if (intelligence && y >= intelligence.offsetTop) active = 'intelligence';
+        if (build && y >= build.offsetTop) active = 'build';
+        links.forEach(a => a.classList.toggle('active', a.dataset.section === active));
+    }
+    window.addEventListener('scroll', updateSubnav, { passive:true });
+    window.addEventListener('resize', updateSubnav, { passive:true });
+
+    window.addEventListener('hashchange', function(){
+        const mode = hashMode();
+        if (mode) selectMode(mode, { scroll:true, hash:false });
+    });
+
+    normalizeState(current);
+    refreshSurface(current);
+    console.log('[The Holding] Registry Surface Switcher', VERSION, '·', current);
+})();</script>
+
 </body>
 </html>
