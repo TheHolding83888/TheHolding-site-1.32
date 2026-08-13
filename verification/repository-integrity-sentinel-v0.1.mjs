@@ -25,7 +25,7 @@ import process from 'node:process';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const VERSION = '0.1-observer';
+const VERSION = '0.1.1-calibration';
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 function argsOf(argv) {
@@ -309,20 +309,29 @@ function scanWorkflow(file) {
     if (!fs.existsSync(full)) finding('missing-local-action', file, value, 'Workflow local action path does not exist.');
   }
 
-  // Restrict executable token scan to non-comment lines. Resolve from repository root and
-  // all static working-directories declared in this workflow. This catches the common
-  // "renamed/moved script but workflow still points to old path" failure class.
-  const tokenRe = /(?<![A-Za-z0-9_:@-])((?:\.\.?\/)?[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*\.(?:mjs|cjs|js|py|sh))(?![A-Za-z0-9_.-])/g;
+  // Workflow script references are intentionally extracted only from executable contexts.
+  // v0.1 scanned every token ending in .js/.mjs/etc. and therefore mistook prose/package
+  // names such as "Node.js" and "bignumber.js" for repository scripts. v0.1.1 limits
+  // detection to interpreter invocations (node/python/bash/sh) plus explicit ./ or ../ paths.
+  const executableRefs = [];
+  const lines = text.split(/\r?\n/);
+  for (const rawLine of lines) {
+    if (/^\s*#/.test(rawLine)) continue;
+    const line = rawLine.replace(/\s+#.*$/, '');
+
+    const interpreterRe = /\b(?:node|python3?|bash|sh)\s+(?:(?:--?[A-Za-z0-9_-]+)(?:[= ]+[^\s;&|]+)?\s+)*["']?([^"'`\s;&|]+\.(?:mjs|cjs|js|py|sh))["']?/gi;
+    for (const m of line.matchAll(interpreterRe)) executableRefs.push(m[1]);
+
+    const directRe = /(?:^|[\s;&|])((?:\.\.?\/)[A-Za-z0-9_./-]+\.(?:mjs|cjs|js|py|sh))(?=$|[\s;&|])/g;
+    for (const m of line.matchAll(directRe)) executableRefs.push(m[1]);
+  }
+
   const seen = new Set();
-  for (const m of text.matchAll(tokenRe)) {
-    const token = m[1];
+  for (const tokenRaw of executableRefs) {
+    const token = stripQueryHash(tokenRaw);
     if (seen.has(token) || dynamicValue(token)) continue;
     seen.add(token);
     if (!EXEC_REF_EXTS.has(path.extname(token))) continue;
-    const lineStart = text.lastIndexOf('\n', m.index) + 1;
-    const lineEndAt = text.indexOf('\n', m.index);
-    const line = text.slice(lineStart, lineEndAt === -1 ? text.length : lineEndAt);
-    if (/^\s*#/.test(line)) continue;
     stats.workflowScriptRefs++;
     const possible = [];
     if (token.startsWith('/')) possible.push(path.join(ROOT, token.slice(1)));
