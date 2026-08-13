@@ -4,10 +4,12 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
-const OBSERVER_VERSION = '0.1-deterministic-system-watcher';
-const LAYER_VERSION = '0.1-autonomous-change-intelligence';
-const MEMORY_VERSION = '0.1-system-memory';
-const HISTORY_VERSION = '0.1-change-history';
+const OBSERVER_VERSION = '0.2-deterministic-memory-vault';
+const LAYER_VERSION = '0.2-autonomous-change-intelligence-memory-vault';
+const MEMORY_VERSION = '0.2-system-memory';
+const HISTORY_VERSION = '0.2-change-history';
+const VAULT_MANIFEST_VERSION = '0.2-memory-vault-manifest';
+const VAULT_RECORD_VERSION = '0.2-memory-vault-record';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -23,6 +25,8 @@ const PATHS = {
   history: process.env.CHANGE_HISTORY_FILE || path.join(ROOT, 'intelligence', 'change-history.json'),
   latest: process.env.CHANGE_INTELLIGENCE_FILE || path.join(ROOT, 'intelligence', 'change-intelligence.json'),
   brief: process.env.CHANGE_BRIEF_FILE || path.join(ROOT, 'intelligence', 'daily-brief.md'),
+  vaultRoot: process.env.MEMORY_VAULT_ROOT || path.join(ROOT, 'intelligence', 'memory-vault'),
+  vaultManifest: process.env.MEMORY_VAULT_MANIFEST || path.join(ROOT, 'intelligence', 'memory-vault', 'manifest.json'),
 };
 
 function ensureDir(file) { fs.mkdirSync(path.dirname(file), { recursive: true }); }
@@ -42,8 +46,16 @@ function stableStringify(value) {
   return `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
 }
 function hashObject(value) { return sha256Text(stableStringify(value)); }
-function finite(v) { const n = Number(v); return Number.isFinite(n) ? n : null; }
+function finite(v) {
+  if (v === null || v === undefined || v === '' || typeof v === 'boolean') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 function round(v, d = 8) { const n = finite(v); return n === null ? null : Number(n.toFixed(d)); }
+function writeJson(file, value) {
+  ensureDir(file);
+  fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
+}
 function pct(v) { const n = finite(v); return n === null ? null : round(n * 100, 4); }
 function isoOrNull(v) { const d = v ? new Date(v) : null; return d && Number.isFinite(d.getTime()) ? d.toISOString() : null; }
 function hoursSince(v, nowMs) { const t = v ? new Date(v).getTime() : NaN; return Number.isFinite(t) ? (nowMs - t) / 36e5 : null; }
@@ -279,6 +291,7 @@ const snapshotHash = hashObject(snapshot);
 const sourceCompositeHash = hashObject(Object.fromEntries(Object.entries(sources).map(([k,v]) => [k, v.sha256])));
 
 const previousMemory = readJson(PATHS.memory, false);
+const previousLatest = readJson(PATHS.latest, false);
 const previous = previousMemory?.currentSnapshot || null;
 
 const events = [];
@@ -406,15 +419,312 @@ const memory = {
   currentSnapshot: snapshot,
 };
 
-const oldHistory = readJson(PATHS.history, false) || {version:HISTORY_VERSION,observerVersion:OBSERVER_VERSION,startedAt:generatedAt,lastUpdatedAt:null,runs:[],events:[]};
+const oldHistory = readJson(PATHS.history, false) || {
+  version: HISTORY_VERSION,
+  observerVersion: OBSERVER_VERSION,
+  startedAt: generatedAt,
+  lastUpdatedAt: null,
+  runs: [],
+  events: [],
+};
+
+function timestampFilePart(iso) {
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) throw new Error(`Invalid Memory Vault timestamp: ${iso}`);
+  return d.toISOString().replaceAll(':', '-').replaceAll('.', '-');
+}
+function vaultRelPathFor(iso, runId) {
+  const d = new Date(iso);
+  const year = String(d.getUTCFullYear());
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  return path.posix.join('intelligence', 'memory-vault', year, month, `${runId}.json`);
+}
+function vaultAbsPath(rel) {
+  const abs = path.resolve(ROOT, rel);
+  const vaultRoot = path.resolve(PATHS.vaultRoot);
+  if (abs !== vaultRoot && !abs.startsWith(vaultRoot + path.sep)) {
+    throw new Error(`Memory Vault path escaped vault root: ${rel}`);
+  }
+  return abs;
+}
+function buildVaultRecord({
+  recordType = 'observer-run',
+  at,
+  mode,
+  previousRecordHash = null,
+  sourceHash,
+  snapHash,
+  sourceState,
+  normalizedState,
+  headline,
+  runEvents,
+  runWatch,
+  migration = null,
+}) {
+  const runId = `${timestampFilePart(at)}-${String(snapHash || 'nohash').slice(0, 10)}`;
+  const core = {
+    version: VAULT_RECORD_VERSION,
+    observerVersion: OBSERVER_VERSION,
+    layerVersion: LAYER_VERSION,
+    recordType,
+    runId,
+    generatedAt: at,
+    mode,
+    chain: {
+      previousRecordHash,
+    },
+    sourceCompositeHash: sourceHash ?? null,
+    snapshotHash: snapHash ?? null,
+    sources: sourceState || {},
+    currentSnapshot: normalizedState || null,
+    intelligence: {
+      headline: headline ?? null,
+      eventCount: safeArray(runEvents).length,
+      events: safeArray(runEvents),
+      watchCount: safeArray(runWatch).length,
+      watchNext: safeArray(runWatch),
+    },
+    ...(migration ? {migration} : {}),
+  };
+  const recordHash = hashObject(core);
+  return {
+    ...core,
+    integrity: {
+      algorithm: 'sha256',
+      recordHash,
+      previousRecordHash,
+    },
+  };
+}
+function safeArray(v) { return Array.isArray(v) ? v : []; }
+function verifyVaultRecord(record) {
+  if (!record || typeof record !== 'object') throw new Error('Memory Vault record is not an object.');
+  const expected = record?.integrity?.recordHash;
+  if (typeof expected !== 'string' || expected.length !== 64) throw new Error('Memory Vault record hash missing.');
+  const core = {...record};
+  delete core.integrity;
+  const actual = hashObject(core);
+  if (actual !== expected) throw new Error(`Memory Vault record integrity mismatch: expected ${expected}, got ${actual}`);
+  if ((record?.chain?.previousRecordHash ?? null) !== (record?.integrity?.previousRecordHash ?? null)) {
+    throw new Error('Memory Vault previous-record hash mismatch inside record.');
+  }
+  return true;
+}
+function writeVaultRecord(record) {
+  verifyVaultRecord(record);
+  const rel = vaultRelPathFor(record.generatedAt, record.runId);
+  const abs = vaultAbsPath(rel);
+  if (fs.existsSync(abs)) {
+    const existing = readJson(abs);
+    verifyVaultRecord(existing);
+    if (existing.integrity.recordHash !== record.integrity.recordHash) {
+      throw new Error(`Memory Vault refuses to overwrite immutable record ${rel}`);
+    }
+    return rel;
+  }
+  writeJson(abs, record);
+  return rel;
+}
+function validateVaultManifest(manifest) {
+  if (!manifest || typeof manifest !== 'object') throw new Error('Memory Vault manifest is invalid.');
+  if (manifest.version !== VAULT_MANIFEST_VERSION) throw new Error(`Unexpected Memory Vault manifest version: ${manifest.version}`);
+  if (!Array.isArray(manifest.runs)) throw new Error('Memory Vault manifest runs[] missing.');
+  if (manifest.runCount !== manifest.runs.length) throw new Error('Memory Vault manifest runCount mismatch.');
+  const latestMeta = manifest.latestRecord || null;
+  if (manifest.runs.length === 0) {
+    if (latestMeta !== null) throw new Error('Memory Vault empty manifest cannot have latestRecord.');
+    return true;
+  }
+  const first = manifest.runs[0];
+  if (!manifest.chainRootHash || manifest.chainRootHash !== first.recordHash) {
+    throw new Error('Memory Vault chain root mismatch.');
+  }
+  for (let i = 0; i < manifest.runs.length; i++) {
+    const expectedPrev = i === 0 ? null : manifest.runs[i - 1].recordHash;
+    if ((manifest.runs[i].previousRecordHash ?? null) !== expectedPrev) {
+      throw new Error(`Memory Vault manifest chain broken at run ${i}.`);
+    }
+  }
+  const last = manifest.runs[manifest.runs.length - 1];
+  if (!latestMeta || latestMeta.recordHash !== last.recordHash || latestMeta.recordPath !== last.recordPath) {
+    throw new Error('Memory Vault latestRecord does not match final manifest run.');
+  }
+  const latestAbs = vaultAbsPath(last.recordPath);
+  const latestRecord = readJson(latestAbs);
+  verifyVaultRecord(latestRecord);
+  if (latestRecord.integrity.recordHash !== last.recordHash) throw new Error('Memory Vault manifest/record hash mismatch.');
+  if (latestRecord.snapshotHash !== last.snapshotHash) throw new Error('Memory Vault manifest/record snapshot mismatch.');
+  return true;
+}
+function emptyVaultManifest() {
+  return {
+    version: VAULT_MANIFEST_VERSION,
+    observerVersion: OBSERVER_VERSION,
+    recordVersion: VAULT_RECORD_VERSION,
+    policy: {
+      mode: 'append-only-hash-chained',
+      hardLifetimeCap: null,
+      canonicalRetention: 'indefinite',
+      note: 'Operational change-history remains bounded for fast access; Memory Vault preserves every Observer run without a configured lifetime cap.',
+    },
+    startedAt: null,
+    lastUpdatedAt: null,
+    runCount: 0,
+    eventCount: 0,
+    chainRootHash: null,
+    latestRecord: null,
+    runs: [],
+  };
+}
+function appendVaultRecord(manifest, record) {
+  const rel = writeVaultRecord(record);
+  if (manifest.runs.some(r => r.runId === record.runId)) {
+    const existing = manifest.runs.find(r => r.runId === record.runId);
+    if (existing.recordHash !== record.integrity.recordHash) throw new Error(`Memory Vault duplicate runId conflict: ${record.runId}`);
+    return manifest;
+  }
+  const meta = {
+    runId: record.runId,
+    generatedAt: record.generatedAt,
+    recordType: record.recordType,
+    mode: record.mode,
+    recordPath: rel,
+    recordHash: record.integrity.recordHash,
+    previousRecordHash: record.integrity.previousRecordHash,
+    snapshotHash: record.snapshotHash,
+    sourceCompositeHash: record.sourceCompositeHash,
+    eventCount: record.intelligence.eventCount,
+    watchCount: record.intelligence.watchCount,
+  };
+  const next = {
+    ...manifest,
+    observerVersion: OBSERVER_VERSION,
+    recordVersion: VAULT_RECORD_VERSION,
+    startedAt: manifest.startedAt || record.generatedAt,
+    lastUpdatedAt: generatedAt,
+    runCount: manifest.runCount + 1,
+    eventCount: manifest.eventCount + record.intelligence.eventCount,
+    chainRootHash: manifest.chainRootHash || record.integrity.recordHash,
+    latestRecord: meta,
+    runs: [...manifest.runs, meta],
+  };
+  validateVaultManifest(next);
+  return next;
+}
+
+let vaultManifest = readJson(PATHS.vaultManifest, false);
+if (vaultManifest) validateVaultManifest(vaultManifest);
+else vaultManifest = emptyVaultManifest();
+
+// v0.2 bootstraps the already-verified v0.1 Observer memory into the permanent Vault.
+// This imports only data that already physically existed in canonical Observer artifacts.
+if (vaultManifest.runCount === 0 && previousMemory?.currentSnapshot && previousMemory?.generatedAt) {
+  const sameLatest = previousLatest?.bridge?.snapshotHash === previousMemory?.snapshotHash;
+  const legacyRun = [...safeArray(oldHistory.runs)].reverse().find(r => r?.snapshotHash === previousMemory?.snapshotHash) || null;
+  const seedEvents = sameLatest ? safeArray(previousLatest?.whatChanged) : safeArray(oldHistory.events).filter(e => safeArray(legacyRun?.eventIds).includes(e?.id));
+  const seedWatch = sameLatest ? safeArray(previousLatest?.watchNext) : [];
+  const seed = buildVaultRecord({
+    recordType: 'imported-v0.1-observer-memory',
+    at: previousMemory.generatedAt,
+    mode: previousLatest?.mode || legacyRun?.mode || 'baseline',
+    previousRecordHash: null,
+    sourceHash: previousMemory.sourceCompositeHash,
+    snapHash: previousMemory.snapshotHash,
+    sourceState: previousMemory.sources,
+    normalizedState: previousMemory.currentSnapshot,
+    headline: sameLatest ? previousLatest?.headline : 'Imported verified pre-v0.2 Observer memory.',
+    runEvents: seedEvents,
+    runWatch: seedWatch,
+    migration: {
+      importedAt: generatedAt,
+      fromMemoryVersion: previousMemory.version ?? null,
+      fromObserverVersion: previousMemory.observerVersion ?? null,
+      sourceHistoryVersion: oldHistory.version ?? null,
+      sourceLatestVersion: previousLatest?.version ?? null,
+      method: 'verified-existing-observer-artifacts',
+      legacyOperationalHistory: {
+        startedAt: oldHistory.startedAt ?? null,
+        lastUpdatedAt: oldHistory.lastUpdatedAt ?? null,
+        runs: safeArray(oldHistory.runs),
+        events: safeArray(oldHistory.events),
+      },
+    },
+  });
+  vaultManifest = appendVaultRecord(vaultManifest, seed);
+}
+
+const currentVaultRecord = buildVaultRecord({
+  at: generatedAt,
+  mode: previous ? 'delta' : 'baseline',
+  previousRecordHash: vaultManifest.latestRecord?.recordHash ?? null,
+  sourceHash: sourceCompositeHash,
+  snapHash: snapshotHash,
+  sourceState: sources,
+  normalizedState: snapshot,
+  headline: latest.headline,
+  runEvents: events,
+  runWatch: watchNext,
+});
+vaultManifest = appendVaultRecord(vaultManifest, currentVaultRecord);
+writeJson(PATHS.vaultManifest, vaultManifest);
+
+latest.bridge.memoryVault = {
+  version: VAULT_MANIFEST_VERSION,
+  policy: vaultManifest.policy.mode,
+  runCount: vaultManifest.runCount,
+  eventCount: vaultManifest.eventCount,
+  startedAt: vaultManifest.startedAt,
+  latestRecordPath: vaultManifest.latestRecord.recordPath,
+  chainRootHash: vaultManifest.chainRootHash,
+  latestRecordHash: vaultManifest.latestRecord.recordHash,
+  previousRecordHash: vaultManifest.latestRecord.previousRecordHash,
+};
+
+memory.memoryVault = {
+  version: VAULT_MANIFEST_VERSION,
+  runCount: vaultManifest.runCount,
+  eventCount: vaultManifest.eventCount,
+  startedAt: vaultManifest.startedAt,
+  latestRecordPath: vaultManifest.latestRecord.recordPath,
+  chainRootHash: vaultManifest.chainRootHash,
+  latestRecordHash: vaultManifest.latestRecord.recordHash,
+};
+
 const eventById = new Map((oldHistory.events||[]).map(e=>[e.id,e]));
 for (const e of events) if (!eventById.has(e.id)) eventById.set(e.id,e);
-const run = {date:generatedAt.slice(0,10),generatedAt,mode:previous?'delta':'baseline',snapshotHash,sourceCompositeHash,eventCount:events.length,eventIds:events.map(e=>e.id),watchCount:watchNext.length};
+const run = {
+  date: generatedAt.slice(0,10),
+  generatedAt,
+  mode: previous?'delta':'baseline',
+  snapshotHash,
+  sourceCompositeHash,
+  eventCount: events.length,
+  eventIds: events.map(e=>e.id),
+  watchCount: watchNext.length,
+  vaultRecordPath: vaultManifest.latestRecord.recordPath,
+  vaultRecordHash: vaultManifest.latestRecord.recordHash,
+};
+const priorLifetimeRuns = finite(oldHistory?.lifetime?.runCount) ?? safeArray(oldHistory.runs).length;
+const priorLifetimeEvents = finite(oldHistory?.lifetime?.eventCount) ??
+  safeArray(oldHistory.runs).reduce((sum, r) => sum + (finite(r?.eventCount) ?? 0), 0);
 const history = {
   version:HISTORY_VERSION,
   observerVersion:OBSERVER_VERSION,
   startedAt:oldHistory.startedAt||generatedAt,
   lastUpdatedAt:generatedAt,
+  retention: {
+    operationalRuns: 730,
+    operationalUniqueEvents: 5000,
+    longTermCanonicalMemory: 'intelligence/memory-vault/',
+  },
+  lifetime: {
+    runCount: priorLifetimeRuns + 1,
+    eventCount: priorLifetimeEvents + events.length,
+    uniqueEventCount: eventById.size,
+    vaultRunCount: vaultManifest.runCount,
+    vaultEventCount: vaultManifest.eventCount,
+    vaultStartedAt: vaultManifest.startedAt,
+  },
   runs:[...(oldHistory.runs||[]),run].slice(-730),
   events:[...eventById.values()].sort((a,b)=>String(a.detectedAt).localeCompare(String(b.detectedAt))).slice(-5000),
 };
@@ -453,20 +763,28 @@ function buildBrief() {
   if (mon) lines.push(`- Monetra Current Capital: ${money(mon.currentCapitalUsd,4)} · display Reference APY ${mon.displayReferenceApyPct ?? 'n/a'}% · claimable ${money(mon.accruedClaimableUsd,4)}.`);
   if (repMon) lines.push(`- Monetra current-month Generated Income: ${money(repMon.currentMonthGeneratedIncomeUsd,4)}.`);
   lines.push('');
+  lines.push('## Long-term memory');
+  lines.push('');
+  lines.push(`- Memory Vault: ${vaultManifest.runCount} immutable/hash-chained run record${vaultManifest.runCount===1?'':'s'} since ${vaultManifest.startedAt}.`);
+  lines.push(`- Latest vault record: \`${vaultManifest.latestRecord.recordPath}\`.`);
+  lines.push('- Operational history remains compact; the Memory Vault has no configured lifetime cap.');
+  lines.push('');
   lines.push('---');
   lines.push('This brief is deterministic. It does not invent explanations or investment decisions. Higher-level reasoning should be performed from `change-intelligence.json` plus the cited source artifacts.');
   lines.push('');
   return lines.join('\n');
 }
 
-for (const file of [PATHS.memory,PATHS.history,PATHS.latest,PATHS.brief]) ensureDir(file);
-fs.writeFileSync(PATHS.memory, JSON.stringify(memory,null,2)+'\n');
-fs.writeFileSync(PATHS.history, JSON.stringify(history,null,2)+'\n');
-fs.writeFileSync(PATHS.latest, JSON.stringify(latest,null,2)+'\n');
+for (const file of [PATHS.memory,PATHS.history,PATHS.latest,PATHS.brief,PATHS.vaultManifest]) ensureDir(file);
+writeJson(PATHS.memory, memory);
+writeJson(PATHS.history, history);
+writeJson(PATHS.latest, latest);
 fs.writeFileSync(PATHS.brief, buildBrief()+'\n');
 
 console.log('The Holding Observer complete.');
 console.log(`Mode: ${latest.mode}`);
 console.log(`Events: ${events.length}`);
 console.log(`Watch: ${watchNext.length}`);
+console.log(`Memory Vault runs: ${vaultManifest.runCount}`);
+console.log(`Memory Vault latest: ${vaultManifest.latestRecord.recordPath}`);
 console.log(`Snapshot hash: ${snapshotHash}`);
