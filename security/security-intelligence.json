@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T20:27:13.944Z",
+  "generatedAt": "2026-08-13T20:27:53.356Z",
   "status": "green",
   "headline": "No high or critical security findings detected in this scan.",
   "severityCounts": {
@@ -13,11 +13,27 @@
   },
   "source": {
     "filesScanned": 119,
-    "bytesScanned": 4865819,
+    "bytesScanned": 4866228,
     "siteProbes": 6
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "b12314bb19a7361c4c6100bfece254d3a82335bb3ee25ba507d37117b460b553",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/refresh-cognitive-stack.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/refresh-cognitive-stack.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "3e3ae4499d2b0ed6407dc06049dcc2bd28f621372a9e14e03ccc322fb7951788",
+          "currentSha256": "af08c5bf3bd795cc94ef972b633bec7fbe1a1809b4a0a297fcd1b0bb5e60f9e6"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "5830e87ed0ad40bc2cf8d284ad872db8fe2f445575f1ff2124a74e96a1d4b6c2",
         "severity": "medium",
@@ -32,22 +48,21 @@
           "currentSha256": "959aca516dff8a7f633191b02c9fd0115d869758c20d3d23fde09540dabaa4d4"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
-      "id": "5830e87ed0ad40bc2cf8d284ad872db8fe2f445575f1ff2124a74e96a1d4b6c2",
+      "id": "b12314bb19a7361c4c6100bfece254d3a82335bb3ee25ba507d37117b460b553",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
+      "file": ".github/workflows/refresh-cognitive-stack.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-brain-chatgpt-bridge.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/refresh-cognitive-stack.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "8843b5dd01bf9187f60881a9c8e4aaad5f4574b13ee9ac31590e22c27f4b1cc3",
-        "currentSha256": "959aca516dff8a7f633191b02c9fd0115d869758c20d3d23fde09540dabaa4d4"
+        "previousSha256": "3e3ae4499d2b0ed6407dc06049dcc2bd28f621372a9e14e03ccc322fb7951788",
+        "currentSha256": "af08c5bf3bd795cc94ef972b633bec7fbe1a1809b4a0a297fcd1b0bb5e60f9e6"
       }
     },
     {
@@ -514,12 +529,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "9579213b6f14ce8b4196bdddd9eabff2e6f44bc298ea963c546ca5cd1089328a",
+    "snapshotHash": "e2247bb8c0325ab84d807e6ef0fbca5e6296f79f9613399c0178ad2fc589dcfa",
     "securityVault": {
-      "runCount": 58,
+      "runCount": 59,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T20-27-13-944Z-9579213b6f.json",
-      "latestRecordHash": "6457b9d65eb7ea6e3b251fa6abad63bbbbfd46c8c6e3a58027f07185f22d49e9",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T20-27-53-356Z-e2247bb8c0.json",
+      "latestRecordHash": "3c5579246a8522b1034d3b28602b7e131eaf739efd5da192725ea34c035ea6ba",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
