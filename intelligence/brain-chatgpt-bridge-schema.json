@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "the-holding://intelligence/brain-chatgpt-bridge/v0.1",
+  "title": "The Holding Brain ChatGPT Bridge v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "bridgeVersion",
+    "generatedAt",
+    "status",
+    "sourceBrain",
+    "currentPosture",
+    "whatChanged",
+    "cases",
+    "evidenceCatalog",
+    "interpretationContract",
+    "grounding",
+    "constraints",
+    "bridge"
+  ],
+  "properties": {
+    "version": {
+      "const": "0.1-chatgpt-bridge"
+    },
+    "bridgeVersion": {
+      "const": "0.1-deterministic-public-cognitive-handoff"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "watch",
+        "blocked"
+      ]
+    },
+    "sourceBrain": {
+      "type": "object"
+    },
+    "currentPosture": {
+      "type": "object"
+    },
+    "whatChanged": {
+      "type": "object"
+    },
+    "cases": {
+      "type": "array"
+    },
+    "evidenceCatalog": {
+      "type": "array"
+    },
+    "interpretationContract": {
+      "type": "object"
+    },
+    "grounding": {
+      "type": "object"
+    },
+    "constraints": {
+      "type": "object"
+    },
+    "bridge": {
+      "type": "object"
+    }
+  }
+}
