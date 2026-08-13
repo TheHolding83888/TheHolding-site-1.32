@@ -1,0 +1,94 @@
+{
+  "version": "0.2.1-memory-vault-corrections",
+  "observerVersion": "0.2.1-deterministic-memory-vault-corrections",
+  "createdAt": "2026-08-13T16:28:21.494Z",
+  "lastUpdatedAt": "2026-08-13T16:28:21.494Z",
+  "policy": {
+    "mode": "append-only-annotation-ledger",
+    "originalRecordsImmutable": true,
+    "interpretationPrecedence": "correction-ledger-over-target-record-field",
+    "note": "Corrections annotate historical interpretation without rewriting or deleting immutable Memory Vault records."
+  },
+  "entryCount": 1,
+  "entries": [
+    {
+      "id": "legacy-v0.1-null-normalization-2026-08-13",
+      "type": "historical-interpretation-correction",
+      "severity": "methodology-integrity",
+      "annotatedAt": "2026-08-13T16:28:21.494Z",
+      "targetRecord": {
+        "path": "intelligence/memory-vault/2026/08/2026-08-13T15-19-01-108Z-80c4442961.json",
+        "hash": "8273065c54b63b99e8fc60ab91eca385d7a5a2354a2c1a6b38ef578de4d60105",
+        "recordType": "imported-v0.1-observer-memory"
+      },
+      "evidenceRecord": {
+        "path": "intelligence/memory-vault/2026/08/2026-08-13T16-12-38-203Z-a4d8ac7e95.json",
+        "hash": "5cfd0a6f3e59e4394d056b15751916219d57cfcb92d44641296f673f6d7423ad",
+        "recordType": "observer-run"
+      },
+      "sourceCompositeHash": "2c0d9f118a7b67dbfada8885e8a2ec64f5b6747a23f958dfa9b001d9d294a8c2",
+      "cause": "Observer v0.1 numeric normalization accepted null-like values through JavaScript Number(...), which can convert null/empty values to zero. Observer v0.2 corrected the finite-number guard.",
+      "interpretation": "The affected values were unknown/null in the canonical source state, not measured zero values. The original Vault record remains immutable and must be read together with this annotation.",
+      "fields": [
+        {
+          "path": [
+            "currentSnapshot",
+            "productivity",
+            "companies",
+            "defitea.eth",
+            "aprHistoricalAveragePct"
+          ],
+          "recordedValue": 0,
+          "canonicalInterpretation": null
+        },
+        {
+          "path": [
+            "currentSnapshot",
+            "productivity",
+            "engines",
+            "liquity_lqty",
+            "aprLatestPct"
+          ],
+          "recordedValue": 0,
+          "canonicalInterpretation": null
+        },
+        {
+          "path": [
+            "currentSnapshot",
+            "productivity",
+            "engines",
+            "pendle_spendle",
+            "aprLatestPct"
+          ],
+          "recordedValue": 0,
+          "canonicalInterpretation": null
+        },
+        {
+          "path": [
+            "currentSnapshot",
+            "stableCapital",
+            "referenceApyPct"
+          ],
+          "recordedValue": 0,
+          "canonicalInterpretation": null
+        },
+        {
+          "path": [
+            "currentSnapshot",
+            "stableIndex",
+            "companies",
+            "Monetra.eth",
+            "currentReferenceApyPct"
+          ],
+          "recordedValue": 0,
+          "canonicalInterpretation": null
+        }
+      ],
+      "futureReasoningRule": "When a correction entry targets a historical field, reasoning layers must prefer canonicalInterpretation from the correction ledger over the superseded field interpretation in the immutable target record."
+    }
+  ],
+  "integrity": {
+    "algorithm": "sha256",
+    "ledgerHash": "0623f58291d65ec7417e436a313f106d2e6aa62e23e1be255ad28c09a4bf1d6b"
+  }
+}
