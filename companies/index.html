@@ -1,5 +1,6 @@
 
 <!DOCTYPE html>
+<!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
 <!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
 <!-- companies.html · build 2026-08-merge · seal dedup, OS status, display names · build 2026-08-10 · Portal narrative + Intelligence Layer v0.2.2 · navigation spacing polish -->
@@ -7043,7 +7044,7 @@
                     <div class="cc-status"><span class="cc-dot"></span><span data-i18n="card.live">Live</span></div>
                 </div>
                 <div class="cc-name">Aerocvxyb.eth</div>
-                <div class="cc-sub" data-i18n="card6.sub">A long-lock productive company combining Aerodrome, Velodrome and Yield Basis across Base, Optimism and Ethereum.</div>
+                <div class="cc-sub" data-i18n="card6.sub">A long-lock productive company combining 2-year ICP NNS staking with Aerodrome, Velodrome and Yield Basis across multiple networks.</div>
                 <div class="cc-metrics">
                     <div>
                         <div class="cc-metric-label" data-i18n="card.tvl">Company TVL</div>
@@ -7051,7 +7052,7 @@
                     </div>
                     <div>
                         <div class="cc-metric-label" data-i18n="card.cashflow">APR</div>
-                        <div class="cc-metric-value" id="apr-aerocvxyb">~22.5%</div>
+                        <div class="cc-metric-value" id="apr-aerocvxyb">~16.5%</div>
                     </div>
                 </div>
                 
@@ -7839,7 +7840,7 @@ const COMPANY_PROTOCOLS = {
     '05081966.eth':  ['Curve','Aero','Frax'],
     'dinaz.eth':     ['Yield Basis'],
     '0x5860...83CA8.eth': ['Bitcoin','ICP','Aero','Velodrome'],
-    'aerocvxyb.eth': ['Aero','Velodrome','Yield Basis']
+    'aerocvxyb.eth': ['ICP','Aero','Velodrome','Yield Basis']
 ,
     "Rook's portfolio": ['Bitcoin','Ethereum','Aave','Aero','Convex','Curve','Yield Basis'],
     'Monetra.eth': ['Aave','Curve','f(x) Protocol','Inverse','Sky','Yearn','Lido','Liquity','Frax'],
@@ -8426,7 +8427,8 @@ const COMPANY_BOOK = {
             ]
         },
         { id: 'velodrome-finance', qty: 6971.925992122776, entry: 0.076936 },
-        { id: 'yield-basis', qty: 12499.999999999958, entry: 0.08061164888740173 }
+        { id: 'yield-basis', qty: 12499.999999999958, entry: 0.08061164888740173 },
+        { id: 'internet-computer', qty: 1296, entry: 1.133, costBasisUsd: 1468.368, incomeMode: 'nns-2y-voting-rewards' }
     ]
 ,
     "Rook's portfolio": [
@@ -10221,11 +10223,15 @@ function renderFramework(lang) {
     const apr5Fallback = pvSum > 0 ? (pvICP*ICP_NNS_UI_FALLBACK + pvAERO*27.04 + pvVELO*24.96) / pvSum : 17;
     const APR_5860 = resolvedCompanyApr('0x5860...83CA8.eth', apr5Fallback, { en:'~' + apr5Fallback.toFixed(1) + '%', ru:'~' + apr5Fallback.toFixed(1) + '%' });
     const FOUNDATION_5860 = companyFoundation('0x5860...83CA8.eth');
+    // Company #006 now includes a 2-year NNS ICP position. ICP_NNS_UI_FALLBACK
+    // is only a first-paint/failure fallback; the weekly Productivity Layer
+    // supplies the current official ICP Dashboard estimate after each run.
+    const pv6ICP  = 1296 * Number(prices['internet-computer'] || 0);
     const pv6AERO = 9230.248119304428 * Number(prices['aerodrome-finance'] || 0);
     const pv6VELO = 6971.925992122776 * Number(prices['velodrome-finance'] || 0);
     const pv6YB   = 12499.999999999958 * Number(prices['yield-basis'] || 0);
-    const pv6Sum  = pv6AERO + pv6VELO + pv6YB;
-    const apr6Fallback = pv6Sum > 0 ? (pv6AERO*27.04 + pv6VELO*24.96 + pv6YB*4.16) / pv6Sum : 22.5;
+    const pv6Sum  = pv6ICP + pv6AERO + pv6VELO + pv6YB;
+    const apr6Fallback = pv6Sum > 0 ? (pv6ICP*ICP_NNS_UI_FALLBACK + pv6AERO*27.04 + pv6VELO*24.96 + pv6YB*4.16) / pv6Sum : 16.5;
     const APR_AEROCRVYB = resolvedCompanyApr('aerocvxyb.eth', apr6Fallback, { en:'~' + apr6Fallback.toFixed(1) + '%', ru:'~' + apr6Fallback.toFixed(1) + '%' });
     const FOUNDATION_AEROCRVYB = companyFoundation('aerocvxyb.eth', '2023-08-18');
     const pv7AERO = 4330.755126048871 * Number(prices['aerodrome-finance'] || 0);
@@ -10261,7 +10267,7 @@ function renderFramework(lang) {
           reg:'005', ...APR_5860, foundedISO:FOUNDATION_5860.iso, founded:{ en:FOUNDATION_5860.en, ru:FOUNDATION_5860.ru }, arch:{ en:'The Holding Standard', ru:'Стандарт The Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
         { nm: 'aerocvxyb.eth', val: tvl6, cost: F6.cost, pnl: F6.pnl, pct: F6.pct, href: null,
           cat: { en: 'The Holding Standard', ru: 'Стандарт The Holding' }, since: { en: FOUNDATION_AEROCRVYB.sinceEn, ru: FOUNDATION_AEROCRVYB.sinceRu },
-          reg:'006', ...APR_AEROCRVYB, foundedISO:FOUNDATION_AEROCRVYB.iso, founded:{ en:FOUNDATION_AEROCRVYB.en, ru:FOUNDATION_AEROCRVYB.ru }, arch:{ en:'The Holding Standard', ru:'Стандарт The Holding' }, protocols:3, status:{ en:'Productive', ru:'Активна' } },
+          reg:'006', ...APR_AEROCRVYB, foundedISO:FOUNDATION_AEROCRVYB.iso, founded:{ en:FOUNDATION_AEROCRVYB.en, ru:FOUNDATION_AEROCRVYB.ru }, arch:{ en:'The Holding Standard', ru:'Стандарт The Holding' }, protocols:4, status:{ en:'Productive', ru:'Активна' } },
         { nm: "Rook's portfolio", val: tvl7, cost: F7.cost, pnl: F7.pnl, pct: F7.pct, href: null,
           cat: { en: 'Custom Build', ru: 'Индивидуальная сборка' }, since: { en: FOUNDATION_ROOK.sinceEn, ru: FOUNDATION_ROOK.sinceRu },
           reg:'007', ...APR_ROOK, foundedISO:FOUNDATION_ROOK.iso, founded:{ en:FOUNDATION_ROOK.en, ru: FOUNDATION_ROOK.ru }, arch:{ en:'Custom Build', ru:'Индивидуальная сборка' }, protocols:8, status:{ en:'Productive', ru:'Активна' } },
@@ -10735,7 +10741,7 @@ function renderFramework(lang) {
             'card4.founded': 'Est. Jan 3, 2025',
             'card4.sub': 'One of The Holding’s core onchain companies — a diversified system of long-term DeFi positions designed to generate durable cash flow onchain.',
             'card5.sub': 'A Bitcoin-reserve company combining maximum-term ICP staking with long-lock positions in Aerodrome and Velodrome.',
-            'card6.sub': 'A long-lock productive company combining Aerodrome, Velodrome and Yield Basis across Base, Optimism and Ethereum.',
+            'card6.sub': 'A long-lock productive company combining 2-year ICP NNS staking with Aerodrome, Velodrome and Yield Basis across multiple networks.',
             'card7.sub': 'A custom onchain company combining reserve capital with productive veAERO, vlCVX, veCRV and Yield Basis liquidity across multiple networks.',
             'card.tvl': 'Company TVL',
             'card.cashflow': 'APR',
@@ -10979,7 +10985,7 @@ function renderFramework(lang) {
             'card4.founded': 'Осн. 3 января 2025',
             'card4.sub': 'Одна из ключевых ончейн-компаний The Holding — диверсифицированная система долгосрочных DeFi-позиций, созданная для устойчивой генерации денежного потока ончейн.',
             'card5.sub': 'Компания с резервом в Bitcoin, максимальным NNS-стейкингом ICP и долгосрочными ve-позициями в Aerodrome и Velodrome.',
-            'card6.sub': 'Продуктивная компания с долгосрочными позициями в Aerodrome, Velodrome и Yield Basis на Base, Optimism и Ethereum.',
+            'card6.sub': 'Продуктивная компания, сочетающая 2-летний NNS-стейкинг ICP с долгосрочными позициями в Aerodrome, Velodrome и Yield Basis.',
             'card7.sub': 'Индивидуальная ончейн-компания, сочетающая резервный капитал с продуктивными veAERO, vlCVX, veCRV и ликвидностью Yield Basis в нескольких сетях.',
             'card.tvl': 'TVL компании',
             'card.cashflow': 'APR',
