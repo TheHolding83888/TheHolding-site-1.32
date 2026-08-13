@@ -2,20 +2,20 @@
   "version": "0.1-chatgpt-bridge",
   "bridgeVersion": "0.1-deterministic-public-cognitive-handoff",
   "engineVersion": "0.2-chatgpt-bridge-engine-upstream-bound",
-  "generatedAt": "2026-08-13T22:16:54.013Z",
+  "generatedAt": "2026-08-13T22:26:37.033Z",
   "status": "watch",
   "sourceBrain": {
     "file": "intelligence/brain-intelligence.json",
     "version": "0.1-grounded-reasoning-gateway",
     "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-    "generatedAt": "2026-08-13T22:16:53.835Z",
+    "generatedAt": "2026-08-13T22:26:36.851Z",
     "ageHours": 0,
     "mode": "delta",
     "status": "watch",
-    "headline": "10 evidence-bound reasoning case(s) are active across economic and security memory.",
-    "sha256": "90dd68469e3d17ffaa27cbfe1cc091aa8201426f18e04060cf68e4aa8610ea7f",
-    "snapshotHash": "f82d08a10728edba1261e6dafa1902a6b447179ec10cf49a44aa854e635c2aa0",
-    "inputCompositeHash": "1e1453201f58dbd131a46a2038d134daa7f7a4e71d2c11e4e23eebdf3faf7f86"
+    "headline": "9 evidence-bound reasoning case(s) are active across economic and security memory.",
+    "sha256": "2905d7192235bc574e38ac2789d2ddcb3a7cd7db7843c8537c3994f110cfa33d",
+    "snapshotHash": "885e183b7149724da4c62ac7715c027880ad3fe6245b875fdf18d4a552cc014c",
+    "inputCompositeHash": "7f99056a1e0505e4fbfec8379c1525ed8b8d1ee3e359cd4b3e3d3bb47cd8a5f6"
   },
   "currentPosture": {
     "observer": {
@@ -32,9 +32,9 @@
       "correctionPrecedence": "correction-ledger-over-target-record-field"
     },
     "security": {
-      "status": "watch",
+      "status": "green",
       "critical": 0,
-      "high": 1,
+      "high": 0,
       "medium": 38,
       "newFindingEvents": 0,
       "resolvedFindingEvents": 0
@@ -45,28 +45,10 @@
     "confidence": "high",
     "evidenceIds": [
       "EV-6b3e33bf36180372",
-      "EV-b6a4663b6749e2cd"
+      "EV-7435114995f4bef2"
     ]
   },
   "cases": [
-    {
-      "caseId": "security-40c1723d5c7e0f1e315242c9",
-      "domain": "security",
-      "severity": "high",
-      "category": "shell-eval",
-      "entity": ".github/workflows/update-learning-loop.yml",
-      "signal": "Workflow contains shell eval.",
-      "deterministicWhyItMatters": "Eval can turn untrusted data into executable shell code.",
-      "deterministicWhatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "deterministicAction": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "high",
-      "confidence": "high",
-      "actionMode": "proposal-only",
-      "evidenceIds": [
-        "EV-b5d3e5afae85ddde"
-      ]
-    },
     {
       "caseId": "353fd15f649ee569d551d74c",
       "domain": "security",
@@ -82,7 +64,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-377957072e70f970"
+        "EV-446e6bced4740309"
       ]
     },
     {
@@ -100,7 +82,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-6db03fb01982c4d3"
+        "EV-5d80cc296aa19102"
       ]
     },
     {
@@ -266,13 +248,13 @@
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-377957072e70f970",
+      "evidenceId": "EV-446e6bced4740309",
       "source": "security/security-intelligence.json",
       "pointer": "/currentFindings",
       "selector": "severity=medium&category=dom-innerhtml",
-      "observedAt": "2026-08-13T22:16:53.002Z",
+      "observedAt": "2026-08-13T22:26:36.004Z",
       "interpretation": "derived-from-direct-findings",
-      "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
+      "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
       "value": {
         "derivedCount": 31,
         "representative": [
@@ -299,23 +281,13 @@
       "note": "Count is derived deterministically from current Security Sentinel findings."
     },
     {
-      "evidenceId": "EV-6b3e33bf36180372",
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged",
-      "selector": null,
-      "observedAt": "2026-08-13T16:45:11.222Z",
-      "interpretation": "direct",
-      "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
-      "value": []
-    },
-    {
-      "evidenceId": "EV-6db03fb01982c4d3",
+      "evidenceId": "EV-5d80cc296aa19102",
       "source": "security/security-intelligence.json",
       "pointer": "/currentFindings",
       "selector": "severity=medium&category=external-script-no-sri",
-      "observedAt": "2026-08-13T22:16:53.002Z",
+      "observedAt": "2026-08-13T22:26:36.004Z",
       "interpretation": "derived-from-direct-findings",
-      "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
+      "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
       "value": {
         "derivedCount": 7,
         "representative": [
@@ -342,6 +314,16 @@
       "note": "Count is derived deterministically from current Security Sentinel findings."
     },
     {
+      "evidenceId": "EV-6b3e33bf36180372",
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/whatChanged",
+      "selector": null,
+      "observedAt": "2026-08-13T16:45:11.222Z",
+      "interpretation": "direct",
+      "sourceSha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
+      "value": []
+    },
+    {
       "evidenceId": "EV-6edd5b129e52af3d",
       "source": "intelligence/change-intelligence.json",
       "pointer": "/watchNext/5",
@@ -359,6 +341,19 @@
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
+      "evidenceId": "EV-7435114995f4bef2",
+      "source": "security/security-intelligence.json",
+      "pointer": "/whatChanged",
+      "selector": null,
+      "observedAt": "2026-08-13T22:26:36.004Z",
+      "interpretation": "direct",
+      "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
+      "value": {
+        "newFindings": [],
+        "resolvedFindings": []
+      }
+    },
+    {
       "evidenceId": "EV-96cad769529c2fbb",
       "source": "intelligence/change-intelligence.json",
       "pointer": "/watchNext/3",
@@ -374,40 +369,6 @@
         "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
       },
       "note": "Direct normalized watch item emitted by The Holding Observer."
-    },
-    {
-      "evidenceId": "EV-b5d3e5afae85ddde",
-      "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings/0",
-      "selector": null,
-      "observedAt": "2026-08-13T22:16:53.002Z",
-      "interpretation": "direct",
-      "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-      "value": {
-        "id": "40c1723d5c7e0f1e315242c970e5754d71a38af5cb08d25148e0d2677a11c2c1",
-        "severity": "high",
-        "category": "shell-eval",
-        "file": ".github/workflows/update-learning-loop.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Workflow contains shell eval.",
-        "whyItMatters": "Eval can turn untrusted data into executable shell code.",
-        "evidence": null
-      },
-      "note": "Direct current finding emitted by The Holding Security Sentinel."
-    },
-    {
-      "evidenceId": "EV-b6a4663b6749e2cd",
-      "source": "security/security-intelligence.json",
-      "pointer": "/whatChanged",
-      "selector": null,
-      "observedAt": "2026-08-13T22:16:53.002Z",
-      "interpretation": "direct",
-      "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-      "value": {
-        "newFindings": [],
-        "resolvedFindings": []
-      }
     },
     {
       "evidenceId": "EV-ba7d5d8cb40a74a2",
@@ -523,16 +484,16 @@
         {
           "key": "security",
           "file": "security/security-intelligence.json",
-          "sha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-          "generatedAt": "2026-08-13T22:16:53.002Z",
+          "sha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
+          "generatedAt": "2026-08-13T22:26:36.004Z",
           "exactByteMatch": true,
           "packagedRawContent": false
         },
         {
           "key": "securityMemory",
           "file": "security/security-memory.json",
-          "sha256": "cab116e82e5434928973cdaf921e92da44a2c7ba047f4a25e1262aaa73fef4c5",
-          "generatedAt": "2026-08-13T22:16:53.002Z",
+          "sha256": "1ffa44e1b4dc323f00e56d2725a59e712db8a9f1ffac36e7ed16e486b0e2623f",
+          "generatedAt": "2026-08-13T22:26:36.004Z",
           "exactByteMatch": true,
           "packagedRawContent": false
         }
@@ -545,7 +506,7 @@
       }
     },
     "allCasesMapped": true,
-    "evidenceCount": 12,
+    "evidenceCount": 11,
     "policy": {
       "file": "intelligence/brain-chatgpt-bridge-policy.json",
       "version": "0.1-chatgpt-bridge-policy",
@@ -586,9 +547,9 @@
     "secretsIncludedByDesign": false
   },
   "bridge": {
-    "semanticKey": "ec3cedd87a9f2b597b5f385fa1d8e8d4842f681cbb1acd1abd527e4fa2ab8e42",
-    "instanceKey": "885984f85a7c11880c24d039ed6d84654d0eb09c342cccea31d65911d5925429",
-    "outputSnapshotHash": "70ec79c0e789a60839f1ed8ca581dc7e61fe46a28872018484217b01726b11eb",
+    "semanticKey": "e33603b1d30058c9b47817edae1e09f5e7fa4fa82b246cf8d74a8e679fe0016a",
+    "instanceKey": "4ee0b49b59e78b833919d578a6d1a6867b2e2f83e4d29405cfd07dfbe592803e",
+    "outputSnapshotHash": "3bfa2adbc56fed5659901878d6c96ee5c2446d35a7d3cb74565379b9b51e3dc4",
     "manualTrigger": "When the owner asks ChatGPT to check/interpret the Brain, read this live Bridge first and keep conclusions inside its evidence/action boundaries."
   }
 }

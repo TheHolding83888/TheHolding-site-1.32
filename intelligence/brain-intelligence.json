@@ -1,10 +1,10 @@
 {
   "version": "0.1-grounded-reasoning-gateway",
   "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-  "generatedAt": "2026-08-13T22:16:53.835Z",
+  "generatedAt": "2026-08-13T22:26:36.851Z",
   "mode": "delta",
   "status": "watch",
-  "headline": "10 evidence-bound reasoning case(s) are active across economic and security memory.",
+  "headline": "9 evidence-bound reasoning case(s) are active across economic and security memory.",
   "currentPosture": {
     "observer": {
       "mode": "delta",
@@ -20,9 +20,9 @@
       "correctionPrecedence": "correction-ledger-over-target-record-field"
     },
     "security": {
-      "status": "watch",
+      "status": "green",
       "critical": 0,
-      "high": 1,
+      "high": 0,
       "medium": 38,
       "newFindingEvents": 0,
       "resolvedFindingEvents": 0
@@ -48,26 +48,13 @@
             "newFindings": [],
             "resolvedFindings": []
           },
-          "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-          "observedAt": "2026-08-13T22:16:53.002Z",
+          "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
+          "observedAt": "2026-08-13T22:26:36.004Z",
           "interpretation": "direct"
         }
       ]
     },
     "whyItMatters": [
-      {
-        "id": "security-40c1723d5c7e0f1e315242c9",
-        "entity": ".github/workflows/update-learning-loop.yml",
-        "answer": "Eval can turn untrusted data into executable shell code.",
-        "evidenceRefs": [
-          {
-            "source": "security/security-intelligence.json",
-            "pointer": "/currentFindings/0",
-            "selector": null,
-            "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367"
-          }
-        ]
-      },
       {
         "id": "353fd15f649ee569d551d74c",
         "entity": "31 current findings",
@@ -77,7 +64,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings",
             "selector": "severity=medium&category=dom-innerhtml",
-            "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367"
+            "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd"
           }
         ]
       },
@@ -90,7 +77,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings",
             "selector": "severity=medium&category=external-script-no-sri",
-            "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367"
+            "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd"
           }
         ]
       },
@@ -188,12 +175,6 @@
     ],
     "whatFollows": [
       {
-        "id": "security-40c1723d5c7e0f1e315242c9",
-        "entity": ".github/workflows/update-learning-loop.yml",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
         "id": "353fd15f649ee569d551d74c",
         "entity": "31 current findings",
         "answer": "A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.",
@@ -249,14 +230,6 @@
       }
     ],
     "whatShouldBeDone": [
-      {
-        "id": "security-40c1723d5c7e0f1e315242c9",
-        "entity": ".github/workflows/update-learning-loop.yml",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "high",
-        "actionMode": "proposal-only"
-      },
       {
         "id": "353fd15f649ee569d551d74c",
         "entity": "31 current findings",
@@ -333,42 +306,6 @@
   },
   "reasoningCases": [
     {
-      "id": "security-40c1723d5c7e0f1e315242c9",
-      "domain": "security",
-      "severity": "high",
-      "category": "shell-eval",
-      "entity": ".github/workflows/update-learning-loop.yml",
-      "signal": "Workflow contains shell eval.",
-      "whyItMatters": "Eval can turn untrusted data into executable shell code.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "high",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "security/security-intelligence.json",
-          "pointer": "/currentFindings/0",
-          "value": {
-            "id": "40c1723d5c7e0f1e315242c970e5754d71a38af5cb08d25148e0d2677a11c2c1",
-            "severity": "high",
-            "category": "shell-eval",
-            "file": ".github/workflows/update-learning-loop.yml",
-            "line": null,
-            "entity": null,
-            "summary": "Workflow contains shell eval.",
-            "whyItMatters": "Eval can turn untrusted data into executable shell code.",
-            "evidence": null
-          },
-          "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-          "observedAt": "2026-08-13T22:16:53.002Z",
-          "interpretation": "direct",
-          "note": "Direct current finding emitted by The Holding Security Sentinel."
-        }
-      ]
-    },
-    {
       "id": "353fd15f649ee569d551d74c",
       "domain": "security",
       "severity": "medium",
@@ -409,8 +346,8 @@
               }
             ]
           },
-          "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-          "observedAt": "2026-08-13T22:16:53.002Z",
+          "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
+          "observedAt": "2026-08-13T22:26:36.004Z",
           "interpretation": "derived-from-direct-findings",
           "selector": "severity=medium&category=dom-innerhtml",
           "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -458,8 +395,8 @@
               }
             ]
           },
-          "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-          "observedAt": "2026-08-13T22:16:53.002Z",
+          "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
+          "observedAt": "2026-08-13T22:26:36.004Z",
           "interpretation": "derived-from-direct-findings",
           "selector": "severity=medium&category=external-script-no-sri",
           "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -694,25 +631,6 @@
   "evidenceLedger": [
     {
       "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings/0",
-      "value": {
-        "id": "40c1723d5c7e0f1e315242c970e5754d71a38af5cb08d25148e0d2677a11c2c1",
-        "severity": "high",
-        "category": "shell-eval",
-        "file": ".github/workflows/update-learning-loop.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Workflow contains shell eval.",
-        "whyItMatters": "Eval can turn untrusted data into executable shell code.",
-        "evidence": null
-      },
-      "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-      "observedAt": "2026-08-13T22:16:53.002Z",
-      "interpretation": "direct",
-      "note": "Direct current finding emitted by The Holding Security Sentinel."
-    },
-    {
-      "source": "security/security-intelligence.json",
       "pointer": "/currentFindings",
       "value": {
         "derivedCount": 31,
@@ -737,8 +655,8 @@
           }
         ]
       },
-      "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-      "observedAt": "2026-08-13T22:16:53.002Z",
+      "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
+      "observedAt": "2026-08-13T22:26:36.004Z",
       "interpretation": "derived-from-direct-findings",
       "selector": "severity=medium&category=dom-innerhtml",
       "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -769,8 +687,8 @@
           }
         ]
       },
-      "sourceSha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-      "observedAt": "2026-08-13T22:16:53.002Z",
+      "sourceSha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
+      "observedAt": "2026-08-13T22:26:36.004Z",
       "interpretation": "derived-from-direct-findings",
       "selector": "severity=medium&category=external-script-no-sri",
       "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -888,7 +806,7 @@
         "file": "intelligence/change-intelligence.json",
         "sha256": "7a086174aacd19b06f215b879839a3f33c516f74c257230031c62ac203de24a7",
         "generatedAt": "2026-08-13T16:45:11.222Z",
-        "ageHours": 5.529,
+        "ageHours": 5.69,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
@@ -896,22 +814,22 @@
         "file": "intelligence/system-memory.json",
         "sha256": "81f89a71d12590b94689998e6fa1dc05e81cfb3e791e7854f23cf9c5d4008174",
         "generatedAt": "2026-08-13T16:45:11.222Z",
-        "ageHours": 5.529,
+        "ageHours": 5.69,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "security": {
         "file": "security/security-intelligence.json",
-        "sha256": "623c91a8b89e3e3fc49b2deb490896e338fc239b26c9f32710d48e6c9628e367",
-        "generatedAt": "2026-08-13T22:16:53.002Z",
+        "sha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
+        "generatedAt": "2026-08-13T22:26:36.004Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "securityMemory": {
         "file": "security/security-memory.json",
-        "sha256": "cab116e82e5434928973cdaf921e92da44a2c7ba047f4a25e1262aaa73fef4c5",
-        "generatedAt": "2026-08-13T22:16:53.002Z",
+        "sha256": "1ffa44e1b4dc323f00e56d2725a59e712db8a9f1ffac36e7ed16e486b0e2623f",
+        "generatedAt": "2026-08-13T22:26:36.004Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
@@ -942,8 +860,8 @@
   },
   "bridge": {
     "purpose": "Canonical evidence-bound reasoning packet for future human/AI interpretation. Read this before opening large memory artifacts.",
-    "inputCompositeHash": "1e1453201f58dbd131a46a2038d134daa7f7a4e71d2c11e4e23eebdf3faf7f86",
-    "snapshotHash": "f82d08a10728edba1261e6dafa1902a6b447179ec10cf49a44aa854e635c2aa0",
-    "previousInputCompositeHash": "eb24794b405de45b27218a6e4a700312cd226fbc72d9ba70a24eac06f8dd588f"
+    "inputCompositeHash": "7f99056a1e0505e4fbfec8379c1525ed8b8d1ee3e359cd4b3e3d3bb47cd8a5f6",
+    "snapshotHash": "885e183b7149724da4c62ac7715c027880ad3fe6245b875fdf18d4a552cc014c",
+    "previousInputCompositeHash": "1e1453201f58dbd131a46a2038d134daa7f7a4e71d2c11e4e23eebdf3faf7f86"
   }
 }
