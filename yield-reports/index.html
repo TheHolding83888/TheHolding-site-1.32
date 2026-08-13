@@ -1,12 +1,13 @@
 
 <!DOCTYPE html>
+<!-- yield-reports.html · v1.1 · Defitea + Monetra Autonomous Reporting · 2026-08-13 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yield Reports — The Holding</title>
     <link rel="canonical" href="https://theholding.ai/yield-reports">
-    <meta name="description" content="Monthly yield reports from The Holding's income-generating funds. Transparent, long-term capital performance.">
+    <meta name="description" content="Monthly income reports from The Holding — Defitea cash flow and Monetra stable-capital generated income, tracked through the autonomous Reporting Layer.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -28,6 +29,8 @@
             --green:        #0a7c4e;
             --green-dim:    rgba(10,124,78,0.08);
             --defitea:      #0a7c4e;
+            --monetra:      #9a792b;
+            --monetra-dim:  rgba(154,121,43,0.08);
             --nav-bg:       rgba(249,248,246,0.92);
             --row-hover:    rgba(0,0,0,0.02);
             --row-total:    rgba(10,124,78,0.04);
@@ -51,6 +54,8 @@
             --green:        #4ade80;
             --green-dim:    rgba(74,222,128,0.08);
             --defitea:      #10b981;
+            --monetra:      #e6c877;
+            --monetra-dim:  rgba(230,200,119,0.08);
             --nav-bg:       rgba(10,10,10,0.9);
             --row-hover:    rgba(255,255,255,0.025);
             --row-total:    rgba(16,185,129,0.04);
@@ -910,6 +915,78 @@
 
         .report-link:hover { color: var(--text); border-color: var(--text-dim); }
 
+
+        /* ─── MONETRA REPORTS ─── */
+        .monetra-reports {
+            position: relative;
+            padding: 8rem 2.5rem;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .monetra-reports::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(70% 55% at 92% 4%, var(--monetra-dim), transparent 68%),
+                linear-gradient(180deg, transparent, rgba(168,132,44,0.018));
+        }
+        .monetra-reports .dr-inner { position: relative; z-index: 1; }
+        .monetra-reports .dr-fund-dot { background: var(--monetra); border-radius: 2px; }
+        .monetra-reports .dr-live-apr-value,
+        .monetra-reports .kpi-value.green,
+        .monetra-reports .td-yield,
+        .monetra-reports .mobile-bar-pct { color: var(--monetra); }
+        .monetra-reports .bar-fill,
+        .monetra-reports .mobile-bar-fill,
+        .monetra-reports .inline-bar { background: var(--monetra); }
+        .monetra-reports .row-total {
+            background: var(--monetra-dim) !important;
+            border-top-color: color-mix(in srgb, var(--monetra) 28%, transparent) !important;
+        }
+        .monetra-method-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 1px;
+            margin: -2.3rem 0 4.2rem;
+            border: 1px solid var(--border);
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .monetra-method-item {
+            background: var(--surface);
+            padding: 1rem 1.1rem;
+            text-align: center;
+        }
+        .monetra-method-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.54rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            margin-bottom: 0.35rem;
+        }
+        .monetra-method-value {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            line-height: 1.45;
+        }
+        .monetra-live-note {
+            color: var(--monetra);
+            border-color: color-mix(in srgb, var(--monetra) 30%, transparent);
+            background: var(--monetra-dim);
+        }
+        .monetra-reports .report-link { color: var(--monetra); border-color: color-mix(in srgb, var(--monetra) 35%, transparent); }
+        .pending-grid.single { grid-template-columns: 1fr; max-width: 760px; }
+
+        @media (max-width: 900px) {
+            .monetra-reports { padding: 5rem 1.5rem; }
+            .monetra-method-strip { grid-template-columns: 1fr; margin-top: -1.8rem; }
+        }
+
         /* ─── PENDING FUNDS ─── */
         .pending-funds {
             padding: 8rem 2.5rem;
@@ -1156,7 +1233,7 @@
             .td-apy   { font-size: 0.78rem; text-align: center; }
             .row-total .td-month { font-size: 1.2rem; }
             .row-total .td-yield { font-size: 1.5rem; }
-            .philosophy, .funds-overview, .defitea-reports, .pending-funds { padding: 5rem 1.5rem; }
+            .philosophy, .funds-overview, .defitea-reports, .monetra-reports, .pending-funds { padding: 5rem 1.5rem; }
         }
 
         @media (max-width: 600px) {
@@ -1197,7 +1274,7 @@
             <h1 class="hero-title">Yield<br><em>Reports</em></h1>
 
             <p class="hero-desc">
-                The Holding operates dedicated income-generating funds that turn onchain economic activity into recurring cash flow. Jan–Jul 2026 preserve the original reported Defitea history. From the automated tracking start, the Reporting Layer adds a live monthly reference model built from time-weighted productive TVL and validated Reference APR — while keeping price appreciation separate.
+                The Holding operates dedicated income-generating funds with distinct reporting semantics. Defitea tracks recurring DeFi cash flow. Monetra tracks stable-capital income whether distributed or compounded. Jan–Jul 2026 preserve the original reported Defitea history; autonomous daily snapshots now build both monthly reporting series while keeping asset-price and stablecoin price effects separate.
             </p>
         </div>
     </section>
@@ -1233,13 +1310,13 @@
                     </div>
                     <div class="phil-principle">
                         <div class="pp-num">02</div>
-                        <div class="pp-title">Cash-flow, not price</div>
-                        <div class="pp-text">Reported months track realised income. Automated periods model cash-flow capacity from productive TVL and validated Reference APR. Asset-price performance remains separate.</div>
+                        <div class="pp-title">Income, not price</div>
+                        <div class="pp-text">Defitea reports cash-flow economics. Monetra reports generated stable-capital income, including value that remains compounded inside a strategy. Asset-price and stablecoin price effects remain separate.</div>
                     </div>
                     <div class="phil-principle">
                         <div class="pp-num">03</div>
                         <div class="pp-title">No protocol-level detail</div>
-                        <div class="pp-text">This page focuses on aggregate cash-flow performance. Position-level information is available through the Defitea page and public trackers.</div>
+                        <div class="pp-text">This page focuses on aggregate fund-level income. Position-level information remains in the dedicated Defitea and Monetra interfaces and their underlying intelligence layers.</div>
                     </div>
                     <div class="phil-principle">
                         <div class="pp-num">04</div>
@@ -1312,7 +1389,7 @@
                         <span class="fund-mechanic">Vault Deposits</span>
                     </div>
                 </div>
-                <div class="fund-status-badge badge-building">Building</div>
+                <div class="fund-status-badge badge-active">Reporting</div>
             </div>
 
             <!-- Fructus -->
@@ -1582,46 +1659,123 @@
         </div>
     </section>
 
+    <!-- Monetra Reports -->
+    <section class="monetra-reports" id="monetra-reports">
+        <div class="dr-inner">
+            <div class="dr-header reveal">
+                <div>
+                    <div class="section-tag">Stable Capital Reporting</div>
+                    <h2 class="dr-heading">Monetra Fund Reports</h2>
+                </div>
+                <div class="dr-header-meta">
+                    <div class="dr-fund-label">
+                        <div class="dr-fund-dot"></div>
+                        Monetra · 2026
+                    </div>
+                    <div class="dr-live-apr" title="Current validated Stable Capital Reference APY from The Holding Stable Capital Intelligence Layer">
+                        <span class="dr-live-apr-label">Current Reference APY</span>
+                        <strong class="dr-live-apr-value" id="monetra-reference-apy">4.52%</strong>
+                        <span class="dr-live-apr-note">Auto-updated daily</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dr-kpis reveal">
+                <div class="kpi-card">
+                    <div class="kpi-label">MTD Generated Income</div>
+                    <div class="kpi-value green" id="monetra-mtd-income">—</div>
+                    <div class="kpi-sub">Reference income · compounding included</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">MTD Yield</div>
+                    <div class="kpi-value green" id="monetra-mtd-yield">—</div>
+                    <div class="kpi-sub" id="monetra-mtd-period">Current month · provisional</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Current Capital</div>
+                    <div class="kpi-value" id="monetra-current-capital">$100.12</div>
+                    <div class="kpi-sub">Market principal + claimable</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Reference APY</div>
+                    <div class="kpi-value" id="monetra-kpi-apy">4.52%</div>
+                    <div class="kpi-sub">Validated productive capacity</div>
+                </div>
+            </div>
+
+            <div class="reporting-status-line" id="monetra-reporting-status">Monetra daily reporting activates with the next Reporting Layer run.</div>
+
+            <div class="monetra-method-strip reveal">
+                <div class="monetra-method-item">
+                    <div class="monetra-method-label">Income basis</div>
+                    <div class="monetra-method-value">Daily Stable Capital × validated Reference APY</div>
+                </div>
+                <div class="monetra-method-item">
+                    <div class="monetra-method-label">Compounding</div>
+                    <div class="monetra-method-value">Counted as generated income even when it stays inside the position</div>
+                </div>
+                <div class="monetra-method-item">
+                    <div class="monetra-method-label">Price effect</div>
+                    <div class="monetra-method-value">Stablecoin / depeg movement remains outside generated income</div>
+                </div>
+            </div>
+
+            <div class="dr-chart-section reveal" id="monetra-chart-section">
+                <div class="chart-label" style="margin-bottom:1.5rem">Monthly Generated Yield</div>
+                <div class="bar-chart-wrap">
+                    <div class="bar-chart" id="monetraBarChart" style="padding-left:0">
+                        <div class="bar-item"><div class="bar-fill" style="height:4%;opacity:.25"><span class="bar-pct">Tracking</span><span class="bar-month">Aug*</span></div></div>
+                    </div>
+                </div>
+                <div class="bar-chart-mobile" id="monetraMobileChart">
+                    <div class="mobile-bar-row"><div class="mobile-bar-month">Aug*</div><div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:4%;opacity:.4"></div></div><div class="mobile-bar-pct">—</div></div>
+                </div>
+            </div>
+
+            <div class="reveal">
+                <div class="year-switcher monetra-year-switcher">
+                    <button class="year-btn active" onclick="switchMonetraYear(2026, this)">2026</button>
+                    <button class="year-btn" onclick="switchMonetraYear(2027, this)">2027</button>
+                </div>
+                <div class="report-table-wrap">
+                    <table class="report-table monetra-table">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th class="right">Avg Capital</th>
+                                <th class="right">Generated Income</th>
+                                <th class="right">Monthly Yield</th>
+                                <th class="right">Ref APY</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monetra-table-2026">
+                            <tr><td class="td-month" colspan="5" style="text-align:center;padding:3rem 2rem;color:var(--text-faint);font-family:'DM Mono',monospace;font-size:.78rem;letter-spacing:.08em;">Tracking starts with the next daily Reporting Layer run.</td></tr>
+                        </tbody>
+                        <tbody id="monetra-table-2027" style="display:none">
+                            <tr><td class="td-month" colspan="5" style="text-align:center;padding:3rem 2rem;color:var(--text-faint);font-family:'DM Mono',monospace;font-size:.78rem;letter-spacing:.08em;">No reports yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="report-disclaimer">
+                    <p>Monetra Generated Income is an autonomous reference model built from daily productive Stable Capital and the validated Stable Capital Reference APY. The APY is converted to its daily equivalent, so income is counted whether it is distributed, separately claimable, or economically compounded inside a strategy. This is not realised cash-flow accounting. Stablecoin/depeg price movement and Net Market P&amp;L remain separate. The current month is provisional. The first tracking month counts only observed reporting days — the system does not fabricate income for days before autonomous monthly tracking began. The Embedded Yield Ledger remains an independent observed-income audit layer and can replace reference-model periods once full-fund flow-safe comparability matures.</p>
+                </div>
+
+                <a href="/monetra/" class="report-link">View Monetra →</a>
+            </div>
+        </div>
+    </section>
+
     <!-- Pending Funds -->
     <section class="pending-funds">
         <div class="pending-inner">
             <div class="reveal">
                 <div class="section-tag">Coming Next</div>
-                <h2 class="pending-heading">Two more funds.<br>Two more income streams.</h2>
-                <p class="pending-sub">As Monetra and Fructus grow and stabilise, monthly reports will be introduced for each. Building takes time. Reporting before there's something meaningful to report serves no one.</p>
+                <h2 class="pending-heading">One more fund.<br>One more income stream.</h2>
+                <p class="pending-sub">Fructus remains the next income family to graduate into autonomous reporting. Building takes time. Reporting begins only when the underlying income model is mature enough to be measured honestly.</p>
             </div>
 
-            <div class="pending-grid reveal">
-                <!-- Monetra -->
-                <div class="pending-card">
-                    <div class="pending-card-header">
-                        <div class="pending-cube cube-monetra" style="background:#111111"></div>
-                        <div class="pending-name">Monetra</div>
-                    </div>
-                    <p class="pending-desc">
-                        The stable capital fund is actively being seeded. Capital will be deployed 
-                        across stablecoin lending, stable liquidity pools, staked stables, 
-                        and AI-agent-managed yield strategies on Base and other networks. 
-                        Reports will begin once TVL reaches a meaningful threshold 
-                        and positions demonstrate consistent monthly output.
-                    </p>
-                    <div class="pending-timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-text">Fund structure and strategy defined</div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-text">Initial capital deployment underway</div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-dot" style="background:rgba(255,255,255,0.15)"></div>
-                            <div class="timeline-text" style="color:rgba(244,244,242,0.2)">Monthly reporting — pending TVL growth</div>
-                        </div>
-                    </div>
-                    <div class="pending-status">Reports pending</div>
-                </div>
-
+            <div class="pending-grid single reveal">
                 <!-- Fructus -->
                 <div class="pending-card">
                     <div class="pending-card-header">
@@ -1807,6 +1961,82 @@
             }
         })();
 
+        // Monetra autonomous Stable Capital reporting
+        (function () {
+            function finite(v) {
+                if (v === null || v === undefined || v === '') return NaN;
+                var n = Number(v); return Number.isFinite(n) ? n : NaN;
+            }
+            function money(v, approximate) {
+                var n = finite(v); if (!Number.isFinite(n)) return '—';
+                return (approximate ? '~' : '') + '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+            }
+            function percent(v, approximate) {
+                var n = finite(v); if (!Number.isFinite(n)) return '—';
+                return (approximate ? '~' : '') + (n > 0 ? '+' : '') + n.toFixed(2) + '%';
+            }
+            function apy(v) {
+                var n = finite(v); return Number.isFinite(n) ? n.toFixed(2) + '%' : '—';
+            }
+            function monthShort(key) {
+                var m=Number(String(key||'').slice(5,7));
+                return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]||'';
+            }
+            function monthLong(key) {
+                var y=Number(String(key||'').slice(0,4)),m=Number(String(key||'').slice(5,7));
+                if(!y||!m) return key||'';
+                return new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(y,m-1,1)));
+            }
+            function renderChart(months) {
+                var desktop=document.getElementById('monetraBarChart');
+                var mobile=document.getElementById('monetraMobileChart');
+                if (!desktop || !mobile) return;
+                if (!months.length) return;
+                var max=Math.max.apply(null,months.map(function(m){return finite(m.monthlyYieldPct)||0;}).concat([0.05]));
+                desktop.innerHTML=months.map(function(m){
+                    var v=finite(m.monthlyYieldPct)||0, live=m.status==='provisional', h=Math.max(3,Math.min(100,v/max*82));
+                    return '<div class="bar-item"><div class="bar-fill" style="height:'+h+'%;opacity:'+(live?'.52':'.82')+'"><span class="bar-pct">'+(live?'~':'+')+v.toFixed(2)+'%</span><span class="bar-month">'+monthShort(m.month)+(live?'*':'')+'</span></div></div>';
+                }).join('');
+                mobile.innerHTML=months.map(function(m){
+                    var v=finite(m.monthlyYieldPct)||0, live=m.status==='provisional', w=Math.max(3,v/max*100);
+                    return '<div class="mobile-bar-row" style="opacity:'+(live?'.76':'1')+'"><div class="mobile-bar-month">'+monthShort(m.month)+(live?'*':'')+'</div><div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:'+w+'%"></div></div><div class="mobile-bar-pct">'+(live?'~':'+')+v.toFixed(2)+'%</div></div>';
+                }).join('');
+            }
+            function renderTable(year, months) {
+                var tbody=document.getElementById('monetra-table-'+year); if(!tbody) return;
+                if(!months.length){tbody.innerHTML='<tr><td class="td-month" colspan="5" style="text-align:center;padding:3rem 2rem;color:var(--text-faint);font-family:\'DM Mono\',monospace;font-size:.78rem;letter-spacing:.08em;">No reports yet.</td></tr>';return;}
+                tbody.innerHTML=months.map(function(m){
+                    var live=m.status==='provisional';
+                    return '<tr class="'+(live?'row-provisional':'')+'"><td class="td-month">'+monthLong(m.month).replace(' '+year,'')+(live?'<span class="report-mode-badge live">Live</span>':'<span class="report-mode-badge">Auto</span>')+'</td><td class="td-num">'+money(m.averageStableCapitalUsd,true)+'</td><td class="td-yield">'+money(m.generatedIncomeUsd,true)+'</td><td class="td-apy">'+percent(m.monthlyYieldPct,true)+'</td><td class="td-apy">'+apy(m.averageReferenceApyPct)+'</td></tr>';
+                }).join('');
+            }
+            async function syncMonetraReporting() {
+                if(!window.THProductivity) return;
+                var reporting=await window.THProductivity.loadReporting();
+                var fund=window.THProductivity.getFundReporting('Monetra.eth',reporting);
+                if(!fund) return;
+                var latest=fund.latestSnapshot||{};
+                var months2026=window.THProductivity.getReportingMonths('Monetra.eth',2026,reporting);
+                var months2027=window.THProductivity.getReportingMonths('Monetra.eth',2027,reporting);
+                var current=months2026.slice().reverse().find(function(m){return m.status==='provisional';})||null;
+                var el=document.getElementById('monetra-mtd-income'); if(el) el.textContent=current?money(current.generatedIncomeUsd,true):'—';
+                el=document.getElementById('monetra-mtd-yield'); if(el) el.textContent=current?percent(current.monthlyYieldPct,true):'—';
+                el=document.getElementById('monetra-current-capital'); if(el) el.textContent=money(latest.currentCapitalUsd,false);
+                el=document.getElementById('monetra-reference-apy'); if(el) el.textContent=apy(latest.referenceApyPct);
+                el=document.getElementById('monetra-kpi-apy'); if(el) el.textContent=apy(latest.referenceApyPct);
+                el=document.getElementById('monetra-mtd-period'); if(el) el.textContent=current?monthLong(current.month)+' · provisional':'No live month';
+                el=document.getElementById('monetra-reporting-status');
+                if(el){
+                    if(current) el.textContent=monthLong(current.month)+' is live · '+current.sampleDays+' daily snapshot'+(current.sampleDays===1?'':'s')+' · generated income includes compounding · closes automatically next month';
+                    else el.textContent='Closed monthly history · Monetra daily Reporting Layer active';
+                }
+                renderChart(months2026); renderTable(2026,months2026); renderTable(2027,months2027);
+                console.log('[Reporting Layer] Monetra synced:',months2026.length+' months');
+            }
+            if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',syncMonetraReporting,{once:true});
+            else syncMonetraReporting();
+        })();
+
         // Year switcher
         function switchYear(year, btn) {
             document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
@@ -1816,6 +2046,13 @@
             });
             const target = document.getElementById('table-body-' + year);
             if (target) target.style.display = '';
+        }
+
+        function switchMonetraYear(year, btn) {
+            document.querySelectorAll('.monetra-year-switcher .year-btn').forEach(function(b){ b.classList.remove('active'); });
+            btn.classList.add('active');
+            document.querySelectorAll('[id^="monetra-table-"]').forEach(function(tb){ tb.style.display='none'; });
+            var target=document.getElementById('monetra-table-'+year); if(target) target.style.display='';
         }
 
         // Theme toggle
