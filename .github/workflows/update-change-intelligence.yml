@@ -35,6 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check intelligence/change-intelligence-engine.mjs
+          test -s intelligence/memory-vault/corrections.json
           test -s companies/productivity-data.json
           test -s companies/rewards-data.json
           test -s companies/stable-capital-data.json
@@ -58,6 +59,7 @@ jobs:
           const memory = JSON.parse(fs.readFileSync('intelligence/system-memory.json','utf8'));
           const history = JSON.parse(fs.readFileSync('intelligence/change-history.json','utf8'));
           const manifest = JSON.parse(fs.readFileSync('intelligence/memory-vault/manifest.json','utf8'));
+          const corrections = JSON.parse(fs.readFileSync('intelligence/memory-vault/corrections.json','utf8'));
 
           function stableStringify(value) {
             if (value === null || typeof value !== 'object') return JSON.stringify(value);
@@ -78,10 +80,10 @@ jobs:
             }
           }
 
-          if (latest.version !== '0.2-autonomous-change-intelligence-memory-vault') throw new Error('unexpected intelligence version');
-          if (latest.observerVersion !== '0.2-deterministic-memory-vault') throw new Error('unexpected Observer version');
-          if (memory.version !== '0.2-system-memory') throw new Error('unexpected memory version');
-          if (history.version !== '0.2-change-history') throw new Error('unexpected history version');
+          if (latest.version !== '0.2.1-autonomous-change-intelligence-memory-vault') throw new Error('unexpected intelligence version');
+          if (latest.observerVersion !== '0.2.1-deterministic-memory-vault-corrections') throw new Error('unexpected Observer version');
+          if (memory.version !== '0.2.1-system-memory') throw new Error('unexpected memory version');
+          if (history.version !== '0.2.1-change-history') throw new Error('unexpected history version');
           if (manifest.version !== '0.2-memory-vault-manifest') throw new Error('unexpected Memory Vault version');
 
           if (!latest.bridge?.snapshotHash || latest.bridge.snapshotHash !== memory.snapshotHash) throw new Error('snapshot hash mismatch');
@@ -129,6 +131,15 @@ jobs:
             throw new Error('first Memory Vault record must have null previous hash');
           }
 
+          if (corrections.version !== '0.2.1-memory-vault-corrections') throw new Error('unexpected correction ledger version');
+          if (!Array.isArray(corrections.entries) || corrections.entryCount !== corrections.entries.length) throw new Error('correction ledger entries invalid');
+          const correctionCore = {...corrections};
+          delete correctionCore.integrity;
+          const correctionHash = sha256Text(stableStringify(correctionCore));
+          if (correctionHash !== corrections.integrity?.ledgerHash) throw new Error('correction ledger integrity mismatch');
+          if (corrections.policy?.originalRecordsImmutable !== true) throw new Error('correction ledger immutability policy missing');
+          if (latest.bridge?.memoryVault?.corrections?.ledgerHash !== corrections.integrity.ledgerHash) throw new Error('bridge/correction hash mismatch');
+          if (history.lifetime?.memoryCorrectionCount !== corrections.entryCount) throw new Error('history correction count mismatch');
           console.log('Change Intelligence + Memory Vault validation OK.');
           console.log('Mode:', latest.mode);
           console.log('Changes:', latest.whatChanged.length);
