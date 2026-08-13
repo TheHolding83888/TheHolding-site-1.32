@@ -1,0 +1,82 @@
+name: The Holding UI Regression Sentinel
+
+on:
+  workflow_dispatch:
+    inputs:
+      enforce:
+        description: 'Fail the Action when a regression is detected (v0.1 default is observer-only)'
+        required: false
+        type: boolean
+        default: false
+  push:
+    branches:
+      - main
+    paths:
+      - 'companies/index.html'
+      - 'companies/**/*.js'
+      - 'companies/productivity-data.json'
+      - 'companies/rewards-data.json'
+      - 'companies/stable-index-data.json'
+      - 'ui-regression/**'
+      - '.github/workflows/ui-regression-sentinel.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-regression-sentinel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  observe-ui:
+    name: Observe Companies UI
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+
+      - name: Install pinned Playwright runtime
+        run: |
+          npm install --no-save --no-package-lock @playwright/test@1.62.0
+          npx playwright install --with-deps chromium
+
+      - name: Start read-only local site
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory . > "$RUNNER_TEMP/ui-sentinel-http.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/ui-sentinel-http.pid"
+          for i in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:4173/companies/ >/dev/null; then
+              echo "Local Companies surface is ready."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Local site did not become ready."
+          cat "$RUNNER_TEMP/ui-sentinel-http.log" || true
+          exit 1
+
+      - name: Run UI Regression Sentinel v0.1
+        env:
+          UI_SENTINEL_URL: http://127.0.0.1:4173/companies/
+          UI_SENTINEL_REPORT_PATH: ${{ runner.temp }}/ui-regression-report.json
+          UI_SENTINEL_ENFORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.enforce || false }}
+        run: node ui-regression/ui-regression-sentinel-v0.1.mjs
+
+      - name: Print deterministic report
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "$RUNNER_TEMP/ui-regression-report.json" ]; then
+            cat "$RUNNER_TEMP/ui-regression-report.json"
+          else
+            echo "No report file was produced."
+          fi
