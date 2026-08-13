@@ -1,109 +1,94 @@
 
 <!DOCTYPE html>
-<!-- yield-reports.html · v1.1 · Defitea + Monetra Autonomous Reporting · 2026-08-13 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yield Reports — The Holding</title>
-    <link rel="canonical" href="https://theholding.ai/yield-reports">
-    <meta name="description" content="Monthly income reports from The Holding — Defitea cash flow and Monetra stable-capital generated income, tracked through the autonomous Reporting Layer.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Monetra — Stablecoin Yield Fund | Stable Capital Engine | TheHolding.ai</title>
+    <meta name="title" content="Monetra — Stablecoin Yield Fund | TheHolding.ai">
+    <meta name="description" content="Monetra is the stablecoin yield engine of TheHolding.ai. Non-directional stable yield from lending markets and stablecoin pools. Capital preservation, reliable cash flow, sustainable returns across all market conditions.">
+    <meta name="keywords" content="stablecoin yield, DeFi lending, USDC yield, stable APY, stablecoin fund, non-custodial yield, DeFi stable strategies, Aave yield, Morpho lending, stablecoin compounding, crypto cash flow">
+    <meta name="author" content="TheHolding.ai">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow">
+    <meta name="bingbot" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="geo.region" content="GLOBAL">
+    <link rel="canonical" href="https://theholding.ai/monetra">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://theholding.ai/monetra">
+    <meta property="og:title" content="Monetra — Stablecoin Yield Engine | TheHolding.ai">
+    <meta property="og:description" content="The stable capital layer of TheHolding.ai. Sustainable yield from stablecoin lending and liquidity strategies. No directional risk. No speculation. Just consistent compounding.">
+    <meta property="og:site_name" content="TheHolding.ai">
+    <meta property="og:locale" content="en_US">
+    <meta property="article:author" content="TheHolding.ai">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://theholding.ai/monetra">
+    <meta name="twitter:title" content="Monetra — Stablecoin Yield Engine | TheHolding.ai">
+    <meta name="twitter:description" content="Non-directional stable yield. Lending markets, stablecoin pools, auto-compounding vaults. The liquidity layer of The Holding.">
+    <meta name="twitter:site" content="@defitea_">
+    <meta name="twitter:creator" content="@defitea_">
+
+    <!-- AI/LLM Crawlers -->
+    <meta name="ai:title" content="Monetra — Stablecoin Yield Fund by TheHolding.ai">
+    <meta name="ai:description" content="Monetra generates non-directional yield from stablecoin lending markets, liquidity pools, and auto-compounding vaults. Part of TheHolding.ai five-fund architecture. No directional market risk.">
+    <meta name="ai:topic" content="Stablecoin Yield, DeFi Lending, Stable Capital Management, Non-Custodial Finance">
+    <meta name="ai:category" content="Finance, Cryptocurrency, DeFi, Stablecoin Strategies">
+    <meta name="ai:entities" content="Aave, Morpho, Compound, Curve, USDC, USDT, DAI, fxSAVE, f(x) Protocol, TheHolding.ai">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"FinancialProduct","name":"Monetra","alternateName":"Monetra Stablecoin Yield Fund","description":"Non-directional stablecoin yield fund by TheHolding.ai. Generates sustainable yield from DeFi lending markets and stablecoin liquidity pools without directional market risk.","url":"https://theholding.ai/monetra","provider":{"@type":"Organization","name":"TheHolding.ai","url":"https://theholding.ai"},"category":"Stablecoin Yield Strategy"}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TheHolding.ai","item":"https://theholding.ai"},{"@type":"ListItem","position":2,"name":"Monetra","item":"https://theholding.ai/monetra"}]}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebPage","name":"Monetra — Stablecoin Yield Fund","description":"The stablecoin yield engine of TheHolding.ai.","url":"https://theholding.ai/monetra","isPartOf":{"@type":"WebSite","name":"TheHolding.ai","url":"https://theholding.ai"}}
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            /* Light theme (default) */
-            --bg:           #f9f8f6;
-            --bg-2:         #f2f0ec;
-            --bg-3:         #eceae4;
-            --surface:      #ffffff;
-            --border:       rgba(0,0,0,0.08);
-            --border-mid:   rgba(0,0,0,0.13);
-            --text:         #1a1a1a;
-            --text-dim:     rgba(26,26,26,0.55);
-            --text-faint:   rgba(26,26,26,0.35);
-            --green:        #0a7c4e;
-            --green-dim:    rgba(10,124,78,0.08);
-            --defitea:      #0a7c4e;
-            --monetra:      #9a792b;
-            --monetra-dim:  rgba(154,121,43,0.08);
-            --nav-bg:       rgba(249,248,246,0.92);
-            --row-hover:    rgba(0,0,0,0.02);
-            --row-total:    rgba(10,124,78,0.04);
-            --row-total-bd: rgba(10,124,78,0.2);
-            --kpi-bg:       #ffffff;
-            --kpi-hover:    #f5f3ef;
-            --pending-bg:   #ffffff;
-            --table-head:   rgba(0,0,0,0.025);
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        [data-theme="dark"] {
-            --bg:           #0a0a0a;
-            --bg-2:         #141414;
-            --bg-3:         #1c1c1c;
-            --surface:      #111111;
-            --border:       rgba(255,255,255,0.07);
-            --border-mid:   rgba(255,255,255,0.13);
-            --text:         #f4f4f2;
-            --text-dim:     rgba(244,244,242,0.55);
-            --text-faint:   rgba(244,244,242,0.28);
-            --green:        #4ade80;
-            --green-dim:    rgba(74,222,128,0.08);
-            --defitea:      #10b981;
-            --monetra:      #e6c877;
-            --monetra-dim:  rgba(230,200,119,0.08);
-            --nav-bg:       rgba(10,10,10,0.9);
-            --row-hover:    rgba(255,255,255,0.025);
-            --row-total:    rgba(16,185,129,0.04);
-            --row-total-bd: rgba(16,185,129,0.20);
-            --kpi-bg:       #1a1a1a;
-            --kpi-hover:    #111111;
-            --pending-bg:   #1a1a1a;
-            --table-head:   rgba(255,255,255,0.025);
+        :root {
+            --black:       #0a0a0a;
+            --black-soft:  #111111;
+            --black-mid:   #1a1a1a;
+            --surface:     #161616;
+            --surface-2:   #1e1e1e;
+            --border:      rgba(255,255,255,0.08);
+            --border-mid:  rgba(255,255,255,0.14);
+            --white:       #f5f5f3;
+            --white-dim:   rgba(245,245,243,0.55);
+            --white-faint: rgba(245,245,243,0.25);
+            --silver:      #c8c8c8;
+            --accent:      #e8e0d0;
+            --accent-dim:  rgba(232,224,208,0.15);
+            --green-pos:   #4ade80;
+            --green-dim:   rgba(74,222,128,0.12);
         }
 
         html { scroll-behavior: smooth; }
 
         body {
             font-family: 'Instrument Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            background: var(--black);
+            color: var(--white);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            transition: background 0.3s ease, color 0.3s ease;
-        }
-
-        /* ─── THEME TOGGLE ─── */
-        .theme-toggle {
-            background: none;
-            border: 1px solid var(--border-mid);
-            border-radius: 20px;
-            padding: 0.35rem 0.85rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text-faint);
-            transition: all 0.3s;
-        }
-
-        .theme-toggle:hover {
-            border-color: var(--text-faint);
-            color: var(--text-dim);
-        }
-
-        .toggle-icon {
-            font-size: 0.8rem;
-            line-height: 1;
         }
 
         /* ─── NAV ─── */
@@ -111,66 +96,75 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 100;
-            padding: 1.5rem 2.5rem;
+            padding: 1.4rem 2.5rem;
+            background: rgba(10,10,10,0.88);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--nav-bg);
-            backdrop-filter: blur(24px);
-            border-bottom: 1px solid var(--border);
         }
-
         .nav-back {
-            color: var(--text-dim);
-            text-decoration: none;
             font-size: 0.78rem;
-            letter-spacing: 0.12em;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
+            color: var(--white-faint);
+            text-decoration: none;
             transition: color 0.3s;
         }
-        .nav-back:hover { color: var(--text); }
-
-        .nav-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.1rem;
-            font-weight: 400;
-            color: var(--text-dim);
-        }
-
+        .nav-back:hover { color: var(--white); }
         .nav-breadcrumb {
-            font-size: 0.75rem;
-            color: var(--text-faint);
-            letter-spacing: 0.06em;
+            font-size: 0.82rem;
+            color: var(--white-faint);
+            letter-spacing: 0.05em;
         }
         .nav-breadcrumb a {
-            color: var(--text-faint);
+            color: var(--white-dim);
             text-decoration: none;
             transition: color 0.3s;
+            font-weight: 400;
         }
-        .nav-breadcrumb a:hover { color: var(--text-dim); }
+        .nav-breadcrumb a:hover { color: var(--white); }
 
         /* ─── HERO ─── */
         .hero {
-            padding: 13rem 2.5rem 8rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 10rem 2.5rem 6rem;
             position: relative;
             overflow: hidden;
-            background: var(--bg);
         }
 
+        /* Subtle grid texture */
         .hero::before {
             content: '';
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(var(--border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 80px 80px;
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        /* Glow orb */
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 20%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(200,200,200,0.04) 0%, transparent 70%);
             pointer-events: none;
         }
 
         .hero-inner {
             max-width: 1200px;
             margin: 0 auto;
+            width: 100%;
             position: relative;
             z-index: 1;
         }
@@ -178,68 +172,138 @@
         .hero-eyebrow {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-bottom: 2.5rem;
+            gap: 1.2rem;
+            margin-bottom: 3rem;
             opacity: 0;
             animation: fadeUp 0.8s ease 0.2s forwards;
         }
 
-        .hero-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--green);
-            animation: pulse 2.5s ease infinite;
+        .hero-cube {
+            width: 10px;
+            height: 10px;
+            background: var(--white);
+            border-radius: 1.5px;
+            flex-shrink: 0;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.8); }
-        }
-
-        .hero-eyebrow-text {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.72rem;
-            letter-spacing: 0.15em;
+        .hero-label {
+            font-size: 0.78rem;
+            letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: var(--text-faint);
+            color: var(--white-dim);
         }
 
         .hero-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(3.5rem, 9vw, 7.5rem);
+            font-size: clamp(5rem, 14vw, 11rem);
             font-weight: 300;
             letter-spacing: -0.04em;
-            line-height: 0.95;
-            margin-bottom: 2.5rem;
-            color: var(--text);
+            line-height: 0.9;
+            color: var(--white);
+            margin-bottom: 3rem;
             opacity: 0;
-            animation: fadeUp 0.9s ease 0.3s forwards;
+            animation: fadeUp 0.9s ease 0.35s forwards;
         }
 
-        .hero-title em {
-            font-style: italic;
-            color: var(--text-dim);
-        }
-
-        .hero-desc {
-            max-width: 620px;
-            font-size: 1.05rem;
-            color: var(--text-dim);
-            line-height: 1.85;
+        .hero-subtitle {
+            max-width: 560px;
+            font-size: 1.15rem;
             font-weight: 300;
+            color: var(--white-dim);
+            line-height: 1.8;
+            margin-bottom: 2rem;
             opacity: 0;
-            animation: fadeUp 0.9s ease 0.45s forwards;
+            animation: fadeUp 0.9s ease 0.5s forwards;
         }
 
-        /* ─── PHILOSOPHY ─── */
-        .philosophy {
-            padding: 8rem 2.5rem;
-            background: var(--bg-2);
-            border-top: 1px solid var(--border);
+        .hero-tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.35rem;
+            font-style: italic;
+            font-weight: 300;
+            color: var(--silver);
+            letter-spacing: 0.04em;
+            margin-bottom: 4rem;
+            opacity: 0;
+            animation: fadeUp 0.9s ease 0.6s forwards;
         }
 
-        .philosophy-inner {
+        .hero-stats {
+            display: flex;
+            gap: 4rem;
+            opacity: 0;
+            animation: fadeUp 0.9s ease 0.65s forwards;
+        }
+
+        .hero-stat {
+            border-left: 1px solid var(--border-mid);
+            padding-left: 1.5rem;
+        }
+        .hero-stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 300;
+            color: var(--white);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .hero-stat-label {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+            margin-top: 0.4rem;
+        }
+
+        .hero-scroll {
+            position: absolute;
+            bottom: -1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            opacity: 0;
+            animation: fadeIn 1s ease 1.2s forwards;
+        }
+
+        .hero-scroll-line {
+            width: 1px;
+            height: 50px;
+            background: linear-gradient(180deg, transparent, var(--white-faint));
+            animation: scrollLine 2s ease-in-out infinite;
+        }
+
+        .hero-scroll-text {
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+        }
+
+        @keyframes scrollLine {
+            0%, 100% { opacity: 0.3; transform: scaleY(1); }
+            50% { opacity: 0.8; transform: scaleY(1.15); }
+        }
+
+        /* ─── MANDATE ─── */
+        .mandate {
+            padding: 10rem 2.5rem;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .mandate::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .mandate-inner {
             max-width: 1100px;
             margin: 0 auto;
             display: grid;
@@ -248,12 +312,13 @@
             align-items: start;
         }
 
+        .mandate-left {}
+
         .section-tag {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.68rem;
+            font-size: 0.72rem;
             letter-spacing: 0.18em;
             text-transform: uppercase;
-            color: var(--text-faint);
+            color: var(--white-faint);
             margin-bottom: 2rem;
             display: flex;
             align-items: center;
@@ -262,860 +327,773 @@
 
         .section-tag::before {
             content: '';
-            width: 18px;
+            width: 20px;
             height: 1px;
-            background: var(--text-faint);
+            background: var(--white-faint);
         }
 
-        .phil-heading {
+        .mandate-heading {
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(2rem, 4vw, 3rem);
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
             font-weight: 300;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-            margin-bottom: 2rem;
-        }
-
-        .phil-text {
-            font-size: 0.95rem;
-            color: var(--text-dim);
-            line-height: 1.9;
-            font-weight: 300;
-            margin-bottom: 1.2rem;
-        }
-
-        .phil-principles {
-            display: flex;
-            flex-direction: column;
-            padding-top: 1rem;
-        }
-
-        .phil-principle {
-            padding: 1.5rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .phil-principle:last-child { border-bottom: 1px solid var(--border); }
-
-        .pp-num {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--text-faint);
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.08em;
-        }
-
-        .pp-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.25rem;
-            font-weight: 400;
-            color: var(--text);
-            margin-bottom: 0.4rem;
-        }
-
-        .pp-text {
-            font-size: 0.85rem;
-            color: var(--text-faint);
-            line-height: 1.7;
-            font-weight: 300;
-        }
-
-        /* ─── FUNDS OVERVIEW ─── */
-        .funds-overview {
-            padding: 8rem 2.5rem;
-            background: var(--bg);
-            border-top: 1px solid var(--border);
-        }
-
-        .funds-overview-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .fo-header {
-            margin-bottom: 4rem;
-        }
-
-        .fo-heading {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 300;
-            letter-spacing: -0.02em;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-        }
-
-        .fo-sub {
-            font-size: 0.95rem;
-            color: var(--text-dim);
-            font-weight: 300;
-            max-width: 560px;
-            line-height: 1.8;
-        }
-
-        .fund-row {
-            display: grid;
-            grid-template-columns: 1.4rem 1fr auto;
-            gap: 0.75rem;
-            align-items: start;
-            padding: 2.5rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .fund-row:last-child { border-bottom: 1px solid var(--border); }
-
-        .fund-cube {
-            width: 11px;
-            height: 11px;
-            border-radius: 2px;
-            flex-shrink: 0;
-            margin-top: 0.8rem;
-        }
-
-        .fund-info {}
-
-        .fund-name-row {
-            display: flex;
-            align-items: baseline;
-            gap: 1rem;
-            margin-bottom: 0.4rem;
-        }
-
-        .fund-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.6rem;
-            font-weight: 400;
-            color: var(--text);
-            letter-spacing: -0.01em;
-        }
-
-        .fund-role-tag {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-faint);
-            padding: 0.25rem 0.6rem;
-            border: 1px solid var(--border-mid);
-            border-radius: 2px;
-        }
-
-        .fund-desc {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            line-height: 1.75;
-            font-weight: 300;
-            max-width: 680px;
-            margin-bottom: 0.8rem;
-        }
-
-        .fund-mechanics {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .fund-mechanic {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.68rem;
-            color: var(--text-faint);
-            background: rgba(255,255,255,0.04);
-            border: 1px solid var(--border);
-            padding: 0.25rem 0.65rem;
-            border-radius: 2px;
-            letter-spacing: 0.04em;
-        }
-
-        .fund-status-badge {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            padding: 0.35rem 0.8rem;
-            border-radius: 2px;
-            white-space: nowrap;
-            align-self: start;
-            margin-top: 0.5rem;
-        }
-
-        .badge-active {
-            color: var(--green);
-            border: 1px solid rgba(74,222,128,0.3);
-            background: var(--green-dim);
-        }
-
-        .badge-building {
-            color: var(--text-faint);
-            border: 1px solid var(--border-mid);
-        }
-
-        /* ─── DEFITEA REPORTS ─── */
-        .defitea-reports {
-            padding: 8rem 2.5rem;
-            background: var(--bg-2);
-            border-top: 1px solid var(--border);
-        }
-
-        .dr-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .dr-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 4rem;
-            gap: 2rem;
-        }
-
-        .dr-heading {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 300;
-            letter-spacing: -0.02em;
-            line-height: 1.2;
-        }
-
-        .dr-fund-label {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            font-family: 'DM Mono', monospace;
-            font-size: 0.68rem;
-            color: var(--text-faint);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .dr-fund-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 1.5px;
-            background: var(--defitea);
-        }
-
-        .dr-header-meta {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 0.7rem;
-        }
-
-        .dr-live-apr {
-            display: inline-flex;
-            align-items: baseline;
-            gap: 0.65rem;
-            padding: 0.55rem 0.8rem;
-            border: 1px solid var(--border-mid);
-            border-radius: 3px;
-            background: var(--surface);
-            white-space: nowrap;
-        }
-
-        .dr-live-apr-label, .dr-live-apr-note {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.58rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-faint);
-        }
-
-        .dr-live-apr-value {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.25rem;
-            line-height: 1;
-            color: var(--green);
-            font-weight: 500;
-        }
-
-        /* KPI cards */
-        .dr-kpis {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 5rem;
-        }
-
-        .kpi-card {
-            background: var(--kpi-bg);
-            padding: 2.5rem 2rem;
-            transition: background 0.3s;
-        }
-
-        .kpi-card:hover { background: var(--kpi-hover); }
-
-        .kpi-label {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text-faint);
-            margin-bottom: 1rem;
-        }
-
-        .kpi-value {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2.8rem;
-            font-weight: 300;
-            letter-spacing: -0.03em;
-            line-height: 1;
-            color: var(--text);
-            margin-bottom: 0.5rem;
-        }
-
-        .kpi-value.green { color: var(--green); }
-
-        .kpi-sub {
-            font-size: 0.78rem;
-            color: var(--text-faint);
-            font-weight: 300;
-        }
-
-
-
-        /* Reporting Layer state */
-        .report-mode-badge {
-            display: inline-block;
-            margin-left: 0.55rem;
-            padding: 0.18rem 0.42rem;
-            border: 1px solid var(--border-mid);
-            border-radius: 2px;
-            font-family: 'DM Mono', monospace;
-            font-size: 0.5rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-faint);
-            vertical-align: middle;
-        }
-        .report-mode-badge.live {
-            color: var(--green);
-            border-color: rgba(74,222,128,0.28);
-            background: var(--green-dim);
-        }
-        .row-provisional { opacity: 0.82; }
-        .row-reference .td-num::before { content: '~'; }
-        .reporting-status-line {
-            margin: -2.5rem 0 3.5rem;
-            font-family: 'DM Mono', monospace;
-            font-size: 0.62rem;
-            letter-spacing: 0.07em;
-            color: var(--text-faint);
-            line-height: 1.7;
-        }
-
-        /* Chart area */
-        .dr-chart-section {
-            margin-bottom: 5rem;
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 1.5rem;
-        }
-
-        .chart-label {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--text-faint);
-        }
-
-        /* bar-grid-label hidden everywhere */
-        .bar-grid-label { display: none; }
-        .chart-legend   { display: none; }
-
-        /* Desktop bar chart */
-        .bar-chart-wrap {
-            position: relative;
-        }
-
-        /* Percent grid lines */
-        .bar-grid {
-            position: absolute;
-            inset: 0 0 2.5rem 0;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .bar-grid-line {
-            position: absolute;
-            left: 0; right: 0;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .bar-grid-label {
-            position: absolute;
-            right: calc(100% + 0.5rem);
-            font-family: 'DM Mono', monospace;
-            font-size: 0.55rem;
-            color: var(--text-faint);
-            letter-spacing: 0.06em;
-            transform: translateY(50%);
-            white-space: nowrap;
-        }
-
-        .bar-chart {
-            display: flex;
-            align-items: flex-end;
-            gap: 0.55rem;
-            height: 180px;
-            padding-bottom: 2.5rem;
-            padding-left: 2.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .bar-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100%;
-            justify-content: flex-end;
-            position: relative;
-        }
-
-        .bar-fill {
-            width: 100%;
-            background: var(--defitea);
-            opacity: 0.75;
-            border-radius: 2px 2px 0 0;
-            transition: opacity 0.3s;
-            position: relative;
-        }
-
-        .bar-item:hover .bar-fill { opacity: 1; }
-
-        .bar-month {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.58rem;
-            color: var(--text-faint);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            position: absolute;
-            bottom: -2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-        }
-
-        .bar-pct {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.6rem;
-            color: var(--text-dim);
-            position: absolute;
-            top: -1.4rem;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-        }
-
-        /* Mobile chart — horizontal bars */
-        .bar-chart-mobile {
-            display: none;
-            flex-direction: column;
-            gap: 0;
-            padding-top: 0.5rem;
-        }
-
-        .mobile-bar-row {
-            display: grid;
-            grid-template-columns: 3rem 1fr 3rem;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .mobile-bar-row:last-child { border-bottom: 1px solid var(--border); }
-
-        .mobile-bar-month {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--text-faint);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .mobile-bar-track {
-            height: 8px;
-            background: var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .mobile-bar-fill {
-            height: 100%;
-            background: var(--defitea);
-            border-radius: 4px;
-            opacity: 0.8;
-        }
-
-        .mobile-bar-pct {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.1rem;
-            font-weight: 300;
-            color: var(--green);
-            text-align: right;
-            letter-spacing: -0.01em;
-        }
-
-        /* Report table */
-        .report-table-wrap {
-            border: 1px solid var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .report-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .report-table thead tr {
-            background: var(--table-head);
-            border-bottom: 1px solid var(--border-mid);
-        }
-
-        .report-table th {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            font-weight: 500;
-            padding: 1.2rem 2rem;
-            text-align: left;
-        }
-
-        .report-table th.right { text-align: right; }
-
-        .report-table tbody tr {
-            border-bottom: 1px solid var(--border);
-            transition: background 0.25s;
-        }
-
-        .report-table tbody tr:last-child { border-bottom: none; }
-        .report-table tbody tr:hover { background: var(--row-hover); }
-
-        .report-table td {
-            padding: 1.6rem 2rem;
-            vertical-align: middle;
-        }
-
-        .td-month {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.4rem;
-            font-weight: 500;
-            color: var(--text);
-            letter-spacing: -0.01em;
-        }
-
-        .td-num {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--text-dim);
-            text-align: right;
-        }
-
-        .td-yield {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.7rem;
-            font-weight: 500;
-            color: var(--green);
-            text-align: right;
-            letter-spacing: -0.02em;
-        }
-
-        .td-apy {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.92rem;
-            font-weight: 500;
-            color: var(--text-dim);
-            text-align: right;
-        }
-
-        .td-bar { width: 140px; }
-
-        .inline-bar {
-            height: 3px;
-            background: var(--defitea);
-            border-radius: 2px;
-            opacity: 0.6;
-        }
-
-        /* Totals row */
-        .row-total {
-            background: var(--row-total) !important;
-            border-top: 1px solid var(--row-total-bd) !important;
-        }
-
-        .row-total .td-month {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.8rem;
-            font-weight: 400;
-            color: var(--text);
-            font-style: italic;
-        }
-
-        .row-total .td-yield {
-            font-size: 2.1rem;
-            font-weight: 400;
-        }
-
-        .row-total .td-num,
-        .row-total .td-apy {
-            font-weight: 400;
-            font-size: 1rem;
-            color: var(--text);
-        }
-
-        /* Disclaimer */
-        .report-disclaimer {
-            margin-top: 2rem;
-            padding: 1.5rem 2rem;
-            border: 1px solid var(--border);
-            border-radius: 3px;
-            background: var(--row-hover);
-        }
-
-        .report-disclaimer p {
-            font-size: 0.78rem;
-            color: var(--text-faint);
-            line-height: 1.7;
-            font-weight: 300;
-        }
-
-        /* External link */
-        .report-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            margin-top: 2rem;
-            font-family: 'DM Mono', monospace;
-            font-size: 0.72rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            text-decoration: none;
-            border-bottom: 1px solid var(--border-mid);
-            padding-bottom: 0.2rem;
-            transition: color 0.3s, border-color 0.3s;
-        }
-
-        .report-link:hover { color: var(--text); border-color: var(--text-dim); }
-
-
-        /* ─── MONETRA REPORTS ─── */
-        .monetra-reports {
-            position: relative;
-            padding: 8rem 2.5rem;
-            background: var(--bg);
-            border-top: 1px solid var(--border);
-            overflow: hidden;
-        }
-        .monetra-reports::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            background:
-                radial-gradient(70% 55% at 92% 4%, var(--monetra-dim), transparent 68%),
-                linear-gradient(180deg, transparent, rgba(168,132,44,0.018));
-        }
-        .monetra-reports .dr-inner { position: relative; z-index: 1; }
-        .monetra-reports .dr-fund-dot { background: var(--monetra); border-radius: 2px; }
-        .monetra-reports .dr-live-apr-value,
-        .monetra-reports .kpi-value.green,
-        .monetra-reports .td-yield,
-        .monetra-reports .mobile-bar-pct { color: var(--monetra); }
-        .monetra-reports .bar-fill,
-        .monetra-reports .mobile-bar-fill,
-        .monetra-reports .inline-bar { background: var(--monetra); }
-        .monetra-reports .row-total {
-            background: var(--monetra-dim) !important;
-            border-top-color: color-mix(in srgb, var(--monetra) 28%, transparent) !important;
-        }
-        .monetra-method-strip {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0,1fr));
-            gap: 1px;
-            margin: -2.3rem 0 4.2rem;
-            border: 1px solid var(--border);
-            background: var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        .monetra-method-item {
-            background: var(--surface);
-            padding: 1rem 1.1rem;
-            text-align: center;
-        }
-        .monetra-method-label {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.54rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text-faint);
-            margin-bottom: 0.35rem;
-        }
-        .monetra-method-value {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            line-height: 1.45;
-        }
-        .monetra-live-note {
-            color: var(--monetra);
-            border-color: color-mix(in srgb, var(--monetra) 30%, transparent);
-            background: var(--monetra-dim);
-        }
-        .monetra-reports .report-link { color: var(--monetra); border-color: color-mix(in srgb, var(--monetra) 35%, transparent); }
-        .pending-grid.single { grid-template-columns: 1fr; max-width: 760px; }
-
-        @media (max-width: 900px) {
-            .monetra-reports { padding: 5rem 1.5rem; }
-            .monetra-method-strip { grid-template-columns: 1fr; margin-top: -1.8rem; }
-        }
-
-        /* ─── PENDING FUNDS ─── */
-        .pending-funds {
-            padding: 8rem 2.5rem;
-            background: var(--bg);
-            border-top: 1px solid var(--border);
-        }
-
-        .pending-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .pending-heading {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 300;
-            letter-spacing: -0.02em;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-        }
-
-        .pending-sub {
-            font-size: 0.95rem;
-            color: var(--text-dim);
-            max-width: 560px;
-            line-height: 1.8;
-            font-weight: 300;
-            margin-bottom: 4rem;
-        }
-
-        .pending-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .pending-card {
-            background: var(--kpi-bg);
-            padding: 3.5rem 3rem;
-        }
-
-        .pending-card-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .pending-cube {
-            width: 11px;
-            height: 11px;
-            border-radius: 2px;
-        }
-
-        .pending-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.8rem;
-            font-weight: 400;
-            color: var(--text);
-            letter-spacing: -0.02em;
-        }
-
-        .pending-desc {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            line-height: 1.8;
-            font-weight: 300;
+            line-height: 1.15;
+            letter-spacing: -0.025em;
             margin-bottom: 2.5rem;
         }
 
-        .pending-timeline {
+        .mandate-text {
+            font-size: 1rem;
+            line-height: 1.9;
+            color: var(--white-dim);
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+
+        .mandate-right {
+            padding-top: 5rem;
+        }
+
+        .mandate-principle {
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .mandate-principle:last-child {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .principle-number {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--white-faint);
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.08em;
+        }
+
+        .principle-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            margin-bottom: 0.6rem;
+            color: var(--white);
+        }
+
+        .principle-text {
+            font-size: 0.9rem;
+            color: var(--white-faint);
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* ─── ARCHITECTURE ─── */
+        .architecture {
+            padding: 10rem 2.5rem;
+            background: var(--black);
+            position: relative;
+        }
+
+        .architecture::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .architecture-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .arch-header {
+            margin-bottom: 5rem;
+        }
+
+        .arch-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+        }
+
+        .arch-sub {
+            font-size: 1rem;
+            color: var(--white-dim);
+            max-width: 600px;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .arch-funds {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0;
         }
 
-        .timeline-item {
-            display: flex;
+        .arch-fund {
+            display: grid;
+            grid-template-columns: 1.5rem 1fr auto;
             gap: 1rem;
-            align-items: flex-start;
+            align-items: start;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
+            transition: background 0.3s;
+            position: relative;
         }
 
-        .timeline-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--text-faint);
+        .arch-fund:last-child {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .arch-fund:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .arch-self {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .arch-self:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .arch-fund-cube {
+            width: 10px;
+            height: 10px;
+            border-radius: 1.5px;
             flex-shrink: 0;
-            margin-top: 0.45rem;
+            margin-top: 1rem;
         }
 
-        .timeline-text {
-            font-size: 0.85rem;
-            color: var(--text-faint);
+        .arch-fund-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--white);
+            margin-bottom: 0.3rem;
+        }
+
+        .arch-fund-role {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--white-faint);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 0.8rem;
+        }
+
+        .arch-fund-relation {
+            font-size: 0.9rem;
+            color: var(--white-dim);
+            line-height: 1.7;
+            font-weight: 300;
+            max-width: 600px;
+        }
+
+        .arch-arrow {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--white-faint);
+            padding-top: 0.4rem;
+            align-self: start;
+        }
+
+        .arch-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.3rem 0.7rem;
+            border-radius: 2px;
+            align-self: start;
+            margin-top: 0.3rem;
+        }
+
+        /* ─── AI AGENTS ─── */
+        .aiagents {
+            padding: 10rem 2.5rem;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .aiagents::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .aiagents-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7rem;
+            align-items: start;
+        }
+
+        .aiagents-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            margin-bottom: 2.5rem;
+        }
+
+        .aiagents-text {
+            font-size: 1rem;
+            line-height: 1.9;
+            color: var(--white-dim);
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+
+        .aiagents-right {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .agent-card {
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .agent-card:last-child {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .agent-card-icon {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--white-faint);
+            margin-bottom: 0.6rem;
+            letter-spacing: 0.05em;
+        }
+
+        .agent-card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: var(--white);
+            margin-bottom: 0.6rem;
+        }
+
+        .agent-card-text {
+            font-size: 0.88rem;
+            color: var(--white-faint);
+            line-height: 1.75;
+            font-weight: 300;
+        }
+
+        /* ─── STRATEGIES ─── */
+        .strategies {
+            padding: 10rem 2.5rem;
+            background: var(--black);
+            position: relative;
+        }
+
+        .strategies::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .strategies-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .strategies-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 5rem;
+        }
+
+        .strategies-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            line-height: 1.1;
+        }
+
+        .strategies-note {
+            font-size: 0.82rem;
+            color: var(--white-faint);
+            max-width: 220px;
+            text-align: right;
             line-height: 1.6;
             font-weight: 300;
         }
 
-        .pending-status {
+        /* Strategy table */
+        .strategy-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .strategy-table thead tr {
+            border-bottom: 1px solid var(--border-mid);
+        }
+
+        .strategy-table th {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+            font-weight: 400;
+            padding: 0 1.5rem 1.2rem 0;
+            text-align: left;
+        }
+
+        .strategy-table th:last-child { text-align: right; padding-right: 0; }
+
+        .strategy-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.3s;
+            cursor: default;
+        }
+
+        .strategy-table tbody tr:hover {
+            background: rgba(255,255,255,0.025);
+        }
+
+        .strategy-table td {
+            padding: 2rem 1.5rem 2rem 0;
+            vertical-align: top;
+        }
+
+        .strategy-table td:last-child {
+            text-align: right;
+            padding-right: 0;
+        }
+
+        .st-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--white);
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .st-sub {
+            font-size: 0.82rem;
+            color: var(--white-faint);
+            font-weight: 300;
+        }
+
+        /* AI agents token-style tags */
+        .st-agents {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.6rem;
+        }
+
+        .st-agents span {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+            color: var(--white-dim);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
+        }
+
+        /* Featured row — subtle highlight for AI agents */
+        .st-row-featured {
+            background: rgba(255,255,255,0.025);
+            border-top: 1px solid rgba(255,255,255,0.1) !important;
+        }
+
+        .st-row-featured:hover {
+            background: rgba(255,255,255,0.045) !important;
+        }
+
+        /* Staked stables token list */
+        .st-sub-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+        }
+
+        .st-sub-list span {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+            color: var(--white-dim);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            padding: 0.2rem 0.55rem;
+            border-radius: 2px;
+        }
+
+        .st-type {
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--white-dim);
+            padding-top: 0.3rem;
+        }
+
+        .st-protocol {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.82rem;
+            color: var(--white-dim);
+        }
+
+        .st-yield {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: var(--green-pos);
+            letter-spacing: -0.02em;
+        }
+
+        .st-yield-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--white-faint);
+            margin-top: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .st-status {
             display: inline-block;
             font-family: 'DM Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.1em;
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: var(--text-faint);
-            border: 1px solid var(--border-mid);
-            padding: 0.35rem 0.8rem;
+            padding: 0.35rem 0.75rem;
             border-radius: 2px;
-            margin-top: 2rem;
+            margin-top: 0.5rem;
         }
 
-        /* Monetra cube adapts in dark theme */
-        .cube-monetra {
-            background: #111111 !important;
-            border: 1px solid rgba(0,0,0,0.2);
+        .st-status.active {
+            color: var(--green-pos);
+            border: 1px solid rgba(74,222,128,0.25);
+            background: var(--green-dim);
         }
 
-        [data-theme="dark"] .cube-monetra {
-            background: #e8e0d0 !important;
-            border: none;
+        .st-status.building {
+            color: var(--white-faint);
+            border: 1px solid var(--border);
+        }
+
+        /* ─── AI AGENT STRATEGIES ─── */
+        .agent-strategies {
+            padding: 10rem 2.5rem;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .agent-strategies::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .agent-strategies-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .agent-strat-header {
+            max-width: 800px;
+            margin-bottom: 5rem;
+        }
+
+        .agent-strat-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-strat-sub {
+            font-size: 1rem;
+            color: var(--white-dim);
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .agent-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 4rem;
+        }
+
+        .agent-detail-card {
+            background: var(--black-mid);
+            padding: 3rem 2.5rem;
+            transition: background 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .agent-detail-card:hover {
+            background: var(--black-soft);
+        }
+
+        .agent-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .agent-detail-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: var(--white);
+            letter-spacing: -0.02em;
+        }
+
+        .agent-detail-url {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--white-faint);
+            letter-spacing: 0.06em;
+        }
+
+        .agent-detail-desc {
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: var(--white-dim);
+            font-weight: 300;
+            flex: 1;
+            margin-bottom: 2rem;
+        }
+
+        .agent-detail-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .agent-stat-item {}
+
+        .agent-stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 300;
+            color: var(--white);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 0.3rem;
+        }
+
+        .agent-stat-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.62rem;
+            color: var(--white-faint);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            line-height: 1.4;
+        }
+
+        .agent-note {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            padding: 2.5rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .agent-note-line {
+            width: 24px;
+            height: 1px;
+            background: var(--white-faint);
+            flex-shrink: 0;
+            margin-top: 0.6rem;
+        }
+
+        .agent-note p {
+            font-size: 0.88rem;
+            color: var(--white-faint);
+            line-height: 1.8;
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        /* ─── RISK MATRIX ─── */
+        .risk {
+            padding: 10rem 2.5rem;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .risk::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .risk-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .risk-header {
+            text-align: center;
+            margin-bottom: 6rem;
+        }
+
+        .risk-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            margin-bottom: 1.5rem;
+        }
+
+        .risk-subtext {
+            font-size: 1rem;
+            color: var(--white-dim);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .risk-item {
+            background: var(--surface-2);
+            padding: 3rem 2.5rem;
+            transition: background 0.3s;
+        }
+
+        .risk-item:hover {
+            background: var(--black-mid);
+        }
+
+        .risk-icon-line {
+            width: 32px;
+            height: 2px;
+            background: var(--white-faint);
+            margin-bottom: 2rem;
+        }
+        .risk-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .risk-text {
+            font-size: 0.9rem;
+            color: var(--white-faint);
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        /* ─── THESIS ─── */
+        .thesis {
+            padding: 10rem 2.5rem;
+            background: var(--black);
+            position: relative;
+        }
+
+        .thesis::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+        }
+
+        .thesis-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .thesis-quote {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4.5vw, 3.2rem);
+            font-weight: 300;
+            font-style: italic;
+            line-height: 1.4;
+            color: var(--white);
+            letter-spacing: -0.02em;
+            margin-bottom: 3rem;
+        }
+
+        .thesis-divider {
+            width: 40px;
+            height: 1px;
+            background: var(--white-faint);
+            margin: 0 auto 2rem;
+        }
+
+        .thesis-attribution {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--white-faint);
+        }
+
+        .thesis-body {
+            margin-top: 6rem;
+            text-align: left;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .thesis-col p {
+            font-size: 1rem;
+            line-height: 1.9;
+            color: var(--white-dim);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
         }
 
         /* ─── FOOTER ─── */
         .footer {
-            padding: 3.5rem 2.5rem;
+            padding: 4rem 2.5rem;
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
@@ -1124,9 +1102,26 @@
 
         .footer-brand {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.3rem;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--white);
+        }
+
+        .footer-brand span {
+            color: var(--white-dim);
+            font-size: 1.15rem;
+            margin-left: 0.5rem;
             font-weight: 400;
-            color: var(--text-dim);
+        }
+
+        .footer-slogan {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            font-style: italic;
+            font-weight: 400;
+            color: var(--white-dim);
+            margin-top: 0.4rem;
+            letter-spacing: 0.02em;
         }
 
         .footer-links {
@@ -1136,63 +1131,38 @@
 
         .footer-link {
             font-size: 0.85rem;
-            color: var(--text-dim);
+            color: rgba(245,245,243,0.6);
             text-decoration: none;
             letter-spacing: 0.04em;
             transition: color 0.3s;
             font-weight: 400;
         }
 
-        .footer-link:hover { color: var(--text); }
+        .footer-link:hover { color: var(--white); }
 
         .footer-note {
             font-family: 'DM Mono', monospace;
-            font-size: 0.72rem;
-            color: var(--text-faint);
+            font-size: 0.65rem;
+            color: rgba(245,245,243,0.45);
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
 
-        /* Year switcher */
-        .year-switcher {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .year-btn {
-            font-family: 'DM Mono', monospace;
-            font-size: 0.72rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            padding: 0.5rem 1.2rem;
-            border-radius: 3px;
-            border: 1px solid var(--border-mid);
-            background: transparent;
-            color: var(--text-faint);
-            cursor: pointer;
-            transition: all 0.25s;
-        }
-
-        .year-btn:hover {
-            color: var(--text-dim);
-            border-color: var(--text-faint);
-        }
-
-        .year-btn.active {
-            background: var(--text);
-            color: var(--bg);
-            border-color: var(--text);
-        }
+        /* ─── ANIMATIONS ─── */
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(24px); }
             to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
         }
 
         .reveal {
             opacity: 0;
-            transform: translateY(24px);
-            transition: opacity 0.75s ease, transform 0.75s ease;
+            transform: translateY(28px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
         }
 
         .reveal.visible {
@@ -1202,608 +1172,676 @@
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 900px) {
-            .nav-title { display: none; }
-            .hero { padding: 10rem 1.5rem 5rem; }
-            .hero-summary { grid-template-columns: repeat(2, 1fr); }
-            .summary-item:nth-child(2) { border-right: none; }
-            .summary-item:nth-child(3) { border-top: 1px solid var(--border); }
-            .summary-item:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
-            .philosophy-inner { grid-template-columns: 1fr; gap: 4rem; }
-            .fund-row { grid-template-columns: 2rem 1fr; }
-            .fund-status-badge { display: none; }
-            .dr-header { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
-            .dr-header-meta { align-items: flex-start; }
-            .dr-live-apr { white-space: normal; flex-wrap: wrap; }
-            .dr-kpis { grid-template-columns: repeat(2, 1fr); }
-            .pending-grid { grid-template-columns: 1fr; }
-            .footer { flex-direction: column; gap: 2rem; text-align: center; }
-            .footer-links { justify-content: center; flex-wrap: wrap; }
-            .report-table th, .report-table td { padding: 1.2rem 0.8rem; }
-            .td-bar { display: none; }
-            .report-table th:nth-child(2),
-            .report-table td:nth-child(2) { display: none; }
-            .report-table { table-layout: fixed; width: 100%; }
-            .report-table th:nth-child(1), .report-table td:nth-child(1) { width: 30%; }
-            .report-table th:nth-child(3), .report-table td:nth-child(3) { width: 24%; text-align: center; }
-            .report-table th:nth-child(4), .report-table td:nth-child(4) { width: 26%; text-align: center; }
-            .report-table th:nth-child(5), .report-table td:nth-child(5) { width: 20%; text-align: right; }
-            .td-month { font-size: 1.15rem; }
-            .td-yield { font-size: 1.4rem; text-align: center; }
-            .td-num   { font-size: 0.82rem; text-align: center; }
-            .td-apy   { font-size: 0.78rem; text-align: center; }
-            .row-total .td-month { font-size: 1.2rem; }
-            .row-total .td-yield { font-size: 1.5rem; }
-            .philosophy, .funds-overview, .defitea-reports, .monetra-reports, .pending-funds { padding: 5rem 1.5rem; }
+            .mandate-inner  { grid-template-columns: 1fr; gap: 4rem; }
+            .mandate-right  { padding-top: 0; }
+            .aiagents-inner { grid-template-columns: 1fr; gap: 4rem; }
+            .agent-cards    { grid-template-columns: 1fr; }
+            .agent-detail-stats { grid-template-columns: repeat(3, 1fr); }
+            .strategies-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .strategies-note   { text-align: left; max-width: none; }
+            .risk-grid         { grid-template-columns: 1fr; }
+            .thesis-body       { grid-template-columns: 1fr; gap: 0; }
+
+            /* Hero stats: 3-column grid on mobile */
+            .hero-stats {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0;
+            }
+            .hero-stat {
+                padding: 0 1.2rem;
+                border-left: 1px solid var(--border-mid);
+            }
+            .hero-stat:first-child { padding-left: 0; border-left: none; }
+
+            .footer            { flex-direction: column; gap: 2rem; text-align: center; }
+            .footer-links      { justify-content: center; flex-wrap: wrap; gap: 1.2rem; margin-top: 1rem; }
+            .footer-link       { font-size: 0.88rem; }
+
+            /* Arch funds: tighter cube alignment */
+            .arch-fund { grid-template-columns: 1.5rem 1fr; gap: 0.8rem; }
+            .arch-fund-cube { margin-top: 0.9rem; }
+            .arch-arrow { display: none; }
+            .arch-badge { display: none; }
+
+            /* Risk section: more compact on mobile */
+            .risk { padding: 5rem 1.5rem; }
+            .risk-item { padding: 1.75rem 1.5rem; }
+            .risk-icon-line { margin-bottom: 1rem; }
+            .risk-title { font-size: 1.2rem; margin-bottom: 0.5rem; }
+            .risk-text { font-size: 0.85rem; }
+
+            /* Nav mobile */
+            .nav-breadcrumb { font-size: 0.65rem; }
+
+            /* Strategy table mobile: card-style layout */
+            .strategy-table thead { display: none; }
+            .strategy-table tbody tr {
+                display: flex;
+                flex-direction: column;
+                gap: 0.6rem;
+                padding: 2rem 0;
+            }
+            .strategy-table td { padding: 0; text-align: left !important; }
+            .st-yield { font-size: 2.2rem; }
+            .st-yield-label { margin-top: 0.1rem; }
         }
 
         @media (max-width: 600px) {
-            .hero-summary { grid-template-columns: 1fr 1fr; }
-            .dr-kpis { grid-template-columns: 1fr 1fr; }
-            .bar-chart-wrap { display: none; }
-            .bar-chart-mobile { display: flex; padding-top: 0.25rem; }
-            .chart-label { font-size: 0.75rem !important; margin-bottom: 0.6rem !important; letter-spacing: 0.1em !important; }
-            .nav { padding: 1.2rem 1.5rem; }
-            .nav-breadcrumb { font-size: 0.68rem; }
+            .hero { padding: 9rem 1.5rem 5rem; }
+            .mandate, .strategies, .risk, .thesis,
+            .architecture, .aiagents, .agent-strategies { padding: 6rem 1.5rem; }
+            .nav { padding: 1.25rem 1.5rem; }
+            .hero-stat-value { font-size: 1.6rem; }
+            .hero-stat-label { font-size: 0.65rem; }
         }
     </style>
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="f969f142-7fbe-47a2-b971-78c8b59c2ddb"></script>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FinancialProduct",
+      "name": "Monetra",
+      "alternateName": "Monetra Stablecoin Yield Fund",
+      "description": "Non-directional stablecoin yield fund by TheHolding.ai. Generates sustainable yield from DeFi lending markets and stablecoin liquidity pools without directional market risk.",
+      "url": "https://theholding.ai/monetra",
+      "provider": {
+        "@type": "Organization",
+        "name": "TheHolding.ai",
+        "url": "https://theholding.ai"
+      },
+      "feesAndCommissionsSpecification": "Non-custodial, transparent, onchain",
+      "category": "Stablecoin Yield Strategy"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "TheHolding.ai", "item": "https://theholding.ai"},
+        {"@type": "ListItem", "position": 2, "name": "Monetra", "item": "https://theholding.ai/monetra"}
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Monetra — Stablecoin Yield Fund",
+      "description": "The stablecoin yield engine of TheHolding.ai. Non-directional stable yield from lending markets and liquidity pools.",
+      "url": "https://theholding.ai/monetra",
+      "isPartOf": {"@type": "WebSite", "name": "TheHolding.ai", "url": "https://theholding.ai"},
+      "breadcrumb": {"@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://theholding.ai"},
+        {"@type": "ListItem", "position": 2, "name": "Monetra", "item": "https://theholding.ai/monetra"}
+      ]}
+    }
+    </script>
+
 </head>
 <body>
 
     <!-- Nav -->
     <nav class="nav">
-        <a href="/" class="nav-back">← The Holding</a>
-        <div style="display:flex;align-items:center;gap:1.5rem">
-            <div class="nav-breadcrumb">
-                <a href="/">theholding.ai</a> / <a href="/yield-reports">yield-reports</a>
-            </div>
-            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
-                <span class="toggle-icon" id="themeIcon">◐</span>
-                <span id="themeLabel">Dark</span>
-            </button>
+        <div class="nav-breadcrumb">
+            <a href="/">theholding.ai</a> / <a href="/monetra">monetra</a>
         </div>
+        <a href="/" class="nav-back">← Back</a>
     </nav>
 
     <!-- Hero -->
     <section class="hero">
         <div class="hero-inner">
             <div class="hero-eyebrow">
-                <div class="hero-dot"></div>
-                <span class="hero-eyebrow-text">Income Reports — Updated Monthly</span>
+                <div class="hero-cube"></div>
+                <span class="hero-label">Liquidity & Cash-Flow Layer</span>
             </div>
 
-            <h1 class="hero-title">Yield<br><em>Reports</em></h1>
+            <h1 class="hero-title">Monetra</h1>
 
-            <p class="hero-desc">
-                The Holding operates dedicated income-generating funds with distinct reporting semantics. Defitea tracks recurring DeFi cash flow. Monetra tracks stable-capital income whether distributed or compounded. Jan–Jul 2026 preserve the original reported Defitea history; autonomous daily snapshots now build both monthly reporting series while keeping asset-price and stablecoin price effects separate.
+            <p class="hero-subtitle">
+                The dedicated stablecoin engine of The Holding.<br><br>
+                Focused on capital preservation, reliable cash flow, and sustainable yield generated from stable assets.
             </p>
+
+            <p class="hero-tagline">Capital that flows.</p>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">Seeding</div>
+                    <div class="hero-stat-label">Stage — Launching Soon</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">Stable</div>
+                    <div class="hero-stat-label">Principal exposure</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">24/7</div>
+                    <div class="hero-stat-label">Yield generation</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-scroll">
+            <div class="hero-scroll-line"></div>
+            <span class="hero-scroll-text">Scroll</span>
         </div>
     </section>
 
-    <!-- Philosophy -->
-    <section class="philosophy">
-        <div class="philosophy-inner">
-            <div class="reveal">
-                <div class="section-tag">Our Approach</div>
-                <h2 class="phil-heading">Slow money.<br>Compound time.</h2>
-                <p class="phil-text">
-                    The Holding is built around dedicated income engines — funds designed to generate 
-                    recurring cash flow, reported separately from asset-price performance. Defitea works through 
-                    vote-escrowed DeFi positions and liquidity provision. Monetra through 
-                    stablecoin strategies. Fructus through tokenised real-world asset yield. 
-                    Together they form a multi-layered cash-flow system. The strategies remain 
-                    exposed to market, protocol, liquidity, and asset-specific risks.
+    <!-- Mandate -->
+    <section class="mandate">
+        <div class="mandate-inner">
+            <div class="mandate-left reveal">
+                <div class="section-tag">Fund Mandate</div>
+                <h2 class="mandate-heading">The onchain engine<br>that never stops.</h2>
+                <p class="mandate-text">
+                    Monetra is not a standalone fund. It is the liquidity and cash-flow 
+                    infrastructure of The Holding — the layer that keeps the entire system 
+                    productive regardless of market conditions.
                 </p>
-                <p class="phil-text">
-                    These reports capture that income. Not paper gains. Not price appreciation. 
-                    Actual dollars produced monthly — the goal being a system that compounds 
-                    reliably across years, through bull markets, bear markets, and everything 
-                    in between.
+                <p class="mandate-text">
+                    Substantia accumulates Bitcoin every week regardless of price.
+                    Monetra ensures that DCA never depends on selling other assets —
+                    stable yield provides a continuous funding stream for the accumulation engine.
+                </p>
+                <p class="mandate-text">
+                    Every position is denominated in USD-pegged assets. Every yield 
+                    is paid in stablecoins. The principal never takes directional risk.
+                    This is a yield engine built for long-term compounding.
                 </p>
             </div>
 
-            <div class="reveal">
-                <div class="phil-principles">
-                    <div class="phil-principle">
-                        <div class="pp-num">01</div>
-                        <div class="pp-title">Monthly cadence only</div>
-                        <div class="pp-text">Weekly or daily metrics create noise and incentivize short-term thinking. One report per month, reviewed once.</div>
-                    </div>
-                    <div class="phil-principle">
-                        <div class="pp-num">02</div>
-                        <div class="pp-title">Income, not price</div>
-                        <div class="pp-text">Defitea reports cash-flow economics. Monetra reports generated stable-capital income, including value that remains compounded inside a strategy. Asset-price and stablecoin price effects remain separate.</div>
-                    </div>
-                    <div class="phil-principle">
-                        <div class="pp-num">03</div>
-                        <div class="pp-title">No protocol-level detail</div>
-                        <div class="pp-text">This page focuses on aggregate fund-level income. Position-level information remains in the dedicated Defitea and Monetra interfaces and their underlying intelligence layers.</div>
-                    </div>
-                    <div class="phil-principle">
-                        <div class="pp-num">04</div>
-                        <div class="pp-title">Approximate figures</div>
-                        <div class="pp-text">TVL changes with underlying asset prices. Automated months use daily TVL snapshots and remain provisional until the next month begins.</div>
-                    </div>
+            <div class="mandate-right reveal">
+                <div class="mandate-principle">
+                    <div class="principle-number">01</div>
+                    <div class="principle-title">Protects Substantia from drawdowns</div>
+                    <div class="principle-text">Stable yield provides a buffer. When BTC corrects, Monetra's cash flow continues funding DCA purchases without requiring the sale of other assets.</div>
+                </div>
+                <div class="mandate-principle">
+                    <div class="principle-number">02</div>
+                    <div class="principle-title">Supports Defitea operations</div>
+                    <div class="principle-text">Monetra's yield complements Defitea's revenue streams, helping maintain a strong cash-flow layer across all market conditions.</div>
+                </div>
+                <div class="mandate-principle">
+                    <div class="principle-number">03</div>
+                    <div class="principle-title">Dry powder for Singul & Fructus</div>
+                    <div class="principle-text">Accumulated stable yield becomes deployable capital when Singul identifies asymmetric opportunities or Fructus uncovers attractive RWA entry points.</div>
+                </div>
+                <div class="mandate-principle">
+                    <div class="principle-number">04</div>
+                    <div class="principle-title">30% liquid reserve at all times</div>
+                    <div class="principle-text">At least 30% of capital remains in highly liquid positions. The system never locks up all capital — rapid redeployment matters.</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Funds Overview -->
-    <section class="funds-overview">
-        <div class="funds-overview-inner">
-            <div class="fo-header reveal">
-                <div class="section-tag">Income Funds</div>
-                <h2 class="fo-heading">Three funds.<br>Three yield mandates.</h2>
-                <p class="fo-sub">Each income-generating fund within The Holding operates a distinct cash-flow strategy. Different risk profiles, different yield sources, unified purpose.</p>
+    <!-- Architecture Section -->
+    <section class="architecture">
+        <div class="architecture-inner">
+            <div class="arch-header reveal">
+                <div class="section-tag">System Architecture</div>
+                <h2 class="arch-heading">The 5th Layer of<br>The Holding</h2>
+                <p class="arch-sub">Monetra doesn't operate in isolation. It is the connective tissue — the liquidity and cash-flow infrastructure that makes the entire ecosystem more resilient.</p>
             </div>
 
-            <!-- Defitea -->
-            <div class="fund-row reveal">
-                <div class="fund-cube" style="background:#10b981"></div>
-                <div class="fund-info">
-                    <div class="fund-name-row">
-                        <div class="fund-name">Defitea</div>
-                        <div class="fund-role-tag">Cash Flow Engine</div>
+            <div class="arch-funds reveal">
+                <div class="arch-fund arch-substantia">
+                    <div class="arch-fund-cube" style="background:#3b82f6"></div>
+                    <div class="arch-fund-info">
+                        <div class="arch-fund-name">Substantia</div>
+                        <div class="arch-fund-role">Foundation · BTC/ETH/Gold/Silver</div>
+                        <div class="arch-fund-relation">
+                            Monetra's yield helps fund continued DCA during BTC drawdowns. Substantia never needs to sell core assets to maintain accumulation — Monetra provides the liquidity.
+                        </div>
                     </div>
-                    <p class="fund-desc">
-                        The primary income fund of The Holding. Capital deployed into DeFi's most 
-                        proven yield mechanisms: vote-escrowed governance tokens, liquidity provision, 
-                        and protocol revenue sharing. Positions are committed long-term — accepting 
-                        reduced liquidity in exchange for durable cash flow. A growing set of productive 
-                        DeFi positions, each contributing to a blended monthly cash flow that varies 
-                        with market and protocol conditions.
-                    </p>
-                    <div class="fund-mechanics">
-                        <span class="fund-mechanic">veToken Governance</span>
-                        <span class="fund-mechanic">Liquidity Provision</span>
-                        <span class="fund-mechanic">Protocol Revenue</span>
-                        <span class="fund-mechanic">Vote Incentives</span>
-                        <span class="fund-mechanic">Long-term Lock</span>
-                    </div>
+                    <div class="arch-arrow">→</div>
                 </div>
-                <div class="fund-status-badge badge-active">Reporting</div>
-            </div>
-
-            <!-- Monetra -->
-            <div class="fund-row reveal">
-                <div class="fund-cube cube-monetra" style="background:#111111"></div>
-                <div class="fund-info">
-                    <div class="fund-name-row">
-                        <div class="fund-name">Monetra</div>
-                        <div class="fund-role-tag">Stable Yield Layer</div>
+                <div class="arch-fund arch-defitea">
+                    <div class="arch-fund-cube" style="background:#10b981"></div>
+                    <div class="arch-fund-info">
+                        <div class="arch-fund-name">Defitea</div>
+                        <div class="arch-fund-role">Income · veTokens & DeFi yield</div>
+                        <div class="arch-fund-relation">
+                            Monetra's yield complements Defitea's cash-flow during lower-yield periods. Together, they form a diversified income layer.
+                        </div>
                     </div>
-                    <p class="fund-desc">
-                        The liquidity engine of The Holding. Capital deployed exclusively into 
-                        stablecoin strategies — lending markets, stable liquidity pools, 
-                        staked stablecoins, and automated agent-managed yield. Designed for lower 
-                        sensitivity to market direction, though still exposed to credit, 
-                        contract, depeg, and liquidity risk. Monetra supplements the entire 
-                        system's cash flow during periods when DeFi emission cycles compress 
-                        Defitea yields.
-                    </p>
-                    <div class="fund-mechanics">
-                        <span class="fund-mechanic">Stable Lending</span>
-                        <span class="fund-mechanic">Stable LP</span>
-                        <span class="fund-mechanic">Staked Stables</span>
-                        <span class="fund-mechanic">AI Agent Strategies</span>
-                        <span class="fund-mechanic">Vault Deposits</span>
-                    </div>
+                    <div class="arch-arrow">→</div>
                 </div>
-                <div class="fund-status-badge badge-active">Reporting</div>
-            </div>
-
-            <!-- Fructus -->
-            <div class="fund-row reveal">
-                <div class="fund-cube" style="background:#eab308"></div>
-                <div class="fund-info">
-                    <div class="fund-name-row">
-                        <div class="fund-name">Fructus</div>
-                        <div class="fund-role-tag">RWA Income</div>
+                <div class="arch-fund arch-singul">
+                    <div class="arch-fund-cube" style="background:#8b5cf6"></div>
+                    <div class="arch-fund-info">
+                        <div class="arch-fund-name">Singul</div>
+                        <div class="arch-fund-role">Venture · AI & Emerging sectors</div>
+                        <div class="arch-fund-relation">
+                            Accumulated Monetra yield becomes deployable capital when Singul identifies asymmetric investment opportunities.
+                        </div>
                     </div>
-                    <p class="fund-desc">
-                        The real-world asset fund. Exposure to tokenised treasuries, 
-                        structured credit, commodity indices, and energy infrastructure — 
-                        all settled onchain. As the allocation matures, Fructus will generate 
-                        yield from treasury instruments and credit positions that operates 
-                        independently from DeFi market cycles, providing true diversification 
-                        of the holding's income streams.
-                    </p>
-                    <div class="fund-mechanics">
-                        <span class="fund-mechanic">Tokenized Treasuries</span>
-                        <span class="fund-mechanic">Structured Credit</span>
-                        <span class="fund-mechanic">Commodity Exposure</span>
-                        <span class="fund-mechanic">RWA Yield</span>
-                    </div>
+                    <div class="arch-arrow">→</div>
                 </div>
-                <div class="fund-status-badge badge-building">Building</div>
+                <div class="arch-fund arch-fructus">
+                    <div class="arch-fund-cube" style="background:#eab308"></div>
+                    <div class="arch-fund-info">
+                        <div class="arch-fund-name">Fructus</div>
+                        <div class="arch-fund-role">RWA · Tokenized real-world assets</div>
+                        <div class="arch-fund-relation">
+                            Monetra provides stable capital for deployment when tokenized real-world assets present attractive allocation opportunities.
+                        </div>
+                    </div>
+                    <div class="arch-arrow">→</div>
+                </div>
+                <div class="arch-fund arch-monetra arch-self">
+                    <div class="arch-fund-cube" style="background:#f5f5f3"></div>
+                    <div class="arch-fund-info">
+                        <div class="arch-fund-name">Monetra</div>
+                        <div class="arch-fund-role">Liquidity layer · Stable yield engine</div>
+                        <div class="arch-fund-relation">
+                            Designed to generate stable cash flow across market cycles while serving as The Holding's permanent liquidity reserve.
+                        </div>
+                    </div>
+                    <div class="arch-badge">This fund</div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Defitea Reports -->
-    <section class="defitea-reports">
-        <div class="dr-inner">
-            <div class="dr-header reveal">
-                <div>
-                    <div class="section-tag">Monthly Performance</div>
-                    <h2 class="dr-heading">Defitea Fund Reports</h2>
-                </div>
-                <div class="dr-header-meta">
-                    <div class="dr-fund-label">
-                        <div class="dr-fund-dot"></div>
-                        Defitea · 2026
-                    </div>
-                    <div class="dr-live-apr" title="Current validated productive APR from The Holding Productivity Intelligence Layer">
-                        <span class="dr-live-apr-label">Current Reference APR</span>
-                        <strong class="dr-live-apr-value" data-th-company="defitea.eth" data-th-company-apr="latest">13.3%</strong>
-                        <span class="dr-live-apr-note">Auto-updated weekly</span>
-                    </div>
-                </div>
+    <!-- AI Agents Section -->
+    <section class="aiagents">
+        <div class="aiagents-inner">
+            <div class="aiagents-left reveal">
+                <div class="section-tag">Monetra × AI Agents</div>
+                <h2 class="aiagents-heading">Built for the<br>Next Billion Users</h2>
+                <p class="aiagents-text">
+                    AI agents are evolving into autonomous economic entities.
+                </p>
+                <p class="aiagents-text">
+                    They hold wallets, manage treasuries, pay for compute, API access, and transaction fees — all in real time, 24/7. As their role expands, they require yield that is stable, predictable, and non-custodial.
+                </p>
+                <p class="aiagents-text">
+                    Monetra is structurally aligned with these needs: no direct exposure to market volatility, no unexpected lockups, and no directional market risk.
+                </p>
+                <p class="aiagents-text">
+                    Just consistent, compounding stable yield — a treasury layer designed for autonomous capital.
+                </p>
             </div>
 
-            <!-- KPI Cards -->
-            <div class="dr-kpis reveal">
-                <div class="kpi-card">
-                    <div class="kpi-label">YTD Cash Flow</div>
-                    <div class="kpi-value green" id="report-ytd-cashflow">$284.55</div>
-                    <div class="kpi-sub" id="report-ytd-period">Jan – Jul 2026</div>
+            <div class="aiagents-right reveal">
+                <div class="agent-card">
+                    <div class="agent-card-icon">—</div>
+                    <div class="agent-card-title">Covers Compute Costs</div>
+                    <div class="agent-card-text">Agents continuously pay for API calls, inference, and transaction fees. Monetra's yield helps cover these operational expenses without requiring the use of principal.</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">YTD Cash-Flow Yield</div>
-                    <div class="kpi-value green" id="report-ytd-yield">+8.12%</div>
-                    <div class="kpi-sub" id="report-ytd-months">7 closed months</div>
+                <div class="agent-card">
+                    <div class="agent-card-icon">—</div>
+                    <div class="agent-card-title">Predictable Treasury Yield</div>
+                    <div class="agent-card-text">Unlike volatile assets, stablecoin yield is more predictable. Agents can forecast cash flows, plan rebalancing, and operate with greater budget certainty.</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Best Month</div>
-                    <div class="kpi-value" id="report-best-yield">+1.84%</div>
-                    <div class="kpi-sub" id="report-best-month">February 2026</div>
+                <div class="agent-card">
+                    <div class="agent-card-icon">—</div>
+                    <div class="agent-card-title">Non-Custodial by Design</div>
+                    <div class="agent-card-text">Autonomous agents require permissionless, on-chain, non-custodial financial infrastructure. Monetra is built around these principles.</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Annualised Cash-Flow APR</div>
-                    <div class="kpi-value" id="report-annualized-apr">~13.9%</div>
-                    <div class="kpi-sub" id="report-apr-note">Closed-month average × 12</div>
+                <div class="agent-card">
+                    <div class="agent-card-icon">—</div>
+                    <div class="agent-card-title">Dry Powder for Opportunities</div>
+                    <div class="agent-card-text">Compounding stable capital can be deployed instantly when agents identify asymmetric opportunities — without the need to sell assets or unwind positions.</div>
                 </div>
-            </div>
-            <div class="reporting-status-line" id="reporting-status-line">Jan–Jul 2026 · reported history · automated daily tracking begins with the Reporting Layer</div>
-
-            <!-- Bar Chart -->
-            <div class="dr-chart-section reveal">
-                <div class="chart-label" style="margin-bottom:1.5rem">Monthly Cash-Flow Yield</div>
-
-                <!-- Desktop: vertical bars with % grid -->
-                <div class="bar-chart-wrap" id="barChartWrap">
-                    <div class="bar-grid" id="barGrid"></div>
-                    <div class="bar-chart" id="barChart">
-                        <div class="bar-item">
-                            <div class="bar-fill" data-pct="1.34" style="height:0">
-                                <span class="bar-pct">1.34%</span>
-                                <span class="bar-month">Jan</span>
-                            </div>
-                        </div>
-                        <div class="bar-item">
-                            <div class="bar-fill" data-pct="1.84" style="height:0">
-                                <span class="bar-pct">1.84%</span>
-                                <span class="bar-month">Feb</span>
-                            </div>
-                        </div>
-                        <div class="bar-item">
-                            <div class="bar-fill" data-pct="1.02" style="height:0">
-                                <span class="bar-pct">1.02%</span>
-                                <span class="bar-month">Mar</span>
-                            </div>
-                        </div>
-                        <div class="bar-item">
-                            <div class="bar-fill" data-pct="0.78" style="height:0">
-                                <span class="bar-pct">0.78%</span>
-                                <span class="bar-month">Apr</span>
-                            </div>
-                        </div>
-                        <div class="bar-item">
-                            <div class="bar-fill" data-pct="1.01" style="height:0">
-                                <span class="bar-pct">1.01%</span>
-                                <span class="bar-month">May</span>
-                            </div>
-                        </div>
-                        <div class="bar-item">
-                            <div class="bar-fill" data-pct="1.31" style="height:0">
-                                <span class="bar-pct">1.31%</span>
-                                <span class="bar-month">Jun</span>
-                            </div>
-                        </div>
-                        <div class="bar-item">
-                            <div class="bar-fill" data-pct="0.82" style="height:0">
-                                <span class="bar-pct">0.82%</span>
-                                <span class="bar-month">Jul</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mobile: horizontal bars -->
-                <div class="bar-chart-mobile" id="mobileChart">
-                    <div class="mobile-bar-row">
-                        <div class="mobile-bar-month">Jan</div>
-                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="72.8%"></div></div>
-                        <div class="mobile-bar-pct">+1.34%</div>
-                    </div>
-                    <div class="mobile-bar-row">
-                        <div class="mobile-bar-month">Feb</div>
-                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="100%"></div></div>
-                        <div class="mobile-bar-pct">+1.84%</div>
-                    </div>
-                    <div class="mobile-bar-row">
-                        <div class="mobile-bar-month">Mar</div>
-                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="55.4%"></div></div>
-                        <div class="mobile-bar-pct">+1.02%</div>
-                    </div>
-                    <div class="mobile-bar-row">
-                        <div class="mobile-bar-month">Apr</div>
-                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="42.4%"></div></div>
-                        <div class="mobile-bar-pct">+0.78%</div>
-                    </div>
-                    <div class="mobile-bar-row">
-                        <div class="mobile-bar-month">May</div>
-                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="54.9%"></div></div>
-                        <div class="mobile-bar-pct">+1.01%</div>
-                    </div>
-                    <div class="mobile-bar-row">
-                        <div class="mobile-bar-month">Jun</div>
-                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="71.2%"></div></div>
-                        <div class="mobile-bar-pct">+1.31%</div>
-                    </div>
-                    <div class="mobile-bar-row">
-                        <div class="mobile-bar-month">Jul</div>
-                        <div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:0" data-w="44.6%"></div></div>
-                        <div class="mobile-bar-pct">+0.82%</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Report Table -->
-            <div class="reveal">
-
-                <!-- Year Switcher -->
-                <div class="year-switcher">
-                    <button class="year-btn active" onclick="switchYear(2026, this)">2026</button>
-                    <button class="year-btn" onclick="switchYear(2027, this)">2027</button>
-                </div>
-
-                <div class="report-table-wrap">
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>Month</th>
-                                <th class="right">Cash Flow</th>
-                                <th class="right">Monthly Yield</th>
-                                <th class="right">APR</th>
-                                <th class="td-bar"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body-2026">
-                            <tr>
-                                <td class="td-month">January</td>
-                                <td class="td-num">$29.66</td>
-                                <td class="td-yield">+1.34%</td>
-                                <td class="td-apy">16.00%</td>
-                                <td class="td-bar"><div class="inline-bar" style="width:39.7%"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="td-month">February</td>
-                                <td class="td-num">$45.97</td>
-                                <td class="td-yield">+1.84%</td>
-                                <td class="td-apy">22.00%</td>
-                                <td class="td-bar"><div class="inline-bar" style="width:61.5%"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="td-month">March</td>
-                                <td class="td-num">$27.51</td>
-                                <td class="td-yield">+1.02%</td>
-                                <td class="td-apy">12.22%</td>
-                                <td class="td-bar"><div class="inline-bar" style="width:36.8%"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="td-month">April</td>
-                                <td class="td-num">$20.2</td>
-                                <td class="td-yield">+0.78%</td>
-                                <td class="td-apy">9.36%</td>
-                                <td class="td-bar"><div class="inline-bar" style="width:27.0%"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="td-month">May</td>
-                                <td class="td-num">$30.4</td>
-                                <td class="td-yield">+1.01%</td>
-                                <td class="td-apy">12.2%</td>
-                                <td class="td-bar"><div class="inline-bar" style="width:40.7%"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="td-month">June</td>
-                                <td class="td-num">$74.76</td>
-                                <td class="td-yield">+1.31%</td>
-                                <td class="td-apy">15.72%</td>
-                                <td class="td-bar"><div class="inline-bar" style="width:100%"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="td-month">July</td>
-                                <td class="td-num">$56.05</td>
-                                <td class="td-yield">+0.82%</td>
-                                <td class="td-apy">9.89%</td>
-                                <td class="td-bar"><div class="inline-bar" style="width:75.0%"></div></td>
-                            </tr>
-                            <tr class="row-total">
-                                <td class="td-month">Total</td>
-                                <td class="td-num">$284.55</td>
-                                <td class="td-yield">+8.12%</td>
-                                <td class="td-apy">~13.9%</td>
-                                <td class="td-bar"></td>
-                            </tr>
-                        </tbody>
-                        <tbody id="table-body-2027" style="display:none">
-                            <tr>
-                                <td class="td-month" colspan="4" style="text-align:center; padding:3rem 2rem; color:var(--text-faint); font-family:'DM Mono',monospace; font-size:0.78rem; letter-spacing:0.08em;">
-                                    No reports yet.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="report-disclaimer">
-                    <p>Jan–Jul 2026 preserve the original reported Defitea cash-flow history. Automated periods are generated by The Holding Reporting Layer from daily productive TVL snapshots and the latest validated Reference APR. Those automated values are a reference cash-flow model, not claim accounting, and the current month remains provisional until the first daily snapshot of the next month closes it. Monthly yield is cash flow divided by average capital; closed-month annualised APR is the average monthly yield multiplied by twelve, with no compounding. Asset-price performance remains separate. Past performance does not guarantee future results.</p>
-                </div>
-
-                <a href="https://docs.google.com/spreadsheets/d/1SfnnAvIiBRI7I83WyIvc-nH_sWjJA5h53AGHzrmCRp8/edit?usp=sharing" 
-                   target="_blank" class="report-link">
-                    View Full Spreadsheet →
-                </a>
             </div>
         </div>
     </section>
 
-    <!-- Monetra Reports -->
-    <section class="monetra-reports" id="monetra-reports">
-        <div class="dr-inner">
-            <div class="dr-header reveal">
-                <div>
-                    <div class="section-tag">Stable Capital Reporting</div>
-                    <h2 class="dr-heading">Monetra Fund Reports</h2>
-                </div>
-                <div class="dr-header-meta">
-                    <div class="dr-fund-label">
-                        <div class="dr-fund-dot"></div>
-                        Monetra · 2026
-                    </div>
-                    <div class="dr-live-apr" title="Current validated Stable Capital Reference APY from The Holding Stable Capital Intelligence Layer">
-                        <span class="dr-live-apr-label">Current Reference APY</span>
-                        <strong class="dr-live-apr-value" id="monetra-reference-apy">4.52%</strong>
-                        <span class="dr-live-apr-note">Auto-updated daily</span>
-                    </div>
-                </div>
+    <!-- Strategies -->
+    <section class="strategies">
+        <div class="strategies-inner">
+            <div class="strategies-header reveal">
+                <h2 class="strategies-heading">Stable strategies<br>in deployment</h2>
+                <p class="strategies-note">Positions scale as TVL grows. Yield ranges are indicative.</p>
             </div>
 
-            <div class="dr-kpis reveal">
-                <div class="kpi-card">
-                    <div class="kpi-label">MTD Generated Income</div>
-                    <div class="kpi-value green" id="monetra-mtd-income">—</div>
-                    <div class="kpi-sub">Reference income · compounding included</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">MTD Yield</div>
-                    <div class="kpi-value green" id="monetra-mtd-yield">—</div>
-                    <div class="kpi-sub" id="monetra-mtd-period">Current month · provisional</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Current Capital</div>
-                    <div class="kpi-value" id="monetra-current-capital">$100.12</div>
-                    <div class="kpi-sub">Market principal + claimable</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Reference APY</div>
-                    <div class="kpi-value" id="monetra-kpi-apy">4.52%</div>
-                    <div class="kpi-sub">Validated productive capacity</div>
-                </div>
-            </div>
-
-            <div class="reporting-status-line" id="monetra-reporting-status">Monetra daily reporting activates with the next Reporting Layer run.</div>
-
-            <div class="monetra-method-strip reveal">
-                <div class="monetra-method-item">
-                    <div class="monetra-method-label">Income basis</div>
-                    <div class="monetra-method-value">Daily Stable Capital × validated Reference APY</div>
-                </div>
-                <div class="monetra-method-item">
-                    <div class="monetra-method-label">Compounding</div>
-                    <div class="monetra-method-value">Counted as generated income even when it stays inside the position</div>
-                </div>
-                <div class="monetra-method-item">
-                    <div class="monetra-method-label">Price effect</div>
-                    <div class="monetra-method-value">Stablecoin / depeg movement remains outside generated income</div>
-                </div>
-            </div>
-
-            <div class="dr-chart-section reveal" id="monetra-chart-section">
-                <div class="chart-label" style="margin-bottom:1.5rem">Monthly Generated Yield</div>
-                <div class="bar-chart-wrap">
-                    <div class="bar-chart" id="monetraBarChart" style="padding-left:0">
-                        <div class="bar-item"><div class="bar-fill" style="height:4%;opacity:.25"><span class="bar-pct">Tracking</span><span class="bar-month">Aug*</span></div></div>
-                    </div>
-                </div>
-                <div class="bar-chart-mobile" id="monetraMobileChart">
-                    <div class="mobile-bar-row"><div class="mobile-bar-month">Aug*</div><div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:4%;opacity:.4"></div></div><div class="mobile-bar-pct">—</div></div>
-                </div>
-            </div>
-
-            <div class="reveal">
-                <div class="year-switcher monetra-year-switcher">
-                    <button class="year-btn active" onclick="switchMonetraYear(2026, this)">2026</button>
-                    <button class="year-btn" onclick="switchMonetraYear(2027, this)">2027</button>
-                </div>
-                <div class="report-table-wrap">
-                    <table class="report-table monetra-table">
-                        <thead>
-                            <tr>
-                                <th>Month</th>
-                                <th class="right">Avg Capital</th>
-                                <th class="right">Generated Income</th>
-                                <th class="right">Monthly Yield</th>
-                                <th class="right">Ref APY</th>
-                            </tr>
-                        </thead>
-                        <tbody id="monetra-table-2026">
-                            <tr><td class="td-month" colspan="5" style="text-align:center;padding:3rem 2rem;color:var(--text-faint);font-family:'DM Mono',monospace;font-size:.78rem;letter-spacing:.08em;">Tracking starts with the next daily Reporting Layer run.</td></tr>
-                        </tbody>
-                        <tbody id="monetra-table-2027" style="display:none">
-                            <tr><td class="td-month" colspan="5" style="text-align:center;padding:3rem 2rem;color:var(--text-faint);font-family:'DM Mono',monospace;font-size:.78rem;letter-spacing:.08em;">No reports yet.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="report-disclaimer">
-                    <p>Monetra Generated Income is an autonomous reference model built from daily productive Stable Capital and the validated Stable Capital Reference APY. The APY is converted to its daily equivalent, so income is counted whether it is distributed, separately claimable, or economically compounded inside a strategy. This is not realised cash-flow accounting. Stablecoin/depeg price movement and Net Market P&amp;L remain separate. The current month is provisional. The first tracking month counts only observed reporting days — the system does not fabricate income for days before autonomous monthly tracking began. The Embedded Yield Ledger remains an independent observed-income audit layer and can replace reference-model periods once full-fund flow-safe comparability matures.</p>
-                </div>
-
-                <a href="/monetra/" class="report-link">View Monetra →</a>
-            </div>
+            <table class="strategy-table reveal">
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>Type</th>
+                        <th>Protocol</th>
+                        <th>Est. Yield</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="st-name">Stable Lending</div>
+                            <div class="st-sub">USDC, USDT, DAI supply-side lending</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Lending</div></td>
+                        <td>
+                            <div class="st-protocol">Aave v3</div>
+                            <div class="st-protocol">Compound</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">4–6%</div>
+                            <div class="st-yield-label">APY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">Stable LP</div>
+                            <div class="st-sub">USDC/USDT · USDC/DAI pools</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Liquidity Pool</div></td>
+                        <td>
+                            <div class="st-protocol">Curve Finance</div>
+                            <div class="st-protocol">Aerodrome</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">5–9%</div>
+                            <div class="st-yield-label">APR</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">Convex Stable Pools</div>
+                            <div class="st-sub">Boosted Curve stable LP via Convex</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Boosted LP</div></td>
+                        <td>
+                            <div class="st-protocol">Convex Finance</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">7–12%</div>
+                            <div class="st-yield-label">APR (CRV+CVX)</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">Staked Stables</div>
+                            <div class="st-sub-list">
+                                <span>scrvUSD</span><span>sfrxUSD</span><span>sGHO</span><span>sUSDe</span><span>sUSDS</span>
+                            </div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Staked Stable</div></td>
+                        <td>
+                            <div class="st-protocol">Curve · Frax</div>
+                            <div class="st-protocol">Aave · Ethena · Sky</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">5–10%</div>
+                            <div class="st-yield-label">APY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">fxSAVE</div>
+                            <div class="st-sub">Delta-neutral auto-compounding stable vault</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Auto-Compound Vault</div></td>
+                        <td>
+                            <div class="st-protocol">f(x) Protocol V2</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">6–12%</div>
+                            <div class="st-yield-label">APY · Organic</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">Yield Staking</div>
+                            <div class="st-sub">Tokenized treasury yield positions</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Yield Protocol</div></td>
+                        <td>
+                            <div class="st-protocol">Pendle Finance</div>
+                            <div class="st-protocol">Ondo Finance</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">5–8%</div>
+                            <div class="st-yield-label">Fixed APY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="st-name">Vault Deposits</div>
+                            <div class="st-sub">Managed stable vaults, auto-compound</div>
+                            <div class="st-status building">Building</div>
+                        </td>
+                        <td><div class="st-type">Vault</div></td>
+                        <td>
+                            <div class="st-protocol">Beefy Finance</div>
+                            <div class="st-protocol">Yearn Finance</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">6–12%</div>
+                            <div class="st-yield-label">APY</div>
+                        </td>
+                    </tr>
+                    <tr class="st-row-featured">
+                        <td>
+                            <div class="st-name">AI Agent Strategies</div>
+                            <div class="st-sub">Autonomous agents continuously scan protocols, rebalance capital in real-time, and capture yield unavailable to static positions</div>
+                            <div class="st-agents">
+                                <span>ZyFAI</span><span>Mamo</span><span>Giza · ARMA</span>
+                            </div>
+                            <div class="st-status building">Exploring</div>
+                        </td>
+                        <td><div class="st-type">Agentic DeFi</div></td>
+                        <td>
+                            <div class="st-protocol">ZyFAI — Base, Sonic</div>
+                            <div class="st-protocol">Mamo — Base</div>
+                            <div class="st-protocol">Giza ARMA — Base, Mode</div>
+                        </td>
+                        <td>
+                            <div class="st-yield">8–25%</div>
+                            <div class="st-yield-label">APY (agent-boosted)</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </section>
 
-    <!-- Pending Funds -->
-    <section class="pending-funds">
-        <div class="pending-inner">
-            <div class="reveal">
-                <div class="section-tag">Coming Next</div>
-                <h2 class="pending-heading">One more fund.<br>One more income stream.</h2>
-                <p class="pending-sub">Fructus remains the next income family to graduate into autonomous reporting. Building takes time. Reporting begins only when the underlying income model is mature enough to be measured honestly.</p>
+    <!-- AI Agent Strategies Deep Dive -->
+    <section class="agent-strategies">
+        <div class="agent-strategies-inner">
+            <div class="agent-strat-header reveal">
+                <div class="section-tag">Agentic DeFi</div>
+                <h2 class="agent-strat-heading">Capital managed<br>by autonomous agents.</h2>
+                <p class="agent-strat-sub">
+                    The next frontier of stablecoin yield may not be a protocol, but a network of AI agents capable of monitoring hundreds of opportunities simultaneously, reallocating capital in real time, and optimizing yield more efficiently than static strategies.
+                </p>
+                <p class="agent-strat-sub">
+                    Monetra is actively exploring integrations with emerging agent-driven yield infrastructure and autonomous treasury management platforms.
+                </p>
             </div>
 
-            <div class="pending-grid single reveal">
-                <!-- Fructus -->
-                <div class="pending-card">
-                    <div class="pending-card-header">
-                        <div class="pending-cube" style="background:#eab308"></div>
-                        <div class="pending-name">Fructus</div>
+            <div class="agent-cards reveal">
+                <!-- ZyFAI -->
+                <div class="agent-detail-card">
+                    <div class="agent-detail-header">
+                        <div class="agent-detail-name">ZyFAI</div>
+                        <div class="agent-detail-url">zyf.ai</div>
                     </div>
-                    <p class="pending-desc">
-                        The real-world asset fund holds tokenised positions in treasuries, 
-                        commodities, copper mining, energy services, and silver. 
-                        As these positions scale and yield-generating instruments 
-                        (particularly treasury and credit components) become a larger 
-                        share of the allocation, structured monthly reporting will follow.
+                    <p class="agent-detail-desc">
+                        ZyFAI deploys autonomous agents via smart accounts with session keys — 
+                        your capital stays in self-custodied wallets while the agent continuously 
+                        reallocates across Aave, Morpho, and Compound on Base, Sonic, Plasma, 
+                        and Arbitrum. Rebalancing executes in under 1.5 seconds when a better 
+                        yield opportunity appears. Not just APY — the agent monitors interest 
+                        rate models, TVL, yield stability, slippage, and price impact 
+                        simultaneously before executing any move.
                     </p>
-                    <div class="pending-timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-text">Initial RWA positions established</div>
+                    <div class="agent-detail-stats">
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">8–25%</div>
+                            <div class="agent-stat-label">Historical APY range</div>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-text">ONDO, STRCon, DBCon, COPXon, OIHon deployed</div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">$8.4M</div>
+                            <div class="agent-stat-label">AUM at peak</div>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-dot" style="background:rgba(255,255,255,0.15)"></div>
-                            <div class="timeline-text" style="color:rgba(244,244,242,0.2)">Yield reporting — pending allocation maturity</div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">&lt;1.5s</div>
+                            <div class="agent-stat-label">Rebalance execution</div>
                         </div>
                     </div>
-                    <div class="pending-status">Reports pending</div>
+                </div>
+
+                <!-- Mamo -->
+                <div class="agent-detail-card">
+                    <div class="agent-detail-header">
+                        <div class="agent-detail-name">Mamo</div>
+                        <div class="agent-detail-url">mamo.bot</div>
+                    </div>
+                    <p class="agent-detail-desc">
+                        Mamo is an AI-powered stablecoin yield optimizer built on Base, 
+                        independently audited by Certora and Halborn Security with a 
+                        $250,000 Code4rena bug bounty program. The platform focuses 
+                        exclusively on USDC yield maximization through intelligent 
+                        autonomous decision-making — removing the need for manual 
+                        protocol monitoring. Real yield distributed weekly, not inflationary 
+                        incentives. Mamo represents the institutional-grade security standard 
+                        that Monetra requires before any capital deployment.
+                    </p>
+                    <div class="agent-detail-stats">
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">Real</div>
+                            <div class="agent-stat-label">Yield source (non-inflationary)</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">2×</div>
+                            <div class="agent-stat-label">Audited (Certora + Halborn)</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">$250K</div>
+                            <div class="agent-stat-label">Bug bounty</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Giza ARMA -->
+                <div class="agent-detail-card">
+                    <div class="agent-detail-header">
+                        <div class="agent-detail-name">Giza · ARMA</div>
+                        <div class="agent-detail-url">gizatech.xyz</div>
+                    </div>
+                    <p class="agent-detail-desc">
+                        Giza's flagship agent ARMA operates across Base and Mode, 
+                        continuously routing stablecoins between Morpho, Aave, and Fluid 
+                        to capture the best risk-adjusted yield available. The agent 
+                        delivers up to 83% higher APR than static USDC market positions 
+                        through real-time optimization. Giza charges 10% performance fee 
+                        on realized yield only — never on principal — and covers all 
+                        gas fees after initial activation. Session keys define precise 
+                        operational limits, preventing any action outside defined parameters. 
+                        $20M+ in assets under agents with a 20% reinvestment rate signals 
+                        strong user confidence in sustained returns.
+                    </p>
+                    <div class="agent-detail-stats">
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">15%+</div>
+                            <div class="agent-stat-label">USDC APY (Base target)</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">$20M+</div>
+                            <div class="agent-stat-label">Assets under agents</div>
+                        </div>
+                        <div class="agent-stat-item">
+                            <div class="agent-stat-value">+83%</div>
+                            <div class="agent-stat-label">vs. static positions</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="agent-note reveal">
+                <div class="agent-note-line"></div>
+                <p>Monetra applies the same due diligence to agentic protocols as to any other position: 
+                audit history, track record, TVL stability, and smart contract architecture are 
+                evaluated before capital deployment. Agent strategies will be introduced gradually 
+                as TVL grows and each platform's risk profile is validated through sustained operation.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Risk Matrix -->
+    <section class="risk">
+        <div class="risk-inner">
+            <div class="risk-header reveal">
+                <h2 class="risk-heading">Risk architecture</h2>
+                <p class="risk-subtext">Stable does not mean risk-free. These are the vectors we actively monitor and manage within Monetra.</p>
+            </div>
+
+            <div class="risk-grid reveal">
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Smart Contract Risk</div>
+                    <div class="risk-text">Protocol vulnerabilities can result in loss of deposited capital. Mitigated through audited protocols, diversification across 4–6 platforms, and graduated position sizing.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Depeg Risk</div>
+                    <div class="risk-text">Stablecoins can lose their USD peg during stress events. Monetra prioritises battle-tested stables (USDC, USDT, DAI) and avoids algorithmic or single-collateral experimental pegs.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Liquidity Risk</div>
+                    <div class="risk-text">Locked positions cannot be exited on demand. A minimum 30% liquid buffer is maintained at all times to ensure capital is accessible when needed.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Yield Compression</div>
+                    <div class="risk-text">DeFi yields fluctuate with market conditions and TVL. Monetra rotates capital between protocols to maintain competitive returns without chasing unsustainable incentives.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Governance Risk</div>
+                    <div class="risk-text">Protocol governance can alter fee structures, collateral ratios, and reward emissions. Positions are monitored against governance proposals that materially affect risk profile.</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-icon-line"></div>
+                    <div class="risk-title">Regulatory Risk</div>
+                    <div class="risk-text">Stablecoin and DeFi regulation is evolving globally. Monetra operates on-chain with non-custodial positions. No regulatory compliance risk transfers to the fund operator.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Thesis -->
+    <section class="thesis">
+        <div class="thesis-inner">
+            <div class="reveal">
+                <p class="thesis-quote">"Most capital in crypto chases asymmetry. Monetra chases consistency. In a volatile system, that is the rarest edge of all."</p>
+                <div class="thesis-divider"></div>
+                <div class="thesis-attribution">The Holding · Monetra Fund Thesis</div>
+            </div>
+
+            <div class="thesis-body reveal">
+                <div class="thesis-col">
+                    <p>
+                        Crypto markets are built on volatility. Bitcoin cycles, DeFi narratives, and governance token emissions all fluctuate over time. Every other fund within The Holding is designed to navigate this volatility deliberately. Monetra is designed to operate largely independently of it.
+                    </p>
+                    <p>
+                        Within DeFi's stablecoin layer, there is a structural source of yield that many allocators overlook while pursuing asymmetric opportunities. Lending markets require liquidity. Stablecoin liquidity pools require depth. These core primitives generate yield paid in stable assets across market cycles, regardless of whether BTC is trading at $40k or $200k.
+                    </p>
+                </div>
+                <div class="thesis-col">
+                    <p>
+                        Monetra exists because The Holding requires a permanent cash-flow layer that operates independently of market direction. When Substantia is accumulating patiently, Monetra compounds. When Defitea's yield environment softens, Monetra supplements. When Singul identifies new opportunities, Monetra provides deployable capital.
+                    </p>
+                    <p>
+                        The strategy is intentionally simple. No leverage. No directional exposure. No speculative bets.
+                    </p>
+                    <p>
+                        Monetra is the engine that makes every other fund within the system more resilient — generating cash flow without relying on asset appreciation as its primary source of returns.
+                    </p>
                 </div>
             </div>
         </div>
@@ -1811,7 +1849,10 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="footer-brand">The Holding</div>
+        <div class="footer-brand">
+            Monetra <span>by The Holding</span>
+            <div class="footer-slogan">Capital that flows.</div>
+        </div>
         <div class="footer-links">
             <a href="/" class="footer-link">TheHolding.ai</a>
             <a href="/substantia" class="footer-link">Substantia</a>
@@ -1820,359 +1861,24 @@
             <a href="/fructus" class="footer-link">Fructus</a>
             <a href="/monetra" class="footer-link">Monetra</a>
         </div>
-        <div class="footer-note">Non-custodial · Onchain</div>
+        <div class="footer-note">monetra.eth · Non-custodial</div>
     </footer>
 
-    <script src="/companies/productivity-intelligence.js"></script>
     <script>
-        // Live Reference APR + monthly Reporting Layer use the same central UI core.
-        (function () {
-            function money(v, approximate) {
-                return window.THProductivity.formatMoney(v, { digits:2, approximate:Boolean(approximate) });
-            }
-            function pct(v, approximate) {
-                return window.THProductivity.formatPercent(v, { digits:2, sign:true, approximate:Boolean(approximate) });
-            }
-            function monthShort(key) {
-                var m = Number(String(key || '').slice(5,7));
-                return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] || '';
-            }
-            function monthLong(key) {
-                var y = Number(String(key || '').slice(0,4));
-                var m = Number(String(key || '').slice(5,7));
-                if (!y || !m) return key || '';
-                return new Intl.DateTimeFormat('en-US', { month:'long', year:'numeric', timeZone:'UTC' }).format(new Date(Date.UTC(y,m-1,1)));
-            }
-
-            function updateSummary(fund, year) {
-                var summary = window.THProductivity.getReportingSummary('defitea.eth', year, { funds:{ 'defitea.eth':fund } });
-                if (!summary) return;
-                var cash = document.getElementById('report-ytd-cashflow');
-                var yld = document.getElementById('report-ytd-yield');
-                var best = document.getElementById('report-best-yield');
-                var bestMonth = document.getElementById('report-best-month');
-                var apr = document.getElementById('report-annualized-apr');
-                var period = document.getElementById('report-ytd-period');
-                var months = document.getElementById('report-ytd-months');
-                var status = document.getElementById('reporting-status-line');
-
-                if (cash) cash.textContent = money(summary.ytdCashFlowUsd, summary.ytdCashFlowEstimated);
-                if (yld) yld.textContent = pct(summary.ytdCashFlowYieldPct, false);
-                if (best) best.textContent = pct(summary.bestMonthYieldPct, false);
-                if (bestMonth) bestMonth.textContent = summary.bestMonthLabel || '—';
-                if (apr) apr.textContent = window.THProductivity.formatPercent(summary.annualizedCashFlowAprPct, { digits:1, approximate:true });
-                if (period) period.textContent = summary.periodStart && summary.periodEnd ? monthShort(summary.periodStart) + ' – ' + monthShort(summary.periodEnd) + ' ' + year : String(year);
-                if (months) months.textContent = summary.closedMonths + ' closed month' + (summary.closedMonths === 1 ? '' : 's');
-
-                var current = summary.currentMonth && fund.months ? fund.months[summary.currentMonth] : null;
-                if (status) {
-                    if (current) {
-                        status.textContent = monthLong(current.month) + ' is live · ' + current.sampleDays + ' daily snapshot' + (current.sampleDays === 1 ? '' : 's') + ' · closes automatically next month';
-                    } else {
-                        status.textContent = 'Closed monthly history · daily Reporting Layer active';
-                    }
-                }
-            }
-
-            function renderDesktopChart(months) {
-                var chart = document.getElementById('barChart');
-                if (!chart) return;
-                var vals = months.map(function (m) { return Number(m.monthlyYieldPct); }).filter(Number.isFinite);
-                var maxPct = Math.max(2, Math.ceil((Math.max.apply(null, vals.concat([0])) || 1) * 4) / 4);
-                chart.innerHTML = months.map(function (m) {
-                    var v = Number(m.monthlyYieldPct) || 0;
-                    var h = Math.max(2, Math.min(100, v / maxPct * 100));
-                    var live = m.status === 'provisional';
-                    return '<div class="bar-item"><div class="bar-fill" data-pct="'+v+'" style="height:'+h+'%;opacity:'+(live ? '0.48' : '0.75')+'">' +
-                        '<span class="bar-pct">'+(live ? '~' : '')+v.toFixed(2)+'%</span>' +
-                        '<span class="bar-month">'+monthShort(m.month)+(live ? '*' : '')+'</span></div></div>';
-                }).join('');
-                var grid = document.getElementById('barGrid');
-                if (grid) grid.innerHTML = '';
-            }
-
-            function renderMobileChart(months) {
-                var mobile = document.getElementById('mobileChart');
-                if (!mobile) return;
-                var maxPct = Math.max.apply(null, months.map(function (m) { return Number(m.monthlyYieldPct) || 0; }).concat([1]));
-                mobile.innerHTML = months.map(function (m) {
-                    var v = Number(m.monthlyYieldPct) || 0;
-                    var live = m.status === 'provisional';
-                    var w = Math.max(2, v / maxPct * 100);
-                    return '<div class="mobile-bar-row" style="opacity:'+(live ? '0.72' : '1')+'">' +
-                        '<div class="mobile-bar-month">'+monthShort(m.month)+(live ? '*' : '')+'</div>' +
-                        '<div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:'+w+'%"></div></div>' +
-                        '<div class="mobile-bar-pct">'+(live ? '~' : '+')+v.toFixed(2)+'%</div></div>';
-                }).join('');
-            }
-
-            function renderTable(year, months) {
-                var tbody = document.getElementById('table-body-' + year);
-                if (!tbody) return;
-                if (!months.length) {
-                    tbody.innerHTML = '<tr><td class="td-month" colspan="5" style="text-align:center;padding:3rem 2rem;color:var(--text-faint);font-family:\'DM Mono\',monospace;font-size:0.78rem;letter-spacing:0.08em;">No reports yet.</td></tr>';
-                    return;
-                }
-                var rows = months.map(function (m) {
-                    var live = m.status === 'provisional';
-                    var reference = m.mode === 'reference-model';
-                    var badge = reference ? '<span class="report-mode-badge '+(live ? 'live' : '')+'">'+(live ? 'Live' : 'Auto')+'</span>' : '';
-                    var cash = Number(m.cashFlowUsd);
-                    var yld = Number(m.monthlyYieldPct);
-                    var apr = Number(m.annualizedAprPct);
-                    return '<tr class="'+(live ? 'row-provisional ' : '')+(reference ? 'row-reference' : '')+'">' +
-                        '<td class="td-month">'+monthLong(m.month).replace(' '+year,'')+badge+'</td>' +
-                        '<td class="td-num">$'+(Number.isFinite(cash) ? cash.toFixed(2) : '—')+'</td>' +
-                        '<td class="td-yield">'+(live ? '~' : '+')+(Number.isFinite(yld) ? yld.toFixed(2) : '—')+'%</td>' +
-                        '<td class="td-apy">'+(reference ? '~' : '')+(Number.isFinite(apr) ? apr.toFixed(2) : '—')+'%</td>' +
-                        '<td class="td-bar"><div class="inline-bar" style="width:'+Math.min(100, Math.max(4, (yld || 0) / 2 * 100))+'%"></div></td></tr>';
-                });
-
-                var closed = months.filter(function (m) { return m.status !== 'provisional'; });
-                var totalCash = closed.reduce(function (s,m) { return s + (Number(m.cashFlowUsd) || 0); },0);
-                var totalYield = closed.reduce(function (s,m) { return s + (Number(m.monthlyYieldPct) || 0); },0);
-                var annual = closed.length ? totalYield / closed.length * 12 : NaN;
-                var estimated = closed.some(function (m) { return m.mode === 'reference-model'; });
-                rows.push('<tr class="row-total"><td class="td-month">Total</td><td class="td-num">'+(estimated ? '~' : '')+'$'+totalCash.toFixed(2)+'</td><td class="td-yield">+'+totalYield.toFixed(2)+'%</td><td class="td-apy">~'+(Number.isFinite(annual) ? annual.toFixed(1) : '—')+'%</td><td class="td-bar"></td></tr>');
-                tbody.innerHTML = rows.join('');
-            }
-
-            async function syncReportProductivity() {
-                if (!window.THProductivity) return;
-                await window.THProductivity.bindCompanyAprs(document);
-                var reporting = await window.THProductivity.loadReporting();
-                if (!reporting) return;
-                var fund = window.THProductivity.getFundReporting('defitea.eth', reporting);
-                if (!fund) return;
-
-                updateSummary(fund, 2026);
-                var months2026 = window.THProductivity.getReportingMonths('defitea.eth', 2026, reporting);
-                var months2027 = window.THProductivity.getReportingMonths('defitea.eth', 2027, reporting);
-                renderDesktopChart(months2026);
-                renderMobileChart(months2026);
-                renderTable(2026, months2026);
-                renderTable(2027, months2027);
-                console.log('[Reporting Layer] Yield Reports synced:', months2026.length + ' months');
-            }
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', syncReportProductivity, { once:true });
-            } else {
-                syncReportProductivity();
-            }
-        })();
-
-        // Monetra autonomous Stable Capital reporting
-        (function () {
-            function finite(v) {
-                if (v === null || v === undefined || v === '') return NaN;
-                var n = Number(v); return Number.isFinite(n) ? n : NaN;
-            }
-            function money(v, approximate) {
-                var n = finite(v); if (!Number.isFinite(n)) return '—';
-                return (approximate ? '~' : '') + '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-            }
-            function percent(v, approximate) {
-                var n = finite(v); if (!Number.isFinite(n)) return '—';
-                return (approximate ? '~' : '') + (n > 0 ? '+' : '') + n.toFixed(2) + '%';
-            }
-            function apy(v) {
-                var n = finite(v); return Number.isFinite(n) ? n.toFixed(2) + '%' : '—';
-            }
-            function monthShort(key) {
-                var m=Number(String(key||'').slice(5,7));
-                return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]||'';
-            }
-            function monthLong(key) {
-                var y=Number(String(key||'').slice(0,4)),m=Number(String(key||'').slice(5,7));
-                if(!y||!m) return key||'';
-                return new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(y,m-1,1)));
-            }
-            function renderChart(months) {
-                var desktop=document.getElementById('monetraBarChart');
-                var mobile=document.getElementById('monetraMobileChart');
-                if (!desktop || !mobile) return;
-                if (!months.length) return;
-                var max=Math.max.apply(null,months.map(function(m){return finite(m.monthlyYieldPct)||0;}).concat([0.05]));
-                desktop.innerHTML=months.map(function(m){
-                    var v=finite(m.monthlyYieldPct)||0, live=m.status==='provisional', h=Math.max(3,Math.min(100,v/max*82));
-                    return '<div class="bar-item"><div class="bar-fill" style="height:'+h+'%;opacity:'+(live?'.52':'.82')+'"><span class="bar-pct">'+(live?'~':'+')+v.toFixed(2)+'%</span><span class="bar-month">'+monthShort(m.month)+(live?'*':'')+'</span></div></div>';
-                }).join('');
-                mobile.innerHTML=months.map(function(m){
-                    var v=finite(m.monthlyYieldPct)||0, live=m.status==='provisional', w=Math.max(3,v/max*100);
-                    return '<div class="mobile-bar-row" style="opacity:'+(live?'.76':'1')+'"><div class="mobile-bar-month">'+monthShort(m.month)+(live?'*':'')+'</div><div class="mobile-bar-track"><div class="mobile-bar-fill" style="width:'+w+'%"></div></div><div class="mobile-bar-pct">'+(live?'~':'+')+v.toFixed(2)+'%</div></div>';
-                }).join('');
-            }
-            function renderTable(year, months) {
-                var tbody=document.getElementById('monetra-table-'+year); if(!tbody) return;
-                if(!months.length){tbody.innerHTML='<tr><td class="td-month" colspan="5" style="text-align:center;padding:3rem 2rem;color:var(--text-faint);font-family:\'DM Mono\',monospace;font-size:.78rem;letter-spacing:.08em;">No reports yet.</td></tr>';return;}
-                tbody.innerHTML=months.map(function(m){
-                    var live=m.status==='provisional';
-                    return '<tr class="'+(live?'row-provisional':'')+'"><td class="td-month">'+monthLong(m.month).replace(' '+year,'')+(live?'<span class="report-mode-badge live">Live</span>':'<span class="report-mode-badge">Auto</span>')+'</td><td class="td-num">'+money(m.averageStableCapitalUsd,true)+'</td><td class="td-yield">'+money(m.generatedIncomeUsd,true)+'</td><td class="td-apy">'+percent(m.monthlyYieldPct,true)+'</td><td class="td-apy">'+apy(m.averageReferenceApyPct)+'</td></tr>';
-                }).join('');
-            }
-            async function syncMonetraReporting() {
-                if(!window.THProductivity) return;
-                var reporting=await window.THProductivity.loadReporting();
-                var fund=window.THProductivity.getFundReporting('Monetra.eth',reporting);
-                if(!fund) return;
-                var latest=fund.latestSnapshot||{};
-                var months2026=window.THProductivity.getReportingMonths('Monetra.eth',2026,reporting);
-                var months2027=window.THProductivity.getReportingMonths('Monetra.eth',2027,reporting);
-                var current=months2026.slice().reverse().find(function(m){return m.status==='provisional';})||null;
-                var el=document.getElementById('monetra-mtd-income'); if(el) el.textContent=current?money(current.generatedIncomeUsd,true):'—';
-                el=document.getElementById('monetra-mtd-yield'); if(el) el.textContent=current?percent(current.monthlyYieldPct,true):'—';
-                el=document.getElementById('monetra-current-capital'); if(el) el.textContent=money(latest.currentCapitalUsd,false);
-                el=document.getElementById('monetra-reference-apy'); if(el) el.textContent=apy(latest.referenceApyPct);
-                el=document.getElementById('monetra-kpi-apy'); if(el) el.textContent=apy(latest.referenceApyPct);
-                el=document.getElementById('monetra-mtd-period'); if(el) el.textContent=current?monthLong(current.month)+' · provisional':'No live month';
-                el=document.getElementById('monetra-reporting-status');
-                if(el){
-                    if(current) el.textContent=monthLong(current.month)+' is live · '+current.sampleDays+' daily snapshot'+(current.sampleDays===1?'':'s')+' · generated income includes compounding · closes automatically next month';
-                    else el.textContent='Closed monthly history · Monetra daily Reporting Layer active';
-                }
-                renderChart(months2026); renderTable(2026,months2026); renderTable(2027,months2027);
-                console.log('[Reporting Layer] Monetra synced:',months2026.length+' months');
-            }
-            if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',syncMonetraReporting,{once:true});
-            else syncMonetraReporting();
-        })();
-
-        // Year switcher
-        function switchYear(year, btn) {
-            document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('[id^="table-body-"]').forEach(tb => {
-                tb.style.display = 'none';
-            });
-            const target = document.getElementById('table-body-' + year);
-            if (target) target.style.display = '';
-        }
-
-        function switchMonetraYear(year, btn) {
-            document.querySelectorAll('.monetra-year-switcher .year-btn').forEach(function(b){ b.classList.remove('active'); });
-            btn.classList.add('active');
-            document.querySelectorAll('[id^="monetra-table-"]').forEach(function(tb){ tb.style.display='none'; });
-            var target=document.getElementById('monetra-table-'+year); if(target) target.style.display='';
-        }
-
-        // Theme toggle
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = html.getAttribute('data-theme') === 'dark';
-            const label = document.getElementById('themeLabel');
-            const icon  = document.getElementById('themeIcon');
-
-            if (isDark) {
-                html.removeAttribute('data-theme');
-                label.textContent = 'Dark';
-                icon.textContent  = '◐';
-                localStorage.setItem('theme', 'light');
-            } else {
-                html.setAttribute('data-theme', 'dark');
-                label.textContent = 'Light';
-                icon.textContent  = '◑';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-
-        // Restore saved theme
-        (function() {
-            const saved = localStorage.getItem('theme');
-            if (saved === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                const label = document.getElementById('themeLabel');
-                const icon  = document.getElementById('themeIcon');
-                if (label) label.textContent = 'Light';
-                if (icon)  icon.textContent  = '◑';
-            }
-        })();
-
         // Scroll reveal
         const reveals = document.querySelectorAll('.reveal');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry, i) => {
                 if (entry.isIntersecting) {
-                    setTimeout(() => entry.target.classList.add('visible'), i * 60);
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, i * 80);
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+        }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
         reveals.forEach(el => observer.observe(el));
-
-        // Build percent grid + animate bars
-        function buildChart() {
-            const grid   = document.getElementById('barGrid');
-            const chart  = document.getElementById('barChart');
-            if (!grid || !chart) return;
-
-            const maxPct  = 2.00;
-            const step    = 0.25;
-            const stopAt  = 1.50; // leave headroom above the strongest observed month
-            const chartH  = chart.offsetHeight;
-            const barAreaH = chartH - 40;
-
-            // Draw grid lines 0.25 → stopAt only
-            grid.innerHTML = '';
-            for (let pct = step; pct <= stopAt; pct = Math.round((pct + step) * 100) / 100) {
-                const frac = pct / maxPct;
-                const bottomPx = frac * barAreaH;
-
-                const line = document.createElement('div');
-                line.className = 'bar-grid-line';
-                line.style.bottom = (bottomPx + 40) + 'px';
-                grid.appendChild(line);
-
-                const label = document.createElement('span');
-                label.className = 'bar-grid-label';
-                label.textContent = pct.toFixed(2) + '%';
-                label.style.bottom = (bottomPx + 40) + 'px';
-                grid.appendChild(label);
-            }
-
-            // Animate vertical bars
-            const fills = chart.querySelectorAll('.bar-fill');
-            fills.forEach((fill, i) => {
-                const pct = parseFloat(fill.getAttribute('data-pct'));
-                const heightPct = (pct / maxPct) * 100;
-                fill.style.transition = `height 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.1}s`;
-                setTimeout(() => { fill.style.height = heightPct + '%'; }, 80);
-            });
-        }
-
-        // Animate mobile horizontal bars
-        function animateMobileBars() {
-            const fills = document.querySelectorAll('.mobile-bar-fill');
-            fills.forEach((fill, i) => {
-                const targetW = fill.getAttribute('data-w');
-                fill.style.transition = `width 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.1}s`;
-                setTimeout(() => { fill.style.width = targetW; }, 80);
-            });
-        }
-
-        // Observe chart section
-        const chartSection = document.querySelector('.dr-chart-section');
-        if (chartSection) {
-            const chartObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        buildChart();
-                        animateMobileBars();
-                        chartObserver.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.2 });
-            chartObserver.observe(chartSection);
-        }
-
-        // Rebuild grid on resize
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                const grid = document.getElementById('barGrid');
-                if (grid && grid.children.length > 0) buildChart();
-            }, 200);
-        });
     </script>
 
 </body>
