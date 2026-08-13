@@ -2,6 +2,9 @@ name: "The Holding Brain · Decision Outcome Learning Loop"
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["The Holding Brain · Refresh Cognitive Stack"]
+    types: [completed]
   # Event-driven in v0.1: wake only when coherent cognitive state, decision
   # memory, policy, or learning release inputs move. A daily cadence is
   # intentionally deferred until the integrated Cognitive Stack itself is
@@ -31,6 +34,7 @@ concurrency:
 
 jobs:
   learn:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
@@ -107,7 +111,7 @@ jobs:
           const fs = require('fs');
           const ctx = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
           const ev = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-eval.json','utf8'));
-          if (ev.status !== 'pass') throw new Error('Independent learning eval is not PASS');
+          if (ev.status !== 'pass') throw new Error('Independent learning review status is not PASS');
           if (ctx.constraints?.executionAllowed !== false) throw new Error('Learning Loop enabled execution');
           if (ctx.constraints?.walletActionAllowed !== false) throw new Error('Learning Loop enabled wallet action');
           if (ctx.constraints?.autonomousPolicyMutationAllowed !== false) throw new Error('Learning Loop enabled autonomous policy mutation');
