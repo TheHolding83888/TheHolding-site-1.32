@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- companies.html · v1.24.1 · Reading room · bar gap, tighter nav, mobile rail unpinned -->
 <!-- companies.html · v1.24 · Reading room · compact section nav + Observatory rail -->
 <!-- companies.html · v1.23.11 · Registry Observatory Mobile Freedom · Collection → Index + Monetra mpx v2 -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
@@ -8086,6 +8087,64 @@
         @media (max-width: 340px){
             .capital-mode-btn{ min-height: 64px !important; }
         }
+        /* ═══════════════════════════════════════════════════════════════
+           Reading room · v1.24.1
+           · a deliberate gap between the two bars, so they read as two
+             separate instruments rather than one thick block
+           · a little more air removed from the section nav
+           · the Observatory rail is sticky on laptop and desktop only —
+             on a phone it scrolls away with the page
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* Section nav — one more step tighter. */
+        .subnav-inner{ padding-top: .66rem; padding-bottom: .62rem; }
+        @media (max-width: 760.98px){
+            .subnav-inner,
+            .subnav > .subnav-inner{ padding-top: .6rem; padding-bottom: .56rem; }
+        }
+        @media (max-width: 460px){
+            .subnav .subnav-inner,
+            .subnav > .subnav-inner{ padding-top: .56rem; padding-bottom: .5rem; }
+        }
+
+        /* The rail parks 10px below the nav instead of against it. The gap is
+           filled by the rail's own leading edge, so page content never flickers
+           through the seam while scrolling. */
+        @media (min-width: 761px){
+            .capital-mode-rail-wrap{ top: 49px; }
+            .capital-mode-rail-wrap::before{
+                content: '';
+                position: absolute;
+                left: 0; right: 0;
+                top: -10px;
+                height: 10px;
+                background: rgba(252,252,250,.992);
+                pointer-events: none;
+            }
+        }
+        @media (min-width: 1181px){
+            .capital-mode-rail-wrap{ top: 50px; }
+        }
+
+        /* Phone: the rail belongs to the page, not to the viewport. */
+        @media (max-width: 760.98px){
+            .capital-mode-rail-wrap{
+                position: relative !important;
+                top: auto !important;
+                z-index: 2;
+            }
+        }
+
+        /* Anchors follow the new stack height. */
+        #collection, #next-layer, #index, #graph, #intelligence,
+        #how-it-works, #platform, #build{ scroll-margin-top: 78px; }
+        #capital-hub{ scroll-margin-top: 46px; }
+        @media (max-width: 760.98px){
+            #collection, #next-layer, #index, #graph, #intelligence,
+            #how-it-works, #platform, #build{ scroll-margin-top: 54px; }
+            #capital-hub{ scroll-margin-top: 44px; }
+        }
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
