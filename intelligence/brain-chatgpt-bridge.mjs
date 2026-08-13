@@ -950,7 +950,7 @@ if (SELF_TEST) {
   }
 
   const secretBad = structuredClone(output);
-  secretBad.bridge.manualTrigger = 'sk-proj-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+  secretBad.bridge.manualTrigger = ['sk', 'proj', 'A'.repeat(32)].join('-');
   const secretValidation = validateBridge(secretBad, brain, policy);
   if (!secretValidation.failures.some((x) => x.includes('secret-like marker'))) {
     fail('Self-test failed to reject secret-like public output');
