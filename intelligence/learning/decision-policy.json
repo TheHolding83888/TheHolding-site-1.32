@@ -1,0 +1,91 @@
+{
+  "version": "0.1-decision-outcome-learning-policy",
+  "mode": "evidence-bound-human-decision-memory",
+  "purpose": "Persist the lifecycle of Grounded Brain cases, owner decisions, observed outcomes, deterministic lessons, and confidence calibration without granting execution authority.",
+  "caseIdentity": {
+    "stableFields": [
+      "domain",
+      "category",
+      "entity",
+      "recommendationClass"
+    ],
+    "note": "The current Brain caseId remains preserved, while caseKey provides a more stable cross-run identity when wording changes.",
+    "entityNormalization": {
+      "dynamicAggregatePattern": "^\\d+\\s+current findings$",
+      "replacement": "current findings",
+      "note": "Aggregate security counts may change while the underlying issue class remains the same. Normalize only this explicit dynamic-count form; all other entities remain exact."
+    }
+  },
+  "decisions": {
+    "allowedDispositions": [
+      "accept",
+      "defer",
+      "reject",
+      "modify"
+    ],
+    "appendOnly": true,
+    "correctionsBySupersedingEntryOnly": true,
+    "minimumRationaleCharacters": 10,
+    "maximumRationaleCharacters": 2000,
+    "maximumExpectedOutcomeCharacters": 1200,
+    "maximumModifiedActionCharacters": 2000
+  },
+  "predictions": {
+    "allowedEvents": [
+      "none",
+      "case-resolved-by-review"
+    ],
+    "minimumProbabilityBps": 0,
+    "maximumProbabilityBps": 10000,
+    "minimumReviewDays": 1,
+    "maximumReviewDays": 365,
+    "settlementRule": "A scored prediction settles only after a coherent Grounded Brain observation at or after reviewAt. The observed active/inactive case state at that later Brain snapshot is used; absence before the review horizon never settles early."
+  },
+  "calibration": {
+    "warmingUntilScoredOutcomes": 5,
+    "highConfidenceThresholdBps": 8000,
+    "binsBps": [
+      [
+        0,
+        1999
+      ],
+      [
+        2000,
+        3999
+      ],
+      [
+        4000,
+        5999
+      ],
+      [
+        6000,
+        7999
+      ],
+      [
+        8000,
+        10000
+      ]
+    ]
+  },
+  "history": {
+    "maxCaseRecords": 1500,
+    "maxLifecycleEvents": 5000,
+    "maxLessons": 1000,
+    "maxContextLessons": 100,
+    "maxPeerExperienceGroups": 500,
+    "maxBrainObservations": 2000
+  },
+  "safety": {
+    "publicDataOnly": true,
+    "noSecrets": true,
+    "apiRequired": false,
+    "modelCallAllowed": false,
+    "capitalExecutionAllowed": false,
+    "walletActionAllowed": false,
+    "repositoryCodeMutationAllowed": false,
+    "methodologyMutationAllowed": false,
+    "workflowPlaneMutationAllowed": false,
+    "decisionRecordsAreExecutable": false,
+    "lessonsMayChangePolicyAutomatically": false
+  }
+}
