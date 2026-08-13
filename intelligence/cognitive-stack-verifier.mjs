@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { verifyGroundedBrainUpstreams, UPSTREAM_GUARD_VERSION } from './brain-upstream-guard.mjs';
+import { verifyCognitiveRelease, RELEASE_GUARD_VERSION } from './cognitive-release-guard.mjs';
 
 const ROOT = process.cwd();
 
@@ -181,7 +182,7 @@ function validateChain({ security, securityMemory, brain, bridge, bridgeEval, br
   };
 }
 
-function buildState({ securityLoaded, securityMemoryLoaded, brainLoaded, bridgeLoaded, bridgeEvalLoaded, validation }) {
+function buildState({ securityLoaded, securityMemoryLoaded, brainLoaded, bridgeLoaded, bridgeEvalLoaded, validation, release }) {
   const { security, securityMemory, brain, bridge } = {
     security: securityLoaded.data,
     securityMemory: securityMemoryLoaded.data,
@@ -247,6 +248,14 @@ function buildState({ securityLoaded, securityMemoryLoaded, brainLoaded, bridgeL
       generatedAt: item.generatedAt,
       exactByteMatch: item.exactByteMatch === true,
     })),
+    release: {
+      guardVersion: RELEASE_GUARD_VERSION,
+      releaseId: release.releaseId,
+      manifestFile: release.manifestFile,
+      manifestSha256: release.manifestSha256,
+      staticFileCount: release.fileCount,
+      exactByteMatch: release.current === true,
+    },
     operatingContract: {
       canonicalManualSequence:
         'Security Sentinel -> Grounded Brain -> ChatGPT Bridge -> human-triggered ChatGPT interpretation',
@@ -268,6 +277,7 @@ function buildState({ securityLoaded, securityMemoryLoaded, brainLoaded, bridgeL
       readyForManualInterpretation: state.readyForManualInterpretation,
       chain: state.chain,
       upstreamVector: state.upstreamVector,
+      release: state.release,
       operatingContract: state.operatingContract,
     })
   );
@@ -283,6 +293,11 @@ function buildBrief(state, validation) {
     `Status: ${state.status}`,
     `Ready for manual interpretation: ${state.readyForManualInterpretation ? 'YES' : 'NO'}`,
     `Immediate human review: ${state.requiresImmediateHumanReview ? 'YES' : 'NO'}`,
+    '',
+    '## Release coherence',
+    '',
+    `Release: ${state.release.releaseId} · exact ${state.release.exactByteMatch}`,
+    `Manifest: ${state.release.manifestSha256}`,
     '',
     '## Chain',
     '',
@@ -320,6 +335,7 @@ function loadAll() {
 }
 
 function createCurrentState() {
+  const release = verifyCognitiveRelease({ root: ROOT });
   const loaded = loadAll();
   const validation = validateChain({
     security: loaded.securityLoaded.data,
@@ -334,7 +350,7 @@ function createCurrentState() {
     fail(`Cognitive stack validation failed:\n${validation.failures.join('\n')}`);
   }
 
-  const state = buildState({ ...loaded, validation });
+  const state = buildState({ ...loaded, validation, release });
 
   const evaluation = {
     version: EVAL_VERSION,
@@ -342,6 +358,7 @@ function createCurrentState() {
     generatedAt: state.generatedAt,
     status: 'pass',
     checks: {
+      staticReleaseCoherent: state.release.exactByteMatch === true,
       securityMemoryLinked: state.chain.security.memorySnapshotMatch === true,
       groundedBrainExactUpstream: state.chain.groundedBrain.exactCanonicalUpstreamBinding === true,
       bridgeExactBrain: state.chain.chatgptBridge.sourceBrainSha256 === state.chain.groundedBrain.sha256,
