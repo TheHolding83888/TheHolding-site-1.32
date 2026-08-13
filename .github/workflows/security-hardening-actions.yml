@@ -1,0 +1,126 @@
+name: "The Holding Security Hardening · Pin Actions"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: security-hardening-actions
+  cancel-in-progress: false
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Checkout reviewed repository state
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s security/security-hardening-actions-v0.1.1.mjs
+          test -d .github/workflows
+          git status --porcelain
+          test -z "$(git status --porcelain)" || {
+            echo "ERROR: checkout is not clean before hardening."
+            exit 1
+          }
+
+      - name: Pin reviewed GitHub Actions to immutable SHAs
+        env:
+          EXPECTED_MUTABLE_REF_COUNTS: "30,0"
+        run: node security/security-hardening-actions-v0.1.1.mjs
+
+      - name: Validate narrow patch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node security/security-hardening-actions-v0.1.1.mjs --verify-only
+          git diff --check
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'security/security-hardening-report.json';
+          if (!fs.existsSync(p)) throw new Error('hardening report missing');
+          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (d.version !== '0.1.1-github-actions-sha-pinning') throw new Error('unexpected report version');
+          if (d.summary?.mutableRefsAfter !== 0) throw new Error('mutable refs remain after hardening');
+          if (!['hardened','already-hardened'].includes(d.summary?.status)) throw new Error('unexpected hardening status');
+          if (d.summary?.status === 'hardened' && d.summary?.replacements !== 30) {
+            throw new Error(`first hardening run expected 30 replacements, got ${d.summary?.replacements}`);
+          }
+          console.log('Hardening report validated:', d.summary);
+          NODE
+
+          bad="$(git status --porcelain | awk '{print $2}' | grep -Ev '^(\.github/workflows/[^/]+\.(yml|yaml)|security/security-hardening-report\.json)$' || true)"
+          if [ -n "$bad" ]; then
+            echo "ERROR: hardening changed files outside the approved scope:"
+            echo "$bad"
+            exit 1
+          fi
+
+      - name: Publish hardened workflow state safely
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "The Holding Security Sentinel"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add .github/workflows security/security-hardening-report.json
+
+          if git diff --cached --quiet; then
+            echo "Repository is already hardened; nothing to publish."
+            exit 0
+          fi
+
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^(\.github/workflows/[^/]+\.(yml|yaml)|security/security-hardening-report\.json)$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: staged hardening scope violation:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          git commit -m "security: pin GitHub Actions to reviewed SHAs"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "ERROR: main changed with a real conflict; refusing to guess."
+              exit 1
+            fi
+
+            # Re-check the post-rebase state before any write to remote main.
+            node security/security-hardening-actions-v0.1.1.mjs --verify-only
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || {
+                echo "ERROR: pushed HEAD is not the current remote main."
+                exit 1
+              }
+              echo "Verified hardened workflow state on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "ERROR: unable to publish hardened workflow state after retries."
+          exit 1
