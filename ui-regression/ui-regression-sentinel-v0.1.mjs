@@ -17,7 +17,7 @@ import vm from 'node:vm';
 import process from 'node:process';
 import { chromium } from '@playwright/test';
 
-const VERSION = '0.1.0-observer';
+const VERSION = '0.1.1-calibration';
 const ROOT = path.resolve(process.env.GITHUB_WORKSPACE || process.cwd());
 const TARGET_URL = process.env.UI_SENTINEL_URL || 'http://127.0.0.1:4173/companies/';
 const REPORT_PATH = path.resolve(process.env.UI_SENTINEL_REPORT_PATH || path.join(ROOT, 'ui-regression-report.json'));
@@ -163,7 +163,7 @@ function staticChecks() {
 }
 
 async function waitForCore(page) {
-  await page.waitForFunction(() => document.querySelectorAll('#companiesGrid .company-card').length >= 9, null, { timeout: 12_000 });
+  await page.waitForFunction(() => document.querySelectorAll('#companiesGrid .company-card:not(.placeholder)').length >= 9, null, { timeout: 12_000 });
   await page.waitForFunction(() => document.querySelectorAll('#idxBoard .ib-item').length >= 8, null, { timeout: 12_000 });
   await page.waitForFunction(() => !!document.querySelector('#graphCanvas svg'), null, { timeout: 12_000 });
 }
@@ -223,15 +223,21 @@ async function testViewport(browser, spec) {
 
     try {
       await waitForCore(page);
-      record(scope, 'dynamic core reaches ready state', true, '9 cards · >=8 General Index rows · Graph SVG');
+      record(scope, 'dynamic core reaches ready state', true, '9 registry cards · >=8 General Index rows · Graph SVG');
     } catch (error) {
       record(scope, 'dynamic core reaches ready state', false, error);
     }
 
-    await acheck(scope, '9 registry cards render', async () => ({
-      ok: await page.locator('#companiesGrid .company-card').count() === 9,
-      detail: `count=${await page.locator('#companiesGrid .company-card').count()}`
-    }));
+    await acheck(scope, '9 registry cards render', async () => {
+      const realCards = page.locator('#companiesGrid .company-card:not(.placeholder)');
+      const placeholders = page.locator('#companiesGrid .company-card.placeholder');
+      const realCount = await realCards.count();
+      const placeholderCount = await placeholders.count();
+      return {
+        ok: realCount === 9 && placeholderCount === 1,
+        detail: `registry=${realCount}, placeholder=${placeholderCount}`
+      };
+    });
 
     await acheck(scope, 'expected company names render', async () => {
       const names = await page.locator('#companiesGrid .cc-name').allTextContents();
@@ -330,12 +336,28 @@ async function testViewport(browser, spec) {
     if (await item.count()) {
       await item.locator('.ib-row').click();
       await page.waitForFunction(() => document.querySelector('.ib-item[data-nm="defitea.eth"]')?.classList.contains('open'), null, { timeout: 2_000 });
-      await acheck(scope, 'Company Passport opens', async () => ({
-        ok: await item.evaluate(el => el.classList.contains('open'))
-          && await item.locator('.ib-row').getAttribute('aria-expanded') === 'true'
-          && await item.locator('.ib-passport').isVisible(),
-        detail: 'Defitea passport'
-      }));
+      // The Passport expands through max-height animation. Wait for measurable geometry,
+      // not merely the `open` class, so a healthy transition does not become a false WATCH.
+      await page.waitForFunction(() => {
+        const passport = document.querySelector('.ib-item[data-nm="defitea.eth"] .ib-passport');
+        return !!passport && passport.getBoundingClientRect().height > 20;
+      }, null, { timeout: 2_000 }).catch(() => {});
+      await acheck(scope, 'Company Passport opens', async () => {
+        const state = await item.evaluate(el => {
+          const row = el.querySelector('.ib-row');
+          const passport = el.querySelector('.ib-passport');
+          const height = passport ? passport.getBoundingClientRect().height : 0;
+          return {
+            open: el.classList.contains('open'),
+            expanded: row?.getAttribute('aria-expanded') === 'true',
+            height
+          };
+        });
+        return {
+          ok: state.open && state.expanded && state.height > 20,
+          detail: `Defitea passport · expanded=${state.expanded}, height=${Math.round(state.height)}`
+        };
+      });
       await acheck(scope, 'Passport headline metrics preserved', async () => ({
         ok: await item.locator('.ipx-economic > *').count() >= 3,
         detail: `headline metrics=${await item.locator('.ipx-economic > *').count()}`
@@ -372,11 +394,18 @@ async function testViewport(browser, spec) {
     if (await stableOpen.count()) {
       await stableOpen.click();
       await page.waitForFunction(() => document.getElementById('stablePassportMonetra')?.classList.contains('is-open'), null, { timeout: 2_000 });
-      await acheck(scope, 'Monetra Stable Passport opens', async () => ({
-        ok: await page.locator('#stablePassportMonetra').isVisible()
-          && await page.locator('#stablePassportMonetra .scp-headline-final > .scp-final-metric').count() >= 4,
-        detail: `headline metrics=${await page.locator('#stablePassportMonetra .scp-headline-final > .scp-final-metric').count()}`
-      }));
+      await acheck(scope, 'Monetra Stable Passport opens', async () => {
+        const passport = page.locator('#stablePassportMonetra');
+        const metricCount = await passport.locator('.mpx-strip > .mpx-metric').count();
+        const actionCount = await passport.locator('.mpx-actions > .mpx-action').count();
+        return {
+          ok: await passport.isVisible()
+            && await passport.getAttribute('aria-hidden') === 'false'
+            && metricCount === 4
+            && actionCount === 2,
+          detail: `MPX metrics=${metricCount}, actions=${actionCount}`
+        };
+      });
       const close = page.locator('#stablePassportMonetra [data-stable-passport-close]').first();
       if (await close.count()) {
         await close.click();
@@ -395,19 +424,35 @@ async function testViewport(browser, spec) {
 
     // Reload/scroll restoration is a mobile-specific historical regression guard.
     if (spec.name === 'mobile') {
-      await page.evaluate(() => {
+      // Seed a deterministic *actual* scroll position. The page itself uses smooth scrolling
+      // and pagehide persists window.scrollY, so asserting against a hard-coded 900 before
+      // the scroll settles can manufacture a false failure.
+      const seededScrollY = await page.evaluate(() => {
         history.replaceState(history.state, '', location.pathname);
-        sessionStorage.setItem('th_companies_reload_scroll_y', '900');
+        document.documentElement.style.scrollBehavior = 'auto';
+        try {
+          sessionStorage.setItem('th_companies_open_passports', '[]');
+          sessionStorage.setItem('th_companies_stable_passport_open', '0');
+        } catch (_) {}
         window.scrollTo(0, 900);
+        const actual = Math.max(0, window.scrollY || 0);
+        try { sessionStorage.setItem('th_companies_reload_scroll_y', String(actual)); } catch (_) {}
+        return actual;
       });
+      await page.waitForTimeout(80);
       await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
       try { await waitForCore(page); } catch (_) {}
       await page.waitForFunction(() => !document.documentElement.classList.contains('th-reload-stabilizing'), null, { timeout: 4_000 }).catch(() => {});
-      await page.waitForTimeout(120);
-      await acheck(scope, 'mobile reload restores scroll without leaving stabilization mask', async () => page.evaluate(() => ({
-        ok: window.scrollY >= 720 && window.scrollY <= 1080 && !document.documentElement.classList.contains('th-reload-stabilizing'),
-        detail: `scrollY=${Math.round(window.scrollY)}, stabilizing=${document.documentElement.classList.contains('th-reload-stabilizing')}`
-      })));
+      await page.waitForTimeout(160);
+      await acheck(scope, 'mobile reload restores scroll without leaving stabilization mask', async () => page.evaluate((seedY) => {
+        const restored = Math.max(0, window.scrollY || 0);
+        const stabilizing = document.documentElement.classList.contains('th-reload-stabilizing');
+        const delta = Math.abs(restored - seedY);
+        return {
+          ok: seedY > 0 && delta <= 180 && !stabilizing,
+          detail: `seedY=${Math.round(seedY)}, restoredY=${Math.round(restored)}, delta=${Math.round(delta)}, stabilizing=${stabilizing}`
+        };
+      }, seededScrollY));
     }
 
     // Browser exceptions are hard regression signals. Console errors remain diagnostic in v0.1
