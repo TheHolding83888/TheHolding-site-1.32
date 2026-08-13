@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T19:02:01.397Z",
-  "status": "watch",
-  "snapshotHash": "6f288ece5785c41511fafd536363b99a79b6a53992ea1184191b970607fb2238",
+  "generatedAt": "2026-08-13T19:16:30.277Z",
+  "status": "critical",
+  "snapshotHash": "8307cc45312768752a0a99602519b76cc18dd9760bf929d30120a8131df6a958",
   "repository": {
-    "filesScanned": 102,
-    "bytesScanned": 4723511,
+    "filesScanned": 103,
+    "bytesScanned": 4754634,
     "criticalHashes": {
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
@@ -127,6 +127,17 @@
     ]
   },
   "findings": [
+    {
+      "id": "476f67b5278bbc3342d6e14f82be6576f486608efe7b0d0e5938a9ae18292ab4",
+      "severity": "critical",
+      "category": "secret-exposure",
+      "file": "intelligence/brain-chatgpt-bridge.mjs",
+      "line": 953,
+      "entity": "openai-key",
+      "summary": "Potential openai-key detected in public repository text.",
+      "whyItMatters": "Credentials committed to a public repository can be copied and abused. The Sentinel stores only the pattern type and location, never the matched secret.",
+      "evidence": null
+    },
     {
       "id": "ab6acd743cb5a77a3979770c488fafbb5d0b4254c944d4f291284a0931459847",
       "severity": "high",
@@ -592,10 +603,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 28,
+    "runCount": 29,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T19-02-01-397Z-6f288ece57.json",
-    "latestRecordHash": "751d3ffef2657c3311ab7a938cd053c99e78ea86a8c0563bf52c7359f2ba7242",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-13T19-16-30-277Z-8307cc4531.json",
+    "latestRecordHash": "b0397f3c03b12f3864f3ecbf38554c7fcfb5566b667fdf5ef1239e4805058318",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
