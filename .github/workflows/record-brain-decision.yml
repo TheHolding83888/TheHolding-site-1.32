@@ -1,0 +1,184 @@
+name: "The Holding Brain · Record Decision"
+
+on:
+  workflow_dispatch:
+    inputs:
+      case_id:
+        description: "Exact current Grounded Brain caseId"
+        required: true
+        type: string
+      disposition:
+        description: "Owner decision"
+        required: true
+        default: "defer"
+        type: choice
+        options:
+          - accept
+          - defer
+          - reject
+          - modify
+      rationale:
+        description: "Why this decision was made (public decision memory)"
+        required: true
+        type: string
+      expected_outcome:
+        description: "Optional plain-language expectation"
+        required: false
+        default: ""
+        type: string
+      modified_action:
+        description: "Required only when disposition=modify; inert text, never executed"
+        required: false
+        default: ""
+        type: string
+      prediction_event:
+        description: "Optional calibratable prediction"
+        required: true
+        default: "none"
+        type: choice
+        options:
+          - none
+          - case-resolved-by-review
+      probability_bps:
+        description: "0-10000 probability bps if prediction is enabled"
+        required: false
+        default: "7000"
+        type: string
+      review_days:
+        description: "1-365 days until outcome review if prediction is enabled"
+        required: false
+        default: "14"
+        type: string
+      supersedes_decision_id:
+        description: "Optional earlier decisionId this new record supersedes"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: decision-recorder-main
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout canonical repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Preflight release coherence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/cognitive-release-guard.mjs
+          node intelligence/learning/learning-release-guard.mjs
+
+      - name: Preflight decision recorder
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/learning/decision-recorder.mjs
+          node intelligence/learning/decision-recorder.mjs --self-test
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/learning/decision-policy.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/decision-ledger.json','utf8'));"
+
+      - name: Append owner decision to immutable ledger
+        id: record
+        env:
+          DECISION_CASE_ID: ${{ inputs.case_id }}
+          DECISION_DISPOSITION: ${{ inputs.disposition }}
+          DECISION_RATIONALE: ${{ inputs.rationale }}
+          DECISION_EXPECTED_OUTCOME: ${{ inputs.expected_outcome }}
+          DECISION_MODIFIED_ACTION: ${{ inputs.modified_action }}
+          DECISION_PREDICTION_EVENT: ${{ inputs.prediction_event }}
+          DECISION_PROBABILITY_BPS: ${{ inputs.probability_bps }}
+          DECISION_REVIEW_DAYS: ${{ inputs.review_days }}
+          DECISION_SUPERSEDES_ID: ${{ inputs.supersedes_decision_id }}
+        run: node intelligence/learning/decision-recorder.mjs
+
+      - name: Validate inert decision boundary
+        shell: bash
+        env:
+          DECISION_VERIFY_ID: ${{ steps.record.outputs.decision_id }}
+        run: |
+          set -euo pipefail
+          node intelligence/learning/decision-recorder.mjs --verify-bound-decision
+          node - <<'NODE'
+          const fs = require('fs');
+          const ledger = JSON.parse(fs.readFileSync('intelligence/learning/decision-ledger.json','utf8'));
+          const d = ledger.decisions.at(-1);
+          if (!d) throw new Error('decision missing after recorder');
+          if (d.authority?.executable !== false || d.authority?.executionAuthority !== 'none') throw new Error('decision escaped inert memory boundary');
+          if (ledger.policy?.executionAuthority !== 'none') throw new Error('ledger execution authority changed');
+          console.log('Decision boundary PASS', { decisionId: d.decisionId, disposition: d.disposition, executionAuthority: d.authority.executionAuthority });
+          NODE
+          git diff --check
+
+      - name: Publish decision memory safely
+        shell: bash
+        env:
+          DECISION_VERIFY_ID: ${{ steps.record.outputs.decision_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Decision Memory"
+          git config user.email "decision-memory@theholding.ai"
+          git add intelligence/learning/decision-ledger.json
+          if git diff --cached --quiet; then
+            echo "No decision-memory change to publish."
+            exit 0
+          fi
+          mapfile -t staged < <(git diff --cached --name-only)
+          if [ "${#staged[@]}" -ne 1 ] || [ "${staged[0]}" != "intelligence/learning/decision-ledger.json" ]; then
+            echo "Unexpected staged decision-memory files: ${staged[*]}"
+            exit 1
+          fi
+          git commit -m "intelligence: record owner decision $DECISION_VERIFY_ID"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Decision publish conflict; fail closed."
+              exit 1
+            fi
+
+            # A decision is valid only against the exact reviewed release and
+            # Brain/Stack bytes it saw. Any movement is fail-closed.
+            node intelligence/cognitive-release-guard.mjs
+            node intelligence/learning/learning-release-guard.mjs
+            node intelligence/learning/decision-recorder.mjs --verify-bound-decision
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; retrying after fetch/rebase."
+            sleep $((attempt * 2))
+          done
+          echo "Decision Memory could not publish after 3 attempts."
+          exit 1
+
+      - name: Decision summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "# The Holding Brain · Decision Memory"
+            echo
+            echo "Decision ID: \`${{ steps.record.outputs.decision_id }}\`"
+            echo "Disposition: \`${{ inputs.disposition }}\`"
+            echo "Prediction: \`${{ inputs.prediction_event }}\`"
+            echo "Execution authority: \`none\`"
+            echo
+            echo "The record is append-only memory. The Learning Loop will wake automatically from the ledger push."
+          } >> "$GITHUB_STEP_SUMMARY"
