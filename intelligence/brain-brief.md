@@ -1,7 +1,7 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-13T18:17:57.680Z
-Mode: baseline
+Generated: 2026-08-13T20:42:11.538Z
+Mode: delta
 Status: watch
 
 ## 9 evidence-bound reasoning case(s) are active across economic and security memory.
