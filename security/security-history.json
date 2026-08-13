@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.1-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-13T18:40:22.481Z",
+  "lastUpdatedAt": "2026-08-13T18:40:49.831Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 25,
-    "vaultRunCount": 25,
+    "runCount": 26,
+    "vaultRunCount": 26,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -312,6 +312,18 @@
       "criticalCount": 0,
       "highCount": 0,
       "newFindingCount": 0,
+      "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-13T18:40:49.831Z",
+      "status": "watch",
+      "snapshotHash": "0d8fa749d3777f00c19db6418561cabce922ca38ac801e0e75abb3502094d57b",
+      "recordPath": "security/security-vault/2026/08/2026-08-13T18-40-49-831Z-0d8fa749d3.json",
+      "recordHash": "7e1cd873fcfa3dc90e3227b4817fc6717f9ac2f700c312716a64409f2ac05bc4",
+      "findingCount": 42,
+      "criticalCount": 0,
+      "highCount": 1,
+      "newFindingCount": 1,
       "resolvedFindingCount": 0
     }
   ],
@@ -3603,6 +3615,17 @@
       "category": "critical-surface-change",
       "summary": "Resolved: Security-sensitive surface changed: companies/index.html.",
       "file": "companies/index.html",
+      "entity": null
+    },
+    {
+      "id": "602ac0315209c018658b07f787ae57882d1207ef9647043707e6ed556e7fe487",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-13T18:40:49.831Z",
+      "findingId": "ab6acd743cb5a77a3979770c488fafbb5d0b4254c944d4f291284a0931459847",
+      "severity": "high",
+      "category": "shell-eval",
+      "summary": "Workflow contains shell eval.",
+      "file": ".github/workflows/update-brain-interpretation.yml",
       "entity": null
     }
   ]
