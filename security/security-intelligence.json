@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-13T20:27:53.356Z",
+  "generatedAt": "2026-08-13T20:28:57.753Z",
   "status": "green",
   "headline": "No high or critical security findings detected in this scan.",
   "severityCounts": {
@@ -13,11 +13,27 @@
   },
   "source": {
     "filesScanned": 119,
-    "bytesScanned": 4866228,
+    "bytesScanned": 4867024,
     "siteProbes": 6
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "e15a08e2924b7abbbaa18af227cd829ab2299514393febbc9e61102a1366c78d",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/security-sentinel.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/security-sentinel.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "ae61c86bcdc27747ac61a22f6665fee285c7f36486dc71c09dde088cdec7d104",
+          "currentSha256": "c918146a2624fe3a59ffea7b4cc58afc1648b175595de2c515b3af1f96b99fde"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "b12314bb19a7361c4c6100bfece254d3a82335bb3ee25ba507d37117b460b553",
         "severity": "medium",
@@ -32,37 +48,21 @@
           "currentSha256": "af08c5bf3bd795cc94ef972b633bec7fbe1a1809b4a0a297fcd1b0bb5e60f9e6"
         }
       }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "5830e87ed0ad40bc2cf8d284ad872db8fe2f445575f1ff2124a74e96a1d4b6c2",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-brain-chatgpt-bridge.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-brain-chatgpt-bridge.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "8843b5dd01bf9187f60881a9c8e4aaad5f4574b13ee9ac31590e22c27f4b1cc3",
-          "currentSha256": "959aca516dff8a7f633191b02c9fd0115d869758c20d3d23fde09540dabaa4d4"
-        }
-      }
     ]
   },
   "currentFindings": [
     {
-      "id": "b12314bb19a7361c4c6100bfece254d3a82335bb3ee25ba507d37117b460b553",
+      "id": "e15a08e2924b7abbbaa18af227cd829ab2299514393febbc9e61102a1366c78d",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/refresh-cognitive-stack.yml",
+      "file": ".github/workflows/security-sentinel.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/refresh-cognitive-stack.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/security-sentinel.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "3e3ae4499d2b0ed6407dc06049dcc2bd28f621372a9e14e03ccc322fb7951788",
-        "currentSha256": "af08c5bf3bd795cc94ef972b633bec7fbe1a1809b4a0a297fcd1b0bb5e60f9e6"
+        "previousSha256": "ae61c86bcdc27747ac61a22f6665fee285c7f36486dc71c09dde088cdec7d104",
+        "currentSha256": "c918146a2624fe3a59ffea7b4cc58afc1648b175595de2c515b3af1f96b99fde"
       }
     },
     {
@@ -529,12 +529,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "e2247bb8c0325ab84d807e6ef0fbca5e6296f79f9613399c0178ad2fc589dcfa",
+    "snapshotHash": "ce47fc3d6017ba57f775e658fdddf494241a53db3f67a53f8255ac4b0dc23e32",
     "securityVault": {
-      "runCount": 59,
+      "runCount": 60,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T20-27-53-356Z-e2247bb8c0.json",
-      "latestRecordHash": "3c5579246a8522b1034d3b28602b7e131eaf739efd5da192725ea34c035ea6ba",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-13T20-28-57-753Z-ce47fc3d60.json",
+      "latestRecordHash": "7189b41afad9f084afb3594e60e58e7e8174f8e3b18a16dd0d7d7d68f9a06d85",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
