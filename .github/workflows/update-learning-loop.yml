@@ -1,0 +1,222 @@
+name: "The Holding Brain · Decision Outcome Learning Loop"
+
+on:
+  workflow_dispatch:
+  # Event-driven in v0.1: wake only when coherent cognitive state, decision
+  # memory, policy, or learning release inputs move. A daily cadence is
+  # intentionally deferred until the integrated Cognitive Stack itself is
+  # promoted to a canonical schedule; this avoids guaranteed stale/no-op runs.
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence/brain-intelligence.json'
+      - 'intelligence/cognitive-stack-state.json'
+      - 'intelligence/cognitive-stack-release.json'
+      - 'intelligence/learning/decision-ledger.json'
+      - 'intelligence/learning/decision-policy.json'
+      - 'intelligence/learning/decision-learning-engine.mjs'
+      - 'intelligence/learning/independent-learning-reviewer.mjs'
+      - 'intelligence/learning/learning-release.json'
+      - 'intelligence/learning/learning-release-guard.mjs'
+      - '.github/workflows/update-learning-loop.yml'
+      - '.github/workflows/record-brain-decision.yml'
+      - '.github/workflows/security-sentinel.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: decision-learning-main
+  cancel-in-progress: false
+
+jobs:
+  learn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout canonical repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Preflight release coherence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/cognitive-release-guard.mjs
+          node intelligence/learning/learning-release-guard.mjs
+
+      - name: Preflight learning engines
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/learning/decision-learning-engine.mjs
+          node --check intelligence/learning/independent-learning-reviewer.mjs
+          node --check intelligence/learning/decision-recorder.mjs
+          node intelligence/learning/decision-recorder.mjs --self-test
+          node intelligence/learning/independent-learning-reviewer.mjs --self-test
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/learning/decision-policy.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/decision-ledger.json','utf8'));"
+
+      - name: Build case → decision → outcome → lesson memory
+        id: build
+        shell: bash
+        run: |
+          set +e
+          node intelligence/learning/decision-learning-engine.mjs
+          code=$?
+          set -e
+          if [ "$code" -eq 3 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "unchanged=false" >> "$GITHUB_OUTPUT"
+            echo "Learning Loop skipped because the current Cognitive Stack is not coherent/ready."
+            exit 0
+          fi
+          if [ "$code" -eq 4 ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "unchanged=true" >> "$GITHUB_OUTPUT"
+            echo "Learning inputs are unchanged; existing reviewed state will be verified without republishing."
+            exit 0
+          fi
+          if [ "$code" -ne 0 ]; then
+            exit "$code"
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "unchanged=false" >> "$GITHUB_OUTPUT"
+
+      - name: Independent reviewer
+        if: steps.build.outputs.skip != 'true' && steps.build.outputs.unchanged != 'true'
+        run: node intelligence/learning/independent-learning-reviewer.mjs
+
+      - name: Verify unchanged published learning state
+        if: steps.build.outputs.skip != 'true' && steps.build.outputs.unchanged == 'true'
+        run: node intelligence/learning/independent-learning-reviewer.mjs --verify-current
+
+      - name: Verify current learning state
+        if: steps.build.outputs.skip != 'true' && steps.build.outputs.unchanged != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/learning/independent-learning-reviewer.mjs --verify-current
+          node - <<'NODE'
+          const fs = require('fs');
+          const ctx = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
+          const ev = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-eval.json','utf8'));
+          if (ev.status !== 'pass') throw new Error('Independent learning eval is not PASS');
+          if (ctx.constraints?.executionAllowed !== false) throw new Error('Learning Loop enabled execution');
+          if (ctx.constraints?.walletActionAllowed !== false) throw new Error('Learning Loop enabled wallet action');
+          if (ctx.constraints?.autonomousPolicyMutationAllowed !== false) throw new Error('Learning Loop enabled autonomous policy mutation');
+          if (ctx.operatingContract?.executionAuthority !== 'none') throw new Error('Learning Loop execution authority changed');
+          console.log('Decision Outcome Learning Loop PASS', {
+            learningHash: ctx.integrity?.learningHash,
+            decisions: ctx.summary?.decisionCount,
+            settledOutcomes: ctx.summary?.settledOutcomeCount,
+            lessons: ctx.summary?.lessonCount,
+            calibration: ctx.summary?.confidenceCalibrationStatus,
+          });
+          NODE
+          git diff --check
+
+      - name: Publish learning memory safely
+        if: steps.build.outputs.skip != 'true' && steps.build.outputs.unchanged != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Learning Loop"
+          git config user.email "learning-loop@theholding.ai"
+          git add intelligence/learning-state
+          if git diff --cached --quiet; then
+            echo "No learning-state change to publish."
+            exit 0
+          fi
+          mapfile -t staged < <(git diff --cached --name-only)
+          allowed=(
+            intelligence/learning-state/case-lifecycle.json
+            intelligence/learning-state/outcome-memory.json
+            intelligence/learning-state/confidence-calibration.json
+            intelligence/learning-state/learning-context.json
+            intelligence/learning-state/learning-brief.md
+            intelligence/learning-state/learning-eval.json
+          )
+          for file in "${staged[@]}"; do
+            ok=false
+            for expected in "${allowed[@]}"; do [ "$file" = "$expected" ] && ok=true && break; done
+            if [ "$ok" != true ]; then
+              echo "Unexpected staged Learning file: $file"
+              exit 1
+            fi
+          done
+          git commit -m "intelligence: refresh decision outcome learning loop"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Learning publish conflict; fail closed."
+              exit 1
+            fi
+
+            # Rebase may have moved canonical Brain/Stack or static release inputs.
+            # Re-prove both release manifests and exact current learning binding before push.
+            node intelligence/cognitive-release-guard.mjs
+            node intelligence/learning/learning-release-guard.mjs
+            node intelligence/learning/independent-learning-reviewer.mjs --verify-current
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; retrying after fetch/rebase."
+            sleep $((attempt * 2))
+          done
+          echo "Learning Loop could not publish after 3 attempts."
+          exit 1
+
+      - name: Learning Loop summary
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.build.outputs.skip }}" = "true" ]; then
+            {
+              echo "# The Holding · Decision Outcome Learning Loop"
+              echo
+              echo "**Status:** SKIPPED SAFELY"
+              echo
+              echo "The current Cognitive Stack was not coherent/ready, so no learning memory was mutated."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [ "${{ steps.build.outputs.unchanged }}" = "true" ]; then
+            {
+              echo "# The Holding · Decision Outcome Learning Loop"
+              echo
+              echo "**Status:** VERIFIED / NO NEW EVIDENCE"
+              echo
+              echo "The coherent Brain, decision ledger, policy and release inputs are unchanged. Existing learning memory passed independent verification and was not republished."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('fs');
+          if (!fs.existsSync('intelligence/learning-state/learning-context.json')) {
+            console.log('# The Holding · Decision Outcome Learning Loop\n\nNo learning context was produced.');
+            process.exit(0);
+          }
+          const c = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
+          const e = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-eval.json','utf8'));
+          console.log('# The Holding · Decision Outcome Learning Loop');
+          console.log('');
+          console.log(`**Status:** ${e.status.toUpperCase()}`);
+          console.log(`**Active cases:** ${c.summary.activeCaseCount}`);
+          console.log(`**Remembered cases:** ${c.summary.rememberedCaseCount}`);
+          console.log(`**Owner decisions:** ${c.summary.decisionCount}`);
+          console.log(`**Settled outcomes:** ${c.summary.settledOutcomeCount}`);
+          console.log(`**Lessons:** ${c.summary.lessonCount}`);
+          console.log(`**Calibration:** ${c.summary.confidenceCalibrationStatus}`);
+          console.log(`**Learning hash:** \`${c.integrity.learningHash}\``);
+          console.log('**Execution authority:** `none`');
+          NODE
