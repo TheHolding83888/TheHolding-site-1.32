@@ -37,7 +37,7 @@ jobs:
           changed="$(gh api --paginate -H 'Accept: application/vnd.github+json' "/repos/$REPO/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename')"
           printf 'Changed files:\n%s\n' "$changed"
 
-          if ! printf '%s\n' "$changed" | grep -Eq '(^|/)wrangler[^/]*\.jsonc?$|^worker/|^index\.html$|^agents/console/|^companies/index\.html$'; then
+          if ! printf '%s\n' "$changed" | grep -Eq '(^|/)wrangler[^/]*\.jsonc?$|^worker/|^index\.html$|^agents/|^companies/index\.html$'; then
             echo 'No deployment-sensitive production surface changed; Cloudflare build gate is not applicable.'
             exit 0
           fi
@@ -80,23 +80,46 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          cloudflare_state() {
+            local sha="$1"
+            gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$sha/check-runs" \
+              --jq '.check_runs[] | select(.name == "Workers Builds: theholdingprotocol") | [.status, (.conclusion // "")] | @tsv' | tail -n1 || true
+          }
+
           for attempt in $(seq 1 45); do
-            row="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$HEAD_SHA/check-runs" \
-              --jq '.check_runs[] | select(.name == "Workers Builds: theholdingprotocol") | [.status, (.conclusion // "")] | @tsv' | tail -n1 || true)"
+            row="$(cloudflare_state "$HEAD_SHA")"
             if [[ "$row" == $'completed\tsuccess' ]]; then
-              echo "Cloudflare production build is GREEN."
+              echo "Cloudflare production build is GREEN for trigger SHA $HEAD_SHA."
               exit 0
             fi
             if [[ "$row" == completed$'\t'* && "$row" != $'completed\tsuccess' ]]; then
-              echo "Cloudflare production build failed: $row" >&2
+              echo "Cloudflare production build failed for trigger SHA $HEAD_SHA: $row" >&2
               exit 1
             fi
+
+            main_sha="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/branches/main" --jq '.commit.sha')"
+            if [[ -n "$main_sha" && "$main_sha" != "$HEAD_SHA" ]]; then
+              ancestry="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/compare/$HEAD_SHA...$main_sha" --jq '.status' 2>/dev/null || true)"
+              if [[ "$ancestry" == "ahead" || "$ancestry" == "identical" ]]; then
+                main_row="$(cloudflare_state "$main_sha")"
+                if [[ "$main_row" == $'completed\tsuccess' ]]; then
+                  echo "Cloudflare production build is GREEN for descendant main SHA $main_sha containing trigger SHA $HEAD_SHA."
+                  exit 0
+                fi
+                if [[ "$main_row" == completed$'\t'* && "$main_row" != $'completed\tsuccess' ]]; then
+                  echo "Cloudflare production build failed for descendant main SHA $main_sha: $main_row" >&2
+                  exit 1
+                fi
+              fi
+            fi
+
             sleep 10
           done
-          echo 'Timed out waiting for Cloudflare production build.' >&2
+          echo 'Timed out waiting for Cloudflare production build on trigger SHA or a verified descendant main SHA.' >&2
           exit 1
 
-      - name: Verify live production root and Console isolation
+      - name: Verify live production root and unified OS Lab
         shell: bash
         run: |
           set -euo pipefail
@@ -105,14 +128,21 @@ jobs:
               && grep -Fqi '<title>TheHolding.ai' /tmp/home.html \
               && grep -Fqi '<link rel="canonical" href="https://theholding.ai/">' /tmp/home.html \
               && ! grep -Eqi 'Ask The Holding\.|KNOWLEDGE ROUTER|Live knowledge console' /tmp/home.html \
-              && curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 -H 'Cache-Control: no-cache' "https://theholding.ai/agents/console/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/console.html \
-              && grep -Fqi 'Ask The Holding.' /tmp/console.html; then
-                echo 'Live production surface contract is GREEN.'
+              && curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 -H 'Cache-Control: no-cache' "https://theholding.ai/agents/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/agents.html \
+              && grep -Fqi 'id="ask-the-holding"' /tmp/agents.html \
+              && grep -Fqi 'Ask The Holding' /tmp/agents.html \
+              && grep -Fqi 'THE HOLDING OBSERVER' /tmp/agents.html \
+              && grep -Fqi 'Cognitive Stack' /tmp/agents.html \
+              && curl -fsS --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 -H 'Cache-Control: no-cache' "https://theholding.ai/agents/console/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/console.html \
+              && grep -Fqi 'Moved to The Holding OS Lab' /tmp/console.html \
+              && grep -Fqi 'url=/agents/#ask-the-holding' /tmp/console.html \
+              && grep -Fqi '<link rel="canonical" href="https://theholding.ai/agents/">' /tmp/console.html; then
+                echo 'Live production surface contract is GREEN: root isolated, unified OS Lab live, legacy Console redirected.'
                 exit 0
             fi
             echo "Production surface not ready or invalid (attempt $attempt/18)."
             sleep 5
           done
 
-          echo 'PRODUCTION INCIDENT: canonical homepage + isolated Console contract failed.' >&2
+          echo 'PRODUCTION INCIDENT: canonical homepage + unified OS Lab + legacy Console redirect contract failed.' >&2
           exit 1
