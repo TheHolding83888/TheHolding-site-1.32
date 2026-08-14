@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://theholding.ai/intelligence/builder/candidate-schema.json",
+  "title": "The Holding Self-Improvement Builder Candidate Queue",
+  "type": "object",
+  "required": ["version", "engineVersion", "generatedAt", "status", "source", "summary", "candidates", "constraints", "integrity"],
+  "properties": {
+    "version": { "const": "0.1-builder-candidate-queue" },
+    "engineVersion": { "const": "0.1-bounded-builder-candidate-engine" },
+    "generatedAt": { "type": "string" },
+    "status": { "enum": ["ready", "watch", "blocked"] },
+    "source": { "type": "object" },
+    "summary": { "type": "object" },
+    "candidates": { "type": "array" },
+    "constraints": { "type": "object" },
+    "integrity": {
+      "type": "object",
+      "required": ["queueHash"],
+      "properties": { "queueHash": { "type": "string", "minLength": 64, "maxLength": 64 } }
+    }
+  },
+  "additionalProperties": true
+}
