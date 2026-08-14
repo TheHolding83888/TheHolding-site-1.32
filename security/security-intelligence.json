@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-14T15:06:02.068Z",
+  "generatedAt": "2026-08-14T15:13:00.943Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 1,
+    "medium": 2,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 208,
-    "bytesScanned": 5793344,
+    "filesScanned": 209,
+    "bytesScanned": 5795201,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -57,100 +57,21 @@
   "whatChanged": {
     "newFindings": [
       {
-        "id": "119c887e98b579ae9b0ac6bbead75c30b398a9d45d207b24f62f24bc71907fae",
-        "severity": "high",
-        "category": "privileged-trigger",
-        "file": ".github/workflows/production-boundary-guard.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Workflow uses pull_request_target.",
-        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
-        "evidence": null
-      },
-      {
-        "id": "796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5",
-        "severity": "high",
-        "category": "privileged-trigger",
+        "id": "378ad5068b297c510e8ce9f8b5db32382ee404bbb5970e303197ecfd82380f6f",
+        "severity": "medium",
+        "category": "critical-surface-change",
         "file": ".github/workflows/production-deployment-smoke.yml",
         "line": null,
         "entity": null,
-        "summary": "Workflow uses pull_request_target.",
-        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
-        "evidence": null
+        "summary": "Security-sensitive surface changed: .github/workflows/production-deployment-smoke.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "1cf12029f8a8a8cb38ac27d122d6631e848afcf6ea9eefd009c6eb1ae0059f64",
+          "currentSha256": "48e1199e3b878f33673616b7339c03e2974f0a4b22d6837a94b9445f1d63d47a"
+        }
       }
     ],
-    "resolvedFindings": [
-      {
-        "id": "7a5a1cec1797dcd9a05cdfa5ce02b0e8f43ee4f5f0f10689222b77f29e0e33b5",
-        "severity": "high",
-        "category": "public-surface-unavailable",
-        "file": null,
-        "line": null,
-        "entity": "https://theholding.ai/agents/",
-        "summary": "Public security probe failed for https://theholding.ai/agents/.",
-        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
-        "evidence": {
-          "status": 404,
-          "error": null
-        }
-      },
-      {
-        "id": "31153ac691914b4034d7d064d721d5f87416195e43f22473d014951f3567b408",
-        "severity": "high",
-        "category": "public-surface-unavailable",
-        "file": null,
-        "line": null,
-        "entity": "https://theholding.ai/companies/",
-        "summary": "Public security probe failed for https://theholding.ai/companies/.",
-        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
-        "evidence": {
-          "status": 404,
-          "error": null
-        }
-      },
-      {
-        "id": "a04971f0a71e2aec7b8db8f0ae1aabb492b4271cc568315851de080d7af3da15",
-        "severity": "high",
-        "category": "public-surface-unavailable",
-        "file": null,
-        "line": null,
-        "entity": "https://theholding.ai/intelligence/change-intelligence.json",
-        "summary": "Public security probe failed for https://theholding.ai/intelligence/change-intelligence.json.",
-        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
-        "evidence": {
-          "status": 404,
-          "error": null
-        }
-      },
-      {
-        "id": "163f2397a439597f7cc2ad1b651e5240a000a0834a3044c9ea439776c935b48a",
-        "severity": "high",
-        "category": "public-surface-unavailable",
-        "file": null,
-        "line": null,
-        "entity": "https://theholding.ai/monetra/",
-        "summary": "Public security probe failed for https://theholding.ai/monetra/.",
-        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
-        "evidence": {
-          "status": 404,
-          "error": null
-        }
-      },
-      {
-        "id": "c90090bcf5e3b0a057a6917a574c6e88db425c0b931c77d05131761629f67196",
-        "severity": "high",
-        "category": "public-surface-unavailable",
-        "file": null,
-        "line": null,
-        "entity": "https://theholding.ai/yield-reports/",
-        "summary": "Public security probe failed for https://theholding.ai/yield-reports/.",
-        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
-        "evidence": {
-          "status": 404,
-          "error": null
-        }
-      }
-    ]
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -176,6 +97,20 @@
       "evidence": null
     },
     {
+      "id": "378ad5068b297c510e8ce9f8b5db32382ee404bbb5970e303197ecfd82380f6f",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/production-deployment-smoke.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/production-deployment-smoke.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "1cf12029f8a8a8cb38ac27d122d6631e848afcf6ea9eefd009c6eb1ae0059f64",
+        "currentSha256": "48e1199e3b878f33673616b7339c03e2974f0a4b22d6837a94b9445f1d63d47a"
+      }
+    },
+    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -199,12 +134,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "73a4e09510fcc0269de002635d13fa51468f0eb2b686612a12b6ad534e1f9400",
+    "snapshotHash": "f5eb7b4976b928ca0fe201bfb927610874b818a1f576a991324832a3a0a9649d",
     "securityVault": {
-      "runCount": 154,
+      "runCount": 155,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T15-06-02-068Z-73a4e09510.json",
-      "latestRecordHash": "1777cba216a04e94e93b8a4126f625b28cf67fb1f3d5696d42e72d66b4ab6ba5",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T15-13-00-943Z-f5eb7b4976.json",
+      "latestRecordHash": "45d8ed51583d5883036407a72204cfa5fe45531c96b526f6ba285f649f23f28c",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
