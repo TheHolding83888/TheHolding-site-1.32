@@ -25,6 +25,8 @@ const json = (root, rel) => {
 
 const criticalFiles = [
   'index.html',
+  'agents/index.html',
+  'agents/console/index.html',
   'wrangler.jsonc',
   'worker/site-root.js',
   'worker/index.js',
@@ -46,14 +48,28 @@ if (homepage) {
   }
   if (!/<title>[^<]*TheHolding\.ai/i.test(homepage)) fail('homepage title must identify TheHolding.ai');
   if (/Ask The Holding\./i.test(homepage) || /KNOWLEDGE ROUTER/i.test(homepage) || /Live knowledge console/i.test(homepage)) {
-    fail('root index.html must never become the Ask The Holding console');
+    fail('root index.html must never become the Ask The Holding interface');
   }
 }
 
-const consoleHtml = read(candidateRoot, 'agents/console/index.html');
-if (consoleHtml) {
-  if (!/Ask The Holding\./i.test(consoleHtml)) fail('Ask The Holding console marker missing from /agents/console/');
-  if (!/Live knowledge console/i.test(consoleHtml)) fail('console identity marker missing from /agents/console/');
+const agentsHtml = read(candidateRoot, 'agents/index.html');
+if (agentsHtml) {
+  if (!/id=["']ask-the-holding["']/i.test(agentsHtml)) fail('canonical Ask The Holding section missing from /agents/');
+  if (!/Ask The Holding/i.test(agentsHtml)) fail('Ask The Holding identity missing from /agents/');
+  if (!/THE HOLDING OBSERVER/i.test(agentsHtml)) fail('Observer surface missing from unified /agents/ OS Lab');
+  if (!/Cognitive Stack/i.test(agentsHtml)) fail('Cognitive Stack surface missing from unified /agents/ OS Lab');
+  if (!/\.\/console\/safety\.js\?v=0\.1/i.test(agentsHtml)) fail('verified Console safety layer must remain attached to /agents/');
+  if (!/\.\/console\/app\.js\?v=0\.4/i.test(agentsHtml)) fail('verified Ask v0.4 router must remain attached to /agents/');
+}
+
+const legacyConsoleHtml = read(candidateRoot, 'agents/console/index.html');
+if (legacyConsoleHtml) {
+  if (!/Moved to The Holding OS Lab/i.test(legacyConsoleHtml)) fail('legacy /agents/console/ must identify the OS Lab move');
+  if (!/url=\/agents\/#ask-the-holding/i.test(legacyConsoleHtml)) fail('legacy /agents/console/ must redirect to /agents/#ask-the-holding');
+  if (!/<link\s+rel=["']canonical["']\s+href=["']https:\/\/theholding\.ai\/agents\/["']/i.test(legacyConsoleHtml)) {
+    fail('legacy /agents/console/ must canonicalize to https://theholding.ai/agents/');
+  }
+  if (!/noindex,follow/i.test(legacyConsoleHtml)) fail('legacy /agents/console/ must remain noindex,follow');
 }
 
 const rootWrangler = json(candidateRoot, 'wrangler.jsonc');
@@ -75,7 +91,7 @@ if (siteRoot) {
   if (!/export\s*\{\s*LearningIntake\s*\}/.test(siteRoot)) fail('site-root must preserve LearningIntake export');
   if (!/env\.ASSETS\.fetch\(request\)/.test(siteRoot)) fail('site-root must serve canonical static assets');
   if (/agents\/console|learning-intake|learning-status|learning-feedback|learning-insights/i.test(siteRoot)) {
-    fail('site-root must not route Console or learning API traffic');
+    fail('site-root must not route OS Lab/Console or learning API traffic');
   }
   const fetchBodies = [...siteRoot.matchAll(/async\s+fetch\s*\([^)]*\)\s*\{([\s\S]*?)\n\s*\}/g)].map(m => m[1]);
   if (fetchBodies.length !== 1 || !/return\s+env\.ASSETS\.fetch\(request\)\s*;?\s*$/.test(fetchBodies[0].trim())) {
@@ -118,7 +134,6 @@ if (apiOnly) {
   if (/ASSETS\.fetch|agents\/console/i.test(apiOnly)) fail('api-only Worker must never serve main-site assets');
 }
 
-// Scan every Wrangler config for dangerous ownership of the primary hostname.
 const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
   if (entry.name === '.git' || entry.name === 'node_modules') return [];
   const full = path.join(dir, entry.name);
@@ -143,7 +158,6 @@ for (const file of walk(candidateRoot)) {
   }
 }
 
-// Durable Object lifecycle continuity: a provisioned export present in baseline cannot silently disappear.
 const baselineWrangler = json(baselineRoot, 'wrangler.jsonc');
 if (baselineWrangler?.exports?.LearningIntake && !rootWrangler?.exports?.LearningIntake) {
   fail('provisioned LearningIntake cannot be silently removed; explicit reviewed lifecycle/migration is required');
@@ -156,7 +170,8 @@ if (failures.length) {
 }
 
 note('canonical homepage ownership verified');
-note('Console isolated to /agents/console/');
+note('unified Ask The Holding OS Lab verified at /agents/');
+note('legacy /agents/console/ redirect contract verified');
 note('learning Worker constrained to theholding.ai/api/*');
 note('LearningIntake lifecycle continuity preserved');
 note('critical production files present');
