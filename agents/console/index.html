@@ -3,272 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ask The Holding | Live Intelligence Console</title>
+  <title>Ask The Holding | Live Knowledge Console</title>
   <style>
-    :root{
-      --bg:#f8f8f5;--panel:#ffffff;--ink:#151719;--muted:#697078;--line:#e4e6e5;
-      --blue:#2d5f87;--blue-soft:#eef4f8;--green:#0b7a4d;--amber:#9a6b16;--red:#9b3a3a;
-      --dark:#0d1115;--dark2:#141a20;--light:#ecf3f8;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}
-    a{color:inherit}
-    .wrap{width:min(980px,calc(100% - 32px));margin:0 auto}
-    header{padding:26px 0;border-bottom:1px solid var(--line);background:rgba(248,248,245,.92);position:sticky;top:0;z-index:20;backdrop-filter:blur(12px)}
-    .head{display:flex;align-items:center;justify-content:space-between;gap:18px}
-    .brand{font-weight:650;letter-spacing:-.02em}.brand small{display:block;color:var(--muted);font-weight:450;letter-spacing:0;margin-top:2px}
-    .back{font-size:13px;color:var(--muted);text-decoration:none}.back:hover{color:var(--blue)}
-    main{padding:58px 0 80px}
-    .hero{text-align:center;margin-bottom:30px}
-    .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);font-weight:750}
-    h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(38px,7vw,66px);line-height:1.02;letter-spacing:-.04em;margin:14px 0 14px}
-    .hero p{max-width:680px;margin:0 auto;color:var(--muted);font-size:16px}
-    .boundary{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px}
-    .pill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 11px;font-size:11px;color:var(--muted)}
-    .pill.live{color:var(--green);border-color:rgba(11,122,77,.2);background:rgba(11,122,77,.045)}
-    .console{background:linear-gradient(145deg,var(--dark),var(--dark2));color:var(--light);border-radius:22px;overflow:hidden;box-shadow:0 28px 80px -45px rgba(0,0,0,.65)}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px}
-    .status{display:flex;align-items:center;gap:8px;color:#b8c3cc}.dot{width:7px;height:7px;border-radius:50%;background:#70808d}.console[data-health="ready"] .dot{background:#42d392;box-shadow:0 0 14px rgba(66,211,146,.5)}.console[data-health="watch"] .dot{background:#f2bb54}.console[data-health="offline"] .dot{background:#7d858b}
-    .summary{padding:24px 22px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
-    .summary-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7896ad;font-weight:750}.summary-text{font-family:Georgia,"Times New Roman",serif;font-size:clamp(22px,4vw,31px);line-height:1.3;margin-top:8px;color:#f7fafc}
-    .facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid rgba(255,255,255,.08)}
-    .fact{padding:17px 18px;border-right:1px solid rgba(255,255,255,.07)}.fact:last-child{border-right:0}.fact strong{display:block;font-size:17px;color:#f8fbfd}.fact span{font-size:10px;color:#82909a;text-transform:uppercase;letter-spacing:.11em}
-    .dialog{padding:22px}
-    .messages{display:flex;flex-direction:column;gap:13px;min-height:220px;max-height:480px;overflow:auto;padding-right:4px}
-    .msg{max-width:88%;padding:13px 15px;border-radius:15px;font-size:14px;white-space:pre-wrap}.msg.system{background:rgba(255,255,255,.055);color:#d8e0e6;border:1px solid rgba(255,255,255,.07)}.msg.user{align-self:flex-end;background:#234d6c;color:#fff}.msg .meta{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#82a9c5;margin-bottom:5px;font-weight:750}
-    .quick{display:flex;gap:8px;flex-wrap:wrap;margin:19px 0 12px}.quick button{border:1px solid rgba(138,184,221,.22);background:rgba(138,184,221,.055);color:#b9d3e7;border-radius:999px;padding:8px 11px;font-size:11px;cursor:pointer}.quick button:hover{background:rgba(138,184,221,.11)}
-    .ask{display:flex;gap:9px}.ask input{min-width:0;flex:1;border:1px solid rgba(255,255,255,.12);background:#090d11;color:#eef4f8;border-radius:13px;padding:13px 14px;font:inherit;outline:none}.ask input:focus{border-color:rgba(138,184,221,.5)}.ask button{border:0;border-radius:13px;background:#e7f0f6;color:#15364e;font-weight:750;padding:0 18px;cursor:pointer}.ask button:disabled{opacity:.45;cursor:not-allowed}
-    .note{font-size:11px;color:#76838d;margin-top:10px}
-    .explain{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:19px}.card h2{font-family:Georgia,"Times New Roman",serif;font-size:22px;font-weight:400;margin:0 0 8px}.card p{color:var(--muted);font-size:13px;margin:0}.card strong{color:var(--ink)}
-    footer{padding:25px 0 40px;color:var(--muted);font-size:11px;text-align:center}
-    @media(max-width:720px){main{padding-top:38px}.facts{grid-template-columns:1fr 1fr}.fact:nth-child(2){border-right:0}.fact:nth-child(-n+2){border-bottom:1px solid rgba(255,255,255,.07)}.explain{grid-template-columns:1fr}.msg{max-width:96%}.ask{flex-direction:column}.ask button{padding:12px}.head{align-items:flex-start}.brand small{max-width:230px}}
+    :root{--bg:#f8f8f5;--panel:#fff;--ink:#151719;--muted:#697078;--line:#e4e6e5;--blue:#2d5f87;--green:#0b7a4d;--dark:#0d1115;--dark2:#141a20;--light:#ecf3f8}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}a{color:inherit}.wrap{width:min(1020px,calc(100% - 32px));margin:0 auto}
+    header{padding:24px 0;border-bottom:1px solid var(--line);background:rgba(248,248,245,.92);position:sticky;top:0;z-index:20;backdrop-filter:blur(12px)}.head{display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{font-weight:680;letter-spacing:-.02em}.brand small{display:block;color:var(--muted);font-weight:450;letter-spacing:0;margin-top:2px}.back{font-size:13px;color:var(--muted);text-decoration:none}.back:hover{color:var(--blue)}
+    main{padding:52px 0 80px}.hero{text-align:center;margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);font-weight:780}h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(38px,7vw,66px);line-height:1.02;letter-spacing:-.04em;margin:14px 0}.hero p{max-width:710px;margin:0 auto;color:var(--muted);font-size:16px}.boundary{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px}.pill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 11px;font-size:11px;color:var(--muted)}.pill.live{color:var(--green);border-color:rgba(11,122,77,.2);background:rgba(11,122,77,.045)}
+    .console{background:linear-gradient(145deg,var(--dark),var(--dark2));color:var(--light);border-radius:22px;overflow:hidden;box-shadow:0 28px 80px -45px rgba(0,0,0,.65)}.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px}.status{display:flex;align-items:center;gap:8px;color:#b8c3cc}.dot{width:7px;height:7px;border-radius:50%;background:#70808d}.console[data-health="ready"] .dot{background:#42d392;box-shadow:0 0 14px rgba(66,211,146,.5)}.console[data-health="watch"] .dot{background:#f2bb54}.console[data-health="offline"] .dot{background:#7d858b}
+    .summary{padding:23px 22px 19px;border-bottom:1px solid rgba(255,255,255,.08)}.summary-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7896ad;font-weight:760}.summary-text{font-family:Georgia,"Times New Roman",serif;font-size:clamp(21px,4vw,29px);line-height:1.3;margin-top:8px;color:#f7fafc}.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid rgba(255,255,255,.08)}.fact{padding:16px 18px;border-right:1px solid rgba(255,255,255,.07)}.fact:last-child{border-right:0}.fact strong{display:block;font-size:17px;color:#f8fbfd}.fact span{font-size:10px;color:#82909a;text-transform:uppercase;letter-spacing:.11em}
+    .dialog{padding:22px}.messages{display:flex;flex-direction:column;gap:13px;min-height:250px;max-height:530px;overflow:auto;padding-right:4px}.msg{max-width:90%;padding:13px 15px;border-radius:15px;font-size:14px;white-space:pre-wrap}.msg.system{background:rgba(255,255,255,.055);color:#d8e0e6;border:1px solid rgba(255,255,255,.07)}.msg.user{align-self:flex-end;background:#234d6c;color:#fff}.msg.pending{opacity:.65}.msg .meta{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#82a9c5;margin-bottom:5px;font-weight:760}.msg .source{display:block;margin-top:8px;padding-top:7px;border-top:1px solid rgba(255,255,255,.07);font-size:9px;color:#74838e;letter-spacing:.05em}.quick{display:flex;gap:8px;flex-wrap:wrap;margin:19px 0 12px}.quick button{border:1px solid rgba(138,184,221,.22);background:rgba(138,184,221,.055);color:#b9d3e7;border-radius:999px;padding:8px 11px;font-size:11px;cursor:pointer}.quick button:hover{background:rgba(138,184,221,.11)}.ask{display:flex;gap:9px}.ask input{min-width:0;flex:1;border:1px solid rgba(255,255,255,.12);background:#090d11;color:#eef4f8;border-radius:13px;padding:13px 14px;font:inherit;outline:none}.ask input:focus{border-color:rgba(138,184,221,.5)}.ask button{border:0;border-radius:13px;background:#e7f0f6;color:#15364e;font-weight:760;padding:0 18px;cursor:pointer}.ask button:disabled{opacity:.45;cursor:not-allowed}.note{font-size:11px;color:#76838d;margin-top:10px}
+    .explain{margin-top:25px;display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:19px}.card h2{font-family:Georgia,"Times New Roman",serif;font-size:22px;font-weight:400;margin:0 0 8px}.card p{color:var(--muted);font-size:13px;margin:0}.card strong{color:var(--ink)}footer{padding:25px 0 40px;color:var(--muted);font-size:11px;text-align:center}
+    @media(max-width:720px){main{padding-top:36px}.facts{grid-template-columns:1fr 1fr}.fact:nth-child(2){border-right:0}.fact:nth-child(-n+2){border-bottom:1px solid rgba(255,255,255,.07)}.explain{grid-template-columns:1fr}.msg{max-width:97%}.ask{flex-direction:column}.ask button{padding:12px}.head{align-items:flex-start}.brand small{max-width:235px}}
   </style>
 </head>
 <body>
-<header><div class="wrap head"><div class="brand">The Holding AI<small>Live read-only intelligence console</small></div><a class="back" href="/agents/#knowledge">← Intelligence Infrastructure</a></div></header>
+<header><div class="wrap head"><div class="brand">The Holding AI<small>Live knowledge console · v0.2</small></div><a class="back" href="/agents/#knowledge">← Intelligence Infrastructure</a></div></header>
 <main class="wrap">
   <section class="hero">
-    <div class="eyebrow">Practice Surface · v0.1</div>
+    <div class="eyebrow">Practice Surface · Live Knowledge v0.2</div>
     <h1>Ask The Holding.</h1>
-    <p>A simple window into what the system already knows now. It reads live verified intelligence and explains it without changing anything.</p>
-    <div class="boundary"><span class="pill live">Live system data</span><span class="pill">No model API</span><span class="pill">No execution</span><span class="pill">No wallet authority</span></div>
+    <p>Ask about companies, funds, capital layers, protocol productivity, Stable Capital, system state, learning and architecture. Answers use live Holding data or clearly say when the answer is not known.</p>
+    <div class="boundary"><span class="pill live">Live Holding data</span><span class="pill">RU / EN</span><span class="pill">No model API</span><span class="pill">Read-only</span><span class="pill">No wallet authority</span></div>
   </section>
 
   <section class="console" id="console" data-health="offline">
-    <div class="topbar"><div>THE HOLDING // CURRENT STATE</div><div class="status"><span class="dot"></span><span id="statusText">CONNECTING</span></div></div>
-    <div class="summary"><div class="summary-label">In plain language</div><div class="summary-text" id="summaryText">Loading current verified state…</div></div>
+    <div class="topbar"><div>THE HOLDING // KNOWLEDGE ROUTER</div><div class="status"><span class="dot"></span><span id="statusText">CONNECTING</span></div></div>
+    <div class="summary"><div class="summary-label">In plain language</div><div class="summary-text" id="summaryText">Loading current verified state and live company data…</div></div>
     <div class="facts">
+      <div class="fact"><strong id="companyFact">—</strong><span>Companies</span></div>
+      <div class="fact"><strong id="engineFact">—</strong><span>Productivity engines</span></div>
+      <div class="fact"><strong id="stableFact">—</strong><span>Stable positions</span></div>
       <div class="fact"><strong id="securityFact">—</strong><span>Security</span></div>
-      <div class="fact"><strong id="caseFact">—</strong><span>Active cases</span></div>
-      <div class="fact"><strong id="changeFact">—</strong><span>Recent changes</span></div>
-      <div class="fact"><strong id="authorityFact">—</strong><span>Execution authority</span></div>
     </div>
     <div class="dialog">
       <div class="messages" id="messages" aria-live="polite"></div>
       <div class="quick" id="quick"></div>
       <form class="ask" id="askForm">
-        <input id="question" autocomplete="off" placeholder="Ask: what needs attention? / что требует внимания?">
+        <input id="question" autocomplete="off" placeholder="Спроси: сколько компаний? какая доходность Aerodrome? что такое слои капитала?">
         <button id="askButton" disabled>Ask</button>
       </form>
-      <div class="note">This is deliberately not pretending to be a full AI chat yet. Answers are built from the live Cognitive Stack and Grounded Brain packet.</div>
+      <div class="note">This is a deterministic knowledge layer, not a free-form LLM. It can answer a broad set of Holding questions from verified live data and public project knowledge, but it will not invent missing facts.</div>
     </div>
   </section>
 
   <section class="explain">
-    <article class="card"><h2>What you can touch now</h2><p><strong>Real state, real memory, real current reasoning cases.</strong> Ask what changed, what needs attention, what the system proposes, or search for a company/protocol already present in the current Brain packet.</p></article>
-    <article class="card"><h2>What is intentionally not here yet</h2><p>A free-form public LLM and autonomous actions. Those add cost, abuse surface and permissions. The same window can later become a true The Holding AI conversation when the underlying experience and controls justify it.</p></article>
+    <article class="card"><h2>What is real now</h2><p><strong>This console reads the same live artifacts The Holding already uses.</strong> Company Registry, Productivity, Stable Capital, Cognitive Stack and Learning are turned into simple answers instead of raw JSON.</p></article>
+    <article class="card"><h2>What comes later</h2><p>Truly open-ended dialogue needs a model layer plus prompt-injection boundaries, public/private context separation, tool permission gates and an immutable action audit. Until then, this surface stays read-only and evidence-bound.</p></article>
   </section>
 </main>
-<footer class="wrap">The Holding · intelligence before authority</footer>
-<script>
-(() => {
-  'use strict';
-  const URLS = {
-    stack: '/intelligence/cognitive-stack-state.json',
-    bridge: '/intelligence/brain-chatgpt-bridge.json',
-    learning: '/intelligence/learning-state/learning-context.json',
-    decisions: '/intelligence/learning/decision-ledger.json'
-  };
-  const state = { stack:null, bridge:null, learning:null, decisions:null };
-  const $ = id => document.getElementById(id);
-  const safeArray = value => Array.isArray(value) ? value : [];
-  const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
-  const consoleEl = $('console');
-  const messages = $('messages');
-  const input = $('question');
-  const button = $('askButton');
-  const form = $('askForm');
-
-  const labels = [
-    ['Что сейчас происходит?', 'now'],
-    ['Что требует внимания?', 'attention'],
-    ['Что система предлагает?', 'actions'],
-    ['Чему система учится?', 'learning'],
-    ['Что ты можешь сам?', 'authority']
-  ];
-
-  function addMessage(kind, text) {
-    const box = document.createElement('div');
-    box.className = `msg ${kind}`;
-    const meta = document.createElement('span');
-    meta.className = 'meta';
-    meta.textContent = kind === 'user' ? 'You' : 'The Holding';
-    const body = document.createElement('span');
-    body.textContent = text;
-    box.append(meta, body);
-    messages.appendChild(box);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  function activeCases() { return safeArray(state.bridge?.cases); }
-  function meaningfulCases() {
-    return activeCases().filter(item => String(item?.severity || '').toLowerCase() !== 'info');
-  }
-  function security() { return state.stack?.chain?.security || state.bridge?.currentPosture?.security || {}; }
-
-  function plainSummary() {
-    const sec = security();
-    const cases = activeCases();
-    const attention = meaningfulCases();
-    const changes = number(state.bridge?.currentPosture?.observer?.materialChangeCount);
-    const ready = state.stack?.readyForManualInterpretation === true;
-    if (!ready) return 'The verified cognitive packet is not ready right now. The console will not invent a fallback answer.';
-    if (String(sec.status).toLowerCase() === 'green' && attention.length === 0) {
-      return `The system is healthy. ${changes} recent material change(s) are remembered and there are no current non-info issues requiring attention.`;
-    }
-    if (String(sec.status).toLowerCase() === 'green') {
-      return `Security is green. The system is working, but ${attention.length} current item(s) still need attention or more evidence. Nothing is being executed automatically.`;
-    }
-    return `The system is online with ${cases.length} active reasoning case(s). Security state is ${String(sec.status || 'unknown')}; human review should come before any action.`;
-  }
-
-  function topLines(items, field, max=5) {
-    const lines = items.slice(0,max).map((item, i) => `${i+1}. ${String(item?.[field] || item?.signal || 'Current case')}`);
-    return lines.length ? lines.join('\n') : 'Nothing current is listed in this category.';
-  }
-
-  function answer(mode, raw='') {
-    const cases = activeCases();
-    const attention = meaningfulCases();
-    const sec = security();
-    const observer = state.bridge?.currentPosture?.observer || {};
-    if (mode === 'now') {
-      return `${plainSummary()}\n\nCurrent Brain headline: ${String(state.bridge?.sourceBrain?.headline || state.bridge?.whatChanged?.answer || 'No headline available.')}`;
-    }
-    if (mode === 'attention') {
-      if (!attention.length) return 'No current non-info reasoning case requires attention. The system is still observing normal changes.';
-      return `These are the main current edges:\n${topLines(attention, 'signal', 6)}`;
-    }
-    if (mode === 'actions') {
-      const actionable = attention.filter(item => item?.deterministicAction);
-      if (!actionable.length) return 'The current verified packet contains no concrete non-info action proposal.';
-      return `Current proposal-only recommendations:\n${topLines(actionable, 'deterministicAction', 5)}\n\nThese are recommendations, not autonomous actions.`;
-    }
-    if (mode === 'learning') {
-      const decisions = safeArray(state.decisions?.decisions);
-      const outcomes = safeArray(state.learning?.outcomes || state.learning?.settledOutcomes || state.learning?.recentOutcomes);
-      const lessons = safeArray(state.learning?.lessons || state.learning?.recentLessons);
-      const remembered = number(state.learning?.rememberedCaseCount ?? state.learning?.rememberedCases ?? state.learning?.counts?.rememberedCases);
-      return `Formal Learning is still young. Recorded owner decisions: ${decisions.length}. Remembered cases: ${remembered || 'warming'}. Settled outcomes visible in the current learning context: ${outcomes.length}. Lessons visible there: ${lessons.length}.\n\nOld project experience is kept as historical operating knowledge, but it is not faked into retrospective outcomes.`;
-    }
-    if (mode === 'authority') {
-      const authority = String(state.stack?.operatingContract?.executionAuthority || 'none');
-      const noExecution = state.stack?.chain?.chatgptBridge?.noExecution === true;
-      return `I can observe, remember, explain current evidence and surface proposal-only recommendations. Current execution authority: ${authority.toUpperCase()}. ${noExecution ? 'The verified Bridge explicitly has no execution.' : 'Execution boundary requires review.'} No wallet or capital action is available from this console.`;
-    }
-    const q = raw.toLowerCase();
-    const matched = cases.filter(item => {
-      const hay = [item?.entity,item?.category,item?.signal,item?.deterministicAction].join(' ').toLowerCase();
-      return q.split(/\s+/).filter(x => x.length > 2).some(token => hay.includes(token));
-    }).slice(0,4);
-    if (matched.length) {
-      return matched.map((item,i) => {
-        const signal = String(item?.signal || 'Current evidence-bound case.');
-        const action = item?.deterministicAction ? `\n   Proposal: ${item.deterministicAction}` : '';
-        return `${i+1}. ${signal}${action}`;
-      }).join('\n\n');
-    }
-    if (/problem|issue|attention|вним|проблем/.test(q)) return answer('attention');
-    if (/action|propos|recommend|делать|предлаг/.test(q)) return answer('actions');
-    if (/learn|memory|уч|памят/.test(q)) return answer('learning');
-    if (/can|authority|сам|можешь|полномоч/.test(q)) return answer('authority');
-    if (/now|status|сейчас|происход/.test(q)) return answer('now');
-    return 'I cannot answer that freely yet without inventing intelligence. Ask about current status, attention items, proposals, learning, authority, or name a company/protocol that appears in the current Brain packet.';
-  }
-
-  function ask(mode, visibleText) {
-    addMessage('user', visibleText);
-    addMessage('system', answer(mode, visibleText));
-  }
-
-  function buildQuick() {
-    const quick = $('quick');
-    labels.forEach(([text,mode]) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = text;
-      b.addEventListener('click', () => ask(mode, text));
-      quick.appendChild(b);
-    });
-  }
-
-  async function getJson(url, optional=false) {
-    const response = await fetch(`${url}?v=${Date.now()}`, { cache:'no-store' });
-    if (!response.ok) { if (optional) return null; throw new Error(`${url} ${response.status}`); }
-    return response.json();
-  }
-
-  function validate() {
-    if (state.stack?.version !== '0.1-cognitive-stack-state') throw new Error('Unexpected cognitive stack');
-    if (state.bridge?.version !== '0.1-chatgpt-bridge') throw new Error('Unexpected bridge');
-    if (state.bridge?.sourceBrain?.sha256 !== state.stack?.chain?.groundedBrain?.sha256) throw new Error('Brain / Bridge mismatch');
-    if (state.stack?.release?.exactByteMatch !== true) throw new Error('Release coherence mismatch');
-  }
-
-  function render() {
-    validate();
-    const sec = security();
-    const cases = activeCases();
-    const changes = number(state.bridge?.currentPosture?.observer?.materialChangeCount);
-    const ready = state.stack?.readyForManualInterpretation === true;
-    const review = state.stack?.requiresImmediateHumanReview === true;
-    consoleEl.dataset.health = ready && !review ? (meaningfulCases().length ? 'watch' : 'ready') : 'offline';
-    $('statusText').textContent = ready && !review ? 'LIVE / VERIFIED' : review ? 'HUMAN REVIEW REQUIRED' : 'NOT READY';
-    $('summaryText').textContent = plainSummary();
-    $('securityFact').textContent = String(sec.status || 'unknown').toUpperCase();
-    $('caseFact').textContent = String(cases.length);
-    $('changeFact').textContent = String(changes);
-    $('authorityFact').textContent = String(state.stack?.operatingContract?.executionAuthority || 'none').toUpperCase();
-    addMessage('system', 'I am connected to the current verified Cognitive Stack. Ask me what is happening, what needs attention, what is proposed, or what the system is allowed to do.');
-  }
-
-  async function boot() {
-    buildQuick();
-    try {
-      const [stack, bridge, learning, decisions] = await Promise.all([
-        getJson(URLS.stack), getJson(URLS.bridge), getJson(URLS.learning, true), getJson(URLS.decisions, true)
-      ]);
-      state.stack = stack; state.bridge = bridge; state.learning = learning; state.decisions = decisions;
-      render();
-    } catch (error) {
-      consoleEl.dataset.health = 'offline';
-      $('statusText').textContent = 'VERIFIED STATE UNAVAILABLE';
-      $('summaryText').textContent = 'The live verified packet could not be loaded. No fallback facts are invented.';
-      addMessage('system', 'Current canonical intelligence is unavailable. Try again later; this console intentionally fails closed.');
-      console.warn('[The Holding Console]', error);
-    }
-  }
-
-  input.addEventListener('input', () => button.disabled = input.value.trim().length === 0);
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    const q = input.value.trim();
-    if (!q || !state.bridge) return;
-    input.value = ''; button.disabled = true;
-    ask('free', q);
-  });
-  boot();
-})();
-</script>
+<footer class="wrap">The Holding · capital that can explain itself</footer>
+<script src="./app.js" defer></script>
 </body>
 </html>
