@@ -1,450 +1,484 @@
 {
   "version": "0.1-autonomous-security-intelligence",
-  "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-14T09:50:12.179Z",
+  "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
+  "generatedAt": "2026-08-14T10:18:14.822Z",
   "status": "green",
   "headline": "No high or critical security findings detected in this scan.",
   "severityCounts": {
     "critical": 0,
     "high": 0,
-    "medium": 38,
+    "medium": 0,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 183,
-    "bytesScanned": 5557028,
+    "filesScanned": 187,
+    "bytesScanned": 5580702,
     "siteProbes": 6
+  },
+  "browserTrust": {
+    "policyVersion": "0.1-browser-trust-policy",
+    "policySha256": "7e6a8597eb217f888ba03c3ef2ea8397e34d84456e3e8c2d9f16725780e22d8d",
+    "summary": {
+      "reviewedDomFileCount": 7,
+      "reviewedDomSinkCount": 31,
+      "unreviewedDomFileCount": 0,
+      "trustedExternalScriptCount": 1,
+      "trustedExternalScriptUsageCount": 7
+    },
+    "externalScripts": [
+      {
+        "url": "https://cloud.umami.is/script.js",
+        "provider": "Umami Cloud",
+        "purpose": "Privacy-focused traffic analytics",
+        "decision": "accepted-monitored-mutable-vendor",
+        "sriPolicy": "not-used-for-unversioned-mutable-asset",
+        "reviewAfter": "2026-11-14T00:00:00Z",
+        "files": [
+          "blog/index.html",
+          "defitea/index.html",
+          "faq/index.html",
+          "fructus/index.html",
+          "monetra/index.html",
+          "singul/index.html",
+          "substantia/index.html"
+        ],
+        "networkSkipped": false,
+        "ok": true,
+        "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
+        "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
+        "lastModified": "Tue, 11 Aug 2026 03:06:27 GMT",
+        "contentType": "application/javascript; charset=utf-8",
+        "bytes": 4717,
+        "error": null
+      }
+    ]
   },
   "whatChanged": {
     "newFindings": [],
-    "resolvedFindings": []
+    "resolvedFindings": [
+      {
+        "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "05081966_calculator/index.html",
+        "line": 102,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "7a89164116aed3a575601c8def93fce5ecfa59c26a0f6362ec85a5d56b7d2ec5",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "05081966_company/index.html",
+        "line": 159,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "e85d5502b20749a485ba93e0822b12be30641a64b6a7adf7da7403380f5e6907",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "05081966/index.html",
+        "line": 162,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "e4afac44d9b3986f5303eae9a4d9c79808af96e3c6266f0a1e3e01819552ab7a",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 9432,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "8687bf518c998480f8d07e8ad568bec08bd24ce4655b140d75951c32e975a9b3",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 9556,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "18783d246676c58d570fbb665cc33bbacfd4351518bf3a2c73a64f127e491328",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 9596,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "8fdeaa40d4735939f51b09d44d37782552360415b37c621a4e88fa18f18f3790",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 9607,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "23dc82188465fb0a16f88f280257a1beb99a1e99af70bd5625da8f3c8dbdc1e2",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10192,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "bcfd53ca6e0fe250aee3ac4e79a498a8dd1f2f5dfd540a1cc65df3e0f78c25e9",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10205,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "afc60b5a113f5b525f4de8f07a15d2fc92c32336f90b854975edeecd4c0b5c8b",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10210,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "34b96b0ce73bef7598460c2ecb5c1e6d965c97f13de642c9789a9519624cf5e7",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10749,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "3ac7bd74a7c06773038008b4733a31197e81022de11908c97b3fce18bfe0d807",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10756,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "ce307cfe72b2fcbb8fd1b7d7f7b92ada835904f00f9432e84e4813a920109eb3",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11238,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "c4e3ee0ed0d5618ed4d2e33039fbd33ae9d44b6856e44efeb6540847688e0a90",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11452,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "4d6479da5c7deef5507668be3c00a702f40f07e32d413b4d1170779aad2b09bc",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11946,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "03828db96a05202bb125a1638698ba807901c0bd5c2cba409aa243a6d5385c42",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11961,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "78c34499e61d76d42d21d6ac7a56057e5542eb6924e7343b486448684f5067fe",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 12604,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "e568dc8eb851ec2b413ed0aa26d0bb5183e67fefedafe83ae370607dd4bcc2eb",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 12804,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "3fe2556d646b36b96e1d36dfe9211e001a2ec787818617b42dcf09f143271147",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 13009,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "f66fdd82da4bade40e049f4168d0934e9c61e7ca6d1a234afa770cd5183ca8cf",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "defitea/index.html",
+        "line": 2480,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "29bc386403d81724c90b99d54a7d1200a842b15461917097523d4db36c1180e3",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 1891,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "d91b61bc2decf74ed3a48d641389a5e44025f0e5e76b41b860551479aad17806",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 1900,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "00eaa46ff49535a1df65655aa605720cda3420e8ab178f37b205e30e543d983b",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 1907,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "d38cbea22a98148ec5108b94bbc8f95a50a00c32c90c3adc7e9e98700378b3ae",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 1922,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "aea395f33e4acf4f851373db57b523ab0aae9821055d586bae0c73bd0c5c0212",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 1948,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "9a2714d6d63090b63aa69f8170afe917c72d0c8409ee9dc0b6a6d145c3f1f731",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 2007,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "bfec9f6612afe76bf00cb395d1a6bf83ff833370d5bd5f5b4e77414835a04028",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 2011,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "1efaaf10d8d80bf6c48f248d60d70cbfe029930055fc7e8d074e8b0875216054",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 2018,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "cd2c256a028d2ad83e3aff1a6829ba00a93ca62e63b52980e18d6a4740b920f0",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 2019,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "ccb57b0a11fab46470554a7807cd3f89d9ee149c57a13866628cd53ad0fda47f",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yield-reports/index.html",
+        "line": 2126,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "c06b3496f5833925c5c73ea866af8e353246749039727dfa38d0584e2ca0bf22",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "yieldring/index.html",
+        "line": 188,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "b8ee5415856ac8f15ad6439d6e7de14890e6088f694b13f73f19a2770fe0cc3c",
+        "severity": "medium",
+        "category": "external-script-no-sri",
+        "file": "blog/index.html",
+        "line": 610,
+        "entity": "https://cloud.umami.is/script.js",
+        "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
+        "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
+        "evidence": null
+      },
+      {
+        "id": "bdc0201496c52b165895ddfdd430be1010e6fc6dd4335adb97544e7efc79ea41",
+        "severity": "medium",
+        "category": "external-script-no-sri",
+        "file": "defitea/index.html",
+        "line": 1950,
+        "entity": "https://cloud.umami.is/script.js",
+        "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
+        "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
+        "evidence": null
+      },
+      {
+        "id": "b7dc99aad99780567e08c882e6d84fc25d6339404849c262ebd223d0b6fa66ed",
+        "severity": "medium",
+        "category": "external-script-no-sri",
+        "file": "faq/index.html",
+        "line": 404,
+        "entity": "https://cloud.umami.is/script.js",
+        "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
+        "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
+        "evidence": null
+      },
+      {
+        "id": "020c9a165d66652a1f198ac64b6f475a6f7f40629a82850ce9959c9d23746073",
+        "severity": "medium",
+        "category": "external-script-no-sri",
+        "file": "fructus/index.html",
+        "line": 598,
+        "entity": "https://cloud.umami.is/script.js",
+        "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
+        "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
+        "evidence": null
+      },
+      {
+        "id": "22ec89ee9dbc791d2a23f686d28dc047410f35e29d4ec199aadd97cc1313cd22",
+        "severity": "medium",
+        "category": "external-script-no-sri",
+        "file": "monetra/index.html",
+        "line": 1239,
+        "entity": "https://cloud.umami.is/script.js",
+        "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
+        "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
+        "evidence": null
+      },
+      {
+        "id": "13239d1626738562d97d98c63386b2e2c04a698d361fed9e490612c2c8579869",
+        "severity": "medium",
+        "category": "external-script-no-sri",
+        "file": "singul/index.html",
+        "line": 713,
+        "entity": "https://cloud.umami.is/script.js",
+        "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
+        "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
+        "evidence": null
+      },
+      {
+        "id": "62c98e52be3ee8da3a1f5271a794948167c772fe7ff5131f937547c379456826",
+        "severity": "medium",
+        "category": "external-script-no-sri",
+        "file": "substantia/index.html",
+        "line": 696,
+        "entity": "https://cloud.umami.is/script.js",
+        "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
+        "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
+        "evidence": null
+      }
+    ]
   },
-  "currentFindings": [
-    {
-      "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "05081966_calculator/index.html",
-      "line": 102,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "7a89164116aed3a575601c8def93fce5ecfa59c26a0f6362ec85a5d56b7d2ec5",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "05081966_company/index.html",
-      "line": 159,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "e85d5502b20749a485ba93e0822b12be30641a64b6a7adf7da7403380f5e6907",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "05081966/index.html",
-      "line": 162,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "e4afac44d9b3986f5303eae9a4d9c79808af96e3c6266f0a1e3e01819552ab7a",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 9432,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "8687bf518c998480f8d07e8ad568bec08bd24ce4655b140d75951c32e975a9b3",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 9556,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "18783d246676c58d570fbb665cc33bbacfd4351518bf3a2c73a64f127e491328",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 9596,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "8fdeaa40d4735939f51b09d44d37782552360415b37c621a4e88fa18f18f3790",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 9607,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "23dc82188465fb0a16f88f280257a1beb99a1e99af70bd5625da8f3c8dbdc1e2",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 10192,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "bcfd53ca6e0fe250aee3ac4e79a498a8dd1f2f5dfd540a1cc65df3e0f78c25e9",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 10205,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "afc60b5a113f5b525f4de8f07a15d2fc92c32336f90b854975edeecd4c0b5c8b",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 10210,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "34b96b0ce73bef7598460c2ecb5c1e6d965c97f13de642c9789a9519624cf5e7",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 10749,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "3ac7bd74a7c06773038008b4733a31197e81022de11908c97b3fce18bfe0d807",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 10756,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "ce307cfe72b2fcbb8fd1b7d7f7b92ada835904f00f9432e84e4813a920109eb3",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 11238,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "c4e3ee0ed0d5618ed4d2e33039fbd33ae9d44b6856e44efeb6540847688e0a90",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 11452,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "4d6479da5c7deef5507668be3c00a702f40f07e32d413b4d1170779aad2b09bc",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 11946,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "03828db96a05202bb125a1638698ba807901c0bd5c2cba409aa243a6d5385c42",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 11961,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "78c34499e61d76d42d21d6ac7a56057e5542eb6924e7343b486448684f5067fe",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 12604,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "e568dc8eb851ec2b413ed0aa26d0bb5183e67fefedafe83ae370607dd4bcc2eb",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 12804,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "3fe2556d646b36b96e1d36dfe9211e001a2ec787818617b42dcf09f143271147",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "companies/index.html",
-      "line": 13009,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "f66fdd82da4bade40e049f4168d0934e9c61e7ca6d1a234afa770cd5183ca8cf",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "defitea/index.html",
-      "line": 2480,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "29bc386403d81724c90b99d54a7d1200a842b15461917097523d4db36c1180e3",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 1891,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "d91b61bc2decf74ed3a48d641389a5e44025f0e5e76b41b860551479aad17806",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 1900,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "00eaa46ff49535a1df65655aa605720cda3420e8ab178f37b205e30e543d983b",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 1907,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "d38cbea22a98148ec5108b94bbc8f95a50a00c32c90c3adc7e9e98700378b3ae",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 1922,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "aea395f33e4acf4f851373db57b523ab0aae9821055d586bae0c73bd0c5c0212",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 1948,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "9a2714d6d63090b63aa69f8170afe917c72d0c8409ee9dc0b6a6d145c3f1f731",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 2007,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "bfec9f6612afe76bf00cb395d1a6bf83ff833370d5bd5f5b4e77414835a04028",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 2011,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "1efaaf10d8d80bf6c48f248d60d70cbfe029930055fc7e8d074e8b0875216054",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 2018,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "cd2c256a028d2ad83e3aff1a6829ba00a93ca62e63b52980e18d6a4740b920f0",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 2019,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "ccb57b0a11fab46470554a7807cd3f89d9ee149c57a13866628cd53ad0fda47f",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yield-reports/index.html",
-      "line": 2126,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "c06b3496f5833925c5c73ea866af8e353246749039727dfa38d0584e2ca0bf22",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "yieldring/index.html",
-      "line": 188,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
-      "id": "b8ee5415856ac8f15ad6439d6e7de14890e6088f694b13f73f19a2770fe0cc3c",
-      "severity": "medium",
-      "category": "external-script-no-sri",
-      "file": "blog/index.html",
-      "line": 610,
-      "entity": "https://cloud.umami.is/script.js",
-      "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
-      "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
-      "evidence": null
-    },
-    {
-      "id": "bdc0201496c52b165895ddfdd430be1010e6fc6dd4335adb97544e7efc79ea41",
-      "severity": "medium",
-      "category": "external-script-no-sri",
-      "file": "defitea/index.html",
-      "line": 1950,
-      "entity": "https://cloud.umami.is/script.js",
-      "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
-      "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
-      "evidence": null
-    },
-    {
-      "id": "b7dc99aad99780567e08c882e6d84fc25d6339404849c262ebd223d0b6fa66ed",
-      "severity": "medium",
-      "category": "external-script-no-sri",
-      "file": "faq/index.html",
-      "line": 404,
-      "entity": "https://cloud.umami.is/script.js",
-      "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
-      "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
-      "evidence": null
-    },
-    {
-      "id": "020c9a165d66652a1f198ac64b6f475a6f7f40629a82850ce9959c9d23746073",
-      "severity": "medium",
-      "category": "external-script-no-sri",
-      "file": "fructus/index.html",
-      "line": 598,
-      "entity": "https://cloud.umami.is/script.js",
-      "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
-      "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
-      "evidence": null
-    },
-    {
-      "id": "22ec89ee9dbc791d2a23f686d28dc047410f35e29d4ec199aadd97cc1313cd22",
-      "severity": "medium",
-      "category": "external-script-no-sri",
-      "file": "monetra/index.html",
-      "line": 1239,
-      "entity": "https://cloud.umami.is/script.js",
-      "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
-      "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
-      "evidence": null
-    },
-    {
-      "id": "13239d1626738562d97d98c63386b2e2c04a698d361fed9e490612c2c8579869",
-      "severity": "medium",
-      "category": "external-script-no-sri",
-      "file": "singul/index.html",
-      "line": 713,
-      "entity": "https://cloud.umami.is/script.js",
-      "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
-      "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
-      "evidence": null
-    },
-    {
-      "id": "62c98e52be3ee8da3a1f5271a794948167c772fe7ff5131f937547c379456826",
-      "severity": "medium",
-      "category": "external-script-no-sri",
-      "file": "substantia/index.html",
-      "line": 696,
-      "entity": "https://cloud.umami.is/script.js",
-      "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js",
-      "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
-      "evidence": null
-    }
-  ],
+  "currentFindings": [],
   "protectNext": [
-    {
-      "priority": "medium",
-      "action": "Keep external/user-controlled data out of HTML execution sinks; prefer textContent for Observer/Brain surfaces."
-    },
     {
       "priority": "roadmap",
       "action": "Before interactive AI dialogue: add prompt-injection boundaries, tool permission gates, private/public context separation and immutable action audit logs."
@@ -452,12 +486,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "5c1a890ca41c0b67f1fbd59b0009aa9e63f585fe477c77188b925fb071e7287d",
+    "snapshotHash": "3c48cf2e31847718fc7651740277d2352b252e5433ec60d8c27e46117150847f",
     "securityVault": {
-      "runCount": 131,
+      "runCount": 132,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T09-50-12-179Z-5c1a890ca4.json",
-      "latestRecordHash": "5a39fbce0072a75166dae1387335ba364464894b1ee46cf7ff9ba7d654c845f9",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T10-18-14-822Z-3c48cf2e31.json",
+      "latestRecordHash": "b1639ab3d8f37a18cc61fe8c89a2261d7394157c37cba30b3021d8f336004c59",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
