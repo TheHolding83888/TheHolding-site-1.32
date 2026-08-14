@@ -65,13 +65,27 @@ function stableEntity(caseObj) {
   if (typeof entity === 'string' && /^\d+\s+current findings$/i.test(entity.trim())) return 'current findings';
   return entity;
 }
-function caseKey(caseObj) {
-  return `CK-${sha256(stableStringify({
+function stableCaseIdentity(caseObj) {
+  const identity = {
     domain: caseObj?.domain ?? null,
     category: caseObj?.category ?? null,
     entity: stableEntity(caseObj),
     recommendationClass: caseObj?.recommendationClass ?? null,
-  })).slice(0, 20)}`;
+  };
+  // Persistent mechanism/security cases deliberately keep the original v0.1
+  // identity bytes. Generic evidence-review cases are event observations and may
+  // legitimately share domain/category/entity/recommendationClass, so only that
+  // class receives a per-event discriminator. This preserves every existing
+  // owner Decision caseKey while preventing event collisions as Brain grows.
+  if (caseObj?.recommendationClass === 'evidence-review') {
+    const eventDiscriminator = caseObj?.id ?? caseObj?.signal ?? null;
+    if (!eventDiscriminator) fail('evidence-review case requires a stable event discriminator');
+    identity.eventDiscriminator = eventDiscriminator;
+  }
+  return identity;
+}
+function caseKey(caseObj) {
+  return `CK-${sha256(stableStringify(stableCaseIdentity(caseObj))).slice(0, 20)}`;
 }
 function observationId(observation) {
   return `OBS-${sha256(stableStringify({

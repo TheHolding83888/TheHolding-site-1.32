@@ -14,6 +14,13 @@
       "dynamicAggregatePattern": "^\\d+\\s+current findings$",
       "replacement": "current findings",
       "note": "Aggregate security counts may change while the underlying issue class remains the same. Normalize only this explicit dynamic-count form; all other entities remain exact."
+    },
+    "identityVersion": "0.1.2-collision-safe-event-identity",
+    "eventIdentity": {
+      "appliesWhenRecommendationClass": "evidence-review",
+      "discriminatorField": "id",
+      "fallbackField": "signal",
+      "note": "Generic evidence-review cases represent discrete observed events. They retain the original stable fields and add a per-event discriminator only for this recommendation class, preventing collisions without changing existing persistent caseKeys or owner decision bindings."
     }
   },
   "decisions": {
