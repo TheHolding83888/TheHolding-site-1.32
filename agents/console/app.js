@@ -50,7 +50,7 @@
 
   const safeArray = value => Array.isArray(value) ? value : [];
   const safeObject = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  const finite = value => Number.isFinite(Number(value)) ? Number(value) : null;
+  const finite = value => (value === null || value === undefined || value === '') ? null : (Number.isFinite(Number(value)) ? Number(value) : null);
   const pct = value => finite(value) === null ? null : `${Number(value).toFixed(2).replace(/\.00$/, '')}%`;
   const usd = value => finite(value) === null ? null : `$${Number(value).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
   const dateShort = value => {
