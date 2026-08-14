@@ -298,7 +298,17 @@
     const contract = result.answerContract || {};
     const text = String(result.text || '');
     const lower = text.toLowerCase();
+    const rawText = String(raw || '');
     const artifacts = safeArray(contract.sourceArtifacts);
+
+    // Final-stage high-recall risk context. Input routing remains the first line, but these checks run
+    // after the answer is built so paraphrase failure cannot silently fall through to a generic answer.
+    const authorityRequest = /(?:sign|confirm|approve|execute).{0,30}(?:tx|transaction)|(?:tx|transaction).{0,30}(?:sign|confirm|approve|execute)|move.{0,20}(?:my|the).{0,12}capital|on my behalf.{0,30}(?:tx|transaction)/i.test(rawText)
+      || /(?:подпис|подтверд|заапрув|исполн).{0,30}(?:транз|tx)|(?:транз|tx).{0,30}(?:подпис|подтверд|заапрув|исполн)|двиг.{0,20}капитал/i.test(rawText);
+    const secretRequest = /private\s+key|seed\s+phrase|recovery\s+phrase|mnemonic|secret\s+key/i.test(rawText)
+      || /приватн.{0,12}ключ|закрыт.{0,12}ключ|сид.{0,8}фраз|мнемонич|фраз.{0,10}восстанов/i.test(rawText);
+    const personalizedAdviceRequest = /(?:what|which).{0,24}(?:should|recommend).{0,20}(?:i|me).{0,16}(?:buy|sell|allocate)|exact\s+allocation.{0,20}(?:i|my|me)|what\s+should\s+i\s+buy/i.test(rawText)
+      || /(?:что|куда).{0,16}(?:мне|я).{0,16}(?:купить|продать|вложить|аллоцир)|точн.{0,12}аллокац.{0,20}(?:мне|мой)/i.test(rawText);
 
     const positiveExecutionClaim = /\b(?:i|we|the holding|this console|guardian|builder)\s+(?:can|may|will|is able to)\s+(?:directly\s+)?(?:sign|execute|move|transfer|trade|approve)\b/i.test(text)
       || /(?:я|мы|the holding|guardian|builder).{0,24}(?:могу|можем|может|умеет).{0,30}(?:подпис|исполн|двиг|перевод|торгов|одобр)/i.test(text);
@@ -316,7 +326,7 @@
 
     const measuredWithoutSource = contract.confidenceClass === 'measured' && artifacts.length === 0;
 
-    if (privateKeyLeak || seedLeak) {
+    if (secretRequest || privateKeyLeak || seedLeak) {
       const safe = language === 'ru'
         ? 'Я не буду раскрывать private keys, seed/recovery phrases или другие секреты. The Holding OS не должен выводить такие данные через Ask.'
         : 'I will not reveal private keys, seed/recovery phrases or other secrets. The Holding OS must not expose such data through Ask.';
@@ -324,7 +334,7 @@
       return { text: safe, source: 'The Holding project canon · output safety guard', answerContract: c, outputGuard: 'secret-block' };
     }
 
-    if (positiveExecutionClaim && !explicitNoAuthority) {
+    if ((authorityRequest || positiveExecutionClaim) && !explicitNoAuthority) {
       const safe = language === 'ru'
         ? `Execution authority: ${executionAuthority().toUpperCase()}. Ask The Holding не может подписывать транзакции, исполнять сделки или двигать капитал.`
         : `Execution authority: ${executionAuthority().toUpperCase()}. Ask The Holding cannot sign transactions, execute trades or move capital.`;
@@ -332,7 +342,7 @@
       return { text: safe, source: 'Live Cognitive Stack operating contract · output safety guard', answerContract: c, outputGuard: 'authority-block' };
     }
 
-    if (personalizedTrade) {
+    if (personalizedAdviceRequest || personalizedTrade) {
       const safe = language === 'ru'
         ? 'The Holding может показывать структуры, evidence и trade-offs, но не выпускает персональную команду купить, продать или распределить капитал. Решение остаётся за владельцем.'
         : 'The Holding can show structures, evidence and trade-offs, but it does not issue personalized commands to buy, sell or allocate capital. The decision remains with the owner.';
