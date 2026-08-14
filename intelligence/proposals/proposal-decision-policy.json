@@ -1,7 +1,7 @@
 {
-  "version": "0.2-proposal-decision-policy",
+  "version": "0.2.1-proposal-decision-policy",
   "mode": "decision-memory-reflection-no-execution",
-  "purpose": "Reflect explicit owner decisions from the append-only Decision Memory into Proposal Work Queue states without creating approval, production mutation, or execution authority.",
+  "purpose": "Reflect explicit owner decisions from append-only Decision Memory into Proposal Work Queue states, including deterministic retirement of resolved decision-bound cases, without creating production mutation or execution authority.",
   "authorities": {
     "ownerDecisionMemory": "intelligence/learning/decision-ledger.json",
     "learningContext": "intelligence/learning-state/learning-context.json",
@@ -14,12 +14,15 @@
     "reject": "REJECTED",
     "defer": "PROPOSED"
   },
+  "inactiveCaseState": "SUPERSEDED",
   "semantics": {
     "approvedMeans": "owner-approved for bounded next-stage research/build-candidate work only",
     "approvedDoesNotMean": "production mutation, merge, release, wallet action, signing, transaction, or capital execution",
     "modifyUsesModifiedAction": true,
     "deferRemainsProposed": true,
-    "effectiveDecisionIdentity": "latest non-superseded append-only decision for the stable caseKey"
+    "effectiveDecisionIdentity": "latest non-superseded append-only decision for the stable caseKey",
+    "inactiveCaseRetirement": "If a decision-bound source case is no longer active in current Learning, the Proposal becomes SUPERSEDED historical memory while retaining the exact owner Decision binding.",
+    "supersededDoesNotMean": "rejected, released, executed, or that the original owner decision was erased"
   },
   "hardBoundaries": {
     "automaticApproval": false,
