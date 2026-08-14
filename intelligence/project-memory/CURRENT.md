@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-14T18:27:17.055Z**
+Canonical source state represented here: **2026-08-14T19:10:06.345Z**
 
 ## Resume order
 
