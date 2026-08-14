@@ -1,28 +1,31 @@
 {
   "version": "0.1-proposal-work-queue",
   "engineVersion": "0.1.1-deterministic-proposal-engine",
-  "generatedAt": "2026-08-14T07:14:54.040Z",
+  "generatedAt": "2026-08-14T07:55:25.053Z",
   "status": "watch",
   "headline": "9 active proposal(s) synthesized from 9 active Learning case(s); execution remains disabled.",
   "source": {
     "brainFile": "intelligence/brain-intelligence.json",
-    "brainSha256": "565381ab1ba91bb627aecb506284df246fe79bb7ccd2840027b932f0d2f34a46",
-    "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+    "brainSha256": "74d0367663e1c6d9c02c3d459e0a919d31e9c28e33a7fa1a990a313eef340944",
+    "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
     "cognitiveStackFile": "intelligence/cognitive-stack-state.json",
-    "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012",
+    "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c",
     "learningContextFile": "intelligence/learning-state/learning-context.json",
-    "learningContextSha256": "5d79fd7c6ed8aaf944e46ca8fd832a7f745bca8c71c690dad06d9c95b855e243",
-    "learningGeneratedAt": "2026-08-14T05:59:37.271Z",
-    "decisionCount": 0,
-    "lessonCount": 0
+    "learningContextSha256": "473d5f215d4453c01095bfaea785bdfae272902438663e355a4bae5364658757",
+    "learningGeneratedAt": "2026-08-14T07:55:02.838Z",
+    "decisionCount": 2,
+    "lessonCount": 0,
+    "decisionLedgerFile": "intelligence/learning/decision-ledger.json",
+    "decisionLedgerSha256": "b36eaf0a745c06f54db2ec5e221f39b66766fc95465cd68fe2f62a3b088460fa",
+    "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d"
   },
   "summary": {
     "activeCaseCount": 9,
     "totalProposalCount": 9,
     "activeProposalCount": 9,
     "stateCounts": {
-      "PROPOSED": 9,
-      "APPROVED": 0,
+      "PROPOSED": 7,
+      "APPROVED": 2,
       "IN_PROGRESS": 0,
       "VERIFYING": 0,
       "RELEASE_READY": 0,
@@ -32,23 +35,27 @@
     },
     "p0Count": 2,
     "p1Count": 0,
-    "requiresHumanApprovalCount": 9
+    "requiresHumanApprovalCount": 9,
+    "ownerDecisionBoundCount": 2,
+    "ownerApprovedCount": 2,
+    "ownerRejectedCount": 0,
+    "ownerDeferredCount": 0
   },
   "proposals": [
     {
       "proposalId": "PRP-1a96e1a58fdab58a3fb0e21e",
       "proposalKey": "1a96e1a58fdab58a3fb0e21e",
-      "state": "PROPOSED",
+      "state": "APPROVED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T07:14:54.040Z",
-      "priorityScore": 127,
+      "updatedAt": "2026-08-14T07:55:25.053Z",
+      "priorityScore": 129,
       "rankClass": "P0",
       "source": {
         "caseId": "bd92163ceaf2983dcdb57151",
         "caseKey": "CK-106f8e0ade4286d3d496",
         "experienceClass": "EC-3ebb9e2096babb38",
-        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
-        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+        "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
+        "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c"
       },
       "domain": "security",
       "category": "external-script-no-sri",
@@ -57,11 +64,11 @@
       "riskTier": "medium",
       "confidence": "high",
       "rationale": {
-        "activeObservationCount": 2,
+        "activeObservationCount": 4,
         "firstSeenAt": "2026-08-13T22:26:36.851Z",
-        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "lastSeenAt": "2026-08-14T07:54:40.551Z",
         "peerCaseCount": 1,
-        "peerDecisionCount": 0,
+        "peerDecisionCount": 1,
         "observedResolutionRate": null,
         "latestLesson": null
       },
@@ -71,7 +78,9 @@
         "automaticApproval": false,
         "automaticExecution": false,
         "humanApprovalRequired": true,
-        "affectedFiles": []
+        "affectedFiles": [],
+        "productionMutationAuthorized": false,
+        "ownerDecisionReflected": true
       },
       "verificationRequired": [
         "fresh source evidence",
@@ -80,26 +89,44 @@
         "human approval before mutation"
       ],
       "human": {
-        "approvedBy": null,
-        "approvedAt": null,
-        "notes": null
+        "approvedBy": "owner",
+        "approvedAt": "2026-08-14T07:38:58.686Z",
+        "notes": "Owner accepts the P0 third-party script trust review as bounded research and compatibility triage before any production mutation.",
+        "disposition": "accept",
+        "decisionId": "DEC-062ad9c0ce2e0ebbc95e",
+        "expectedOutcome": "Classify the seven current third-party script findings and produce evidence-bound hardening recommendations only where compatibility is proven.",
+        "modifiedAction": null
       },
-      "outcome": null
+      "outcome": null,
+      "decisionBinding": {
+        "decisionId": "DEC-062ad9c0ce2e0ebbc95e",
+        "decisionHash": "93e5a89140639c7a7671ec15caae01840d03106106f61c768f31c63e41fbd253",
+        "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d",
+        "caseKey": "CK-106f8e0ade4286d3d496",
+        "sourceCaseId": "bd92163ceaf2983dcdb57151",
+        "recordedAt": "2026-08-14T07:38:58.686Z",
+        "disposition": "accept",
+        "exactDecisionMemory": true,
+        "authority": "human-owner",
+        "productionMutationAuthorized": false,
+        "executionAuthority": "none"
+      },
+      "effectiveAction": "Review third-party script trust and integrity posture for 7 current findings; propose bounded hardening only where compatibility is proven."
     },
     {
       "proposalId": "PRP-5cc338ec8428a56eee951082",
       "proposalKey": "5cc338ec8428a56eee951082",
-      "state": "PROPOSED",
+      "state": "APPROVED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T07:14:54.040Z",
-      "priorityScore": 127,
+      "updatedAt": "2026-08-14T07:55:25.053Z",
+      "priorityScore": 129,
       "rankClass": "P0",
       "source": {
         "caseId": "353fd15f649ee569d551d74c",
         "caseKey": "CK-8793263ff6a84dddf9f1",
         "experienceClass": "EC-8a782c4b87278e47",
-        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
-        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+        "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
+        "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c"
       },
       "domain": "security",
       "category": "dom-innerhtml",
@@ -108,11 +135,11 @@
       "riskTier": "medium",
       "confidence": "high",
       "rationale": {
-        "activeObservationCount": 2,
+        "activeObservationCount": 4,
         "firstSeenAt": "2026-08-13T22:26:36.851Z",
-        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "lastSeenAt": "2026-08-14T07:54:40.551Z",
         "peerCaseCount": 1,
-        "peerDecisionCount": 0,
+        "peerDecisionCount": 1,
         "observedResolutionRate": null,
         "latestLesson": null
       },
@@ -122,7 +149,9 @@
         "automaticApproval": false,
         "automaticExecution": false,
         "humanApprovalRequired": true,
-        "affectedFiles": []
+        "affectedFiles": [],
+        "productionMutationAuthorized": false,
+        "ownerDecisionReflected": true
       },
       "verificationRequired": [
         "fresh source evidence",
@@ -131,26 +160,44 @@
         "human approval before mutation"
       ],
       "human": {
-        "approvedBy": null,
-        "approvedAt": null,
-        "notes": null
+        "approvedBy": "owner",
+        "approvedAt": "2026-08-14T07:43:19.942Z",
+        "notes": "Owner accepts the P0 innerHTML provenance triage so every current sink is classified by actual data provenance before any production code change.",
+        "disposition": "accept",
+        "decisionId": "DEC-9e7fdbf2f8431a42194b",
+        "expectedOutcome": "Classify the current innerHTML sinks as trusted, sanitized, or unsafe and identify only evidence-bound hardening candidates that preserve UI behavior.",
+        "modifiedAction": null
       },
-      "outcome": null
+      "outcome": null,
+      "decisionBinding": {
+        "decisionId": "DEC-9e7fdbf2f8431a42194b",
+        "decisionHash": "2d84ed8dcf46da1853b0560b62b66d9345cc399d5a54c5dac353ff524241989d",
+        "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d",
+        "caseKey": "CK-8793263ff6a84dddf9f1",
+        "sourceCaseId": "353fd15f649ee569d551d74c",
+        "recordedAt": "2026-08-14T07:43:19.942Z",
+        "disposition": "accept",
+        "exactDecisionMemory": true,
+        "authority": "human-owner",
+        "productionMutationAuthorized": false,
+        "executionAuthority": "none"
+      },
+      "effectiveAction": "Review actual data provenance for 31 current findings; classify sinks as trusted, sanitized, or unsafe before any code change."
     },
     {
       "proposalId": "PRP-1c630e60d261ba053b229445",
       "proposalKey": "1c630e60d261ba053b229445",
       "state": "PROPOSED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T07:14:54.040Z",
-      "priorityScore": 82,
+      "updatedAt": "2026-08-14T07:55:25.053Z",
+      "priorityScore": 84,
       "rankClass": "P2",
       "source": {
         "caseId": "29d41c97821adff643d62d32",
         "caseKey": "CK-51a4fda6ce424c13ee8a",
         "experienceClass": "EC-d33215336aa05406",
-        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
-        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+        "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
+        "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c"
       },
       "domain": "economic",
       "category": "productivity-coverage",
@@ -159,9 +206,9 @@
       "riskTier": "low",
       "confidence": "high",
       "rationale": {
-        "activeObservationCount": 2,
+        "activeObservationCount": 4,
         "firstSeenAt": "2026-08-13T22:26:36.851Z",
-        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "lastSeenAt": "2026-08-14T07:54:40.551Z",
         "peerCaseCount": 1,
         "peerDecisionCount": 0,
         "observedResolutionRate": null,
@@ -193,15 +240,15 @@
       "proposalKey": "53f71f57ca5cf21f138254b1",
       "state": "PROPOSED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T07:14:54.040Z",
-      "priorityScore": 82,
+      "updatedAt": "2026-08-14T07:55:25.053Z",
+      "priorityScore": 84,
       "rankClass": "P2",
       "source": {
         "caseId": "752ad1fa5d5c4b4db1804346",
         "caseKey": "CK-37d56ce4c4a253c834ab",
         "experienceClass": "EC-b5f43a2563708fba",
-        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
-        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+        "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
+        "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c"
       },
       "domain": "economic",
       "category": "rewards-completeness",
@@ -210,9 +257,9 @@
       "riskTier": "low",
       "confidence": "high",
       "rationale": {
-        "activeObservationCount": 2,
+        "activeObservationCount": 4,
         "firstSeenAt": "2026-08-13T22:26:36.851Z",
-        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "lastSeenAt": "2026-08-14T07:54:40.551Z",
         "peerCaseCount": 3,
         "peerDecisionCount": 0,
         "observedResolutionRate": null,
@@ -244,15 +291,15 @@
       "proposalKey": "81d54ac38992f6bba833b172",
       "state": "PROPOSED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T07:14:54.040Z",
-      "priorityScore": 82,
+      "updatedAt": "2026-08-14T07:55:25.053Z",
+      "priorityScore": 84,
       "rankClass": "P2",
       "source": {
         "caseId": "610968fa0e1f1675d6be4131",
         "caseKey": "CK-fdccd8da821af08d2c85",
         "experienceClass": "EC-a94712818599e5d3",
-        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
-        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+        "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
+        "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c"
       },
       "domain": "economic",
       "category": "adapter-state",
@@ -261,9 +308,9 @@
       "riskTier": "low",
       "confidence": "high",
       "rationale": {
-        "activeObservationCount": 2,
+        "activeObservationCount": 4,
         "firstSeenAt": "2026-08-13T22:26:36.851Z",
-        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "lastSeenAt": "2026-08-14T07:54:40.551Z",
         "peerCaseCount": 2,
         "peerDecisionCount": 0,
         "observedResolutionRate": null,
@@ -295,15 +342,15 @@
       "proposalKey": "88fbdd0dc94d3d960389eb33",
       "state": "PROPOSED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T07:14:54.040Z",
-      "priorityScore": 82,
+      "updatedAt": "2026-08-14T07:55:25.053Z",
+      "priorityScore": 84,
       "rankClass": "P2",
       "source": {
         "caseId": "a2edb74a9d50a22d9e91e64a",
         "caseKey": "CK-388a7f0fca06aa8dd6c9",
         "experienceClass": "EC-a94712818599e5d3",
-        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
-        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+        "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
+        "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c"
       },
       "domain": "economic",
       "category": "adapter-state",
@@ -312,9 +359,9 @@
       "riskTier": "low",
       "confidence": "high",
       "rationale": {
-        "activeObservationCount": 2,
+        "activeObservationCount": 4,
         "firstSeenAt": "2026-08-13T22:26:36.851Z",
-        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "lastSeenAt": "2026-08-14T07:54:40.551Z",
         "peerCaseCount": 2,
         "peerDecisionCount": 0,
         "observedResolutionRate": null,
@@ -346,15 +393,15 @@
       "proposalKey": "ae74ccd1ba7655ef36fe3e77",
       "state": "PROPOSED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T07:14:54.040Z",
-      "priorityScore": 82,
+      "updatedAt": "2026-08-14T07:55:25.053Z",
+      "priorityScore": 84,
       "rankClass": "P2",
       "source": {
         "caseId": "91a77cb6899cf6d34a8ea962",
         "caseKey": "CK-731d4a5d4c2a45d0eab2",
         "experienceClass": "EC-a9c75952fae202ff",
-        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
-        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+        "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
+        "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c"
       },
       "domain": "economic",
       "category": "stable-capital-coverage",
@@ -363,9 +410,9 @@
       "riskTier": "low",
       "confidence": "high",
       "rationale": {
-        "activeObservationCount": 2,
+        "activeObservationCount": 4,
         "firstSeenAt": "2026-08-13T22:26:36.851Z",
-        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "lastSeenAt": "2026-08-14T07:54:40.551Z",
         "peerCaseCount": 1,
         "peerDecisionCount": 0,
         "observedResolutionRate": null,
@@ -397,15 +444,15 @@
       "proposalKey": "c1982f7fa3a1d8b41e526c44",
       "state": "PROPOSED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T07:14:54.040Z",
-      "priorityScore": 82,
+      "updatedAt": "2026-08-14T07:55:25.053Z",
+      "priorityScore": 84,
       "rankClass": "P2",
       "source": {
         "caseId": "d57ad616b19f94c0c5e8b6e7",
         "caseKey": "CK-190a1e658fec990daf95",
         "experienceClass": "EC-b5f43a2563708fba",
-        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
-        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+        "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
+        "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c"
       },
       "domain": "economic",
       "category": "rewards-completeness",
@@ -414,9 +461,9 @@
       "riskTier": "low",
       "confidence": "high",
       "rationale": {
-        "activeObservationCount": 2,
+        "activeObservationCount": 4,
         "firstSeenAt": "2026-08-13T22:26:36.851Z",
-        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "lastSeenAt": "2026-08-14T07:54:40.551Z",
         "peerCaseCount": 3,
         "peerDecisionCount": 0,
         "observedResolutionRate": null,
@@ -448,15 +495,15 @@
       "proposalKey": "fb1de4f6edd21d5bb0bd9280",
       "state": "PROPOSED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T07:14:54.040Z",
-      "priorityScore": 82,
+      "updatedAt": "2026-08-14T07:55:25.053Z",
+      "priorityScore": 84,
       "rankClass": "P2",
       "source": {
         "caseId": "9407adbb1115d285937ffb3d",
         "caseKey": "CK-081a4dd7a92ffe27ff49",
         "experienceClass": "EC-b5f43a2563708fba",
-        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
-        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+        "brainSnapshotHash": "8c611257b5d258ace20f52add3da8fd8275ce46f27fe77a5430a56e0d6a54a1b",
+        "cognitiveChainHash": "d9574d714187d62e4c894f6e841673b9fc06ef927ca2fe73772690b359752e6c"
       },
       "domain": "economic",
       "category": "rewards-completeness",
@@ -465,9 +512,9 @@
       "riskTier": "low",
       "confidence": "high",
       "rationale": {
-        "activeObservationCount": 2,
+        "activeObservationCount": 4,
         "firstSeenAt": "2026-08-13T22:26:36.851Z",
-        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "lastSeenAt": "2026-08-14T07:54:40.551Z",
         "peerCaseCount": 3,
         "peerDecisionCount": 0,
         "observedResolutionRate": null,
@@ -506,6 +553,19 @@
     "noPaidModelApiRequired": true
   },
   "integrity": {
-    "queueHash": "c492d78ba80cc03edda029b7bb07ceb135a79ae3759e229b6f87a809cee771cd"
+    "queueHash": "972f7af99a8b1f72a174009523ace067fc57a563d30312394c7ea6679d353364"
+  },
+  "decisionBridge": {
+    "version": "0.2-decision-bound-proposal-state",
+    "policyFile": "intelligence/proposals/proposal-decision-policy.json",
+    "policySha256": "dfedc4ca471dde065d30e63bde56f23d57b01bc6119b490090139bd74f838d0e",
+    "boundDecisionCount": 2,
+    "approvedCount": 2,
+    "rejectedCount": 0,
+    "deferredCount": 0,
+    "stateAuthority": "append-only-owner-decision-memory",
+    "approvedMeaning": "owner-approved for bounded next-stage research/build-candidate work only",
+    "productionMutationAuthorized": false,
+    "executionAuthority": "none"
   }
 }
