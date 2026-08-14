@@ -10,11 +10,14 @@ const EXPECTED_FILES = [
   'intelligence/proposals/proposal-schema.json',
   'intelligence/proposals/proposal-engine.mjs',
   'intelligence/proposals/independent-proposal-reviewer.mjs',
+  'intelligence/proposals/proposal-decision-policy.json',
+  'intelligence/proposals/proposal-decision-bridge.mjs',
+  'intelligence/proposals/independent-proposal-decision-reviewer.mjs',
 ].sort();
 
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
-if (manifest.version !== '0.1.1-proposal-release') throw new Error(`Unexpected Proposal release version: ${manifest.version}`);
-if (manifest.releaseId !== '0.1.1-proposal-work-queue-path-coherence-repair') throw new Error(`Unexpected Proposal releaseId: ${manifest.releaseId}`);
+if (manifest.version !== '0.2-proposal-release') throw new Error(`Unexpected Proposal release version: ${manifest.version}`);
+if (manifest.releaseId !== '0.2-decision-bound-proposal-state') throw new Error(`Unexpected Proposal releaseId: ${manifest.releaseId}`);
 const actual = (manifest.staticFiles ?? []).map(x => x.file).sort();
 if (JSON.stringify(actual) !== JSON.stringify(EXPECTED_FILES)) {
   throw new Error(`Proposal static file contract mismatch: ${JSON.stringify(actual)}`);
