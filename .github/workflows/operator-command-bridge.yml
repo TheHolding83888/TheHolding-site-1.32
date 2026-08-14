@@ -30,22 +30,37 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
-          const path = 'intelligence/operator/command.json';
-          const cmd = JSON.parse(fs.readFileSync(path, 'utf8'));
-
-          const allowedWorkflows = new Set([
-            'update-proposal-work-queue.yml',
-          ]);
+          const commandPath = 'intelligence/operator/command.json';
+          const cmd = JSON.parse(fs.readFileSync(commandPath, 'utf8'));
+          const out = process.env.GITHUB_OUTPUT;
 
           const fail = (message) => {
             console.error(message);
             process.exit(1);
           };
+          const clean = (value, label, { required = false, min = 0, max = 2000 } = {}) => {
+            const text = String(value ?? '').trim();
+            if (required && !text) fail(`${label} is required`);
+            if (text.length < min) fail(`${label} must be at least ${min} characters`);
+            if (text.length > max) fail(`${label} exceeds ${max} characters`);
+            return text;
+          };
+          const secretLike = (text) => [
+            /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/i,
+            /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b/,
+            /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/,
+            /\bsk-ant-[A-Za-z0-9_-]{20,}\b/,
+            /\bAKIA[0-9A-Z]{16}\b/,
+            /\b(?:seed phrase|mnemonic|private key)\s*[:=]/i,
+          ].some((r) => r.test(text));
+          const integer = (value, label, min, max) => {
+            const n = Number(value);
+            if (!Number.isInteger(n) || n < min || n > max) fail(`${label} must be an integer in ${min}..${max}`);
+            return n;
+          };
+          const output = (key, value) => fs.appendFileSync(out, `${key}=${String(value).replace(/\n/g, ' ')}\n`);
 
-          if (cmd.version !== '0.1-operator-command') fail('Unexpected operator command version');
-          if (cmd.operation !== 'workflow_dispatch') fail('Only workflow_dispatch is allowed');
-          if (!allowedWorkflows.has(cmd.workflow)) fail(`Workflow is not allowlisted: ${cmd.workflow}`);
-          if (cmd.ref !== 'main') fail('Only main may be dispatched');
+          if (!['0.1-operator-command', '0.2-operator-command'].includes(cmd.version)) fail('Unexpected operator command version');
           if (cmd.requestedBy !== 'owner') fail('Owner request marker is required');
           if (cmd.approval !== 'explicit') fail('Explicit approval marker is required');
           if (cmd.arbitraryWorkflowAllowed !== false) fail('arbitraryWorkflowAllowed must remain false');
@@ -53,10 +68,99 @@ jobs:
           if (cmd.capitalExecutionAllowed !== false) fail('capitalExecutionAllowed must remain false');
           if (typeof cmd.commandId !== 'string' || !/^[A-Za-z0-9._:+-]{8,128}$/.test(cmd.commandId)) fail('Invalid commandId');
 
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `workflow=${cmd.workflow}\n`);
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `ref=${cmd.ref}\n`);
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `command_id=${cmd.commandId}\n`);
-          console.log('Bounded operator command validated:', cmd.commandId, cmd.workflow, cmd.ref);
+          let targetWorkflow;
+          let targetRef = 'main';
+          let operation;
+          let dispatch;
+          let proposalId = '';
+          let disposition = '';
+
+          // Backward-compatible support for the already-proven v0.1 command.
+          if (cmd.version === '0.1-operator-command') {
+            if (cmd.operation !== 'workflow_dispatch') fail('v0.1 only allows workflow_dispatch');
+            if (cmd.workflow !== 'update-proposal-work-queue.yml') fail('v0.1 workflow is not allowlisted');
+            if (cmd.ref !== 'main') fail('Only main may be dispatched');
+            targetWorkflow = 'update-proposal-work-queue.yml';
+            operation = 'refresh_proposal_queue';
+            dispatch = { ref: 'main' };
+          } else if (cmd.operation === 'refresh_proposal_queue') {
+            targetWorkflow = 'update-proposal-work-queue.yml';
+            operation = cmd.operation;
+            dispatch = { ref: 'main' };
+          } else if (cmd.operation === 'record_owner_decision') {
+            targetWorkflow = 'record-brain-decision.yml';
+            operation = cmd.operation;
+
+            const d = cmd.decision ?? {};
+            proposalId = clean(d.proposalId, 'decision.proposalId', { required: true, max: 80 });
+            const caseId = clean(d.caseId, 'decision.caseId', { required: true, max: 80 });
+            const caseKey = clean(d.caseKey, 'decision.caseKey', { required: true, max: 80 });
+            if (!/^PRP-[0-9a-f]{24}$/.test(proposalId)) fail('Invalid proposalId');
+            if (!/^[0-9a-f]{24}$/.test(caseId)) fail('Invalid caseId');
+            if (!/^CK-[0-9a-f]{20}$/.test(caseKey)) fail('Invalid caseKey');
+
+            const queuePath = 'intelligence/proposals/proposal-queue.json';
+            if (!fs.existsSync(queuePath)) fail('Current Proposal queue is missing');
+            const queue = JSON.parse(fs.readFileSync(queuePath, 'utf8'));
+            const proposal = (queue.proposals ?? []).find((p) => p.proposalId === proposalId);
+            if (!proposal) fail(`Current proposal not found: ${proposalId}`);
+            if (proposal.source?.caseId !== caseId) fail('Proposal/caseId binding mismatch');
+            if (proposal.source?.caseKey !== caseKey) fail('Proposal/caseKey binding mismatch');
+            if (proposal.state !== 'PROPOSED') fail(`Only a current PROPOSED item may receive its first owner decision; got ${proposal.state}`);
+            if (proposal.boundaries?.humanApprovalRequired !== true) fail('Proposal does not declare the human approval gate');
+            if (proposal.boundaries?.automaticApproval !== false || proposal.boundaries?.automaticExecution !== false) {
+              fail('Proposal safety boundary is not intact');
+            }
+
+            disposition = clean(d.disposition, 'decision.disposition', { required: true, max: 20 });
+            if (!['accept', 'defer', 'reject', 'modify'].includes(disposition)) fail('Unsupported decision disposition');
+            const rationale = clean(d.rationale, 'decision.rationale', { required: true, min: 10, max: 2000 });
+            const expectedOutcome = clean(d.expectedOutcome, 'decision.expectedOutcome', { max: 1200 });
+            const modifiedAction = clean(d.modifiedAction, 'decision.modifiedAction', { required: disposition === 'modify', max: 2000 });
+            if (disposition !== 'modify' && modifiedAction) fail('modifiedAction is only allowed for disposition=modify');
+            const predictionEvent = clean(d.predictionEvent || 'none', 'decision.predictionEvent', { required: true, max: 64 });
+            if (!['none', 'case-resolved-by-review'].includes(predictionEvent)) fail('Unsupported prediction event');
+            const probabilityBps = integer(d.probabilityBps ?? 7000, 'decision.probabilityBps', 0, 10000);
+            const reviewDays = integer(d.reviewDays ?? 14, 'decision.reviewDays', 1, 365);
+            const supersedesDecisionId = clean(d.supersedesDecisionId, 'decision.supersedesDecisionId', { max: 80 });
+            if (supersedesDecisionId) fail('v0.2 first-decision bridge does not yet permit corrections/superseding entries');
+
+            const publicDecisionText = [rationale, expectedOutcome, modifiedAction].join('\n');
+            if (secretLike(publicDecisionText)) fail('Decision text contains a secret-like marker; public decision memory rejected');
+
+            dispatch = {
+              ref: 'main',
+              inputs: {
+                case_id: caseId,
+                disposition,
+                rationale,
+                expected_outcome: expectedOutcome,
+                modified_action: modifiedAction,
+                prediction_event: predictionEvent,
+                probability_bps: String(probabilityBps),
+                review_days: String(reviewDays),
+                supersedes_decision_id: '',
+              },
+            };
+          } else {
+            fail(`Operation is not allowlisted: ${cmd.operation}`);
+          }
+
+          fs.writeFileSync('/tmp/operator-dispatch.json', JSON.stringify(dispatch), 'utf8');
+          output('workflow', targetWorkflow);
+          output('ref', targetRef);
+          output('command_id', cmd.commandId);
+          output('operation', operation);
+          output('proposal_id', proposalId);
+          output('disposition', disposition);
+          console.log('Bounded operator command validated:', {
+            commandId: cmd.commandId,
+            operation,
+            workflow: targetWorkflow,
+            ref: targetRef,
+            proposalId: proposalId || null,
+            disposition: disposition || null,
+          });
           NODE
 
       - name: Dispatch allowlisted workflow
@@ -67,13 +171,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          case "$TARGET_WORKFLOW" in
+            update-proposal-work-queue.yml|record-brain-decision.yml) ;;
+            *) echo "Unexpected target workflow after validation: $TARGET_WORKFLOW"; exit 1 ;;
+          esac
+          if [ "$TARGET_REF" != "main" ]; then
+            echo "Unexpected target ref after validation: $TARGET_REF"
+            exit 1
+          fi
+
           code="$(curl -sS -o /tmp/dispatch-response.txt -w '%{http_code}' \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/dispatches" \
-            -d "{\"ref\":\"${TARGET_REF}\"}")"
+            --data-binary @/tmp/operator-dispatch.json)"
 
           if [ "$code" != "204" ]; then
             echo "Workflow dispatch failed with HTTP ${code}."
@@ -91,9 +204,16 @@ jobs:
             echo "# The Holding · Operator Command Bridge"
             echo
             echo "**Command ID:** \`${{ steps.command.outputs.command_id }}\`"
+            echo "**Operation:** \`${{ steps.command.outputs.operation }}\`"
             echo "**Target workflow:** \`${{ steps.command.outputs.workflow }}\`"
             echo "**Target ref:** \`${{ steps.command.outputs.ref }}\`"
+            if [ -n "${{ steps.command.outputs.proposal_id }}" ]; then
+              echo "**Proposal:** \`${{ steps.command.outputs.proposal_id }}\`"
+              echo "**Owner disposition:** \`${{ steps.command.outputs.disposition }}\`"
+            fi
             echo "**Arbitrary workflows:** disabled"
             echo "**Wallet action:** disabled"
             echo "**Capital execution:** disabled"
+            echo
+            echo "Owner decisions are dispatched only into the existing inert, append-only Decision Memory workflow. They do not execute the proposal."
           } >> "$GITHUB_STEP_SUMMARY"
