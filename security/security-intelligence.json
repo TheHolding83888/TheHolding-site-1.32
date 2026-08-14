@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-14T11:23:45.788Z",
+  "generatedAt": "2026-08-14T11:34:12.258Z",
   "status": "green",
   "headline": "No high or critical security findings detected in this scan.",
   "severityCounts": {
     "critical": 0,
     "high": 0,
-    "medium": 0,
+    "medium": 1,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 189,
-    "bytesScanned": 5587285,
+    "bytesScanned": 5627791,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Tue, 11 Aug 2026 03:06:27 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:20:22 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,10 +55,40 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "4b3993ff309144b8811809b718e01fef1e40106ba9934de1512eb8f6073199cf",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": "agents/index.html",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: agents/index.html.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "0dc60ab6b1a1dae57255242bdcbc28f7d6c3b5b5415bca31a638aafa1b5e9ea7",
+          "currentSha256": "219283656bbda09a6ec5dffadae1d6e64ef7e636b46777ac1da8a6e82ebd3383"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
-  "currentFindings": [],
+  "currentFindings": [
+    {
+      "id": "4b3993ff309144b8811809b718e01fef1e40106ba9934de1512eb8f6073199cf",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "agents/index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: agents/index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "0dc60ab6b1a1dae57255242bdcbc28f7d6c3b5b5415bca31a638aafa1b5e9ea7",
+        "currentSha256": "219283656bbda09a6ec5dffadae1d6e64ef7e636b46777ac1da8a6e82ebd3383"
+      }
+    }
+  ],
   "protectNext": [
     {
       "priority": "roadmap",
@@ -67,12 +97,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "45bf2c94030591f98c9ad3a55d49b0c07b2994db39cd43eefefacf1b88a014cf",
+    "snapshotHash": "4f889224c474a19dbf515c36f72fda2a27b446360b3fe996f7f5b7b0c5e183a8",
     "securityVault": {
-      "runCount": 143,
+      "runCount": 144,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T11-23-45-788Z-45bf2c9403.json",
-      "latestRecordHash": "82312df88cd575da1142bddadd7ec653e61ea74a2f0756cf58ea0d6794d1b9bf",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T11-34-12-258Z-4f889224c4.json",
+      "latestRecordHash": "3e09121484f331724f7608a4ce7dfe7c5f533f5597bd4bb8bf7b4d531d5ee3f0",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
