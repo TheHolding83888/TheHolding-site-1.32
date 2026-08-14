@@ -1,0 +1,120 @@
+name: "The Holding · Ask Answer Contract v0.4 Integrator"
+
+on:
+  push:
+    branches: [agents/ask-answer-contract-v0.4-20260814]
+    paths:
+      - 'verification/ask-answer-contract-integrator-v0.4.mjs'
+      - '.github/workflows/ask-answer-contract-integrator-v0.4.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ask-answer-contract-v04-integrator
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout candidate branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: agents/ask-answer-contract-v0.4-20260814
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Apply fail-closed Answer Contract integration
+        run: node verification/ask-answer-contract-integrator-v0.4.mjs
+
+      - name: Static JavaScript validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check agents/console/app.js
+          node --check agents/console/safety.js
+          git diff --check
+
+      - name: Verify Answer Contract invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const app = fs.readFileSync('agents/console/app.js','utf8');
+          const html = fs.readFileSync('agents/console/index.html','utf8');
+          const learning = JSON.parse(fs.readFileSync('worker/wrangler.learning.jsonc','utf8'));
+          const required = [
+            "0.1-source-bound-answer-contract",
+            "measured', 'partial', 'warming', 'unknown",
+            'data-answer-contract-version',
+            'data-answer-confidence-class',
+            'HoldingAnswerQuality',
+            'sourceArtifacts',
+            'generatedAt',
+            'grounded'
+          ];
+          for (const token of required) {
+            if (!app.includes(token)) throw new Error(`Missing Answer Contract invariant: ${token}`);
+          }
+          if (!html.includes('v0.4 source-bound answers')) throw new Error('Console v0.4 identity missing');
+          if (!html.includes('Source-bound answers')) throw new Error('Source-bound answer pill missing');
+          if (!html.includes('./app.js?v=0.4')) throw new Error('Console app v0.4 cache version missing');
+          if (String(learning.vars?.LEARNING_INTAKE_ENABLED) !== 'false') throw new Error('Persistent conversation learning was activated unexpectedly');
+          if (app.includes("fetch('/api/learning-") || app.includes('fetch(`/api/learning-')) throw new Error('Answer Contract app added a learning API transmission path');
+          if (/localStorage\.setItem\([^,]+,\s*(?:raw|question|text)\b/i.test(app)) throw new Error('Potential raw question persistence detected');
+          if (!app.includes("crypto.subtle.digest('SHA-256'")) throw new Error('Local unresolved fingerprint is not one-way SHA-256');
+          if (!app.includes('quality.unresolved')) throw new Error('Repeated unresolved metric missing');
+          if (!app.includes("contract.confidenceClass === 'unknown'")) throw new Error('Unknown-rate accounting missing');
+          console.log('Ask Answer Contract invariants PASS');
+          NODE
+
+      - name: Verify source coverage and no factual answer without source contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const app = fs.readFileSync('agents/console/app.js','utf8');
+          const expectedSources = [
+            'Live Registry + Productivity',
+            'Live Productivity',
+            'Live Stable Capital',
+            'Live Company Registry',
+            'Live Cognitive Stack + Brain Bridge',
+            'Live Brain Bridge',
+            'Live Decision & Outcome Learning',
+            'Live Rewards data',
+            'Live Embedded Yield data',
+            'Live Strategy Entry Ledger',
+            'The Holding project canon',
+            'Console capability map',
+            'Public site knowledge'
+          ];
+          for (const source of expectedSources) {
+            if (!app.includes(source)) throw new Error(`Expected answer source disappeared: ${source}`);
+          }
+          if (!app.includes('This answer has no verified source artifact') || !app.includes('У ответа нет подтверждённого source artifact')) {
+            throw new Error('No-source fail-closed response missing');
+          }
+          console.log('Answer source coverage PASS');
+          NODE
+
+      - name: Restore temporary machinery and publish only product files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Integration"
+          git config user.email "integration@theholding.ai"
+          git add agents/console/app.js agents/console/index.html
+          test -n "$(git diff --cached --name-only)"
+          git commit -m "agents: add source-bound answer quality contract"
+          git push origin HEAD:agents/ask-answer-contract-v0.4-20260814
