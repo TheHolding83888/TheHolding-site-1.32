@@ -1,0 +1,26 @@
+{
+  "name": "theholding-learning-intake",
+  "main": "api-only.js",
+  "compatibility_date": "2026-08-14",
+  "observability": { "enabled": true },
+  "routes": [
+    {
+      "pattern": "theholding.ai/api/*",
+      "zone_name": "theholding.ai"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "LEARNING_INTAKE", "class_name": "LearningIntake" }
+    ]
+  },
+  "exports": {
+    "LearningIntake": { "type": "durable-object", "storage": "sqlite" }
+  },
+  "vars": {
+    "LEARNING_INTAKE_ENABLED": "false",
+    "LEARNING_CONTROLLER_NAME": "UNSET",
+    "LEARNING_CONTROLLER_CONTACT": "UNSET",
+    "LEARNING_LEGAL_BASIS_NOTICE": "UNSET"
+  }
+}
