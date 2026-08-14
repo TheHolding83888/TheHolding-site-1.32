@@ -10,6 +10,14 @@
     "Secrets, signing/transaction requests, credentials, private keys, seed phrases and sensitive personal data are excluded from learning examples.",
     "No automatic code patch, methodology mutation, Proposal approval or execution authority is created from live-human traffic."
   ],
+  "metricIsolation": {
+    "syntheticRegression": "measures whether known behavior degraded",
+    "syntheticMutation": "measures generalization to unseen surface forms",
+    "ownerUnknown": "discovers missing synthesis capability without a pre-known answer",
+    "liveHuman": "discovers what real people actually need and how they naturally ask",
+    "crossOriginAggregateScore": false,
+    "humanSignalMayNotBeDilutedBySyntheticVolume": true
+  },
   "safeAggregateSignals": [
     "answer confidence bucket",
     "coarse intent/topic",
@@ -39,5 +47,6 @@
     "contextBreak": "conversation-state capability review"
   },
   "durableCompression": "raw conversations -> aggregate evidence -> failure class -> reviewed hypothesis -> accepted/rejected lesson -> regression result",
+  "durableHypothesisRule": "Preserve both accepted and rejected reviewed hypotheses with origin and evidence reference so future models or maintainers do not repeatedly rediscover rejected approaches.",
   "crossOriginAggregateScore": false
 }
