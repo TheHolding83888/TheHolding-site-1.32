@@ -5,6 +5,12 @@ on:
     branches: [main]
     paths-ignore:
       - 'intelligence/project-memory/CURRENT.md'
+      # Operator commands are transient control-plane inputs. Refreshing CURRENT
+      # from the same command push can race the bounded downstream dispatch by
+      # advancing main between dispatch request and workflow creation. The
+      # resulting canonical subsystem state is still captured by the hourly
+      # backstop and by ordinary material pushes.
+      - 'intelligence/operator/command.json'
   schedule:
     - cron: '17 * * * *'
   workflow_dispatch:
