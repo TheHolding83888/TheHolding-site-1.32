@@ -32,10 +32,10 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
-      - name: Validate integrator syntax before execution
+      - name: Validate repair integrator syntax before execution
         run: node --check verification/ask-answer-contract-integrator-v0.4.mjs
 
-      - name: Apply fail-closed Answer Contract integration
+      - name: Repair generated Answer Contract semantics fail-closed
         run: node verification/ask-answer-contract-integrator-v0.4.mjs
 
       - name: Static JavaScript validation
@@ -46,7 +46,7 @@ jobs:
           node --check agents/console/safety.js
           git diff --check
 
-      - name: Verify Answer Contract invariants
+      - name: Verify Answer Contract invariants and privacy boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -77,7 +77,39 @@ jobs:
           if (!app.includes("crypto.subtle.digest('SHA-256'")) throw new Error('Local unresolved fingerprint is not one-way SHA-256');
           if (!app.includes('quality.unresolved')) throw new Error('Repeated unresolved metric missing');
           if (!app.includes("contract.confidenceClass === 'unknown'")) throw new Error('Unknown-rate accounting missing');
-          console.log('Ask Answer Contract invariants PASS');
+          console.log('Ask Answer Contract invariants + privacy PASS');
+          NODE
+
+      - name: Verify confidence semantics behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const app = fs.readFileSync('agents/console/app.js','utf8');
+          const measuredLiteral = String.raw`const hasMeasuredValue = /(?:\$|\d+(?:[.,]\d+)?%)/.test`;
+          const coverageLiteral = String.raw`matchAll(/(?:coverage|покрытие)[^0-9]{0,24}(\d+(?:[.,]\d+)?)%/gi)`;
+          if (!app.includes(measuredLiteral)) throw new Error('Correct measured-value regex is not present');
+          if (!app.includes(coverageLiteral)) throw new Error('Correct coverage regex is not present');
+          if (app.includes('/(?:$|d+(?:[.,]d+)?%)/') || app.includes('(d+(?:[.,]d+)?)%')) {
+            throw new Error('Malformed generated regex survived repair');
+          }
+
+          const measured = /(?:\$|\d+(?:[.,]\d+)?%)/;
+          const coverage = /(?:coverage|покрытие)[^0-9]{0,24}(\d+(?:[.,]\d+)?)%/gi;
+          const cases = [
+            ['Reference APR: 12.3%', true],
+            ['Value: $148.82', true],
+            ['warming without value', false]
+          ];
+          for (const [sample, expected] of cases) {
+            if (measured.test(sample) !== expected) throw new Error(`Measured-value semantic failure: ${sample}`);
+          }
+          const partial = [...'Coverage: 78.5%'.matchAll(coverage)].some(m => Number(m[1]) < 99.999);
+          if (!partial) throw new Error('Partial coverage semantic classification failed');
+          const full = [...'Coverage: 100%'.matchAll(coverage)].some(m => Number(m[1]) < 99.999);
+          if (full) throw new Error('Full coverage incorrectly classified as partial');
+          console.log('Answer confidence semantic behavior PASS');
           NODE
 
       - name: Verify source coverage and no factual answer without source contract
@@ -111,13 +143,13 @@ jobs:
           console.log('Answer source coverage PASS');
           NODE
 
-      - name: Publish only product files
+      - name: Publish repaired product file only
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "The Holding Integration"
           git config user.email "integration@theholding.ai"
-          git add agents/console/app.js agents/console/index.html
+          git add agents/console/app.js
           test -n "$(git diff --cached --name-only)"
-          git commit -m "agents: add source-bound answer quality contract"
+          git commit -m "agents: repair answer confidence semantics"
           git push origin HEAD:agents/ask-answer-contract-v0.4-20260814
