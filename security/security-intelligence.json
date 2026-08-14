@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-14T15:55:33.437Z",
+  "generatedAt": "2026-08-14T15:58:53.959Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 209,
-    "bytesScanned": 5794464,
+    "bytesScanned": 5795155,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,22 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "a5299b8bc38f26ba5262482138b44bc0238cd1ea761435a37de50bdd35aacdb1",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/production-deployment-smoke.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/production-deployment-smoke.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "f07f2e8e527c194f36670e9dd7c6635f711a8442e86606bd2e0a4790e2ec34be",
+          "currentSha256": "df795927034f2a7a5985df8078c9d3c73be1fd3c91d9582093f8f2ad01932f27"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "0acc4dc110f979437f85135677de89420530f3dcc8ec14964ab3df341d5063e6",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -68,22 +84,6 @@
         "evidence": {
           "previousSha256": "5ec8bc5dedd9c6ec49b8c99c62f9d42a7796b7ee723b7a95de22ea17141c9a0a",
           "currentSha256": "f07f2e8e527c194f36670e9dd7c6635f711a8442e86606bd2e0a4790e2ec34be"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "8648809deea25e985330b0f3902ab1d980afe29f6d0a3b34f2085f658bf0d90c",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/production-deployment-smoke.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/production-deployment-smoke.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "26f3d80babc9dc8d88a0dba21f30d6cbf60e96afd700c7ebb04586d830180fd8",
-          "currentSha256": "5ec8bc5dedd9c6ec49b8c99c62f9d42a7796b7ee723b7a95de22ea17141c9a0a"
         }
       }
     ]
@@ -112,7 +112,7 @@
       "evidence": null
     },
     {
-      "id": "0acc4dc110f979437f85135677de89420530f3dcc8ec14964ab3df341d5063e6",
+      "id": "a5299b8bc38f26ba5262482138b44bc0238cd1ea761435a37de50bdd35aacdb1",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/production-deployment-smoke.yml",
@@ -121,8 +121,8 @@
       "summary": "Security-sensitive surface changed: .github/workflows/production-deployment-smoke.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "5ec8bc5dedd9c6ec49b8c99c62f9d42a7796b7ee723b7a95de22ea17141c9a0a",
-        "currentSha256": "f07f2e8e527c194f36670e9dd7c6635f711a8442e86606bd2e0a4790e2ec34be"
+        "previousSha256": "f07f2e8e527c194f36670e9dd7c6635f711a8442e86606bd2e0a4790e2ec34be",
+        "currentSha256": "df795927034f2a7a5985df8078c9d3c73be1fd3c91d9582093f8f2ad01932f27"
       }
     },
     {
@@ -149,12 +149,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "e00508cdf5ce0d1800eea0bf00bfc55c717c8e4c7e98b57879da1271a4c3a167",
+    "snapshotHash": "771211dfd4e6296e3c12fd82d0c95325c4a56cd81e034d6c55bfdf7ff33fc7cf",
     "securityVault": {
-      "runCount": 158,
+      "runCount": 159,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T15-55-33-437Z-e00508cdf5.json",
-      "latestRecordHash": "1803395aecb2eae5076c1a3cc1ed0193c3c2c9c236af7d02544760e496a5f611",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T15-58-53-959Z-771211dfd4.json",
+      "latestRecordHash": "3d53576736f75d3ce5ae30936da90f37009534c90758fec23bddfcc119e09268",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
