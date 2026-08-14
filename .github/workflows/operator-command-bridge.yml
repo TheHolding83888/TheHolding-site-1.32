@@ -17,7 +17,7 @@ concurrency:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - name: Checkout canonical repository state
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -53,7 +53,11 @@ jobs:
           ].some(r => r.test(text));
           const output = (k, v) => fs.appendFileSync(out, `${k}=${String(v).replace(/\n/g, ' ')}\n`);
 
-          if (!['0.1-operator-command','0.2-operator-command','0.3-operator-command','0.4-operator-command','0.5-operator-command'].includes(cmd.version)) fail('Unexpected operator command version');
+          const versions = new Set([
+            '0.1-operator-command','0.2-operator-command','0.3-operator-command',
+            '0.4-operator-command','0.5-operator-command','0.6-operator-command'
+          ]);
+          if (!versions.has(cmd.version)) fail('Unexpected operator command version');
           if (cmd.requestedBy !== 'owner' || cmd.approval !== 'explicit') fail('Explicit owner approval marker is required');
           if (cmd.arbitraryWorkflowAllowed !== false) fail('arbitraryWorkflowAllowed must remain false');
           if (cmd.walletActionAllowed !== false) fail('walletActionAllowed must remain false');
@@ -64,7 +68,9 @@ jobs:
           let proposalId = '', disposition = '';
 
           if (cmd.version === '0.1-operator-command') {
-            if (cmd.operation !== 'workflow_dispatch' || cmd.workflow !== 'update-proposal-work-queue.yml' || cmd.ref !== 'main') fail('Legacy command escaped its original bounded contract');
+            if (cmd.operation !== 'workflow_dispatch' || cmd.workflow !== 'update-proposal-work-queue.yml' || cmd.ref !== 'main') {
+              fail('Legacy command escaped its original bounded contract');
+            }
             operation = 'refresh_proposal_queue';
             targetWorkflow = 'update-proposal-work-queue.yml';
             dispatch = { ref: 'main' };
@@ -75,6 +81,10 @@ jobs:
           } else if (cmd.operation === 'refresh_proposal_queue') {
             operation = cmd.operation;
             targetWorkflow = 'update-proposal-work-queue.yml';
+            dispatch = { ref: 'main' };
+          } else if (cmd.operation === 'refresh_builder_candidates') {
+            operation = cmd.operation;
+            targetWorkflow = 'update-builder-candidates.yml';
             dispatch = { ref: 'main' };
           } else if (cmd.operation === 'record_owner_decision') {
             operation = cmd.operation;
@@ -92,7 +102,9 @@ jobs:
             if (!proposal) fail(`Current proposal not found: ${proposalId}`);
             if (proposal.source?.caseId !== caseId || proposal.source?.caseKey !== caseKey) fail('Proposal/case binding mismatch');
             if (proposal.state !== 'PROPOSED') fail(`Only a current PROPOSED item may receive its first owner decision; got ${proposal.state}`);
-            if (proposal.boundaries?.humanApprovalRequired !== true || proposal.boundaries?.automaticApproval !== false || proposal.boundaries?.automaticExecution !== false) fail('Proposal safety boundary is not intact');
+            if (proposal.boundaries?.humanApprovalRequired !== true || proposal.boundaries?.automaticApproval !== false || proposal.boundaries?.automaticExecution !== false) {
+              fail('Proposal safety boundary is not intact');
+            }
 
             disposition = clean(d.disposition, 'decision.disposition', {required:true,max:20});
             if (!['accept','defer','reject','modify'].includes(disposition)) fail('Unsupported disposition');
@@ -128,7 +140,13 @@ jobs:
           output('command_id', cmd.commandId);
           output('proposal_id', proposalId);
           output('disposition', disposition);
-          console.log('Bounded command validated', {commandId:cmd.commandId, operation, targetWorkflow, proposalId:proposalId||null, disposition:disposition||null});
+          console.log('Bounded command validated', {
+            commandId:cmd.commandId,
+            operation,
+            targetWorkflow,
+            proposalId:proposalId||null,
+            disposition:disposition||null
+          });
           NODE
 
       - name: Execute coherence-aware bounded orchestration
@@ -142,14 +160,18 @@ jobs:
         run: |
           set -euo pipefail
           case "$TARGET_WORKFLOW" in
-            refresh-cognitive-stack.yml|update-proposal-work-queue.yml|record-brain-decision.yml) ;;
+            refresh-cognitive-stack.yml|update-proposal-work-queue.yml|update-builder-candidates.yml|record-brain-decision.yml) ;;
             *) echo "Unexpected target workflow: $TARGET_WORKFLOW"; exit 1 ;;
           esac
 
           API="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}"
           LAST_RUN_ID=""
           api_get() {
-            curl -fsSL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" "$1"
+            curl -fsSL \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "$1"
           }
           wait_run_success() {
             local run_id="$1" label="$2" timeout_s="${3:-420}" elapsed=0 status conclusion
@@ -161,36 +183,53 @@ jobs:
                 [ "$conclusion" = "success" ] || { echo "$label failed: $conclusion"; exit 1; }
                 return 0
               fi
-              sleep 4; elapsed=$((elapsed+4))
+              sleep 4
+              elapsed=$((elapsed+4))
             done
-            echo "Timed out waiting for $label run $run_id"; exit 1
+            echo "Timed out waiting for $label run $run_id"
+            exit 1
           }
           wait_command_security() {
             local elapsed=0 run_id=""
             while [ "$elapsed" -lt 240 ]; do
-              run_id="$(api_get "${API}/actions/workflows/security-sentinel.yml/runs?event=push&branch=main&per_page=30" | jq -r --arg sha "$COMMAND_SHA" '.workflow_runs[] | select(.head_sha==$sha) | .id' | head -n1)"
+              run_id="$(api_get "${API}/actions/workflows/security-sentinel.yml/runs?event=push&branch=main&per_page=30" |
+                jq -r --arg sha "$COMMAND_SHA" '.workflow_runs[] | select(.head_sha==$sha) | .id' | head -n1)"
               if [ -n "$run_id" ]; then
                 echo "Command-bound Security Sentinel: $run_id"
                 wait_run_success "$run_id" "Security Sentinel" 300
                 echo "security_run_id=$run_id" >> "$GITHUB_OUTPUT"
                 return 0
               fi
-              sleep 4; elapsed=$((elapsed+4))
+              sleep 4
+              elapsed=$((elapsed+4))
             done
-            echo "No Security Sentinel run found for command commit $COMMAND_SHA"; exit 1
+            echo "No Security Sentinel run found for command commit $COMMAND_SHA"
+            exit 1
           }
           main_sha() { api_get "${API}/git/ref/heads/main" | jq -r '.object.sha'; }
           dispatch_and_wait() {
-            local workflow="$1" payload="$2" label="$3" expected_sha="$4" before_file elapsed=0 new_id="" code
+            local workflow="$1" payload="$2" label="$3" expected_sha="$4"
+            local before_file elapsed=0 new_id="" code
             before_file="$(mktemp)"
             api_get "${API}/actions/workflows/${workflow}/runs?per_page=30" | jq -r '.workflow_runs[].id' > "$before_file"
             code="$(curl -sS -o /tmp/operator-dispatch-response.txt -w '%{http_code}' -X POST \
-              -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
-              "${API}/actions/workflows/${workflow}/dispatches" --data-binary "@${payload}")"
-            [ "$code" = "204" ] || { echo "$label dispatch failed with HTTP $code"; cat /tmp/operator-dispatch-response.txt || true; exit 1; }
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "${API}/actions/workflows/${workflow}/dispatches" \
+              --data-binary "@${payload}")"
+            [ "$code" = "204" ] || {
+              echo "$label dispatch failed with HTTP $code"
+              cat /tmp/operator-dispatch-response.txt || true
+              exit 1
+            }
             echo "Dispatched $label at main $expected_sha"
             while [ "$elapsed" -lt 90 ]; do
-              new_id="$(api_get "${API}/actions/workflows/${workflow}/runs?event=workflow_dispatch&branch=main&per_page=30" | jq -r --arg sha "$expected_sha" '.workflow_runs[] | select(.head_sha==$sha) | .id' | while read -r id; do if ! grep -qx "$id" "$before_file"; then echo "$id"; break; fi; done)"
+              new_id="$(api_get "${API}/actions/workflows/${workflow}/runs?event=workflow_dispatch&branch=main&per_page=30" |
+                jq -r --arg sha "$expected_sha" '.workflow_runs[] | select(.head_sha==$sha) | .id' |
+                while read -r id; do
+                  if ! grep -qx "$id" "$before_file"; then echo "$id"; break; fi
+                done)"
               if [ -n "$new_id" ]; then
                 echo "Resolved $label run: $new_id"
                 wait_run_success "$new_id" "$label" 420
@@ -198,10 +237,12 @@ jobs:
                 rm -f "$before_file"
                 return 0
               fi
-              sleep 3; elapsed=$((elapsed+3))
+              sleep 3
+              elapsed=$((elapsed+3))
             done
             rm -f "$before_file"
-            echo "Could not resolve new $label run"; exit 1
+            echo "Could not resolve new $label run"
+            exit 1
           }
           verify_learning_binding() {
             local stack_json learning_json stack_chain learning_chain learning_status
@@ -211,19 +252,35 @@ jobs:
             learning_chain="$(printf '%s' "$learning_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.source.cognitiveChainHash // empty')"
             learning_status="$(printf '%s' "$learning_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.status // empty')"
             echo "Learning binding: status=$learning_status stack=${stack_chain:0:12} learning=${learning_chain:0:12}"
-            [ -n "$stack_chain" ] && [ "$learning_status" = "ready" ] && [ "$learning_chain" = "$stack_chain" ] || { echo "Learning is not current relative to Cognitive Stack"; exit 1; }
+            [ -n "$stack_chain" ] && [ "$learning_status" = "ready" ] && [ "$learning_chain" = "$stack_chain" ] || {
+              echo "Learning is not current relative to Cognitive Stack"
+              exit 1
+            }
           }
           run_learning() {
             printf '{"ref":"main"}' > /tmp/learning-dispatch.json
-            local learning_head
-            learning_head="$(main_sha)"
-            dispatch_and_wait 'update-learning-loop.yml' /tmp/learning-dispatch.json 'Decision Outcome Learning' "$learning_head"
+            local head
+            head="$(main_sha)"
+            dispatch_and_wait 'update-learning-loop.yml' /tmp/learning-dispatch.json 'Decision Outcome Learning' "$head"
             echo "learning_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
             verify_learning_binding
           }
+          run_proposal() {
+            printf '{"ref":"main"}' > /tmp/proposal-dispatch.json
+            local head
+            head="$(main_sha)"
+            dispatch_and_wait 'update-proposal-work-queue.yml' /tmp/proposal-dispatch.json 'Proposal Work Queue' "$head"
+            echo "proposal_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
+          }
+          run_builder() {
+            printf '{"ref":"main"}' > /tmp/builder-dispatch.json
+            local head
+            head="$(main_sha)"
+            dispatch_and_wait 'update-builder-candidates.yml' /tmp/builder-dispatch.json 'Self-Improvement Builder Sandbox' "$head"
+            echo "builder_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
+          }
 
-          # command.json is deliberately Security-reviewed. Wait for the exact
-          # command-bound scan/publish before refreshing the cognitive packet.
+          # The command commit itself is reviewed before any downstream orchestration.
           wait_command_security
 
           printf '{"ref":"main"}' > /tmp/cognitive-dispatch.json
@@ -242,17 +299,19 @@ jobs:
               dispatch_and_wait 'record-brain-decision.yml' /tmp/operator-target-dispatch.json 'Decision Memory' "$TARGET_HEAD"
               DECISION_RUN="$LAST_RUN_ID"
               echo "target_run_id=$DECISION_RUN" >> "$GITHUB_OUTPUT"
-              # GitHub-token generated decision pushes do not reliably wake a
-              # downstream push workflow. Explicitly run Learning after the
-              # inert decision commit so the accepted decision becomes experience.
               run_learning
               ;;
             refresh_proposal_queue)
-              # Explicit Learning handoff closes the GITHUB_TOKEN workflow-chain
-              # gap and guarantees Proposal sees the fresh cognitive chain.
               run_learning
-              TARGET_HEAD="$(main_sha)"
-              dispatch_and_wait 'update-proposal-work-queue.yml' /tmp/operator-target-dispatch.json 'Proposal Work Queue' "$TARGET_HEAD"
+              run_proposal
+              echo "target_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
+              ;;
+            refresh_builder_candidates)
+              # Builder consumes exact Decision-bound Proposal bytes. Establish the
+              # full fresh chain before generating candidate work packets.
+              run_learning
+              run_proposal
+              run_builder
               echo "target_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
               ;;
             *) echo "Unexpected operation after validation: $OPERATION"; exit 1 ;;
@@ -263,7 +322,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "# The Holding · Operator Command Bridge v0.5"
+            echo "# The Holding · Operator Command Bridge v0.6"
             echo
             echo "**Command ID:** \`${{ steps.command.outputs.command_id }}\`"
             echo "**Operation:** \`${{ steps.command.outputs.operation }}\`"
@@ -275,10 +334,13 @@ jobs:
             echo "**Command-bound Security run:** \`${{ steps.orchestrate.outputs.security_run_id }}\`"
             echo "**Fresh Cognitive run:** \`${{ steps.orchestrate.outputs.cognitive_run_id }}\`"
             echo "**Learning run:** \`${{ steps.orchestrate.outputs.learning_run_id }}\`"
+            echo "**Proposal run:** \`${{ steps.orchestrate.outputs.proposal_run_id }}\`"
+            echo "**Builder run:** \`${{ steps.orchestrate.outputs.builder_run_id }}\`"
             echo "**Final target run:** \`${{ steps.orchestrate.outputs.target_run_id }}\`"
             echo "**Arbitrary workflows:** disabled"
+            echo "**Repository mutation by bridge:** disabled"
             echo "**Wallet action:** disabled"
             echo "**Capital execution:** disabled"
             echo
-            echo "v0.5 performs the bounded operator transaction Security → Cognitive → optional Decision → Learning → optional Proposal, with each workflow independently fail-closed."
+            echo "v0.6 can perform Security → Cognitive → Learning → Decision-bound Proposal → Builder Candidate orchestration, while each downstream workflow remains independently fail-closed."
           } >> "$GITHUB_STEP_SUMMARY"
