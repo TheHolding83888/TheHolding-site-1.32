@@ -1,14 +1,14 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "theholding-learning-intake",
-  "main": "worker/index.js",
+  "main": "api-only.js",
   "compatibility_date": "2026-08-14",
   "observability": { "enabled": true },
-  "assets": {
-    "directory": "agents/console",
-    "binding": "ASSETS",
-    "run_worker_first": ["/api/*"]
-  },
+  "routes": [
+    {
+      "pattern": "theholding.ai/api/*",
+      "zone_name": "theholding.ai"
+    }
+  ],
   "durable_objects": {
     "bindings": [
       { "name": "LEARNING_INTAKE", "class_name": "LearningIntake" }
