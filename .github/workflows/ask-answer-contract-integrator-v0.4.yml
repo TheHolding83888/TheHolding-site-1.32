@@ -32,6 +32,9 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
+      - name: Validate integrator syntax before execution
+        run: node --check verification/ask-answer-contract-integrator-v0.4.mjs
+
       - name: Apply fail-closed Answer Contract integration
         run: node verification/ask-answer-contract-integrator-v0.4.mjs
 
@@ -55,8 +58,8 @@ jobs:
           const required = [
             "0.1-source-bound-answer-contract",
             "measured', 'partial', 'warming', 'unknown",
-            'data-answer-contract-version',
-            'data-answer-confidence-class',
+            'dataset.answerContractVersion',
+            'dataset.answerConfidenceClass',
             'HoldingAnswerQuality',
             'sourceArtifacts',
             'generatedAt',
@@ -108,7 +111,7 @@ jobs:
           console.log('Answer source coverage PASS');
           NODE
 
-      - name: Restore temporary machinery and publish only product files
+      - name: Publish only product files
         shell: bash
         run: |
           set -euo pipefail
