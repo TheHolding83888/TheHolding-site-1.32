@@ -1,14 +1,32 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import crypto from 'node:crypto';
-const mf = 'intelligence/proposals/proposal-release.json';
-const m = JSON.parse(fs.readFileSync(mf,'utf8'));
-if (m.version !== '0.1-proposal-release') throw new Error(`Unexpected Proposal release version: ${m.version}`);
-for (const x of m.staticFiles ?? []) {
-  if (!fs.existsSync(x.file)) throw new Error(`Missing static Proposal file: ${x.file}`);
-  const b = fs.readFileSync(x.file);
-  const h = crypto.createHash('sha256').update(b).digest('hex');
-  if (h !== x.sha256) throw new Error(`Proposal static release mismatch: ${x.file}`);
-  if (b.length !== x.bytes) throw new Error(`Proposal static byte-size mismatch: ${x.file}`);
+
+const MANIFEST = 'intelligence/proposals/proposal-release.json';
+const EXPECTED_FILES = [
+  '.github/workflows/update-proposal-work-queue.yml',
+  'intelligence/proposals/README.md',
+  'intelligence/proposals/proposal-policy.json',
+  'intelligence/proposals/proposal-schema.json',
+  'intelligence/proposals/proposal-engine.mjs',
+  'intelligence/proposals/independent-proposal-reviewer.mjs',
+].sort();
+
+const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
+if (manifest.version !== '0.1.1-proposal-release') throw new Error(`Unexpected Proposal release version: ${manifest.version}`);
+if (manifest.releaseId !== '0.1.1-proposal-work-queue-path-coherence-repair') throw new Error(`Unexpected Proposal releaseId: ${manifest.releaseId}`);
+const actual = (manifest.staticFiles ?? []).map(x => x.file).sort();
+if (JSON.stringify(actual) !== JSON.stringify(EXPECTED_FILES)) {
+  throw new Error(`Proposal static file contract mismatch: ${JSON.stringify(actual)}`);
 }
-console.log('Proposal static release coherence PASS', {releaseId:m.releaseId, staticFileCount:m.staticFiles?.length ?? 0});
+for (const x of manifest.staticFiles ?? []) {
+  if (!fs.existsSync(x.file)) throw new Error(`Missing static Proposal file: ${x.file}`);
+  const bytes = fs.readFileSync(x.file);
+  const hash = crypto.createHash('sha256').update(bytes).digest('hex');
+  if (hash !== x.sha256) throw new Error(`Proposal static release mismatch: ${x.file}`);
+  if (bytes.length !== x.bytes) throw new Error(`Proposal static byte-size mismatch: ${x.file}`);
+}
+console.log('Proposal static release coherence PASS', {
+  releaseId: manifest.releaseId,
+  staticFileCount: manifest.staticFiles?.length ?? 0,
+});

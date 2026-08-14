@@ -5,6 +5,7 @@
   "type": "object",
   "required": [
     "version",
+    "engineVersion",
     "generatedAt",
     "status",
     "source",
@@ -14,27 +15,18 @@
     "integrity"
   ],
   "properties": {
-    "version": {
-      "const": "0.1-proposal-work-queue"
-    },
-    "generatedAt": {
-      "type": "string"
-    },
-    "status": {
-      "enum": [
-        "ready",
-        "watch",
-        "blocked"
-      ]
-    },
-    "proposals": {
-      "type": "array"
-    },
-    "constraints": {
-      "type": "object"
-    },
+    "version": { "const": "0.1-proposal-work-queue" },
+    "engineVersion": { "const": "0.1.1-deterministic-proposal-engine" },
+    "generatedAt": { "type": "string" },
+    "status": { "enum": ["ready", "watch", "blocked"] },
+    "source": { "type": "object" },
+    "summary": { "type": "object" },
+    "proposals": { "type": "array" },
+    "constraints": { "type": "object" },
     "integrity": {
-      "type": "object"
+      "type": "object",
+      "required": ["queueHash"],
+      "properties": { "queueHash": { "type": "string", "minLength": 64, "maxLength": 64 } }
     }
   },
   "additionalProperties": true

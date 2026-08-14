@@ -15,14 +15,21 @@ concurrency:
 
 jobs:
   propose:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      ${{
+        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'workflow_run' &&
+         github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 8
 
     steps:
-      - name: Checkout canonical repository state
+      - name: Checkout canonical main
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -31,14 +38,14 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
-      - name: Preflight Proposal Work Queue
+      - name: Preflight Proposal Work Queue v0.1.1
         shell: bash
         run: |
           set -euo pipefail
           REQUIRED=(
             "intelligence/brain-intelligence.json"
             "intelligence/cognitive-stack-state.json"
-            "intelligence/learning/learning-context.json"
+            "intelligence/learning-state/learning-context.json"
             "intelligence/proposals/proposal-policy.json"
             "intelligence/proposals/proposal-schema.json"
             "intelligence/proposals/proposal-engine.mjs"
@@ -50,6 +57,9 @@ jobs:
           node --check intelligence/proposals/proposal-engine.mjs
           node --check intelligence/proposals/independent-proposal-reviewer.mjs
           node --check intelligence/proposals/proposal-release-guard.mjs
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-policy.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-schema.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-release.json','utf8'))"
           node intelligence/proposals/proposal-release-guard.mjs
 
       - name: Verify exact Learning → Cognitive binding
@@ -58,12 +68,17 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
+          const crypto = require('crypto');
+          const sha = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+          const brainPath = 'intelligence/brain-intelligence.json';
           const stack = JSON.parse(fs.readFileSync('intelligence/cognitive-stack-state.json','utf8'));
-          const learning = JSON.parse(fs.readFileSync('intelligence/learning/learning-context.json','utf8'));
+          const learning = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
           if (stack.readyForManualInterpretation !== true) throw new Error('Cognitive Stack not ready');
           if (stack.operatingContract?.executionAuthority !== 'none') throw new Error('Execution authority changed');
           if (learning.status !== 'ready') throw new Error(`Learning not ready: ${learning.status}`);
           if (learning.source?.cognitiveChainHash !== stack.integrity?.chainHash) throw new Error('Learning/Cognitive chain mismatch');
+          if (stack.chain?.groundedBrain?.sha256 && stack.chain.groundedBrain.sha256 !== sha(brainPath)) throw new Error('Brain/Cognitive byte binding mismatch');
+          if ((learning.activeCases ?? []).length !== learning.summary?.activeCaseCount) throw new Error('Learning active case count mismatch');
           console.log('Learning → Cognitive binding PASS', {
             learningGeneratedAt: learning.generatedAt,
             cognitiveChainHash: stack.integrity.chainHash,
@@ -90,7 +105,9 @@ jobs:
             throw new Error('Proposal queue crossed mutation boundary');
           }
           for (const p of q.proposals ?? []) {
-            if (p.boundaries?.automaticExecution !== false || p.boundaries?.humanApprovalRequired !== true) throw new Error(`Unsafe proposal ${p.proposalId}`);
+            if (p.boundaries?.automaticExecution !== false || p.boundaries?.automaticApproval !== false || p.boundaries?.humanApprovalRequired !== true) {
+              throw new Error(`Unsafe proposal ${p.proposalId}`);
+            }
           }
           console.log('Proposal safety boundary PASS', q.summary);
           NODE
@@ -102,24 +119,44 @@ jobs:
           set -euo pipefail
           git config user.name "The Holding Proposal Engine"
           git config user.email "proposal-engine@theholding.ai"
-          git add \
-            intelligence/proposals/proposal-queue.json \
-            intelligence/proposals/proposal-brief.md \
-            intelligence/proposals/proposal-eval.json
 
-          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/proposals/(proposal-queue\.json|proposal-brief\.md|proposal-eval\.json)$' || true)"
-          if [ -n "$staged_bad" ]; then
-            echo "ERROR: Proposal workflow attempted to stage files outside generated-state boundary:"
-            echo "$staged_bad"
-            exit 1
-          fi
+          GENERATED=(
+            "intelligence/proposals/proposal-queue.json"
+            "intelligence/proposals/proposal-brief.md"
+            "intelligence/proposals/proposal-eval.json"
+          )
 
+          stage_generated() {
+            git add "${GENERATED[@]}"
+            staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/proposals/(proposal-queue\.json|proposal-brief\.md|proposal-eval\.json)$' || true)"
+            if [ -n "$staged_bad" ]; then
+              echo "ERROR: Proposal workflow attempted to stage files outside generated-state boundary:"
+              echo "$staged_bad"
+              exit 1
+            fi
+          }
+
+          verify_and_rebuild() {
+            node intelligence/proposals/proposal-release-guard.mjs
+            node intelligence/proposals/proposal-engine.mjs
+            node intelligence/proposals/independent-proposal-reviewer.mjs
+            node - <<'NODE'
+          const fs = require('fs');
+          const q = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-queue.json','utf8'));
+          const e = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-eval.json','utf8'));
+          if (e.status !== 'pass') throw new Error('Independent reviewer did not PASS after rebase');
+          if (q.constraints?.noProductionExecution !== true || q.constraints?.noAutomaticCodeChanges !== true || q.constraints?.noAutomaticApprovals !== true) throw new Error('Proposal mutation boundary changed after rebase');
+          NODE
+            git diff --check
+          }
+
+          stage_generated
           if git diff --cached --quiet; then
             echo "No Proposal state changes to publish."
             exit 0
           fi
-
           git commit -m "intelligence: refresh proposal work queue"
+
           for attempt in 1 2 3; do
             git fetch origin main
             if ! git rebase origin/main; then
@@ -127,8 +164,15 @@ jobs:
               echo "Proposal publish conflict; refusing to guess."
               exit 1
             fi
-            node intelligence/proposals/proposal-release-guard.mjs
-            node intelligence/proposals/independent-proposal-reviewer.mjs
+
+            # Rebuild after every rebase so published Proposal state is bound to the
+            # exact current Learning/Cognitive bytes, not to a stale pre-rebase snapshot.
+            verify_and_rebuild
+            stage_generated
+            if ! git diff --cached --quiet; then
+              git commit --amend --no-edit
+            fi
+
             if git push origin HEAD:main; then
               git fetch origin main
               test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
@@ -137,5 +181,6 @@ jobs:
             fi
             echo "Main moved during push; retrying ($attempt/3)..."
           done
+
           echo "ERROR: unable to publish Proposal Work Queue after retries"
           exit 1
