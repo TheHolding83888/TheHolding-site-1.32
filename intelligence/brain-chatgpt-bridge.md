@@ -1,12 +1,12 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-14T10:36:52.390Z
+Generated: 2026-08-14T17:53:21.480Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-14T10:36:52.186Z
-Brain snapshot: 7b36abba8123451d388c04f1c41af6d78fdceeb28e1f3e3aa2cd3ef8bbfba410
-Cases: 18
-Evidence objects: 20
+Brain generated: 2026-08-14T17:53:21.306Z
+Brain snapshot: 3c146b9b0e85faa7718fb223310a0a848b905e3a49a5a88852277167f40ca9fe
+Cases: 21
+Evidence objects: 23
 
 ## What changed
 
@@ -14,7 +14,52 @@ Current canonical inputs contain 12 material Observer change(s), 0 new security 
 
 ## Active deterministic cases
 
-### 1. liquity_lqty
+### 1. .github/workflows/production-boundary-guard.yml
+
+Case: `security-119c887e98b579ae9b0ac6bb`
+Domain: security · Severity: high · Risk: high
+
+Signal: Workflow uses pull_request_target.
+
+Why it matters: This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.
+
+What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+
+Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+
+Evidence: EV-b83c990d684589d9
+
+### 2. .github/workflows/production-deployment-smoke.yml
+
+Case: `security-796045f38b2faae4de28f58e`
+Domain: security · Severity: high · Risk: high
+
+Signal: Workflow uses pull_request_target.
+
+Why it matters: This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.
+
+What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+
+Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+
+Evidence: EV-e494e8dbe197ec2c
+
+### 3. agents/console/learning-notice.html
+
+Case: `70c3630416c89ac7c9ffae2b`
+Domain: security · Severity: medium · Risk: medium
+
+Signal: 1 current medium security finding(s) in category dom-innerhtml.
+
+Why it matters: If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.
+
+What follows: A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.
+
+Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
+
+Evidence: EV-c6e54e12c41e9b2a
+
+### 4. liquity_lqty
 
 Case: `a2edb74a9d50a22d9e91e64a`
 Domain: economic · Severity: watch · Risk: low
@@ -29,7 +74,7 @@ Deterministic action: Keep the adapter explicitly warming/unknown and use the no
 
 Evidence: EV-07cddf2ec79538de
 
-### 2. pendle_spendle
+### 5. pendle_spendle
 
 Case: `610968fa0e1f1675d6be4131`
 Domain: economic · Severity: watch · Risk: low
@@ -44,7 +89,7 @@ Deterministic action: Keep the adapter explicitly warming/unknown and use the no
 
 Evidence: EV-1b73e100de662c63
 
-### 3. defitea.eth
+### 6. defitea.eth
 
 Case: `29d41c97821adff643d62d32`
 Domain: economic · Severity: watch · Risk: low
@@ -59,7 +104,7 @@ Deterministic action: Prioritize the unresolved adapter(s) contributing to the c
 
 Evidence: EV-5c6fe7383c506fa7
 
-### 4. 0x5860...83CA8.eth
+### 7. 0x5860...83CA8.eth
 
 Case: `752ad1fa5d5c4b4db1804346`
 Domain: economic · Severity: watch · Risk: low
@@ -74,7 +119,7 @@ Deterministic action: Resolve only the pending reward route(s) with bounded curr
 
 Evidence: EV-aec728cc57f99c61
 
-### 5. aerocvxyb.eth
+### 8. aerocvxyb.eth
 
 Case: `9407adbb1115d285937ffb3d`
 Domain: economic · Severity: watch · Risk: low
@@ -89,7 +134,7 @@ Deterministic action: Resolve only the pending reward route(s) with bounded curr
 
 Evidence: EV-3d1ab2596602fedb
 
-### 6. defitea.eth
+### 9. defitea.eth
 
 Case: `d57ad616b19f94c0c5e8b6e7`
 Domain: economic · Severity: watch · Risk: low
@@ -104,7 +149,7 @@ Deterministic action: Resolve only the pending reward route(s) with bounded curr
 
 Evidence: EV-de905afac7e691ae
 
-### 7. defitea.eth
+### 10. defitea.eth
 
 Case: `4369de1b4280bbba6dcce82d`
 Domain: system-change · Severity: info · Risk: low
@@ -119,7 +164,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-8de6c559a79f8272
 
-### 8. defitea.eth
+### 11. defitea.eth
 
 Case: `3128efb31d0b73358196d53e`
 Domain: system-change · Severity: info · Risk: low
@@ -134,7 +179,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-d9687f2910cc3db8
 
-### 9. Monetra.eth
+### 12. Monetra.eth
 
 Case: `63703e28bce6c8c1bf08929a`
 Domain: system-change · Severity: info · Risk: low
@@ -149,7 +194,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-18e3130b35c417aa
 
-### 10. Monetra.eth
+### 13. Monetra.eth
 
 Case: `a8f59105ade21320158b9322`
 Domain: system-change · Severity: info · Risk: low
@@ -164,7 +209,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-9aad6fd7b3c577f4
 
-### 11. Monetra.eth
+### 14. Monetra.eth
 
 Case: `5d69fccff8e6e1076ec2511d`
 Domain: system-change · Severity: info · Risk: low
@@ -179,7 +224,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-d9078506ab468576
 
-### 12. 0x5860...83CA8.eth
+### 15. 0x5860...83CA8.eth
 
 Case: `419af0f7f34e8b52954eacec`
 Domain: system-change · Severity: info · Risk: low
@@ -194,7 +239,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-62a6c7a6ebaf29d4
 
-### 13. 1milliondollar.eth
+### 16. 1milliondollar.eth
 
 Case: `2641af56f14a0cc221ae0378`
 Domain: system-change · Severity: info · Risk: low
@@ -209,7 +254,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-e88e87979705ed94
 
-### 14. aerocvxyb.eth
+### 17. aerocvxyb.eth
 
 Case: `df31bc0288cafe2989836dc8`
 Domain: system-change · Severity: info · Risk: low
@@ -224,7 +269,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-eedf7f12082e9d1a
 
-### 15. defitea.eth
+### 18. defitea.eth
 
 Case: `7ab3037bf9d3592219681076`
 Domain: system-change · Severity: info · Risk: low
@@ -239,7 +284,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-2b70f1842e5567e4
 
-### 16. Rook's portfolio
+### 19. Rook's portfolio
 
 Case: `1e7d96c76e15465153c800b6`
 Domain: system-change · Severity: info · Risk: low
@@ -254,7 +299,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-27a0216d95fc4c3b
 
-### 17. Stable Companies Index
+### 20. Stable Companies Index
 
 Case: `49889c5d6ab0dfba40740bd5`
 Domain: system-change · Severity: important · Risk: low
@@ -269,7 +314,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-e03a4cdcdf16f7cc
 
-### 18. Stable Companies Index
+### 21. Stable Companies Index
 
 Case: `381e82d63a4b2d26ed8cb062`
 Domain: system-change · Severity: info · Risk: low
