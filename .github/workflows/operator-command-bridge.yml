@@ -1,0 +1,99 @@
+name: "The Holding Operator · Command Bridge"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence/operator/command.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: operator-command-bridge-main
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout canonical repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Validate bounded operator command
+        id: command
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'intelligence/operator/command.json';
+          const cmd = JSON.parse(fs.readFileSync(path, 'utf8'));
+
+          const allowedWorkflows = new Set([
+            'update-proposal-work-queue.yml',
+          ]);
+
+          const fail = (message) => {
+            console.error(message);
+            process.exit(1);
+          };
+
+          if (cmd.version !== '0.1-operator-command') fail('Unexpected operator command version');
+          if (cmd.operation !== 'workflow_dispatch') fail('Only workflow_dispatch is allowed');
+          if (!allowedWorkflows.has(cmd.workflow)) fail(`Workflow is not allowlisted: ${cmd.workflow}`);
+          if (cmd.ref !== 'main') fail('Only main may be dispatched');
+          if (cmd.requestedBy !== 'owner') fail('Owner request marker is required');
+          if (cmd.approval !== 'explicit') fail('Explicit approval marker is required');
+          if (cmd.arbitraryWorkflowAllowed !== false) fail('arbitraryWorkflowAllowed must remain false');
+          if (cmd.walletActionAllowed !== false) fail('walletActionAllowed must remain false');
+          if (cmd.capitalExecutionAllowed !== false) fail('capitalExecutionAllowed must remain false');
+          if (typeof cmd.commandId !== 'string' || !/^[A-Za-z0-9._:+-]{8,128}$/.test(cmd.commandId)) fail('Invalid commandId');
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `workflow=${cmd.workflow}\n`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `ref=${cmd.ref}\n`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `command_id=${cmd.commandId}\n`);
+          console.log('Bounded operator command validated:', cmd.commandId, cmd.workflow, cmd.ref);
+          NODE
+
+      - name: Dispatch allowlisted workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_WORKFLOW: ${{ steps.command.outputs.workflow }}
+          TARGET_REF: ${{ steps.command.outputs.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          code="$(curl -sS -o /tmp/dispatch-response.txt -w '%{http_code}' \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/dispatches" \
+            -d "{\"ref\":\"${TARGET_REF}\"}")"
+
+          if [ "$code" != "204" ]; then
+            echo "Workflow dispatch failed with HTTP ${code}."
+            cat /tmp/dispatch-response.txt || true
+            exit 1
+          fi
+
+          echo "Dispatched ${TARGET_WORKFLOW} on ${TARGET_REF}."
+
+      - name: Operator command summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "# The Holding · Operator Command Bridge"
+            echo
+            echo "**Command ID:** \`${{ steps.command.outputs.command_id }}\`"
+            echo "**Target workflow:** \`${{ steps.command.outputs.workflow }}\`"
+            echo "**Target ref:** \`${{ steps.command.outputs.ref }}\`"
+            echo "**Arbitrary workflows:** disabled"
+            echo "**Wallet action:** disabled"
+            echo "**Capital execution:** disabled"
+          } >> "$GITHUB_STEP_SUMMARY"
