@@ -50,11 +50,23 @@ jobs:
           node --check intelligence/proposals/independent-proposal-reviewer.mjs
           node --check intelligence/proposals/proposal-decision-bridge.mjs
           node --check intelligence/proposals/independent-proposal-decision-reviewer.mjs
+          node intelligence/cognitive-release-guard.mjs
           node intelligence/learning/learning-release-guard.mjs
           node intelligence/proposals/proposal-release-guard.mjs
           node intelligence/guardian/guardian-release-guard.mjs
           node intelligence/learning/decision-recorder.mjs --self-test
           git diff --check
+
+      - name: Rebuild coherent cognitive packet locally for dry run
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/brain-reasoning-engine.mjs
+          node intelligence/brain-chatgpt-bridge.mjs --self-test
+          node intelligence/brain-chatgpt-bridge.mjs
+          node intelligence/brain-chatgpt-bridge.mjs --verify-current
+          node intelligence/cognitive-stack-verifier.mjs
+          node intelligence/cognitive-stack-verifier.mjs --verify-current
 
       - name: End-to-end deterministic dry run
         shell: bash
@@ -95,6 +107,16 @@ jobs:
         run: |
           set -euo pipefail
           git restore \
+            intelligence/brain-intelligence.json \
+            intelligence/brain-history.json \
+            intelligence/brain-brief.md \
+            intelligence/brain-chatgpt-bridge.json \
+            intelligence/brain-chatgpt-bridge.md \
+            intelligence/brain-chatgpt-bridge-history.json \
+            intelligence/brain-chatgpt-bridge-eval.json \
+            intelligence/cognitive-stack-state.json \
+            intelligence/cognitive-stack-brief.md \
+            intelligence/cognitive-stack-eval.json \
             intelligence/learning-state \
             intelligence/proposals/proposal-queue.json \
             intelligence/proposals/proposal-brief.md \
