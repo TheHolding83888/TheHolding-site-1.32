@@ -559,7 +559,7 @@
 
   function followupAnswer(query, lang) {
     const q = norm(query);
-    if (!state.lastEntity) return null;
+    if (!state.lastEntity || protocolGroup(query) || findCompany(query)) return null;
     if (state.lastEntity.kind === 'company' && includesAny(q, ['истор', 'средн', 'histor', 'average'])) {
       return companyAnswer({ name: state.lastEntity.name, registry: state.registry.find(x => x.name === state.lastEntity.name) || null }, lang, query);
     }
