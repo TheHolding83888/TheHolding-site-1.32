@@ -4,11 +4,11 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-14T10:30:26.835Z**
+Canonical source state represented here: **2026-08-14T10:38:00.872Z**
 
 ## Resume order
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-14_1214.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-14_1214.md)
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-14_1345_P0_BROWSER_TRUST_CLOSED.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-14_1345_P0_BROWSER_TRUST_CLOSED.md)
 2. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
 3. [Project Memory README](./README.md)
 4. Read only the live machine-readable subsystem artifacts needed for the current task.
@@ -31,16 +31,16 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Current cognitive stack
 
-- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: aa29eeede346c225af7018139e5004e8b2336e8b214827d3939a5c1fe8361130.
+- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 67d702f6307e6e0e23d1fdcc183a90ad1ce1c85fa4f46a104477c3940f7ab810.
 - Security: **GREEN**; Critical 0 / High 0 / Medium 0.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 18; evidence 20; noExecution true.
 
 ## Learning / Proposal / Builder / Guardian
 
-- Learning: **READY**; active cases 18; remembered cases 21; Brain observations 9; owner decisions 2; settled outcomes 0; lessons 0.
-- Proposal: **WATCH**; active 20; APPROVED 2; PROPOSED 18; SUPERSEDED 1; production execution disabled.
-- Builder: **WATCH**; candidates 2; CANDIDATE 2; productionMutationAuthorizedCount 0.
+- Learning: **READY**; active cases 18; remembered cases 21; Brain observations 10; owner decisions 2; settled outcomes 0; lessons 0.
+- Proposal: **WATCH**; active 18; APPROVED 0; PROPOSED 18; SUPERSEDED 3; production execution disabled.
+- Builder: **READY**; candidates 0; CANDIDATE 0; productionMutationAuthorizedCount 0.
 - Guardian: **WATCH**; research-only 2; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
 
 ## Build discipline
