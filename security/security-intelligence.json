@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-14T20:20:55.689Z",
+  "generatedAt": "2026-08-14T20:25:45.395Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 221,
-    "bytesScanned": 6016580,
+    "bytesScanned": 6015578,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Fri, 14 Aug 2026 14:53:00 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,22 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "4af56e919f5b01d02300a242855e18f30f0a80866f5ceade1b6ce05dba08604f",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": "index.html",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: index.html.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "76c7d1246577cda659f61317eb6d483f9edb6aa14977ad58f9095e8bfcd3c3a3",
+          "currentSha256": "1378d080ce878189b39602216ca09ea0a3aab58c0e34e9c9e590dff835603189"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "09b605861137e35f7ac79574b79587a80514b1304ded57ba2048bbb15345d3fe",
         "severity": "medium",
@@ -70,8 +86,7 @@
           "currentSha256": "76c7d1246577cda659f61317eb6d483f9edb6aa14977ad58f9095e8bfcd3c3a3"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -97,7 +112,7 @@
       "evidence": null
     },
     {
-      "id": "09b605861137e35f7ac79574b79587a80514b1304ded57ba2048bbb15345d3fe",
+      "id": "4af56e919f5b01d02300a242855e18f30f0a80866f5ceade1b6ce05dba08604f",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": "index.html",
@@ -106,8 +121,8 @@
       "summary": "Security-sensitive surface changed: index.html.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "881b207206e04175235a9bf08dd2f3012e30db31dc92344a2ef736c64105d386",
-        "currentSha256": "76c7d1246577cda659f61317eb6d483f9edb6aa14977ad58f9095e8bfcd3c3a3"
+        "previousSha256": "76c7d1246577cda659f61317eb6d483f9edb6aa14977ad58f9095e8bfcd3c3a3",
+        "currentSha256": "1378d080ce878189b39602216ca09ea0a3aab58c0e34e9c9e590dff835603189"
       }
     },
     {
@@ -134,12 +149,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "7ff97c39c9d93787f0e2bf98807410b1061a288fe18fc47b15e1350ba3dcc780",
+    "snapshotHash": "d51a1de542b809e2ec884cea61db5f43ce618548d3b33b9526f8b9f4c172722d",
     "securityVault": {
-      "runCount": 175,
+      "runCount": 176,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T20-20-55-689Z-7ff97c39c9.json",
-      "latestRecordHash": "2de1a44c6e6e1762e73fc0378f41e04359d61ed6c8b0fccc08faecf4d44247bb",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T20-25-45-395Z-d51a1de542.json",
+      "latestRecordHash": "ce35803ebe52be11fc01693f80f34a6357863b5564d9c3bb354b57185c686ac2",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
