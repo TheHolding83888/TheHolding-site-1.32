@@ -1,18 +1,18 @@
 {
   "version": "0.1-proposal-work-queue",
-  "engineVersion": "0.1.1-deterministic-proposal-engine",
-  "generatedAt": "2026-08-14T10:37:36.725Z",
+  "engineVersion": "0.1.2-decision-eligible-proposal-engine",
+  "generatedAt": "2026-08-14T17:53:55.461Z",
   "status": "watch",
-  "headline": "18 active proposal(s) synthesized from 18 active Learning case(s); execution remains disabled.",
+  "headline": "3 active proposal(s) synthesized from 3 decision-worthy case(s) out of 21 observed active Learning case(s); execution remains disabled.",
   "source": {
     "brainFile": "intelligence/brain-intelligence.json",
-    "brainSha256": "113b06dea8f8cdb98e42e003f5c877fe74ba006db3c7d5aeda3d17ccd2bf9ed1",
-    "brainSnapshotHash": "7b36abba8123451d388c04f1c41af6d78fdceeb28e1f3e3aa2cd3ef8bbfba410",
+    "brainSha256": "b2376b3c1a0cb63a25e8a91023832bb22b17c7f697323ad4384c431511768661",
+    "brainSnapshotHash": "3c146b9b0e85faa7718fb223310a0a848b905e3a49a5a88852277167f40ca9fe",
     "cognitiveStackFile": "intelligence/cognitive-stack-state.json",
-    "cognitiveChainHash": "67d702f6307e6e0e23d1fdcc183a90ad1ce1c85fa4f46a104477c3940f7ab810",
+    "cognitiveChainHash": "91e58676844fa34409918db5d9c2dec70fe5315589c0c1846143a0bae0f25a37",
     "learningContextFile": "intelligence/learning-state/learning-context.json",
-    "learningContextSha256": "0e7f2f7ba29f85f63b70f92c5b65269a6fcc1672e96cf724d00a4b31228ad9c2",
-    "learningGeneratedAt": "2026-08-14T10:37:12.828Z",
+    "learningContextSha256": "aa1b9d673691144968a646feaa05078d12f36f201ab09b42a260b5f14972f847",
+    "learningGeneratedAt": "2026-08-14T17:53:37.834Z",
     "decisionCount": 2,
     "lessonCount": 0,
     "decisionLedgerFile": "intelligence/learning/decision-ledger.json",
@@ -20,22 +20,24 @@
     "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d"
   },
   "summary": {
-    "activeCaseCount": 18,
-    "totalProposalCount": 21,
-    "activeProposalCount": 18,
+    "activeCaseCount": 3,
+    "observedActiveCaseCount": 21,
+    "dataHygieneCaseCount": 18,
+    "totalProposalCount": 24,
+    "activeProposalCount": 3,
     "stateCounts": {
-      "PROPOSED": 18,
+      "PROPOSED": 3,
       "APPROVED": 0,
       "IN_PROGRESS": 0,
       "VERIFYING": 0,
       "RELEASE_READY": 0,
       "RELEASED": 0,
       "REJECTED": 0,
-      "SUPERSEDED": 3
+      "SUPERSEDED": 21
     },
-    "p0Count": 0,
+    "p0Count": 3,
     "p1Count": 0,
-    "requiresHumanApprovalCount": 18,
+    "requiresHumanApprovalCount": 3,
     "ownerDecisionBoundCount": 2,
     "ownerApprovedCount": 0,
     "ownerRejectedCount": 0,
@@ -44,11 +46,113 @@
   },
   "proposals": [
     {
+      "proposalId": "PRP-23c55c802d4647e3a49fe39f",
+      "proposalKey": "23c55c802d4647e3a49fe39f",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T17:53:54.564Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
+      "priorityScore": 141,
+      "rankClass": "P0",
+      "source": {
+        "caseId": "security-119c887e98b579ae9b0ac6bb",
+        "caseKey": "CK-d6cbc3fa82d1c2095b97",
+        "experienceClass": "EC-6084750dd087d3eb",
+        "brainSnapshotHash": "3c146b9b0e85faa7718fb223310a0a848b905e3a49a5a88852277167f40ca9fe",
+        "cognitiveChainHash": "91e58676844fa34409918db5d9c2dec70fe5315589c0c1846143a0bae0f25a37"
+      },
+      "domain": "security",
+      "category": "privileged-trigger",
+      "entity": ".github/workflows/production-boundary-guard.yml",
+      "recommendationClass": "evidence-review",
+      "riskTier": "high",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 1,
+        "firstSeenAt": "2026-08-14T17:53:21.306Z",
+        "lastSeenAt": "2026-08-14T17:53:21.306Z",
+        "peerCaseCount": 2,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Perform bounded human-reviewed work for .github/workflows/production-boundary-guard.yml under recommendation class evidence-review.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
+      "proposalId": "PRP-fc9a44da3aec7be25bb0672e",
+      "proposalKey": "fc9a44da3aec7be25bb0672e",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T17:53:54.564Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
+      "priorityScore": 141,
+      "rankClass": "P0",
+      "source": {
+        "caseId": "security-796045f38b2faae4de28f58e",
+        "caseKey": "CK-7b4e88f317ff2c143dd9",
+        "experienceClass": "EC-6084750dd087d3eb",
+        "brainSnapshotHash": "3c146b9b0e85faa7718fb223310a0a848b905e3a49a5a88852277167f40ca9fe",
+        "cognitiveChainHash": "91e58676844fa34409918db5d9c2dec70fe5315589c0c1846143a0bae0f25a37"
+      },
+      "domain": "security",
+      "category": "privileged-trigger",
+      "entity": ".github/workflows/production-deployment-smoke.yml",
+      "recommendationClass": "evidence-review",
+      "riskTier": "high",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 1,
+        "firstSeenAt": "2026-08-14T17:53:21.306Z",
+        "lastSeenAt": "2026-08-14T17:53:21.306Z",
+        "peerCaseCount": 2,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Perform bounded human-reviewed work for .github/workflows/production-deployment-smoke.yml under recommendation class evidence-review.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
       "proposalId": "PRP-1a96e1a58fdab58a3fb0e21e",
       "proposalKey": "1a96e1a58fdab58a3fb0e21e",
       "state": "SUPERSEDED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 133,
       "rankClass": "P0",
       "source": {
@@ -121,7 +225,7 @@
       "proposalKey": "5cc338ec8428a56eee951082",
       "state": "SUPERSEDED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 133,
       "rankClass": "P0",
       "source": {
@@ -190,11 +294,62 @@
       "supersededReason": "Source case is no longer active in current Learning context; exact owner Decision Memory is preserved. SUPERSEDED does not imply rejection, release, or execution."
     },
     {
+      "proposalId": "PRP-7d42cc3c6634a92f1dafe9c7",
+      "proposalKey": "7d42cc3c6634a92f1dafe9c7",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T17:53:54.564Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
+      "priorityScore": 126,
+      "rankClass": "P0",
+      "source": {
+        "caseId": "70c3630416c89ac7c9ffae2b",
+        "caseKey": "CK-f896be9d6d7c65fac0c0",
+        "experienceClass": "EC-8a782c4b87278e47",
+        "brainSnapshotHash": "3c146b9b0e85faa7718fb223310a0a848b905e3a49a5a88852277167f40ca9fe",
+        "cognitiveChainHash": "91e58676844fa34409918db5d9c2dec70fe5315589c0c1846143a0bae0f25a37"
+      },
+      "domain": "security",
+      "category": "dom-innerhtml",
+      "entity": "agents/console/learning-notice.html",
+      "recommendationClass": "security-provenance-triage",
+      "riskTier": "medium",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 1,
+        "firstSeenAt": "2026-08-14T17:53:21.306Z",
+        "lastSeenAt": "2026-08-14T17:53:21.306Z",
+        "peerCaseCount": 2,
+        "peerDecisionCount": 1,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Review actual data provenance for agents/console/learning-notice.html; classify sinks as trusted, sanitized, or unsafe before any code change.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
       "proposalId": "PRP-1c630e60d261ba053b229445",
       "proposalKey": "1c630e60d261ba053b229445",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 90,
       "rankClass": "P2",
       "source": {
@@ -238,14 +393,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-53f71f57ca5cf21f138254b1",
       "proposalKey": "53f71f57ca5cf21f138254b1",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 90,
       "rankClass": "P2",
       "source": {
@@ -289,14 +445,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-81d54ac38992f6bba833b172",
       "proposalKey": "81d54ac38992f6bba833b172",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 90,
       "rankClass": "P2",
       "source": {
@@ -340,14 +497,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-88fbdd0dc94d3d960389eb33",
       "proposalKey": "88fbdd0dc94d3d960389eb33",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 90,
       "rankClass": "P2",
       "source": {
@@ -391,14 +549,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-c1982f7fa3a1d8b41e526c44",
       "proposalKey": "c1982f7fa3a1d8b41e526c44",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 90,
       "rankClass": "P2",
       "source": {
@@ -442,14 +601,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-fb1de4f6edd21d5bb0bd9280",
       "proposalKey": "fb1de4f6edd21d5bb0bd9280",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 90,
       "rankClass": "P2",
       "source": {
@@ -493,14 +653,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-ae74ccd1ba7655ef36fe3e77",
       "proposalKey": "ae74ccd1ba7655ef36fe3e77",
       "state": "SUPERSEDED",
       "createdAt": "2026-08-14T07:05:21.248Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 84,
       "rankClass": "P2",
       "source": {
@@ -550,9 +711,9 @@
     {
       "proposalId": "PRP-18ddb753d41acd1b54d74abd",
       "proposalKey": "18ddb753d41acd1b54d74abd",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -596,14 +757,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-1a34cefec9b76a655e07a532",
       "proposalKey": "1a34cefec9b76a655e07a532",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -647,14 +809,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-31e8afbc770b50b3ce295b4c",
       "proposalKey": "31e8afbc770b50b3ce295b4c",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -698,14 +861,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-7e63809657178e40bf727f4d",
       "proposalKey": "7e63809657178e40bf727f4d",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -749,14 +913,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-8d3db8b6f7bf4a5eb02352fe",
       "proposalKey": "8d3db8b6f7bf4a5eb02352fe",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -800,14 +965,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-a256d9dd6f5c227973352736",
       "proposalKey": "a256d9dd6f5c227973352736",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -851,14 +1017,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-c1db24e954d7396817b57f61",
       "proposalKey": "c1db24e954d7396817b57f61",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -902,14 +1069,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-cdf67c629d32772b1c3fe0d0",
       "proposalKey": "cdf67c629d32772b1c3fe0d0",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -953,14 +1121,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-d146048228b915e00314a42f",
       "proposalKey": "d146048228b915e00314a42f",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -1004,14 +1173,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-e11063a9b6a4a0d1fdd19d0c",
       "proposalKey": "e11063a9b6a4a0d1fdd19d0c",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -1055,14 +1225,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-e6b6a638ed7b4bf1f507900c",
       "proposalKey": "e6b6a638ed7b4bf1f507900c",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -1106,14 +1277,15 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     },
     {
       "proposalId": "PRP-fcacd6ad5da9b938c6b98c60",
       "proposalKey": "fcacd6ad5da9b938c6b98c60",
-      "state": "PROPOSED",
+      "state": "SUPERSEDED",
       "createdAt": "2026-08-14T08:24:31.549Z",
-      "updatedAt": "2026-08-14T10:37:36.725Z",
+      "updatedAt": "2026-08-14T17:53:55.461Z",
       "priorityScore": 56,
       "rankClass": "P3",
       "source": {
@@ -1157,7 +1329,8 @@
         "approvedAt": null,
         "notes": null
       },
-      "outcome": null
+      "outcome": null,
+      "supersededReason": "Source case is no longer active in current Learning context."
     }
   ],
   "constraints": {
@@ -1171,7 +1344,7 @@
     "noPaidModelApiRequired": true
   },
   "integrity": {
-    "queueHash": "0f84caab4614eaf1fcab516a790bc832e8c807579dd089b68bb7fb8d2db86a6b"
+    "queueHash": "082d1106e37ff8ef8dfcbe9c00c5c8866201648768dbc24609aa542055b58abe"
   },
   "decisionBridge": {
     "version": "0.2.1-inactive-case-retirement",
