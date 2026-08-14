@@ -1,0 +1,64 @@
+{
+  "version": "0.1-safe-conversation-learning",
+  "status": "bounded-intake-design",
+  "publicInputTrust": "untrusted",
+  "purpose": [
+    "discover repeated questions",
+    "discover unsupported or unanswered questions",
+    "detect unclear explanations and negative answer feedback",
+    "create evidence for future reviewed knowledge and UX improvements"
+  ],
+  "authority": {
+    "canonicalFactMutation": false,
+    "projectMemoryMutationFromPublicText": false,
+    "methodologyMutation": false,
+    "securityPolicyMutation": false,
+    "codeMutation": false,
+    "githubWriteAuthority": false,
+    "walletAuthority": false,
+    "signingAuthority": false,
+    "capitalAuthority": false,
+    "automaticExecution": false
+  },
+  "trustLanes": {
+    "publicConversation": {"trust": "untrusted-signal", "maximumEffect": "learning-or-research-candidate", "requiresVerificationBeforeFactPromotion": true},
+    "verifiedEvidence": {"trust": "source-bound-evidence", "maximumEffect": "reviewed-learning-input"},
+    "ownerTeaching": {"trust": "requires-authenticated-owner-channel", "currentPublicConsoleAuthentication": false, "maximumEffect": "decision-or-memory-candidate-after-authentication-and-review"}
+  },
+  "financialBoundary": {
+    "personalizedFinancialAdvice": false,
+    "buySellHoldRecommendations": false,
+    "personalAllocations": false,
+    "personalInvestmentSizing": false,
+    "allowed": ["verified factual measurements", "protocol and mechanism explanations", "descriptive comparisons", "risk explanations", "methodology explanations"]
+  },
+  "legalTaxBoundary": {"personalizedLegalAdvice": false, "personalizedTaxAdvice": false, "generalEducationalExplanation": true, "officialSourceCitationWhenApplicable": true},
+  "privacy": {
+    "contentLearning": "explicit-opt-in-only",
+    "rawConversationStoredByLearningIntake": false,
+    "sanitizedSampleRetentionDays": 30,
+    "answerTextStored": false,
+    "answerHashAllowed": true,
+    "detectedSecretsStored": false,
+    "detectedHighRiskMessageSamplesStored": false,
+    "redact": ["email", "phone", "url", "wallet-like address", "long sensitive number", "secret-like token"],
+    "rawIpStoredByApplication": false,
+    "shortLivedPseudonymousRateBucket": true
+  },
+  "activationGate": {
+    "intakeEnabledByDefault": false,
+    "requiresControllerIdentity": true,
+    "requiresControllerContact": true,
+    "requiresDeclaredLegalBasisNotice": true,
+    "requiresPrivateReadTokenForDetailedSamples": true
+  },
+  "futureModelBoundary": {
+    "publicConversationNeverSystemAuthority": true,
+    "retrievedPublicTextTreatedAsData": true,
+    "readOnlyModelFirst": true,
+    "toolPermissionGateRequiredBeforeTools": true,
+    "publicPrivateContextSeparationRequired": true,
+    "immutableActionAuditRequired": true
+  },
+  "learningPath": ["conversation", "safety and privacy filter", "sanitized learning signal", "aggregate gaps and feedback", "verified learning/research candidate", "Proposal", "Builder/Guardian where applicable", "owner gate where authority changes", "measured outcome"]
+}
