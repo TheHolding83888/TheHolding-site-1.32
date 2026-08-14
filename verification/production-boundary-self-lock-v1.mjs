@@ -7,7 +7,8 @@ const baselineRoot = path.resolve(process.argv[3] || candidateRoot);
 const locked = [
   'verification/production-boundary-guard-v1.mjs',
   'verification/production-boundary-self-lock-v1.mjs',
-  '.github/workflows/production-boundary-guard.yml'
+  '.github/workflows/production-boundary-guard.yml',
+  '.github/workflows/production-deployment-smoke.yml'
 ];
 const digest = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const failures = [];
