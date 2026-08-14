@@ -1,0 +1,128 @@
+#!/usr/bin/env node
+import fs from 'node:fs';
+import path from 'node:path';
+
+const ROOT = process.cwd();
+const rel = p => path.join(ROOT, p);
+const readJson = (p) => {
+  try { return JSON.parse(fs.readFileSync(rel(p), 'utf8')); }
+  catch { return null; }
+};
+const exists = p => fs.existsSync(rel(p));
+const val = (v, fallback = 'n/a') => (v === null || v === undefined || v === '' ? fallback : v);
+
+const projectDir = rel('intelligence/project-memory');
+const continuityFiles = exists('intelligence/project-memory')
+  ? fs.readdirSync(projectDir)
+      .filter(name => /^THE_HOLDING_MASTER_CONTINUITY_.*\.md$/.test(name))
+      .sort()
+  : [];
+const latestContinuity = continuityFiles.at(-1) ?? null;
+
+const systemMemory = readJson('intelligence/system-memory.json');
+const vault = readJson('intelligence/memory-vault/manifest.json');
+const cognitive = readJson('intelligence/cognitive-stack-state.json');
+const learning = readJson('intelligence/learning-state/learning-context.json');
+const proposals = readJson('intelligence/proposals/proposal-queue.json');
+const builder = readJson('intelligence/builder/candidate-queue.json');
+const guardian = readJson('intelligence/guardian/guardian-state.json');
+const security = readJson('security/security-intelligence.json');
+const decisions = readJson('intelligence/learning/decision-ledger.json');
+
+const latestSourceTimes = [
+  systemMemory?.generatedAt,
+  cognitive?.generatedAt,
+  learning?.generatedAt,
+  proposals?.generatedAt,
+  builder?.generatedAt,
+  guardian?.generatedAt,
+  security?.generatedAt,
+].filter(Boolean).sort();
+const sourceStateAsOf = latestSourceTimes.at(-1) ?? 'n/a';
+
+const stateCounts = proposals?.summary?.stateCounts ?? {};
+const builderCounts = builder?.summary?.stateCounts ?? {};
+
+const lines = [
+  '# THE HOLDING — CURRENT PROJECT MEMORY BOOTSTRAP',
+  '',
+  '> **IRON RULE FOR NEW CHATS / NEW MODELS**',
+  '>',
+  '> Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.',
+  '',
+  `Canonical source state represented here: **${sourceStateAsOf}**`,
+  '',
+  '## Resume order',
+  '',
+  `1. ${latestContinuity ? `[${latestContinuity}](./${latestContinuity})` : 'No continuity checkpoint found.'}`,
+  '2. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)',
+  '3. [Project Memory README](./README.md)',
+  '4. Read only the live machine-readable subsystem artifacts needed for the current task.',
+  '',
+  '## Project identity',
+  '',
+  'The Holding is a **Capital Operating System + persistent intelligence, memory and governance layer for sovereign onchain companies and funds**.',
+  '',
+  '`OBSERVE → REMEMBER → UNDERSTAND → REPORT → RECOMMEND → ACT → MEASURE → LEARN`',
+  '',
+  'Current authority boundary: **execution authority = none**. No wallet signing, transaction execution, autonomous capital movement, automatic production merge/release, or automatic methodology/policy mutation.',
+  '',
+  '## Memory architecture',
+  '',
+  `- **System Memory** — current normalized state; generatedAt: ${val(systemMemory?.generatedAt)}.`,
+  `- **Permanent Memory Vault** — ${val(vault?.runCount, 0)} Observer record(s), ${val(vault?.eventCount, 0)} material event(s), retention: ${val(vault?.policy?.canonicalRetention)}; hard lifetime cap: ${vault?.policy?.hardLifetimeCap === null ? 'none' : val(vault?.policy?.hardLifetimeCap)}.`,
+  `- **Latest Vault record** — ${val(vault?.latestRecord?.recordPath)}.`,
+  `- **Decision Memory** — ${val(decisions?.decisionCount, 0)} append-only owner decision(s); executionAuthority: ${val(decisions?.authority?.executionAuthority ?? decisions?.executionAuthority, 'none')}.`,
+  '- **Project continuity** — this bootstrap + human continuity checkpoints + build-discipline canon.',
+  '',
+  '## Current cognitive stack',
+  '',
+  `- Cognitive Stack: **${String(val(cognitive?.status, 'unknown')).toUpperCase()}**; readyForManualInterpretation: ${val(cognitive?.readyForManualInterpretation, false)}; chainHash: ${val(cognitive?.integrity?.chainHash)}.`,
+  `- Security: **${String(val(cognitive?.chain?.security?.status ?? security?.status, 'unknown')).toUpperCase()}**; Critical ${val(cognitive?.chain?.security?.critical ?? security?.summary?.critical, 0)} / High ${val(cognitive?.chain?.security?.high ?? security?.summary?.high, 0)} / Medium ${val(cognitive?.chain?.security?.medium ?? security?.summary?.medium, 0)}.`,
+  `- Grounded Brain: **${String(val(cognitive?.chain?.groundedBrain?.status, 'unknown')).toUpperCase()}**.`,
+  `- ChatGPT Bridge: **${String(val(cognitive?.chain?.chatgptBridge?.status, 'unknown')).toUpperCase()}**; cases ${val(cognitive?.chain?.chatgptBridge?.caseCount, 0)}; evidence ${val(cognitive?.chain?.chatgptBridge?.evidenceCount, 0)}; noExecution ${val(cognitive?.chain?.chatgptBridge?.noExecution, true)}.`,
+  '',
+  '## Learning / Proposal / Builder / Guardian',
+  '',
+  `- Learning: **${String(val(learning?.status, 'unknown')).toUpperCase()}**; active cases ${val(learning?.summary?.activeCaseCount, 0)}; remembered cases ${val(learning?.summary?.rememberedCaseCount, 0)}; Brain observations ${val(learning?.summary?.brainObservationCount, 0)}; owner decisions ${val(learning?.summary?.decisionCount, 0)}; settled outcomes ${val(learning?.summary?.settledOutcomeCount, 0)}; lessons ${val(learning?.summary?.lessonCount, 0)}.`,
+  `- Proposal: **${String(val(proposals?.status, 'unknown')).toUpperCase()}**; active ${val(proposals?.summary?.activeProposalCount, 0)}; APPROVED ${val(stateCounts.APPROVED, 0)}; PROPOSED ${val(stateCounts.PROPOSED, 0)}; SUPERSEDED ${val(stateCounts.SUPERSEDED, 0)}; production execution disabled.`,
+  `- Builder: **${String(val(builder?.status, 'unknown')).toUpperCase()}**; candidates ${val(builder?.summary?.candidateCount, 0)}; CANDIDATE ${val(builderCounts.CANDIDATE, 0)}; productionMutationAuthorizedCount ${val(builder?.summary?.productionMutationAuthorizedCount, 0)}.`,
+  `- Guardian: **${String(val(guardian?.status, 'unknown')).toUpperCase()}**; research-only ${val(guardian?.summary?.researchOnlyCount, 0)}; blocked ${val(guardian?.summary?.blockedCount, 0)}; sandbox-build authorized ${val(guardian?.summary?.sandboxBuildAuthorizedCount, 0)}; production mutation authorized ${val(guardian?.summary?.productionMutationAuthorizedCount, 0)}.`,
+  '',
+  '## Build discipline',
+  '',
+  '- Build **layer by layer**.',
+  '- One primary objective at a time.',
+  '- No new layer without a real gap.',
+  '- Close and prove the current capability before expanding.',
+  '- Prefer reuse and simplification over parallel machinery.',
+  '- No duplicate sources of truth and no orchestration loops.',
+  '- Capability must grow faster than complexity; authority must grow slower than intelligence.',
+  '',
+  '## Durable-memory rule',
+  '',
+  'Material architecture decisions, owner directives, production milestones, important failure/recovery lessons and roadmap shifts must be preserved in GitHub-owned project memory. Trivial run noise should remain in machine logs/history rather than being copied into prose continuity.',
+  '',
+  '## Canonical priority when facts conflict',
+  '',
+  '1. live GitHub `main`',
+  '2. fresh generated production JSON / exact workflow evidence',
+  '3. current subsystem machine-readable state',
+  '4. latest continuity checkpoint',
+  '5. older project-memory / handoff files',
+  '',
+  'The model can change. **The memory must remain The Holding\'s.**',
+  ''
+];
+
+fs.writeFileSync(rel('intelligence/project-memory/CURRENT.md'), lines.join('\n'), 'utf8');
+console.log('Project Memory CURRENT.md rebuilt', {
+  sourceStateAsOf,
+  latestContinuity,
+  vaultRuns: vault?.runCount ?? 0,
+  decisions: decisions?.decisionCount ?? 0,
+  activeCases: learning?.summary?.activeCaseCount ?? 0,
+  activeProposals: proposals?.summary?.activeProposalCount ?? 0,
+  builderCandidates: builder?.summary?.candidateCount ?? 0,
+  guardianResearchOnly: guardian?.summary?.researchOnlyCount ?? 0,
+});
