@@ -43,6 +43,30 @@ The cognitive-governance stack has reached a meaningful architectural threshold:
 
 The next priority is **not to add many more abstract layers**. First exercise the two existing owner-approved P0 candidates through real bounded research and evidence, then decide whether Guardian sandbox-build authority is actually justified.
 
+## Durable project-memory iron rule
+
+The Holding must not depend on one chat session or one model remembering the project.
+
+- GitHub `main` is the canonical durable home for project continuity.
+- Material architecture decisions, owner directives, production milestones, safety boundaries, important failures/recoveries and roadmap shifts must be preserved in `intelligence/project-memory/` or in the appropriate machine-readable canonical subsystem.
+- `intelligence/project-memory/CURRENT.md` is the compact auto-refreshed bootstrap entrypoint.
+- On the first substantive The Holding turn in a new chat/session, read live `CURRENT.md` first, then its latest continuity checkpoint, then only the live machine-readable artifacts needed for the task.
+- Do not copy trivial logs into prose memory. Compress meaning; keep raw detail in Git/workflow/history artifacts.
+- When prose memory conflicts with changing production facts, fresh `main` artifacts win.
+
+The model can change. The memory must remain The Holding's.
+
+## Orchestration efficiency invariant
+
+The Holding should behave as a directed, bounded organism – not a maze of workflows.
+
+- Prefer a DAG of explicit handoffs; do not create autonomous cycles unless a bounded retry/recovery loop is deliberately required.
+- Never dispatch a downstream workflow manually if an already-proven canonical handoff will produce the same fresh state; wait for and verify the canonical handoff instead.
+- Eliminate repeated no-op or duplicate runs when they add cost/complexity without additional assurance.
+- Safety redundancy is allowed only when it closes a distinct failure mode (for example, fresh Security immediately before reasoning).
+- Every generated state has one canonical producer and one canonical source-of-truth path.
+- If orchestration becomes harder to explain than the capability it delivers, simplify before adding another layer.
+
 ## Owner quality standard
 
 The target is not maximum speed and not maximum complexity. The target is **super quality, order, reproducibility, controlled progress and a system that remains understandable as it compounds**.
