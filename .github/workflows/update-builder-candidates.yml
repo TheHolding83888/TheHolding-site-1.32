@@ -1,0 +1,166 @@
+name: "The Holding Brain · Self-Improvement Builder Sandbox"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: self-improvement-builder-main
+  cancel-in-progress: false
+
+jobs:
+  build-candidates:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Preflight Builder Sandbox v0.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          REQUIRED=(
+            "intelligence/proposals/proposal-queue.json"
+            "intelligence/proposals/proposal-decision-eval.json"
+            "intelligence/learning-state/learning-context.json"
+            "intelligence/learning/decision-ledger.json"
+            "intelligence/builder/README.md"
+            "intelligence/builder/builder-policy.json"
+            "intelligence/builder/candidate-schema.json"
+            "intelligence/builder/builder-engine.mjs"
+            "intelligence/builder/independent-builder-reviewer.mjs"
+            "intelligence/builder/builder-release-guard.mjs"
+            "intelligence/builder/builder-release.json"
+          )
+          for f in "${REQUIRED[@]}"; do test -s "$f"; done
+          node --check intelligence/builder/builder-engine.mjs
+          node --check intelligence/builder/independent-builder-reviewer.mjs
+          node --check intelligence/builder/builder-release-guard.mjs
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/builder/builder-policy.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/builder/candidate-schema.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/builder/builder-release.json','utf8'))"
+          node intelligence/builder/builder-release-guard.mjs
+
+      - name: Verify exact approved Proposal input
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs'), crypto=require('crypto');
+          const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+          const q=JSON.parse(fs.readFileSync('intelligence/proposals/proposal-queue.json','utf8'));
+          const e=JSON.parse(fs.readFileSync('intelligence/proposals/proposal-decision-eval.json','utf8'));
+          const l=JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
+          const d=JSON.parse(fs.readFileSync('intelligence/learning/decision-ledger.json','utf8'));
+          if(e.status!=='pass') throw new Error('Proposal Decision reviewer not PASS');
+          if(e.source?.queueSha256!==sha('intelligence/proposals/proposal-queue.json')) throw new Error('Proposal bytes differ from reviewed bytes');
+          if(q.source?.learningContextSha256!==sha('intelligence/learning-state/learning-context.json')) throw new Error('Proposal/Learning byte binding mismatch');
+          if(q.source?.decisionLedgerHash!==d.integrity?.ledgerHash || l.source?.decisionLedgerHash!==d.integrity?.ledgerHash) throw new Error('Decision Ledger binding mismatch');
+          if(q.decisionBridge?.executionAuthority!=='none' || q.decisionBridge?.productionMutationAuthorized!==false) throw new Error('Proposal execution boundary changed');
+          const approved=(q.proposals??[]).filter(p=>p.state==='APPROVED');
+          for(const p of approved){
+            if(p.decisionBinding?.authority!=='human-owner' || p.decisionBinding?.exactDecisionMemory!==true) throw new Error(`Approved Proposal lacks exact owner decision: ${p.proposalId}`);
+          }
+          console.log('Approved Proposal input PASS',{approved:approved.length,decisionCount:d.decisionCount});
+          NODE
+
+      - name: Build bounded candidate work packets
+        run: node intelligence/builder/builder-engine.mjs
+
+      - name: Independent Builder reviewer
+        run: node intelligence/builder/independent-builder-reviewer.mjs
+
+      - name: Verify Builder remains non-mutating
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const q=JSON.parse(fs.readFileSync('intelligence/builder/candidate-queue.json','utf8'));
+          const e=JSON.parse(fs.readFileSync('intelligence/builder/candidate-eval.json','utf8'));
+          if(e.status!=='pass') throw new Error('Independent Builder reviewer did not PASS');
+          for(const key of ['noRepositoryCodeMutation','noBranchCreation','noPullRequestCreation','noAutomaticMerge','noAutomaticRelease','noWalletAccess','noCapitalExecution']){
+            if(q.constraints?.[key]!==true) throw new Error(`Builder boundary changed: ${key}`);
+          }
+          if(q.constraints?.humanReleaseApprovalRequired!==true || q.constraints?.executionAuthority!=='none') throw new Error('Builder release/execution boundary changed');
+          console.log('Builder v0.1 mutation boundary PASS',q.summary);
+          NODE
+          git diff --check
+
+      - name: Publish Builder candidate state safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Builder Sandbox"
+          git config user.email "builder-sandbox@theholding.ai"
+
+          GENERATED=(
+            "intelligence/builder/candidate-queue.json"
+            "intelligence/builder/candidate-brief.md"
+            "intelligence/builder/candidate-eval.json"
+          )
+
+          stage_generated() {
+            git add "${GENERATED[@]}"
+            staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/builder/(candidate-queue\.json|candidate-brief\.md|candidate-eval\.json)$' || true)"
+            if [ -n "$staged_bad" ]; then
+              echo "ERROR: Builder attempted to stage outside generated candidate-state boundary:"
+              echo "$staged_bad"
+              exit 1
+            fi
+          }
+
+          verify_and_rebuild() {
+            node intelligence/builder/builder-release-guard.mjs
+            node intelligence/builder/builder-engine.mjs
+            node intelligence/builder/independent-builder-reviewer.mjs
+            node - <<'NODE'
+          const fs=require('fs');
+          const q=JSON.parse(fs.readFileSync('intelligence/builder/candidate-queue.json','utf8'));
+          const e=JSON.parse(fs.readFileSync('intelligence/builder/candidate-eval.json','utf8'));
+          if(e.status!=='pass') throw new Error('Builder reviewer did not PASS after rebase');
+          if(q.constraints?.noRepositoryCodeMutation!==true || q.constraints?.noAutomaticMerge!==true || q.constraints?.noAutomaticRelease!==true || q.constraints?.executionAuthority!=='none') throw new Error('Builder mutation boundary changed after rebase');
+          NODE
+            git diff --check
+          }
+
+          stage_generated
+          if git diff --cached --quiet; then
+            echo "No Builder candidate-state changes to publish."
+            exit 0
+          fi
+          git commit -m "intelligence: refresh self-improvement builder candidates"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Builder publish conflict; refusing to guess."
+              exit 1
+            fi
+            verify_and_rebuild
+            stage_generated
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+            if git push origin HEAD:main; then
+              git fetch origin main
+              test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+              echo "Verified Builder candidate state on remote main."
+              exit 0
+            fi
+            echo "Main moved during Builder push; retrying ($attempt/3)..."
+          done
+          echo "ERROR: unable to publish Builder candidate state after retries"
+          exit 1
