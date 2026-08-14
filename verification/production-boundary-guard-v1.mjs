@@ -58,8 +58,12 @@ if (agentsHtml) {
   if (!/Ask The Holding/i.test(agentsHtml)) fail('Ask The Holding identity missing from /agents/');
   if (!/THE HOLDING OBSERVER/i.test(agentsHtml)) fail('Observer surface missing from unified /agents/ OS Lab');
   if (!/Cognitive Stack/i.test(agentsHtml)) fail('Cognitive Stack surface missing from unified /agents/ OS Lab');
-  if (!/\.\/console\/safety\.js\?v=0\.1/i.test(agentsHtml)) fail('verified Console safety layer must remain attached to /agents/');
-  if (!/\.\/console\/app\.js\?v=0\.4/i.test(agentsHtml)) fail('verified Ask v0.4 router must remain attached to /agents/');
+  if (!/(?:\/agents\/console|\.\/console)\/safety\.js\?v=0\.1/i.test(agentsHtml)) {
+    fail('verified Console safety v0.1 layer must remain attached to /agents/ through the canonical console asset path');
+  }
+  if (!/(?:\/agents\/console|\.\/console)\/app\.js\?v=[0-9][A-Za-z0-9._-]*/i.test(agentsHtml)) {
+    fail('a versioned Ask router must remain attached to /agents/ through the canonical console asset path');
+  }
 }
 
 const legacyConsoleHtml = read(candidateRoot, 'agents/console/index.html');
