@@ -1,0 +1,42 @@
+name: One-time Ask RU transliteration and typo recovery
+
+on:
+  push:
+    branches:
+      - agents/ask-evaluation-trust-v0.6.1-20260815
+    paths:
+      - verification/_one_time_ru_human_alias_patch.py
+      - .github/workflows/_one_time_ru_human_alias_patch.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: agents/ask-evaluation-trust-v0.6.1-20260815
+          fetch-depth: 0
+      - name: Apply RU language patch
+        run: python3 verification/_one_time_ru_human_alias_patch.py
+      - name: Validate product and boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check agents/console/app.js
+          node verification/production-boundary-guard-v1.mjs
+          git diff --check
+      - name: Publish clean candidate delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+          git add agents/console/app.js
+          git rm verification/_one_time_ru_human_alias_patch.py
+          git rm .github/workflows/_one_time_ru_human_alias_patch.yml
+          git commit -m "Ask v0.6.1: add RU transliteration and typo recovery"
+          git push origin HEAD:agents/ask-evaluation-trust-v0.6.1-20260815
