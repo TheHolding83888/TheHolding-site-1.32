@@ -1,7 +1,7 @@
 {
   "version": "0.1-decision-ledger",
-  "lastUpdatedAt": null,
-  "decisionCount": 0,
+  "lastUpdatedAt": "2026-08-14T07:38:58.686Z",
+  "decisionCount": 1,
   "policy": {
     "appendOnly": true,
     "correctionsBySupersedingEntryOnly": true,
@@ -9,10 +9,65 @@
     "executionAuthority": "none",
     "note": "Owner decision records are inert memory. They never execute capital, repository, methodology, or workflow actions."
   },
-  "decisions": [],
+  "decisions": [
+    {
+      "decisionId": "DEC-062ad9c0ce2e0ebbc95e",
+      "sequence": 1,
+      "recordedAt": "2026-08-14T07:38:58.686Z",
+      "authorRole": "owner",
+      "caseId": "bd92163ceaf2983dcdb57151",
+      "caseKey": "CK-106f8e0ade4286d3d496",
+      "disposition": "accept",
+      "rationale": "Owner accepts the P0 third-party script trust review as bounded research and compatibility triage before any production mutation.",
+      "expectedOutcome": "Classify the seven current third-party script findings and produce evidence-bound hardening recommendations only where compatibility is proven.",
+      "modifiedAction": null,
+      "supersedesDecisionId": null,
+      "prediction": {
+        "event": "none",
+        "probabilityBps": null,
+        "reviewDays": null,
+        "reviewAt": null
+      },
+      "sourceCase": {
+        "payloadHash": "4244566a316e44c8656de061ee00b2b127fb7c2dcca803692ea4de892485da61",
+        "domain": "security",
+        "severity": "medium",
+        "category": "external-script-no-sri",
+        "entity": "7 current findings",
+        "recommendationClass": "third-party-trust-review",
+        "riskTier": "medium",
+        "confidence": "high",
+        "deterministicAction": "Assess SRI feasibility, self-hosting, removal, or tighter CSP for the exact script. Preserve analytics behavior until the safer replacement is verified.",
+        "evidenceCount": 1,
+        "actionMode": "proposal-only"
+      },
+      "source": {
+        "brainFile": "intelligence/brain-intelligence.json",
+        "brainSha256": "9a8878295b106f459d3b0c6033c39e928a6faa5f6be3264c0b225fddb5d51dec",
+        "brainSnapshotHash": "ef15793a5f735ecbb0fd285f2f59c155cb173ebcd42511ff4f7d09f679564233",
+        "brainInputCompositeHash": "076c92681a44c259a0705e48f6cfe259bfb8e6925ade296138c29b8b8f18b75b",
+        "cognitiveStackFile": "intelligence/cognitive-stack-state.json",
+        "cognitiveChainHash": "faf74667753014f4a901f7eaf60bdd0a53ddb671424c1b6e81ac6ca7bbe2c5c3",
+        "cognitiveReleaseId": "0.2.1-release-coherence",
+        "cognitiveReleaseManifestSha256": "332353fcab733b903b905418bcffcddfb84956dbbc6a8d21a0f7e380fe3c06a7"
+      },
+      "authority": {
+        "recordType": "human-decision-memory",
+        "executable": false,
+        "executionAuthority": "none",
+        "note": "This record captures an owner decision. It does not execute or authorize capital, repository, methodology, or workflow actions."
+      },
+      "chain": {
+        "previousDecisionHash": null
+      },
+      "integrity": {
+        "decisionHash": "93e5a89140639c7a7671ec15caae01840d03106106f61c768f31c63e41fbd253"
+      }
+    }
+  ],
   "integrity": {
-    "chainRootHash": null,
-    "latestDecisionHash": null,
-    "ledgerHash": "e7f007a7cb4e1e3ca657964b9a92cc86dc65fc6569177d1d6dda3cecbfcab8c2"
+    "chainRootHash": "93e5a89140639c7a7671ec15caae01840d03106106f61c768f31c63e41fbd253",
+    "latestDecisionHash": "93e5a89140639c7a7671ec15caae01840d03106106f61c768f31c63e41fbd253",
+    "ledgerHash": "087b1daf916e3ae0f92589e64d1b2adb348407302a8be2cee8bfd3eb30ab455f"
   }
 }
