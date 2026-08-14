@@ -26,12 +26,23 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - name: Require successful Cloudflare non-production version upload
+      - name: Require Cloudflare build for deployment-sensitive changes
         shell: bash
         run: |
           set -euo pipefail
+
+          changed="$(gh api --paginate -H 'Accept: application/vnd.github+json' "/repos/$REPO/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename')"
+          printf 'Changed files:\n%s\n' "$changed"
+
+          if ! printf '%s\n' "$changed" | grep -Eq '(^|/)wrangler[^/]*\.jsonc?$|^worker/|^index\.html$|^agents/console/|^companies/index\.html$'; then
+            echo 'No deployment-sensitive production surface changed; Cloudflare build gate is not applicable.'
+            exit 0
+          fi
+
+          echo 'Deployment-sensitive change detected; requiring successful Cloudflare non-production version upload.'
           for attempt in $(seq 1 45); do
             payload="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$HEAD_SHA/check-runs")"
             row="$(printf '%s' "$payload" | jq -r '.check_runs[] | select(.name == "Workers Builds: theholdingprotocol") | [.status, (.conclusion // "")] | @tsv' | tail -n1 || true)"
@@ -43,7 +54,7 @@ jobs:
               fi
               echo "Cloudflare non-production version upload is GREEN."
               echo "Cloudflare Version ID: $VERSION_ID"
-              echo 'HTTP Preview URL is intentionally not required: Cloudflare does not generate Preview URLs for Workers implementing Durable Objects. Runtime surface is verified after merge by Production homepage smoke.'
+              echo 'HTTP Preview URL is intentionally not required because Cloudflare does not generate Preview URLs for Workers implementing Durable Objects. Runtime surface is verified after merge by Production homepage smoke.'
               exit 0
             fi
             if [[ "$row" == completed$'\t'* && "$row" != $'completed\tsuccess' ]]; then
@@ -52,7 +63,7 @@ jobs:
             fi
             sleep 10
           done
-          echo 'Timed out waiting for Cloudflare non-production build.' >&2
+          echo 'Timed out waiting for required Cloudflare non-production build.' >&2
           exit 1
 
   production-homepage-smoke:
