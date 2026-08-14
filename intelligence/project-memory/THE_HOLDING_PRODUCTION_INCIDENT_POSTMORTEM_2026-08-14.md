@@ -1,5 +1,6 @@
 # THE HOLDING — PRODUCTION INCIDENT POSTMORTEM
 ## 2026-08-14 — Root homepage replaced by Ask The Holding Console
+## FINAL CLOSED / PRODUCTION BOUNDARY PROVEN
 
 ## Executive summary
 
@@ -8,6 +9,11 @@ The production root `https://theholding.ai/` temporarily served the Ask The Hold
 This was **not an external compromise, DNS hijack, repository loss, or domain takeover**. It was an internal deployment-plane regression caused by a repository-root Cloudflare Wrangler configuration introduced while building Safe Conversation Learning.
 
 The incident was recovered with a fresh successful Cloudflare production deployment that restored the canonical static-site contract while preserving the already-provisioned `LearningIntake` Durable Object lifecycle.
+
+The incident is now considered engineering-closed because the recovery was followed by a machine-enforced Production Boundary Guard and two explicit canary proofs:
+
+- a safe deployment-sensitive candidate passed the deterministic boundary and a real Cloudflare version upload;
+- a deliberately forbidden `theholding.ai/*` Worker route was rejected RED before production and never merged.
 
 ## What happened
 
@@ -52,7 +58,12 @@ Once `LearningIntake` was provisioned, older versions that did not export it wer
 A GitHub write could indirectly change Cloudflare production because the repository already had automatic Cloudflare Git deployment. Direct Cloudflare access was not required.
 
 ### 5. Recovery moved too quickly through hypotheses
-Several repair attempts were made before the full deployment + Durable Object lifecycle contract was known. The final operating rule is: inspect exact production ownership and resource lifecycle first, then change one bounded thing.
+Several repair attempts were made before the full deployment + Durable Object lifecycle contract was known. The permanent operating rule is: inspect exact production ownership and resource lifecycle first, then change one bounded thing.
+
+### 6. Cloudflare Preview URL assumptions were initially wrong for this architecture
+Repeated canary testing proved that a successful Workers build could publish a Version ID while the corresponding HTTP preview URL remained unavailable. The decisive constraint is architectural: the production Worker implements the provisioned `LearningIntake` Durable Object, and Cloudflare does not generate Preview URLs for Workers implementing Durable Objects.
+
+The guard was therefore corrected to stop demanding an impossible HTTP PR preview.
 
 ## What went well
 
@@ -61,7 +72,8 @@ Several repair attempts were made before the full deployment + Durable Object li
 - Cloudflare blocked an unsafe rollback that would have orphaned a provisioned Durable Object.
 - The incident was observable and reversible without deleting production data.
 - The final repair produced a fresh successful Cloudflare production build.
-- The incident generated a reusable engineering lesson rather than a one-off fix.
+- The incident generated reusable engineering knowledge and executable controls rather than a one-off fix.
+- Benign and malicious canaries were run outside `main` and were never merged.
 
 ## Permanent operating rules
 
@@ -74,52 +86,111 @@ Several repair attempts were made before the full deployment + Durable Object li
 - Auxiliary Workers must use the smallest explicit route.
 - Conversation Learning may target only `theholding.ai/api/*`.
 - Auxiliary Workers must not bundle the Console or canonical site as fallback assets.
-- The production site Worker must not route learning API traffic.
+- The production site Worker must remain the canonical site owner.
 
 ### Durable Object lifecycle
 - A provisioned Durable Object export must never silently disappear from the connected production project.
 - Removal/rename requires an explicit lifecycle/migration/tombstone plan and owner-controlled maintenance procedure.
 - Rollback compatibility must be evaluated against Durable Object lifecycle state before rollback.
 
-### Production verification
-- Cloudflare build GREEN alone is insufficient.
-- PR preview must be fetched and its `/` HTML verified as canonical homepage.
-- `/agents/console/` must separately verify as Console.
-- After production deploy, the live root and Console paths must be smoke-tested again.
+### Production verification — final proven architecture
 
-### Permission model
-- GitHub write access can indirectly mutate production through connected deployment integrations.
-- ChatGPT/GitHub permission should remain `Any changes` by default unless machine-enforced production guards are proven and the owner explicitly chooses otherwise.
-- Repository-level guards, not model memory, are the authoritative protection against deployment regression.
+**Universal pre-merge layer**
+- `Production boundary` runs against every PR from trusted `main` code.
+- Candidate code is treated as data; a PR cannot replace the guard that evaluates itself.
+- It verifies canonical homepage ownership, Console isolation, Wrangler ownership, learning route scope, Durable Object continuity, API allowlist, critical-file presence and self-protection.
 
-## Machine-enforced closure introduced after this incident
+**Deployment-sensitive pre-merge layer**
+- For deployment-sensitive paths (`wrangler*`, `worker/**`, root/public surfaces), `Cloudflare preview build gate` requires an actual successful `Workers Builds: theholdingprotocol` run and a valid Cloudflare Version ID.
+- For changes that do not affect deployment surfaces, the Cloudflare build gate is explicitly not applicable and exits GREEN rather than waiting for a build Cloudflare may never start.
+- HTTP Preview URL is intentionally not a required invariant because the production Worker implements a Durable Object and Cloudflare does not provide Preview URLs for that class of Worker.
 
-`Production Boundary Guard v1` is designed to fail closed when a candidate change violates the production contract. It checks:
+**Post-merge runtime layer**
+- `Production homepage smoke` waits for the production Cloudflare build and fetches the real `https://theholding.ai/`.
+- Root must contain canonical homepage markers and must not contain Console markers.
+- `/agents/console/` is checked independently and must contain the Ask The Holding Console marker.
 
-- root homepage canonical marker;
-- Console isolation;
-- root Wrangler project identity and static-site ownership;
-- no primary-domain routes from the root project;
-- exact Conversation Learning route scope;
-- no learning Worker site assets;
-- fail-closed learning config;
-- `LearningIntake` lifecycle continuity;
-- critical production file presence;
-- Worker API path allowlist;
-- self-protection of the guard workflow/verifiers.
+This creates the final safety chain:
 
-A separate deployment smoke workflow waits for Cloudflare and verifies the rendered preview/live surfaces rather than trusting build status alone.
+`candidate PR`
+→ `trusted deterministic Production Boundary`
+→ `Cloudflare version-upload gate when deployment-sensitive`
+→ `merge/deploy`
+→ `live production root + Console smoke`
+→ `Security / Integrity / Project Memory observation`
+
+## Canary proof — safe change accepted
+
+Final benign canary:
+
+- PR `#43` — `CANARY – deployment-sensitive benign GREEN proof`
+- head SHA `2da6d1a71f8ae0066b4b2c128ba53a1fc2760897`
+- only candidate change: comment-only edit in `worker/site-root.js`; runtime behavior unchanged
+- `Production boundary` = `SUCCESS`
+- `Workers Builds: theholdingprotocol` = `SUCCESS`
+- Cloudflare Build ID `2edb7d5d-3432-46cf-947f-0d51e25150d0`
+- Cloudflare Version ID `a7f5fef0-65ac-4ee0-9cf3-1bc72651696d`
+- `Cloudflare preview build gate` = `SUCCESS`
+- PR closed without merge
+
+Interpretation: the boundary does not merely block changes; it permits a safe deployment-sensitive candidate and proves Cloudflare can build/upload it.
+
+## Canary proof — forbidden root takeover rejected
+
+Final malicious canary:
+
+- PR `#44` — `CANARY – forbidden root route must be blocked RED`
+- head SHA `a7b22783fcf448d44aefc33b5d834e3496bc81a1`
+- candidate deliberately introduced a canary Wrangler config with route `theholding.ai/*`
+- `Production boundary` = `FAILURE`
+- candidate never entered `main`
+- PR closed without merge
+
+Interpretation: an auxiliary/root-route takeover attempt matching the original incident class is now machine-detectable and fail-closed before production.
+
+## GitHub branch ruleset — current deliberate baseline
+
+`Main Branch Protection` remains active on the default branch with:
+
+- branch deletion blocked;
+- force-push / non-fast-forward blocked;
+- no bypass actors.
+
+`Require pull request before merging` and required status checks are **intentionally not yet enabled at the branch-ruleset level** because multiple trusted GitHub Actions currently publish generated Memory, Security, Productivity and other machine state directly to `main`. Enabling mandatory PR-only updates without first redesigning those autonomous write paths would break legitimate system operation.
+
+Future strengthening path:
+
+1. redesign trusted autonomous publishers to use an explicitly authorized bot/PR or equivalent bounded publication mechanism;
+2. prove that generated-state workflows remain healthy;
+3. then enable mandatory PR + required `Production boundary` and appropriate deployment gate checks at the GitHub ruleset level.
+
+Until then, ChatGPT GitHub permission remains safer as `Any changes`, not `Allow all actions`.
+
+## Permission lesson
+
+GitHub write access can indirectly mutate production through connected deployment integrations. Therefore:
+
+- repository/CI constraints are the authoritative safety boundary;
+- model memory is supportive, not authoritative;
+- broad write permission should not be restored solely because the incident is remembered;
+- permission expansion should follow proven machine enforcement and explicit owner choice.
 
 ## Learning interpretation
 
 This incident is a genuine The Holding experience-learning cycle:
 
-`real change → production regression → observation → root-cause analysis → recovery → durable memory → executable guard → measured future prevention`
+`real change → production regression → observation → root-cause analysis → recovery → durable memory → executable guard → benign proof → adversarial proof → measured prevention`
 
-The system did **not** retrain a model or give Workers autonomous learning ability. The durable learning is owned by The Holding through Project Memory, production configuration and machine-enforced CI rules.
+The system did **not** retrain a model or give Workers autonomous learning ability. The durable learning is owned by The Holding through Project Memory, production configuration, deterministic CI and measured canary evidence.
 
 ## Authority
 
 No wallet, signing or capital authority changed during this incident or its recovery.
 
 The lesson is specifically about deployment-plane authority: intelligence may remember a rule, but production safety must be enforced by deterministic controls.
+
+## Final status
+
+**INCIDENT RECOVERED. PRODUCTION BOUNDARY GUARD PROVEN.**
+
+The next product priority after this closure is to return to Ask The Holding / Safe Conversation Learning development, with learning runtime still fail-closed until its privacy/legal/runtime activation gates are explicitly satisfied.
