@@ -20,11 +20,9 @@ jobs:
         with:
           ref: intelligence/claude-review-absorption-v1-20260814
           fetch-depth: 1
-      - name: Measure exact Guardian workflow bytes
+      - name: Verify exact Guardian release binding
         shell: bash
         run: |
           set -euo pipefail
-          printf 'GUARDIAN_WORKFLOW_SHA256='
-          sha256sum .github/workflows/update-guardian-state.yml | awk '{print $1}'
-          printf 'GUARDIAN_WORKFLOW_BYTES='
-          wc -c < .github/workflows/update-guardian-state.yml
+          node intelligence/guardian/guardian-release-guard.mjs
+          git diff --check
