@@ -277,7 +277,7 @@ fs.writeFileSync(INDEX, nextIndex, 'utf8');
 console.log(JSON.stringify({
   status: 'patched',
   version: 'Ask The Holding v0.4',
-  answerContract: ANSWER_CONTRACT_VERSION,
+  answerContract: '0.1-source-bound-answer-contract',
   persistentLearningActivated: false,
   rawQuestionLedgerAdded: false
 }, null, 2));
