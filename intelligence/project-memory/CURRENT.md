@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-14T16:07:35.715Z**
+Canonical source state represented here: **2026-08-14T17:13:18.851Z**
 
 ## Resume order
 
@@ -41,7 +41,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 - Learning: **READY**; active cases 18; remembered cases 21; Brain observations 10; owner decisions 2; settled outcomes 0; lessons 0.
 - Proposal: **WATCH**; active 18; APPROVED 0; PROPOSED 18; SUPERSEDED 3; production execution disabled.
 - Builder: **READY**; candidates 0; CANDIDATE 0; productionMutationAuthorizedCount 0.
-- Guardian: **WATCH**; research-only 2; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
+- Guardian: **READY**; research-only 0; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
 
 ## Build discipline
 
