@@ -1,0 +1,120 @@
+  function activeProposals() {
+    return safeArray(state.proposals?.proposals).filter(x => !['SUPERSEDED', 'REJECTED', 'RELEASED'].includes(String(x?.state || '').toUpperCase()));
+  }
+
+  function governanceCoherent() {
+    const chain = state.stack?.integrity?.chainHash;
+    const proposalHash = state.proposals?.integrity?.queueHash;
+    const builderHash = state.builder?.integrity?.queueHash;
+    return Boolean(
+      chain &&
+      state.proposals?.source?.cognitiveChainHash === chain &&
+      proposalHash && state.builder?.source?.proposalQueueHash === proposalHash &&
+      builderHash && state.guardian?.source?.candidateQueueHash === builderHash
+    );
+  }
+
+  function proposalAnswer(lang) {
+    const items = activeProposals().slice(0, 6);
+    const s = state.proposals?.summary || {};
+    state.lastTopic = 'proposal';
+    state.lastEntity = { kind: 'governance', topic: 'proposal' };
+    if (!state.proposals || !governanceCoherent()) return {
+      text: lang === 'ru'
+        ? 'Governance packet сейчас не подтверждён как coherent с текущим Cognitive Stack. Я не буду подменять Proposal сырыми Brain cases.'
+        : 'The governance packet is not currently verified as coherent with the Cognitive Stack, so I will not substitute raw Brain cases for real Proposals.',
+      source: 'Proposal Work Queue unavailable'
+    };
+    if (!items.length) return {
+      text: lang === 'ru' ? 'В текущей Proposal Work Queue нет активных предложений.' : 'There are no active items in the current Proposal Work Queue.',
+      source: 'Proposal Work Queue'
+    };
+    const intro = lang === 'ru'
+      ? `Система наблюдает ${s.observedActiveCaseCount ?? '—'} активных case, но после фильтра опыта оставила ${s.activeCaseCount ?? items.length} decision-worthy и ${s.dataHygieneCaseCount ?? '—'} data-hygiene. Активных Proposal: ${s.activeProposalCount ?? items.length}.\n\n`
+      : `The system observes ${s.observedActiveCaseCount ?? '—'} active cases, but the experience gate kept ${s.activeCaseCount ?? items.length} decision-worthy and ${s.dataHygieneCaseCount ?? '—'} data-hygiene. Active Proposals: ${s.activeProposalCount ?? items.length}.\n\n`;
+    const rows = items.map((x, i) => `${i + 1}. [${x.rankClass || '—'} · ${x.state || '—'}] ${x.entity || x.category || x.proposalId}\n   ${x.proposedAction || ''}`);
+    const tail = lang === 'ru'
+      ? `\n\nОдобрено владельцем: ${s.ownerApprovedCount ?? 0}. Automatic approval/execution выключены.`
+      : `\n\nOwner-approved: ${s.ownerApprovedCount ?? 0}. Automatic approval/execution remain disabled.`;
+    return { text: intro + rows.join('\n') + tail, source: 'Proposal Work Queue' };
+  }
+
+  function governanceStatusAnswer(lang) {
+    const p = state.proposals?.summary || {};
+    const b = state.builder?.summary || {};
+    const g = state.guardian?.summary || {};
+    state.lastTopic = 'governance';
+    state.lastEntity = { kind: 'governance', topic: 'status' };
+    if (!governanceCoherent()) return {
+      text: lang === 'ru' ? 'Governance chain сейчас не проходит exact coherence check. Действие не предполагается.' : 'The governance chain does not currently pass exact coherence checks. No action is implied.',
+      source: 'OS Governance unavailable'
+    };
+    return {
+      text: lang === 'ru'
+        ? `Governance сейчас: Proposal ${p.activeProposalCount ?? 0} active / ${p.ownerApprovedCount ?? 0} owner-approved → Builder ${b.candidateCount ?? 0} candidates → Guardian ${g.researchOnlyCount ?? 0} research-only / ${g.sandboxBuildAuthorizedCount ?? 0} sandbox / ${g.productionMutationAuthorizedCount ?? 0} production-authorized.\n\nExecution authority: ${(state.guardian?.constraints?.executionAuthority || executionAuthority()).toUpperCase()}. Пока владелец ничего не одобрил, Builder остаётся пустым, а Guardian не выдаёт capability.`
+        : `Governance now: Proposal ${p.activeProposalCount ?? 0} active / ${p.ownerApprovedCount ?? 0} owner-approved → Builder ${b.candidateCount ?? 0} candidates → Guardian ${g.researchOnlyCount ?? 0} research-only / ${g.sandboxBuildAuthorizedCount ?? 0} sandbox / ${g.productionMutationAuthorizedCount ?? 0} production-authorized.\n\nExecution authority: ${(state.guardian?.constraints?.executionAuthority || executionAuthority()).toUpperCase()}. Until the owner approves something, Builder stays empty and Guardian grants no capability.`,
+      source: 'OS Governance · Proposal + Builder + Guardian'
+    };
+  }
+
+  function whyFilteredAnswer(lang) {
+    const s = state.proposals?.summary || {};
+    state.lastTopic = 'proposal-filter';
+    state.lastEntity = { kind: 'governance', topic: 'filter' };
+    if (!state.proposals || !governanceCoherent()) return proposalAnswer(lang);
+    return {
+      text: lang === 'ru'
+        ? `Потому что observation и decision experience теперь разделены. Learning наблюдает ${s.observedActiveCaseCount ?? '—'} активных case. ${s.dataHygieneCaseCount ?? '—'} классифицированы как data-hygiene – их полезно помнить, но они не должны отвлекать владельца и обучать систему как будто это решения. В Proposal прошли только ${s.activeCaseCount ?? '—'} decision-worthy case. Поэтому больше наблюдений не означает больше задач.`
+        : `Because observation and decision experience are now separated. Learning observes ${s.observedActiveCaseCount ?? '—'} active cases. ${s.dataHygieneCaseCount ?? '—'} are data-hygiene – useful to remember, but they should not distract the owner or train the system as if they were decisions. Only ${s.activeCaseCount ?? '—'} decision-worthy cases reached Proposal. More observations no longer means more tasks.`,
+      source: 'Proposal Work Queue + Decision & Outcome Learning'
+    };
+  }
+
+  function findCompanies(query) {
+    const q = norm(query);
+    const names = new Set([
+      ...state.registry.map(x => x.name),
+      ...Object.keys(safeObject(state.productivity?.companies)),
+      state.stable?.company?.name
+    ].filter(Boolean));
+    const special = {
+      "Rook's portfolio": ['rook', 'rooks', 'рук'],
+      '05081966.eth': ['05081966'],
+      '0x5860...83CA8.eth': ['83ca8', '5860'],
+      '1milliondollar.eth': ['1milliondollar', 'milliondollar', '1 million dollar']
+    };
+    return [...names]
+      .map(name => {
+        let score = 0;
+        const full = norm(name);
+        const short = norm(name.replace(/\.eth$/i, ''));
+        if (full && q.includes(full)) score += 30;
+        if (short.length >= 4 && q.includes(short)) score += 20;
+        for (const alias of special[name] || []) if (q.includes(norm(alias))) score += 20;
+        return { name, registry: state.registry.find(x => x.name === name) || null, score };
+      })
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+  }
+
+  function compareCompaniesAnswer(a, b, lang) {
+    const companies = safeObject(state.productivity?.companies);
+    const pa = companies[a.name];
+    const pb = companies[b.name];
+    state.lastTopic = 'company-compare';
+    state.lastEntity = { kind: 'company-compare', names: [a.name, b.name] };
+    if (!pa || !pb || finite(pa.aprLatest) === null || finite(pb.aprLatest) === null) return {
+      text: lang === 'ru' ? 'Для точного сравнения обе компании должны иметь подтверждённый current Reference APR. Сейчас этого нет.' : 'Both companies need verified current Reference APR for an exact comparison, and that is not available right now.',
+      source: 'Live Productivity'
+    };
+    const ca = finite(pa.coverage);
+    const cb = finite(pb.coverage);
+    const diff = Number(pa.aprLatest) - Number(pb.aprLatest);
+    const leader = diff >= 0 ? a.name : b.name;
+    return {
+      text: lang === 'ru'
+        ? `${a.name}: ${pct(pa.aprLatest)} Reference APR${ca !== null ? ` · coverage ${Math.round(ca * 100)}%` : ''}.\n${b.name}: ${pct(pb.aprLatest)} Reference APR${cb !== null ? ` · coverage ${Math.round(cb * 100)}%` : ''}.\n\nАбсолютная разница текущего Reference APR: ${pct(Math.abs(diff))} в пользу ${leader}. Это сравнение current productive capacity, не realised performance.`
+        : `${a.name}: ${pct(pa.aprLatest)} Reference APR${ca !== null ? ` · coverage ${Math.round(ca * 100)}%` : ''}.\n${b.name}: ${pct(pb.aprLatest)} Reference APR${cb !== null ? ` · coverage ${Math.round(cb * 100)}%` : ''}.\n\nAbsolute current Reference APR difference: ${pct(Math.abs(diff))} in favor of ${leader}. This compares current productive capacity, not realised performance.`,
+      source: 'Live Productivity'
+    };
+  }
