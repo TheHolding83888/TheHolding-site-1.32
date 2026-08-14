@@ -118,9 +118,9 @@
     if (!result?.source || /unavailable|no sufficiently strong verified match|fail closed/.test(source)) return 'unknown';
     if (/не могу ответить|cannot answer|не удалось|could not safely|не найден|not found|no exact|нет подтвержден|no verified|не загрузил|did not load|unavailable/.test(text)) return 'unknown';
     const hasWarming = /warming|догрев|прогрев/.test(text);
-    const hasMeasuredValue = /(?:$|d+(?:[.,]d+)?%)/.test(String(result?.text || ''));
+    const hasMeasuredValue = /(?:\$|\d+(?:[.,]\d+)?%)/.test(String(result?.text || ''));
     if (hasWarming) return hasMeasuredValue ? 'partial' : 'warming';
-    const coverageMatches = [...String(result?.text || '').matchAll(/(?:coverage|покрытие)[^0-9]{0,24}(d+(?:[.,]d+)?)%/gi)];
+    const coverageMatches = [...String(result?.text || '').matchAll(/(?:coverage|покрытие)[^0-9]{0,24}(\d+(?:[.,]\d+)?)%/gi)];
     if (coverageMatches.some(m => Number(String(m[1]).replace(',', '.')) < 99.999)) return 'partial';
     if (/partial|частичн/.test(text)) return 'partial';
     return 'measured';
