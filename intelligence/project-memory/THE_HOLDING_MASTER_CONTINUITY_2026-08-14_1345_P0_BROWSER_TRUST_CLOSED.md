@@ -7,6 +7,18 @@ This checkpoint supersedes older prose for the browser-security P0 work. Changin
 
 The owner explicitly requires The Holding to be built **layer by layer**, one primary objective at a time, with super-high quality and no architecture/work for its own sake. Close and prove the current capability before expanding. Prefer reuse and simplification. Do not create duplicate sources of truth or orchestration loops. Authority must grow slower than intelligence.
 
+## Communication rule — hard owner preference
+
+All future discussion with the owner should use **very simple, plain language** even when the underlying architecture is advanced.
+
+- Prefer short-to-medium answers over long technical walls of text.
+- Lead with the practical conclusion: what happened, why it matters, and what comes next.
+- Use technical terms only when they are genuinely useful; explain them in ordinary words.
+- Keep enough detail to make decisions confidently, but do not overload the owner with implementation detail unless he asks for it.
+- The system itself may remain highly technical and sophisticated. **Simplify the language, not the thinking, verification, security, or engineering quality.**
+- The goal is that important project decisions and explanations should be understandable to an intelligent non-specialist.
+- This is a durable communication preference for future chats/models working on The Holding.
+
 ## Objective that was closed
 
 Two owner-approved P0 Security proposals were taken through a real practical cycle:
