@@ -38,7 +38,7 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
-      - name: Preflight Proposal Work Queue v0.1.1
+      - name: Preflight Proposal Work Queue v0.2
         shell: bash
         run: |
           set -euo pipefail
@@ -46,19 +46,26 @@ jobs:
             "intelligence/brain-intelligence.json"
             "intelligence/cognitive-stack-state.json"
             "intelligence/learning-state/learning-context.json"
+            "intelligence/learning/decision-ledger.json"
             "intelligence/proposals/proposal-policy.json"
             "intelligence/proposals/proposal-schema.json"
             "intelligence/proposals/proposal-engine.mjs"
             "intelligence/proposals/independent-proposal-reviewer.mjs"
+            "intelligence/proposals/proposal-decision-policy.json"
+            "intelligence/proposals/proposal-decision-bridge.mjs"
+            "intelligence/proposals/independent-proposal-decision-reviewer.mjs"
             "intelligence/proposals/proposal-release-guard.mjs"
             "intelligence/proposals/proposal-release.json"
           )
           for f in "${REQUIRED[@]}"; do test -s "$f"; done
           node --check intelligence/proposals/proposal-engine.mjs
           node --check intelligence/proposals/independent-proposal-reviewer.mjs
+          node --check intelligence/proposals/proposal-decision-bridge.mjs
+          node --check intelligence/proposals/independent-proposal-decision-reviewer.mjs
           node --check intelligence/proposals/proposal-release-guard.mjs
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-policy.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-schema.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-decision-policy.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-release.json','utf8'))"
           node intelligence/proposals/proposal-release-guard.mjs
 
@@ -73,24 +80,33 @@ jobs:
           const brainPath = 'intelligence/brain-intelligence.json';
           const stack = JSON.parse(fs.readFileSync('intelligence/cognitive-stack-state.json','utf8'));
           const learning = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
+          const ledger = JSON.parse(fs.readFileSync('intelligence/learning/decision-ledger.json','utf8'));
           if (stack.readyForManualInterpretation !== true) throw new Error('Cognitive Stack not ready');
           if (stack.operatingContract?.executionAuthority !== 'none') throw new Error('Execution authority changed');
           if (learning.status !== 'ready') throw new Error(`Learning not ready: ${learning.status}`);
           if (learning.source?.cognitiveChainHash !== stack.integrity?.chainHash) throw new Error('Learning/Cognitive chain mismatch');
+          if (learning.source?.decisionLedgerHash !== ledger.integrity?.ledgerHash) throw new Error('Learning/Decision Ledger mismatch');
           if (stack.chain?.groundedBrain?.sha256 && stack.chain.groundedBrain.sha256 !== sha(brainPath)) throw new Error('Brain/Cognitive byte binding mismatch');
           if ((learning.activeCases ?? []).length !== learning.summary?.activeCaseCount) throw new Error('Learning active case count mismatch');
-          console.log('Learning → Cognitive binding PASS', {
+          console.log('Learning → Cognitive → Decision binding PASS', {
             learningGeneratedAt: learning.generatedAt,
             cognitiveChainHash: stack.integrity.chainHash,
-            activeCases: learning.summary?.activeCaseCount
+            activeCases: learning.summary?.activeCaseCount,
+            ownerDecisions: ledger.decisionCount
           });
           NODE
 
       - name: Build machine-readable Proposal Work Queue
         run: node intelligence/proposals/proposal-engine.mjs
 
+      - name: Reflect owner Decision Memory into Proposal states
+        run: node intelligence/proposals/proposal-decision-bridge.mjs
+
       - name: Independent Proposal reviewer
         run: node intelligence/proposals/independent-proposal-reviewer.mjs
+
+      - name: Independent Decision → Proposal reviewer
+        run: node intelligence/proposals/independent-proposal-decision-reviewer.mjs
 
       - name: Verify queue remains non-executable
         shell: bash
@@ -100,16 +116,24 @@ jobs:
           const fs = require('fs');
           const q = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-queue.json','utf8'));
           const e = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-eval.json','utf8'));
-          if (e.status !== 'pass') throw new Error('Independent reviewer did not PASS');
+          const d = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-decision-eval.json','utf8'));
+          if (e.status !== 'pass') throw new Error('Independent Proposal reviewer did not PASS');
+          if (d.status !== 'pass') throw new Error('Independent Decision → Proposal reviewer did not PASS');
           if (q.constraints?.noProductionExecution !== true || q.constraints?.noAutomaticCodeChanges !== true || q.constraints?.noAutomaticApprovals !== true) {
             throw new Error('Proposal queue crossed mutation boundary');
+          }
+          if (q.decisionBridge?.productionMutationAuthorized !== false || q.decisionBridge?.executionAuthority !== 'none') {
+            throw new Error('Decision Bridge crossed production/execution boundary');
           }
           for (const p of q.proposals ?? []) {
             if (p.boundaries?.automaticExecution !== false || p.boundaries?.automaticApproval !== false || p.boundaries?.humanApprovalRequired !== true) {
               throw new Error(`Unsafe proposal ${p.proposalId}`);
             }
+            if (p.state === 'APPROVED' && p.decisionBinding?.authority !== 'human-owner') {
+              throw new Error(`APPROVED proposal lacks exact owner Decision Memory: ${p.proposalId}`);
+            }
           }
-          console.log('Proposal safety boundary PASS', q.summary);
+          console.log('Proposal v0.2 safety boundary PASS', q.summary);
           NODE
           git diff --check
 
@@ -124,11 +148,12 @@ jobs:
             "intelligence/proposals/proposal-queue.json"
             "intelligence/proposals/proposal-brief.md"
             "intelligence/proposals/proposal-eval.json"
+            "intelligence/proposals/proposal-decision-eval.json"
           )
 
           stage_generated() {
             git add "${GENERATED[@]}"
-            staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/proposals/(proposal-queue\.json|proposal-brief\.md|proposal-eval\.json)$' || true)"
+            staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/proposals/(proposal-queue\.json|proposal-brief\.md|proposal-eval\.json|proposal-decision-eval\.json)$' || true)"
             if [ -n "$staged_bad" ]; then
               echo "ERROR: Proposal workflow attempted to stage files outside generated-state boundary:"
               echo "$staged_bad"
@@ -139,13 +164,17 @@ jobs:
           verify_and_rebuild() {
             node intelligence/proposals/proposal-release-guard.mjs
             node intelligence/proposals/proposal-engine.mjs
+            node intelligence/proposals/proposal-decision-bridge.mjs
             node intelligence/proposals/independent-proposal-reviewer.mjs
+            node intelligence/proposals/independent-proposal-decision-reviewer.mjs
             node - <<'NODE'
           const fs = require('fs');
           const q = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-queue.json','utf8'));
           const e = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-eval.json','utf8'));
-          if (e.status !== 'pass') throw new Error('Independent reviewer did not PASS after rebase');
+          const d = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-decision-eval.json','utf8'));
+          if (e.status !== 'pass' || d.status !== 'pass') throw new Error('Proposal reviewers did not PASS after rebase');
           if (q.constraints?.noProductionExecution !== true || q.constraints?.noAutomaticCodeChanges !== true || q.constraints?.noAutomaticApprovals !== true) throw new Error('Proposal mutation boundary changed after rebase');
+          if (q.decisionBridge?.productionMutationAuthorized !== false || q.decisionBridge?.executionAuthority !== 'none') throw new Error('Decision Bridge authority changed after rebase');
           NODE
             git diff --check
           }
@@ -155,7 +184,7 @@ jobs:
             echo "No Proposal state changes to publish."
             exit 0
           fi
-          git commit -m "intelligence: refresh proposal work queue"
+          git commit -m "intelligence: refresh decision-bound proposal work queue"
 
           for attempt in 1 2 3; do
             git fetch origin main
@@ -165,8 +194,8 @@ jobs:
               exit 1
             fi
 
-            # Rebuild after every rebase so published Proposal state is bound to the
-            # exact current Learning/Cognitive bytes, not to a stale pre-rebase snapshot.
+            # Rebuild after every rebase so Proposal state is bound to the exact
+            # current Learning/Cognitive/Decision bytes, not a stale snapshot.
             verify_and_rebuild
             stage_generated
             if ! git diff --cached --quiet; then
@@ -176,7 +205,7 @@ jobs:
             if git push origin HEAD:main; then
               git fetch origin main
               test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
-              echo "Verified Proposal Work Queue on remote main."
+              echo "Verified decision-bound Proposal Work Queue on remote main."
               exit 0
             fi
             echo "Main moved during push; retrying ($attempt/3)..."

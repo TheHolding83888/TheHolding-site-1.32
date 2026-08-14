@@ -1,0 +1,33 @@
+{
+  "version": "0.2-proposal-decision-policy",
+  "mode": "decision-memory-reflection-no-execution",
+  "purpose": "Reflect explicit owner decisions from the append-only Decision Memory into Proposal Work Queue states without creating approval, production mutation, or execution authority.",
+  "authorities": {
+    "ownerDecisionMemory": "intelligence/learning/decision-ledger.json",
+    "learningContext": "intelligence/learning-state/learning-context.json",
+    "proposalQueue": "intelligence/proposals/proposal-queue.json",
+    "execution": "none"
+  },
+  "dispositionToProposalState": {
+    "accept": "APPROVED",
+    "modify": "APPROVED",
+    "reject": "REJECTED",
+    "defer": "PROPOSED"
+  },
+  "semantics": {
+    "approvedMeans": "owner-approved for bounded next-stage research/build-candidate work only",
+    "approvedDoesNotMean": "production mutation, merge, release, wallet action, signing, transaction, or capital execution",
+    "modifyUsesModifiedAction": true,
+    "deferRemainsProposed": true,
+    "effectiveDecisionIdentity": "latest non-superseded append-only decision for the stable caseKey"
+  },
+  "hardBoundaries": {
+    "automaticApproval": false,
+    "automaticExecution": false,
+    "productionMutationAuthorized": false,
+    "walletActionAllowed": false,
+    "capitalExecutionAllowed": false,
+    "decisionRecordsExecutable": false,
+    "humanReleaseGateStillRequired": true
+  }
+}
