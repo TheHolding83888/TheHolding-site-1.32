@@ -60,7 +60,7 @@ jobs:
           };
           const output = (key, value) => fs.appendFileSync(out, `${key}=${String(value).replace(/\n/g, ' ')}\n`);
 
-          if (!['0.1-operator-command', '0.2-operator-command'].includes(cmd.version)) fail('Unexpected operator command version');
+          if (!['0.1-operator-command', '0.2-operator-command', '0.3-operator-command'].includes(cmd.version)) fail('Unexpected operator command version');
           if (cmd.requestedBy !== 'owner') fail('Owner request marker is required');
           if (cmd.approval !== 'explicit') fail('Explicit approval marker is required');
           if (cmd.arbitraryWorkflowAllowed !== false) fail('arbitraryWorkflowAllowed must remain false');
@@ -82,6 +82,10 @@ jobs:
             if (cmd.ref !== 'main') fail('Only main may be dispatched');
             targetWorkflow = 'update-proposal-work-queue.yml';
             operation = 'refresh_proposal_queue';
+            dispatch = { ref: 'main' };
+          } else if (cmd.operation === 'refresh_cognitive_stack') {
+            targetWorkflow = 'refresh-cognitive-stack.yml';
+            operation = cmd.operation;
             dispatch = { ref: 'main' };
           } else if (cmd.operation === 'refresh_proposal_queue') {
             targetWorkflow = 'update-proposal-work-queue.yml';
@@ -172,7 +176,7 @@ jobs:
         run: |
           set -euo pipefail
           case "$TARGET_WORKFLOW" in
-            update-proposal-work-queue.yml|record-brain-decision.yml) ;;
+            refresh-cognitive-stack.yml|update-proposal-work-queue.yml|record-brain-decision.yml) ;;
             *) echo "Unexpected target workflow after validation: $TARGET_WORKFLOW"; exit 1 ;;
           esac
           if [ "$TARGET_REF" != "main" ]; then
@@ -215,5 +219,5 @@ jobs:
             echo "**Wallet action:** disabled"
             echo "**Capital execution:** disabled"
             echo
-            echo "Owner decisions are dispatched only into the existing inert, append-only Decision Memory workflow. They do not execute the proposal."
+            echo "The bridge dispatches only explicitly allowlisted maintenance/decision workflows. Owner decisions remain inert append-only memory and do not execute proposals."
           } >> "$GITHUB_STEP_SUMMARY"
