@@ -32,8 +32,9 @@ const ledger = read(F.ledger);
 
 if (q.version !== '0.1-proposal-work-queue') fail(`Unexpected Proposal queue version: ${q.version}`);
 if (q.engineVersion !== '0.1.1-deterministic-proposal-engine') fail(`Unexpected Proposal engine version: ${q.engineVersion}`);
-if (policy.version !== '0.2-proposal-decision-policy') fail(`Unexpected Proposal Decision policy: ${policy.version}`);
+if (policy.version !== '0.2.1-proposal-decision-policy') fail(`Unexpected Proposal Decision policy: ${policy.version}`);
 if (policy.mode !== 'decision-memory-reflection-no-execution') fail('Proposal Decision policy mode mismatch');
+if (policy.inactiveCaseState !== 'SUPERSEDED') fail('Inactive Proposal retirement policy changed');
 if (policy.hardBoundaries?.automaticApproval !== false) fail('Decision bridge policy unexpectedly enables automatic approval');
 if (policy.hardBoundaries?.automaticExecution !== false) fail('Decision bridge policy unexpectedly enables execution');
 if (policy.hardBoundaries?.productionMutationAuthorized !== false) fail('Decision bridge policy unexpectedly authorizes production mutation');
@@ -59,10 +60,10 @@ if ((ledger.integrity?.chainRootHash ?? null) !== (ledger.decisions[0]?.integrit
 if ((ledger.integrity?.latestDecisionHash ?? null) !== (ledger.decisions.at(-1)?.integrity?.decisionHash ?? null)) fail('Decision Ledger latest mismatch');
 if (ledger.integrity?.ledgerHash !== stableHash(ledgerCore(ledger))) fail('Decision Ledger integrity mismatch');
 
-const superseded = new Set(ledger.decisions.map(d => d.supersedesDecisionId).filter(Boolean));
+const supersededDecisionIds = new Set(ledger.decisions.map(d => d.supersedesDecisionId).filter(Boolean));
 const effectiveByCase = new Map();
 for (const d of ledger.decisions) {
-  if (superseded.has(d.decisionId)) continue;
+  if (supersededDecisionIds.has(d.decisionId)) continue;
   if (effectiveByCase.has(d.caseKey)) fail(`Multiple effective owner decisions for stable case ${d.caseKey}`);
   effectiveByCase.set(d.caseKey, d);
 }
@@ -74,34 +75,53 @@ let boundDecisionCount = 0;
 let approvedCount = 0;
 let rejectedCount = 0;
 let deferredCount = 0;
+let historicalDecisionBoundCount = 0;
 
 q.proposals = (q.proposals ?? []).map(p => {
   const d = effectiveByCase.get(p.source?.caseKey) ?? null;
+  const learningCase = learningByCase.get(p.source?.caseKey) ?? null;
+  const sourceCaseActive = !!learningCase;
+
   if (!d) {
-    if (p.state !== 'SUPERSEDED') p.state = 'PROPOSED';
+    if (!sourceCaseActive) {
+      p.state = 'SUPERSEDED';
+      p.supersededReason = p.supersededReason ?? 'Source case is no longer active in current Learning context.';
+    } else {
+      p.state = 'PROPOSED';
+      delete p.supersededReason;
+    }
     delete p.decisionBinding;
     delete p.effectiveAction;
     p.human = { approvedBy: null, approvedAt: null, notes: null };
     return p;
   }
 
-  const learningCase = learningByCase.get(p.source?.caseKey);
-  const latest = learningCase?.decisionMemory?.latestDecision;
-  if (!latest || latest.decisionId !== d.decisionId || latest.disposition !== d.disposition) {
-    fail(`Learning does not expose the effective decision for ${p.source?.caseKey}`);
+  if (sourceCaseActive) {
+    const latest = learningCase?.decisionMemory?.latestDecision;
+    if (!latest || latest.decisionId !== d.decisionId || latest.disposition !== d.disposition) {
+      fail(`Active Learning case does not expose the effective decision for ${p.source?.caseKey}`);
+    }
   }
 
-  const targetState = mapping[d.disposition];
-  if (!targetState) fail(`Decision disposition has no Proposal mapping: ${d.disposition}`);
-  if (!states.includes(targetState)) fail(`Decision policy mapped to unknown Proposal state: ${targetState}`);
+  const activeTargetState = mapping[d.disposition];
+  if (!activeTargetState) fail(`Decision disposition has no Proposal mapping: ${d.disposition}`);
+  if (!states.includes(activeTargetState)) fail(`Decision policy mapped to unknown Proposal state: ${activeTargetState}`);
 
+  const targetState = sourceCaseActive ? activeTargetState : policy.inactiveCaseState;
   p.state = targetState;
+  if (sourceCaseActive) {
+    delete p.supersededReason;
+  } else {
+    p.supersededReason = 'Source case is no longer active in current Learning context; exact owner Decision Memory is preserved. SUPERSEDED does not imply rejection, release, or execution.';
+  }
+
   p.decisionBinding = {
     decisionId: d.decisionId,
     decisionHash: d.integrity?.decisionHash ?? null,
     decisionLedgerHash: ledger.integrity.ledgerHash,
     caseKey: d.caseKey,
     sourceCaseId: d.caseId,
+    sourceCaseActive,
     recordedAt: d.recordedAt,
     disposition: d.disposition,
     exactDecisionMemory: true,
@@ -129,22 +149,28 @@ q.proposals = (q.proposals ?? []).map(p => {
   };
 
   boundDecisionCount += 1;
+  if (!sourceCaseActive) historicalDecisionBoundCount += 1;
   if (targetState === 'APPROVED') approvedCount += 1;
   if (targetState === 'REJECTED') rejectedCount += 1;
-  if (d.disposition === 'defer') deferredCount += 1;
+  if (sourceCaseActive && d.disposition === 'defer') deferredCount += 1;
   return p;
 });
 
+const finalActive = q.proposals.filter(p => !['REJECTED','SUPERSEDED','RELEASED'].includes(p.state));
 const stateCounts = Object.fromEntries(states.map(s => [s, q.proposals.filter(p => p.state === s).length]));
 q.summary = {
   ...(q.summary ?? {}),
   totalProposalCount: q.proposals.length,
-  activeProposalCount: q.proposals.filter(p => !['REJECTED','SUPERSEDED','RELEASED'].includes(p.state)).length,
+  activeProposalCount: finalActive.length,
   stateCounts,
+  p0Count: finalActive.filter(p => p.rankClass === 'P0').length,
+  p1Count: finalActive.filter(p => p.rankClass === 'P1').length,
+  requiresHumanApprovalCount: finalActive.filter(p => p.boundaries?.humanApprovalRequired === true).length,
   ownerDecisionBoundCount: boundDecisionCount,
   ownerApprovedCount: approvedCount,
   ownerRejectedCount: rejectedCount,
-  ownerDeferredCount: deferredCount
+  ownerDeferredCount: deferredCount,
+  historicalDecisionBoundCount
 };
 q.source = {
   ...(q.source ?? {}),
@@ -154,15 +180,18 @@ q.source = {
   decisionCount: ledger.decisionCount
 };
 q.decisionBridge = {
-  version: '0.2-decision-bound-proposal-state',
+  version: '0.2.1-inactive-case-retirement',
   policyFile: F.policy,
   policySha256: shaFile(F.policy),
   boundDecisionCount,
   approvedCount,
   rejectedCount,
   deferredCount,
-  stateAuthority: 'append-only-owner-decision-memory',
+  historicalDecisionBoundCount,
+  stateAuthority: 'append-only-owner-decision-memory-plus-current-learning-lifecycle',
   approvedMeaning: policy.semantics?.approvedMeans ?? null,
+  inactiveCaseState: policy.inactiveCaseState,
+  inactiveCaseMeaning: policy.semantics?.inactiveCaseRetirement ?? null,
   productionMutationAuthorized: false,
   executionAuthority: 'none'
 };
@@ -180,7 +209,7 @@ const lines = [
   '',
   `Status: **${String(q.status ?? 'watch').toUpperCase()}**`,
   '',
-  `${q.summary.activeProposalCount} active proposal(s) from ${q.summary.activeCaseCount} active Learning case(s); ${boundDecisionCount} owner decision(s) reflected; execution remains disabled.`,
+  `${q.summary.activeProposalCount} active proposal(s) from ${q.summary.activeCaseCount} active Learning case(s); ${boundDecisionCount} owner decision(s) reflected; ${historicalDecisionBoundCount} decision-bound item(s) retained as historical resolved-case memory; execution remains disabled.`,
   '',
   '## Priority queue',
   '',
@@ -188,13 +217,13 @@ const lines = [
   '',
   '## Decision boundary',
   '',
-  `Owner-approved proposals: ${approvedCount}. Rejected: ${rejectedCount}. Deferred: ${deferredCount}.`,
+  `Currently owner-approved active proposals: ${approvedCount}. Rejected: ${rejectedCount}. Deferred active cases: ${deferredCount}. Historical decision-bound resolved cases: ${historicalDecisionBoundCount}.`,
   '',
-  'APPROVED means owner-approved for bounded next-stage research/build-candidate work only. It does not authorize production mutation, merge, release, wallet action, signing, transaction, or capital execution.',
+  'APPROVED means owner-approved for bounded next-stage research/build-candidate work only. SUPERSEDED means the source case is no longer active; it does not mean rejected, released, executed, or forgotten.',
   '',
   '## Safety boundary',
   '',
-  'This queue can observe, synthesize, reflect explicit owner decisions, and propose. Automatic approval and execution remain disabled.',
+  'This queue can observe, synthesize, reflect explicit owner decisions, and retire resolved source cases. Automatic approval and execution remain disabled.',
   ''
 ];
 fs.writeFileSync(F.brief, lines.join('\n'));
@@ -205,6 +234,8 @@ console.log('Proposal Decision Bridge applied', {
   approvedCount,
   rejectedCount,
   deferredCount,
+  historicalDecisionBoundCount,
+  activeProposalCount: finalActive.length,
   queueHash: q.integrity.queueHash,
   executionAuthority: 'none'
 });
