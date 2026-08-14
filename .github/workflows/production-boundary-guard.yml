@@ -1,0 +1,55 @@
+name: The Holding Production Boundary Guard
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: production-boundary-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  production-boundary:
+    name: Production boundary
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout trusted guard baseline
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+          path: guard-base
+          fetch-depth: 1
+
+      - name: Checkout candidate without executing candidate code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
+          path: candidate
+          fetch-depth: 1
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Verify guard self-lock from trusted baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          node guard-base/verification/production-boundary-self-lock-v1.mjs candidate guard-base
+
+      - name: Verify production boundary from trusted baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          node guard-base/verification/production-boundary-guard-v1.mjs candidate guard-base

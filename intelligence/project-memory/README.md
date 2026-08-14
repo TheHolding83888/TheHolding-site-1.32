@@ -24,7 +24,8 @@ On the first substantive The Holding request in a new chat/session, the assistan
 4. when the task depends on how the system was built or what earlier work already taught us, read `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`;
 5. when the task concerns founder alignment, The Holding AI, decision style or the future digital-founder model, read `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`;
 6. when the task concerns public dialogue, conversation learning, model safety, financial-advice boundaries or owner teaching through the console, read `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`;
-7. only then the live machine-readable artifacts needed for the task.
+7. when the task touches Cloudflare, Workers, Wrangler, deployment routing, Durable Objects, production permissions, or homepage ownership, read `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md` before proposing changes;
+8. only then the live machine-readable artifacts needed for the task.
 
 Changing production facts always outrank prose memory. If a continuity document conflicts with live generated state, live `main` + fresh production artifacts win.
 
@@ -60,14 +61,17 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 - `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`
 - `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`
 - `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`
+- `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md`
 
-This is the fastest way for a future model/session to recover the project architecture, operating rules, current stage, resume point, durable lessons from earlier company/product/infrastructure work, founder-alignment direction, and the safety rules for learning from real human conversation.
+This is the fastest way for a future model/session to recover the project architecture, operating rules, current stage, resume point, durable lessons from earlier company/product/infrastructure work, founder-alignment direction, conversation-learning safety rules, and production deployment lessons already paid for in live operation.
 
 The historical operating knowledge file is deliberately compact and contains durable lessons only. It must not be used as a substitute for fresh production data and must not be treated as retrospective Decision/Outcome Learning.
 
 The Founder Decision DNA canon is a strategic/evidence rule, not a current runtime layer. A formal machine-readable founder model should only be built after enough genuine owner decision → outcome cycles exist to support stable patterns rather than guesses.
 
 The Conversation Learning canon defines how real public dialogue may become a learning signal without allowing untrusted visitors to directly mutate facts, memory, code, methodology, security policy or capital authority. Owner teaching through the public console is not trusted until a real authenticated owner channel exists.
+
+The production incident postmortem defines the deployment-plane lesson from the 2026-08-14 root-routing incident. Its key rule is that model memory is not a sufficient production control: canonical homepage ownership, auxiliary Worker scope and Durable Object lifecycle must be machine-enforced and smoke-tested against rendered production surfaces.
 
 ## Automation
 
