@@ -42,6 +42,8 @@ Hard boundaries:
 
 The goal is not to imitate the market. The goal is for The Holding to **continuously absorb useful knowledge and improve itself while staying coherent, simple and owner-governed**.
 
+This is currently a strategic/cognitive rule, not a reason to add a new autonomous web-crawling subsystem today. Build that capability only when a real use case justifies it; until then, use the existing research/Proposal/Learning path.
+
 ## Objective that was closed
 
 Two owner-approved P0 Security proposals were taken through a real practical cycle:
