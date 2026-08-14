@@ -7,6 +7,51 @@ This checkpoint supersedes older prose for the browser-security P0 work. Changin
 
 The owner explicitly requires The Holding to be built **layer by layer**, one primary objective at a time, with super-high quality and no architecture/work for its own sake. Close and prove the current capability before expanding. Prefer reuse and simplification. Do not create duplicate sources of truth or orchestration loops. Authority must grow slower than intelligence.
 
+## Communication rule — hard owner preference
+
+All future discussion with the owner should use **very simple, plain language** even when the underlying architecture is advanced.
+
+- Prefer short-to-medium answers over long technical walls of text.
+- Lead with the practical conclusion: what happened, why it matters, and what comes next.
+- Use technical terms only when they are genuinely useful; explain them in ordinary words.
+- Keep enough detail to make decisions confidently, but do not overload the owner with implementation detail unless he asks for it.
+- The system itself may remain highly technical and sophisticated. **Simplify the language, not the thinking, verification, security, or engineering quality.**
+- The goal is that important project decisions and explanations should be understandable to an intelligent non-specialist.
+- This is a durable communication preference for future chats/models working on The Holding.
+
+## External learning and self-improvement canon
+
+The Holding should learn from strong ideas outside the project, but never copy them blindly.
+
+Owner pattern:
+- the owner may bring a technical/business idea, architecture, product, post, research result or observed solution from another project;
+- the AI should extract the useful mechanism, compare it with The Holding, and recommend adoption only if it creates clear value;
+- take the **best principle**, not unnecessary surrounding complexity.
+
+Long-term system direction:
+- proactively research public sources for genuinely useful new ideas, methods and proven patterns;
+- compare them against current The Holding architecture and real gaps;
+- surface only high-value improvements, with source evidence and a clear reason why they matter;
+- learn from accepted/rejected outcomes so future recommendations improve.
+
+Hard boundaries:
+- no code or new layer merely because another project has it;
+- no blind trend-following;
+- no autonomous production merge, methodology mutation, wallet action or capital execution;
+- external ideas enter through the same governed path: evidence → understanding → proposal → owner/Guardian decision → verified implementation when justified.
+
+The goal is not to imitate the market. The goal is for The Holding to **continuously absorb useful knowledge and improve itself while staying coherent, simple and owner-governed**.
+
+This is currently a strategic/cognitive rule, not a reason to add a new autonomous web-crawling subsystem today. Build that capability only when a real use case justifies it; until then, use the existing research/Proposal/Learning path.
+
+## New-chat memory rule
+
+For a new The Holding chat/model, use both memory channels:
+1. ChatGPT project/personal context when available;
+2. live GitHub-owned project memory, starting with `intelligence/project-memory/CURRENT.md`.
+
+GitHub `main` remains the durable canonical source when memories disagree. Fresh generated artifacts outrank prose summaries for changing facts.
+
 ## Objective that was closed
 
 Two owner-approved P0 Security proposals were taken through a real practical cycle:
