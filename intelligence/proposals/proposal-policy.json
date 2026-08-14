@@ -1,0 +1,75 @@
+{
+  "version": "0.1-proposal-policy",
+  "mode": "proposal-only-no-execution",
+  "purpose": "Transform grounded Brain cases plus accumulated decision/outcome learning into a deterministic machine-readable work queue without creating, approving, or executing operational actions.",
+  "authorities": {
+    "facts": "intelligence/brain-intelligence.json",
+    "caseLifecycleAndExperience": "intelligence/learning/learning-context.json",
+    "cognitiveCoherence": "intelligence/cognitive-stack-state.json",
+    "execution": "none"
+  },
+  "states": [
+    "PROPOSED",
+    "APPROVED",
+    "IN_PROGRESS",
+    "VERIFYING",
+    "RELEASE_READY",
+    "RELEASED",
+    "REJECTED",
+    "SUPERSEDED"
+  ],
+  "engineMayCreateStates": [
+    "PROPOSED"
+  ],
+  "engineMayTransitionStates": [
+    "PROPOSED",
+    "SUPERSEDED"
+  ],
+  "humanControlledStates": [
+    "APPROVED",
+    "IN_PROGRESS",
+    "VERIFYING",
+    "RELEASE_READY",
+    "RELEASED",
+    "REJECTED"
+  ],
+  "riskTiers": [
+    "low",
+    "medium",
+    "high",
+    "critical"
+  ],
+  "hardBoundaries": {
+    "noTransactions": true,
+    "noSigning": true,
+    "noWalletAccess": true,
+    "noProductionExecution": true,
+    "noAutomaticCodeChanges": true,
+    "noAutomaticApprovals": true,
+    "noPaidModelApiRequired": true,
+    "humanGateForAnyMutation": true
+  },
+  "priorityRules": {
+    "security": 100,
+    "integrity": 90,
+    "economic": 70,
+    "ui": 50,
+    "other": 40,
+    "riskBonus": {
+      "critical": 40,
+      "high": 30,
+      "medium": 15,
+      "low": 0
+    },
+    "confidenceBonus": {
+      "high": 5,
+      "medium": 2,
+      "low": 0
+    }
+  },
+  "deduplication": "stable proposalKey = sha256(caseKey + recommendationClass + entity + domain + category)",
+  "staleness": {
+    "supersedeWhenSourceCaseDisappears": true,
+    "neverDeleteHistoricalProposal": true
+  }
+}
