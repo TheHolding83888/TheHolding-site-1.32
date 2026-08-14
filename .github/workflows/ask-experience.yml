@@ -1,0 +1,224 @@
+name: Ask The Holding · Experience
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Experience mode
+        required: true
+        default: core
+        type: choice
+        options:
+          - safety
+          - core
+          - mutation
+          - owner-unknown
+          - all
+      seed:
+        description: Optional mutation seed
+        required: false
+        type: string
+  push:
+    branches:
+      - main
+      - agents/ask-evaluation-trust-v0.6.1-20260815
+    paths:
+      - agents/console/app.js
+      - agents/index.html
+      - verification/ask-experience/**
+      - .github/workflows/ask-experience.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - agents/console/app.js
+      - agents/index.html
+      - verification/ask-experience/**
+      - .github/workflows/ask-experience.yml
+  schedule:
+    - cron: '17 5 * * *'
+    - cron: '37 5 1 * *'
+
+permissions:
+  contents: read
+
+jobs:
+  experience:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact tested revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Resolve evidence mode
+        shell: bash
+        env:
+          DISPATCH_MODE: ${{ inputs.mode }}
+          DISPATCH_SEED: ${{ inputs.seed }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "17 5 * * *" ]; then
+            MODE=safety
+          elif [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "37 5 1 * *" ]; then
+            MODE=mutation
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            MODE="${DISPATCH_MODE:-core}"
+          else
+            MODE=core
+          fi
+          if [ -n "${DISPATCH_SEED:-}" ]; then
+            SEED="$DISPATCH_SEED"
+          elif [ "$MODE" = "mutation" ]; then
+            SEED="$(date -u +%Y-%m)-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          else
+            SEED=""
+          fi
+          echo "RUN_MODE=$MODE" >> "$GITHUB_ENV"
+          echo "MUTATION_SEED=$SEED" >> "$GITHUB_ENV"
+          echo "Resolved mode=$MODE seed=${SEED:-none}"
+
+      - name: Locate Chrome and install browser harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+          npm install --no-save --no-package-lock puppeteer-core@24.16.0
+
+      - name: Serve exact tested revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/ask-experience-http.log 2>&1 &
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8080/agents/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/ask-experience-http.log
+          exit 1
+
+      - name: Direct final-output safety guard test
+        if: env.RUN_MODE != 'owner-unknown'
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+        run: node verification/ask-experience/output-guard-test-v0.1.mjs
+
+      - name: Frozen safety corpus
+        if: env.RUN_MODE == 'safety' || env.RUN_MODE == 'all'
+        shell: bash
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-safety
+          ASK_EXPERIENCE_ORIGIN: synthetic-regression
+        run: |
+          set -euo pipefail
+          node verification/ask-experience/runner-v0.1.mjs \
+            verification/ask-experience/corpus-safety-v0.1.json \
+            artifacts/ask-experience-safety.json
+          node verification/ask-experience/evaluator-v0.1.mjs \
+            verification/ask-experience/corpus-safety-v0.1.json \
+            artifacts/ask-experience-safety.json \
+            > artifacts/ask-experience-safety-evaluation.json
+
+      - name: Annotated core regression
+        if: env.RUN_MODE == 'core' || env.RUN_MODE == 'all'
+        shell: bash
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-core
+          ASK_EXPERIENCE_ORIGIN: synthetic-regression
+        run: |
+          set -euo pipefail
+          node verification/ask-experience/runner-v0.1.mjs \
+            verification/ask-experience/corpus-core-v0.1.json \
+            artifacts/ask-experience-core.json
+          node verification/ask-experience/evaluator-v0.1.mjs \
+            verification/ask-experience/corpus-core-v0.1.json \
+            artifacts/ask-experience-core.json \
+            > artifacts/ask-experience-core-evaluation.json
+
+      - name: Seeded mutation generalization
+        if: env.RUN_MODE == 'mutation' || env.RUN_MODE == 'all'
+        shell: bash
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-mutation
+          ASK_EXPERIENCE_ORIGIN: synthetic-mutation
+          ASK_EXPERIENCE_SEED: ${{ env.MUTATION_SEED }}
+          ASK_EXPERIENCE_GRAMMAR_VERSION: 0.1-seeded-surface-grammar
+        run: |
+          set -euo pipefail
+          test -n "$MUTATION_SEED"
+          node verification/ask-experience/generate-mutation-corpus-v0.1.mjs \
+            verification/ask-experience/mutation-intents-v0.1.json \
+            verification/ask-experience/grammar-v0.1.json \
+            "$MUTATION_SEED" \
+            artifacts/ask-experience-mutation-corpus.json
+          node verification/ask-experience/runner-v0.1.mjs \
+            artifacts/ask-experience-mutation-corpus.json \
+            artifacts/ask-experience-mutation.json
+          node verification/ask-experience/evaluator-v0.1.mjs \
+            artifacts/ask-experience-mutation-corpus.json \
+            artifacts/ask-experience-mutation.json \
+            > artifacts/ask-experience-mutation-evaluation.json
+
+      - name: Owner Unknown discovery run
+        if: env.RUN_MODE == 'owner-unknown' || env.RUN_MODE == 'all'
+        shell: bash
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-owner-unknown
+          ASK_EXPERIENCE_ORIGIN: owner-unknown
+        run: |
+          set -euo pipefail
+          node verification/ask-experience/runner-v0.1.mjs \
+            verification/ask-experience/corpus-owner-unknown-v0.1.json \
+            artifacts/ask-experience-owner-unknown.json
+          node - <<'NODE' > artifacts/ask-experience-owner-unknown-summary.json
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('artifacts/ask-experience-owner-unknown.json','utf8'));
+          const rows=r.cases.map(c=>({
+            id:c.id,
+            origin:c.origin,
+            discoveryTarget:c.discoveryTarget,
+            confidence:c.prompts.at(-1)?.answerContract?.confidenceClass||'missing',
+            sourceArtifacts:c.prompts.at(-1)?.answerContract?.sourceArtifacts||[],
+            topic:c.prompts.at(-1)?.answerContract?.topic||null
+          }));
+          const counts={}; for(const x of rows) counts[x.confidence]=(counts[x.confidence]||0)+1;
+          console.log(JSON.stringify({version:'0.1-owner-unknown-summary',origin:'owner-unknown',releaseGateEligible:false,counts,rows},null,2));
+          NODE
+
+      - name: Write run provenance
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          cat > artifacts/ask-experience-provenance.json <<EOF
+          {
+            "version": "0.1-experience-run-provenance",
+            "runId": "${GITHUB_RUN_ID}",
+            "runAttempt": "${GITHUB_RUN_ATTEMPT}",
+            "event": "${GITHUB_EVENT_NAME}",
+            "testedSha": "${GITHUB_SHA}",
+            "mode": "${RUN_MODE:-unknown}",
+            "seed": "${MUTATION_SEED:-}",
+            "originPolicy": "0.1-experience-origin-policy",
+            "crossOriginAggregateScore": false,
+            "generatedStringsDurable": false
+          }
+          EOF
+
+      - name: Upload temporary raw evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ask-experience-${{ env.RUN_MODE }}-${{ github.run_id }}
+          path: artifacts/ask-experience-*.json
+          if-no-files-found: warn
+          retention-days: 30
