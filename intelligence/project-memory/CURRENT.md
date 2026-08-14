@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-14T10:19:37.033Z**
+Canonical source state represented here: **2026-08-14T10:20:27.906Z**
 
 ## Resume order
 
@@ -31,14 +31,14 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Current cognitive stack
 
-- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: c80fb96dadb400cc09acecd66eb5ef53b319c9574727ccca83ae30a3c54fd2fe.
-- Security: **GREEN**; Critical 0 / High 0 / Medium 38.
+- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 72e412132d085eac2e67f37828edbc3cba8fb42ee09e8b0bd03b0b892fc5cb99.
+- Security: **GREEN**; Critical 0 / High 0 / Medium 0.
 - Grounded Brain: **WATCH**.
-- ChatGPT Bridge: **WATCH**; cases 20; evidence 22; noExecution true.
+- ChatGPT Bridge: **WATCH**; cases 18; evidence 20; noExecution true.
 
 ## Learning / Proposal / Builder / Guardian
 
-- Learning: **READY**; active cases 20; remembered cases 21; Brain observations 8; owner decisions 2; settled outcomes 0; lessons 0.
+- Learning: **READY**; active cases 18; remembered cases 21; Brain observations 9; owner decisions 2; settled outcomes 0; lessons 0.
 - Proposal: **WATCH**; active 20; APPROVED 2; PROPOSED 18; SUPERSEDED 1; production execution disabled.
 - Builder: **WATCH**; candidates 2; CANDIDATE 2; productionMutationAuthorizedCount 0.
 - Guardian: **WATCH**; research-only 2; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
