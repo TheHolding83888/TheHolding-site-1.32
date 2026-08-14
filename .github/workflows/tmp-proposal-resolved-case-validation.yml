@@ -1,0 +1,60 @@
+name: "TEMP · Validate Proposal resolved-case retirement"
+
+on:
+  push:
+    branches:
+      - ai/proposal-resolved-case-retirement-v0.2.1-20260814
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+      - name: Validate Proposal v0.2.1 resolved-case lifecycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/proposals/proposal-decision-bridge.mjs
+          node --check intelligence/proposals/independent-proposal-decision-reviewer.mjs
+          node intelligence/proposals/proposal-release-guard.mjs
+          node intelligence/proposals/proposal-engine.mjs
+          node intelligence/proposals/proposal-decision-bridge.mjs
+          node intelligence/proposals/independent-proposal-reviewer.mjs
+          node intelligence/proposals/independent-proposal-decision-reviewer.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const q=JSON.parse(fs.readFileSync('intelligence/proposals/proposal-queue.json','utf8'));
+          const e=JSON.parse(fs.readFileSync('intelligence/proposals/proposal-decision-eval.json','utf8'));
+          if(e.status!=='pass') throw new Error('Decision reviewer did not PASS');
+          if(q.summary?.activeCaseCount!==18) throw new Error(`expected 18 active Learning cases, got ${q.summary?.activeCaseCount}`);
+          if(q.summary?.activeProposalCount!==18) throw new Error(`expected 18 active proposals, got ${q.summary?.activeProposalCount}`);
+          if(q.summary?.ownerApprovedCount!==0) throw new Error(`resolved P0 approvals still active: ${q.summary?.ownerApprovedCount}`);
+          if(q.summary?.historicalDecisionBoundCount!==2) throw new Error(`expected 2 historical decision-bound items, got ${q.summary?.historicalDecisionBoundCount}`);
+          const ids=['PRP-1a96e1a58fdab58a3fb0e21e','PRP-5cc338ec8428a56eee951082'];
+          for(const id of ids){
+            const p=q.proposals.find(x=>x.proposalId===id);
+            if(!p) throw new Error(`missing historical proposal ${id}`);
+            if(p.state!=='SUPERSEDED') throw new Error(`${id} not retired: ${p.state}`);
+            if(p.decisionBinding?.sourceCaseActive!==false) throw new Error(`${id} sourceCaseActive not false`);
+            if(p.decisionBinding?.exactDecisionMemory!==true || p.decisionBinding?.authority!=='human-owner') throw new Error(`${id} lost owner Decision Memory`);
+            if(p.decisionBinding?.executionAuthority!=='none' || p.decisionBinding?.productionMutationAuthorized!==false) throw new Error(`${id} authority escaped`);
+          }
+          console.log('Proposal resolved-case retirement pre-merge PASS',{
+            activeCases:q.summary.activeCaseCount,
+            activeProposals:q.summary.activeProposalCount,
+            historicalDecisionBound:q.summary.historicalDecisionBoundCount,
+            activeApproved:q.summary.ownerApprovedCount,
+            p0:q.summary.p0Count,
+            execution:q.decisionBridge.executionAuthority
+          });
+          NODE
