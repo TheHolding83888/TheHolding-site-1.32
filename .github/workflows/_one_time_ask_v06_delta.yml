@@ -1,0 +1,44 @@
+name: One-time Ask v0.6 Run 002 Delta
+
+on:
+  push:
+    branches:
+      - agents/ask-trust-intent-v0.6-20260814
+    paths:
+      - .github/workflows/_one_time_ask_v06_delta.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  delta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: agents/ask-trust-intent-v0.6-20260814
+          fetch-depth: 0
+      - name: Apply Run 002 learning delta
+        run: python3 verification/_one_time_ask_v06_delta.py
+      - name: Validate delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check agents/console/app.js
+          git diff --check
+          node verification/production-boundary-guard-v1.mjs
+          git diff -- agents/console/app.js | grep -q 'compareFollowupAnswer'
+          git diff -- agents/console/app.js | grep -q 'protocolCompaniesAnswer'
+      - name: Publish delta and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'The Holding Experience Integrator'
+          git config user.email 'experience-integrator@theholding.ai'
+          git add agents/console/app.js
+          git rm .github/workflows/_one_time_ask_v06_delta.yml verification/_one_time_ask_v06_delta.py
+          git commit -m 'agents: absorb Ask experience Run 002 delta'
+          git push origin HEAD:agents/ask-trust-intent-v0.6-20260814
