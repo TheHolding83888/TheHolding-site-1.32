@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-14T16:17:37.946Z",
+  "generatedAt": "2026-08-14T17:13:17.675Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 1,
+    "medium": 2,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 212,
-    "bytesScanned": 5822823,
+    "filesScanned": 213,
+    "bytesScanned": 5844147,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,7 +55,22 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "b316100700b1f28bf0bfcf45c392bf05c9934ca48d0d15fe9ad1a439b02971c1",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-guardian-state.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-guardian-state.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "a052aa32ccef99dcd2fca09d1d1aa0a5ddfd39806b58b068da112445e1ec57ab",
+          "currentSha256": "12b24c0609d70c2ae0ab387772ccda17ed6a9ec8ffa50a46686b0bb559913b97"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -82,6 +97,20 @@
       "evidence": null
     },
     {
+      "id": "b316100700b1f28bf0bfcf45c392bf05c9934ca48d0d15fe9ad1a439b02971c1",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-guardian-state.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-guardian-state.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "a052aa32ccef99dcd2fca09d1d1aa0a5ddfd39806b58b068da112445e1ec57ab",
+        "currentSha256": "12b24c0609d70c2ae0ab387772ccda17ed6a9ec8ffa50a46686b0bb559913b97"
+      }
+    },
+    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -105,12 +134,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "0a2500df47ead07dde57eebe441e9d86db791e49cab9423589d4a636782f8be1",
+    "snapshotHash": "9c8670c37bef7690d05950e8abc1fe34f5c62de31d6cb252b62a516797b56648",
     "securityVault": {
-      "runCount": 161,
+      "runCount": 162,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T16-17-37-946Z-0a2500df47.json",
-      "latestRecordHash": "4d60c53d8e340b9fbe03eeafbf2efe514a6a36f0a8ccbef5877430025ddade3e",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T17-13-17-675Z-9c8670c37b.json",
+      "latestRecordHash": "07b2711175c404e55455da0af141efae7d21d5f28399fa167b5acac51bb2b29f",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
