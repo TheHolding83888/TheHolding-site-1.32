@@ -196,6 +196,24 @@ const activeBrainKeys = new Set((brain?.reasoningCases ?? []).map(caseKey));
 const activeLifecycleKeys = new Set((lifecycle?.records ?? []).filter((r) => r.status === 'active').map((r) => r.caseKey));
 check('exactActiveCaseCoverage', activeBrainKeys.size === activeLifecycleKeys.size && [...activeBrainKeys].every((k) => activeLifecycleKeys.has(k)), 'Active Brain cases and lifecycle records do not match exactly');
 check('contextActiveCaseCoverage', Array.isArray(context?.activeCases) && context.activeCases.length === activeBrainKeys.size && context.activeCases.every((x) => activeBrainKeys.has(x.caseKey)), 'Learning context active-case coverage mismatch');
+const eligibilityCfg = policy?.experienceEligibility ?? {};
+const decisionClassSet = new Set(eligibilityCfg.decisionWorthyRecommendationClasses ?? []);
+const hygieneClassSet = new Set(eligibilityCfg.dataHygieneRecommendationClasses ?? []);
+for (const c of context?.activeCases ?? []) {
+  const expectedEligibility = c.domain === 'security' && (eligibilityCfg.securitySeveritiesAlwaysDecisionWorthy ?? []).includes(String(c.riskTier === 'critical' ? 'critical' : c.riskTier === 'high' ? 'high' : '').toLowerCase())
+    ? 'decision-worthy'
+    : decisionClassSet.has(c.recommendationClass)
+      ? 'decision-worthy'
+      : hygieneClassSet.has(c.recommendationClass)
+        ? 'data-hygiene'
+        : null;
+  check(`experienceEligibility:${c.caseKey}`, expectedEligibility !== null && c.experienceEligibility === expectedEligibility, `Learning case eligibility mismatch: ${c.caseKey}`);
+}
+for (const d of ledger.decisions ?? []) {
+  const sc = d.sourceCase ?? {};
+  const eligible = (sc.domain === 'security' && (eligibilityCfg.securitySeveritiesAlwaysDecisionWorthy ?? []).includes(String(sc.severity ?? '').toLowerCase())) || decisionClassSet.has(sc.recommendationClass);
+  check(`decisionEligibility:${d.decisionId}`, eligible, `Decision ${d.decisionId} is bound to data-hygiene and must not enter calibration`);
+}
 
 const observations = Array.isArray(lifecycle?.observations) ? lifecycle.observations : [];
 check('brainObservationJournalPresent', observations.length >= 1 && lifecycle?.observationCount === observations.length, 'Brain observation journal missing or count mismatch');

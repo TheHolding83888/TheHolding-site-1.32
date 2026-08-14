@@ -255,6 +255,13 @@ const sourceCase = (brain.reasoningCases ?? []).find((x) => x.id === caseId);
 if (!sourceCase) fail(`Current Grounded Brain case not found: ${caseId}`);
 if (sourceCase.actionMode !== 'proposal-only') fail('Source Brain case is not proposal-only');
 if (!Array.isArray(sourceCase.evidence) || sourceCase.evidence.length === 0) fail('Source Brain case has no evidence');
+const eligibility = policy.experienceEligibility ?? {};
+const decisionWorthy =
+  (sourceCase.domain === 'security' && (eligibility.securitySeveritiesAlwaysDecisionWorthy ?? []).includes(String(sourceCase.severity ?? '').toLowerCase())) ||
+  (eligibility.decisionWorthyRecommendationClasses ?? []).includes(sourceCase.recommendationClass);
+if (!decisionWorthy) {
+  fail(`Brain case ${caseId} is observational/data-hygiene, not decision-worthy; it may remain in lifecycle memory but cannot enter owner Decision Learning or calibration`);
+}
 
 const recordedAt = new Date().toISOString();
 const reviewAt = reviewDays === null ? null : new Date(Date.parse(recordedAt) + reviewDays * 86_400_000).toISOString();

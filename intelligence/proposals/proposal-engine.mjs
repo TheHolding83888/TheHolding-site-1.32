@@ -47,10 +47,14 @@ if (stack.chain?.groundedBrain?.sha256 && stack.chain.groundedBrain.sha256 !== s
   throw new Error('Brain bytes do not match Cognitive Stack binding');
 }
 
-const activeCases = Array.isArray(learning.activeCases) ? learning.activeCases : [];
-if (Number.isInteger(learning.summary?.activeCaseCount) && learning.summary.activeCaseCount !== activeCases.length) {
-  throw new Error(`Learning activeCaseCount mismatch: summary=${learning.summary.activeCaseCount} array=${activeCases.length}`);
+const observedActiveCases = Array.isArray(learning.activeCases) ? learning.activeCases : [];
+if (Number.isInteger(learning.summary?.activeCaseCount) && learning.summary.activeCaseCount !== observedActiveCases.length) {
+  throw new Error(`Learning activeCaseCount mismatch: summary=${learning.summary.activeCaseCount} array=${observedActiveCases.length}`);
 }
+for (const c of observedActiveCases) {
+  if (!['decision-worthy','data-hygiene'].includes(c.experienceEligibility)) throw new Error(`Learning case missing deterministic experienceEligibility: ${c.caseKey}`);
+}
+const activeCases = observedActiveCases.filter(c => c.experienceEligibility === 'decision-worthy');
 
 let previous = null;
 if (fs.existsSync(FILES.queue)) {
@@ -165,10 +169,10 @@ const active = proposals.filter(p => !inactiveStates.has(p.state));
 
 const core = {
   version: '0.1-proposal-work-queue',
-  engineVersion: '0.1.1-deterministic-proposal-engine',
+  engineVersion: '0.1.2-decision-eligible-proposal-engine',
   generatedAt: now,
   status: active.some(x => x.riskTier === 'critical') ? 'blocked' : active.length ? 'watch' : 'ready',
-  headline: `${active.length} active proposal(s) synthesized from ${activeCases.length} active Learning case(s); execution remains disabled.`,
+  headline: `${active.length} active proposal(s) synthesized from ${activeCases.length} decision-worthy case(s) out of ${observedActiveCases.length} observed active Learning case(s); execution remains disabled.`,
   source: {
     brainFile: FILES.brain,
     brainSha256: shaFile(FILES.brain),
@@ -183,6 +187,8 @@ const core = {
   },
   summary: {
     activeCaseCount: activeCases.length,
+    observedActiveCaseCount: observedActiveCases.length,
+    dataHygieneCaseCount: observedActiveCases.length - activeCases.length,
     totalProposalCount: proposals.length,
     activeProposalCount: active.length,
     stateCounts,

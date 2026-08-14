@@ -31,7 +31,7 @@ const learning = read(F.learning);
 const ledger = read(F.ledger);
 
 if (q.version !== '0.1-proposal-work-queue') fail(`Unexpected Proposal queue version: ${q.version}`);
-if (q.engineVersion !== '0.1.1-deterministic-proposal-engine') fail(`Unexpected Proposal engine version: ${q.engineVersion}`);
+if (q.engineVersion !== '0.1.2-decision-eligible-proposal-engine') fail(`Unexpected Proposal engine version: ${q.engineVersion}`);
 if (policy.version !== '0.2.1-proposal-decision-policy') fail(`Unexpected Proposal Decision policy: ${policy.version}`);
 if (policy.mode !== 'decision-memory-reflection-no-execution') fail('Proposal Decision policy mode mismatch');
 if (policy.inactiveCaseState !== 'SUPERSEDED') fail('Inactive Proposal retirement policy changed');
@@ -68,7 +68,7 @@ for (const d of ledger.decisions) {
   effectiveByCase.set(d.caseKey, d);
 }
 
-const learningByCase = new Map((learning.activeCases ?? []).map(c => [c.caseKey, c]));
+const learningByCase = new Map((learning.activeCases ?? []).filter(c => c.experienceEligibility === 'decision-worthy').map(c => [c.caseKey, c]));
 const mapping = policy.dispositionToProposalState ?? {};
 const states = ['PROPOSED','APPROVED','IN_PROGRESS','VERIFYING','RELEASE_READY','RELEASED','REJECTED','SUPERSEDED'];
 let boundDecisionCount = 0;
