@@ -69,17 +69,29 @@ for (const x of q.proposals ?? []) {
   if (!policy.riskTiers.includes(x.riskTier)) errors.push(`${x.proposalId}: invalid risk ${x.riskTier}`);
   if (!x.source?.caseKey) errors.push(`${x.proposalId}: no source caseKey`);
   if (!x.source?.cognitiveChainHash) errors.push(`${x.proposalId}: no cognitiveChainHash`);
-  if (x.source?.cognitiveChainHash !== q.source?.cognitiveChainHash) errors.push(`${x.proposalId}: proposal chain mismatch`);
+
+  const sourceIsActive = activeCaseKeys.has(x.source?.caseKey);
+  // Current Proposal states must bind to the current Cognitive chain. A
+  // SUPERSEDED proposal is deliberately retained as immutable historical memory,
+  // so its source chain is expected to remain the chain on which it was created.
+  if (x.state !== 'SUPERSEDED' && x.source?.cognitiveChainHash !== q.source?.cognitiveChainHash) {
+    errors.push(`${x.proposalId}: current proposal chain mismatch`);
+  }
+  if (x.state === 'SUPERSEDED') {
+    if (sourceIsActive) errors.push(`${x.proposalId}: SUPERSEDED proposal still has an active source case`);
+    if (!x.supersededReason) errors.push(`${x.proposalId}: SUPERSEDED proposal missing reason`);
+  }
+
   if (x.boundaries?.automaticExecution !== false) errors.push(`${x.proposalId}: executable proposal`);
   if (x.boundaries?.automaticApproval !== false) errors.push(`${x.proposalId}: auto-approvable proposal`);
   if (x.boundaries?.humanApprovalRequired !== true) errors.push(`${x.proposalId}: human approval not required`);
-  if (x.state === 'PROPOSED' && !activeCaseKeys.has(x.source?.caseKey)) errors.push(`${x.proposalId}: PROPOSED item has no active source case`);
+  if (x.state === 'PROPOSED' && !sourceIsActive) errors.push(`${x.proposalId}: PROPOSED item has no active source case`);
   if (!Array.isArray(x.verificationRequired) || x.verificationRequired.length < 3) warnings.push(`${x.proposalId}: weak verification plan`);
 }
 
 const report = {
   version: '0.1.1-proposal-eval',
-  reviewerVersion: '0.1.1-independent-deterministic-proposal-reviewer',
+  reviewerVersion: '0.1.2-historical-state-aware-proposal-reviewer',
   generatedAt: new Date().toISOString(),
   status: errors.length ? 'fail' : 'pass',
   queueSha256: shaFile(F.queue),
