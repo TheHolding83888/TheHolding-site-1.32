@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-14T10:30:25.920Z",
+  "generatedAt": "2026-08-14T10:35:46.001Z",
   "status": "green",
   "headline": "No high or critical security findings detected in this scan.",
   "severityCounts": {
     "critical": 0,
     "high": 0,
-    "medium": 0,
+    "medium": 1,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 187,
-    "bytesScanned": 5569458,
+    "bytesScanned": 5571465,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Tue, 11 Aug 2026 03:06:27 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:20:22 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,10 +55,40 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "6f3f156f0d94b0d0adaa656290451a324c3a14c35da0c2972f8f1e80e2277a8c",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-project-memory-bootstrap.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-project-memory-bootstrap.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "19a199d226c4a3e4cbddee6d3490b32a6775b8d945518a3ffe7cb78d3b9ac740",
+          "currentSha256": "11f306600302fa5b8a7e10ad47989907d8ec32e86d4821261c9af9d1310ab864"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
-  "currentFindings": [],
+  "currentFindings": [
+    {
+      "id": "6f3f156f0d94b0d0adaa656290451a324c3a14c35da0c2972f8f1e80e2277a8c",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-project-memory-bootstrap.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-project-memory-bootstrap.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "19a199d226c4a3e4cbddee6d3490b32a6775b8d945518a3ffe7cb78d3b9ac740",
+        "currentSha256": "11f306600302fa5b8a7e10ad47989907d8ec32e86d4821261c9af9d1310ab864"
+      }
+    }
+  ],
   "protectNext": [
     {
       "priority": "roadmap",
@@ -67,12 +97,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "f2e9b3d2e5f3f9504fc103d04a8617f59384d1211e110682fe1f9e6610592c27",
+    "snapshotHash": "8176b09fd8fa96f12d68c2830ae00dd16e8d84c72b010236d14eab02ea9eb10e",
     "securityVault": {
-      "runCount": 137,
+      "runCount": 138,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T10-30-25-920Z-f2e9b3d2e5.json",
-      "latestRecordHash": "5368ad4cdedfb8afadeaeb907c96b39a31cc6f3560a96b62e61cb75d3ed5f54a",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T10-35-46-001Z-8176b09fd8.json",
+      "latestRecordHash": "9a51f916bde6772d9232f709fad4b6b46440e6404edd097e90a7879cf694111d",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }

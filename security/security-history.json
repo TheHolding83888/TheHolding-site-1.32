@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-14T10:30:25.920Z",
+  "lastUpdatedAt": "2026-08-14T10:35:46.001Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 137,
-    "vaultRunCount": 137,
+    "runCount": 138,
+    "vaultRunCount": 138,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -1656,6 +1656,18 @@
       "criticalCount": 0,
       "highCount": 0,
       "newFindingCount": 0,
+      "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-14T10:35:46.001Z",
+      "status": "green",
+      "snapshotHash": "8176b09fd8fa96f12d68c2830ae00dd16e8d84c72b010236d14eab02ea9eb10e",
+      "recordPath": "security/security-vault/2026/08/2026-08-14T10-35-46-001Z-8176b09fd8.json",
+      "recordHash": "9a51f916bde6772d9232f709fad4b6b46440e6404edd097e90a7879cf694111d",
+      "findingCount": 1,
+      "criticalCount": 0,
+      "highCount": 0,
+      "newFindingCount": 1,
       "resolvedFindingCount": 0
     }
   ],
@@ -5905,6 +5917,17 @@
       "summary": "Resolved: External script without Subresource Integrity: https://cloud.umami.is/script.js",
       "file": "substantia/index.html",
       "entity": "https://cloud.umami.is/script.js"
+    },
+    {
+      "id": "8c2ba73f36cb55c04d7a1d2d534136e5a2154cd83bd8568da03af319db077e7c",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-14T10:35:46.001Z",
+      "findingId": "6f3f156f0d94b0d0adaa656290451a324c3a14c35da0c2972f8f1e80e2277a8c",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-project-memory-bootstrap.yml.",
+      "file": ".github/workflows/update-project-memory-bootstrap.yml",
+      "entity": null
     }
   ]
 }
