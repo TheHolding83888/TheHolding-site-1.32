@@ -1,0 +1,226 @@
+{
+  "version": "0.1-builder-candidate-queue",
+  "engineVersion": "0.1-bounded-builder-candidate-engine",
+  "generatedAt": "2026-08-14T08:25:00.172Z",
+  "status": "watch",
+  "headline": "2 bounded Builder candidate(s) derived from 2 exact owner-approved Proposal item(s); repository mutation remains disabled.",
+  "source": {
+    "proposalQueueFile": "intelligence/proposals/proposal-queue.json",
+    "proposalQueueSha256": "35cfa116664dea52d7d8a62c31000da476c84b29aae0ebe4f3f656a7b0b7aba1",
+    "proposalQueueHash": "1275dade4f05b48bd3552b18a336bb35f56f37dad5d0f26d38aac4fefdc154b5",
+    "proposalDecisionEvalFile": "intelligence/proposals/proposal-decision-eval.json",
+    "proposalDecisionEvalSha256": "b320746edecfc1b7f491f253969307c6ea4d115239ff606e4f32feb849515260",
+    "learningContextFile": "intelligence/learning-state/learning-context.json",
+    "learningContextSha256": "b1ba711c38f02d0154af3e1e2d124fa1bb0adaca596259572d5fd0e4e0a83110",
+    "decisionLedgerFile": "intelligence/learning/decision-ledger.json",
+    "decisionLedgerSha256": "b36eaf0a745c06f54db2ec5e221f39b66766fc95465cd68fe2f62a3b088460fa",
+    "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d",
+    "cognitiveChainHash": "311d29ff88691189a39a62d33dc7857d9f52b6544cf27f6bdb91806fa53f3bb2",
+    "builderPolicySha256": "b1d920328bcab6ba1694d7c5029441921a36a6407ee08866fea359a26edf8386"
+  },
+  "summary": {
+    "approvedProposalCount": 2,
+    "candidateCount": 2,
+    "stateCounts": {
+      "CANDIDATE": 2,
+      "VERIFYING": 0,
+      "RELEASE_READY": 0,
+      "SUPERSEDED": 0
+    },
+    "productionMutationAuthorizedCount": 0
+  },
+  "candidates": [
+    {
+      "candidateId": "BLD-8e81b432353f43f75df4f44f",
+      "candidateKey": "8e81b432353f43f75df4f44f",
+      "state": "CANDIDATE",
+      "candidateClass": "third-party-trust-research",
+      "proposal": {
+        "proposalId": "PRP-1a96e1a58fdab58a3fb0e21e",
+        "proposalKey": "1a96e1a58fdab58a3fb0e21e",
+        "rankClass": "P0",
+        "domain": "security",
+        "category": "external-script-no-sri",
+        "entity": "7 current findings",
+        "riskTier": "medium",
+        "queueHash": "1275dade4f05b48bd3552b18a336bb35f56f37dad5d0f26d38aac4fefdc154b5"
+      },
+      "decision": {
+        "decisionId": "DEC-062ad9c0ce2e0ebbc95e",
+        "decisionHash": "93e5a89140639c7a7671ec15caae01840d03106106f61c768f31c63e41fbd253",
+        "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d",
+        "disposition": "accept",
+        "authority": "human-owner"
+      },
+      "objective": "Review third-party script trust and integrity posture for 7 current findings; propose bounded hardening only where compatibility is proven.",
+      "expectedOutcome": "Classify the seven current third-party script findings and produce evidence-bound hardening recommendations only where compatibility is proven.",
+      "researchSteps": [
+        "Inventory the exact external script URLs, loading surfaces, and whether each script is essential.",
+        "Determine whether each resource is immutable enough for SRI; if not, compare self-hosting, removal, or a narrower CSP/trust boundary.",
+        "Preserve existing analytics/site behavior until a replacement is independently verified.",
+        "Return evidence and a minimal hardening candidate; do not edit production in Builder v0.1."
+      ],
+      "allowedScope": [
+        "evidence collection from public/canonical sources",
+        "classification and threat/economic reasoning",
+        "candidate design and verification planning",
+        "reversible patch specification for a later Guardian-gated phase"
+      ],
+      "forbiddenScope": [
+        "editing production repository files",
+        "creating or merging production pull requests",
+        "changing policy or methodology automatically",
+        "wallet access, signing, transaction, or capital execution"
+      ],
+      "affectedFiles": [],
+      "evidenceRequired": [
+        "exact Proposal queue byte/hash binding",
+        "exact owner Decision Memory binding",
+        "independent Builder review",
+        "explicit verification plan",
+        "reversibility statement",
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation",
+        "exact script URL and page/surface",
+        "current provider/version behavior",
+        "SRI immutability feasibility",
+        "compatibility/regression risk"
+      ],
+      "verificationPlan": [
+        "Independent Builder reviewer PASS",
+        "Security Sentinel appropriate to the affected surface before any future patch release",
+        "Repository Integrity Sentinel PASS for any future code candidate",
+        "UI Regression Sentinel PASS when UI behavior can be affected",
+        "explicit human/Guardian release gate before production mutation"
+      ],
+      "reversibility": "Builder v0.1 makes no production mutation. The candidate can be discarded without changing runtime state.",
+      "boundaries": {
+        "candidateOnly": true,
+        "repositoryCodeMutationAllowed": false,
+        "branchCreationAllowed": false,
+        "pullRequestCreationAllowed": false,
+        "automaticMergeAllowed": false,
+        "automaticReleaseAllowed": false,
+        "productionMutationAuthorized": false,
+        "humanReleaseApprovalRequired": true,
+        "walletActionAllowed": false,
+        "capitalExecutionAllowed": false,
+        "executionAuthority": "none"
+      },
+      "source": {
+        "proposalQueueFile": "intelligence/proposals/proposal-queue.json",
+        "proposalQueueSha256": "35cfa116664dea52d7d8a62c31000da476c84b29aae0ebe4f3f656a7b0b7aba1",
+        "proposalQueueHash": "1275dade4f05b48bd3552b18a336bb35f56f37dad5d0f26d38aac4fefdc154b5",
+        "proposalDecisionEvalSha256": "b320746edecfc1b7f491f253969307c6ea4d115239ff606e4f32feb849515260",
+        "cognitiveChainHash": "311d29ff88691189a39a62d33dc7857d9f52b6544cf27f6bdb91806fa53f3bb2",
+        "learningContextSha256": "b1ba711c38f02d0154af3e1e2d124fa1bb0adaca596259572d5fd0e4e0a83110",
+        "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d"
+      }
+    },
+    {
+      "candidateId": "BLD-70a67965f295035cdbfc57ef",
+      "candidateKey": "70a67965f295035cdbfc57ef",
+      "state": "CANDIDATE",
+      "candidateClass": "dom-provenance-triage",
+      "proposal": {
+        "proposalId": "PRP-5cc338ec8428a56eee951082",
+        "proposalKey": "5cc338ec8428a56eee951082",
+        "rankClass": "P0",
+        "domain": "security",
+        "category": "dom-innerhtml",
+        "entity": "31 current findings",
+        "riskTier": "medium",
+        "queueHash": "1275dade4f05b48bd3552b18a336bb35f56f37dad5d0f26d38aac4fefdc154b5"
+      },
+      "decision": {
+        "decisionId": "DEC-9e7fdbf2f8431a42194b",
+        "decisionHash": "2d84ed8dcf46da1853b0560b62b66d9345cc399d5a54c5dac353ff524241989d",
+        "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d",
+        "disposition": "accept",
+        "authority": "human-owner"
+      },
+      "objective": "Review actual data provenance for 31 current findings; classify sinks as trusted, sanitized, or unsafe before any code change.",
+      "expectedOutcome": "Classify the current innerHTML sinks as trusted, sanitized, or unsafe and identify only evidence-bound hardening candidates that preserve UI behavior.",
+      "researchSteps": [
+        "Enumerate the current sink set and group by page/component.",
+        "Trace every assigned value to its source and classify provenance as trusted-static, trusted-generated, sanitized, or untrusted/external.",
+        "Mark only sinks reachable by untrusted/dynamic data as hardening candidates.",
+        "Prefer textContent or safe DOM construction only where semantically equivalent; preserve accepted UI behavior."
+      ],
+      "allowedScope": [
+        "evidence collection from public/canonical sources",
+        "classification and threat/economic reasoning",
+        "candidate design and verification planning",
+        "reversible patch specification for a later Guardian-gated phase"
+      ],
+      "forbiddenScope": [
+        "editing production repository files",
+        "creating or merging production pull requests",
+        "changing policy or methodology automatically",
+        "wallet access, signing, transaction, or capital execution"
+      ],
+      "affectedFiles": [],
+      "evidenceRequired": [
+        "exact Proposal queue byte/hash binding",
+        "exact owner Decision Memory binding",
+        "independent Builder review",
+        "explicit verification plan",
+        "reversibility statement",
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation",
+        "sink path and line/surface",
+        "data-source provenance",
+        "sanitization/encoding evidence",
+        "UI regression implications"
+      ],
+      "verificationPlan": [
+        "Independent Builder reviewer PASS",
+        "Security Sentinel appropriate to the affected surface before any future patch release",
+        "Repository Integrity Sentinel PASS for any future code candidate",
+        "UI Regression Sentinel PASS when UI behavior can be affected",
+        "explicit human/Guardian release gate before production mutation"
+      ],
+      "reversibility": "Builder v0.1 makes no production mutation. The candidate can be discarded without changing runtime state.",
+      "boundaries": {
+        "candidateOnly": true,
+        "repositoryCodeMutationAllowed": false,
+        "branchCreationAllowed": false,
+        "pullRequestCreationAllowed": false,
+        "automaticMergeAllowed": false,
+        "automaticReleaseAllowed": false,
+        "productionMutationAuthorized": false,
+        "humanReleaseApprovalRequired": true,
+        "walletActionAllowed": false,
+        "capitalExecutionAllowed": false,
+        "executionAuthority": "none"
+      },
+      "source": {
+        "proposalQueueFile": "intelligence/proposals/proposal-queue.json",
+        "proposalQueueSha256": "35cfa116664dea52d7d8a62c31000da476c84b29aae0ebe4f3f656a7b0b7aba1",
+        "proposalQueueHash": "1275dade4f05b48bd3552b18a336bb35f56f37dad5d0f26d38aac4fefdc154b5",
+        "proposalDecisionEvalSha256": "b320746edecfc1b7f491f253969307c6ea4d115239ff606e4f32feb849515260",
+        "cognitiveChainHash": "311d29ff88691189a39a62d33dc7857d9f52b6544cf27f6bdb91806fa53f3bb2",
+        "learningContextSha256": "b1ba711c38f02d0154af3e1e2d124fa1bb0adaca596259572d5fd0e4e0a83110",
+        "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d"
+      }
+    }
+  ],
+  "constraints": {
+    "noRepositoryCodeMutation": true,
+    "noBranchCreation": true,
+    "noPullRequestCreation": true,
+    "noAutomaticMerge": true,
+    "noAutomaticRelease": true,
+    "noWalletAccess": true,
+    "noCapitalExecution": true,
+    "humanReleaseApprovalRequired": true,
+    "executionAuthority": "none"
+  },
+  "integrity": {
+    "queueHash": "90d058daf9dae2de77e9daa3efa48af800ab105e92cb789ced2a02772f31aad3"
+  }
+}
