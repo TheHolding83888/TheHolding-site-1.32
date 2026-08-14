@@ -27,7 +27,6 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-      HEAD_REF: ${{ github.event.pull_request.head.ref }}
       WORKERS_SUBDOMAIN: allthewoooorld
     steps:
       - name: Wait for successful Cloudflare preview build
@@ -50,13 +49,22 @@ jobs:
           echo 'Timed out waiting for Cloudflare preview build.' >&2
           exit 1
 
-      - name: Verify Cloudflare branch preview surface
+      - name: Resolve and verify exact Cloudflare version preview surface
         shell: bash
         run: |
           set -euo pipefail
-          BRANCH_SLUG="$(printf '%s' "$HEAD_REF" | tr '[:upper:]' '[:lower:]' | sed -E 's#[/_]+#-#g; s#[^a-z0-9.-]+#-#g')"
-          PREVIEW_URL="https://${BRANCH_SLUG}-theholdingprotocol.${WORKERS_SUBDOMAIN}.workers.dev"
-          echo "Preview URL: $PREVIEW_URL"
+          SUMMARY="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$HEAD_SHA/check-runs" \
+            --jq '.check_runs[] | select(.name == "Workers Builds: theholdingprotocol" and .conclusion == "success") | .output.summary' | tail -n1)"
+          PREVIEW_URL="$(printf '%s\n' "$SUMMARY" | sed -nE 's#^Preview URL: (https://[^ ]+)$#\1#p' | tail -n1)"
+          if [[ -z "$PREVIEW_URL" ]]; then
+            VERSION_ID="$(printf '%s\n' "$SUMMARY" | sed -nE 's/^Version ID: ([0-9a-f-]{36})$/\1/p' | tail -n1)"
+            if [[ -z "$VERSION_ID" ]]; then
+              echo 'Cloudflare GREEN check did not publish a Preview URL or Version ID.' >&2
+              exit 1
+            fi
+            PREVIEW_URL="https://${VERSION_ID:0:8}-theholdingprotocol.${WORKERS_SUBDOMAIN}.workers.dev"
+          fi
+          echo "Exact preview URL: $PREVIEW_URL"
 
           for attempt in $(seq 1 18); do
             if curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 "$PREVIEW_URL/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/home.html \
@@ -65,14 +73,14 @@ jobs:
               && ! grep -Eqi 'Ask The Holding\.|KNOWLEDGE ROUTER|Live knowledge console' /tmp/home.html \
               && curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 "$PREVIEW_URL/agents/console/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/console.html \
               && grep -Fqi 'Ask The Holding.' /tmp/console.html; then
-                echo 'Cloudflare preview surface contract is GREEN.'
+                echo 'Cloudflare version preview surface contract is GREEN.'
                 exit 0
             fi
-            echo "Preview surface not ready or invalid (attempt $attempt/18)."
+            echo "Version preview surface not ready or invalid (attempt $attempt/18)."
             sleep 5
           done
 
-          echo 'Cloudflare preview did not satisfy canonical homepage + isolated Console contract.' >&2
+          echo 'Cloudflare version preview did not satisfy canonical homepage + isolated Console contract.' >&2
           exit 1
 
   production-homepage-smoke:
