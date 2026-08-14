@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - 'intelligence/operator/command.json'
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -18,7 +17,7 @@ concurrency:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 12
     steps:
       - name: Checkout canonical repository state
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -30,20 +29,19 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
-          const commandPath = 'intelligence/operator/command.json';
-          const cmd = JSON.parse(fs.readFileSync(commandPath, 'utf8'));
+          const cmd = JSON.parse(fs.readFileSync('intelligence/operator/command.json', 'utf8'));
           const out = process.env.GITHUB_OUTPUT;
-
-          const fail = (message) => {
-            console.error(message);
-            process.exit(1);
+          const fail = (m) => { console.error(m); process.exit(1); };
+          const clean = (v, label, { required=false, min=0, max=2000 }={}) => {
+            const s = String(v ?? '').trim();
+            if (required && !s) fail(`${label} is required`);
+            if (s.length < min || s.length > max) fail(`${label} length is outside ${min}..${max}`);
+            return s;
           };
-          const clean = (value, label, { required = false, min = 0, max = 2000 } = {}) => {
-            const text = String(value ?? '').trim();
-            if (required && !text) fail(`${label} is required`);
-            if (text.length < min) fail(`${label} must be at least ${min} characters`);
-            if (text.length > max) fail(`${label} exceeds ${max} characters`);
-            return text;
+          const integer = (v, label, min, max) => {
+            const n = Number(v);
+            if (!Number.isInteger(n) || n < min || n > max) fail(`${label} must be an integer in ${min}..${max}`);
+            return n;
           };
           const secretLike = (text) => [
             /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/i,
@@ -52,172 +50,222 @@ jobs:
             /\bsk-ant-[A-Za-z0-9_-]{20,}\b/,
             /\bAKIA[0-9A-Z]{16}\b/,
             /\b(?:seed phrase|mnemonic|private key)\s*[:=]/i,
-          ].some((r) => r.test(text));
-          const integer = (value, label, min, max) => {
-            const n = Number(value);
-            if (!Number.isInteger(n) || n < min || n > max) fail(`${label} must be an integer in ${min}..${max}`);
-            return n;
-          };
-          const output = (key, value) => fs.appendFileSync(out, `${key}=${String(value).replace(/\n/g, ' ')}\n`);
+          ].some(r => r.test(text));
+          const output = (k, v) => fs.appendFileSync(out, `${k}=${String(v).replace(/\n/g, ' ')}\n`);
 
-          if (!['0.1-operator-command', '0.2-operator-command', '0.3-operator-command'].includes(cmd.version)) fail('Unexpected operator command version');
-          if (cmd.requestedBy !== 'owner') fail('Owner request marker is required');
-          if (cmd.approval !== 'explicit') fail('Explicit approval marker is required');
+          if (!['0.1-operator-command','0.2-operator-command','0.3-operator-command','0.4-operator-command'].includes(cmd.version)) fail('Unexpected operator command version');
+          if (cmd.requestedBy !== 'owner' || cmd.approval !== 'explicit') fail('Explicit owner approval marker is required');
           if (cmd.arbitraryWorkflowAllowed !== false) fail('arbitraryWorkflowAllowed must remain false');
           if (cmd.walletActionAllowed !== false) fail('walletActionAllowed must remain false');
           if (cmd.capitalExecutionAllowed !== false) fail('capitalExecutionAllowed must remain false');
           if (typeof cmd.commandId !== 'string' || !/^[A-Za-z0-9._:+-]{8,128}$/.test(cmd.commandId)) fail('Invalid commandId');
 
-          let targetWorkflow;
-          let targetRef = 'main';
-          let operation;
-          let dispatch;
-          let proposalId = '';
-          let disposition = '';
+          let operation, targetWorkflow, dispatch;
+          let proposalId = '', disposition = '';
 
-          // Backward-compatible support for the already-proven v0.1 command.
           if (cmd.version === '0.1-operator-command') {
-            if (cmd.operation !== 'workflow_dispatch') fail('v0.1 only allows workflow_dispatch');
-            if (cmd.workflow !== 'update-proposal-work-queue.yml') fail('v0.1 workflow is not allowlisted');
-            if (cmd.ref !== 'main') fail('Only main may be dispatched');
-            targetWorkflow = 'update-proposal-work-queue.yml';
+            if (cmd.operation !== 'workflow_dispatch' || cmd.workflow !== 'update-proposal-work-queue.yml' || cmd.ref !== 'main') fail('Legacy command escaped its original bounded contract');
             operation = 'refresh_proposal_queue';
+            targetWorkflow = 'update-proposal-work-queue.yml';
             dispatch = { ref: 'main' };
           } else if (cmd.operation === 'refresh_cognitive_stack') {
-            targetWorkflow = 'refresh-cognitive-stack.yml';
             operation = cmd.operation;
+            targetWorkflow = 'refresh-cognitive-stack.yml';
             dispatch = { ref: 'main' };
           } else if (cmd.operation === 'refresh_proposal_queue') {
-            targetWorkflow = 'update-proposal-work-queue.yml';
             operation = cmd.operation;
+            targetWorkflow = 'update-proposal-work-queue.yml';
             dispatch = { ref: 'main' };
           } else if (cmd.operation === 'record_owner_decision') {
-            targetWorkflow = 'record-brain-decision.yml';
             operation = cmd.operation;
-
+            targetWorkflow = 'record-brain-decision.yml';
             const d = cmd.decision ?? {};
-            proposalId = clean(d.proposalId, 'decision.proposalId', { required: true, max: 80 });
-            const caseId = clean(d.caseId, 'decision.caseId', { required: true, max: 80 });
-            const caseKey = clean(d.caseKey, 'decision.caseKey', { required: true, max: 80 });
+            proposalId = clean(d.proposalId, 'decision.proposalId', {required:true,max:80});
+            const caseId = clean(d.caseId, 'decision.caseId', {required:true,max:80});
+            const caseKey = clean(d.caseKey, 'decision.caseKey', {required:true,max:80});
             if (!/^PRP-[0-9a-f]{24}$/.test(proposalId)) fail('Invalid proposalId');
             if (!/^[0-9a-f]{24}$/.test(caseId)) fail('Invalid caseId');
             if (!/^CK-[0-9a-f]{20}$/.test(caseKey)) fail('Invalid caseKey');
 
-            const queuePath = 'intelligence/proposals/proposal-queue.json';
-            if (!fs.existsSync(queuePath)) fail('Current Proposal queue is missing');
-            const queue = JSON.parse(fs.readFileSync(queuePath, 'utf8'));
-            const proposal = (queue.proposals ?? []).find((p) => p.proposalId === proposalId);
+            const queue = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-queue.json','utf8'));
+            const proposal = (queue.proposals ?? []).find(p => p.proposalId === proposalId);
             if (!proposal) fail(`Current proposal not found: ${proposalId}`);
-            if (proposal.source?.caseId !== caseId) fail('Proposal/caseId binding mismatch');
-            if (proposal.source?.caseKey !== caseKey) fail('Proposal/caseKey binding mismatch');
+            if (proposal.source?.caseId !== caseId || proposal.source?.caseKey !== caseKey) fail('Proposal/case binding mismatch');
             if (proposal.state !== 'PROPOSED') fail(`Only a current PROPOSED item may receive its first owner decision; got ${proposal.state}`);
-            if (proposal.boundaries?.humanApprovalRequired !== true) fail('Proposal does not declare the human approval gate');
-            if (proposal.boundaries?.automaticApproval !== false || proposal.boundaries?.automaticExecution !== false) {
-              fail('Proposal safety boundary is not intact');
-            }
+            if (proposal.boundaries?.humanApprovalRequired !== true || proposal.boundaries?.automaticApproval !== false || proposal.boundaries?.automaticExecution !== false) fail('Proposal safety boundary is not intact');
 
-            disposition = clean(d.disposition, 'decision.disposition', { required: true, max: 20 });
-            if (!['accept', 'defer', 'reject', 'modify'].includes(disposition)) fail('Unsupported decision disposition');
-            const rationale = clean(d.rationale, 'decision.rationale', { required: true, min: 10, max: 2000 });
-            const expectedOutcome = clean(d.expectedOutcome, 'decision.expectedOutcome', { max: 1200 });
-            const modifiedAction = clean(d.modifiedAction, 'decision.modifiedAction', { required: disposition === 'modify', max: 2000 });
-            if (disposition !== 'modify' && modifiedAction) fail('modifiedAction is only allowed for disposition=modify');
-            const predictionEvent = clean(d.predictionEvent || 'none', 'decision.predictionEvent', { required: true, max: 64 });
-            if (!['none', 'case-resolved-by-review'].includes(predictionEvent)) fail('Unsupported prediction event');
+            disposition = clean(d.disposition, 'decision.disposition', {required:true,max:20});
+            if (!['accept','defer','reject','modify'].includes(disposition)) fail('Unsupported disposition');
+            const rationale = clean(d.rationale, 'decision.rationale', {required:true,min:10,max:2000});
+            const expectedOutcome = clean(d.expectedOutcome, 'decision.expectedOutcome', {max:1200});
+            const modifiedAction = clean(d.modifiedAction, 'decision.modifiedAction', {required:disposition==='modify',max:2000});
+            if (disposition !== 'modify' && modifiedAction) fail('modifiedAction is only allowed with modify');
+            const predictionEvent = clean(d.predictionEvent || 'none', 'decision.predictionEvent', {required:true,max:64});
+            if (!['none','case-resolved-by-review'].includes(predictionEvent)) fail('Unsupported prediction event');
             const probabilityBps = integer(d.probabilityBps ?? 7000, 'decision.probabilityBps', 0, 10000);
             const reviewDays = integer(d.reviewDays ?? 14, 'decision.reviewDays', 1, 365);
-            const supersedesDecisionId = clean(d.supersedesDecisionId, 'decision.supersedesDecisionId', { max: 80 });
-            if (supersedesDecisionId) fail('v0.2 first-decision bridge does not yet permit corrections/superseding entries');
+            if (clean(d.supersedesDecisionId, 'decision.supersedesDecisionId', {max:80})) fail('First-decision bridge does not permit corrections yet');
+            if (secretLike([rationale, expectedOutcome, modifiedAction].join('\n'))) fail('Decision text contains a secret-like marker');
 
-            const publicDecisionText = [rationale, expectedOutcome, modifiedAction].join('\n');
-            if (secretLike(publicDecisionText)) fail('Decision text contains a secret-like marker; public decision memory rejected');
-
-            dispatch = {
-              ref: 'main',
-              inputs: {
-                case_id: caseId,
-                disposition,
-                rationale,
-                expected_outcome: expectedOutcome,
-                modified_action: modifiedAction,
-                prediction_event: predictionEvent,
-                probability_bps: String(probabilityBps),
-                review_days: String(reviewDays),
-                supersedes_decision_id: '',
-              },
-            };
+            dispatch = { ref:'main', inputs:{
+              case_id:caseId,
+              disposition,
+              rationale,
+              expected_outcome:expectedOutcome,
+              modified_action:modifiedAction,
+              prediction_event:predictionEvent,
+              probability_bps:String(probabilityBps),
+              review_days:String(reviewDays),
+              supersedes_decision_id:''
+            }};
           } else {
             fail(`Operation is not allowlisted: ${cmd.operation}`);
           }
 
-          fs.writeFileSync('/tmp/operator-dispatch.json', JSON.stringify(dispatch), 'utf8');
+          fs.writeFileSync('/tmp/operator-target-dispatch.json', JSON.stringify(dispatch), 'utf8');
           output('workflow', targetWorkflow);
-          output('ref', targetRef);
-          output('command_id', cmd.commandId);
           output('operation', operation);
+          output('command_id', cmd.commandId);
           output('proposal_id', proposalId);
           output('disposition', disposition);
-          console.log('Bounded operator command validated:', {
-            commandId: cmd.commandId,
-            operation,
-            workflow: targetWorkflow,
-            ref: targetRef,
-            proposalId: proposalId || null,
-            disposition: disposition || null,
-          });
+          console.log('Bounded command validated', {commandId:cmd.commandId, operation, targetWorkflow, proposalId:proposalId||null, disposition:disposition||null});
           NODE
 
-      - name: Dispatch allowlisted workflow
+      - name: Execute coherence-aware bounded orchestration
+        id: orchestrate
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET_WORKFLOW: ${{ steps.command.outputs.workflow }}
-          TARGET_REF: ${{ steps.command.outputs.ref }}
+          OPERATION: ${{ steps.command.outputs.operation }}
+          COMMAND_SHA: ${{ github.sha }}
         shell: bash
         run: |
           set -euo pipefail
           case "$TARGET_WORKFLOW" in
             refresh-cognitive-stack.yml|update-proposal-work-queue.yml|record-brain-decision.yml) ;;
-            *) echo "Unexpected target workflow after validation: $TARGET_WORKFLOW"; exit 1 ;;
+            *) echo "Unexpected target workflow: $TARGET_WORKFLOW"; exit 1 ;;
           esac
-          if [ "$TARGET_REF" != "main" ]; then
-            echo "Unexpected target ref after validation: $TARGET_REF"
-            exit 1
-          fi
 
-          code="$(curl -sS -o /tmp/dispatch-response.txt -w '%{http_code}' \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/dispatches" \
-            --data-binary @/tmp/operator-dispatch.json)"
+          API="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}"
+          LAST_RUN_ID=""
+          api_get() {
+            curl -fsSL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" "$1"
+          }
+          wait_run_success() {
+            local run_id="$1" label="$2" timeout_s="${3:-420}" elapsed=0 status conclusion
+            while [ "$elapsed" -lt "$timeout_s" ]; do
+              status="$(api_get "${API}/actions/runs/${run_id}" | jq -r '.status // empty')"
+              conclusion="$(api_get "${API}/actions/runs/${run_id}" | jq -r '.conclusion // empty')"
+              echo "$label run $run_id: status=$status conclusion=${conclusion:-pending}"
+              if [ "$status" = "completed" ]; then
+                [ "$conclusion" = "success" ] || { echo "$label failed: $conclusion"; exit 1; }
+                return 0
+              fi
+              sleep 4; elapsed=$((elapsed+4))
+            done
+            echo "Timed out waiting for $label run $run_id"; exit 1
+          }
+          wait_command_security() {
+            local elapsed=0 run_id=""
+            while [ "$elapsed" -lt 240 ]; do
+              run_id="$(api_get "${API}/actions/workflows/security-sentinel.yml/runs?event=push&branch=main&per_page=30" | jq -r --arg sha "$COMMAND_SHA" '.workflow_runs[] | select(.head_sha==$sha) | .id' | head -n1)"
+              if [ -n "$run_id" ]; then
+                echo "Command-bound Security Sentinel: $run_id"
+                wait_run_success "$run_id" "Security Sentinel" 300
+                echo "security_run_id=$run_id" >> "$GITHUB_OUTPUT"
+                return 0
+              fi
+              sleep 4; elapsed=$((elapsed+4))
+            done
+            echo "No Security Sentinel run found for command commit $COMMAND_SHA"; exit 1
+          }
+          main_sha() { api_get "${API}/git/ref/heads/main" | jq -r '.object.sha'; }
+          dispatch_and_wait() {
+            local workflow="$1" payload="$2" label="$3" expected_sha="$4" before_file elapsed=0 new_id="" code
+            before_file="$(mktemp)"
+            api_get "${API}/actions/workflows/${workflow}/runs?per_page=30" | jq -r '.workflow_runs[].id' > "$before_file"
+            code="$(curl -sS -o /tmp/operator-dispatch-response.txt -w '%{http_code}' -X POST \
+              -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
+              "${API}/actions/workflows/${workflow}/dispatches" --data-binary "@${payload}")"
+            [ "$code" = "204" ] || { echo "$label dispatch failed with HTTP $code"; cat /tmp/operator-dispatch-response.txt || true; exit 1; }
+            echo "Dispatched $label at main $expected_sha"
+            while [ "$elapsed" -lt 90 ]; do
+              new_id="$(api_get "${API}/actions/workflows/${workflow}/runs?event=workflow_dispatch&branch=main&per_page=30" | jq -r --arg sha "$expected_sha" '.workflow_runs[] | select(.head_sha==$sha) | .id' | while read -r id; do if ! grep -qx "$id" "$before_file"; then echo "$id"; break; fi; done)"
+              if [ -n "$new_id" ]; then
+                echo "Resolved $label run: $new_id"
+                wait_run_success "$new_id" "$label" 420
+                LAST_RUN_ID="$new_id"
+                rm -f "$before_file"
+                return 0
+              fi
+              sleep 3; elapsed=$((elapsed+3))
+            done
+            rm -f "$before_file"
+            echo "Could not resolve new $label run"; exit 1
+          }
+          wait_learning_binding() {
+            local elapsed=0 stack_json learning_json stack_chain learning_chain learning_status
+            while [ "$elapsed" -lt 180 ]; do
+              stack_json="$(api_get "${API}/contents/intelligence/cognitive-stack-state.json?ref=main")"
+              learning_json="$(api_get "${API}/contents/intelligence/learning-state/learning-context.json?ref=main")"
+              stack_chain="$(printf '%s' "$stack_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.integrity.chainHash // empty')"
+              learning_chain="$(printf '%s' "$learning_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.source.cognitiveChainHash // empty')"
+              learning_status="$(printf '%s' "$learning_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.status // empty')"
+              echo "Learning binding: status=$learning_status stack=${stack_chain:0:12} learning=${learning_chain:0:12}"
+              if [ -n "$stack_chain" ] && [ "$learning_status" = "ready" ] && [ "$learning_chain" = "$stack_chain" ]; then return 0; fi
+              sleep 4; elapsed=$((elapsed+4))
+            done
+            echo "Learning did not become current relative to Cognitive Stack"; exit 1
+          }
 
-          if [ "$code" != "204" ]; then
-            echo "Workflow dispatch failed with HTTP ${code}."
-            cat /tmp/dispatch-response.txt || true
-            exit 1
-          fi
+          # The command itself is Security-reviewed. Do not dispatch cognition until
+          # the exact command-bound Security run has finished and published.
+          wait_command_security
 
-          echo "Dispatched ${TARGET_WORKFLOW} on ${TARGET_REF}."
+          printf '{"ref":"main"}' > /tmp/cognitive-dispatch.json
+          COGNITIVE_HEAD="$(main_sha)"
+          dispatch_and_wait 'refresh-cognitive-stack.yml' /tmp/cognitive-dispatch.json 'Cognitive Stack' "$COGNITIVE_HEAD"
+          COGNITIVE_RUN="$LAST_RUN_ID"
+          echo "cognitive_run_id=$COGNITIVE_RUN" >> "$GITHUB_OUTPUT"
+
+          case "$OPERATION" in
+            refresh_cognitive_stack)
+              echo "target_run_id=$COGNITIVE_RUN" >> "$GITHUB_OUTPUT"
+              ;;
+            record_owner_decision)
+              TARGET_HEAD="$(main_sha)"
+              dispatch_and_wait 'record-brain-decision.yml' /tmp/operator-target-dispatch.json 'Decision Memory' "$TARGET_HEAD"
+              echo "target_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
+              ;;
+            refresh_proposal_queue)
+              wait_learning_binding
+              TARGET_HEAD="$(main_sha)"
+              dispatch_and_wait 'update-proposal-work-queue.yml' /tmp/operator-target-dispatch.json 'Proposal Work Queue' "$TARGET_HEAD"
+              echo "target_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
+              ;;
+            *) echo "Unexpected operation after validation: $OPERATION"; exit 1 ;;
+          esac
 
       - name: Operator command summary
         if: always()
         shell: bash
         run: |
           {
-            echo "# The Holding · Operator Command Bridge"
+            echo "# The Holding · Operator Command Bridge v0.4"
             echo
             echo "**Command ID:** \`${{ steps.command.outputs.command_id }}\`"
             echo "**Operation:** \`${{ steps.command.outputs.operation }}\`"
-            echo "**Target workflow:** \`${{ steps.command.outputs.workflow }}\`"
-            echo "**Target ref:** \`${{ steps.command.outputs.ref }}\`"
+            echo "**Requested target:** \`${{ steps.command.outputs.workflow }}\`"
             if [ -n "${{ steps.command.outputs.proposal_id }}" ]; then
               echo "**Proposal:** \`${{ steps.command.outputs.proposal_id }}\`"
               echo "**Owner disposition:** \`${{ steps.command.outputs.disposition }}\`"
             fi
+            echo "**Command-bound Security run:** \`${{ steps.orchestrate.outputs.security_run_id }}\`"
+            echo "**Fresh Cognitive run:** \`${{ steps.orchestrate.outputs.cognitive_run_id }}\`"
+            echo "**Final target run:** \`${{ steps.orchestrate.outputs.target_run_id }}\`"
             echo "**Arbitrary workflows:** disabled"
             echo "**Wallet action:** disabled"
             echo "**Capital execution:** disabled"
             echo
-            echo "The bridge dispatches only explicitly allowlisted maintenance/decision workflows. Owner decisions remain inert append-only memory and do not execute proposals."
+            echo "v0.4 waits for Security on the exact command commit, refreshes cognition from current main, and only then dispatches the allowlisted target."
           } >> "$GITHUB_STEP_SUMMARY"
