@@ -2713,6 +2713,23 @@
             .oslab-explain { grid-template-columns:1fr; }
         }
 
+
+        /* THE HOLDING OS LAB · PLATFORM DIRECTION v0.1 */
+        .oslab-direction { padding: 0 0 4.75rem; }
+        .oslab-direction-shell { border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light); padding:1.55rem 0 1.35rem; }
+        .oslab-direction-kicker { margin-bottom:1rem; color:var(--accent-azure,#2d5f87); font:700 .58rem/1.2 'Space Grotesk',sans-serif; letter-spacing:.18em; text-transform:uppercase; }
+        .oslab-direction-flow { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); align-items:center; gap:.7rem; }
+        .oslab-direction-step { min-width:0; }
+        .oslab-direction-step span { display:block; margin-bottom:.3rem; color:var(--text-tertiary); font:700 .5rem/1.2 'Space Grotesk',sans-serif; letter-spacing:.12em; }
+        .oslab-direction-step strong { display:block; color:var(--text-primary); font:500 1.12rem/1.15 'Cormorant Garamond',Georgia,serif; letter-spacing:-.01em; }
+        .oslab-direction-step small { display:block; margin-top:.28rem; color:var(--text-secondary); font:400 .62rem/1.45 'Space Grotesk',sans-serif; }
+        .oslab-direction-step.live strong { color:var(--accent-azure,#2d5f87); }
+        .oslab-direction-arrow { color:var(--azure-line,rgba(45,95,135,.28)); font:400 1rem/1 'Space Grotesk',sans-serif; }
+        .oslab-direction-note { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-top:1.05rem; padding-top:.85rem; border-top:1px solid var(--border-light); color:var(--text-tertiary); font-size:.62rem; line-height:1.55; }
+        .oslab-direction-note a { flex:0 0 auto; color:var(--accent-azure,#2d5f87); text-decoration:none; font-weight:600; }
+        .oslab-direction-note a:hover { text-decoration:underline; text-underline-offset:3px; }
+        @media (max-width:760px) { .oslab-direction{padding-bottom:4rem}.oslab-direction-flow{grid-template-columns:1fr;gap:.55rem}.oslab-direction-step{padding:.25rem 0}.oslab-direction-arrow{transform:rotate(90deg);transform-origin:center;width:1rem;margin-left:.15rem}.oslab-direction-note{align-items:flex-start;flex-direction:column;gap:.45rem} }
+
     </style>
 </head>
 <body>
@@ -2823,6 +2840,25 @@
         </div>
     </section>
 
+
+    <!-- The Holding OS · compact platform direction -->
+    <section class="oslab-direction" id="platform-direction" aria-label="The Holding OS platform direction">
+        <div class="container">
+            <div class="oslab-direction-shell">
+                <div class="oslab-direction-kicker">One OS · Long-term direction</div>
+                <div class="oslab-direction-flow" role="list" aria-label="The Holding platform progression">
+                    <div class="oslab-direction-step live" role="listitem"><span>01 · CORE</span><strong>The Holding OS</strong><small>shared memory · security · intelligence</small></div>
+                    <div class="oslab-direction-arrow" aria-hidden="true">→</div>
+                    <div class="oslab-direction-step live" role="listitem"><span>02 · INTERFACE</span><strong>Ask The Holding</strong><small>one conversational surface · live now</small></div>
+                    <div class="oslab-direction-arrow" aria-hidden="true">→</div>
+                    <div class="oslab-direction-step" role="listitem"><span>03 · COMPANY</span><strong>Company Companions</strong><small>company-specific intelligence · next</small></div>
+                    <div class="oslab-direction-arrow" aria-hidden="true">→</div>
+                    <div class="oslab-direction-step" role="listitem"><span>04 · ECONOMY</span><strong>Agent Economy</strong><small>humans + authorised agents · future</small></div>
+                </div>
+                <div class="oslab-direction-note"><span>Brain · Memory · Security · Learning are organs of one OS — not separate products.</span><a href="/manifesto">Explore the platform vision →</a></div>
+            </div>
+        </div>
+    </section>
 
     <!-- The Holding Observer · live read-only intelligence stream -->
     <section class="observer-section" id="observer" aria-label="The Holding Observer">
