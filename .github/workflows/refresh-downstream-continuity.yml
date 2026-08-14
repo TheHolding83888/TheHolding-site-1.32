@@ -1,0 +1,192 @@
+name: "The Holding Brain · Downstream Continuity"
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["The Holding Brain · Proposal Work Queue"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: downstream-continuity-main
+  cancel-in-progress: false
+
+jobs:
+  refresh-downstream:
+    if: >-
+      ${{
+        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'workflow_run' &&
+         github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.head_branch == 'main')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Preflight exact downstream contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          REQUIRED=(
+            "intelligence/proposals/proposal-queue.json"
+            "intelligence/proposals/proposal-decision-eval.json"
+            "intelligence/learning-state/learning-context.json"
+            "intelligence/learning/decision-ledger.json"
+            "intelligence/cognitive-stack-state.json"
+            "intelligence/builder/builder-engine.mjs"
+            "intelligence/builder/independent-builder-reviewer.mjs"
+            "intelligence/builder/builder-release-guard.mjs"
+            "intelligence/guardian/guardian-engine.mjs"
+            "intelligence/guardian/independent-guardian-reviewer.mjs"
+            "intelligence/guardian/guardian-release-guard.mjs"
+            "intelligence/project-memory/build-current-memory.mjs"
+          )
+          for f in "${REQUIRED[@]}"; do test -s "$f"; done
+          node intelligence/builder/builder-release-guard.mjs
+          node intelligence/guardian/guardian-release-guard.mjs
+          node --check intelligence/project-memory/build-current-memory.mjs
+
+      - name: Refresh Builder → Guardian → CURRENT atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Downstream Continuity"
+          git config user.email "downstream-continuity@theholding.ai"
+
+          GENERATED=(
+            "intelligence/builder/candidate-queue.json"
+            "intelligence/builder/candidate-brief.md"
+            "intelligence/builder/candidate-eval.json"
+            "intelligence/guardian/guardian-state.json"
+            "intelligence/guardian/guardian-brief.md"
+            "intelligence/guardian/guardian-eval.json"
+            "intelligence/project-memory/CURRENT.md"
+          )
+
+          verify_upstream() {
+            node - <<'NODE'
+          const fs=require('fs'), crypto=require('crypto');
+          const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+          const p=JSON.parse(fs.readFileSync('intelligence/proposals/proposal-queue.json','utf8'));
+          const pe=JSON.parse(fs.readFileSync('intelligence/proposals/proposal-decision-eval.json','utf8'));
+          const l=JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
+          const d=JSON.parse(fs.readFileSync('intelligence/learning/decision-ledger.json','utf8'));
+          const c=JSON.parse(fs.readFileSync('intelligence/cognitive-stack-state.json','utf8'));
+          if(pe.status!=='pass') throw new Error('Proposal Decision reviewer not PASS');
+          if(pe.source?.queueSha256!==sha('intelligence/proposals/proposal-queue.json')) throw new Error('Proposal bytes differ from reviewed bytes');
+          if(p.source?.learningContextSha256!==sha('intelligence/learning-state/learning-context.json')) throw new Error('Proposal/Learning byte binding mismatch');
+          if(p.source?.decisionLedgerHash!==d.integrity?.ledgerHash || l.source?.decisionLedgerHash!==d.integrity?.ledgerHash) throw new Error('Decision Ledger binding mismatch');
+          if(l.source?.cognitiveChainHash!==c.integrity?.chainHash) throw new Error('Learning/Cognitive chain mismatch');
+          if(p.decisionBridge?.executionAuthority!=='none' || p.decisionBridge?.productionMutationAuthorized!==false) throw new Error('Proposal execution boundary changed');
+          console.log('Downstream upstream binding PASS',{
+            proposals:p.summary?.activeProposalCount,
+            approved:p.summary?.stateCounts?.APPROVED ?? 0,
+            cognitiveChainHash:c.integrity?.chainHash
+          });
+          NODE
+          }
+
+          rebuild() {
+            node intelligence/builder/builder-release-guard.mjs
+            node intelligence/guardian/guardian-release-guard.mjs
+            verify_upstream
+
+            node intelligence/builder/builder-engine.mjs
+            node intelligence/builder/independent-builder-reviewer.mjs
+
+            node - <<'NODE'
+          const fs=require('fs');
+          const q=JSON.parse(fs.readFileSync('intelligence/builder/candidate-queue.json','utf8'));
+          const e=JSON.parse(fs.readFileSync('intelligence/builder/candidate-eval.json','utf8'));
+          if(e.status!=='pass') throw new Error('Builder reviewer did not PASS');
+          for(const key of ['noRepositoryCodeMutation','noBranchCreation','noPullRequestCreation','noAutomaticMerge','noAutomaticRelease','noWalletAccess','noCapitalExecution']){
+            if(q.constraints?.[key]!==true) throw new Error(`Builder boundary changed: ${key}`);
+          }
+          if(q.constraints?.humanReleaseApprovalRequired!==true || q.constraints?.executionAuthority!=='none') throw new Error('Builder execution boundary changed');
+          NODE
+
+            node intelligence/guardian/guardian-engine.mjs
+            node intelligence/guardian/independent-guardian-reviewer.mjs
+
+            node - <<'NODE'
+          const fs=require('fs'), crypto=require('crypto');
+          const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+          const b=JSON.parse(fs.readFileSync('intelligence/builder/candidate-queue.json','utf8'));
+          const be=JSON.parse(fs.readFileSync('intelligence/builder/candidate-eval.json','utf8'));
+          const g=JSON.parse(fs.readFileSync('intelligence/guardian/guardian-state.json','utf8'));
+          const ge=JSON.parse(fs.readFileSync('intelligence/guardian/guardian-eval.json','utf8'));
+          if(be.status!=='pass' || ge.status!=='pass') throw new Error('Downstream independent reviewer did not PASS');
+          if(g.source?.candidateQueueSha256!==sha('intelligence/builder/candidate-queue.json')) throw new Error('Guardian/Builder byte binding mismatch');
+          if(g.summary?.sandboxBuildAuthorizedCount!==0 || g.summary?.productionMutationAuthorizedCount!==0) throw new Error('Guardian granted mutation authority');
+          if(g.constraints?.sandboxBuildAuthority!==false || g.constraints?.executionAuthority!=='none') throw new Error('Guardian execution boundary changed');
+          console.log('Builder → Guardian binding PASS',{
+            candidates:b.summary?.candidateCount,
+            guardianResearchOnly:g.summary?.researchOnlyCount,
+            executionAuthority:g.constraints?.executionAuthority
+          });
+          NODE
+
+            node intelligence/project-memory/build-current-memory.mjs
+            git diff --check
+            git add "${GENERATED[@]}"
+            bad="$(git diff --cached --name-only | grep -Ev '^(intelligence/builder/(candidate-queue\.json|candidate-brief\.md|candidate-eval\.json)|intelligence/guardian/(guardian-state\.json|guardian-brief\.md|guardian-eval\.json)|intelligence/project-memory/CURRENT\.md)$' || true)"
+            if [ -n "$bad" ]; then
+              echo "ERROR: downstream continuity attempted to stage outside generated-state boundary:"
+              echo "$bad"
+              exit 1
+            fi
+          }
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            rebuild
+
+            if git diff --cached --quiet; then
+              echo "Downstream Builder, Guardian and CURRENT already match canonical state."
+              exit 0
+            fi
+
+            git commit -m "intelligence: refresh downstream continuity"
+            if git push origin HEAD:main; then
+              git fetch origin main
+              test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+              echo "Verified coherent Builder → Guardian → CURRENT state on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during downstream publish; rebuilding from fresh main ($attempt/3)..."
+          done
+
+          echo "ERROR: unable to publish coherent downstream state after retries"
+          exit 1
+
+      - name: Downstream continuity summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "# The Holding · Downstream Continuity"
+            echo
+            echo "**Canonical sequence:** Proposal → Builder → Guardian → CURRENT"
+            echo "**Generated mutation boundary:** Builder state + Guardian state + CURRENT.md only"
+            echo "**Repository code mutation:** none"
+            echo "**Automatic approval:** none"
+            echo "**Wallet / capital execution:** none"
+            echo "**Execution authority:** none"
+          } >> "$GITHUB_STEP_SUMMARY"
