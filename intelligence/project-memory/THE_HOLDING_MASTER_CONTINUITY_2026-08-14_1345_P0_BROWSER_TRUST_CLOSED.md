@@ -19,6 +19,29 @@ All future discussion with the owner should use **very simple, plain language** 
 - The goal is that important project decisions and explanations should be understandable to an intelligent non-specialist.
 - This is a durable communication preference for future chats/models working on The Holding.
 
+## External learning and self-improvement canon
+
+The Holding should learn from strong ideas outside the project, but never copy them blindly.
+
+Owner pattern:
+- the owner may bring a technical/business idea, architecture, product, post, research result or observed solution from another project;
+- the AI should extract the useful mechanism, compare it with The Holding, and recommend adoption only if it creates clear value;
+- take the **best principle**, not unnecessary surrounding complexity.
+
+Long-term system direction:
+- proactively research public sources for genuinely useful new ideas, methods and proven patterns;
+- compare them against current The Holding architecture and real gaps;
+- surface only high-value improvements, with source evidence and a clear reason why they matter;
+- learn from accepted/rejected outcomes so future recommendations improve.
+
+Hard boundaries:
+- no code or new layer merely because another project has it;
+- no blind trend-following;
+- no autonomous production merge, methodology mutation, wallet action or capital execution;
+- external ideas enter through the same governed path: evidence → understanding → proposal → owner/Guardian decision → verified implementation when justified.
+
+The goal is not to imitate the market. The goal is for The Holding to **continuously absorb useful knowledge and improve itself while staying coherent, simple and owner-governed**.
+
 ## Objective that was closed
 
 Two owner-approved P0 Security proposals were taken through a real practical cycle:
