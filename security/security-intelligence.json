@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-14T13:01:08.481Z",
-  "status": "green",
-  "headline": "No high or critical security findings detected in this scan.",
+  "generatedAt": "2026-08-14T13:02:39.408Z",
+  "status": "watch",
+  "headline": "5 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
-    "high": 0,
+    "high": 5,
     "medium": 1,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 197,
-    "bytesScanned": 5743207,
+    "filesScanned": 198,
+    "bytesScanned": 5756769,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -57,20 +57,149 @@
   "whatChanged": {
     "newFindings": [
       {
-        "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "agents/console/learning-notice.html",
-        "line": 25,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
+        "id": "7a5a1cec1797dcd9a05cdfa5ce02b0e8f43ee4f5f0f10689222b77f29e0e33b5",
+        "severity": "high",
+        "category": "public-surface-unavailable",
+        "file": null,
+        "line": null,
+        "entity": "https://theholding.ai/agents/",
+        "summary": "Public security probe failed for https://theholding.ai/agents/.",
+        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+        "evidence": {
+          "status": 404,
+          "error": null
+        }
+      },
+      {
+        "id": "31153ac691914b4034d7d064d721d5f87416195e43f22473d014951f3567b408",
+        "severity": "high",
+        "category": "public-surface-unavailable",
+        "file": null,
+        "line": null,
+        "entity": "https://theholding.ai/companies/",
+        "summary": "Public security probe failed for https://theholding.ai/companies/.",
+        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+        "evidence": {
+          "status": 404,
+          "error": null
+        }
+      },
+      {
+        "id": "a04971f0a71e2aec7b8db8f0ae1aabb492b4271cc568315851de080d7af3da15",
+        "severity": "high",
+        "category": "public-surface-unavailable",
+        "file": null,
+        "line": null,
+        "entity": "https://theholding.ai/intelligence/change-intelligence.json",
+        "summary": "Public security probe failed for https://theholding.ai/intelligence/change-intelligence.json.",
+        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+        "evidence": {
+          "status": 404,
+          "error": null
+        }
+      },
+      {
+        "id": "163f2397a439597f7cc2ad1b651e5240a000a0834a3044c9ea439776c935b48a",
+        "severity": "high",
+        "category": "public-surface-unavailable",
+        "file": null,
+        "line": null,
+        "entity": "https://theholding.ai/monetra/",
+        "summary": "Public security probe failed for https://theholding.ai/monetra/.",
+        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+        "evidence": {
+          "status": 404,
+          "error": null
+        }
+      },
+      {
+        "id": "c90090bcf5e3b0a057a6917a574c6e88db425c0b931c77d05131761629f67196",
+        "severity": "high",
+        "category": "public-surface-unavailable",
+        "file": null,
+        "line": null,
+        "entity": "https://theholding.ai/yield-reports/",
+        "summary": "Public security probe failed for https://theholding.ai/yield-reports/.",
+        "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+        "evidence": {
+          "status": 404,
+          "error": null
+        }
       }
     ],
     "resolvedFindings": []
   },
   "currentFindings": [
+    {
+      "id": "7a5a1cec1797dcd9a05cdfa5ce02b0e8f43ee4f5f0f10689222b77f29e0e33b5",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "file": null,
+      "line": null,
+      "entity": "https://theholding.ai/agents/",
+      "summary": "Public security probe failed for https://theholding.ai/agents/.",
+      "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+      "evidence": {
+        "status": 404,
+        "error": null
+      }
+    },
+    {
+      "id": "31153ac691914b4034d7d064d721d5f87416195e43f22473d014951f3567b408",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "file": null,
+      "line": null,
+      "entity": "https://theholding.ai/companies/",
+      "summary": "Public security probe failed for https://theholding.ai/companies/.",
+      "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+      "evidence": {
+        "status": 404,
+        "error": null
+      }
+    },
+    {
+      "id": "a04971f0a71e2aec7b8db8f0ae1aabb492b4271cc568315851de080d7af3da15",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "file": null,
+      "line": null,
+      "entity": "https://theholding.ai/intelligence/change-intelligence.json",
+      "summary": "Public security probe failed for https://theholding.ai/intelligence/change-intelligence.json.",
+      "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+      "evidence": {
+        "status": 404,
+        "error": null
+      }
+    },
+    {
+      "id": "163f2397a439597f7cc2ad1b651e5240a000a0834a3044c9ea439776c935b48a",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "file": null,
+      "line": null,
+      "entity": "https://theholding.ai/monetra/",
+      "summary": "Public security probe failed for https://theholding.ai/monetra/.",
+      "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+      "evidence": {
+        "status": 404,
+        "error": null
+      }
+    },
+    {
+      "id": "c90090bcf5e3b0a057a6917a574c6e88db425c0b931c77d05131761629f67196",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "file": null,
+      "line": null,
+      "entity": "https://theholding.ai/yield-reports/",
+      "summary": "Public security probe failed for https://theholding.ai/yield-reports/.",
+      "whyItMatters": "Unexpected unavailability can indicate deployment, routing, domain or hosting trouble.",
+      "evidence": {
+        "status": 404,
+        "error": null
+      }
+    },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
@@ -89,18 +218,22 @@
       "action": "Re-review the changed DOM rendering surface; reviewed innerHTML exemptions are valid only for exact unchanged Git blobs."
     },
     {
+      "priority": "medium",
+      "action": "Plan a Content Security Policy in report-only mode before enforcing it across the public portal."
+    },
+    {
       "priority": "roadmap",
       "action": "Before interactive AI dialogue: add prompt-injection boundaries, tool permission gates, private/public context separation and immutable action audit logs."
     }
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "0861217bc68111ea8911df63dbd6de8af886b25fc53d5ce320086d564e72e2db",
+    "snapshotHash": "753fbc03acdc068542b831e149c8590fdc0d337b3c69e47c34cba2300707c42a",
     "securityVault": {
-      "runCount": 147,
+      "runCount": 148,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T13-01-08-481Z-0861217bc6.json",
-      "latestRecordHash": "b33e0ea7e9d99792f7308a051b432fa224c9a86dba01d7c8d380898c0f16f79a",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T13-02-39-408Z-753fbc03ac.json",
+      "latestRecordHash": "a6e65c07927b1f5cab4306863eec7533538c56f84d8cd0506fac2107e8ef59d3",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
