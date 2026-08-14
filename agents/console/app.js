@@ -12,8 +12,8 @@
     productivity: '/companies/productivity-data.json',
     stable: '/companies/stable-capital-data.json',
     rewards: '/companies/rewards-data.json',
-    embedded: '/companies/embedded-yield-data.json',
-    entries: '/companies/strategy-entry-ledger.json',
+    embedded: '/companies/embedded-yield-ledger.json',
+    entries: '/companies/company-008-strategy-entry-ledger.json',
     companies: '/companies/'
   });
 
@@ -27,7 +27,8 @@
     ['Fructus', '/fructus/'],
     ['Singul', '/singul/'],
     ['YieldRing', '/yieldring/'],
-    ['Intelligence', '/agents/']
+    ['Intelligence', '/agents/'],
+    ['Manifesto', '/manifesto']
   ]);
 
   const state = {
@@ -74,6 +75,13 @@
   };
   const isRu = text => /[а-яё]/i.test(text);
   const norm = text => String(text || '')
+    .replace(/\bholdng\b/gi, 'holding')
+    .replace(/\brewads\b/gi, 'rewards')
+    .replace(/\bcmpare\b/gi, 'compare')
+    .replace(/\b1milliondolar\b/gi, '1milliondollar')
+    .replace(/\bраскажи\b/gi, 'расскажи')
+    .replace(/\bапи\b/gi, 'apy')
+    .replace(/\bщас\b/gi, 'сейчас')
     .toLowerCase()
     .replace(/ё/g, 'е')
     .replace(/[’']/g, '')
@@ -129,6 +137,7 @@
   }
 
   function confidenceForAnswer(result) {
+    if (CONFIDENCE_CLASSES.includes(result?.confidenceHint)) return result.confidenceHint;
     const text = norm(result?.text);
     const source = norm(result?.source);
     if (!result?.source || /unavailable|no sufficiently strong verified match|fail closed/.test(source)) return 'unknown';
@@ -557,10 +566,10 @@
       'dinaz.eth': ['dinaz'],
       'aerocvxyb.eth': ['aerocvxyb', 'aero cvx yb'],
       "Rook's portfolio": ['rooks', 'rook', 'рук'],
-      'Monetra.eth': ['monetra', 'монетра'],
+      'Monetra.eth': ['monetra', 'монетра', 'монетру', 'монетре', '008', 'company 008', 'компания 008'],
       '05081966.eth': ['05081966'],
       '0x5860...83CA8.eth': ['83ca8', '5860'],
-      '1milliondollar.eth': ['1milliondollar', '1 million dollar', 'milliondollar']
+      '1milliondollar.eth': ['1milliondollar', '1 million dollar', 'milliondollar', 'million dollar eth', '009', 'company 009', 'компания 009']
     };
     const names = new Set([
       ...state.registry.map(x => x.name),
@@ -669,6 +678,7 @@
   function registryAnswer(lang) {
     const names = state.registry.map(x => x.name);
     state.lastTopic = 'registry';
+    state.lastEntity = { kind: 'registry' };
     if (!names.length) return {
       text: lang === 'ru' ? 'Живой Registry сейчас не загрузился. Я не буду угадывать число компаний.' : 'The live Registry did not load, so I will not guess the company count.',
       source: 'Registry unavailable'
@@ -893,13 +903,18 @@ function learningAnswer(lang) {
 
   function followupAnswer(query, lang) {
     const q = norm(query);
+    if (state.lastEntity?.kind === 'registry' && includesAny(q, ['list them', 'перечисли', 'список', 'show them'])) return registryAnswer(lang);
     if (!state.lastEntity || protocolGroup(query) || findCompany(query)) return null;
-    if (state.lastEntity.kind === 'company') {
+    if (['company', 'stable-company'].includes(state.lastEntity.kind)) {
       const company = { name: state.lastEntity.name, registry: state.registry.find(x => x.name === state.lastEntity.name) || null };
       if (includesAny(q, ['истор', 'средн', 'histor', 'average'])) return companyAnswer(company, lang, query);
       if (includesAny(q, ['reward', 'награ', 'claimable', 'accrued'])) return rewardsAnswer(query, lang, company);
       if (includesAny(q, ['embedded', 'встроенн', 'внутри позиции'])) return embeddedAnswer(query, lang, company);
       if (includesAny(q, ['entry', 'точка входа', 'цена входа', 'покупк'])) return entryAnswer(query, lang, company);
+      if (includesAny(q, ['доходност', 'apr', 'apy', 'yield', 'productivity', 'продуктивност'])) {
+        if (company.name === 'Monetra.eth' && state.stable?.summary) return stableSummary(lang);
+        return companyAnswer(company, lang, query);
+      }
     }
     if (state.lastEntity.kind === 'engine' && includesAny(q, ['а сейчас', 'current', 'текущ', 'доход', 'apr'])) {
       const e = safeObject(state.productivity?.engines)[state.lastEntity.id];
@@ -1005,6 +1020,7 @@ async function loadLazy(kind) {
   }
 
   async function entryAnswer(query, lang, company) {
+    if (company?.name && company.name !== 'Monetra.eth') return { text: lang === 'ru' ? `Для ${company.name} нет отдельного подтверждённого Strategy Entry Ledger в текущем Ask.` : `The current Ask has no separate verified Strategy Entry Ledger for ${company.name}.`, source: 'Strategy Entry Ledger unavailable', confidenceHint: 'unknown' };
     const data = await loadLazy('entries');
     if (!data) return { text: lang === 'ru' ? 'Entry ledger сейчас недоступен.' : 'Entry ledger is unavailable.', source: 'Entry ledger unavailable' };
     const needle = company?.name || protocolGroup(query) || words(query).find(x => x.length > 3) || '';
@@ -1053,12 +1069,32 @@ async function loadLazy(kind) {
       }
     }));
     results.sort((a, b) => b.score - a.score);
-    const best = results.filter(x => x.score >= 3).slice(0, 2);
+    const best = results.filter(x => x.score >= 6 && tokens.filter(token => norm(x.block).includes(token)).length >= 2).slice(0, 2);
     if (!best.length) return null;
     return {
       text: (lang === 'ru' ? 'Нашёл в публичных знаниях The Holding:\n\n' : 'Found in The Holding public knowledge:\n\n') + best.map(x => `${x.name}: ${x.block}`).join('\n\n'),
-      source: `Public site knowledge · ${best.map(x => x.url).join(' · ')}`
+      source: `Public site knowledge · ${best.map(x => x.url).join(' · ')}`,
+      confidenceHint: 'partial'
     };
+  }
+
+  function trustIntentAnswer(q, lang) {
+    if (includesAny(q, ['private key', 'seed phrase', 'recovery phrase', 'приватн ключ', 'сид фраз', 'секретн ключ'])) return {
+      text: lang === 'ru' ? 'Я не раскрываю и не ищу private keys, seed/recovery phrases или другие секреты. The Holding OS не должен выдавать такие данные через Ask.' : 'I will not reveal or search for private keys, seed/recovery phrases or other secrets. The Holding OS must not expose such data through Ask.',
+      source: 'The Holding project canon'
+    };
+    if (includesAny(q, ['move my capital', 'move capital', 'двигать капитал', 'sign transaction', 'подписать транзак', 'execute trade', 'who has authority', 'кто имеет полномочия', 'authority right now'])) return authorityAnswer(lang);
+    if (includesAny(q, ['exact allocation', 'what should i buy', 'buy today', 'точн аллокац', 'что купить', 'купить сегодня'])) return {
+      text: lang === 'ru' ? 'The Holding показывает структуры, evidence и trade-offs, но не выдаёт персональную точную аллокацию или команду «что купить сегодня». Решение остаётся за владельцем.' : 'The Holding can show structures, evidence and trade-offs, but it does not provide a personalized exact allocation or tell an owner what to buy today. The decision remains with the owner.',
+      source: 'The Holding project canon'
+    };
+    if (includesAny(q, ['sharpe', 'коэффициент шарпа'])) return { text: lang === 'ru' ? 'В текущих подтверждённых данных нет Sharpe ratio под этот период. Я не буду подменять его текущим APY или APR.' : 'The current verified data has no Sharpe ratio for that period. I will not substitute current APY or APR for it.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
+    if (includesAny(q, ['next friday', 'следующ пятниц', 'forecast', 'predict', 'прогноз'])) return { text: lang === 'ru' ? 'У The Holding нет подтверждённого будущего значения цены. Я не буду выдавать прогноз как факт.' : 'The Holding has no verified future price value. I will not present a forecast as a fact.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
+    if (includesAny(q, ['before tracking', 'до начала наблюден', 'march 2026', 'март 2026'])) return { text: lang === 'ru' ? 'Если период предшествует tracking и не был backfilled, точного дохода в текущих данных нет. Я не буду подменять его сегодняшней доходностью.' : 'If the period predates tracking and was not backfilled, the current data has no exact income figure. I will not substitute today’s yield.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
+    if ((includesAny(q, ['reference apr', 'apr']) && includesAny(q, ['performance', 'прибыл', 'profit', 'equal', 'равно'])) || includesAny(q, ['does that mean it performed better'])) return { text: lang === 'ru' ? 'Нет. Reference APR – текущая доходная способность. Performance – фактический результат относительно точки входа. Более высокий APR сейчас не доказывает лучшую историческую performance.' : 'No. Reference APR is current earning capacity. Performance is the actual result versus the entry point. A higher APR now does not prove better historical performance.', source: 'The Holding project canon' };
+    if (includesAny(q, ['каждое наблюдение становится предложением', 'does every observation become a proposal', 'every observation become a proposal'])) return whyFilteredAnswer(lang);
+    if (includesAny(q, ['как система понимает что решение было хорошим', 'how does the system know a decision was good', 'decision outcome'])) return { text: lang === 'ru' ? 'Learning связывает case с решением владельца, ждёт более позднее observation/outcome и только затем формирует lesson, если появилось реальное последующее доказательство.' : 'Learning binds a case to the owner decision, waits for a later observation/outcome, and only forms a lesson when real later evidence exists.', source: 'Live Decision & Outcome Learning' };
+    return null;
   }
 
   async function routeQuestion(raw) {
@@ -1066,8 +1102,11 @@ async function loadLazy(kind) {
     const q = norm(raw);
     if (!q) return helpAnswer(lang);
 
-    if (/^(привет|здравств|хай|hello|hi|hey)\b/.test(q) || includesAny(q, ['как дела', 'how are you'])) return greetingAnswer(lang, q);
+    if (/^(привет|здравств|хай|hello|hi|hey|gm)\b/.test(q) || includesAny(q, ['как дела', 'how are you'])) return greetingAnswer(lang, q);
     if (includesAny(q, ['помощ', 'help', 'что спросить', 'что умеешь', 'what can you do'])) return helpAnswer(lang);
+
+    const trust = trustIntentAnswer(q, lang);
+    if (trust) return trust;
 
     const follow = followupAnswer(raw, lang);
     if (follow) return follow;
@@ -1096,8 +1135,8 @@ async function loadLazy(kind) {
     if (includesAny(q, ['что требует внимания', 'требует внимания', 'needs attention', 'attention items', 'проблемы сейчас'])) return attentionAnswer(lang);
     if (includesAny(q, ['почему только 3', 'почему три', 'почему так мало proposal', 'why only 3', 'data hygiene', 'decision worthy', 'decision-worthy'])) return whyFilteredAnswer(lang);
     if (includesAny(q, ['что уже одобрено', 'что одобрено', 'approved proposal', 'builder', 'guardian', 'может ли система выполнить', 'может ли это быть выполнено', 'can execute', 'governance status'])) return governanceStatusAnswer(lang);
-    if (includesAny(q, ['что система предлагает', 'что предлагаешь', 'proposal', 'recommendation', 'recommend', 'что делать дальше'])) return proposalAnswer(lang);
-    if (includesAny(q, ['чему система учится', 'как система учится', 'learning status', 'learning now'])) return learningAnswer(lang);
+    if (includesAny(q, ['что система предлагает', 'что холдинг предлагает', 'что предлагаешь', 'proposal', 'propose', 'proposes', 'what does the holding propose', 'what does the system propose', 'recommendation', 'что делать дальше'])) return proposalAnswer(lang);
+    if (includesAny(q, ['чему система учится', 'чему os научилась', 'чему система научилась', 'как система учится', 'learning status', 'learning now', 'what has the os learned', 'what has the system learned'])) return learningAnswer(lang);
     if (includesAny(q, ['что ты можешь сам', 'execution authority', 'полномочия', 'можешь сам', 'что можешь делать'])) return authorityAnswer(lang);
     if (includesAny(q, ['что сейчас происходит', 'состояние системы', 'system status', 'current state', 'как система'])) return currentStateAnswer(lang);
 
@@ -1117,6 +1156,10 @@ async function loadLazy(kind) {
     if (concept) return concept;
     if (engineMatches.length && protocolGroup(raw)) return engineAnswer(engineMatches, lang);
     if (stableMatches.length && protocolGroup(raw)) return stableAnswer(stableMatches, lang);
+
+    if (includesAny(q, ['company companion', 'companion agent', 'агент куратор', 'агент-куратор'])) return { text: lang === 'ru' ? 'Company Companion Agent – будущий AI-куратор одной onchain-компании. Он наследует общие способности The Holding OS и добавляет память, состояние, решения и риски конкретной компании. Сам по себе Companion не получает права подписывать транзакции или двигать капитал.' : 'A Company Companion Agent is a future AI curator for one onchain company. It inherits shared The Holding OS capabilities and adds that company’s memory, state, decisions and risks. A Companion does not automatically receive transaction-signing or capital authority.', source: 'The Holding project canon' };
+    if (includesAny(q, ['company marketplace', 'marketplace', 'биржа компаний'])) return { text: lang === 'ru' ? 'Company Marketplace – будущий слой discovery и передачи зрелых onchain-компаний или их структур, когда identity, history, transferability, security и юридическая форма будут достаточно зрелыми.' : 'The Company Marketplace is a future discovery and transfer layer for mature onchain companies or company structures once identity, history, transferability, security and legal design are sufficiently mature.', source: 'The Holding project canon' };
+    if (includesAny(q, ['ratings', 'rating', 'рейтин'])) return { text: lang === 'ru' ? 'Рейтинги компаний задуманы как производная от проверяемой истории – прозрачности, возраста, устойчивости, productivity, концентрации риска, полноты reporting и maturity, а не популярности.' : 'Company ratings are intended to emerge from verifiable history – transparency, age, resilience, productivity, risk concentration, reporting completeness and maturity, not popularity.', source: 'The Holding project canon' };
 
     const publicHit = await searchPublicKnowledge(raw, lang);
     if (publicHit) return publicHit;
