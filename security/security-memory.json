@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-14T12:18:25.279Z",
+  "generatedAt": "2026-08-14T13:01:08.481Z",
   "status": "green",
-  "snapshotHash": "460fde67d9c355502ff7545258f65323b99b168fe42c3454294bc643522da112",
+  "snapshotHash": "0861217bc68111ea8911df63dbd6de8af886b25fc53d5ce320086d564e72e2db",
   "repository": {
-    "filesScanned": 192,
-    "bytesScanned": 5696832,
+    "filesScanned": 197,
+    "bytesScanned": 5743207,
     "criticalHashes": {
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
@@ -171,6 +171,16 @@
         "rationale": "Asset labels are hardcoded and external price values are used only after numeric arithmetic/formatting."
       },
       {
+        "file": "agents/console/learning-notice.html",
+        "status": "unreviewed",
+        "classification": null,
+        "sinkCount": 1,
+        "expectedCount": null,
+        "currentGitBlobSha1": "d999bdc559a3a40753401fe34027897a5cd3ed0a",
+        "reviewedGitBlobSha1": null,
+        "rationale": null
+      },
+      {
         "file": "companies/index.html",
         "status": "reviewed",
         "classification": "trusted-canonical-company-registry-and-generated-data",
@@ -232,7 +242,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:10 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -241,18 +251,30 @@
     "summary": {
       "reviewedDomFileCount": 7,
       "reviewedDomSinkCount": 31,
-      "unreviewedDomFileCount": 0,
+      "unreviewedDomFileCount": 1,
       "trustedExternalScriptCount": 1,
       "trustedExternalScriptUsageCount": 7
     }
   },
-  "findings": [],
+  "findings": [
+    {
+      "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "agents/console/learning-notice.html",
+      "line": 25,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    }
+  ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 146,
+    "runCount": 147,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-14T12-18-25-279Z-460fde67d9.json",
-    "latestRecordHash": "e0edd45541332a72861baa3f04bf8811b3d220c47bb52883dbf7f68764559b6f",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-14T13-01-08-481Z-0861217bc6.json",
+    "latestRecordHash": "b33e0ea7e9d99792f7308a051b432fa224c9a86dba01d7c8d380898c0f16f79a",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
