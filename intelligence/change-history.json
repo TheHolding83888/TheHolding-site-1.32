@@ -2,18 +2,18 @@
   "version": "0.2.1-change-history",
   "observerVersion": "0.2.1-deterministic-memory-vault-corrections",
   "startedAt": "2026-08-13T15:19:01.108Z",
-  "lastUpdatedAt": "2026-08-13T16:45:11.222Z",
+  "lastUpdatedAt": "2026-08-14T07:56:41.449Z",
   "retention": {
     "operationalRuns": 730,
     "operationalUniqueEvents": 5000,
     "longTermCanonicalMemory": "intelligence/memory-vault/"
   },
   "lifetime": {
-    "runCount": 3,
-    "eventCount": 0,
-    "uniqueEventCount": 0,
-    "vaultRunCount": 3,
-    "vaultEventCount": 0,
+    "runCount": 4,
+    "eventCount": 12,
+    "uniqueEventCount": 12,
+    "vaultRunCount": 4,
+    "vaultEventCount": 12,
     "vaultStartedAt": "2026-08-13T15:19:01.108Z",
     "memoryCorrectionCount": 1
   },
@@ -51,7 +51,233 @@
       "watchCount": 7,
       "vaultRecordPath": "intelligence/memory-vault/2026/08/2026-08-13T16-45-11-222Z-a4d8ac7e95.json",
       "vaultRecordHash": "2cdc5f2c1ebfc09ac38b5da467e11bf31aaa299fb429a2f94565684276c4a0c8"
+    },
+    {
+      "date": "2026-08-14",
+      "generatedAt": "2026-08-14T07:56:41.449Z",
+      "mode": "delta",
+      "snapshotHash": "ecd2334625a6419d1401c0c77a0213cbc8f9ac2f055736e57c2e78ac3bb75bf3",
+      "sourceCompositeHash": "807c0ebe9b8c659656821467cf01d696ea834fe3f3da5fdfc21645919b351125",
+      "eventCount": 12,
+      "eventIds": [
+        "f678902387ba6342af97",
+        "b2d962270110df75a38b",
+        "c80fed23adb3cf83e3ca",
+        "9268b17db7f6f3f62672",
+        "4680bf2eb933db129c9f",
+        "40e83a256a6c17fe0b98",
+        "8c9b7672f4eec6d013da",
+        "3e18f7eec1bb803e5fb3",
+        "98455239478252c5edb8",
+        "e118853d455be99019b3",
+        "4422e82815fd708ac058",
+        "4a43ac9f803c01d5df76"
+      ],
+      "watchCount": 6,
+      "vaultRecordPath": "intelligence/memory-vault/2026/08/2026-08-14T07-56-41-449Z-ecd2334625.json",
+      "vaultRecordHash": "2a725a04b10b26a3a27cd2469bdd3e0735c684494f8f3ebb476349b8648fa2db"
     }
   ],
-  "events": []
+  "events": [
+    {
+      "id": "f678902387ba6342af97",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "stable-capital",
+      "entity": "Stable Companies Index",
+      "metric": "coverage-state",
+      "previousValue": {
+        "status": "last-full-coverage",
+        "fullCoverage": false
+      },
+      "currentValue": {
+        "status": "current-full-coverage",
+        "fullCoverage": true
+      },
+      "unit": null,
+      "severity": "important",
+      "summary": "Stable Index coverage state changed: last-full-coverage/false → current-full-coverage/true.",
+      "whyItMatters": "Stable Reference APY is fail-closed; coverage state determines whether the current rate is fully observed or the latest full observation is being carried forward.",
+      "sourceKeys": [
+        "stableCapital",
+        "stableIndex"
+      ]
+    },
+    {
+      "id": "b2d962270110df75a38b",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "reporting",
+      "entity": "defitea.eth",
+      "metric": "new-daily-snapshot",
+      "previousValue": "2026-08-13",
+      "currentValue": "2026-08-14",
+      "unit": null,
+      "severity": "info",
+      "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-14.",
+      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "c80fed23adb3cf83e3ca",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "reporting",
+      "entity": "defitea.eth",
+      "metric": "currentMonthCashFlowUsd",
+      "previousValue": 16.96,
+      "currentValue": 20.03,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "defitea.eth current-month cash-flow/reference-income counter moved $16.96 → $20.03.",
+      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "9268b17db7f6f3f62672",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "new-daily-snapshot",
+      "previousValue": "2026-08-13",
+      "currentValue": "2026-08-14",
+      "unit": null,
+      "severity": "info",
+      "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-14.",
+      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "4680bf2eb933db129c9f",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "currentMonthCashFlowUsd",
+      "previousValue": 0.0121,
+      "currentValue": 0.0242,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.01 → $0.02.",
+      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "40e83a256a6c17fe0b98",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "currentMonthGeneratedIncomeUsd",
+      "previousValue": 0.0121,
+      "currentValue": 0.0242,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Monetra.eth current-month generated income moved $0.0121 → $0.0242.",
+      "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "8c9b7672f4eec6d013da",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "rewards",
+      "entity": "0x5860...83CA8.eth",
+      "metric": "totalUsd",
+      "previousValue": 58.336566,
+      "currentValue": 57.611141,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "0x5860...83CA8.eth accrued rewards moved $58.34 → $57.61 ($-0.73).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "3e18f7eec1bb803e5fb3",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "rewards",
+      "entity": "1milliondollar.eth",
+      "metric": "totalUsd",
+      "previousValue": 25.35009,
+      "currentValue": 25.008536,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "1milliondollar.eth accrued rewards moved $25.35 → $25.01 ($-0.34).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "98455239478252c5edb8",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "rewards",
+      "entity": "aerocvxyb.eth",
+      "metric": "totalUsd",
+      "previousValue": 97.677392,
+      "currentValue": 97.12057,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "aerocvxyb.eth accrued rewards moved $97.68 → $97.12 ($-0.56).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "e118853d455be99019b3",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "rewards",
+      "entity": "defitea.eth",
+      "metric": "totalUsd",
+      "previousValue": 100.643733,
+      "currentValue": 100.184998,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "defitea.eth accrued rewards moved $100.64 → $100.18 ($-0.46).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "4422e82815fd708ac058",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "rewards",
+      "entity": "Rook's portfolio",
+      "metric": "totalUsd",
+      "previousValue": 154.536532,
+      "currentValue": 152.33901,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Rook's portfolio accrued rewards moved $154.54 → $152.34 ($-2.20).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "4a43ac9f803c01d5df76",
+      "detectedAt": "2026-08-14T07:56:41.449Z",
+      "category": "stable-capital",
+      "entity": "Stable Companies Index",
+      "metric": "embeddedIncomeSinceTrackingUsd",
+      "previousValue": 0.00324679,
+      "currentValue": 0.00798347,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Observed embedded income since tracking moved $0.0032 → $0.0080.",
+      "whyItMatters": "Embedded Yield is the system’s memory of value that compounds inside positions instead of waiting to be claimed.",
+      "sourceKeys": [
+        "stableIndex",
+        "embeddedLedger"
+      ]
+    }
+  ]
 }
