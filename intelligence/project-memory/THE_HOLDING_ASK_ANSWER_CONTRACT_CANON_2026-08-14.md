@@ -45,6 +45,16 @@ The relevant evidence is not code size. It is answer quality:
 - error rate;
 - repeated unresolved topics/questions.
 
+The v0.4 quality view is deliberately **rolling rather than lifetime-cumulative**:
+
+- local observation window: **30 days**;
+- maximum retained quality events: **500**;
+- rates are rebuilt from only the events still inside that window;
+- expired events no longer influence measured/partial/warming/unknown/error rates;
+- repeated unresolved fingerprints are also rebuilt from the same active window.
+
+This prevents stale historical unknowns from permanently dominating the signal after the router improves. The future model-layer decision should be based on recent unresolved demand and recent answer quality, not on an ever-growing lifetime error count.
+
 This makes the future model transition evidence-driven rather than architecture-driven.
 
 ## Privacy boundary
@@ -56,9 +66,12 @@ The v0.4 quality mechanism:
 - does not add a server endpoint;
 - does not activate persistent learning;
 - does not store raw questions in its quality ledger;
+- does not store answer text in its quality ledger;
 - does not create a raw Question Ledger;
 - uses a browser-local random salt plus SHA-256 for repeated unresolved-question fingerprints;
-- stores only bounded local aggregates/coarse topic/fingerprint/count/timestamps/language;
+- stores at most 500 bounded local non-content events;
+- each quality event contains only timestamp, confidence/outcome bucket, coarse topic, language and optional one-way unresolved fingerprint;
+- derives aggregate counts, rates and repeated-unresolved summaries from the active 30-day window;
 - does not transmit those quality metrics anywhere.
 
 Existing Safe Conversation Learning activation gates remain unchanged and fail-closed.
@@ -83,6 +96,8 @@ Execution authority remains `none`.
 Syntax-valid generated code is not sufficient proof of semantic correctness.
 
 During v0.4 candidate validation, an external patch generator produced syntactically valid but semantically malformed regular expressions after escape processing. Manual post-GREEN inspection detected the issue before PR. The candidate was repaired and a behavioral semantic gate was added for numeric/coverage classification.
+
+The later 30-day quality-window enhancement was also validated behaviorally: an event older than 30 days had to disappear, current events had to remain, and rates had to recompute from only the surviving window.
 
 Durable rule:
 
