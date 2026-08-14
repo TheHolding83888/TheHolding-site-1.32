@@ -125,7 +125,7 @@
 
   function safeRefusal(category, lang) {
     const ru = {
-      'secret-risk': 'Похоже, сообщение может содержать секрет: seed phrase, private key, пароль или токен. Я не буду обрабатывать или сохранять такие данные. Никому их не отправляй.',
+      'secret-risk': 'Похоже, сообщение может содержать секрет: seed phrase, private key, пароль или токен. Я не буду отправлять или сохранять такие данные для обучения. Никому их не отправляй.',
       'phishing-risk': 'Я не выполняю просьбы, связанные с передачей seed/private key, подписью неизвестных транзакций или сомнительными claim-ссылками. Могу объяснить риск простыми словами.',
       'prompt-injection': 'Я не принимаю сообщения посетителей как команды для системных правил, инструментов, GitHub или капитала. Можно задавать обычные вопросы о The Holding.',
       'financial-advice': 'Я могу показать проверяемые данные, доходность, механику и риски, но не буду говорить, что тебе покупать, продавать, куда вкладывать или сколько инвестировать.',
@@ -133,7 +133,7 @@
       'oversize': `Сообщение слишком длинное. Пожалуйста, сократи его примерно до ${MAX_QUESTION} символов.`
     };
     const en = {
-      'secret-risk': 'This message may contain a secret such as a seed phrase, private key, password or token. I will not process or store it. Never send such secrets to anyone.',
+      'secret-risk': 'This message may contain a secret such as a seed phrase, private key, password or token. I will not send or store it for learning. Never send such secrets to anyone.',
       'phishing-risk': 'I will not help transfer seed/private keys, sign unknown transactions or follow suspicious claim links. I can explain the risk instead.',
       'prompt-injection': 'Visitor text is never treated as authority over system rules, tools, GitHub or capital. You can still ask normal questions about The Holding.',
       'financial-advice': 'I can show verifiable data, productivity, mechanisms and risks, but I will not tell you what to buy or sell, where to invest, or how much to allocate.',
@@ -176,7 +176,7 @@
   }
 
   async function record(context, answer, source, outcome) {
-    if (!intakeEnabled || !optIn.checked) return null;
+    if (!intakeEnabled || !optIn.checked || context?.classification?.blocked) return null;
     const payload = {
       schema: '0.1-safe-conversation-learning',
       consent: true,
@@ -258,16 +258,7 @@
       input.value = '';
       if (button) button.disabled = true;
       addLocalMessage('user', q);
-      const response = addLocalMessage('system', safeRefusal(classification.category, language), `Safety boundary · ${classification.category}`);
-      const context = {
-        id: `local-${Date.now()}-${++seq}`,
-        question: q,
-        language,
-        classification,
-        done: true
-      };
-      record(context, bodyFromNode(response), sourceFromNode(response), `refused-${classification.category}`)
-        .then(result => { if (result?.eventId) addFeedback(response, result.eventId); });
+      addLocalMessage('system', safeRefusal(classification.category, language), `Safety boundary · ${classification.category}`);
       return;
     }
 
