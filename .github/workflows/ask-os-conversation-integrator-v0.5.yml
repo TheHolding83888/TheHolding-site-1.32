@@ -46,10 +46,10 @@ jobs:
           must(app.includes('function compareCompaniesAnswer'), 'company compare missing');
           must(app.includes("source: 'Proposal Work Queue'"), 'real Proposal source missing');
           must(app.includes("source: 'OS Governance · Proposal + Builder + Guardian'"), 'OS governance source missing');
-          must(page.includes('./console/app.js?v=0.5'), 'v0.5 cache version missing');
+          must(page.includes('/agents/console/app.js?v=0.5'), 'v0.5 cache version missing');
           must(String(learning.vars?.LEARNING_INTAKE_ENABLED) === 'false', 'persistent learning activated');
           must(!app.includes("fetch('/api/"), 'new API fetch added');
-          must(app.includes("executionAuthority"), 'authority contract disappeared');
+          must(app.includes('executionAuthority'), 'authority contract disappeared');
           console.log('Ask v0.5 static contracts: PASS');
           NODE
       - name: Verify production boundary
@@ -58,7 +58,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git restore .github/workflows/ask-os-conversation-integrator-v0.5.yml verification/ask-os-conversation-integrator-v0.5.mjs
+          git restore .github/workflows/ask-os-conversation-integrator-v0.5.yml verification/ask-os-conversation-integrator-v0.5.mjs verification/ask-os-conversation-v0.5-functions.txt
           git status --short
           changed="$(git diff --name-only)"
           test "$changed" = $'agents/console/app.js\nagents/index.html'
