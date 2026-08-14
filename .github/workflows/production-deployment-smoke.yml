@@ -53,17 +53,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SUMMARY="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$HEAD_SHA/check-runs" \
-            --jq '.check_runs[] | select(.name == "Workers Builds: theholdingprotocol" and .conclusion == "success") | .output.summary' | tail -n1)"
-          PREVIEW_URL="$(printf '%s\n' "$SUMMARY" | sed -nE 's#^Preview URL: (https://[^ ]+)$#\1#p' | tail -n1)"
-          if [[ -z "$PREVIEW_URL" ]]; then
-            VERSION_ID="$(printf '%s\n' "$SUMMARY" | sed -nE 's/^Version ID: ([0-9a-f-]{36})$/\1/p' | tail -n1)"
-            if [[ -z "$VERSION_ID" ]]; then
-              echo 'Cloudflare GREEN check did not publish a Preview URL or Version ID.' >&2
-              exit 1
-            fi
-            PREVIEW_URL="https://${VERSION_ID:0:8}-theholdingprotocol.${WORKERS_SUBDOMAIN}.workers.dev"
+          VERSION_ID="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$HEAD_SHA/check-runs" \
+            --jq '[.check_runs[] | select(.name == "Workers Builds: theholdingprotocol" and .conclusion == "success") | .output.summary | capture("Version ID: (?<id>[0-9a-f-]{36})").id] | last // empty')"
+          if [[ ! "$VERSION_ID" =~ ^[0-9a-f-]{36}$ ]]; then
+            echo 'Cloudflare GREEN check did not expose a machine-readable Version ID.' >&2
+            exit 1
           fi
+          PREVIEW_URL="https://${VERSION_ID:0:8}-theholdingprotocol.${WORKERS_SUBDOMAIN}.workers.dev"
+          echo "Cloudflare Version ID: $VERSION_ID"
           echo "Exact preview URL: $PREVIEW_URL"
 
           for attempt in $(seq 1 18); do
