@@ -32,7 +32,7 @@ const errors = [];
 const warnings = [];
 
 if (q.version !== '0.1-proposal-work-queue') errors.push(`unexpected queue version ${q.version}`);
-if (q.engineVersion !== '0.1.1-deterministic-proposal-engine') errors.push(`unexpected engine version ${q.engineVersion}`);
+if (q.engineVersion !== '0.1.2-decision-eligible-proposal-engine') errors.push(`unexpected engine version ${q.engineVersion}`);
 if (policy.version !== '0.1.1-proposal-policy') errors.push(`unexpected policy version ${policy.version}`);
 if (policy.mode !== 'proposal-only-no-execution') errors.push('policy mode escaped proposal-only');
 if (policy.authorities?.caseLifecycleAndExperience !== F.learning) errors.push('policy Learning path contract mismatch');
@@ -57,7 +57,12 @@ for (const key of ['noTransactions','noSigning','noWalletAccess','noProductionEx
   if (q.constraints?.[key] !== true) errors.push(`missing hard boundary: ${key}`);
 }
 
-const activeCaseKeys = new Set((learning.activeCases ?? []).map(x => x.caseKey));
+const observedLearningCases = learning.activeCases ?? [];
+const eligibleLearningCases = observedLearningCases.filter(x => x.experienceEligibility === 'decision-worthy');
+const activeCaseKeys = new Set(eligibleLearningCases.map(x => x.caseKey));
+if (q.summary?.activeCaseCount !== eligibleLearningCases.length) errors.push('Proposal activeCaseCount is not decision-worthy Learning count');
+if (q.summary?.observedActiveCaseCount !== observedLearningCases.length) errors.push('Proposal observedActiveCaseCount mismatch');
+if (q.summary?.dataHygieneCaseCount !== observedLearningCases.length - eligibleLearningCases.length) errors.push('Proposal dataHygieneCaseCount mismatch');
 const ids = new Set();
 const keys = new Set();
 for (const x of q.proposals ?? []) {
@@ -102,7 +107,8 @@ const report = {
   },
   counts: {
     proposals: q.proposals?.length ?? 0,
-    activeLearningCases: learning.activeCases?.length ?? 0,
+    observedActiveLearningCases: observedLearningCases.length,
+    decisionWorthyActiveLearningCases: eligibleLearningCases.length,
     errors: errors.length,
     warnings: warnings.length,
   },

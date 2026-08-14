@@ -94,5 +94,26 @@
     "workflowPlaneMutationAllowed": false,
     "decisionRecordsAreExecutable": false,
     "lessonsMayChangePolicyAutomatically": false
+  },
+  "experienceEligibility": {
+    "version": "0.1-decision-quality-gate",
+    "decisionWorthyRecommendationClasses": [
+      "security-review",
+      "security-provenance-triage",
+      "third-party-trust-review",
+      "human-security-escalation"
+    ],
+    "dataHygieneRecommendationClasses": [
+      "data-gap-resolution",
+      "coverage-resolution",
+      "reward-route-resolution",
+      "stable-coverage-resolution",
+      "evidence-review"
+    ],
+    "securitySeveritiesAlwaysDecisionWorthy": [
+      "high",
+      "critical"
+    ],
+    "rule": "All Brain cases remain observable lifecycle memory. Only decision-worthy cases may receive owner Decision Learning records, scored outcomes, calibration, deterministic lessons, or active Proposal work. Unknown eligibility fails closed."
   }
 }

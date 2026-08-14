@@ -119,6 +119,16 @@ function experienceClass(caseObj) {
     recommendationClass: caseObj?.recommendationClass ?? null,
   })).slice(0, 16)}`;
 }
+function experienceEligibility(policy, caseObj) {
+  const cfg = policy?.experienceEligibility ?? {};
+  const recommendationClass = caseObj?.recommendationClass ?? null;
+  const severity = String(caseObj?.severity ?? '').toLowerCase();
+  const domain = caseObj?.domain ?? null;
+  if (domain === 'security' && (cfg.securitySeveritiesAlwaysDecisionWorthy ?? []).includes(severity)) return 'decision-worthy';
+  if ((cfg.decisionWorthyRecommendationClasses ?? []).includes(recommendationClass)) return 'decision-worthy';
+  if ((cfg.dataHygieneRecommendationClasses ?? []).includes(recommendationClass)) return 'data-hygiene';
+  fail(`Unclassified experience eligibility for recommendationClass=${recommendationClass} domain=${domain} severity=${severity}`);
+}
 function casePayloadHash(caseObj) {
   return sha256(stableStringify({
     id: caseObj?.id ?? null,
@@ -364,6 +374,11 @@ const brain = brainLoaded.data;
 const stack = stackLoaded.data;
 const policy = policyLoaded.data;
 const ledger = ledgerLoaded.data;
+for (const decision of ledger.decisions) {
+  if (experienceEligibility(policy, decision.sourceCase ?? {}) !== 'decision-worthy') {
+    fail(`Decision ${decision.decisionId} is bound to a non-decision-worthy Brain case; refusing outcome learning/calibration noise`);
+  }
+}
 const policySha = sha256(policyLoaded.text);
 const learningReleaseSha = sha256(learningReleaseLoaded.text);
 const existingContextLoaded = readJson(FILES.context, false);
@@ -765,6 +780,7 @@ const activeCases = currentCases.map((item) => {
     recommendationClass: item.recommendationClass ?? null,
     riskTier: item.riskTier ?? null,
     confidence: item.confidence ?? null,
+    experienceEligibility: experienceEligibility(policy, item),
     lifecycle: {
       firstSeenAt: record?.firstSeenAt ?? null,
       lastSeenAt: record?.lastSeenAt ?? null,
@@ -818,6 +834,8 @@ const contextCore = {
   },
   summary: {
     activeCaseCount: activeCases.length,
+    decisionWorthyActiveCaseCount: activeCases.filter((x) => x.experienceEligibility === 'decision-worthy').length,
+    dataHygieneActiveCaseCount: activeCases.filter((x) => x.experienceEligibility === 'data-hygiene').length,
     rememberedCaseCount: lifecycle.caseCount,
     brainObservationCount: lifecycle.observationCount,
     decisionCount: ledger.decisionCount,
@@ -875,7 +893,9 @@ const brief = [
   '',
   '## Memory',
   '',
-  `Active Brain cases: ${context.summary.activeCaseCount}`,
+  `Active Brain cases observed: ${context.summary.activeCaseCount}`,
+  `Decision-worthy active cases: ${context.summary.decisionWorthyActiveCaseCount}`,
+  `Data-hygiene active cases: ${context.summary.dataHygieneActiveCaseCount}`,
   `Remembered cases: ${context.summary.rememberedCaseCount}`,
   `Coherent Brain observations: ${context.summary.brainObservationCount}`,
   `Owner decisions: ${context.summary.decisionCount}`,

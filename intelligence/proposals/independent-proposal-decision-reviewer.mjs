@@ -52,7 +52,7 @@ for (const d of ledger.decisions ?? []) {
   if (effective.has(d.caseKey)) errors.push(`multiple effective decisions for ${d.caseKey}`);
   effective.set(d.caseKey, d);
 }
-const activeLearning = new Map((learning.activeCases ?? []).map(c => [c.caseKey, c]));
+const activeLearning = new Map((learning.activeCases ?? []).filter(c => c.experienceEligibility === 'decision-worthy').map(c => [c.caseKey, c]));
 const mapping = policy.dispositionToProposalState ?? {};
 let bound = 0, approved = 0, rejected = 0, deferred = 0, historical = 0;
 
