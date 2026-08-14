@@ -1,16 +1,16 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-14T05:59:18.992Z
+Generated: 2026-08-14T07:38:31.691Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-14T05:59:18.812Z
-Brain snapshot: da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f
+Brain generated: 2026-08-14T07:38:31.503Z
+Brain snapshot: ef15793a5f735ecbb0fd285f2f59c155cb173ebcd42511ff4f7d09f679564233
 Cases: 9
 Evidence objects: 11
 
 ## What changed
 
-Current canonical inputs contain 0 material Observer change(s), 0 new security finding event(s), and 1 resolved security finding event(s).
+No new material Observer or Security change events are present in the current canonical inputs. Existing watch items remain active.
 
 ## Active deterministic cases
 
@@ -27,7 +27,7 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-26216c3890b9f3a3
+Evidence: EV-b70f1793f8001622
 
 ### 2. 7 current findings
 
@@ -42,7 +42,7 @@ What follows: A third-party script origin is part of the browser trust boundary.
 
 Deterministic action: Assess SRI feasibility, self-hosting, removal, or tighter CSP for the exact script. Preserve analytics behavior until the safer replacement is verified.
 
-Evidence: EV-3e7040b52dacae40
+Evidence: EV-449cb6af94f17299
 
 ### 3. liquity_lqty
 
