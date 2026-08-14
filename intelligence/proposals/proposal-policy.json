@@ -1,10 +1,10 @@
 {
-  "version": "0.1-proposal-policy",
+  "version": "0.1.1-proposal-policy",
   "mode": "proposal-only-no-execution",
   "purpose": "Transform grounded Brain cases plus accumulated decision/outcome learning into a deterministic machine-readable work queue without creating, approving, or executing operational actions.",
   "authorities": {
     "facts": "intelligence/brain-intelligence.json",
-    "caseLifecycleAndExperience": "intelligence/learning/learning-context.json",
+    "caseLifecycleAndExperience": "intelligence/learning-state/learning-context.json",
     "cognitiveCoherence": "intelligence/cognitive-stack-state.json",
     "execution": "none"
   },
@@ -18,13 +18,8 @@
     "REJECTED",
     "SUPERSEDED"
   ],
-  "engineMayCreateStates": [
-    "PROPOSED"
-  ],
-  "engineMayTransitionStates": [
-    "PROPOSED",
-    "SUPERSEDED"
-  ],
+  "engineMayCreateStates": ["PROPOSED"],
+  "engineMayTransitionStates": ["PROPOSED", "SUPERSEDED"],
   "humanControlledStates": [
     "APPROVED",
     "IN_PROGRESS",
@@ -33,12 +28,7 @@
     "RELEASED",
     "REJECTED"
   ],
-  "riskTiers": [
-    "low",
-    "medium",
-    "high",
-    "critical"
-  ],
+  "riskTiers": ["low", "medium", "high", "critical"],
   "hardBoundaries": {
     "noTransactions": true,
     "noSigning": true,
