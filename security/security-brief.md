@@ -1,15 +1,15 @@
 # The Holding — Autonomous Security Intelligence
 
-**Generated:** 2026-08-14T14:12:46.920Z
+**Generated:** 2026-08-14T15:06:02.068Z
 **Sentinel:** 0.2-browser-trust-aware-security-sentinel
 
-## 5 high-signal security watch items detected; no critical secret exposure found.
+## 2 high-signal security watch items detected; no critical secret exposure found.
 
 - Critical: 0
-- High: 5
+- High: 2
 - Medium: 1
-- New findings: 0
-- Resolved findings: 0
+- New findings: 2
+- Resolved findings: 5
 
 ## Browser trust review
 
@@ -21,13 +21,12 @@
 ## Protect next
 
 - **medium** — Re-review the changed DOM rendering surface; reviewed innerHTML exemptions are valid only for exact unchanged Git blobs.
-- **medium** — Plan a Content Security Policy in report-only mode before enforcing it across the public portal.
 - **roadmap** — Before interactive AI dialogue: add prompt-injection boundaries, tool permission gates, private/public context separation and immutable action audit logs.
 
 ## Permanent security memory
 
-- Security Vault runs: 153.
-- Latest record: `security/security-vault/2026/08/2026-08-14T14-12-46-920Z-9aaa4b6d07.json`.
+- Security Vault runs: 154.
+- Latest record: `security/security-vault/2026/08/2026-08-14T15-06-02-068Z-73a4e09510.json`.
 - Vault retention: indefinite / append-only hash chain.
 
 ---

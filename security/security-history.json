@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-14T14:12:46.920Z",
+  "lastUpdatedAt": "2026-08-14T15:06:02.068Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 153,
-    "vaultRunCount": 153,
+    "runCount": 154,
+    "vaultRunCount": 154,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -1849,6 +1849,18 @@
       "highCount": 5,
       "newFindingCount": 0,
       "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-14T15:06:02.068Z",
+      "status": "watch",
+      "snapshotHash": "73a4e09510fcc0269de002635d13fa51468f0eb2b686612a12b6ad534e1f9400",
+      "recordPath": "security/security-vault/2026/08/2026-08-14T15-06-02-068Z-73a4e09510.json",
+      "recordHash": "1777cba216a04e94e93b8a4126f625b28cf67fb1f3d5696d42e72d66b4ab6ba5",
+      "findingCount": 3,
+      "criticalCount": 0,
+      "highCount": 2,
+      "newFindingCount": 2,
+      "resolvedFindingCount": 5
     }
   ],
   "events": [
@@ -6205,6 +6217,83 @@
       "severity": "high",
       "category": "public-surface-unavailable",
       "summary": "Public security probe failed for https://theholding.ai/yield-reports/.",
+      "file": null,
+      "entity": "https://theholding.ai/yield-reports/"
+    },
+    {
+      "id": "c6efe238a6d3b92b0ebf9c15286d8dd4aafec2f2bd7dc38f4ae30c3157b73c5e",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-14T15:06:02.068Z",
+      "findingId": "119c887e98b579ae9b0ac6bbead75c30b398a9d45d207b24f62f24bc71907fae",
+      "severity": "high",
+      "category": "privileged-trigger",
+      "summary": "Workflow uses pull_request_target.",
+      "file": ".github/workflows/production-boundary-guard.yml",
+      "entity": null
+    },
+    {
+      "id": "8047a6af3cfbc60dcced75b4168793857498956aef892eeb668eda5de691de8b",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-14T15:06:02.068Z",
+      "findingId": "796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5",
+      "severity": "high",
+      "category": "privileged-trigger",
+      "summary": "Workflow uses pull_request_target.",
+      "file": ".github/workflows/production-deployment-smoke.yml",
+      "entity": null
+    },
+    {
+      "id": "498c7ad1a3600b397084d607ac2aaa010ba11ba8a815326f07fc786d457dc843",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-14T15:06:02.068Z",
+      "findingId": "7a5a1cec1797dcd9a05cdfa5ce02b0e8f43ee4f5f0f10689222b77f29e0e33b5",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "summary": "Resolved: Public security probe failed for https://theholding.ai/agents/.",
+      "file": null,
+      "entity": "https://theholding.ai/agents/"
+    },
+    {
+      "id": "c29cdcb40941040e93f826006d86f6057a1998a8116bc627924ab7de1b702c9e",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-14T15:06:02.068Z",
+      "findingId": "31153ac691914b4034d7d064d721d5f87416195e43f22473d014951f3567b408",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "summary": "Resolved: Public security probe failed for https://theholding.ai/companies/.",
+      "file": null,
+      "entity": "https://theholding.ai/companies/"
+    },
+    {
+      "id": "4116711a5ae579ab8b65794fd418a61287631f3b91ff58580b6aabf19b7e0d38",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-14T15:06:02.068Z",
+      "findingId": "a04971f0a71e2aec7b8db8f0ae1aabb492b4271cc568315851de080d7af3da15",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "summary": "Resolved: Public security probe failed for https://theholding.ai/intelligence/change-intelligence.json.",
+      "file": null,
+      "entity": "https://theholding.ai/intelligence/change-intelligence.json"
+    },
+    {
+      "id": "16bad777b8be39f19048bbc49fa699835b9e24208082d1c193f70cfe92e24c0e",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-14T15:06:02.068Z",
+      "findingId": "163f2397a439597f7cc2ad1b651e5240a000a0834a3044c9ea439776c935b48a",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "summary": "Resolved: Public security probe failed for https://theholding.ai/monetra/.",
+      "file": null,
+      "entity": "https://theholding.ai/monetra/"
+    },
+    {
+      "id": "41bd89c5409f9c1454979a51f9012b611f6cc3d1fddf2b6d992e5f70d6f0afa8",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-14T15:06:02.068Z",
+      "findingId": "c90090bcf5e3b0a057a6917a574c6e88db425c0b931c77d05131761629f67196",
+      "severity": "high",
+      "category": "public-surface-unavailable",
+      "summary": "Resolved: Public security probe failed for https://theholding.ai/yield-reports/.",
       "file": null,
       "entity": "https://theholding.ai/yield-reports/"
     }
