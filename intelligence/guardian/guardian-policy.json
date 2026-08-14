@@ -1,0 +1,51 @@
+{
+  "version": "0.1-guardian-policy",
+  "mode": "deterministic-capability-gate-no-execution",
+  "purpose": "Classify exact, independently reviewed Builder candidates into bounded capability states without granting repository, release, wallet, or capital execution authority.",
+  "authorities": {
+    "candidateWork": "intelligence/builder/candidate-queue.json",
+    "candidateReview": "intelligence/builder/candidate-eval.json",
+    "ownerDecisionMemory": "intelligence/learning/decision-ledger.json",
+    "execution": "none"
+  },
+  "gateDecisions": ["RESEARCH_ONLY", "BLOCKED"],
+  "researchOnlyRule": {
+    "requiredCandidateState": "CANDIDATE",
+    "requireIndependentBuilderPass": true,
+    "requireExactOwnerDecisionBinding": true,
+    "requireAffectedFilesEmpty": true,
+    "requireProductionMutationAuthorizedFalse": true,
+    "allowedCapabilities": [
+      "evidence_collection",
+      "provenance_classification",
+      "security_or_economic_analysis",
+      "candidate_specification",
+      "verification_planning"
+    ]
+  },
+  "blockedWhen": [
+    "Builder reviewer is not PASS",
+    "candidate is not exactly bound to the reviewed Builder queue",
+    "candidate lacks exact human-owner Decision Memory",
+    "candidate attempts repository or production mutation",
+    "candidate declares affected files before a sandbox-build capability exists",
+    "wallet, signing, transaction, capital, merge, or release authority is requested"
+  ],
+  "hardBoundaries": {
+    "repositoryCodeMutationAllowed": false,
+    "branchCreationAllowed": false,
+    "pullRequestCreationAllowed": false,
+    "automaticMergeAllowed": false,
+    "automaticReleaseAllowed": false,
+    "productionMutationAuthorized": false,
+    "walletActionAllowed": false,
+    "signingAllowed": false,
+    "transactionAllowed": false,
+    "capitalExecutionAllowed": false,
+    "methodologyMutationAllowed": false,
+    "policyMutationAllowed": false,
+    "sandboxBuildAuthority": false,
+    "humanReleaseApprovalRequired": true,
+    "executionAuthority": "none"
+  }
+}
