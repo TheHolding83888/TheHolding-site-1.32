@@ -1,10 +1,10 @@
 {
   "version": "0.1-grounded-reasoning-gateway",
   "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-  "generatedAt": "2026-08-14T09:26:36.959Z",
+  "generatedAt": "2026-08-14T10:19:59.848Z",
   "mode": "delta",
   "status": "watch",
-  "headline": "20 evidence-bound reasoning case(s) are active across economic and security memory.",
+  "headline": "18 evidence-bound reasoning case(s) are active across economic and security memory.",
   "currentPosture": {
     "observer": {
       "mode": "delta",
@@ -23,7 +23,7 @@
       "status": "green",
       "critical": 0,
       "high": 0,
-      "medium": 38,
+      "medium": 0,
       "newFindingEvents": 0,
       "resolvedFindingEvents": 0
     }
@@ -249,39 +249,13 @@
             "newFindings": [],
             "resolvedFindings": []
           },
-          "sourceSha256": "0aebc241513b9267d35c0beec57ea9d84626258a4ac9116336e8e771f579477d",
-          "observedAt": "2026-08-14T09:26:36.399Z",
+          "sourceSha256": "62157f7606ea2124c03fd4ad8054deb562b79c248d77fe3764ff94b21b8a9c7e",
+          "observedAt": "2026-08-14T10:19:58.996Z",
           "interpretation": "direct"
         }
       ]
     },
     "whyItMatters": [
-      {
-        "id": "353fd15f649ee569d551d74c",
-        "entity": "31 current findings",
-        "answer": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidenceRefs": [
-          {
-            "source": "security/security-intelligence.json",
-            "pointer": "/currentFindings",
-            "selector": "severity=medium&category=dom-innerhtml",
-            "sourceSha256": "0aebc241513b9267d35c0beec57ea9d84626258a4ac9116336e8e771f579477d"
-          }
-        ]
-      },
-      {
-        "id": "bd92163ceaf2983dcdb57151",
-        "entity": "7 current findings",
-        "answer": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
-        "evidenceRefs": [
-          {
-            "source": "security/security-intelligence.json",
-            "pointer": "/currentFindings",
-            "selector": "severity=medium&category=external-script-no-sri",
-            "sourceSha256": "0aebc241513b9267d35c0beec57ea9d84626258a4ac9116336e8e771f579477d"
-          }
-        ]
-      },
       {
         "id": "a2edb74a9d50a22d9e91e64a",
         "entity": "liquity_lqty",
@@ -519,18 +493,6 @@
     ],
     "whatFollows": [
       {
-        "id": "353fd15f649ee569d551d74c",
-        "entity": "31 current findings",
-        "answer": "A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.",
-        "confidence": "high"
-      },
-      {
-        "id": "bd92163ceaf2983dcdb57151",
-        "entity": "7 current findings",
-        "answer": "A third-party script origin is part of the browser trust boundary.",
-        "confidence": "high"
-      },
-      {
         "id": "a2edb74a9d50a22d9e91e64a",
         "entity": "liquity_lqty",
         "answer": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
@@ -640,22 +602,6 @@
       }
     ],
     "whatShouldBeDone": [
-      {
-        "id": "353fd15f649ee569d551d74c",
-        "entity": "31 current findings",
-        "answer": "Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.",
-        "recommendationClass": "security-provenance-triage",
-        "riskTier": "medium",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "bd92163ceaf2983dcdb57151",
-        "entity": "7 current findings",
-        "answer": "Assess SRI feasibility, self-hosting, removal, or tighter CSP for the exact script. Preserve analytics behavior until the safer replacement is verified.",
-        "recommendationClass": "third-party-trust-review",
-        "riskTier": "medium",
-        "actionMode": "proposal-only"
-      },
       {
         "id": "a2edb74a9d50a22d9e91e64a",
         "entity": "liquity_lqty",
@@ -803,104 +749,6 @@
     ]
   },
   "reasoningCases": [
-    {
-      "id": "353fd15f649ee569d551d74c",
-      "domain": "security",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "entity": "31 current findings",
-      "signal": "31 current medium security finding(s) in category dom-innerhtml.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "whatFollows": "A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.",
-      "whatShouldBeDone": "Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.",
-      "recommendationClass": "security-provenance-triage",
-      "riskTier": "medium",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "security/security-intelligence.json",
-          "pointer": "/currentFindings",
-          "value": {
-            "derivedCount": 31,
-            "representative": [
-              {
-                "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
-                "file": "05081966_calculator/index.html",
-                "line": 102,
-                "summary": "Dynamic innerHTML assignment detected."
-              },
-              {
-                "id": "7a89164116aed3a575601c8def93fce5ecfa59c26a0f6362ec85a5d56b7d2ec5",
-                "file": "05081966_company/index.html",
-                "line": 159,
-                "summary": "Dynamic innerHTML assignment detected."
-              },
-              {
-                "id": "e85d5502b20749a485ba93e0822b12be30641a64b6a7adf7da7403380f5e6907",
-                "file": "05081966/index.html",
-                "line": 162,
-                "summary": "Dynamic innerHTML assignment detected."
-              }
-            ]
-          },
-          "sourceSha256": "0aebc241513b9267d35c0beec57ea9d84626258a4ac9116336e8e771f579477d",
-          "observedAt": "2026-08-14T09:26:36.399Z",
-          "interpretation": "derived-from-direct-findings",
-          "selector": "severity=medium&category=dom-innerhtml",
-          "note": "Count is derived deterministically from current Security Sentinel findings."
-        }
-      ]
-    },
-    {
-      "id": "bd92163ceaf2983dcdb57151",
-      "domain": "security",
-      "severity": "medium",
-      "category": "external-script-no-sri",
-      "entity": "7 current findings",
-      "signal": "7 current medium security finding(s) in category external-script-no-sri.",
-      "whyItMatters": "A compromised third-party script host can execute code in visitors’ browsers. SRI is useful when the asset is immutable.",
-      "whatFollows": "A third-party script origin is part of the browser trust boundary.",
-      "whatShouldBeDone": "Assess SRI feasibility, self-hosting, removal, or tighter CSP for the exact script. Preserve analytics behavior until the safer replacement is verified.",
-      "recommendationClass": "third-party-trust-review",
-      "riskTier": "medium",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "security/security-intelligence.json",
-          "pointer": "/currentFindings",
-          "value": {
-            "derivedCount": 7,
-            "representative": [
-              {
-                "id": "b8ee5415856ac8f15ad6439d6e7de14890e6088f694b13f73f19a2770fe0cc3c",
-                "file": "blog/index.html",
-                "line": 610,
-                "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
-              },
-              {
-                "id": "bdc0201496c52b165895ddfdd430be1010e6fc6dd4335adb97544e7efc79ea41",
-                "file": "defitea/index.html",
-                "line": 1950,
-                "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
-              },
-              {
-                "id": "b7dc99aad99780567e08c882e6d84fc25d6339404849c262ebd223d0b6fa66ed",
-                "file": "faq/index.html",
-                "line": 404,
-                "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
-              }
-            ]
-          },
-          "sourceSha256": "0aebc241513b9267d35c0beec57ea9d84626258a4ac9116336e8e771f579477d",
-          "observedAt": "2026-08-14T09:26:36.399Z",
-          "interpretation": "derived-from-direct-findings",
-          "selector": "severity=medium&category=external-script-no-sri",
-          "note": "Count is derived deterministically from current Security Sentinel findings."
-        }
-      ]
-    },
     {
       "id": "a2edb74a9d50a22d9e91e64a",
       "domain": "economic",
@@ -1596,70 +1444,6 @@
   ],
   "evidenceLedger": [
     {
-      "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings",
-      "value": {
-        "derivedCount": 31,
-        "representative": [
-          {
-            "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
-            "file": "05081966_calculator/index.html",
-            "line": 102,
-            "summary": "Dynamic innerHTML assignment detected."
-          },
-          {
-            "id": "7a89164116aed3a575601c8def93fce5ecfa59c26a0f6362ec85a5d56b7d2ec5",
-            "file": "05081966_company/index.html",
-            "line": 159,
-            "summary": "Dynamic innerHTML assignment detected."
-          },
-          {
-            "id": "e85d5502b20749a485ba93e0822b12be30641a64b6a7adf7da7403380f5e6907",
-            "file": "05081966/index.html",
-            "line": 162,
-            "summary": "Dynamic innerHTML assignment detected."
-          }
-        ]
-      },
-      "sourceSha256": "0aebc241513b9267d35c0beec57ea9d84626258a4ac9116336e8e771f579477d",
-      "observedAt": "2026-08-14T09:26:36.399Z",
-      "interpretation": "derived-from-direct-findings",
-      "selector": "severity=medium&category=dom-innerhtml",
-      "note": "Count is derived deterministically from current Security Sentinel findings."
-    },
-    {
-      "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings",
-      "value": {
-        "derivedCount": 7,
-        "representative": [
-          {
-            "id": "b8ee5415856ac8f15ad6439d6e7de14890e6088f694b13f73f19a2770fe0cc3c",
-            "file": "blog/index.html",
-            "line": 610,
-            "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
-          },
-          {
-            "id": "bdc0201496c52b165895ddfdd430be1010e6fc6dd4335adb97544e7efc79ea41",
-            "file": "defitea/index.html",
-            "line": 1950,
-            "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
-          },
-          {
-            "id": "b7dc99aad99780567e08c882e6d84fc25d6339404849c262ebd223d0b6fa66ed",
-            "file": "faq/index.html",
-            "line": 404,
-            "summary": "External script without Subresource Integrity: https://cloud.umami.is/script.js"
-          }
-        ]
-      },
-      "sourceSha256": "0aebc241513b9267d35c0beec57ea9d84626258a4ac9116336e8e771f579477d",
-      "observedAt": "2026-08-14T09:26:36.399Z",
-      "interpretation": "derived-from-direct-findings",
-      "selector": "severity=medium&category=external-script-no-sri",
-      "note": "Count is derived deterministically from current Security Sentinel findings."
-    },
-    {
       "source": "intelligence/change-intelligence.json",
       "pointer": "/watchNext/0",
       "value": {
@@ -2053,7 +1837,7 @@
         "file": "intelligence/change-intelligence.json",
         "sha256": "9b821f68e48091b1821a29282ca247ba3d2a6d5426a3b180b36102a875a48362",
         "generatedAt": "2026-08-14T07:56:41.449Z",
-        "ageHours": 1.499,
+        "ageHours": 2.388,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
@@ -2061,22 +1845,22 @@
         "file": "intelligence/system-memory.json",
         "sha256": "642f1440a757591e4ae91369ac26703d316031f3721421fa77695d7b0f40bac1",
         "generatedAt": "2026-08-14T07:56:41.449Z",
-        "ageHours": 1.499,
+        "ageHours": 2.388,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "security": {
         "file": "security/security-intelligence.json",
-        "sha256": "0aebc241513b9267d35c0beec57ea9d84626258a4ac9116336e8e771f579477d",
-        "generatedAt": "2026-08-14T09:26:36.399Z",
+        "sha256": "62157f7606ea2124c03fd4ad8054deb562b79c248d77fe3764ff94b21b8a9c7e",
+        "generatedAt": "2026-08-14T10:19:58.996Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "securityMemory": {
         "file": "security/security-memory.json",
-        "sha256": "9fdde6feba0f08e452e6ce9be12e60fd549156892f5886f5a53e23433f3226e5",
-        "generatedAt": "2026-08-14T09:26:36.399Z",
+        "sha256": "b5ae1cfe25b786797a47709989c85567e69e85788cef3495ea389d462794f1bf",
+        "generatedAt": "2026-08-14T10:19:58.996Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
@@ -2107,8 +1891,8 @@
   },
   "bridge": {
     "purpose": "Canonical evidence-bound reasoning packet for future human/AI interpretation. Read this before opening large memory artifacts.",
-    "inputCompositeHash": "6fb8d4055272fa6938b514974e38d435a0131e400e76f4e88ad0d9d80f50f565",
-    "snapshotHash": "bfd71033ef573cc012399e2802a2a82b093278e292d358fb2176c605e17d756d",
-    "previousInputCompositeHash": "b713aed2d8c7aa8d96977a27f30fb63d51d751ff86226eba0b2fa2d9757b4d33"
+    "inputCompositeHash": "717ed89030697d0263237f9cde7ab752c0655307f1e4803c13e902a721cee920",
+    "snapshotHash": "e58191bf79d04b66652a04ed0b1fb903feb3a3ede7da713d0dad320eb42336e4",
+    "previousInputCompositeHash": "6fb8d4055272fa6938b514974e38d435a0131e400e76f4e88ad0d9d80f50f565"
   }
 }
