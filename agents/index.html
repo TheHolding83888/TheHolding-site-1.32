@@ -1,5 +1,6 @@
-
 <!DOCTYPE html>
+<!-- agents.html · Design Layer v2.1 · Cold Light (azure accent, gold retired from this surface) -->
+<!-- agents.html · Design Layer v2 · The Holding brand system, editorial hero, section openers, arrival + sheen -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- The Holding brand typefaces, shared with the registry surfaces -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         * {
@@ -1764,6 +1767,817 @@
                 flex-direction: column;
             }
         }
+
+        /* ═══════════════════════════════════════════════════════════════
+           THE HOLDING · DESIGN LAYER v2
+           ---------------------------------------------------------------
+           One brand system for this page, applied as a final layer so that
+           nothing above needs to be rewritten: markup, IDs, handlers and the
+           live Observer / Cognitive telemetry are untouched.
+
+           The reasoning:
+
+           · The page spoke two visual languages at once. The live panels are
+             a black instrument surface with monospace telemetry — genuinely
+             good — while everything around them was generic Inter + Playfair
+             on white cards. Two languages read as a draft, not a product.
+
+           · So the surrounding page adopts The Holding's own system, the same
+             one the registry uses: Cormorant Garamond for statements, Space
+             Grotesk for structure, ivory ground, a single gold and a single
+             green. The instrument panels keep their monospace darkness — now
+             it reads as a deliberate contrast between the editorial layer and
+             the machine layer, instead of an accident.
+
+           · Most of the shift is done by re-declaring the design tokens, so
+             every existing rule inherits the new palette rather than being
+             overridden one by one.
+           ═══════════════════════════════════════════════════════════════ */
+
+        :root{
+            /* The Holding registry palette */
+            --bg-primary:    #fcfcfa;
+            --bg-secondary:  #ffffff;
+            --bg-soft:       #f6f5f1;
+            --bg-dark:       #16150f;
+            --text-primary:  #16150f;
+            --text-secondary: rgba(22,21,15,0.62);
+            --text-tertiary: rgba(22,21,15,0.40);
+            --border-light:  rgba(22,21,15,0.10);
+            --border-medium: rgba(22,21,15,0.16);
+            --accent-gold:   #a8842c;
+            --gold-soft:     rgba(168,132,44,0.08);
+            --gold-line:     rgba(168,132,44,0.32);
+            --accent-emerald:#0a7c4e;
+            --accent-purple: #5f5a86;
+            --shadow-sm: 0 1px 2px rgba(22,21,15,.03);
+            --shadow-md: 0 8px 24px -18px rgba(22,21,15,.28);
+            --shadow-lg: 0 24px 56px -30px rgba(22,21,15,.26);
+            --shadow-xl: 0 30px 70px -32px rgba(22,21,15,.32);
+        }
+
+        body{
+            font-family: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
+            line-height: 1.62;
+            letter-spacing: 0;
+        }
+        .serif,
+        .hero h1,
+        .section-title,
+        .demo-title,
+        .agent-name,
+        .knowledge-card-title,
+        .cta-title,
+        .brand-text,
+        .footer-brand,
+        .cognitive-heading h2,
+        .stat-value,
+        .knowledge-stat-value{
+            font-family: 'Cormorant Garamond', Georgia, serif;
+        }
+
+        .container{ max-width: 1180px; }
+
+        /* A reading rule the whole page shares: statements are light and
+           large, structure is small and tracked. */
+        .hero h1{
+            font-weight: 300;
+            font-size: clamp(3.1rem, 7vw, 5.6rem);
+            line-height: 1.04;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.6rem;
+        }
+        .hero h1 em{
+            font-style: italic;
+            color: var(--accent-gold);
+        }
+        .section-title,
+        .demo-title,
+        .cognitive-heading h2{
+            font-weight: 300 !important;
+            font-size: clamp(2.1rem, 4.4vw, 3.2rem) !important;
+            line-height: 1.08 !important;
+            letter-spacing: -0.025em !important;
+        }
+        .cta-title{
+            font-weight: 300;
+            font-size: clamp(2.3rem, 5vw, 3.6rem);
+            letter-spacing: -0.03em;
+            line-height: 1.06;
+        }
+
+        /* ── Reading progress ──────────────────────────────────────────── */
+        .th-progress{
+            position: fixed;
+            top: 0; left: 0;
+            height: 2px;
+            width: 0;
+            z-index: 200;
+            background: linear-gradient(90deg, rgba(168,132,44,.35), var(--accent-gold));
+            box-shadow: 0 0 12px rgba(168,132,44,.35);
+            pointer-events: none;
+            transition: width .12s linear, opacity .3s ease;
+        }
+
+        /* ── Header ────────────────────────────────────────────────────── */
+        header{
+            background: rgba(252,252,250,0.86);
+            backdrop-filter: blur(14px) saturate(150%);
+            -webkit-backdrop-filter: blur(14px) saturate(150%);
+            border-bottom: 1px solid var(--border-light);
+        }
+        header.scrolled{ box-shadow: 0 10px 30px -28px rgba(22,21,15,.5); }
+        .header-content{ padding: 1.05rem 0; }
+        .brand{ gap: .8rem; }
+        .brand-logo{
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: var(--gold-soft);
+            border: 1px solid var(--gold-line);
+            padding: 7px;
+        }
+        .brand-text{
+            font-size: 1.3rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+        .nav-links{ gap: 1.9rem; }
+        .nav-link{
+            position: relative;
+            font-size: .7rem;
+            font-weight: 600;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            padding-bottom: .22rem;
+            transition: color .25s ease;
+        }
+        .nav-link::after{
+            content: '';
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 1.5px;
+            background: var(--accent-gold);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .35s cubic-bezier(.22,1,.36,1);
+        }
+        .nav-link:hover{ color: var(--text-primary); }
+        .nav-link.is-current{ color: var(--text-primary); }
+        .nav-link.is-current::after{ transform: scaleX(1); }
+        .nav-badge{
+            padding: .34rem .8rem;
+            border-radius: 999px;
+            border: 1px solid var(--gold-line);
+            background: var(--gold-soft);
+            color: var(--accent-gold);
+            font-size: .6rem;
+            letter-spacing: .18em;
+            font-weight: 600;
+        }
+
+        /* ── Hero ──────────────────────────────────────────────────────── */
+        .hero{
+            padding: 6.5rem 0 4.8rem;
+            overflow: hidden;
+        }
+        /* the vertical hairline is replaced by a field of light: a dot grid
+           masked into the upper right, and one warm gold bloom */
+        .hero::before{
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            transform: none;
+            background-image: radial-gradient(circle, rgba(22,21,15,.13) 1px, transparent 1.4px);
+            background-size: 34px 34px;
+            -webkit-mask: radial-gradient(120% 78% at 74% 12%, #000 0%, transparent 64%);
+                    mask: radial-gradient(120% 78% at 74% 12%, #000 0%, transparent 64%);
+            opacity: .5;
+            pointer-events: none;
+        }
+        .hero::after{
+            content: '';
+            position: absolute;
+            top: -12%; left: -6%;
+            width: 52%; height: 78%;
+            background: radial-gradient(circle at 32% 40%,
+                rgba(168,132,44,.09) 0%, rgba(168,132,44,.035) 40%, rgba(168,132,44,0) 76%);
+            pointer-events: none;
+        }
+        .hero .container{ position: relative; z-index: 1; }
+        .hero-eyebrow{
+            color: var(--accent-gold);
+            font-size: .68rem;
+            letter-spacing: .28em;
+            margin-bottom: 1.65rem;
+        }
+        .hero-subtitle{
+            font-size: clamp(1rem, 1.5vw, 1.12rem);
+            font-weight: 300;
+            line-height: 1.78;
+            max-width: 620px;
+            margin-bottom: 3.4rem;
+            text-wrap: balance;
+        }
+        /* the three facts read as a ledger, not as three loose numbers */
+        .hero-stats{
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 0;
+            max-width: 720px;
+            padding: 0;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .stat{
+            padding: 1.75rem 1rem 1.6rem;
+            border-left: 1px solid var(--border-light);
+        }
+        .stat:first-child{ border-left: 0; }
+        .stat-value{
+            font-size: 2.5rem;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            margin-bottom: .55rem;
+            color: var(--accent-gold);
+            font-variant-numeric: tabular-nums;
+        }
+        .stat-label{
+            font-size: .6rem;
+            letter-spacing: .18em;
+            color: var(--text-tertiary);
+        }
+
+        /* ── Section openers ───────────────────────────────────────────── */
+        .section-header,
+        .demo-header{ position: relative; padding-top: 2.1rem; }
+        .section-header::before,
+        .demo-header::before{
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 46px; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+            opacity: .8;
+        }
+        .section-subtitle,
+        .demo-subtitle{
+            font-size: clamp(.95rem, 1.4vw, 1.05rem);
+            font-weight: 300;
+            line-height: 1.75;
+            max-width: 640px;
+            margin: 1.1rem auto 0;
+            text-wrap: balance;
+        }
+        .cognitive-heading p{
+            font-weight: 300;
+            font-size: clamp(.95rem, 1.4vw, 1.05rem);
+            line-height: 1.75;
+            text-wrap: balance;
+        }
+        .cognitive-eyebrow{
+            color: var(--accent-gold);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .66rem;
+            letter-spacing: .26em;
+        }
+
+        /* ── Agents ────────────────────────────────────────────────────── */
+        .agents-section{ padding: 5.5rem 0 5rem; }
+        .agents-grid{ gap: 1.75rem; }
+        .agent-card{
+            border-radius: 22px;
+            padding: 2.1rem 2rem 1.9rem;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,.94), rgba(252,252,250,.6)),
+                var(--bg-secondary);
+            box-shadow: var(--shadow-sm), var(--shadow-md);
+            transition:
+                transform .45s cubic-bezier(.22,1,.36,1),
+                box-shadow .45s ease,
+                border-color .4s ease;
+        }
+        /* a pointer-aware sheen: light follows the reader across the card */
+        .agent-card::after{
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%),
+                rgba(168,132,44,.09), transparent 62%);
+            opacity: 0;
+            transition: opacity .4s ease;
+            pointer-events: none;
+        }
+        .agent-card::before{
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--agent-color), transparent);
+        }
+        .agent-card:hover{
+            transform: translateY(-5px);
+            border-color: var(--gold-line);
+            box-shadow: 0 2px 4px rgba(22,21,15,.04), 0 30px 60px -28px rgba(22,21,15,.24);
+        }
+        .agent-card:hover::after{ opacity: 1; }
+        .agent-card.substantia{ --agent-color: var(--accent-gold); }
+        .agent-card.defitea{ --agent-color: var(--accent-emerald); }
+        .agent-card.singul{ --agent-color: var(--accent-purple); }
+
+        /* the icon becomes a seal rather than a coloured tile */
+        .agent-icon{
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: color-mix(in srgb, var(--agent-color) 8%, transparent);
+            border: 1px solid color-mix(in srgb, var(--agent-color) 34%, transparent);
+            color: var(--agent-color);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            box-shadow: none;
+            margin-bottom: 1.35rem;
+        }
+        .agent-name{
+            font-size: 2rem;
+            font-weight: 400;
+            letter-spacing: -0.015em;
+            margin-bottom: .4rem;
+        }
+        .agent-role{
+            font-size: .6rem;
+            letter-spacing: .2em;
+            margin-bottom: 1.25rem;
+        }
+        .agent-description{
+            font-size: .875rem;
+            font-weight: 300;
+            line-height: 1.75;
+            margin-bottom: 1.6rem;
+        }
+        .knowledge-title{
+            font-size: .58rem;
+            letter-spacing: .2em;
+        }
+        .knowledge-item{
+            font-size: .82rem;
+            font-weight: 300;
+            padding-left: 1.05rem;
+        }
+        .knowledge-item::before{
+            content: '·';
+            font-size: 1.2rem;
+            line-height: 1;
+            top: -.1rem;
+            position: absolute;
+        }
+        .sources-title{ font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; }
+        .source-item{
+            border-radius: 12px;
+        }
+        .source-type{
+            border-radius: 999px;
+            font-size: .55rem;
+            letter-spacing: .12em;
+        }
+
+        /* ── Dialogue ──────────────────────────────────────────────────── */
+        .demo-section{
+            padding: 5.5rem 0;
+            background:
+                radial-gradient(90% 70% at 50% 0%, rgba(168,132,44,.045), transparent 62%),
+                var(--bg-soft);
+        }
+        .demo-controls{ gap: .6rem; }
+        .demo-button{
+            padding: .7rem 1.5rem;
+            border: 1px solid var(--border-medium);
+            border-radius: 999px;
+            background: rgba(255,255,255,.7);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            transition: background .25s ease, color .25s ease, border-color .25s ease, transform .25s ease;
+        }
+        .demo-button:hover{
+            border-color: var(--gold-line);
+            color: var(--text-primary);
+            transform: none;
+        }
+        .demo-button.active{
+            background: var(--bg-dark);
+            border-color: var(--bg-dark);
+            color: var(--bg-primary);
+        }
+        .conversation-window{
+            border-radius: 20px;
+            padding: 1.9rem;
+            box-shadow: var(--shadow-lg);
+        }
+        .ask-input{
+            border-radius: 999px !important;
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-weight: 300 !important;
+        }
+        .ask-input:focus{
+            border-color: var(--gold-line) !important;
+            box-shadow: 0 0 0 4px var(--gold-soft) !important;
+        }
+        .ask-submit{
+            border-radius: 999px !important;
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-size: .72rem !important;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        .ask-title{ font-weight: 400; }
+        .ask-note{ font-size: .74rem; }
+
+        /* ── Infrastructure ────────────────────────────────────────────── */
+        .knowledge-section{
+            padding: 5.5rem 0 6rem;
+            border-top: 1px solid var(--border-light);
+        }
+        .knowledge-grid{ gap: 1.75rem; }
+        .knowledge-card{
+            border-radius: 22px;
+            padding: 2.1rem 2rem 1.85rem;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,.94), rgba(252,252,250,.6)),
+                var(--bg-secondary);
+            box-shadow: var(--shadow-sm), var(--shadow-md);
+            transition: transform .45s cubic-bezier(.22,1,.36,1), box-shadow .45s ease, border-color .4s ease;
+        }
+        .knowledge-card:hover{
+            transform: translateY(-4px);
+            border-color: var(--gold-line);
+            box-shadow: 0 2px 4px rgba(22,21,15,.04), 0 28px 56px -30px rgba(22,21,15,.24);
+        }
+        .knowledge-card-title{
+            font-size: 1.75rem;
+            font-weight: 400;
+            letter-spacing: -0.015em;
+            margin-bottom: .85rem;
+        }
+        .knowledge-card-description{
+            font-size: .875rem;
+            font-weight: 300;
+            line-height: 1.78;
+        }
+        .knowledge-stats{ gap: 0; }
+        .knowledge-stat{
+            padding: 0 .75rem;
+            border-left: 1px solid var(--border-light);
+        }
+        .knowledge-stat:first-child{ border-left: 0; }
+        .knowledge-stat-value{
+            font-size: 1.6rem;
+            font-weight: 500;
+            color: var(--accent-gold);
+            letter-spacing: -0.01em;
+        }
+        .knowledge-stat-label{
+            font-size: .58rem;
+            letter-spacing: .18em;
+        }
+
+        /* ── Closing ───────────────────────────────────────────────────── */
+        .cta-section{
+            position: relative;
+            overflow: hidden;
+            padding: 6.5rem 0;
+            background:
+                radial-gradient(120% 72% at 50% -12%, #262521 0%, #16150f 55%, #100f0b 100%);
+        }
+        .cta-section::before{
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(242,238,230,.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(242,238,230,.035) 1px, transparent 1px);
+            background-size: 46px 46px;
+            -webkit-mask: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+                    mask: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+            opacity: .5;
+            pointer-events: none;
+        }
+        .cta-section .container{ position: relative; z-index: 1; }
+        .cta-subtitle{
+            font-size: clamp(1rem, 1.5vw, 1.14rem);
+            font-weight: 300;
+            color: rgba(246,242,230,.62);
+            line-height: 1.75;
+            margin-bottom: 2.9rem;
+            text-wrap: balance;
+        }
+        .cta-button{
+            padding: .95rem 2.6rem;
+            border: 1px solid rgba(246,242,230,.5);
+            border-radius: 999px;
+            background: transparent;
+            color: #f6f2e6;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .78rem;
+            font-weight: 500;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            transition: background .3s ease, color .3s ease, border-color .3s ease, transform .3s ease;
+        }
+        .cta-button:hover{
+            background: #f6f2e6;
+            border-color: #f6f2e6;
+            color: var(--bg-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 18px 40px -22px rgba(0,0,0,.6);
+        }
+
+        /* ── Footer ────────────────────────────────────────────────────── */
+        footer{
+            padding: 3rem 0 2rem;
+            background: var(--bg-primary);
+        }
+        .footer-brand{ font-size: 1.3rem; font-weight: 500; }
+        .footer-link{
+            font-size: .68rem;
+            font-weight: 600;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+        }
+        .footer-link:hover{ color: var(--accent-gold); }
+        .footer-bottom{
+            font-size: .68rem;
+            letter-spacing: .08em;
+            color: var(--text-tertiary);
+        }
+
+        /* ── Instrument panels: give them room to be the contrast ─────── */
+        .observer-section{ padding: 0 0 4.5rem; }
+        .cognitive-section{ padding: 1rem 0 5.5rem; }
+        .observer-shell,
+        .cognitive-shell{
+            box-shadow:
+                0 36px 90px -46px rgba(22,21,15,.55),
+                inset 0 1px 0 rgba(255,255,255,.045) !important;
+        }
+
+        /* ── Arrival: content settles in rather than snapping in ───────── */
+        .th-reveal{
+            opacity: 0;
+            transform: translateY(22px);
+            transition:
+                opacity .85s cubic-bezier(.22,1,.36,1),
+                transform .85s cubic-bezier(.22,1,.36,1);
+            will-change: opacity, transform;
+        }
+        .th-reveal.th-in{
+            opacity: 1;
+            transform: none;
+        }
+
+        @media (prefers-reduced-motion: reduce){
+            .th-reveal{ opacity: 1 !important; transform: none !important; transition: none !important; }
+            .th-progress{ display: none; }
+            .agent-card, .knowledge-card, .cta-button{ transition: none !important; }
+        }
+
+        /* ── Responsive ───────────────────────────────────────────────── */
+        @media (max-width: 968px){
+            .hero{ padding: 4.6rem 0 3.6rem; }
+            .hero-subtitle{ margin-bottom: 2.6rem; }
+            /* the three facts stay a ledger, just a narrower one */
+            .hero-stats{
+                display: grid !important;
+                grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+                gap: 0 !important;
+            }
+            .stat{ padding: 1.15rem .45rem 1.05rem; }
+            .stat-value{ font-size: 1.75rem; margin-bottom: .4rem; }
+            .stat-label{ font-size: .5rem; letter-spacing: .12em; line-height: 1.3; }
+
+            /* navigation is kept, as a swipeable rail, instead of removed */
+            .nav-links{
+                display: flex !important;
+                gap: 1.1rem;
+                overflow-x: auto;
+                scrollbar-width: none;
+                -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+                        mask-image: linear-gradient(90deg, #000 88%, transparent);
+            }
+            .nav-links::-webkit-scrollbar{ display: none; }
+            .nav-link{ font-size: .6rem; letter-spacing: .12em; white-space: nowrap; }
+            .nav-badge{ display: none; }
+            .header-content{ gap: 1rem; padding: .85rem 0; }
+            .brand-logo{ width: 30px; height: 30px; }
+            .brand-text{ font-size: 1.12rem; }
+
+            .agents-section, .knowledge-section{ padding: 4.2rem 0; }
+            .demo-section{ padding: 4.2rem 0; }
+            .agents-grid, .knowledge-grid{ gap: 1.15rem; }
+            .agent-card, .knowledge-card{ padding: 1.6rem 1.4rem 1.5rem; border-radius: 18px; }
+            .agent-card:hover, .knowledge-card:hover{ transform: none; }
+            .agent-name{ font-size: 1.75rem; }
+            .knowledge-card-title{ font-size: 1.5rem; }
+            .demo-controls{ flex-direction: row !important; flex-wrap: wrap; justify-content: center; }
+            .demo-button{ padding: .6rem 1.1rem; font-size: .66rem; }
+            .cta-section{ padding: 4.6rem 0; }
+            .container{ padding: 0 1.25rem; }
+        }
+        @media (max-width: 460px){
+            .hero h1{ font-size: clamp(2.5rem, 12vw, 3.2rem); }
+            .stat-value{ font-size: 1.5rem; }
+            .stat-label{ font-size: .46rem; }
+            .agent-card, .knowledge-card{ padding: 1.4rem 1.2rem 1.3rem; }
+            .knowledge-stat{ padding: 0 .4rem; }
+            .knowledge-stat-value{ font-size: 1.3rem; }
+        }
+        /* ── Knowledge sources: the deepest layer on the page, so it is
+              given a proper reading window rather than a cramped one ───── */
+        .agent-knowledge{ position: relative; }
+        .agent-knowledge::after{
+            content: attr(data-cue);
+            display: block;
+            margin-top: 1.25rem;
+            padding: .5rem .95rem;
+            width: fit-content;
+            border: 1px solid var(--border-medium);
+            border-radius: 999px;
+            color: var(--text-tertiary);
+            font-size: .6rem;
+            font-weight: 600;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            transition: color .25s ease, border-color .25s ease, background .25s ease;
+        }
+        .agent-card:hover .agent-knowledge::after{
+            color: var(--agent-color);
+            border-color: color-mix(in srgb, var(--agent-color) 34%, transparent);
+            background: color-mix(in srgb, var(--agent-color) 6%, transparent);
+        }
+        .agent-card.expanded .agent-knowledge::after{ content: attr(data-cue-open); }
+
+        .sources-panel.open{
+            max-height: min(560px, 68vh);
+            margin-top: 1.35rem;
+            padding-right: .35rem;
+            -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent);
+                    mask-image: linear-gradient(to bottom, #000 88%, transparent);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-medium) transparent;
+        }
+        .sources-panel.open::-webkit-scrollbar{ width: 4px; }
+        .sources-panel.open::-webkit-scrollbar-thumb{
+            background: var(--border-medium);
+            border-radius: 999px;
+        }
+        .sources-header{
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            padding: .55rem 0 .5rem;
+            margin-bottom: .85rem;
+            border-bottom: 1px solid var(--gold-line);
+            background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(255,255,255,.92));
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .sources-title{
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.08rem;
+            font-weight: 500;
+            letter-spacing: 0;
+            text-transform: none;
+            color: var(--text-primary);
+        }
+        .sources-count{
+            font-size: .58rem;
+            font-weight: 600;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--agent-color);
+        }
+        .sources-grid{ gap: .5rem; }
+        .source-item{
+            padding: .6rem .7rem;
+            border: 1px solid var(--border-light);
+            border-left: 2px solid color-mix(in srgb, var(--agent-color) 45%, transparent);
+            border-radius: 10px;
+            background: rgba(252,252,250,.82);
+        }
+        .source-item:hover{
+            transform: none;
+            border-color: var(--gold-line);
+            border-left-color: var(--agent-color);
+            background: #fff;
+        }
+        .source-title{ font-size: .74rem; font-weight: 500; line-height: 1.28; }
+        .source-author{ font-size: .64rem; font-weight: 300; font-style: normal; line-height: 1.3; }
+        .source-type{
+            margin-top: .3rem;
+            padding: .12rem .42rem;
+            background: var(--gold-soft);
+            color: var(--accent-gold);
+            font-size: .5rem;
+            font-weight: 600;
+            letter-spacing: .1em;
+        }
+        @media (max-width: 640px){
+            .sources-grid{ grid-template-columns: 1fr; }
+            .sources-panel.open{ max-height: min(460px, 62vh); }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           THE HOLDING · DESIGN LAYER v2.1 · Cold Light
+           ---------------------------------------------------------------
+           Gold is the registry's signature and it is already carrying most
+           of the site. Repeating it here made this page feel like more of
+           the same rather than its own room, so the intelligence surface
+           takes a cold accent instead: a deep steel azure on the ivory
+           ground, and a lighter azure on the instrument panels.
+
+           It also happens to be the right colour for the subject. Gold reads
+           as treasury and capital; this page is about observation, memory
+           and reasoning — the cold end of the spectrum. Green and violet stay
+           where they were: they mark the individual agents, not the surface.
+
+           The accent tokens are re-pointed rather than renamed, so every rule
+           written against them shifts at once and nothing needs rewriting.
+           ═══════════════════════════════════════════════════════════════ */
+
+        :root{
+            --accent-azure:      #2d5f87;   /* statements, rules, active state */
+            --accent-azure-deep: #1f4463;   /* pressed / strong contrast       */
+            --azure-soft:        rgba(45,95,135,0.07);
+            --azure-line:        rgba(45,95,135,0.28);
+            --azure-glow:        rgba(45,95,135,0.30);
+            --azure-light:       #8ab8dd;   /* on the dark instrument panels   */
+
+            /* the existing accent tokens now carry the cold light */
+            --accent-gold: var(--accent-azure);
+            --gold-soft:   var(--azure-soft);
+            --gold-line:   var(--azure-line);
+            --accent-purple: #6b5f9e;
+        }
+
+        /* ── Editorial surface: the last hard-coded warm values ────────── */
+        .th-progress{
+            background: linear-gradient(90deg, rgba(45,95,135,.35), var(--accent-azure));
+            box-shadow: 0 0 12px rgba(45,95,135,.35);
+        }
+        .hero::after{
+            background: radial-gradient(circle at 32% 40%,
+                rgba(45,95,135,.10) 0%, rgba(45,95,135,.04) 40%, rgba(45,95,135,0) 76%);
+        }
+        .agent-card::after{
+            background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%),
+                rgba(45,95,135,.10), transparent 62%);
+        }
+        .demo-section{
+            background:
+                radial-gradient(90% 70% at 50% 0%, rgba(45,95,135,.05), transparent 62%),
+                var(--bg-soft);
+        }
+        .source-type{
+            background: var(--azure-soft);
+            color: var(--accent-azure);
+        }
+        .agent-card.substantia{ --agent-color: var(--accent-azure); }
+
+        /* ── Instrument panels: the same shift, one step lighter so it
+              still reads as illuminated type on black ──────────────────── */
+        .observer-shell{
+            background:
+                radial-gradient(circle at 82% -20%, rgba(138,184,221,.10), transparent 34%),
+                linear-gradient(145deg, #0f1113 0%, #0b0d0f 62%, #0e1012 100%) !important;
+        }
+        .cognitive-shell{
+            background:
+                radial-gradient(circle at 12% -15%, rgba(52,211,153,.06), transparent 28%),
+                radial-gradient(circle at 91% 0%, rgba(138,184,221,.10), transparent 30%),
+                linear-gradient(145deg, #0f1113 0%, #090b0d 68%, #0c0e10 100%) !important;
+        }
+        .observer-mark{
+            border-color: rgba(138,184,221,.42);
+            color: var(--azure-light);
+            box-shadow: inset 0 0 18px rgba(138,184,221,.06);
+        }
+        .observer-feed{ scrollbar-color: rgba(138,184,221,.28) transparent; }
+        .observer-feed::-webkit-scrollbar-thumb{ background: rgba(138,184,221,.25); }
+        .observer-entry-code{ color: rgba(138,184,221,.82); }
+        .observer-memory-kicker{ color: rgba(138,184,221,.75); }
+        .observer-prompt::after{ color: rgba(138,184,221,.85); }
+        .cognitive-node::after{ color: rgba(138,184,221,.5); }
+        .cognitive-node-index{ color: rgba(138,184,221,.66); }
+        .cognitive-answer{
+            border-color: rgba(138,184,221,.14);
+            background: rgba(138,184,221,.04);
+        }
+        .cognitive-case-domain{ color: rgba(138,184,221,.76); }
+        /* amber stays amber: it means attention, not decoration */
+
     </style>
 </head>
 <body>
@@ -3620,5 +4434,158 @@
         })();
     </script>
 
+
+<!-- The Holding · Design Layer v2 · behaviour -->
+<script data-th-addon="design-layer-v2">(function(){
+    'use strict';
+    /* Four small behaviours, all additive and all fail-safe: if any part of
+       this script never runs, the page is still complete and readable.
+         1. an italic gold accent on the last word of the hero statement
+         2. a hairline reading-progress rule at the very top of the viewport
+         3. section tracking in the header navigation
+         4. arrival animation + a pointer-aware sheen on the cards            */
+
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* 1 · Hero accent — the registry sets the closing word of a statement in
+       italic gold. Done here so the copy itself stays a single clean string. */
+    (function heroAccent(){
+        var h1 = document.querySelector('.hero h1');
+        if (!h1 || h1.querySelector('em')) return;
+        var words = h1.textContent.trim().split(/\s+/);
+        if (words.length < 2) return;
+        var last = words.pop();
+        h1.textContent = words.join(' ') + ' ';
+        var em = document.createElement('em');
+        em.textContent = last;
+        h1.appendChild(em);
+    })();
+
+    /* 2 · Reading progress */
+    (function progress(){
+        if (reduced) return;
+        var bar = document.createElement('div');
+        bar.className = 'th-progress';
+        document.body.appendChild(bar);
+        var ticking = false;
+        function draw(){
+            ticking = false;
+            var doc = document.documentElement;
+            var max = doc.scrollHeight - window.innerHeight;
+            var p = max > 0 ? window.scrollY / max : 0;
+            p = p < 0 ? 0 : (p > 1 ? 1 : p);
+            bar.style.width = (p * 100).toFixed(2) + '%';
+            bar.style.opacity = p > 0.002 ? '1' : '0';
+        }
+        window.addEventListener('scroll', function(){
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(draw);
+        }, { passive: true });
+        window.addEventListener('resize', draw);
+        draw();
+    })();
+
+    /* 3 · Which section am I in — the nav answers without being asked */
+    (function scrollSpy(){
+        var links = Array.prototype.slice.call(document.querySelectorAll('.nav-link[href^="#"]'));
+        if (!links.length) return;
+        var pairs = links.map(function(a){
+            var id = a.getAttribute('href').slice(1);
+            return { link: a, section: document.getElementById(id) };
+        }).filter(function(p){ return p.section; });
+        if (!pairs.length) return;
+
+        var ticking = false;
+        function mark(){
+            ticking = false;
+            var y = window.scrollY + 160;
+            var current = null;
+            pairs.forEach(function(p){
+                if (p.section.offsetTop <= y) current = p;
+            });
+            pairs.forEach(function(p){
+                p.link.classList.toggle('is-current', p === current);
+            });
+        }
+        window.addEventListener('scroll', function(){
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(mark);
+        }, { passive: true });
+        mark();
+    })();
+
+    /* 4 · Arrival + sheen.
+       The reveal class is added from script, never from the stylesheet, so a
+       blocked or failed script can never leave content invisible. A timeout
+       backstop reveals everything regardless of observer support. */
+    (function arrival(){
+        var targets = document.querySelectorAll(
+            '.hero-eyebrow, .hero h1, .hero-subtitle, .hero-stats, ' +
+            '.section-header, .demo-header, .agent-card, .knowledge-card, ' +
+            '.cognitive-heading, .demo-controls, .conversation-window, .ask-section, ' +
+            '.cta-title, .cta-subtitle, .cta-button'
+        );
+        if (!targets.length) return;
+
+        if (reduced || !('IntersectionObserver' in window)) return;
+
+        var list = Array.prototype.slice.call(targets);
+        list.forEach(function(el, i){
+            el.classList.add('th-reveal');
+            el.style.transitionDelay = Math.min(i % 4, 3) * 60 + 'ms';
+        });
+
+        var io = new IntersectionObserver(function(entries){
+            entries.forEach(function(e){
+                if (!e.isIntersecting) return;
+                e.target.classList.add('th-in');
+                io.unobserve(e.target);
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+        list.forEach(function(el){ io.observe(el); });
+
+        /* Backstop: nothing stays hidden for longer than a moment. */
+        window.setTimeout(function(){
+            list.forEach(function(el){ el.classList.add('th-in'); });
+        }, 2600);
+    })();
+
+    /* 5 · The agent cards open into their source library on click. That was
+       only discoverable by accident, so each card now states it — using the
+       count the card itself declares, never an invented number. */
+    (function sourcesCue(){
+        var cards = document.querySelectorAll('.agent-card');
+        Array.prototype.forEach.call(cards, function(card){
+            var block = card.querySelector('.agent-knowledge');
+            var count = card.querySelector('.sources-count');
+            if (!block) return;
+            var label = count ? count.textContent.trim() : 'Knowledge sources';
+            block.setAttribute('data-cue', label + ' \u2193');
+            block.setAttribute('data-cue-open', 'Hide sources \u2191');
+        });
+    })();
+
+    (function sheen(){
+        if (!window.matchMedia('(hover: hover)').matches || reduced) return;
+        var cards = document.querySelectorAll('.agent-card, .knowledge-card');
+        Array.prototype.forEach.call(cards, function(card){
+            var queued = false, mx = 50, my = 0;
+            card.addEventListener('pointermove', function(ev){
+                var r = card.getBoundingClientRect();
+                mx = ((ev.clientX - r.left) / r.width) * 100;
+                my = ((ev.clientY - r.top) / r.height) * 100;
+                if (queued) return;
+                queued = true;
+                requestAnimationFrame(function(){
+                    queued = false;
+                    card.style.setProperty('--mx', mx.toFixed(1) + '%');
+                    card.style.setProperty('--my', my.toFixed(1) + '%');
+                });
+            }, { passive: true });
+        });
+    })();
+})();</script>
 </body>
 </html>
