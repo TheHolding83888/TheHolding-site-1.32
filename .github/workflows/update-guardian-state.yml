@@ -2,6 +2,17 @@ name: "The Holding Brain · Guardian Capability Gate"
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-guardian-state.yml'
+      - 'intelligence/guardian/README.md'
+      - 'intelligence/guardian/guardian-policy.json'
+      - 'intelligence/guardian/guardian-schema.json'
+      - 'intelligence/guardian/guardian-engine.mjs'
+      - 'intelligence/guardian/independent-guardian-reviewer.mjs'
+      - 'intelligence/guardian/guardian-release-guard.mjs'
+      - 'intelligence/guardian/guardian-release.json'
 
 permissions:
   contents: write
