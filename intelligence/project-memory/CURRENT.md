@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-14T10:30:06.240Z**
+Canonical source state represented here: **2026-08-14T10:30:26.835Z**
 
 ## Resume order
 
@@ -31,7 +31,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Current cognitive stack
 
-- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 72e412132d085eac2e67f37828edbc3cba8fb42ee09e8b0bd03b0b892fc5cb99.
+- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: aa29eeede346c225af7018139e5004e8b2336e8b214827d3939a5c1fe8361130.
 - Security: **GREEN**; Critical 0 / High 0 / Medium 0.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 18; evidence 20; noExecution true.
