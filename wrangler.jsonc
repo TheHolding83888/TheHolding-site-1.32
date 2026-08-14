@@ -1,10 +1,20 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "theholdingprotocol",
+  "main": "worker/site-root.js",
   "compatibility_date": "2026-08-14",
-  "assets": {
-    "directory": "."
-  },
+  "compatibility_flags": ["nodejs_compat"],
   "observability": {
     "enabled": true
+  },
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  "exports": {
+    "LearningIntake": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
   }
 }
