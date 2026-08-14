@@ -74,7 +74,49 @@
     return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
   };
   const isRu = text => /[а-яё]/i.test(text);
-  const norm = text => String(text || '')
+
+  // Conservative human-language typo recovery. This is intentionally NOT global fuzzy search.
+  // Only known entity/protocol/intent lexemes may be corrected, with edit distance <= 1.
+  const FUZZY_QUERY_LEXEMES = Object.freeze([
+    'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
+    'rewards', 'reward', 'claimable', 'companies', 'company', 'using', 'compare', 'productivity',
+    'performance', 'embedded', 'current', 'registry', 'passport', 'learning', 'proposal', 'builder',
+    'guardian', 'transaction', 'authority', 'allocation'
+  ]);
+
+  function editDistanceAtMostOne(a, b) {
+    if (a === b) return true;
+    if (Math.abs(a.length - b.length) > 1) return false;
+    if (a.length === b.length) {
+      let mismatches = 0;
+      for (let i = 0; i < a.length; i++) if (a[i] !== b[i] && ++mismatches > 1) return false;
+      return true;
+    }
+    const shorter = a.length < b.length ? a : b;
+    const longer = a.length < b.length ? b : a;
+    let i = 0, j = 0, edits = 0;
+    while (i < shorter.length && j < longer.length) {
+      if (shorter[i] === longer[j]) { i++; j++; continue; }
+      if (++edits > 1) return false;
+      j++;
+    }
+    return true;
+  }
+
+  function fuzzyKnownLexemes(text) {
+    return String(text || '').replace(/[A-Za-z][A-Za-z0-9-]{3,}/g, token => {
+      const lower = token.toLowerCase();
+      if (FUZZY_QUERY_LEXEMES.includes(lower)) return lower;
+      const matches = FUZZY_QUERY_LEXEMES.filter(candidate =>
+        candidate[0] === lower[0]
+        && Math.abs(candidate.length - lower.length) <= 1
+        && editDistanceAtMostOne(lower, candidate)
+      );
+      return matches.length === 1 ? matches[0] : token;
+    });
+  }
+
+  const norm = text => fuzzyKnownLexemes(String(text || ''))
     .replace(/\bholdng\b/gi, 'holding')
     .replace(/\brewads\b/gi, 'rewards')
     .replace(/\bcmpare\b/gi, 'compare')
@@ -1235,7 +1277,7 @@ async function loadLazy(kind) {
     const follow = followupAnswer(raw, lang);
     if (follow) return follow;
 
-    if (protocolGroup(raw) && includesAny(q,['which companies','какие компании','кто использует','companies use','компании используют'])) return protocolCompaniesAnswer(protocolGroup(raw),lang);
+    if (protocolGroup(raw) && includesAny(q,['which companies','who uses','who is using','which ones use','какие компании','кто использует','companies use','компании используют'])) return protocolCompaniesAnswer(protocolGroup(raw),lang);
     if (includesAny(q, ['сколько компаний', 'какие компании', 'список компаний', 'how many companies', 'which companies', 'company list'])) return registryAnswer(lang);
 
     const definitionish = includesAny(q, ['что такое', 'объясни', 'что значит', 'what is', 'explain', 'difference', 'разница']);
