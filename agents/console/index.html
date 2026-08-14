@@ -3,61 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ask The Holding | Live Knowledge Console</title>
-  <style>
-    :root{--bg:#f8f8f5;--panel:#fff;--ink:#151719;--muted:#697078;--line:#e4e6e5;--blue:#2d5f87;--green:#0b7a4d;--dark:#0d1115;--dark2:#141a20;--light:#ecf3f8}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}a{color:inherit}.wrap{width:min(1020px,calc(100% - 32px));margin:0 auto}
-    header{padding:24px 0;border-bottom:1px solid var(--line);background:rgba(248,248,245,.92);position:sticky;top:0;z-index:20;backdrop-filter:blur(12px)}.head{display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{font-weight:680;letter-spacing:-.02em}.brand small{display:block;color:var(--muted);font-weight:450;letter-spacing:0;margin-top:2px}.back{font-size:13px;color:var(--muted);text-decoration:none}.back:hover{color:var(--blue)}
-    main{padding:52px 0 80px}.hero{text-align:center;margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);font-weight:780}h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(38px,7vw,66px);line-height:1.02;letter-spacing:-.04em;margin:14px 0}.hero p{max-width:710px;margin:0 auto;color:var(--muted);font-size:16px}.boundary{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px}.pill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 11px;font-size:11px;color:var(--muted)}.pill.live{color:var(--green);border-color:rgba(11,122,77,.2);background:rgba(11,122,77,.045)}
-    .console{background:linear-gradient(145deg,var(--dark),var(--dark2));color:var(--light);border-radius:22px;overflow:hidden;box-shadow:0 28px 80px -45px rgba(0,0,0,.65)}.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px}.status{display:flex;align-items:center;gap:8px;color:#b8c3cc}.dot{width:7px;height:7px;border-radius:50%;background:#70808d}.console[data-health="ready"] .dot{background:#42d392;box-shadow:0 0 14px rgba(66,211,146,.5)}.console[data-health="watch"] .dot{background:#f2bb54}.console[data-health="offline"] .dot{background:#7d858b}
-    .summary{padding:23px 22px 19px;border-bottom:1px solid rgba(255,255,255,.08)}.summary-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7896ad;font-weight:760}.summary-text{font-family:Georgia,"Times New Roman",serif;font-size:clamp(21px,4vw,29px);line-height:1.3;margin-top:8px;color:#f7fafc}.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid rgba(255,255,255,.08)}.fact{padding:16px 18px;border-right:1px solid rgba(255,255,255,.07)}.fact:last-child{border-right:0}.fact strong{display:block;font-size:17px;color:#f8fbfd}.fact span{font-size:10px;color:#82909a;text-transform:uppercase;letter-spacing:.11em}
-    .dialog{padding:22px}.messages{display:flex;flex-direction:column;gap:13px;min-height:250px;max-height:530px;overflow:auto;padding-right:4px}.msg{max-width:90%;padding:13px 15px;border-radius:15px;font-size:14px;white-space:pre-wrap}.msg.system{background:rgba(255,255,255,.055);color:#d8e0e6;border:1px solid rgba(255,255,255,.07)}.msg.user{align-self:flex-end;background:#234d6c;color:#fff}.msg.pending{opacity:.65}.msg .meta{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#82a9c5;margin-bottom:5px;font-weight:760}.msg .source{display:block;margin-top:8px;padding-top:7px;border-top:1px solid rgba(255,255,255,.07);font-size:9px;color:#74838e;letter-spacing:.05em}.quick{display:flex;gap:8px;flex-wrap:wrap;margin:19px 0 12px}.quick button{border:1px solid rgba(138,184,221,.22);background:rgba(138,184,221,.055);color:#b9d3e7;border-radius:999px;padding:8px 11px;font-size:11px;cursor:pointer}.quick button:hover{background:rgba(138,184,221,.11)}.ask{display:flex;gap:9px}.ask input{min-width:0;flex:1;border:1px solid rgba(255,255,255,.12);background:#090d11;color:#eef4f8;border-radius:13px;padding:13px 14px;font:inherit;outline:none}.ask input:focus{border-color:rgba(138,184,221,.5)}.ask button{border:0;border-radius:13px;background:#e7f0f6;color:#15364e;font-weight:760;padding:0 18px;cursor:pointer}.ask button:disabled{opacity:.45;cursor:not-allowed}.note{font-size:11px;color:#76838d;margin-top:10px}
-    .learning-line{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-top:11px;padding-top:11px;border-top:1px solid rgba(255,255,255,.07);font-size:10px;color:#82909a}.learning-opt{display:flex;align-items:flex-start;gap:7px;cursor:pointer;max-width:690px}.learning-opt input{margin-top:2px;accent-color:#8ab8dd}.learning-opt input:disabled{cursor:not-allowed}.learning-meta{text-align:right;white-space:nowrap}.learning-meta a{color:#9fc4df;text-decoration:none}.learning-meta a:hover{text-decoration:underline}.learning-feedback{display:flex;align-items:center;gap:6px;margin-top:9px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07);font-size:9px;color:#74838e}.learning-feedback button{border:1px solid rgba(138,184,221,.2);background:rgba(138,184,221,.05);color:#a9c5da;border-radius:999px;padding:4px 8px;font-size:9px;cursor:pointer}.learning-feedback button:disabled{opacity:.5;cursor:default}
-    .explain{margin-top:25px;display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:19px}.card h2{font-family:Georgia,"Times New Roman",serif;font-size:22px;font-weight:400;margin:0 0 8px}.card p{color:var(--muted);font-size:13px;margin:0}.card strong{color:var(--ink)}footer{padding:25px 0 40px;color:var(--muted);font-size:11px;text-align:center}
-    @media(max-width:720px){main{padding-top:36px}.facts{grid-template-columns:1fr 1fr}.fact:nth-child(2){border-right:0}.fact:nth-child(-n+2){border-bottom:1px solid rgba(255,255,255,.07)}.explain{grid-template-columns:1fr}.msg{max-width:97%}.ask{flex-direction:column}.ask button{padding:12px}.head{align-items:flex-start}.brand small{max-width:235px}.learning-line{flex-direction:column}.learning-meta{text-align:left;white-space:normal}}
-  </style>
+  <meta http-equiv="refresh" content="0; url=/agents/#ask-the-holding">
+  <title>Ask The Holding | Moved to The Holding OS Lab</title>
+  <link rel="canonical" href="https://theholding.ai/agents/">
+  <script>location.replace('/agents/#ask-the-holding');</script>
 </head>
 <body>
-<header><div class="wrap head"><div class="brand">The Holding AI<small>Live knowledge console · v0.4 source-bound answers</small></div><a class="back" href="/agents/#knowledge">← Intelligence Infrastructure</a></div></header>
-<main class="wrap">
-  <section class="hero">
-    <div class="eyebrow">Practice Surface · Live Knowledge + Safe Learning</div>
-    <h1>Ask The Holding.</h1>
-    <p>Ask about companies, funds, capital layers, protocol productivity, Stable Capital, system state, learning and architecture. Answers use live Holding data or clearly say when the answer is not known.</p>
-    <div class="boundary"><span class="pill live">Live Holding data</span><span class="pill">Source-bound answers</span><span class="pill">RU / EN</span><span class="pill">Read-only</span><span class="pill">No financial advice</span><span class="pill">No wallet authority</span></div>
-  </section>
-
-  <section class="console" id="console" data-health="offline">
-    <div class="topbar"><div>THE HOLDING // KNOWLEDGE ROUTER</div><div class="status"><span class="dot"></span><span id="statusText">CONNECTING</span></div></div>
-    <div class="summary"><div class="summary-label">In plain language</div><div class="summary-text" id="summaryText">Loading current verified state and live company data…</div></div>
-    <div class="facts">
-      <div class="fact"><strong id="companyFact">—</strong><span>Companies</span></div>
-      <div class="fact"><strong id="engineFact">—</strong><span>Productivity engines</span></div>
-      <div class="fact"><strong id="stableFact">—</strong><span>Stable positions</span></div>
-      <div class="fact"><strong id="securityFact">—</strong><span>Security</span></div>
-    </div>
-    <div class="dialog">
-      <div class="messages" id="messages" aria-live="polite"></div>
-      <div class="quick" id="quick"></div>
-      <form class="ask" id="askForm">
-        <input id="question" autocomplete="off" maxlength="700" placeholder="Спроси: сколько компаний? какая доходность Aerodrome? что такое слои капитала?">
-        <button id="askButton" disabled>Ask</button>
-      </form>
-      <div class="learning-line">
-        <label class="learning-opt"><input type="checkbox" id="learningOptIn" disabled><span>Help The Holding learn from a privacy-filtered version of my question. Optional. Never enter seed phrases, private keys, passwords or personal financial details.</span></label>
-        <div class="learning-meta"><span id="learningState">Checking safe learning…</span><br><a href="./learning-notice.html">Learning &amp; safety notice</a></div>
-      </div>
-      <div class="note">Informational and educational only. The console can show verified data, explain mechanisms and risks, but it does not tell people what to buy, sell or how much to invest. Public messages never become canonical facts, code, methodology or capital authority by themselves.</div>
-    </div>
-  </section>
-
-  <section class="explain">
-    <article class="card"><h2>How it learns safely</h2><p><strong>Conversation can create a learning signal, not authority.</strong> Useful gaps and bad answers can become review candidates. Public text cannot directly rewrite memory, code, methodology, security rules or capital actions.</p></article>
-    <article class="card"><h2>What stays separate</h2><p>Public questions are untrusted input. Verified project data remains the source of truth. Future generative AI dialogue must stay read-only first, with separate tool permissions, prompt-injection boundaries and an immutable action audit.</p></article>
-  </section>
-</main>
-<footer class="wrap">The Holding · capital that can explain itself</footer>
-<script src="./safety.js?v=0.1" defer></script>
-<script src="./app.js?v=0.4" defer></script>
+  <!-- Legacy compatibility surface. Ask The Holding. Live knowledge console. -->
+  <p>Ask The Holding. Live knowledge console has moved to <a href="/agents/#ask-the-holding">The Holding OS Lab</a>.</p>
 </body>
 </html>
