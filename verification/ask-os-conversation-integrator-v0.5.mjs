@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 
+// Re-run marker: validate v0.5 against the version-aware unified OS Lab boundary.
 const APP = 'agents/console/app.js';
 const AGENTS = 'agents/index.html';
 const SNIPPET = 'verification/ask-os-conversation-v0.5-functions.txt';
