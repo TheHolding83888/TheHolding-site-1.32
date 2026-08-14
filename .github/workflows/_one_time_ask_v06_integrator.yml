@@ -31,7 +31,7 @@ jobs:
           set -euo pipefail
           node --check agents/console/app.js
           git diff --check
-          node verification/production-boundary-v1.mjs
+          node verification/production-boundary-guard-v1.mjs
           git diff -- agents/console/app.js | grep -q 'embedded-yield-ledger.json'
           git diff -- agents/console/app.js | grep -q 'trustIntentAnswer'
           git diff -- agents/index.html | grep -q 'app.js?v=0.6'
