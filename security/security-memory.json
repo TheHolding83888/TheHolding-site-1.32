@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-14T07:42:58.480Z",
+  "generatedAt": "2026-08-14T07:53:38.575Z",
   "status": "green",
-  "snapshotHash": "e691e3bb214e026fdd8f566e551ba38889cf7eaa60cb0821019520b3179719ea",
+  "snapshotHash": "c5e4ee9ad3858d9743ec9b3e53f0096e3d813794c280585bd676032db142d0ac",
   "repository": {
-    "filesScanned": 151,
-    "bytesScanned": 5172058,
+    "filesScanned": 154,
+    "bytesScanned": 5205781,
     "criticalHashes": {
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
@@ -31,7 +31,7 @@
       ".github/workflows/update-company-rewards.yml": "f48ec1a8994a2dfa90edec4dbdc21527ba409f2df7f5431ff3faf221dda36498",
       ".github/workflows/update-learning-loop.yml": "8fcd4c80f877ffd5e9934e0f19d37a4eb57334c99457dcb2088f907f75216478",
       ".github/workflows/update-productivity.yml": "68f0c508323e571692f5940200213d2e21d0134ce616060e1dde74bf4e584834",
-      ".github/workflows/update-proposal-work-queue.yml": "7ded498448b6f79c3836cde019edfe3bd0fea7bc668603b9673bf8edf46d084e",
+      ".github/workflows/update-proposal-work-queue.yml": "1e4930fe6fd4011c37220e8dfdad83779d971eaf68d04a9dfd26d282ee111691",
       ".github/workflows/update-reporting.yml": "53bfa8be818c1e58b13f4660c5d9482dc0a6ad974db62e43901161a2ae2a66d2",
       ".github/workflows/update-stable-capital.yml": "a2383747017ac6e6522c668a6187a85afab7a9e257e92fb0d2ee2b16fdb6b5b0",
       "agents/index.html": "0dc60ab6b1a1dae57255242bdcbc28f7d6c3b5b5415bca31a638aafa1b5e9ea7",
@@ -133,6 +133,20 @@
     ]
   },
   "findings": [
+    {
+      "id": "fd99800a6d3e6db9c38b5b7b433be1c1a6d7b2e75a7d1d5582623d8b8828aeb1",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-proposal-work-queue.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-proposal-work-queue.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "7ded498448b6f79c3836cde019edfe3bd0fea7bc668603b9673bf8edf46d084e",
+        "currentSha256": "1e4930fe6fd4011c37220e8dfdad83779d971eaf68d04a9dfd26d282ee111691"
+      }
+    },
     {
       "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
       "severity": "medium",
@@ -554,10 +568,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 108,
+    "runCount": 109,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-14T07-42-58-480Z-e691e3bb21.json",
-    "latestRecordHash": "8ca2545961420bd07f8e4b51220f8bbb51c1dbe91907b65d5c0d2dc0be40b56d",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-14T07-53-38-575Z-c5e4ee9ad3.json",
+    "latestRecordHash": "c286cd8af78ae7a0d88d6feda2c0b939c92f6780abe9fa69cb77bb6c63f7354b",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
