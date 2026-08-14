@@ -1,17 +1,500 @@
 {
   "version": "0.1-proposal-work-queue",
-  "engineVersion": "0.1-deterministic-proposal-engine",
-  "generatedAt": null,
-  "status": "ready",
-  "headline": "Proposal Work Queue installed; awaiting first grounded build.",
-  "source": {},
-  "summary": {
-    "activeCaseCount": 0,
-    "totalProposalCount": 0,
-    "activeProposalCount": 0,
-    "stateCounts": {}
+  "engineVersion": "0.1.1-deterministic-proposal-engine",
+  "generatedAt": "2026-08-14T07:05:21.995Z",
+  "status": "watch",
+  "headline": "9 active proposal(s) synthesized from 9 active Learning case(s); execution remains disabled.",
+  "source": {
+    "brainFile": "intelligence/brain-intelligence.json",
+    "brainSha256": "565381ab1ba91bb627aecb506284df246fe79bb7ccd2840027b932f0d2f34a46",
+    "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+    "cognitiveStackFile": "intelligence/cognitive-stack-state.json",
+    "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012",
+    "learningContextFile": "intelligence/learning-state/learning-context.json",
+    "learningContextSha256": "5d79fd7c6ed8aaf944e46ca8fd832a7f745bca8c71c690dad06d9c95b855e243",
+    "learningGeneratedAt": "2026-08-14T05:59:37.271Z",
+    "decisionCount": 0,
+    "lessonCount": 0
   },
-  "proposals": [],
+  "summary": {
+    "activeCaseCount": 9,
+    "totalProposalCount": 9,
+    "activeProposalCount": 9,
+    "stateCounts": {
+      "PROPOSED": 9,
+      "APPROVED": 0,
+      "IN_PROGRESS": 0,
+      "VERIFYING": 0,
+      "RELEASE_READY": 0,
+      "RELEASED": 0,
+      "REJECTED": 0,
+      "SUPERSEDED": 0
+    },
+    "p0Count": 2,
+    "p1Count": 0,
+    "requiresHumanApprovalCount": 9
+  },
+  "proposals": [
+    {
+      "proposalId": "PRP-1a96e1a58fdab58a3fb0e21e",
+      "proposalKey": "1a96e1a58fdab58a3fb0e21e",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T07:05:21.248Z",
+      "updatedAt": "2026-08-14T07:05:21.995Z",
+      "priorityScore": 127,
+      "rankClass": "P0",
+      "source": {
+        "caseId": "bd92163ceaf2983dcdb57151",
+        "caseKey": "CK-106f8e0ade4286d3d496",
+        "experienceClass": "EC-3ebb9e2096babb38",
+        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+      },
+      "domain": "security",
+      "category": "external-script-no-sri",
+      "entity": "7 current findings",
+      "recommendationClass": "third-party-trust-review",
+      "riskTier": "medium",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 2,
+        "firstSeenAt": "2026-08-13T22:26:36.851Z",
+        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "peerCaseCount": 1,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Review third-party script trust and integrity posture for 7 current findings; propose bounded hardening only where compatibility is proven.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
+      "proposalId": "PRP-5cc338ec8428a56eee951082",
+      "proposalKey": "5cc338ec8428a56eee951082",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T07:05:21.248Z",
+      "updatedAt": "2026-08-14T07:05:21.995Z",
+      "priorityScore": 127,
+      "rankClass": "P0",
+      "source": {
+        "caseId": "353fd15f649ee569d551d74c",
+        "caseKey": "CK-8793263ff6a84dddf9f1",
+        "experienceClass": "EC-8a782c4b87278e47",
+        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+      },
+      "domain": "security",
+      "category": "dom-innerhtml",
+      "entity": "31 current findings",
+      "recommendationClass": "security-provenance-triage",
+      "riskTier": "medium",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 2,
+        "firstSeenAt": "2026-08-13T22:26:36.851Z",
+        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "peerCaseCount": 1,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Review actual data provenance for 31 current findings; classify sinks as trusted, sanitized, or unsafe before any code change.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
+      "proposalId": "PRP-1c630e60d261ba053b229445",
+      "proposalKey": "1c630e60d261ba053b229445",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T07:05:21.248Z",
+      "updatedAt": "2026-08-14T07:05:21.995Z",
+      "priorityScore": 82,
+      "rankClass": "P2",
+      "source": {
+        "caseId": "29d41c97821adff643d62d32",
+        "caseKey": "CK-51a4fda6ce424c13ee8a",
+        "experienceClass": "EC-d33215336aa05406",
+        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+      },
+      "domain": "economic",
+      "category": "productivity-coverage",
+      "entity": "defitea.eth",
+      "recommendationClass": "coverage-resolution",
+      "riskTier": "low",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 2,
+        "firstSeenAt": "2026-08-13T22:26:36.851Z",
+        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "peerCaseCount": 1,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Resolve the bounded coverage gap for defitea.eth using existing adapters before introducing new methodology.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
+      "proposalId": "PRP-53f71f57ca5cf21f138254b1",
+      "proposalKey": "53f71f57ca5cf21f138254b1",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T07:05:21.248Z",
+      "updatedAt": "2026-08-14T07:05:21.995Z",
+      "priorityScore": 82,
+      "rankClass": "P2",
+      "source": {
+        "caseId": "752ad1fa5d5c4b4db1804346",
+        "caseKey": "CK-37d56ce4c4a253c834ab",
+        "experienceClass": "EC-b5f43a2563708fba",
+        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+      },
+      "domain": "economic",
+      "category": "rewards-completeness",
+      "entity": "0x5860...83CA8.eth",
+      "recommendationClass": "reward-route-resolution",
+      "riskTier": "low",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 2,
+        "firstSeenAt": "2026-08-13T22:26:36.851Z",
+        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "peerCaseCount": 3,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Resolve incomplete reward routes for 0x5860...83CA8.eth with current-state, wallet-scoped accounting and explicit provenance.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
+      "proposalId": "PRP-81d54ac38992f6bba833b172",
+      "proposalKey": "81d54ac38992f6bba833b172",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T07:05:21.248Z",
+      "updatedAt": "2026-08-14T07:05:21.995Z",
+      "priorityScore": 82,
+      "rankClass": "P2",
+      "source": {
+        "caseId": "610968fa0e1f1675d6be4131",
+        "caseKey": "CK-fdccd8da821af08d2c85",
+        "experienceClass": "EC-a94712818599e5d3",
+        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+      },
+      "domain": "economic",
+      "category": "adapter-state",
+      "entity": "pendle_spendle",
+      "recommendationClass": "data-gap-resolution",
+      "riskTier": "low",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 2,
+        "firstSeenAt": "2026-08-13T22:26:36.851Z",
+        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "peerCaseCount": 2,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Run bounded resolver/research for pendle_spendle; preserve unknown/warming rather than inventing a value.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
+      "proposalId": "PRP-88fbdd0dc94d3d960389eb33",
+      "proposalKey": "88fbdd0dc94d3d960389eb33",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T07:05:21.248Z",
+      "updatedAt": "2026-08-14T07:05:21.995Z",
+      "priorityScore": 82,
+      "rankClass": "P2",
+      "source": {
+        "caseId": "a2edb74a9d50a22d9e91e64a",
+        "caseKey": "CK-388a7f0fca06aa8dd6c9",
+        "experienceClass": "EC-a94712818599e5d3",
+        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+      },
+      "domain": "economic",
+      "category": "adapter-state",
+      "entity": "liquity_lqty",
+      "recommendationClass": "data-gap-resolution",
+      "riskTier": "low",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 2,
+        "firstSeenAt": "2026-08-13T22:26:36.851Z",
+        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "peerCaseCount": 2,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Run bounded resolver/research for liquity_lqty; preserve unknown/warming rather than inventing a value.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
+      "proposalId": "PRP-ae74ccd1ba7655ef36fe3e77",
+      "proposalKey": "ae74ccd1ba7655ef36fe3e77",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T07:05:21.248Z",
+      "updatedAt": "2026-08-14T07:05:21.995Z",
+      "priorityScore": 82,
+      "rankClass": "P2",
+      "source": {
+        "caseId": "91a77cb6899cf6d34a8ea962",
+        "caseKey": "CK-731d4a5d4c2a45d0eab2",
+        "experienceClass": "EC-a9c75952fae202ff",
+        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+      },
+      "domain": "economic",
+      "category": "stable-capital-coverage",
+      "entity": "Stable Companies Index",
+      "recommendationClass": "stable-coverage-resolution",
+      "riskTier": "low",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 2,
+        "firstSeenAt": "2026-08-13T22:26:36.851Z",
+        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "peerCaseCount": 1,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Perform bounded human-reviewed work for Stable Companies Index under recommendation class stable-coverage-resolution.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
+      "proposalId": "PRP-c1982f7fa3a1d8b41e526c44",
+      "proposalKey": "c1982f7fa3a1d8b41e526c44",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T07:05:21.248Z",
+      "updatedAt": "2026-08-14T07:05:21.995Z",
+      "priorityScore": 82,
+      "rankClass": "P2",
+      "source": {
+        "caseId": "d57ad616b19f94c0c5e8b6e7",
+        "caseKey": "CK-190a1e658fec990daf95",
+        "experienceClass": "EC-b5f43a2563708fba",
+        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+      },
+      "domain": "economic",
+      "category": "rewards-completeness",
+      "entity": "defitea.eth",
+      "recommendationClass": "reward-route-resolution",
+      "riskTier": "low",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 2,
+        "firstSeenAt": "2026-08-13T22:26:36.851Z",
+        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "peerCaseCount": 3,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Resolve incomplete reward routes for defitea.eth with current-state, wallet-scoped accounting and explicit provenance.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    },
+    {
+      "proposalId": "PRP-fb1de4f6edd21d5bb0bd9280",
+      "proposalKey": "fb1de4f6edd21d5bb0bd9280",
+      "state": "PROPOSED",
+      "createdAt": "2026-08-14T07:05:21.248Z",
+      "updatedAt": "2026-08-14T07:05:21.995Z",
+      "priorityScore": 82,
+      "rankClass": "P2",
+      "source": {
+        "caseId": "9407adbb1115d285937ffb3d",
+        "caseKey": "CK-081a4dd7a92ffe27ff49",
+        "experienceClass": "EC-b5f43a2563708fba",
+        "brainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+        "cognitiveChainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
+      },
+      "domain": "economic",
+      "category": "rewards-completeness",
+      "entity": "aerocvxyb.eth",
+      "recommendationClass": "reward-route-resolution",
+      "riskTier": "low",
+      "confidence": "high",
+      "rationale": {
+        "activeObservationCount": 2,
+        "firstSeenAt": "2026-08-13T22:26:36.851Z",
+        "lastSeenAt": "2026-08-14T05:59:18.812Z",
+        "peerCaseCount": 3,
+        "peerDecisionCount": 0,
+        "observedResolutionRate": null,
+        "latestLesson": null
+      },
+      "proposedAction": "Resolve incomplete reward routes for aerocvxyb.eth with current-state, wallet-scoped accounting and explicit provenance.",
+      "boundaries": {
+        "proposalOnly": true,
+        "automaticApproval": false,
+        "automaticExecution": false,
+        "humanApprovalRequired": true,
+        "affectedFiles": []
+      },
+      "verificationRequired": [
+        "fresh source evidence",
+        "independent deterministic review",
+        "regression/security checks appropriate to affected surface",
+        "human approval before mutation"
+      ],
+      "human": {
+        "approvedBy": null,
+        "approvedAt": null,
+        "notes": null
+      },
+      "outcome": null
+    }
+  ],
   "constraints": {
     "mode": "proposal-only-no-execution",
     "noTransactions": true,
@@ -23,6 +506,6 @@
     "noPaidModelApiRequired": true
   },
   "integrity": {
-    "queueHash": null
+    "queueHash": "4cc945e63060e6b326caefdfa8962e1f5f61e8c3f720393be1dae0bf0fe1797e"
   }
 }
