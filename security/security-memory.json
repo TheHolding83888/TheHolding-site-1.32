@@ -1,18 +1,18 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.1-security-sentinel",
-  "generatedAt": "2026-08-14T07:28:14.951Z",
+  "generatedAt": "2026-08-14T07:30:37.873Z",
   "status": "green",
-  "snapshotHash": "e58cac4e6bba3a376199ff2a2ef1ec034590e8bed93459bd2f9733dfeddbe635",
+  "snapshotHash": "455375237d45124cb373f77f801972d89930565441af6259fabbc56355f026d9",
   "repository": {
     "filesScanned": 151,
-    "bytesScanned": 5163859,
+    "bytesScanned": 5164145,
     "criticalHashes": {
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
       ".github/workflows/discover-company-008.yml": "1f6b40f3a3d61565bc515c7c5935d984ff40bb3a36ae2cb5fe5d6f8e901abbe9",
       ".github/workflows/discover-company-009.yml": "921b46baa8e841763502a1ff8eefe2fc1b775c6cd0a8f185c5d184fcd324b9cd",
-      ".github/workflows/operator-command-bridge.yml": "63f71f4c645c0c989dd4db6003b862235c29560856d0fb2e2c1cc8cd8e53b00a",
+      ".github/workflows/operator-command-bridge.yml": "ff66c20d7d565710aa01b968f949abf5b41517f4254b3888ae697d947232fba3",
       ".github/workflows/record-brain-decision.yml": "1796a180a0bffbb74adfdb63870abacd0f3452457b53f48dfbf156e5fdd8e824",
       ".github/workflows/refresh-cognitive-stack.yml": "c75ed2d49e0c18b4a37d9a8ec66cebebeceb08268417fe22cb69715bb2b832cf",
       ".github/workflows/repository-integrity-sentinel.yml": "202aae18525961a9d70a51497a203f2a18830043e837ac9a0a680061715102ba",
@@ -133,6 +133,20 @@
     ]
   },
   "findings": [
+    {
+      "id": "d10d240eeb3b2d442ecae0068fca84f046f59ee342baae8b90d87233019e334c",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/operator-command-bridge.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/operator-command-bridge.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "63f71f4c645c0c989dd4db6003b862235c29560856d0fb2e2c1cc8cd8e53b00a",
+        "currentSha256": "ff66c20d7d565710aa01b968f949abf5b41517f4254b3888ae697d947232fba3"
+      }
+    },
     {
       "id": "19c6e7b2757d5d84caa4f6a8371f9d55ddaa494d3b9d45c91ed891afbaf68c98",
       "severity": "medium",
@@ -554,10 +568,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 100,
+    "runCount": 101,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-14T07-28-14-951Z-e58cac4e6b.json",
-    "latestRecordHash": "45d6f591645b16dc029db0b85d7469e9fab59c1cb9e722974f383c616ece365c",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-14T07-30-37-873Z-455375237d.json",
+    "latestRecordHash": "9d5caf8c29bccf0776e31e76590b994a84c752637fb6d522860a6d8597e5bb2e",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
