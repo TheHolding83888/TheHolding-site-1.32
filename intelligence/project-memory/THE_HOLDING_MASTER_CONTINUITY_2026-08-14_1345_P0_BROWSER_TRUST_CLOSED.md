@@ -44,6 +44,14 @@ The goal is not to imitate the market. The goal is for The Holding to **continuo
 
 This is currently a strategic/cognitive rule, not a reason to add a new autonomous web-crawling subsystem today. Build that capability only when a real use case justifies it; until then, use the existing research/Proposal/Learning path.
 
+## New-chat memory rule
+
+For a new The Holding chat/model, use both memory channels:
+1. ChatGPT project/personal context when available;
+2. live GitHub-owned project memory, starting with `intelligence/project-memory/CURRENT.md`.
+
+GitHub `main` remains the durable canonical source when memories disagree. Fresh generated artifacts outrank prose summaries for changing facts.
+
 ## Objective that was closed
 
 Two owner-approved P0 Security proposals were taken through a real practical cycle:
