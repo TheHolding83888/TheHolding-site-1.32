@@ -1,9 +1,10 @@
 name: "The Holding Brain · Grounded Reasoning"
 
 on:
+  # Manual recovery / diagnostic path only. Canonical daily cognition now runs
+  # through Refresh Cognitive Stack so Security, Brain, Bridge, Cognitive State
+  # and downstream Learning share one coherent evidence chain.
   workflow_dispatch:
-  schedule:
-    - cron: "7 7 * * *"
 
 permissions:
   contents: write
@@ -22,7 +23,6 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
-
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
@@ -33,7 +33,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           test -s intelligence/brain-reasoning-engine.mjs
           test -s intelligence/brain-policy.json
           test -s intelligence/change-intelligence.json
@@ -45,7 +44,6 @@ jobs:
 
       - name: Build grounded reasoning packet
         run: node intelligence/brain-reasoning-engine.mjs
-
       - name: Validate Brain contract
         shell: bash
         run: |
@@ -57,7 +55,6 @@ jobs:
           const brain = JSON.parse(fs.readFileSync('intelligence/brain-intelligence.json', 'utf8'));
           const history = JSON.parse(fs.readFileSync('intelligence/brain-history.json', 'utf8'));
           const policy = JSON.parse(fs.readFileSync('intelligence/brain-policy.json', 'utf8'));
-
           if (brain.version !== '0.1-grounded-reasoning-gateway') {
             throw new Error(`Unexpected Brain version: ${brain.version}`);
           }
@@ -69,7 +66,6 @@ jobs:
           if (policy.mode !== 'read-only-proposal-only') {
             throw new Error('Brain policy is not read-only-proposal-only');
           }
-
           if (brain.constraints?.actionMode !== 'proposal-only') {
             throw new Error('Brain output escaped proposal-only mode');
           }
@@ -81,7 +77,6 @@ jobs:
             'sourceDataMutationAllowed',
             'workflowPlaneMutationAllowed',
           ];
-
           for (const key of forbidden) {
             if (brain.constraints?.[key] !== false) {
               throw new Error(`Forbidden capability became enabled: ${key}`);
@@ -91,7 +86,6 @@ jobs:
           if (!Array.isArray(brain.reasoningCases)) {
             throw new Error('reasoningCases missing');
           }
-
           for (const item of brain.reasoningCases) {
             if (!Array.isArray(item.evidence) || item.evidence.length === 0) {
               throw new Error(`Reasoning case ${item.id} has no evidence`);
@@ -105,7 +99,6 @@ jobs:
               }
             }
           }
-
           if (history.version !== '0.1-brain-history') {
             throw new Error(`Unexpected history version: ${history.version}`);
           }
@@ -117,7 +110,6 @@ jobs:
           if (!brain.bridge?.inputCompositeHash || !brain.bridge?.snapshotHash) {
             throw new Error('Brain bridge hashes missing');
           }
-
           console.log('Brain contract PASS', {
             status: brain.status,
             mode: brain.mode,
@@ -133,7 +125,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           GENERATED=(
             "intelligence/brain-intelligence.json"
             "intelligence/brain-history.json"
@@ -148,7 +139,6 @@ jobs:
           git config user.email "brain@theholding.ai"
 
           git add "${GENERATED[@]}"
-
           staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/(brain-intelligence\.json|brain-history\.json|brain-brief\.md)$' || true)"
           if [ -n "$staged_bad" ]; then
             echo "ERROR: Brain staged a file outside its generated-output boundary:"
@@ -160,7 +150,6 @@ jobs:
             echo "No Brain output changes to publish."
             exit 0
           fi
-
           git commit -m "intelligence: extend grounded Brain reasoning"
 
           verify_grounding_inputs() {
@@ -169,7 +158,6 @@ jobs:
           const crypto = require('crypto');
 
           const brain = JSON.parse(fs.readFileSync('intelligence/brain-intelligence.json', 'utf8'));
-
           const sources = {
             change: 'intelligence/change-intelligence.json',
             systemMemory: 'intelligence/system-memory.json',
@@ -179,7 +167,6 @@ jobs:
 
           const sha256 = (text) =>
             crypto.createHash('sha256').update(text).digest('hex');
-
           for (const [key, file] of Object.entries(sources)) {
             const expected = brain?.grounding?.sources?.[key]?.sha256;
             if (!expected) {
@@ -187,7 +174,6 @@ jobs:
             }
 
             const actual = sha256(fs.readFileSync(file, 'utf8'));
-
             if (actual !== expected) {
               throw new Error(
                 `Canonical grounding input changed after Brain build: ${file}. ` +
@@ -200,7 +186,6 @@ jobs:
           if (!expectedPolicy) {
             throw new Error('Missing Brain policy grounding hash');
           }
-
           const actualPolicy = sha256(
             fs.readFileSync('intelligence/brain-policy.json', 'utf8')
           );
@@ -214,7 +199,6 @@ jobs:
           if (brain.constraints?.actionMode !== 'proposal-only') {
             throw new Error('Brain proposal-only invariant failed');
           }
-
           for (const item of brain.reasoningCases ?? []) {
             if (!item.evidence?.length) {
               throw new Error(`Reasoning case ${item.id} lost evidence`);
@@ -227,7 +211,6 @@ jobs:
 
           for attempt in 1 2 3; do
             git fetch origin main
-
             if ! git rebase origin/main; then
               git rebase --abort || true
               echo "Brain publish conflict; refusing to guess."
@@ -240,7 +223,6 @@ jobs:
 
             if git push origin HEAD:main; then
               git fetch origin main
-
               if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
                 echo "ERROR: pushed Brain commit is not current remote main."
                 exit 1
@@ -253,6 +235,5 @@ jobs:
             echo "Main moved during push; retrying ($attempt/3)..."
             sleep $((attempt * 2))
           done
-
           echo "ERROR: unable to publish Brain output after 3 attempts."
           exit 1
