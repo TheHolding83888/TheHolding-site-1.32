@@ -1,0 +1,81 @@
+{
+  "version": "0.1-browser-trust-policy",
+  "reviewedAt": "2026-08-14T10:05:00Z",
+  "purpose": "Turn noisy browser-surface findings into explicit, fail-closed trust decisions. Reviewed DOM sinks are accepted only while the exact Git blob remains unchanged; mutable third-party scripts remain monitored as external trust dependencies rather than being incorrectly pinned with brittle SRI.",
+  "externalScripts": [
+    {
+      "url": "https://cloud.umami.is/script.js",
+      "provider": "Umami Cloud",
+      "purpose": "Privacy-focused traffic analytics",
+      "decision": "accepted-monitored-mutable-vendor",
+      "sriPolicy": "not-used-for-unversioned-mutable-asset",
+      "reviewAfter": "2026-11-14T00:00:00Z",
+      "monitorRemoteHash": true,
+      "expectedFiles": [
+        "blog/index.html",
+        "defitea/index.html",
+        "faq/index.html",
+        "fructus/index.html",
+        "monetra/index.html",
+        "singul/index.html",
+        "substantia/index.html"
+      ],
+      "rationale": "Umami's official documentation explicitly supports proxying or self-hosting the tracker and warns that a hosted copy must be refreshed when the tracker changes. Because cloud.umami.is/script.js is an unversioned mutable asset, static SRI would create a brittle availability dependency. The Holding instead keeps the exact vendor URL allowlisted, monitors the remote bytes, and reopens review whenever the remote hash changes or the review window expires.",
+      "officialReferences": [
+        "https://docs.umami.is/docs/bypass-ad-blockers",
+        "https://docs.umami.is/docs/tracker-configuration"
+      ]
+    }
+  ],
+  "reviewedDomInnerHtml": [
+    {
+      "file": "05081966_calculator/index.html",
+      "gitBlobSha1": "1c00cfdef20ab84f9a19f250eb07d13924714e8d",
+      "expectedCount": 1,
+      "classification": "trusted-static-plus-numeric-user-input",
+      "rationale": "The only user-controlled value is coerced through Number() before rendering; labels, styles and scenario strings are static constants."
+    },
+    {
+      "file": "05081966_company/index.html",
+      "gitBlobSha1": "b23dc8e4e048f2917ad3aab6135a22a578988102",
+      "expectedCount": 1,
+      "classification": "trusted-static-plus-numeric-market-data",
+      "rationale": "Asset labels are hardcoded and external price values are used only after numeric arithmetic/formatting."
+    },
+    {
+      "file": "05081966/index.html",
+      "gitBlobSha1": "bba37e2bac1d7783fc4d011a806fe04186239ddc",
+      "expectedCount": 1,
+      "classification": "trusted-static-plus-numeric-market-data",
+      "rationale": "Asset labels are hardcoded and external price values are used only after numeric arithmetic/formatting."
+    },
+    {
+      "file": "yieldring/index.html",
+      "gitBlobSha1": "132a095d65be61716ff82160049bf86a25589925",
+      "expectedCount": 1,
+      "classification": "trusted-static-plus-numeric-market-data",
+      "rationale": "Asset labels are local constants and fetched prices are converted to numeric values before rendering."
+    },
+    {
+      "file": "defitea/index.html",
+      "gitBlobSha1": "5d10039eec556375fb310641cf090439bd069c42",
+      "expectedCount": 1,
+      "classification": "trusted-canonical-reporting-data",
+      "rationale": "The SVG renderer consumes same-origin canonical Reporting Layer records; plotted values are numerically coerced and month labels are derived through controlled formatting."
+    },
+    {
+      "file": "yield-reports/index.html",
+      "gitBlobSha1": "2b01f6b896d0c5506627a41601ed0f0c521e334f",
+      "expectedCount": 10,
+      "classification": "trusted-canonical-reporting-data",
+      "rationale": "Report renderers consume same-origin canonical Reporting Layer records. Numeric fields are coerced through Number/finite helpers and displayed month labels are generated through controlled date formatting."
+    },
+    {
+      "file": "companies/index.html",
+      "gitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+      "expectedCount": 16,
+      "classification": "trusted-canonical-company-registry-and-generated-data",
+      "rationale": "Reviewed sinks render static registry/i18n structures and same-origin canonical Company/Stable/Rewards/Reporting artifacts. No URL/search/form/user string is routed directly into these reviewed assignments. Any file change invalidates this review and reopens every sink automatically."
+    }
+  ]
+}
