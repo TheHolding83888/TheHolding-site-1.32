@@ -42,6 +42,12 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Verify guard self-lock from trusted baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          node guard-base/verification/production-boundary-self-lock-v1.mjs candidate guard-base
+
       - name: Verify production boundary from trusted baseline
         shell: bash
         run: |
