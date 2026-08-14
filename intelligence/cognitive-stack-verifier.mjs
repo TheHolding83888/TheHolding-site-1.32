@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING — COGNITIVE STACK VERIFIER v0.1
+ * THE HOLDING — COGNITIVE STACK VERIFIER v0.2
  *
- * Produces one machine-readable readiness state for:
- *   Security Sentinel -> Grounded Brain -> ChatGPT Bridge
+ * Produces one machine-readable readiness state for the canonical cognitive chain:
+ *   Observer / Memory -> Security Sentinel -> Grounded Brain -> ChatGPT Bridge -> Cognitive Stack -> Decision Outcome Learning
  *
- * It does not reason about capital. It proves chain coherence.
+ * It does not reason about capital and it does not execute actions. It proves chain coherence
+ * and publishes the operating topology of the autonomous cognitive cycle.
  */
-
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -15,7 +15,6 @@ import { verifyGroundedBrainUpstreams, UPSTREAM_GUARD_VERSION } from './brain-up
 import { verifyCognitiveRelease, RELEASE_GUARD_VERSION } from './cognitive-release-guard.mjs';
 
 const ROOT = process.cwd();
-
 const FILES = {
   security: 'security/security-intelligence.json',
   securityMemory: 'security/security-memory.json',
@@ -26,9 +25,8 @@ const FILES = {
   brief: 'intelligence/cognitive-stack-brief.md',
   eval: 'intelligence/cognitive-stack-eval.json',
 };
-
 const VERSION = '0.1-cognitive-stack-state';
-const ENGINE_VERSION = '0.1-cognitive-stack-verifier';
+const ENGINE_VERSION = '0.2-autonomous-cycle-aware-cognitive-stack-verifier';
 const EVAL_VERSION = '0.1-cognitive-stack-eval';
 
 const args = new Set(process.argv.slice(2));
@@ -89,7 +87,6 @@ function validateChain({ security, securityMemory, brain, bridge, bridgeEval, br
   if (security?.version !== '0.1-autonomous-security-intelligence') {
     failures.push(`unexpected Security Intelligence version: ${security?.version}`);
   }
-
   if (securityMemory?.version !== '0.1-security-memory') {
     failures.push(`unexpected Security Memory version: ${securityMemory?.version}`);
   }
@@ -112,43 +109,33 @@ function validateChain({ security, securityMemory, brain, bridge, bridgeEval, br
   }
 
   const currentBrainSha = sha256(brainText);
-
   if (bridge?.sourceBrain?.sha256 !== currentBrainSha) {
     failures.push('Bridge is not bound to the exact current Grounded Brain bytes');
   }
-
   if (bridge?.sourceBrain?.snapshotHash !== brain?.bridge?.snapshotHash) {
     failures.push('Bridge and Grounded Brain snapshot hashes do not match');
   }
-
   if (bridge?.sourceBrain?.inputCompositeHash !== brain?.bridge?.inputCompositeHash) {
     failures.push('Bridge and Grounded Brain input composite hashes do not match');
   }
-
   if (bridge?.grounding?.upstreamCurrent !== true) {
     failures.push('Bridge does not declare exact current upstream binding');
   }
-
   if (bridge?.grounding?.upstreamGuardVersion !== UPSTREAM_GUARD_VERSION) {
     failures.push('Bridge upstream guard version mismatch');
   }
-
   if (bridgeEval?.status !== 'pass') {
     failures.push('Bridge deterministic evaluation is not PASS');
   }
-
   if (bridge?.constraints?.apiRequired !== false) {
     failures.push('Bridge unexpectedly requires an API');
   }
-
   if (bridge?.constraints?.modelCallPerformed !== false) {
     failures.push('Bridge unexpectedly performed a model call');
   }
-
   if (bridge?.constraints?.executionAllowed !== false) {
     failures.push('Bridge unexpectedly enables execution');
   }
-
   if (brain?.constraints?.actionMode !== 'proposal-only') {
     failures.push('Grounded Brain escaped proposal-only mode');
   }
@@ -156,7 +143,6 @@ function validateChain({ security, securityMemory, brain, bridge, bridgeEval, br
   const critical = Number(security?.severityCounts?.critical ?? 0);
   const high = Number(security?.severityCounts?.high ?? 0);
   const medium = Number(security?.severityCounts?.medium ?? 0);
-
   if (!Number.isFinite(critical) || !Number.isFinite(high) || !Number.isFinite(medium)) {
     failures.push('Security severity counts are not finite');
   }
@@ -182,13 +168,11 @@ function validateChain({ security, securityMemory, brain, bridge, bridgeEval, br
   };
 }
 
-function buildState({ securityLoaded, securityMemoryLoaded, brainLoaded, bridgeLoaded, bridgeEvalLoaded, validation, release }) {
-  const { security, securityMemory, brain, bridge } = {
-    security: securityLoaded.data,
-    securityMemory: securityMemoryLoaded.data,
-    brain: brainLoaded.data,
-    bridge: bridgeLoaded.data,
-  };
+function buildState({ securityLoaded, securityMemoryLoaded, brainLoaded, bridgeLoaded, validation, release }) {
+  const security = securityLoaded.data;
+  const securityMemory = securityMemoryLoaded.data;
+  const brain = brainLoaded.data;
+  const bridge = bridgeLoaded.data;
 
   const state = {
     version: VERSION,
@@ -214,8 +198,7 @@ function buildState({ securityLoaded, securityMemoryLoaded, brainLoaded, bridgeL
         critical: validation.counts.critical,
         high: validation.counts.high,
         medium: validation.counts.medium,
-        memorySnapshotMatch:
-          security.bridge?.snapshotHash === securityMemory.snapshotHash,
+        memorySnapshotMatch: security.bridge?.snapshotHash === securityMemory.snapshotHash,
       },
       groundedBrain: {
         file: FILES.brain,
@@ -257,8 +240,16 @@ function buildState({ securityLoaded, securityMemoryLoaded, brainLoaded, bridgeL
       exactByteMatch: release.current === true,
     },
     operatingContract: {
-      canonicalManualSequence:
-        'Security Sentinel -> Grounded Brain -> ChatGPT Bridge -> human-triggered ChatGPT interpretation',
+      canonicalCognitiveSequence:
+        'Observer / Memory -> Security Sentinel -> Grounded Brain -> ChatGPT Bridge -> Cognitive Stack -> Decision Outcome Learning',
+      autonomousCycle: {
+        mode: 'scheduled-integrated-plus-manual-recovery',
+        scheduleUtc: '07:27',
+        observerMaxAgeHours: 6,
+        learningTrigger: 'workflow_run-after-successful-cognitive-refresh',
+        standaloneBrainScheduleEnabled: false,
+        standaloneBridgeScheduleEnabled: false,
+      },
       factsAuthority: 'intelligence/brain-intelligence.json',
       evidenceAuthority: 'intelligence/brain-intelligence.json',
       allowedActionAuthority: 'deterministic Grounded Brain case',
@@ -298,6 +289,14 @@ function buildBrief(state, validation) {
     '',
     `Release: ${state.release.releaseId} · exact ${state.release.exactByteMatch}`,
     `Manifest: ${state.release.manifestSha256}`,
+    '',
+    '## Operating topology',
+    '',
+    `Mode: ${state.operatingContract.autonomousCycle.mode}`,
+    `Daily schedule: ${state.operatingContract.autonomousCycle.scheduleUtc} UTC`,
+    `Observer max age: ${state.operatingContract.autonomousCycle.observerMaxAgeHours}h`,
+    `Learning trigger: ${state.operatingContract.autonomousCycle.learningTrigger}`,
+    `Execution authority: ${state.operatingContract.executionAuthority}`,
     '',
     '## Chain',
     '',
@@ -351,7 +350,6 @@ function createCurrentState() {
   }
 
   const state = buildState({ ...loaded, validation, release });
-
   const evaluation = {
     version: EVAL_VERSION,
     verifierVersion: ENGINE_VERSION,
@@ -367,6 +365,8 @@ function createCurrentState() {
       noApiRequired: state.chain.chatgptBridge.noApiRequired === true,
       noModelCall: state.chain.chatgptBridge.noModelCall === true,
       noExecution: state.chain.chatgptBridge.noExecution === true,
+      autonomousCycleDeclared: state.operatingContract.autonomousCycle.mode === 'scheduled-integrated-plus-manual-recovery',
+      executionAuthorityNone: state.operatingContract.executionAuthority === 'none',
     },
     warnings: validation.warnings,
     failures: [],
@@ -396,23 +396,24 @@ if (VERIFY_CURRENT) {
     readyForManualInterpretation: published.readyForManualInterpretation,
     requiresImmediateHumanReview: published.requiresImmediateHumanReview,
     chainHash: published.integrity.chainHash,
+    autonomousCycle: published.operatingContract?.autonomousCycle ?? null,
   }, null, 2));
   process.exit(0);
 }
 
 const current = createCurrentState();
-
 fs.writeFileSync(FILES.state, JSON.stringify(current.state, null, 2) + '\n', 'utf8');
 fs.writeFileSync(FILES.eval, JSON.stringify(current.evaluation, null, 2) + '\n', 'utf8');
 fs.writeFileSync(FILES.brief, buildBrief(current.state, current.validation), 'utf8');
-
 console.log(JSON.stringify({
   version: current.state.version,
+  verifierVersion: current.state.verifierVersion,
   generatedAt: current.state.generatedAt,
   status: current.state.status,
   readyForManualInterpretation: current.state.readyForManualInterpretation,
   requiresImmediateHumanReview: current.state.requiresImmediateHumanReview,
   chainHash: current.state.integrity.chainHash,
+  autonomousCycle: current.state.operatingContract.autonomousCycle,
   security: current.state.chain.security,
   groundedBrain: current.state.chain.groundedBrain,
   chatgptBridge: current.state.chain.chatgptBridge,
