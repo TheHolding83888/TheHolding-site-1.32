@@ -1,0 +1,73 @@
+name: The Holding · Ask OS Conversation v0.5 Integrator
+
+on:
+  push:
+    branches: [agents/ask-os-conversation-v0.5-20260814]
+    paths:
+      - 'verification/ask-os-conversation-integrator-v0.5.mjs'
+      - '.github/workflows/ask-os-conversation-integrator-v0.5.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: agents/ask-os-conversation-v0.5-20260814
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Syntax-check integrator
+        run: node --check verification/ask-os-conversation-integrator-v0.5.mjs
+      - name: Apply fail-closed candidate patch
+        run: node verification/ask-os-conversation-integrator-v0.5.mjs
+      - name: Syntax-check Ask router
+        run: node --check agents/console/app.js
+      - name: Verify v0.5 contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const app = fs.readFileSync('agents/console/app.js','utf8');
+          const page = fs.readFileSync('agents/index.html','utf8');
+          const learning = JSON.parse(fs.readFileSync('worker/wrangler.learning.jsonc','utf8'));
+          const must = (cond, msg) => { if (!cond) throw new Error(msg); };
+          must(app.includes("proposals: '/intelligence/proposals/proposal-queue.json'"), 'Proposal source missing');
+          must(app.includes("builder: '/intelligence/builder/candidate-queue.json'"), 'Builder source missing');
+          must(app.includes("guardian: '/intelligence/guardian/guardian-state.json'"), 'Guardian source missing');
+          must(app.includes('function governanceCoherent()'), 'governance coherence gate missing');
+          must(app.includes('function whyFilteredAnswer(lang)'), '21→3 explanation missing');
+          must(app.includes('function compareCompaniesAnswer'), 'company compare missing');
+          must(app.includes("source: 'Proposal Work Queue'"), 'real Proposal source missing');
+          must(app.includes("source: 'OS Governance · Proposal + Builder + Guardian'"), 'OS governance source missing');
+          must(page.includes('./console/app.js?v=0.5'), 'v0.5 cache version missing');
+          must(String(learning.vars?.LEARNING_INTAKE_ENABLED) === 'false', 'persistent learning activated');
+          must(!app.includes("fetch('/api/"), 'new API fetch added');
+          must(app.includes("executionAuthority"), 'authority contract disappeared');
+          console.log('Ask v0.5 static contracts: PASS');
+          NODE
+      - name: Verify production boundary
+        run: node verification/production-boundary-guard-v1.mjs . .
+      - name: Publish candidate files only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git restore .github/workflows/ask-os-conversation-integrator-v0.5.yml verification/ask-os-conversation-integrator-v0.5.mjs
+          git status --short
+          changed="$(git diff --name-only)"
+          test "$changed" = $'agents/console/app.js\nagents/index.html'
+          git config user.name 'The Holding Ask Integrator'
+          git config user.email 'ask-integrator@theholding.ai'
+          git add agents/console/app.js agents/index.html
+          if git diff --cached --quiet; then
+            echo 'No candidate changes to publish.'
+            exit 0
+          fi
+          git commit -m 'agents: synthesize OS governance in Ask v0.5'
+          git push origin HEAD:agents/ask-os-conversation-v0.5-20260814
