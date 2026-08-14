@@ -1,0 +1,102 @@
+name: "The Holding · Project Memory Bootstrap"
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'intelligence/project-memory/CURRENT.md'
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: project-memory-bootstrap-main
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Validate deterministic memory builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/project-memory/README.md
+          test -s intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md
+          test -s intelligence/project-memory/build-current-memory.mjs
+          node --check intelligence/project-memory/build-current-memory.mjs
+
+      - name: Refresh CURRENT project memory safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Project Memory"
+          git config user.email "project-memory@theholding.ai"
+
+          rebuild() {
+            node intelligence/project-memory/build-current-memory.mjs
+            git diff --check
+            git add intelligence/project-memory/CURRENT.md
+            bad="$(git diff --cached --name-only | grep -Ev '^intelligence/project-memory/CURRENT\.md$' || true)"
+            if [ -n "$bad" ]; then
+              echo "ERROR: Project Memory updater attempted to stage outside CURRENT.md"
+              echo "$bad"
+              exit 1
+            fi
+          }
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            rebuild
+
+            if git diff --cached --quiet; then
+              echo "Project Memory CURRENT.md already matches canonical source state."
+              exit 0
+            fi
+
+            git commit -m "memory: refresh current project bootstrap"
+            if git push origin HEAD:main; then
+              git fetch origin main
+              test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+              echo "Verified CURRENT project memory on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during Project Memory publish; rebuilding from fresh main ($attempt/3)..."
+          done
+
+          echo "ERROR: unable to publish CURRENT project memory after retries"
+          exit 1
+
+      - name: Memory bootstrap summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "# The Holding · Project Memory Bootstrap"
+            echo
+            echo "**Canonical entrypoint:** \`intelligence/project-memory/CURRENT.md\`"
+            echo "**Permanent factual archive:** \`intelligence/memory-vault/\`"
+            echo "**Model/API call:** none"
+            echo "**Generated mutation boundary:** CURRENT.md only"
+            echo "**Schedule:** hourly backstop at minute 17"
+            echo
+            echo "The updater is deterministic and emits no commit when canonical source state has not changed."
+          } >> "$GITHUB_STEP_SUMMARY"
