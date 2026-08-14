@@ -89,7 +89,7 @@ next = replaceOnce(next,
   function coarseTopic(raw) {
     if (state.lastTopic) return String(state.lastTopic).slice(0, 80);
     const protocol = protocolGroup(raw);
-    if (protocol) return `protocol:${protocol}`;
+    if (protocol) return 'protocol:' + protocol;
     const q = norm(raw);
     if (includesAny(q, ['reward', 'награ', 'claimable', 'accrued'])) return 'rewards';
     if (includesAny(q, ['embedded', 'встроенн'])) return 'embedded-yield';
@@ -130,7 +130,7 @@ next = replaceOnce(next,
 
   async function questionFingerprint(raw) {
     try {
-      const payload = new TextEncoder().encode(`${answerQualitySalt()}|${norm(raw)}`);
+      const payload = new TextEncoder().encode(answerQualitySalt() + '|' + norm(raw));
       const digest = await crypto.subtle.digest('SHA-256', payload);
       return [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, '0')).join('').slice(0, 24);
     } catch (_) { return null; }
@@ -225,8 +225,8 @@ next = replaceOnce(next,
     if (source || contract) {
       const src = document.createElement('span');
       src.className = 'source';
-      const quality = contract ? ` · ${contract.confidenceClass.toUpperCase()}` : '';
-      src.textContent = `${source || 'Answer Contract'}${quality}`;
+      const quality = contract ? ' · ' + contract.confidenceClass.toUpperCase() : '';
+      src.textContent = (source || 'Answer Contract') + quality;
       box.appendChild(src);
     }
     messages.scrollTop = messages.scrollHeight;
