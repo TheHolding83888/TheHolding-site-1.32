@@ -1,0 +1,122 @@
+name: "The Holding · Claude Review Absorption Integrator"
+
+on:
+  push:
+    branches: [intelligence/claude-review-absorption-v1-20260814]
+    paths:
+      - 'verification/claude-review-absorption-integrator-v1.mjs'
+      - '.github/workflows/claude-review-absorption-integrator.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: claude-review-absorption-integrator
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: intelligence/claude-review-absorption-v1-20260814
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Apply fail-closed integration
+        run: node verification/claude-review-absorption-integrator-v1.mjs
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/learning/decision-learning-engine.mjs
+          node --check intelligence/learning/decision-recorder.mjs
+          node --check intelligence/learning/independent-learning-reviewer.mjs
+          node --check intelligence/proposals/proposal-engine.mjs
+          node --check intelligence/proposals/independent-proposal-reviewer.mjs
+          node --check intelligence/proposals/proposal-decision-bridge.mjs
+          node --check intelligence/proposals/independent-proposal-decision-reviewer.mjs
+          node intelligence/learning/learning-release-guard.mjs
+          node intelligence/proposals/proposal-release-guard.mjs
+          node intelligence/guardian/guardian-release-guard.mjs
+          node intelligence/learning/decision-recorder.mjs --self-test
+          git diff --check
+
+      - name: End-to-end deterministic dry run
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/learning/decision-learning-engine.mjs
+          node intelligence/learning/independent-learning-reviewer.mjs
+          node intelligence/proposals/proposal-engine.mjs
+          node intelligence/proposals/independent-proposal-reviewer.mjs
+          node intelligence/proposals/proposal-decision-bridge.mjs
+          node intelligence/proposals/independent-proposal-decision-reviewer.mjs
+          node intelligence/builder/builder-engine.mjs
+          node intelligence/builder/independent-builder-reviewer.mjs
+          node intelligence/guardian/guardian-engine.mjs
+          node intelligence/guardian/independent-guardian-reviewer.mjs
+          node - <<'NODE'
+          const fs = require('fs');
+          const learning = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
+          const proposal = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-queue.json','utf8'));
+          const guardian = JSON.parse(fs.readFileSync('intelligence/guardian/guardian-state.json','utf8'));
+          const observed = Number(learning.summary?.activeCaseCount ?? -1);
+          const worthy = Number(learning.summary?.decisionWorthyActiveCaseCount ?? -1);
+          const hygiene = Number(learning.summary?.dataHygieneActiveCaseCount ?? -1);
+          if (observed < 0 || worthy < 0 || hygiene < 0 || worthy + hygiene !== observed) throw new Error('Learning eligibility counts invalid');
+          if ((learning.activeCases ?? []).some(c => !['decision-worthy','data-hygiene'].includes(c.experienceEligibility))) throw new Error('Unclassified Learning case');
+          if (proposal.summary?.observedActiveCaseCount !== observed) throw new Error('Proposal observed count mismatch');
+          if (proposal.summary?.activeCaseCount !== worthy) throw new Error('Proposal decision-worthy count mismatch');
+          if ((proposal.proposals ?? []).filter(p => !['REJECTED','SUPERSEDED','RELEASED'].includes(p.state)).some(p => {
+            const c = (learning.activeCases ?? []).find(x => x.caseKey === p.source?.caseKey);
+            return !c || c.experienceEligibility !== 'decision-worthy';
+          })) throw new Error('Active Proposal escaped decision-worthy filter');
+          if (guardian.summary?.sandboxBuildAuthorizedCount !== 0 || guardian.summary?.productionMutationAuthorizedCount !== 0) throw new Error('Guardian authority expanded');
+          console.log('Experience quality dry-run PASS', { observed, decisionWorthy: worthy, dataHygiene: hygiene, activeProposals: proposal.summary?.activeProposalCount, guardian: guardian.summary });
+          NODE
+
+      - name: Restore generated state after dry run
+        shell: bash
+        run: |
+          set -euo pipefail
+          git restore \
+            intelligence/learning-state \
+            intelligence/proposals/proposal-queue.json \
+            intelligence/proposals/proposal-brief.md \
+            intelligence/proposals/proposal-eval.json \
+            intelligence/proposals/proposal-decision-eval.json \
+            intelligence/builder/candidate-queue.json \
+            intelligence/builder/candidate-brief.md \
+            intelligence/builder/candidate-eval.json \
+            intelligence/guardian/guardian-state.json \
+            intelligence/guardian/guardian-brief.md \
+            intelligence/guardian/guardian-eval.json
+          git diff --check
+
+      - name: Remove temporary integration machinery
+        shell: bash
+        run: |
+          rm -f verification/claude-review-absorption-integrator-v1.mjs
+          rm -f .github/workflows/claude-review-absorption-integrator.yml
+
+      - name: Publish integrated candidate branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Integration"
+          git config user.email "integration@theholding.ai"
+          git add -A
+          test -n "$(git status --porcelain)"
+          git commit -m "intelligence: gate experience learning to real decisions"
+          git push origin HEAD:intelligence/claude-review-absorption-v1-20260814
