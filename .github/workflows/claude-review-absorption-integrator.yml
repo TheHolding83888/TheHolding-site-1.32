@@ -32,8 +32,12 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
-      - name: Apply fail-closed integration
-        run: node verification/claude-review-absorption-integrator-v1.mjs
+      - name: Correct verified live anchor and apply fail-closed integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i 's/rememberedCaseCount}` ,/rememberedCaseCount}`,/' verification/claude-review-absorption-integrator-v1.mjs
+          node verification/claude-review-absorption-integrator-v1.mjs
 
       - name: Static validation
         shell: bash
