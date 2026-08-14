@@ -102,7 +102,7 @@ jobs:
           console.log('Experience quality dry-run PASS', { observed, decisionWorthy: worthy, dataHygiene: hygiene, activeProposals: proposal.summary?.activeProposalCount, guardian: guardian.summary });
           NODE
 
-      - name: Restore generated state after dry run
+      - name: Restore generated and workflow-plane files before publish
         shell: bash
         run: |
           set -euo pipefail
@@ -127,22 +127,28 @@ jobs:
             intelligence/builder/candidate-eval.json \
             intelligence/guardian/guardian-state.json \
             intelligence/guardian/guardian-brief.md \
-            intelligence/guardian/guardian-eval.json
+            intelligence/guardian/guardian-eval.json \
+            .github/workflows/update-guardian-state.yml \
+            intelligence/guardian/guardian-release.json
           git diff --check
 
-      - name: Remove temporary integration machinery
-        shell: bash
-        run: |
-          rm -f verification/claude-review-absorption-integrator-v1.mjs
-          rm -f .github/workflows/claude-review-absorption-integrator.yml
-
-      - name: Publish integrated candidate branch
+      - name: Publish tested non-workflow candidate patch
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "The Holding Integration"
           git config user.email "integration@theholding.ai"
-          git add -A
-          test -n "$(git status --porcelain)"
+          git add \
+            intelligence/learning/decision-policy.json \
+            intelligence/learning/decision-learning-engine.mjs \
+            intelligence/learning/decision-recorder.mjs \
+            intelligence/learning/independent-learning-reviewer.mjs \
+            intelligence/learning/learning-release.json \
+            intelligence/proposals/proposal-engine.mjs \
+            intelligence/proposals/independent-proposal-reviewer.mjs \
+            intelligence/proposals/proposal-decision-bridge.mjs \
+            intelligence/proposals/independent-proposal-decision-reviewer.mjs \
+            intelligence/proposals/proposal-release.json
+          test -n "$(git diff --cached --name-only)"
           git commit -m "intelligence: gate experience learning to real decisions"
           git push origin HEAD:intelligence/claude-review-absorption-v1-20260814
