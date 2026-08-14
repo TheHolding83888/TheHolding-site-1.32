@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://theholding.ai/intelligence/guardian/guardian-schema.json",
+  "title": "The Holding Guardian Capability State",
+  "type": "object",
+  "required": ["version", "engineVersion", "generatedAt", "status", "source", "summary", "decisions", "constraints", "integrity"],
+  "properties": {
+    "version": { "const": "0.1-guardian-state" },
+    "engineVersion": { "const": "0.1-deterministic-guardian-capability-gate" },
+    "generatedAt": { "type": "string" },
+    "status": { "enum": ["ready", "watch", "blocked"] },
+    "source": { "type": "object" },
+    "summary": { "type": "object" },
+    "decisions": { "type": "array" },
+    "constraints": { "type": "object" },
+    "integrity": {
+      "type": "object",
+      "required": ["stateHash"],
+      "properties": { "stateHash": { "type": "string", "minLength": 64, "maxLength": 64 } }
+    }
+  },
+  "additionalProperties": true
+}
