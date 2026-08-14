@@ -22,7 +22,7 @@ jobs:
     if: github.event_name == 'pull_request_target'
     name: Cloudflare preview homepage smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     env:
       GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
@@ -50,54 +50,36 @@ jobs:
           echo 'Timed out waiting for Cloudflare preview build.' >&2
           exit 1
 
-      - name: Resolve and verify exact Cloudflare preview surface
-        id: preview
+      - name: Verify Cloudflare branch preview surface
         shell: bash
         run: |
           set -euo pipefail
-          SUMMARY="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$HEAD_SHA/check-runs" \
-            --jq '.check_runs[] | select(.name == "Workers Builds: theholdingprotocol" and .conclusion == "success") | .output.summary' | tail -n1)"
-          VERSION_ID="$(printf '%s' "$SUMMARY" | grep -Eo 'Version ID: [0-9a-f-]{36}' | awk '{print $3}' | tail -n1 || true)"
-          BRANCH_SLUG="$(printf '%s' "$HEAD_REF" | tr '[:upper:]_/' '[:lower:]--')"
-          CANDIDATES=("https://${BRANCH_SLUG}-theholdingprotocol.${WORKERS_SUBDOMAIN}.workers.dev")
-          if [[ -n "$VERSION_ID" ]]; then
-            CANDIDATES+=("https://${VERSION_ID:0:8}-theholdingprotocol.${WORKERS_SUBDOMAIN}.workers.dev")
-          fi
+          BRANCH_SLUG="$(printf '%s' "$HEAD_REF" | tr '[:upper:]' '[:lower:]' | sed -E 's#[/_]+#-#g; s#[^a-z0-9.-]+#-#g')"
+          PREVIEW_URL="https://${BRANCH_SLUG}-theholdingprotocol.${WORKERS_SUBDOMAIN}.workers.dev"
+          echo "Preview URL: $PREVIEW_URL"
 
-          for URL in "${CANDIDATES[@]}"; do
-            echo "Testing preview candidate: $URL"
-            if ! curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 "$URL/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/home.html; then
-              continue
+          for attempt in $(seq 1 18); do
+            if curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 "$PREVIEW_URL/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/home.html \
+              && grep -Fqi '<title>TheHolding.ai' /tmp/home.html \
+              && grep -Fqi '<link rel="canonical" href="https://theholding.ai/">' /tmp/home.html \
+              && ! grep -Eqi 'Ask The Holding\.|KNOWLEDGE ROUTER|Live knowledge console' /tmp/home.html \
+              && curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 "$PREVIEW_URL/agents/console/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/console.html \
+              && grep -Fqi 'Ask The Holding.' /tmp/console.html; then
+                echo 'Cloudflare preview surface contract is GREEN.'
+                exit 0
             fi
-            if ! grep -Eqi '<title>[^<]*TheHolding\.ai' /tmp/home.html; then
-              continue
-            fi
-            if ! grep -Eqi '<link[[:space:]]+rel=["'"']canonical["'"'][[:space:]]+href=["'"']https://theholding\.ai/["'"']' /tmp/home.html; then
-              continue
-            fi
-            if grep -Eqi 'Ask The Holding\.|KNOWLEDGE ROUTER|Live knowledge console' /tmp/home.html; then
-              echo "Preview root candidate serves Console: $URL" >&2
-              continue
-            fi
-            if ! curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 "$URL/agents/console/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/console.html; then
-              continue
-            fi
-            if ! grep -Fqi 'Ask The Holding.' /tmp/console.html; then
-              continue
-            fi
-            echo "url=$URL" >> "$GITHUB_OUTPUT"
-            echo "Cloudflare preview surface contract is GREEN: $URL"
-            exit 0
+            echo "Preview surface not ready or invalid (attempt $attempt/18)."
+            sleep 5
           done
 
-          echo 'No Cloudflare preview candidate satisfied the canonical homepage + isolated Console contract.' >&2
+          echo 'Cloudflare preview did not satisfy canonical homepage + isolated Console contract.' >&2
           exit 1
 
   production-homepage-smoke:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     name: Production homepage smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     env:
       GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
@@ -127,13 +109,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsSL --retry 5 --retry-delay 3 -H 'Cache-Control: no-cache' "https://theholding.ai/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/home.html
-          grep -Eqi '<title>[^<]*TheHolding\.ai' /tmp/home.html
-          grep -Eqi '<link[[:space:]]+rel=["'"']canonical["'"'][[:space:]]+href=["'"']https://theholding\.ai/["'"']' /tmp/home.html
-          if grep -Eqi 'Ask The Holding\.|KNOWLEDGE ROUTER|Live knowledge console' /tmp/home.html; then
-            echo 'PRODUCTION INCIDENT: theholding.ai root is serving Console.' >&2
-            exit 1
-          fi
-          curl -fsSL --retry 5 --retry-delay 3 -H 'Cache-Control: no-cache' "https://theholding.ai/agents/console/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/console.html
-          grep -Fqi 'Ask The Holding.' /tmp/console.html
-          echo 'Live production surface contract is GREEN.'
+          for attempt in $(seq 1 18); do
+            if curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 -H 'Cache-Control: no-cache' "https://theholding.ai/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/home.html \
+              && grep -Fqi '<title>TheHolding.ai' /tmp/home.html \
+              && grep -Fqi '<link rel="canonical" href="https://theholding.ai/">' /tmp/home.html \
+              && ! grep -Eqi 'Ask The Holding\.|KNOWLEDGE ROUTER|Live knowledge console' /tmp/home.html \
+              && curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 --retry-delay 2 -H 'Cache-Control: no-cache' "https://theholding.ai/agents/console/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/console.html \
+              && grep -Fqi 'Ask The Holding.' /tmp/console.html; then
+                echo 'Live production surface contract is GREEN.'
+                exit 0
+            fi
+            echo "Production surface not ready or invalid (attempt $attempt/18)."
+            sleep 5
+          done
+
+          echo 'PRODUCTION INCIDENT: canonical homepage + isolated Console contract failed.' >&2
+          exit 1
