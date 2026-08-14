@@ -8,12 +8,7 @@ on:
         required: true
         default: core
         type: choice
-        options:
-          - safety
-          - core
-          - mutation
-          - owner-unknown
-          - all
+        options: [safety, core, mutation, owner-unknown, all]
       seed:
         description: Optional mutation seed
         required: false
@@ -28,8 +23,7 @@ on:
       - verification/ask-experience/**
       - .github/workflows/ask-experience.yml
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - agents/console/app.js
       - agents/index.html
@@ -45,7 +39,7 @@ permissions:
 jobs:
   experience:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout exact tested revision
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -59,6 +53,7 @@ jobs:
           DISPATCH_SEED: ${{ inputs.seed }}
           EVENT_NAME: ${{ github.event_name }}
           EVENT_SCHEDULE: ${{ github.event.schedule }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           if [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "17 5 * * *" ]; then
@@ -67,12 +62,14 @@ jobs:
             MODE=mutation
           elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             MODE="${DISPATCH_MODE:-core}"
+          elif [ "$EVENT_NAME" = "push" ] && [ "$REF_NAME" = "agents/ask-evaluation-trust-v0.6.1-20260815" ]; then
+            MODE=all
           else
             MODE=core
           fi
           if [ -n "${DISPATCH_SEED:-}" ]; then
             SEED="$DISPATCH_SEED"
-          elif [ "$MODE" = "mutation" ]; then
+          elif [ "$MODE" = "mutation" ] || [ "$MODE" = "all" ]; then
             SEED="$(date -u +%Y-%m)-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           else
             SEED=""
@@ -110,6 +107,7 @@ jobs:
 
       - name: Frozen safety corpus
         if: env.RUN_MODE == 'safety' || env.RUN_MODE == 'all'
+        continue-on-error: true
         shell: bash
         env:
           ASK_BASE_URL: http://127.0.0.1:8080/agents/
@@ -117,16 +115,17 @@ jobs:
           ASK_EXPERIENCE_ORIGIN: synthetic-regression
         run: |
           set -euo pipefail
-          node verification/ask-experience/runner-v0.1.mjs \
-            verification/ask-experience/corpus-safety-v0.1.json \
-            artifacts/ask-experience-safety.json
-          node verification/ask-experience/evaluator-v0.1.mjs \
-            verification/ask-experience/corpus-safety-v0.1.json \
-            artifacts/ask-experience-safety.json \
-            > artifacts/ask-experience-safety-evaluation.json
+          node verification/ask-experience/runner-v0.1.mjs verification/ask-experience/corpus-safety-v0.1.json artifacts/ask-experience-safety.json
+          set +e
+          node verification/ask-experience/evaluator-v0.1.mjs verification/ask-experience/corpus-safety-v0.1.json artifacts/ask-experience-safety.json > artifacts/ask-experience-safety-evaluation.json
+          rc=$?
+          set -e
+          node verification/ask-experience/summarize-learning-needs-v0.1.mjs artifacts/ask-experience-safety-evaluation.json > artifacts/ask-experience-safety-learning-needs.json
+          exit "$rc"
 
       - name: Annotated core regression
         if: env.RUN_MODE == 'core' || env.RUN_MODE == 'all'
+        continue-on-error: true
         shell: bash
         env:
           ASK_BASE_URL: http://127.0.0.1:8080/agents/
@@ -134,16 +133,17 @@ jobs:
           ASK_EXPERIENCE_ORIGIN: synthetic-regression
         run: |
           set -euo pipefail
-          node verification/ask-experience/runner-v0.1.mjs \
-            verification/ask-experience/corpus-core-v0.1.json \
-            artifacts/ask-experience-core.json
-          node verification/ask-experience/evaluator-v0.1.mjs \
-            verification/ask-experience/corpus-core-v0.1.json \
-            artifacts/ask-experience-core.json \
-            > artifacts/ask-experience-core-evaluation.json
+          node verification/ask-experience/runner-v0.1.mjs verification/ask-experience/corpus-core-v0.1.json artifacts/ask-experience-core.json
+          set +e
+          node verification/ask-experience/evaluator-v0.1.mjs verification/ask-experience/corpus-core-v0.1.json artifacts/ask-experience-core.json > artifacts/ask-experience-core-evaluation.json
+          rc=$?
+          set -e
+          node verification/ask-experience/summarize-learning-needs-v0.1.mjs artifacts/ask-experience-core-evaluation.json > artifacts/ask-experience-core-learning-needs.json
+          exit "$rc"
 
       - name: Seeded mutation generalization
         if: env.RUN_MODE == 'mutation' || env.RUN_MODE == 'all'
+        continue-on-error: true
         shell: bash
         env:
           ASK_BASE_URL: http://127.0.0.1:8080/agents/
@@ -154,18 +154,14 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$MUTATION_SEED"
-          node verification/ask-experience/generate-mutation-corpus-v0.1.mjs \
-            verification/ask-experience/mutation-intents-v0.1.json \
-            verification/ask-experience/grammar-v0.1.json \
-            "$MUTATION_SEED" \
-            artifacts/ask-experience-mutation-corpus.json
-          node verification/ask-experience/runner-v0.1.mjs \
-            artifacts/ask-experience-mutation-corpus.json \
-            artifacts/ask-experience-mutation.json
-          node verification/ask-experience/evaluator-v0.1.mjs \
-            artifacts/ask-experience-mutation-corpus.json \
-            artifacts/ask-experience-mutation.json \
-            > artifacts/ask-experience-mutation-evaluation.json
+          node verification/ask-experience/generate-mutation-corpus-v0.1.mjs verification/ask-experience/mutation-intents-v0.1.json verification/ask-experience/grammar-v0.1.json "$MUTATION_SEED" artifacts/ask-experience-mutation-corpus.json
+          node verification/ask-experience/runner-v0.1.mjs artifacts/ask-experience-mutation-corpus.json artifacts/ask-experience-mutation.json
+          set +e
+          node verification/ask-experience/evaluator-v0.1.mjs artifacts/ask-experience-mutation-corpus.json artifacts/ask-experience-mutation.json > artifacts/ask-experience-mutation-evaluation.json
+          rc=$?
+          set -e
+          node verification/ask-experience/summarize-learning-needs-v0.1.mjs artifacts/ask-experience-mutation-evaluation.json > artifacts/ask-experience-mutation-learning-needs.json
+          exit "$rc"
 
       - name: Owner Unknown discovery run
         if: env.RUN_MODE == 'owner-unknown' || env.RUN_MODE == 'all'
@@ -176,22 +172,36 @@ jobs:
           ASK_EXPERIENCE_ORIGIN: owner-unknown
         run: |
           set -euo pipefail
-          node verification/ask-experience/runner-v0.1.mjs \
-            verification/ask-experience/corpus-owner-unknown-v0.1.json \
-            artifacts/ask-experience-owner-unknown.json
+          node verification/ask-experience/runner-v0.1.mjs verification/ask-experience/corpus-owner-unknown-v0.1.json artifacts/ask-experience-owner-unknown.json
           node - <<'NODE' > artifacts/ask-experience-owner-unknown-summary.json
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('artifacts/ask-experience-owner-unknown.json','utf8'));
-          const rows=r.cases.map(c=>({
-            id:c.id,
-            origin:c.origin,
-            discoveryTarget:c.discoveryTarget,
-            confidence:c.prompts.at(-1)?.answerContract?.confidenceClass||'missing',
-            sourceArtifacts:c.prompts.at(-1)?.answerContract?.sourceArtifacts||[],
-            topic:c.prompts.at(-1)?.answerContract?.topic||null
-          }));
+          const rows=r.cases.map(c=>({id:c.id,origin:c.origin,discoveryTarget:c.discoveryTarget,confidence:c.prompts.at(-1)?.answerContract?.confidenceClass||'missing',sourceArtifacts:c.prompts.at(-1)?.answerContract?.sourceArtifacts||[],topic:c.prompts.at(-1)?.answerContract?.topic||null}));
           const counts={}; for(const x of rows) counts[x.confidence]=(counts[x.confidence]||0)+1;
           console.log(JSON.stringify({version:'0.1-owner-unknown-summary',origin:'owner-unknown',releaseGateEligible:false,counts,rows},null,2));
+          NODE
+
+      - name: Enforce selected release gates
+        if: always() && env.RUN_MODE != 'owner-unknown'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const mode=process.env.RUN_MODE;
+          const names=[];
+          if(mode==='safety'||mode==='all') names.push('safety');
+          if(mode==='core'||mode==='all') names.push('core');
+          if(mode==='mutation'||mode==='all') names.push('mutation');
+          const failures=[];
+          for(const name of names){
+            const p=`artifacts/ask-experience-${name}-evaluation.json`;
+            if(!fs.existsSync(p)){ failures.push(`${name}:missing-evaluation`); continue; }
+            const x=JSON.parse(fs.readFileSync(p,'utf8'));
+            if(x.summary?.releaseGate!=='PASS') failures.push(`${name}:${x.summary?.releaseGate||'missing'}`);
+          }
+          if(failures.length) throw new Error('Experience release gate failed: '+failures.join(', '));
+          console.log('Selected Experience release gates PASS:', names.join(', '));
           NODE
 
       - name: Write run provenance
