@@ -1,7 +1,7 @@
 {
   "version": "0.1-decision-ledger",
-  "lastUpdatedAt": "2026-08-14T07:38:58.686Z",
-  "decisionCount": 1,
+  "lastUpdatedAt": "2026-08-14T07:43:19.942Z",
+  "decisionCount": 2,
   "policy": {
     "appendOnly": true,
     "correctionsBySupersedingEntryOnly": true,
@@ -63,11 +63,65 @@
       "integrity": {
         "decisionHash": "93e5a89140639c7a7671ec15caae01840d03106106f61c768f31c63e41fbd253"
       }
+    },
+    {
+      "decisionId": "DEC-9e7fdbf2f8431a42194b",
+      "sequence": 2,
+      "recordedAt": "2026-08-14T07:43:19.942Z",
+      "authorRole": "owner",
+      "caseId": "353fd15f649ee569d551d74c",
+      "caseKey": "CK-8793263ff6a84dddf9f1",
+      "disposition": "accept",
+      "rationale": "Owner accepts the P0 innerHTML provenance triage so every current sink is classified by actual data provenance before any production code change.",
+      "expectedOutcome": "Classify the current innerHTML sinks as trusted, sanitized, or unsafe and identify only evidence-bound hardening candidates that preserve UI behavior.",
+      "modifiedAction": null,
+      "supersedesDecisionId": null,
+      "prediction": {
+        "event": "none",
+        "probabilityBps": null,
+        "reviewDays": null,
+        "reviewAt": null
+      },
+      "sourceCase": {
+        "payloadHash": "4ea4aa0a48b019bd4deafe963217e00b96b02a52ad592fdc06d303c5cb813478",
+        "domain": "security",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "entity": "31 current findings",
+        "recommendationClass": "security-provenance-triage",
+        "riskTier": "medium",
+        "confidence": "high",
+        "deterministicAction": "Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.",
+        "evidenceCount": 1,
+        "actionMode": "proposal-only"
+      },
+      "source": {
+        "brainFile": "intelligence/brain-intelligence.json",
+        "brainSha256": "519df8ec1bbfbe6eaa76a07c530208c07c1ade3c0e11e451c91cf6383d1faf16",
+        "brainSnapshotHash": "f9f2a451ec747a2a4dd8ac05c041109ce9c8c20761d9fff905aaf5397a00e182",
+        "brainInputCompositeHash": "4ffe95b2ed9032d1ba7e7c6b802a9b4ab2b82ed8ef7be18369f3832cea418079",
+        "cognitiveStackFile": "intelligence/cognitive-stack-state.json",
+        "cognitiveChainHash": "7ed30c203aa327ba7ee9eb5b370eb4be13129a4242fa6164747479e3636c4e9e",
+        "cognitiveReleaseId": "0.2.1-release-coherence",
+        "cognitiveReleaseManifestSha256": "332353fcab733b903b905418bcffcddfb84956dbbc6a8d21a0f7e380fe3c06a7"
+      },
+      "authority": {
+        "recordType": "human-decision-memory",
+        "executable": false,
+        "executionAuthority": "none",
+        "note": "This record captures an owner decision. It does not execute or authorize capital, repository, methodology, or workflow actions."
+      },
+      "chain": {
+        "previousDecisionHash": "93e5a89140639c7a7671ec15caae01840d03106106f61c768f31c63e41fbd253"
+      },
+      "integrity": {
+        "decisionHash": "2d84ed8dcf46da1853b0560b62b66d9345cc399d5a54c5dac353ff524241989d"
+      }
     }
   ],
   "integrity": {
     "chainRootHash": "93e5a89140639c7a7671ec15caae01840d03106106f61c768f31c63e41fbd253",
-    "latestDecisionHash": "93e5a89140639c7a7671ec15caae01840d03106106f61c768f31c63e41fbd253",
-    "ledgerHash": "087b1daf916e3ae0f92589e64d1b2adb348407302a8be2cee8bfd3eb30ab455f"
+    "latestDecisionHash": "2d84ed8dcf46da1853b0560b62b66d9345cc399d5a54c5dac353ff524241989d",
+    "ledgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d"
   }
 }
