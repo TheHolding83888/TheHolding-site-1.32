@@ -1,17 +1,18 @@
 from pathlib import Path
 p=Path('agents/console/app.js')
 s=p.read_text(encoding='utf-8')
-anchor="""    return {
-      text: lang === 'ru'
-        ? 'Пока не могу ответить на это достаточно точно без свободной AI-модели. Я умею искать живые данные The Holding и публичные знания, но если подтверждённого ответа нет – лучше скажу «не знаю».\\
-\\
-Попробуй спросить про компанию, фонд, протокол, доходность, rewards, слои капитала, Brain, Learning или текущее состояние.'
-        : 'I cannot answer that precisely enough yet without a free-form AI model. I can search live Holding data and public project knowledge, but if the evidence is not there, I would rather say “I don’t know”.\\
-\\
-Try a company, fund, protocol, productivity, rewards, capital layers, Brain, Learning or current state.',
-      source: 'No sufficiently strong verified match'
-    };"""
-if s.count(anchor)!=1: raise SystemExit(f'fallback anchor expected 1 got {s.count(anchor)}')
+
+end_marker='\n  function buildQuick()'
+end=s.find(end_marker)
+if end<0: raise SystemExit('buildQuick boundary missing')
+start=s.rfind('    return {',0,end)
+if start<0: raise SystemExit('final fallback return missing')
+window=s[start:end]
+if "No sufficiently strong verified match" not in window:
+    raise SystemExit('final return is not fail-closed fallback')
+if "state.lastTopic = 'product-navigation'" in s:
+    raise SystemExit('product navigation already exists')
+
 block="""    const navigationIntent = includesAny(q, [
       'where should i start', 'where should a new person begin', 'where do i begin', 'where do i start',
       'i just found this site', 'new here', 'look first', 'bigger vision', 'read the vision',
@@ -28,8 +29,8 @@ block="""    const navigationIntent = includesAny(q, [
       };
     }
 
-"""+anchor
-s=s.replace(anchor,block,1)
+"""
+s=s[:start]+block+s[start:]
 if "state.lastTopic = 'product-navigation'" not in s: raise SystemExit('navigation patch missing')
 p.write_text(s,encoding='utf-8')
 print('human product navigation patch PASS')
