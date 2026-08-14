@@ -1,0 +1,37 @@
+{
+  "version": "0.1-builder-policy",
+  "mode": "approved-proposal-to-candidate-plan-no-mutation",
+  "purpose": "Convert only exact owner-approved Proposal items into bounded self-improvement candidate work packets without changing repository code, production state, methodology, wallets, or capital.",
+  "authorities": {
+    "approvedWork": "intelligence/proposals/proposal-queue.json",
+    "ownerDecisionMemory": "intelligence/learning/decision-ledger.json",
+    "proposalDecisionReview": "intelligence/proposals/proposal-decision-eval.json",
+    "execution": "none"
+  },
+  "eligibleProposalStates": ["APPROVED"],
+  "candidateStates": ["CANDIDATE", "VERIFYING", "RELEASE_READY", "SUPERSEDED"],
+  "candidateClasses": {
+    "external-script-no-sri": "third-party-trust-research",
+    "dom-innerhtml": "dom-provenance-triage",
+    "default": "bounded-improvement-research"
+  },
+  "hardBoundaries": {
+    "repositoryCodeMutationAllowed": false,
+    "branchCreationAllowed": false,
+    "pullRequestCreationAllowed": false,
+    "automaticMergeAllowed": false,
+    "automaticReleaseAllowed": false,
+    "walletActionAllowed": false,
+    "capitalExecutionAllowed": false,
+    "methodologyMutationAllowed": false,
+    "policyMutationAllowed": false,
+    "humanReleaseApprovalRequired": true
+  },
+  "requiredCandidateEvidence": [
+    "exact Proposal queue byte/hash binding",
+    "exact owner Decision Memory binding",
+    "independent Builder review",
+    "explicit verification plan",
+    "reversibility statement"
+  ]
+}
