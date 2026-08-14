@@ -1,10 +1,10 @@
 # The Holding Proposal Work Queue
 
-Generated: 2026-08-14T07:55:25.053Z
+Generated: 2026-08-14T08:24:32.379Z
 
 Status: **WATCH**
 
-9 active proposal(s) from 9 active Learning case(s); 2 owner decision(s) reflected; execution remains disabled.
+20 active proposal(s) from 20 active Learning case(s); 2 owner decision(s) reflected; execution remains disabled.
 
 ## Priority queue
 
@@ -14,9 +14,21 @@ Status: **WATCH**
 - **P2 · economic · 0x5860...83CA8.eth** – Resolve incomplete reward routes for 0x5860...83CA8.eth with current-state, wallet-scoped accounting and explicit provenance. [PROPOSED]
 - **P2 · economic · pendle_spendle** – Run bounded resolver/research for pendle_spendle; preserve unknown/warming rather than inventing a value. [PROPOSED]
 - **P2 · economic · liquity_lqty** – Run bounded resolver/research for liquity_lqty; preserve unknown/warming rather than inventing a value. [PROPOSED]
-- **P2 · economic · Stable Companies Index** – Perform bounded human-reviewed work for Stable Companies Index under recommendation class stable-coverage-resolution. [PROPOSED]
 - **P2 · economic · defitea.eth** – Resolve incomplete reward routes for defitea.eth with current-state, wallet-scoped accounting and explicit provenance. [PROPOSED]
 - **P2 · economic · aerocvxyb.eth** – Resolve incomplete reward routes for aerocvxyb.eth with current-state, wallet-scoped accounting and explicit provenance. [PROPOSED]
+- **P2 · economic · Stable Companies Index** – Perform bounded human-reviewed work for Stable Companies Index under recommendation class stable-coverage-resolution. [SUPERSEDED]
+- **P3 · system-change · Stable Companies Index** – Perform bounded human-reviewed work for Stable Companies Index under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · Monetra.eth** – Perform bounded human-reviewed work for Monetra.eth under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · aerocvxyb.eth** – Perform bounded human-reviewed work for aerocvxyb.eth under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · 0x5860...83CA8.eth** – Perform bounded human-reviewed work for 0x5860...83CA8.eth under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · defitea.eth** – Perform bounded human-reviewed work for defitea.eth under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · Monetra.eth** – Perform bounded human-reviewed work for Monetra.eth under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · 1milliondollar.eth** – Perform bounded human-reviewed work for 1milliondollar.eth under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · Monetra.eth** – Perform bounded human-reviewed work for Monetra.eth under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · defitea.eth** – Perform bounded human-reviewed work for defitea.eth under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · defitea.eth** – Perform bounded human-reviewed work for defitea.eth under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · Rook's portfolio** – Perform bounded human-reviewed work for Rook's portfolio under recommendation class evidence-review. [PROPOSED]
+- **P3 · system-change · Stable Companies Index** – Perform bounded human-reviewed work for Stable Companies Index under recommendation class evidence-review. [PROPOSED]
 
 ## Decision boundary
 
