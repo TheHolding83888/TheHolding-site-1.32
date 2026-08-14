@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-14T15:13:00.943Z",
+  "generatedAt": "2026-08-14T15:21:09.381Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 209,
-    "bytesScanned": 5795201,
+    "bytesScanned": 5795793,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:20:10 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,22 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "ac90d25d1ce3088db70b5da05e2a74cb63ae1ca3a4927d269d095417fef90c14",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/production-deployment-smoke.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/production-deployment-smoke.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "48e1199e3b878f33673616b7339c03e2974f0a4b22d6837a94b9445f1d63d47a",
+          "currentSha256": "26f3d80babc9dc8d88a0dba21f30d6cbf60e96afd700c7ebb04586d830180fd8"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "378ad5068b297c510e8ce9f8b5db32382ee404bbb5970e303197ecfd82380f6f",
         "severity": "medium",
@@ -70,8 +86,7 @@
           "currentSha256": "48e1199e3b878f33673616b7339c03e2974f0a4b22d6837a94b9445f1d63d47a"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -97,7 +112,7 @@
       "evidence": null
     },
     {
-      "id": "378ad5068b297c510e8ce9f8b5db32382ee404bbb5970e303197ecfd82380f6f",
+      "id": "ac90d25d1ce3088db70b5da05e2a74cb63ae1ca3a4927d269d095417fef90c14",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/production-deployment-smoke.yml",
@@ -106,8 +121,8 @@
       "summary": "Security-sensitive surface changed: .github/workflows/production-deployment-smoke.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "1cf12029f8a8a8cb38ac27d122d6631e848afcf6ea9eefd009c6eb1ae0059f64",
-        "currentSha256": "48e1199e3b878f33673616b7339c03e2974f0a4b22d6837a94b9445f1d63d47a"
+        "previousSha256": "48e1199e3b878f33673616b7339c03e2974f0a4b22d6837a94b9445f1d63d47a",
+        "currentSha256": "26f3d80babc9dc8d88a0dba21f30d6cbf60e96afd700c7ebb04586d830180fd8"
       }
     },
     {
@@ -134,12 +149,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "f5eb7b4976b928ca0fe201bfb927610874b818a1f576a991324832a3a0a9649d",
+    "snapshotHash": "3cc31d14b3d1cf5ec0dcd35469928012ad116764abcb3011146c0133ada2da81",
     "securityVault": {
-      "runCount": 155,
+      "runCount": 156,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T15-13-00-943Z-f5eb7b4976.json",
-      "latestRecordHash": "45d8ed51583d5883036407a72204cfa5fe45531c96b526f6ba285f649f23f28c",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-14T15-21-09-381Z-3cc31d14b3.json",
+      "latestRecordHash": "85b01cad10ca46b4c8755d044ed13f12b2554e06811f3ce5c4ca79239554b731",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
