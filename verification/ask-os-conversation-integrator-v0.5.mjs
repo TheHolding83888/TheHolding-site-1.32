@@ -98,8 +98,8 @@ app = replaceOnce(app,
   "    const labels = ['Сколько сейчас компаний?', 'Сравни defitea.eth и YieldRing.eth', 'Что система предлагает?', 'Почему только 3 proposal?', 'Может ли система что-то выполнить?'];",
   'quick prompts');
 
-agents = replaceOnce(agents, './console/app.js?v=0.4', './console/app.js?v=0.5', 'cache version');
-agents = agents.replace(/v0\.4 source-bound answers/g, 'v0.5 OS conversation synthesis');
+agents = replaceOnce(agents, '/agents/console/app.js?v=0.4', '/agents/console/app.js?v=0.5', 'cache version');
+agents = replaceOnce(agents, '<!-- Ask The Holding v0.4 · reused source-bound router + safety layer -->', '<!-- Ask The Holding v0.5 · OS governance synthesis + source-bound safety -->', 'Ask release comment');
 
 fs.writeFileSync(APP, app);
 fs.writeFileSync(AGENTS, agents);
