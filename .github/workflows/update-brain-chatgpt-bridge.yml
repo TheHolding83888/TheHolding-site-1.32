@@ -1,9 +1,10 @@
 name: "The Holding Brain · ChatGPT Bridge"
 
 on:
+  # Manual recovery / diagnostic path only. Canonical daily cognition now runs
+  # through Refresh Cognitive Stack so Security, Brain, Bridge, Cognitive State
+  # and downstream Learning share one coherent evidence chain.
   workflow_dispatch:
-  schedule:
-    - cron: "12 7 * * *"
 
 permissions:
   contents: write
@@ -22,7 +23,6 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
-
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
@@ -33,7 +33,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           test -s intelligence/brain-intelligence.json
           test -s intelligence/brain-chatgpt-bridge.mjs
           test -s intelligence/brain-chatgpt-bridge-policy.json
@@ -41,7 +40,6 @@ jobs:
           test -s intelligence/brain-upstream-guard.mjs
           test -s intelligence/cognitive-release-guard.mjs
           test -s intelligence/cognitive-stack-release.json
-
           node --check intelligence/brain-chatgpt-bridge.mjs
           node --check intelligence/cognitive-release-guard.mjs
           node intelligence/cognitive-release-guard.mjs
@@ -54,12 +52,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           node intelligence/brain-chatgpt-bridge.mjs --verify-current
 
           node - <<'NODE'
           const fs = require('fs');
-
           const bridge = JSON.parse(
             fs.readFileSync('intelligence/brain-chatgpt-bridge.json', 'utf8')
           );
@@ -69,7 +65,6 @@ jobs:
           const history = JSON.parse(
             fs.readFileSync('intelligence/brain-chatgpt-bridge-history.json', 'utf8')
           );
-
           if (bridge.version !== '0.1-chatgpt-bridge') {
             throw new Error(`Unexpected Bridge version: ${bridge.version}`);
           }
@@ -81,7 +76,6 @@ jobs:
           if (evaluation.status !== 'pass') {
             throw new Error('Bridge validation report did not PASS');
           }
-
           if (bridge.constraints?.apiRequired !== false) {
             throw new Error('Bridge unexpectedly requires an API');
           }
@@ -93,7 +87,6 @@ jobs:
           if (bridge.constraints?.executionAllowed !== false) {
             throw new Error('Bridge unexpectedly allows execution');
           }
-
           if (bridge.constraints?.proposalOnly !== true) {
             throw new Error('Bridge escaped proposal-only');
           }
@@ -105,11 +98,9 @@ jobs:
           if (bridge.grounding?.upstreamCurrent !== true) {
             throw new Error('Bridge Grounded Brain upstream binding is not current');
           }
-
           if (!(bridge.grounding?.upstreamValidation?.sources ?? []).every((x) => x.exactByteMatch === true)) {
             throw new Error('Bridge exact upstream source binding failed');
           }
-
           for (const item of bridge.cases ?? []) {
             if (item.actionMode !== 'proposal-only') {
               throw new Error(`Case ${item.caseId} escaped proposal-only`);
@@ -121,11 +112,9 @@ jobs:
               throw new Error(`Case ${item.caseId} lost deterministic action`);
             }
           }
-
           if (history.version !== '0.1-chatgpt-bridge-history') {
             throw new Error(`Unexpected Bridge history version: ${history.version}`);
           }
-
           console.log('ChatGPT Bridge contract PASS', {
             status: bridge.status,
             brainStatus: bridge.sourceBrain.status,
@@ -142,7 +131,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           GENERATED=(
             "intelligence/brain-chatgpt-bridge.json"
             "intelligence/brain-chatgpt-bridge.md"
@@ -158,7 +146,6 @@ jobs:
           git config user.email "brain@theholding.ai"
 
           git add "${GENERATED[@]}"
-
           staged_bad="$(
             git diff --cached --name-only |
               grep -Ev '^intelligence/(brain-chatgpt-bridge\.json|brain-chatgpt-bridge\.md|brain-chatgpt-bridge-history\.json|brain-chatgpt-bridge-eval\.json)$' ||
@@ -170,7 +157,6 @@ jobs:
             echo "$staged_bad"
             exit 1
           fi
-
           if git diff --cached --quiet; then
             echo "No Bridge output changes to publish."
             exit 0
@@ -186,14 +172,12 @@ jobs:
               echo "Bridge publish conflict; refusing to guess."
               exit 1
             fi
-
             # Fail closed if the exact Brain/policy/schema/engine bytes used to
             # generate this public handoff changed while we were publishing.
             node intelligence/brain-chatgpt-bridge.mjs --verify-current
 
             if git push origin HEAD:main; then
               git fetch origin main
-
               if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
                 echo "ERROR: pushed Bridge commit is not current remote main."
                 exit 1
@@ -206,6 +190,5 @@ jobs:
             echo "Main moved during push; retrying ($attempt/3)..."
             sleep $((attempt * 2))
           done
-
           echo "ERROR: unable to publish ChatGPT Bridge after 3 attempts."
           exit 1
