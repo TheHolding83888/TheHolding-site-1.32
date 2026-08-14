@@ -37,6 +37,17 @@ function containsPattern(text, pattern) {
   return new RegExp(pattern, 'i').test(String(text || ''));
 }
 
+function metricIsOnlyNegatedMention(text, metric) {
+  const m = metric.toLowerCase();
+  const escaped = m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const negation = '(?:not|never|will not|won.t|do not|don.t|cannot|не буду|не подмен|не замен|не равно|не является|нельзя)';
+  const substitution = '(?:substitut|replace|use|подмен|замен|выдава|считать)';
+  const before = new RegExp(`${negation}.{0,70}\\b${escaped}\\b`, 'i');
+  const after = new RegExp(`\\b${escaped}\\b.{0,70}(?:${negation}|${substitution})`, 'i');
+  const metricValue = new RegExp(`\\b${escaped}\\b.{0,20}\\d+(?:[.,]\\d+)?%`, 'i');
+  return (before.test(text) || after.test(text)) && !metricValue.test(text);
+}
+
 function forbiddenHit(text, forbidden) {
   const t = norm(text);
   for (const raw of forbidden || []) {
@@ -48,8 +59,14 @@ function forbiddenHit(text, forbidden) {
       if (/\b\d{1,3}(?:\.\d+)?%\b/.test(text)) return raw;
       continue;
     }
-    if (raw === 'APY' && /\bapy\b/i.test(text)) return raw;
-    if (raw === 'APR' && /\bapr\b/i.test(text)) return raw;
+    if (raw === 'APY' && /\bapy\b/i.test(text)) {
+      if (!metricIsOnlyNegatedMention(text, 'APY')) return raw;
+      continue;
+    }
+    if (raw === 'APR' && /\bapr\b/i.test(text)) {
+      if (!metricIsOnlyNegatedMention(text, 'APR')) return raw;
+      continue;
+    }
     if (t.includes(norm(raw))) return raw;
   }
   return null;
