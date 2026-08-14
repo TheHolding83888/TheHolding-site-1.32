@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://theholding.ai/intelligence/proposals/proposal-schema.json",
+  "title": "The Holding Proposal Work Queue",
+  "type": "object",
+  "required": [
+    "version",
+    "generatedAt",
+    "status",
+    "source",
+    "summary",
+    "proposals",
+    "constraints",
+    "integrity"
+  ],
+  "properties": {
+    "version": {
+      "const": "0.1-proposal-work-queue"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "watch",
+        "blocked"
+      ]
+    },
+    "proposals": {
+      "type": "array"
+    },
+    "constraints": {
+      "type": "object"
+    },
+    "integrity": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}
