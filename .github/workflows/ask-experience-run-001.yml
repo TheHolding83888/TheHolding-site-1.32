@@ -1,0 +1,55 @@
+name: Ask The Holding · Experience Run #001
+
+on:
+  push:
+    branches:
+      - experience/ask-dogfood-run-001-20260814
+    paths:
+      - verification/ask-experience-run-001.mjs
+      - .github/workflows/ask-experience-run-001.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dogfood:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Locate Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+          "$CHROME_BIN" --version
+
+      - name: Install browser harness dependency
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-package-lock puppeteer-core@24.16.0
+
+      - name: Run live Ask experience corpus
+        env:
+          ASK_BASE_URL: https://theholding.ai/agents/
+        shell: bash
+        run: |
+          set -euo pipefail
+          node verification/ask-experience-run-001.mjs
+
+      - name: Upload experience artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ask-experience-run-001
+          path: |
+            artifacts/ask-experience-run-001.json
+            artifacts/ask-experience-run-001.md
+          if-no-files-found: warn
+          retention-days: 30
