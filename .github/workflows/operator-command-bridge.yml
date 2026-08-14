@@ -17,7 +17,7 @@ concurrency:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - name: Checkout canonical repository state
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -53,7 +53,7 @@ jobs:
           ].some(r => r.test(text));
           const output = (k, v) => fs.appendFileSync(out, `${k}=${String(v).replace(/\n/g, ' ')}\n`);
 
-          if (!['0.1-operator-command','0.2-operator-command','0.3-operator-command','0.4-operator-command'].includes(cmd.version)) fail('Unexpected operator command version');
+          if (!['0.1-operator-command','0.2-operator-command','0.3-operator-command','0.4-operator-command','0.5-operator-command'].includes(cmd.version)) fail('Unexpected operator command version');
           if (cmd.requestedBy !== 'owner' || cmd.approval !== 'explicit') fail('Explicit owner approval marker is required');
           if (cmd.arbitraryWorkflowAllowed !== false) fail('arbitraryWorkflowAllowed must remain false');
           if (cmd.walletActionAllowed !== false) fail('walletActionAllowed must remain false');
@@ -203,23 +203,27 @@ jobs:
             rm -f "$before_file"
             echo "Could not resolve new $label run"; exit 1
           }
-          wait_learning_binding() {
-            local elapsed=0 stack_json learning_json stack_chain learning_chain learning_status
-            while [ "$elapsed" -lt 180 ]; do
-              stack_json="$(api_get "${API}/contents/intelligence/cognitive-stack-state.json?ref=main")"
-              learning_json="$(api_get "${API}/contents/intelligence/learning-state/learning-context.json?ref=main")"
-              stack_chain="$(printf '%s' "$stack_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.integrity.chainHash // empty')"
-              learning_chain="$(printf '%s' "$learning_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.source.cognitiveChainHash // empty')"
-              learning_status="$(printf '%s' "$learning_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.status // empty')"
-              echo "Learning binding: status=$learning_status stack=${stack_chain:0:12} learning=${learning_chain:0:12}"
-              if [ -n "$stack_chain" ] && [ "$learning_status" = "ready" ] && [ "$learning_chain" = "$stack_chain" ]; then return 0; fi
-              sleep 4; elapsed=$((elapsed+4))
-            done
-            echo "Learning did not become current relative to Cognitive Stack"; exit 1
+          verify_learning_binding() {
+            local stack_json learning_json stack_chain learning_chain learning_status
+            stack_json="$(api_get "${API}/contents/intelligence/cognitive-stack-state.json?ref=main")"
+            learning_json="$(api_get "${API}/contents/intelligence/learning-state/learning-context.json?ref=main")"
+            stack_chain="$(printf '%s' "$stack_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.integrity.chainHash // empty')"
+            learning_chain="$(printf '%s' "$learning_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.source.cognitiveChainHash // empty')"
+            learning_status="$(printf '%s' "$learning_json" | jq -r '.content' | tr -d '\n' | base64 -d | jq -r '.status // empty')"
+            echo "Learning binding: status=$learning_status stack=${stack_chain:0:12} learning=${learning_chain:0:12}"
+            [ -n "$stack_chain" ] && [ "$learning_status" = "ready" ] && [ "$learning_chain" = "$stack_chain" ] || { echo "Learning is not current relative to Cognitive Stack"; exit 1; }
+          }
+          run_learning() {
+            printf '{"ref":"main"}' > /tmp/learning-dispatch.json
+            local learning_head
+            learning_head="$(main_sha)"
+            dispatch_and_wait 'update-learning-loop.yml' /tmp/learning-dispatch.json 'Decision Outcome Learning' "$learning_head"
+            echo "learning_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
+            verify_learning_binding
           }
 
-          # The command itself is Security-reviewed. Do not dispatch cognition until
-          # the exact command-bound Security run has finished and published.
+          # command.json is deliberately Security-reviewed. Wait for the exact
+          # command-bound scan/publish before refreshing the cognitive packet.
           wait_command_security
 
           printf '{"ref":"main"}' > /tmp/cognitive-dispatch.json
@@ -230,15 +234,23 @@ jobs:
 
           case "$OPERATION" in
             refresh_cognitive_stack)
+              run_learning
               echo "target_run_id=$COGNITIVE_RUN" >> "$GITHUB_OUTPUT"
               ;;
             record_owner_decision)
               TARGET_HEAD="$(main_sha)"
               dispatch_and_wait 'record-brain-decision.yml' /tmp/operator-target-dispatch.json 'Decision Memory' "$TARGET_HEAD"
-              echo "target_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
+              DECISION_RUN="$LAST_RUN_ID"
+              echo "target_run_id=$DECISION_RUN" >> "$GITHUB_OUTPUT"
+              # GitHub-token generated decision pushes do not reliably wake a
+              # downstream push workflow. Explicitly run Learning after the
+              # inert decision commit so the accepted decision becomes experience.
+              run_learning
               ;;
             refresh_proposal_queue)
-              wait_learning_binding
+              # Explicit Learning handoff closes the GITHUB_TOKEN workflow-chain
+              # gap and guarantees Proposal sees the fresh cognitive chain.
+              run_learning
               TARGET_HEAD="$(main_sha)"
               dispatch_and_wait 'update-proposal-work-queue.yml' /tmp/operator-target-dispatch.json 'Proposal Work Queue' "$TARGET_HEAD"
               echo "target_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
@@ -251,7 +263,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "# The Holding · Operator Command Bridge v0.4"
+            echo "# The Holding · Operator Command Bridge v0.5"
             echo
             echo "**Command ID:** \`${{ steps.command.outputs.command_id }}\`"
             echo "**Operation:** \`${{ steps.command.outputs.operation }}\`"
@@ -262,10 +274,11 @@ jobs:
             fi
             echo "**Command-bound Security run:** \`${{ steps.orchestrate.outputs.security_run_id }}\`"
             echo "**Fresh Cognitive run:** \`${{ steps.orchestrate.outputs.cognitive_run_id }}\`"
+            echo "**Learning run:** \`${{ steps.orchestrate.outputs.learning_run_id }}\`"
             echo "**Final target run:** \`${{ steps.orchestrate.outputs.target_run_id }}\`"
             echo "**Arbitrary workflows:** disabled"
             echo "**Wallet action:** disabled"
             echo "**Capital execution:** disabled"
             echo
-            echo "v0.4 waits for Security on the exact command commit, refreshes cognition from current main, and only then dispatches the allowlisted target."
+            echo "v0.5 performs the bounded operator transaction Security → Cognitive → optional Decision → Learning → optional Proposal, with each workflow independently fail-closed."
           } >> "$GITHUB_STEP_SUMMARY"
