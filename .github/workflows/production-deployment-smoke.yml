@@ -1,0 +1,135 @@
+name: The Holding Production Deployment Smoke
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: production-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cloudflare-preview-smoke:
+    if: github.event_name == 'pull_request_target'
+    name: Cloudflare preview homepage smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Wait for successful Cloudflare preview build
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 45); do
+            row="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$HEAD_SHA/check-runs" \
+              --jq '.check_runs[] | select(.name == "Workers Builds: theholdingprotocol") | [.status, (.conclusion // "")] | @tsv' | tail -n1 || true)"
+            if [[ "$row" == $'completed\tsuccess' ]]; then
+              echo "Cloudflare preview build is GREEN."
+              exit 0
+            fi
+            if [[ "$row" == completed$'\t'* && "$row" != $'completed\tsuccess' ]]; then
+              echo "Cloudflare preview build failed: $row" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+          echo 'Timed out waiting for Cloudflare preview build.' >&2
+          exit 1
+
+      - name: Resolve exact Cloudflare commit preview URL
+        id: preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${HEAD_SHA:0:8}"
+          for attempt in $(seq 1 18); do
+            BODY="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/issues/$PR_NUMBER/comments" \
+              --jq '[.[] | select(.user.login == "cloudflare-workers-and-pages[bot]") | .body] | last // ""')"
+            if [[ "$BODY" == *"$SHORT_SHA"* || "$BODY" == *"Deployment successful"* ]]; then
+              URL="$(printf '%s' "$BODY" | grep -Eo 'https://[A-Za-z0-9._-]+-theholdingprotocol\.[A-Za-z0-9._-]+\.workers\.dev' | head -n1 || true)"
+              if [[ -n "$URL" ]]; then
+                echo "url=$URL" >> "$GITHUB_OUTPUT"
+                echo "Resolved preview: $URL"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Could not resolve Cloudflare commit preview URL.' >&2
+          exit 1
+
+      - name: Verify preview root is canonical homepage and Console stays isolated
+        shell: bash
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.url }}
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 --retry-delay 2 "$PREVIEW_URL/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/home.html
+          grep -Eqi '<title>[^<]*TheHolding\.ai' /tmp/home.html
+          grep -Eqi '<link[[:space:]]+rel=["'"']canonical["'"'][[:space:]]+href=["'"']https://theholding\.ai/["'"']' /tmp/home.html
+          if grep -Eqi 'Ask The Holding\.|KNOWLEDGE ROUTER|Live knowledge console' /tmp/home.html; then
+            echo 'Preview root was replaced by Console.' >&2
+            exit 1
+          fi
+          curl -fsSL --retry 3 --retry-delay 2 "$PREVIEW_URL/agents/console/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/console.html
+          grep -Fqi 'Ask The Holding.' /tmp/console.html
+          echo 'Cloudflare preview surface contract is GREEN.'
+
+  production-homepage-smoke:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    name: Production homepage smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      HEAD_SHA: ${{ github.sha }}
+    steps:
+      - name: Wait for successful Cloudflare production build
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 45); do
+            row="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$HEAD_SHA/check-runs" \
+              --jq '.check_runs[] | select(.name == "Workers Builds: theholdingprotocol") | [.status, (.conclusion // "")] | @tsv' | tail -n1 || true)"
+            if [[ "$row" == $'completed\tsuccess' ]]; then
+              echo "Cloudflare production build is GREEN."
+              exit 0
+            fi
+            if [[ "$row" == completed$'\t'* && "$row" != $'completed\tsuccess' ]]; then
+              echo "Cloudflare production build failed: $row" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+          echo 'Timed out waiting for Cloudflare production build.' >&2
+          exit 1
+
+      - name: Verify live production root and Console isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 5 --retry-delay 3 -H 'Cache-Control: no-cache' "https://theholding.ai/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/home.html
+          grep -Eqi '<title>[^<]*TheHolding\.ai' /tmp/home.html
+          grep -Eqi '<link[[:space:]]+rel=["'"']canonical["'"'][[:space:]]+href=["'"']https://theholding\.ai/["'"']' /tmp/home.html
+          if grep -Eqi 'Ask The Holding\.|KNOWLEDGE ROUTER|Live knowledge console' /tmp/home.html; then
+            echo 'PRODUCTION INCIDENT: theholding.ai root is serving Console.' >&2
+            exit 1
+          fi
+          curl -fsSL --retry 5 --retry-delay 3 -H 'Cache-Control: no-cache' "https://theholding.ai/agents/console/?holding_boundary_smoke=$HEAD_SHA" -o /tmp/console.html
+          grep -Fqi 'Ask The Holding.' /tmp/console.html
+          echo 'Live production surface contract is GREEN.'
