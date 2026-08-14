@@ -45,14 +45,15 @@ jobs:
           import re
           html = Path('agents/index.html').read_text()
           legacy = Path('agents/console/index.html').read_text()
-          required = [
+          unique = [
               'id="ask-the-holding"','id="console"','id="messages"','id="askForm"',
-              'id="observerShell"','id="cognitiveShell"','Meet the Agents',
-              'Agent Dialogue Preview','Intelligence Infrastructure',
+              'id="observerShell"','id="cognitiveShell"',
               '/agents/console/app.js?v=0.4','/agents/console/safety.js?v=0.1'
           ]
-          for marker in required:
+          for marker in unique:
               assert html.count(marker) == 1, (marker, html.count(marker))
+          for marker in ['Meet the Agents','Agent Dialogue Preview','Intelligence Infrastructure','The Holding Observer','The Holding Cognitive Stack']:
+              assert marker in html, marker
           ids = re.findall(r'\bid=["\']([^"\']+)["\']', html)
           dupes = sorted({x for x in ids if ids.count(x) > 1})
           assert not dupes, f'duplicate ids: {dupes}'
