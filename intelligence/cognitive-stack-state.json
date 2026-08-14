@@ -1,17 +1,17 @@
 {
   "version": "0.1-cognitive-stack-state",
-  "verifierVersion": "0.1-cognitive-stack-verifier",
-  "generatedAt": "2026-08-13T22:26:37.172Z",
+  "verifierVersion": "0.2-autonomous-cycle-aware-cognitive-stack-verifier",
+  "generatedAt": "2026-08-14T05:59:19.124Z",
   "status": "watch",
   "readyForManualInterpretation": true,
   "requiresImmediateHumanReview": false,
   "chain": {
     "security": {
       "file": "security/security-intelligence.json",
-      "generatedAt": "2026-08-13T22:26:36.004Z",
+      "generatedAt": "2026-08-14T05:59:18.349Z",
       "status": "green",
-      "sha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
-      "snapshotHash": "5147c1fef17fde22c9200ca6946f1cdc6b32e089ce7613d49a84ccc2cb01e343",
+      "sha256": "1db7d85dcbff02fd659033aa322e4574bb183a7665ad9a6f54ddfda36d42922b",
+      "snapshotHash": "b15eb4587fbcc5271372265d0eb121b7eaaa3a15a7c64cd6cb90419bd9937988",
       "critical": 0,
       "high": 0,
       "medium": 38,
@@ -19,20 +19,20 @@
     },
     "groundedBrain": {
       "file": "intelligence/brain-intelligence.json",
-      "generatedAt": "2026-08-13T22:26:36.851Z",
+      "generatedAt": "2026-08-14T05:59:18.812Z",
       "status": "watch",
-      "sha256": "2905d7192235bc574e38ac2789d2ddcb3a7cd7db7843c8537c3994f110cfa33d",
-      "snapshotHash": "885e183b7149724da4c62ac7715c027880ad3fe6245b875fdf18d4a552cc014c",
-      "inputCompositeHash": "7f99056a1e0505e4fbfec8379c1525ed8b8d1ee3e359cd4b3e3d3bb47cd8a5f6",
+      "sha256": "565381ab1ba91bb627aecb506284df246fe79bb7ccd2840027b932f0d2f34a46",
+      "snapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
+      "inputCompositeHash": "33d9e35237e540a094da3b38ee2dd39bb06401fbb69bd71b3642f8cbef0c41fa",
       "exactCanonicalUpstreamBinding": true
     },
     "chatgptBridge": {
       "file": "intelligence/brain-chatgpt-bridge.json",
-      "generatedAt": "2026-08-13T22:26:37.033Z",
+      "generatedAt": "2026-08-14T05:59:18.992Z",
       "status": "watch",
-      "sha256": "11424781f1a69f2aa8472614a39561666156a50a8bc0ee3a8f4a82cd71df9b7f",
-      "sourceBrainSha256": "2905d7192235bc574e38ac2789d2ddcb3a7cd7db7843c8537c3994f110cfa33d",
-      "sourceBrainSnapshotHash": "885e183b7149724da4c62ac7715c027880ad3fe6245b875fdf18d4a552cc014c",
+      "sha256": "1d2bf41338ada3d021907c438d73d1788acd307dd086d9105c0e3618241bf0cd",
+      "sourceBrainSha256": "565381ab1ba91bb627aecb506284df246fe79bb7ccd2840027b932f0d2f34a46",
+      "sourceBrainSnapshotHash": "da68313dbff69a3bfc8db0681aa6d71e36a87792665c500187ed7e659268388f",
       "exactCanonicalUpstreamBinding": true,
       "caseCount": 9,
       "evidenceCount": 11,
@@ -59,15 +59,15 @@
     {
       "key": "security",
       "file": "security/security-intelligence.json",
-      "sha256": "ff65c023d37dde8c172c0c1ef41d81fa4cf4f64a6954c7e746bfa878521d1cdd",
-      "generatedAt": "2026-08-13T22:26:36.004Z",
+      "sha256": "1db7d85dcbff02fd659033aa322e4574bb183a7665ad9a6f54ddfda36d42922b",
+      "generatedAt": "2026-08-14T05:59:18.349Z",
       "exactByteMatch": true
     },
     {
       "key": "securityMemory",
       "file": "security/security-memory.json",
-      "sha256": "1ffa44e1b4dc323f00e56d2725a59e712db8a9f1ffac36e7ed16e486b0e2623f",
-      "generatedAt": "2026-08-13T22:26:36.004Z",
+      "sha256": "e198249fd2024094f9e6781466f13e718cf158ef6c2032f6cca91b0aad328680",
+      "generatedAt": "2026-08-14T05:59:18.349Z",
       "exactByteMatch": true
     }
   ],
@@ -75,12 +75,20 @@
     "guardVersion": "0.1-static-release-coherence",
     "releaseId": "0.2.1-release-coherence",
     "manifestFile": "intelligence/cognitive-stack-release.json",
-    "manifestSha256": "bf65b0c532b97eadea8a679431cb2101d296cb0328be7d3ac164e64a52ee18b4",
-    "staticFileCount": 9,
+    "manifestSha256": "332353fcab733b903b905418bcffcddfb84956dbbc6a8d21a0f7e380fe3c06a7",
+    "staticFileCount": 10,
     "exactByteMatch": true
   },
   "operatingContract": {
-    "canonicalManualSequence": "Security Sentinel -> Grounded Brain -> ChatGPT Bridge -> human-triggered ChatGPT interpretation",
+    "canonicalCognitiveSequence": "Observer / Memory -> Security Sentinel -> Grounded Brain -> ChatGPT Bridge -> Cognitive Stack -> Decision Outcome Learning",
+    "autonomousCycle": {
+      "mode": "scheduled-integrated-plus-manual-recovery",
+      "scheduleUtc": "07:27",
+      "observerMaxAgeHours": 6,
+      "learningTrigger": "workflow_run-after-successful-cognitive-refresh",
+      "standaloneBrainScheduleEnabled": false,
+      "standaloneBridgeScheduleEnabled": false
+    },
     "factsAuthority": "intelligence/brain-intelligence.json",
     "evidenceAuthority": "intelligence/brain-intelligence.json",
     "allowedActionAuthority": "deterministic Grounded Brain case",
@@ -88,6 +96,6 @@
     "executionAuthority": "none"
   },
   "integrity": {
-    "chainHash": "7b02ceb1865badc2d27257c72b68132e407b150decf4ca43af1cb78632b1a58d"
+    "chainHash": "f19cc691cb3c01ab7584038e507e98beca9deb6f33e50a56b9ea3db94e956012"
   }
 }
