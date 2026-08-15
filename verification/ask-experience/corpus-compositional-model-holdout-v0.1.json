@@ -1,9 +1,10 @@
 {
-  "version": "0.1-compositional-model-holdout-corpus",
+  "version": "0.1.1-compositional-model-holdout-corpus",
   "origin": "synthetic-compositional-model-holdout",
   "releaseGateEligible": false,
   "frozen": true,
-  "purpose": "Independent holdout for model-assisted question decomposition. Freeze before observing model results; do not tune cases to model output.",
+  "labelRevision": "pre-inference contract alignment: a single semantic primitive plus compare operation is not composite",
+  "purpose": "Independent holdout for model-assisted semantic understanding. Frozen before any holdout model inference; do not tune cases to model output.",
   "cases": [
     {
       "id": "holdout-company-change-rewards-en",
@@ -87,9 +88,10 @@
         "Now look at Defitea.",
         "Compare them and tell me what changed recently for both."
       ],
-      "expectedIntents": ["composite"],
+      "expectedIntents": ["change-salience"],
       "requiredObjects": ["change-intelligence"],
       "expectedEntityContains": ["Monetra", "Defitea"],
+      "expectedOperation": "compare",
       "expectedMissingPrimitives": []
     },
     {
