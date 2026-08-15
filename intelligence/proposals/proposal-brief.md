@@ -1,15 +1,19 @@
 # The Holding Proposal Work Queue
 
-Generated: 2026-08-14T18:27:01.454Z
+Generated: 2026-08-15T07:49:02.081Z
 
 Status: **WATCH**
 
-3 active proposal(s) from 3 active Learning case(s); 2 owner decision(s) reflected; 2 decision-bound item(s) retained as historical resolved-case memory; execution remains disabled.
+7 active proposal(s) from 7 active Learning case(s); 2 owner decision(s) reflected; 2 decision-bound item(s) retained as historical resolved-case memory; execution remains disabled.
 
 ## Priority queue
 
 - **P0 · security · .github/workflows/production-boundary-guard.yml** – Perform bounded human-reviewed work for .github/workflows/production-boundary-guard.yml under recommendation class evidence-review. [PROPOSED]
 - **P0 · security · .github/workflows/production-deployment-smoke.yml** – Perform bounded human-reviewed work for .github/workflows/production-deployment-smoke.yml under recommendation class evidence-review. [PROPOSED]
+- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [PROPOSED]
+- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [PROPOSED]
+- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [PROPOSED]
+- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [PROPOSED]
 - **P0 · security · 7 current findings** – Review third-party script trust and integrity posture for 7 current findings; propose bounded hardening only where compatibility is proven. [SUPERSEDED] · owner accept · DEC-062ad9c0ce2e0ebbc95e
 - **P0 · security · 31 current findings** – Review actual data provenance for 31 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [SUPERSEDED] · owner accept · DEC-9e7fdbf2f8431a42194b
 - **P0 · security · agents/console/learning-notice.html** – Review actual data provenance for agents/console/learning-notice.html; classify sinks as trusted, sanitized, or unsafe before any code change. [PROPOSED]
