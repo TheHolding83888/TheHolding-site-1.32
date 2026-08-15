@@ -1,0 +1,41 @@
+name: Ask candidate · Quick Command Contract
+
+on:
+  push:
+    branches:
+      - agents/ask-quick-command-contract-v1.0.1-20260815
+    paths:
+      - .github/workflows/_ask_quick_command_contract_candidate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: agents/ask-quick-command-contract-v1.0.1-20260815
+          fetch-depth: 0
+      - name: Apply fail-closed patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          node verification/ask-experience/patch-quick-command-contract-v1.0.1.mjs
+          node --check agents/console/app.js
+          node verification/ask-experience/quick-command-contract-v0.1.mjs
+          git diff --check
+      - name: Commit candidate and self-clean transient tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm verification/ask-experience/patch-quick-command-contract-v1.0.1.mjs
+          rm .github/workflows/_ask_quick_command_contract_candidate.yml
+          git config user.name 'The Holding Production Integrator'
+          git config user.email 'production-integrator@theholding.ai'
+          git add agents/console/app.js verification/ask-experience/corpus-core-v0.1.json verification/ask-experience/quick-command-contract-v0.1.mjs .github/workflows/ask-experience.yml
+          git add -u verification/ask-experience/patch-quick-command-contract-v1.0.1.mjs .github/workflows/_ask_quick_command_contract_candidate.yml
+          git commit -m 'Ask v1.0.1: bind quick commands to tested intents'
+          git push origin HEAD:agents/ask-quick-command-contract-v1.0.1-20260815
