@@ -14,7 +14,7 @@ on:
       limit:
         description: 'Bounded shadow case limit; 0 means all cases'
         required: false
-        default: '1'
+        default: '6'
       model:
         description: 'Copilot CLI model; auto keeps provider selection replaceable'
         required: false
@@ -32,7 +32,7 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       ASK_SHADOW_TRANSPORT: copilot-cli
       ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'auto' }}
-      ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '1' }}
+      ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '6' }}
     steps:
       - name: Checkout exact shadow revision
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
