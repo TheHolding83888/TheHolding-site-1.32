@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 
+// Visible quick commands are product promises: exact UI text must have exact Core coverage.
+// Any cleaned candidate re-synced with fresh main must re-run Experience on these exact bytes.
 const app = fs.readFileSync('agents/console/app.js', 'utf8');
 const core = JSON.parse(fs.readFileSync('verification/ask-experience/corpus-core-v0.1.json', 'utf8'));
 
