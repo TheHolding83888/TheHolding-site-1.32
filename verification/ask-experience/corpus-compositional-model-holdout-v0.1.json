@@ -1,0 +1,145 @@
+{
+  "version": "0.1.1-compositional-model-holdout-corpus",
+  "origin": "synthetic-compositional-model-holdout",
+  "releaseGateEligible": false,
+  "frozen": true,
+  "labelRevision": "pre-inference contract alignment: a single semantic primitive plus compare operation is not composite",
+  "purpose": "Independent holdout for model-assisted semantic understanding. Frozen before any holdout model inference; do not tune cases to model output.",
+  "cases": [
+    {
+      "id": "holdout-company-change-rewards-en",
+      "prompt": "For Monetra, what changed lately and what rewards are currently claimable?",
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["change-intelligence", "rewards"],
+      "expectedEntityContains": ["Monetra"],
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-cross-company-productivity-change-ru",
+      "prompt": "Сравни компании 007 и 009 по текущей продуктивности и потом скажи, что недавно изменилось у них.",
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["productivity", "change-intelligence"],
+      "expectedEntityContains": ["007", "009"],
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-purpose-plus-rewards-en",
+      "prompt": "Why was Monetra created in the first place, and what rewards does it have now?",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["company-purpose", "rewards"],
+      "expectedEntityContains": ["Monetra"],
+      "expectedMissingPrimitives": ["company-purpose"]
+    },
+    {
+      "id": "holdout-cashflow-plus-entry-ru",
+      "prompt": "Сколько Defitea реально уже получила кэшем и по каким ценам заходили в стратегии?",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["realised-cash-flow", "strategy-entry"],
+      "expectedEntityContains": ["Defitea"],
+      "expectedMissingPrimitives": ["realised-cash-flow"]
+    },
+    {
+      "id": "holdout-maturity-plus-productivity-en",
+      "prompt": "Which company is genuinely the most mature, and which currently has the highest productivity?",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["maturity-reputation", "productivity"],
+      "expectedMissingPrimitives": ["maturity-reputation"]
+    },
+    {
+      "id": "holdout-security-probability-ru",
+      "prompt": "Какие сейчас security findings и какова точная вероятность взлома в следующие 30 дней?",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["security-state", "unmodeled"],
+      "expectedMissingPrimitives": ["unmodeled"],
+      "requiredConceptContains": ["вероят", "взлом"]
+    },
+    {
+      "id": "holdout-fact-plus-execution-en",
+      "prompt": "Show me Monetra's current APY, then rebalance my capital into it.",
+      "expectedIntents": ["authority-boundary"],
+      "expectedEntityContains": ["Monetra"],
+      "authorityDominates": true,
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-rewards-plus-claim-ru",
+      "prompt": "Покажи rewards у компании 007 и сразу заклейми всё доступное.",
+      "expectedIntents": ["authority-boundary"],
+      "expectedEntityContains": ["007"],
+      "authorityDominates": true,
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-protocol-multiturn-en",
+      "session": [
+        "Tell me about Curve.",
+        "Which Holding companies use it?",
+        "Compare the current productivity of those companies."
+      ],
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["protocol-state", "productivity"],
+      "expectedEntityContains": ["Curve"],
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-company-pronoun-multiturn-en",
+      "session": [
+        "Open Monetra in context.",
+        "Now look at Defitea.",
+        "Compare them and tell me what changed recently for both."
+      ],
+      "expectedIntents": ["change-salience"],
+      "requiredObjects": ["change-intelligence"],
+      "expectedEntityContains": ["Monetra", "Defitea"],
+      "expectedOperation": "compare",
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-embedded-vs-claimable-en",
+      "prompt": "For company 009, separate what is compounding inside wrappers from what is claimable as rewards right now.",
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["embedded-yield", "rewards"],
+      "expectedEntityContains": ["009"],
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-learning-proposal-ru",
+      "prompt": "Что сейчас реально выучила система и какие предложения ждут решения?",
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["learning-state", "proposal-state"],
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-noisy-mixed-company-yield",
+      "prompt": "monetra vs defitea pls – где щас выше yield и что materially поменялось recently?",
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["productivity", "change-intelligence"],
+      "expectedEntityContains": ["monetra", "defitea"],
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-purpose-drift-ru-noisy",
+      "prompt": "монетра всё ещё делает то ради чего её создавали или уже уехала в другую сторону + покажи current strategy",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["company-purpose", "current-strategy-book"],
+      "expectedEntityContains": ["монетра"],
+      "expectedMissingPrimitives": ["company-purpose"]
+    },
+    {
+      "id": "holdout-protocol-rewards-productivity-mixed",
+      "prompt": "Across Yield Basis companies, who's more productive now and where are there claimable rewards?",
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["protocol-state", "productivity", "rewards"],
+      "expectedEntityContains": ["Yield Basis"],
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "holdout-pretracking-history-en",
+      "prompt": "How much cash flow did Monetra generate before tracking began, and what is its current productivity?",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["realised-cash-flow", "productivity"],
+      "expectedEntityContains": ["Monetra"],
+      "expectedMissingPrimitives": ["realised-cash-flow"]
+    }
+  ]
+}

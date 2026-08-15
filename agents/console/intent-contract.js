@@ -53,6 +53,9 @@
     'navigation', 'authority-boundary', 'unmodeled'
   ]);
 
+  // These primitives are syntactically understood by the OS but do not yet have a
+  // canonical source object. They may appear only as explicit unsupported/missing
+  // requirements. This is a semantic-availability invariant, not a model hint.
   const ALLOWED_MISSING_PRIMITIVES = Object.freeze([
     'company-purpose', 'realised-cash-flow', 'maturity-reputation', 'unmodeled'
   ]);
@@ -188,8 +191,21 @@
       return reject('decomposition-requires-composite-intent');
     }
 
+    const decompositionObjects = new Set(decomposition.map(item => item.object));
+
+    // Semantic availability is fail-closed: knowing the name of a primitive is not
+    // equivalent to having evidence for it. Until a canonical object exists, every
+    // currently unavailable primitive must travel through unsupported-decomposed and
+    // be declared in missingPrimitives. This prevents semantic substitution or false
+    // support from any caller, including future model-assisted parsers.
+    for (const primitive of ALLOWED_MISSING_PRIMITIVES) {
+      if (!decompositionObjects.has(primitive)) continue;
+      if (intent !== 'unsupported-decomposed' || !missingPrimitives.includes(primitive)) {
+        return reject('unavailable-primitive-requires-missing', primitive);
+      }
+    }
+
     if (missingPrimitives.length) {
-      const decompositionObjects = new Set(decomposition.map(item => item.object));
       for (const primitive of missingPrimitives) {
         if (!decompositionObjects.has(primitive)) return reject('missing-primitive-not-decomposed', primitive);
       }
@@ -229,7 +245,8 @@
       allowedOperations: ALLOWED_OPERATIONS,
       allowedScopes: ALLOWED_SCOPES,
       allowedPrimitives: ALLOWED_PRIMITIVES,
-      allowedMissingPrimitives: ALLOWED_MISSING_PRIMITIVES
+      allowedMissingPrimitives: ALLOWED_MISSING_PRIMITIVES,
+      unavailablePrimitives: ALLOWED_MISSING_PRIMITIVES
     });
   }
 
