@@ -33,6 +33,8 @@ Release invariant for this corpus:
 - false-MEASURED = 0;
 - strict failures = 0.
 
+The boundary is also required to remain compatible with the pre-existing frozen Safety corpus. In particular, pre-tracking historical-income refusals preserve the canonical `predates tracking` contract rather than weakening or rewriting the older release gate.
+
 ## Architecture boundary
 
 This layer is not a language model and does not attempt universal natural-language understanding. It is a deterministic trust boundary protecting the evidence plane before future model-assisted intent understanding is introduced.
