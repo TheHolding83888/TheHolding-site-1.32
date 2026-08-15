@@ -1,0 +1,64 @@
+name: "The Holding · Realised Cash Flow Proof"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'intelligence/realised-cash-flow/**'
+      - 'verification/realised-cash-flow/**'
+      - '.github/workflows/realised-cash-flow-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  accounting-boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Static boundary checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/realised-cash-flow/classifier.mjs
+          node --check verification/realised-cash-flow/evaluator-v0.1.mjs
+          node - <<'NODE'
+          const p=require('./intelligence/realised-cash-flow/policy.json');
+          const r=require('./intelligence/realised-cash-flow/adapter-research.json');
+          if(p.authority?.executionAuthority!=='none') throw new Error('execution authority changed');
+          if(p.publicationRules?.genericWithdrawCanProveIncome!==false) throw new Error('withdraw income boundary changed');
+          if(p.publicationRules?.genericInboundTransferCanProveIncome!==false) throw new Error('generic transfer income boundary changed');
+          const yb=(r.adapters||[]).find(x=>x.adapterId==='yield-basis-fee-distributor-claim');
+          if(!yb || yb.status!=='researched-not-live') throw new Error('Yield Basis adapter promoted without live proof');
+          if(yb.deploymentBinding?.sourceCodeToConfiguredAddressBytecodeVerified!==false) throw new Error('deployment/source binding claimed prematurely');
+          if(yb.executionAuthority!=='none') throw new Error('adapter authority changed');
+          NODE
+
+      - name: Prove accounting boundary
+        run: node verification/realised-cash-flow/evaluator-v0.1.mjs
+
+      - name: Boundary summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "# The Holding · Realised Cash Flow Foundation"
+            echo
+            echo "**Primary rule:** receipt alone is not income"
+            echo "**Generic withdraw / redeem:** never sufficient"
+            echo "**Cross-adapter physical-event collision:** fail closed"
+            echo "**First adapter research:** Yield Basis Claim · researched-not-live"
+            echo "**Current production Ask promotion:** none"
+            echo "**Model/API call:** none"
+            echo "**Wallet / transaction authority:** none"
+            echo "**Execution authority:** none"
+          } >> "$GITHUB_STEP_SUMMARY"
