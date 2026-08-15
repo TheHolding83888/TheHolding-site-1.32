@@ -1,0 +1,97 @@
+{
+  "version": "0.1.1-compositional-model-shadow-corpus",
+  "origin": "synthetic-compositional-model-shadow",
+  "releaseGateEligible": false,
+  "purpose": "Shadow-only benchmark for model-assisted semantic understanding of compound and multi-turn Ask questions. Gold labels measure semantic meaning rather than forcing decomposition when one supported primitive plus an operation is sufficient.",
+  "cases": [
+    {
+      "id": "compound-compare-change-en",
+      "prompt": "Compare Monetra and Defitea and tell me what materially changed recently.",
+      "expectedIntents": ["change-salience"],
+      "requiredObjects": ["change-intelligence"],
+      "expectedEntityContains": ["Monetra", "Defitea"],
+      "expectedOperation": "compare",
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "compound-concentration-change-ru",
+      "prompt": "Где мы сейчас наиболее сконцентрированы и что там недавно изменилось?",
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["concentration", "change-intelligence"],
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "compound-purpose-current-en",
+      "prompt": "Is Monetra still doing what it was created to do, and what is its current strategy book?",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["company-purpose", "current-strategy-book"],
+      "expectedEntityContains": ["Monetra"],
+      "expectedMissingPrimitives": ["company-purpose"]
+    },
+    {
+      "id": "compound-cashflow-productivity-ru",
+      "prompt": "Сколько компания 008 реально получила деньгами и какая у нее сейчас продуктивность?",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["realised-cash-flow", "productivity"],
+      "expectedEntityContains": ["008"],
+      "expectedMissingPrimitives": ["realised-cash-flow"]
+    },
+    {
+      "id": "multiturn-company-compare-change-en",
+      "session": [
+        "Tell me about Monetra.eth.",
+        "Now compare it with Defitea and tell me what changed for them."
+      ],
+      "expectedIntents": ["change-salience"],
+      "requiredObjects": ["change-intelligence"],
+      "expectedEntityContains": ["Monetra", "Defitea"],
+      "expectedOperation": "compare",
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "multiturn-protocol-company-ru",
+      "session": [
+        "Расскажи про Yield Basis.",
+        "Какие компании его используют?",
+        "А у какой из них сейчас больше продуктивность?"
+      ],
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["protocol-state", "productivity"],
+      "expectedEntityContains": ["Yield Basis"],
+      "expectedComparison": "highest",
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "mixed-language-compound",
+      "prompt": "Monetra vs Defitea – что changed, где выше current yield и что тут реально важно owner'у?",
+      "expectedIntents": ["composite"],
+      "requiredObjects": ["change-intelligence", "productivity"],
+      "expectedEntityContains": ["Monetra", "Defitea"],
+      "expectedComparison": "highest",
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "compound-fact-authority",
+      "prompt": "What is Monetra's current APY and then move my capital there.",
+      "expectedIntents": ["authority-boundary"],
+      "expectedEntityContains": ["Monetra"],
+      "authorityDominates": true,
+      "expectedMissingPrimitives": []
+    },
+    {
+      "id": "compound-maturity-evidence",
+      "prompt": "Which company is the most mature, and which one do we actually have the widest evidence for?",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["maturity-reputation", "company-identity"],
+      "expectedMissingPrimitives": ["maturity-reputation"]
+    },
+    {
+      "id": "compound-security-probability",
+      "prompt": "What are the current security findings and what is the exact probability we get hacked next month?",
+      "expectedIntents": ["unsupported-decomposed"],
+      "requiredObjects": ["security-state", "unmodeled"],
+      "expectedMissingPrimitives": ["unmodeled"],
+      "requiredConceptContains": ["hack", "probability"]
+    }
+  ]
+}
