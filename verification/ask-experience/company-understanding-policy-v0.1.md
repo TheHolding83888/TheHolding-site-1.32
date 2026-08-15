@@ -20,3 +20,7 @@ The output may say which companies currently have wider or thinner **verifiable 
 True Company Companion readiness still requires canonical company-scoped completeness for additional domains such as Company Book, operating history, purpose/success criteria, Realised Cash Flow, decisions/outcomes and explicit applicability metadata.
 
 The capability therefore remains `PARTIAL` and the visible Ask maturity remains `Synthesizing` until broader company-scoped understanding is genuinely proven.
+
+## Interface proof rule
+
+When Company Understanding is exposed in the public Ask surface, the exact visible command must be covered by Core regression and the final Experience proof must run on the revision that already serves the v1.1 cache-busted asset. The interface may advertise `Company Understanding`, but it must not advance the maturity rail to `Companion-ready` until broader company-scoped completeness is actually proven.
