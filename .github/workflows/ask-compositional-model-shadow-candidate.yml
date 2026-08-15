@@ -8,7 +8,7 @@ on:
       - '.github/workflows/ask-compositional-model-shadow-candidate.yml'
       - 'agents/console/intent-contract.js'
       - 'verification/ask-experience/corpus-compositional-model-shadow-v0.1.json'
-      - 'verification/ask-experience/compositional-model-shadow-v0.3.mjs'
+      - 'verification/ask-experience/compositional-model-shadow-v0.4.mjs'
   workflow_dispatch:
     inputs:
       limit:
@@ -16,9 +16,9 @@ on:
         required: false
         default: '1'
       model:
-        description: 'Copilot CLI model; auto only for account-aware discovery probe'
+        description: 'Pinned Copilot CLI model for reproducible structured parsing'
         required: false
-        default: 'auto'
+        default: 'claude-sonnet-4.6'
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ github.token }}
       ASK_SHADOW_TRANSPORT: copilot-cli
-      ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'auto' }}
+      ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'claude-sonnet-4.6' }}
       ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '1' }}
     steps:
       - name: Checkout exact shadow revision
@@ -43,16 +43,11 @@ jobs:
       - name: Install current Copilot CLI
         run: npm install -g @github/copilot
 
-      - name: Identify account-available auto model
-        run: |
-          set -euo pipefail
-          copilot -p 'Reply with exactly OK and no other content.' --no-ask-user --available-tools=
-
-      - name: Run one-case no-tools untrusted compositional shadow
+      - name: Run one-case pinned no-tools semantic shadow
         run: |
           set -euo pipefail
           mkdir -p artifacts
-          node verification/ask-experience/compositional-model-shadow-v0.3.mjs \
+          node verification/ask-experience/compositional-model-shadow-v0.4.mjs \
             verification/ask-experience/corpus-compositional-model-shadow-v0.1.json \
             artifacts/ask-compositional-model-shadow.json
 
@@ -66,7 +61,7 @@ jobs:
           if (x.summary.answerAuthority !== 'deterministic-ask-only') throw new Error('shadow gained answer authority');
           if (x.summary.forbiddenFieldLeakCount !== 0) throw new Error('model emitted forbidden control fields');
           if (x.summary.acceptedByFirewall === 0) throw new Error('no model candidate passed the production firewall');
-          console.log('Compositional shadow authority boundary PASS');
+          console.log('Semantic shadow authority boundary PASS');
           NODE
 
       - name: Upload temporary shadow evidence
