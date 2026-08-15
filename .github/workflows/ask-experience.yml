@@ -54,14 +54,14 @@ on:
       - .github/workflows/ask-experience.yml
   schedule:
     - cron: '17 5 * * *'
-    - cron: '37 5 1 * * *'
+    - cron: '37 5 1 * *'
 
 permissions:
   contents: read
 
 jobs:
   experience:
-    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'model-shadow'
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.mode != 'model-shadow' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -81,7 +81,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "17 5 * * *" ]; then MODE=safety
-          elif [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "37 5 1 * * *" ]; then MODE=mutation
+          elif [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "37 5 1 * *" ]; then MODE=mutation
           elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then MODE="${DISPATCH_MODE:-core}"
           elif [ "$EVENT_NAME" = "push" ] && [[ "$REF_NAME" == agents/ask-* ]]; then MODE=all
           else MODE=core
@@ -244,7 +244,7 @@ jobs:
           retention-days: 30
 
   model-shadow:
-    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'model-shadow'
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'model-shadow' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
