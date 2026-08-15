@@ -1,13 +1,13 @@
 {
-  "version": "0.1-compositional-model-shadow-corpus",
+  "version": "0.1.1-compositional-model-shadow-corpus",
   "origin": "synthetic-compositional-model-shadow",
   "releaseGateEligible": false,
-  "purpose": "Shadow-only benchmark for model-assisted decomposition of compound and multi-turn Ask questions. Expected structures are evaluation labels, never Capital OS truth.",
+  "purpose": "Shadow-only benchmark for model-assisted semantic understanding of compound and multi-turn Ask questions. Gold labels measure semantic meaning rather than forcing decomposition when one supported primitive plus an operation is sufficient.",
   "cases": [
     {
       "id": "compound-compare-change-en",
       "prompt": "Compare Monetra and Defitea and tell me what materially changed recently.",
-      "expectedIntents": ["composite"],
+      "expectedIntents": ["change-salience"],
       "requiredObjects": ["change-intelligence"],
       "expectedEntityContains": ["Monetra", "Defitea"],
       "expectedOperation": "compare",
@@ -42,7 +42,7 @@
         "Tell me about Monetra.eth.",
         "Now compare it with Defitea and tell me what changed for them."
       ],
-      "expectedIntents": ["composite"],
+      "expectedIntents": ["change-salience"],
       "requiredObjects": ["change-intelligence"],
       "expectedEntityContains": ["Monetra", "Defitea"],
       "expectedOperation": "compare",
