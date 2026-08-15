@@ -18,7 +18,7 @@ on:
       model:
         description: 'Pinned Copilot CLI model for reproducible structured parsing'
         required: false
-        default: 'claude-haiku-4.5'
+        default: 'gpt-5.4'
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ github.token }}
       ASK_SHADOW_TRANSPORT: copilot-cli
-      ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'claude-haiku-4.5' }}
+      ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'gpt-5.4' }}
       ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '10' }}
     steps:
       - name: Checkout exact shadow revision
