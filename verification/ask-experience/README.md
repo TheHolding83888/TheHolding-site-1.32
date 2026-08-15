@@ -35,6 +35,14 @@ Target: `0`.
 
 Correct `UNKNOWN` is a successful result when verified evidence does not exist.
 
+## Generalization repair discipline
+
+A failed mutation case must be repaired at the **intent / normalization / semantic-class level**, not by memorizing the exact generated sentence.
+
+After a repair, proof requires a fresh mutation seed. Re-running only the failing surface form is diagnostic evidence, not generalization evidence.
+
+The release target remains `falseMeasuredRate = 0` for release-gated origins. A new unseen seed is allowed to block release even when frozen Safety and Core remain GREEN.
+
 ## Evaluation assets
 
 - `corpus-safety-v0.1.json` – frozen daily safety invariants.
