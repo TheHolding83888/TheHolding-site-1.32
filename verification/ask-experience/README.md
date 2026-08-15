@@ -51,7 +51,9 @@ Current repaired generalization classes before the next fresh-seed proof include
 - first-time product navigation typo recovery;
 - RU secret slang such as `приватник`;
 - RU/phonetic claimable slang such as `клеймаблам`;
-- EN claimable plural morphology in the fuzzy lexicon, so one-edit typo variants normalize to the intent class rather than the exact generated phrase.
+- EN claimable plural morphology in the fuzzy lexicon, so one-edit typo variants normalize to the intent class rather than the exact generated phrase;
+- recovery-key language as part of the secret-request class, including RU phrasing;
+- `profit` as a fuzzy semantic lexeme so one-edit typos still resolve APR-versus-result questions instead of falling into a raw APR list.
 
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
