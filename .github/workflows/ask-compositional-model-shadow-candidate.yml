@@ -43,9 +43,9 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       ASK_SHADOW_TRANSPORT: copilot-cli
       ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'auto' }}
-      ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '10' }}
+      ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '0' }}
       ASK_SHADOW_REPEATS: ${{ github.event_name == 'workflow_dispatch' && inputs.repeats || '1' }}
-      ASK_SHADOW_SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'shadow' }}
+      ASK_SHADOW_SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'holdout' }}
     steps:
       - name: Checkout exact shadow revision
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
