@@ -1312,9 +1312,13 @@ async function loadLazy(kind) {
     if (previous !== null && current !== null) {
       const absDelta = Math.abs(current - previous);
       const base = Math.max(Math.abs(previous), 1e-9);
-      const rel = absDelta / base;
-      score += Math.min(25, rel * 20);
-      if (absDelta > 1) score += Math.min(10, Math.log10(absDelta + 1) * 3);
+      const unit = String(event?.unit || '').toUpperCase();
+      if (unit === 'USD') {
+        score += Math.min(30, Math.log10(absDelta + 1) * 10);
+        if (base >= 10 && absDelta >= 1) score += Math.min(5, (absDelta / base) * 5);
+      } else {
+        score += Math.min(10, (absDelta / base) * 5);
+      }
     }
     if (event?.whyItMatters) score += 2;
     return score;
