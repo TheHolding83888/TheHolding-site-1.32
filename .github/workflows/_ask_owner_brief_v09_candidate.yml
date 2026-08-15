@@ -27,6 +27,31 @@ jobs:
           set -euo pipefail
           git config user.name "The Holding Production Integrator"
           git config user.email "production-integrator@theholding.ai"
+
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('verification/ask-experience/patch-owner-brief-v0.9.mjs')
+          lines = p.read_text().splitlines()
+          fixes = 0
+          for i, line in enumerate(lines):
+              if 'watch.forEach((x, i)' in line:
+                  lines[i] = '''  "      watch.forEach((x, i) => lines.push((i + 1) + '. ' + String(x?.summary || 'Watch condition') + (x?.whyItMatters ? ' ' + String(x.whyItMatters) : '')));",'''
+                  fixes += 1
+              elif 'const secAt = Date.parse' in line:
+                  lines[i] = '''  "    const secAt = Date.parse(sec?.generatedAt || '');",'''
+                  fixes += 1
+              elif 'const learningAt = Date.parse' in line:
+                  lines[i] = '''  "    const learningAt = Date.parse(learning?.generatedAt || '');",'''
+                  fixes += 1
+              elif 'const proposalAt = Date.parse' in line:
+                  lines[i] = '''  "    const proposalAt = Date.parse(proposals?.generatedAt || '');",'''
+                  fixes += 1
+          if fixes != 4:
+              raise SystemExit(f'expected 4 quoting fixes, got {fixes}')
+          p.write_text('\n'.join(lines) + '\n')
+          PY
+
+          node --check verification/ask-experience/patch-owner-brief-v0.9.mjs
           node verification/ask-experience/patch-owner-brief-v0.9.mjs
           node --check agents/console/app.js
           grep -F "securityIntelligence: '/security/security-intelligence.json'" agents/console/app.js >/dev/null
