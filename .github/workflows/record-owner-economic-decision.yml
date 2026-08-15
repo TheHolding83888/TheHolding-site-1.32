@@ -1,0 +1,202 @@
+name: "The Holding Brain · Record Owner Economic Decision"
+
+on:
+  workflow_dispatch:
+    inputs:
+      entity:
+        description: "Company / economic entity"
+        required: true
+        type: string
+      category:
+        description: "Stable owner decision category, e.g. reward-harvest-timing"
+        required: true
+        type: string
+      disposition:
+        description: "Owner decision"
+        required: true
+        default: "defer"
+        type: choice
+        options:
+          - accept
+          - defer
+          - reject
+          - modify
+      rationale:
+        description: "Why this decision is being made now"
+        required: true
+        type: string
+      expected_outcome:
+        description: "Expected result before the outcome is known"
+        required: true
+        type: string
+      evaluation_criterion:
+        description: "Observable evidence used later to judge the decision"
+        required: true
+        type: string
+      review_on_or_after:
+        description: "Review date YYYY-MM-DD or timestamp"
+        required: true
+        type: string
+      counterevidence:
+        description: "Strongest relevant evidence/argument against the choice"
+        required: true
+        type: string
+      invalidation_condition:
+        description: "What would trigger earlier review or make the choice wrong"
+        required: true
+        type: string
+      deferred_alternative:
+        description: "Material alternative not chosen now"
+        required: true
+        type: string
+      intended_use:
+        description: "Optional intended use if/when value is realized"
+        required: false
+        default: ""
+        type: string
+      confidence:
+        description: "Optional qualitative confidence; never invented by the recorder"
+        required: false
+        default: ""
+        type: string
+      evidence_note:
+        description: "Optional public provenance/evidence note"
+        required: false
+        default: ""
+        type: string
+      supersedes_decision_id:
+        description: "Optional earlier decisionId for same stable owner case"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: owner-decision-recorder-main
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout canonical repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Preflight exact release coherence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/cognitive-release-guard.mjs
+          node intelligence/learning/learning-release-guard.mjs
+          node --check intelligence/learning/owner-initiated-decision-recorder.mjs
+          node intelligence/learning/owner-initiated-decision-recorder.mjs --self-test
+
+      - name: Append owner-initiated decision
+        id: record
+        env:
+          DECISION_DOMAIN: economic
+          DECISION_RECOMMENDATION_CLASS: owner-capital-allocation
+          DECISION_ENTITY: ${{ inputs.entity }}
+          DECISION_CATEGORY: ${{ inputs.category }}
+          DECISION_DISPOSITION: ${{ inputs.disposition }}
+          DECISION_RATIONALE: ${{ inputs.rationale }}
+          DECISION_EXPECTED_OUTCOME: ${{ inputs.expected_outcome }}
+          DECISION_EVALUATION_CRITERION: ${{ inputs.evaluation_criterion }}
+          DECISION_REVIEW_ON_OR_AFTER: ${{ inputs.review_on_or_after }}
+          DECISION_COUNTEREVIDENCE: ${{ inputs.counterevidence }}
+          DECISION_INVALIDATION_CONDITION: ${{ inputs.invalidation_condition }}
+          DECISION_DEFERRED_ALTERNATIVE: ${{ inputs.deferred_alternative }}
+          DECISION_INTENDED_USE: ${{ inputs.intended_use }}
+          DECISION_CONFIDENCE: ${{ inputs.confidence }}
+          DECISION_EVIDENCE_NOTE: ${{ inputs.evidence_note }}
+          DECISION_SUPERSEDES_ID: ${{ inputs.supersedes_decision_id }}
+        run: node intelligence/learning/owner-initiated-decision-recorder.mjs
+
+      - name: Validate inert owner-decision boundary
+        shell: bash
+        env:
+          DECISION_VERIFY_ID: ${{ steps.record.outputs.decision_id }}
+        run: |
+          set -euo pipefail
+          node intelligence/learning/owner-initiated-decision-recorder.mjs --verify-bound-decision
+          node - <<'NODE'
+          const fs = require('fs');
+          const ledger = JSON.parse(fs.readFileSync('intelligence/learning/decision-ledger.json','utf8'));
+          const d = ledger.decisions.at(-1);
+          if (!d) throw new Error('owner decision missing');
+          if (d.experience?.status !== 'open' || d.experience?.preOutcomeCaptured !== true) throw new Error('owner decision did not enter as open pre-outcome experience');
+          if (d.authority?.executable !== false || d.authority?.executionAuthority !== 'none') throw new Error('owner decision escaped inert authority');
+          if (d.source?.provenance?.peerOwnerStatement !== false) throw new Error('owner decision provenance drift');
+          console.log('Owner Decision boundary PASS', { decisionId: d.decisionId, status: d.experience.status, executionAuthority: d.authority.executionAuthority });
+          NODE
+          git diff --check
+
+      - name: Publish owner Decision Memory safely
+        shell: bash
+        env:
+          DECISION_VERIFY_ID: ${{ steps.record.outputs.decision_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Decision Memory"
+          git config user.email "decision-memory@theholding.ai"
+          git add intelligence/learning/decision-ledger.json
+          if git diff --cached --quiet; then
+            echo "No owner decision-memory change to publish."
+            exit 0
+          fi
+          mapfile -t staged < <(git diff --cached --name-only)
+          if [ "${#staged[@]}" -ne 1 ] || [ "${staged[0]}" != "intelligence/learning/decision-ledger.json" ]; then
+            echo "Unexpected staged owner-decision files: ${staged[*]}"
+            exit 1
+          fi
+          git commit -m "intelligence: record owner economic decision $DECISION_VERIFY_ID"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Owner Decision publish conflict; fail closed."
+              exit 1
+            fi
+
+            node intelligence/cognitive-release-guard.mjs
+            node intelligence/learning/learning-release-guard.mjs
+            node intelligence/learning/owner-initiated-decision-recorder.mjs --verify-bound-decision
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; retrying after fetch/rebase."
+            sleep $((attempt * 2))
+          done
+          echo "Owner Decision Memory could not publish after 3 attempts."
+          exit 1
+
+      - name: Owner decision summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "# The Holding Brain · Owner-Initiated Decision Experience"
+            echo
+            echo "Decision ID: \`${{ steps.record.outputs.decision_id }}\`"
+            echo "Entity: \`${{ inputs.entity }}\`"
+            echo "Category: \`${{ inputs.category }}\`"
+            echo "Disposition: \`${{ inputs.disposition }}\`"
+            echo "Review on/after: \`${{ inputs.review_on_or_after }}\`"
+            echo "Experience status: \`open\`"
+            echo "Execution authority: \`none\`"
+            echo
+            echo "This is pre-outcome Decision Memory, not a learned lesson and not an executable capital instruction."
+          } >> "$GITHUB_STEP_SUMMARY"
