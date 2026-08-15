@@ -1,0 +1,82 @@
+name: Ask The Holding · Compositional Pressure Candidate
+
+on:
+  push:
+    branches:
+      - agents/ask-compositional-understanding-v1.3a-20260815
+    paths:
+      - verification/ask-experience/corpus-compositional-pressure-v0.1.json
+      - .github/workflows/ask-compositional-pressure-candidate.yml
+      - agents/console/app.js
+      - agents/console/intent-contract.js
+
+permissions:
+  contents: read
+
+jobs:
+  pressure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Locate Chrome and install browser harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+          npm install --no-save --no-package-lock puppeteer-core@24.16.0
+
+      - name: Serve exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/compositional-pressure-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/agents/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/compositional-pressure-http.log
+          exit 1
+
+      - name: Re-prove compositional firewall
+        run: node verification/ask-experience/intent-contract-test-v0.1.mjs
+
+      - name: Collect compound and multi-turn pressure evidence
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-compositional-pressure
+          ASK_EXPERIENCE_ORIGIN: synthetic-compositional-pressure
+        run: node verification/ask-experience/runner-v0.1.mjs verification/ask-experience/corpus-compositional-pressure-v0.1.json artifacts/ask-experience-compositional-pressure.json
+
+      - name: Summarize discovery only
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('artifacts/ask-experience-compositional-pressure.json','utf8'));
+          const rows = x.cases.map(c => {
+            const p = c.prompts.at(-1) || {};
+            return {
+              id: c.id,
+              discoveryTarget: c.discoveryTarget,
+              confidence: p.answerContract?.confidenceClass || 'missing',
+              topic: p.answerContract?.topic || null,
+              sourceArtifacts: p.answerContract?.sourceArtifacts || [],
+              answer: p.answer || ''
+            };
+          });
+          const counts = {};
+          for (const r of rows) counts[r.confidence] = (counts[r.confidence] || 0) + 1;
+          const generic = rows.filter(r => /don't have enough verified evidence|не хватает подтвержденных данных|couldn.t map|не удалось сопоставить/i.test(r.answer)).map(r => r.id);
+          const summary = {version:'0.1-compositional-pressure-summary',releaseGateEligible:false,counts,genericFallbackCases:generic,rows};
+          fs.writeFileSync('artifacts/ask-experience-compositional-pressure-summary.json', JSON.stringify(summary,null,2));
+          console.log(JSON.stringify({counts,genericFallbackCases:generic},null,2));
+          NODE
+
+      - name: Upload temporary discovery evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ask-compositional-pressure-${{ github.run_id }}
+          path: artifacts/ask-experience-compositional-pressure*.json
+          retention-days: 14
