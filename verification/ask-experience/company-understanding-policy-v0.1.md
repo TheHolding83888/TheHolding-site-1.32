@@ -13,7 +13,7 @@ Strategy Entry may be shown as specialized evidence where a canonical ledger exi
 
 Absence of Rewards or Embedded Yield must not automatically be called a data gap. A layer may be economically inapplicable to a particular company.
 
-Company identity must be reconciled across public Registry labels and internal canonical artifact keys before evidence breadth is measured. A naming mismatch (for example shortened public wallet labels versus internal canonical company keys) is an identity-resolution problem, not evidence absence.
+Company identity must be reconciled across public Registry labels and internal canonical artifact keys before evidence breadth is measured. A naming mismatch (for example shortened public wallet labels versus internal canonical company keys) is an identity-resolution problem, not evidence absence. Reconciled aliases must also be deduplicated before scoring so one economic company cannot appear twice as a thin public label and a richer internal key.
 
 The output may say which companies currently have wider or thinner **verifiable evidence surfaces**. It must not call that a Companion Score or a maturity/readiness ranking.
 
