@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-15T10:12:07.767Z",
+  "generatedAt": "2026-08-15T11:17:17.418Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 20,
+    "medium": 21,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 243,
-    "bytesScanned": 6308085,
+    "filesScanned": 244,
+    "bytesScanned": 6317838,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Fri, 14 Aug 2026 14:53:00 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,23 +55,23 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "257f18fc1039702c1d6d8ea9e6d6117dbf52c633645101f6b9f16c4dcdba05c9",
+        "id": "76ef18591c4644757c65048547ac8f5aae64f0d89872abcd9e2c0bf1cf483eb4",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": "companies/index.html",
+        "file": "agents/index.html",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: companies/index.html.",
+        "summary": "Security-sensitive surface changed: agents/index.html.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "d16e5a1a2306fe96e4b76120d0bb06868bbc4c46d1e9fa4536ba21820e9d7c33",
-          "currentSha256": "561d2923d0dd1c671dfe33b97b4efdc26efc293486bdc2f46d69dfb3c083a430"
+          "previousSha256": "6f4ac289bf50a04ed7947fd63567256c3e27faad3a41cdddaf90cd255d63fce7",
+          "currentSha256": "fa7d8041290944a29d790d79943d6adbbd62868079959fb6e24e8c77c71a5c14"
         }
       }
-    ]
+    ],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -139,6 +139,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "76ef18591c4644757c65048547ac8f5aae64f0d89872abcd9e2c0bf1cf483eb4",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "agents/index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: agents/index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "6f4ac289bf50a04ed7947fd63567256c3e27faad3a41cdddaf90cd255d63fce7",
+        "currentSha256": "fa7d8041290944a29d790d79943d6adbbd62868079959fb6e24e8c77c71a5c14"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -485,12 +499,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "de32154bad30ade5b37c725b9dcf6f6a516c3fc6bc691563473ee481e1cef9d9",
+    "snapshotHash": "c8c657016b8b80998deb6b35f53e4eb7d4e20b139993b8c56467144dc4233e62",
     "securityVault": {
-      "runCount": 194,
+      "runCount": 195,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T10-12-07-767Z-de32154bad.json",
-      "latestRecordHash": "3460baee296138a2a3266dd3ad5a710f31a3d9db05192de1ab896e3b7a6dec6a",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T11-17-17-418Z-c8c657016b.json",
+      "latestRecordHash": "108df60aa1874ac4355f6f6c2d9f28d6255be3d08aa5a379158da2fabdff2f2e",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
