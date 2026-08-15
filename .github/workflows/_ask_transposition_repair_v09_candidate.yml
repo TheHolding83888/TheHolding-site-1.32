@@ -21,43 +21,20 @@ jobs:
           ref: agents/ask-owner-brief-v0.9-20260815
           fetch-depth: 0
 
-      - name: Add bounded adjacent-transposition recovery and self-clean
+      - name: Apply bounded transposition recovery and self-clean
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "The Holding Production Integrator"
           git config user.email "production-integrator@theholding.ai"
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('agents/console/app.js')
-          s=p.read_text()
-          old="""    if (a.length === b.length) {
-      let mismatches = 0;
-      for (let i = 0; i < a.length; i++) if (a[i] !== b[i] && ++mismatches > 1) return false;
-      return true;
-    }"""
-          new="""    if (a.length === b.length) {
-      const mismatch = [];
-      for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) mismatch.push(i);
-      if (mismatch.length <= 1) return true;
-      if (mismatch.length === 2) {
-        const [i, j] = mismatch;
-        return j === i + 1 && a[i] === b[j] && a[j] === b[i];
-      }
-      return false;
-    }"""
-          if old not in s:
-              raise SystemExit('expected edit-distance anchor missing')
-          if new in s:
-              raise SystemExit('transposition recovery already present unexpectedly')
-          p.write_text(s.replace(old,new))
-          PY
+          node verification/ask-experience/patch-transposition-v0.9.mjs
           node --check agents/console/app.js
           grep -F "return j === i + 1 && a[i] === b[j] && a[j] === b[i];" agents/console/app.js >/dev/null
+          rm -f verification/ask-experience/patch-transposition-v0.9.mjs
           rm -f .github/workflows/_ask_transposition_repair_v09_candidate.yml
           git add -A
           git diff --check --cached
-          expected=$'.github/workflows/_ask_transposition_repair_v09_candidate.yml\nagents/console/app.js'
+          expected=$'.github/workflows/_ask_transposition_repair_v09_candidate.yml\nagents/console/app.js\nverification/ask-experience/patch-transposition-v0.9.mjs'
           actual="$(git diff --cached --name-only | sort)"
           test "$actual" = "$expected"
           git commit -m "Ask v0.9: recover bounded adjacent transposition typos"
