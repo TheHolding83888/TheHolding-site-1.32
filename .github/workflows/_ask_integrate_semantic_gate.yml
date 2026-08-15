@@ -1,0 +1,34 @@
+name: Ask candidate · Integrate Semantic Gate
+
+on:
+  push:
+    branches: ['agents/ask-semantic-safety-boundary-v1.2a-20260815']
+    paths:
+      - verification/ask-experience/_integrate_semantic_gate_v12a.mjs
+      - .github/workflows/_ask_integrate_semantic_gate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: agents/ask-semantic-safety-boundary-v1.2a-20260815
+      - name: Integrate semantic release gate
+        run: node verification/ask-experience/_integrate_semantic_gate_v12a.mjs
+      - name: Remove transient tooling
+        run: |
+          rm -f verification/ask-experience/_integrate_semantic_gate_v12a.mjs
+          rm -f .github/workflows/_ask_integrate_semantic_gate.yml
+      - name: Commit canonical Experience integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/workflows/ask-experience.yml .github/workflows/_ask_semantic_safety_candidate.yml verification/ask-experience/_integrate_semantic_gate_v12a.mjs .github/workflows/_ask_integrate_semantic_gate.yml
+          git commit -m 'Ask v1.2A: integrate semantic safety into canonical Experience gate'
+          git push origin HEAD:agents/ask-semantic-safety-boundary-v1.2a-20260815
