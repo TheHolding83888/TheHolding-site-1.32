@@ -16,7 +16,7 @@ on:
   push:
     branches:
       - main
-      - agents/ask-evaluation-trust-v0.6.1-20260815
+      - 'agents/ask-*'
     paths:
       - agents/console/app.js
       - agents/index.html
@@ -59,7 +59,7 @@ jobs:
           if [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "17 5 * * *" ]; then MODE=safety
           elif [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "37 5 1 * *" ]; then MODE=mutation
           elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then MODE="${DISPATCH_MODE:-core}"
-          elif [ "$EVENT_NAME" = "push" ] && [ "$REF_NAME" = "agents/ask-evaluation-trust-v0.6.1-20260815" ]; then MODE=all
+          elif [ "$EVENT_NAME" = "push" ] && [[ "$REF_NAME" == agents/ask-* ]]; then MODE=all
           else MODE=core
           fi
           if [ -n "${DISPATCH_SEED:-}" ]; then SEED="$DISPATCH_SEED"
@@ -88,18 +88,18 @@ jobs:
           cat /tmp/ask-experience-http.log; exit 1
 
       - name: Direct final-output safety guard test
-        if: env.RUN_MODE != 'owner-unknown'
-        env: { ASK_BASE_URL: http://127.0.0.1:8080/agents/ }
+        if: env.RUN_MODE == 'safety' || env.RUN_MODE == 'core' || env.RUN_MODE == 'mutation' || env.RUN_MODE == 'all'
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
         run: node verification/ask-experience/output-guard-test-v0.1.mjs
 
       - name: Frozen safety corpus
         if: env.RUN_MODE == 'safety' || env.RUN_MODE == 'all'
-        continue-on-error: true
-        shell: bash
         env:
           ASK_BASE_URL: http://127.0.0.1:8080/agents/
           ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-safety
           ASK_EXPERIENCE_ORIGIN: synthetic-regression
+        shell: bash
         run: |
           set -euo pipefail
           node verification/ask-experience/runner-v0.1.mjs verification/ask-experience/corpus-safety-v0.1.json artifacts/ask-experience-safety.json
@@ -112,12 +112,11 @@ jobs:
 
       - name: Annotated core regression
         if: env.RUN_MODE == 'core' || env.RUN_MODE == 'all'
-        continue-on-error: true
-        shell: bash
         env:
           ASK_BASE_URL: http://127.0.0.1:8080/agents/
           ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-core
           ASK_EXPERIENCE_ORIGIN: synthetic-regression
+        shell: bash
         run: |
           set -euo pipefail
           node verification/ask-experience/runner-v0.1.mjs verification/ask-experience/corpus-core-v0.1.json artifacts/ask-experience-core.json
@@ -130,14 +129,13 @@ jobs:
 
       - name: Seeded mutation generalization
         if: env.RUN_MODE == 'mutation' || env.RUN_MODE == 'all'
-        continue-on-error: true
-        shell: bash
         env:
           ASK_BASE_URL: http://127.0.0.1:8080/agents/
           ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-mutation
           ASK_EXPERIENCE_ORIGIN: synthetic-mutation
           ASK_EXPERIENCE_SEED: ${{ env.MUTATION_SEED }}
           ASK_EXPERIENCE_GRAMMAR_VERSION: 0.1-seeded-surface-grammar
+        shell: bash
         run: |
           set -euo pipefail
           test -n "$MUTATION_SEED"
@@ -152,11 +150,11 @@ jobs:
 
       - name: Owner Unknown discovery run
         if: env.RUN_MODE == 'owner-unknown' || env.RUN_MODE == 'all'
-        shell: bash
         env:
           ASK_BASE_URL: http://127.0.0.1:8080/agents/
           ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-owner-unknown
           ASK_EXPERIENCE_ORIGIN: owner-unknown
+        shell: bash
         run: |
           set -euo pipefail
           node verification/ask-experience/runner-v0.1.mjs verification/ask-experience/corpus-owner-unknown-v0.1.json artifacts/ask-experience-owner-unknown.json
@@ -169,7 +167,6 @@ jobs:
           node verification/ask-experience/review-owner-unknown-v0.1.mjs artifacts/ask-experience-owner-unknown.json > artifacts/ask-experience-owner-unknown-review.json
 
       - name: Enforce selected release gates
-        if: always() && env.RUN_MODE != 'owner-unknown'
         shell: bash
         run: |
           set -euo pipefail
@@ -199,5 +196,4 @@ jobs:
         with:
           name: ask-experience-${{ env.RUN_MODE }}-${{ github.run_id }}
           path: artifacts/ask-experience-*.json
-          if-no-files-found: warn
           retention-days: 30

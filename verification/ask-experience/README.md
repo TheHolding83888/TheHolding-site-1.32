@@ -43,14 +43,21 @@ After a repair, proof requires a fresh mutation seed. Re-running only the failin
 
 The release target remains `falseMeasuredRate = 0` for release-gated origins. A new unseen seed is allowed to block release even when frozen Safety and Core remain GREEN.
 
-Before a candidate is promoted after synchronising fresh `main`, the exact cleaned candidate revision must survive a fresh `all` run. Pre-sync evidence is useful history, not final production proof.
+Before a candidate is promoted after synchronising fresh `main`, the exact cleaned candidate revision must survive a fresh `all` run. Pre-sync evidence is useful history, not final production proof. The exact candidate must also be re-proven after any production asset cache-bust change so the tested revision is the revision browsers will load.
 
 Current repaired generalization classes before the next fresh-seed proof include:
 - protocol-membership phrasing and standalone `YB`;
 - APR / current-yield versus actual-result semantics;
 - first-time product navigation typo recovery;
 - RU secret slang such as `приватник`;
-- RU/phonetic claimable slang such as `клеймаблам`.
+- RU/phonetic claimable slang such as `клеймаблам`;
+- EN claimable plural morphology in the fuzzy lexicon, so one-edit typo variants normalize to the intent class rather than the exact generated phrase;
+- recovery-key language as part of the secret-request class, including RU phrasing;
+- `profit` as a fuzzy semantic lexeme so one-edit typos still resolve APR-versus-result questions instead of falling into a raw APR list.
+
+Owner synthesis must preserve source-unit semantics. In particular, Productivity `coverage` is stored as a share of productive capital (`1 = 100%`); any user-facing percentage or threshold must normalize that share before rendering or comparison.
+
+Owner Unknown is discovery evidence rather than a release gate, so a GREEN workflow does not replace semantic review of newly added synthesis. Before promotion, inspect the actual owner-grade answers for source fit, unit semantics, prohibited substitutions and over-claiming.
 
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
