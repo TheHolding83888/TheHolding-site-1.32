@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+const p='agents/console/app.js';
+let s=fs.readFileSync(p,'utf8');
+const a="    'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure'";
+const b="    'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure', 'begin'";
+if((s.split(a).length-1)!==1) throw new Error('english lexeme anchor mismatch');
+s=s.replace(a,b);
+const c="    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам'";
+const d="    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам', 'компани'";
+if((s.split(c).length-1)!==1) throw new Error('ru lexeme anchor mismatch');
+s=s.replace(c,d);
+const e="      .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable');";
+const f="      .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable')\n      .replace(/\\bкомпани\\b/gi, 'компании');";
+if((s.split(e).length-1)!==1) throw new Error('RU alias anchor mismatch');
+s=s.replace(e,f);
+fs.writeFileSync(p,s);
+console.log(JSON.stringify({boundedEnglishLexeme:'begin',boundedRuStem:'компани→компании'},null,2));
