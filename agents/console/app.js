@@ -1736,7 +1736,7 @@ async function loadLazy(kind) {
     if (preTracking) return unknown(
       ru
         ? 'Этот период предшествует подтверждённому tracking, и без отдельного backfill точного исторического дохода в текущем OS нет. Я не буду подменять неизвестную историю сегодняшним APR/APY, Rewards или текущей стоимостью.'
-        : 'That period predates verified tracking, and without a separate backfill the OS has no exact historical income figure for it. I will not substitute today’s APR/APY, Rewards, or current value for unknown history.',
+        : 'That period predates tracking, and without a separate backfill the OS has no exact historical income figure for it. I will not substitute today’s APR/APY, Rewards, or current value for unknown history.',
       'Console capability map'
     );
 
