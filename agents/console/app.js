@@ -92,9 +92,14 @@
     if (a === b) return true;
     if (Math.abs(a.length - b.length) > 1) return false;
     if (a.length === b.length) {
-      let mismatches = 0;
-      for (let i = 0; i < a.length; i++) if (a[i] !== b[i] && ++mismatches > 1) return false;
-      return true;
+      const mismatch = [];
+      for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) mismatch.push(i);
+      if (mismatch.length <= 1) return true;
+      if (mismatch.length === 2) {
+        const [i, j] = mismatch;
+        return j === i + 1 && a[i] === b[j] && a[j] === b[i];
+      }
+      return false;
     }
     const shorter = a.length < b.length ? a : b;
     const longer = a.length < b.length ? b : a;
