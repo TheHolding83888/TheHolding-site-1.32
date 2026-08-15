@@ -12,9 +12,15 @@ The deterministic Ask router remains the only answer authority.
 
 ## Provider boundary
 
-The first development proof may use GitHub Models from GitHub Actions with the workflow-scoped `GITHUB_TOKEN` and `models: read` permission. No separate model API secret is required for this proof.
+The shadow evaluator must be provider-replaceable. Provider/model identity is diagnostic metadata only and is never canonical truth.
 
-The provider is not canonical truth and is replaceable. Provider/model identity is recorded in temporary shadow evidence.
+GitHub Models was evaluated first because it could previously run from Actions with a short-lived workflow token. Live development evidence returned the explicit retirement response `github_models_retirement_brownout`, and GitHub's published retirement schedule fully retires that service. Therefore GitHub Models is not an allowed durable dependency for this capability.
+
+The current preferred GitHub-native development transport is GitHub Copilot CLI in non-interactive mode, authenticated from Actions with the short-lived `GITHUB_TOKEN` and narrowly scoped `copilot-requests: write` permission. No long-lived model API credential is introduced by this path.
+
+The Copilot transport must expose zero tools to the model for intent classification. It receives only the parser instructions and user question and returns text that is parsed as a candidate before the production Intent Contract Firewall.
+
+If Copilot access is unavailable because account/repository policy or subscription state blocks requests, the shadow run must fail closed and record only a bounded diagnostic. It must not silently fall back to a weaker factual path or enable a paid external provider without owner authorization.
 
 The existing deterministic ChatGPT Bridge is not repurposed. Its current no-API/no-model-call meaning remains unchanged.
 
@@ -61,6 +67,22 @@ This includes at least:
 - pre-tracking income that has not been backfilled.
 
 Execution or production-authority commands must map to `authority-boundary`, never to an executable action.
+
+## Transport failure semantics
+
+Infrastructure errors are distinct from model-quality misses.
+
+The evaluator must fail fast after the first transport-class error so it does not waste quota or create misleading aggregate quality statistics. Logged diagnostics must redact tokens and bound provider error text.
+
+Examples of transport-class errors:
+
+- provider retirement/unavailability;
+- authentication failure;
+- account or repository policy denial;
+- quota/budget exhaustion;
+- unsupported transport configuration.
+
+A transport RED says nothing about the quality of the Intent Contract or deterministic Ask answer layer.
 
 ## Evidence semantics
 
