@@ -1,13 +1,15 @@
 import fs from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import contract from '../../agents/console/intent-contract.js';
 
+const execFileAsync = promisify(execFile);
 const corpusPath = process.argv[2] || 'verification/ask-experience/corpus-model-intent-shadow-v0.1.json';
 const outputPath = process.argv[3] || 'artifacts/ask-model-intent-shadow.json';
-const token = process.env.GITHUB_TOKEN || '';
-const model = process.env.ASK_SHADOW_MODEL || 'openai/gpt-4.1';
-const endpoint = process.env.ASK_SHADOW_ENDPOINT || 'https://models.github.ai/inference/chat/completions';
-
-if (!token) throw new Error('GITHUB_TOKEN is required for shadow inference');
+const transport = process.env.ASK_SHADOW_TRANSPORT || 'copilot-cli';
+const model = process.env.ASK_SHADOW_MODEL || 'auto';
+const limitRaw = Number(process.env.ASK_SHADOW_LIMIT || 0);
+const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.floor(limitRaw) : null;
 
 const corpus = JSON.parse(await fs.readFile(corpusPath, 'utf8'));
 if (!Array.isArray(corpus.cases) || corpus.cases.length === 0) throw new Error('shadow corpus is empty');
@@ -46,47 +48,51 @@ function extractJson(content) {
   throw new Error('parse:model-content-not-json');
 }
 
-function safeApiError(status, text) {
-  const bounded = String(text || '')
+function sanitizeError(value) {
+  return String(value || '')
     .replace(/Bearer\s+[A-Za-z0-9._~+\/-]+/gi, 'Bearer [redacted]')
+    .replace(/github_pat_[A-Za-z0-9_]{20,}/g, '[redacted-token]')
     .replace(/gh[pousr]_[A-Za-z0-9_]{20,}/g, '[redacted-token]')
-    .replace(/[A-Za-z0-9_-]{36,}/g, '[bounded-id]')
+    .replace(/\b[A-Z0-9]{4}:[A-Z0-9:]{8,}\b/gi, '[bounded-request-id]')
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, 320);
-  return `transport:http-${status}:${bounded || 'empty-error-body'}`;
+    .slice(0, 420);
+}
+
+function classifyTransportError(value) {
+  const msg = sanitizeError(value);
+  if (/access denied by policy settings/i.test(msg)) return `transport:policy-denied:${msg}`;
+  if (/authentication|unauthorized|forbidden|token/i.test(msg)) return `transport:auth:${msg}`;
+  if (/rate limit|quota|budget|credits/i.test(msg)) return `transport:quota:${msg}`;
+  return `transport:copilot-cli:${msg || 'unknown-error'}`;
+}
+
+async function inferViaCopilot(question) {
+  const prompt = `${systemPrompt}\n\nUSER REQUEST:\n${String(question)}`;
+  const args = [
+    '-p', prompt,
+    '-s',
+    '--no-ask-user',
+    '--no-custom-instructions',
+    '--available-tools='
+  ];
+  if (model !== 'auto') args.push('--model', model);
+  try {
+    const { stdout } = await execFileAsync('copilot', args, {
+      env: process.env,
+      timeout: 90_000,
+      maxBuffer: 2 * 1024 * 1024
+    });
+    return { raw: stdout, usage: null, provider: 'github-copilot-cli' };
+  } catch (e) {
+    const combined = `${e?.stderr || ''} ${e?.stdout || ''} ${e?.message || e}`;
+    throw new Error(classifyTransportError(combined));
+  }
 }
 
 async function infer(question) {
-  let response;
-  try {
-    response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/vnd.github+json',
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'X-GitHub-Api-Version': '2022-11-28'
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0,
-        max_tokens: 300,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: String(question) }
-        ]
-      })
-    });
-  } catch (e) {
-    throw new Error(`transport:fetch:${String(e?.message || e).slice(0, 200)}`);
-  }
-  const bodyText = await response.text();
-  if (!response.ok) throw new Error(safeApiError(response.status, bodyText));
-  let body;
-  try { body = JSON.parse(bodyText); }
-  catch { throw new Error('transport:invalid-json-response'); }
-  return { raw: body?.choices?.[0]?.message?.content ?? '', usage: body?.usage || null };
+  if (transport === 'copilot-cli') return inferViaCopilot(question);
+  throw new Error(`transport:unsupported:${transport}`);
 }
 
 function entityFits(envelope, expected = []) {
@@ -95,20 +101,21 @@ function entityFits(envelope, expected = []) {
   return expected.every(x => haystack.includes(String(x).toLowerCase()));
 }
 
+const selectedCases = limit ? corpus.cases.slice(0, limit) : corpus.cases;
 const results = [];
 let infrastructureFailure = null;
-for (const test of corpus.cases) {
+for (const test of selectedCases) {
   const started = Date.now();
-  let modelRaw = null;
   let candidate = null;
   let validation = null;
   let error = null;
   let usage = null;
+  let provider = null;
   try {
     const inference = await infer(test.question);
-    modelRaw = inference.raw;
     usage = inference.usage;
-    candidate = extractJson(modelRaw);
+    provider = inference.provider;
+    candidate = extractJson(inference.raw);
     validation = contract.validate(candidate);
   } catch (e) {
     error = String(e?.message || e);
@@ -138,7 +145,8 @@ for (const test of corpus.cases) {
     fit: { intent: intentFit, metric: metricFit, timeframe: timeframeFit, comparison: comparisonFit, entities: entitiesFit, strict: strictFit },
     error,
     latencyMs: Date.now() - started,
-    usage
+    usage,
+    provider
   });
 
   if (infrastructureFailure) break;
@@ -159,13 +167,15 @@ const forbiddenLeak = results.filter(r => {
 }).length;
 
 const summary = {
-  version: '0.1-model-intent-shadow-evaluation',
+  version: '0.2-model-intent-shadow-evaluation',
   corpusVersion: corpus.version,
   contractVersion: contract.VERSION,
+  transport,
   model,
   mode: 'shadow-only-no-answer-authority',
   executionAuthority: cap.executionAuthority,
   totalCorpusCases: corpus.cases.length,
+  selectedCases: selectedCases.length,
   attempted,
   acceptedByFirewall: accepted,
   rejectedByFirewall: rejected,
@@ -185,9 +195,11 @@ const summary = {
 await fs.mkdir(outputPath.split('/').slice(0, -1).join('/') || '.', { recursive: true });
 await fs.writeFile(outputPath, JSON.stringify({ summary, results }, null, 2) + '\n');
 console.log(JSON.stringify(summary, null, 2));
-if (infrastructureFailure) console.error(`SHADOW_INFRA_RED=${JSON.stringify(infrastructureFailure)}`);
+for (const row of results.filter(r => !r.fit.strict || r.error)) {
+  console.log(`SHADOW_MISS=${JSON.stringify({ id: row.id, candidate: row.candidate, firewall: row.firewall, fit: row.fit, error: row.error })}`);
+}
 
-// Shadow evidence is diagnostic, not a release gate. Infrastructure failures still fail the job.
+// Shadow quality is diagnostic at v0.2. Infrastructure and authority boundary failures are hard failures.
 if (infrastructureFailure) process.exit(2);
-if (errors > 0) process.exit(4);
+if (forbiddenLeak > 0) process.exit(5);
 if (accepted === 0) process.exit(3);
