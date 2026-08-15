@@ -110,6 +110,23 @@ jobs:
           node verification/ask-experience/summarize-learning-needs-v0.1.mjs artifacts/ask-experience-safety-evaluation.json > artifacts/ask-experience-safety-learning-needs.json
           exit "$rc"
 
+      - name: Frozen semantic substitution boundary
+        if: env.RUN_MODE == 'core' || env.RUN_MODE == 'all'
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-semantic-safety
+          ASK_EXPERIENCE_ORIGIN: synthetic-semantic-safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          node verification/ask-experience/runner-v0.1.mjs verification/ask-experience/corpus-semantic-safety-v0.1.json artifacts/ask-experience-semantic-safety.json
+          set +e
+          node verification/ask-experience/evaluator-v0.1.mjs verification/ask-experience/corpus-semantic-safety-v0.1.json artifacts/ask-experience-semantic-safety.json > artifacts/ask-experience-semantic-safety-evaluation.json
+          rc=$?
+          set -e
+          node verification/ask-experience/summarize-learning-needs-v0.1.mjs artifacts/ask-experience-semantic-safety-evaluation.json > artifacts/ask-experience-semantic-safety-learning-needs.json
+          exit "$rc"
+
       - name: Annotated core regression
         if: env.RUN_MODE == 'core' || env.RUN_MODE == 'all'
         env:
@@ -173,7 +190,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs'); const mode=process.env.RUN_MODE; const names=[];
           if(mode==='safety'||mode==='all') names.push('safety');
-          if(mode==='core'||mode==='all') names.push('core');
+          if(mode==='core'||mode==='all') { names.push('semantic-safety'); names.push('core'); }
           if(mode==='mutation'||mode==='all') names.push('mutation');
           const failures=[];
           for(const name of names){const p=`artifacts/ask-experience-${name}-evaluation.json`; if(!fs.existsSync(p)){failures.push(`${name}:missing-evaluation`);continue;} const x=JSON.parse(fs.readFileSync(p,'utf8')); if(x.summary?.releaseGate!=='PASS') failures.push(`${name}:${x.summary?.releaseGate||'missing'}`);}
