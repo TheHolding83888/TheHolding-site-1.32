@@ -1301,6 +1301,7 @@ async function loadLazy(kind) {
     const ru = lang === 'ru';
     const unknown = (text, source = 'Console capability map') => ({ text, source, confidenceHint: 'unknown' });
     const partial = (text, source) => ({ text, source, confidenceHint: 'partial' });
+    const coveragePct = value => finite(value) === null ? null : (Number(value) <= 1 ? Number(value) * 100 : Number(value));
 
     if (includesAny(q, ['furthest from the purpose', 'purpose it was created for', 'от цели создания', 'дальше всего от цели', 'зачем ее создавали'])) return unknown(
       ru
@@ -1346,8 +1347,8 @@ async function loadLazy(kind) {
       const best = rows[0];
       return partial(
         ru
-          ? best.name + ' сейчас имеет один из самых сильных измеримых сигналов операционной полноты: ' + best.coverage.toFixed(1) + '% Productivity coverage, ' + best.engines + ' productive engine(s), Reference APR ' + best.apr.toFixed(2) + '%. Но это только proxy того, что productive architecture измерима и работает; без канонического success criterion я не называю это доказательством выполнения исходной цели.'
-          : best.name + ' currently has one of the strongest measurable signals of operational completeness: ' + best.coverage.toFixed(1) + '% Productivity coverage, ' + best.engines + ' productive engine(s), and ' + best.apr.toFixed(2) + '% Reference APR. This is only a proxy that the productive architecture is measurable and operating; without a canonical success criterion I will not call it proof that the original purpose has been fulfilled.',
+          ? best.name + ' сейчас имеет один из самых сильных измеримых сигналов операционной полноты: ' + coveragePct(best.coverage).toFixed(1) + '% Productivity coverage, ' + best.engines + ' productive engine(s), Reference APR ' + best.apr.toFixed(2) + '%. Но это только proxy того, что productive architecture измерима и работает; без канонического success criterion я не называю это доказательством выполнения исходной цели.'
+          : best.name + ' currently has one of the strongest measurable signals of operational completeness: ' + coveragePct(best.coverage).toFixed(1) + '% Productivity coverage, ' + best.engines + ' productive engine(s), and ' + best.apr.toFixed(2) + '% Reference APR. This is only a proxy that the productive architecture is measurable and operating; without a canonical success criterion I will not call it proof that the original purpose has been fulfilled.',
         'Live Productivity'
       );
     }
@@ -1395,10 +1396,10 @@ async function loadLazy(kind) {
         .filter(x => x.coverage !== null)
         .sort((a, b) => a.coverage - b.coverage);
       const worst = rows[0];
-      if (worst && worst.coverage < 99.999) return partial(
+      if (worst && coveragePct(worst.coverage) < 99.999) return partial(
         ru
-          ? 'В Productivity самый явный измеримый data gap сейчас у ' + worst.name + ': coverage ' + worst.coverage.toFixed(1) + '%. Это конкретный verified пробел, но я не называю его крупнейшим во всей OS без единой cross-layer data-quality queue.'
-          : 'Within Productivity, the clearest measurable data gap is ' + worst.name + ' at ' + worst.coverage.toFixed(1) + '% coverage. That is a verified gap, but I will not call it the largest gap across the whole OS without a unified cross-layer data-quality queue.',
+          ? 'В Productivity самый явный измеримый data gap сейчас у ' + worst.name + ': coverage ' + coveragePct(worst.coverage).toFixed(1) + '%. Это конкретный verified пробел, но я не называю его крупнейшим во всей OS без единой cross-layer data-quality queue.'
+          : 'Within Productivity, the clearest measurable data gap is ' + worst.name + ' at ' + coveragePct(worst.coverage).toFixed(1) + '% coverage. That is a verified gap, but I will not call it the largest gap across the whole OS without a unified cross-layer data-quality queue.',
         'Live Productivity'
       );
       return partial(
