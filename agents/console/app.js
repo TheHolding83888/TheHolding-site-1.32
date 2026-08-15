@@ -85,7 +85,7 @@
     'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
     'rewards', 'reward', 'claimable', 'claimables', 'companies', 'company', 'using', 'compare', 'productivity',
     'performance', 'profit', 'embedded', 'current', 'first', 'where', 'registry', 'passport', 'learning', 'proposal', 'builder',
-    'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure'
+    'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure', 'begin'
   ]);
 
   function editDistanceAtMostOne(a, b) {
@@ -129,7 +129,7 @@
     'монетра', 'монетру', 'монетре', 'дефити', 'дефитеа', 'йелд', 'елд', 'бейсис',
     'аэродром', 'велодром', 'ревардс', 'реварды', 'ревардсам', 'награды', 'компания',
     'компании', 'использует', 'используют', 'продуктивность', 'доходность', 'сравни',
-    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам'
+    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам', 'компани'
   ]);
 
   function fuzzyKnownRuLexemes(text) {
@@ -154,7 +154,8 @@
       .replace(/велодром/gi, 'velodrome')
       .replace(/ревардс|реварды|ревардсам/gi, 'rewards')
       .replace(/приватник(?:а|у|ом|е|и)?/gi, 'private key')
-      .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable');
+      .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable')
+      .replace(/\bкомпани\b/gi, 'компании');
   }
 
   const norm = text => canonicalizeHumanAliases(String(text || ''))
@@ -1684,6 +1685,68 @@ async function loadLazy(kind) {
     };
   }
 
+  function semanticUnsupportedBoundary(raw, lang) {
+    const q = norm(raw);
+    const ru = lang === 'ru';
+    const unknown = (text, source = 'Console capability map') => ({ text, source, confidenceHint: 'unknown' });
+    const companyEval = includesAny(q, ['company', 'companies', 'компания', 'компании', 'which company', 'какая компания', 'какой компании', 'по компаниям']);
+    const compareEval = includesAny(q, ['compare', 'rank', 'ranking', 'best', 'worst', 'largest', 'most', 'furthest', 'gap', 'which', 'who', 'сравни', 'ранжир', 'рейтинг', 'лучше', 'хуже', 'самая', 'самый', 'дальше всего', 'разрыв', 'кто']);
+
+    const purposeSignal = includesAny(q, ['purpose drift', 'founding purpose', 'original mission', 'original purpose', 'mission fulfil', 'purpose fulfil', 'purpose and current state', 'цель создания', 'цели создания', 'выполняет миссию', 'выполнение purpose', 'разрыв между purpose', 'от цели ради которой', 'ушла от цели']) || (q.includes('исходн') && (q.includes('мисси') || q.includes('цел')));
+    if (purposeSignal && (companyEval || compareEval)) return unknown(
+      ru
+        ? 'Я пока не могу доказательно оценивать purpose drift по компаниям: в текущем OS нет канонического machine-readable purpose / success criterion для каждой компании и связанной методики сравнения с текущим состоянием. Я не буду подменять purpose текущим APR, TVL, Performance или общим определением компании.'
+        : 'I cannot yet evaluate company purpose drift with evidence: the OS has no canonical machine-readable purpose / success criterion for every company and no method that compares it with current state. I will not substitute current APR, TVL, Performance, or a generic company definition for purpose.',
+      'Live Registry + Console capability map'
+    );
+
+    const maturitySignal = includesAny(q, ['maturity', 'mature company', 'reputation score', 'reputation ranking', 'most mature', 'least mature', 'зрелост', 'самая зрелая', 'наиболее зрел', 'репутационн', 'рейтинг репутац']);
+    if (maturitySignal && (companyEval || compareEval || includesAny(q, ['score', 'рейтинг']))) return unknown(
+      ru
+        ? 'Канонического company-level Maturity / Reputation score сейчас нет. История, provenance, productivity, cash-flow quality и время могут стать входами будущей методики, но сегодня ранжировать компании по зрелости или репутации было бы выдумкой.'
+        : 'There is no canonical company-level Maturity / Reputation score today. History, provenance, productivity, cash-flow quality and time may become inputs to a future method, but ranking companies by maturity or reputation now would be invented.',
+      'Live Registry + Console capability map'
+    );
+
+    const realisedSignal = includesAny(q, ['realised cash flow', 'realized cash flow', 'received cash flow', 'received company cash flow', 'received company level cash flow', 'полученн cash flow', 'реализованн cash flow', 'реально полученн', 'фактически полученн', 'уже полученн доход', 'полученному cash flow']) || (q.includes('received') && q.includes('cash flow')) || ((q.includes('полученн') || q.includes('реализованн')) && q.includes('cash flow'));
+    const actualEarnedCompare = includesAny(q, ['actually earned the most', 'really earned the most', 'earned the most money', 'кто реально заработал больше', 'кто фактически заработал больше']);
+    if ((realisedSignal && (companyEval || compareEval || includesAny(q, ['how much', 'сколько', 'largest', 'biggest', 'единый']))) || actualEarnedCompare) return unknown(
+      ru
+        ? 'Единого канонического company-level Realised Cash Flow ledger в текущем Ask нет, поэтому такой numeric comparison или ranking сейчас недоказуем. Reference APR/APY – это productive capacity, Rewards – accrued/unclaimed value; ни один из этих слоёв нельзя подменять уже физически полученным cash flow.'
+        : 'The current Ask has no unified canonical company-level Realised Cash Flow ledger, so this numeric comparison or ranking is not evidence-backed yet. Reference APR/APY is productive capacity and Rewards is accrued/unclaimed value; neither may substitute for cash flow already physically received.',
+      'Live Productivity + Console capability map'
+    );
+
+    const futureYield = includesAny(q, ['guaranteed apy', 'guaranteed apr', 'guaranteed yield', 'apy one year from now', 'apr one year from now', 'yield one year from now', 'apy next year', 'apr next year', 'доходность через год', 'apy через год', 'apr через год']) || (q.includes('гарантирован') && includesAny(q, ['apy', 'apr', 'доходност'])) || (q.includes('guarante') && includesAny(q, ['apy', 'apr', 'yield']));
+    if (futureYield) return unknown(
+      ru
+        ? 'У OS нет подтверждённого гарантированного будущего APR/APY. Текущая Reference APR/APY переменна и не является прогнозом или обещанием доходности через год.'
+        : 'The OS has no verified guaranteed future APR/APY. Current Reference APR/APY is variable and is neither a forecast nor a promise of yield one year from now.',
+      'Console capability map'
+    );
+
+    const hackProbability = includesAny(q, ['probability each company gets hacked', 'probability of hack', 'hack probability', 'chance of being hacked', 'вероятность хака', 'шанс взлома']) || (q.includes('вероятност') && q.includes('взлом'));
+    if (hackProbability && includesAny(q, ['exact', 'next month', 'следующ месяц', 'точн'])) return unknown(
+      ru
+        ? 'The Holding Security может показывать наблюдаемые findings и severity, но не имеет валидированной модели точной вероятности взлома компании в следующем месяце. Я не буду превращать security findings в выдуманную вероятность.'
+        : 'The Holding Security can report observed findings and severity, but it has no validated model for the exact probability that a company will be hacked next month. I will not turn security findings into an invented probability.',
+      'Security Intelligence + Console capability map'
+    );
+
+    const preTracking = includesAny(q, ['before tracking', 'before tracking began', 'before tracking started', 'prior to tracking', 'до начала tracking', 'до начала трекинга', 'до трекинга', 'до начала наблюден']);
+    if (preTracking) return unknown(
+      ru
+        ? 'Этот период предшествует подтверждённому tracking, и без отдельного backfill точного исторического дохода в текущем OS нет. Я не буду подменять неизвестную историю сегодняшним APR/APY, Rewards или текущей стоимостью.'
+        : 'That period predates tracking, and without a separate backfill the OS has no exact historical income figure for it. I will not substitute today’s APR/APY, Rewards, or current value for unknown history.',
+      'Console capability map'
+    );
+
+    const authorityCommand = includesAny(q, ['execute this trade', 'execute the trade', 'move the capital', 'move capital now', 'sign this transaction', 'sign the transaction', 'approve this transaction', 'rebalance now', 'выполни сделку', 'двигай капитал', 'перемести капитал', 'подпиши транзак', 'одобри транзак', 'ребалансируй']);
+    if (authorityCommand) return authorityAnswer(lang);
+
+    return null;
+  }
+
   async function ownerEvidenceSynthesis(raw, lang) {
     const q = norm(raw);
     const ru = lang === 'ru';
@@ -1776,6 +1839,9 @@ async function loadLazy(kind) {
     const lang = isRu(raw) ? 'ru' : 'en';
     const q = norm(raw);
     if (!q) return helpAnswer(lang);
+
+    const semanticBoundary = semanticUnsupportedBoundary(raw, lang);
+    if (semanticBoundary) return semanticBoundary;
 
     const ownerSynthesis = await ownerEvidenceSynthesis(raw, lang);
     if (ownerSynthesis) return ownerSynthesis;

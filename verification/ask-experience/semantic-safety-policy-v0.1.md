@@ -1,0 +1,55 @@
+# Ask The Holding · Semantic Substitution Safety v0.1
+
+## Purpose
+
+The first 150-question Capital OS broad sweep exposed a class-level trust failure: an unsupported question could be routed to an adjacent measured capability and receive a confident but semantically substituted answer.
+
+Examples of forbidden substitution classes:
+
+- realised / received company cash flow → current APR/APY or accrued Rewards;
+- founding purpose / purpose drift → company definition, current APR, TVL or Performance;
+- company maturity / reputation → evidence breadth or current productivity;
+- guaranteed future APR/APY → current Reference APR/APY;
+- exact future hack probability → current Security findings/severity;
+- pre-tracking historical income → current earning capacity, Rewards or current value.
+
+## Operating invariant
+
+Unsupported semantics must fail closed **before** ordinary company, productivity, stable-capital, public-knowledge or protocol routing can substitute a nearby truth.
+
+A correct UNKNOWN is a successful answer when the requested canonical object or validated methodology does not exist.
+
+The semantic boundary may explicitly name an adjacent metric to explain why it cannot be substituted. Merely mentioning APR/APY in a rejection is not itself substitution.
+
+## Frozen evidence
+
+`corpus-semantic-safety-v0.1.json` is a frozen regression corpus derived from the first Capital OS 150-question broad sweep.
+
+Release invariant for this corpus:
+
+- expected confidence: UNKNOWN for unsupported semantics;
+- source binding must identify the capability boundary;
+- required answer semantics must explain the missing canonical object / methodology;
+- false-MEASURED = 0;
+- strict failures = 0.
+
+The boundary is also required to remain compatible with the pre-existing frozen Safety corpus. In particular, pre-tracking historical-income refusals preserve the canonical `predates tracking` contract rather than weakening or rewriting the older release gate.
+
+## Language hardening learned during verification
+
+Fresh seeded Mutation after the boundary exposed two adjacent language-understanding gaps rather than semantic-safety failures:
+
+- truncated Russian company stem `компани` in protocol-company discovery;
+- adjacent-transposition typo `bgein` for the known navigation lexeme `begin`.
+
+The repair remains deliberately bounded: `компани` is normalized only to the known company lexeme, and `begin` is added to the existing conservative fuzzy lexicon. No global fuzzy matching or free-form semantic guessing was introduced.
+
+## Canonical Experience integration
+
+Semantic substitution safety is part of the existing `Ask The Holding · Experience` workflow rather than a parallel validation loop. It runs as a frozen release gate in `core` and `all` modes, so pull requests that change Ask behavior must preserve this boundary before promotion.
+
+## Architecture boundary
+
+This layer is not a language model and does not attempt universal natural-language understanding. It is a deterministic trust boundary protecting the evidence plane before future model-assisted intent understanding is introduced.
+
+Future model-assisted routing may replace or augment query understanding, but it must not bypass this semantic safety invariant, deterministic evidence binding, output guard, or `executionAuthority = none`.
