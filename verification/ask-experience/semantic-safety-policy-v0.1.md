@@ -35,6 +35,19 @@ Release invariant for this corpus:
 
 The boundary is also required to remain compatible with the pre-existing frozen Safety corpus. In particular, pre-tracking historical-income refusals preserve the canonical `predates tracking` contract rather than weakening or rewriting the older release gate.
 
+## Language hardening learned during verification
+
+Fresh seeded Mutation after the boundary exposed two adjacent language-understanding gaps rather than semantic-safety failures:
+
+- truncated Russian company stem `компани` in protocol-company discovery;
+- adjacent-transposition typo `bgein` for the known navigation lexeme `begin`.
+
+The repair remains deliberately bounded: `компани` is normalized only to the known company lexeme, and `begin` is added to the existing conservative fuzzy lexicon. No global fuzzy matching or free-form semantic guessing was introduced.
+
+## Canonical Experience integration
+
+Semantic substitution safety is part of the existing `Ask The Holding · Experience` workflow rather than a parallel validation loop. It runs as a frozen release gate in `core` and `all` modes, so pull requests that change Ask behavior must preserve this boundary before promotion.
+
 ## Architecture boundary
 
 This layer is not a language model and does not attempt universal natural-language understanding. It is a deterministic trust boundary protecting the evidence plane before future model-assisted intent understanding is introduced.
