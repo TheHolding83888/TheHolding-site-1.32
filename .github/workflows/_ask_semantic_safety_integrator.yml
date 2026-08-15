@@ -1,0 +1,35 @@
+name: Ask candidate · Semantic Safety Integrator
+
+on:
+  push:
+    branches: ['agents/ask-semantic-safety-boundary-v1.2a-20260815']
+    paths:
+      - verification/ask-experience/_patch_semantic_safety_v12a.mjs
+      - .github/workflows/_ask_semantic_safety_integrator.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: agents/ask-semantic-safety-boundary-v1.2a-20260815
+      - name: Apply semantic safety boundary
+        run: node verification/ask-experience/_patch_semantic_safety_v12a.mjs
+      - name: Remove transient integrator files
+        shell: bash
+        run: |
+          rm -f verification/ask-experience/_patch_semantic_safety_v12a.mjs
+          rm -f .github/workflows/_ask_semantic_safety_integrator.yml
+      - name: Commit exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add agents/console/app.js verification/ask-experience/corpus-semantic-safety-v0.1.json verification/ask-experience/_patch_semantic_safety_v12a.mjs .github/workflows/_ask_semantic_safety_integrator.yml
+          git commit -m 'Ask v1.2A: add semantic substitution safety boundary'
+          git push origin HEAD:agents/ask-semantic-safety-boundary-v1.2a-20260815
