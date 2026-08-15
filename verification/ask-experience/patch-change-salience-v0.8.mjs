@@ -13,6 +13,8 @@ function replaceOnce(oldText, newText, label) {
   console.log(`${label}: applied`);
 }
 
+const block = lines => lines.join('\n');
+
 replaceOnce(
   "    guardian: '/intelligence/guardian/guardian-state.json',\n    productivity: '/companies/productivity-data.json',",
   "    guardian: '/intelligence/guardian/guardian-state.json',\n    changeIntelligence: '/intelligence/change-intelligence.json',\n    productivity: '/companies/productivity-data.json',",
@@ -38,7 +40,75 @@ replaceOnce(
 );
 
 const helperAnchor = "\n\n  async function ownerEvidenceSynthesis(raw, lang) {";
-const helper = `\n\n  function changeSalienceScore(event) {\n    const severity = String(event?.severity || '').toLowerCase();\n    const category = String(event?.category || '').toLowerCase();\n    const metric = String(event?.metric || '').toLowerCase();\n    let score = severity === 'critical' ? 100 : severity === 'high' ? 80 : severity === 'watch' ? 60 : severity === 'medium' ? 45 : 10;\n    if (metric === 'new-daily-snapshot') score -= 8;\n    if (category === 'reporting' && metric === 'new-daily-snapshot') score -= 4;\n    const previous = finite(event?.previousValue);\n    const current = finite(event?.currentValue);\n    if (previous !== null && current !== null) {\n      const absDelta = Math.abs(current - previous);\n      const base = Math.max(Math.abs(previous), 1e-9);\n      const rel = absDelta / base;\n      score += Math.min(25, rel * 20);\n      if (absDelta > 1) score += Math.min(10, Math.log10(absDelta + 1) * 3);\n    }\n    if (event?.whyItMatters) score += 2;\n    return score;\n  }\n\n  function latestChangeSalienceAnswer(lang, mode = 'changes') {\n    const packet = state.changeIntelligence;\n    const ru = lang === 'ru';\n    if (!packet || packet?.sourceHealth?.allFresh !== true) return {\n      text: ru\n        ? 'Change Intelligence сейчас недоступен или source health не полностью fresh. Я не буду собирать change summary из устаревшего состояния.'\n        : 'Change Intelligence is unavailable or its source health is not fully fresh. I will not build a change summary from stale state.',\n      source: 'Change Intelligence unavailable',\n      confidenceHint: 'unknown'\n    };\n\n    const changes = safeArray(packet.whatChanged)\n      .map(event => ({ event, score: changeSalienceScore(event) }))\n      .sort((a, b) => b.score - a.score);\n    const watch = safeArray(packet.watchNext);\n    const previousAt = packet?.bridge?.previousSnapshotAt || null;\n    const horizon = previousAt ? (ru ? 'с предыдущего verified snapshot ' + dateShort(previousAt) : 'since the previous verified snapshot ' + dateShort(previousAt)) : (ru ? 'в последнем verified delta' : 'in the latest verified delta');\n\n    if (mode === 'attention') {\n      const rankedWatch = watch.slice().sort((a, b) => {\n        const w = x => String(x?.severity || '').toLowerCase() === 'critical' ? 100 : String(x?.severity || '').toLowerCase() === 'high' ? 80 : String(x?.severity || '').toLowerCase() === 'watch' ? 60 : 20;\n        return w(b) - w(a);\n      }).slice(0, 3);\n      const lines = rankedWatch.map((x, i) => (i + 1) + '. ' + String(x.summary || '') + (x.whyItMatters ? ' ' + String(x.whyItMatters) : ''));\n      const topChange = changes[0]?.event;\n      if (topChange) lines.push((ru ? 'Свежий material delta: ' : 'Fresh material delta: ') + topChange.summary);\n      return {\n        text: ru\n          ? 'Сейчас я бы отделил operational noise от owner-attention так:\n\n' + (lines.join('\\n') || 'Нет активных watch conditions.') + '\n\nЭто приоритет наблюдения из verified Change Intelligence, не инвестиционная рекомендация.'\n          : 'I would separate operational noise from owner attention like this:\n\n' + (lines.join('\\n') || 'There are no active watch conditions.') + '\n\nThis is a monitoring priority from verified Change Intelligence, not investment advice.',\n        source: 'Live Change Intelligence',\n        confidenceHint: 'measured'\n      };\n    }\n\n    if (!changes.length) return {\n      text: ru ? 'В последнем verified Observer delta материальных изменений не зафиксировано.' : 'No material changes were recorded in the latest verified Observer delta.',\n      source: 'Live Change Intelligence',\n      confidenceHint: 'measured'\n    };\n\n    const top = changes.slice(0, 3).map(({ event }, i) => (i + 1) + '. ' + event.summary + (event.whyItMatters ? ' ' + event.whyItMatters : ''));\n    return {\n      text: ru\n        ? 'В verified Change Intelligence зафиксировано ' + changes.length + ' material change(s) ' + horizon + '. Наиболее значимые по bounded salience:\n\n' + top.join('\\n') + '\n\nВажно: это ранжирование последнего Observer delta, а не полный месячный анализ. Для горизонта «за месяц» нужно открыть Memory Vault history и агрегировать несколько snapshots.'\n        : 'Verified Change Intelligence records ' + changes.length + ' material change(s) ' + horizon + '. The most significant by bounded salience are:\n\n' + top.join('\\n') + '\n\nImportant: this ranks the latest Observer delta, not a full monthly history. A true “last month” answer requires aggregating multiple Memory Vault snapshots.',\n      source: 'Live Change Intelligence',\n      confidenceHint: 'partial'\n    };\n  }`;
+const helper = block([
+  '',
+  '',
+  '  function changeSalienceScore(event) {',
+  "    const severity = String(event?.severity || '').toLowerCase();",
+  "    const category = String(event?.category || '').toLowerCase();",
+  "    const metric = String(event?.metric || '').toLowerCase();",
+  "    let score = severity === 'critical' ? 100 : severity === 'high' ? 80 : severity === 'watch' ? 60 : severity === 'medium' ? 45 : 10;",
+  "    if (metric === 'new-daily-snapshot') score -= 8;",
+  "    if (category === 'reporting' && metric === 'new-daily-snapshot') score -= 4;",
+  '    const previous = finite(event?.previousValue);',
+  '    const current = finite(event?.currentValue);',
+  '    if (previous !== null && current !== null) {',
+  '      const absDelta = Math.abs(current - previous);',
+  '      const base = Math.max(Math.abs(previous), 1e-9);',
+  '      const rel = absDelta / base;',
+  '      score += Math.min(25, rel * 20);',
+  '      if (absDelta > 1) score += Math.min(10, Math.log10(absDelta + 1) * 3);',
+  '    }',
+  '    if (event?.whyItMatters) score += 2;',
+  '    return score;',
+  '  }',
+  '',
+  "  function latestChangeSalienceAnswer(lang, mode = 'changes') {",
+  '    const packet = state.changeIntelligence;',
+  "    const ru = lang === 'ru';",
+  '    const nl = String.fromCharCode(10);',
+  '    if (!packet || packet?.sourceHealth?.allFresh !== true) return {',
+  "      text: ru ? 'Change Intelligence сейчас недоступен или source health не полностью fresh. Я не буду собирать change summary из устаревшего состояния.' : 'Change Intelligence is unavailable or its source health is not fully fresh. I will not build a change summary from stale state.',",
+  "      source: 'Change Intelligence unavailable',",
+  "      confidenceHint: 'unknown'",
+  '    };',
+  '',
+  '    const changes = safeArray(packet.whatChanged)',
+  '      .map(event => ({ event, score: changeSalienceScore(event) }))',
+  '      .sort((a, b) => b.score - a.score);',
+  '    const watch = safeArray(packet.watchNext);',
+  '    const previousAt = packet?.bridge?.previousSnapshotAt || null;',
+  "    const horizon = previousAt ? (ru ? 'с предыдущего verified snapshot ' + dateShort(previousAt) : 'since the previous verified snapshot ' + dateShort(previousAt)) : (ru ? 'в последнем verified delta' : 'in the latest verified delta');",
+  '',
+  "    if (mode === 'attention') {",
+  '      const rankedWatch = watch.slice().sort((a, b) => {',
+  "        const w = x => String(x?.severity || '').toLowerCase() === 'critical' ? 100 : String(x?.severity || '').toLowerCase() === 'high' ? 80 : String(x?.severity || '').toLowerCase() === 'watch' ? 60 : 20;",
+  '        return w(b) - w(a);',
+  '      }).slice(0, 3);',
+  "      const lines = rankedWatch.map((x, i) => (i + 1) + '. ' + String(x.summary || '') + (x.whyItMatters ? ' ' + String(x.whyItMatters) : ''));",
+  '      const topChange = changes[0]?.event;',
+  "      if (topChange) lines.push((ru ? 'Свежий material delta: ' : 'Fresh material delta: ') + topChange.summary);",
+  '      return {',
+  "        text: ru ? 'Сейчас я бы отделил operational noise от owner-attention так:' + nl + nl + (lines.join(nl) || 'Нет активных watch conditions.') + nl + nl + 'Это приоритет наблюдения из verified Change Intelligence, не инвестиционная рекомендация.' : 'I would separate operational noise from owner attention like this:' + nl + nl + (lines.join(nl) || 'There are no active watch conditions.') + nl + nl + 'This is a monitoring priority from verified Change Intelligence, not investment advice.',",
+  "        source: 'Live Change Intelligence',",
+  "        confidenceHint: 'measured'",
+  '      };',
+  '    }',
+  '',
+  '    if (!changes.length) return {',
+  "      text: ru ? 'В последнем verified Observer delta материальных изменений не зафиксировано.' : 'No material changes were recorded in the latest verified Observer delta.',",
+  "      source: 'Live Change Intelligence',",
+  "      confidenceHint: 'measured'",
+  '    };',
+  '',
+  "    const top = changes.slice(0, 3).map(({ event }, i) => (i + 1) + '. ' + event.summary + (event.whyItMatters ? ' ' + event.whyItMatters : ''));",
+  '    return {',
+  "      text: ru ? 'В verified Change Intelligence зафиксировано ' + changes.length + ' material change(s) ' + horizon + '. Наиболее значимые по bounded salience:' + nl + nl + top.join(nl) + nl + nl + 'Важно: это ранжирование последнего Observer delta, а не полный месячный анализ. Для горизонта «за месяц» нужно открыть Memory Vault history и агрегировать несколько snapshots.' : 'Verified Change Intelligence records ' + changes.length + ' material change(s) ' + horizon + '. The most significant by bounded salience are:' + nl + nl + top.join(nl) + nl + nl + 'Important: this ranks the latest Observer delta, not a full monthly history. A true “last month” answer requires aggregating multiple Memory Vault snapshots.',",
+  "      source: 'Live Change Intelligence',",
+  "      confidenceHint: 'partial'",
+  '    };',
+  '  }'
+]);
 replaceOnce(helperAnchor, helper + helperAnchor, 'Change salience helper');
 
 replaceOnce(
