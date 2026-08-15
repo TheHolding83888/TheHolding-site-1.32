@@ -79,7 +79,7 @@
   // Only known entity/protocol/intent lexemes may be corrected, with edit distance <= 1.
   const FUZZY_QUERY_LEXEMES = Object.freeze([
     'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
-    'rewards', 'reward', 'claimable', 'companies', 'company', 'using', 'compare', 'productivity',
+    'rewards', 'reward', 'claimable', 'claimables', 'companies', 'company', 'using', 'compare', 'productivity',
     'performance', 'embedded', 'current', 'first', 'registry', 'passport', 'learning', 'proposal', 'builder',
     'guardian', 'transaction', 'authority', 'allocation'
   ]);
