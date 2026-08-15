@@ -1468,10 +1468,35 @@ async function loadLazy(kind) {
     };
   }
 
+  function companyEvidenceNeedles(companyName) {
+    const name = String(companyName || '');
+    const n = norm(name);
+    const out = [name];
+    if (n.includes('83ca8')) out.push('83ca8', '0x5860...83CA8.eth', '0x58...CA8.eth');
+    if (n.includes('rook')) out.push('Rook', "Rook's portfolio");
+    if (n.includes('1milliondollar') || n.includes('million dollar')) out.push('1milliondollar');
+    return [...new Set(out.filter(Boolean))];
+  }
+
+  function productivityForCompany(companyName) {
+    const companies = safeObject(state.productivity?.companies);
+    if (companies[companyName]) return companies[companyName];
+    const needles = companyEvidenceNeedles(companyName).map(norm);
+    for (const [key, value] of Object.entries(companies)) {
+      const nk = norm(key);
+      if (needles.some(needle => needle && (nk.includes(needle) || needle.includes(nk)))) return value;
+      if (needles.includes('83ca8') && nk.includes('83ca8')) return value;
+    }
+    return null;
+  }
+
   function hasCompanyEvidence(data, companyName, numericFields) {
     if (!data || !companyName) return false;
-    const hits = collectNamedObjects(data, companyName, 24);
-    return hits.some(hit => numericFact(hit.value, numericFields));
+    for (const needle of companyEvidenceNeedles(companyName)) {
+      const hits = collectNamedObjects(data, needle, 24);
+      if (hits.some(hit => numericFact(hit.value, numericFields))) return true;
+    }
+    return false;
   }
 
   async function companyUnderstandingAnswer(lang) {
@@ -1499,7 +1524,7 @@ async function loadLazy(kind) {
 
     const rows = names.map(name => {
       const registry = state.registry.some(x => x.name === name);
-      const ordinaryProductivity = Boolean(safeObject(state.productivity?.companies)[name]);
+      const ordinaryProductivity = Boolean(productivityForCompany(name));
       const stableProductivity = name === state.stable?.company?.name && Boolean(state.stable?.summary);
       const productivity = ordinaryProductivity || stableProductivity;
       const rewardsEvidence = hasCompanyEvidence(rewards, name, rewardFields);
