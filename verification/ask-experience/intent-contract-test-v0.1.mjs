@@ -62,6 +62,19 @@ expectOk('valid-unsupported-purpose-decomposition', {
   missingPrimitives: ['company-purpose']
 }, e => e.missingPrimitives[0] === 'company-purpose');
 
+expectOk('valid-unsupported-two-missing-primitives', {
+  intent: 'unsupported-decomposed',
+  entities: ['Monetra.eth'],
+  operation: 'assess',
+  scope: 'company',
+  decomposition: [
+    { object: 'company-purpose', entity: 'Monetra.eth', operation: 'get' },
+    { object: 'maturity-reputation', entity: 'Monetra.eth', operation: 'assess' },
+    { object: 'productivity', entity: 'Monetra.eth', operation: 'get' }
+  ],
+  missingPrimitives: ['company-purpose', 'maturity-reputation']
+}, e => e.missingPrimitives.length === 2);
+
 expectOk('valid-unmodeled-decomposition', {
   intent: 'unsupported-decomposed',
   operation: 'explain',
@@ -99,8 +112,30 @@ expectReject('reject-authority-with-metric', { intent: 'authority-boundary', req
 expectReject('reject-decomposition-on-simple-intent', { intent: 'company-query', decomposition: [{ object: 'productivity', operation: 'get' }] }, 'decomposition-requires-composite-intent');
 expectReject('reject-composite-with-one-part', { intent: 'composite', decomposition: [{ object: 'productivity', operation: 'get' }] }, 'composite-requires-decomposition');
 expectReject('reject-composite-with-missing', { intent: 'composite', decomposition: [{ object: 'productivity', operation: 'get' }, { object: 'company-purpose', operation: 'get' }], missingPrimitives: ['company-purpose'] }, 'composite-cannot-declare-missing');
+expectReject('reject-composite-unavailable-purpose-as-supported', {
+  intent: 'composite',
+  decomposition: [
+    { object: 'company-purpose', operation: 'get' },
+    { object: 'current-strategy-book', operation: 'get' }
+  ]
+}, 'unavailable-primitive-requires-missing');
+expectReject('reject-composite-unavailable-maturity-as-supported', {
+  intent: 'composite',
+  decomposition: [
+    { object: 'maturity-reputation', operation: 'assess' },
+    { object: 'company-identity', operation: 'get' }
+  ]
+}, 'unavailable-primitive-requires-missing');
 expectReject('reject-unsupported-no-decomposition', { intent: 'unsupported-decomposed', missingPrimitives: ['company-purpose'] }, 'unsupported-requires-decomposition');
 expectReject('reject-unsupported-no-missing', { intent: 'unsupported-decomposed', decomposition: [{ object: 'company-purpose', operation: 'get' }] }, 'unsupported-requires-missing-primitive');
+expectReject('reject-unsupported-omits-one-unavailable-from-missing', {
+  intent: 'unsupported-decomposed',
+  decomposition: [
+    { object: 'company-purpose', operation: 'get' },
+    { object: 'maturity-reputation', operation: 'assess' }
+  ],
+  missingPrimitives: ['company-purpose']
+}, 'unavailable-primitive-requires-missing');
 expectReject('reject-missing-not-decomposed', { intent: 'unsupported-decomposed', decomposition: [{ object: 'productivity', operation: 'get' }], missingPrimitives: ['company-purpose'] }, 'missing-primitive-not-decomposed');
 expectReject('reject-answer-in-decomposition', { intent: 'unsupported-decomposed', decomposition: [{ object: 'company-purpose', operation: 'get', answer: 'fake' }], missingPrimitives: ['company-purpose'] }, 'invalid-decomposition');
 expectReject('reject-source-in-decomposition', { intent: 'unsupported-decomposed', decomposition: [{ object: 'company-purpose', operation: 'get', source: '/fake.json' }], missingPrimitives: ['company-purpose'] }, 'invalid-decomposition');
@@ -108,17 +143,28 @@ expectReject('reject-unmodeled-without-concept', { intent: 'unsupported-decompos
 expectReject('reject-concept-on-known-object', { intent: 'unsupported-decomposed', decomposition: [{ object: 'company-purpose', operation: 'get', concept: 'secret meaning' }], missingPrimitives: ['company-purpose'] }, 'invalid-decomposition');
 
 const cap = contract.capability();
-if (cap.executionAuthority !== 'none' || cap.canAnswer !== false || cap.canSetConfidence !== false || cap.canSelectSourcesAsTruth !== false || cap.canExecute !== false || cap.canDecomposeQuestion !== true || cap.canReportMissingPrimitive !== true) {
-  failures.push({ id: 'capability-boundary', expected: 'safe compositional understanding only', result: cap });
+const expectedUnavailable = ['company-purpose', 'realised-cash-flow', 'maturity-reputation', 'unmodeled'];
+if (
+  cap.executionAuthority !== 'none' ||
+  cap.canAnswer !== false ||
+  cap.canSetConfidence !== false ||
+  cap.canSelectSourcesAsTruth !== false ||
+  cap.canExecute !== false ||
+  cap.canDecomposeQuestion !== true ||
+  cap.canReportMissingPrimitive !== true ||
+  JSON.stringify(cap.unavailablePrimitives) !== JSON.stringify(expectedUnavailable)
+) {
+  failures.push({ id: 'capability-boundary', expected: 'safe compositional understanding plus explicit unavailable primitives', result: cap });
 } else pass.push('capability-boundary');
 
 const summary = {
-  version: '0.2-compositional-intent-contract-test',
+  version: '0.3-semantic-availability-intent-contract-test',
   contractVersion: contract.VERSION,
   total: pass.length + failures.length,
   passed: pass.length,
   failed: failures.length,
   executionAuthority: cap.executionAuthority,
+  unavailablePrimitives: cap.unavailablePrimitives,
   releaseGate: failures.length ? 'FAIL' : 'PASS'
 };
 console.log(JSON.stringify({ summary, failures }, null, 2));
