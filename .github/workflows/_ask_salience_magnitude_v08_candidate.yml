@@ -1,0 +1,42 @@
+name: "Ask candidate · Salience Magnitude v0.8"
+
+on:
+  push:
+    branches: [agents/ask-change-salience-v0.8-20260815]
+    paths:
+      - '.github/workflows/_ask_salience_magnitude_v08_candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: agents/ask-change-salience-v0.8-20260815
+          fetch-depth: 0
+
+      - name: Apply magnitude semantics and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+          node verification/ask-experience/patch-salience-magnitude-v0.8.mjs
+          node --check agents/console/app.js
+          grep -F "if (unit === 'USD')" agents/console/app.js >/dev/null
+          grep -F "base >= 10 && absDelta >= 1" agents/console/app.js >/dev/null
+          rm -f verification/ask-experience/patch-salience-magnitude-v0.8.mjs
+          rm -f .github/workflows/_ask_salience_magnitude_v08_candidate.yml
+          git add -A
+          git diff --check --cached
+          expected=$'.github/workflows/_ask_salience_magnitude_v08_candidate.yml\nagents/console/app.js\nverification/ask-experience/patch-salience-magnitude-v0.8.mjs'
+          actual="$(git diff --cached --name-only | sort)"
+          test "$actual" = "$expected"
+          git commit -m "Ask v0.8: rank USD salience by economic magnitude"
+          git push origin HEAD:agents/ask-change-salience-v0.8-20260815
