@@ -85,7 +85,7 @@
     'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
     'rewards', 'reward', 'claimable', 'claimables', 'companies', 'company', 'using', 'compare', 'productivity',
     'performance', 'profit', 'embedded', 'current', 'first', 'registry', 'passport', 'learning', 'proposal', 'builder',
-    'guardian', 'transaction', 'authority', 'allocation'
+    'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure'
   ]);
 
   function editDistanceAtMostOne(a, b) {
@@ -1379,6 +1379,84 @@ async function loadLazy(kind) {
     };
   }
 
+  function productiveConcentrationAnswer(lang) {
+    const ru = lang === 'ru';
+    const companies = safeObject(state.productivity?.companies);
+    const engines = safeObject(state.productivity?.engines);
+    const protocolTotals = new Map();
+    const companyTotals = [];
+    let measuredOrdinary = 0;
+    let uncoveredOrdinary = 0;
+
+    for (const [name, company] of Object.entries(companies)) {
+      let measuredCompany = 0;
+      for (const row of safeArray(company?.breakdown)) {
+        const value = finite(row?.value);
+        if (value === null || value <= 0) continue;
+        const protocol = String(engines?.[row?.engineId]?.protocol || row?.protocol || row?.engineId || 'Unknown');
+        protocolTotals.set(protocol, (protocolTotals.get(protocol) || 0) + value);
+        measuredCompany += value;
+        measuredOrdinary += value;
+      }
+      const explicitUncovered = finite(company?.uncoveredProductiveValue);
+      if (explicitUncovered !== null && explicitUncovered > 0) uncoveredOrdinary += explicitUncovered;
+      if (measuredCompany > 0) companyTotals.push({ name, value: measuredCompany });
+    }
+
+    if (!(measuredOrdinary > 0)) return {
+      text: ru ? 'Сейчас нет достаточного измеренного productive-capital breakdown, чтобы честно оценить концентрацию по протоколам.' : 'There is not enough measured productive-capital breakdown to assess protocol concentration honestly right now.',
+      source: 'Live Productivity unavailable',
+      confidenceHint: 'unknown'
+    };
+
+    const protocols = [...protocolTotals.entries()]
+      .map(([name, value]) => ({ name, value, share: value / measuredOrdinary }))
+      .sort((a, b) => b.value - a.value);
+    companyTotals.sort((a, b) => b.value - a.value);
+
+    const stablePositions = safeArray(state.stable?.positions).filter(x => x?.productive !== false && finite(x?.valueUsd) !== null && finite(x?.valueUsd) > 0);
+    const stableTotal = stablePositions.reduce((sum, x) => sum + Number(x.valueUsd), 0);
+    const stableChains = new Map();
+    const stableProtocols = new Map();
+    for (const p of stablePositions) {
+      const value = Number(p.valueUsd);
+      const chain = String(p.chain || 'Unknown');
+      const protocol = String(p.protocol || 'Unknown');
+      stableChains.set(chain, (stableChains.get(chain) || 0) + value);
+      stableProtocols.set(protocol, (stableProtocols.get(protocol) || 0) + value);
+    }
+    const topStableChain = [...stableChains.entries()].sort((a, b) => b[1] - a[1])[0] || null;
+    const topStableProtocol = [...stableProtocols.entries()].sort((a, b) => b[1] - a[1])[0] || null;
+
+    const top = protocols.slice(0, 3);
+    const topCompany = companyTotals[0] || null;
+    const fmtShare = x => (x * 100).toFixed(1).replace(/\.0$/, '') + '%';
+    const lines = [];
+    lines.push(ru ? 'MEASURED PRODUCTIVE-CAPITAL CONCENTRATION' : 'MEASURED PRODUCTIVE-CAPITAL CONCENTRATION');
+    for (let i = 0; i < top.length; i++) lines.push((i + 1) + '. ' + top[i].name + ' · ' + usd(top[i].value) + ' · ' + fmtShare(top[i].share) + ' измеренного ordinary productive capital');
+    if (topCompany) lines.push(ru ? 'Крупнейшая ordinary company по измеренному productive capital: ' + topCompany.name + ' · ' + usd(topCompany.value) + '.' : 'Largest ordinary company by measured productive capital: ' + topCompany.name + ' · ' + usd(topCompany.value) + '.');
+
+    if (stableTotal > 0) {
+      lines.push('');
+      lines.push(ru ? 'STABLE CAPITAL – ОТДЕЛЬНЫЙ UNIVERSE' : 'STABLE CAPITAL – SEPARATE UNIVERSE');
+      if (topStableChain) lines.push((ru ? 'Крупнейшая chain exposure: ' : 'Largest chain exposure: ') + topStableChain[0] + ' · ' + usd(topStableChain[1]) + ' · ' + fmtShare(topStableChain[1] / stableTotal) + '.');
+      if (topStableProtocol) lines.push((ru ? 'Крупнейшая protocol exposure: ' : 'Largest protocol exposure: ') + topStableProtocol[0] + ' · ' + usd(topStableProtocol[1]) + ' · ' + fmtShare(topStableProtocol[1] / stableTotal) + '.');
+    }
+
+    lines.push('');
+    lines.push(ru ? 'Почему это важно: высокая доля означает, что большая часть измеренного productive capital зависит от экономики и доступности одного протокола/слоя. Это индикатор зависимости, а не доказательство вероятности убытка и не команда перераспределять капитал.' : 'Why it matters: a high share means a larger part of measured productive capital depends on one protocol or layer. This is a dependency indicator, not proof of loss probability and not an instruction to reallocate capital.');
+    if (uncoveredOrdinary > 0) lines.push(ru ? 'Ограничение: ' + usd(uncoveredOrdinary) + ' ordinary productive capital сейчас вне измеренного protocol ranking; unknown/warming exposure может изменить порядок.' : 'Limitation: ' + usd(uncoveredOrdinary) + ' of ordinary productive capital is outside the measured protocol ranking; unknown/warming exposure can change the ordering.');
+    lines.push(ru ? 'Ordinary Productivity и Stable Capital намеренно не сложены в один risk score.' : 'Ordinary Productivity and Stable Capital are intentionally not collapsed into one risk score.');
+
+    state.lastTopic = 'cross-company-concentration';
+    state.lastEntity = { kind: 'concentration', topProtocol: top[0]?.name || null };
+    return {
+      text: lines.join(String.fromCharCode(10)),
+      source: 'Live Productivity + Stable Capital',
+      confidenceHint: uncoveredOrdinary > 0 ? 'partial' : 'measured'
+    };
+  }
+
   function ownerBriefAnswer(lang) {
     const ru = lang === 'ru';
     const nl = String.fromCharCode(10);
@@ -1606,6 +1684,7 @@ async function loadLazy(kind) {
     if (asksEmbedded) return embeddedAnswer(raw, lang, company);
     if (asksEntry) return entryAnswer(raw, lang, company);
 
+    if (includesAny(q, ['где система наиболее сконцентрирована', 'где у нас самая большая концентрация', 'концентрация по протоколам', 'что у нас с концентрацией', 'concentration risk', 'most concentrated', 'largest concentration', 'protocol concentration', 'cross company concentration', 'cross-company concentration', 'biggest protocol exposure', 'where are we most concentrated'])) return productiveConcentrationAnswer(lang);
     if (includesAny(q, ['что важнее сейчас', 'что реально важно', 'what matters now', 'what actually matters', 'what should i pay attention to', 'на что обратить внимание', 'что мне реально надо знать сейчас', 'what do i actually need to know now'])) return ownerBriefAnswer(lang);
     if (includesAny(q, ['что изменилось', 'что изменилось сейчас', 'what changed', 'latest changes', 'recent changes'])) return latestChangeSalienceAnswer(lang, 'changes');
     if (includesAny(q, ['что требует внимания', 'требует внимания', 'needs attention', 'attention items', 'проблемы сейчас'])) return latestChangeSalienceAnswer(lang, 'attention');
