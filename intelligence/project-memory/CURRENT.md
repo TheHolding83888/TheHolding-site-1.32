@@ -4,11 +4,11 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-15T14:01:45.006Z**
+Canonical source state represented here: **2026-08-15T14:19:52.750Z**
 
 ## Resume order
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-15_1656_ASK_V12B_INTENT_CONTRACT_PR64_READY.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-15_1656_ASK_V12B_INTENT_CONTRACT_PR64_READY.md)
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-15_1720_ASK_V12B_PRODUCTION_GREEN_MODEL_SHADOW_START.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-15_1720_ASK_V12B_PRODUCTION_GREEN_MODEL_SHADOW_START.md)
 2. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
 3. [Project Memory README](./README.md)
 4. Read only the live machine-readable subsystem artifacts needed for the current task.
