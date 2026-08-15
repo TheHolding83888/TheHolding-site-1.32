@@ -80,7 +80,7 @@
   const FUZZY_QUERY_LEXEMES = Object.freeze([
     'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
     'rewards', 'reward', 'claimable', 'companies', 'company', 'using', 'compare', 'productivity',
-    'performance', 'embedded', 'current', 'registry', 'passport', 'learning', 'proposal', 'builder',
+    'performance', 'embedded', 'current', 'first', 'registry', 'passport', 'learning', 'proposal', 'builder',
     'guardian', 'transaction', 'authority', 'allocation'
   ]);
 
@@ -448,7 +448,7 @@
     velodrome: ['velodrome', 'велодром', 'velo', 'vevelo'],
     convex: ['convex', 'конвекс', 'cvx', 'vlcvx', 'cvxcrv'],
     curve: ['curve', 'керв', 'кёрв', 'curve dao', 'crv', 'vecrv'],
-    yieldbasis: ['yield basis', 'yieldbasis', 'yield-basis', 'veyb', 'yb-lp', 'йелд бейсис', 'илд бейсис'],
+    yieldbasis: ['yield basis', 'yieldbasis', 'yield-basis', 'yb', 'veyb', 'yb-lp', 'йелд бейсис', 'илд бейсис'],
     frax: ['frax', 'фракс', 'vefrax', 'frxusd', 'sfrxusd'],
     pendle: ['pendle', 'пендл', 'spendle', 'vependle'],
     fx: ['f(x)', 'fx protocol', 'fxn', 'vefxn', 'fxsave', 'fxusd'],
@@ -1282,7 +1282,7 @@ async function loadLazy(kind) {
     if (includesAny(q, ['sharpe', 'коэффициент шарпа'])) return { text: lang === 'ru' ? 'В текущих подтверждённых данных нет Sharpe ratio под этот период. Я не буду подменять его текущим APY или APR.' : 'The current verified data has no Sharpe ratio for that period. I will not substitute current APY or APR for it.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
     if (includesAny(q, ['next friday', 'следующ пятниц', 'forecast', 'predict', 'прогноз'])) return { text: lang === 'ru' ? 'У The Holding нет подтверждённого будущего значения цены. Я не буду выдавать прогноз как факт.' : 'The Holding has no verified future price value. I will not present a forecast as a fact.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
     if (includesAny(q, ['before tracking', 'до начала наблюден', 'march 2026', 'март 2026'])) return { text: lang === 'ru' ? 'Если период предшествует tracking и не был backfilled, точного дохода в текущих данных нет. Я не буду подменять его сегодняшней доходностью.' : 'If the period predates tracking and was not backfilled, the current data has no exact income figure. I will not substitute today’s yield.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
-    if ((includesAny(q, ['reference apr', 'apr']) && includesAny(q, ['performance', 'прибыл', 'profit', 'equal', 'равно'])) || includesAny(q, ['does that mean it performed better'])) return { text: lang === 'ru' ? 'Нет. Reference APR – текущая доходная способность. Performance – фактический результат относительно точки входа. Более высокий APR сейчас не доказывает лучшую историческую performance.' : 'No. Reference APR is current earning capacity. Performance is the actual result versus the entry point. A higher APR now does not prove better historical performance.', source: 'The Holding project canon' };
+    if ((includesAny(q, ['reference apr', 'apr', 'current yield', 'текущая доходность']) && includesAny(q, ['performance', 'прибыл', 'profit', 'actual result', 'result', 'реальная доходность', 'фактический результат', 'equal', 'равно'])) || includesAny(q, ['does that mean it performed better'])) return { text: lang === 'ru' ? 'Нет. Reference APR – текущая доходная способность. Performance – фактический результат относительно точки входа. Более высокий APR сейчас не доказывает лучшую историческую performance.' : 'No. Reference APR is current earning capacity. Performance is the actual result versus the entry point. A higher APR now does not prove better historical performance.', source: 'The Holding project canon' };
     if (includesAny(q, ['каждое наблюдение становится предложением', 'does every observation become a proposal', 'every observation become a proposal'])) return whyFilteredAnswer(lang);
     if (includesAny(q,['где тут доход вообще','что уже заработано но еще не пришло','what is already earned but not received'])) return conceptAnswer('слои капитала productivity rewards embedded yield cash flow',lang);
     if (includesAny(q,['что само внутри позиции растет','what grows inside the position'])) return conceptAnswer('embedded yield',lang);
@@ -1307,7 +1307,7 @@ async function loadLazy(kind) {
     const follow = followupAnswer(raw, lang);
     if (follow) return follow;
 
-    if (protocolGroup(raw) && includesAny(q,['which companies','who uses','who is using','which ones use','какие компании','кто использует','companies use','компании используют'])) return protocolCompaniesAnswer(protocolGroup(raw),lang);
+    if (protocolGroup(raw) && includesAny(q,['which companies','who uses','who is using','which ones use','who runs','which companies run','companies use','companies using','какие компании','кто использует','компании используют','компании сидят','кто сидит'])) return protocolCompaniesAnswer(protocolGroup(raw),lang);
     if (includesAny(q, ['сколько компаний', 'какие компании', 'список компаний', 'how many companies', 'which companies', 'company list'])) return registryAnswer(lang);
 
     const definitionish = includesAny(q, ['что такое', 'объясни', 'что значит', 'what is', 'explain', 'difference', 'разница']);
