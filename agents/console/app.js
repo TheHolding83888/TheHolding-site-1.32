@@ -1468,11 +1468,18 @@ async function loadLazy(kind) {
     };
   }
 
-  function companyEvidenceNeedles(companyName) {
+  function canonicalCompanyEvidenceName(companyName) {
     const name = String(companyName || '');
     const n = norm(name);
+    if (n.includes('83ca8') || n === '0x58...ca8.eth' || n.startsWith('0x58...ca8')) return '0x5860...83CA8.eth';
+    return name;
+  }
+
+  function companyEvidenceNeedles(companyName) {
+    const name = canonicalCompanyEvidenceName(companyName);
+    const n = norm(name);
     const out = [name];
-    if (n.includes('83ca8')) out.push('83ca8', '0x5860...83CA8.eth', '0x58...CA8.eth');
+    if (n.includes('83ca8')) out.push('83ca8', '5860', '0x5860...83CA8.eth', '0x58...ca8.eth');
     if (n.includes('rook')) out.push('Rook', "Rook's portfolio");
     if (n.includes('1milliondollar') || n.includes('million dollar')) out.push('1milliondollar');
     return [...new Set(out.filter(Boolean))];
@@ -1511,7 +1518,7 @@ async function loadLazy(kind) {
       ...state.registry.map(x => x.name),
       ...Object.keys(safeObject(state.productivity?.companies)),
       state.stable?.company?.name
-    ].filter(Boolean))];
+    ].filter(Boolean).map(canonicalCompanyEvidenceName))];
     if (!names.length) return {
       text: ru ? 'Сейчас нет достаточного company-level evidence для карты понимания.' : 'There is not enough company-level evidence to build an understanding map right now.',
       source: 'Company evidence unavailable',
@@ -1523,7 +1530,10 @@ async function loadLazy(kind) {
     const entryFields = ['entryPriceUsd', 'entryPrice', 'priceUsd', 'unitPriceUsd'];
 
     const rows = names.map(name => {
-      const registry = state.registry.some(x => x.name === name);
+      const registry = state.registry.some(x => companyEvidenceNeedles(name).some(needle => {
+        const a = norm(x.name), b = norm(needle);
+        return a === b || (b === '83ca8' && a.includes('ca8'));
+      }));
       const ordinaryProductivity = Boolean(productivityForCompany(name));
       const stableProductivity = name === state.stable?.company?.name && Boolean(state.stable?.summary);
       const productivity = ordinaryProductivity || stableProductivity;
@@ -1531,7 +1541,10 @@ async function loadLazy(kind) {
       const embeddedEvidence = hasCompanyEvidence(embedded, name, embeddedFields);
       const entryEvidence = name === 'Monetra.eth' && hasCompanyEvidence(entries, name, entryFields);
       const common = [registry, productivity, rewardsEvidence, embeddedEvidence].filter(Boolean).length;
-      return { name, registry, productivity, rewardsEvidence, embeddedEvidence, entryEvidence, common };
+      const displayName = name === '0x5860...83CA8.eth'
+        ? (state.registry.find(x => norm(x.name) === '0x58...ca8.eth')?.name || name)
+        : name;
+      return { name: displayName, evidenceName: name, registry, productivity, rewardsEvidence, embeddedEvidence, entryEvidence, common };
     });
 
     rows.sort((a, b) => b.common - a.common || a.name.localeCompare(b.name));
