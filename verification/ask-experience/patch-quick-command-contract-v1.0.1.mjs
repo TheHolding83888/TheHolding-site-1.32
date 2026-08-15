@@ -2,7 +2,6 @@ import fs from 'node:fs';
 
 const APP = 'agents/console/app.js';
 const CORE = 'verification/ask-experience/corpus-core-v0.1.json';
-const WORKFLOW = '.github/workflows/ask-experience.yml';
 
 function once(source, before, after, label) {
   const count = source.split(before).length - 1;
@@ -84,11 +83,5 @@ const additions = [
 const byId = new Map((core.cases || []).map(x => [x.id, x]));
 for (const item of additions) if (!byId.has(item.id)) core.cases.push(item);
 fs.writeFileSync(CORE, JSON.stringify(core, null, 2) + '\n');
-
-let workflow = fs.readFileSync(WORKFLOW, 'utf8');
-const anchor = "      - name: Direct final-output safety guard test\n";
-const step = "      - name: Quick-command contract\n        if: env.RUN_MODE == 'core' || env.RUN_MODE == 'all'\n        run: node verification/ask-experience/quick-command-contract-v0.1.mjs\n\n";
-if (!workflow.includes('name: Quick-command contract')) workflow = once(workflow, anchor, step + anchor, 'workflow quick-command step');
-fs.writeFileSync(WORKFLOW, workflow);
 
 console.log('Ask v1.0.1 quick-command contract patch applied');
