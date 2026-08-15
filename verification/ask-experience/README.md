@@ -61,6 +61,8 @@ Owner Unknown is discovery evidence rather than a release gate, so a GREEN workf
 
 Change + Salience synthesis must reuse canonical `intelligence/change-intelligence.json` rather than create a duplicate history layer. It may rank the latest verified Observer delta and current `watchNext` state, but it must not call that a monthly history when only one delta is loaded. A longer time horizon must fail boundedly and name Memory Vault aggregation as the missing evidence step.
 
+For USD-denominated change events, salience must respect **economic magnitude**. Large percentage moves from a near-zero base must not outrank materially larger dollar changes solely because their relative percentage is larger.
+
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
 ## Evaluation assets
