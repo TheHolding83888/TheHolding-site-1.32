@@ -15,6 +15,8 @@ Rules:
 4. The brief may identify owner-attention priorities, evidence and uncertainty. It must not issue personalized buy/sell/allocation commands or imply execution authority.
 5. `whatChanged` salience continues to respect economic magnitude and verified source semantics.
 6. Owner Unknown remains discovery evidence. A GREEN release gate does not replace manual semantic review of the resulting brief.
+7. Known-lexeme typo recovery may accept one adjacent character transposition in addition to one insertion/deletion/substitution. This remains bounded to the explicit RU/EN semantic lexicons and is not global fuzzy retrieval.
+8. Any generalization repair requires a fresh seeded Experience proof; the failing generated phrase itself is not a durable regression string.
 
 Desired answer shape:
 
