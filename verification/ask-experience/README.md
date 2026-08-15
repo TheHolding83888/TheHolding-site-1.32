@@ -68,6 +68,14 @@ Cross-source Owner Brief synthesis must keep current Security, Learning/Proposal
 
 Cross-company concentration synthesis must remain a **measured exposure view**, not an invented risk score. Ordinary Productivity may aggregate measured productive USD by protocol/company from canonical breakdown rows. Stable Capital remains a separate measurement universe and may expose its own protocol/chain concentration, but the two universes must not be silently collapsed into one risk number. Unknown/warming productive capital must be disclosed and lowers confidence when it could change ordering. Concentration indicates dependency on a protocol/layer; it does not prove loss probability and must not become a personalized reallocation command.
 
+### Quick-command capability contract
+
+Every visible Ask quick command is a product promise. Its exact button text must exist in the annotated Core regression corpus and resolve to the intended source-bound capability on the exact tested revision.
+
+A quick command must never be added merely because a nearby semantic phrasing works in Owner Unknown or Mutation. UI text and router intent are one contract. If the interface exposes a command that falls through to generic UNKNOWN while the underlying capability is already claimed, treat that as a product regression rather than as acceptable model uncertainty.
+
+When a quick command changes, update its exact regression case before promotion and re-run fresh Experience evidence. The durable `quick-command-contract-v0.1.mjs` check exists to prevent future UI/router drift.
+
 ## Interface evolution law
 
 The Ask interface should visibly evolve when capability has materially and repeatedly improved. This is product communication, not decoration.
@@ -104,6 +112,7 @@ These entries document semantic classes only; exact generated mutation strings a
 - `runner-v0.1.mjs` – reusable browser runner against the exact tested Ask revision.
 - `evaluator-v0.1.mjs` – origin-scoped trust evaluator.
 - `output-guard-test-v0.1.mjs` – directly tests the final answer safety guard independent of input routing.
+- `quick-command-contract-v0.1.mjs` – verifies that every visible quick command has exact Core regression coverage.
 - `summarize-learning-needs-v0.1.mjs` – converts evaluated failures into review-only hypotheses.
 - `review-owner-unknown-v0.1.mjs` – non-authoritative review of synthesis/evidence shape; it does not claim factual correctness.
 - `origin-policy-v0.1.json` – evidence-source isolation rules.
