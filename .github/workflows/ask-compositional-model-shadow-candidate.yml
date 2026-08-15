@@ -14,11 +14,11 @@ on:
       limit:
         description: 'Bounded shadow case limit; 0 means all cases'
         required: false
-        default: '1'
+        default: '10'
       model:
-        description: 'Pinned Copilot CLI model for reproducible structured parsing'
+        description: 'Copilot CLI model; current account requires replaceable auto provider'
         required: false
-        default: 'claude-sonnet-4.6'
+        default: 'auto'
 
 permissions:
   contents: read
@@ -31,8 +31,8 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ github.token }}
       ASK_SHADOW_TRANSPORT: copilot-cli
-      ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'claude-sonnet-4.6' }}
-      ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '1' }}
+      ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'auto' }}
+      ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '10' }}
     steps:
       - name: Checkout exact shadow revision
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -43,7 +43,7 @@ jobs:
       - name: Install current Copilot CLI
         run: npm install -g @github/copilot
 
-      - name: Run one-case pinned no-tools semantic shadow
+      - name: Run full no-tools semantic shadow
         run: |
           set -euo pipefail
           mkdir -p artifacts
