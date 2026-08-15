@@ -16,9 +16,9 @@ on:
         required: false
         default: '10'
       model:
-        description: 'Copilot CLI model; auto keeps provider selection replaceable'
+        description: 'Pinned Copilot CLI model for reproducible structured parsing'
         required: false
-        default: 'auto'
+        default: 'claude-haiku-4.5'
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ github.token }}
       ASK_SHADOW_TRANSPORT: copilot-cli
-      ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'auto' }}
+      ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'claude-haiku-4.5' }}
       ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '10' }}
     steps:
       - name: Checkout exact shadow revision
