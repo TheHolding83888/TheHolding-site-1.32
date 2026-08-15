@@ -81,6 +81,8 @@ jobs:
           rm -f .github/workflows/_ask_generalization_repair_2_candidate.yml
           git add -A
           git diff --check --cached
-          test "$(git diff --cached --name-only)" = "agents/console/app.js"
+          expected=$'.github/workflows/_ask_generalization_repair_2_candidate.yml\nagents/console/app.js'
+          actual="$(git diff --cached --name-only | sort)"
+          test "$actual" = "$expected"
           git commit -m "Ask v0.6.1: generalize RU safety rewards and result intents"
           git push origin HEAD:agents/ask-evaluation-trust-v0.6.1-20260815
