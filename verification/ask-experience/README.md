@@ -63,6 +63,8 @@ Change + Salience synthesis must reuse canonical `intelligence/change-intelligen
 
 For USD-denominated change events, salience must respect **economic magnitude**. Large percentage moves from a near-zero base must not outrank materially larger dollar changes solely because their relative percentage is larger.
 
+Ask v0.8 production proof must be taken from an exact candidate revision that already serves `/agents/console/app.js?v=0.8`; a pre-cache-bust GREEN is not final release evidence.
+
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
 ## Evaluation assets
