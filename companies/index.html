@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- companies.html · v1.25.1 · Graph node hygiene + compact constellation + reload passport restore -->
 <!-- companies.html · v1.25 · Graph rate column + Monetra Strategy Constellation v2 (radial, moved below passport) -->
 <!-- companies.html · v1.24.4 · Reading room · compact bars + seam, original mobile rail mechanic -->
 <!-- companies.html · v1.24.1 · Reading room · bar gap, tighter nav -->
@@ -8683,6 +8684,36 @@
 @media (prefers-reduced-motion: reduce) {
     .g-apr-chip, .so-node { transition: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   The Holding Index · mobile density
+   Nothing about this section changed in the recent builds; it simply carried
+   more air than the surfaces around it now do. Only spacing is touched.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 760.98px) {
+    .index-sec { padding: 3.4rem 0 3.6rem; }
+    .index-head { margin-bottom: 2.1rem; }
+    .index-eyebrow { margin-bottom: 1.05rem; }
+    .index-title { margin-bottom: 0.75rem; }
+    .index-sub { font-size: 0.86rem; line-height: 1.62; }
+    .index-metrics {
+        gap: 1.35rem 2.2rem;
+        padding-bottom: 1.7rem;
+        margin-bottom: 1.9rem;
+    }
+    .index-comp { margin-bottom: 2.1rem; }
+    .index-comp-head { margin-bottom: 0.75rem; }
+    .idx-lens-note { margin-bottom: 0.7rem; }
+    .index-comp-legend { margin-top: 0.85rem; }
+    .ib-row { padding: 0.92rem 0; }
+    .index-note { margin-top: 1.7rem; }
+    .index-separation-note { margin-top: 0.85rem; padding: 0.8rem 0.9rem; }
+}
+@media (max-width: 460px) {
+    .index-sec { padding: 3rem 0 3.2rem; }
+    .index-metrics { gap: 1.1rem 1.9rem; }
+}
+
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -10164,14 +10195,16 @@ function renderStableStrategyOrbit(lang, company) {
     const n = ordered.length;
 
     /* ── Canvas geometry ─────────────────────────────────────────────── */
-    const W = mobile ? 380 : 900;
-    const H = mobile ? 340 : 630;
+    /* Laptop canvas is deliberately compact so the whole constellation fits one
+       screen and can be captured in a single frame. */
+    const W = mobile ? 380 : 880;
+    const H = mobile ? 340 : 556;
     const cx = W / 2;
-    const cy = mobile ? 170 : 316;
-    const R = mobile ? 122 : 214;
-    const centerR = mobile ? 54 : 68;
-    const nodeMin = mobile ? 8 : 9;
-    const nodeMax = mobile ? 12.5 : 17;
+    const cy = mobile ? 170 : 278;
+    const R = mobile ? 122 : 182;
+    const centerR = mobile ? 54 : 60;
+    const nodeMin = mobile ? 8 : 8;
+    const nodeMax = mobile ? 12.5 : 15;
 
     /* Start half a step past the vertical so no strategy sits directly above or
        below the company — those are the two positions where an outward label has
@@ -10216,20 +10249,31 @@ function renderStableStrategyOrbit(lang, company) {
 
     /* ── Nodes ───────────────────────────────────────────────────────── */
     const nodes = items.map(item => {
-        const rateRadius = R + item.r + (mobile ? 13 : 17);
-        const [rx, ry] = pt(item.angle, rateRadius);
-        const rateDy = mobile ? 3.4 : 4;
+        let textBlock = '';
 
-        let labelBlock = '';
-        if (!mobile) {
-            const labelRadius = R + item.r + 44;
-            const [lx, ly] = pt(item.angle, labelRadius);
-            const chainDy = item.chain ? 13 : 0;
-            /* Room left between the anchor point and the canvas edge, so a long
-               strategy name is trimmed rather than allowed to escape the frame. */
-            const room = item.anchor === 'start' ? (W - 14 - lx)
-                       : item.anchor === 'end'   ? (lx - 14)
-                       : Math.min(lx, W - lx) * 2 - 20;
+        if (mobile) {
+            /* Phone keeps only the rate on the ring; names live in the ledger. */
+            const [rx, ry] = pt(item.angle, R + item.r + 13);
+            textBlock = '<text class="so-rate" x="' + rx.toFixed(1) + '" y="' + (ry + 3.4).toFixed(1)
+                + '" text-anchor="' + item.anchor + '">' + escapeHtml(item.aprText) + '</text>';
+        } else {
+            /* Laptop: name, chain and rate are ONE anchored block on the spoke.
+               Previously the rate sat on its own radius and could land on top of a
+               neighbour's name — the collision visible in the screenshot. Written
+               as a single block, the three lines cannot cross anything. */
+            const [ax, ay] = pt(item.angle, R + item.r + 15);
+            const lineH = 13.5;
+            const lines = item.chain ? 3 : 2;
+            const blockH = (lines - 1) * lineH;
+            /* Above the node the block grows upward, below it grows downward, so
+               it always moves away from the ring rather than across it. */
+            const topY = item.sin < -0.12 ? (ay - blockH)
+                       : item.sin > 0.12  ? (ay + 4)
+                       : (ay - blockH / 2 + 4);
+
+            const room = item.anchor === 'start' ? (W - 12 - ax)
+                       : item.anchor === 'end'   ? (ax - 12)
+                       : Math.min(ax, W - ax) * 2 - 20;
             const fit = (text, fontPx) => {
                 const s = String(text || '');
                 const per = fontPx * 0.58;
@@ -10237,14 +10281,17 @@ function renderStableStrategyOrbit(lang, company) {
                 const keep = Math.max(4, Math.floor(room / per) - 1);
                 return s.slice(0, keep).replace(/[\s·]+$/, '') + '…';
             };
-            item.label = fit(item.label, 12.2);
-            labelBlock =
-                '<text class="so-label" x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + item.anchor + '">'
-                + escapeHtml(item.label) + '</text>'
+
+            let ln = 0;
+            textBlock =
+                '<text class="so-label" x="' + ax.toFixed(1) + '" y="' + (topY + lineH * ln++).toFixed(1) + '" text-anchor="' + item.anchor + '">'
+                + escapeHtml(fit(item.label, 12)) + '</text>'
                 + (item.chain
-                    ? '<text class="so-chain" x="' + lx.toFixed(1) + '" y="' + (ly + chainDy).toFixed(1) + '" text-anchor="' + item.anchor + '">'
+                    ? '<text class="so-chain" x="' + ax.toFixed(1) + '" y="' + (topY + lineH * ln++).toFixed(1) + '" text-anchor="' + item.anchor + '">'
                       + escapeHtml(item.chain) + '</text>'
-                    : '');
+                    : '')
+                + '<text class="so-rate" x="' + ax.toFixed(1) + '" y="' + (topY + lineH * ln + 0.5).toFixed(1) + '" text-anchor="' + item.anchor + '">'
+                + escapeHtml(item.aprText) + '</text>';
         }
 
         return '<g class="so-node" data-idx="' + item.i + '">'
@@ -10253,9 +10300,7 @@ function renderStableStrategyOrbit(lang, company) {
             + (mobile
                 ? '<text class="so-node-index" x="' + item.x.toFixed(1) + '" y="' + (item.y + 2.9).toFixed(1) + '">' + (item.i + 1) + '</text>'
                 : '')
-            + '<text class="so-rate" x="' + rx.toFixed(1) + '" y="' + (ry + rateDy).toFixed(1) + '" text-anchor="' + item.anchor + '">'
-            + escapeHtml(item.aprText) + '</text>'
-            + labelBlock
+            + textBlock
             + '</g>';
     }).join('');
 
@@ -12086,7 +12131,14 @@ function buildGraph() {
     const coIndex = {}; comps.forEach((c, i) => coIndex[c.nm] = i);
     const protoCount = {};
     comps.forEach(c => (MEMBERSHIP[c.nm] || []).forEach(p => protoCount[p] = (protoCount[p] || 0) + 1));
-    let protos = Object.keys(protoCount);
+    /* Ethereum is a settlement asset rather than a productive protocol, so it is
+       not carried as a node on the capital map. Aave appears on the map through
+       companies whose Aave exposure is not the stable position the rate would be
+       read from, so the node stays and the rate is withheld rather than shown
+       against the wrong position. Both remain intact in Company Passports. */
+    const GRAPH_HIDDEN_PROTOCOLS = new Set(['Ethereum']);
+    const GRAPH_RATE_WITHHELD = new Set(['Aave', 'Ethereum']);
+    let protos = Object.keys(protoCount).filter(p => !GRAPH_HIDDEN_PROTOCOLS.has(p));
     const bary = {};
     protos.forEach(p => {
         const rs = comps.filter(c => (MEMBERSHIP[c.nm] || []).includes(p)).map(c => coIndex[c.nm]);
@@ -12113,6 +12165,7 @@ function buildGraph() {
     comps.forEach((c, i) => {
         const col = shade(i), x1 = P.coX, y1 = coY(i);   // starts under the node, radius-independent
         (MEMBERSHIP[c.nm] || []).forEach(p => {
+            if (!(p in prIndex)) return;   // hidden from the map (see GRAPH_HIDDEN_PROTOCOLS)
             const j = prIndex[p], x2 = P.prX - rPr(p), y2 = prY(j), mx = (x1 + x2) / 2;
             const d = 'M' + x1.toFixed(1) + ',' + y1.toFixed(1)
                     + ' C' + mx.toFixed(1) + ',' + y1.toFixed(1)
@@ -12135,7 +12188,7 @@ function buildGraph() {
     const aprTexts = {};
     protos.forEach(p => {
         const a = Number(protocolAprMap[p]);
-        aprTexts[p] = Number.isFinite(a) ? stablePct(a, 2) : '';
+        aprTexts[p] = (!GRAPH_RATE_WITHHELD.has(p) && Number.isFinite(a)) ? stablePct(a, 2) : '';
     });
     const longestApr = Object.keys(aprTexts).reduce((m, k) => Math.max(m, aprTexts[k].length), 0);
     const pillH = mobile ? 17 : 19;
@@ -12713,7 +12766,35 @@ function renderFramework(lang) {
     }
     renderIndex(idxLang());
     buildGraph();
+    finalizeReloadRestore();
 })();
+
+/* Reopening an expanded passport used to depend on a 1.25s stabilisation
+   window. Live prices can arrive later than that, and the board is rebuilt when
+   they do — so the restore ran against rows that did not exist yet, the passport
+   came back closed and the shorter document pushed the reader down the page.
+   This runs once, immediately after the board is populated, and re-applies the
+   remembered scroll against the restored (taller) document. */
+let thReloadRestoreDone = false;
+function finalizeReloadRestore() {
+    if (thReloadRestoreDone) return;
+    thReloadRestoreDone = true;
+    if (!TH_RESTORE_RELOAD_SCROLL) return;
+
+    requestAnimationFrame(() => {
+        const root = document.documentElement;
+        const prev = root.style.scrollBehavior;
+        root.style.scrollBehavior = 'auto';
+        restoreOpenPassports();
+        restoreStablePassport();
+        requestAnimationFrame(() => {
+            const maxY = Math.max(0, root.scrollHeight - window.innerHeight);
+            if (TH_RELOAD_SCROLL_Y > 0) window.scrollTo(0, Math.min(TH_RELOAD_SCROLL_Y, maxY));
+            root.style.scrollBehavior = prev;
+            TH_SCROLL_SAVE_ENABLED = true;
+        });
+    });
+}
 
 /* ── Sticky subnav: highlight active section on scroll ── */
 (function () {
