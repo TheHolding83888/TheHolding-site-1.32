@@ -1565,12 +1565,7 @@ async function loadLazy(kind) {
       'Live Productivity + Console capability map'
     );
 
-    if (includesAny(q, ['concentration risk', 'concentration most visible', 'риск концентрации', 'концентрация риска'])) return unknown(
-      ru
-        ? 'В текущем Ask нет нормализованного cross-company exposure matrix по активам, протоколам и сетям. Поэтому я не могу честно назвать компанию с максимальной concentration risk. APR или одна позиция не являются заменой exposure concentration.'
-        : 'The current Ask has no normalized cross-company exposure matrix across assets, protocols and chains, so I cannot honestly name the highest concentration risk. APR or one visible position is not a substitute for exposure concentration.',
-      'Console capability map'
-    );
+    if (includesAny(q, ['concentration risk', 'concentration most visible', 'риск концентрации', 'концентрация риска'])) return productiveConcentrationAnswer(lang);
 
     if (includesAny(q, ['becoming more mature', 'more mature as an economic object', 'maturity', 'reputation synthesis', 'становится зрелее', 'зрелост', 'репутац'])) return unknown(
       ru
