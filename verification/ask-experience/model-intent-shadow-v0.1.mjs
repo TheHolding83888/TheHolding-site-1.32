@@ -36,38 +36,56 @@ Never invent a new enum. Never include an answer field. Never include confidence
 
 function extractJson(content) {
   const text = String(content || '').trim();
-  if (!text) throw new Error('empty-model-content');
+  if (!text) throw new Error('parse:empty-model-content');
   try { return JSON.parse(text); } catch {}
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fenced) return JSON.parse(fenced[1]);
   const first = text.indexOf('{');
   const last = text.lastIndexOf('}');
   if (first >= 0 && last > first) return JSON.parse(text.slice(first, last + 1));
-  throw new Error('model-content-not-json');
+  throw new Error('parse:model-content-not-json');
+}
+
+function safeApiError(status, text) {
+  const bounded = String(text || '')
+    .replace(/Bearer\s+[A-Za-z0-9._~+\/-]+/gi, 'Bearer [redacted]')
+    .replace(/gh[pousr]_[A-Za-z0-9_]{20,}/g, '[redacted-token]')
+    .replace(/[A-Za-z0-9_-]{36,}/g, '[bounded-id]')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 320);
+  return `transport:http-${status}:${bounded || 'empty-error-body'}`;
 }
 
 async function infer(question) {
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/vnd.github+json',
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'X-GitHub-Api-Version': '2022-11-28'
-    },
-    body: JSON.stringify({
-      model,
-      temperature: 0,
-      max_tokens: 300,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: String(question) }
-      ]
-    })
-  });
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0,
+        max_tokens: 300,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: String(question) }
+        ]
+      })
+    });
+  } catch (e) {
+    throw new Error(`transport:fetch:${String(e?.message || e).slice(0, 200)}`);
+  }
   const bodyText = await response.text();
-  if (!response.ok) throw new Error(`model-http-${response.status}:${bodyText.slice(0, 240)}`);
-  const body = JSON.parse(bodyText);
+  if (!response.ok) throw new Error(safeApiError(response.status, bodyText));
+  let body;
+  try { body = JSON.parse(bodyText); }
+  catch { throw new Error('transport:invalid-json-response'); }
   return { raw: body?.choices?.[0]?.message?.content ?? '', usage: body?.usage || null };
 }
 
@@ -78,6 +96,7 @@ function entityFits(envelope, expected = []) {
 }
 
 const results = [];
+let infrastructureFailure = null;
 for (const test of corpus.cases) {
   const started = Date.now();
   let modelRaw = null;
@@ -93,6 +112,7 @@ for (const test of corpus.cases) {
     validation = contract.validate(candidate);
   } catch (e) {
     error = String(e?.message || e);
+    if (error.startsWith('transport:')) infrastructureFailure = { id: test.id, error };
   }
 
   const envelope = validation?.ok ? validation.envelope : null;
@@ -120,8 +140,11 @@ for (const test of corpus.cases) {
     latencyMs: Date.now() - started,
     usage
   });
+
+  if (infrastructureFailure) break;
 }
 
+const attempted = results.length;
 const accepted = results.filter(r => r.firewall?.ok).length;
 const rejected = results.filter(r => r.firewall && !r.firewall.ok).length;
 const errors = results.filter(r => r.error).length;
@@ -142,16 +165,18 @@ const summary = {
   model,
   mode: 'shadow-only-no-answer-authority',
   executionAuthority: cap.executionAuthority,
-  total: results.length,
+  totalCorpusCases: corpus.cases.length,
+  attempted,
   acceptedByFirewall: accepted,
   rejectedByFirewall: rejected,
   inferenceOrParseErrors: errors,
+  infrastructureFailure,
   strictPassed,
-  strictPassRatePct: Number((strictPassed * 100 / results.length).toFixed(2)),
+  strictPassRatePctAttempted: attempted ? Number((strictPassed * 100 / attempted).toFixed(2)) : 0,
   unsupportedSafe,
-  unsupportedTotal: unsupported.length,
+  unsupportedAttempted: unsupported.length,
   authoritySafe,
-  authorityTotal: authority.length,
+  authorityAttempted: authority.length,
   forbiddenFieldLeakCount: forbiddenLeak,
   answerAuthority: 'deterministic-ask-only',
   releaseGateEligible: false
@@ -160,7 +185,9 @@ const summary = {
 await fs.mkdir(outputPath.split('/').slice(0, -1).join('/') || '.', { recursive: true });
 await fs.writeFile(outputPath, JSON.stringify({ summary, results }, null, 2) + '\n');
 console.log(JSON.stringify(summary, null, 2));
+if (infrastructureFailure) console.error(`SHADOW_INFRA_RED=${JSON.stringify(infrastructureFailure)}`);
 
 // Shadow evidence is diagnostic, not a release gate. Infrastructure failures still fail the job.
-if (errors > 0) process.exit(2);
+if (infrastructureFailure) process.exit(2);
+if (errors > 0) process.exit(4);
 if (accepted === 0) process.exit(3);
