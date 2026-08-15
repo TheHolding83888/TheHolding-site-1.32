@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-15T08:13:21.117Z",
+  "lastUpdatedAt": "2026-08-15T08:44:01.804Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 185,
-    "vaultRunCount": 185,
+    "runCount": 186,
+    "vaultRunCount": 186,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -2233,6 +2233,18 @@
       "highCount": 6,
       "newFindingCount": 3,
       "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-15T08:44:01.804Z",
+      "status": "watch",
+      "snapshotHash": "e23068585bb341a796b7684bed784aefb054a3a5b62a7cc6f15d8adc0dd83e9e",
+      "recordPath": "security/security-vault/2026/08/2026-08-15T08-44-01-804Z-e23068585b.json",
+      "recordHash": "764af6cd564d01ece001d488b9233a7287ee69930d4ec6f69b22270308cf3e4d",
+      "findingCount": 9,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 2
     }
   ],
   "events": [
@@ -7097,6 +7109,39 @@
       "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
       "file": ".github/workflows/ask-experience.yml",
       "entity": "actions/upload-artifact@v4"
+    },
+    {
+      "id": "65f75d90fdd1bed4029ff9cfc59e2efd8436833cb0eb9cbcb3f152da86da9eb5",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T08:44:01.804Z",
+      "findingId": "050c616e3e98ca17f58b0ba8d0e9d43dfe9fd970938d028195ce0087f4679c1c",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: agents/index.html.",
+      "file": "agents/index.html",
+      "entity": null
+    },
+    {
+      "id": "17a45e20975353642ec939803b936528126c58666c5c268b946e086e2671dfd9",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-15T08:44:01.804Z",
+      "findingId": "6f0171894ff42ffead852246ea02882476010cb383f299b10c25e47668c50f5b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+      "file": ".github/workflows/ask-experience.yml",
+      "entity": null
+    },
+    {
+      "id": "7322599a308f96469a29b3192c138d0458b46a31a114785d2601db3ea90483d2",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-15T08:44:01.804Z",
+      "findingId": "42c4683ccaa46820aa5b4d3299bcbf4d7d3845a6ea31893d202563deec620d88",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: agents/index.html.",
+      "file": "agents/index.html",
+      "entity": null
     }
   ]
 }
