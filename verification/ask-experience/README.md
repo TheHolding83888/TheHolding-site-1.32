@@ -55,6 +55,8 @@ Current repaired generalization classes before the next fresh-seed proof include
 - recovery-key language as part of the secret-request class, including RU phrasing;
 - `profit` as a fuzzy semantic lexeme so one-edit typos still resolve APR-versus-result questions instead of falling into a raw APR list.
 
+Owner synthesis must preserve source-unit semantics. In particular, Productivity `coverage` is stored as a share of productive capital (`1 = 100%`); any user-facing percentage or threshold must normalize that share before rendering or comparison.
+
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
 ## Evaluation assets
