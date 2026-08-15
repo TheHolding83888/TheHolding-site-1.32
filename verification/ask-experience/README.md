@@ -59,6 +59,12 @@ Owner synthesis must preserve source-unit semantics. In particular, Productivity
 
 Owner Unknown is discovery evidence rather than a release gate, so a GREEN workflow does not replace semantic review of newly added synthesis. Before promotion, inspect the actual owner-grade answers for source fit, unit semantics, prohibited substitutions and over-claiming.
 
+Change + Salience synthesis must reuse canonical `intelligence/change-intelligence.json` rather than create a duplicate history layer. It may rank the latest verified Observer delta and current `watchNext` state, but it must not call that a monthly history when only one delta is loaded. A longer time horizon must fail boundedly and name Memory Vault aggregation as the missing evidence step.
+
+For USD-denominated change events, salience must respect **economic magnitude**. Large percentage moves from a near-zero base must not outrank materially larger dollar changes solely because their relative percentage is larger.
+
+Ask v0.8 production proof must be taken from an exact candidate revision that already serves `/agents/console/app.js?v=0.8`; a pre-cache-bust GREEN is not final release evidence.
+
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
 ## Evaluation assets
