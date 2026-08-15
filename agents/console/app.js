@@ -1667,7 +1667,7 @@ async function loadLazy(kind) {
 
   function buildQuick() {
     const quick = $('quick');
-    const labels = ['Сколько сейчас компаний?', 'Сравни defitea.eth и YieldRing.eth', 'Что реально требует внимания?', 'Что система предлагает?', 'Может ли система что-то выполнить?'];
+    const labels = ['Дай owner brief', 'Что изменилось сейчас?', 'Что система сейчас предлагает?', 'Чему OS ещё не может научиться?', 'Может ли система что-то выполнить?'];
     labels.forEach(text => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -1725,8 +1725,8 @@ async function loadLazy(kind) {
     $('securityFact').textContent = String(state.securityIntelligence?.status || security()?.status || 'unknown').toUpperCase();
     addMessage(
       'system',
-      'Привет 🙂 Я уже читаю живые знания The Holding. Можно спрашивать обычным языком про компании, фонды, слои капитала, доходность протоколов, Stable Capital и состояние мозга системы.',
-      'Live Registry + Productivity + Stable Capital + Cognitive Stack'
+      'Привет 🙂 Я читаю живое состояние The Holding OS и уже умею не только находить факты, но и связывать Change Intelligence, Security, Learning и Governance в bounded owner-level картину. Спроси, что изменилось, что важно сейчас или дай owner brief.',
+      'Live Capital OS · source-bound synthesis'
     );
   }
 
