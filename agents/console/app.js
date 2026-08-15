@@ -1691,7 +1691,7 @@ async function loadLazy(kind) {
     const companyEval = includesAny(q, ['company', 'companies', 'компания', 'компании', 'which company', 'какая компания', 'какой компании', 'по компаниям']);
     const compareEval = includesAny(q, ['compare', 'rank', 'ranking', 'best', 'worst', 'largest', 'most', 'furthest', 'gap', 'which', 'who', 'сравни', 'ранжир', 'рейтинг', 'лучше', 'хуже', 'самая', 'самый', 'дальше всего', 'разрыв', 'кто']);
 
-    const purposeSignal = includesAny(q, ['purpose drift', 'founding purpose', 'original mission', 'original purpose', 'mission fulfil', 'purpose fulfil', 'purpose and current state', 'цель создания', 'цели создания', 'исходн мисси', 'исходн цел', 'выполняет миссию', 'выполнение purpose', 'разрыв между purpose', 'от цели ради которой', 'ушла от цели']);
+    const purposeSignal = includesAny(q, ['purpose drift', 'founding purpose', 'original mission', 'original purpose', 'mission fulfil', 'purpose fulfil', 'purpose and current state', 'цель создания', 'цели создания', 'выполняет миссию', 'выполнение purpose', 'разрыв между purpose', 'от цели ради которой', 'ушла от цели']) || (q.includes('исходн') && (q.includes('мисси') || q.includes('цел')));
     if (purposeSignal && (companyEval || compareEval)) return unknown(
       ru
         ? 'Я пока не могу доказательно оценивать purpose drift по компаниям: в текущем OS нет канонического machine-readable purpose / success criterion для каждой компании и связанной методики сравнения с текущим состоянием. Я не буду подменять purpose текущим APR, TVL, Performance или общим определением компании.'
@@ -1707,7 +1707,7 @@ async function loadLazy(kind) {
       'Live Registry + Console capability map'
     );
 
-    const realisedSignal = includesAny(q, ['realised cash flow', 'realized cash flow', 'received cash flow', 'received company cash flow', 'полученн cash flow', 'реализованн cash flow', 'реально полученн', 'фактически полученн', 'уже полученн доход', 'полученному cash flow']);
+    const realisedSignal = includesAny(q, ['realised cash flow', 'realized cash flow', 'received cash flow', 'received company cash flow', 'received company level cash flow', 'полученн cash flow', 'реализованн cash flow', 'реально полученн', 'фактически полученн', 'уже полученн доход', 'полученному cash flow']) || (q.includes('received') && q.includes('cash flow')) || ((q.includes('полученн') || q.includes('реализованн')) && q.includes('cash flow'));
     const actualEarnedCompare = includesAny(q, ['actually earned the most', 'really earned the most', 'earned the most money', 'кто реально заработал больше', 'кто фактически заработал больше']);
     if ((realisedSignal && (companyEval || compareEval || includesAny(q, ['how much', 'сколько', 'largest', 'biggest', 'единый']))) || actualEarnedCompare) return unknown(
       ru
@@ -1716,7 +1716,7 @@ async function loadLazy(kind) {
       'Live Productivity + Console capability map'
     );
 
-    const futureYield = includesAny(q, ['guaranteed apy', 'guaranteed apr', 'guaranteed yield', 'apy one year from now', 'apr one year from now', 'yield one year from now', 'apy next year', 'apr next year', 'гарантированн apy', 'гарантированн apr', 'гарантированн доходност', 'доходность через год', 'apy через год', 'apr через год']);
+    const futureYield = includesAny(q, ['guaranteed apy', 'guaranteed apr', 'guaranteed yield', 'apy one year from now', 'apr one year from now', 'yield one year from now', 'apy next year', 'apr next year', 'доходность через год', 'apy через год', 'apr через год']) || (q.includes('гарантирован') && includesAny(q, ['apy', 'apr', 'доходност'])) || (q.includes('guarante') && includesAny(q, ['apy', 'apr', 'yield']));
     if (futureYield) return unknown(
       ru
         ? 'У OS нет подтверждённого гарантированного будущего APR/APY. Текущая Reference APR/APY переменна и не является прогнозом или обещанием доходности через год.'
@@ -1724,7 +1724,7 @@ async function loadLazy(kind) {
       'Console capability map'
     );
 
-    const hackProbability = includesAny(q, ['probability each company gets hacked', 'probability of hack', 'hack probability', 'chance of being hacked', 'вероятност взлом', 'вероятность хака', 'шанс взлома']);
+    const hackProbability = includesAny(q, ['probability each company gets hacked', 'probability of hack', 'hack probability', 'chance of being hacked', 'вероятность хака', 'шанс взлома']) || (q.includes('вероятност') && q.includes('взлом'));
     if (hackProbability && includesAny(q, ['exact', 'next month', 'следующ месяц', 'точн'])) return unknown(
       ru
         ? 'The Holding Security может показывать наблюдаемые findings и severity, но не имеет валидированной модели точной вероятности взлома компании в следующем месяце. Я не буду превращать security findings в выдуманную вероятность.'
