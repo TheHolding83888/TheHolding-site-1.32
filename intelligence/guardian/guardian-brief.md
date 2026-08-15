@@ -1,6 +1,6 @@
 # The Holding Guardian Capability Gate
 
-Generated: 2026-08-14T18:27:17.055Z
+Generated: 2026-08-15T07:49:25.296Z
 
 Research-only: 0 · Blocked: 0 · Sandbox build authority: 0
 
