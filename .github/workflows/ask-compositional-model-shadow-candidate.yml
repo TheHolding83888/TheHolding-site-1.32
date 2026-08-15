@@ -8,7 +8,7 @@ on:
       - '.github/workflows/ask-compositional-model-shadow-candidate.yml'
       - 'agents/console/intent-contract.js'
       - 'verification/ask-experience/corpus-compositional-model-shadow-v0.1.json'
-      - 'verification/ask-experience/compositional-model-shadow-v0.2.mjs'
+      - 'verification/ask-experience/compositional-model-shadow-v0.3.mjs'
   workflow_dispatch:
     inputs:
       limit:
@@ -47,7 +47,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts
-          node verification/ask-experience/compositional-model-shadow-v0.2.mjs \
+          node verification/ask-experience/compositional-model-shadow-v0.3.mjs \
             verification/ask-experience/corpus-compositional-model-shadow-v0.1.json \
             artifacts/ask-compositional-model-shadow.json
 
