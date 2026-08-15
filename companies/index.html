@@ -3,7 +3,7 @@
 <!-- companies.html · v1.24.4 · Reading room · compact bars + seam, original mobile rail mechanic -->
 <!-- companies.html · v1.24.1 · Reading room · bar gap, tighter nav -->
 <!-- companies.html · v1.24 · Reading room · compact section nav + Observatory rail -->
-<!-- companies.html · v1.23.11 · Registry Observatory Mobile Freedom · Collection → Index + Monetra mpx v2 -->
+<!-- companies.html · v1.23.12 · Premium APR Rails + Monetra Octopus Orbit -->
 <!-- companies.html · v1.22.2 · Aerocvxyb ICP Expansion · 1296 ICP · 2Y NNS Productivity -->
 <!-- companies.html · v1.22.1 · Defitea Aerodrome Reward Split · Unclaimed + Compounded -->
 <!-- companies.html · v1.21.14 · Monetra Strategy Book Columns · aligned Invested + Current -->
@@ -2021,33 +2021,34 @@
 .g-label-pr-wrap { pointer-events: none; }
 .g-apr-chip {
     pointer-events: none;
-    transform-box: fill-box;
-    transform-origin: center;
+    opacity: 0.96;
+    transition: opacity 0.28s ease, transform 0.28s ease;
 }
 .g-apr-pill {
-    fill: rgba(216,180,90,0.16);
-    stroke: rgba(216,180,90,0.38);
+    fill: rgba(216,180,90,0.15);
+    stroke: rgba(216,180,90,0.42);
     stroke-width: 1;
 }
 .g-apr-text {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 11px;
-    fill: #e6c877;
+    font-size: 10.8px;
+    fill: #e1bf66;
     font-weight: 600;
     letter-spacing: 0.02em;
 }
-.g-svg.focused .g-apr-chip { opacity: 0.4; transition: opacity 0.3s ease; }
+.g-svg.focused .g-apr-chip { opacity: 0.3; }
 .g-svg.focused .g-node-pr.on .g-apr-chip { opacity: 1; }
+.g-svg.focused .g-node-pr.primary .g-apr-chip { transform: translateY(-0.5px); }
 
 /* ═════ Stable Strategy Orbit / Octopus ═════ */
 .stable-orbit {
     margin-top: 1.65rem;
-    padding: 1.15rem;
+    padding: 1.2rem 1.18rem 1.05rem;
     border: 1px solid rgba(10,124,78,.12);
-    border-radius: 26px;
+    border-radius: 28px;
     background:
-        radial-gradient(120% 140% at 50% 0%, rgba(216,180,90,.16) 0%, rgba(216,180,90,0) 42%),
-        linear-gradient(180deg, rgba(255,255,255,.92), rgba(249,247,241,.86));
+        radial-gradient(120% 150% at 50% -6%, rgba(216,180,90,.17) 0%, rgba(216,180,90,0) 44%),
+        linear-gradient(180deg, rgba(255,255,255,.95), rgba(249,247,241,.88));
     box-shadow: 0 28px 72px -56px rgba(10,50,33,.44);
     overflow: hidden;
 }
@@ -2056,7 +2057,7 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.95rem;
 }
 .stable-orbit-kicker {
     font-size: 0.69rem;
@@ -2111,7 +2112,7 @@
     overflow: visible;
 }
 .stable-orbit-note {
-    margin: 0.85rem 0 0;
+    margin: 0.75rem 0 0;
     font-size: 0.74rem;
     line-height: 1.55;
     color: rgba(10,50,33,.58);
@@ -2128,14 +2129,14 @@
 }
 .so-link {
     fill: none;
-    stroke: rgba(17,68,48,.18);
-    stroke-width: 1.35;
+    stroke: rgba(17,68,48,.17);
+    stroke-width: 1.45;
     stroke-linecap: round;
 }
 .so-link-glow {
     fill: none;
-    stroke: rgba(216,180,90,.18);
-    stroke-width: 9;
+    stroke: rgba(216,180,90,.15);
+    stroke-width: 8;
     stroke-linecap: round;
     filter: url(#soBlur);
 }
@@ -2144,9 +2145,9 @@
     filter: url(#soBlur);
 }
 .so-center-dot {
-    fill: #113b2a;
-    stroke: rgba(216,180,90,.76);
-    stroke-width: 1.4;
+    fill: #133b2a;
+    stroke: rgba(216,180,90,.78);
+    stroke-width: 1.6;
 }
 .so-center-title {
     font-family: 'Space Grotesk', sans-serif;
@@ -2157,42 +2158,45 @@
 }
 .so-center-sub {
     font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.12em;
+    font-size: 10px;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     fill: rgba(246,241,230,.72);
     text-anchor: middle;
 }
 .so-node-glow {
-    fill: rgba(216,180,90,.14);
+    fill: rgba(216,180,90,.13);
     filter: url(#soBlur);
 }
 .so-node-dot {
-    fill: #f7f0dc;
+    fill: #f3ede0;
     stroke: rgba(17,68,48,.18);
-    stroke-width: 1.15;
+    stroke-width: 1.1;
 }
-.so-node-text {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    fill: #193727;
-    text-anchor: middle;
-}
-.so-node-sub {
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    fill: rgba(25,55,39,.6);
-    text-anchor: middle;
-}
-.so-apr-pill {
-    fill: rgba(216,180,90,.16);
-    stroke: rgba(216,180,90,.4);
+.so-card {
+    fill: rgba(255,255,255,.76);
+    stroke: rgba(17,68,48,.12);
     stroke-width: 1;
 }
-.so-apr-text {
+.so-card-label {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 11px;
+    font-size: 11.6px;
+    font-weight: 600;
+    fill: #183627;
+}
+.so-card-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 9.2px;
+    fill: rgba(24,54,39,.58);
+}
+.so-card-apr-pill {
+    fill: rgba(216,180,90,.16);
+    stroke: rgba(216,180,90,.38);
+    stroke-width: 1;
+}
+.so-card-apr-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
     font-weight: 600;
     fill: #8d6725;
     text-anchor: middle;
@@ -2205,17 +2209,17 @@
     }
     .stable-orbit-head {
         display: block;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.72rem;
     }
     .stable-orbit-meta {
-        margin-top: 0.75rem;
+        margin-top: 0.72rem;
     }
     .stable-orbit-sub {
         font-size: 0.77rem;
         line-height: 1.55;
     }
     .stable-orbit-canvas {
-        min-height: 500px;
+        min-height: 480px;
     }
 }
 
@@ -9673,6 +9677,12 @@ function canonicalGraphProtocol(name) {
 
 function collectGraphAprSamples(root, buckets, known) {
     const seen = new WeakSet();
+    const rateKeys = new Set([
+        'referenceApyPct','referenceAprPct','aprPct','apyPct','currentAprPct','currentApyPct',
+        'averageAprPct','averageApyPct','latestAprPct','latestApyPct','apr','apy',
+        'aprHistoricalAverage','aprLatest','ratePct','yieldPct'
+    ]);
+    const labelKeys = ['protocolFamily','protocol','protocolName','project','routeLabel','route','source','name','label','assetLabel','engineId','id','key'];
     const add = (proto, rate) => {
         const key = canonicalGraphProtocol(proto);
         const value = Number(rate);
@@ -9680,36 +9690,97 @@ function collectGraphAprSamples(root, buckets, known) {
         if (value < 0 || value > 500) return;
         (buckets[key] || (buckets[key] = [])).push(value);
     };
-    const rateKeys = ['referenceApyPct','referenceAprPct','aprPct','apyPct','currentAprPct','currentApyPct','averageAprPct','averageApyPct','latestAprPct','latestApyPct','apr','apy'];
-    const labelKeys = ['protocolFamily','protocol','protocolName','project','routeLabel','source','name'];
-    const walk = (value, depth) => {
-        if (!value || depth > 5) return;
-        if (Array.isArray(value)) { value.forEach(v => walk(v, depth + 1)); return; }
+    const chooseLabel = (value, ctx = {}) => {
+        const candidates = [];
+        if (value && typeof value === 'object') {
+            labelKeys.forEach(key => {
+                if (typeof value[key] === 'string' && value[key].trim()) candidates.push(value[key].trim());
+            });
+        }
+        if (ctx && typeof ctx.key === 'string' && ctx.key.trim()) candidates.push(ctx.key.trim());
+        if (ctx && typeof ctx.path === 'string' && ctx.path.trim()) candidates.push(ctx.path.trim());
+        if (ctx && typeof ctx.label === 'string' && ctx.label.trim()) candidates.push(ctx.label.trim());
+        for (const item of candidates) {
+            const canon = canonicalGraphProtocol(item);
+            if (known.has(canon)) return canon;
+        }
+        return '';
+    };
+    const walk = (value, depth, ctx = {}) => {
+        if (!value || depth > 8) return;
+        if (Array.isArray(value)) { value.forEach(v => walk(v, depth + 1, ctx)); return; }
         if (typeof value !== 'object') return;
         if (seen.has(value)) return;
         seen.add(value);
-        let label = '';
-        for (const key of labelKeys) {
-            if (typeof value[key] === 'string' && value[key].trim()) { label = value[key].trim(); break; }
-        }
-        let rate = null;
+
+        const localLabel = chooseLabel(value, ctx) || ctx.label || '';
         for (const key of rateKeys) {
-            if (value[key] !== null && value[key] !== undefined && value[key] !== '') {
-                const n = Number(value[key]);
-                if (Number.isFinite(n)) { rate = n; break; }
+            const raw = value[key];
+            if (raw !== null && raw !== undefined && raw !== '' && Number.isFinite(Number(raw))) {
+                add(localLabel || key, raw);
             }
         }
-        if (label && rate !== null) add(label, rate);
-        Object.keys(value).forEach(k => walk(value[k], depth + 1));
+
+        Object.keys(value).forEach(k => {
+            const child = value[k];
+            if (rateKeys.has(k) && child !== null && child !== undefined && child !== '' && Number.isFinite(Number(child))) {
+                add(localLabel || ctx.label || k, child);
+                return;
+            }
+            const nextLabel = (() => {
+                const fromKey = canonicalGraphProtocol(k);
+                if (known.has(fromKey)) return fromKey;
+                if (child && typeof child === 'object') {
+                    const guessed = chooseLabel(child, { key: k, path: (ctx.path ? ctx.path + ' ' : '') + k, label: localLabel || ctx.label || '' });
+                    if (guessed) return guessed;
+                }
+                return localLabel || ctx.label || '';
+            })();
+            walk(child, depth + 1, { key: k, path: (ctx.path ? ctx.path + ' ' : '') + k, label: nextLabel });
+        });
     };
-    walk(root, 0);
+    walk(root, 0, {});
 }
 
 function computeGraphProtocolAprMap() {
     const known = new Set(Object.values(COMPANY_PROTOCOLS).flat());
     const buckets = {};
-    if (PRODUCTIVITY_SNAPSHOT) collectGraphAprSamples(PRODUCTIVITY_SNAPSHOT, buckets, known);
-    if (STABLE_INDEX_SNAPSHOT) collectGraphAprSamples(STABLE_INDEX_SNAPSHOT, buckets, known);
+    const add = (proto, rate) => {
+        const key = canonicalGraphProtocol(proto);
+        const value = Number(rate);
+        if (!key || !known.has(key) || !Number.isFinite(value)) return;
+        if (value < 0 || value > 500) return;
+        (buckets[key] || (buckets[key] = [])).push(value);
+    };
+
+    if (PRODUCTIVITY_SNAPSHOT) {
+        collectGraphAprSamples(PRODUCTIVITY_SNAPSHOT, buckets, known);
+        const companies = PRODUCTIVITY_SNAPSHOT.companies || {};
+        Object.keys(companies).forEach(name => {
+            const company = companies[name] || {};
+            const directArrays = ['positions','protocols','strategies','items','rows'];
+            directArrays.forEach(key => {
+                const list = Array.isArray(company[key]) ? company[key] : [];
+                list.forEach(item => add(
+                    item.protocolFamily || item.protocol || item.protocolName || item.project || item.name || item.label || item.id,
+                    item.referenceApyPct ?? item.referenceAprPct ?? item.apyPct ?? item.aprPct ?? item.currentApyPct ?? item.currentAprPct ?? item.latestApyPct ?? item.latestAprPct
+                ));
+            });
+        });
+    }
+
+    if (STABLE_INDEX_SNAPSHOT) {
+        collectGraphAprSamples(STABLE_INDEX_SNAPSHOT, buckets, known);
+        const companies = Array.isArray(STABLE_INDEX_SNAPSHOT.companies) ? STABLE_INDEX_SNAPSHOT.companies : [];
+        companies.forEach(company => {
+            const positions = Array.isArray(company && company.positions) ? company.positions : [];
+            positions.forEach(p => add(
+                p.protocolFamily || p.protocol || p.protocolName || p.name,
+                p.referenceApyPct ?? p.referenceAprPct ?? p.apyPct ?? p.aprPct ?? p.currentApyPct ?? p.currentAprPct
+            ));
+        });
+    }
+
     const out = {};
     known.forEach(key => {
         const arr = (buckets[key] || []).filter(v => Number.isFinite(v)).sort((a, b) => a - b);
@@ -9736,67 +9807,94 @@ function renderStableStrategyOrbit(lang, company) {
         canvas.innerHTML = '<div class="stable-orbit-empty">' + escapeHtml(copy.empty) + '</div>';
         return;
     }
+
     const mobile = (window.innerWidth || 1000) < 760;
     const W = mobile ? 360 : 900;
-    const H = mobile ? 560 : 620;
+    const H = mobile ? 500 : 500;
     const cx = W / 2;
-    const cy = mobile ? 284 : 308;
-    const ringX = mobile ? 122 : 292;
-    const ringY = mobile ? 198 : 214;
-    const centerR = mobile ? 48 : 68;
+    const cy = mobile ? 116 : 248;
+    const centerR = mobile ? 44 : 60;
     const maxValue = Math.max.apply(null, positions.map(p => Number(p.valueUsd ?? p.strategyEntry?.principalNominalStable ?? 0)).concat([1]));
-    const items = positions.slice().sort((a, b) => {
+
+    const ordered = positions.slice().sort((a, b) => {
         const av = Number(a.valueUsd ?? a.strategyEntry?.principalNominalStable ?? 0);
         const bv = Number(b.valueUsd ?? b.strategyEntry?.principalNominalStable ?? 0);
         return bv - av;
-    }).map((p, index, arr) => {
-        const angle = (-Math.PI / 2) + (Math.PI * 2 * index / arr.length);
-        const x = cx + Math.cos(angle) * ringX;
-        const y = cy + Math.sin(angle) * ringY;
-        const baseValue = Number(p.valueUsd ?? p.strategyEntry?.principalNominalStable ?? 0);
-        const nodeR = (mobile ? 16 : 22) + (mobile ? 10 : 15) * Math.sqrt(Math.max(baseValue, 0) / maxValue);
-        return {
-            x, y, nodeR,
-            label: orbitStrategyLabel(p),
-            chain: String(p.chain || '').trim(),
-            apr: Number(p.referenceApyPct),
-            angle
-        };
     });
+    const left = [], right = [];
+    ordered.forEach((p, i) => (i % 2 === 0 ? left : right).push(p));
+
+    const sideLayout = (items, side) => {
+        const count = items.length;
+        const gap = mobile ? 72 : 70;
+        const topBase = mobile ? 222 : 100;
+        const totalH = (count - 1) * gap;
+        const top = topBase + Math.max(0, ((mobile ? 180 : 300) - totalH) / 2);
+        return items.map((p, idx) => {
+            const y = top + idx * gap;
+            const baseValue = Number(p.valueUsd ?? p.strategyEntry?.principalNominalStable ?? 0);
+            const nodeR = (mobile ? 10 : 12) + (mobile ? 6 : 8) * Math.sqrt(Math.max(baseValue, 0) / maxValue);
+            const nodeX = side === 'left' ? (mobile ? 92 : 212) : (mobile ? 268 : 688);
+            const label = orbitStrategyLabel(p);
+            const chain = String(p.chain || '').trim();
+            const apr = Number(p.referenceApyPct);
+            const aprText = Number.isFinite(apr) ? stablePct(apr, 2) : '—';
+            const textLen = Math.max(label.length, chain.length || 0, 10);
+            const cardW = mobile ? Math.min(126, Math.max(100, textLen * 5.1 + 34)) : Math.min(170, Math.max(124, textLen * 5.7 + 42));
+            const cardH = mobile ? 38 : 42;
+            const gapX = mobile ? 12 : 14;
+            const cardX = side === 'left' ? nodeX - nodeR - gapX - cardW : nodeX + nodeR + gapX;
+            const cardY = y - cardH / 2;
+            const pillW = Math.max((aprText.length * (mobile ? 5.4 : 6.1)) + 18, mobile ? 46 : 54);
+            const pillH = mobile ? 16 : 18;
+            const pillX = side === 'left' ? cardX + 10 : cardX + cardW - pillW - 10;
+            const pillY = cardY + 8;
+            const labelX = cardX + 10;
+            const labelY = cardY + (mobile ? 24 : 17);
+            const subY = cardY + (mobile ? 34 : 30);
+            return {
+                x: nodeX, y, nodeR,
+                cardX, cardY, cardW, cardH,
+                pillX, pillY, pillW, pillH,
+                labelX, labelY, subY,
+                label, chain, aprText, side
+            };
+        });
+    };
+
+    const items = sideLayout(left, 'left').concat(sideLayout(right, 'right'));
+
     const lines = items.map(item => {
-        const sx = cx + Math.cos(item.angle) * centerR * 0.82;
-        const sy = cy + Math.sin(item.angle) * centerR * 0.82;
-        const ex = item.x - Math.cos(item.angle) * item.nodeR * 0.84;
-        const ey = item.y - Math.sin(item.angle) * item.nodeR * 0.84;
-        const c1x = cx + Math.cos(item.angle) * (mobile ? 66 : 86);
-        const c1y = cy + Math.sin(item.angle) * (mobile ? 60 : 78);
-        const c2x = item.x - Math.cos(item.angle) * (mobile ? 46 : 62);
-        const c2y = item.y - Math.sin(item.angle) * (mobile ? 46 : 62);
+        const sx = cx + (item.side === 'left' ? -centerR * 0.78 : centerR * 0.78);
+        const sy = cy + (item.y > cy ? Math.min(centerR * 0.32, (item.y - cy) * 0.16) : Math.max(-centerR * 0.32, (item.y - cy) * 0.16));
+        const ex = item.x + (item.side === 'left' ? item.nodeR * 0.88 : -item.nodeR * 0.88);
+        const ey = item.y;
+        const c1x = cx + (item.side === 'left' ? -(mobile ? 64 : 92) : (mobile ? 64 : 92));
+        const c1y = cy + (item.y - cy) * 0.2;
+        const c2x = item.side === 'left' ? item.x + 54 : item.x - 54;
+        const c2y = item.y;
         const d = 'M' + sx.toFixed(1) + ',' + sy.toFixed(1)
             + ' C' + c1x.toFixed(1) + ',' + c1y.toFixed(1)
             + ' ' + c2x.toFixed(1) + ',' + c2y.toFixed(1)
             + ' ' + ex.toFixed(1) + ',' + ey.toFixed(1);
         return '<path class="so-link-glow" d="' + d + '"></path><path class="so-link" d="' + d + '"></path>';
     }).join('');
+
     const nodes = items.map(item => {
         const label = escapeHtml(item.label);
         const chain = item.chain ? escapeHtml(item.chain) : '';
-        const aprText = Number.isFinite(item.apr) ? stablePct(item.apr, 2) : '—';
-        const pillW = Math.max((aprText.length * (mobile ? 5.8 : 6.6)) + 18, mobile ? 46 : 54);
-        const labelY = item.y + item.nodeR + (mobile ? 15 : 18);
-        const chainY = labelY + (mobile ? 12 : 14);
         return ''
             + '<g class="so-node">'
-            +   '<circle class="so-node-glow" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + (item.nodeR * 2.2).toFixed(1) + '"></circle>'
-            +   '<g class="so-apr" transform="translate(' + (item.x - pillW / 2).toFixed(1) + ',' + (item.y - item.nodeR - (mobile ? 24 : 28)).toFixed(1) + ')">'
-            +     '<rect class="so-apr-pill" rx="999" ry="999" width="' + pillW.toFixed(1) + '" height="20"></rect>'
-            +     '<text class="so-apr-text" x="' + (pillW / 2).toFixed(1) + '" y="13.6">' + escapeHtml(aprText) + '</text>'
-            +   '</g>'
+            +   '<circle class="so-node-glow" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + (item.nodeR * 2.4).toFixed(1) + '"></circle>'
             +   '<circle class="so-node-dot" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + item.nodeR.toFixed(1) + '"></circle>'
-            +   '<text class="so-node-text" x="' + item.x.toFixed(1) + '" y="' + labelY.toFixed(1) + '">' + label + '</text>'
-            +   (chain ? '<text class="so-node-sub" x="' + item.x.toFixed(1) + '" y="' + chainY.toFixed(1) + '">' + chain + '</text>' : '')
+            +   '<rect class="so-card" x="' + item.cardX.toFixed(1) + '" y="' + item.cardY.toFixed(1) + '" width="' + item.cardW.toFixed(1) + '" height="' + item.cardH.toFixed(1) + '" rx="14" ry="14"></rect>'
+            +   '<rect class="so-card-apr-pill" x="' + item.pillX.toFixed(1) + '" y="' + item.pillY.toFixed(1) + '" width="' + item.pillW.toFixed(1) + '" height="' + item.pillH.toFixed(1) + '" rx="999" ry="999"></rect>'
+            +   '<text class="so-card-apr-text" x="' + (item.pillX + item.pillW / 2).toFixed(1) + '" y="' + (item.pillY + (mobile ? 11.2 : 12.5)).toFixed(1) + '">' + escapeHtml(item.aprText) + '</text>'
+            +   '<text class="so-card-label" x="' + item.labelX.toFixed(1) + '" y="' + item.labelY.toFixed(1) + '">' + label + '</text>'
+            +   (chain ? '<text class="so-card-sub" x="' + item.labelX.toFixed(1) + '" y="' + item.subY.toFixed(1) + '">' + chain + '</text>' : '')
             + '</g>';
     }).join('');
+
     canvas.innerHTML = ''
         + '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" class="stable-orbit-svg">'
         + '<defs><filter id="soBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="' + (mobile ? 7 : 9) + '"></feGaussianBlur></filter></defs>'
@@ -9804,7 +9902,7 @@ function renderStableStrategyOrbit(lang, company) {
         + '<circle class="so-center-glow" cx="' + cx + '" cy="' + cy + '" r="' + (centerR * 2.35).toFixed(1) + '"></circle>'
         + '<circle class="so-center-dot" cx="' + cx + '" cy="' + cy + '" r="' + centerR + '"></circle>'
         + '<text class="so-center-title" x="' + cx + '" y="' + (cy - 5) + '">Monetra</text>'
-        + '<text class="so-center-sub" x="' + cx + '" y="' + (cy + 16) + '">' + escapeHtml(copy.centerSub) + '</text>'
+        + '<text class="so-center-sub" x="' + cx + '" y="' + (cy + 15) + '">' + escapeHtml(copy.centerSub) + '</text>'
         + nodes
         + '</svg>';
 }
@@ -11581,8 +11679,8 @@ function buildGraph() {
     // Compact, responsive layout profiles (mobile fits the screen, no scroll)
     const mobile = (window.innerWidth || 1000) < 640;
     const P = mobile
-        ? { W:360, coX:102, prX:242, padY:18, rowH:30, fCo:12, fPr:10.5, rCoMin:5,  rCoMax:19, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
-        : { W:780, coX:172, prX:542, padY:24, rowH:35, fCo:15, fPr:12.5, rCoMin:7,  rCoMax:34, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
+        ? { W:374, coX:94, prX:236, padY:20, rowH:38, fCo:12.2, fPr:10.8, rCoMin:5, rCoMax:19, rPrMin:3.2, rPrMax:6.4, offCo:10, offPr:8, blur:3.2, railX: null, railPad: 9 }
+        : { W:842, coX:170, prX:534, padY:28, rowH:39, fCo:15, fPr:12.5, rCoMin:7, rCoMax:34, rPrMin:4, rPrMax:9, offCo:14, offPr:13, blur:5, railX: 714, railPad: 18 };
 
     // Layout order is stable (always composite) so switching lenses morphs node
     // sizes in place rather than reshuffling the map; only the SIZES follow the lens.
@@ -11610,6 +11708,7 @@ function buildGraph() {
     // including the largest — visibly re-weights when the lens changes.
     const rCo = c => P.rCoMax * Math.sqrt(Math.min(wt(c), 1));
     const protocolAprMap = computeGraphProtocolAprMap();
+    const estimateTextWidth = (label, fontPx) => Math.max(26, String(label || '').length * fontPx * 0.58);
     const maxPr = Math.max.apply(null, Object.keys(protoCount).map(k => protoCount[k]).concat([1]));
     // area ∝ number of connected companies (radius ∝ √count), so a protocol used by
     // three companies covers exactly three times the area of one used by a single company
@@ -11633,21 +11732,28 @@ function buildGraph() {
         const x = P.prX, y = prY(j), r = rPr(p);
         const hitH = (P.rowH * 0.94).toFixed(1), hitY = (y - P.rowH * 0.47).toFixed(1);
         const labelX = P.prX + P.rPrMax + P.offPr;
-        const labelY = y - (mobile ? 2.2 : 3.1);
+        const labelY = y + (mobile ? 4.2 : 4.5);
         const apr = Number(protocolAprMap[p]);
         const aprText = Number.isFinite(apr) ? stablePct(apr, 2) : '';
+        const pillH = mobile ? 16 : 18;
         const pillW = aprText ? Math.max((aprText.length * (mobile ? 5.6 : 6.2)) + 18, mobile ? 44 : 52) : 0;
-        const pillY = y + (mobile ? 5.8 : 7.2);
+        const labelWidth = estimateTextWidth(p, P.fPr);
+        const pillX = aprText
+            ? (mobile
+                ? Math.min(Math.max(labelX + Math.max(0, (labelWidth - pillW) / 2), labelX), P.W - pillW - P.railPad)
+                : Math.max(P.railX, labelX + labelWidth + 14))
+            : 0;
+        const pillY = mobile ? y + 9.5 : y - 9;
         prNodes += '<g class="g-node g-node-pr" data-pr="' + p + '">'
             + '<rect class="g-hit" x="' + (P.prX - P.rPrMax - 6) + '" y="' + hitY + '" width="' + (P.W - P.prX + P.rPrMax + 6) + '" height="' + hitH + '"></rect>'
-            + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.6).toFixed(1) + '" fill="#d8b45a" opacity="0.10" filter="url(#gGlow)"></circle>'
+            + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.8).toFixed(1) + '" fill="#d8b45a" opacity="0.10" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-pr" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"></circle>'
             + '<g class="g-label-pr-wrap">'
             +   '<text class="g-label-pr" x="' + labelX + '" y="' + labelY.toFixed(1) + '" style="font-size:' + P.fPr + 'px">' + escapeHtml(p) + '</text>'
             +   (aprText
-                    ? ('<g class="g-apr-chip" transform="translate(' + labelX + ',' + pillY.toFixed(1) + ')">'
-                        + '<rect class="g-apr-pill" x="0" y="0" rx="999" ry="999" width="' + pillW.toFixed(1) + '" height="18"></rect>'
-                        + '<text class="g-apr-text" x="' + (pillW / 2).toFixed(1) + '" y="12.3" text-anchor="middle">' + escapeHtml(aprText) + '</text>'
+                    ? ('<g class="g-apr-chip" transform="translate(' + pillX.toFixed(1) + ',' + pillY.toFixed(1) + ')">'
+                        + '<rect class="g-apr-pill" x="0" y="0" rx="999" ry="999" width="' + pillW.toFixed(1) + '" height="' + pillH + '"></rect>'
+                        + '<text class="g-apr-text" x="' + (pillW / 2).toFixed(1) + '" y="' + (mobile ? 11.2 : 12.3) + '" text-anchor="middle">' + escapeHtml(aprText) + '</text>'
                         + '</g>')
                     : '')
             + '</g>'
