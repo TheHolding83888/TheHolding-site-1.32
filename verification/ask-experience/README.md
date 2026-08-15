@@ -50,7 +50,8 @@ Current repaired generalization classes before the next fresh-seed proof include
 - APR / current-yield versus actual-result semantics;
 - first-time product navigation typo recovery;
 - RU secret slang such as `приватник`;
-- RU/phonetic claimable slang such as `клеймаблам`.
+- RU/phonetic claimable slang such as `клеймаблам`;
+- EN claimable plural morphology in the fuzzy lexicon, so one-edit typo variants normalize to the intent class rather than the exact generated phrase.
 
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
