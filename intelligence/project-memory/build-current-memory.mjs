@@ -43,6 +43,22 @@ const sourceStateAsOf = latestSourceTimes.at(-1) ?? 'n/a';
 const stateCounts = proposals?.summary?.stateCounts ?? {};
 const builderCounts = builder?.summary?.stateCounts ?? {};
 
+// CURRENT is a bootstrap for the latest independently available subsystem state,
+// not a frozen replay of the older coherent Cognitive Stack packet. Therefore the
+// standalone Security Sentinel artifact is authoritative for *current* Security.
+// The Cognitive Stack keeps its own exact historical Security binding and remains
+// authoritative for that coherent packet only.
+const securityStatus = security?.status ?? cognitive?.chain?.security?.status ?? 'unknown';
+const securityCritical = security?.severityCounts?.critical ?? cognitive?.chain?.security?.critical ?? 0;
+const securityHigh = security?.severityCounts?.high ?? cognitive?.chain?.security?.high ?? 0;
+const securityMedium = security?.severityCounts?.medium ?? cognitive?.chain?.security?.medium ?? 0;
+const securityGeneratedAt = security?.generatedAt ?? cognitive?.chain?.security?.generatedAt ?? null;
+const cognitiveSecurityGeneratedAt = cognitive?.chain?.security?.generatedAt ?? null;
+const securityNewerThanCognitive = Boolean(
+  securityGeneratedAt && cognitiveSecurityGeneratedAt &&
+  Date.parse(securityGeneratedAt) > Date.parse(cognitiveSecurityGeneratedAt)
+);
+
 const lines = [
   '# THE HOLDING — CURRENT PROJECT MEMORY BOOTSTRAP',
   '',
@@ -78,7 +94,10 @@ const lines = [
   '## Current cognitive stack',
   '',
   `- Cognitive Stack: **${String(val(cognitive?.status, 'unknown')).toUpperCase()}**; readyForManualInterpretation: ${val(cognitive?.readyForManualInterpretation, false)}; chainHash: ${val(cognitive?.integrity?.chainHash)}.`,
-  `- Security: **${String(val(cognitive?.chain?.security?.status ?? security?.status, 'unknown')).toUpperCase()}**; Critical ${val(cognitive?.chain?.security?.critical ?? security?.summary?.critical, 0)} / High ${val(cognitive?.chain?.security?.high ?? security?.summary?.high, 0)} / Medium ${val(cognitive?.chain?.security?.medium ?? security?.summary?.medium, 0)}.`,
+  `- Security Sentinel (latest standalone state): **${String(val(securityStatus, 'unknown')).toUpperCase()}**; Critical ${val(securityCritical, 0)} / High ${val(securityHigh, 0)} / Medium ${val(securityMedium, 0)}; generatedAt ${val(securityGeneratedAt)}.`,
+  ...(securityNewerThanCognitive ? [
+    `- Cognitive Stack Security snapshot is older (${val(cognitiveSecurityGeneratedAt)}); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.`
+  ] : []),
   `- Grounded Brain: **${String(val(cognitive?.chain?.groundedBrain?.status, 'unknown')).toUpperCase()}**.`,
   `- ChatGPT Bridge: **${String(val(cognitive?.chain?.chatgptBridge?.status, 'unknown')).toUpperCase()}**; cases ${val(cognitive?.chain?.chatgptBridge?.caseCount, 0)}; evidence ${val(cognitive?.chain?.chatgptBridge?.evidenceCount, 0)}; noExecution ${val(cognitive?.chain?.chatgptBridge?.noExecution, true)}.`,
   '',
@@ -119,6 +138,9 @@ fs.writeFileSync(rel('intelligence/project-memory/CURRENT.md'), lines.join('\n')
 console.log('Project Memory CURRENT.md rebuilt', {
   sourceStateAsOf,
   latestContinuity,
+  securityGeneratedAt,
+  securityCounts: { critical: securityCritical, high: securityHigh, medium: securityMedium },
+  cognitiveSecurityGeneratedAt,
   vaultRuns: vault?.runCount ?? 0,
   decisions: decisions?.decisionCount ?? 0,
   activeCases: learning?.summary?.activeCaseCount ?? 0,

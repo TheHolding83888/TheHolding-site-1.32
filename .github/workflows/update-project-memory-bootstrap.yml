@@ -11,6 +11,9 @@ on:
       # resulting canonical subsystem state is still captured by the hourly
       # backstop and by ordinary material pushes.
       - 'intelligence/operator/command.json'
+  workflow_run:
+    workflows: ["The Holding Security Sentinel"]
+    types: [completed]
   schedule:
     - cron: '17 * * * *'
   workflow_dispatch:
@@ -24,6 +27,12 @@ concurrency:
 
 jobs:
   refresh:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -46,7 +55,9 @@ jobs:
           test -s intelligence/project-memory/README.md
           test -s intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md
           test -s intelligence/project-memory/build-current-memory.mjs
+          test -s intelligence/project-memory/verify-current-memory.mjs
           node --check intelligence/project-memory/build-current-memory.mjs
+          node --check intelligence/project-memory/verify-current-memory.mjs
 
       - name: Refresh CURRENT project memory safely
         shell: bash
@@ -57,6 +68,7 @@ jobs:
 
           rebuild() {
             node intelligence/project-memory/build-current-memory.mjs
+            node intelligence/project-memory/verify-current-memory.mjs
             git diff --check
             git add intelligence/project-memory/CURRENT.md
             bad="$(git diff --cached --name-only | grep -Ev '^intelligence/project-memory/CURRENT\.md$' || true)"
@@ -100,9 +112,11 @@ jobs:
             echo
             echo "**Canonical entrypoint:** \`intelligence/project-memory/CURRENT.md\`"
             echo "**Permanent factual archive:** \`intelligence/memory-vault/\`"
+            echo "**Current Security authority:** fresh \`security/security-intelligence.json\`"
+            echo "**Post-Sentinel refresh:** enabled after successful main Security Sentinel runs"
             echo "**Model/API call:** none"
             echo "**Generated mutation boundary:** CURRENT.md only"
             echo "**Schedule:** hourly backstop at minute 17"
             echo
-            echo "The updater is deterministic and emits no commit when canonical source state has not changed."
+            echo "The updater is deterministic, verifies CURRENT against the fresh Security artifact, and emits no commit when canonical source state has not changed."
           } >> "$GITHUB_STEP_SUMMARY"
