@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-15T07:38:16.595Z",
+  "generatedAt": "2026-08-15T07:44:02.217Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 3,
+    "medium": 2,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 238,
-    "bytesScanned": 6175352,
+    "filesScanned": 239,
+    "bytesScanned": 6181515,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,51 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
-      {
-        "id": "fedb97ff102b9723a0095f5e809315937dde66e499d846523007147edb1494cd",
-        "severity": "high",
-        "category": "javascript-eval",
-        "file": "verification/ask-experience/runner-v0.1.mjs",
-        "line": 33,
-        "entity": null,
-        "summary": "JavaScript eval usage detected.",
-        "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
-        "evidence": null
-      },
-      {
-        "id": "6bbec36a254ab76d5d36da2b0b988aa38f441e0ae73f41ae99f6c9f3adc063af",
-        "severity": "high",
-        "category": "javascript-eval",
-        "file": "verification/ask-experience/runner-v0.1.mjs",
-        "line": 34,
-        "entity": null,
-        "summary": "JavaScript eval usage detected.",
-        "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
-        "evidence": null
-      },
-      {
-        "id": "8eb0b9a226edd5854851591485724e00513227280ab0f6434a836ac225991738",
-        "severity": "high",
-        "category": "javascript-eval",
-        "file": "verification/ask-experience/runner-v0.1.mjs",
-        "line": 38,
-        "entity": null,
-        "summary": "JavaScript eval usage detected.",
-        "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
-        "evidence": null
-      },
-      {
-        "id": "8d367c1d4d50a76bbf153d433e05d4a4ed872a97eaeaa0ec8e644cab99315c8e",
-        "severity": "high",
-        "category": "javascript-eval",
-        "file": "verification/ask-experience/runner-v0.1.mjs",
-        "line": 41,
-        "entity": null,
-        "summary": "JavaScript eval usage detected.",
-        "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
-        "evidence": null
-      },
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "a3761486d9e13746f5aca95970791edd62fa455c6df5b495180824fe4a6d7622",
         "severity": "medium",
@@ -113,20 +70,8 @@
           "previousSha256": "390ce17d5deed36764bc5d22fd3dc3f58cb867c42d4c28bd32fdef9da051faa3",
           "currentSha256": "42455f6dc8d7b034f9d7ab97e4d78ce4043b54f9ca84316c68cdff02bdae232d"
         }
-      },
-      {
-        "id": "3e854edf419bfedc8e58bf5b3a1e5be0bdbddbb9c327d368f41810ed26c8f813",
-        "severity": "medium",
-        "category": "unpinned-action",
-        "file": ".github/workflows/ask-experience.yml",
-        "line": 198,
-        "entity": "actions/upload-artifact@v4",
-        "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
-        "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
-        "evidence": null
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -196,20 +141,6 @@
       "evidence": null
     },
     {
-      "id": "a3761486d9e13746f5aca95970791edd62fa455c6df5b495180824fe4a6d7622",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": "agents/index.html",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: agents/index.html.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "390ce17d5deed36764bc5d22fd3dc3f58cb867c42d4c28bd32fdef9da051faa3",
-        "currentSha256": "42455f6dc8d7b034f9d7ab97e4d78ce4043b54f9ca84316c68cdff02bdae232d"
-      }
-    },
-    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -248,12 +179,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "0037424b79f9bf41d2620c6e23632634ca21cfce82039cebcb103c98a8395e21",
+    "snapshotHash": "ab8ac4595974aabbc3975048b754380b8a0116925542f02f55ad26cd17733041",
     "securityVault": {
-      "runCount": 182,
+      "runCount": 183,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T07-38-16-595Z-0037424b79.json",
-      "latestRecordHash": "eac74398f3b9977b6359f6a7855bb91f19736d54db5efb4394fc148ca83707ca",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T07-44-02-217Z-ab8ac45959.json",
+      "latestRecordHash": "96d6dba1ab6a7fb7b8f664f987f9026704ca8e173819735af9c84913164c4b6f",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
