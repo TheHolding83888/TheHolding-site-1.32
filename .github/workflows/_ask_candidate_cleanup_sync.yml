@@ -1,0 +1,51 @@
+name: "Ask candidate · Cleanup + Main Sync"
+
+on:
+  push:
+    branches: [agents/ask-evaluation-trust-v0.6.1-20260815]
+    paths:
+      - '.github/workflows/_ask_candidate_cleanup_sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: agents/ask-evaluation-trust-v0.6.1-20260815
+          fetch-depth: 0
+
+      - name: Sync fresh main and remove transient harnesses
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+          git fetch origin main
+          git merge --no-edit origin/main
+
+          rm -f \
+            .github/workflows/_ask_experience_run_002b_candidate.yml \
+            .github/workflows/_ask_mutation_gap_repair_candidate.yml \
+            .github/workflows/_ask_candidate_cleanup_sync.yml
+
+          node --check agents/console/app.js
+          test -s .github/workflows/ask-experience.yml
+          test -s verification/ask-experience/README.md
+
+          if find .github/workflows -maxdepth 1 -type f -name '_ask_*candidate*.yml' | grep -q .; then
+            echo 'ERROR: transient Ask candidate workflow remains:'
+            find .github/workflows -maxdepth 1 -type f -name '_ask_*candidate*.yml'
+            exit 1
+          fi
+
+          git add -A
+          git diff --check --cached
+          git commit -m "Ask v0.6.1: sync main and clean transient harnesses"
+          git push origin HEAD:agents/ask-evaluation-trust-v0.6.1-20260815
