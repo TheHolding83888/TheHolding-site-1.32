@@ -1,0 +1,86 @@
+name: "Ask candidate · Generalization Repair 2"
+
+on:
+  push:
+    branches: [agents/ask-evaluation-trust-v0.6.1-20260815]
+    paths:
+      - '.github/workflows/_ask_generalization_repair_2_candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: agents/ask-evaluation-trust-v0.6.1-20260815
+          fetch-depth: 0
+
+      - name: Apply semantic-class repairs and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+
+          node <<'NODE'
+          const fs = require('fs');
+          const p = 'agents/console/app.js';
+          let s = fs.readFileSync(p, 'utf8');
+
+          function replaceOnce(oldText, newText, label) {
+            if (s.includes(newText)) { console.log(label + ': already applied'); return; }
+            if (!s.includes(oldText)) throw new Error(label + ': expected anchor missing');
+            s = s.replace(oldText, newText);
+            console.log(label + ': applied');
+          }
+
+          replaceOnce(
+            "    'транзакцию', 'транзу'\n  ]);",
+            "    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам'\n  ]);",
+            'RU intent lexemes'
+          );
+
+          replaceOnce(
+            "      .replace(/ревардс|реварды|ревардсам/gi, 'rewards');",
+            "      .replace(/ревардс|реварды|ревардсам/gi, 'rewards')\n      .replace(/приватник(?:а|у|ом|е|и)?/gi, 'private key')\n      .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable');",
+            'RU slang canonicalization'
+          );
+
+          replaceOnce(
+            "      || /приватн.{0,12}ключ|закрыт.{0,12}ключ|сид.{0,8}фраз|мнемонич|фраз.{0,10}восстанов/i.test(rawText);",
+            "      || /приватн.{0,12}ключ|приватник|закрыт.{0,12}ключ|сид.{0,8}фраз|мнемонич|фраз.{0,10}восстанов/i.test(rawText);",
+            'output guard secret slang'
+          );
+
+          replaceOnce(
+            "    if (includesAny(q, ['private key', 'seed phrase', 'recovery phrase', 'приватн ключ', 'сид фраз', 'секретн ключ'])) return {",
+            "    if (includesAny(q, ['private key', 'seed phrase', 'recovery phrase', 'приватн ключ', 'приватник', 'сид фраз', 'секретн ключ'])) return {",
+            'input secret intent slang'
+          );
+
+          replaceOnce(
+            "    if ((includesAny(q, ['reference apr', 'apr', 'current yield', 'текущая доходность']) && includesAny(q, ['performance', 'прибыл', 'profit', 'actual result', 'result', 'реальная доходность', 'фактический результат', 'equal', 'равно'])) || includesAny(q, ['does that mean it performed better'])) return {",
+            "    if ((includesAny(q, ['reference apr', 'apr', 'current yield', 'текущая доходность']) && (includesAny(q, ['performance', 'прибыл', 'profit', 'actual result', 'result', 'фактический результат', 'equal', 'равно']) || /реал[а-я]{0,5}\\s+доходност/.test(q))) || includesAny(q, ['does that mean it performed better'])) return {",
+            'APR versus real-result semantic class'
+          );
+
+          fs.writeFileSync(p, s, 'utf8');
+          NODE
+
+          node --check agents/console/app.js
+          grep -F "приватник" agents/console/app.js >/dev/null
+          grep -F "клеймабл" agents/console/app.js >/dev/null
+          grep -F "реал[а-я]{0,5}" agents/console/app.js >/dev/null
+
+          rm -f .github/workflows/_ask_generalization_repair_2_candidate.yml
+          git add -A
+          git diff --check --cached
+          test "$(git diff --cached --name-only)" = "agents/console/app.js"
+          git commit -m "Ask v0.6.1: generalize RU safety rewards and result intents"
+          git push origin HEAD:agents/ask-evaluation-trust-v0.6.1-20260815
