@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-14T20:37:44.523Z**
+Canonical source state represented here: **2026-08-15T07:17:54.680Z**
 
 ## Resume order
 
@@ -23,9 +23,9 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Memory architecture
 
-- **System Memory** — current normalized state; generatedAt: 2026-08-14T07:56:41.449Z.
-- **Permanent Memory Vault** — 4 Observer record(s), 12 material event(s), retention: indefinite; hard lifetime cap: none.
-- **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-14T07-56-41-449Z-ecd2334625.json.
+- **System Memory** — current normalized state; generatedAt: 2026-08-15T07:06:08.657Z.
+- **Permanent Memory Vault** — 5 Observer record(s), 20 material event(s), retention: indefinite; hard lifetime cap: none.
+- **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-15T07-06-08-657Z-982ef7004c.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
 - **Project continuity** — this bootstrap + human continuity checkpoints + build-discipline canon.
 
