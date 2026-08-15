@@ -1,13 +1,14 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-15T07:17:54.680Z",
+  "generatedAt": "2026-08-15T07:38:16.595Z",
   "status": "watch",
-  "snapshotHash": "8b49cb4c887e8972a779db97564d8fe14f20f7038e507b4954a630e5c187332b",
+  "snapshotHash": "0037424b79f9bf41d2620c6e23632634ca21cfce82039cebcb103c98a8395e21",
   "repository": {
-    "filesScanned": 223,
-    "bytesScanned": 6079039,
+    "filesScanned": 238,
+    "bytesScanned": 6175352,
     "criticalHashes": {
+      ".github/workflows/ask-experience.yml": "fd1a2dc4c593a23190fc26d88f2093260332453e5d1609f065ae5717dd236afb",
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
       ".github/workflows/discover-company-008.yml": "1f6b40f3a3d61565bc515c7c5935d984ff40bb3a36ae2cb5fe5d6f8e901abbe9",
@@ -40,7 +41,7 @@
       ".github/workflows/update-proposal-work-queue.yml": "1e4930fe6fd4011c37220e8dfdad83779d971eaf68d04a9dfd26d282ee111691",
       ".github/workflows/update-reporting.yml": "53bfa8be818c1e58b13f4660c5d9482dc0a6ad974db62e43901161a2ae2a66d2",
       ".github/workflows/update-stable-capital.yml": "a2383747017ac6e6522c668a6187a85afab7a9e257e92fb0d2ee2b16fdb6b5b0",
-      "agents/index.html": "390ce17d5deed36764bc5d22fd3dc3f58cb867c42d4c28bd32fdef9da051faa3",
+      "agents/index.html": "42455f6dc8d7b034f9d7ab97e4d78ce4043b54f9ca84316c68cdff02bdae232d",
       "companies/index.html": "d600d2025ffd982446b35d07f2c56f4862cef5a5709cfeec8e3882dc3653284d",
       "index.html": "1378d080ce878189b39602216ca09ea0a3aab58c0e34e9c9e590dff835603189",
       "intelligence/change-intelligence-engine.mjs": "6b9ef0728e0df7eb217009251e85d5efc6d059b03419f098a1387de46631519d",
@@ -261,6 +262,50 @@
   },
   "findings": [
     {
+      "id": "fedb97ff102b9723a0095f5e809315937dde66e499d846523007147edb1494cd",
+      "severity": "high",
+      "category": "javascript-eval",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "line": 33,
+      "entity": null,
+      "summary": "JavaScript eval usage detected.",
+      "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
+      "evidence": null
+    },
+    {
+      "id": "6bbec36a254ab76d5d36da2b0b988aa38f441e0ae73f41ae99f6c9f3adc063af",
+      "severity": "high",
+      "category": "javascript-eval",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "line": 34,
+      "entity": null,
+      "summary": "JavaScript eval usage detected.",
+      "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
+      "evidence": null
+    },
+    {
+      "id": "8eb0b9a226edd5854851591485724e00513227280ab0f6434a836ac225991738",
+      "severity": "high",
+      "category": "javascript-eval",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "line": 38,
+      "entity": null,
+      "summary": "JavaScript eval usage detected.",
+      "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
+      "evidence": null
+    },
+    {
+      "id": "8d367c1d4d50a76bbf153d433e05d4a4ed872a97eaeaa0ec8e644cab99315c8e",
+      "severity": "high",
+      "category": "javascript-eval",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "line": 41,
+      "entity": null,
+      "summary": "JavaScript eval usage detected.",
+      "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
+      "evidence": null
+    },
+    {
       "id": "119c887e98b579ae9b0ac6bbead75c30b398a9d45d207b24f62f24bc71907fae",
       "severity": "high",
       "category": "privileged-trigger",
@@ -283,6 +328,20 @@
       "evidence": null
     },
     {
+      "id": "a3761486d9e13746f5aca95970791edd62fa455c6df5b495180824fe4a6d7622",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "agents/index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: agents/index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "390ce17d5deed36764bc5d22fd3dc3f58cb867c42d4c28bd32fdef9da051faa3",
+        "currentSha256": "42455f6dc8d7b034f9d7ab97e4d78ce4043b54f9ca84316c68cdff02bdae232d"
+      }
+    },
+    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -292,14 +351,25 @@
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": null
+    },
+    {
+      "id": "3e854edf419bfedc8e58bf5b3a1e5be0bdbddbb9c327d368f41810ed26c8f813",
+      "severity": "medium",
+      "category": "unpinned-action",
+      "file": ".github/workflows/ask-experience.yml",
+      "line": 198,
+      "entity": "actions/upload-artifact@v4",
+      "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
+      "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
+      "evidence": null
     }
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 181,
+    "runCount": 182,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-15T07-17-54-680Z-8b49cb4c88.json",
-    "latestRecordHash": "6f49a5acd6aa8ca33e09ee963c18986e9a0fca4c7092558d02020fa0d5be8494",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-15T07-38-16-595Z-0037424b79.json",
+    "latestRecordHash": "eac74398f3b9977b6359f6a7855bb91f19736d54db5efb4394fc148ca83707ca",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }

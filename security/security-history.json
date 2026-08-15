@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-15T07:17:54.680Z",
+  "lastUpdatedAt": "2026-08-15T07:38:16.595Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 181,
-    "vaultRunCount": 181,
+    "runCount": 182,
+    "vaultRunCount": 182,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -2185,6 +2185,18 @@
       "highCount": 2,
       "newFindingCount": 0,
       "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-15T07:38:16.595Z",
+      "status": "watch",
+      "snapshotHash": "0037424b79f9bf41d2620c6e23632634ca21cfce82039cebcb103c98a8395e21",
+      "recordPath": "security/security-vault/2026/08/2026-08-15T07-38-16-595Z-0037424b79.json",
+      "recordHash": "eac74398f3b9977b6359f6a7855bb91f19736d54db5efb4394fc148ca83707ca",
+      "findingCount": 9,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 6,
+      "resolvedFindingCount": 0
     }
   ],
   "events": [
@@ -6928,6 +6940,72 @@
       "summary": "Resolved: Security-sensitive surface changed: agents/index.html.",
       "file": "agents/index.html",
       "entity": null
+    },
+    {
+      "id": "d0e0a33e21d4d487e0d96b584c80a323c05f0d0b8fc687e1815dee6ddd64a838",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T07:38:16.595Z",
+      "findingId": "fedb97ff102b9723a0095f5e809315937dde66e499d846523007147edb1494cd",
+      "severity": "high",
+      "category": "javascript-eval",
+      "summary": "JavaScript eval usage detected.",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "entity": null
+    },
+    {
+      "id": "8e85bd585d89ee08d6b931b5f419738310589e0e00083df3e6100dc71ca0e937",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T07:38:16.595Z",
+      "findingId": "6bbec36a254ab76d5d36da2b0b988aa38f441e0ae73f41ae99f6c9f3adc063af",
+      "severity": "high",
+      "category": "javascript-eval",
+      "summary": "JavaScript eval usage detected.",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "entity": null
+    },
+    {
+      "id": "3fdba583a9391af30fac2e53d1169689477d8dc990d67a7b41d74e4ab2797a90",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T07:38:16.595Z",
+      "findingId": "8eb0b9a226edd5854851591485724e00513227280ab0f6434a836ac225991738",
+      "severity": "high",
+      "category": "javascript-eval",
+      "summary": "JavaScript eval usage detected.",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "entity": null
+    },
+    {
+      "id": "4185f3834ae42c16287b336ee2f6ce17eb70e26b5d56fbad911b269e824a33cc",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T07:38:16.595Z",
+      "findingId": "8d367c1d4d50a76bbf153d433e05d4a4ed872a97eaeaa0ec8e644cab99315c8e",
+      "severity": "high",
+      "category": "javascript-eval",
+      "summary": "JavaScript eval usage detected.",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "entity": null
+    },
+    {
+      "id": "260889d9e3b1b51e6cada7bb0a01eb6b944647d6f6f86bb9caee31d688c6f872",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T07:38:16.595Z",
+      "findingId": "a3761486d9e13746f5aca95970791edd62fa455c6df5b495180824fe4a6d7622",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: agents/index.html.",
+      "file": "agents/index.html",
+      "entity": null
+    },
+    {
+      "id": "e179b294d79db0bf0537aa934f2ff38e04ed5f8d9c1d55dff582286154f2561a",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T07:38:16.595Z",
+      "findingId": "3e854edf419bfedc8e58bf5b3a1e5be0bdbddbb9c327d368f41810ed26c8f813",
+      "severity": "medium",
+      "category": "unpinned-action",
+      "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
+      "file": ".github/workflows/ask-experience.yml",
+      "entity": "actions/upload-artifact@v4"
     }
   ]
 }

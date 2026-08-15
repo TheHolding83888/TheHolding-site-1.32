@@ -1,15 +1,15 @@
 # The Holding — Autonomous Security Intelligence
 
-**Generated:** 2026-08-15T07:17:54.680Z
+**Generated:** 2026-08-15T07:38:16.595Z
 **Sentinel:** 0.2-browser-trust-aware-security-sentinel
 
-## 2 high-signal security watch items detected; no critical secret exposure found.
+## 6 high-signal security watch items detected; no critical secret exposure found.
 
 - Critical: 0
-- High: 2
-- Medium: 1
-- New findings: 0
-- Resolved findings: 1
+- High: 6
+- Medium: 3
+- New findings: 6
+- Resolved findings: 0
 
 ## Browser trust review
 
@@ -20,13 +20,14 @@
 
 ## Protect next
 
+- **high** — Pin write-capable GitHub Actions to reviewed full commit SHAs, then let Dependabot propose controlled updates.
 - **medium** — Re-review the changed DOM rendering surface; reviewed innerHTML exemptions are valid only for exact unchanged Git blobs.
 - **roadmap** — Before interactive AI dialogue: add prompt-injection boundaries, tool permission gates, private/public context separation and immutable action audit logs.
 
 ## Permanent security memory
 
-- Security Vault runs: 181.
-- Latest record: `security/security-vault/2026/08/2026-08-15T07-17-54-680Z-8b49cb4c88.json`.
+- Security Vault runs: 182.
+- Latest record: `security/security-vault/2026/08/2026-08-15T07-38-16-595Z-0037424b79.json`.
 - Vault retention: indefinite / append-only hash chain.
 
 ---
