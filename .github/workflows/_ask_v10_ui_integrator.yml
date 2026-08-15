@@ -1,0 +1,44 @@
+name: "Ask candidate · v1.0 UI Integrator"
+
+on:
+  push:
+    branches: [agents/ask-concentration-v1.0-20260815]
+    paths:
+      - '.github/workflows/_ask_v10_ui_integrator.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: agents/ask-concentration-v1.0-20260815
+          fetch-depth: 0
+
+      - name: Sync main, apply v1.0 interface evolution, self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+          git fetch origin main
+          git merge --no-edit origin/main
+          node verification/ask-experience/patch-ask-v1.0-interface.mjs
+          node --check agents/console/app.js
+          grep -F "CAPITAL OS INTELLIGENCE <span class=\"oslab-version\">v1.0</span>" agents/index.html >/dev/null
+          grep -F "Exposure Synthesis" agents/index.html >/dev/null
+          grep -F "/agents/console/app.js?v=1.0" agents/index.html >/dev/null
+          grep -F "Где мы наиболее сконцентрированы?" agents/console/app.js >/dev/null
+          grep -F "function productiveConcentrationAnswer" agents/console/app.js >/dev/null
+          rm -f verification/ask-experience/patch-ask-v1.0-interface.mjs
+          rm -f .github/workflows/_ask_v10_ui_integrator.yml
+          git add -A
+          git diff --check --cached
+          git commit -m "Ask v1.0: expose measured concentration synthesis in OS Lab"
+          git push origin HEAD:agents/ask-concentration-v1.0-20260815
