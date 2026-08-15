@@ -1,0 +1,41 @@
+{
+  "version": "0.1-realised-cash-flow-adapter-research",
+  "generatedAt": "2026-08-15T20:20:00Z",
+  "adapters": [
+    {
+      "adapterId": "yield-basis-fee-distributor-claim",
+      "protocol": "Yield Basis",
+      "status": "researched-not-live",
+      "evidenceTierTarget": "A",
+      "productionConfigEvidence": {
+        "holdingFile": "rewards/company-rewards-engine.mjs",
+        "configuredFeeDistributor": "0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90",
+        "currentAccruedMetric": "FeeDistributor.preview_claim(receiver, 50, false)",
+        "currentClassification": "unclaimed"
+      },
+      "upstreamSourceEvidence": {
+        "repository": "yield-basis/yb-core",
+        "treeSha": "0c46a683f1187d2be1929f18dba44ad5dfd39006",
+        "path": "contracts/dao/FeeDistributor.vy",
+        "blobSha": "8456fa2298f30692694f1e0f810b7cd404990fc7",
+        "contractVersion": "0.4.3",
+        "claimEvent": "Claim(address indexed user, IERC20 indexed token, uint256 amount)",
+        "semanticObservation": "_claim transfers the payout token to the receiver and then emits Claim(user=user, token=token, amount=amount)."
+      },
+      "deploymentBinding": {
+        "sourceCodeToConfiguredAddressBytecodeVerified": false,
+        "reason": "Official source semantics and The Holding production address are both known, but exact deployed-bytecode/source binding is intentionally left unclaimed until the live adapter preflight proves it."
+      },
+      "promotionRequirements": [
+        "verify configured deployment/event signature on Ethereum",
+        "bind beneficiary to canonical company identity",
+        "collect historical Claim logs over a declared complete horizon",
+        "dedupe by physical event before adapter identity",
+        "verify token metadata and receipt semantics",
+        "publish token quantities without inventing historical USD valuation",
+        "pass independent ledger review"
+      ],
+      "executionAuthority": "none"
+    }
+  ]
+}
