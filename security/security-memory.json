@@ -1,14 +1,14 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-15T07:48:20.602Z",
+  "generatedAt": "2026-08-15T08:13:21.117Z",
   "status": "watch",
-  "snapshotHash": "bc566e7a2bd66175a709f994ec6ebe2206983a7ae573af3830d3c13411b99439",
+  "snapshotHash": "d69ccfb1fd5a159483dc5d17ff506d16b5cd36d57360a5f6ffa2d3fb6ade737e",
   "repository": {
     "filesScanned": 239,
-    "bytesScanned": 6181517,
+    "bytesScanned": 6230223,
     "criticalHashes": {
-      ".github/workflows/ask-experience.yml": "fd1a2dc4c593a23190fc26d88f2093260332453e5d1609f065ae5717dd236afb",
+      ".github/workflows/ask-experience.yml": "628cfb366dda108ab82b0c1938c9d7912f81a7859f3271a394d74538c65d34cf",
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
       ".github/workflows/discover-company-007.yml": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
       ".github/workflows/discover-company-008.yml": "1f6b40f3a3d61565bc515c7c5935d984ff40bb3a36ae2cb5fe5d6f8e901abbe9",
@@ -41,7 +41,7 @@
       ".github/workflows/update-proposal-work-queue.yml": "1e4930fe6fd4011c37220e8dfdad83779d971eaf68d04a9dfd26d282ee111691",
       ".github/workflows/update-reporting.yml": "53bfa8be818c1e58b13f4660c5d9482dc0a6ad974db62e43901161a2ae2a66d2",
       ".github/workflows/update-stable-capital.yml": "a2383747017ac6e6522c668a6187a85afab7a9e257e92fb0d2ee2b16fdb6b5b0",
-      "agents/index.html": "42455f6dc8d7b034f9d7ab97e4d78ce4043b54f9ca84316c68cdff02bdae232d",
+      "agents/index.html": "4e6b521e6226158bc9e85c75f4cced911ac427980f0d3005e71f2caf9fe695c8",
       "companies/index.html": "d600d2025ffd982446b35d07f2c56f4862cef5a5709cfeec8e3882dc3653284d",
       "index.html": "1378d080ce878189b39602216ca09ea0a3aab58c0e34e9c9e590dff835603189",
       "intelligence/change-intelligence-engine.mjs": "6b9ef0728e0df7eb217009251e85d5efc6d059b03419f098a1387de46631519d",
@@ -246,7 +246,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Fri, 14 Aug 2026 06:09:13 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -328,6 +328,34 @@
       "evidence": null
     },
     {
+      "id": "6f0171894ff42ffead852246ea02882476010cb383f299b10c25e47668c50f5b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/ask-experience.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "fd1a2dc4c593a23190fc26d88f2093260332453e5d1609f065ae5717dd236afb",
+        "currentSha256": "628cfb366dda108ab82b0c1938c9d7912f81a7859f3271a394d74538c65d34cf"
+      }
+    },
+    {
+      "id": "42c4683ccaa46820aa5b4d3299bcbf4d7d3845a6ea31893d202563deec620d88",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "agents/index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: agents/index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "42455f6dc8d7b034f9d7ab97e4d78ce4043b54f9ca84316c68cdff02bdae232d",
+        "currentSha256": "4e6b521e6226158bc9e85c75f4cced911ac427980f0d3005e71f2caf9fe695c8"
+      }
+    },
+    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -339,11 +367,11 @@
       "evidence": null
     },
     {
-      "id": "3e854edf419bfedc8e58bf5b3a1e5be0bdbddbb9c327d368f41810ed26c8f813",
+      "id": "0be1af9c7e70cf3300f9e892b4c94ecf06b02322e25457130386b415e6cd0fd1",
       "severity": "medium",
       "category": "unpinned-action",
       "file": ".github/workflows/ask-experience.yml",
-      "line": 198,
+      "line": 195,
       "entity": "actions/upload-artifact@v4",
       "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
       "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
@@ -352,10 +380,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 184,
+    "runCount": 185,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-15T07-48-20-602Z-bc566e7a2b.json",
-    "latestRecordHash": "9ae101db774e1b405195095095a607078bbdc954de6c60dca0451a96fb0c26ee",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-15T08-13-21-117Z-d69ccfb1fd.json",
+    "latestRecordHash": "b746224682a029a567a7afe57f6c444a060ea42fae4e31228d029a8c5b205017",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }

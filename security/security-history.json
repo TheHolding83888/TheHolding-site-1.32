@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-15T07:48:20.602Z",
+  "lastUpdatedAt": "2026-08-15T08:13:21.117Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 184,
-    "vaultRunCount": 184,
+    "runCount": 185,
+    "vaultRunCount": 185,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -2221,6 +2221,18 @@
       "highCount": 6,
       "newFindingCount": 0,
       "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-15T08:13:21.117Z",
+      "status": "watch",
+      "snapshotHash": "d69ccfb1fd5a159483dc5d17ff506d16b5cd36d57360a5f6ffa2d3fb6ade737e",
+      "recordPath": "security/security-vault/2026/08/2026-08-15T08-13-21-117Z-d69ccfb1fd.json",
+      "recordHash": "b746224682a029a567a7afe57f6c444a060ea42fae4e31228d029a8c5b205017",
+      "findingCount": 10,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 3,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -7041,6 +7053,50 @@
       "summary": "Resolved: Security-sensitive surface changed: agents/index.html.",
       "file": "agents/index.html",
       "entity": null
+    },
+    {
+      "id": "53b4a7b21266230c25ff5d76ed75172c78ab6868ee2ecfb75a24d8e836188bf2",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T08:13:21.117Z",
+      "findingId": "6f0171894ff42ffead852246ea02882476010cb383f299b10c25e47668c50f5b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+      "file": ".github/workflows/ask-experience.yml",
+      "entity": null
+    },
+    {
+      "id": "2e922a5f2835017d61c5d0697121599e132ca3f8bf4d929aa842a5a1ee9a787c",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T08:13:21.117Z",
+      "findingId": "42c4683ccaa46820aa5b4d3299bcbf4d7d3845a6ea31893d202563deec620d88",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: agents/index.html.",
+      "file": "agents/index.html",
+      "entity": null
+    },
+    {
+      "id": "316b5996bbb2ca2a1ffdf84a9291955ef98dbf48109904d13762c33c6006439b",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T08:13:21.117Z",
+      "findingId": "0be1af9c7e70cf3300f9e892b4c94ecf06b02322e25457130386b415e6cd0fd1",
+      "severity": "medium",
+      "category": "unpinned-action",
+      "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
+      "file": ".github/workflows/ask-experience.yml",
+      "entity": "actions/upload-artifact@v4"
+    },
+    {
+      "id": "176ac8f902586c5f3cd5a7eea2e2faaf5d4955705c5376cae11ad4d3f67eebf7",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-15T08:13:21.117Z",
+      "findingId": "3e854edf419bfedc8e58bf5b3a1e5be0bdbddbb9c327d368f41810ed26c8f813",
+      "severity": "medium",
+      "category": "unpinned-action",
+      "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
+      "file": ".github/workflows/ask-experience.yml",
+      "entity": "actions/upload-artifact@v4"
     }
   ]
 }
