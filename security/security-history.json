@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-15T14:17:09.872Z",
+  "lastUpdatedAt": "2026-08-15T14:19:52.750Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 200,
-    "vaultRunCount": 200,
+    "runCount": 201,
+    "vaultRunCount": 201,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -2413,6 +2413,18 @@
       "highCount": 6,
       "newFindingCount": 3,
       "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-15T14:19:52.750Z",
+      "status": "watch",
+      "snapshotHash": "4be499c577bb6829fcff6df5bcb51377ec1bbce4c94a5f8628fa032192dfa16e",
+      "recordPath": "security/security-vault/2026/08/2026-08-15T14-19-52-750Z-4be499c577.json",
+      "recordHash": "8966e8df3bac2efda358c8b1dd39c58b8a50553813b8191e5b806988a678626b",
+      "findingCount": 26,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 0,
+      "resolvedFindingCount": 2
     }
   ],
   "events": [
@@ -8949,6 +8961,28 @@
       "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
       "file": ".github/workflows/ask-experience.yml",
       "entity": "actions/upload-artifact@v4"
+    },
+    {
+      "id": "d3feda7ba0d48856a4a3dd560d656036c933060542c9aeb91e79099fb6622833",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-15T14:19:52.750Z",
+      "findingId": "2227d6989b54d893c770c3beaaf6958073785da14e8cb7f9502eb4cd0b70fed3",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+      "file": ".github/workflows/ask-experience.yml",
+      "entity": null
+    },
+    {
+      "id": "d7e295455d55b96c58cc0c3b2a26f968c5a70460bc257f5a4b06cbd615decb96",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-15T14:19:52.750Z",
+      "findingId": "571ade8f1de4a8fa9ef55a9c603e2bb99e8ac4bc102270c2b52f1fa728f5528b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: agents/index.html.",
+      "file": "agents/index.html",
+      "entity": null
     }
   ]
 }
