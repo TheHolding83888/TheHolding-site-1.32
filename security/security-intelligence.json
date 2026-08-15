@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-15T14:01:45.006Z",
+  "generatedAt": "2026-08-15T14:17:09.872Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 20,
+    "medium": 22,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 249,
-    "bytesScanned": 6382952,
+    "filesScanned": 252,
+    "bytesScanned": 6396626,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,8 +55,60 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": []
+    "newFindings": [
+      {
+        "id": "2227d6989b54d893c770c3beaaf6958073785da14e8cb7f9502eb4cd0b70fed3",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/ask-experience.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "a024d27f4af3fec7742531112c78e1f8fbbc657a3d3af1e1a52b6966da894443",
+          "currentSha256": "b3dd51bd95e6b4955f17f06fb68360196231d9b6c11a18f2fe55e445b2cc6876"
+        }
+      },
+      {
+        "id": "571ade8f1de4a8fa9ef55a9c603e2bb99e8ac4bc102270c2b52f1fa728f5528b",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": "agents/index.html",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: agents/index.html.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "fa7d8041290944a29d790d79943d6adbbd62868079959fb6e24e8c77c71a5c14",
+          "currentSha256": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915"
+        }
+      },
+      {
+        "id": "5aab93288228b0250fffc8aaeeb280170946d4c8ac4a412d30824c14076b429e",
+        "severity": "medium",
+        "category": "unpinned-action",
+        "file": ".github/workflows/ask-experience.yml",
+        "line": 218,
+        "entity": "actions/upload-artifact@v4",
+        "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
+        "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
+        "evidence": null
+      }
+    ],
+    "resolvedFindings": [
+      {
+        "id": "7b3a6d2b82b38ac63664f261de4943aba6b87e69a0c173f705050d37ebca1115",
+        "severity": "medium",
+        "category": "unpinned-action",
+        "file": ".github/workflows/ask-experience.yml",
+        "line": 212,
+        "entity": "actions/upload-artifact@v4",
+        "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
+        "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
+        "evidence": null
+      }
+    ]
   },
   "currentFindings": [
     {
@@ -124,6 +176,34 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "2227d6989b54d893c770c3beaaf6958073785da14e8cb7f9502eb4cd0b70fed3",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/ask-experience.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "a024d27f4af3fec7742531112c78e1f8fbbc657a3d3af1e1a52b6966da894443",
+        "currentSha256": "b3dd51bd95e6b4955f17f06fb68360196231d9b6c11a18f2fe55e445b2cc6876"
+      }
+    },
+    {
+      "id": "571ade8f1de4a8fa9ef55a9c603e2bb99e8ac4bc102270c2b52f1fa728f5528b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "agents/index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: agents/index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "fa7d8041290944a29d790d79943d6adbbd62868079959fb6e24e8c77c71a5c14",
+        "currentSha256": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -443,11 +523,11 @@
       }
     },
     {
-      "id": "7b3a6d2b82b38ac63664f261de4943aba6b87e69a0c173f705050d37ebca1115",
+      "id": "5aab93288228b0250fffc8aaeeb280170946d4c8ac4a412d30824c14076b429e",
       "severity": "medium",
       "category": "unpinned-action",
       "file": ".github/workflows/ask-experience.yml",
-      "line": 212,
+      "line": 218,
       "entity": "actions/upload-artifact@v4",
       "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
       "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
@@ -470,12 +550,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "0b005a8084b3fc8359575e0d485700b589dfd58cd9caed5c998c4e98bac1eed0",
+    "snapshotHash": "ee79a1892af5ba501bfe872838f14c412c83bd7b3f93c34c62eac3a8614e0a49",
     "securityVault": {
-      "runCount": 199,
+      "runCount": 200,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T14-01-45-006Z-0b005a8084.json",
-      "latestRecordHash": "f24234dc19c8b85b5a5acddb69a37ed7275faaa0a376f66dab4ff7ec99c3ecec",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T14-17-09-872Z-ee79a1892a.json",
+      "latestRecordHash": "df819137be686f5297c45d99cc1ff2360345dafde98738f9f88b6f60554030a5",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
