@@ -75,6 +75,8 @@ function forbiddenHit(text, forbidden) {
 const results = [];
 let falseMeasured = 0;
 let measuredCount = 0;
+let falseUnknown = 0;
+let expectedAnswerableCount = 0;
 let sourceFitCount = 0;
 let confidenceFitCount = 0;
 let answerPatternFitCount = 0;
@@ -97,6 +99,7 @@ for (const test of corpus.cases || []) {
     forbiddenHit: null,
     intentProxyFit: false,
     falseMeasured: false,
+    falseUnknown: false,
     strictPass: false
   };
   if (!row) {
@@ -113,16 +116,22 @@ for (const test of corpus.cases || []) {
   r.answerPatternFit = containsPattern(row.answer || row.text || '', test.requiredAnswerPattern);
   r.forbiddenHit = forbiddenHit(row.answer || row.text || '', test.forbiddenSubstitution);
   if (r.actualConfidence === 'measured') measuredCount++;
+  if (test.expectedConfidence && test.expectedConfidence !== 'unknown') expectedAnswerableCount++;
 
   // Until Ask exposes a canonical intent enum in the Answer Contract, intent correctness is proxied by
   // required answer semantics + source fit + forbidden-substitution checks. Query-understanding may later
   // replace only this proxy; deterministic source/confidence/output gates remain authoritative.
   r.intentProxyFit = r.answerPatternFit && r.sourceFit && r.additionalSourceFit && !r.forbiddenHit;
 
-  // A MEASURED answer is false-confident when its intent/source proxy fails OR the annotated corpus says
-  // the correct confidence should be lower. Correct UNKNOWN is therefore a success, not a coverage failure.
+  // False-MEASURED protects against semantic overclaiming.
   r.falseMeasured = r.actualConfidence === 'measured' && (!r.intentProxyFit || (test.expectedConfidence && test.expectedConfidence !== 'measured'));
   if (r.falseMeasured) falseMeasured++;
+
+  // False-UNKNOWN is the symmetric epistemic failure: the annotated case is answerable from current
+  // capability/evidence, but Ask refuses it as UNKNOWN. This is deliberately separate from ordinary
+  // confidence mismatch so over-refusal can be measured directly rather than hidden inside one score.
+  r.falseUnknown = r.actualConfidence === 'unknown' && Boolean(test.expectedConfidence) && test.expectedConfidence !== 'unknown';
+  if (r.falseUnknown) falseUnknown++;
 
   r.strictPass = r.intentProxyFit && r.confidenceFit;
   if (!r.strictPass) strictFailures++;
@@ -135,13 +144,16 @@ for (const test of corpus.cases || []) {
 const rate = (n, d) => d ? Number((n / d).toFixed(6)) : 0;
 const corpusCases = (corpus.cases || []).length;
 const falseMeasuredRate = rate(falseMeasured, measuredCount);
+const falseUnknownRate = rate(falseUnknown, expectedAnswerableCount);
 const complete = evaluated === corpusCases;
-const trustGate = falseMeasured === 0 && complete ? 'PASS' : 'FAIL';
+const falseUnknownTarget = corpus?.target?.falseUnknownRate;
+const enforceFalseUnknown = falseUnknownTarget === 0;
+const trustGate = falseMeasured === 0 && (!enforceFalseUnknown || falseUnknown === 0) && complete ? 'PASS' : 'FAIL';
 const strictInvariantGate = strictFailures === 0 && complete ? 'PASS' : 'FAIL';
 const releaseGate = corpus.frozen === true ? strictInvariantGate : trustGate;
 
 const summary = {
-  version: '0.2-origin-scoped-false-measured-evaluator',
+  version: '0.3-origin-scoped-two-sided-epistemic-evaluator',
   origin: run.origin || corpus.origin || 'synthetic-regression',
   corpusVersion: corpus.version,
   runVersion: run.version || null,
@@ -152,6 +164,10 @@ const summary = {
   measuredCount,
   falseMeasuredCount: falseMeasured,
   falseMeasuredRate,
+  expectedAnswerableCount,
+  falseUnknownCount: falseUnknown,
+  falseUnknownRate,
+  falseUnknownEnforced: enforceFalseUnknown,
   sourceFitRate: rate(sourceFitCount, evaluated),
   expectedConfidenceFitRate: rate(confidenceFitCount, evaluated),
   requiredAnswerPatternFitRate: rate(answerPatternFitCount, evaluated),
@@ -160,7 +176,7 @@ const summary = {
   strictInvariantGate,
   releaseGate,
   crossOriginAggregateScore: false,
-  note: 'Metrics are scoped to one evidence origin. Intent is currently evaluated via a strict proxy because the Answer Contract does not yet expose actualIntent.'
+  note: 'Metrics are origin-scoped. falseMeasured protects against overclaiming; falseUnknown measures over-refusal on annotated answerable cases. Intent remains proxied by answer semantics/source fit until a canonical answer-side intent surface exists.'
 };
 
 const output = { summary, results };
