@@ -120,7 +120,7 @@
     'монетра', 'монетру', 'монетре', 'дефити', 'дефитеа', 'йелд', 'елд', 'бейсис',
     'аэродром', 'велодром', 'ревардс', 'реварды', 'ревардсам', 'награды', 'компания',
     'компании', 'использует', 'используют', 'продуктивность', 'доходность', 'сравни',
-    'транзакцию', 'транзу'
+    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам'
   ]);
 
   function fuzzyKnownRuLexemes(text) {
@@ -143,7 +143,9 @@
       .replace(/(?:йелд|елд)\s+бейсис/gi, 'yield basis')
       .replace(/аэродром/gi, 'aerodrome')
       .replace(/велодром/gi, 'velodrome')
-      .replace(/ревардс|реварды|ревардсам/gi, 'rewards');
+      .replace(/ревардс|реварды|ревардсам/gi, 'rewards')
+      .replace(/приватник(?:а|у|ом|е|и)?/gi, 'private key')
+      .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable');
   }
 
   const norm = text => canonicalizeHumanAliases(String(text || ''))
@@ -378,7 +380,7 @@
     const authorityRequest = /(?:sign|confirm|approve|execute).{0,30}(?:tx|transaction)|(?:tx|transaction).{0,30}(?:sign|confirm|approve|execute)|move.{0,20}(?:my|the).{0,12}capital|on my behalf.{0,30}(?:tx|transaction)/i.test(rawText)
       || /(?:подпис|подтверд|заапрув|исполн).{0,30}(?:транз|tx)|(?:транз|tx).{0,30}(?:подпис|подтверд|заапрув|исполн)|двиг.{0,20}капитал/i.test(rawText);
     const secretRequest = /private\s+key|seed\s+phrase|recovery\s+phrase|mnemonic|secret\s+key/i.test(rawText)
-      || /приватн.{0,12}ключ|закрыт.{0,12}ключ|сид.{0,8}фраз|мнемонич|фраз.{0,10}восстанов/i.test(rawText);
+      || /приватн.{0,12}ключ|приватник|закрыт.{0,12}ключ|сид.{0,8}фраз|мнемонич|фраз.{0,10}восстанов/i.test(rawText);
     const personalizedAdviceRequest = /(?:what|which).{0,24}(?:should|recommend).{0,20}(?:i|me).{0,16}(?:buy|sell|allocate)|exact\s+allocation.{0,20}(?:i|my|me)|what\s+should\s+i\s+buy/i.test(rawText)
       || /(?:что|куда).{0,16}(?:мне|я).{0,16}(?:купить|продать|вложить|аллоцир)|точн.{0,12}аллокац.{0,20}(?:мне|мой)/i.test(rawText);
 
@@ -1270,7 +1272,7 @@ async function loadLazy(kind) {
   }
 
   function trustIntentAnswer(q, lang) {
-    if (includesAny(q, ['private key', 'seed phrase', 'recovery phrase', 'приватн ключ', 'сид фраз', 'секретн ключ'])) return {
+    if (includesAny(q, ['private key', 'seed phrase', 'recovery phrase', 'приватн ключ', 'приватник', 'сид фраз', 'секретн ключ'])) return {
       text: lang === 'ru' ? 'Я не раскрываю и не ищу private keys, seed/recovery phrases или другие секреты. The Holding OS не должен выдавать такие данные через Ask.' : 'I will not reveal or search for private keys, seed/recovery phrases or other secrets. The Holding OS must not expose such data through Ask.',
       source: 'The Holding project canon'
     };
@@ -1282,7 +1284,7 @@ async function loadLazy(kind) {
     if (includesAny(q, ['sharpe', 'коэффициент шарпа'])) return { text: lang === 'ru' ? 'В текущих подтверждённых данных нет Sharpe ratio под этот период. Я не буду подменять его текущим APY или APR.' : 'The current verified data has no Sharpe ratio for that period. I will not substitute current APY or APR for it.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
     if (includesAny(q, ['next friday', 'следующ пятниц', 'forecast', 'predict', 'прогноз'])) return { text: lang === 'ru' ? 'У The Holding нет подтверждённого будущего значения цены. Я не буду выдавать прогноз как факт.' : 'The Holding has no verified future price value. I will not present a forecast as a fact.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
     if (includesAny(q, ['before tracking', 'до начала наблюден', 'march 2026', 'март 2026'])) return { text: lang === 'ru' ? 'Если период предшествует tracking и не был backfilled, точного дохода в текущих данных нет. Я не буду подменять его сегодняшней доходностью.' : 'If the period predates tracking and was not backfilled, the current data has no exact income figure. I will not substitute today’s yield.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
-    if ((includesAny(q, ['reference apr', 'apr', 'current yield', 'текущая доходность']) && includesAny(q, ['performance', 'прибыл', 'profit', 'actual result', 'result', 'реальная доходность', 'фактический результат', 'equal', 'равно'])) || includesAny(q, ['does that mean it performed better'])) return { text: lang === 'ru' ? 'Нет. Reference APR – текущая доходная способность. Performance – фактический результат относительно точки входа. Более высокий APR сейчас не доказывает лучшую историческую performance.' : 'No. Reference APR is current earning capacity. Performance is the actual result versus the entry point. A higher APR now does not prove better historical performance.', source: 'The Holding project canon' };
+    if ((includesAny(q, ['reference apr', 'apr', 'current yield', 'текущая доходность']) && (includesAny(q, ['performance', 'прибыл', 'profit', 'actual result', 'result', 'фактический результат', 'equal', 'равно']) || /реал[а-я]{0,5}\s+доходност/.test(q))) || includesAny(q, ['does that mean it performed better'])) return { text: lang === 'ru' ? 'Нет. Reference APR – текущая доходная способность. Performance – фактический результат относительно точки входа. Более высокий APR сейчас не доказывает лучшую историческую performance.' : 'No. Reference APR is current earning capacity. Performance is the actual result versus the entry point. A higher APR now does not prove better historical performance.', source: 'The Holding project canon' };
     if (includesAny(q, ['каждое наблюдение становится предложением', 'does every observation become a proposal', 'every observation become a proposal'])) return whyFilteredAnswer(lang);
     if (includesAny(q,['где тут доход вообще','что уже заработано но еще не пришло','what is already earned but not received'])) return conceptAnswer('слои капитала productivity rewards embedded yield cash flow',lang);
     if (includesAny(q,['что само внутри позиции растет','what grows inside the position'])) return conceptAnswer('embedded yield',lang);
