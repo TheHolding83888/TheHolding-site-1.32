@@ -85,7 +85,7 @@
     'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
     'rewards', 'reward', 'claimable', 'claimables', 'companies', 'company', 'using', 'compare', 'productivity',
     'performance', 'profit', 'embedded', 'current', 'first', 'where', 'registry', 'passport', 'learning', 'proposal', 'builder',
-    'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure'
+    'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure', 'begin'
   ]);
 
   function editDistanceAtMostOne(a, b) {
@@ -129,7 +129,7 @@
     'монетра', 'монетру', 'монетре', 'дефити', 'дефитеа', 'йелд', 'елд', 'бейсис',
     'аэродром', 'велодром', 'ревардс', 'реварды', 'ревардсам', 'награды', 'компания',
     'компании', 'использует', 'используют', 'продуктивность', 'доходность', 'сравни',
-    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам'
+    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам', 'компани'
   ]);
 
   function fuzzyKnownRuLexemes(text) {
@@ -154,7 +154,8 @@
       .replace(/велодром/gi, 'velodrome')
       .replace(/ревардс|реварды|ревардсам/gi, 'rewards')
       .replace(/приватник(?:а|у|ом|е|и)?/gi, 'private key')
-      .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable');
+      .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable')
+      .replace(/\bкомпани\b/gi, 'компании');
   }
 
   const norm = text => canonicalizeHumanAliases(String(text || ''))
