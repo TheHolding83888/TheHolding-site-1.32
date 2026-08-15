@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const VERSION = '0.2-compositional-understanding-firewall';
+  const VERSION = '0.1-intent-contract-firewall';
 
   const ALLOWED_INTENTS = Object.freeze([
     'unknown',
@@ -29,90 +29,32 @@
   ]);
 
   const ALLOWED_METRICS = Object.freeze([
-    'none',
-    'apr',
-    'apy',
-    'productivity',
-    'rewards',
-    'claimable',
-    'embedded-yield',
-    'entry-price',
-    'capital',
-    'performance',
-    'concentration',
-    'change',
-    'security',
-    'learning',
-    'governance'
+    'none', 'apr', 'apy', 'productivity', 'rewards', 'claimable', 'embedded-yield',
+    'entry-price', 'capital', 'performance', 'concentration', 'change', 'security',
+    'learning', 'governance'
   ]);
 
   const ALLOWED_COMPARISONS = Object.freeze([
-    'none',
-    'largest',
-    'smallest',
-    'highest',
-    'lowest',
-    'most-concentrated',
-    'least-concentrated',
-    'widest-evidence',
-    'thinnest-evidence'
+    'none', 'largest', 'smallest', 'highest', 'lowest', 'most-concentrated',
+    'least-concentrated', 'widest-evidence', 'thinnest-evidence'
   ]);
 
   const ALLOWED_TIMEFRAMES = Object.freeze([
-    'current',
-    'latest',
-    'today',
-    'mtd',
-    'qtd',
-    'ytd',
-    'since-tracking',
-    'unspecified'
+    'current', 'latest', 'today', 'mtd', 'qtd', 'ytd', 'since-tracking', 'unspecified'
   ]);
 
-  const ALLOWED_OPERATIONS = Object.freeze([
-    'none',
-    'get',
-    'compare',
-    'summarize',
-    'explain',
-    'rank',
-    'assess'
-  ]);
-
-  const ALLOWED_SCOPES = Object.freeze([
-    'unspecified',
-    'system',
-    'company',
-    'cross-company',
-    'protocol'
-  ]);
+  const ALLOWED_OPERATIONS = Object.freeze(['none', 'get', 'compare', 'summarize', 'explain', 'rank', 'assess']);
+  const ALLOWED_SCOPES = Object.freeze(['unspecified', 'system', 'company', 'cross-company', 'protocol']);
 
   const ALLOWED_PRIMITIVES = Object.freeze([
-    'company-identity',
-    'company-purpose',
-    'current-strategy-book',
-    'productivity',
-    'rewards',
-    'embedded-yield',
-    'strategy-entry',
-    'change-intelligence',
-    'security-state',
-    'learning-state',
-    'proposal-state',
-    'concentration',
-    'realised-cash-flow',
-    'maturity-reputation',
-    'protocol-state',
-    'navigation',
-    'authority-boundary',
-    'unmodeled'
+    'company-identity', 'company-purpose', 'current-strategy-book', 'productivity', 'rewards',
+    'embedded-yield', 'strategy-entry', 'change-intelligence', 'security-state', 'learning-state',
+    'proposal-state', 'concentration', 'realised-cash-flow', 'maturity-reputation', 'protocol-state',
+    'navigation', 'authority-boundary', 'unmodeled'
   ]);
 
   const ALLOWED_MISSING_PRIMITIVES = Object.freeze([
-    'company-purpose',
-    'realised-cash-flow',
-    'maturity-reputation',
-    'unmodeled'
+    'company-purpose', 'realised-cash-flow', 'maturity-reputation', 'unmodeled'
   ]);
 
   const ALLOWED_KEYS = new Set([
@@ -123,9 +65,8 @@
   const FORBIDDEN_KEYS = new Set([
     'answer', 'text', 'response', 'source', 'sources', 'sourceArtifacts', 'sourcePreference',
     'evidence', 'evidenceIds', 'citations', 'confidence', 'confidenceClass', 'grounded',
-    'execution', 'execute', 'action', 'transaction', 'tx', 'signature', 'sign',
-    'wallet', 'privateKey', 'seedPhrase', 'methodology', 'policy', 'authority', 'permissions',
-    'mandate', 'mutation'
+    'execution', 'execute', 'action', 'transaction', 'tx', 'signature', 'sign', 'wallet',
+    'privateKey', 'seedPhrase', 'methodology', 'policy', 'authority', 'permissions', 'mandate', 'mutation'
   ]);
 
   const allowedIntents = new Set(ALLOWED_INTENTS);
@@ -138,13 +79,7 @@
   const allowedMissingPrimitives = new Set(ALLOWED_MISSING_PRIMITIVES);
 
   function reject(reason, detail) {
-    return Object.freeze({
-      ok: false,
-      version: VERSION,
-      reason,
-      detail: detail || null,
-      envelope: null
-    });
+    return Object.freeze({ ok: false, version: VERSION, reason, detail: detail || null, envelope: null });
   }
 
   function cleanScalar(value, maxLength) {
@@ -204,9 +139,7 @@
   }
 
   function validate(candidate) {
-    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
-      return reject('candidate-not-object');
-    }
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return reject('candidate-not-object');
 
     const keys = Object.keys(candidate);
     for (const key of keys) {
@@ -214,9 +147,7 @@
       if (!ALLOWED_KEYS.has(key)) return reject('unknown-key', key);
     }
 
-    if (candidate.version !== undefined && candidate.version !== VERSION) {
-      return reject('unsupported-version', String(candidate.version));
-    }
+    if (candidate.version !== undefined && candidate.version !== VERSION) return reject('unsupported-version', String(candidate.version));
 
     const intent = cleanScalar(candidate.intent, 64);
     if (!intent || !allowedIntents.has(intent)) return reject('invalid-intent', intent || null);
@@ -245,9 +176,7 @@
     const missingPrimitives = cleanMissingPrimitives(candidate.missingPrimitives);
     if (missingPrimitives === null) return reject('invalid-missing-primitives');
 
-    if (intent === 'authority-boundary' && requestedMetric !== 'none') {
-      return reject('authority-intent-cannot-request-metric');
-    }
+    if (intent === 'authority-boundary' && requestedMetric !== 'none') return reject('authority-intent-cannot-request-metric');
 
     if (intent === 'composite') {
       if (decomposition.length < 2) return reject('composite-requires-decomposition');
