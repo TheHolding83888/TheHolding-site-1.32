@@ -28,6 +28,15 @@ jobs:
           git config user.name "The Holding Production Integrator"
           git config user.email "production-integrator@theholding.ai"
 
+          node <<'NODE'
+          const fs = require('fs');
+          const p = 'verification/ask-experience/patch-change-salience-v0.8.mjs';
+          let t = fs.readFileSync(p, 'utf8');
+          t = t.replace('const helper = `', 'const helper = String.raw`');
+          t = t.replace('  }`;\nreplaceOnce(helperAnchor', '  }`.replaceAll(String.raw`\\\\n`, String.raw`\\n`);\nreplaceOnce(helperAnchor');
+          fs.writeFileSync(p, t, 'utf8');
+          NODE
+
           node verification/ask-experience/patch-change-salience-v0.8.mjs
           node --check agents/console/app.js
 
