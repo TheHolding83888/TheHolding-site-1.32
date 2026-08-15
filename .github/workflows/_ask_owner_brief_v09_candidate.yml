@@ -1,0 +1,44 @@
+name: "Ask candidate · Owner Brief v0.9"
+
+on:
+  push:
+    branches: [agents/ask-owner-brief-v0.9-20260815]
+    paths:
+      - '.github/workflows/_ask_owner_brief_v09_candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: agents/ask-owner-brief-v0.9-20260815
+          fetch-depth: 0
+
+      - name: Apply bounded cross-source owner brief and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+          node verification/ask-experience/patch-owner-brief-v0.9.mjs
+          node --check agents/console/app.js
+          grep -F "securityIntelligence: '/security/security-intelligence.json'" agents/console/app.js >/dev/null
+          grep -F "function ownerBriefAnswer" agents/console/app.js >/dev/null
+          grep -F "counts must not be added as independent problems" agents/console/app.js >/dev/null
+          grep -F "Что реально требует внимания?" agents/console/app.js >/dev/null
+          rm -f verification/ask-experience/patch-owner-brief-v0.9.mjs
+          rm -f .github/workflows/_ask_owner_brief_v09_candidate.yml
+          git add -A
+          git diff --check --cached
+          expected=$'.github/workflows/_ask_owner_brief_v09_candidate.yml\nagents/console/app.js\nverification/ask-experience/patch-owner-brief-v0.9.mjs'
+          actual="$(git diff --cached --name-only | sort)"
+          test "$actual" = "$expected"
+          git commit -m "Ask v0.9: add cross-source owner brief"
+          git push origin HEAD:agents/ask-owner-brief-v0.9-20260815
