@@ -66,6 +66,8 @@ For USD-denominated change events, salience must respect **economic magnitude**.
 
 Cross-source Owner Brief synthesis must keep current Security, Learning/Proposal governance and Change Intelligence as distinct but correlated views. Security → Learning → Proposal counts must not be added as if they were independent problems. Fresh subsystem state outranks an older coherent snapshot for current counts, while the coherent snapshot remains authoritative for its own exact observation time.
 
+Cross-company concentration synthesis must remain a **measured exposure view**, not an invented risk score. Ordinary Productivity may aggregate measured productive USD by protocol/company from canonical breakdown rows. Stable Capital remains a separate measurement universe and may expose its own protocol/chain concentration, but the two universes must not be silently collapsed into one risk number. Unknown/warming productive capital must be disclosed and lowers confidence when it could change ordering. Concentration indicates dependency on a protocol/layer; it does not prove loss probability and must not become a personalized reallocation command.
+
 ## Interface evolution law
 
 The Ask interface should visibly evolve when capability has materially and repeatedly improved. This is product communication, not decoration.
@@ -86,6 +88,8 @@ Examples of legitimate visible evolution:
 The interface must never visually imply wallet authority, autonomous execution, private-memory access or model capabilities that the underlying product does not possess.
 
 Ask v0.9 production proof must be taken from an exact candidate revision that already serves `/agents/console/app.js?v=0.9` and includes the visible `Synthesizing` maturity surface. A pre-interface or pre-cache-bust GREEN is not final release evidence.
+
+Ask v1.0 concentration work must keep the visible maturity at `Synthesizing` until broader company-scoped reasoning is proven. A successful concentration primitive may justify a richer quick command after proof, but not a jump to `Companion-ready`.
 
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
