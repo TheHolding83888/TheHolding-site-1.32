@@ -1,0 +1,51 @@
+name: "Ask candidate · Owner Coverage Semantics Fix"
+
+on:
+  push:
+    branches:
+      - agents/ask-owner-synthesis-v0.7-20260815
+    paths:
+      - '.github/workflows/_ask_owner_coverage_semantics_fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: agents/ask-owner-synthesis-v0.7-20260815
+          fetch-depth: 0
+      - name: Fix coverage fraction semantics and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('agents/console/app.js')
+          s=p.read_text()
+          old="const partial = (text, source) => ({ text, source, confidenceHint: 'partial' });"
+          new="const partial = (text, source) => ({ text, source, confidenceHint: 'partial' });\n    const coveragePct = value => finite(value) === null ? null : (Number(value) <= 1 ? Number(value) * 100 : Number(value));"
+          if new not in s:
+              if old not in s: raise SystemExit('owner synthesis helper anchor missing')
+              s=s.replace(old,new,1)
+          s=s.replace("best.coverage.toFixed(1) + '% Productivity coverage'", "coveragePct(best.coverage).toFixed(1) + '% Productivity coverage'", 2)
+          s=s.replace("if (worst && worst.coverage < 99.999)", "if (worst && coveragePct(worst.coverage) < 99.999)", 1)
+          s=s.replace("worst.coverage.toFixed(1) + '% coverage", "coveragePct(worst.coverage).toFixed(1) + '% coverage", 2)
+          p.write_text(s)
+          PY
+          node --check agents/console/app.js
+          grep -F "const coveragePct" agents/console/app.js >/dev/null
+          grep -F "coveragePct(best.coverage)" agents/console/app.js >/dev/null
+          grep -F "coveragePct(worst.coverage) < 99.999" agents/console/app.js >/dev/null
+          rm -f .github/workflows/_ask_owner_coverage_semantics_fix.yml
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+          git add -A
+          git diff --check --cached
+          git commit -m "Ask v0.7: fix Productivity coverage fraction semantics"
+          git push origin HEAD:agents/ask-owner-synthesis-v0.7-20260815
