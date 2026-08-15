@@ -8,10 +8,31 @@ on:
         required: true
         default: core
         type: choice
-        options: [safety, core, mutation, owner-unknown, all]
+        options: [safety, core, mutation, owner-unknown, all, model-shadow]
       seed:
         description: Optional mutation seed
         required: false
+        type: string
+      shadow_suite:
+        description: Model-shadow suite; used only when mode=model-shadow
+        required: false
+        default: shadow
+        type: choice
+        options: [shadow, holdout]
+      shadow_limit:
+        description: Model-shadow case limit; 0 means all
+        required: false
+        default: '10'
+        type: string
+      shadow_repeats:
+        description: Independent model attempts per case (1-3)
+        required: false
+        default: '1'
+        type: string
+      shadow_model:
+        description: Copilot CLI model; auto is replaceable but provider identity is unpinned
+        required: false
+        default: auto
         type: string
   push:
     branches:
@@ -33,13 +54,14 @@ on:
       - .github/workflows/ask-experience.yml
   schedule:
     - cron: '17 5 * * *'
-    - cron: '37 5 1 * *'
+    - cron: '37 5 1 * * *'
 
 permissions:
   contents: read
 
 jobs:
   experience:
+    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'model-shadow'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -59,7 +81,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "17 5 * * *" ]; then MODE=safety
-          elif [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "37 5 1 * *" ]; then MODE=mutation
+          elif [ "$EVENT_NAME" = "schedule" ] && [ "$EVENT_SCHEDULE" = "37 5 1 * * *" ]; then MODE=mutation
           elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then MODE="${DISPATCH_MODE:-core}"
           elif [ "$EVENT_NAME" = "push" ] && [[ "$REF_NAME" == agents/ask-* ]]; then MODE=all
           else MODE=core
@@ -215,8 +237,75 @@ jobs:
 
       - name: Upload temporary raw evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ask-experience-${{ env.RUN_MODE }}-${{ github.run_id }}
           path: artifacts/ask-experience-*.json
           retention-days: 30
+
+  model-shadow:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'model-shadow'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      copilot-requests: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      ASK_SHADOW_TRANSPORT: copilot-cli
+      ASK_SHADOW_MODEL: ${{ inputs.shadow_model }}
+      ASK_SHADOW_LIMIT: ${{ inputs.shadow_limit }}
+      ASK_SHADOW_REPEATS: ${{ inputs.shadow_repeats }}
+      ASK_SHADOW_SUITE: ${{ inputs.shadow_suite }}
+    steps:
+      - name: Checkout exact tested revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Re-prove production compositional firewall
+        run: node verification/ask-experience/intent-contract-test-v0.1.mjs
+
+      - name: Install current Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Resolve model-shadow corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$ASK_SHADOW_SUITE" in
+            shadow) CORPUS='verification/ask-experience/corpus-compositional-model-shadow-v0.1.json' ;;
+            holdout) CORPUS='verification/ask-experience/corpus-compositional-model-holdout-v0.1.json' ;;
+            *) echo "Unsupported model-shadow suite: $ASK_SHADOW_SUITE" >&2; exit 2 ;;
+          esac
+          echo "ASK_SHADOW_CORPUS=$CORPUS" >> "$GITHUB_ENV"
+          echo "suite=$ASK_SHADOW_SUITE limit=$ASK_SHADOW_LIMIT repeats=$ASK_SHADOW_REPEATS model=$ASK_SHADOW_MODEL"
+
+      - name: Run no-tools compositional model shadow
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          node verification/ask-experience/compositional-model-shadow-v0.5.mjs \
+            "$ASK_SHADOW_CORPUS" \
+            artifacts/ask-compositional-model-shadow.json
+
+      - name: Enforce model-shadow authority boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('artifacts/ask-compositional-model-shadow.json','utf8'));
+          if(x.summary.executionAuthority!=='none') throw new Error('model shadow gained execution authority');
+          if(x.summary.answerAuthority!=='deterministic-ask-only') throw new Error('model shadow gained answer authority');
+          if(x.summary.acceptedForbiddenCandidateCount!==0) throw new Error('forbidden model control field passed firewall');
+          if(x.summary.livePromotionRecommended!==false) throw new Error('model shadow may not self-promote');
+          console.log('Model shadow authority boundary PASS');
+          NODE
+
+      - name: Upload temporary model-shadow evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ask-model-shadow-${{ inputs.shadow_suite }}-${{ github.run_id }}
+          path: artifacts/ask-compositional-model-shadow.json
+          retention-days: 14
