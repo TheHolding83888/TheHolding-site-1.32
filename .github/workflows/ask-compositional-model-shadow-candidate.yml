@@ -1,0 +1,73 @@
+name: Ask The Holding · Compositional Model Shadow Candidate
+
+on:
+  push:
+    branches:
+      - agents/ask-compositional-model-shadow-v1.3b-20260815
+    paths:
+      - '.github/workflows/ask-compositional-model-shadow-candidate.yml'
+      - 'agents/console/intent-contract.js'
+      - 'verification/ask-experience/corpus-compositional-model-shadow-v0.1.json'
+      - 'verification/ask-experience/compositional-model-shadow-v0.1.mjs'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Bounded shadow case limit; 0 means all cases'
+        required: false
+        default: '1'
+      model:
+        description: 'Copilot CLI model; auto keeps provider selection replaceable'
+        required: false
+        default: 'auto'
+
+permissions:
+  contents: read
+  copilot-requests: write
+
+jobs:
+  shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      ASK_SHADOW_TRANSPORT: copilot-cli
+      ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'auto' }}
+      ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '1' }}
+    steps:
+      - name: Checkout exact shadow revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Re-prove production compositional firewall
+        run: node verification/ask-experience/intent-contract-test-v0.1.mjs
+
+      - name: Install current Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Run no-tools untrusted compositional shadow
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          node verification/ask-experience/compositional-model-shadow-v0.1.mjs \
+            verification/ask-experience/corpus-compositional-model-shadow-v0.1.json \
+            artifacts/ask-compositional-model-shadow.json
+
+      - name: Verify shadow authority boundary
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('artifacts/ask-compositional-model-shadow.json','utf8'));
+          if (x.summary.executionAuthority !== 'none') throw new Error('shadow gained execution authority');
+          if (x.summary.answerAuthority !== 'deterministic-ask-only') throw new Error('shadow gained answer authority');
+          if (x.summary.forbiddenFieldLeakCount !== 0) throw new Error('model emitted forbidden control fields');
+          if (x.summary.acceptedByFirewall === 0) throw new Error('no model candidate passed the production firewall');
+          console.log('Compositional shadow authority boundary PASS');
+          NODE
+
+      - name: Upload temporary shadow evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ask-compositional-model-shadow-${{ github.run_id }}
+          path: artifacts/ask-compositional-model-shadow.json
+          retention-days: 14
