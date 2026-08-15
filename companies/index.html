@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- companies.html · v1.25.2 · Constellation repainted in emerald · colour only, geometry untouched -->
 <!-- companies.html · v1.25.1 · Graph node hygiene + compact constellation + reload passport restore -->
 <!-- companies.html · v1.25 · Graph rate column + Monetra Strategy Constellation v2 (radial, moved below passport) -->
 <!-- companies.html · v1.24.4 · Reading room · compact bars + seam, original mobile rail mechanic -->
@@ -8714,6 +8715,112 @@
     .index-metrics { gap: 1.1rem 1.9rem; }
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Monetra Strategy Constellation · Emerald
+   ---------------------------------------------------------------------------
+   Colour only. Every rule below repaints an element that already exists at a
+   position computed in the renderer — no radii, offsets, anchors or font sizes
+   are touched, so no label, chain or rate can move by a pixel.
+
+   Why the change: gold is the registry's signature and it was doing the work
+   here too — gold haloes on the nodes, a gold ring around the company, gold
+   rates. Stable Capital is a green universe on this page, so the constellation
+   now reads in the same voice as the section it belongs to: deep emerald at the
+   centre, cool ivory nodes, one warm bronze reserved for nothing at all.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── The panel ─────────────────────────────────────────────────────────── */
+.stable-orbit {
+    border-color: rgba(10,124,78,.16);
+    background:
+        radial-gradient(118% 128% at 50% -10%, rgba(10,124,78,.085) 0%, rgba(10,124,78,0) 52%),
+        radial-gradient(90% 70% at 92% 8%, rgba(17,68,48,.05) 0%, rgba(17,68,48,0) 46%),
+        linear-gradient(180deg, #ffffff 0%, rgba(247,251,249,.96) 62%, rgba(244,249,246,.94) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.9),
+        0 34px 84px -60px rgba(9,48,32,.5);
+}
+.stable-orbit-meta {
+    border-color: rgba(10,124,78,.18);
+    background: rgba(10,124,78,.04);
+    color: #0d6a45;
+}
+
+/* ── Structure: present, never decorative ──────────────────────────────── */
+.so-ring {
+    stroke: rgba(12,58,42,.13);
+    stroke-dasharray: 1.5 7;
+}
+/* three rings, three depths — the outer one carries the least weight */
+.so-structure .so-ring:nth-of-type(1) { stroke: rgba(12,58,42,.16); }
+.so-structure .so-ring:nth-of-type(2) { stroke: rgba(12,58,42,.11); }
+.so-structure .so-ring:nth-of-type(3) {
+    stroke: rgba(12,58,42,.085);
+    stroke-dasharray: 1.5 9;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: soDrift 150s linear infinite;
+}
+@keyframes soDrift { to { transform: rotate(360deg); } }
+
+.so-spoke {
+    stroke: url(#soSpoke);
+    stroke-width: 1;
+}
+
+/* ── The company at the centre ─────────────────────────────────────────── */
+.so-center-glow { fill: url(#soCoreHalo); }
+.so-center-ring {
+    stroke: rgba(10,124,78,.26);
+    stroke-width: 1;
+}
+.so-center-dot {
+    fill: url(#soCore);
+    stroke: rgba(126,206,166,.42);
+    stroke-width: 1.2;
+}
+.so-center-title { fill: #f2f7f4; }
+.so-center-rate  { fill: #86dcb2; }
+.so-center-sub   { fill: rgba(226,240,233,.56); }
+
+/* ── Strategies ────────────────────────────────────────────────────────── */
+.so-node-glow { fill: url(#soNodeHalo); }
+.so-node-dot {
+    fill: url(#soNodeFill);
+    stroke: rgba(10,124,78,.42);
+    stroke-width: 1.5;
+}
+.so-node-index { fill: rgba(12,58,42,.66); }
+
+/* The rate is the number the reader came for, so it holds the green; the name
+   stays in ink and the chain recedes. One accent per node, never two. */
+.so-rate  { fill: #0a7c4e; font-weight: 700; }
+.so-label { fill: #16302a; }
+.so-chain { fill: rgba(22,48,42,.46); }
+
+@media (hover: hover) {
+    .so-nodes:hover .so-node { opacity: .34; }
+    .so-nodes .so-node:hover { opacity: 1; }
+    .so-node:hover .so-node-dot {
+        stroke: #0a7c4e;
+        stroke-width: 2;
+    }
+    .so-node:hover .so-node-glow { fill: rgba(10,124,78,.2); }
+    .so-node:hover .so-rate { fill: #08633e; }
+}
+
+/* ── Phone ledger ──────────────────────────────────────────────────────── */
+.so-legend-idx {
+    border-color: rgba(10,124,78,.2);
+    background: rgba(10,124,78,.035);
+    color: #0d6a45;
+}
+.so-legend-rate { color: #0a7c4e; }
+
+@media (prefers-reduced-motion: reduce) {
+    .so-structure .so-ring:nth-of-type(3) { animation: none; }
+}
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -10321,8 +10428,32 @@ function renderStableStrategyOrbit(lang, company) {
 
     const svg =
         '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" class="stable-orbit-svg" role="img">'
-        + '<defs><filter id="soBlur" x="-70%" y="-70%" width="240%" height="240%">'
-        + '<feGaussianBlur stdDeviation="' + (mobile ? 8 : 11) + '"></feGaussianBlur></filter></defs>'
+        + '<defs>'
+        +   '<filter id="soBlur" x="-70%" y="-70%" width="240%" height="240%">'
+        +     '<feGaussianBlur stdDeviation="' + (mobile ? 8 : 11) + '"></feGaussianBlur></filter>'
+        /* Paint definitions only — no geometry is derived from them, so labels,
+           rates and node positions are untouched by the change of palette. */
+        +   '<radialGradient id="soCore" cx="34%" cy="26%" r="82%">'
+        +     '<stop offset="0%" stop-color="#1d5a41"></stop>'
+        +     '<stop offset="58%" stop-color="#123c2c"></stop>'
+        +     '<stop offset="100%" stop-color="#0b2a1f"></stop></radialGradient>'
+        +   '<radialGradient id="soCoreHalo" cx="50%" cy="50%" r="50%">'
+        +     '<stop offset="0%" stop-color="rgba(10,124,78,0.30)"></stop>'
+        +     '<stop offset="100%" stop-color="rgba(10,124,78,0)"></stop></radialGradient>'
+        +   '<radialGradient id="soNodeFill" cx="34%" cy="26%" r="78%">'
+        +     '<stop offset="0%" stop-color="#ffffff"></stop>'
+        +     '<stop offset="100%" stop-color="#eaf3ee"></stop></radialGradient>'
+        +   '<radialGradient id="soNodeHalo" cx="50%" cy="50%" r="50%">'
+        +     '<stop offset="0%" stop-color="rgba(10,124,78,0.26)"></stop>'
+        +     '<stop offset="100%" stop-color="rgba(10,124,78,0)"></stop></radialGradient>'
+        /* One radial ramp centred on the company makes every spoke fade outward
+           at the same rate, whatever its angle. */
+        +   '<radialGradient id="soSpoke" gradientUnits="userSpaceOnUse"'
+        +     ' cx="' + cx + '" cy="' + cy + '" r="' + (R + 6).toFixed(1) + '">'
+        +     '<stop offset="0%" stop-color="rgba(12,58,42,0.42)"></stop>'
+        +     '<stop offset="62%" stop-color="rgba(12,58,42,0.22)"></stop>'
+        +     '<stop offset="100%" stop-color="rgba(12,58,42,0.07)"></stop></radialGradient>'
+        + '</defs>'
         + '<g class="so-structure">' + rings + spokes + '</g>'
         + centre
         + '<g class="so-nodes">' + nodes + '</g>'
