@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-15T17:05:40.604Z",
+  "lastUpdatedAt": "2026-08-15T19:51:32.168Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 207,
-    "vaultRunCount": 207,
+    "runCount": 208,
+    "vaultRunCount": 208,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -2497,6 +2497,18 @@
       "highCount": 6,
       "newFindingCount": 0,
       "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-15T19:51:32.168Z",
+      "status": "watch",
+      "snapshotHash": "d08a647d474c8edac81bbe945a4054bd98425230976e4fc5b88c2bc2dde1192e",
+      "recordPath": "security/security-vault/2026/08/2026-08-15T19-51-32-168Z-d08a647d47.json",
+      "recordHash": "da256f9e9fbd8e14060df4664bd6800a3e38f788f44230c20c40390e77ac6103",
+      "findingCount": 26,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -9473,6 +9485,28 @@
       "summary": "Resolved: Security-sensitive surface changed: companies/index.html.",
       "file": "companies/index.html",
       "entity": null
+    },
+    {
+      "id": "1d67fae9872af8228adf44d607d3dddc57e6acdfbe4be7b2abd9b123e386c7e9",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T19:51:32.168Z",
+      "findingId": "88c50e98b90e5400f666d052d2b8c3aa8163a8fc6db28390ed1a8f3b31dbfae8",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+      "file": ".github/workflows/ask-experience.yml",
+      "entity": null
+    },
+    {
+      "id": "194c26174828ba24b8ec565159f4f0b042405cfc8ddbc1434e4d722155e6530b",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-15T19:51:32.168Z",
+      "findingId": "5aab93288228b0250fffc8aaeeb280170946d4c8ac4a412d30824c14076b429e",
+      "severity": "medium",
+      "category": "unpinned-action",
+      "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
+      "file": ".github/workflows/ask-experience.yml",
+      "entity": "actions/upload-artifact@v4"
     }
   ]
 }

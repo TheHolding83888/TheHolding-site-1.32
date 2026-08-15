@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-15T17:05:40.604Z",
+  "generatedAt": "2026-08-15T19:51:32.168Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -12,8 +12,8 @@
     "info": 0
   },
   "source": {
-    "filesScanned": 259,
-    "bytesScanned": 6502625,
+    "filesScanned": 265,
+    "bytesScanned": 6560155,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,8 +55,35 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": []
+    "newFindings": [
+      {
+        "id": "88c50e98b90e5400f666d052d2b8c3aa8163a8fc6db28390ed1a8f3b31dbfae8",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/ask-experience.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "b3dd51bd95e6b4955f17f06fb68360196231d9b6c11a18f2fe55e445b2cc6876",
+          "currentSha256": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
+        "id": "5aab93288228b0250fffc8aaeeb280170946d4c8ac4a412d30824c14076b429e",
+        "severity": "medium",
+        "category": "unpinned-action",
+        "file": ".github/workflows/ask-experience.yml",
+        "line": 218,
+        "entity": "actions/upload-artifact@v4",
+        "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
+        "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
+        "evidence": null
+      }
+    ]
   },
   "currentFindings": [
     {
@@ -124,6 +151,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "88c50e98b90e5400f666d052d2b8c3aa8163a8fc6db28390ed1a8f3b31dbfae8",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/ask-experience.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "b3dd51bd95e6b4955f17f06fb68360196231d9b6c11a18f2fe55e445b2cc6876",
+        "currentSha256": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -441,24 +482,9 @@
         "expectedCount": 16,
         "currentCount": 18
       }
-    },
-    {
-      "id": "5aab93288228b0250fffc8aaeeb280170946d4c8ac4a412d30824c14076b429e",
-      "severity": "medium",
-      "category": "unpinned-action",
-      "file": ".github/workflows/ask-experience.yml",
-      "line": 218,
-      "entity": "actions/upload-artifact@v4",
-      "summary": "GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
-      "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
-      "evidence": null
     }
   ],
   "protectNext": [
-    {
-      "priority": "high",
-      "action": "Pin write-capable GitHub Actions to reviewed full commit SHAs, then let Dependabot propose controlled updates."
-    },
     {
       "priority": "medium",
       "action": "Re-review the changed DOM rendering surface; reviewed innerHTML exemptions are valid only for exact unchanged Git blobs."
@@ -470,12 +496,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "b0d6e6435efb58d4092a07d9db119f8ff8e01cb3e1cb33e6d4c22658807501e2",
+    "snapshotHash": "d08a647d474c8edac81bbe945a4054bd98425230976e4fc5b88c2bc2dde1192e",
     "securityVault": {
-      "runCount": 207,
+      "runCount": 208,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T17-05-40-604Z-b0d6e6435e.json",
-      "latestRecordHash": "f356ce001f20ed481c1442f301d3bd397468dad7017cfe4774afd40ab403ace2",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T19-51-32-168Z-d08a647d47.json",
+      "latestRecordHash": "da256f9e9fbd8e14060df4664bd6800a3e38f788f44230c20c40390e77ac6103",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
