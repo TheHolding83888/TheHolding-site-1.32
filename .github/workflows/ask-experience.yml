@@ -19,6 +19,7 @@ on:
       - 'agents/ask-*'
     paths:
       - agents/console/app.js
+      - agents/console/intent-contract.js
       - agents/index.html
       - verification/ask-experience/**
       - .github/workflows/ask-experience.yml
@@ -26,6 +27,7 @@ on:
     branches: [main]
     paths:
       - agents/console/app.js
+      - agents/console/intent-contract.js
       - agents/index.html
       - verification/ask-experience/**
       - .github/workflows/ask-experience.yml
@@ -92,6 +94,10 @@ jobs:
         env:
           ASK_BASE_URL: http://127.0.0.1:8080/agents/
         run: node verification/ask-experience/output-guard-test-v0.1.mjs
+
+      - name: Strict intent contract firewall
+        if: env.RUN_MODE == 'core' || env.RUN_MODE == 'all'
+        run: node verification/ask-experience/intent-contract-test-v0.1.mjs
 
       - name: Frozen safety corpus
         if: env.RUN_MODE == 'safety' || env.RUN_MODE == 'all'
