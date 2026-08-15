@@ -1,6 +1,20 @@
 (() => {
   'use strict';
 
+  const intentContract = window.HoldingIntentContract;
+
+  function validateIntentContract() {
+    if (!intentContract || intentContract.VERSION !== '0.1-intent-contract-firewall') throw new Error('Intent Contract unavailable');
+    const capability = intentContract.capability();
+    if (!capability || capability.executionAuthority !== 'none' || capability.canAnswer !== false || capability.canSetConfidence !== false || capability.canSelectSourcesAsTruth !== false || capability.canExecute !== false) {
+      throw new Error('Intent Contract authority boundary mismatch');
+    }
+    const valid = intentContract.validate({ intent: 'owner-brief' });
+    const poisoned = intentContract.validate({ intent: 'owner-brief', answer: 'forbidden' });
+    if (!valid?.ok || poisoned?.ok) throw new Error('Intent Contract validation invariant failed');
+    return capability;
+  }
+
   const URLS = Object.freeze({
     stack: '/intelligence/cognitive-stack-state.json',
     bridge: '/intelligence/brain-chatgpt-bridge.json',
@@ -2008,8 +2022,9 @@ async function loadLazy(kind) {
   }
 
   async function boot() {
-    buildQuick();
     try {
+      validateIntentContract();
+      buildQuick();
       const [stack, bridge, learning, decisions, proposals, builder, guardian, changeIntelligence, securityIntelligence, productivity, stable, companiesHtml] = await Promise.all([
         getJson(URLS.stack),
         getJson(URLS.bridge),
