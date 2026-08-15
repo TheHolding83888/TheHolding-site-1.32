@@ -53,7 +53,8 @@ Current repaired generalization classes before the next fresh-seed proof include
 - RU/phonetic claimable slang such as `клеймаблам`;
 - EN claimable plural morphology in the fuzzy lexicon, so one-edit typo variants normalize to the intent class rather than the exact generated phrase;
 - recovery-key language as part of the secret-request class, including RU phrasing;
-- `profit` as a fuzzy semantic lexeme so one-edit typos still resolve APR-versus-result questions instead of falling into a raw APR list.
+- `profit` as a fuzzy semantic lexeme so one-edit typos still resolve APR-versus-result questions instead of falling into a raw APR list;
+- one adjacent character transposition inside the bounded known-intent lexicon, without enabling global fuzzy matching.
 
 Owner synthesis must preserve source-unit semantics. In particular, Productivity `coverage` is stored as a share of productive capital (`1 = 100%`); any user-facing percentage or threshold must normalize that share before rendering or comparison.
 
@@ -63,7 +64,28 @@ Change + Salience synthesis must reuse canonical `intelligence/change-intelligen
 
 For USD-denominated change events, salience must respect **economic magnitude**. Large percentage moves from a near-zero base must not outrank materially larger dollar changes solely because their relative percentage is larger.
 
-Ask v0.8 production proof must be taken from an exact candidate revision that already serves `/agents/console/app.js?v=0.8`; a pre-cache-bust GREEN is not final release evidence.
+Cross-source Owner Brief synthesis must keep current Security, Learning/Proposal governance and Change Intelligence as distinct but correlated views. Security → Learning → Proposal counts must not be added as if they were independent problems. Fresh subsystem state outranks an older coherent snapshot for current counts, while the coherent snapshot remains authoritative for its own exact observation time.
+
+## Interface evolution law
+
+The Ask interface should visibly evolve when capability has materially and repeatedly improved. This is product communication, not decoration.
+
+Visible maturity indicators must be backed by evidence. The current progression is:
+
+`Router → Context-aware → Generalizing → Synthesizing → Companion-ready`
+
+Do not advance the displayed maturity merely because a feature was coded. A stage should become visible only after the relevant capability survives Experience/regression evidence and semantic review.
+
+Examples of legitimate visible evolution:
+- richer quick commands that expose newly proven reasoning primitives;
+- source-bound / confidence cues;
+- Change + Salience and Owner Brief affordances;
+- clearer OS / Security / Learning / Governance status;
+- later, company-scoped Companion affordances when that capability is actually proven.
+
+The interface must never visually imply wallet authority, autonomous execution, private-memory access or model capabilities that the underlying product does not possess.
+
+Ask v0.9 production proof must be taken from an exact candidate revision that already serves `/agents/console/app.js?v=0.9` and includes the visible `Synthesizing` maturity surface. A pre-interface or pre-cache-bust GREEN is not final release evidence.
 
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
