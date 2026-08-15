@@ -1,5 +1,5 @@
-
 <!DOCTYPE html>
+<!-- companies.html · v1.25 · Graph rate column + Monetra Strategy Constellation v2 (radial, moved below passport) -->
 <!-- companies.html · v1.24.4 · Reading room · compact bars + seam, original mobile rail mechanic -->
 <!-- companies.html · v1.24.1 · Reading room · bar gap, tighter nav -->
 <!-- companies.html · v1.24 · Reading room · compact section nav + Observatory rail -->
@@ -8356,6 +8356,333 @@
             #capital-hub{ scroll-margin-top: 44px; }
         }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Graph rate rail + Monetra Strategy Constellation · v2
+   Final layer: everything above is left intact, these rules govern the two
+   surfaces that were reported as crooked.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── The Holding Graph: rates as a column, and nothing that moves ────────── */
+.g-label-pr-wrap { pointer-events: none; }
+.g-apr-chip {
+    pointer-events: none;
+    opacity: 1;
+    /* Only opacity is animated. The old rule nudged the chip on focus, which
+       is what made the rates look like they were running away from the cursor. */
+    transform: none !important;
+    transition: opacity 0.3s ease;
+}
+.g-apr-pill {
+    fill: rgba(216,180,90,0.13);
+    stroke: rgba(216,180,90,0.36);
+    stroke-width: 1;
+}
+.g-apr-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10.6px;
+    font-weight: 600;
+    letter-spacing: 0.015em;
+    fill: #e3c470;
+    font-variant-numeric: tabular-nums;
+}
+.g-rail-line {
+    stroke: rgba(236,231,218,0.14);
+    stroke-width: 1;
+}
+.g-rail-head {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 7.6px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    fill: rgba(236,231,218,0.42);
+}
+.g-svg.focused .g-apr-chip { opacity: 0.22; }
+.g-svg.focused .g-node-pr.on .g-apr-chip { opacity: 1; }
+.g-svg.focused .g-rail-line,
+.g-svg.focused .g-rail-head { opacity: 0.35; transition: opacity 0.3s ease; }
+@media (max-width: 640px) {
+    .g-apr-text { font-size: 9.9px; }
+    .g-rail-head { font-size: 7px; letter-spacing: 0.16em; }
+}
+
+/* ── Monetra Strategy Constellation ─────────────────────────────────────── */
+.stable-orbit {
+    margin: 2.1rem 0 0;
+    padding: 1.7rem 1.7rem 1.5rem;
+    border: 1px solid rgba(10,124,78,.13);
+    border-radius: 26px;
+    background:
+        radial-gradient(115% 130% at 50% -8%, rgba(216,180,90,.11) 0%, rgba(216,180,90,0) 46%),
+        linear-gradient(180deg, rgba(255,255,255,.97), rgba(249,251,248,.93));
+    box-shadow: 0 30px 76px -58px rgba(10,50,33,.46);
+    overflow: hidden;
+}
+.stable-orbit-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.4rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 1.05rem;
+    border-bottom: 1px solid var(--line);
+}
+.stable-orbit-kicker {
+    color: var(--green);
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .17em;
+    text-transform: uppercase;
+    opacity: .85;
+    margin-bottom: .5rem;
+}
+.stable-orbit-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.5rem, 2.4vw, 2.05rem);
+    font-weight: 500;
+    line-height: 1.06;
+    letter-spacing: -.022em;
+    margin: 0;
+}
+.stable-orbit-sub {
+    max-width: 640px;
+    margin: .6rem 0 0;
+    color: var(--text-2);
+    font-size: .82rem;
+    line-height: 1.68;
+}
+.stable-orbit-meta {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .48rem .8rem;
+    border: 1px solid rgba(10,124,78,.16);
+    border-radius: 999px;
+    background: rgba(10,124,78,.03);
+    color: var(--green);
+    font-size: .62rem;
+    font-weight: 650;
+    letter-spacing: .06em;
+    white-space: nowrap;
+}
+.stable-orbit-meta i {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 4px rgba(10,124,78,.10);
+}
+.stable-orbit-canvas {
+    position: relative;
+    min-height: 0;
+    padding-top: .6rem;
+}
+.stable-orbit-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+}
+.stable-orbit-note {
+    margin: 1rem 0 0;
+    padding-top: .85rem;
+    border-top: 1px solid var(--line);
+    font-size: .72rem;
+    line-height: 1.6;
+    color: var(--text-3);
+}
+.stable-orbit-empty {
+    min-height: 200px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 1.4rem;
+    border-radius: 20px;
+    border: 1px dashed rgba(10,124,78,.18);
+    color: var(--text-3);
+    background: rgba(255,255,255,.55);
+    font-size: .8rem;
+}
+
+/* structure — present, never loud */
+.so-ring {
+    fill: none;
+    stroke: rgba(17,68,48,.09);
+    stroke-width: 1;
+    stroke-dasharray: 2 6;
+}
+.so-spoke {
+    stroke: rgba(17,68,48,.16);
+    stroke-width: 1.1;
+    stroke-linecap: round;
+}
+
+/* the company at the centre */
+.so-center-glow { fill: rgba(17,68,48,.16); filter: url(#soBlur); }
+.so-center-ring {
+    fill: none;
+    stroke: rgba(216,180,90,.30);
+    stroke-width: 1;
+}
+.so-center-dot {
+    fill: #12332479;
+    fill: #123324;
+    stroke: rgba(216,180,90,.62);
+    stroke-width: 1.4;
+}
+.so-center-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -.01em;
+    fill: #f6f2e8;
+    text-anchor: middle;
+}
+.so-center-rate {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 650;
+    fill: #7fd3aa;
+    text-anchor: middle;
+    font-variant-numeric: tabular-nums;
+}
+.so-center-sub {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 8.6px;
+    font-weight: 600;
+    letter-spacing: .19em;
+    text-transform: uppercase;
+    fill: rgba(246,242,232,.6);
+    text-anchor: middle;
+}
+
+/* strategies */
+.so-node-glow { fill: rgba(216,180,90,.14); filter: url(#soBlur); }
+.so-node-dot {
+    fill: #ffffff;
+    stroke: rgba(17,68,48,.34);
+    stroke-width: 1.4;
+}
+.so-node-index {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 8.4px;
+    font-weight: 700;
+    fill: rgba(17,68,48,.72);
+    text-anchor: middle;
+}
+.so-rate {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12.4px;
+    font-weight: 650;
+    fill: #8d6725;
+    font-variant-numeric: tabular-nums;
+}
+.so-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12.2px;
+    font-weight: 600;
+    fill: #17352a;
+}
+.so-chain {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 9.4px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    fill: rgba(23,53,42,.5);
+}
+@media (hover: hover) {
+    .so-node { transition: opacity .28s ease; }
+    .so-nodes:hover .so-node { opacity: .42; }
+    .so-nodes .so-node:hover { opacity: 1; }
+    .so-node:hover .so-node-dot { stroke: var(--green); stroke-width: 1.8; }
+}
+
+/* phone ledger — the ring keeps the rates, the names are legible here */
+.so-legend {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .38rem .7rem;
+    margin: 1rem 0 0;
+    padding: .9rem 0 0;
+    border-top: 1px solid var(--line);
+    counter-reset: none;
+}
+.so-legend-narrow { grid-template-columns: minmax(0, 1fr); }
+.so-legend-row {
+    display: grid;
+    grid-template-columns: 17px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .42rem;
+    min-width: 0;
+}
+.so-legend-idx {
+    width: 17px; height: 17px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(17,68,48,.18);
+    border-radius: 50%;
+    color: var(--text-3);
+    font-size: .54rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.so-legend-body { min-width: 0; }
+.so-legend-body b {
+    display: block;
+    font-size: .68rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.so-legend-body small {
+    display: block;
+    margin-top: .04rem;
+    font-size: .55rem;
+    color: var(--text-3);
+    letter-spacing: .04em;
+}
+.so-legend-rate {
+    color: var(--green);
+    font-size: .66rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .stable-orbit {
+        margin-top: 1.35rem;
+        padding: 1.1rem .95rem 1rem;
+        border-radius: 20px;
+    }
+    .stable-orbit-head {
+        display: block;
+        margin-bottom: .35rem;
+        padding-bottom: .85rem;
+    }
+    .stable-orbit-title { font-size: 1.42rem; }
+    .stable-orbit-sub { font-size: .76rem; line-height: 1.6; margin-top: .5rem; }
+    .stable-orbit-meta { margin-top: .8rem; font-size: .58rem; padding: .42rem .68rem; }
+    .stable-orbit-canvas { padding-top: .35rem; min-height: 0; }
+    .stable-orbit-note { margin-top: .85rem; font-size: .68rem; }
+    .so-center-title { font-size: 19px; }
+    .so-center-rate { font-size: 13px; }
+    .so-center-sub { font-size: 7.6px; letter-spacing: .15em; }
+    .so-rate { font-size: 10.6px; }
+}
+@media (max-width: 400px) {
+    .stable-orbit { padding: .95rem .8rem .9rem; }
+    .so-rate { font-size: 10px; }
+    .so-legend-body b { font-size: .66rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .g-apr-chip, .so-node { transition: none; }
+}
 </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -9162,6 +9489,9 @@
             </div>
 
 
+
+        </article>
+
 <section class="stable-orbit reveal" id="stableStrategyOrbitSection">
     <div class="stable-orbit-head">
         <div>
@@ -9176,8 +9506,6 @@
     </div>
     <p class="stable-orbit-note" data-i18n="stable.orbit.note">Current protocol rates come directly from the Monetra strategy book. Node size follows current position value when available, keeping the view elegant rather than noisy.</p>
 </section>
-
-        </article>
     </div>
 </section>
 
@@ -9798,6 +10126,24 @@ function orbitStrategyLabel(position) {
     return asset ? (proto + ' · ' + asset) : proto;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Monetra Strategy Constellation · v2 (true orbit)
+
+   The previous version placed strategies in two vertical columns with floating
+   label cards, which read as a flowchart rather than a constellation and broke
+   badly on a phone: fixed-width cards, clipped labels, pills drifting into the
+   next row.
+
+   This is a real radial layout. Ten strategies sit on one orbit around the
+   company, each on its own spoke, and the rate travels with the node instead of
+   being parked in a card. Geometry is derived from the angle, so a long label
+   can never move a neighbour: everything is anchored outward from the centre.
+
+   Desktop: labels ride the spokes, anchored by quadrant.
+   Phone:   the ring stays (with the rate on every node, which is the number
+            that matters at a glance) and the names move into a legible ledger
+            underneath, tied to the ring by index.
+   ═══════════════════════════════════════════════════════════════════════════ */
 function renderStableStrategyOrbit(lang, company) {
     const canvas = document.getElementById('stableStrategyOrbitCanvas');
     if (!canvas) return;
@@ -9808,103 +10154,152 @@ function renderStableStrategyOrbit(lang, company) {
         return;
     }
 
+    const ru = (lang === 'ru');
     const mobile = (window.innerWidth || 1000) < 760;
-    const W = mobile ? 360 : 900;
-    const H = mobile ? 500 : 500;
+    const narrow = (window.innerWidth || 1000) < 400;
+
+    const posValue = p => Number(p.valueUsd ?? p.strategyEntry?.principalNominalStable ?? 0);
+    const ordered = positions.slice().sort((a, b) => posValue(b) - posValue(a));
+    const maxValue = Math.max.apply(null, ordered.map(posValue).concat([1]));
+    const n = ordered.length;
+
+    /* ── Canvas geometry ─────────────────────────────────────────────── */
+    const W = mobile ? 380 : 900;
+    const H = mobile ? 340 : 630;
     const cx = W / 2;
-    const cy = mobile ? 116 : 248;
-    const centerR = mobile ? 44 : 60;
-    const maxValue = Math.max.apply(null, positions.map(p => Number(p.valueUsd ?? p.strategyEntry?.principalNominalStable ?? 0)).concat([1]));
+    const cy = mobile ? 170 : 316;
+    const R = mobile ? 122 : 214;
+    const centerR = mobile ? 54 : 68;
+    const nodeMin = mobile ? 8 : 9;
+    const nodeMax = mobile ? 12.5 : 17;
 
-    const ordered = positions.slice().sort((a, b) => {
-        const av = Number(a.valueUsd ?? a.strategyEntry?.principalNominalStable ?? 0);
-        const bv = Number(b.valueUsd ?? b.strategyEntry?.principalNominalStable ?? 0);
-        return bv - av;
-    });
-    const left = [], right = [];
-    ordered.forEach((p, i) => (i % 2 === 0 ? left : right).push(p));
+    /* Start half a step past the vertical so no strategy sits directly above or
+       below the company — those are the two positions where an outward label has
+       nowhere to go. */
+    const step = 360 / n;
+    const angleAt = i => -90 + step / 2 + i * step;
 
-    const sideLayout = (items, side) => {
-        const count = items.length;
-        const gap = mobile ? 72 : 70;
-        const topBase = mobile ? 222 : 100;
-        const totalH = (count - 1) * gap;
-        const top = topBase + Math.max(0, ((mobile ? 180 : 300) - totalH) / 2);
-        return items.map((p, idx) => {
-            const y = top + idx * gap;
-            const baseValue = Number(p.valueUsd ?? p.strategyEntry?.principalNominalStable ?? 0);
-            const nodeR = (mobile ? 10 : 12) + (mobile ? 6 : 8) * Math.sqrt(Math.max(baseValue, 0) / maxValue);
-            const nodeX = side === 'left' ? (mobile ? 92 : 212) : (mobile ? 268 : 688);
-            const label = orbitStrategyLabel(p);
-            const chain = String(p.chain || '').trim();
-            const apr = Number(p.referenceApyPct);
-            const aprText = Number.isFinite(apr) ? stablePct(apr, 2) : '—';
-            const textLen = Math.max(label.length, chain.length || 0, 10);
-            const cardW = mobile ? Math.min(126, Math.max(100, textLen * 5.1 + 34)) : Math.min(170, Math.max(124, textLen * 5.7 + 42));
-            const cardH = mobile ? 38 : 42;
-            const gapX = mobile ? 12 : 14;
-            const cardX = side === 'left' ? nodeX - nodeR - gapX - cardW : nodeX + nodeR + gapX;
-            const cardY = y - cardH / 2;
-            const pillW = Math.max((aprText.length * (mobile ? 5.4 : 6.1)) + 18, mobile ? 46 : 54);
-            const pillH = mobile ? 16 : 18;
-            const pillX = side === 'left' ? cardX + 10 : cardX + cardW - pillW - 10;
-            const pillY = cardY + 8;
-            const labelX = cardX + 10;
-            const labelY = cardY + (mobile ? 24 : 17);
-            const subY = cardY + (mobile ? 34 : 30);
-            return {
-                x: nodeX, y, nodeR,
-                cardX, cardY, cardW, cardH,
-                pillX, pillY, pillW, pillH,
-                labelX, labelY, subY,
-                label, chain, aprText, side
-            };
-        });
+    const pt = (angle, radius) => {
+        const t = angle * Math.PI / 180;
+        return [cx + Math.cos(t) * radius, cy + Math.sin(t) * radius];
     };
 
-    const items = sideLayout(left, 'left').concat(sideLayout(right, 'right'));
+    const items = ordered.map((p, i) => {
+        const angle = angleAt(i);
+        const t = angle * Math.PI / 180;
+        const cos = Math.cos(t), sin = Math.sin(t);
+        const value = posValue(p);
+        const r = nodeMin + (nodeMax - nodeMin) * Math.sqrt(Math.max(value, 0) / maxValue);
+        const apr = Number(p.referenceApyPct);
+        const aprText = Number.isFinite(apr) ? stablePct(apr, 2) : '—';
+        const [x, y] = pt(angle, R);
+        return {
+            i, angle, cos, sin, x, y, r, value, aprText,
+            label: orbitStrategyLabel(p),
+            chain: String(p.chain || '').trim(),
+            anchor: cos > 0.28 ? 'start' : (cos < -0.28 ? 'end' : 'middle')
+        };
+    });
 
-    const lines = items.map(item => {
-        const sx = cx + (item.side === 'left' ? -centerR * 0.78 : centerR * 0.78);
-        const sy = cy + (item.y > cy ? Math.min(centerR * 0.32, (item.y - cy) * 0.16) : Math.max(-centerR * 0.32, (item.y - cy) * 0.16));
-        const ex = item.x + (item.side === 'left' ? item.nodeR * 0.88 : -item.nodeR * 0.88);
-        const ey = item.y;
-        const c1x = cx + (item.side === 'left' ? -(mobile ? 64 : 92) : (mobile ? 64 : 92));
-        const c1y = cy + (item.y - cy) * 0.2;
-        const c2x = item.side === 'left' ? item.x + 54 : item.x - 54;
-        const c2y = item.y;
-        const d = 'M' + sx.toFixed(1) + ',' + sy.toFixed(1)
-            + ' C' + c1x.toFixed(1) + ',' + c1y.toFixed(1)
-            + ' ' + c2x.toFixed(1) + ',' + c2y.toFixed(1)
-            + ' ' + ex.toFixed(1) + ',' + ey.toFixed(1);
-        return '<path class="so-link-glow" d="' + d + '"></path><path class="so-link" d="' + d + '"></path>';
+    /* ── Orbit rings and spokes: quiet structure, drawn first ─────────── */
+    const rings = [0.42, 0.72, 1].map(k =>
+        '<circle class="so-ring" cx="' + cx + '" cy="' + cy + '" r="' + (R * k).toFixed(1) + '"></circle>'
+    ).join('');
+
+    const spokes = items.map(item => {
+        const [sx, sy] = pt(item.angle, centerR + 4);
+        const [ex, ey] = pt(item.angle, R - item.r - 3);
+        return '<line class="so-spoke" data-idx="' + item.i + '"'
+            + ' x1="' + sx.toFixed(1) + '" y1="' + sy.toFixed(1) + '"'
+            + ' x2="' + ex.toFixed(1) + '" y2="' + ey.toFixed(1) + '"></line>';
     }).join('');
 
+    /* ── Nodes ───────────────────────────────────────────────────────── */
     const nodes = items.map(item => {
-        const label = escapeHtml(item.label);
-        const chain = item.chain ? escapeHtml(item.chain) : '';
-        return ''
-            + '<g class="so-node">'
-            +   '<circle class="so-node-glow" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + (item.nodeR * 2.4).toFixed(1) + '"></circle>'
-            +   '<circle class="so-node-dot" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + item.nodeR.toFixed(1) + '"></circle>'
-            +   '<rect class="so-card" x="' + item.cardX.toFixed(1) + '" y="' + item.cardY.toFixed(1) + '" width="' + item.cardW.toFixed(1) + '" height="' + item.cardH.toFixed(1) + '" rx="14" ry="14"></rect>'
-            +   '<rect class="so-card-apr-pill" x="' + item.pillX.toFixed(1) + '" y="' + item.pillY.toFixed(1) + '" width="' + item.pillW.toFixed(1) + '" height="' + item.pillH.toFixed(1) + '" rx="999" ry="999"></rect>'
-            +   '<text class="so-card-apr-text" x="' + (item.pillX + item.pillW / 2).toFixed(1) + '" y="' + (item.pillY + (mobile ? 11.2 : 12.5)).toFixed(1) + '">' + escapeHtml(item.aprText) + '</text>'
-            +   '<text class="so-card-label" x="' + item.labelX.toFixed(1) + '" y="' + item.labelY.toFixed(1) + '">' + label + '</text>'
-            +   (chain ? '<text class="so-card-sub" x="' + item.labelX.toFixed(1) + '" y="' + item.subY.toFixed(1) + '">' + chain + '</text>' : '')
+        const rateRadius = R + item.r + (mobile ? 13 : 17);
+        const [rx, ry] = pt(item.angle, rateRadius);
+        const rateDy = mobile ? 3.4 : 4;
+
+        let labelBlock = '';
+        if (!mobile) {
+            const labelRadius = R + item.r + 44;
+            const [lx, ly] = pt(item.angle, labelRadius);
+            const chainDy = item.chain ? 13 : 0;
+            /* Room left between the anchor point and the canvas edge, so a long
+               strategy name is trimmed rather than allowed to escape the frame. */
+            const room = item.anchor === 'start' ? (W - 14 - lx)
+                       : item.anchor === 'end'   ? (lx - 14)
+                       : Math.min(lx, W - lx) * 2 - 20;
+            const fit = (text, fontPx) => {
+                const s = String(text || '');
+                const per = fontPx * 0.58;
+                if (s.length * per <= room) return s;
+                const keep = Math.max(4, Math.floor(room / per) - 1);
+                return s.slice(0, keep).replace(/[\s·]+$/, '') + '…';
+            };
+            item.label = fit(item.label, 12.2);
+            labelBlock =
+                '<text class="so-label" x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + item.anchor + '">'
+                + escapeHtml(item.label) + '</text>'
+                + (item.chain
+                    ? '<text class="so-chain" x="' + lx.toFixed(1) + '" y="' + (ly + chainDy).toFixed(1) + '" text-anchor="' + item.anchor + '">'
+                      + escapeHtml(item.chain) + '</text>'
+                    : '');
+        }
+
+        return '<g class="so-node" data-idx="' + item.i + '">'
+            + '<circle class="so-node-glow" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + (item.r * 2.3).toFixed(1) + '"></circle>'
+            + '<circle class="so-node-dot" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + item.r.toFixed(1) + '"></circle>'
+            + (mobile
+                ? '<text class="so-node-index" x="' + item.x.toFixed(1) + '" y="' + (item.y + 2.9).toFixed(1) + '">' + (item.i + 1) + '</text>'
+                : '')
+            + '<text class="so-rate" x="' + rx.toFixed(1) + '" y="' + (ry + rateDy).toFixed(1) + '" text-anchor="' + item.anchor + '">'
+            + escapeHtml(item.aprText) + '</text>'
+            + labelBlock
             + '</g>';
     }).join('');
 
-    canvas.innerHTML = ''
-        + '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" class="stable-orbit-svg">'
-        + '<defs><filter id="soBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="' + (mobile ? 7 : 9) + '"></feGaussianBlur></filter></defs>'
-        + '<g class="so-links">' + lines + '</g>'
-        + '<circle class="so-center-glow" cx="' + cx + '" cy="' + cy + '" r="' + (centerR * 2.35).toFixed(1) + '"></circle>'
+    /* ── Centre: the company itself, carrying the book-level aggregate ─ */
+    const bookApr = Number(company && company.displayReferenceApyPct);
+    const bookAprText = Number.isFinite(bookApr) ? stablePct(bookApr, 2) : '—';
+    const strategiesLabel = ru
+        ? (n + ' ' + (n === 1 ? 'стратегия' : (n < 5 ? 'стратегии' : 'стратегий')))
+        : (n + ' ' + (n === 1 ? 'strategy' : 'strategies'));
+
+    const centre =
+        '<circle class="so-center-glow" cx="' + cx + '" cy="' + cy + '" r="' + (centerR * 2.15).toFixed(1) + '"></circle>'
+        + '<circle class="so-center-ring" cx="' + cx + '" cy="' + cy + '" r="' + (centerR + (mobile ? 7 : 9)) + '"></circle>'
         + '<circle class="so-center-dot" cx="' + cx + '" cy="' + cy + '" r="' + centerR + '"></circle>'
-        + '<text class="so-center-title" x="' + cx + '" y="' + (cy - 5) + '">Monetra</text>'
-        + '<text class="so-center-sub" x="' + cx + '" y="' + (cy + 15) + '">' + escapeHtml(copy.centerSub) + '</text>'
-        + nodes
+        + '<text class="so-center-title" x="' + cx + '" y="' + (cy - (mobile ? 8 : 11)) + '">Monetra</text>'
+        + '<text class="so-center-rate" x="' + cx + '" y="' + (cy + (mobile ? 13 : 16)) + '">' + escapeHtml(bookAprText) + '</text>'
+        + '<text class="so-center-sub" x="' + cx + '" y="' + (cy + (mobile ? 29 : 34)) + '">' + escapeHtml(strategiesLabel) + '</text>';
+
+    const svg =
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" class="stable-orbit-svg" role="img">'
+        + '<defs><filter id="soBlur" x="-70%" y="-70%" width="240%" height="240%">'
+        + '<feGaussianBlur stdDeviation="' + (mobile ? 8 : 11) + '"></feGaussianBlur></filter></defs>'
+        + '<g class="so-structure">' + rings + spokes + '</g>'
+        + centre
+        + '<g class="so-nodes">' + nodes + '</g>'
         + '</svg>';
+
+    /* ── Phone ledger: the ring keeps the rates, the names live here ──── */
+    let legend = '';
+    if (mobile) {
+        const rows = items.map(item =>
+            '<li class="so-legend-row">'
+            + '<span class="so-legend-idx">' + (item.i + 1) + '</span>'
+            + '<span class="so-legend-body">'
+            +   '<b>' + escapeHtml(item.label) + '</b>'
+            +   (item.chain ? '<small>' + escapeHtml(item.chain) + '</small>' : '')
+            + '</span>'
+            + '<span class="so-legend-rate">' + escapeHtml(item.aprText) + '</span>'
+            + '</li>'
+        ).join('');
+        legend = '<ol class="so-legend' + (narrow ? ' so-legend-narrow' : '') + '">' + rows + '</ol>';
+    }
+
+    canvas.innerHTML = svg + legend;
 }
 
 function renderStableCompanies(lang) {
@@ -11679,8 +12074,8 @@ function buildGraph() {
     // Compact, responsive layout profiles (mobile fits the screen, no scroll)
     const mobile = (window.innerWidth || 1000) < 640;
     const P = mobile
-        ? { W:374, coX:94, prX:236, padY:20, rowH:38, fCo:12.2, fPr:10.8, rCoMin:5, rCoMax:19, rPrMin:3.2, rPrMax:6.4, offCo:10, offPr:8, blur:3.2, railX: null, railPad: 9 }
-        : { W:842, coX:170, prX:534, padY:28, rowH:39, fCo:15, fPr:12.5, rCoMin:7, rCoMax:34, rPrMin:4, rPrMax:9, offCo:14, offPr:13, blur:5, railX: 714, railPad: 18 };
+        ? { W:374, coX:104, prX:208, padY:24, rowH:38, fCo:11.4, fPr:10.6, rCoMin:5, rCoMax:17, rPrMin:3.2, rPrMax:6.4, offCo:10, offPr:8, blur:3.2, railX: null, railPad: 8 }
+        : { W:842, coX:170, prX:520, padY:34, rowH:39, fCo:15, fPr:12.5, rCoMin:7, rCoMax:34, rPrMin:4, rPrMax:9, offCo:14, offPr:13, blur:5, railX: 714, railPad: 18 };
 
     // Layout order is stable (always composite) so switching lenses morphs node
     // sizes in place rather than reshuffling the map; only the SIZES follow the lens.
@@ -11727,33 +12122,66 @@ function buildGraph() {
         });
     });
 
+    /* ── Protocol rail ───────────────────────────────────────────────────────
+       The rate used to be positioned per row: pill width derived from the text,
+       x derived from that row's label length, and on a phone it was pushed
+       BELOW the label, where it landed on the next row. That is what read as
+       crooked, and hovering moved it again.
+
+       Now the rate is a genuine column: one shared pill width for every row, a
+       single x for all of them, and vertical centring on the row itself. The
+       protocol name is truncated to the space that remains, so a long name can
+       never push the column. Nothing about it moves on hover. */
+    const aprTexts = {};
+    protos.forEach(p => {
+        const a = Number(protocolAprMap[p]);
+        aprTexts[p] = Number.isFinite(a) ? stablePct(a, 2) : '';
+    });
+    const longestApr = Object.keys(aprTexts).reduce((m, k) => Math.max(m, aprTexts[k].length), 0);
+    const pillH = mobile ? 17 : 19;
+    const pillW = longestApr
+        ? Math.max((longestApr * (mobile ? 5.7 : 6.3)) + (mobile ? 16 : 20), mobile ? 46 : 56)
+        : 0;
+    const aprColX = pillW ? (P.W - P.railPad - pillW) : P.W;
+    const labelX = P.prX + P.rPrMax + P.offPr;
+    const labelRoom = aprColX - labelX - (mobile ? 9 : 16);
+
+    const fitLabel = (text, fontPx, room) => {
+        const s = String(text || '');
+        const per = fontPx * 0.58;
+        if (s.length * per <= room) return s;
+        const keep = Math.max(3, Math.floor(room / per) - 1);
+        return s.slice(0, keep).replace(/[\s·]+$/, '') + '…';
+    };
+
+    let prRail = '';
+    if (pillW && protos.length > 1) {
+        const railTop = prY(0) - pillH / 2 - (mobile ? 12 : 16);
+        const railBottom = prY(nPr - 1) + pillH / 2 + (mobile ? 6 : 8);
+        prRail = '<line class="g-rail-line" x1="' + (aprColX - (mobile ? 7 : 12)).toFixed(1) + '" y1="' + railTop.toFixed(1)
+            + '" x2="' + (aprColX - (mobile ? 7 : 12)).toFixed(1) + '" y2="' + railBottom.toFixed(1) + '"></line>'
+            + '<text class="g-rail-head" x="' + (aprColX + pillW / 2).toFixed(1) + '" y="' + (railTop - (mobile ? 5 : 7)).toFixed(1)
+            + '" text-anchor="middle">' + (idxLang() === 'ru' ? 'СТАВКА' : 'RATE') + '</text>';
+    }
+
     let prNodes = '';
     protos.forEach((p, j) => {
         const x = P.prX, y = prY(j), r = rPr(p);
         const hitH = (P.rowH * 0.94).toFixed(1), hitY = (y - P.rowH * 0.47).toFixed(1);
-        const labelX = P.prX + P.rPrMax + P.offPr;
-        const labelY = y + (mobile ? 4.2 : 4.5);
-        const apr = Number(protocolAprMap[p]);
-        const aprText = Number.isFinite(apr) ? stablePct(apr, 2) : '';
-        const pillH = mobile ? 16 : 18;
-        const pillW = aprText ? Math.max((aprText.length * (mobile ? 5.6 : 6.2)) + 18, mobile ? 44 : 52) : 0;
-        const labelWidth = estimateTextWidth(p, P.fPr);
-        const pillX = aprText
-            ? (mobile
-                ? Math.min(Math.max(labelX + Math.max(0, (labelWidth - pillW) / 2), labelX), P.W - pillW - P.railPad)
-                : Math.max(P.railX, labelX + labelWidth + 14))
-            : 0;
-        const pillY = mobile ? y + 9.5 : y - 9;
+        const labelY = y + (mobile ? 3.9 : 4.4);
+        const aprText = aprTexts[p];
+        const pillY = y - pillH / 2;
         prNodes += '<g class="g-node g-node-pr" data-pr="' + p + '">'
             + '<rect class="g-hit" x="' + (P.prX - P.rPrMax - 6) + '" y="' + hitY + '" width="' + (P.W - P.prX + P.rPrMax + 6) + '" height="' + hitH + '"></rect>'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.8).toFixed(1) + '" fill="#d8b45a" opacity="0.10" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-pr" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"></circle>'
             + '<g class="g-label-pr-wrap">'
-            +   '<text class="g-label-pr" x="' + labelX + '" y="' + labelY.toFixed(1) + '" style="font-size:' + P.fPr + 'px">' + escapeHtml(p) + '</text>'
+            +   '<text class="g-label-pr" x="' + labelX + '" y="' + labelY.toFixed(1) + '" style="font-size:' + P.fPr + 'px">'
+            +     escapeHtml(fitLabel(p, P.fPr, labelRoom)) + '</text>'
             +   (aprText
-                    ? ('<g class="g-apr-chip" transform="translate(' + pillX.toFixed(1) + ',' + pillY.toFixed(1) + ')">'
-                        + '<rect class="g-apr-pill" x="0" y="0" rx="999" ry="999" width="' + pillW.toFixed(1) + '" height="' + pillH + '"></rect>'
-                        + '<text class="g-apr-text" x="' + (pillW / 2).toFixed(1) + '" y="' + (mobile ? 11.2 : 12.3) + '" text-anchor="middle">' + escapeHtml(aprText) + '</text>'
+                    ? ('<g class="g-apr-chip">'
+                        + '<rect class="g-apr-pill" x="' + aprColX.toFixed(1) + '" y="' + pillY.toFixed(1) + '" rx="999" ry="999" width="' + pillW.toFixed(1) + '" height="' + pillH + '"></rect>'
+                        + '<text class="g-apr-text" x="' + (aprColX + pillW / 2).toFixed(1) + '" y="' + (pillY + pillH / 2 + (mobile ? 3.6 : 4)).toFixed(1) + '" text-anchor="middle">' + escapeHtml(aprText) + '</text>'
                         + '</g>')
                     : '')
             + '</g>'
@@ -11768,7 +12196,8 @@ function buildGraph() {
             + '<rect class="g-hit" x="0" y="' + hitY2 + '" width="' + (P.coX + P.rCoMax + 6) + '" height="' + hitH2 + '"></rect>'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.1).toFixed(1) + '" fill="' + col + '" opacity="0.20" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-co" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '" style="fill:' + col + '"></circle>'
-            + '<text class="g-label-co" x="' + (P.coX - P.rCoMax - P.offCo) + '" y="' + (y + (mobile ? 4 : 5)).toFixed(1) + '" text-anchor="end" style="font-size:' + P.fCo + 'px">' + companyDisplayName(c.nm) + '</text>'
+            + '<text class="g-label-co" x="' + (P.coX - P.rCoMax - P.offCo) + '" y="' + (y + (mobile ? 4 : 5)).toFixed(1) + '" text-anchor="end" style="font-size:' + P.fCo + 'px">'
+            +   escapeHtml(fitLabel(companyDisplayName(c.nm), P.fCo, P.coX - P.rCoMax - P.offCo - 2)) + '</text>'
             + '</g>';
     });
 
@@ -11776,7 +12205,7 @@ function buildGraph() {
         '<svg viewBox="0 0 ' + P.W + ' ' + H.toFixed(0) + '" xmlns="http://www.w3.org/2000/svg" class="g-svg">'
         + '<defs><filter id="gGlow" x="-60%" y="-60%" width="220%" height="220%">'
         + '<feGaussianBlur stdDeviation="' + P.blur + '"></feGaussianBlur></filter></defs>'
-        + '<g class="g-edges">' + edges + '</g>' + prNodes + coNodes
+        + '<g class="g-edges">' + edges + '</g>' + prRail + prNodes + coNodes
         + '</svg>';
 
     const svg = canvas.querySelector('svg');
