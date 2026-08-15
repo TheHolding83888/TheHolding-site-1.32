@@ -177,6 +177,17 @@
       'the', 'and', 'about', 'tell', 'what', 'which', 'current', 'please'
     ].includes(w));
   const includesAny = (q, list) => list.some(x => q.includes(norm(x)));
+  const isConcentrationIntent = q => {
+    const n = norm(q);
+    return includesAny(n, [
+      'concentration risk', 'concentration most visible', 'most concentrated', 'largest concentration',
+      'protocol concentration', 'cross company concentration', 'cross-company concentration',
+      'biggest protocol exposure', 'where are we most concentrated',
+      'где система наиболее сконцентрирована', 'где мы наиболее сконцентрированы',
+      'где у нас самая большая концентрация', 'концентрация по протоколам',
+      'что у нас с концентрацией', 'риск концентрации', 'концентрация риска'
+    ]) || ((n.includes('сконцентрир') || n.includes('концентрац')) && includesAny(n, ['где', 'самая', 'наиболее', 'больше', 'риск']));
+  };
 
   function answerArtifacts(source) {
     const s = String(source || '');
@@ -1565,7 +1576,7 @@ async function loadLazy(kind) {
       'Live Productivity + Console capability map'
     );
 
-    if (includesAny(q, ['concentration risk', 'concentration most visible', 'риск концентрации', 'концентрация риска'])) return productiveConcentrationAnswer(lang);
+    if (isConcentrationIntent(q)) return productiveConcentrationAnswer(lang);
 
     if (includesAny(q, ['becoming more mature', 'more mature as an economic object', 'maturity', 'reputation synthesis', 'становится зрелее', 'зрелост', 'репутац'])) return unknown(
       ru
@@ -1679,7 +1690,7 @@ async function loadLazy(kind) {
     if (asksEmbedded) return embeddedAnswer(raw, lang, company);
     if (asksEntry) return entryAnswer(raw, lang, company);
 
-    if (includesAny(q, ['где система наиболее сконцентрирована', 'где у нас самая большая концентрация', 'концентрация по протоколам', 'что у нас с концентрацией', 'concentration risk', 'most concentrated', 'largest concentration', 'protocol concentration', 'cross company concentration', 'cross-company concentration', 'biggest protocol exposure', 'where are we most concentrated'])) return productiveConcentrationAnswer(lang);
+    if (isConcentrationIntent(q)) return productiveConcentrationAnswer(lang);
     if (includesAny(q, ['что важнее сейчас', 'что реально важно', 'what matters now', 'what actually matters', 'what should i pay attention to', 'на что обратить внимание', 'что мне реально надо знать сейчас', 'what do i actually need to know now'])) return ownerBriefAnswer(lang);
     if (includesAny(q, ['что изменилось', 'что изменилось сейчас', 'what changed', 'latest changes', 'recent changes'])) return latestChangeSalienceAnswer(lang, 'changes');
     if (includesAny(q, ['что требует внимания', 'требует внимания', 'needs attention', 'attention items', 'проблемы сейчас'])) return latestChangeSalienceAnswer(lang, 'attention');
