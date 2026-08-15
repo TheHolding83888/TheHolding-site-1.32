@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <!-- companies.html · v1.24.4 · Reading room · compact bars + seam, original mobile rail mechanic -->
 <!-- companies.html · v1.24.1 · Reading room · bar gap, tighter nav -->
@@ -2013,6 +2014,210 @@
             .graph-hint { color: rgba(243,239,228,0.5); }
         }
 
+
+
+
+/* ═════ Graph APR chips ═════ */
+.g-label-pr-wrap { pointer-events: none; }
+.g-apr-chip {
+    pointer-events: none;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+.g-apr-pill {
+    fill: rgba(216,180,90,0.16);
+    stroke: rgba(216,180,90,0.38);
+    stroke-width: 1;
+}
+.g-apr-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    fill: #e6c877;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.g-svg.focused .g-apr-chip { opacity: 0.4; transition: opacity 0.3s ease; }
+.g-svg.focused .g-node-pr.on .g-apr-chip { opacity: 1; }
+
+/* ═════ Stable Strategy Orbit / Octopus ═════ */
+.stable-orbit {
+    margin-top: 1.65rem;
+    padding: 1.15rem;
+    border: 1px solid rgba(10,124,78,.12);
+    border-radius: 26px;
+    background:
+        radial-gradient(120% 140% at 50% 0%, rgba(216,180,90,.16) 0%, rgba(216,180,90,0) 42%),
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(249,247,241,.86));
+    box-shadow: 0 28px 72px -56px rgba(10,50,33,.44);
+    overflow: hidden;
+}
+.stable-orbit-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.stable-orbit-kicker {
+    font-size: 0.69rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(10,50,33,.52);
+    margin-bottom: 0.3rem;
+}
+.stable-orbit-title {
+    margin: 0;
+    font-size: clamp(1.2rem, 2.2vw, 1.72rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: #10281e;
+}
+.stable-orbit-sub {
+    margin: 0.35rem 0 0;
+    max-width: 760px;
+    font-size: 0.84rem;
+    line-height: 1.6;
+    color: rgba(10,50,33,.66);
+}
+.stable-orbit-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.48rem;
+    padding: 0.5rem 0.78rem;
+    border-radius: 999px;
+    border: 1px solid rgba(216,180,90,.28);
+    background: rgba(255,255,255,.66);
+    color: rgba(10,50,33,.76);
+    font-size: 0.74rem;
+    white-space: nowrap;
+}
+.stable-orbit-meta i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d8b45a;
+    box-shadow: 0 0 0 6px rgba(216,180,90,.14);
+    display: inline-block;
+    flex: 0 0 auto;
+}
+.stable-orbit-canvas {
+    position: relative;
+    min-height: 420px;
+}
+.stable-orbit-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+}
+.stable-orbit-note {
+    margin: 0.85rem 0 0;
+    font-size: 0.74rem;
+    line-height: 1.55;
+    color: rgba(10,50,33,.58);
+}
+.stable-orbit-empty {
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    border-radius: 22px;
+    border: 1px dashed rgba(10,124,78,.18);
+    color: rgba(10,50,33,.52);
+    background: rgba(255,255,255,.52);
+}
+.so-link {
+    fill: none;
+    stroke: rgba(17,68,48,.18);
+    stroke-width: 1.35;
+    stroke-linecap: round;
+}
+.so-link-glow {
+    fill: none;
+    stroke: rgba(216,180,90,.18);
+    stroke-width: 9;
+    stroke-linecap: round;
+    filter: url(#soBlur);
+}
+.so-center-glow {
+    fill: rgba(17,68,48,.18);
+    filter: url(#soBlur);
+}
+.so-center-dot {
+    fill: #113b2a;
+    stroke: rgba(216,180,90,.76);
+    stroke-width: 1.4;
+}
+.so-center-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    fill: #f6f1e6;
+    text-anchor: middle;
+}
+.so-center-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    fill: rgba(246,241,230,.72);
+    text-anchor: middle;
+}
+.so-node-glow {
+    fill: rgba(216,180,90,.14);
+    filter: url(#soBlur);
+}
+.so-node-dot {
+    fill: #f7f0dc;
+    stroke: rgba(17,68,48,.18);
+    stroke-width: 1.15;
+}
+.so-node-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    fill: #193727;
+    text-anchor: middle;
+}
+.so-node-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    fill: rgba(25,55,39,.6);
+    text-anchor: middle;
+}
+.so-apr-pill {
+    fill: rgba(216,180,90,.16);
+    stroke: rgba(216,180,90,.4);
+    stroke-width: 1;
+}
+.so-apr-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    fill: #8d6725;
+    text-anchor: middle;
+}
+@media (max-width: 760px) {
+    .stable-orbit {
+        margin-top: 1.1rem;
+        padding: 0.95rem 0.78rem 0.88rem;
+        border-radius: 20px;
+    }
+    .stable-orbit-head {
+        display: block;
+        margin-bottom: 0.75rem;
+    }
+    .stable-orbit-meta {
+        margin-top: 0.75rem;
+    }
+    .stable-orbit-sub {
+        font-size: 0.77rem;
+        line-height: 1.55;
+    }
+    .stable-orbit-canvas {
+        min-height: 500px;
+    }
+}
 
         /* ══ Index Framework — trigger + slide-out drawer ══ */
         .index-comp-head {
@@ -8951,6 +9156,23 @@
                     <button class="scp-close-bottom" type="button" data-stable-passport-close data-i18n="stable.passport.close">Close Passport ↑</button>
                 </div>
             </div>
+
+
+<section class="stable-orbit reveal" id="stableStrategyOrbitSection">
+    <div class="stable-orbit-head">
+        <div>
+            <div class="stable-orbit-kicker" data-i18n="stable.orbit.kicker">04 · STRATEGY CONSTELLATION</div>
+            <h3 class="stable-orbit-title" data-i18n="stable.orbit.title">Monetra and the live strategy web around it</h3>
+            <p class="stable-orbit-sub" data-i18n="stable.orbit.sub">A central Monetra node sits in the middle, while every live stable strategy radiates around it. Each outer node shows the strategy’s current APY, so the stable book can be observed at a glance.</p>
+        </div>
+        <div class="stable-orbit-meta"><i></i><span data-i18n="stable.orbit.meta">Live strategy APYs · centered view</span></div>
+    </div>
+    <div class="stable-orbit-canvas" id="stableStrategyOrbitCanvas">
+        <div class="stable-orbit-empty" data-i18n="stable.orbit.loading">Loading Monetra strategy map…</div>
+    </div>
+    <p class="stable-orbit-note" data-i18n="stable.orbit.note">Current protocol rates come directly from the Monetra strategy book. Node size follows current position value when available, keeping the view elegant rather than noisy.</p>
+</section>
+
         </article>
     </div>
 </section>
@@ -9395,6 +9617,198 @@ function stableEmbeddedDisplay(v, status, lang) {
         : '—';
 }
 
+
+
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function stableOrbitCopy(lang) {
+    if (lang === 'ru') {
+        return {
+            empty: 'Когда книга стратегий Monetra будет доступна, здесь появится её визуальная карта.',
+            centerSub: 'Stable Capital'
+        };
+    }
+    return {
+        empty: 'When the Monetra strategy book is available, its live strategy map will appear here.',
+        centerSub: 'Stable Capital'
+    };
+}
+
+function canonicalGraphProtocol(name) {
+    const raw = String(name || '').trim();
+    if (!raw) return '';
+    const s = raw.toLowerCase();
+    if (/^aero\b|aerodrome/.test(s)) return 'Aero';
+    if (/convex|cvxcrv/.test(s)) return 'Convex';
+    if (/curve|vecrv/.test(s)) return 'Curve';
+    if (/pendle|spendle/.test(s)) return 'Pendle';
+    if (/yield\s*basis|\byb\b|veyb/.test(s)) return 'Yield Basis';
+    if (/frax|sfrxusd|frxusd/.test(s)) return 'Frax';
+    if (/velo|velodrome/.test(s)) return 'Velodrome';
+    if (/venice/.test(s)) return 'Venice';
+    if (/liquity|lqty/.test(s)) return 'Liquity';
+    if (/resupply|rsup/.test(s)) return 'Resupply';
+    if (/f\(x\)|fxsave|fxn|fx\s*protocol/.test(s)) return 'f(x) Protocol';
+    if (/bitcoin|\bbtc\b|wbtc/.test(s)) return 'Bitcoin';
+    if (/ethereum|\beth\b|weth/.test(s)) return 'Ethereum';
+    if (/\bicp\b|internet computer/.test(s)) return 'ICP';
+    if (/aave/.test(s)) return 'Aave';
+    if (/llamalend/.test(s)) return 'Llamalend';
+    if (/inverse/.test(s)) return 'Inverse';
+    if (/\bsky\b|maker/.test(s)) return 'Sky';
+    if (/yearn/.test(s)) return 'Yearn';
+    if (/lido|susdc/.test(s)) return 'Lido';
+    if (/morpho/.test(s)) return 'Morpho';
+    if (/lombard/.test(s)) return 'Lombard';
+    if (/beefy/.test(s)) return 'Beefy';
+    return raw;
+}
+
+function collectGraphAprSamples(root, buckets, known) {
+    const seen = new WeakSet();
+    const add = (proto, rate) => {
+        const key = canonicalGraphProtocol(proto);
+        const value = Number(rate);
+        if (!key || !known.has(key) || !Number.isFinite(value)) return;
+        if (value < 0 || value > 500) return;
+        (buckets[key] || (buckets[key] = [])).push(value);
+    };
+    const rateKeys = ['referenceApyPct','referenceAprPct','aprPct','apyPct','currentAprPct','currentApyPct','averageAprPct','averageApyPct','latestAprPct','latestApyPct','apr','apy'];
+    const labelKeys = ['protocolFamily','protocol','protocolName','project','routeLabel','source','name'];
+    const walk = (value, depth) => {
+        if (!value || depth > 5) return;
+        if (Array.isArray(value)) { value.forEach(v => walk(v, depth + 1)); return; }
+        if (typeof value !== 'object') return;
+        if (seen.has(value)) return;
+        seen.add(value);
+        let label = '';
+        for (const key of labelKeys) {
+            if (typeof value[key] === 'string' && value[key].trim()) { label = value[key].trim(); break; }
+        }
+        let rate = null;
+        for (const key of rateKeys) {
+            if (value[key] !== null && value[key] !== undefined && value[key] !== '') {
+                const n = Number(value[key]);
+                if (Number.isFinite(n)) { rate = n; break; }
+            }
+        }
+        if (label && rate !== null) add(label, rate);
+        Object.keys(value).forEach(k => walk(value[k], depth + 1));
+    };
+    walk(root, 0);
+}
+
+function computeGraphProtocolAprMap() {
+    const known = new Set(Object.values(COMPANY_PROTOCOLS).flat());
+    const buckets = {};
+    if (PRODUCTIVITY_SNAPSHOT) collectGraphAprSamples(PRODUCTIVITY_SNAPSHOT, buckets, known);
+    if (STABLE_INDEX_SNAPSHOT) collectGraphAprSamples(STABLE_INDEX_SNAPSHOT, buckets, known);
+    const out = {};
+    known.forEach(key => {
+        const arr = (buckets[key] || []).filter(v => Number.isFinite(v)).sort((a, b) => a - b);
+        if (!arr.length) return;
+        const mid = Math.floor(arr.length / 2);
+        const median = arr.length % 2 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
+        out[key] = median;
+    });
+    return out;
+}
+
+function orbitStrategyLabel(position) {
+    const proto = String(position.protocolFamily || position.protocol || 'Strategy').trim();
+    const asset = String(position.asset || position.wrapperSymbol || position.underlyingSymbol || '').trim();
+    return asset ? (proto + ' · ' + asset) : proto;
+}
+
+function renderStableStrategyOrbit(lang, company) {
+    const canvas = document.getElementById('stableStrategyOrbitCanvas');
+    if (!canvas) return;
+    const copy = stableOrbitCopy(lang);
+    const positions = Array.isArray(company && company.positions) ? company.positions.filter(Boolean) : [];
+    if (!positions.length) {
+        canvas.innerHTML = '<div class="stable-orbit-empty">' + escapeHtml(copy.empty) + '</div>';
+        return;
+    }
+    const mobile = (window.innerWidth || 1000) < 760;
+    const W = mobile ? 360 : 900;
+    const H = mobile ? 560 : 620;
+    const cx = W / 2;
+    const cy = mobile ? 284 : 308;
+    const ringX = mobile ? 122 : 292;
+    const ringY = mobile ? 198 : 214;
+    const centerR = mobile ? 48 : 68;
+    const maxValue = Math.max.apply(null, positions.map(p => Number(p.valueUsd ?? p.strategyEntry?.principalNominalStable ?? 0)).concat([1]));
+    const items = positions.slice().sort((a, b) => {
+        const av = Number(a.valueUsd ?? a.strategyEntry?.principalNominalStable ?? 0);
+        const bv = Number(b.valueUsd ?? b.strategyEntry?.principalNominalStable ?? 0);
+        return bv - av;
+    }).map((p, index, arr) => {
+        const angle = (-Math.PI / 2) + (Math.PI * 2 * index / arr.length);
+        const x = cx + Math.cos(angle) * ringX;
+        const y = cy + Math.sin(angle) * ringY;
+        const baseValue = Number(p.valueUsd ?? p.strategyEntry?.principalNominalStable ?? 0);
+        const nodeR = (mobile ? 16 : 22) + (mobile ? 10 : 15) * Math.sqrt(Math.max(baseValue, 0) / maxValue);
+        return {
+            x, y, nodeR,
+            label: orbitStrategyLabel(p),
+            chain: String(p.chain || '').trim(),
+            apr: Number(p.referenceApyPct),
+            angle
+        };
+    });
+    const lines = items.map(item => {
+        const sx = cx + Math.cos(item.angle) * centerR * 0.82;
+        const sy = cy + Math.sin(item.angle) * centerR * 0.82;
+        const ex = item.x - Math.cos(item.angle) * item.nodeR * 0.84;
+        const ey = item.y - Math.sin(item.angle) * item.nodeR * 0.84;
+        const c1x = cx + Math.cos(item.angle) * (mobile ? 66 : 86);
+        const c1y = cy + Math.sin(item.angle) * (mobile ? 60 : 78);
+        const c2x = item.x - Math.cos(item.angle) * (mobile ? 46 : 62);
+        const c2y = item.y - Math.sin(item.angle) * (mobile ? 46 : 62);
+        const d = 'M' + sx.toFixed(1) + ',' + sy.toFixed(1)
+            + ' C' + c1x.toFixed(1) + ',' + c1y.toFixed(1)
+            + ' ' + c2x.toFixed(1) + ',' + c2y.toFixed(1)
+            + ' ' + ex.toFixed(1) + ',' + ey.toFixed(1);
+        return '<path class="so-link-glow" d="' + d + '"></path><path class="so-link" d="' + d + '"></path>';
+    }).join('');
+    const nodes = items.map(item => {
+        const label = escapeHtml(item.label);
+        const chain = item.chain ? escapeHtml(item.chain) : '';
+        const aprText = Number.isFinite(item.apr) ? stablePct(item.apr, 2) : '—';
+        const pillW = Math.max((aprText.length * (mobile ? 5.8 : 6.6)) + 18, mobile ? 46 : 54);
+        const labelY = item.y + item.nodeR + (mobile ? 15 : 18);
+        const chainY = labelY + (mobile ? 12 : 14);
+        return ''
+            + '<g class="so-node">'
+            +   '<circle class="so-node-glow" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + (item.nodeR * 2.2).toFixed(1) + '"></circle>'
+            +   '<g class="so-apr" transform="translate(' + (item.x - pillW / 2).toFixed(1) + ',' + (item.y - item.nodeR - (mobile ? 24 : 28)).toFixed(1) + ')">'
+            +     '<rect class="so-apr-pill" rx="999" ry="999" width="' + pillW.toFixed(1) + '" height="20"></rect>'
+            +     '<text class="so-apr-text" x="' + (pillW / 2).toFixed(1) + '" y="13.6">' + escapeHtml(aprText) + '</text>'
+            +   '</g>'
+            +   '<circle class="so-node-dot" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + item.nodeR.toFixed(1) + '"></circle>'
+            +   '<text class="so-node-text" x="' + item.x.toFixed(1) + '" y="' + labelY.toFixed(1) + '">' + label + '</text>'
+            +   (chain ? '<text class="so-node-sub" x="' + item.x.toFixed(1) + '" y="' + chainY.toFixed(1) + '">' + chain + '</text>' : '')
+            + '</g>';
+    }).join('');
+    canvas.innerHTML = ''
+        + '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" class="stable-orbit-svg">'
+        + '<defs><filter id="soBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="' + (mobile ? 7 : 9) + '"></feGaussianBlur></filter></defs>'
+        + '<g class="so-links">' + lines + '</g>'
+        + '<circle class="so-center-glow" cx="' + cx + '" cy="' + cy + '" r="' + (centerR * 2.35).toFixed(1) + '"></circle>'
+        + '<circle class="so-center-dot" cx="' + cx + '" cy="' + cy + '" r="' + centerR + '"></circle>'
+        + '<text class="so-center-title" x="' + cx + '" y="' + (cy - 5) + '">Monetra</text>'
+        + '<text class="so-center-sub" x="' + cx + '" y="' + (cy + 16) + '">' + escapeHtml(copy.centerSub) + '</text>'
+        + nodes
+        + '</svg>';
+}
+
 function renderStableCompanies(lang) {
     STABLE_UI_LANG = (lang === 'ru' ? 'ru' : 'en');
     const d = STABLE_INDEX_SNAPSHOT;
@@ -9612,6 +10026,8 @@ function renderStableCompanies(lang) {
     };
     renderAllocation('scpChainAllocation', c.allocation?.byChain, false);
     renderAllocation('scpTypeAllocation', c.allocation?.byStrategyType, true);
+    renderStableStrategyOrbit(lang, c);
+    stableOrbitResize = () => renderStableStrategyOrbit(idxLang(), c);
     const sp = document.getElementById('stablePassportMonetra');
     if (sp && window.stablePassportSet) window.stablePassportSet(sp.classList.contains('is-open'), false);
 }
@@ -11165,8 +11581,8 @@ function buildGraph() {
     // Compact, responsive layout profiles (mobile fits the screen, no scroll)
     const mobile = (window.innerWidth || 1000) < 640;
     const P = mobile
-        ? { W:360, coX:104, prX:250, padY:16, rowH:22, fCo:12, fPr:11, rCoMin:5,  rCoMax:19, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
-        : { W:780, coX:172, prX:558, padY:22, rowH:27, fCo:15, fPr:13, rCoMin:7,  rCoMax:34, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
+        ? { W:360, coX:102, prX:242, padY:18, rowH:30, fCo:12, fPr:10.5, rCoMin:5,  rCoMax:19, rPrMin:3, rPrMax:6, offCo:9,  offPr:7,  blur:3 }
+        : { W:780, coX:172, prX:542, padY:24, rowH:35, fCo:15, fPr:12.5, rCoMin:7,  rCoMax:34, rPrMin:4, rPrMax:9, offCo:12, offPr:10, blur:5 };
 
     // Layout order is stable (always composite) so switching lenses morphs node
     // sizes in place rather than reshuffling the map; only the SIZES follow the lens.
@@ -11193,6 +11609,7 @@ function buildGraph() {
     // Area-proportional to the company's share of the whole network, so every node —
     // including the largest — visibly re-weights when the lens changes.
     const rCo = c => P.rCoMax * Math.sqrt(Math.min(wt(c), 1));
+    const protocolAprMap = computeGraphProtocolAprMap();
     const maxPr = Math.max.apply(null, Object.keys(protoCount).map(k => protoCount[k]).concat([1]));
     // area ∝ number of connected companies (radius ∝ √count), so a protocol used by
     // three companies covers exactly three times the area of one used by a single company
@@ -11215,11 +11632,25 @@ function buildGraph() {
     protos.forEach((p, j) => {
         const x = P.prX, y = prY(j), r = rPr(p);
         const hitH = (P.rowH * 0.94).toFixed(1), hitY = (y - P.rowH * 0.47).toFixed(1);
+        const labelX = P.prX + P.rPrMax + P.offPr;
+        const labelY = y - (mobile ? 2.2 : 3.1);
+        const apr = Number(protocolAprMap[p]);
+        const aprText = Number.isFinite(apr) ? stablePct(apr, 2) : '';
+        const pillW = aprText ? Math.max((aprText.length * (mobile ? 5.6 : 6.2)) + 18, mobile ? 44 : 52) : 0;
+        const pillY = y + (mobile ? 5.8 : 7.2);
         prNodes += '<g class="g-node g-node-pr" data-pr="' + p + '">'
             + '<rect class="g-hit" x="' + (P.prX - P.rPrMax - 6) + '" y="' + hitY + '" width="' + (P.W - P.prX + P.rPrMax + 6) + '" height="' + hitH + '"></rect>'
             + '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.6).toFixed(1) + '" fill="#d8b45a" opacity="0.10" filter="url(#gGlow)"></circle>'
             + '<circle class="g-dot-pr" cx="' + x + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"></circle>'
-            + '<text class="g-label-pr" x="' + (P.prX + P.rPrMax + P.offPr) + '" y="' + (y + (mobile ? 3.5 : 4)).toFixed(1) + '" style="font-size:' + P.fPr + 'px">' + p + '</text>'
+            + '<g class="g-label-pr-wrap">'
+            +   '<text class="g-label-pr" x="' + labelX + '" y="' + labelY.toFixed(1) + '" style="font-size:' + P.fPr + 'px">' + escapeHtml(p) + '</text>'
+            +   (aprText
+                    ? ('<g class="g-apr-chip" transform="translate(' + labelX + ',' + pillY.toFixed(1) + ')">'
+                        + '<rect class="g-apr-pill" x="0" y="0" rx="999" ry="999" width="' + pillW.toFixed(1) + '" height="18"></rect>'
+                        + '<text class="g-apr-text" x="' + (pillW / 2).toFixed(1) + '" y="12.3" text-anchor="middle">' + escapeHtml(aprText) + '</text>'
+                        + '</g>')
+                    : '')
+            + '</g>'
             + '</g>';
     });
 
@@ -11307,6 +11738,7 @@ function buildGraph() {
     };
 }
 let graphResize = null;
+let stableOrbitResize = null;
 let _graphRT;
 window.addEventListener('resize', function () {
     try {
@@ -11322,7 +11754,7 @@ window.addEventListener('resize', function () {
         });
     } catch (e) {}
     clearTimeout(_graphRT);
-    _graphRT = setTimeout(function () { if (INDEX_STATE) buildGraph(); }, 200);
+    _graphRT = setTimeout(function () { if (INDEX_STATE) buildGraph(); if (stableOrbitResize) stableOrbitResize(); }, 200);
 });
 
 /* ── Index Framework drawer: content + render + open/close ── */
@@ -12151,6 +12583,12 @@ function renderFramework(lang) {
             'stable.passport.trackingNote': 'No pre-tracking income is reconstructed from current APY.',
             'stable.passport.open': 'Open Monetra →',
             'stable.passport.close': 'Close Passport ↑',
+            'stable.orbit.kicker': '04 · STRATEGY CONSTELLATION',
+            'stable.orbit.title': 'Monetra and the live strategy web around it',
+            'stable.orbit.sub': 'A central Monetra node sits in the middle, while every live stable strategy radiates around it. Each outer node shows the strategy’s current APY, so the stable book can be observed at a glance.',
+            'stable.orbit.meta': 'Live strategy APYs · centered view',
+            'stable.orbit.loading': 'Loading Monetra strategy map…',
+            'stable.orbit.note': 'Current protocol rates come directly from the Monetra strategy book. Node size follows current position value when available, keeping the view elegant rather than noisy.',
             'stable.guide': 'How it works',
             'stable.quick.strategies': 'Strategy Book',
             'stable.quick.income': 'Income',
@@ -12471,6 +12909,12 @@ function renderFramework(lang) {
             'stable.explain.claimableText': 'Награды уже заработаны внутри протокола, но ещё не поступили в кошелёк компании. После получения они становятся реализованным денежным потоком / казначейством.',
             'stable.explain.priceTitle': 'Эффект цены стейблов',
             'stable.explain.priceText': 'Отклонение стейблкоина от $1 учитывается отдельно от доходности стратегии, чтобы изменение цены не выглядело как заработанный доход.',
+            'stable.orbit.kicker': '04 · КАРТА СТРАТЕГИЙ',
+            'stable.orbit.title': 'Monetra и живая сеть стратегий вокруг неё',
+            'stable.orbit.sub': 'В центре находится Monetra, а вокруг неё расходятся все активные стейбл-стратегии. У каждой внешней ноды показан текущий APY, чтобы всю книгу можно было считывать одним взглядом.',
+            'stable.orbit.meta': 'Live strategy APYs · центрированная карта',
+            'stable.orbit.loading': 'Загружаем карту стратегий Monetra…',
+            'stable.orbit.note': 'Текущие ставки протоколов берутся прямо из книги стратегий Monetra. Размер ноды следует за текущей стоимостью позиции, сохраняя график премиальным и спокойным.',
             'monetra.passport.kicker': 'Company Passport · Реестр 008',
             'monetra.passport.lede': 'Stable Capital измеряется напрямую по ончейн-позициям компании. Газовые активы не входят в TVL Stable Capital.',
             'monetra.passport.live': 'Stable Capital · Live',
