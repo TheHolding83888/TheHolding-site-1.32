@@ -1,0 +1,45 @@
+name: "Ask candidate · v0.7 Cache Bust"
+
+on:
+  push:
+    branches:
+      - agents/ask-owner-synthesis-v0.7-20260815
+    paths:
+      - '.github/workflows/_ask_v07_cache_bust.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: agents/ask-owner-synthesis-v0.7-20260815
+          fetch-depth: 0
+      - name: Advance Ask asset version and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('agents/index.html')
+          s=p.read_text()
+          old='/agents/console/app.js?v=0.6'
+          new='/agents/console/app.js?v=0.7'
+          if new not in s:
+              if s.count(old) != 1: raise SystemExit(f'expected exactly one old Ask asset, found {s.count(old)}')
+              s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          grep -F '/agents/console/app.js?v=0.7' agents/index.html >/dev/null
+          rm -f .github/workflows/_ask_v07_cache_bust.yml
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+          git add -A
+          git diff --check --cached
+          git commit -m "Ask v0.7: advance production asset cache bust"
+          git push origin HEAD:agents/ask-owner-synthesis-v0.7-20260815
