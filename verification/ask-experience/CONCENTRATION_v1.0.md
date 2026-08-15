@@ -12,4 +12,4 @@ Canonical rules:
 - the old Owner Evidence `concentration risk` UNKNOWN boundary is retired only because a bounded measured exposure primitive now exists;
 - visible Ask maturity remains `Synthesizing`, not `Companion-ready`.
 
-Fresh all-mode Experience proof is required after the old UNKNOWN boundary has been retired.
+Final v1.0 proof must run after synchronising fresh `main` and against the exact revision that visibly serves `CAPITAL OS INTELLIGENCE v1.0`, `/agents/console/app.js?v=1.0`, the `Exposure Synthesis` capability cue and the concentration quick command.
