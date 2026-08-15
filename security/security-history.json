@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-15T13:39:01.661Z",
+  "lastUpdatedAt": "2026-08-15T13:42:12.230Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 197,
-    "vaultRunCount": 197,
+    "runCount": 198,
+    "vaultRunCount": 198,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -2376,6 +2376,18 @@
       "criticalCount": 0,
       "highCount": 6,
       "newFindingCount": 2,
+      "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-15T13:42:12.230Z",
+      "status": "watch",
+      "snapshotHash": "027a9941f3ab2d5a8b2ece32b7b12a035fa35f81fd0959a4c1ee58128d6b4f57",
+      "recordPath": "security/security-vault/2026/08/2026-08-15T13-42-12-230Z-027a9941f3.json",
+      "recordHash": "f1f6ee355d104a9ac31ccaa568a561e6dd4ac7de66eb468c9e8ed62e5db81617",
+      "findingCount": 26,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 0,
       "resolvedFindingCount": 1
     }
   ],
@@ -8858,6 +8870,17 @@
       "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/upload-artifact@v4.",
       "file": ".github/workflows/ask-experience.yml",
       "entity": "actions/upload-artifact@v4"
+    },
+    {
+      "id": "9b23766e7a0e9ebc9bfb5acf3bc5cb49b1b52697a7dbec4bca3dc413fd8691b5",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-15T13:42:12.230Z",
+      "findingId": "2e496f6f7a7b2d4a6c00920be562d20a6a38a4a263b38bfa4b4095573a18ba2b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+      "file": ".github/workflows/ask-experience.yml",
+      "entity": null
     }
   ]
 }
