@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-15T14:19:52.750Z",
+  "generatedAt": "2026-08-15T14:25:37.802Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 20,
+    "medium": 21,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 253,
-    "bytesScanned": 6408048,
+    "bytesScanned": 6414573,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,34 +55,633 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "2227d6989b54d893c770c3beaaf6958073785da14e8cb7f9502eb4cd0b70fed3",
+        "id": "5b498f6ef8f6bb688991bb437714bdcf3bac483b388c89b10bc18af1da007cae",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": ".github/workflows/ask-experience.yml",
+        "file": "companies/index.html",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
+        "summary": "Security-sensitive surface changed: companies/index.html.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "a024d27f4af3fec7742531112c78e1f8fbbc657a3d3af1e1a52b6966da894443",
-          "currentSha256": "b3dd51bd95e6b4955f17f06fb68360196231d9b6c11a18f2fe55e445b2cc6876"
+          "previousSha256": "561d2923d0dd1c671dfe33b97b4efdc26efc293486bdc2f46d69dfb3c083a430",
+          "currentSha256": "246d6be079b34400a5cee907d0440abdff57ebc3b94764ecaf1ced556a0a061b"
         }
       },
       {
-        "id": "571ade8f1de4a8fa9ef55a9c603e2bb99e8ac4bc102270c2b52f1fa728f5528b",
+        "id": "2a408b66e348d3d6c2a67c74f31f2676c58557e75ca7b99bd5d72aefa6f542c6",
         "severity": "medium",
-        "category": "critical-surface-change",
-        "file": "agents/index.html",
-        "line": null,
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10291,
         "entity": null,
-        "summary": "Security-sensitive surface changed: agents/index.html.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
         "evidence": {
-          "previousSha256": "fa7d8041290944a29d790d79943d6adbbd62868079959fb6e24e8c77c71a5c14",
-          "currentSha256": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915"
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "3333aaf8d780d824d603c957007a6cbe74655379b0990997061c5bdf6b363f4e",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10478,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "50ca8e85d26611d5f7ea32cf230edec100f59f1a494d50141c7305f9e622677d",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10515,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "2a5a0f1affefcdafb3963d8697c2b5f4f9b931f8e835f8f90f2e3a8b30d99f0c",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10639,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "82bfeda2aea0ba2250be91f1f1f24c0b5761f22a3516315c8588e632a7671895",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10679,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "77eade0755a47488ada038f1ec76a52d203d80457d926f27d217d6b5ecdf96a7",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10690,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "96ea6e980af3f3387d8c5d3bc4b97fde94520996f555685113178978a73f3512",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11277,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "d8f33405ca607c2644f0c6dec5be08001bec7e44edc60b99e554947491c75974",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11290,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "839093ea88e6f7dded3723f6e1afa904e3d769e9a54da003a0fc049f0b83a650",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11295,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "b75c00eae47fda25a628643e69a11598fc8d252d236906016526c040572288a4",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11834,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "d7c6d02411132781494c9422230e313aee4aeddf2a6823e2968864d4135f38c4",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11841,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "adfa1eec672c98931a7cfccf0da7bd41406e721329dfd0a72dcba7cfc2fe8fbe",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 12388,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "cdc5a1cf8eb29861abf81c9671b938fb41ac5fffa157bc853a06ea589362c698",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 12603,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "6b12a81fc242cf8e2b0a8b732e1f9fc52115b79e9ff0b345f03ca86f2073d856",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 13125,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "1faf1ae56dc43fd0ca99197703e8dd9c8eed50586dd9ad2b33bfc16aa35493ef",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 13140,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "9ba39038df02f88d3a0c72b2ec2853ad7303a006ce038922806b9eaf5d89918c",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 13795,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "8cca80744450ae7644d16e3bb50572421057794f0b8731eb3355b971b71781f8",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 13995,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "1e000a042590ef0bf9a35035221ab9dd3269f615a7ecfd806251bafca0ab5bf4",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 14200,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
+        "id": "124334c9ff0c2bf366916848e78cf53d08fb86fb89c0a4198a52458a5c99df9a",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10184,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "96c321898c35e29345489953496e1f91d7077d106daca3860a54442dd5b0ec09",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10347,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "b8fe63571da68861d18383733e576ddab8289b30c4e986dd34cd70e993306fb4",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10384,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "581bdb49c1c93a3b190436f0bcc3937491772b4d389eb33114e80a4e551c7397",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10508,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "278966774f8324680bc66f8b1a20dcf898ab0e331257b9ca391c5bed3a828291",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10548,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "79a2a6fde4c2497fe23f3491250686d784f6e966c28b54bee8cc3170dc9ae629",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 10559,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "639cf5a243f07156e2e5b9c61a1b8d17bb153ad2ccc0e6681c3b98f53696f3a3",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11146,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "6c334aa8c11ea894f812d2c9b53ad1f133f35d7a829c749749d60cdaad229a3c",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11159,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "6dd42160648cc1dcbbd9046ecfbecfe5e72a4792caf83ad05093a5b27b38f9ea",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11164,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "f057d71323002df0f9dafd83ff32be123755ef13daae9db62de714ca61652af2",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11703,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "f6e36385aa14834923203401141e4666bca6350f2ae797de540888e57ccb76eb",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 11710,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "ff463800db97cbed52f52edb8a8b21c931ad20cc51016c2da02ae140ca556920",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 12257,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "90735102e02c642ca8cbd560459dbf60831ad17206a16649435b68c0d3733ac4",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 12472,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "4b0f65134be52822a28fb815088086a34b3f8bf7cbf1d6c54b92003be227df66",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 12994,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "856002ec5dda95bbfd2f2a1abb3555821a3ba6db0378fddb8892a6b686ee96c1",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 13009,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "bcb4c18a96c91da054a223ef2375bfcec9b1e23d9e6b5029a4f4795b2de9e6e5",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 13664,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "7537f01b15a55e98f667901d418509dab4d6b33945c1c33200e9f9c35435be11",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 13864,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
+        }
+      },
+      {
+        "id": "3ecfb5b65f95c6f57f9efcd06b6c2f4c982bfdc721d6cc7286e245e157dc46dc",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/index.html",
+        "line": 14069,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
+          "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+          "expectedCount": 16,
+          "currentCount": 18
         }
       }
     ]
@@ -155,6 +754,20 @@
       "evidence": null
     },
     {
+      "id": "5b498f6ef8f6bb688991bb437714bdcf3bac483b388c89b10bc18af1da007cae",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "companies/index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: companies/index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "561d2923d0dd1c671dfe33b97b4efdc26efc293486bdc2f46d69dfb3c083a430",
+        "currentSha256": "246d6be079b34400a5cee907d0440abdff57ebc3b94764ecaf1ced556a0a061b"
+      }
+    },
+    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -166,307 +779,307 @@
       "evidence": null
     },
     {
-      "id": "124334c9ff0c2bf366916848e78cf53d08fb86fb89c0a4198a52458a5c99df9a",
+      "id": "2a408b66e348d3d6c2a67c74f31f2676c58557e75ca7b99bd5d72aefa6f542c6",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 10184,
+      "line": 10291,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "96c321898c35e29345489953496e1f91d7077d106daca3860a54442dd5b0ec09",
+      "id": "3333aaf8d780d824d603c957007a6cbe74655379b0990997061c5bdf6b363f4e",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 10347,
+      "line": 10478,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "b8fe63571da68861d18383733e576ddab8289b30c4e986dd34cd70e993306fb4",
+      "id": "50ca8e85d26611d5f7ea32cf230edec100f59f1a494d50141c7305f9e622677d",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 10384,
+      "line": 10515,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "581bdb49c1c93a3b190436f0bcc3937491772b4d389eb33114e80a4e551c7397",
+      "id": "2a5a0f1affefcdafb3963d8697c2b5f4f9b931f8e835f8f90f2e3a8b30d99f0c",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 10508,
+      "line": 10639,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "278966774f8324680bc66f8b1a20dcf898ab0e331257b9ca391c5bed3a828291",
+      "id": "82bfeda2aea0ba2250be91f1f1f24c0b5761f22a3516315c8588e632a7671895",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 10548,
+      "line": 10679,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "79a2a6fde4c2497fe23f3491250686d784f6e966c28b54bee8cc3170dc9ae629",
+      "id": "77eade0755a47488ada038f1ec76a52d203d80457d926f27d217d6b5ecdf96a7",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 10559,
+      "line": 10690,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "639cf5a243f07156e2e5b9c61a1b8d17bb153ad2ccc0e6681c3b98f53696f3a3",
+      "id": "96ea6e980af3f3387d8c5d3bc4b97fde94520996f555685113178978a73f3512",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 11146,
+      "line": 11277,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "6c334aa8c11ea894f812d2c9b53ad1f133f35d7a829c749749d60cdaad229a3c",
+      "id": "d8f33405ca607c2644f0c6dec5be08001bec7e44edc60b99e554947491c75974",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 11159,
+      "line": 11290,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "6dd42160648cc1dcbbd9046ecfbecfe5e72a4792caf83ad05093a5b27b38f9ea",
+      "id": "839093ea88e6f7dded3723f6e1afa904e3d769e9a54da003a0fc049f0b83a650",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 11164,
+      "line": 11295,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "f057d71323002df0f9dafd83ff32be123755ef13daae9db62de714ca61652af2",
+      "id": "b75c00eae47fda25a628643e69a11598fc8d252d236906016526c040572288a4",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 11703,
+      "line": 11834,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "f6e36385aa14834923203401141e4666bca6350f2ae797de540888e57ccb76eb",
+      "id": "d7c6d02411132781494c9422230e313aee4aeddf2a6823e2968864d4135f38c4",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 11710,
+      "line": 11841,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "ff463800db97cbed52f52edb8a8b21c931ad20cc51016c2da02ae140ca556920",
+      "id": "adfa1eec672c98931a7cfccf0da7bd41406e721329dfd0a72dcba7cfc2fe8fbe",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 12257,
+      "line": 12388,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "90735102e02c642ca8cbd560459dbf60831ad17206a16649435b68c0d3733ac4",
+      "id": "cdc5a1cf8eb29861abf81c9671b938fb41ac5fffa157bc853a06ea589362c698",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 12472,
+      "line": 12603,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "4b0f65134be52822a28fb815088086a34b3f8bf7cbf1d6c54b92003be227df66",
+      "id": "6b12a81fc242cf8e2b0a8b732e1f9fc52115b79e9ff0b345f03ca86f2073d856",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 12994,
+      "line": 13125,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "856002ec5dda95bbfd2f2a1abb3555821a3ba6db0378fddb8892a6b686ee96c1",
+      "id": "1faf1ae56dc43fd0ca99197703e8dd9c8eed50586dd9ad2b33bfc16aa35493ef",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 13009,
+      "line": 13140,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "bcb4c18a96c91da054a223ef2375bfcec9b1e23d9e6b5029a4f4795b2de9e6e5",
+      "id": "9ba39038df02f88d3a0c72b2ec2853ad7303a006ce038922806b9eaf5d89918c",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 13664,
+      "line": 13795,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "7537f01b15a55e98f667901d418509dab4d6b33945c1c33200e9f9c35435be11",
+      "id": "8cca80744450ae7644d16e3bb50572421057794f0b8731eb3355b971b71781f8",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 13864,
+      "line": 13995,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
     },
     {
-      "id": "3ecfb5b65f95c6f57f9efcd06b6c2f4c982bfdc721d6cc7286e245e157dc46dc",
+      "id": "1e000a042590ef0bf9a35035221ab9dd3269f615a7ecfd806251bafca0ab5bf4",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 14069,
+      "line": 14200,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-        "currentGitBlobSha1": "bcb54014719b8de719defd7cb346d1ab7f7a46fa",
+        "currentGitBlobSha1": "3cefbc20d06e296c166a42e15795e82c20edbe34",
         "expectedCount": 16,
         "currentCount": 18
       }
@@ -499,12 +1112,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "4be499c577bb6829fcff6df5bcb51377ec1bbce4c94a5f8628fa032192dfa16e",
+    "snapshotHash": "c0a8a4656b9ee0d826109268dd88bbc7c08340e9e85411bf6e5085b386caf91e",
     "securityVault": {
-      "runCount": 201,
+      "runCount": 202,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T14-19-52-750Z-4be499c577.json",
-      "latestRecordHash": "8966e8df3bac2efda358c8b1dd39c58b8a50553813b8191e5b806988a678626b",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-15T14-25-37-802Z-c0a8a4656b.json",
+      "latestRecordHash": "761f9e11e1039da7eab925d0cffa47c0238d466e4b95a0fdd464f50cec7ad7f5",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
