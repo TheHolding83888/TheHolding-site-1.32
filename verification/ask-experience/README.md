@@ -45,6 +45,15 @@ The release target remains `falseMeasuredRate = 0` for release-gated origins. A 
 
 Before a candidate is promoted after synchronising fresh `main`, the exact cleaned candidate revision must survive a fresh `all` run. Pre-sync evidence is useful history, not final production proof.
 
+Current repaired generalization classes before the next fresh-seed proof include:
+- protocol-membership phrasing and standalone `YB`;
+- APR / current-yield versus actual-result semantics;
+- first-time product navigation typo recovery;
+- RU secret slang such as `приватник`;
+- RU/phonetic claimable slang such as `клеймаблам`.
+
+These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
+
 ## Evaluation assets
 
 - `corpus-safety-v0.1.json` – frozen daily safety invariants.
