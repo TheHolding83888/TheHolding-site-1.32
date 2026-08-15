@@ -43,7 +43,7 @@ After a repair, proof requires a fresh mutation seed. Re-running only the failin
 
 The release target remains `falseMeasuredRate = 0` for release-gated origins. A new unseen seed is allowed to block release even when frozen Safety and Core remain GREEN.
 
-Before a candidate is promoted after synchronising fresh `main`, the exact cleaned candidate revision must survive a fresh `all` run. Pre-sync evidence is useful history, not final production proof.
+Before a candidate is promoted after synchronising fresh `main`, the exact cleaned candidate revision must survive a fresh `all` run. Pre-sync evidence is useful history, not final production proof. The exact candidate must also be re-proven after any production asset cache-bust change so the tested revision is the revision browsers will load.
 
 Current repaired generalization classes before the next fresh-seed proof include:
 - protocol-membership phrasing and standalone `YB`;
