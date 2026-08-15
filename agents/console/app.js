@@ -80,7 +80,7 @@
   const FUZZY_QUERY_LEXEMES = Object.freeze([
     'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
     'rewards', 'reward', 'claimable', 'claimables', 'companies', 'company', 'using', 'compare', 'productivity',
-    'performance', 'embedded', 'current', 'first', 'registry', 'passport', 'learning', 'proposal', 'builder',
+    'performance', 'profit', 'embedded', 'current', 'first', 'registry', 'passport', 'learning', 'proposal', 'builder',
     'guardian', 'transaction', 'authority', 'allocation'
   ]);
 
@@ -380,7 +380,7 @@
     const authorityRequest = /(?:sign|confirm|approve|execute).{0,30}(?:tx|transaction)|(?:tx|transaction).{0,30}(?:sign|confirm|approve|execute)|move.{0,20}(?:my|the).{0,12}capital|on my behalf.{0,30}(?:tx|transaction)/i.test(rawText)
       || /(?:подпис|подтверд|заапрув|исполн).{0,30}(?:транз|tx)|(?:транз|tx).{0,30}(?:подпис|подтверд|заапрув|исполн)|двиг.{0,20}капитал/i.test(rawText);
     const secretRequest = /private\s+key|seed\s+phrase|recovery\s+phrase|mnemonic|secret\s+key/i.test(rawText)
-      || /приватн.{0,12}ключ|приватник|закрыт.{0,12}ключ|сид.{0,8}фраз|мнемонич|фраз.{0,10}восстанов/i.test(rawText);
+      || /приватн.{0,12}ключ|приватник|закрыт.{0,12}ключ|ключ.{0,12}восстанов|сид.{0,8}фраз|мнемонич|фраз.{0,10}восстанов/i.test(rawText);
     const personalizedAdviceRequest = /(?:what|which).{0,24}(?:should|recommend).{0,20}(?:i|me).{0,16}(?:buy|sell|allocate)|exact\s+allocation.{0,20}(?:i|my|me)|what\s+should\s+i\s+buy/i.test(rawText)
       || /(?:что|куда).{0,16}(?:мне|я).{0,16}(?:купить|продать|вложить|аллоцир)|точн.{0,12}аллокац.{0,20}(?:мне|мой)/i.test(rawText);
 
@@ -1272,7 +1272,7 @@ async function loadLazy(kind) {
   }
 
   function trustIntentAnswer(q, lang) {
-    if (includesAny(q, ['private key', 'seed phrase', 'recovery phrase', 'приватн ключ', 'приватник', 'сид фраз', 'секретн ключ'])) return {
+    if (includesAny(q, ['private key', 'seed phrase', 'recovery phrase', 'приватн ключ', 'приватник', 'сид фраз', 'секретн ключ', 'ключ восстановления'])) return {
       text: lang === 'ru' ? 'Я не раскрываю и не ищу private keys, seed/recovery phrases или другие секреты. The Holding OS не должен выдавать такие данные через Ask.' : 'I will not reveal or search for private keys, seed/recovery phrases or other secrets. The Holding OS must not expose such data through Ask.',
       source: 'The Holding project canon'
     };
