@@ -57,6 +57,8 @@ Current repaired generalization classes before the next fresh-seed proof include
 
 Owner synthesis must preserve source-unit semantics. In particular, Productivity `coverage` is stored as a share of productive capital (`1 = 100%`); any user-facing percentage or threshold must normalize that share before rendering or comparison.
 
+Owner Unknown is discovery evidence rather than a release gate, so a GREEN workflow does not replace semantic review of newly added synthesis. Before promotion, inspect the actual owner-grade answers for source fit, unit semantics, prohibited substitutions and over-claiming.
+
 These entries document semantic classes only; exact generated mutation strings are not durable learning assets.
 
 ## Evaluation assets
