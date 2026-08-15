@@ -1,0 +1,26 @@
+# Ask v1.1 · Company Understanding Evidence Surface
+
+This capability measures **breadth of source-bindable company evidence**, not company quality, maturity, reputation, risk, or economic performance.
+
+Common evidence surfaces are deliberately bounded to:
+
+1. Registry identity
+2. Productivity / Stable Productivity
+3. Rewards numeric evidence
+4. Embedded Yield numeric evidence
+
+Strategy Entry may be shown as specialized evidence where a canonical ledger exists, but it is not added to the common-surface denominator because it is not universally applicable.
+
+Absence of Rewards or Embedded Yield must not automatically be called a data gap. A layer may be economically inapplicable to a particular company.
+
+Company identity must be reconciled across public Registry labels and internal canonical artifact keys before evidence breadth is measured. A naming mismatch (for example shortened public wallet labels versus internal canonical company keys) is an identity-resolution problem, not evidence absence. Reconciled aliases must also be deduplicated before scoring so one economic company cannot appear twice as a thin public label and a richer internal key.
+
+The output may say which companies currently have wider or thinner **verifiable evidence surfaces**. It must not call that a Companion Score or a maturity/readiness ranking.
+
+True Company Companion readiness still requires canonical company-scoped completeness for additional domains such as Company Book, operating history, purpose/success criteria, Realised Cash Flow, decisions/outcomes and explicit applicability metadata.
+
+The capability therefore remains `PARTIAL` and the visible Ask maturity remains `Synthesizing` until broader company-scoped understanding is genuinely proven.
+
+## Interface proof rule
+
+When Company Understanding is exposed in the public Ask surface, the exact visible command must be covered by Core regression and the final Experience proof must run on the revision that already serves the v1.1 cache-busted asset. The interface may advertise `Company Understanding`, but it must not advance the maturity rail to `Companion-ready` until broader company-scoped completeness is actually proven.

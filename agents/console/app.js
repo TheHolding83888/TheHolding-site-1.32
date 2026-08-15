@@ -1468,6 +1468,137 @@ async function loadLazy(kind) {
     };
   }
 
+  function canonicalCompanyEvidenceName(companyName) {
+    const name = String(companyName || '');
+    const n = norm(name);
+    if (n.includes('83ca8') || n === '0x58...ca8.eth' || n.startsWith('0x58...ca8')) return '0x5860...83CA8.eth';
+    return name;
+  }
+
+  function companyEvidenceNeedles(companyName) {
+    const name = canonicalCompanyEvidenceName(companyName);
+    const n = norm(name);
+    const out = [name];
+    if (n.includes('83ca8')) out.push('83ca8', '5860', '0x5860...83CA8.eth', '0x58...ca8.eth');
+    if (n.includes('rook')) out.push('Rook', "Rook's portfolio");
+    if (n.includes('1milliondollar') || n.includes('million dollar')) out.push('1milliondollar');
+    return [...new Set(out.filter(Boolean))];
+  }
+
+  function productivityForCompany(companyName) {
+    const companies = safeObject(state.productivity?.companies);
+    if (companies[companyName]) return companies[companyName];
+    const needles = companyEvidenceNeedles(companyName).map(norm);
+    for (const [key, value] of Object.entries(companies)) {
+      const nk = norm(key);
+      if (needles.some(needle => needle && (nk.includes(needle) || needle.includes(nk)))) return value;
+      if (needles.includes('83ca8') && nk.includes('83ca8')) return value;
+    }
+    return null;
+  }
+
+  function hasCompanyEvidence(data, companyName, numericFields) {
+    if (!data || !companyName) return false;
+    for (const needle of companyEvidenceNeedles(companyName)) {
+      const hits = collectNamedObjects(data, needle, 24);
+      if (hits.some(hit => numericFact(hit.value, numericFields))) return true;
+    }
+    return false;
+  }
+
+  async function companyUnderstandingAnswer(lang) {
+    const ru = lang === 'ru';
+    const [rewards, embedded, entries] = await Promise.all([
+      loadLazy('rewards'),
+      loadLazy('embedded'),
+      loadLazy('entries')
+    ]);
+
+    const names = [...new Set([
+      ...state.registry.map(x => x.name),
+      ...Object.keys(safeObject(state.productivity?.companies)),
+      state.stable?.company?.name
+    ].filter(Boolean).map(canonicalCompanyEvidenceName))];
+    if (!names.length) return {
+      text: ru ? 'Сейчас нет достаточного company-level evidence для карты понимания.' : 'There is not enough company-level evidence to build an understanding map right now.',
+      source: 'Company evidence unavailable',
+      confidenceHint: 'unknown'
+    };
+
+    const rewardFields = ['totalUsd', 'totalUSD', 'usdValue', 'valueUsd', 'claimableUsd', 'rewardsUsd', 'accruedUsd'];
+    const embeddedFields = ['embeddedYieldUsd', 'yieldUsd', 'valueUsd', 'deltaUsd', 'earnedUsd', 'apyPct', 'aprPct'];
+    const entryFields = ['entryPriceUsd', 'entryPrice', 'priceUsd', 'unitPriceUsd'];
+
+    const rows = names.map(name => {
+      const registry = state.registry.some(x => companyEvidenceNeedles(name).some(needle => {
+        const a = norm(x.name), b = norm(needle);
+        return a === b || (b === '83ca8' && a.includes('ca8'));
+      }));
+      const ordinaryProductivity = Boolean(productivityForCompany(name));
+      const stableProductivity = name === state.stable?.company?.name && Boolean(state.stable?.summary);
+      const productivity = ordinaryProductivity || stableProductivity;
+      const rewardsEvidence = hasCompanyEvidence(rewards, name, rewardFields);
+      const embeddedEvidence = hasCompanyEvidence(embedded, name, embeddedFields);
+      const entryEvidence = name === 'Monetra.eth' && hasCompanyEvidence(entries, name, entryFields);
+      const common = [registry, productivity, rewardsEvidence, embeddedEvidence].filter(Boolean).length;
+      const displayName = name === '0x5860...83CA8.eth'
+        ? (state.registry.find(x => norm(x.name) === '0x58...ca8.eth')?.name || name)
+        : name;
+      return { name: displayName, evidenceName: name, registry, productivity, rewardsEvidence, embeddedEvidence, entryEvidence, common };
+    });
+
+    rows.sort((a, b) => b.common - a.common || a.name.localeCompare(b.name));
+    const bestCommon = rows[0]?.common ?? 0;
+    const worstCommon = rows[rows.length - 1]?.common ?? 0;
+    const best = rows.filter(x => x.common === bestCommon);
+    const worst = rows.filter(x => x.common === worstCommon);
+    const fmt = row => {
+      const layers = [
+        row.registry ? 'Registry' : null,
+        row.productivity ? 'Productivity' : null,
+        row.rewardsEvidence ? 'Rewards' : null,
+        row.embeddedEvidence ? 'Embedded Yield' : null
+      ].filter(Boolean);
+      const extras = row.entryEvidence ? ' + Strategy Entry' : '';
+      return row.name + ' · ' + row.common + '/4 common surfaces · ' + (layers.join(', ') || 'none') + extras;
+    };
+
+    const lines = [];
+    lines.push(ru ? 'COMPANY UNDERSTANDING · EVIDENCE SURFACE MAP' : 'COMPANY UNDERSTANDING · EVIDENCE SURFACE MAP');
+    lines.push(ru
+      ? 'Это не Companion Score и не рейтинг качества компании. Я сравниваю только ширину текущих machine-readable evidence surfaces, которые Ask может source-bind прямо сейчас.'
+      : 'This is not a Companion Score or a company-quality ranking. It compares only the breadth of machine-readable evidence surfaces Ask can source-bind right now.');
+    lines.push('');
+    lines.push(ru ? 'САМАЯ ШИРОКАЯ COMMON EVIDENCE' : 'WIDEST COMMON EVIDENCE');
+    best.slice(0, 4).forEach(row => lines.push('• ' + fmt(row)));
+    lines.push('');
+    lines.push(ru ? 'САМАЯ ТОНКАЯ COMMON EVIDENCE' : 'THINNEST COMMON EVIDENCE');
+    worst.slice(0, 4).forEach(row => lines.push('• ' + fmt(row)));
+
+    const special = rows.filter(x => x.entryEvidence);
+    if (special.length) {
+      lines.push('');
+      lines.push(ru ? 'SPECIALIZED EVIDENCE' : 'SPECIALIZED EVIDENCE');
+      special.forEach(row => lines.push('• ' + row.name + ' · Strategy Entry Ledger available.'));
+    }
+
+    lines.push('');
+    lines.push(ru
+      ? 'Ограничение: отсутствие Rewards или Embedded Yield здесь не всегда означает data gap – слой может быть экономически неприменим к конкретной компании. Поэтому я не превращаю 4/4 в maturity, reputation или readiness score.'
+      : 'Limitation: absence of Rewards or Embedded Yield does not always mean a data gap; a layer may simply be economically inapplicable to a company. I therefore do not turn 4/4 into a maturity, reputation or readiness score.');
+    lines.push(ru
+      ? 'Для настоящего Company Companion readiness ещё нужны канонические company-scoped Company Book/history/purpose/realised-cash-flow completeness fields. Но эта карта уже показывает, где OS сейчас имеет более широкое или более узкое подтверждаемое понимание.'
+      : 'True Company Companion readiness still needs canonical company-scoped Company Book/history/purpose/realised-cash-flow completeness fields. This map does, however, show where the OS currently has broader or thinner verifiable understanding.');
+
+    state.lastTopic = 'company-understanding';
+    state.lastEntity = { kind: 'company-understanding', best: best.map(x => x.name), worst: worst.map(x => x.name) };
+    return {
+      text: lines.join(String.fromCharCode(10)),
+      source: 'Live Registry + Productivity + Rewards + Embedded Yield + Strategy Entry Ledger',
+      confidenceHint: 'partial'
+    };
+  }
+
   function ownerBriefAnswer(lang) {
     const ru = lang === 'ru';
     const nl = String.fromCharCode(10);
@@ -1616,12 +1747,7 @@ async function loadLazy(kind) {
       };
     }
 
-    if (includesAny(q, ['company companion existed today', 'companion readiness', 'understand best', 'understand worst', 'куратор понимал лучше', 'companion понимал'])) return unknown(
-      ru
-        ? 'Я пока не могу честно назвать best/worst для Company Companion: текущий Ask не имеет company-scoped completeness matrix, объединяющей Company Book, history, Productivity, Rewards, Embedded Yield, Realised Cash Flow, decisions и data gaps. Наличие одного APR не равно полноте понимания компании.'
-        : 'I cannot honestly name the best/worst Company Companion target yet: Ask has no company-scoped completeness matrix combining Company Book, history, Productivity, Rewards, Embedded Yield, Realised Cash Flow, decisions and data gaps. Having one APR is not the same as understanding a company.',
-      'Console capability map'
-    );
+    if (includesAny(q, ['company companion existed today', 'companion readiness', 'understand best', 'understand worst', 'куратор понимал лучше', 'companion понимал', 'что os знает о компаниях', 'карта понимания компаний'])) return await companyUnderstandingAnswer(lang);
 
     if (includesAny(q, ['unresolved data gap', 'data gap', 'limits owner understanding', 'пробел в данных', 'нехватк данных'])) {
       const rows = Object.entries(safeObject(state.productivity?.companies))
@@ -1752,7 +1878,7 @@ async function loadLazy(kind) {
 
   function buildQuick() {
     const quick = $('quick');
-    const labels = ['Дай owner brief', 'Где мы наиболее сконцентрированы?', 'Что изменилось сейчас?', 'Что система сейчас предлагает?', 'Чему OS ещё не может научиться?'];
+    const labels = ['Дай owner brief', 'Что OS знает о компаниях?', 'Где мы наиболее сконцентрированы?', 'Что изменилось сейчас?', 'Что система сейчас предлагает?', 'Чему OS ещё не может научиться?'];
     labels.forEach(text => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -1810,8 +1936,8 @@ async function loadLazy(kind) {
     $('securityFact').textContent = String(state.securityIntelligence?.status || security()?.status || 'unknown').toUpperCase();
     addMessage(
       'system',
-      'Привет 🙂 Я читаю живое состояние The Holding OS, связываю Change Intelligence, Security, Learning и Governance и теперь умею отдельно показывать measured concentration по productive capital без выдуманного risk score. Спроси, где система сконцентрирована, что изменилось или дай owner brief.',
-      'Live Capital OS · source-bound synthesis + exposure view'
+      'Привет 🙂 Я читаю живое состояние The Holding OS, связываю Change Intelligence, Security, Learning и Governance, показываю measured concentration и теперь могу сравнить ширину подтверждаемого company-level evidence без выдуманного Companion Score. Спроси, что OS знает о компаниях, где система сконцентрирована или дай owner brief.',
+      'Live Capital OS · synthesis + exposure + company understanding'
     );
   }
 
