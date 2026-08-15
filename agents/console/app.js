@@ -84,7 +84,7 @@
   const FUZZY_QUERY_LEXEMES = Object.freeze([
     'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
     'rewards', 'reward', 'claimable', 'claimables', 'companies', 'company', 'using', 'compare', 'productivity',
-    'performance', 'profit', 'embedded', 'current', 'first', 'registry', 'passport', 'learning', 'proposal', 'builder',
+    'performance', 'profit', 'embedded', 'current', 'first', 'where', 'registry', 'passport', 'learning', 'proposal', 'builder',
     'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure'
   ]);
 
