@@ -1,0 +1,44 @@
+{
+  "version": "0.1-experience-origin-policy",
+  "purpose": "Keep regression protection, generalization testing, owner discovery and future real-human discovery as separate evidence streams.",
+  "hardRule": "Never collapse synthetic-regression, synthetic-mutation, owner-unknown and live-human into one quality score.",
+  "origins": {
+    "synthetic-regression": {
+      "metricNamespace": "regression",
+      "releaseGateEligible": true,
+      "meaning": "Frozen annotated cases that detect behavioral regression, source mismatch and false confidence."
+    },
+    "synthetic-mutation": {
+      "metricNamespace": "generalization",
+      "releaseGateEligible": true,
+      "meaning": "Seeded unseen surface forms generated from stable intents. Generated strings are ephemeral."
+    },
+    "owner-unknown": {
+      "metricNamespace": "discovery",
+      "releaseGateEligible": false,
+      "meaning": "Questions the owner genuinely wants answered without a pre-known correct answer. Used to expose missing synthesis capability, not to train a route."
+    },
+    "live-human": {
+      "metricNamespace": "live-human",
+      "releaseGateEligible": false,
+      "meaning": "Future privacy-safe evidence from real external use. It reveals what the product is missing and must never be numerically drowned out by synthetic traffic."
+    }
+  },
+  "reporting": {
+    "storeOriginOnEveryRun": true,
+    "storeOriginOnEveryCase": true,
+    "crossOriginAggregateScore": false,
+    "compareTrendsWithinOriginOnly": true,
+    "allowHumanEvidenceToCreateCanonicalTruth": false,
+    "preserveReviewedAcceptedHypotheses": true,
+    "preserveReviewedRejectedHypotheses": true,
+    "generatedMutationStringsPermanent": false
+  },
+  "governance": {
+    "evaluationMayCreateReviewHypothesis": true,
+    "evaluationMayPatchCode": false,
+    "evaluationMayWriteCanonicalTruth": false,
+    "evaluationMayApproveProposal": false,
+    "evaluationMayGrantExecutionAuthority": false
+  }
+}

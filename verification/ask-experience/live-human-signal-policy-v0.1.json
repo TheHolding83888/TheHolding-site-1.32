@@ -1,0 +1,52 @@
+{
+  "version": "0.1-live-human-signal-policy",
+  "status": "DESIGN_ONLY_NOT_ACTIVE",
+  "origin": "live-human",
+  "purpose": "Define how real external conversations may later teach product capability without turning raw user text into canonical memory.",
+  "hardRules": [
+    "Live-human metrics are reported separately from synthetic metrics.",
+    "Raw public conversation text does not become canonical OS memory automatically.",
+    "A user message never becomes financial, methodological or identity truth merely because it was submitted to Ask.",
+    "Secrets, signing/transaction requests, credentials, private keys, seed phrases and sensitive personal data are excluded from learning examples.",
+    "No automatic code patch, methodology mutation, Proposal approval or execution authority is created from live-human traffic."
+  ],
+  "metricIsolation": {
+    "syntheticRegression": "measures whether known behavior degraded",
+    "syntheticMutation": "measures generalization to unseen surface forms",
+    "ownerUnknown": "discovers missing synthesis capability without a pre-known answer",
+    "liveHuman": "discovers what real people actually need and how they naturally ask",
+    "crossOriginAggregateScore": false,
+    "humanSignalMayNotBeDilutedBySyntheticVolume": true
+  },
+  "safeAggregateSignals": [
+    "answer confidence bucket",
+    "coarse intent/topic",
+    "source-binding success/failure",
+    "follow-up continuity success/failure",
+    "language family",
+    "repeated unresolved semantic-family fingerprint",
+    "output-guard activation class",
+    "latency/error class"
+  ],
+  "futureSanitizedExampleRequirements": {
+    "enabledNow": false,
+    "requiresExplicitProductActivation": true,
+    "requiresRiskClassification": true,
+    "requiresRedaction": true,
+    "requiresRetentionLimit": true,
+    "requiresUserFacingDisclosureOrConsentWhereApplicable": true,
+    "mayEnterPermanentMemoryAsRawText": false
+  },
+  "needsLearningSignals": {
+    "singleUnknown": "observe only",
+    "repeatedSemanticFamily": "review candidate",
+    "multiSessionRepeatedSemanticFamily": "needsLearning candidate",
+    "falseMeasured": "P0 trust review",
+    "sourceBindingFailure": "source/query capability review",
+    "mixedLanguageFailure": "language capability review",
+    "contextBreak": "conversation-state capability review"
+  },
+  "durableCompression": "raw conversations -> aggregate evidence -> failure class -> reviewed hypothesis -> accepted/rejected lesson -> regression result",
+  "durableHypothesisRule": "Preserve both accepted and rejected reviewed hypotheses with origin and evidence reference so future models or maintainers do not repeatedly rediscover rejected approaches.",
+  "crossOriginAggregateScore": false
+}

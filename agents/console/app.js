@@ -12,8 +12,8 @@
     productivity: '/companies/productivity-data.json',
     stable: '/companies/stable-capital-data.json',
     rewards: '/companies/rewards-data.json',
-    embedded: '/companies/embedded-yield-data.json',
-    entries: '/companies/strategy-entry-ledger.json',
+    embedded: '/companies/embedded-yield-ledger.json',
+    entries: '/companies/company-008-strategy-entry-ledger.json',
     companies: '/companies/'
   });
 
@@ -27,7 +27,8 @@
     ['Fructus', '/fructus/'],
     ['Singul', '/singul/'],
     ['YieldRing', '/yieldring/'],
-    ['Intelligence', '/agents/']
+    ['Intelligence', '/agents/'],
+    ['Manifesto', '/manifesto']
   ]);
 
   const state = {
@@ -73,7 +74,88 @@
     return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
   };
   const isRu = text => /[а-яё]/i.test(text);
-  const norm = text => String(text || '')
+
+  // Conservative human-language typo recovery. This is intentionally NOT global fuzzy search.
+  // Only known entity/protocol/intent lexemes may be corrected, with edit distance <= 1.
+  const FUZZY_QUERY_LEXEMES = Object.freeze([
+    'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
+    'rewards', 'reward', 'claimable', 'companies', 'company', 'using', 'compare', 'productivity',
+    'performance', 'embedded', 'current', 'first', 'registry', 'passport', 'learning', 'proposal', 'builder',
+    'guardian', 'transaction', 'authority', 'allocation'
+  ]);
+
+  function editDistanceAtMostOne(a, b) {
+    if (a === b) return true;
+    if (Math.abs(a.length - b.length) > 1) return false;
+    if (a.length === b.length) {
+      let mismatches = 0;
+      for (let i = 0; i < a.length; i++) if (a[i] !== b[i] && ++mismatches > 1) return false;
+      return true;
+    }
+    const shorter = a.length < b.length ? a : b;
+    const longer = a.length < b.length ? b : a;
+    let i = 0, j = 0, edits = 0;
+    while (i < shorter.length && j < longer.length) {
+      if (shorter[i] === longer[j]) { i++; j++; continue; }
+      if (++edits > 1) return false;
+      j++;
+    }
+    return true;
+  }
+
+  function fuzzyKnownLexemes(text) {
+    return String(text || '').replace(/[A-Za-z][A-Za-z0-9-]{3,}/g, token => {
+      const lower = token.toLowerCase();
+      if (FUZZY_QUERY_LEXEMES.includes(lower)) return lower;
+      const matches = FUZZY_QUERY_LEXEMES.filter(candidate =>
+        candidate[0] === lower[0]
+        && Math.abs(candidate.length - lower.length) <= 1
+        && editDistanceAtMostOne(lower, candidate)
+      );
+      return matches.length === 1 ? matches[0] : token;
+    });
+  }
+
+  const FUZZY_RU_QUERY_LEXEMES = Object.freeze([
+    'монетра', 'монетру', 'монетре', 'дефити', 'дефитеа', 'йелд', 'елд', 'бейсис',
+    'аэродром', 'велодром', 'ревардс', 'реварды', 'ревардсам', 'награды', 'компания',
+    'компании', 'использует', 'используют', 'продуктивность', 'доходность', 'сравни',
+    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам'
+  ]);
+
+  function fuzzyKnownRuLexemes(text) {
+    return String(text || '').replace(/[А-Яа-яЁё]{3,}/g, token => {
+      const lower = token.toLowerCase().replace(/ё/g, 'е');
+      if (FUZZY_RU_QUERY_LEXEMES.includes(lower)) return lower;
+      const matches = FUZZY_RU_QUERY_LEXEMES.filter(candidate =>
+        candidate[0] === lower[0]
+        && Math.abs(candidate.length - lower.length) <= 1
+        && editDistanceAtMostOne(lower, candidate)
+      );
+      return matches.length === 1 ? matches[0] : token;
+    });
+  }
+
+  function canonicalizeHumanAliases(text) {
+    return fuzzyKnownLexemes(fuzzyKnownRuLexemes(String(text || '')))
+      .replace(/монетра|монетру|монетре/gi, 'monetra')
+      .replace(/дефити|дефитеа/gi, 'defitea')
+      .replace(/(?:йелд|елд)\s+бейсис/gi, 'yield basis')
+      .replace(/аэродром/gi, 'aerodrome')
+      .replace(/велодром/gi, 'velodrome')
+      .replace(/ревардс|реварды|ревардсам/gi, 'rewards')
+      .replace(/приватник(?:а|у|ом|е|и)?/gi, 'private key')
+      .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable');
+  }
+
+  const norm = text => canonicalizeHumanAliases(String(text || ''))
+    .replace(/\bholdng\b/gi, 'holding')
+    .replace(/\brewads\b/gi, 'rewards')
+    .replace(/\bcmpare\b/gi, 'compare')
+    .replace(/\b1milliondolar\b/gi, '1milliondollar')
+    .replace(/\bраскажи\b/gi, 'расскажи')
+    .replace(/апи/gi, 'apy')
+    .replace(/щас/gi, 'сейчас')
     .toLowerCase()
     .replace(/ё/g, 'е')
     .replace(/[’']/g, '')
@@ -129,6 +211,7 @@
   }
 
   function confidenceForAnswer(result) {
+    if (CONFIDENCE_CLASSES.includes(result?.confidenceHint)) return result.confidenceHint;
     const text = norm(result?.text);
     const source = norm(result?.source);
     if (!result?.source || /unavailable|no sufficiently strong verified match|fail closed/.test(source)) return 'unknown';
@@ -284,6 +367,79 @@
     return { ...result, answerContract: contract };
   }
 
+  function enforceOutputGuard(contracted, raw, language) {
+    const result = contracted || {};
+    const contract = result.answerContract || {};
+    const text = String(result.text || '');
+    const lower = text.toLowerCase();
+    const rawText = String(raw || '');
+    const artifacts = safeArray(contract.sourceArtifacts);
+
+    // Final-stage high-recall risk context. Input routing remains the first line, but these checks run
+    // after the answer is built so paraphrase failure cannot silently fall through to a generic answer.
+    const authorityRequest = /(?:sign|confirm|approve|execute).{0,30}(?:tx|transaction)|(?:tx|transaction).{0,30}(?:sign|confirm|approve|execute)|move.{0,20}(?:my|the).{0,12}capital|on my behalf.{0,30}(?:tx|transaction)/i.test(rawText)
+      || /(?:подпис|подтверд|заапрув|исполн).{0,30}(?:транз|tx)|(?:транз|tx).{0,30}(?:подпис|подтверд|заапрув|исполн)|двиг.{0,20}капитал/i.test(rawText);
+    const secretRequest = /private\s+key|seed\s+phrase|recovery\s+phrase|mnemonic|secret\s+key/i.test(rawText)
+      || /приватн.{0,12}ключ|приватник|закрыт.{0,12}ключ|сид.{0,8}фраз|мнемонич|фраз.{0,10}восстанов/i.test(rawText);
+    const personalizedAdviceRequest = /(?:what|which).{0,24}(?:should|recommend).{0,20}(?:i|me).{0,16}(?:buy|sell|allocate)|exact\s+allocation.{0,20}(?:i|my|me)|what\s+should\s+i\s+buy/i.test(rawText)
+      || /(?:что|куда).{0,16}(?:мне|я).{0,16}(?:купить|продать|вложить|аллоцир)|точн.{0,12}аллокац.{0,20}(?:мне|мой)/i.test(rawText);
+
+    const positiveExecutionClaim = /\b(?:i|we|the holding|this console|guardian|builder)\s+(?:can|may|will|is able to)\s+(?:directly\s+)?(?:sign|execute|move|transfer|trade|approve)\b/i.test(text)
+      || /(?:я|мы|the holding|guardian|builder).{0,24}(?:могу|можем|может|умеет).{0,30}(?:подпис|исполн|двиг|перевод|торгов|одобр)/i.test(text);
+    const explicitNoAuthority = /execution authority\s*:\s*none|cannot\s+(?:mutate|sign|execute|move|transfer)|не\s+(?:может|могу|можем|умеет).{0,30}(?:подпис|исполн|двиг|перевод|торгов)/i.test(text);
+
+    const privateKeyLeak = /private\s+key\s*[:=]\s*(?:0x)?[a-f0-9]{64}\b/i.test(text)
+      || /(?:приватн|закрыт).{0,16}ключ\s*[:=]\s*(?:0x)?[a-f0-9]{64}\b/i.test(text);
+    const seedLeak = /(?:seed|mnemonic|recovery)\s+phrase\s*[:=]\s*(?:[a-z]+\s+){11,23}[a-z]+/i.test(text)
+      || /(?:сид|мнемонич|фраз.{0,8}восстанов).{0,16}[:=]\s*(?:[a-zа-я]+\s+){11,23}[a-zа-я]+/i.test(text);
+
+    const personalizedTrade = /\b(?:you should|i recommend(?: that)? you|my recommendation is to)\s+(?:buy|sell|allocate|trade)\b/i.test(text)
+      || /\b(?:allocate|put)\s+\d{1,3}(?:\.\d+)?%\s+(?:of\s+)?(?:your|the)\b/i.test(text)
+      || /(?:тебе|вам).{0,20}(?:стоит|нужно|следует).{0,16}(?:купить|продать|вложить|аллоцир)/i.test(text)
+      || /(?:рекомендую|советую).{0,20}(?:купить|продать|вложить|аллоцир)/i.test(text);
+
+    const measuredWithoutSource = contract.confidenceClass === 'measured' && artifacts.length === 0;
+
+    if (secretRequest || privateKeyLeak || seedLeak) {
+      const safe = language === 'ru'
+        ? 'Я не буду раскрывать private keys, seed/recovery phrases или другие секреты. The Holding OS не должен выводить такие данные через Ask.'
+        : 'I will not reveal private keys, seed/recovery phrases or other secrets. The Holding OS must not expose such data through Ask.';
+      const c = Object.freeze({ ...contract, confidenceClass: 'measured', sourceArtifacts: ['/intelligence/project-memory/CURRENT.md'], generatedAt: null, topic: 'security-boundary', grounded: true });
+      return { text: safe, source: 'The Holding project canon · output safety guard', answerContract: c, outputGuard: 'secret-block' };
+    }
+
+    if ((authorityRequest || positiveExecutionClaim) && !explicitNoAuthority) {
+      const safe = language === 'ru'
+        ? `Execution authority: ${executionAuthority().toUpperCase()}. Ask The Holding не может подписывать транзакции, исполнять сделки или двигать капитал.`
+        : `Execution authority: ${executionAuthority().toUpperCase()}. Ask The Holding cannot sign transactions, execute trades or move capital.`;
+      const c = Object.freeze({ ...contract, confidenceClass: 'measured', sourceArtifacts: [URLS.stack], generatedAt: artifactGeneratedAt(URLS.stack), topic: 'authority', grounded: true });
+      return { text: safe, source: 'Live Cognitive Stack operating contract · output safety guard', answerContract: c, outputGuard: 'authority-block' };
+    }
+
+    if (personalizedAdviceRequest || personalizedTrade) {
+      const safe = language === 'ru'
+        ? 'The Holding может показывать структуры, evidence и trade-offs, но не выпускает персональную команду купить, продать или распределить капитал. Решение остаётся за владельцем.'
+        : 'The Holding can show structures, evidence and trade-offs, but it does not issue personalized commands to buy, sell or allocate capital. The decision remains with the owner.';
+      const c = Object.freeze({ ...contract, confidenceClass: 'measured', sourceArtifacts: ['/intelligence/project-memory/CURRENT.md'], generatedAt: null, topic: 'advice-boundary', grounded: true });
+      return { text: safe, source: 'The Holding project canon · output safety guard', answerContract: c, outputGuard: 'advice-block' };
+    }
+
+    if (measuredWithoutSource) {
+      const safe = language === 'ru'
+        ? 'Финальный safety guard не нашёл валидного source mapping для уверенного ответа, поэтому ответ понижен до UNKNOWN.'
+        : 'The final safety guard found no valid source mapping for a confident answer, so the answer is downgraded to UNKNOWN.';
+      const c = Object.freeze({ ...contract, confidenceClass: 'unknown', sourceArtifacts: [], generatedAt: null, grounded: false });
+      return { text: safe, source: 'Output safety guard · source mapping unavailable', answerContract: c, outputGuard: 'source-block' };
+    }
+
+    return { ...result, outputGuard: 'pass' };
+  }
+
+  window.HoldingOutputGuard = Object.freeze({
+    version: '0.1-final-answer-safety-guard',
+    check: (contracted, raw, language) => structuredClone(enforceOutputGuard(contracted, raw, language))
+  });
+
   window.HoldingAnswerQuality = Object.freeze({
     version: ANSWER_QUALITY_VERSION,
     snapshot: () => structuredClone(loadAnswerQuality())
@@ -294,7 +450,7 @@
     velodrome: ['velodrome', 'велодром', 'velo', 'vevelo'],
     convex: ['convex', 'конвекс', 'cvx', 'vlcvx', 'cvxcrv'],
     curve: ['curve', 'керв', 'кёрв', 'curve dao', 'crv', 'vecrv'],
-    yieldbasis: ['yield basis', 'yieldbasis', 'yield-basis', 'veyb', 'yb-lp', 'йелд бейсис', 'илд бейсис'],
+    yieldbasis: ['yield basis', 'yieldbasis', 'yield-basis', 'yb', 'veyb', 'yb-lp', 'йелд бейсис', 'илд бейсис'],
     frax: ['frax', 'фракс', 'vefrax', 'frxusd', 'sfrxusd'],
     pendle: ['pendle', 'пендл', 'spendle', 'vependle'],
     fx: ['f(x)', 'fx protocol', 'fxn', 'vefxn', 'fxsave', 'fxusd'],
@@ -557,10 +713,10 @@
       'dinaz.eth': ['dinaz'],
       'aerocvxyb.eth': ['aerocvxyb', 'aero cvx yb'],
       "Rook's portfolio": ['rooks', 'rook', 'рук'],
-      'Monetra.eth': ['monetra', 'монетра'],
+      'Monetra.eth': ['monetra', 'монетра', 'монетру', 'монетре', '008', 'company 008', 'компания 008'],
       '05081966.eth': ['05081966'],
       '0x5860...83CA8.eth': ['83ca8', '5860'],
-      '1milliondollar.eth': ['1milliondollar', '1 million dollar', 'milliondollar']
+      '1milliondollar.eth': ['1milliondollar', '1 million dollar', 'milliondollar', 'million dollar eth', 'миллион доллар этх', 'миллион доллар', '009', 'company 009', 'компания 009']
     };
     const names = new Set([
       ...state.registry.map(x => x.name),
@@ -666,9 +822,24 @@
     };
   }
 
+  function protocolCompaniesAnswer(key, lang) {
+    const aliases=protocolAliasesFor(key).map(norm);
+    const names=[];
+    for (const [name,c] of Object.entries(safeObject(state.productivity?.companies))) {
+      const hit=safeArray(c?.breakdown).some(x=>aliases.some(a=>norm([x?.engineId,x?.protocol,x?.principalSymbol].join(' ')).includes(a)));
+      if (hit) names.push(name);
+    }
+    if (state.stable?.company?.name && safeArray(state.stable?.positions).some(x=>aliases.some(a=>norm([x?.protocol,x?.wrapperSymbol,x?.underlyingSymbol].join(' ')).includes(a)))) names.push(state.stable.company.name);
+    const uniq=[...new Set(names)];
+    state.lastEntity={kind:'protocol',key}; state.lastTopic='protocol:'+key;
+    if (!uniq.length) return {text:lang==='ru'?'В текущих machine-readable данных не нашёл подтверждённых компаний для этого протокола.':'No verified companies for this protocol were found in the current machine-readable data.',source:'Live Productivity',confidenceHint:'unknown'};
+    return {text:(lang==='ru'?'Подтверждённые компании в текущих данных:\n':'Verified companies in current data:\n')+uniq.map(x=>'• '+x).join('\n'),source:'Live Productivity + Stable Capital'};
+  }
+
   function registryAnswer(lang) {
     const names = state.registry.map(x => x.name);
     state.lastTopic = 'registry';
+    state.lastEntity = { kind: 'registry' };
     if (!names.length) return {
       text: lang === 'ru' ? 'Живой Registry сейчас не загрузился. Я не буду угадывать число компаний.' : 'The live Registry did not load, so I will not guess the company count.',
       source: 'Registry unavailable'
@@ -806,26 +977,50 @@
       .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
   }
 
+  function companyYieldSnapshot(name) {
+    const p = safeObject(state.productivity?.companies)[name];
+    if (p && finite(p.aprLatest) !== null) return { value: Number(p.aprLatest), coverage: finite(p.coverage), label: 'Reference APR' };
+    if (name === state.stable?.company?.name && finite(state.stable?.summary?.referenceApyPct ?? state.stable?.summary?.referenceAnnualYieldPct) !== null) {
+      return { value: Number(state.stable.summary.referenceApyPct ?? state.stable.summary.referenceAnnualYieldPct), coverage: finite(state.stable?.summary?.coverage), label: 'Reference APY' };
+    }
+    return null;
+  }
+
   function compareCompaniesAnswer(a, b, lang) {
-    const companies = safeObject(state.productivity?.companies);
-    const pa = companies[a.name];
-    const pb = companies[b.name];
+    const pa = companyYieldSnapshot(a.name);
+    const pb = companyYieldSnapshot(b.name);
     state.lastTopic = 'company-compare';
     state.lastEntity = { kind: 'company-compare', names: [a.name, b.name] };
-    if (!pa || !pb || finite(pa.aprLatest) === null || finite(pb.aprLatest) === null) return {
-      text: lang === 'ru' ? 'Для точного сравнения обе компании должны иметь подтверждённый current Reference APR. Сейчас этого нет.' : 'Both companies need verified current Reference APR for an exact comparison, and that is not available right now.',
-      source: 'Live Productivity'
+    if (!pa || !pb) return {
+      text: lang === 'ru' ? 'Для точного сравнения обе компании должны иметь подтверждённую текущую Reference yield metric. Сейчас этого нет.' : 'Both companies need a verified current reference-yield metric for an exact comparison, and that is not available right now.',
+      source: 'Live Productivity', confidenceHint: 'unknown'
     };
-    const ca = finite(pa.coverage);
-    const cb = finite(pb.coverage);
-    const diff = Number(pa.aprLatest) - Number(pb.aprLatest);
+    const diff = pa.value - pb.value;
     const leader = diff >= 0 ? a.name : b.name;
     return {
       text: lang === 'ru'
-        ? `${a.name}: ${pct(pa.aprLatest)} Reference APR${ca !== null ? ` · coverage ${Math.round(ca * 100)}%` : ''}.\n${b.name}: ${pct(pb.aprLatest)} Reference APR${cb !== null ? ` · coverage ${Math.round(cb * 100)}%` : ''}.\n\nАбсолютная разница текущего Reference APR: ${pct(Math.abs(diff))} в пользу ${leader}. Это сравнение current productive capacity, не realised performance.`
-        : `${a.name}: ${pct(pa.aprLatest)} Reference APR${ca !== null ? ` · coverage ${Math.round(ca * 100)}%` : ''}.\n${b.name}: ${pct(pb.aprLatest)} Reference APR${cb !== null ? ` · coverage ${Math.round(cb * 100)}%` : ''}.\n\nAbsolute current Reference APR difference: ${pct(Math.abs(diff))} in favor of ${leader}. This compares current productive capacity, not realised performance.`,
-      source: 'Live Productivity'
+        ? `${a.name}: ${pct(pa.value)} ${pa.label}${pa.coverage !== null ? ` · coverage ${Math.round(pa.coverage * 100)}%` : ''}.\n${b.name}: ${pct(pb.value)} ${pb.label}${pb.coverage !== null ? ` · coverage ${Math.round(pb.coverage * 100)}%` : ''}.\n\nАбсолютная разница текущей reference yield: ${pct(Math.abs(diff))} в пользу ${leader}. Это сравнение current productive capacity, не realised performance.`
+        : `${a.name}: ${pct(pa.value)} ${pa.label}${pa.coverage !== null ? ` · coverage ${Math.round(pa.coverage * 100)}%` : ''}.\n${b.name}: ${pct(pb.value)} ${pb.label}${pb.coverage !== null ? ` · coverage ${Math.round(pb.coverage * 100)}%` : ''}.\n\nAbsolute current reference-yield difference: ${pct(Math.abs(diff))} in favor of ${leader}. This compares current productive capacity, not realised performance.`,
+      source: 'Live Productivity + Stable Capital'
     };
+  }
+
+  function compareFollowupAnswer(query, lang) {
+    if (state.lastEntity?.kind !== 'company-compare') return null;
+    const names = safeArray(state.lastEntity.names);
+    if (names.length !== 2) return null;
+    const a={name:names[0],registry:state.registry.find(x=>x.name===names[0])||null};
+    const b={name:names[1],registry:state.registry.find(x=>x.name===names[1])||null};
+    const q=norm(query);
+    if (includesAny(q,['higher reference apr','higher apr','у кого выше','выше текущая продуктивность','productivity'])) return compareCompaniesAnswer(a,b,lang);
+    if (includesAny(q,['coverage difference','разница coverage','разница покрытия','покрыти'])) {
+      const pa=companyYieldSnapshot(a.name), pb=companyYieldSnapshot(b.name);
+      if (!pa || !pb || pa.coverage===null || pb.coverage===null) return {text:lang==='ru'?'Для обеих компаний нет подтверждённого coverage.':'Verified coverage is not available for both companies.',source:'Live Productivity',confidenceHint:'unknown'};
+      const da=Math.round(pa.coverage*100), db=Math.round(pb.coverage*100);
+      return {text:lang==='ru'?`${a.name}: ${da}%. ${b.name}: ${db}%. Разница coverage: ${Math.abs(da-db)} п.п.`:`${a.name}: ${da}%. ${b.name}: ${db}%. Coverage difference: ${Math.abs(da-db)} percentage points.`,source:'Live Productivity + Stable Capital'};
+    }
+    if (includesAny(q,['performed better','performance','лучше'])) return {text:lang==='ru'?'Нет. Более высокая текущая reference yield не доказывает лучшую историческую Performance. Performance требует точки входа и фактического изменения капитала.':'No. Higher current reference yield does not prove better historical Performance. Performance requires entry data and actual capital change.',source:'The Holding project canon'};
+    return null;
   }
 
 function learningAnswer(lang) {
@@ -893,13 +1088,25 @@ function learningAnswer(lang) {
 
   function followupAnswer(query, lang) {
     const q = norm(query);
+    const compareFollow = compareFollowupAnswer(query, lang);
+    if (compareFollow) return compareFollow;
+    if (state.lastEntity?.kind === 'registry' && includesAny(q, ['list them', 'перечисли', 'список', 'show them'])) return registryAnswer(lang);
+    if (state.lastEntity?.kind === 'protocol') {
+      const key=state.lastEntity.key;
+      if (includesAny(q,['which companies','какие компании','кто использует','use it'])) return protocolCompaniesAnswer(key,lang);
+      if (includesAny(q,['reference apr','apr','apy','yield','продуктивност'])) { const rows=findEngines(key); if (rows.length) return engineAnswer(rows,lang); }
+    }
     if (!state.lastEntity || protocolGroup(query) || findCompany(query)) return null;
-    if (state.lastEntity.kind === 'company') {
+    if (['company', 'stable-company'].includes(state.lastEntity.kind)) {
       const company = { name: state.lastEntity.name, registry: state.registry.find(x => x.name === state.lastEntity.name) || null };
       if (includesAny(q, ['истор', 'средн', 'histor', 'average'])) return companyAnswer(company, lang, query);
       if (includesAny(q, ['reward', 'награ', 'claimable', 'accrued'])) return rewardsAnswer(query, lang, company);
       if (includesAny(q, ['embedded', 'встроенн', 'внутри позиции'])) return embeddedAnswer(query, lang, company);
       if (includesAny(q, ['entry', 'точка входа', 'цена входа', 'покупк'])) return entryAnswer(query, lang, company);
+      if (includesAny(q, ['доходност', 'apr', 'apy', 'yield', 'productivity', 'продуктивност'])) {
+        if (company.name === 'Monetra.eth' && state.stable?.summary) return stableSummary(lang);
+        return companyAnswer(company, lang, query);
+      }
     }
     if (state.lastEntity.kind === 'engine' && includesAny(q, ['а сейчас', 'current', 'текущ', 'доход', 'apr'])) {
       const e = safeObject(state.productivity?.engines)[state.lastEntity.id];
@@ -977,7 +1184,8 @@ async function loadLazy(kind) {
       text: lang === 'ru'
         ? `Rewards packet загружен, но я не нашёл достаточно точного денежного поля для этого вопроса${company ? ` по ${company.name}` : ''}. Лучше не придумывать цифру.`
         : `Rewards data loaded, but I could not map this question to a precise monetary field${company ? ` for ${company.name}` : ''}. Better not to invent a number.`,
-      source: 'Live Rewards data'
+      source: 'Live Rewards data',
+      confidenceHint: 'unknown'
     };
   }
 
@@ -1005,6 +1213,7 @@ async function loadLazy(kind) {
   }
 
   async function entryAnswer(query, lang, company) {
+    if (company?.name && company.name !== 'Monetra.eth') return { text: lang === 'ru' ? `Для ${company.name} нет отдельного подтверждённого Strategy Entry Ledger в текущем Ask.` : `The current Ask has no separate verified Strategy Entry Ledger for ${company.name}.`, source: 'Strategy Entry Ledger unavailable', confidenceHint: 'unknown' };
     const data = await loadLazy('entries');
     if (!data) return { text: lang === 'ru' ? 'Entry ledger сейчас недоступен.' : 'Entry ledger is unavailable.', source: 'Entry ledger unavailable' };
     const needle = company?.name || protocolGroup(query) || words(query).find(x => x.length > 3) || '';
@@ -1053,12 +1262,37 @@ async function loadLazy(kind) {
       }
     }));
     results.sort((a, b) => b.score - a.score);
-    const best = results.filter(x => x.score >= 3).slice(0, 2);
+    const best = results.filter(x => x.score >= 6 && tokens.filter(token => norm(x.block).includes(token)).length >= 2).slice(0, 2);
     if (!best.length) return null;
     return {
       text: (lang === 'ru' ? 'Нашёл в публичных знаниях The Holding:\n\n' : 'Found in The Holding public knowledge:\n\n') + best.map(x => `${x.name}: ${x.block}`).join('\n\n'),
-      source: `Public site knowledge · ${best.map(x => x.url).join(' · ')}`
+      source: `Public site knowledge · ${best.map(x => x.url).join(' · ')}`,
+      confidenceHint: 'partial'
     };
+  }
+
+  function trustIntentAnswer(q, lang) {
+    if (includesAny(q, ['private key', 'seed phrase', 'recovery phrase', 'приватн ключ', 'приватник', 'сид фраз', 'секретн ключ'])) return {
+      text: lang === 'ru' ? 'Я не раскрываю и не ищу private keys, seed/recovery phrases или другие секреты. The Holding OS не должен выдавать такие данные через Ask.' : 'I will not reveal or search for private keys, seed/recovery phrases or other secrets. The Holding OS must not expose such data through Ask.',
+      source: 'The Holding project canon'
+    };
+    if (includesAny(q, ['move my capital', 'move capital', 'двигать капитал', 'sign transaction', 'sign a transaction', 'signing transaction', 'sign tx', 'подписать транзак', 'execute trade', 'who has authority', 'кто имеет полномочия', 'authority right now'])) return authorityAnswer(lang);
+    if (includesAny(q, ['exact allocation', 'what should i buy', 'buy today', 'точн аллокац', 'что купить', 'купить сегодня'])) return {
+      text: lang === 'ru' ? 'The Holding показывает структуры, evidence и trade-offs, но не выдаёт персональную точную аллокацию или команду «что купить сегодня». Решение остаётся за владельцем.' : 'The Holding can show structures, evidence and trade-offs, but it does not provide a personalized exact allocation or tell an owner what to buy today. The decision remains with the owner.',
+      source: 'The Holding project canon'
+    };
+    if (includesAny(q, ['sharpe', 'коэффициент шарпа'])) return { text: lang === 'ru' ? 'В текущих подтверждённых данных нет Sharpe ratio под этот период. Я не буду подменять его текущим APY или APR.' : 'The current verified data has no Sharpe ratio for that period. I will not substitute current APY or APR for it.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
+    if (includesAny(q, ['next friday', 'следующ пятниц', 'forecast', 'predict', 'прогноз'])) return { text: lang === 'ru' ? 'У The Holding нет подтверждённого будущего значения цены. Я не буду выдавать прогноз как факт.' : 'The Holding has no verified future price value. I will not present a forecast as a fact.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
+    if (includesAny(q, ['before tracking', 'до начала наблюден', 'march 2026', 'март 2026'])) return { text: lang === 'ru' ? 'Если период предшествует tracking и не был backfilled, точного дохода в текущих данных нет. Я не буду подменять его сегодняшней доходностью.' : 'If the period predates tracking and was not backfilled, the current data has no exact income figure. I will not substitute today’s yield.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
+    if ((includesAny(q, ['reference apr', 'apr', 'current yield', 'текущая доходность']) && (includesAny(q, ['performance', 'прибыл', 'profit', 'actual result', 'result', 'фактический результат', 'equal', 'равно']) || /реал[а-я]{0,5}\s+доходност/.test(q))) || includesAny(q, ['does that mean it performed better'])) return { text: lang === 'ru' ? 'Нет. Reference APR – текущая доходная способность. Performance – фактический результат относительно точки входа. Более высокий APR сейчас не доказывает лучшую историческую performance.' : 'No. Reference APR is current earning capacity. Performance is the actual result versus the entry point. A higher APR now does not prove better historical performance.', source: 'The Holding project canon' };
+    if (includesAny(q, ['каждое наблюдение становится предложением', 'does every observation become a proposal', 'every observation become a proposal'])) return whyFilteredAnswer(lang);
+    if (includesAny(q,['где тут доход вообще','что уже заработано но еще не пришло','what is already earned but not received'])) return conceptAnswer('слои капитала productivity rewards embedded yield cash flow',lang);
+    if (includesAny(q,['что само внутри позиции растет','what grows inside the position'])) return conceptAnswer('embedded yield',lang);
+    if (includesAny(q,['embedded yield be negative','embedded yield negative','встроенная доходность отрицательной'])) return {text:lang==='ru'?'Да, в механиках вроде Yield Basis Embedded Yield может быть отрицательным: если drag/rebalance loss превышает заработанные fees, PPS может снизиться.':'Yes. In mechanics such as Yield Basis, Embedded Yield can be negative when drag or rebalance loss exceeds earned fees and PPS falls.',source:'The Holding project canon'};
+    if (includesAny(q,['what does invested mean','что такое invested','invested mean'])) return {text:lang==='ru'?'Invested – подтверждённый внешний капитал, внесённый в компанию. Внутренние перемещения между стратегиями не должны повторно считаться новым Invested.':'Invested is verified external capital contributed to a company. Internal moves between strategies should not be counted again as new Invested.',source:'The Holding project canon'};
+    if (includesAny(q,['performance тогда что','what is performance then'])) return conceptAnswer('performance',lang);
+    if (includesAny(q, ['как система понимает что решение было хорошим', 'how does the system know a decision was good', 'decision outcome'])) return { text: lang === 'ru' ? 'Learning связывает case с решением владельца, ждёт более позднее observation/outcome и только затем формирует lesson, если появилось реальное последующее доказательство.' : 'Learning binds a case to the owner decision, waits for a later observation/outcome, and only forms a lesson when real later evidence exists.', source: 'Live Decision & Outcome Learning' };
+    return null;
   }
 
   async function routeQuestion(raw) {
@@ -1066,15 +1300,20 @@ async function loadLazy(kind) {
     const q = norm(raw);
     if (!q) return helpAnswer(lang);
 
-    if (/^(привет|здравств|хай|hello|hi|hey)\b/.test(q) || includesAny(q, ['как дела', 'how are you'])) return greetingAnswer(lang, q);
+    if (/^(привет|здравств|хай|hello|hi|hey|gm)\b/.test(q) || includesAny(q, ['как дела', 'how are you'])) return greetingAnswer(lang, q);
     if (includesAny(q, ['помощ', 'help', 'что спросить', 'что умеешь', 'what can you do'])) return helpAnswer(lang);
+
+    const trust = trustIntentAnswer(q, lang);
+    if (trust) return trust;
 
     const follow = followupAnswer(raw, lang);
     if (follow) return follow;
 
+    if (protocolGroup(raw) && includesAny(q,['which companies','who uses','who is using','which ones use','who runs','which companies run','companies use','companies using','какие компании','кто использует','компании используют','компании сидят','кто сидит'])) return protocolCompaniesAnswer(protocolGroup(raw),lang);
     if (includesAny(q, ['сколько компаний', 'какие компании', 'список компаний', 'how many companies', 'which companies', 'company list'])) return registryAnswer(lang);
 
     const definitionish = includesAny(q, ['что такое', 'объясни', 'что значит', 'what is', 'explain', 'difference', 'разница']);
+    if (definitionish && protocolGroup(raw)==='yieldbasis') { state.lastEntity={kind:'protocol',key:'yieldbasis'}; state.lastTopic='protocol:yieldbasis'; return {text:lang==='ru'?'Yield Basis в The Holding разделяется на две экономические механики: unstaked yb-LP накапливает fee yield внутри PPS, а staked YB получает отдельные emissions/rewards. Эти слои не смешиваются.':'Yield Basis is split into two economic mechanics in The Holding: unstaked yb-LP compounds fee yield inside PPS, while staked YB receives separate emissions/rewards. These layers are not mixed.',source:'The Holding project canon'}; }
     if (definitionish) {
       const concept = conceptAnswer(raw, lang);
       if (concept) return concept;
@@ -1085,6 +1324,10 @@ async function loadLazy(kind) {
     if (compareIntent) {
       const matches = findCompanies(raw);
       if (matches.length >= 2) return compareCompaniesAnswer(matches[0], matches[1], lang);
+      if (matches.length === 1 && ['company','stable-company'].includes(state.lastEntity?.kind) && state.lastEntity.name !== matches[0].name) {
+        const prior={name:state.lastEntity.name,registry:state.registry.find(x=>x.name===state.lastEntity.name)||null};
+        return compareCompaniesAnswer(prior,matches[0],lang);
+      }
     }
     const asksRewards = includesAny(q, ['reward', 'награ', 'claimable', 'accrued']);
     const asksEmbedded = includesAny(q, ['embedded', 'встроенн', 'внутри позиции']);
@@ -1096,8 +1339,8 @@ async function loadLazy(kind) {
     if (includesAny(q, ['что требует внимания', 'требует внимания', 'needs attention', 'attention items', 'проблемы сейчас'])) return attentionAnswer(lang);
     if (includesAny(q, ['почему только 3', 'почему три', 'почему так мало proposal', 'why only 3', 'data hygiene', 'decision worthy', 'decision-worthy'])) return whyFilteredAnswer(lang);
     if (includesAny(q, ['что уже одобрено', 'что одобрено', 'approved proposal', 'builder', 'guardian', 'может ли система выполнить', 'может ли это быть выполнено', 'can execute', 'governance status'])) return governanceStatusAnswer(lang);
-    if (includesAny(q, ['что система предлагает', 'что предлагаешь', 'proposal', 'recommendation', 'recommend', 'что делать дальше'])) return proposalAnswer(lang);
-    if (includesAny(q, ['чему система учится', 'как система учится', 'learning status', 'learning now'])) return learningAnswer(lang);
+    if (includesAny(q, ['что система предлагает', 'что система сейчас предлагает', 'что холдинг предлагает', 'предлагает система', 'что предлагаешь', 'proposal', 'propose', 'proposes', 'what does the holding propose', 'what does the system propose', 'recommendation', 'что делать дальше'])) return proposalAnswer(lang);
+    if (includesAny(q, ['чему система учится', 'чему os научилась', 'чему os уже научилась', 'чему система научилась', 'как система учится', 'learning status', 'learning now', 'what has the os learned', 'what has the os learned recently', 'what has the system learned'])) return learningAnswer(lang);
     if (includesAny(q, ['что ты можешь сам', 'execution authority', 'полномочия', 'можешь сам', 'что можешь делать'])) return authorityAnswer(lang);
     if (includesAny(q, ['что сейчас происходит', 'состояние системы', 'system status', 'current state', 'как система'])) return currentStateAnswer(lang);
 
@@ -1118,8 +1361,29 @@ async function loadLazy(kind) {
     if (engineMatches.length && protocolGroup(raw)) return engineAnswer(engineMatches, lang);
     if (stableMatches.length && protocolGroup(raw)) return stableAnswer(stableMatches, lang);
 
+    if (includesAny(q, ['company companion', 'companion agent', 'агент куратор', 'агент-куратор'])) return { text: lang === 'ru' ? 'Company Companion Agent – будущий AI-куратор одной onchain-компании. Он наследует общие способности The Holding OS и добавляет память, состояние, решения и риски конкретной компании. Сам по себе Companion не получает права подписывать транзакции или двигать капитал.' : 'A Company Companion Agent is a future AI curator for one onchain company. It inherits shared The Holding OS capabilities and adds that company’s memory, state, decisions and risks. A Companion does not automatically receive transaction-signing or capital authority.', source: 'The Holding project canon' };
+    if (includesAny(q,['ai agents build companies','agents build companies','агенты собирать компании'])) return {text:lang==='ru'?'Да, это часть долгосрочного направления: authorised AI agents смогут читать machine-readable структуру The Holding и со временем собирать или сопровождать компании в пределах явных permissions. Это не означает неограниченную автономию капитала.':'Yes. The long-term direction includes authorised AI agents reading The Holding’s machine-readable structures and eventually building or accompanying companies within explicit permissions. That does not imply unrestricted capital autonomy.',source:'The Holding project canon'};
+    if (includesAny(q, ['company marketplace', 'marketplace', 'биржа компаний'])) return { text: lang === 'ru' ? 'Company Marketplace – будущий слой discovery и передачи зрелых onchain-компаний или их структур, когда identity, history, transferability, security и юридическая форма будут достаточно зрелыми.' : 'The Company Marketplace is a future discovery and transfer layer for mature onchain companies or company structures once identity, history, transferability, security and legal design are sufficiently mature.', source: 'The Holding project canon' };
+    if (includesAny(q, ['ratings', 'rating', 'рейтин'])) return { text: lang === 'ru' ? 'Рейтинги компаний задуманы как производная от проверяемой истории – прозрачности, возраста, устойчивости, productivity, концентрации риска, полноты reporting и maturity, а не популярности.' : 'Company ratings are intended to emerge from verifiable history – transparency, age, resilience, productivity, risk concentration, reporting completeness and maturity, not popularity.', source: 'The Holding project canon' };
+
     const publicHit = await searchPublicKnowledge(raw, lang);
     if (publicHit) return publicHit;
+
+    const navigationIntent = includesAny(q, [
+      'where should i start', 'where should a new person begin', 'where do i begin', 'where do i start',
+      'i just found this site', 'new here', 'look first', 'bigger vision', 'read the vision',
+      'с чего начать', 'с чего мне начать', 'я впервые тут', 'я первый раз тут', 'куда смотреть сначала',
+      'где почитать видение', 'где почитать манифест'
+    ]);
+    if (navigationIntent) {
+      state.lastTopic = 'product-navigation';
+      return {
+        text: lang === 'ru'
+          ? 'Если ты здесь впервые, начни с Manifesto – там вся идея и дорожная карта. Затем открой Companies / Registry, чтобы увидеть реальные onchain-компании и их историю. После этого возвращайся в Ask The Holding и спрашивай про любую компанию, доходность, rewards, устройство OS или сравнение. Я помогу идти глубже по мере вопросов.'
+          : 'If you are new here, start with the Manifesto for the full idea and roadmap. Then open Companies / Registry to see real onchain companies and their operating history. After that, come back to Ask The Holding and ask about any company, productivity, rewards, the OS, or comparisons. I can guide you deeper as questions emerge.',
+        source: 'Public site knowledge: /manifesto /companies/ /agents/'
+      };
+    }
 
     return {
       text: lang === 'ru'
@@ -1151,8 +1415,9 @@ async function loadLazy(kind) {
       state.lastTopic = null;
       const result = await routeQuestion(text);
       const contracted = await buildAnswerContract(result, text, lang);
-      resolvePending(wait, contracted.text, contracted.source || '', contracted.answerContract);
-      await recordAnswerQuality(contracted.answerContract, text);
+      const guarded = enforceOutputGuard(contracted, text, lang);
+      resolvePending(wait, guarded.text, guarded.source || '', guarded.answerContract);
+      await recordAnswerQuality(guarded.answerContract, text);
     } catch (error) {
       const contract = Object.freeze({ version: ANSWER_CONTRACT_VERSION, language: lang, confidenceClass: 'unknown', sourceArtifacts: [], generatedAt: null, topic: coarseTopic(text), grounded: false });
       resolvePending(wait,
