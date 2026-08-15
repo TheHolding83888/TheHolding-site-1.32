@@ -1,0 +1,42 @@
+name: "Ask candidate · Concentration Boundary v1.0"
+
+on:
+  push:
+    branches: [agents/ask-concentration-v1.0-20260815]
+    paths:
+      - '.github/workflows/_ask_concentration_boundary_v10_candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: agents/ask-concentration-v1.0-20260815
+          fetch-depth: 0
+
+      - name: Replace superseded concentration unknown boundary and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+          node verification/ask-experience/patch-concentration-owner-boundary-v1.0.mjs
+          node --check agents/console/app.js
+          grep -F "return productiveConcentrationAnswer(lang);" agents/console/app.js >/dev/null
+          ! grep -F "no normalized cross-company exposure matrix" agents/console/app.js >/dev/null
+          rm -f verification/ask-experience/patch-concentration-owner-boundary-v1.0.mjs
+          rm -f .github/workflows/_ask_concentration_boundary_v10_candidate.yml
+          git add -A
+          git diff --check --cached
+          expected=$'.github/workflows/_ask_concentration_boundary_v10_candidate.yml\nagents/console/app.js\nverification/ask-experience/patch-concentration-owner-boundary-v1.0.mjs'
+          actual="$(git diff --cached --name-only | sort)"
+          test "$actual" = "$expected"
+          git commit -m "Ask v1.0: retire superseded concentration unknown boundary"
+          git push origin HEAD:agents/ask-concentration-v1.0-20260815
