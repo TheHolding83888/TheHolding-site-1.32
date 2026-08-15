@@ -1,0 +1,95 @@
+name: "Ask candidate · Mutation Gap Repair"
+
+on:
+  push:
+    branches: [agents/ask-evaluation-trust-v0.6.1-20260815]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ask-mutation-gap-repair-candidate
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: agents/ask-evaluation-trust-v0.6.1-20260815
+          fetch-depth: 0
+
+      - name: Apply class-level generalization repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'agents/console/app.js';
+          let s = fs.readFileSync(path, 'utf8');
+          let changed = false;
+
+          function replaceOnce(oldText, newText, label) {
+            if (s.includes(newText)) {
+              console.log(label + ': already applied');
+              return;
+            }
+            if (!s.includes(oldText)) throw new Error(label + ': expected anchor missing');
+            s = s.replace(oldText, newText);
+            changed = true;
+            console.log(label + ': applied');
+          }
+
+          replaceOnce(
+            "'performance', 'embedded', 'current', 'registry', 'passport'",
+            "'performance', 'embedded', 'current', 'first', 'registry', 'passport'",
+            'navigation typo lexeme'
+          );
+
+          replaceOnce(
+            "yieldbasis: ['yield basis', 'yieldbasis', 'yield-basis', 'veyb', 'yb-lp'",
+            "yieldbasis: ['yield basis', 'yieldbasis', 'yield-basis', 'yb', 'veyb', 'yb-lp'",
+            'Yield Basis standalone alias'
+          );
+
+          replaceOnce(
+            "['which companies','who uses','who is using','which ones use','какие компании','кто использует','companies use','компании используют']",
+            "['which companies','who uses','who is using','which ones use','who runs','which companies run','companies use','companies using','какие компании','кто использует','компании используют','компании сидят','кто сидит']",
+            'protocol membership intent class'
+          );
+
+          replaceOnce(
+            "includesAny(q, ['reference apr', 'apr']) && includesAny(q, ['performance', 'прибыл', 'profit', 'equal', 'равно'])",
+            "includesAny(q, ['reference apr', 'apr', 'current yield', 'текущая доходность']) && includesAny(q, ['performance', 'прибыл', 'profit', 'actual result', 'result', 'реальная доходность', 'фактический результат', 'equal', 'равно'])",
+            'APR versus performance intent class'
+          );
+
+          if (changed) fs.writeFileSync(path, s, 'utf8');
+          fs.writeFileSync('/tmp/ask-repair-changed', changed ? '1' : '0');
+          NODE
+
+          node --check agents/console/app.js
+          grep -F "'first'" agents/console/app.js >/dev/null
+          grep -F "'yb', 'veyb'" agents/console/app.js >/dev/null
+          grep -F "'компании сидят'" agents/console/app.js >/dev/null
+          grep -F "'actual result'" agents/console/app.js >/dev/null
+
+      - name: Publish exact candidate bytes if changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$(cat /tmp/ask-repair-changed)" != "1" ]; then
+            echo "Candidate already contains the class-level repair."
+            exit 0
+          fi
+          git config user.name "The Holding Production Integrator"
+          git config user.email "production-integrator@theholding.ai"
+          git add agents/console/app.js
+          test "$(git diff --cached --name-only)" = "agents/console/app.js"
+          git diff --check --cached
+          git commit -m "Ask v0.6.1: generalize mutation failure classes"
+          git push origin HEAD:agents/ask-evaluation-trust-v0.6.1-20260815
