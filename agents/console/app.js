@@ -1741,7 +1741,7 @@ async function loadLazy(kind) {
 
   function buildQuick() {
     const quick = $('quick');
-    const labels = ['Дай owner brief', 'Что изменилось сейчас?', 'Что система сейчас предлагает?', 'Чему OS ещё не может научиться?', 'Может ли система что-то выполнить?'];
+    const labels = ['Дай owner brief', 'Где мы наиболее сконцентрированы?', 'Что изменилось сейчас?', 'Что система сейчас предлагает?', 'Чему OS ещё не может научиться?'];
     labels.forEach(text => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -1799,8 +1799,8 @@ async function loadLazy(kind) {
     $('securityFact').textContent = String(state.securityIntelligence?.status || security()?.status || 'unknown').toUpperCase();
     addMessage(
       'system',
-      'Привет 🙂 Я читаю живое состояние The Holding OS и уже умею не только находить факты, но и связывать Change Intelligence, Security, Learning и Governance в bounded owner-level картину. Спроси, что изменилось, что важно сейчас или дай owner brief.',
-      'Live Capital OS · source-bound synthesis'
+      'Привет 🙂 Я читаю живое состояние The Holding OS, связываю Change Intelligence, Security, Learning и Governance и теперь умею отдельно показывать measured concentration по productive capital без выдуманного risk score. Спроси, где система сконцентрирована, что изменилось или дай owner brief.',
+      'Live Capital OS · source-bound synthesis + exposure view'
     );
   }
 
