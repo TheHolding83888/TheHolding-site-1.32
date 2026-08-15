@@ -8,15 +8,26 @@ on:
       - '.github/workflows/ask-compositional-model-shadow-candidate.yml'
       - 'agents/console/intent-contract.js'
       - 'verification/ask-experience/corpus-compositional-model-shadow-v0.1.json'
-      - 'verification/ask-experience/compositional-model-shadow-v0.4.mjs'
+      - 'verification/ask-experience/corpus-compositional-model-holdout-v0.1.json'
+      - 'verification/ask-experience/compositional-model-shadow-v0.5.mjs'
   workflow_dispatch:
     inputs:
+      suite:
+        description: 'Evaluation suite'
+        required: true
+        default: shadow
+        type: choice
+        options: [shadow, holdout]
       limit:
-        description: 'Bounded shadow case limit; 0 means all cases'
+        description: 'Bounded case limit; 0 means all cases'
         required: false
         default: '10'
+      repeats:
+        description: 'Independent model attempts per case (1-3)'
+        required: false
+        default: '1'
       model:
-        description: 'Copilot CLI model; current account requires replaceable auto provider'
+        description: 'Copilot CLI model; auto keeps provider replaceable but identity unpinned'
         required: false
         default: 'auto'
 
@@ -27,12 +38,14 @@ permissions:
 jobs:
   shadow:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     env:
       GITHUB_TOKEN: ${{ github.token }}
       ASK_SHADOW_TRANSPORT: copilot-cli
       ASK_SHADOW_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'auto' }}
       ASK_SHADOW_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '10' }}
+      ASK_SHADOW_REPEATS: ${{ github.event_name == 'workflow_dispatch' && inputs.repeats || '1' }}
+      ASK_SHADOW_SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'shadow' }}
     steps:
       - name: Checkout exact shadow revision
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -43,15 +56,29 @@ jobs:
       - name: Install current Copilot CLI
         run: npm install -g @github/copilot
 
-      - name: Run full no-tools semantic shadow
+      - name: Resolve evaluation corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$ASK_SHADOW_SUITE" = "holdout" ]; then
+            CORPUS='verification/ask-experience/corpus-compositional-model-holdout-v0.1.json'
+          else
+            CORPUS='verification/ask-experience/corpus-compositional-model-shadow-v0.1.json'
+          fi
+          echo "ASK_SHADOW_CORPUS=$CORPUS" >> "$GITHUB_ENV"
+          echo "Using suite=$ASK_SHADOW_SUITE corpus=$CORPUS repeats=$ASK_SHADOW_REPEATS model=$ASK_SHADOW_MODEL"
+
+      - name: Run no-tools stability-aware semantic shadow
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts
-          node verification/ask-experience/compositional-model-shadow-v0.4.mjs \
-            verification/ask-experience/corpus-compositional-model-shadow-v0.1.json \
+          node verification/ask-experience/compositional-model-shadow-v0.5.mjs \
+            "$ASK_SHADOW_CORPUS" \
             artifacts/ask-compositional-model-shadow.json
 
       - name: Verify shadow authority boundary
+        shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -59,14 +86,14 @@ jobs:
           const x = JSON.parse(fs.readFileSync('artifacts/ask-compositional-model-shadow.json','utf8'));
           if (x.summary.executionAuthority !== 'none') throw new Error('shadow gained execution authority');
           if (x.summary.answerAuthority !== 'deterministic-ask-only') throw new Error('shadow gained answer authority');
-          if (x.summary.forbiddenFieldLeakCount !== 0) throw new Error('model emitted forbidden control fields');
-          if (x.summary.acceptedByFirewall === 0) throw new Error('no model candidate passed the production firewall');
-          console.log('Semantic shadow authority boundary PASS');
+          if (x.summary.acceptedForbiddenCandidateCount !== 0) throw new Error('forbidden model control field passed firewall');
+          if (x.summary.livePromotionRecommended !== false) throw new Error('shadow may not self-promote');
+          console.log('Compositional shadow authority boundary PASS');
           NODE
 
       - name: Upload temporary shadow evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ask-compositional-model-shadow-${{ github.run_id }}
           path: artifacts/ask-compositional-model-shadow.json
