@@ -1,0 +1,64 @@
+name: Ask candidate · Capital OS Broad Sweep 150Q
+
+on:
+  push:
+    branches:
+      - agents/ask-capital-os-broad-sweep-v1.2-20260815
+    paths:
+      - .github/workflows/_ask_capital_os_broad_sweep_candidate.yml
+
+permissions:
+  contents: read
+
+jobs:
+  broad-sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: agents/ask-capital-os-broad-sweep-v1.2-20260815
+          fetch-depth: 0
+
+      - name: Locate Chrome and install browser harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+          npm install --no-save --no-package-lock puppeteer-core@24.16.0
+
+      - name: Serve exact tested revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/ask-broad-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/agents/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/ask-broad-http.log; exit 1
+
+      - name: Generate exact 150-question corpus
+        run: node verification/ask-experience/generate-capital-os-broad-sweep-v0.1.mjs
+
+      - name: Run 150-question Capital OS sweep
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-capital-os-broad-150q
+          ASK_EXPERIENCE_ORIGIN: synthetic-broad-sweep
+        run: node verification/ask-experience/runner-v0.1.mjs artifacts/capital-os-broad-sweep-corpus.json artifacts/capital-os-broad-sweep-run.json
+
+      - name: Review broad sweep
+        shell: bash
+        run: |
+          set -euo pipefail
+          node verification/ask-experience/review-capital-os-broad-sweep-v0.1.mjs artifacts/capital-os-broad-sweep-corpus.json artifacts/capital-os-broad-sweep-run.json > artifacts/capital-os-broad-sweep-review.json
+          node -e "const x=require('./artifacts/capital-os-broad-sweep-review.json'); console.log(JSON.stringify({questions:x.questionCount,flags:x.flaggedCount,genericFallback:x.genericFallbackCount,confidenceMismatch:x.expectedConfidenceMismatchCount,missingSourceBinding:x.missingSourceBindingCount,harnessErrors:x.harnessErrors},null,2))"
+
+      - name: Upload broad sweep evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capital-os-broad-sweep-150q-${{ github.run_id }}
+          path: artifacts/capital-os-broad-sweep-*.json
+          retention-days: 30
