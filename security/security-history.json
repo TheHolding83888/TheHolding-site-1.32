@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-15T09:15:29.771Z",
+  "lastUpdatedAt": "2026-08-15T09:26:59.643Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 190,
-    "vaultRunCount": 190,
+    "runCount": 191,
+    "vaultRunCount": 191,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -2293,6 +2293,18 @@
       "highCount": 6,
       "newFindingCount": 19,
       "resolvedFindingCount": 19
+    },
+    {
+      "generatedAt": "2026-08-15T09:26:59.643Z",
+      "status": "watch",
+      "snapshotHash": "932d2a4894940ac3f88417a42d6c849ccc2aaebdf3ee2d0d6b99fafe05bdd17d",
+      "recordPath": "security/security-vault/2026/08/2026-08-15T09-26-59-643Z-932d2a4894.json",
+      "recordHash": "eb76c5fb6992d1be576aae782d0fcf6669b7bf5f0507babf7b2c46e8057e3c4f",
+      "findingCount": 27,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -7848,6 +7860,28 @@
       "severity": "medium",
       "category": "dom-innerhtml",
       "summary": "Resolved: Dynamic innerHTML assignment detected.",
+      "file": "companies/index.html",
+      "entity": null
+    },
+    {
+      "id": "c7c503857513cc4d6c74672a32b647fc798f20c1f1866a6b2de1b4d0788bd832",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-15T09:26:59.643Z",
+      "findingId": "b0353d4ae7bde9bdf342ce9a5287f292157ebb109807e6de9f1fbefb6836581e",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: agents/index.html.",
+      "file": "agents/index.html",
+      "entity": null
+    },
+    {
+      "id": "ca0c7b7bd21e1ad3588d35fdb714a4b2cd18d588a07a30e38a2f4f7c54c8d156",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-15T09:26:59.643Z",
+      "findingId": "bca030695cc127604c45d2a68b15a10989911e624fd810e56aa1910917ec239c",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: companies/index.html.",
       "file": "companies/index.html",
       "entity": null
     }
