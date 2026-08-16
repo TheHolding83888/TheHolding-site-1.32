@@ -120,14 +120,17 @@ jobs:
           if (!Array.isArray(questions) || new Set(questions).size !== questions.length) {
             throw new Error('Owner audio question coverage is invalid');
           }
-          if (context.provenance?.audioQuestionCount !== 10) {
-            throw new Error(`Expected 10 audio owner questions, got ${context.provenance?.audioQuestionCount}`);
+          if (context.provenance?.audioQuestionCount !== 13) {
+            throw new Error(`Expected 13 audio owner questions, got ${context.provenance?.audioQuestionCount}`);
+          }
+          if (questions.join(',') !== '1,2,3,4,5,6,7,8,9,10,11,12,13') {
+            throw new Error(`Unexpected audio owner question set: ${questions.join(',')}`);
           }
           if (context.provenance?.textTeachingItemCount !== 25) {
             throw new Error(`Expected 25 earlier text teaching items, got ${context.provenance?.textTeachingItemCount}`);
           }
-          if (context.provenance?.totalTeachingUnits !== 35) {
-            throw new Error(`Expected 35 total teaching units, got ${context.provenance?.totalTeachingUnits}`);
+          if (context.provenance?.totalTeachingUnits !== 38) {
+            throw new Error(`Expected 38 total teaching units, got ${context.provenance?.totalTeachingUnits}`);
           }
           const namespaces = new Set(context.provenance?.teachingNamespaces ?? []);
           if (!namespaces.has('audio-owner-q') || !namespaces.has('text-tranches-1-3')) {
@@ -137,8 +140,8 @@ jobs:
           if (!legacy || legacy.teachingItemCount !== 25 || legacy.sourceChannel !== 'owner-text-chat') {
             throw new Error('Legacy text teaching source is not correctly bound');
           }
-          if (overlay.ownerDecisionContext?.totalTeachingUnits !== 35) {
-            throw new Error('Overlay did not expose all 35 owner teaching units');
+          if (overlay.ownerDecisionContext?.totalTeachingUnits !== 38) {
+            throw new Error('Overlay did not expose all 38 owner teaching units');
           }
 
           console.log('Owner Decision Context Overlay PASS', {
@@ -195,8 +198,6 @@ jobs:
               exit 1
             fi
 
-            # Rebuild after every rebase so the overlay remains tied to the exact
-            # current Brain and exact current owner-context source bytes.
             node intelligence/owner-context/owner-context-runtime.mjs
             node intelligence/owner-context/brain-owner-context-overlay.mjs
             git add "${GENERATED[@]}"
