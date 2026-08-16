@@ -6,9 +6,10 @@
     "provenance": "explicit-owner-teaching",
     "channel": "owner-audio-transcribed-in-chat",
     "tranche": 7,
-    "questionsCovered": [11, 12, 13],
-    "humanReadableSource": "intelligence/project-memory/THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_7_Q11_Q13_2026-08-16.md",
-    "batchState": "owner-explicitly-authorized-processing-before-q14-q15",
+    "questionsCovered": [12, 13],
+    "pendingExactSourceQuestions": [11, 14, 15],
+    "humanReadableSource": "intelligence/project-memory/THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_7_Q12_Q13_2026-08-16.md",
+    "batchState": "owner-explicitly-authorized-processing-q12-q13-before-q14-q15",
     "speechNormalization": {
       "silentGuessingAllowed": false,
       "unverifiedHistoricalReferences": [
@@ -36,40 +37,6 @@
     "runtimeBinding": "none-currently-context-only"
   },
   "repeatableDecisionPatterns": {
-    "q11BorrowingPurpose": {
-      "principle": "debt-should-strengthen-capital-or-create-productive-economic-value-rather-than-fund-consumption",
-      "borrowingIsMandatory": false,
-      "borrowOnlyWhenExistingCapitalInsufficient": false,
-      "decisionRequiresFullLoanContext": true,
-      "acceptableCollateralExamples": [
-        "BTC",
-        "ETH",
-        "gold",
-        "silver",
-        "real-estate",
-        "stocks"
-      ],
-      "productiveDeploymentExamples": [
-        "business-expansion",
-        "strengthen-foundational-assets",
-        "productive-or-dividend-assets",
-        "real-yield-or-cash-flow-assets",
-        "stable-strategies-when-expected-return-can-cover-borrowing-cost"
-      ],
-      "preferredEconomicDirection": [
-        "strengthen-foundation",
-        "increase-cash-flow-capacity"
-      ],
-      "avoid": [
-        "higher-risk-strategies-without-sufficient-justification",
-        "consumption-or-lifestyle-purchases-funded-by-debt"
-      ],
-      "lifeExpensesBoundary": "owner-distinguishes debt-funded-consumption from potentially using generated rewards for life expenses",
-      "riskBuffer": {
-        "preserve-capital-for-health-factor-restoration-if-market-falls": true,
-        "automatic-health-factor-threshold": false
-      }
-    },
     "q12GeneratedCashFlowAllocation": {
       "principle": "allocation-is-state-dependent-and-requires-current-whole-company-capital-map-before-routing-rewards",
       "fixedAllocationPercentages": false,
@@ -146,19 +113,6 @@
     }
   },
   "runtimeReasoningHooks": {
-    "borrowingDecisionInputs": [
-      "collateral-value-and-composition",
-      "debt-value-and-asset",
-      "borrow-rate-and-cost",
-      "health-factor-and-trend",
-      "liquidation-mechanics",
-      "market-regime",
-      "available-stable-buffer",
-      "capital-layer-weights",
-      "intended-use-of-proceeds",
-      "expected-productive-return-with-evidence",
-      "risk-class-of-destination"
-    ],
     "rewardAllocationInputs": [
       "foundation-weight",
       "productive-layer-weight",
@@ -187,25 +141,6 @@
     "ownerContextBoundary": "These inputs guide interpretation only. Market, security and protocol facts must come from independently reproducible evidence."
   },
   "trackingHooks": [
-    {
-      "id": "debt-purpose-and-buffer",
-      "desiredFields": [
-        "company",
-        "collateral-assets",
-        "collateral-value-usd",
-        "debt-asset",
-        "debt-value-usd",
-        "borrow-apr",
-        "health-factor",
-        "health-factor-trend",
-        "liquidation-mechanism",
-        "stable-buffer-usd",
-        "use-of-proceeds-class",
-        "destination-risk-class",
-        "destination-expected-productive-return"
-      ],
-      "coverageClaim": "mixed-existing-and-gap-requires-source-audit"
-    },
     {
       "id": "capital-layer-allocation-state",
       "desiredFields": [
@@ -248,7 +183,6 @@
     "candidateRelationIsCausalFact": false,
     "historicalIncidentRecollectionIsVerifiedEvidence": false,
     "fixedAllocationRuleInferred": false,
-    "fixedBorrowingThresholdInferred": false,
     "fixedProtocolReentryThresholdInferred": false
   }
 }
