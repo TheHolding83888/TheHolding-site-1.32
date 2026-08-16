@@ -305,13 +305,29 @@
   bootLearningStatus();
 })();
 
-// Read-only UI bootstrap. Kept outside the safety IIFE so the progress surface
-// remains independent from conversation intake and cannot affect its policy.
+// Read-only UI bootstrap. Kept outside the safety IIFE so telemetry surfaces
+// remain independent from conversation intake and cannot affect its policy.
 (() => {
-  if (typeof document === 'undefined' || document.querySelector('script[data-th-intelligence-progress-loader]')) return;
-  const script = document.createElement('script');
-  script.src = '/agents/console/intelligence-progress.js?v=0.1';
-  script.defer = true;
-  script.dataset.thIntelligenceProgressLoader = 'v0.1';
-  document.head.appendChild(script);
+  if (typeof document === 'undefined') return;
+  const scripts = [
+    {
+      selector: 'script[data-th-intelligence-progress-loader]',
+      src: '/agents/console/intelligence-progress.js?v=0.1',
+      dataset: ['thIntelligenceProgressLoader', 'v0.1']
+    },
+    {
+      selector: 'script[data-th-operating-event-intelligence-loader]',
+      src: '/agents/console/event-intelligence.js?v=0.1',
+      dataset: ['thOperatingEventIntelligenceLoader', 'v0.1']
+    }
+  ];
+  for (const spec of scripts) {
+    if (document.querySelector(spec.selector)) continue;
+    const script = document.createElement('script');
+    script.src = spec.src;
+    script.async = false;
+    script.defer = true;
+    script.dataset[spec.dataset[0]] = spec.dataset[1];
+    document.head.appendChild(script);
+  }
 })();

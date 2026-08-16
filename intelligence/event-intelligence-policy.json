@@ -1,0 +1,43 @@
+{
+  "version": "0.1-operating-event-policy",
+  "mode": "read-only-source-backed-event-intelligence",
+  "authority": {
+    "executionAuthority": "none",
+    "walletActionAllowed": false,
+    "capitalActionAllowed": false,
+    "methodologyMutationAllowed": false,
+    "brainPolicyMutationAllowed": false,
+    "sourceDataMutationAllowed": false
+  },
+  "feed": {
+    "maxItems": 80,
+    "rewardMilestoneUsdStep": 10,
+    "companyDailyTvlMovePct": 10,
+    "aprChangeSelection": "any-observed-change-no-owner-threshold-invented"
+  },
+  "freshness": {
+    "reportingMaxAgeHours": 36,
+    "changeHistoryMaxAgeHours": 36
+  },
+  "eventTypes": [
+    {"id":"observer-material-change","mode":"measured","status":"active","source":"intelligence/change-history.json"},
+    {"id":"reward-value-change","mode":"measured","status":"active","source":"intelligence/change-history.json"},
+    {"id":"reward-usd-milestone","mode":"derived","status":"active","source":"intelligence/change-history.json","ownerRule":"every $10 upward milestone"},
+    {"id":"company-daily-tvl-move","mode":"derived","status":"active","source":"reporting/reporting-data.json","ownerRule":"absolute daily move >= 10%"},
+    {"id":"company-reference-apr-change","mode":"derived","status":"active","source":"reporting/reporting-data.json","selection":"any-observed-change"},
+    {"id":"protocol-reference-apr-change","mode":"derived","status":"active","source":"reporting/reporting-data.json","selection":"any-observed-change"},
+    {"id":"generated-income-change","mode":"measured","status":"active","source":"intelligence/change-history.json"},
+    {"id":"cash-flow-counter-change","mode":"measured","status":"active","source":"intelligence/change-history.json"},
+    {"id":"stable-capital-change","mode":"measured","status":"active","source":"intelligence/change-history.json"},
+    {"id":"coverage-state-change","mode":"measured","status":"active","source":"intelligence/change-history.json"},
+    {"id":"daily-reporting-observation","mode":"measured","status":"active","source":"intelligence/change-history.json"}
+  ],
+  "coverageGaps": [
+    {"id":"protocol-trading-volume-change","status":"gap","why":"No canonical protocol-volume time series is bound to Event Intelligence yet."},
+    {"id":"protocol-fees-revenue-change","status":"gap","why":"No canonical cross-protocol fee/revenue time series is bound yet."},
+    {"id":"company-cash-flow-fee-attribution","status":"gap","why":"APR/reward changes cannot be causally attributed to protocol fees without mechanism-specific evidence."},
+    {"id":"reward-unit-vs-price-attribution","status":"gap","why":"Current reward history records USD value changes but not a canonical per-interval unit-vs-price decomposition for every route."},
+    {"id":"company-concentration-drift","status":"gap","why":"No canonical daily company-wide asset-weight history is bound to this layer yet."},
+    {"id":"index-movement-feed","status":"gap","why":"Index movement event semantics require a dedicated canonical time-series contract before promotion."}
+  ]
+}
