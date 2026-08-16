@@ -6,7 +6,7 @@ const OWNER_DIR = path.join(ROOT, 'intelligence/owner-context');
 const POLICY_FILE = path.join(OWNER_DIR, 'public-owner-privacy-policy.json');
 
 const EMAIL_RE = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
-const PHONE_RE = /(?:^|[^\d])(?:\+?\d[\d ()-]{7,}\d)(?:$|[^\d])/;
+const LABELED_PHONE_RE = /\b(?:phone|telephone|mobile|whatsapp)(?:\s+(?:number|contact))?\s*[:=\-]\s*\+?\d[\d ()-]{7,}\d\b/i;
 const FORBIDDEN_KEY_RE = /^(?:personal)?(?:email|phone|telephone|mobile|realname|legalname|fullname|profilename|username|socialhandle|telegram|discord|dateofbirth|birthdate|taxid|passport|nationalid|homeaddress|privateaddress|connectedaccount|connectedserviceprofile)$/i;
 const HUMAN_IDENTITY_LABEL_RE = /\b(?:personal\s+email|real\s+name|legal\s+name|personal\s+profile|personal\s+username|social\s+handle|telegram\s+handle|discord\s+handle|phone\s+number|date\s+of\s+birth|home\s+address)\s*:/i;
 
@@ -31,6 +31,7 @@ function walkJson(value, trail, findings) {
   if (typeof value === 'string') {
     if (EMAIL_RE.test(value)) findings.push(`${trail}: email-like personal identifier`);
     if (HUMAN_IDENTITY_LABEL_RE.test(value)) findings.push(`${trail}: explicit personal-identity label`);
+    if (LABELED_PHONE_RE.test(value)) findings.push(`${trail}: contact-style phone data may be present`);
   }
 }
 
@@ -50,6 +51,7 @@ for (const name of profileFiles) {
   const rel = `intelligence/owner-context/${name}`;
   const text = fs.readFileSync(path.join(ROOT, rel), 'utf8');
   if (EMAIL_RE.test(text)) findings.push(`${rel}: email-like identifier present`);
+  if (LABELED_PHONE_RE.test(text)) findings.push(`${rel}: contact-style phone data may be present`);
   let data;
   try { data = JSON.parse(text); } catch (error) { fail(`${rel}: invalid JSON: ${error.message}`); }
   walkJson(data, rel, findings);
@@ -66,11 +68,7 @@ for (const rel of humanReadableFiles) {
   const text = fs.readFileSync(file, 'utf8');
   if (EMAIL_RE.test(text)) findings.push(`${rel}: email-like identifier present`);
   if (HUMAN_IDENTITY_LABEL_RE.test(text)) findings.push(`${rel}: explicit personal-identity label present`);
-  // Phone scanning is limited to prose sources because wallet/chain JSON contains many numeric values.
-  if (PHONE_RE.test(text)) {
-    // Avoid treating dates/version numbers as phone numbers by requiring an explicit contact-style label nearby.
-    if (/\b(?:phone|telephone|mobile|whatsapp)\b/i.test(text)) findings.push(`${rel}: contact-style phone data may be present`);
-  }
+  if (LABELED_PHONE_RE.test(text)) findings.push(`${rel}: contact-style phone data may be present`);
 }
 
 if (findings.length > 0) {
