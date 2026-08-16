@@ -312,13 +312,18 @@
   const scripts = [
     {
       selector: 'script[data-th-intelligence-progress-loader]',
-      src: '/agents/console/intelligence-progress.js?v=0.1',
-      dataset: ['thIntelligenceProgressLoader', 'v0.1']
+      src: '/agents/console/intelligence-progress.js?v=0.2',
+      dataset: ['thIntelligenceProgressLoader', 'v0.2']
     },
     {
       selector: 'script[data-th-operating-event-intelligence-loader]',
-      src: '/agents/console/event-intelligence.js?v=0.1',
-      dataset: ['thOperatingEventIntelligenceLoader', 'v0.1']
+      src: '/agents/console/event-intelligence.js?v=0.2-news',
+      dataset: ['thOperatingEventIntelligenceLoader', 'v0.2-news']
+    },
+    {
+      selector: 'script[data-th-live-panels-refresh-loader]',
+      src: '/agents/console/live-panels-refresh.js?v=0.1',
+      dataset: ['thLivePanelsRefreshLoader', 'v0.1']
     }
   ];
   for (const spec of scripts) {
