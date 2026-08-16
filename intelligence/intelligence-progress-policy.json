@@ -1,0 +1,79 @@
+{
+  "version": "0.1-thi-policy",
+  "index": {
+    "name": "The Holding Intelligence Index",
+    "shortName": "THI",
+    "max": 100,
+    "purpose": "A deterministic maturity index for The Holding Brain. It is not psychometric IQ and it does not measure human intelligence.",
+    "principle": "Raw repetition has diminishing value. Durable memory and evaluated reasoning matter; real decisions, settled outcomes and evidence-backed lessons matter most.",
+    "stages": [
+      {"min": 0, "max": 24.99, "label": "Bootstrapping"},
+      {"min": 25, "max": 44.99, "label": "Instrumented"},
+      {"min": 45, "max": 59.99, "label": "Developing"},
+      {"min": 60, "max": 74.99, "label": "Adaptive"},
+      {"min": 75, "max": 89.99, "label": "Experienced"},
+      {"min": 90, "max": 100, "label": "Mature"}
+    ]
+  },
+  "factors": {
+    "memory": {
+      "label": "Memory",
+      "max": 20,
+      "metrics": {
+        "memoryVaultRuns": {"weight": 6, "cap": 30, "curve": "log1p"},
+        "memoryVaultEvents": {"weight": 4, "cap": 200, "curve": "log1p"},
+        "brainObservations": {"weight": 6, "cap": 100, "curve": "log1p"},
+        "rememberedCases": {"weight": 4, "cap": 150, "curve": "log1p"}
+      }
+    },
+    "reasoning": {
+      "label": "Reasoning",
+      "max": 20,
+      "metrics": {
+        "evidenceMapped": {"weight": 8, "cap": 100, "curve": "log1p"},
+        "activeCases": {"weight": 4, "cap": 40, "curve": "log1p"},
+        "exactUpstreamBinding": {"weight": 4, "curve": "binary"},
+        "releaseCoherent": {"weight": 4, "curve": "binary"}
+      }
+    },
+    "evaluation": {
+      "label": "Evaluation",
+      "max": 20,
+      "metrics": {
+        "successfulAskRuns": {"weight": 10, "cap": 200, "curve": "log1p"},
+        "staticQuestionBank": {"weight": 5, "cap": 150, "curve": "log1p"},
+        "askSuccessRate": {"weight": 5, "curve": "ratio"}
+      }
+    },
+    "experience": {
+      "label": "Experience",
+      "max": 25,
+      "metrics": {
+        "ownerDecisions": {"weight": 5, "cap": 20, "curve": "log1p"},
+        "settledOutcomes": {"weight": 10, "cap": 30, "curve": "log1p"},
+        "lessons": {"weight": 10, "cap": 30, "curve": "log1p"}
+      }
+    },
+    "integrity": {
+      "label": "Integrity",
+      "max": 15,
+      "metrics": {
+        "cognitiveEvalPass": {"weight": 4, "curve": "binary"},
+        "noExecutionAuthority": {"weight": 3, "curve": "binary"},
+        "noCriticalSecurity": {"weight": 3, "curve": "binary"},
+        "observerFresh": {"weight": 2, "curve": "binary"},
+        "learningReady": {"weight": 3, "curve": "binary"}
+      }
+    }
+  },
+  "history": {
+    "maxSnapshots": 120,
+    "dedupeWindowMinutes": 30
+  },
+  "authority": {
+    "executable": false,
+    "executionAuthority": "none",
+    "scoreAuthority": "deterministic-policy-plus-canonical-production-artifacts",
+    "automaticPolicyMutation": false
+  }
+}

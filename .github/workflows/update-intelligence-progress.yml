@@ -1,0 +1,147 @@
+name: "The Holding Brain · Intelligence Progress"
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Ask The Holding · Experience"
+      - "The Holding Brain · Decision Outcome Learning Loop"
+      - "The Holding Brain · Refresh Cognitive Stack"
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence/intelligence-progress-engine.mjs'
+      - 'intelligence/intelligence-progress-policy.json'
+      - '.github/workflows/update-intelligence-progress.yml'
+      - 'agents/console/intelligence-progress.js'
+      - 'agents/console/safety.js'
+  schedule:
+    - cron: '52 7 * * *'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: intelligence-progress-main
+  cancel-in-progress: false
+
+jobs:
+  progress:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout canonical repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Resolve verified Ask Experience run counters
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          base="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/ask-experience.yml/runs"
+          total="$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' "${base}?per_page=1" | node -pe "JSON.parse(require('fs').readFileSync(0,'utf8')).total_count")"
+          success="$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' "${base}?status=success&per_page=1" | node -pe "JSON.parse(require('fs').readFileSync(0,'utf8')).total_count")"
+          test "${total}" -ge "${success}"
+          echo "ASK_EXPERIENCE_TOTAL_RUNS=${total}" >> "$GITHUB_ENV"
+          echo "ASK_EXPERIENCE_SUCCESSFUL_RUNS=${success}" >> "$GITHUB_ENV"
+          echo "PROGRESS_GENERATED_AT=$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)" >> "$GITHUB_ENV"
+          echo "Ask Experience: ${success}/${total} successful runs"
+
+      - name: Validate Intelligence Progress engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/intelligence-progress-engine.mjs
+          node intelligence/intelligence-progress-engine.mjs --self-test
+          node --check agents/console/intelligence-progress.js
+          node --check agents/console/safety.js
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/intelligence-progress-policy.json','utf8'))"
+
+      - name: Build deterministic Intelligence Progress telemetry
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/intelligence-progress-engine.mjs
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('intelligence/intelligence-progress.json','utf8'));
+          if (x.version !== '0.1-intelligence-progress') throw new Error('unexpected telemetry version');
+          if (!Number.isFinite(x.index?.value) || x.index.value < 0 || x.index.value > 100) throw new Error('invalid THI');
+          if (x.authority?.executionAuthority !== 'none' || x.authority?.executable !== false) throw new Error('telemetry authority drift');
+          if (!Array.isArray(x.factors) || x.factors.length !== 5) throw new Error('factor set invalid');
+          const total = x.factors.reduce((n,f)=>n+Number(f.score||0),0);
+          if (Math.abs(total - x.index.value) > 0.6) throw new Error('factor total mismatch');
+          console.log('Intelligence Progress boundary PASS', {thi:x.index.value,stage:x.index.stage,questionBank:x.metrics.evaluation.staticQuestionBank});
+          NODE
+          git diff --check
+
+      - name: Publish telemetry safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Intelligence Progress"
+          git config user.email "intelligence-progress@theholding.ai"
+          git add intelligence/intelligence-progress.json
+          if git diff --cached --quiet; then
+            echo "No Intelligence Progress change to publish."
+            exit 0
+          fi
+          mapfile -t staged < <(git diff --cached --name-only)
+          if [ "${#staged[@]}" -ne 1 ] || [ "${staged[0]}" != "intelligence/intelligence-progress.json" ]; then
+            echo "Unexpected staged telemetry files: ${staged[*]}"
+            exit 1
+          fi
+          git commit -m "intelligence: refresh progress telemetry"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Intelligence Progress publish conflict; fail closed."
+              exit 1
+            fi
+
+            node intelligence/intelligence-progress-engine.mjs
+            git add intelligence/intelligence-progress.json
+            if ! git diff --cached --quiet; then
+              git commit --amend --no-edit
+            fi
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; retrying."
+            sleep $((attempt * 2))
+          done
+          echo "Intelligence Progress could not publish after 3 attempts."
+          exit 1
+
+      - name: Intelligence Progress summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f intelligence/intelligence-progress.json ]; then
+            node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+            const x=require('./intelligence/intelligence-progress.json');
+            console.log('# The Holding Intelligence Progress');
+            console.log('');
+            console.log(`THI: **${x.index.value} / 100 · ${x.index.stage}**`);
+            console.log(`Ask runs: **${x.metrics.evaluation.successfulAskRuns}/${x.metrics.evaluation.totalAskRuns}** successful`);
+            console.log(`Question bank: **${x.metrics.evaluation.staticQuestionBank}** canonical cases`);
+            console.log(`Owner decisions: **${x.metrics.experience.ownerDecisions}** · Settled outcomes: **${x.metrics.experience.settledOutcomes}** · Lessons: **${x.metrics.experience.lessons}**`);
+            console.log('');
+            console.log('Read-only telemetry. Execution authority: `none`.');
+            NODE
+          fi
