@@ -1,0 +1,66 @@
+name: Ask candidate · Owner Intelligence Graph Gap 150Q
+
+on:
+  push:
+    branches:
+      - agents/ask-owner-intelligence-graph-gap-150q-20260816
+    paths:
+      - .github/workflows/_ask_owner_intelligence_graph_gap_150q_candidate.yml
+      - verification/ask-experience/generate-owner-intelligence-graph-gap-150q-v0.1.mjs
+      - verification/ask-experience/review-owner-intelligence-graph-gap-150q-v0.1.mjs
+
+permissions:
+  contents: read
+
+jobs:
+  graph-gap-sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: agents/ask-owner-intelligence-graph-gap-150q-20260816
+          fetch-depth: 0
+
+      - name: Locate Chrome and install browser harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+          npm install --no-save --no-package-lock puppeteer-core@24.16.0
+
+      - name: Serve exact tested revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/ask-graph-gap-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/agents/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/ask-graph-gap-http.log; exit 1
+
+      - name: Generate exact 150-question graph-gap corpus
+        run: node verification/ask-experience/generate-owner-intelligence-graph-gap-150q-v0.1.mjs
+
+      - name: Run 150-question Owner Intelligence Graph Gap sweep
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-owner-intelligence-graph-gap-150q
+          ASK_EXPERIENCE_ORIGIN: synthetic-owner-intelligence-graph-gap-sweep
+        run: node verification/ask-experience/runner-v0.1.mjs artifacts/owner-intelligence-graph-gap-corpus.json artifacts/owner-intelligence-graph-gap-run.json
+
+      - name: Review graph-gap sweep
+        shell: bash
+        run: |
+          set -euo pipefail
+          node verification/ask-experience/review-owner-intelligence-graph-gap-150q-v0.1.mjs artifacts/owner-intelligence-graph-gap-corpus.json artifacts/owner-intelligence-graph-gap-run.json > artifacts/owner-intelligence-graph-gap-review.json
+          node -e "const x=require('./artifacts/owner-intelligence-graph-gap-review.json'); console.log(JSON.stringify({questions:x.questionCount,flags:x.flaggedCount,genericFallback:x.genericFallbackCount,confidenceMismatch:x.expectedConfidenceMismatchCount,missingSourceBinding:x.missingSourceBindingCount,harnessErrors:x.harnessErrors},null,2))"
+
+      - name: Upload graph-gap evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-intelligence-graph-gap-150q-${{ github.run_id }}
+          path: artifacts/owner-intelligence-graph-gap-*.json
+          retention-days: 30
