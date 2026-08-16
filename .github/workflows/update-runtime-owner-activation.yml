@@ -5,12 +5,17 @@ on:
   workflow_run:
     workflows:
       - "The Holding Risk · Health Factor Intelligence"
+      - "Update The Holding Productivity Data"
+      - "Update Company Rewards"
+      - "The Holding · Update Realised Cash Flow"
     types:
       - completed
   pull_request:
     paths:
       - "intelligence/owner-context/runtime-owner-activation.mjs"
       - "intelligence/neural-graph/runtime-capability-overlay.mjs"
+      - "intelligence/runtime-evidence/runtime-capability-registry.json"
+      - "intelligence/runtime-evidence/runtime-capability-source-state.mjs"
       - "intelligence/runtime-evidence/runtime-reasoning-evidence.mjs"
       - "intelligence/risk/health-factor-intelligence.json"
       - "intelligence/owner-context/owner-teaching-activation.json"
@@ -50,6 +55,8 @@ jobs:
           set -euo pipefail
           test -s intelligence/owner-context/runtime-owner-activation.mjs
           test -s intelligence/neural-graph/runtime-capability-overlay.mjs
+          test -s intelligence/runtime-evidence/runtime-capability-registry.json
+          test -s intelligence/runtime-evidence/runtime-capability-source-state.mjs
           test -s intelligence/runtime-evidence/runtime-reasoning-evidence.mjs
           test -s intelligence/risk/health-factor-intelligence.json
           test -s intelligence/owner-context/owner-teaching-activation.json
@@ -57,14 +64,16 @@ jobs:
           test -s agents/console/live-panels-refresh.js
           node --check intelligence/owner-context/runtime-owner-activation.mjs
           node --check intelligence/neural-graph/runtime-capability-overlay.mjs
+          node --check intelligence/runtime-evidence/runtime-capability-source-state.mjs
           node --check intelligence/runtime-evidence/runtime-reasoning-evidence.mjs
           node --check agents/console/runtime-evidence-cortex.js
           node --check agents/console/live-panels-refresh.js
           grep -q "executionAuthority: 'none'" intelligence/owner-context/runtime-owner-activation.mjs
           grep -q "executionAuthority: 'none'" intelligence/neural-graph/runtime-capability-overlay.mjs
+          grep -q "executionAuthority: 'none'" intelligence/runtime-evidence/runtime-capability-source-state.mjs
           grep -q "executionAuthority: 'none'" intelligence/runtime-evidence/runtime-reasoning-evidence.mjs
+          grep -q '"automaticCapabilityActivation": false' intelligence/runtime-evidence/runtime-capability-registry.json
           grep -q "health-factor-monitoring" intelligence/owner-context/runtime-owner-activation.mjs
-          grep -q "runtimeStatus" intelligence/owner-context/runtime-owner-activation.mjs
           grep -q "runtime-reasoning-evidence.json" agents/console/runtime-evidence-cortex.js
           grep -q "runtime-evidence-cortex.js" agents/console/live-panels-refresh.js
 
@@ -74,10 +83,13 @@ jobs:
       - name: Build runtime capability graph overlay
         run: node intelligence/neural-graph/runtime-capability-overlay.mjs
 
-      - name: Build runtime reasoning evidence packet
+      - name: Evaluate registered capability source state
+        run: node intelligence/runtime-evidence/runtime-capability-source-state.mjs
+
+      - name: Build registry-driven runtime reasoning evidence packet
         run: node intelligence/runtime-evidence/runtime-reasoning-evidence.mjs
 
-      - name: Validate runtime promotion, graph binding and reasoning packet
+      - name: Validate runtime promotion, registry, source health, graph binding and reasoning packet
         shell: bash
         run: |
           set -euo pipefail
@@ -85,6 +97,8 @@ jobs:
           const fs = require('fs');
           const a = JSON.parse(fs.readFileSync('intelligence/owner-context/runtime-owner-activation.json', 'utf8'));
           const g = JSON.parse(fs.readFileSync('intelligence/neural-graph/runtime-capability-overlay.json', 'utf8'));
+          const reg = JSON.parse(fs.readFileSync('intelligence/runtime-evidence/runtime-capability-registry.json', 'utf8'));
+          const ss = JSON.parse(fs.readFileSync('intelligence/runtime-evidence/runtime-capability-source-state.json', 'utf8'));
           const p = JSON.parse(fs.readFileSync('intelligence/runtime-evidence/runtime-reasoning-evidence.json', 'utf8'));
           const r = JSON.parse(fs.readFileSync('intelligence/risk/health-factor-intelligence.json', 'utf8'));
 
@@ -107,24 +121,40 @@ jobs:
           if (!edges.some(x => x.kind === 'capability-observes-risk')) throw new Error('runtime capability not bound to live risk observation');
           if (!edges.some(x => x.kind === 'risk-observation-company')) throw new Error('live risk observation not bound to company');
 
-          if (p.version !== '0.1-runtime-reasoning-evidence') throw new Error('unexpected runtime reasoning packet version');
-          if (p.authority?.executionAuthority !== 'none' || p.authority?.readOnly !== true) throw new Error('runtime reasoning packet gained execution authority');
-          if (p.freshness?.riskSourceFresh !== true) throw new Error('runtime reasoning packet accepted stale risk evidence');
+          if (reg.version !== '0.2-runtime-evidence-capability-registry') throw new Error('unexpected capability registry version');
+          if (reg.authority?.executionAuthority !== 'none' || reg.authority?.automaticCapabilityActivation !== false) throw new Error('capability registry authority drift');
+          if ((reg.capabilities || []).length < 5) throw new Error('capability registry unexpectedly narrow');
+          for (const id of ['health-factor-monitoring','claimable-rewards-observation','reference-productivity-observation','realised-cash-flow-observation','embedded-yield-observation']) {
+            if (!(reg.capabilities || []).some(x => x.capabilityId === id)) throw new Error(`missing registered capability family: ${id}`);
+          }
+
+          if (ss.version !== '0.2-runtime-capability-source-state') throw new Error('unexpected capability source-state version');
+          if (ss.authority?.executionAuthority !== 'none' || ss.authority?.automaticCapabilityActivation !== false) throw new Error('source-state authority drift');
+          const hfState = (ss.capabilities || []).find(x => x.capabilityId === 'health-factor-monitoring');
+          if (!hfState || hfState.sourceExists !== true || hfState.schemaInspected !== true || hfState.fresh !== true || hfState.adapterReady !== true) throw new Error('HF registry source state is not current/ready');
+          const rewardsState = (ss.capabilities || []).find(x => x.capabilityId === 'claimable-rewards-observation');
+          if (!rewardsState || rewardsState.sourceExists !== true || rewardsState.schemaInspected !== false || rewardsState.adapterReady !== false) throw new Error('Rewards source must remain schema-pending and non-emitting');
+
+          if (p.version !== '0.2-runtime-reasoning-evidence') throw new Error('unexpected runtime reasoning packet version');
+          if (p.authority?.executionAuthority !== 'none' || p.authority?.readOnly !== true || p.authority?.automaticCapabilityActivation !== false) throw new Error('runtime reasoning packet authority drift');
+          if (p.registry?.version !== reg.version || p.summary?.registeredCapabilityCount < 5) throw new Error('runtime packet not registry-bound');
           const cap = (p.capabilities || []).find(x => x.capabilityId === 'health-factor-monitoring');
           if (!cap || cap.runtimeStatus !== 'activated' || cap.runtimeCoverage !== 'partial') throw new Error('HF capability missing from reasoning packet');
           if (!Array.isArray(cap.observations) || cap.observations.length < 1) throw new Error('reasoning packet has no live HF observation');
           const monetra = cap.observations.find(x => x.companyRegistry === '008');
           if (!monetra) throw new Error('Monetra live HF observation missing from reasoning packet');
           if (monetra.debtPresent === false && monetra.healthFactor !== null) throw new Error('zero-debt HF semantics corrupted in reasoning packet');
-          if (!p.integrity?.packetHash || !g.integrity?.overlayHash || !a.integrity?.runtimeActivationHash) throw new Error('runtime integrity hashes missing');
+          if ((p.capabilities || []).some(x => x.capabilityId === 'claimable-rewards-observation')) throw new Error('schema-unbound Rewards capability leaked into active packet');
+          if (!p.integrity?.packetHash || !p.integrity?.capabilityRegistryHash || !p.integrity?.capabilitySourceStateHash || !g.integrity?.overlayHash || !a.integrity?.runtimeActivationHash) throw new Error('runtime integrity hashes missing');
 
-          console.log('Runtime Reasoning Evidence PASS', {
+          console.log('Runtime Evidence Registry v0.2 PASS', {
             q7Declared: q7.declaredStatus,
             q7Runtime: q7.runtimeStatus,
             q7Coverage: q7.runtimeCoverage,
-            capabilityNodes: g.totals.runtimeCapabilityCount,
-            graphEdges: g.totals.connectionCount,
-            packetCapabilities: p.summary.activeCapabilityCount,
+            registeredCapabilities: p.summary.registeredCapabilityCount,
+            activeCapabilities: p.summary.activeCapabilityCount,
+            sourcePresent: ss.summary.sourcePresentCount,
+            schemaPending: ss.summary.schemaPendingCount,
             packetObservations: p.summary.observationCount,
             monetraState: monetra.state,
             monetraHealthFactor: monetra.healthFactor,
@@ -141,6 +171,7 @@ jobs:
           GENERATED=(
             "intelligence/owner-context/runtime-owner-activation.json"
             "intelligence/neural-graph/runtime-capability-overlay.json"
+            "intelligence/runtime-evidence/runtime-capability-source-state.json"
             "intelligence/runtime-evidence/runtime-reasoning-evidence.json"
           )
           for f in "${GENERATED[@]}"; do test -s "$f"; done
@@ -149,7 +180,7 @@ jobs:
           git config user.email "runtime-activation@theholding.ai"
           git add "${GENERATED[@]}"
 
-          staged_bad="$(git diff --cached --name-only | grep -Ev '^(intelligence/owner-context/runtime-owner-activation\.json|intelligence/neural-graph/runtime-capability-overlay\.json|intelligence/runtime-evidence/runtime-reasoning-evidence\.json)$' || true)"
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^(intelligence/owner-context/runtime-owner-activation\.json|intelligence/neural-graph/runtime-capability-overlay\.json|intelligence/runtime-evidence/runtime-capability-source-state\.json|intelligence/runtime-evidence/runtime-reasoning-evidence\.json)$' || true)"
           if [ -n "$staged_bad" ]; then
             echo "ERROR: Runtime Activation attempted to stage outside generated boundary:"
             echo "$staged_bad"
@@ -173,6 +204,7 @@ jobs:
 
             node intelligence/owner-context/runtime-owner-activation.mjs
             node intelligence/neural-graph/runtime-capability-overlay.mjs
+            node intelligence/runtime-evidence/runtime-capability-source-state.mjs
             node intelligence/runtime-evidence/runtime-reasoning-evidence.mjs
             git add "${GENERATED[@]}"
             if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
