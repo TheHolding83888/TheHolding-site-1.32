@@ -304,3 +304,14 @@
   window.HoldingConversationSafety = Object.freeze({ classify });
   bootLearningStatus();
 })();
+
+// Read-only UI bootstrap. Kept outside the safety IIFE so the progress surface
+// remains independent from conversation intake and cannot affect its policy.
+(() => {
+  if (typeof document === 'undefined' || document.querySelector('script[data-th-intelligence-progress-loader]')) return;
+  const script = document.createElement('script');
+  script.src = '/agents/console/intelligence-progress.js?v=0.1';
+  script.defer = true;
+  script.dataset.thIntelligenceProgressLoader = 'v0.1';
+  document.head.appendChild(script);
+})();
