@@ -1,7 +1,7 @@
 {
   "version": "0.1-neural-graph-telemetry",
   "engineVersion": "0.1-canonical-neuron-and-connection-counter",
-  "generatedAt": "2026-08-16T16:41:52.301Z",
+  "generatedAt": "2026-08-16T17:23:15.429Z",
   "status": "ok",
   "purpose": "Compact instrument telemetry for how The Holding knowledge graph grows and changes.",
   "semantics": {
@@ -65,13 +65,15 @@
     }
   },
   "deltaSincePreviousSnapshot": {
-    "previousGeneratedAt": "2026-08-16T16:41:49.294Z",
+    "previousGeneratedAt": "2026-08-16T17:23:14.231Z",
     "neurons": {
       "mode": "delta",
-      "added": 0,
+      "added": 1,
       "removed": 0,
       "updated": 0,
-      "addedIds": [],
+      "addedIds": [
+        "security-finding:d9ce30dfb8d0247b8e15ff0ae0936be5c87019969fc9f5bc5825905511c0e6d4"
+      ],
       "removedIds": [],
       "updatedIds": []
     },
@@ -87,10 +89,10 @@
   },
   "activity24h": {
     "mode": "activity",
-    "snapshotCount": 8,
+    "snapshotCount": 10,
     "neurons": {
-      "added": 3,
-      "removed": 2,
+      "added": 4,
+      "removed": 3,
       "updated": 0
     },
     "connections": {
@@ -132,8 +134,8 @@
     },
     "security": {
       "file": "security/security-intelligence.json",
-      "sha256": "16889921e41682a4bf37dc706dedfad3515a5b51691a90dea146061eb5be48c9",
-      "generatedAt": "2026-08-16T16:41:43.543Z"
+      "sha256": "b6f8a92d0abafdf9bb76d289d0d3b3e5cafc203a76f1b6fd133688a3c7b429dd",
+      "generatedAt": "2026-08-16T17:23:07.856Z"
     },
     "owner": {
       "file": "intelligence/owner-context/owner-decision-context.json",
@@ -5438,6 +5440,21 @@
         },
         "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
+      "security-finding:d9ce30dfb8d0247b8e15ff0ae0936be5c87019969fc9f5bc5825905511c0e6d4": {
+        "id": "security-finding:d9ce30dfb8d0247b8e15ff0ae0936be5c87019969fc9f5bc5825905511c0e6d4",
+        "type": "security-finding",
+        "label": "Security-sensitive surface changed: .github/workflows/update-runtime-owner-activation.yml.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "critical-surface-change",
+          "file": ".github/workflows/update-runtime-owner-activation.yml"
+        },
+        "fingerprint": "161deee2c483c1bbe1625f915b2be2a301470810bf29179edb447edf4f80994a"
+      },
       "security-finding:e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924": {
         "id": "security-finding:e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
         "type": "security-finding",
@@ -5452,21 +5469,6 @@
           "file": "agents/console/owner-intelligence.js"
         },
         "fingerprint": "9de74b5f3bfe6e91c1c26a2e38b3d11c84bae102b7fa02a167d226f067f848b2"
-      },
-      "security-finding:ef4c0c55c45ea7454751045961e7944337cc1b55aa3ae224f8d6d5e46ef54a8a": {
-        "id": "security-finding:ef4c0c55c45ea7454751045961e7944337cc1b55aa3ae224f8d6d5e46ef54a8a",
-        "type": "security-finding",
-        "label": "Security-sensitive surface changed: .github/workflows/update-neural-graph-telemetry.yml.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "critical-surface-change",
-          "file": ".github/workflows/update-neural-graph-telemetry.yml"
-        },
-        "fingerprint": "7f8116fc8a56f0b525bf4d8bc59b0a5208c309b44b40d6859fad036baebea6ad"
       },
       "security-finding:fedb97ff102b9723a0095f5e809315937dde66e499d846523007147edb1494cd": {
         "id": "security-finding:fedb97ff102b9723a0095f5e809315937dde66e499d846523007147edb1494cd",
@@ -8609,9 +8611,9 @@
     }
   },
   "integrity": {
-    "nodeCompositeHash": "44d6d494b9c53f8fa1728f6846c70a00b822e4be8504f8b1f3d45b6656c7167a",
+    "nodeCompositeHash": "e8547ced3e15b7936744007fe3f7378e23b7da88aac1214c0623475f72086041",
     "connectionCompositeHash": "0f1dcaa8e18e7286ce1f1f8841e4eb420b6d1ffc30e3d7d13a4c002e2191fd1a",
-    "sourceCompositeHash": "e79156a41eacb76a2c7a9512041e4f3d63606e2ccee80fa73ea0ce18122167d7",
-    "telemetryHash": "9ebd1121e2bed60321ac938445bcb488cedffc9d019751c8a1669d0ed4898e24"
+    "sourceCompositeHash": "542b8d2938ba9ed5d456c785f9e393b9a725b404dcb06dadcc5bd425aa6c4b7a",
+    "telemetryHash": "fb2aee9dddd9ce628ca8011371af4e66a1f4867086ced16fa19fe98cc2b7c8fb"
   }
 }
