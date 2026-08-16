@@ -7,7 +7,9 @@ on:
   pull_request:
     paths:
       - "intelligence/neural-graph/**"
+      - "intelligence/owner-context/owner-teaching-activation.json"
       - "agents/console/neural-graph-dashboard.js"
+      - "agents/console/neural-graph-quality.js"
       - "agents/console/neural-graph-daily-delta.js"
       - "agents/console/neural-map-explorer.js"
       - "agents/console/live-panels-refresh.js"
@@ -25,8 +27,11 @@ on:
       - "security/security-intelligence.json"
       - "intelligence/owner-context/owner-decision-context.json"
       - "intelligence/owner-context/intelligence-graph-growth-directive.json"
+      - "intelligence/owner-context/owner-teaching-activation.json"
       - "intelligence/neural-graph/neural-graph-telemetry.mjs"
+      - "intelligence/neural-graph/neural-graph-quality.mjs"
       - "agents/console/neural-graph-dashboard.js"
+      - "agents/console/neural-graph-quality.js"
       - "agents/console/neural-graph-daily-delta.js"
       - "agents/console/neural-map-explorer.js"
       - "agents/console/live-panels-refresh.js"
@@ -62,25 +67,37 @@ jobs:
         run: |
           set -euo pipefail
           test -s intelligence/neural-graph/neural-graph-telemetry.mjs
+          test -s intelligence/neural-graph/neural-graph-quality.mjs
+          test -s intelligence/owner-context/owner-teaching-activation.json
           test -s agents/console/neural-graph-dashboard.js
+          test -s agents/console/neural-graph-quality.js
           test -s agents/console/neural-graph-daily-delta.js
           test -s agents/console/neural-map-explorer.js
           test -s agents/console/live-panels-refresh.js
           node --check intelligence/neural-graph/neural-graph-telemetry.mjs
+          node --check intelligence/neural-graph/neural-graph-quality.mjs
           node --check agents/console/neural-graph-dashboard.js
+          node --check agents/console/neural-graph-quality.js
           node --check agents/console/neural-graph-daily-delta.js
           node --check agents/console/neural-map-explorer.js
           node --check agents/console/live-panels-refresh.js
           grep -q "executionAuthority: 'none'" intelligence/neural-graph/neural-graph-telemetry.mjs
           grep -q "candidate-not-tracked" intelligence/neural-graph/neural-graph-telemetry.mjs
           grep -q "candidateBoundary" intelligence/neural-graph/neural-graph-telemetry.mjs
+          grep -q "Owner teaching missing activation disposition" intelligence/neural-graph/neural-graph-quality.mjs
+          grep -q '"activated"' intelligence/owner-context/owner-teaching-activation.json
+          grep -q '"blocked"' intelligence/owner-context/owner-teaching-activation.json
+          grep -q '"contextual"' intelligence/owner-context/owner-teaching-activation.json
           grep -q "MAX_NEIGHBORS" agents/console/neural-map-explorer.js
           grep -q "daily comparison warming" agents/console/neural-graph-daily-delta.js
 
       - name: Build canonical neural graph telemetry
         run: node intelligence/neural-graph/neural-graph-telemetry.mjs
 
-      - name: Validate graph semantics and authority
+      - name: Build graph quality and owner activation telemetry
+        run: node intelligence/neural-graph/neural-graph-quality.mjs
+
+      - name: Validate graph semantics, connectivity, activation and authority
         shell: bash
         run: |
           set -euo pipefail
@@ -88,6 +105,8 @@ jobs:
           const fs = require('fs');
           const x = JSON.parse(fs.readFileSync('intelligence/neural-graph/neural-graph-telemetry.json', 'utf8'));
           const h = JSON.parse(fs.readFileSync('intelligence/neural-graph/neural-graph-history.json', 'utf8'));
+          const q = JSON.parse(fs.readFileSync('intelligence/neural-graph/neural-graph-quality.json', 'utf8'));
+          const o = JSON.parse(fs.readFileSync('intelligence/owner-context/owner-decision-context.json', 'utf8'));
           if (x.version !== '0.1-neural-graph-telemetry') throw new Error('unexpected telemetry version');
           if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('graph gained execution authority');
           if (x.authority?.marketFactAuthorityForOwnerContext !== false) throw new Error('owner context gained fact authority');
@@ -97,14 +116,51 @@ jobs:
           if (!x.semantics?.candidateBoundary || !x.semantics?.thiBoundary) throw new Error('graph guardrails missing');
           if (h.version !== '0.1-neural-graph-history' || !Array.isArray(h.snapshots) || h.snapshots.length < 1) throw new Error('history unavailable');
           if (!x.integrity?.nodeCompositeHash || !x.integrity?.connectionCompositeHash || !x.integrity?.sourceCompositeHash) throw new Error('graph integrity missing');
-          console.log('Neural Graph Telemetry PASS', {
-            neurons: x.totals.neurons,
-            candidateNeurons: x.totals.candidateNeurons,
-            connections: x.totals.neuralConnections,
-            candidateConnections: x.totals.candidateConnections,
-            deltaMode: x.deltaSincePreviousSnapshot?.neurons?.mode,
-            activity24h: x.activity24h,
-            executionAuthority: x.authority.executionAuthority
+
+          if (q.version !== '0.2-neural-graph-quality-and-activation') throw new Error('unexpected graph-quality version');
+          if (q.authority?.executionAuthority !== 'none' || q.authority?.readOnly !== true) throw new Error('graph quality gained execution authority');
+          const teachingCount = Number(o.provenance?.totalTeachingUnits);
+          if (!Number.isInteger(teachingCount) || teachingCount < 1) throw new Error('canonical owner teaching count unavailable');
+          if (q.ownerActivation?.teachingUnitCount !== teachingCount) throw new Error('activation contract does not cover canonical owner teaching corpus');
+          const dispositionTotal = Number(q.ownerActivation?.activated) + Number(q.ownerActivation?.blocked) + Number(q.ownerActivation?.contextual);
+          if (dispositionTotal !== teachingCount) throw new Error('owner activation dispositions do not sum to teaching corpus');
+          if (!Number.isFinite(q.ownerActivation?.activationRatePct)) throw new Error('owner activation rate unavailable');
+          if (!Number.isFinite(q.connectivity?.base?.edgesPerNode) || !Number.isFinite(q.connectivity?.enriched?.edgesPerNode)) throw new Error('graph connectivity ratio unavailable');
+          if (!Number.isInteger(q.connectivity?.base?.zeroDegreeCount) || !Number.isInteger(q.connectivity?.enriched?.zeroDegreeCount)) throw new Error('zero-degree counts unavailable');
+          if (q.connectivity.enriched.zeroDegreeCount !== 0) throw new Error(`established graph contains isolated neurons after enrichment: ${q.connectivity.enriched.zeroDegreeCount}`);
+          if (q.connectivity.enriched.singletonComponentCount !== 0) throw new Error('established graph contains singleton components after enrichment');
+          if (q.ownerActivation?.enrichedGraphZeroDegreeOwnerUnits !== 0) throw new Error('owner teaching remains non-traversable after activation overlay');
+          if (q.candidateCapacity?.activeReviewCount > q.candidateCapacity?.activeReviewCap) throw new Error('candidate active review exceeds cap');
+          if (q.utility?.questionsMadeAnswerableByGraph !== null || q.utility?.measurementStatus !== 'warming') throw new Error('graph-only utility must remain warming until causally evaluated');
+          const hf = (q.blockedArchitectureDemand || []).find(x => x.blockerId === 'health-factor-monitoring');
+          if (!hf) throw new Error('Q7 Health Factor blocker is not explicit');
+          if (!q.integrity?.qualityHash || !q.integrity?.activationContractHash) throw new Error('graph quality integrity missing');
+
+          console.log('Neural Graph Quality PASS', {
+            base: {
+              nodes: q.connectivity.base.nodeCount,
+              edges: q.connectivity.base.edgeCount,
+              edgesPerNode: q.connectivity.base.edgesPerNode,
+              zeroDegree: q.connectivity.base.zeroDegreeCount,
+              components: q.connectivity.base.connectedComponentCount
+            },
+            enriched: {
+              nodes: q.connectivity.enriched.nodeCount,
+              edges: q.connectivity.enriched.edgeCount,
+              edgesPerNode: q.connectivity.enriched.edgesPerNode,
+              zeroDegree: q.connectivity.enriched.zeroDegreeCount,
+              components: q.connectivity.enriched.connectedComponentCount
+            },
+            ownerActivation: q.ownerActivation,
+            candidateCapacity: {
+              inventory: q.candidateCapacity.inventoryCount,
+              active: q.candidateCapacity.activeReviewCount,
+              blocked: q.candidateCapacity.blockedCount,
+              dormant: q.candidateCapacity.dormantCount,
+              promoted: q.candidateCapacity.promotedCount
+            },
+            graphUtility: q.utility.measurementStatus,
+            executionAuthority: q.authority.executionAuthority
           });
           NODE
           git diff --check
@@ -117,6 +173,7 @@ jobs:
           GENERATED=(
             "intelligence/neural-graph/neural-graph-telemetry.json"
             "intelligence/neural-graph/neural-graph-history.json"
+            "intelligence/neural-graph/neural-graph-quality.json"
           )
           for f in "${GENERATED[@]}"; do test -s "$f"; done
 
@@ -124,7 +181,7 @@ jobs:
           git config user.email "neural-graph@theholding.ai"
           git add "${GENERATED[@]}"
 
-          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/neural-graph/(neural-graph-telemetry\.json|neural-graph-history\.json)$' || true)"
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/neural-graph/(neural-graph-telemetry\.json|neural-graph-history\.json|neural-graph-quality\.json)$' || true)"
           if [ -n "$staged_bad" ]; then
             echo "ERROR: Neural Graph attempted to stage outside generated boundary:"
             echo "$staged_bad"
@@ -146,8 +203,9 @@ jobs:
               exit 1
             fi
 
-            # Rebuild after rebase so source hashes, delta and history bind to exact current main.
+            # Rebuild after rebase so source hashes, deltas, history and quality bind to exact current main.
             node intelligence/neural-graph/neural-graph-telemetry.mjs
+            node intelligence/neural-graph/neural-graph-quality.mjs
             git add "${GENERATED[@]}"
             if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
 
