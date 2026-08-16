@@ -1,0 +1,73 @@
+{
+  "version": "0.1-public-owner-privacy-boundary",
+  "asOf": "2026-08-16",
+  "status": "canonical-read-only-privacy-policy",
+  "purpose": "Keep personal owner/investor identity data out of The Holding public repository, public site and public Ask reasoning plane while allowing explicitly public company/capital identities and evidence.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "identityDisclosureAuthority": "none",
+    "personalDataPublicDisclosure": false,
+    "personalDataCollectionRequired": false,
+    "connectorProfileMetadataMayBeCopiedIntoProject": false
+  },
+  "boundary": {
+    "ownerContextIsNotOwnerIdentity": true,
+    "storeDecisionLogicNotPersonalIdentity": true,
+    "publicAskMayUseSanitizedOwnerDecisionContext": true,
+    "publicAskMayDisclosePersonalOwnerIdentity": false,
+    "publicRepositoryMayStorePersonalOwnerIdentity": false,
+    "connectedAccountProfileMetadataIsProjectEvidence": false
+  },
+  "prohibitedPersonalIdentityClasses": [
+    "personal-email-address",
+    "personal-phone-number",
+    "legal-or-real-person-name-when-used-as-owner-identity",
+    "personal-profile-name",
+    "personal-username-or-social-handle",
+    "personal-nickname-linked-to-a-person",
+    "telegram-or-discord-or-other-personal-messaging-handle",
+    "home-or-private-physical-address",
+    "passport-or-national-id",
+    "tax-id",
+    "date-of-birth",
+    "private-account-identifier",
+    "connected-service-profile-metadata"
+  ],
+  "explicitlyAllowedPublicCapitalIdentityClasses": [
+    "company-registry-id",
+    "explicitly-public-company-name",
+    "explicitly-public-company-ens",
+    "public-wallet-address-used-as-company-capital-identity",
+    "protocol-name",
+    "chain-name-or-chain-id",
+    "public-position-or-contract-address",
+    "public-onchain-transaction-or-block-reference"
+  ],
+  "rules": {
+    "publicCompanyIdentityDoesNotImplyPersonalIdentity": true,
+    "neverInferPersonBehindCompany": true,
+    "neverMapCompanyWalletToNaturalPersonWithoutExplicitSeparatePrivateSystem": true,
+    "neverAnswerWhoOwnsThisCompanyFromPrivateIdentityData": true,
+    "neverCopyGithubOrOtherConnectorUserProfileFieldsIntoOwnerContext": true,
+    "ownerTeachingMayPreserveInvestmentLogicPreferencesAndDecisionHeuristics": true,
+    "ownerTeachingMustRemoveUnneededPersonalIdentifiersBeforeCommit": true,
+    "unknownIdentityLikeStringFailsClosedForHumanReview": true
+  },
+  "askContract": {
+    "allowed": [
+      "explain-owner-decision-logic-without-identifying-owner",
+      "explain-public-company-state",
+      "explain-public-company-wallet-or-ens",
+      "cite-public-protocol-chain-and-onchain-evidence"
+    ],
+    "forbidden": [
+      "disclose-owner-email",
+      "disclose-owner-real-name",
+      "disclose-owner-personal-handle",
+      "disclose-private-contact-details",
+      "infer-natural-person-from-company-or-wallet",
+      "reveal-connected-account-profile-metadata"
+    ]
+  }
+}
