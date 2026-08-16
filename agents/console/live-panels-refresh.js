@@ -30,10 +30,23 @@
     document.head.appendChild(ownerUi);
   }
 
+  // Bounded conversational cortex. This is a read-only owner-context / graph
+  // synthesis layer over the existing Ask router. safety.js is the parent
+  // loader and therefore registers its capture guard before this script can
+  // receive any form submission. Ordinary company/APR/Rewards questions remain
+  // owned by the established app.js router.
+  if (!document.querySelector('script[data-th-owner-context-cortex-loader]')) {
+    const cortex = document.createElement('script');
+    cortex.src = '/agents/console/owner-context-conversation.js?v=0.1';
+    cortex.defer = true;
+    cortex.dataset.thOwnerContextCortexLoader = 'v0.1';
+    document.head.appendChild(cortex);
+  }
+
   // Desktop-safe ownership of THI spacing. This lives outside The Holding News
   // so the score layout never depends on whether the News component loaded.
   const style = document.createElement('style');
-  style.dataset.thLivePanelsRefresh = 'v0.2';
+  style.dataset.thLivePanelsRefresh = 'v0.3';
   style.textContent = `
     @media (min-width: 901px) {
       #intelligenceProgress .thi-index-row {
