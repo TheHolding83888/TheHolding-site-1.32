@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING — BRAIN OWNER CONTEXT OVERLAY v0.1
+ * THE HOLDING — BRAIN OWNER CONTEXT OVERLAY v0.2
  *
  * Joins the current Grounded Brain snapshot with compiled owner decision context
  * without changing deterministic reasoning cases or action authority.
@@ -89,6 +89,7 @@ const caseIndex = (brain.reasoningCases ?? []).map((item) => ({
 
 const output = {
   version: VERSION,
+  overlayEngineVersion: '0.2-multi-namespace-owner-teaching-overlay',
   status: 'ready-for-contextual-interpretation',
   purpose:
     'Read-only interpretation overlay joining canonical Grounded Brain evidence with explicit owner decision context.',
@@ -107,10 +108,17 @@ const output = {
     file: CONTEXT_FILE,
     sha256: contextSha256,
     version: context.version,
+    compilerVersion: context.compilerVersion ?? null,
     asOf: context.asOf,
     sourceCount: context.provenance?.sourceCount ?? null,
     questionCount: context.provenance?.questionCount ?? null,
     questionsCovered: context.provenance?.questionsCovered ?? [],
+    audioQuestionCount: context.provenance?.audioQuestionCount ?? context.provenance?.questionCount ?? null,
+    audioQuestionsCovered: context.provenance?.audioQuestionsCovered ?? context.provenance?.questionsCovered ?? [],
+    textTeachingItemCount: context.provenance?.textTeachingItemCount ?? 0,
+    totalTeachingUnits: context.provenance?.totalTeachingUnits ?? context.provenance?.questionCount ?? null,
+    teachingNamespaces: context.provenance?.teachingNamespaces ?? [],
+    numberingRule: context.provenance?.numberingRule ?? null,
     sourceCompositeHash: context.provenance?.sourceCompositeHash ?? null,
     contextHash: context.contextHash,
     ownerExperience: context.ownerExperience,
@@ -128,6 +136,8 @@ const output = {
       'Owner context may shape interpretation of a proven case but may not override canonical facts, evidence, uncertainty, or deterministic action boundaries.',
     synthesisRule:
       'Use owner context to explain fit, priorities, tradeoffs and likely owner review questions only when a Grounded Brain case or explicit human question makes that context relevant.',
+    provenanceRule:
+      'Preserve the teaching namespace and source channel. Earlier text teaching and later audio Q&A may reinforce each other but must not be silently presented as one numbered interview sequence.',
     noCaseFabrication: true,
     noFactFabrication: true,
     noAutomaticPolicyPromotion: true,
@@ -163,10 +173,13 @@ fs.writeFileSync(
 
 console.log(JSON.stringify({
   version: output.version,
+  overlayEngineVersion: output.overlayEngineVersion,
   status: output.status,
   brainSnapshotHash: output.sourceBrain.snapshotHash,
   ownerContextHash: output.ownerDecisionContext.contextHash,
-  questionCount: output.ownerDecisionContext.questionCount,
+  audioQuestionCount: output.ownerDecisionContext.audioQuestionCount,
+  textTeachingItemCount: output.ownerDecisionContext.textTeachingItemCount,
+  totalTeachingUnits: output.ownerDecisionContext.totalTeachingUnits,
   reasoningCaseCount: output.sourceBrain.reasoningCaseCount,
   overlayHash: output.integrity.overlayHash,
   executionAllowed: output.constraints.executionAllowed,

@@ -11,6 +11,7 @@ on:
       - main
     paths:
       - "intelligence/owner-context/owner-operating-profile*.json"
+      - "intelligence/owner-context/owner-operating-context-text-tranches-1-3.json"
       - "intelligence/brain-intelligence.json"
       - "intelligence/owner-context/owner-context-runtime.mjs"
       - "intelligence/owner-context/brain-owner-context-overlay.mjs"
@@ -55,6 +56,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s intelligence/owner-context/owner-operating-profile.json
+          test -s intelligence/owner-context/owner-operating-context-text-tranches-1-3.json
           test -s intelligence/owner-context/owner-context-runtime.mjs
           test -s intelligence/owner-context/brain-owner-context-overlay.mjs
           test -s intelligence/brain-intelligence.json
@@ -83,6 +85,9 @@ jobs:
           if (context.version !== '0.1-owner-decision-context-runtime') {
             throw new Error(`Unexpected owner context version: ${context.version}`);
           }
+          if (context.compilerVersion !== '0.2-multi-namespace-owner-context-compiler') {
+            throw new Error(`Unexpected owner compiler version: ${context.compilerVersion}`);
+          }
           if (context.authority?.executionAuthority !== 'none' || context.authority?.executable !== false) {
             throw new Error('Owner context gained execution authority');
           }
@@ -91,6 +96,9 @@ jobs:
           }
           if (overlay.version !== '0.1-brain-owner-context-overlay') {
             throw new Error(`Unexpected overlay version: ${overlay.version}`);
+          }
+          if (overlay.overlayEngineVersion !== '0.2-multi-namespace-owner-teaching-overlay') {
+            throw new Error(`Unexpected owner overlay engine: ${overlay.overlayEngineVersion}`);
           }
           if (overlay.sourceBrain?.sha256 !== sha256(brainText)) {
             throw new Error('Overlay is not exact-byte bound to current Brain');
@@ -108,14 +116,37 @@ jobs:
             throw new Error('Owner heuristics could be promoted automatically');
           }
 
-          const questions = context.provenance?.questionsCovered ?? [];
+          const questions = context.provenance?.audioQuestionsCovered ?? [];
           if (!Array.isArray(questions) || new Set(questions).size !== questions.length) {
-            throw new Error('Owner question coverage is invalid');
+            throw new Error('Owner audio question coverage is invalid');
+          }
+          if (context.provenance?.audioQuestionCount !== 10) {
+            throw new Error(`Expected 10 audio owner questions, got ${context.provenance?.audioQuestionCount}`);
+          }
+          if (context.provenance?.textTeachingItemCount !== 25) {
+            throw new Error(`Expected 25 earlier text teaching items, got ${context.provenance?.textTeachingItemCount}`);
+          }
+          if (context.provenance?.totalTeachingUnits !== 35) {
+            throw new Error(`Expected 35 total teaching units, got ${context.provenance?.totalTeachingUnits}`);
+          }
+          const namespaces = new Set(context.provenance?.teachingNamespaces ?? []);
+          if (!namespaces.has('audio-owner-q') || !namespaces.has('text-tranches-1-3')) {
+            throw new Error('Owner teaching namespaces are incomplete');
+          }
+          const legacy = (context.sources ?? []).find((source) => source.teachingNamespace === 'text-tranches-1-3');
+          if (!legacy || legacy.teachingItemCount !== 25 || legacy.sourceChannel !== 'owner-text-chat') {
+            throw new Error('Legacy text teaching source is not correctly bound');
+          }
+          if (overlay.ownerDecisionContext?.totalTeachingUnits !== 35) {
+            throw new Error('Overlay did not expose all 35 owner teaching units');
           }
 
           console.log('Owner Decision Context Overlay PASS', {
             sources: context.provenance?.sourceCount ?? null,
-            questions: context.provenance?.questionCount ?? null,
+            audioQuestions: context.provenance?.audioQuestionCount ?? null,
+            textTeachingItems: context.provenance?.textTeachingItemCount ?? null,
+            totalTeachingUnits: context.provenance?.totalTeachingUnits ?? null,
+            namespaces: context.provenance?.teachingNamespaces ?? [],
             brainCases: overlay.sourceBrain?.reasoningCaseCount ?? null,
             brainSnapshotHash: overlay.sourceBrain?.snapshotHash ?? null,
             contextHash: context.contextHash,
