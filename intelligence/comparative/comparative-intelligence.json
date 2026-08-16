@@ -1,0 +1,746 @@
+{
+  "version": "0.1-comparative-intelligence",
+  "engineVersion": "0.1-comparability-first-ranking-engine",
+  "generatedAt": "2026-08-16T20:29:02.343Z",
+  "status": "partial",
+  "purpose": "Evidence-bound comparative layer that ranks only within explicitly comparable universes and preserves metric semantics, exclusions, provenance, and coverage.",
+  "semantics": {
+    "noUniversalLeaderboard": "There is no single best company or protocol score. Capital scale, Reference Productivity, protocol Reference APR, and measured income contribution answer different questions.",
+    "comparabilityRule": "A ranking is emitted only when metric definition, eligible universe, coverage and source methodology are explicit enough to reproduce it.",
+    "aprRule": "Reference APR is annualized productive capacity, not realised cash flow, embedded yield, claimable rewards or verified performance.",
+    "incomeRule": "Latest measured income contribution is an observed checkpoint-interval attribution for Monetra only; it is not a calendar-day, MTD, or cross-company performance ranking.",
+    "zeroRule": "Unknown or unsupported values are excluded, not ranked as zero."
+  },
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "allocationAuthority": false,
+    "recommendationAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "sourceState": {
+    "capitalState": {
+      "file": "intelligence/capital-state/capital-state.json",
+      "version": "0.2-capital-state",
+      "generatedAt": "2026-08-16T19:52:26.420Z",
+      "sha256": "73814b1c86d97fce62a4893c1073e8d451da024bb67bb8252d32633568eb62ea"
+    },
+    "productivity": {
+      "file": "companies/productivity-data.json",
+      "version": "1.15",
+      "methodologyVersion": "1.1-simple-safe",
+      "generatedAt": "2026-08-16T04:50:50.379Z",
+      "sha256": "662b28e20df7ef30fe40b54982714ef9199cd807c0ec54dddf4f56b8390547e1"
+    },
+    "incomePerformance": {
+      "file": "intelligence/income-performance/income-performance.json",
+      "version": "0.1-income-performance-intelligence",
+      "engineVersion": "0.1.1-monetra-evidence-family-compiler",
+      "generatedAt": "2026-08-16T20:09:29.134Z",
+      "sha256": "ce6cb86c9cd60d164bb5c3e650a167bf73be2f1511ac4acbdae04efed03cd6e3"
+    }
+  },
+  "comparisons": {
+    "companyCapitalScale": {
+      "metric": "current-total-capital-usd",
+      "rankingBasis": "descending measuredCapitalUsd",
+      "eligibleUniverse": "all Registry companies with complete total-capital binding",
+      "eligibleCount": 9,
+      "networkTvlUsd": 50650.491766,
+      "coverageRule": "requires 9/9 complete Capital State total-capital binding",
+      "exclusions": [],
+      "rows": [
+        {
+          "rank": 1,
+          "registry": "005",
+          "name": "0x5860...83CA8.eth",
+          "capitalUsd": 13355.503708,
+          "shareOfNetworkPct": 26.367965,
+          "totalCapitalComplete": true,
+          "capitalScope": "general-company-total-current-capital"
+        },
+        {
+          "rank": 2,
+          "registry": "007",
+          "name": "Rook's portfolio",
+          "capitalUsd": 10984.478624,
+          "shareOfNetworkPct": 21.686815,
+          "totalCapitalComplete": true,
+          "capitalScope": "general-company-total-current-capital"
+        },
+        {
+          "rank": 3,
+          "registry": "004",
+          "name": "defitea.eth",
+          "capitalUsd": 9236.526117,
+          "shareOfNetworkPct": 18.235807,
+          "totalCapitalComplete": true,
+          "capitalScope": "general-company-total-current-capital"
+        },
+        {
+          "rank": 4,
+          "registry": "006",
+          "name": "aerocvxyb.eth",
+          "capitalUsd": 7692.523611,
+          "shareOfNetworkPct": 15.187461,
+          "totalCapitalComplete": true,
+          "capitalScope": "general-company-total-current-capital"
+        },
+        {
+          "rank": 5,
+          "registry": "009",
+          "name": "1milliondollar.eth",
+          "capitalUsd": 5330.637744,
+          "shareOfNetworkPct": 10.524355,
+          "totalCapitalComplete": true,
+          "capitalScope": "general-company-total-current-capital"
+        },
+        {
+          "rank": 6,
+          "registry": "002",
+          "name": "YieldRing.eth",
+          "capitalUsd": 2695.60632,
+          "shareOfNetworkPct": 5.321975,
+          "totalCapitalComplete": true,
+          "capitalScope": "general-company-total-current-capital"
+        },
+        {
+          "rank": 7,
+          "registry": "003",
+          "name": "dinaz.eth",
+          "capitalUsd": 946.165053,
+          "shareOfNetworkPct": 1.868027,
+          "totalCapitalComplete": true,
+          "capitalScope": "general-company-total-current-capital"
+        },
+        {
+          "rank": 8,
+          "registry": "001",
+          "name": "05081966.eth",
+          "capitalUsd": 308.867651,
+          "shareOfNetworkPct": 0.609802,
+          "totalCapitalComplete": true,
+          "capitalScope": "general-company-total-current-capital"
+        },
+        {
+          "rank": 9,
+          "registry": "008",
+          "name": "Monetra.eth",
+          "capitalUsd": 100.182938,
+          "shareOfNetworkPct": 0.197793,
+          "totalCapitalComplete": true,
+          "capitalScope": "stable-company-total-current-capital"
+        }
+      ]
+    },
+    "generalCompanyReferenceProductivity": {
+      "metric": "capital-weighted-reference-apr-pct",
+      "rankingBasis": "descending aprLatest within full-productive-capital methodology",
+      "eligibleUniverse": "general companies in canonical Productivity with status=ok, coverage=1 and aprScope=full-productive-capital",
+      "eligibleCount": 8,
+      "coverageRule": "only 100% covered general-company productive universes are ranked",
+      "exclusions": [
+        "Monetra.eth is excluded from this leaderboard because Stable Capital Reference APY is produced by a separate stable methodology/universe."
+      ],
+      "byReferenceApr": [
+        {
+          "rank": 1,
+          "registry": "007",
+          "name": "Rook's portfolio",
+          "productiveCapitalUsd": 3363.58,
+          "referenceAprPct": 16.1467,
+          "productiveShareOfCompanyPct": 30.621208,
+          "annualizedReferenceOutputUsd": 543.10717186,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 2,
+          "registry": "006",
+          "name": "aerocvxyb.eth",
+          "productiveCapitalUsd": 7692.52,
+          "referenceAprPct": 15.8513,
+          "productiveShareOfCompanyPct": 99.999953,
+          "annualizedReferenceOutputUsd": 1219.36442276,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 3,
+          "registry": "005",
+          "name": "0x5860...83CA8.eth",
+          "productiveCapitalUsd": 5525.17,
+          "referenceAprPct": 15.5815,
+          "productiveShareOfCompanyPct": 41.369986,
+          "annualizedReferenceOutputUsd": 860.90436355,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 4,
+          "registry": "002",
+          "name": "YieldRing.eth",
+          "productiveCapitalUsd": 802.7,
+          "referenceAprPct": 15.0039,
+          "productiveShareOfCompanyPct": 29.778087,
+          "annualizedReferenceOutputUsd": 120.4363053,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 5,
+          "registry": "004",
+          "name": "defitea.eth",
+          "productiveCapitalUsd": 9236.53,
+          "referenceAprPct": 12.4862,
+          "productiveShareOfCompanyPct": 100.000042,
+          "annualizedReferenceOutputUsd": 1153.29160886,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 6,
+          "registry": "001",
+          "name": "05081966.eth",
+          "productiveCapitalUsd": 308.87,
+          "referenceAprPct": 9.6768,
+          "productiveShareOfCompanyPct": 100.000761,
+          "annualizedReferenceOutputUsd": 29.88873216,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 7,
+          "registry": "009",
+          "name": "1milliondollar.eth",
+          "productiveCapitalUsd": 432.15,
+          "referenceAprPct": 6.7961,
+          "productiveShareOfCompanyPct": 8.10691,
+          "annualizedReferenceOutputUsd": 29.36934615,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 8,
+          "registry": "003",
+          "name": "dinaz.eth",
+          "productiveCapitalUsd": 946.17,
+          "referenceAprPct": 0.01,
+          "productiveShareOfCompanyPct": 100.000523,
+          "annualizedReferenceOutputUsd": 0.094617,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        }
+      ],
+      "byProductiveCapital": [
+        {
+          "rank": 1,
+          "registry": "004",
+          "name": "defitea.eth",
+          "productiveCapitalUsd": 9236.53,
+          "referenceAprPct": 12.4862,
+          "productiveShareOfCompanyPct": 100.000042,
+          "annualizedReferenceOutputUsd": 1153.29160886,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 2,
+          "registry": "006",
+          "name": "aerocvxyb.eth",
+          "productiveCapitalUsd": 7692.52,
+          "referenceAprPct": 15.8513,
+          "productiveShareOfCompanyPct": 99.999953,
+          "annualizedReferenceOutputUsd": 1219.36442276,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 3,
+          "registry": "005",
+          "name": "0x5860...83CA8.eth",
+          "productiveCapitalUsd": 5525.17,
+          "referenceAprPct": 15.5815,
+          "productiveShareOfCompanyPct": 41.369986,
+          "annualizedReferenceOutputUsd": 860.90436355,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 4,
+          "registry": "007",
+          "name": "Rook's portfolio",
+          "productiveCapitalUsd": 3363.58,
+          "referenceAprPct": 16.1467,
+          "productiveShareOfCompanyPct": 30.621208,
+          "annualizedReferenceOutputUsd": 543.10717186,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 5,
+          "registry": "003",
+          "name": "dinaz.eth",
+          "productiveCapitalUsd": 946.17,
+          "referenceAprPct": 0.01,
+          "productiveShareOfCompanyPct": 100.000523,
+          "annualizedReferenceOutputUsd": 0.094617,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 6,
+          "registry": "002",
+          "name": "YieldRing.eth",
+          "productiveCapitalUsd": 802.7,
+          "referenceAprPct": 15.0039,
+          "productiveShareOfCompanyPct": 29.778087,
+          "annualizedReferenceOutputUsd": 120.4363053,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 7,
+          "registry": "009",
+          "name": "1milliondollar.eth",
+          "productiveCapitalUsd": 432.15,
+          "referenceAprPct": 6.7961,
+          "productiveShareOfCompanyPct": 8.10691,
+          "annualizedReferenceOutputUsd": 29.36934615,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 8,
+          "registry": "001",
+          "name": "05081966.eth",
+          "productiveCapitalUsd": 308.87,
+          "referenceAprPct": 9.6768,
+          "productiveShareOfCompanyPct": 100.000761,
+          "annualizedReferenceOutputUsd": 29.88873216,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        }
+      ],
+      "byAnnualizedReferenceOutput": [
+        {
+          "rank": 1,
+          "registry": "006",
+          "name": "aerocvxyb.eth",
+          "productiveCapitalUsd": 7692.52,
+          "referenceAprPct": 15.8513,
+          "productiveShareOfCompanyPct": 99.999953,
+          "annualizedReferenceOutputUsd": 1219.36442276,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 2,
+          "registry": "004",
+          "name": "defitea.eth",
+          "productiveCapitalUsd": 9236.53,
+          "referenceAprPct": 12.4862,
+          "productiveShareOfCompanyPct": 100.000042,
+          "annualizedReferenceOutputUsd": 1153.29160886,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 3,
+          "registry": "005",
+          "name": "0x5860...83CA8.eth",
+          "productiveCapitalUsd": 5525.17,
+          "referenceAprPct": 15.5815,
+          "productiveShareOfCompanyPct": 41.369986,
+          "annualizedReferenceOutputUsd": 860.90436355,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 4,
+          "registry": "007",
+          "name": "Rook's portfolio",
+          "productiveCapitalUsd": 3363.58,
+          "referenceAprPct": 16.1467,
+          "productiveShareOfCompanyPct": 30.621208,
+          "annualizedReferenceOutputUsd": 543.10717186,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 5,
+          "registry": "002",
+          "name": "YieldRing.eth",
+          "productiveCapitalUsd": 802.7,
+          "referenceAprPct": 15.0039,
+          "productiveShareOfCompanyPct": 29.778087,
+          "annualizedReferenceOutputUsd": 120.4363053,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 6,
+          "registry": "001",
+          "name": "05081966.eth",
+          "productiveCapitalUsd": 308.87,
+          "referenceAprPct": 9.6768,
+          "productiveShareOfCompanyPct": 100.000761,
+          "annualizedReferenceOutputUsd": 29.88873216,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 7,
+          "registry": "009",
+          "name": "1milliondollar.eth",
+          "productiveCapitalUsd": 432.15,
+          "referenceAprPct": 6.7961,
+          "productiveShareOfCompanyPct": 8.10691,
+          "annualizedReferenceOutputUsd": 29.36934615,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        },
+        {
+          "rank": 8,
+          "registry": "003",
+          "name": "dinaz.eth",
+          "productiveCapitalUsd": 946.17,
+          "referenceAprPct": 0.01,
+          "productiveShareOfCompanyPct": 100.000523,
+          "annualizedReferenceOutputUsd": 0.094617,
+          "coverage": 1,
+          "methodologyVersion": "1.1-simple-safe",
+          "aprScope": "full-productive-capital"
+        }
+      ]
+    },
+    "protocolReferenceApr": {
+      "metric": "current-reference-apr-pct",
+      "rankingBasis": "descending normalized aprLatest",
+      "eligibleUniverse": "canonical Productivity engines with status=ok and finite Reference APR",
+      "eligibleCount": 15,
+      "coverageRule": "engine-level ranking only; differing native cadences and mechanisms remain visible in every row",
+      "exclusions": [
+        "Do not infer realised performance from this ranking.",
+        "Do not compare this directly with Monetra measured income contribution."
+      ],
+      "rows": [
+        {
+          "rank": 1,
+          "engineId": "fx_vefxn",
+          "protocol": "f(x)",
+          "principalSymbol": "FXN",
+          "referenceAprPct": 33.9,
+          "sourceType": "official-frontend",
+          "sourceMetric": "veFXN Locker APR",
+          "nativeCadence": "weekly",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 2,
+          "engineId": "aerodrome_veaero",
+          "protocol": "Aerodrome",
+          "principalSymbol": "AERO",
+          "referenceAprPct": 27.04,
+          "sourceType": "official-frontend",
+          "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
+          "nativeCadence": "weekly",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 3,
+          "engineId": "velodrome_vevelo",
+          "protocol": "Velodrome",
+          "principalSymbol": "VELO",
+          "referenceAprPct": 24.96,
+          "sourceType": "official-frontend",
+          "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
+          "nativeCadence": "weekly",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 4,
+          "engineId": "convex_vlcvx",
+          "protocol": "Convex",
+          "principalSymbol": "CVX",
+          "referenceAprPct": 14.7249,
+          "sourceType": "official-frontend",
+          "sourceMetric": "Locked CVX platform vAPR + last completed Votium incentives APR",
+          "nativeCadence": "biweekly",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 5,
+          "engineId": "resupply_rsup",
+          "protocol": "Resupply",
+          "principalSymbol": "RSUP",
+          "referenceAprPct": 14.68,
+          "sourceType": "official-frontend",
+          "sourceMetric": "Staked RSUP vAPR",
+          "nativeCadence": "weekly",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 6,
+          "engineId": "beefy_cvxcrv",
+          "protocol": "Beefy / Convex",
+          "principalSymbol": "cvxCRV",
+          "referenceAprPct": 11.6304,
+          "sourceType": "official-api",
+          "sourceMetric": "Beefy convex-staked-cvxCRV vault APY · auto-compounded embedded yield",
+          "nativeCadence": "continuous",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 7,
+          "engineId": "venice_svvv",
+          "protocol": "Venice",
+          "principalSymbol": "VVV",
+          "referenceAprPct": 8.8304,
+          "sourceType": "onchain",
+          "sourceMetric": "VVV emissionRatePerSecond / total sVVV supply",
+          "nativeCadence": "continuous",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 8,
+          "engineId": "icp_nns",
+          "protocol": "Internet Computer",
+          "principalSymbol": "ICP",
+          "referenceAprPct": 6.54,
+          "sourceType": "official-dashboard",
+          "sourceMetric": "NNS 2-year dissolve-delay Annualized Estimate Rewards",
+          "nativeCadence": "continuous",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 9,
+          "engineId": "frax_vefrax",
+          "protocol": "Frax",
+          "principalSymbol": "FRAX",
+          "referenceAprPct": 5.3384,
+          "sourceType": "official-api",
+          "sourceMetric": "Fraxtal veFRAX/veFXS APR",
+          "nativeCadence": "epoch",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 10,
+          "engineId": "pendle_spendle",
+          "protocol": "Pendle",
+          "principalSymbol": "PENDLE",
+          "referenceAprPct": 2.3573,
+          "sourceType": "official-merkle+onchain-current-survivor-cluster",
+          "sourceMetric": "sPENDLE buyback distribution APR · replicated current-balance survivor reconstruction",
+          "nativeCadence": "14d",
+          "periodStart": "2026-07-31T00:00:00.000Z",
+          "periodEnd": "2026-08-14T00:00:00.000Z"
+        },
+        {
+          "rank": 11,
+          "engineId": "curve_vecrv",
+          "protocol": "Curve",
+          "principalSymbol": "CRV",
+          "referenceAprPct": 1.724,
+          "sourceType": "onchain",
+          "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
+          "nativeCadence": "weekly",
+          "periodStart": "2026-07-16T00:00:00.000Z",
+          "periodEnd": "2026-08-13T00:00:00.000Z"
+        },
+        {
+          "rank": 12,
+          "engineId": "yieldbasis_veyb",
+          "protocol": "Yield Basis",
+          "principalSymbol": "YB",
+          "referenceAprPct": 0.01,
+          "sourceType": "official-analytics",
+          "sourceMetric": "veYB APR · current/latest epoch",
+          "nativeCadence": "epoch",
+          "periodStart": null,
+          "periodEnd": "2026-08-16T04:50:50.379Z"
+        },
+        {
+          "rank": 13,
+          "engineId": "liquity_lqty",
+          "protocol": "Liquity",
+          "principalSymbol": "LQTY",
+          "referenceAprPct": 0,
+          "sourceType": "onchain",
+          "sourceMetric": "LQTY F_ETH + F_LUSD observed-period delta annualized",
+          "nativeCadence": "continuous/week-sampled",
+          "periodStart": "2026-08-09T18:40:35.000Z",
+          "periodEnd": "2026-08-16T04:51:35.000Z"
+        },
+        {
+          "rank": 14,
+          "engineId": "yieldbasis_yblp_wbtc",
+          "protocol": "Yield Basis",
+          "principalSymbol": "BTC",
+          "referenceAprPct": -0.407,
+          "sourceType": "local-verified-resolver",
+          "sourceMetric": "Yield Basis FT APY (30D) · fundamental PPS growth · emissions excluded",
+          "nativeCadence": "30d",
+          "periodStart": "2026-07-12T14:44:59.000Z",
+          "periodEnd": "2026-08-11T17:24:29.785Z"
+        },
+        {
+          "rank": 15,
+          "engineId": "yieldbasis_yblp_weth",
+          "protocol": "Yield Basis",
+          "principalSymbol": "ETH",
+          "referenceAprPct": -1.8065,
+          "sourceType": "local-verified-resolver",
+          "sourceMetric": "Yield Basis FT APY (30D) · fundamental PPS growth · emissions excluded",
+          "nativeCadence": "30d",
+          "periodStart": "2026-07-12T14:44:59.000Z",
+          "periodEnd": "2026-08-11T17:24:29.785Z"
+        }
+      ]
+    },
+    "monetraLatestMeasuredIncomeContribution": {
+      "metric": "latest-measured-embedded-income-usd",
+      "rankingBasis": "descending observed incomeUsd inside the same latest checkpoint interval",
+      "eligibleUniverse": "Monetra positions/protocols with latestInterval.status=ok",
+      "eligibleCount": 8,
+      "measuredPositionCount": 8,
+      "totalPositionCount": 10,
+      "latestMeasuredIncomeUsd": 0.01004892,
+      "coverageRule": "same company, same checkpoint interval semantic; non-comparable/warming positions excluded",
+      "exclusions": [
+        "Not calendar-day income.",
+        "Not MTD protocol attribution.",
+        "Not cross-company performance."
+      ],
+      "rows": [
+        {
+          "rank": 1,
+          "protocol": "Yearn V3",
+          "latestMeasuredIncomeUsd": 0.00210273,
+          "stablePriceEffectUsd": 0.00124292,
+          "positionCount": 1,
+          "intervalSemantic": "latest-measured-checkpoint-interval"
+        },
+        {
+          "rank": 2,
+          "protocol": "Inverse",
+          "latestMeasuredIncomeUsd": 0.00186773,
+          "stablePriceEffectUsd": 0.00257428,
+          "positionCount": 1,
+          "intervalSemantic": "latest-measured-checkpoint-interval"
+        },
+        {
+          "rank": 3,
+          "protocol": "f(x) Protocol",
+          "latestMeasuredIncomeUsd": 0.00135721,
+          "stablePriceEffectUsd": -0.00470579,
+          "positionCount": 1,
+          "intervalSemantic": "latest-measured-checkpoint-interval"
+        },
+        {
+          "rank": 4,
+          "protocol": "Frax Finance",
+          "latestMeasuredIncomeUsd": 0.00119373,
+          "stablePriceEffectUsd": 0.00061261,
+          "positionCount": 1,
+          "intervalSemantic": "latest-measured-checkpoint-interval"
+        },
+        {
+          "rank": 5,
+          "protocol": "Aave",
+          "latestMeasuredIncomeUsd": 0.00116871,
+          "stablePriceEffectUsd": 0.0026883,
+          "positionCount": 1,
+          "intervalSemantic": "latest-measured-checkpoint-interval"
+        },
+        {
+          "rank": 6,
+          "protocol": "Aave v3",
+          "latestMeasuredIncomeUsd": 0.0009747,
+          "stablePriceEffectUsd": 0.00033966,
+          "positionCount": 1,
+          "intervalSemantic": "latest-measured-checkpoint-interval"
+        },
+        {
+          "rank": 7,
+          "protocol": "Sky",
+          "latestMeasuredIncomeUsd": 0.00095206,
+          "stablePriceEffectUsd": 0.00078809,
+          "positionCount": 1,
+          "intervalSemantic": "latest-measured-checkpoint-interval"
+        },
+        {
+          "rank": 8,
+          "protocol": "Curve",
+          "latestMeasuredIncomeUsd": 0.00043205,
+          "stablePriceEffectUsd": 0.00332203,
+          "positionCount": 1,
+          "intervalSemantic": "latest-measured-checkpoint-interval"
+        }
+      ]
+    }
+  },
+  "answerability": {
+    "largest-company-by-current-capital": "answerable",
+    "smallest-company-by-current-capital": "answerable",
+    "highest-reference-apr-general-company": "answerable-with-general-universe-disclosure",
+    "largest-general-productive-capital": "answerable-with-general-universe-disclosure",
+    "highest-reference-apr-protocol-engine": "answerable-with-mechanism-and-cadence-disclosure",
+    "largest-monetra-latest-income-contributor": "answerable-with-interval-label",
+    "best-company-overall": "blocked-no-universal-score",
+    "best-protocol-overall": "blocked-no-universal-score",
+    "cross-company-realised-performance-ranking": "blocked-insufficient-comparable-realised-performance-coverage"
+  },
+  "gaps": [
+    {
+      "id": "cross-company-realised-performance-coverage",
+      "status": "blocking",
+      "blocks": [
+        "realised-performance leaderboard",
+        "capital-efficiency ranking based on realised return"
+      ],
+      "reason": "Comparable realised income/performance is not yet available across the full company universe."
+    },
+    {
+      "id": "stable-vs-general-reference-yield-normalization",
+      "status": "deliberately-separated",
+      "blocks": [
+        "single Reference APR leaderboard across Monetra and general companies"
+      ],
+      "reason": "Stable Capital Reference APY and general-company Productivity APR are separate methodologies and should not be silently collapsed."
+    }
+  ]
+}
