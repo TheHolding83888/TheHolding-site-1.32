@@ -36,7 +36,7 @@ jobs:
           node - <<'NODE'
           const p=require('./intelligence/realised-cash-flow/policy.json');
           const r=require('./intelligence/realised-cash-flow/adapter-research.json');
-          if(p.version!=='0.2-realised-cash-flow-policy') throw new Error('unexpected policy version');
+          if(p.version!=='0.2.1-realised-cash-flow-policy') throw new Error('unexpected policy version');
           if(p.authority?.executionAuthority!=='none') throw new Error('execution authority changed');
           if(p.authority?.claiming!==false || p.authority?.transactions!==false || p.authority?.capitalMovement!==false) throw new Error('capital authority changed');
           if(p.publicationRules?.genericWithdrawCanProveIncome!==false) throw new Error('withdraw income boundary changed');
@@ -52,6 +52,8 @@ jobs:
           if(pyb?.status!=='live-candidate-bounded-direct-claim') throw new Error('policy/research adapter state mismatch');
           if(pyb?.liveEvidenceContract?.claimUserMustEqualCanonicalCompanyWallet!==true) throw new Error('direct Claim.user invariant missing');
           if(pyb?.liveEvidenceContract?.matchingSameTransactionTransferRequired!==true) throw new Error('matching Transfer invariant missing');
+          if(!/^0x[0-9a-f]{64}$/.test(pyb?.liveEvidenceContract?.deploymentTransaction||'')) throw new Error('deployment transaction binding missing');
+          if(!String(pyb?.liveEvidenceContract?.scanStartRule||'').includes('deployment receipt')) throw new Error('deployment-bound scan rule missing');
           if(pyb?.coverage?.overallCompanyCoverageComplete!==false || pyb?.coverage?.askPromotionEligible!==false) throw new Error('coverage boundary drift');
           NODE
 
@@ -69,6 +71,7 @@ jobs:
             echo "**Generic withdraw / redeem:** never sufficient"
             echo "**Cross-adapter physical-event collision:** fail closed"
             echo "**First live candidate:** Yield Basis Claim + exact same-tx ERC20 Transfer"
+            echo "**History start:** proven FeeDistributor deployment receipt"
             echo "**Declared lane:** direct Claim.user = canonical company wallet"
             echo "**Overall company coverage:** incomplete"
             echo "**Current Ask promotion:** disabled"
