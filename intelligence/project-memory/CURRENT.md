@@ -4,15 +4,14 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-16T18:58:39Z**
+Canonical source state represented here: **2026-08-16T18:58:37.650Z**
 
 ## Resume order
 
 1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-16_2200_PRIVACY_HYGIENE_CLOSED_CAPITAL_INTELLIGENCE_NEXT.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-16_2200_PRIVACY_HYGIENE_CLOSED_CAPITAL_INTELLIGENCE_NEXT.md)
-2. [THE_HOLDING_MASTER_CONTINUITY_2026-08-16_2126_RUNTIME_EVIDENCE_V02_OWNER_Q11_Q13_PRIVACY.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-16_2126_RUNTIME_EVIDENCE_V02_OWNER_Q11_Q13_PRIVACY.md)
-3. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
-4. [Project Memory README](./README.md)
-5. Read only the live machine-readable subsystem artifacts needed for the current task.
+2. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
+3. [Project Memory README](./README.md)
+4. Read only the live machine-readable subsystem artifacts needed for the current task.
 
 ## Project identity
 
@@ -22,55 +21,28 @@ The Holding is a **Capital Operating System + persistent intelligence, memory an
 
 Current authority boundary: **execution authority = none**. No wallet signing, transaction execution, autonomous capital movement, automatic production merge/release, or automatic methodology/policy mutation.
 
-## Current privacy boundary
-
-- Public Owner Context / Ask: preserve decision logic, exclude natural-person identity and private contact/profile metadata.
-- Never infer the person behind a public company wallet.
-- Git commit identity hygiene: production guard active; new owner/connector commits use GitHub privacy-safe noreply identity; project bot aliases under `@theholding.ai` remain allowed.
-- Historical Git history has not been rewritten.
-
-## Current owner/runtime intelligence state
-
-- Owner Decision Context: 13 audio questions + 25 text teaching items = **38 canonical teaching units**.
-- Q11–Q13 canonicalized; Q14–Q15 pending.
-- Runtime Reasoning Evidence: **v0.2 registry-driven**.
-- Registered capability families: Health Factor, Claimable Rewards, Reference APR/Productivity, Realised Cash Flow, Embedded Yield.
-- Registry membership is not activation.
-- Health Factor is the current explicitly active runtime capability.
-- Productivity is source/schema/freshness ready for future explicit activation.
-- Rewards and Embedded Yield remain fail-closed pending schema-bound adapters.
-
 ## Memory architecture
 
 - **System Memory** — current normalized state; generatedAt: 2026-08-16T07:08:14.100Z.
-- **Permanent Memory Vault** — append-only long-term machine memory; read fresh manifest for changing counts.
-- **Decision Memory** — append-only owner decisions; executionAuthority: none.
+- **Permanent Memory Vault** — 6 Observer record(s), 41 material event(s), retention: indefinite; hard lifetime cap: none.
+- **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-16T07-08-14-100Z-9b1d3c476c.json.
+- **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
 - **Project continuity** — this bootstrap + human continuity checkpoints + build-discipline canon.
 
 ## Current cognitive stack
 
-- Cognitive Stack remains evidence-bound and non-executing; read live machine state for changing status/counts.
-- Security Sentinel remains the defensive observer; read fresh security JSON for changing finding counts.
-- Grounded Brain / ChatGPT Bridge remain proposal/interpretation surfaces with no execution authority.
+- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: e2f1e0a098587deeb0bd6cf1a81a5714447329cb917e78ff18d1f19d7f8e644e.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 20; generatedAt 2026-08-16T18:58:37.650Z.
+- Cognitive Stack Security snapshot is older (2026-08-16T07:50:27.591Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
+- Grounded Brain: **WATCH**.
+- ChatGPT Bridge: **WATCH**; cases 25; evidence 27; noExecution true.
 
-## Next global stage
+## Learning / Proposal / Builder / Guardian
 
-Begin the next major engineering cycle in a fresh chat:
-
-**Capital Intelligence Fabric v0.1**
-
-Preferred bounded sequence:
-1. Capital State
-2. Income & Performance Intelligence
-3. Comparative Intelligence
-4. Explanatory Context
-
-Specialized later organs justified by Q11–Q13:
-- Borrowing Intelligence
-- Capital Allocation Intelligence
-- Protocol Rehabilitation Intelligence
-
-Do not collapse Rewards / Realised Cash Flow / Embedded Yield / Reference Productivity into one generic income metric.
+- Learning: **READY**; active cases 25; remembered cases 51; Brain observations 13; owner decisions 2; settled outcomes 0; lessons 0.
+- Proposal: **WATCH**; active 7; APPROVED 0; PROPOSED 7; SUPERSEDED 21; production execution disabled.
+- Builder: **READY**; candidates 0; CANDIDATE 0; productionMutationAuthorizedCount 0.
+- Guardian: **READY**; research-only 0; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
 
 ## Build discipline
 
@@ -81,9 +53,6 @@ Do not collapse Rewards / Realised Cash Flow / Embedded Yield / Reference Produc
 - Prefer reuse and simplification over parallel machinery.
 - No duplicate sources of truth and no orchestration loops.
 - Capability must grow faster than complexity; authority must grow slower than intelligence.
-- Surface may only reveal what substrate can prove.
-- Degrade locally, not globally.
-- Intelligence depth must grow without responsiveness degrading.
 
 ## Durable-memory rule
 
