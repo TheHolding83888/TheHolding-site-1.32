@@ -7,6 +7,9 @@ on:
   pull_request:
     paths:
       - "intelligence/neural-graph/**"
+      - "intelligence/owner-context/owner-operating-profile*.json"
+      - "intelligence/owner-context/owner-operating-context-text-tranches-1-3.json"
+      - "intelligence/owner-context/owner-context-runtime.mjs"
       - "intelligence/owner-context/owner-teaching-activation.json"
       - "agents/console/neural-graph-dashboard.js"
       - "agents/console/neural-graph-quality.js"
@@ -70,6 +73,7 @@ jobs:
           set -euo pipefail
           test -s intelligence/neural-graph/neural-graph-telemetry.mjs
           test -s intelligence/neural-graph/neural-graph-quality.mjs
+          test -s intelligence/owner-context/owner-context-runtime.mjs
           test -s intelligence/owner-context/owner-teaching-activation.json
           test -s agents/console/neural-graph-dashboard.js
           test -s agents/console/neural-graph-quality.js
@@ -77,6 +81,7 @@ jobs:
           test -s agents/console/neural-map-explorer.js
           test -s agents/console/neural-map-activation-overlay.js
           test -s agents/console/live-panels-refresh.js
+          node --check intelligence/owner-context/owner-context-runtime.mjs
           node --check intelligence/neural-graph/neural-graph-telemetry.mjs
           node --check intelligence/neural-graph/neural-graph-quality.mjs
           node --check agents/console/neural-graph-dashboard.js
@@ -97,6 +102,9 @@ jobs:
           grep -q "executionAuthority" agents/console/neural-map-activation-overlay.js
           grep -q "neural-map-activation-overlay.js" agents/console/live-panels-refresh.js
           grep -q "daily comparison warming" agents/console/neural-graph-daily-delta.js
+
+      - name: Compile exact owner context for graph source binding
+        run: node intelligence/owner-context/owner-context-runtime.mjs
 
       - name: Build canonical neural graph telemetry
         run: node intelligence/neural-graph/neural-graph-telemetry.mjs
@@ -128,6 +136,7 @@ jobs:
           if (q.authority?.executionAuthority !== 'none' || q.authority?.readOnly !== true) throw new Error('graph quality gained execution authority');
           const teachingCount = Number(o.provenance?.totalTeachingUnits);
           if (!Number.isInteger(teachingCount) || teachingCount < 1) throw new Error('canonical owner teaching count unavailable');
+          if (teachingCount !== 38) throw new Error(`expected 38 canonical teaching units after Q11-Q13, got ${teachingCount}`);
           if (q.ownerActivation?.teachingUnitCount !== teachingCount) throw new Error('activation contract does not cover canonical owner teaching corpus');
           const dispositionTotal = Number(q.ownerActivation?.activated) + Number(q.ownerActivation?.blocked) + Number(q.ownerActivation?.contextual);
           if (dispositionTotal !== teachingCount) throw new Error('owner activation dispositions do not sum to teaching corpus');
@@ -140,7 +149,10 @@ jobs:
           if (q.candidateCapacity?.activeReviewCount > q.candidateCapacity?.activeReviewCap) throw new Error('candidate active review exceeds cap');
           if (q.utility?.questionsMadeAnswerableByGraph !== null || q.utility?.measurementStatus !== 'warming') throw new Error('graph-only utility must remain warming until causally evaluated');
           const hf = (q.blockedArchitectureDemand || []).find(x => x.blockerId === 'health-factor-monitoring');
-          if (!hf) throw new Error('Q7 Health Factor blocker is not explicit');
+          const debt = (q.blockedArchitectureDemand || []).find(x => x.blockerId === 'debt-purpose-and-buffer');
+          const allocation = (q.blockedArchitectureDemand || []).find(x => x.blockerId === 'capital-layer-allocation-state');
+          const rehab = (q.blockedArchitectureDemand || []).find(x => x.blockerId === 'protocol-rehabilitation-evidence');
+          if (!hf || !debt || !allocation || !rehab) throw new Error('Q7/Q11/Q12/Q13 architecture demand is incomplete');
           if (!q.integrity?.qualityHash || !q.integrity?.activationContractHash) throw new Error('graph quality integrity missing');
 
           console.log('Neural Graph Quality PASS', {
@@ -210,7 +222,7 @@ jobs:
               exit 1
             fi
 
-            # Rebuild after rebase so source hashes, deltas, history and quality bind to exact current main.
+            node intelligence/owner-context/owner-context-runtime.mjs
             node intelligence/neural-graph/neural-graph-telemetry.mjs
             node intelligence/neural-graph/neural-graph-quality.mjs
             git add "${GENERATED[@]}"

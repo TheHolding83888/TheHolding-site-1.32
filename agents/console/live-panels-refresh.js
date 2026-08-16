@@ -94,9 +94,9 @@
   // without teaching context masquerading as market/account truth.
   if (!document.querySelector('script[data-th-runtime-evidence-cortex-loader]')) {
     const runtimeCortex = document.createElement('script');
-    runtimeCortex.src = '/agents/console/runtime-evidence-cortex.js?v=0.1';
+    runtimeCortex.src = '/agents/console/runtime-evidence-cortex.js?v=0.2';
     runtimeCortex.defer = true;
-    runtimeCortex.dataset.thRuntimeEvidenceCortexLoader = 'v0.1';
+    runtimeCortex.dataset.thRuntimeEvidenceCortexLoader = 'v0.2';
     document.head.appendChild(runtimeCortex);
   }
 
@@ -203,8 +203,6 @@
       state.thiGeneratedAt = nextThi;
       state.newsGeneratedAt = nextNews;
     } catch (error) {
-      // Fail closed: keep the last verified snapshot on screen rather than
-      // replacing it with invented values or a transient network error.
       console.warn('[The Holding Live Panels] refresh check unavailable', error);
     } finally {
       state.refreshing = false;

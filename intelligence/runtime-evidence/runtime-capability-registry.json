@@ -1,0 +1,144 @@
+{
+  "version": "0.2-runtime-evidence-capability-registry",
+  "asOf": "2026-08-16",
+  "status": "canonical-read-only-capability-source-registry",
+  "purpose": "Describe reusable Runtime Evidence capability families, canonical source files, freshness contracts, epistemic boundaries and bounded adapters without activating owner teaching or granting execution authority.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "automaticCapabilityActivation": false,
+    "automaticPolicyMutation": false,
+    "automaticMethodologyMutation": false,
+    "marketFactAuthority": false
+  },
+  "semantics": {
+    "registryIsNotActivation": "A capability being listed here means its evidence family/source boundary is known. It enters Runtime Reasoning Evidence only when a runtime-owner-activation unit explicitly requests that capability and its adapter validates fresh evidence.",
+    "sourceVerifiedIsNotSchemaBound": "A source can be verified as canonical and live while its Runtime Evidence extraction adapter remains disabled until schema semantics are independently inspected.",
+    "economicFamiliesRemainDistinct": "Rewards, Reference APR/Productivity, Embedded Yield and Realised Cash Flow are separate economic objects and must never be silently collapsed into one generic income metric.",
+    "degradation": "Missing, stale, invalid, partial or semantically unsupported evidence degrades locally and is never fabricated as zero or carried forward as current.",
+    "ownerContextBoundary": "Owner teaching supplies decision context. Current balances, yields, rewards, incidents and protocol facts require canonical evidence sources."
+  },
+  "capabilities": [
+    {
+      "capabilityId": "health-factor-monitoring",
+      "label": "Health Factor Monitoring",
+      "family": "risk",
+      "runtimeAdapter": "health-factor-v1",
+      "runtimeEmission": "enabled-when-explicitly-activated",
+      "source": {
+        "file": "intelligence/risk/health-factor-intelligence.json",
+        "generatedAtPath": "generatedAt",
+        "statusPath": "status",
+        "canonical": true,
+        "schemaInspected": true
+      },
+      "freshness": {
+        "maxAgeHours": 30,
+        "mode": "generated-at"
+      },
+      "scope": "Current canonical supported lending positions only; zero-debt state remains healthFactor=null/not-applicable.",
+      "unresolvedDimensions": [
+        "cross-protocol-health-factor-coverage",
+        "canonical-health-factor-history-and-trend-for-all-supported-positions",
+        "owner-regime-review-remains-context-not-hard-threshold"
+      ]
+    },
+    {
+      "capabilityId": "claimable-rewards-observation",
+      "label": "Claimable Rewards Observation",
+      "family": "rewards",
+      "runtimeAdapter": "rewards-v1",
+      "runtimeEmission": "disabled-pending-schema-bound-adapter",
+      "source": {
+        "file": "companies/rewards-data.json",
+        "canonical": true,
+        "schemaInspected": false,
+        "sourceVerified": true,
+        "note": "Canonical production artifact verified in repository; file is large and Runtime Evidence field semantics must be independently bound before emission."
+      },
+      "freshness": {
+        "maxAgeHours": 36,
+        "mode": "generated-at-when-adapter-bound"
+      },
+      "scope": "Claimable/accrued reward inventory only. Does not imply realised cash flow or embedded yield.",
+      "unresolvedDimensions": [
+        "runtime-field-map",
+        "reward-units-vs-price-effect-decomposition",
+        "complete-company-coverage-semantics"
+      ]
+    },
+    {
+      "capabilityId": "reference-productivity-observation",
+      "label": "Reference APR / Productivity Observation",
+      "family": "productivity",
+      "runtimeAdapter": "productivity-v1",
+      "runtimeEmission": "available-for-future-explicit-activation",
+      "source": {
+        "file": "companies/productivity-data.json",
+        "generatedAtPath": "generatedAt",
+        "canonical": true,
+        "schemaInspected": true,
+        "observedVersion": "1.15",
+        "observedMethodologyVersion": "1.1-simple-safe"
+      },
+      "freshness": {
+        "maxAgeHours": 192,
+        "mode": "generated-at",
+        "rationale": "Canonical Productivity cadence is weekly; freshness allowance is bounded above one week rather than borrowing the 30h risk-source rule."
+      },
+      "scope": "Current normalized Reference APR/productive capacity. Unknown engines are excluded rather than treated as 0%. This is not historical realised cash flow.",
+      "unresolvedDimensions": [
+        "explicit-runtime-owner-activation-binding",
+        "question-specific-history-comparison-adapter"
+      ]
+    },
+    {
+      "capabilityId": "realised-cash-flow-observation",
+      "label": "Realised Cash Flow Observation",
+      "family": "realised-cash-flow",
+      "runtimeAdapter": "realised-cash-flow-v1",
+      "runtimeEmission": "available-for-future-explicit-activation",
+      "source": {
+        "file": "intelligence/realised-cash-flow/realised-cash-flow.json",
+        "generatedAtPath": "generatedAt",
+        "statusPath": "status",
+        "canonical": true,
+        "schemaInspected": true,
+        "observedVersion": "0.2.3-yield-basis-live-realised-cash-flow-resilient-logs"
+      },
+      "freshness": {
+        "maxAgeHours": 36,
+        "mode": "generated-at"
+      },
+      "scope": "Direct proven realised-income lanes only. Current Yield Basis adapter is intentionally incomplete for whole-company cash flow and historical USD may remain null by design.",
+      "unresolvedDimensions": [
+        "overall-company-realised-cash-flow-coverage",
+        "historical-block-bound-usd-valuation",
+        "non-yield-basis-realised-income-mechanisms"
+      ]
+    },
+    {
+      "capabilityId": "embedded-yield-observation",
+      "label": "Embedded Yield Observation",
+      "family": "embedded-yield",
+      "runtimeAdapter": "embedded-yield-v1",
+      "runtimeEmission": "disabled-pending-schema-audit",
+      "source": {
+        "file": "companies/embedded-yield-ledger.json",
+        "canonical": true,
+        "schemaInspected": false,
+        "sourceVerified": true
+      },
+      "freshness": {
+        "maxAgeHours": 36,
+        "mode": "generated-at-when-adapter-bound"
+      },
+      "scope": "Value accrued inside yield-bearing wrappers/vault shares; separate from claimable rewards and realised claims.",
+      "unresolvedDimensions": [
+        "runtime-field-map",
+        "explicit-runtime-owner-activation-binding"
+      ]
+    }
+  ]
+}

@@ -3,10 +3,10 @@
 
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-  const VERSION = '0.1-runtime-evidence-cortex';
+  const VERSION = '0.2-runtime-evidence-cortex';
   const PACKET_URL = '/intelligence/runtime-evidence/runtime-reasoning-evidence.json';
   const CONTEXT_URL = '/intelligence/owner-context/owner-decision-context.json';
-  const CONTRACT_VERSION = '0.1-runtime-source-bound-answer-contract';
+  const CONTRACT_VERSION = '0.2-runtime-capability-source-bound-answer-contract';
 
   const norm = value => String(value || '')
     .toLowerCase()
@@ -87,6 +87,23 @@
       ? 'runtime-evidence-plus-owner-context'
       : 'owner-context-live-evidence-unavailable';
     box.dataset.runtimePacketHash = packet?.integrity?.packetHash || '';
+    box.dataset.runtimePacketVersion = packet?.version || '';
+  }
+
+  function packetCapabilityIsFresh(packet, capability) {
+    if (!packet || !capability) return false;
+    if (packet.version === '0.1-runtime-reasoning-evidence') {
+      return packet?.freshness?.riskSourceFresh === true;
+    }
+    if (packet.version === '0.2-runtime-reasoning-evidence') {
+      const age = Number(capability?.sourceAgeHours);
+      const max = Number(capability?.maxSourceAgeHours);
+      if (!Number.isFinite(age) || !Number.isFinite(max)) return false;
+      if (age < 0 || age > max) return false;
+      const catalog = arr(packet?.registry?.catalog).find(x => x?.capabilityId === capability.capabilityId);
+      return catalog?.sourceExists === true && catalog?.schemaInspected === true && catalog?.fresh === true && catalog?.adapterReady === true;
+    }
+    return false;
   }
 
   async function answer(raw) {
@@ -123,17 +140,18 @@
         ? observations.find(x => x?.companyRegistry === '008' || norm(x?.companyName).includes('monetra'))
         : observations[0];
 
-      const grounded = packet?.version === '0.1-runtime-reasoning-evidence'
+      const packetVersionAccepted = packet?.version === '0.1-runtime-reasoning-evidence' || packet?.version === '0.2-runtime-reasoning-evidence';
+      const grounded = packetVersionAccepted
         && packet?.authority?.executionAuthority === 'none'
-        && packet?.freshness?.riskSourceFresh === true
+        && packetCapabilityIsFresh(packet, capability)
         && capability?.runtimeStatus === 'activated'
         && !!obs;
 
       let text;
       if (!grounded) {
         text = lang === 'ru'
-          ? `Owner Q7 по-прежнему задаёт контекст: Health Factor — regime-aware safety margin, а не один жёсткий порог; общая owner-ориентация около ${ownerReference}. Но свежий runtime evidence packet сейчас недоступен или не прошёл freshness/activation boundary, поэтому текущий HF компании я не буду выдумывать.`
-          : `Owner Q7 still provides the context: Health Factor is a regime-aware safety margin, not one hard threshold; the general owner orientation is around ${ownerReference}. But the current runtime evidence packet is unavailable or did not pass freshness/activation boundaries, so I will not invent a live company HF.`;
+          ? `Owner Q7 по-прежнему задаёт контекст: Health Factor — regime-aware safety margin, а не один жёсткий порог; общая owner-ориентация около ${ownerReference}. Но свежий runtime evidence packet сейчас недоступен или не прошёл capability freshness/activation boundary, поэтому текущий HF компании я не буду выдумывать.`
+          : `Owner Q7 still provides the context: Health Factor is a regime-aware safety margin, not one hard threshold; the general owner orientation is around ${ownerReference}. But the current runtime evidence packet is unavailable or did not pass capability freshness/activation boundaries, so I will not invent a live company HF.`;
       } else if (obs.debtPresent === false) {
         text = lang === 'ru'
           ? `${obs.companyName || `Company #${obs.companyRegistry}`} · ${obs.protocol} ${obs.chain}: live onchain state показывает collateral ≈ $${formatRawBase(obs.totalCollateralBaseRaw)}, debt = $0. Поэтому Health Factor сейчас экономически неприменим и канонически хранится как null / no-debt — не как искусственно огромное число.\n\nOwner Q7 используется только как interpretation context: ориентир около ${ownerReference} относится к ситуациям, где долг реально есть. Сейчас hard threshold/action не возникает. Непокрытые измерения остаются явными: ${arr(capability.unresolvedDimensions).slice(0, 6).join(', ')}.`
