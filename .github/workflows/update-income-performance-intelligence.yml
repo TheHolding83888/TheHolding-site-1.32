@@ -1,0 +1,163 @@
+name: "The Holding · Income & Performance Intelligence"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "intelligence/income-performance/**"
+      - ".github/workflows/update-income-performance-intelligence.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "companies/embedded-yield-ledger.json"
+      - "companies/stable-index-data.json"
+      - "intelligence/realised-cash-flow/realised-cash-flow.json"
+      - "intelligence/income-performance/income-performance.mjs"
+      - ".github/workflows/update-income-performance-intelligence.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-income-performance-intelligence
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/income-performance/income-performance.mjs
+          test -s companies/embedded-yield-ledger.json
+          test -s companies/stable-index-data.json
+          test -s intelligence/realised-cash-flow/realised-cash-flow.json
+          node --check intelligence/income-performance/income-performance.mjs
+          grep -q "noCollapseRule" intelligence/income-performance/income-performance.mjs
+          grep -q "todayPolicy" intelligence/income-performance/income-performance.mjs
+          grep -q "executionAuthority: 'none'" intelligence/income-performance/income-performance.mjs
+
+      - name: Build Income & Performance Intelligence
+        run: node intelligence/income-performance/income-performance.mjs
+
+      - name: Validate economic-family semantics and answerability
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('intelligence/income-performance/income-performance.json', 'utf8'));
+
+          if (x.version !== '0.1-income-performance-intelligence') throw new Error('unexpected version');
+          if (x.engineVersion !== '0.1-monetra-evidence-family-compiler') throw new Error('unexpected engine version');
+          if (x.status !== 'partial') throw new Error('v0.1 must remain partial');
+          if (x.company?.registry !== '008' || x.company?.name !== 'Monetra.eth') throw new Error('Monetra identity mismatch');
+
+          if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('execution authority regression');
+          if (x.authority?.capitalExecution !== false || x.authority?.claimingAuthority !== false || x.authority?.allocationAuthority !== false) throw new Error('capital authority regression');
+
+          if (!Number.isFinite(x.current?.currentCapitalUsd) || x.current.currentCapitalUsd <= 0) throw new Error('current capital unavailable');
+          if (!Number.isFinite(x.current?.investedUsd) || x.current.investedUsd <= 0) throw new Error('invested unavailable');
+          if (!Number.isFinite(x.performance?.strategy?.sinceInceptionUsd)) throw new Error('strategy performance unavailable');
+          if (!Number.isFinite(x.performance?.netMarketPnl?.usd)) throw new Error('net market PnL unavailable');
+
+          if (x.embeddedYield?.monthToDate?.attributionReconciled !== true) throw new Error('MTD attribution not reconciled');
+          if (!Number.isFinite(x.embeddedYield?.monthToDate?.incomeUsd)) throw new Error('MTD embedded income unavailable');
+          if (!Array.isArray(x.embeddedYield?.monthToDate?.byProtocol) || x.embeddedYield.monthToDate.byProtocol.length < 1) throw new Error('protocol attribution unavailable');
+          if (Math.abs(x.embeddedYield.monthToDate.incomeUsd - x.embeddedYield.monthToDate.independentlyAttributedIncomeUsd) > 0.00002) throw new Error('MTD attribution drift');
+
+          if (x.embeddedYield?.latestMeasuredInterval?.exactCalendarDay !== false) throw new Error('latest interval must not masquerade as calendar day');
+          if (x.answerability?.['monetra-calendar-day-income-today'] !== 'blocked-no-exact-calendar-day-boundary') throw new Error('today answerability must fail closed');
+          if (x.answerability?.['monetra-month-to-date-embedded-income'] !== 'answerable-with-flow-safe-coverage-disclosure') throw new Error('MTD answerability regression');
+          if (x.answerability?.['monetra-since-inception-strategy-performance'] !== 'answerable') throw new Error('performance answerability regression');
+
+          if (x.realisedCashFlow?.overallCoverageComplete !== false) throw new Error('realised cash flow coverage was silently upgraded');
+          if (x.answerability?.['monetra-overall-realised-cash-flow'] !== 'blocked-incomplete-coverage') throw new Error('realised cash flow must remain blocked');
+
+          const families = ['embeddedYield','accruedRewards','realisedCashFlow','performance'];
+          for (const f of families) if (!(f in x)) throw new Error(`missing economic family ${f}`);
+          if (!String(x.semantics?.noCollapseRule || '').includes('Do not sum')) throw new Error('no-collapse semantic missing');
+
+          console.log('INCOME & PERFORMANCE INTELLIGENCE v0.1 PASS', {
+            currentCapitalUsd: x.current.currentCapitalUsd,
+            latestMeasuredIncomeUsd: x.embeddedYield.latestMeasuredInterval.incomeUsd,
+            mtdEmbeddedIncomeUsd: x.embeddedYield.monthToDate.incomeUsd,
+            protocolsAttributed: x.embeddedYield.monthToDate.byProtocol.length,
+            strategyPerformanceUsd: x.performance.strategy.sinceInceptionUsd,
+            realisedCashFlow: x.realisedCashFlow.status,
+            today: x.answerability['monetra-calendar-day-income-today'],
+            executionAuthority: x.authority.executionAuthority
+          });
+          NODE
+          git diff --check
+
+      - name: Publish generated Income & Performance Intelligence
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED="intelligence/income-performance/income-performance.json"
+          test -s "$GENERATED"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$GENERATED"
+
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/income-performance/income-performance\.json$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Income & Performance attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "Income & Performance Intelligence already current."
+            exit 0
+          fi
+
+          git commit -m "intelligence: refresh income performance state"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Publish conflict; refusing to guess."
+              exit 1
+            fi
+
+            node intelligence/income-performance/income-performance.mjs
+            git add "$GENERATED"
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              git cat-file -e "origin/main:$GENERATED"
+              REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+              test "$REMOTE_VERSION" = "0.1-income-performance-intelligence"
+              echo "Verified Income & Performance Intelligence v0.1 on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "Income & Performance publish failed after 3 attempts."
+          exit 1
