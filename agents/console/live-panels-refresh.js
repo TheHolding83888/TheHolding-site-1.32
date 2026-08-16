@@ -42,6 +42,28 @@
     document.head.appendChild(neuralGraph);
   }
 
+  // Day-over-day badges are a companion to canonical graph history. They do
+  // not backfill or invent yesterday's state: the badge remains warming until
+  // a real prior daily snapshot exists.
+  if (!document.querySelector('script[data-th-neural-graph-delta-loader]')) {
+    const dailyDelta = document.createElement('script');
+    dailyDelta.src = '/agents/console/neural-graph-daily-delta.js?v=0.1';
+    dailyDelta.defer = true;
+    dailyDelta.dataset.thNeuralGraphDeltaLoader = 'v0.1';
+    document.head.appendChild(dailyDelta);
+  }
+
+  // Interactive topology is a read-only view over the same canonical node and
+  // connection catalog. It opens as a bounded subgraph to avoid a misleading
+  // spaghetti map, then expands one neighborhood at a time through user clicks.
+  if (!document.querySelector('script[data-th-neural-map-loader]')) {
+    const neuralMap = document.createElement('script');
+    neuralMap.src = '/agents/console/neural-map-explorer.js?v=0.1';
+    neuralMap.defer = true;
+    neuralMap.dataset.thNeuralMapLoader = 'v0.1';
+    document.head.appendChild(neuralMap);
+  }
+
   // Bounded conversational cortex. This is a read-only owner-context / graph
   // synthesis layer over the existing Ask router. safety.js is the parent
   // loader and therefore registers its capture guard before this script can
@@ -58,7 +80,7 @@
   // Desktop-safe ownership of THI spacing. This lives outside The Holding News
   // so the score layout never depends on whether the News component loaded.
   const style = document.createElement('style');
-  style.dataset.thLivePanelsRefresh = 'v0.4';
+  style.dataset.thLivePanelsRefresh = 'v0.5';
   style.textContent = `
     @media (min-width: 901px) {
       #intelligenceProgress .thi-index-row {
