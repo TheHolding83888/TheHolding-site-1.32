@@ -1,0 +1,825 @@
+{
+  "version": "0.1-capital-state",
+  "engineVersion": "0.1-evidence-bound-capital-substrate",
+  "generatedAt": "2026-08-16T19:33:44.841Z",
+  "status": "partial",
+  "purpose": "Canonical machine-readable Capital State substrate. It separates measured capital from complete company/network TVL and fails closed on unbound capital.",
+  "semantics": {
+    "measuredCapitalFloorUsd": "Sum of non-overlapping capital amounts currently proven by canonical machine-readable sources. This is a lower bound, not Network TVL.",
+    "networkTvlUsd": "Only populated when every registered company has a complete, non-overlapping total-capital binding. Unknown is never treated as zero.",
+    "capitalLayer": "Primary economic role used for allocation reasoning. Productivity can be an attribute of Stable Reserve and must not force double classification.",
+    "layerTaxonomy": [
+      "foundation",
+      "productive-dividend",
+      "stable-reserve",
+      "rwa",
+      "venture",
+      "unclassified"
+    ],
+    "unknownPolicy": "unknown != zero; unbound or ambiguous capital remains null/unclassified rather than guessed",
+    "doubleCountPolicy": "wrapper/LP/underlying/productivity representations may contribute only through one canonical economic path to company/network aggregates"
+  },
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "allocationAuthority": false,
+    "policyMutationAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "sourceState": {
+    "productivity": {
+      "file": "companies/productivity-data.json",
+      "version": "1.15",
+      "generatedAt": "2026-08-16T04:50:50.379Z",
+      "sha256": "662b28e20df7ef30fe40b54982714ef9199cd807c0ec54dddf4f56b8390547e1",
+      "role": "productive-capital measurement for eight general companies"
+    },
+    "stableIndex": {
+      "file": "companies/stable-index-data.json",
+      "version": "0.2-stable-companies-index-strategy-performance",
+      "generatedAt": "2026-08-16T05:59:41.376Z",
+      "sha256": "77ec3e6f61dbefdf724f4de0e99bdf89546a1154099c1f38ee0149002555b1ad",
+      "role": "complete current capital state for Stable Capital company Monetra.eth"
+    }
+  },
+  "network": {
+    "registryCompanyCount": 9,
+    "measuredCompanyCount": 9,
+    "totalCapitalCompleteCompanyCount": 1,
+    "totalCapitalCoverage": 0.111111,
+    "measuredProductiveCapitalUsd": 28307.69,
+    "measuredStableCapitalUsd": 100.182938,
+    "measuredCapitalFloorUsd": 28407.872938,
+    "networkTvlUsd": null,
+    "networkTvlStatus": "withheld-incomplete-total-capital-coverage",
+    "indexedCoverageStatus": "1/9 companies have canonical complete total-capital binding",
+    "latestUpstreamGeneratedAt": "2026-08-16T05:59:41.376Z"
+  },
+  "companies": [
+    {
+      "registry": "001",
+      "name": "05081966.eth",
+      "measurementStatus": "partial-capital-measurement",
+      "measuredCapitalUsd": 308.87,
+      "capitalScope": "productive-capital-only",
+      "totalCapitalComplete": false,
+      "knownButUnboundCapitalMayExist": true,
+      "layerValues": {
+        "foundationUsd": null,
+        "productiveDividendUsd": 308.87,
+        "stableReserveUsd": null,
+        "rwaUsd": null,
+        "ventureUsd": null,
+        "unclassifiedUsd": null
+      },
+      "coverage": {
+        "companyCapitalCoverage": null,
+        "reason": "Canonical Productivity covers productive capital, but non-productive/foundation capital is not yet machine-bound into Capital State."
+      },
+      "measuredPositions": [
+        {
+          "sourceKind": "productivity",
+          "engineId": "aerodrome_veaero",
+          "principalId": "aerodrome-finance",
+          "units": 202,
+          "priceUsd": 0.400949,
+          "valueUsd": 80.99,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "curve_vecrv",
+          "principalId": "curve-dao-token",
+          "units": 480,
+          "priceUsd": 0.240742,
+          "valueUsd": 115.56,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "frax_vefrax",
+          "principalId": "frax-share",
+          "units": 393,
+          "priceUsd": 0.285801,
+          "valueUsd": 112.32,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        }
+      ]
+    },
+    {
+      "registry": "002",
+      "name": "YieldRing.eth",
+      "measurementStatus": "partial-capital-measurement",
+      "measuredCapitalUsd": 802.7,
+      "capitalScope": "productive-capital-only",
+      "totalCapitalComplete": false,
+      "knownButUnboundCapitalMayExist": true,
+      "layerValues": {
+        "foundationUsd": null,
+        "productiveDividendUsd": 802.7,
+        "stableReserveUsd": null,
+        "rwaUsd": null,
+        "ventureUsd": null,
+        "unclassifiedUsd": null
+      },
+      "coverage": {
+        "companyCapitalCoverage": null,
+        "reason": "Canonical Productivity covers productive capital, but non-productive/foundation capital is not yet machine-bound into Capital State."
+      },
+      "measuredPositions": [
+        {
+          "sourceKind": "productivity",
+          "engineId": "aerodrome_veaero",
+          "principalId": "aerodrome-finance",
+          "units": 480,
+          "priceUsd": 0.400949,
+          "valueUsd": 192.46,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "convex_vlcvx",
+          "principalId": "convex-finance",
+          "units": 240,
+          "priceUsd": 1.59,
+          "valueUsd": 381.6,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "frax_vefrax",
+          "principalId": "frax-share",
+          "units": 800,
+          "priceUsd": 0.285801,
+          "valueUsd": 228.64,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        }
+      ]
+    },
+    {
+      "registry": "003",
+      "name": "dinaz.eth",
+      "measurementStatus": "partial-capital-measurement",
+      "measuredCapitalUsd": 946.17,
+      "capitalScope": "productive-capital-only",
+      "totalCapitalComplete": false,
+      "knownButUnboundCapitalMayExist": true,
+      "layerValues": {
+        "foundationUsd": null,
+        "productiveDividendUsd": 946.17,
+        "stableReserveUsd": null,
+        "rwaUsd": null,
+        "ventureUsd": null,
+        "unclassifiedUsd": null
+      },
+      "coverage": {
+        "companyCapitalCoverage": null,
+        "reason": "Canonical Productivity covers productive capital, but non-productive/foundation capital is not yet machine-bound into Capital State."
+      },
+      "measuredPositions": [
+        {
+          "sourceKind": "productivity",
+          "engineId": "yieldbasis_veyb",
+          "principalId": "yield-basis",
+          "units": 12029,
+          "priceUsd": 0.078657,
+          "valueUsd": 946.17,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        }
+      ]
+    },
+    {
+      "registry": "004",
+      "name": "defitea.eth",
+      "measurementStatus": "partial-capital-measurement",
+      "measuredCapitalUsd": 9236.53,
+      "capitalScope": "productive-capital-only",
+      "totalCapitalComplete": false,
+      "knownButUnboundCapitalMayExist": true,
+      "layerValues": {
+        "foundationUsd": null,
+        "productiveDividendUsd": 9236.53,
+        "stableReserveUsd": null,
+        "rwaUsd": null,
+        "ventureUsd": null,
+        "unclassifiedUsd": null
+      },
+      "coverage": {
+        "companyCapitalCoverage": null,
+        "reason": "Canonical Productivity covers productive capital, but non-productive/foundation capital is not yet machine-bound into Capital State."
+      },
+      "measuredPositions": [
+        {
+          "sourceKind": "productivity",
+          "engineId": "aerodrome_veaero",
+          "principalId": "aerodrome-finance",
+          "units": 2440,
+          "priceUsd": 0.400949,
+          "valueUsd": 978.32,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "convex_vlcvx",
+          "principalId": "convex-finance",
+          "units": 1333,
+          "priceUsd": 1.59,
+          "valueUsd": 2119.47,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "curve_vecrv",
+          "principalId": "curve-dao-token",
+          "units": 4125,
+          "priceUsd": 0.240742,
+          "valueUsd": 993.06,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "pendle_spendle",
+          "principalId": "pendle",
+          "units": 500,
+          "priceUsd": 1.3,
+          "valueUsd": 650,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "fx_vefxn",
+          "principalId": "fxn-token",
+          "units": 59.81,
+          "priceUsd": 15.53,
+          "valueUsd": 928.85,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "yieldbasis_veyb",
+          "principalId": "yield-basis",
+          "units": 10846,
+          "priceUsd": 0.078657,
+          "valueUsd": 853.11,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "frax_vefrax",
+          "principalId": "frax-share",
+          "units": 4224,
+          "priceUsd": 0.285801,
+          "valueUsd": 1207.22,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "velodrome_vevelo",
+          "principalId": "velodrome-finance",
+          "units": 12180,
+          "priceUsd": 0.01697843,
+          "valueUsd": 206.8,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "venice_svvv",
+          "principalId": "venice-token",
+          "units": 50,
+          "priceUsd": 11.86,
+          "valueUsd": 593,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "liquity_lqty",
+          "principalId": "liquity",
+          "units": 1488,
+          "priceUsd": 0.196464,
+          "valueUsd": 292.34,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "resupply_rsup",
+          "principalId": "resupply",
+          "units": 3682,
+          "priceUsd": 0.112536,
+          "valueUsd": 414.36,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        }
+      ]
+    },
+    {
+      "registry": "005",
+      "name": "0x5860...83CA8.eth",
+      "measurementStatus": "partial-capital-measurement",
+      "measuredCapitalUsd": 5525.17,
+      "capitalScope": "productive-capital-only",
+      "totalCapitalComplete": false,
+      "knownButUnboundCapitalMayExist": true,
+      "layerValues": {
+        "foundationUsd": null,
+        "productiveDividendUsd": 5525.17,
+        "stableReserveUsd": null,
+        "rwaUsd": null,
+        "ventureUsd": null,
+        "unclassifiedUsd": null
+      },
+      "coverage": {
+        "companyCapitalCoverage": null,
+        "reason": "Canonical Productivity covers productive capital, but non-productive/foundation capital is not yet machine-bound into Capital State."
+      },
+      "measuredPositions": [
+        {
+          "sourceKind": "productivity",
+          "engineId": "icp_nns",
+          "principalId": "internet-computer",
+          "units": 1363,
+          "priceUsd": 2.23,
+          "valueUsd": 3039.49,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "aerodrome_veaero",
+          "principalId": "aerodrome-finance",
+          "units": 5000,
+          "priceUsd": 0.400949,
+          "valueUsd": 2004.75,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "velodrome_vevelo",
+          "principalId": "velodrome-finance",
+          "units": 28326,
+          "priceUsd": 0.01697843,
+          "valueUsd": 480.93,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        }
+      ]
+    },
+    {
+      "registry": "006",
+      "name": "aerocvxyb.eth",
+      "measurementStatus": "partial-capital-measurement",
+      "measuredCapitalUsd": 7692.52,
+      "capitalScope": "productive-capital-only",
+      "totalCapitalComplete": false,
+      "knownButUnboundCapitalMayExist": true,
+      "layerValues": {
+        "foundationUsd": null,
+        "productiveDividendUsd": 7692.52,
+        "stableReserveUsd": null,
+        "rwaUsd": null,
+        "ventureUsd": null,
+        "unclassifiedUsd": null
+      },
+      "coverage": {
+        "companyCapitalCoverage": null,
+        "reason": "Canonical Productivity covers productive capital, but non-productive/foundation capital is not yet machine-bound into Capital State."
+      },
+      "measuredPositions": [
+        {
+          "sourceKind": "productivity",
+          "engineId": "aerodrome_veaero",
+          "principalId": "aerodrome-finance",
+          "units": 9230.248119304428,
+          "priceUsd": 0.400949,
+          "valueUsd": 3700.86,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "velodrome_vevelo",
+          "principalId": "velodrome-finance",
+          "units": 6971.925992122776,
+          "priceUsd": 0.01697843,
+          "valueUsd": 118.37,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "yieldbasis_veyb",
+          "principalId": "yield-basis",
+          "units": 12499.999999999958,
+          "priceUsd": 0.078657,
+          "valueUsd": 983.21,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "icp_nns",
+          "principalId": "internet-computer",
+          "units": 1296,
+          "priceUsd": 2.23,
+          "valueUsd": 2890.08,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        }
+      ]
+    },
+    {
+      "registry": "007",
+      "name": "Rook's portfolio",
+      "measurementStatus": "partial-capital-measurement",
+      "measuredCapitalUsd": 3363.58,
+      "capitalScope": "productive-capital-only",
+      "totalCapitalComplete": false,
+      "knownButUnboundCapitalMayExist": true,
+      "layerValues": {
+        "foundationUsd": null,
+        "productiveDividendUsd": 3363.58,
+        "stableReserveUsd": null,
+        "rwaUsd": null,
+        "ventureUsd": null,
+        "unclassifiedUsd": null
+      },
+      "coverage": {
+        "companyCapitalCoverage": null,
+        "reason": "Canonical Productivity covers productive capital, but non-productive/foundation capital is not yet machine-bound into Capital State."
+      },
+      "measuredPositions": [
+        {
+          "sourceKind": "productivity",
+          "engineId": "aerodrome_veaero",
+          "principalId": "aerodrome-finance",
+          "units": 4330.755126048871,
+          "priceUsd": 0.400949,
+          "valueUsd": 1736.41,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "convex_vlcvx",
+          "principalId": "convex-finance",
+          "units": 336.240148815125,
+          "priceUsd": 1.59,
+          "valueUsd": 534.62,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "curve_vecrv",
+          "principalId": "curve-dao-token",
+          "units": 1368.677426931635,
+          "priceUsd": 0.240742,
+          "valueUsd": 329.5,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "yieldbasis_yblp_wbtc",
+          "principalId": "bitcoin",
+          "units": 0.00335757,
+          "priceUsd": 63070,
+          "valueUsd": 211.76,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "yieldbasis_yblp_weth",
+          "principalId": "ethereum",
+          "units": 0.293093279397,
+          "priceUsd": 1880.93,
+          "valueUsd": 551.29,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        }
+      ]
+    },
+    {
+      "registry": "008",
+      "name": "Monetra.eth",
+      "measurementStatus": "total-capital-complete",
+      "measuredCapitalUsd": 100.182938,
+      "capitalScope": "stable-company-total-current-capital",
+      "totalCapitalComplete": true,
+      "knownButUnboundCapitalMayExist": false,
+      "layerValues": {
+        "foundationUsd": null,
+        "productiveDividendUsd": null,
+        "stableReserveUsd": 100.182938,
+        "rwaUsd": null,
+        "ventureUsd": null,
+        "unclassifiedUsd": null
+      },
+      "coverage": {
+        "companyCapitalCoverage": 1,
+        "reason": "Canonical stable company source covers the complete current strategy capital state."
+      },
+      "measuredPositions": [
+        {
+          "sourceKind": "stable-index",
+          "positionId": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "protocol": "Aave",
+          "chain": "Base",
+          "asset": "USDC",
+          "valueUsd": 10.010357,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        },
+        {
+          "sourceKind": "stable-index",
+          "positionId": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
+          "protocol": "Curve",
+          "chain": "Ethereum",
+          "asset": "scrvUSD",
+          "valueUsd": 10.004005,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        },
+        {
+          "sourceKind": "stable-index",
+          "positionId": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+          "protocol": "f(x) Protocol",
+          "chain": "Ethereum",
+          "asset": "fxSAVE",
+          "valueUsd": 10.057672,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        },
+        {
+          "sourceKind": "stable-index",
+          "positionId": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
+          "protocol": "Inverse",
+          "chain": "Ethereum",
+          "asset": "sDOLA",
+          "valueUsd": 10.042428,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        },
+        {
+          "sourceKind": "stable-index",
+          "positionId": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+          "protocol": "Sky",
+          "chain": "Ethereum",
+          "asset": "sUSDS",
+          "valueUsd": 10.034276,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        },
+        {
+          "sourceKind": "stable-index",
+          "positionId": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
+          "protocol": "Aave",
+          "chain": "Ethereum",
+          "asset": "sGho",
+          "valueUsd": 10.026643,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        },
+        {
+          "sourceKind": "stable-index",
+          "positionId": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
+          "protocol": "Yearn",
+          "chain": "Ethereum",
+          "asset": "ysyBOLD",
+          "valueUsd": 10.017223,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        },
+        {
+          "sourceKind": "stable-index",
+          "positionId": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+          "protocol": "Lido",
+          "chain": "Ethereum",
+          "asset": "earnUSD",
+          "valueUsd": 9.997359,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        },
+        {
+          "sourceKind": "stable-index",
+          "positionId": "ethereum:liquity-v2-sp:weth",
+          "protocol": "Liquity",
+          "chain": "Ethereum",
+          "asset": "BOLD",
+          "valueUsd": 9.998354,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        },
+        {
+          "sourceKind": "stable-index",
+          "positionId": "fraxtal:0xfc00000000000000000000000000000000000008",
+          "protocol": "Frax",
+          "chain": "Fraxtal",
+          "asset": "sfrxUSD",
+          "valueUsd": 9.951522,
+          "primaryCapitalLayer": "stable-reserve",
+          "productiveAttribute": true,
+          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+        }
+      ]
+    },
+    {
+      "registry": "009",
+      "name": "1milliondollar.eth",
+      "measurementStatus": "partial-capital-measurement",
+      "measuredCapitalUsd": 432.15,
+      "capitalScope": "productive-capital-only",
+      "totalCapitalComplete": false,
+      "knownButUnboundCapitalMayExist": true,
+      "layerValues": {
+        "foundationUsd": null,
+        "productiveDividendUsd": 432.15,
+        "stableReserveUsd": null,
+        "rwaUsd": null,
+        "ventureUsd": null,
+        "unclassifiedUsd": null
+      },
+      "coverage": {
+        "companyCapitalCoverage": null,
+        "reason": "Canonical Productivity covers productive capital, but non-productive/foundation capital is not yet machine-bound into Capital State."
+      },
+      "measuredPositions": [
+        {
+          "sourceKind": "productivity",
+          "engineId": "aerodrome_veaero",
+          "principalId": "aerodrome-finance",
+          "units": 214.798088305326,
+          "priceUsd": 0.400949,
+          "valueUsd": 86.12,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "beefy_cvxcrv",
+          "principalId": "convex-crv",
+          "units": 468.390991181449,
+          "priceUsd": 0.111103,
+          "valueUsd": 52.04,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        },
+        {
+          "sourceKind": "productivity",
+          "engineId": "yieldbasis_veyb",
+          "principalId": "yield-basis",
+          "units": 3737.585758274693,
+          "priceUsd": 0.078657,
+          "valueUsd": 293.99,
+          "primaryCapitalLayer": "productive-dividend",
+          "classificationRule": "canonical-productivity-position-is-productive-capital",
+          "classificationStatus": "established",
+          "doubleCountPolicy": "position contributes once through canonical Productivity breakdown"
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "id": "general-company-total-capital-binding",
+      "severity": "blocking",
+      "affects": [
+        "networkTvlUsd",
+        "foundation-weight",
+        "whole-company-concentration",
+        "owner-q12-allocation-context"
+      ],
+      "detail": "Eight general companies have canonical productive-capital measurement but their full balance-sheet/company-book capital is still browser-side or otherwise not normalized into a machine-readable canonical total-capital source."
+    },
+    {
+      "id": "capital-layer-classification-beyond-proven-sources",
+      "severity": "blocking",
+      "affects": [
+        "foundation",
+        "rwa",
+        "venture",
+        "unclassified-share"
+      ],
+      "detail": "Capital layers are emitted only where source semantics establish them. No asset is silently promoted into Foundation/RWA/Venture from owner preference alone."
+    }
+  ],
+  "readiness": {
+    "q12AllocationContext": "partial",
+    "companyCurrentMeasuredCapital": "available-with-scope",
+    "networkCapitalFloor": "available",
+    "networkTvl": "blocked",
+    "capitalLayerWeights": "partial"
+  }
+}
