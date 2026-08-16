@@ -6,10 +6,10 @@
     "provenance": "explicit-owner-teaching",
     "channel": "owner-audio-transcribed-in-chat",
     "tranche": 7,
-    "questionsCovered": [12, 13],
-    "pendingExactSourceQuestions": [11, 14, 15],
-    "humanReadableSource": "intelligence/project-memory/THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_7_Q12_Q13_2026-08-16.md",
-    "batchState": "owner-explicitly-authorized-processing-q12-q13-before-q14-q15",
+    "questionsCovered": [11, 12, 13],
+    "pendingExactSourceQuestions": [14, 15],
+    "humanReadableSource": "intelligence/project-memory/THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_7_Q11_Q13_2026-08-16.md",
+    "batchState": "owner-explicitly-authorized-processing-q11-q13-before-q14-q15",
     "speechNormalization": {
       "silentGuessingAllowed": false,
       "unverifiedHistoricalReferences": [
@@ -37,6 +37,55 @@
     "runtimeBinding": "none-currently-context-only"
   },
   "repeatableDecisionPatterns": {
+    "q11BorrowingPurpose": {
+      "principle": "borrowing-is-optional-and-most-justified-when-borrowed-capital-remains-productive-strengthens-foundation-or-expands-cash-flow-capacity",
+      "borrowingIsMandatory": false,
+      "ownerRationale": [
+        "avoid-forced-sale-of-long-horizon-fundamental-assets-when-borrowing-is-prudent",
+        "retain-exposure-to-fundamental-assets-while-accessing-liquidity",
+        "use-borrowed-capital-to-expand-business-or-productive-capital"
+      ],
+      "taxObservation": {
+        "classification": "owner-general-observation-not-tax-advice-or-jurisdictional-fact",
+        "summary": "Owner notes that capital holders may prefer borrowing against appreciated assets instead of selling partly for tax and continuity-of-exposure reasons."
+      },
+      "preferredUseOfProceeds": [
+        "business-expansion",
+        "strengthen-foundation",
+        "productive-dividend-assets",
+        "real-yield-or-cash-flow-generating-assets",
+        "BTC",
+        "ETH",
+        "gold",
+        "silver",
+        "tokenized-real-estate",
+        "physical-real-estate",
+        "tokenized-metals",
+        "physical-metals",
+        "stable-strategies-when-expected-yield-can-cover-borrow-cost"
+      ],
+      "lowerPreference": [
+        "higher-risk-strategies-without-strong-justification",
+        "consumption-or-lifestyle-purchases-funded-by-debt"
+      ],
+      "rewardsVsDebtBoundary": "Owner distinguishes generated rewards, part of which may fund life expenses, from borrowed capital, which should preferably remain productive.",
+      "riskBuffer": {
+        "market-drawdown-can-require-health-factor-restoration": true,
+        "borrowed-capital-should-not-be-consumed-in-a-way-that-removes-restoration-flexibility": true,
+        "automatic-health-factor-threshold": false
+      },
+      "stableStrategyCondition": {
+        "possible": true,
+        "ownerCondition": "expected-stable-strategy-return-should-cover-borrowing-cost",
+        "guaranteedPositiveCarry": false
+      },
+      "whenNotNeeded": [
+        "sufficient-unborrowed-capital-is-already-available",
+        "productive-expansion-can-be-funded-directly",
+        "generated-cash-flow-can-fund-incremental-asset-growth"
+      ],
+      "automaticBorrowingAuthority": false
+    },
     "q12GeneratedCashFlowAllocation": {
       "principle": "allocation-is-state-dependent-and-requires-current-whole-company-capital-map-before-routing-rewards",
       "fixedAllocationPercentages": false,
@@ -50,31 +99,13 @@
         "size-of-already-invested-capital"
       ],
       "contextualRouting": [
-        {
-          "condition": "foundation-relatively-weak",
-          "possibleDestination": "strengthen-foundation"
-        },
-        {
-          "condition": "foundation-already-strong",
-          "possibleDestination": "productive-dividend-layer-and-cash-flow-generating-assets"
-        },
-        {
-          "condition": "foundation-and-productive-layers-strong-and-market-has-risen-materially",
-          "possibleDestination": "productive-stables-or-stable-reserve"
-        },
-        {
-          "condition": "venture-opportunity-remains-early-and-potential-is-convincing",
-          "possibleDestination": "bounded-venture-exposure"
-        },
-        {
-          "condition": "suitable-opportunity",
-          "possibleDestination": "RWA"
-        }
+        {"condition":"foundation-relatively-weak","possibleDestination":"strengthen-foundation"},
+        {"condition":"foundation-already-strong","possibleDestination":"productive-dividend-layer-and-cash-flow-generating-assets"},
+        {"condition":"foundation-and-productive-layers-strong-and-market-has-risen-materially","possibleDestination":"productive-stables-or-stable-reserve"},
+        {"condition":"venture-opportunity-remains-early-and-potential-is-convincing","possibleDestination":"bounded-venture-exposure"},
+        {"condition":"suitable-opportunity","possibleDestination":"RWA"}
       ],
-      "higherRiskExamplesMentioned": [
-        "metaverse-tokens",
-        "GameFi-sector-tokens"
-      ],
+      "higherRiskExamplesMentioned": ["metaverse-tokens", "GameFi-sector-tokens"],
       "higherRiskExamplesAreMandatory": false,
       "ownerNarrativeOrdering": "examples-were-described-roughly-from-more-serious-core-oriented-to-less-core-and-more-speculative",
       "hardPriorityOrder": false,
@@ -82,12 +113,7 @@
     },
     "q13ProtocolRehabilitation": {
       "principle": "post-incident-trust-requires-holistic-evidence-and-case-specific-review-not-one-binary-rule",
-      "incidentTypes": [
-        "hack",
-        "exploit",
-        "stable-depeg",
-        "serious-protocol-failure"
-      ],
+      "incidentTypes": ["hack", "exploit", "stable-depeg", "serious-protocol-failure"],
       "reviewDimensions": [
         "technical-remediation",
         "new-or-follow-up-audits",
@@ -113,6 +139,19 @@
     }
   },
   "runtimeReasoningHooks": {
+    "borrowingDecisionInputs": [
+      "collateral-value-and-composition",
+      "debt-value-and-asset",
+      "borrow-rate-and-cost",
+      "health-factor-and-trend",
+      "liquidation-mechanics",
+      "market-regime",
+      "available-stable-buffer",
+      "capital-layer-weights",
+      "intended-use-of-proceeds",
+      "expected-productive-return-with-evidence",
+      "risk-class-of-destination"
+    ],
     "rewardAllocationInputs": [
       "foundation-weight",
       "productive-layer-weight",
@@ -138,9 +177,28 @@
       "unlock-horizon",
       "current-position-size-and-layer"
     ],
-    "ownerContextBoundary": "These inputs guide interpretation only. Market, security and protocol facts must come from independently reproducible evidence."
+    "ownerContextBoundary": "These inputs guide interpretation only. Market, security, tax and protocol facts must come from independently reproducible evidence."
   },
   "trackingHooks": [
+    {
+      "id": "debt-purpose-and-buffer",
+      "desiredFields": [
+        "company",
+        "collateral-assets",
+        "collateral-value-usd",
+        "debt-asset",
+        "debt-value-usd",
+        "borrow-apr",
+        "health-factor",
+        "health-factor-trend",
+        "liquidation-mechanism",
+        "stable-buffer-usd",
+        "use-of-proceeds-class",
+        "destination-risk-class",
+        "destination-expected-productive-return"
+      ],
+      "coverageClaim": "mixed-existing-and-gap-requires-source-audit"
+    },
     {
       "id": "capital-layer-allocation-state",
       "desiredFields": [
@@ -180,8 +238,10 @@
   ],
   "epistemicGuardrails": {
     "ownerHeuristicIsMarketFact": false,
+    "ownerTaxObservationIsTaxAdviceOrJurisdictionalFact": false,
     "candidateRelationIsCausalFact": false,
     "historicalIncidentRecollectionIsVerifiedEvidence": false,
+    "fixedBorrowingRuleInferred": false,
     "fixedAllocationRuleInferred": false,
     "fixedProtocolReentryThresholdInferred": false
   }
