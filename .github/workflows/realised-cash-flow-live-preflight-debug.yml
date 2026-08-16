@@ -1,0 +1,41 @@
+name: "TEMP · Realised Cash Flow Live Preflight"
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Address checksums · FeeDistributor
+        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90'))"
+      - name: Address checksums · Dinaz
+        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc'))"
+      - name: Address checksums · Defitea primary
+        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3'))"
+      - name: Address checksums · Defitea operations
+        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d'))"
+      - name: Address checksums · Company 006 Yield Basis
+        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0x6c6543eBA07946706Fd10a1064FA773326B5f5a9'))"
+      - name: Address checksums · Company 009
+        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0xe4b9c9ced406baffe406e63f83d39daaef150596'))"
+
+      - name: Current constructor shape
+        run: node --input-type=module -e "import {JsonRpcProvider} from 'ethers'; const p=new JsonRpcProvider('https://ethereum-rpc.publicnode.com',1,{staticNetwork:true}); console.log(Number((await p.getNetwork()).chainId), await p.getBlockNumber())"
+      - name: Official static-network shape
+        if: always()
+        run: node --input-type=module -e "import {JsonRpcProvider,Network} from 'ethers'; const n=Network.from(1); const p=new JsonRpcProvider('https://ethereum-rpc.publicnode.com',n,{staticNetwork:n}); console.log(Number((await p.getNetwork()).chainId), await p.getBlockNumber())"
+      - name: Auto-detect static shape
+        if: always()
+        run: node --input-type=module -e "import {JsonRpcProvider} from 'ethers'; const p=new JsonRpcProvider('https://ethereum-rpc.publicnode.com',undefined,{staticNetwork:true}); console.log(Number((await p.getNetwork()).chainId), await p.getBlockNumber())"
