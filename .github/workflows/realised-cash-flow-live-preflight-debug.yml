@@ -9,7 +9,7 @@ permissions:
 jobs:
   preflight:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -18,24 +18,54 @@ jobs:
           package-manager-cache: false
       - run: npm install --no-save --no-package-lock ethers@6
 
-      - name: Address checksums · FeeDistributor
-        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90'))"
-      - name: Address checksums · Dinaz
-        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc'))"
-      - name: Address checksums · Defitea primary
-        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3'))"
-      - name: Address checksums · Defitea operations
-        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d'))"
-      - name: Address checksums · Company 006 Yield Basis
-        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0x6c6543eBA07946706Fd10a1064FA773326B5f5a9'))"
-      - name: Address checksums · Company 009
-        run: node --input-type=module -e "import {getAddress} from 'ethers'; console.log(getAddress('0xe4b9c9ced406baffe406e63f83d39daaef150596'))"
+      - name: Validate all boundary address checksums
+        run: |
+          node --input-type=module <<'NODE'
+          import {getAddress} from 'ethers';
+          const xs=[
+            '0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90',
+            '0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
+            '0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3',
+            '0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d',
+            '0x6c6543eBA07946706Fd10a1064FA773326B5f5a9',
+            '0xe4b9c9ced406baffe406e63f83d39daaef150596'
+          ];
+          for(const x of xs) console.log(getAddress(x));
+          NODE
 
-      - name: Current constructor shape
-        run: node --input-type=module -e "import {JsonRpcProvider} from 'ethers'; const p=new JsonRpcProvider('https://ethereum-rpc.publicnode.com',1,{staticNetwork:true}); console.log(Number((await p.getNetwork()).chainId), await p.getBlockNumber())"
-      - name: Official static-network shape
+      - name: Probe provider and deployment transaction
+        run: |
+          mkdir -p artifacts
+          node --input-type=module <<'NODE' > artifacts/preflight.json
+          import {JsonRpcProvider} from 'ethers';
+          const p=new JsonRpcProvider('https://ethereum-rpc.publicnode.com',1,{staticNetwork:true});
+          const tx='0xcd7321d6f67dc74f861266e56a7fee8285c3f5af663619ebb96581a083f0ef62';
+          const r=await p.getTransactionReceipt(tx);
+          console.log(JSON.stringify({
+            chainId:Number((await p.getNetwork()).chainId),
+            latestBlock:await p.getBlockNumber(),
+            deployTx:tx,
+            deployBlock:r?.blockNumber ?? null,
+            deployStatus:r?.status ?? null,
+            contractAddress:r?.contractAddress ?? null
+          },null,2));
+          NODE
+
+      - name: Capture exact adapter failure
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        shell: bash
+        run: |
+          set +e
+          node intelligence/realised-cash-flow/yield-basis-live-adapter.mjs > artifacts/adapter.stdout.txt 2> artifacts/adapter.stderr.txt
+          rc=$?
+          echo "$rc" > artifacts/adapter.exit-code.txt
+          exit 0
+
+      - name: Upload diagnostic evidence
         if: always()
-        run: node --input-type=module -e "import {JsonRpcProvider,Network} from 'ethers'; const n=Network.from(1); const p=new JsonRpcProvider('https://ethereum-rpc.publicnode.com',n,{staticNetwork:n}); console.log(Number((await p.getNetwork()).chainId), await p.getBlockNumber())"
-      - name: Auto-detect static shape
-        if: always()
-        run: node --input-type=module -e "import {JsonRpcProvider} from 'ethers'; const p=new JsonRpcProvider('https://ethereum-rpc.publicnode.com',undefined,{staticNetwork:true}); console.log(Number((await p.getNetwork()).chainId), await p.getBlockNumber())"
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: realised-cash-flow-live-preflight-${{ github.run_id }}
+          path: artifacts/
+          retention-days: 2
