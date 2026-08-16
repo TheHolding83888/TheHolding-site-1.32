@@ -1,5 +1,5 @@
 # THE HOLDING — OWNER OPERATING CONTEXT
-## 2026-08-16 · tranches 1–2
+## 2026-08-16 · tranches 1–3
 
 ## Purpose
 
@@ -187,7 +187,7 @@ Owner teaching alone does not equal model-weight training, and repeated Q&A alon
 
 Provenance: explicit owner answer.
 
-The owner does **not** primarily evaluate claim/harvest gas through a fixed percentage threshold such as 1%, 3% or 5% of harvest value.
+The owner does not primarily evaluate claim/harvest gas through a fixed percentage threshold such as 1%, 3% or 5% of harvest value.
 
 Examples given by the owner:
 - paying about $5 gas to realize about $100 of rewards can be acceptable even though this is approximately 5%;
@@ -216,7 +216,7 @@ This is a preference/thesis, not a universal rule. Future Brain reasoning must s
 
 Provenance: explicit owner answer.
 
-The owner's most natural reason for harvesting earlier than planned is often **not fear/risk alone**, but the appearance of a useful capital deployment opportunity or a new liquidity need.
+The owner's most natural reason for harvesting earlier than planned is often not fear/risk alone, but the appearance of a useful capital deployment opportunity or a new liquidity need.
 
 Examples explicitly given:
 - a desired asset falls substantially in price and the owner wants to buy it earlier than planned;
@@ -227,7 +227,7 @@ Examples explicitly given:
 - a higher-risk venture-style investment becomes attractive;
 - additional personal living liquidity is required because circumstances can change.
 
-Owner preference nevertheless remains to accumulate a larger reward pool and make capital allocations **less frequently but more substantially** when conditions permit.
+Owner preference nevertheless remains to accumulate a larger reward pool and make capital allocations less frequently but more substantially when conditions permit.
 
 Learning implication: a future harvest decision should compare the value of continued batching against the opportunity cost of missing a high-conviction deployment, collateral need or genuine liquidity requirement.
 
@@ -235,7 +235,7 @@ This is not automatic authorization to sell rewards or move capital. `executionA
 
 ## 14. Stable reserve / liquidity buffer philosophy
 
-Provenance: explicit owner answer.
+Provenance: explicit owner answer plus explicit owner correction of an earlier typo.
 
 The owner considers some form of stable-value liquidity buffer generally desirable for a company, but does not require that the stable reserve always sit on the same wallet/balance sheet surface.
 
@@ -244,12 +244,9 @@ Possible forms include:
 - stables held separately for the company;
 - part of accrued rewards already being denominated in stables.
 
-The owner expressed that some percentage of company TVL in stables can be reasonable and wrote the examples as **`50-10-20%`**. This wording is ambiguous as written and is intentionally preserved without normalization. It must **not** be converted into a precise 5%, 10%, 20%, 50%, or fixed-range policy until the owner explicitly clarifies the intended percentages.
+Corrected owner clarification: the intended example reserve sizes were **5%, 10% or 20% of company TVL**, not `50-10-20%`.
 
-What is clear from the answer:
-- exact reserve sizing is owner/company-specific;
-- some liquidity cushion is generally desirable;
-- reserve size can change with market regime.
+These are example reference levels, not a fixed mandatory range or universal policy. Exact reserve sizing is owner/company-specific and can vary with market regime and strategy.
 
 ### Market-cycle reserve thesis
 
@@ -261,14 +258,201 @@ This is a tactical capital-management thesis, not an automatic market-timing sys
 
 Future learning should compare actual reserve decisions against later drawdowns, buying opportunities, liquidity needs and company-level outcomes.
 
-## 15. Questions still unanswered after tranche 2
+## 15. Allocation of accumulated generated income — existing position vs new asset
 
-These remain intentionally open and must not be filled by inference:
+Provenance: explicit owner answer.
+
+The owner chooses between reinforcing an existing position and adding a new asset primarily by looking at current market prices and opportunity quality rather than following a fixed reinvestment split.
+
+Current decision logic:
+- if an existing asset has fallen substantially while the owner still believes in its long-term potential and underlying business quality, some or all rewards may be directed to increasing that position;
+- the same logic can justify buying a new asset with strong perceived long-term potential;
+- part of realised value may remain in stables;
+- for a Stable Capital company such as Monetra, stables should themselves remain productive where suitable rather than sitting idle, consistent with the company's stable-yield strategy.
+
+Learning implication: future allocation reasoning should compare relative opportunity across existing positions, new assets and stable-yield deployment rather than treating reinvestment as mechanically “buy more of what already exists.”
+
+## 16. Concentration and diversification preference
+
+Provenance: explicit owner answer.
+
+The owner generally tries to keep roughly comparable capital amounts across productive protocols where practical.
+
+Important exceptions / hierarchy:
+- BTC, ETH and gold may intentionally carry larger weights because they belong to the foundation layer;
+- in a company that is purely a productive/dividend portfolio, protocol allocations should tend toward roughly comparable sizes rather than one productive protocol dominating the company.
+
+This is not an exact equal-weight policy. It is a diversification bias.
+
+The owner considers excessive concentration in a single non-foundation asset to be a more meaningful strategic error than temporary price volatility across a diversified set of high-quality protocols.
+
+## 17. Peer-owner long-term company-development vision
+
+Provenance: owner-reported direct personal communication with owners of YieldRing, Dynaz and people running similar companies that are not yet included in The Holding company collection/index.
+
+According to the Holding owner's direct conversations, the broad development vision is similar to Defitea's:
+- build the company over years rather than optimize for short-term exits;
+- keep productive assets locked for long horizons;
+- maintain a thesis that selected productive assets can appreciate materially;
+- allow the resulting cash flow to increase as company scale and/or protocol economics improve;
+- reinvest rewards;
+- potentially strengthen the foundation layer as the company develops;
+- over time build stronger, more diversified companies with more robust capital architecture, conceptually similar to The Holding layered model.
+
+Evidence classification: `user-reported direct peer-owner conversation`.
+
+This remains peer-owner context until independently captured or later observed in actual actions. It must not be silently converted into Holding-owner Decision Memory or verified testimony from those owners.
+
+## 18. Strategy review philosophy — stable architecture, protocol-specific adaptation
+
+Provenance: explicit owner answer.
+
+The owner does not currently see the core Holding architecture as something that should be frequently overturned by short-term market events. The architecture has been iterated over many years and is now viewed as relatively stable.
+
+The owner still expects continuous refinement, especially when:
+- a specific cash-flow-generating protocol materially changes;
+- protocol quality deteriorates;
+- one asset becomes excessively dominant;
+- diversification weakens.
+
+Owner principle: do not invest everything in one asset; progressively diversify.
+
+Learning implication: the system should distinguish between:
+- **core architecture review** — rare, evidence-heavy and structural;
+- **company/protocol adaptation** — more frequent and context-specific.
+
+A protocol issue should not automatically invalidate the whole layered-company thesis.
+
+## 19. Retrospective decisions — no clear reversal identified yet
+
+Provenance: explicit owner response.
+
+When asked for a recent company decision that he would definitely repeat, the owner did not identify one specific isolated case and said the question may need to be made more concrete. Broadly, he is satisfied with how the companies have been constructed but wants more detail before selecting a single example.
+
+When asked whether he would do anything materially differently today, the owner did not identify a clear reversal. His current view is that the system has been progressively refined and that the separation between foundation and productive/dividend layers is a core strength.
+
+Example mental model provided:
+- Substance = foundation;
+- Defitea = productive/dividend layer standing on a stronger foundation conceptually.
+
+This must not be treated as proof that all past decisions were optimal. It only records that the owner currently does not identify a specific material decision he would reverse.
+
+Future questioning should revisit this with concrete decisions rather than forcing a retrospective lesson where none has been identified.
+
+## 20. What would make a company strategy meaningfully wrong
+
+Provenance: explicit owner answer.
+
+The owner avoids categorical language that a diversified high-quality company is “wrong” merely because some assets or protocols later fail.
+
+He would view more obvious strategic mistakes as examples such as:
+- allocating 30–50% of company capital to an unclear low-quality token or meme coin;
+- allocating major capital to a pyramid/scam-like project;
+- allowing excessive concentration in a single non-foundation asset.
+
+By contrast, bankruptcy/failure of one protocol within a diversified portfolio does not by itself prove the whole strategy was wrong if the original protocol selection was evidence-based and the architecture diversified.
+
+Owner preference remains to select stronger real-yield / productive protocols and diversify across them.
+
+Learning implication: future outcome review must separate:
+- ex-ante decision quality;
+- idiosyncratic protocol failure;
+- concentration failure;
+- fraudulent/low-quality asset selection;
+- whole-company architecture quality.
+
+## 21. Normal reward accumulation horizon
+
+Provenance: explicit owner answer.
+
+The owner considers **at least about one month** a normal minimum reward-accumulation period in many cases.
+
+Longer accumulation can also be acceptable:
+- 2–3+ months;
+- approximately six months;
+- even around one year when there is no practical need to harvest earlier.
+
+One reason is that some rewards already accrue in productive/reward tokens, which the owner sees as partially reinvestment-like because the company remains exposed to those tokens while rewards accumulate.
+
+This is not a fixed lockup rule. Earlier harvest can still be justified by capital opportunities, collateral needs, risk, liquidity needs or strategy changes.
+
+## 22. Desired decision-point signals for The Holding Brain / future Company Curator
+
+Provenance: explicit owner request.
+
+The owner wants The Holding to notice and surface important operating changes automatically. These are desired intelligence signals, not all confirmed production features today.
+
+### 22.1 Protocol economic changes
+Track meaningful changes in:
+- trading volume;
+- protocol fees / commissions earned;
+- protocol revenue / fee capture where relevant;
+- resulting changes in company yield / cash generation.
+
+The purpose is to connect company-level yield changes to underlying protocol economics where causally appropriate.
+
+### 22.2 Company TVL movement
+Desired signal:
+- approximately **>10% company TVL change within one day**, upward or downward.
+
+This should trigger an informational review signal, not automatically be classified as critical or as a strategy failure.
+
+### 22.3 Reward milestone notifications
+Desired signal:
+- record each **$10 increment** in company accumulated reward value: $10, $20, $30 … $100, then $110, $120 and onward.
+
+The system should ideally distinguish why USD reward value crossed the milestone:
+- new reward quantity accumulated;
+- reward-token price appreciation;
+- combination of both.
+
+This helps preserve both operational progress and price-effect attribution.
+
+### 22.4 Relative asset imbalance / concentration drift
+Desired signal:
+- notice when one company asset appreciates or grows materially faster than others and creates visible concentration drift;
+- owner example: an asset becoming roughly **30–50%+ larger relative to comparable positions** can be worth highlighting.
+
+This is generally an informational signal rather than an automatic critical alert.
+
+The purpose is to make the owner aware that a previously balanced productive portfolio may have become unintentionally concentrated due to market movement.
+
+### 22.5 Future refinement
+The owner expects this decision-point list to evolve and explicitly wants similar questions to be asked again periodically as operating experience accumulates.
+
+## 23. Decision-point severity principle
+
+The desired monitoring model should not flatten all signals into alarms.
+
+A useful distinction for future Brain/Curator design is:
+- **informational signal** — reward milestone, normal concentration drift, routine yield shift;
+- **review signal** — >10% daily TVL change, major protocol economics change, substantial relative asset imbalance;
+- **strategy review trigger** — evidence of protocol quality deterioration, security/solvency issue, structural loss of cash-flow mechanism, extreme non-foundation concentration, scam/fraud evidence, or persistent architectural mismatch.
+
+This severity structure is an inference from the owner's stated preferences and should remain provisional until implemented/tested.
+
+## 24. Public/client-facing intelligence implication
+
+Provenance: explicit owner observation plus product inference.
+
+The owner expects this richer operating memory and automatic monitoring to make public/company-chat answers more interesting and useful because the system can explain not only current values but also:
+- why yield changed;
+- why company balance changed;
+- how reward value accumulated;
+- whether a change came from token quantity or token price;
+- whether concentration drift has appeared;
+- what the owner's/peer-owner long-term strategy context is;
+- where a genuine decision point may be emerging.
+
+This supports the long-term Company Curator direction, provided source provenance and owner-vs-peer-vs-system observations remain clearly separated.
+
+## 25. Questions still intentionally open after tranche 3
+
+These remain open and must not be filled by inference:
 1. Are there assets/protocols the owner categorically would not add even at high yield?
 2. How does the owner personally distinguish generated income, accrued rewards, realised cash flow and unrealised reward-token appreciation?
-3. Clarify the intended stable-reserve percentage examples currently written as `50-10-20%` if a precise numerical heuristic is desired.
-
-Future answers should extend owner context rather than inventing answers here.
+3. Identify one concrete historical company decision the owner would definitely repeat once a sufficiently specific example is selected.
+4. Revisit and expand the desired decision-point metric set after more live operating experience.
 
 ## Memory / authority boundary
 
