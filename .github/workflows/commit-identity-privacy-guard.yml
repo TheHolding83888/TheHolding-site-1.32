@@ -1,0 +1,59 @@
+name: "The Holding Security · Commit Identity Privacy Guard"
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: commit-identity-privacy-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static privacy preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s security/commit-identity-privacy-policy.json
+          test -s security/commit-identity-privacy-guard.mjs
+          node --check security/commit-identity-privacy-guard.mjs
+          grep -q '"historicalRewriteAuthorized": false' security/commit-identity-privacy-policy.json
+          grep -q '"printRejectedEmailValues": false' security/commit-identity-privacy-policy.json
+          grep -q '"executionAuthority": "none"' security/commit-identity-privacy-policy.json
+
+      - name: Enforce new commit identity privacy boundary
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node security/commit-identity-privacy-guard.mjs
+
+      - name: Verify no authority drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const p = require('./security/commit-identity-privacy-policy.json');
+          if (p.authority?.executionAuthority !== 'none') throw new Error('privacy guard gained execution authority');
+          if (p.authority?.repositoryHistoryRewriteAuthority !== false) throw new Error('privacy guard gained history rewrite authority');
+          if (p.authority?.identityDisclosureAuthority !== 'none') throw new Error('privacy guard gained identity disclosure authority');
+          if (p.boundary?.naturalPersonEmailAllowed !== false) throw new Error('natural-person email became allowed');
+          console.log('Commit Identity Privacy authority boundary PASS');
+          NODE
+          git diff --check
