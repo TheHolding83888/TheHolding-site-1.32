@@ -9,6 +9,16 @@
   const THI_SCRIPT = '/agents/console/intelligence-progress.js';
   const NEWS_SCRIPT = '/agents/console/event-intelligence.js';
 
+  // English-first presentation layer for Ask The Holding. The underlying router
+  // remains bilingual; this only changes the default visible console copy.
+  if (!document.querySelector('script[data-th-ask-english-first-loader]')) {
+    const askUi = document.createElement('script');
+    askUi.src = '/agents/console/ask-english-first-ui.js?v=0.1';
+    askUi.defer = true;
+    askUi.dataset.thAskEnglishFirstLoader = 'v0.1';
+    document.head.appendChild(askUi);
+  }
+
   // Desktop-safe ownership of THI spacing. This lives outside The Holding News
   // so the score layout never depends on whether the News component loaded.
   const style = document.createElement('style');
