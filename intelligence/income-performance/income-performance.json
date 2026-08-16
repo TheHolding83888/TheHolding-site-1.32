@@ -1,0 +1,382 @@
+{
+  "version": "0.1-income-performance-intelligence",
+  "engineVersion": "0.1.1-monetra-evidence-family-compiler",
+  "generatedAt": "2026-08-16T20:09:29.134Z",
+  "status": "partial",
+  "scope": "First bounded Income & Performance Intelligence slice for Monetra.eth. Compiles proven evidence families without collapsing them or overclaiming period attribution.",
+  "company": {
+    "registry": "008",
+    "name": "Monetra.eth"
+  },
+  "semantics": {
+    "embeddedYield": "Flow-safe growth already capitalized inside strategy positions. It is not claimable rewards, realised cash flow, reference APY, or stable-price movement.",
+    "accruedClaimable": "Earned protocol-side value that remains separately claimable. It is not realised cash flow and is not added to Embedded Yield.",
+    "realisedCashFlow": "Accepted realised income events only under mechanism-specific proof. Incomplete coverage never becomes zero.",
+    "strategyPerformance": "Verified entry principal versus same-run nominal stable strategy value.",
+    "netMarketPnl": "Invested versus current USD capital including current market/stable-price effects under Stable Index reconciliation.",
+    "referenceProductivity": "Current annualized productive capacity. It is not earned return.",
+    "todayPolicy": "Do not label latest measured interval as calendar-day income unless its boundaries exactly match a calendar day.",
+    "periodAttributionPolicy": "The current Embedded Yield Ledger exposes source-labelled MTD/QTD/YTD aggregates but does not preserve a canonical interval-by-interval attribution ledger. Therefore protocol attribution is emitted only for the latest measured interval; MTD protocol attribution remains blocked.",
+    "noCollapseRule": "Do not sum Embedded Yield + Accrued Claimable + Realised Cash Flow + Strategy Performance + Net Market P&L into one income number because these families overlap or answer different economic questions."
+  },
+  "sourceState": {
+    "embeddedYieldLedger": {
+      "file": "companies/embedded-yield-ledger.json",
+      "version": "0.4-flow-aware-recurring-checkpoints",
+      "generatedAt": "2026-08-16T05:59:41.315Z",
+      "sha256": "9e2612d1fbfcf065bb5f4b3a6c733409af9fa48281e805221b362a19e777aa75"
+    },
+    "stableIndex": {
+      "file": "companies/stable-index-data.json",
+      "version": "0.2-stable-companies-index-strategy-performance",
+      "generatedAt": "2026-08-16T05:59:41.376Z",
+      "sha256": "77ec3e6f61dbefdf724f4de0e99bdf89546a1154099c1f38ee0149002555b1ad"
+    },
+    "realisedCashFlow": {
+      "file": "intelligence/realised-cash-flow/realised-cash-flow.json",
+      "version": "0.2.3-yield-basis-live-realised-cash-flow-resilient-logs",
+      "generatedAt": "2026-08-16T07:46:32.221Z",
+      "sha256": "10d34ba8b41d501a65e36abb97a849b83fd92fbc99260edb4da5af7080543150",
+      "overallCoverageComplete": false
+    }
+  },
+  "current": {
+    "currentCapitalUsd": 100.18293767,
+    "investedUsd": 99.99833671,
+    "referenceApyPct": 4.434042,
+    "referenceApyStatus": "last-full-coverage",
+    "accruedClaimableUsd": 0.04309867
+  },
+  "embeddedYield": {
+    "trackingStartedAt": "2026-08-12T11:57:52.890Z",
+    "latestMeasuredInterval": {
+      "status": "measured-partial-position-coverage",
+      "measuredPositionCount": 8,
+      "totalPositionCount": 10,
+      "incomeUsd": 0.01004892,
+      "stablePriceEffectUsd": 0.0068621,
+      "exactCalendarDay": false,
+      "label": "latest measured checkpoint interval, not calendar-day income",
+      "byProtocol": [
+        {
+          "protocol": "Yearn V3",
+          "incomeUsd": 0.00210273,
+          "stablePriceEffectUsd": 0.00124292,
+          "positionCount": 1
+        },
+        {
+          "protocol": "Inverse",
+          "incomeUsd": 0.00186773,
+          "stablePriceEffectUsd": 0.00257428,
+          "positionCount": 1
+        },
+        {
+          "protocol": "f(x) Protocol",
+          "incomeUsd": 0.00135721,
+          "stablePriceEffectUsd": -0.00470579,
+          "positionCount": 1
+        },
+        {
+          "protocol": "Frax Finance",
+          "incomeUsd": 0.00119373,
+          "stablePriceEffectUsd": 0.00061261,
+          "positionCount": 1
+        },
+        {
+          "protocol": "Aave",
+          "incomeUsd": 0.00116871,
+          "stablePriceEffectUsd": 0.0026883,
+          "positionCount": 1
+        },
+        {
+          "protocol": "Aave v3",
+          "incomeUsd": 0.0009747,
+          "stablePriceEffectUsd": 0.00033966,
+          "positionCount": 1
+        },
+        {
+          "protocol": "Sky",
+          "incomeUsd": 0.00095206,
+          "stablePriceEffectUsd": 0.00078809,
+          "positionCount": 1
+        },
+        {
+          "protocol": "Curve",
+          "incomeUsd": 0.00043205,
+          "stablePriceEffectUsd": 0.00332203,
+          "positionCount": 1
+        }
+      ]
+    },
+    "monthToDate": {
+      "status": "source-labelled-aggregate-no-canonical-protocol-attribution",
+      "incomeUsd": 0.01004892,
+      "protocolAttributionStatus": "blocked-no-canonical-interval-history",
+      "byProtocol": null
+    },
+    "quarterToDate": {
+      "status": "source-labelled-aggregate",
+      "incomeUsd": 0.01004892
+    },
+    "yearToDate": {
+      "status": "source-labelled-aggregate",
+      "incomeUsd": 0.01004892
+    },
+    "sinceTracking": {
+      "status": "source-labelled-aggregate",
+      "incomeUsd": 0.01004892
+    },
+    "stablePriceEffectSinceTrackingUsd": 0.0068621
+  },
+  "accruedRewards": {
+    "status": "measured-current-claimable",
+    "currentClaimableUsd": 0.04309867,
+    "items": [
+      {
+        "protocol": "Liquity V2",
+        "symbol": "BOLD",
+        "amount": 0.043105874267,
+        "usdValue": 0.04309867,
+        "snapshotAt": "2026-08-16T05:59:41.315Z"
+      }
+    ]
+  },
+  "realisedCashFlow": {
+    "status": "unknown",
+    "overallCoverageComplete": false,
+    "companyLanePresent": false,
+    "companyCoverageComplete": false,
+    "usd": null,
+    "interpretation": "No Monetra-specific realised-cash-flow lane is currently present; do not infer zero."
+  },
+  "performance": {
+    "strategy": {
+      "status": "verified-since-inception",
+      "sinceInceptionUsd": 0.32892938,
+      "sinceInceptionPct": 0.328935,
+      "basis": "verified-entry-principal-to-same-run-nominal-and-market-reconciliation",
+      "asOf": "2026-08-16T05:59:41.315Z",
+      "entryAsOf": "2026-08-12T20:06:12.616Z"
+    },
+    "netMarketPnl": {
+      "usd": 0.18460096,
+      "pct": 0.184604,
+      "stablePriceEffectUsd": -0.14432843,
+      "reconciliationIdentity": "strategyPerformanceUsd + stablePriceEffectUsd = netMarketPnlUsd"
+    }
+  },
+  "positions": [
+    {
+      "positionId": "base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "protocol": "Aave v3",
+      "chain": "Base",
+      "positionType": "Stable Lending",
+      "incomeMode": "lending-embedded",
+      "embeddedYieldEligible": true,
+      "currentComparable": true,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "ok",
+        "incomeUsd": 0.0009747,
+        "stablePriceEffectUsd": 0.00033966,
+        "exactCalendarDay": false,
+        "semanticWindow": "latest-measured-checkpoint-interval"
+      }
+    },
+    {
+      "positionId": "ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367",
+      "protocol": "Curve",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "embeddedYieldEligible": true,
+      "currentComparable": true,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "ok",
+        "incomeUsd": 0.00043205,
+        "stablePriceEffectUsd": 0.00332203,
+        "exactCalendarDay": false,
+        "semanticWindow": "latest-measured-checkpoint-interval"
+      }
+    },
+    {
+      "positionId": "ethereum:0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+      "protocol": "f(x) Protocol",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "embeddedYieldEligible": true,
+      "currentComparable": true,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "ok",
+        "incomeUsd": 0.00135721,
+        "stablePriceEffectUsd": -0.00470579,
+        "exactCalendarDay": false,
+        "semanticWindow": "latest-measured-checkpoint-interval"
+      }
+    },
+    {
+      "positionId": "ethereum:0xb45ad160634c528cc3d2926d9807104fa3157305",
+      "protocol": "Inverse",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "embeddedYieldEligible": true,
+      "currentComparable": true,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "ok",
+        "incomeUsd": 0.00186773,
+        "stablePriceEffectUsd": 0.00257428,
+        "exactCalendarDay": false,
+        "semanticWindow": "latest-measured-checkpoint-interval"
+      }
+    },
+    {
+      "positionId": "ethereum:0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+      "protocol": "Sky",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "embeddedYieldEligible": true,
+      "currentComparable": true,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "ok",
+        "incomeUsd": 0.00095206,
+        "stablePriceEffectUsd": 0.00078809,
+        "exactCalendarDay": false,
+        "semanticWindow": "latest-measured-checkpoint-interval"
+      }
+    },
+    {
+      "positionId": "ethereum:0xe1753f2e00940cc31213dd92013cf019dfe4ca1d",
+      "protocol": "Aave",
+      "chain": "Ethereum",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "embeddedYieldEligible": true,
+      "currentComparable": true,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "ok",
+        "incomeUsd": 0.00116871,
+        "stablePriceEffectUsd": 0.0026883,
+        "exactCalendarDay": false,
+        "semanticWindow": "latest-measured-checkpoint-interval"
+      }
+    },
+    {
+      "positionId": "ethereum:0x23346b04a7f55b8760e5860aa5a77383d63491cd",
+      "protocol": "Yearn V3",
+      "chain": "Ethereum",
+      "positionType": "Auto-Compounding Stable Vault",
+      "incomeMode": "embedded-yield",
+      "embeddedYieldEligible": true,
+      "currentComparable": true,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "ok",
+        "incomeUsd": 0.00210273,
+        "stablePriceEffectUsd": 0.00124292,
+        "exactCalendarDay": false,
+        "semanticWindow": "latest-measured-checkpoint-interval"
+      }
+    },
+    {
+      "positionId": "ethereum:0x4ce1ac8f43e0e5bd7a346a98af777bf8fbea1981",
+      "protocol": "Lido Earn",
+      "chain": "Ethereum",
+      "positionType": "Agent / Curator Managed Stable Vault",
+      "incomeMode": "agent-managed-embedded-yield",
+      "embeddedYieldEligible": true,
+      "currentComparable": false,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "warming-noncanonical-checkpoint",
+        "incomeUsd": 0,
+        "stablePriceEffectUsd": 0,
+        "exactCalendarDay": false,
+        "semanticWindow": "not-currently-comparable"
+      }
+    },
+    {
+      "positionId": "ethereum:liquity-v2-sp:weth",
+      "protocol": "Liquity V2",
+      "chain": "Ethereum",
+      "positionType": "Stability Pool Deposit",
+      "incomeMode": "stability-pool-yield-with-separate-claimables",
+      "embeddedYieldEligible": false,
+      "currentComparable": false,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "warming-noncanonical-checkpoint",
+        "incomeUsd": 0,
+        "stablePriceEffectUsd": 0,
+        "exactCalendarDay": false,
+        "semanticWindow": "not-currently-comparable"
+      }
+    },
+    {
+      "positionId": "fraxtal:0xfc00000000000000000000000000000000000008",
+      "protocol": "Frax Finance",
+      "chain": "Fraxtal",
+      "positionType": "Savings Stable",
+      "incomeMode": "embedded-yield",
+      "embeddedYieldEligible": true,
+      "currentComparable": true,
+      "checkpointCount": 5,
+      "latestCheckpointAt": "2026-08-16T05:59:41.315Z",
+      "latestInterval": {
+        "status": "ok",
+        "incomeUsd": 0.00119373,
+        "stablePriceEffectUsd": 0.00061261,
+        "exactCalendarDay": false,
+        "semanticWindow": "latest-measured-checkpoint-interval"
+      }
+    }
+  ],
+  "answerability": {
+    "monetra-current-capital": "answerable",
+    "monetra-current-claimable-rewards": "answerable",
+    "monetra-latest-measured-embedded-income": "answerable-with-interval-label-and-protocol-attribution",
+    "monetra-calendar-day-income-today": "blocked-no-exact-calendar-day-boundary",
+    "monetra-month-to-date-embedded-income": "answerable-source-labelled-aggregate",
+    "monetra-month-to-date-protocol-attribution": "blocked-no-canonical-interval-history",
+    "monetra-since-inception-strategy-performance": "answerable",
+    "monetra-net-market-pnl": "answerable",
+    "monetra-overall-realised-cash-flow": "blocked-incomplete-coverage"
+  },
+  "gaps": [
+    {
+      "id": "embedded-yield-canonical-interval-history",
+      "severity": "blocking-for-period-attribution",
+      "affects": [
+        "calendar-day-income",
+        "mtd-protocol-attribution",
+        "qtd-protocol-attribution",
+        "ytd-protocol-attribution"
+      ],
+      "detail": "Current ledger persists checkpoints and latestInterval but not a canonical interval ledger with historical accepted interval rows. Do not reconstruct official period attribution in this compiler."
+    }
+  ],
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "claimingAuthority": false,
+    "allocationAuthority": false,
+    "methodologyMutationAuthority": false
+  }
+}
