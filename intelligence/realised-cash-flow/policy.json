@@ -1,6 +1,6 @@
 {
-  "version": "0.1-realised-cash-flow-policy",
-  "methodology": "0.1-evidence-first-boundary-accounting",
+  "version": "0.2.1-realised-cash-flow-policy",
+  "methodology": "0.2.1-evidence-first-boundary-accounting-live-tier-a",
   "economicPrimitive": "realised-cash-flow",
   "countedClassification": "realised-income",
   "classifications": [
@@ -27,10 +27,13 @@
     "currentAprCanBackfillCashFlow": false,
     "unknownCountsAsZero": false,
     "unvaluedTokenPayoutCountsAsMeasuredTokenQuantity": true,
-    "unvaluedTokenPayoutCountsTowardUsdTotal": false
+    "unvaluedTokenPayoutCountsTowardUsdTotal": false,
+    "partialUsdSumMayMasqueradeAsCompleteTotal": false,
+    "askPromotionRequiresCompanyWideDeclaredCoverage": true
   },
   "dedupe": {
     "canonicalEventIdentity": "chainId:transactionHash:logIndex:adapterId",
+    "physicalEventIdentity": "chainId:transactionHash:logIndex",
     "supportingTransferCreatesSecondCashFlowRow": false,
     "crossAdapterCollisionPolicy": "fail-review"
   },
@@ -47,21 +50,42 @@
   ],
   "initialAdapters": {
     "yield-basis-fee-distributor-claim": {
-      "status": "researched-not-live",
+      "status": "live-candidate-bounded-direct-claim",
       "tier": "A",
       "protocol": "Yield Basis",
       "chain": "Ethereum",
       "contract": "0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90",
       "event": "Claim(address indexed user,address indexed token,uint256 amount)",
       "currentRewardsPlane": "FeeDistributor.preview_claim(receiver,50,false) measures unclaimed rewards only",
-      "cashFlowPlane": "historical Claim event after token transfer"
+      "cashFlowPlane": "historical successful Claim event plus independently matching ERC20 payout Transfer",
+      "liveEvidenceContract": {
+        "claimUserMustEqualCanonicalCompanyWallet": true,
+        "matchingSameTransactionTransferRequired": true,
+        "matchingTransferFromFeeDistributorRequired": true,
+        "matchingTransferToCanonicalCompanyWalletRequired": true,
+        "matchingTransferTokenRequired": true,
+        "matchingTransferRawAmountRequired": true,
+        "deploymentTransaction": "0xcd7321d6f67dc74f861266e56a7fee8285c3f5af663619ebb96581a083f0ef62",
+        "scanStartRule": "verify successful deployment receipt and exact contractAddress, then start at that receipt block",
+        "scanThroughLatestBlockRequired": true,
+        "compilerReproducedBytecodeBindingRequiredForV02": false,
+        "compilerReproducedBytecodeBindingClaimed": false
+      },
+      "coverage": {
+        "declaredLaneCanBeMeasured": true,
+        "overallCompanyCoverageComplete": false,
+        "askPromotionEligible": false,
+        "historicalUsdValuationComplete": false
+      }
     }
   },
   "authority": {
     "modelCallRequired": false,
     "walletSigning": false,
+    "claiming": false,
     "transactions": false,
     "capitalMovement": false,
+    "automaticMethodologyMutation": false,
     "executionAuthority": "none"
   }
 }
