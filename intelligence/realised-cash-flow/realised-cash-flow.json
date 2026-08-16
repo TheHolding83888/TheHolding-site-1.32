@@ -1,0 +1,286 @@
+{
+  "version": "0.2.3-yield-basis-live-realised-cash-flow-resilient-logs",
+  "generatedAt": "2026-08-16T07:46:32.221Z",
+  "startedAt": "2026-08-16T07:46:09.989Z",
+  "status": "unknown",
+  "scope": "Realised Cash Flow evidence plane; first live adapter is Yield Basis direct FeeDistributor claims for supported Holding company wallets.",
+  "methodology": {
+    "primaryRule": "receipt alone is not income",
+    "liveLaneRule": "count only when official Claim semantics and an exact same-transaction ERC20 payout to the exact company wallet both agree",
+    "valuationRule": "historical token quantity is factual; USD remains null until block/timestamp-bound valuation is separately proven",
+    "overallCoverageComplete": false,
+    "askPromotionEligible": false
+  },
+  "source": {
+    "protocol": "Yield Basis",
+    "chainId": 1,
+    "contract": "0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90",
+    "event": "Claim(address indexed user,address indexed token,uint256 amount)",
+    "deploymentTx": "0xcd7321d6f67dc74f861266e56a7fee8285c3f5af663619ebb96581a083f0ef62",
+    "deploymentBlock": 23925586,
+    "deploymentReceiptVerified": true,
+    "upstreamRepository": "yield-basis/yb-core",
+    "upstreamTreeSha": "0c46a683f1187d2be1929f18dba44ad5dfd39006",
+    "upstreamPath": "contracts/dao/FeeDistributor.vy",
+    "upstreamBlobSha": "8456fa2298f30692694f1e0f810b7cd404990fc7",
+    "productionAddressAlsoPresentInOfficialScripts": true,
+    "compilerReproducedBytecodeBindingClaimed": false
+  },
+  "scan": {
+    "fromBlock": 23925586,
+    "toBlock": 25766210,
+    "complete": true,
+    "startRule": "exact successful contract-creation receipt for the configured FeeDistributor",
+    "queryScope": "Claim event + exact tracked Claim.user topic OR filter",
+    "trackedUserCount": 5,
+    "requestedWindow": 20000,
+    "minimumSplitWindow": 250,
+    "topLevelWindowCount": 93,
+    "windowCount": 93,
+    "requestAttemptCount": 93,
+    "splitCount": 0,
+    "minimumSuccessfulWindow": 625,
+    "allContractClaimLogCount": null,
+    "allContractClaimLogCountMeasured": false,
+    "trackedUserClaimLogCount": 0,
+    "matchedDirectCompanyClaimLogCount": 0,
+    "providers": {
+      "state": "state:ethereum-rpc.publicnode.com",
+      "historicalLogs": "logs:multi-provider-failover",
+      "endpoints": [
+        "logs:rpc.flashbots.net",
+        "logs:ethereum-rpc.publicnode.com"
+      ],
+      "successCounts": {
+        "logs:rpc.flashbots.net": 93,
+        "logs:ethereum-rpc.publicnode.com": 0
+      },
+      "headLagBlocks": 0
+    }
+  },
+  "summary": {
+    "companyCount": 4,
+    "companiesWithDirectClaims": 0,
+    "realisedIncomeEventCount": 0,
+    "realisedCashFlowUsd": null,
+    "note": "USD aggregate is intentionally null because v0.2 does not fabricate historical wrapper/reward-token valuation."
+  },
+  "companies": {
+    "dinaz.eth": {
+      "status": "unknown",
+      "adapterCoverage": {
+        "adapterId": "yield-basis-fee-distributor-claim",
+        "status": "measured",
+        "completeForDeclaredLane": true,
+        "declaredLane": "Claim.user is an exact canonical company wallet and the same successful tx contains exactly one matching FeeDistributor ERC20 Transfer to that wallet",
+        "excluded": [
+          "claims where economic ownership exists but Claim.user differs from the receiving company boundary unless separately proven",
+          "other Yield Basis realised-income mechanisms",
+          "all non-Yield-Basis realised-income mechanisms"
+        ]
+      },
+      "wallets": [
+        {
+          "alias": "dinaz.eth",
+          "address": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc"
+        }
+      ],
+      "directClaimEventCount": 0,
+      "proofs": [],
+      "ledger": {
+        "version": "0.1.1-realised-cash-flow-ledger",
+        "classifierVersion": "0.1.1-fail-closed-realised-cash-flow-classifier",
+        "policyVersion": "0.2.1-realised-cash-flow-policy",
+        "generatedAt": "2026-08-16T07:46:32.221Z",
+        "scope": "dinaz.eth:yield-basis-direct-claim-lane",
+        "coverage": {
+          "complete": false,
+          "declaration": "Yield Basis direct Claim.user=company-wallet history is completely scanned from proven FeeDistributor deployment block 23925586 through block 25766210. Overall company Realised Cash Flow remains incomplete."
+        },
+        "status": "unknown",
+        "summary": {
+          "candidateCount": 0,
+          "acceptedRowCount": 0,
+          "rejectedRowCount": 0,
+          "realisedIncomeEventCount": 0,
+          "valuedRealisedIncomeEventCount": 0,
+          "unvaluedRealisedIncomeEventCount": 0,
+          "realisedCashFlowUsd": 0,
+          "totalsByAsset": {}
+        },
+        "rows": [],
+        "rejected": [],
+        "authority": {
+          "executionAuthority": "none",
+          "walletSigning": false,
+          "transactions": false
+        }
+      }
+    },
+    "defitea.eth": {
+      "status": "unknown",
+      "adapterCoverage": {
+        "adapterId": "yield-basis-fee-distributor-claim",
+        "status": "measured",
+        "completeForDeclaredLane": true,
+        "declaredLane": "Claim.user is an exact canonical company wallet and the same successful tx contains exactly one matching FeeDistributor ERC20 Transfer to that wallet",
+        "excluded": [
+          "claims where economic ownership exists but Claim.user differs from the receiving company boundary unless separately proven",
+          "other Yield Basis realised-income mechanisms",
+          "all non-Yield-Basis realised-income mechanisms"
+        ]
+      },
+      "wallets": [
+        {
+          "alias": "defitea.eth",
+          "address": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3"
+        },
+        {
+          "alias": "Defitea Operations",
+          "address": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d"
+        }
+      ],
+      "directClaimEventCount": 0,
+      "proofs": [],
+      "ledger": {
+        "version": "0.1.1-realised-cash-flow-ledger",
+        "classifierVersion": "0.1.1-fail-closed-realised-cash-flow-classifier",
+        "policyVersion": "0.2.1-realised-cash-flow-policy",
+        "generatedAt": "2026-08-16T07:46:32.221Z",
+        "scope": "defitea.eth:yield-basis-direct-claim-lane",
+        "coverage": {
+          "complete": false,
+          "declaration": "Yield Basis direct Claim.user=company-wallet history is completely scanned from proven FeeDistributor deployment block 23925586 through block 25766210. Overall company Realised Cash Flow remains incomplete."
+        },
+        "status": "unknown",
+        "summary": {
+          "candidateCount": 0,
+          "acceptedRowCount": 0,
+          "rejectedRowCount": 0,
+          "realisedIncomeEventCount": 0,
+          "valuedRealisedIncomeEventCount": 0,
+          "unvaluedRealisedIncomeEventCount": 0,
+          "realisedCashFlowUsd": 0,
+          "totalsByAsset": {}
+        },
+        "rows": [],
+        "rejected": [],
+        "authority": {
+          "executionAuthority": "none",
+          "walletSigning": false,
+          "transactions": false
+        }
+      }
+    },
+    "aerocrvyb.eth": {
+      "status": "unknown",
+      "adapterCoverage": {
+        "adapterId": "yield-basis-fee-distributor-claim",
+        "status": "measured",
+        "completeForDeclaredLane": true,
+        "declaredLane": "Claim.user is an exact canonical company wallet and the same successful tx contains exactly one matching FeeDistributor ERC20 Transfer to that wallet",
+        "excluded": [
+          "claims where economic ownership exists but Claim.user differs from the receiving company boundary unless separately proven",
+          "other Yield Basis realised-income mechanisms",
+          "all non-Yield-Basis realised-income mechanisms"
+        ]
+      },
+      "wallets": [
+        {
+          "alias": "Yield Basis wallet",
+          "address": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9"
+        }
+      ],
+      "directClaimEventCount": 0,
+      "proofs": [],
+      "ledger": {
+        "version": "0.1.1-realised-cash-flow-ledger",
+        "classifierVersion": "0.1.1-fail-closed-realised-cash-flow-classifier",
+        "policyVersion": "0.2.1-realised-cash-flow-policy",
+        "generatedAt": "2026-08-16T07:46:32.221Z",
+        "scope": "aerocrvyb.eth:yield-basis-direct-claim-lane",
+        "coverage": {
+          "complete": false,
+          "declaration": "Yield Basis direct Claim.user=company-wallet history is completely scanned from proven FeeDistributor deployment block 23925586 through block 25766210. Overall company Realised Cash Flow remains incomplete."
+        },
+        "status": "unknown",
+        "summary": {
+          "candidateCount": 0,
+          "acceptedRowCount": 0,
+          "rejectedRowCount": 0,
+          "realisedIncomeEventCount": 0,
+          "valuedRealisedIncomeEventCount": 0,
+          "unvaluedRealisedIncomeEventCount": 0,
+          "realisedCashFlowUsd": 0,
+          "totalsByAsset": {}
+        },
+        "rows": [],
+        "rejected": [],
+        "authority": {
+          "executionAuthority": "none",
+          "walletSigning": false,
+          "transactions": false
+        }
+      }
+    },
+    "1milliondollar.eth": {
+      "status": "unknown",
+      "adapterCoverage": {
+        "adapterId": "yield-basis-fee-distributor-claim",
+        "status": "measured",
+        "completeForDeclaredLane": true,
+        "declaredLane": "Claim.user is an exact canonical company wallet and the same successful tx contains exactly one matching FeeDistributor ERC20 Transfer to that wallet",
+        "excluded": [
+          "claims where economic ownership exists but Claim.user differs from the receiving company boundary unless separately proven",
+          "other Yield Basis realised-income mechanisms",
+          "all non-Yield-Basis realised-income mechanisms"
+        ]
+      },
+      "wallets": [
+        {
+          "alias": "1milliondollar.eth",
+          "address": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596"
+        }
+      ],
+      "directClaimEventCount": 0,
+      "proofs": [],
+      "ledger": {
+        "version": "0.1.1-realised-cash-flow-ledger",
+        "classifierVersion": "0.1.1-fail-closed-realised-cash-flow-classifier",
+        "policyVersion": "0.2.1-realised-cash-flow-policy",
+        "generatedAt": "2026-08-16T07:46:32.221Z",
+        "scope": "1milliondollar.eth:yield-basis-direct-claim-lane",
+        "coverage": {
+          "complete": false,
+          "declaration": "Yield Basis direct Claim.user=company-wallet history is completely scanned from proven FeeDistributor deployment block 23925586 through block 25766210. Overall company Realised Cash Flow remains incomplete."
+        },
+        "status": "unknown",
+        "summary": {
+          "candidateCount": 0,
+          "acceptedRowCount": 0,
+          "rejectedRowCount": 0,
+          "realisedIncomeEventCount": 0,
+          "valuedRealisedIncomeEventCount": 0,
+          "unvaluedRealisedIncomeEventCount": 0,
+          "realisedCashFlowUsd": 0,
+          "totalsByAsset": {}
+        },
+        "rows": [],
+        "rejected": [],
+        "authority": {
+          "executionAuthority": "none",
+          "walletSigning": false,
+          "transactions": false
+        }
+      }
+    }
+  },
+  "authority": {
+    "modelCall": false,
+    "walletSigning": false,
+    "claiming": false,
+    "transactions": false,
+    "capitalMovement": false,
+    "executionAuthority": "none"
+  }
+}
