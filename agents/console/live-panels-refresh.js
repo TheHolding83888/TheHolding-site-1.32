@@ -87,6 +87,19 @@
     document.head.appendChild(activationOverlay);
   }
 
+  // Runtime Evidence Cortex is a thin read-only consumer of the normalized
+  // runtime-reasoning-evidence packet. It owns only live/current evidence-backed
+  // topics that have a proven runtime capability. It is loaded before the broader
+  // Owner Context Cortex so measured live state can be combined with owner context
+  // without teaching context masquerading as market/account truth.
+  if (!document.querySelector('script[data-th-runtime-evidence-cortex-loader]')) {
+    const runtimeCortex = document.createElement('script');
+    runtimeCortex.src = '/agents/console/runtime-evidence-cortex.js?v=0.1';
+    runtimeCortex.defer = true;
+    runtimeCortex.dataset.thRuntimeEvidenceCortexLoader = 'v0.1';
+    document.head.appendChild(runtimeCortex);
+  }
+
   // Bounded conversational cortex. This is a read-only owner-context / graph
   // synthesis layer over the existing Ask router. safety.js is the parent
   // loader and therefore registers its capture guard before this script can
