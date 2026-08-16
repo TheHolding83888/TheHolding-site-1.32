@@ -1,0 +1,152 @@
+name: "The Holding Brain · Neural Graph Telemetry"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 8 * * *"
+  pull_request:
+    paths:
+      - "intelligence/neural-graph/**"
+      - "agents/console/neural-graph-dashboard.js"
+      - "agents/console/live-panels-refresh.js"
+      - ".github/workflows/update-neural-graph-telemetry.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "companies/productivity-data.json"
+      - "companies/stable-capital-data.json"
+      - "intelligence/event-intelligence.json"
+      - "intelligence/brain-chatgpt-bridge.json"
+      - "intelligence/learning/decision-ledger.json"
+      - "intelligence/memory-vault/manifest.json"
+      - "security/security-intelligence.json"
+      - "intelligence/owner-context/owner-decision-context.json"
+      - "intelligence/owner-context/intelligence-graph-growth-directive.json"
+      - "intelligence/neural-graph/neural-graph-telemetry.mjs"
+      - "agents/console/neural-graph-dashboard.js"
+      - "agents/console/live-panels-refresh.js"
+      - ".github/workflows/update-neural-graph-telemetry.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-neural-graph-telemetry
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/neural-graph/neural-graph-telemetry.mjs
+          node --check intelligence/neural-graph/neural-graph-telemetry.mjs
+          if [ -f agents/console/neural-graph-dashboard.js ]; then node --check agents/console/neural-graph-dashboard.js; fi
+          grep -q "executionAuthority: 'none'" intelligence/neural-graph/neural-graph-telemetry.mjs
+          grep -q "candidate-not-tracked" intelligence/neural-graph/neural-graph-telemetry.mjs
+          grep -q "candidateBoundary" intelligence/neural-graph/neural-graph-telemetry.mjs
+
+      - name: Build canonical neural graph telemetry
+        run: node intelligence/neural-graph/neural-graph-telemetry.mjs
+
+      - name: Validate graph semantics and authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('intelligence/neural-graph/neural-graph-telemetry.json', 'utf8'));
+          const h = JSON.parse(fs.readFileSync('intelligence/neural-graph/neural-graph-history.json', 'utf8'));
+          if (x.version !== '0.1-neural-graph-telemetry') throw new Error('unexpected telemetry version');
+          if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('graph gained execution authority');
+          if (x.authority?.marketFactAuthorityForOwnerContext !== false) throw new Error('owner context gained fact authority');
+          if (!Number.isInteger(x.totals?.neurons) || x.totals.neurons < 1) throw new Error('neuron count unavailable');
+          if (!Number.isInteger(x.totals?.neuralConnections) || x.totals.neuralConnections < 1) throw new Error('connection count unavailable');
+          if (!Number.isInteger(x.totals?.candidateNeurons) || !Number.isInteger(x.totals?.candidateConnections)) throw new Error('candidate counts unavailable');
+          if (!x.semantics?.candidateBoundary || !x.semantics?.thiBoundary) throw new Error('graph guardrails missing');
+          if (h.version !== '0.1-neural-graph-history' || !Array.isArray(h.snapshots) || h.snapshots.length < 1) throw new Error('history unavailable');
+          if (!x.integrity?.nodeCompositeHash || !x.integrity?.connectionCompositeHash || !x.integrity?.sourceCompositeHash) throw new Error('graph integrity missing');
+          console.log('Neural Graph Telemetry PASS', {
+            neurons: x.totals.neurons,
+            candidateNeurons: x.totals.candidateNeurons,
+            connections: x.totals.neuralConnections,
+            candidateConnections: x.totals.candidateConnections,
+            deltaMode: x.deltaSincePreviousSnapshot?.neurons?.mode,
+            activity24h: x.activity24h,
+            executionAuthority: x.authority.executionAuthority
+          });
+          NODE
+          git diff --check
+
+      - name: Publish generated neural graph telemetry
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED=(
+            "intelligence/neural-graph/neural-graph-telemetry.json"
+            "intelligence/neural-graph/neural-graph-history.json"
+          )
+          for f in "${GENERATED[@]}"; do test -s "$f"; done
+
+          git config user.name "The Holding Neural Graph"
+          git config user.email "neural-graph@theholding.ai"
+          git add "${GENERATED[@]}"
+
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/neural-graph/(neural-graph-telemetry\.json|neural-graph-history\.json)$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Neural Graph attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "Neural Graph telemetry already current."
+            exit 0
+          fi
+
+          git commit -m "intelligence: refresh neural graph telemetry"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Neural Graph publish conflict; refusing to guess."
+              exit 1
+            fi
+
+            # Rebuild after rebase so source hashes, delta and history bind to exact current main.
+            node intelligence/neural-graph/neural-graph-telemetry.mjs
+            git add "${GENERATED[@]}"
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+              echo "Verified Neural Graph telemetry on remote main."
+              exit 0
+            fi
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "ERROR: unable to publish Neural Graph telemetry after 3 attempts."
+          exit 1
