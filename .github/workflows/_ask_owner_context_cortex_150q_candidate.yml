@@ -1,0 +1,101 @@
+name: Ask candidate · Owner Context Cortex 150Q
+
+on:
+  push:
+    branches:
+      - agents/ask-owner-context-cortex-dev-20260816
+    paths:
+      - .github/workflows/_ask_owner_context_cortex_150q_candidate.yml
+      - agents/console/owner-context-conversation.js
+      - agents/console/live-panels-refresh.js
+      - verification/ask-experience/generate-owner-intelligence-graph-gap-150q-v0.1.mjs
+      - verification/ask-experience/review-owner-intelligence-graph-gap-150q-v0.1.mjs
+
+permissions:
+  contents: read
+
+jobs:
+  cortex-150q:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: agents/ask-owner-context-cortex-dev-20260816
+          fetch-depth: 0
+
+      - name: Static syntax and authority preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s agents/console/owner-context-conversation.js
+          test -s agents/console/live-panels-refresh.js
+          node --check agents/console/owner-context-conversation.js
+          node --check agents/console/live-panels-refresh.js
+          grep -q "executionAuthority: 'none'" agents/console/owner-context-conversation.js
+          grep -q "candidate metric" agents/console/owner-context-conversation.js
+          grep -q "causal" agents/console/owner-context-conversation.js
+
+      - name: Locate Chrome and install browser harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+          npm install --no-save --no-package-lock puppeteer-core@24.16.0
+
+      - name: Serve exact tested revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/ask-cortex-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/agents/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/ask-cortex-http.log; exit 1
+
+      - name: Generate exact same 150-question corpus
+        run: node verification/ask-experience/generate-owner-intelligence-graph-gap-150q-v0.1.mjs
+
+      - name: Run same 150Q against conversational cortex
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-owner-context-cortex-150q
+          ASK_EXPERIENCE_ORIGIN: synthetic-owner-intelligence-graph-gap-sweep
+        run: node verification/ask-experience/runner-v0.1.mjs artifacts/owner-intelligence-graph-gap-corpus.json artifacts/owner-intelligence-graph-gap-run.json
+
+      - name: Review exact same 150Q
+        shell: bash
+        run: |
+          set -euo pipefail
+          node verification/ask-experience/review-owner-intelligence-graph-gap-150q-v0.1.mjs artifacts/owner-intelligence-graph-gap-corpus.json artifacts/owner-intelligence-graph-gap-run.json > artifacts/owner-intelligence-graph-gap-review.json
+          node - <<'NODE'
+          const x = require('./artifacts/owner-intelligence-graph-gap-review.json');
+          const baseline = { flagged:108, genericFallback:47, confidenceMismatch:99, missingSourceBinding:0, harnessErrors:0 };
+          const current = {
+            flagged:x.flaggedCount,
+            genericFallback:x.genericFallbackCount,
+            confidenceMismatch:x.expectedConfidenceMismatchCount,
+            missingSourceBinding:x.missingSourceBindingCount,
+            harnessErrors:x.harnessErrors
+          };
+          console.log(JSON.stringify({ questions:x.questionCount, baseline, current, delta:{
+            flagged: current.flagged - baseline.flagged,
+            genericFallback: current.genericFallback - baseline.genericFallback,
+            confidenceMismatch: current.confidenceMismatch - baseline.confidenceMismatch,
+            missingSourceBinding: current.missingSourceBinding - baseline.missingSourceBinding,
+            harnessErrors: current.harnessErrors - baseline.harnessErrors
+          }, byGroup:x.byGroup }, null, 2));
+          if (current.harnessErrors !== 0) throw new Error('browser harness regression');
+          if (current.missingSourceBinding !== 0) throw new Error('source-binding regression');
+          if (current.genericFallback >= baseline.genericFallback) throw new Error('cortex did not reduce generic fallback');
+          if (current.flagged >= baseline.flagged) throw new Error('cortex did not reduce flagged cases');
+          NODE
+
+      - name: Upload cortex A-B evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-context-cortex-150q-${{ github.run_id }}
+          path: artifacts/owner-intelligence-graph-gap-*.json
+          retention-days: 30
