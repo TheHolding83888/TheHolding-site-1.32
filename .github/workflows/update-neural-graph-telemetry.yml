@@ -12,6 +12,7 @@ on:
       - "agents/console/neural-graph-quality.js"
       - "agents/console/neural-graph-daily-delta.js"
       - "agents/console/neural-map-explorer.js"
+      - "agents/console/neural-map-activation-overlay.js"
       - "agents/console/live-panels-refresh.js"
       - ".github/workflows/update-neural-graph-telemetry.yml"
   push:
@@ -34,6 +35,7 @@ on:
       - "agents/console/neural-graph-quality.js"
       - "agents/console/neural-graph-daily-delta.js"
       - "agents/console/neural-map-explorer.js"
+      - "agents/console/neural-map-activation-overlay.js"
       - "agents/console/live-panels-refresh.js"
       - ".github/workflows/update-neural-graph-telemetry.yml"
 
@@ -73,6 +75,7 @@ jobs:
           test -s agents/console/neural-graph-quality.js
           test -s agents/console/neural-graph-daily-delta.js
           test -s agents/console/neural-map-explorer.js
+          test -s agents/console/neural-map-activation-overlay.js
           test -s agents/console/live-panels-refresh.js
           node --check intelligence/neural-graph/neural-graph-telemetry.mjs
           node --check intelligence/neural-graph/neural-graph-quality.mjs
@@ -80,6 +83,7 @@ jobs:
           node --check agents/console/neural-graph-quality.js
           node --check agents/console/neural-graph-daily-delta.js
           node --check agents/console/neural-map-explorer.js
+          node --check agents/console/neural-map-activation-overlay.js
           node --check agents/console/live-panels-refresh.js
           grep -q "executionAuthority: 'none'" intelligence/neural-graph/neural-graph-telemetry.mjs
           grep -q "candidate-not-tracked" intelligence/neural-graph/neural-graph-telemetry.mjs
@@ -89,6 +93,9 @@ jobs:
           grep -q '"blocked"' intelligence/owner-context/owner-teaching-activation.json
           grep -q '"contextual"' intelligence/owner-context/owner-teaching-activation.json
           grep -q "MAX_NEIGHBORS" agents/console/neural-map-explorer.js
+          grep -q "neural-graph-quality.json" agents/console/neural-map-activation-overlay.js
+          grep -q "executionAuthority" agents/console/neural-map-activation-overlay.js
+          grep -q "neural-map-activation-overlay.js" agents/console/live-panels-refresh.js
           grep -q "daily comparison warming" agents/console/neural-graph-daily-delta.js
 
       - name: Build canonical neural graph telemetry
