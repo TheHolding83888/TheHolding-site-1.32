@@ -8,10 +8,11 @@ Canonical source state represented here: **2026-08-16T13:21:00.546Z**
 
 ## Resume order
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1517_OWNER_INTELLIGENCE_GRAPH_150Q.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1517_OWNER_INTELLIGENCE_GRAPH_150Q.md)
-2. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
-3. [Project Memory README](./README.md)
-4. Read only the live machine-readable subsystem artifacts needed for the current task.
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1630_NEURAL_GRAPH_VISUAL_INTELLIGENCE_PAUSE.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1630_NEURAL_GRAPH_VISUAL_INTELLIGENCE_PAUSE.md)
+2. [THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1517_OWNER_INTELLIGENCE_GRAPH_150Q.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1517_OWNER_INTELLIGENCE_GRAPH_150Q.md)
+3. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
+4. [Project Memory README](./README.md)
+5. Read only the live machine-readable subsystem artifacts needed for the current task.
 
 ## Project identity
 
@@ -28,6 +29,25 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 - **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-16T07-08-14-100Z-9b1d3c476c.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
 - **Project continuity** — this bootstrap + human continuity checkpoints + build-discipline canon.
+
+## Current owner intelligence / neural graph
+
+- Owner Decision Context: **35 structured teaching units** = 25 earlier text teaching units + 10 audio Q1–Q10.
+- Conversational Cortex is production-live; exact same 150Q A/B improved flagged review cases **108 → 18**, generic fallbacks **47 → 6**, confidence mismatches **99 → 15**, while missing source binding and harness errors remained 0.
+- Neural Graph is production-live and provenance-aware. Fresh telemetry generatedAt `2026-08-16T13:21:05.318Z`: **354 established neurons / 262 established neural connections / 64 candidate neurons / 5 candidate connections**.
+- Fresh Neural Graph change: +1 established Security-finding neuron versus the immediately preceding snapshot; current rolling graph history is young and daily day-over-day comparison is still warming.
+- `/agents/` now includes distinct Owner Intelligence, whole-OS Neural Graph / Brain Growth, and Interactive Neural Map layers.
+- Interactive Neural Map is a bounded neighborhood explorer over canonical `catalog.nodes` / `catalog.connections`: overview, click-to-focus 1-hop neighborhood, traversal, zoom/pan/reset, provenance inspector, optional candidate-edge visibility.
+- Daily Delta layer never invents history. It shows `daily comparison warming` until a real prior canonical daily baseline exists.
+- Neural/graph growth does **not** automatically raise THI; established/candidate, direct/derived, correlation/causation and owner-context/market-fact boundaries remain explicit.
+
+## Current pause / next owner teaching action
+
+- Owner intentionally paused after visually confirming the new Neural Graph / Neural Map production UI.
+- Owner plans to answer the next five strategy questions later by audio.
+- **Next question is Q11 only**: borrowing purpose / debt boundaries under BTC/ETH/other collateral.
+- Then Q12–Q15 one-by-one. Collect the five voice answers and process/canonicalize them together unless owner explicitly requests earlier processing.
+- Do not rediscover #88/#90/#91 as future work: Conversational Cortex, Neural Graph Telemetry, Brain Growth dashboard, Interactive Neural Map and Daily Delta are already production capabilities.
 
 ## Current cognitive stack
 
@@ -53,6 +73,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 - Prefer reuse and simplification over parallel machinery.
 - No duplicate sources of truth and no orchestration loops.
 - Capability must grow faster than complexity; authority must grow slower than intelligence.
+- Durable owner refinement: if a strong useful idea can be safely implemented now, do not abandon it to a vague roadmap; implement the smallest coherent layer, evaluate it, verify production, and preserve it in project memory.
 
 ## Durable-memory rule
 
