@@ -31,16 +31,28 @@ jobs:
           set -euo pipefail
           node --check intelligence/realised-cash-flow/classifier.mjs
           node --check verification/realised-cash-flow/evaluator-v0.1.mjs
+          node --check intelligence/realised-cash-flow/yield-basis-live-adapter.mjs
+          node --check verification/realised-cash-flow/review-live-v0.2.mjs
           node - <<'NODE'
           const p=require('./intelligence/realised-cash-flow/policy.json');
           const r=require('./intelligence/realised-cash-flow/adapter-research.json');
+          if(p.version!=='0.2-realised-cash-flow-policy') throw new Error('unexpected policy version');
           if(p.authority?.executionAuthority!=='none') throw new Error('execution authority changed');
+          if(p.authority?.claiming!==false || p.authority?.transactions!==false || p.authority?.capitalMovement!==false) throw new Error('capital authority changed');
           if(p.publicationRules?.genericWithdrawCanProveIncome!==false) throw new Error('withdraw income boundary changed');
           if(p.publicationRules?.genericInboundTransferCanProveIncome!==false) throw new Error('generic transfer income boundary changed');
+          if(p.publicationRules?.claimableDecreaseCanProveIncome!==false) throw new Error('claimable decrease boundary changed');
+          if(p.publicationRules?.askPromotionRequiresCompanyWideDeclaredCoverage!==true) throw new Error('Ask coverage gate weakened');
           const yb=(r.adapters||[]).find(x=>x.adapterId==='yield-basis-fee-distributor-claim');
-          if(!yb || yb.status!=='researched-not-live') throw new Error('Yield Basis adapter promoted without live proof');
-          if(yb.deploymentBinding?.sourceCodeToConfiguredAddressBytecodeVerified!==false) throw new Error('deployment/source binding claimed prematurely');
+          if(!yb || yb.status!=='live-candidate-bounded-direct-claim') throw new Error('unexpected Yield Basis adapter state');
+          if(yb.deploymentBinding?.sourceCodeToConfiguredAddressBytecodeVerified!==false) throw new Error('compiler bytecode binding claimed prematurely');
+          if(yb.liveCandidateContract?.askPromotionEligible!==false) throw new Error('live candidate promoted Ask prematurely');
           if(yb.executionAuthority!=='none') throw new Error('adapter authority changed');
+          const pyb=p.initialAdapters?.['yield-basis-fee-distributor-claim'];
+          if(pyb?.status!=='live-candidate-bounded-direct-claim') throw new Error('policy/research adapter state mismatch');
+          if(pyb?.liveEvidenceContract?.claimUserMustEqualCanonicalCompanyWallet!==true) throw new Error('direct Claim.user invariant missing');
+          if(pyb?.liveEvidenceContract?.matchingSameTransactionTransferRequired!==true) throw new Error('matching Transfer invariant missing');
+          if(pyb?.coverage?.overallCompanyCoverageComplete!==false || pyb?.coverage?.askPromotionEligible!==false) throw new Error('coverage boundary drift');
           NODE
 
       - name: Prove accounting boundary
@@ -56,8 +68,10 @@ jobs:
             echo "**Primary rule:** receipt alone is not income"
             echo "**Generic withdraw / redeem:** never sufficient"
             echo "**Cross-adapter physical-event collision:** fail closed"
-            echo "**First adapter research:** Yield Basis Claim · researched-not-live"
-            echo "**Current production Ask promotion:** none"
+            echo "**First live candidate:** Yield Basis Claim + exact same-tx ERC20 Transfer"
+            echo "**Declared lane:** direct Claim.user = canonical company wallet"
+            echo "**Overall company coverage:** incomplete"
+            echo "**Current Ask promotion:** disabled"
             echo "**Model/API call:** none"
             echo "**Wallet / transaction authority:** none"
             echo "**Execution authority:** none"
