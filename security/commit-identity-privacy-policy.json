@@ -1,0 +1,29 @@
+{
+  "version": "0.1-commit-identity-privacy-policy",
+  "status": "defensive-repository-identity-boundary",
+  "purpose": "Prevent new Git commits from publishing natural-person email identities while allowing GitHub privacy-safe noreply identities and explicit The Holding project bot aliases.",
+  "boundary": {
+    "historicalRewriteAuthorized": false,
+    "scanNewCommitsOnly": true,
+    "printRejectedEmailValues": false,
+    "naturalPersonEmailAllowed": false,
+    "githubNoreplyAllowed": true,
+    "projectBotAliasAllowed": true
+  },
+  "allowed": {
+    "exactEmails": [
+      "noreply@github.com"
+    ],
+    "emailSuffixes": [
+      "@users.noreply.github.com",
+      "@theholding.ai"
+    ]
+  },
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "repositoryHistoryRewriteAuthority": false,
+    "identityDisclosureAuthority": "none"
+  }
+}
