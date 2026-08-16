@@ -4,14 +4,19 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - "companies/index.html"
+      - "companies/productivity-data.json"
+      - "companies/stable-index-data.json"
       - "intelligence/capital-state/**"
       - ".github/workflows/update-capital-state.yml"
   push:
     branches:
       - main
     paths:
+      - "companies/index.html"
       - "companies/productivity-data.json"
       - "companies/stable-index-data.json"
+      - "intelligence/capital-state/general-company-balance-sheet.mjs"
       - "intelligence/capital-state/capital-state.mjs"
       - ".github/workflows/update-capital-state.yml"
 
@@ -25,7 +30,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
 
     steps:
       - name: Checkout canonical state
@@ -44,68 +49,77 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test -s intelligence/capital-state/general-company-balance-sheet.mjs
           test -s intelligence/capital-state/capital-state.mjs
+          test -s companies/index.html
           test -s companies/productivity-data.json
           test -s companies/stable-index-data.json
+          node --check intelligence/capital-state/general-company-balance-sheet.mjs
           node --check intelligence/capital-state/capital-state.mjs
+          grep -q "executionAuthority:'none'\|executionAuthority: 'none'" intelligence/capital-state/general-company-balance-sheet.mjs
           grep -q "executionAuthority: 'none'" intelligence/capital-state/capital-state.mjs
+          grep -q "unknown != zero" intelligence/capital-state/general-company-balance-sheet.mjs
           grep -q "unknown != zero" intelligence/capital-state/capital-state.mjs
           grep -q "networkTvlUsd" intelligence/capital-state/capital-state.mjs
-          grep -q "measuredCapitalFloorUsd" intelligence/capital-state/capital-state.mjs
+          grep -q "layerWeights" intelligence/capital-state/capital-state.mjs
+
+      - name: Build General Company Balance Sheet
+        run: node intelligence/capital-state/general-company-balance-sheet.mjs
 
       - name: Build Capital State
         run: node intelligence/capital-state/capital-state.mjs
 
-      - name: Validate Capital State semantics and authority
+      - name: Validate total-capital semantics and authority
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
-          const x = JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json', 'utf8'));
+          const b = JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
+          const x = JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
 
-          if (x.version !== '0.1-capital-state') throw new Error('unexpected Capital State version');
-          if (x.engineVersion !== '0.1-evidence-bound-capital-substrate') throw new Error('unexpected engine version');
-          if (x.status !== 'partial') throw new Error('v0.1 must remain partial until total-capital coverage is proven');
+          if (b.version !== '0.1-general-company-balance-sheet' || b.status !== 'ok') throw new Error('general balance sheet not healthy');
+          if (b.authority?.executionAuthority !== 'none' || b.authority?.readOnly !== true) throw new Error('general balance sheet gained execution authority');
+          if (!Array.isArray(b.companies) || b.companies.length !== 8) throw new Error('expected eight general companies');
+          if (b.network?.totalCapitalCompleteCompanyCount !== 8) throw new Error('general total-capital binding incomplete');
+          if (!Number.isFinite(b.network?.generalCompanyTvlUsd) || b.network.generalCompanyTvlUsd <= 0) throw new Error('general company TVL unavailable');
+          for (const c of b.companies) {
+            if (c.totalCapitalComplete !== true || c.status !== 'total-capital-complete') throw new Error(`${c.registry}: incomplete total-capital binding`);
+            const sum = Object.values(c.layerValues||{}).reduce((s,v)=>s+Number(v||0),0);
+            if (Math.abs(sum-Number(c.totalCapitalUsd))>0.05) throw new Error(`${c.registry}: layer reconciliation failed`);
+          }
+          const rook = b.companies.find(c=>c.registry==='007');
+          const rookZk = rook?.positions?.find(p=>p.assetId==='zksync');
+          if (!rookZk || rookZk.primaryCapitalLayer !== 'unclassified') throw new Error('Rook ZK must remain unclassified');
+          const oneM = b.companies.find(c=>c.registry==='009');
+          const oneMEth = oneM?.positions?.find(p=>p.assetId==='ethereum');
+          if (!oneMEth || oneMEth.evidenceStatus !== 'mixed-verified-native-plus-owner-observed') throw new Error('Company 009 mixed ETH provenance lost');
+
+          if (x.version !== '0.2-capital-state') throw new Error('unexpected Capital State version');
+          if (x.engineVersion !== '0.2-complete-balance-sheet-capital-substrate') throw new Error('unexpected Capital State engine version');
+          if (x.status !== 'ok') throw new Error('Capital State must be ok with 9/9 complete bindings');
           if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('Capital State gained execution authority');
           if (x.authority?.capitalExecution !== false || x.authority?.allocationAuthority !== false) throw new Error('Capital State gained capital/allocation authority');
-
           if (!Array.isArray(x.companies) || x.companies.length !== 9) throw new Error('expected exactly 9 Registry companies');
-          if (x.network?.registryCompanyCount !== 9) throw new Error('registry count mismatch');
-          if (x.network?.measuredCompanyCount !== 9) throw new Error('expected scoped measured capital for all 9 companies');
-          if (x.network?.totalCapitalCompleteCompanyCount !== 1) throw new Error('only Monetra total-capital binding is complete in v0.1');
-          if (x.network?.networkTvlUsd !== null) throw new Error('Network TVL must be withheld while total-capital coverage is incomplete');
-          if (x.network?.networkTvlStatus !== 'withheld-incomplete-total-capital-coverage') throw new Error('Network TVL status must disclose incomplete coverage');
-          if (!Number.isFinite(x.network?.measuredCapitalFloorUsd) || x.network.measuredCapitalFloorUsd <= 0) throw new Error('measured capital floor unavailable');
-          if (!Number.isFinite(x.network?.measuredProductiveCapitalUsd) || x.network.measuredProductiveCapitalUsd <= 0) throw new Error('productive capital floor unavailable');
-          if (!Number.isFinite(x.network?.measuredStableCapitalUsd) || x.network.measuredStableCapitalUsd <= 0) throw new Error('stable capital unavailable');
+          if (x.network?.registryCompanyCount !== 9 || x.network?.measuredCompanyCount !== 9) throw new Error('registry measurement mismatch');
+          if (x.network?.totalCapitalCompleteCompanyCount !== 9 || x.network?.totalCapitalCoverage !== 1) throw new Error('9/9 total-capital coverage required');
+          if (!Number.isFinite(x.network?.networkTvlUsd) || x.network.networkTvlUsd <= 0) throw new Error('Network TVL unavailable');
+          if (Math.abs(Number(x.network.networkTvlUsd)-Number(x.network.measuredCapitalFloorUsd))>0.01) throw new Error('Network TVL must equal proven measured capital floor at 9/9 coverage');
+          const layerSum = Object.values(x.network?.layerValues||{}).reduce((s,v)=>s+Number(v||0),0);
+          if (Math.abs(layerSum-Number(x.network.networkTvlUsd))>0.05) throw new Error('network layers do not reconcile to Network TVL');
+          const weightSum = Object.values(x.network?.layerWeights||{}).reduce((s,v)=>s+Number(v||0),0);
+          if (Math.abs(weightSum-1)>0.00001) throw new Error('capital layer weights must sum to 1');
+          if (x.readiness?.networkTvl !== 'available') throw new Error('Network TVL readiness not activated');
+          if (x.readiness?.q12AllocationContext !== 'available-with-layer-provenance') throw new Error('Q12 allocation context not activated');
+          if ((x.gaps||[]).some(g=>g.id==='general-company-total-capital-binding' && g.severity==='blocking')) throw new Error('closed total-capital blocker still present');
 
-          const monetra = x.companies.find(c => c.registry === '008');
-          if (!monetra || monetra.name !== 'Monetra.eth') throw new Error('Monetra identity missing');
-          if (monetra.totalCapitalComplete !== true || monetra.measurementStatus !== 'total-capital-complete') throw new Error('Monetra complete-capital contract missing');
-          if (!Number.isFinite(monetra.layerValues?.stableReserveUsd) || monetra.layerValues.stableReserveUsd <= 0) throw new Error('Monetra stable layer unavailable');
-          if (monetra.layerValues?.productiveDividendUsd !== null) throw new Error('Stable principal must not be double-classified as Productive layer');
-
-          for (const c of x.companies.filter(c => c.registry !== '008')) {
-            if (c.totalCapitalComplete !== false) throw new Error(`${c.registry}: general company incorrectly marked total-complete`);
-            if (c.capitalScope !== 'productive-capital-only') throw new Error(`${c.registry}: expected productive-only scope`);
-            if (!Number.isFinite(c.layerValues?.productiveDividendUsd) || c.layerValues.productiveDividendUsd <= 0) throw new Error(`${c.registry}: productive layer unavailable`);
-            if (c.coverage?.companyCapitalCoverage !== null) throw new Error(`${c.registry}: unknown whole-company coverage must remain null`);
-          }
-
-          const blocker = (x.gaps || []).find(g => g.id === 'general-company-total-capital-binding');
-          if (!blocker || blocker.severity !== 'blocking') throw new Error('general total-capital blocker missing');
-          if (x.readiness?.networkTvl !== 'blocked') throw new Error('network TVL readiness must remain blocked');
-          if (x.readiness?.q12AllocationContext !== 'partial') throw new Error('Q12 must remain partial');
-
-          console.log('CAPITAL STATE v0.1 PASS', {
-            companies: x.network.registryCompanyCount,
-            measuredCompanies: x.network.measuredCompanyCount,
-            completeCompanies: x.network.totalCapitalCompleteCompanyCount,
-            measuredCapitalFloorUsd: x.network.measuredCapitalFloorUsd,
-            networkTvlUsd: x.network.networkTvlUsd,
-            q12: x.readiness.q12AllocationContext,
-            executionAuthority: x.authority.executionAuthority
+          console.log('CAPITAL STATE v0.2 PASS', {
+            generalCompanies:b.companies.length,
+            registryCompanies:x.network.registryCompanyCount,
+            networkTvlUsd:x.network.networkTvlUsd,
+            layerWeights:x.network.layerWeights,
+            q12:x.readiness.q12AllocationContext,
+            executionAuthority:x.authority.executionAuthority
           });
           NODE
           git diff --check
@@ -115,14 +129,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          GENERATED="intelligence/capital-state/capital-state.json"
-          test -s "$GENERATED"
+          BALANCE="intelligence/capital-state/general-company-balance-sheet.json"
+          STATE="intelligence/capital-state/capital-state.json"
+          test -s "$BALANCE"
+          test -s "$STATE"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$GENERATED"
+          git add "$BALANCE" "$STATE"
 
-          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/capital-state/capital-state\.json$' || true)"
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/capital-state/(general-company-balance-sheet|capital-state)\.json$' || true)"
           if [ -n "$staged_bad" ]; then
             echo "ERROR: Capital State attempted to stage outside generated boundary:"
             echo "$staged_bad"
@@ -134,7 +150,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "capital: refresh canonical capital state"
+          git commit -m "capital: refresh complete capital state"
 
           for attempt in 1 2 3; do
             git fetch origin main
@@ -144,16 +160,20 @@ jobs:
               exit 1
             fi
 
+            node intelligence/capital-state/general-company-balance-sheet.mjs
             node intelligence/capital-state/capital-state.mjs
-            git add "$GENERATED"
+            git add "$BALANCE" "$STATE"
             if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
 
             if git push origin HEAD:main; then
               git fetch origin main
-              git cat-file -e "origin/main:$GENERATED"
-              REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
-              test "$REMOTE_VERSION" = "0.1-capital-state"
-              echo "Verified Capital State v0.1 on remote main."
+              git cat-file -e "origin/main:$BALANCE"
+              git cat-file -e "origin/main:$STATE"
+              REMOTE_BALANCE_VERSION="$(git show "origin/main:$BALANCE" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+              REMOTE_STATE_VERSION="$(git show "origin/main:$STATE" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+              test "$REMOTE_BALANCE_VERSION" = "0.1-general-company-balance-sheet"
+              test "$REMOTE_STATE_VERSION" = "0.2-capital-state"
+              echo "Verified General Balance Sheet v0.1 + Capital State v0.2 on remote main."
               exit 0
             fi
 
