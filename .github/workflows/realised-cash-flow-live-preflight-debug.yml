@@ -6,6 +6,10 @@ on:
 permissions:
   contents: read
 
+env:
+  ETH_RPC_URL: https://rpc.flashbots.net
+  YB_LOG_WINDOW: '5000'
+
 jobs:
   preflight:
     runs-on: ubuntu-latest
@@ -18,60 +22,38 @@ jobs:
           package-manager-cache: false
       - run: npm install --no-save --no-package-lock ethers@6
 
-      - name: Probe historical getLogs capability
-        env:
-          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+      - name: Probe exact bounded historical range
         run: |
           mkdir -p artifacts
-          node --input-type=module <<'NODE' > artifacts/rpc-probes.json
+          node --input-type=module <<'NODE' > artifacts/rpc-probe.json
           import {JsonRpcProvider, Interface} from 'ethers';
+          const p=new JsonRpcProvider(process.env.ETH_RPC_URL,1,{staticNetwork:true});
           const iface=new Interface(['event Claim(address indexed user,address indexed token,uint256 amount)']);
-          const topic=iface.getEvent('Claim').topicHash;
-          const address='0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90';
-          const from=23925586, to=23928000;
-          const urls=[
-            process.env.ETH_RPC_URL,
-            'https://ethereum-rpc.publicnode.com',
-            'https://eth.llamarpc.com',
-            'https://1rpc.io/eth',
-            'https://rpc.flashbots.net',
-            'https://eth.drpc.org'
-          ].filter(Boolean);
-          const seen=new Set(); const out=[];
-          for(const url of urls){
-            let label='configured'; try{label=new URL(url).hostname}catch{}
-            if(seen.has(url)) continue; seen.add(url);
-            const row={label};
-            try{
-              const p=new JsonRpcProvider(url,1,{staticNetwork:true});
-              row.chainId=Number((await p.getNetwork()).chainId);
-              row.latest=await p.getBlockNumber();
-              const logs=await p.getLogs({address,topics:[topic],fromBlock:from,toBlock:to});
-              row.historicalGetLogs='ok'; row.logCount=logs.length;
-            }catch(e){
-              row.historicalGetLogs='error';
-              row.error=String(e?.shortMessage||e?.message||e).replace(url,'[redacted]').slice(0,300);
-            }
-            out.push(row);
-          }
-          console.log(JSON.stringify(out,null,2));
+          const logs=await p.getLogs({
+            address:'0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90',
+            topics:[iface.getEvent('Claim').topicHash],
+            fromBlock:23925586,
+            toBlock:23930585
+          });
+          console.log(JSON.stringify({chainId:Number((await p.getNetwork()).chainId),latest:await p.getBlockNumber(),window:5000,logCount:logs.length},null,2));
           NODE
 
-      - name: Capture exact adapter result
-        env:
-          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+      - name: Capture exact bounded adapter result
         shell: bash
         run: |
           set +e
           node intelligence/realised-cash-flow/yield-basis-live-adapter.mjs > artifacts/adapter.stdout.txt 2> artifacts/adapter.stderr.txt
           rc=$?
           echo "$rc" > artifacts/adapter.exit-code.txt
+          if [ -s intelligence/realised-cash-flow/realised-cash-flow.json ]; then
+            cp intelligence/realised-cash-flow/realised-cash-flow.json artifacts/realised-cash-flow.json
+          fi
           exit 0
 
       - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: realised-cash-flow-rpc-preflight-${{ github.run_id }}
+          name: realised-cash-flow-bounded-preflight-${{ github.run_id }}
           path: artifacts/
           retention-days: 2
