@@ -1,6 +1,6 @@
 {
-  "version": "0.2-realised-cash-flow-adapter-research",
-  "generatedAt": "2026-08-16T05:10:00Z",
+  "version": "0.2.1-realised-cash-flow-adapter-research",
+  "generatedAt": "2026-08-16T05:20:00Z",
   "adapters": [
     {
       "adapterId": "yield-basis-fee-distributor-claim",
@@ -31,19 +31,28 @@
       "deploymentBinding": {
         "configuredAddressHasRuntimeCodeRequiredByLivePreflight": true,
         "officialRepositoryBindsSourceContractToConfiguredAddress": true,
+        "deploymentTransaction": "0xcd7321d6f67dc74f861266e56a7fee8285c3f5af663619ebb96581a083f0ef62",
+        "observedDeploymentBlockDuringDiagnostic": 23925586,
+        "liveRule": "Every run fetches the deployment transaction receipt, requires status=1 and contractAddress equal to the configured FeeDistributor, derives the scan start from that receipt, and verifies current runtime code before scanning.",
         "sourceCodeToConfiguredAddressBytecodeVerified": false,
-        "reason": "v0.2 does not claim compiler-reproduced bytecode equivalence. It instead requires three independent facts before counting: official source semantics, official repository address binding, and a successful onchain Claim plus exact matching ERC20 Transfer from the configured contract."
+        "reason": "v0.2.1 does not claim compiler-reproduced bytecode equivalence. It requires official source semantics, official repository address binding, a successful exact deployment receipt, runtime code, and then each counted Claim must have an exact same-transaction ERC20 payout from the configured contract."
       },
       "liveCandidateContract": {
         "collector": "intelligence/realised-cash-flow/yield-basis-live-adapter.mjs",
         "reviewer": "verification/realised-cash-flow/review-live-v0.2.mjs",
         "workflow": ".github/workflows/update-realised-cash-flow.yml",
-        "scanHorizon": "ethereum block 0 through exact latest block of the run",
+        "scanHorizon": "receipt-derived FeeDistributor deployment block through the exact latest Ethereum block of each run",
+        "scanCompletenessRule": "The direct-Claim lane is complete only when the deployment receipt is proven and every block from that receipt block through scan.toBlock has been queried successfully; RPC gaps fail closed.",
         "semanticRequirement": "Claim.user must equal an exact canonical company wallet",
         "receiptRequirement": "same successful transaction must contain exactly one ERC20 Transfer of the same token and raw amount from FeeDistributor to that exact company wallet",
-        "historicalUsd": "not-valued in v0.2",
+        "historicalUsd": "not-valued in v0.2.1",
         "overallCompanyCoverage": "incomplete",
         "askPromotionEligible": false
+      },
+      "diagnosticLearning": {
+        "initialGenesisScanFailure": "A public Ethereum RPC rejected archive eth_getLogs from genesis with HTTP 403 even though current network/deployment reads worked.",
+        "architecturalCorrection": "Do not weaken RPC/economic guards. Derive the earliest possible event horizon from the exact successful contract-creation receipt instead of querying impossible pre-deployment history.",
+        "durableImpact": "Lower RPC load while increasing provenance quality: history now starts from a transaction-proven contract existence boundary rather than an arbitrary block 0 assumption."
       },
       "remainingExpansionRequirements": [
         "add other protocol-attributed payout mechanisms one at a time",
