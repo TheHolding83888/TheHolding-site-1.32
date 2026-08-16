@@ -129,16 +129,22 @@ jobs:
           git config user.name "The Holding Realised Cash Flow"
           git config user.email "realised-cash-flow@theholding.ai"
 
-          stage_and_validate() {
-            git add intelligence/realised-cash-flow/realised-cash-flow.json
-            mapfile -t staged < <(git diff --cached --name-only)
-            if [ "${#staged[@]}" -gt 1 ] || { [ "${#staged[@]}" -eq 1 ] && [ "${staged[0]}" != "intelligence/realised-cash-flow/realised-cash-flow.json" ]; }; then
-              echo "Unexpected staged files: ${staged[*]}"
-              exit 1
-            fi
+          critical_fingerprint() {
+            sha256sum \
+              intelligence/realised-cash-flow/classifier.mjs \
+              intelligence/realised-cash-flow/policy.json \
+              intelligence/realised-cash-flow/yield-basis-live-adapter.mjs \
+              verification/realised-cash-flow/review-live-v0.2.mjs
           }
 
-          stage_and_validate
+          critical_before="$(critical_fingerprint)"
+
+          git add intelligence/realised-cash-flow/realised-cash-flow.json
+          mapfile -t staged < <(git diff --cached --name-only)
+          if [ "${#staged[@]}" -gt 1 ] || { [ "${#staged[@]}" -eq 1 ] && [ "${staged[0]}" != "intelligence/realised-cash-flow/realised-cash-flow.json" ]; }; then
+            echo "Unexpected staged files: ${staged[*]}"
+            exit 1
+          fi
           if git diff --cached --quiet; then
             echo "No Realised Cash Flow state change to publish."
             exit 0
@@ -153,17 +159,23 @@ jobs:
               exit 1
             fi
 
-            node intelligence/realised-cash-flow/yield-basis-live-adapter.mjs
+            critical_after="$(critical_fingerprint)"
+            if [ "$critical_after" != "$critical_before" ]; then
+              echo "Critical Realised Cash Flow sources changed during publish rebase; fail closed and require a fresh external scan."
+              exit 1
+            fi
+
             node verification/realised-cash-flow/review-live-v0.2.mjs
-            stage_and_validate
-            if ! git diff --cached --quiet; then
-              git commit --amend --no-edit
+            mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
+            if [ "${#ahead[@]}" -ne 1 ] || [ "${ahead[0]}" != "intelligence/realised-cash-flow/realised-cash-flow.json" ]; then
+              echo "Unexpected publish delta after rebase: ${ahead[*]}"
+              exit 1
             fi
 
             if git push origin HEAD:main; then
               exit 0
             fi
-            echo "Push attempt ${attempt} failed; retrying."
+            echo "Push attempt ${attempt} lost a race; rebasing the already-proven JSON without repeating external RPC collection."
             sleep $((attempt * 2))
           done
           echo "Realised Cash Flow could not publish after 3 attempts."
