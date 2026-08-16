@@ -4,14 +4,15 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-16T12:42:37.511Z**
+Canonical source state represented here: **2026-08-16T12:42:37.511Z + Owner Intelligence Conversational Cortex production checkpoint**
 
 ## Resume order
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1517_OWNER_INTELLIGENCE_GRAPH_150Q.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1517_OWNER_INTELLIGENCE_GRAPH_150Q.md)
-2. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
-3. [Project Memory README](./README.md)
-4. Read only the live machine-readable subsystem artifacts needed for the current task.
+1. [THE_HOLDING_OWNER_INTELLIGENCE_CONVERSATIONAL_CORTEX_PRODUCTION_2026-08-16.md](./THE_HOLDING_OWNER_INTELLIGENCE_CONVERSATIONAL_CORTEX_PRODUCTION_2026-08-16.md)
+2. [THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1517_OWNER_INTELLIGENCE_GRAPH_150Q.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-16_1517_OWNER_INTELLIGENCE_GRAPH_150Q.md)
+3. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
+4. [Project Memory README](./README.md)
+5. Read only the live machine-readable subsystem artifacts needed for the current task.
 
 ## Project identity
 
@@ -27,6 +28,8 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 - **Permanent Memory Vault** — 6 Observer record(s), 41 material event(s), retention: indefinite; hard lifetime cap: none.
 - **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-16T07-08-14-100Z-9b1d3c476c.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
+- **Owner Decision Context** — 35 structured teaching units: 25 earlier text teaching + 10 owner audio Q1–Q10; read-only exact-bound context beside the Grounded Brain.
+- **Owner Intelligence Conversational Cortex v0.1** — PRODUCTION: bounded Ask binding to Owner Decision Context / Intelligence Graph; exact same 150Q A/B improved flagged 108→18, generic fallback 47→6, confidence mismatch 99→15 with 0 source-binding gaps and 0 harness errors.
 - **Project continuity** — this bootstrap + human continuity checkpoints + build-discipline canon.
 
 ## Current cognitive stack
@@ -53,6 +56,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 - Prefer reuse and simplification over parallel machinery.
 - No duplicate sources of truth and no orchestration loops.
 - Capability must grow faster than complexity; authority must grow slower than intelligence.
+- Important improvements that are already justified, bounded and safe to implement should not be left as vague roadmap items; implement → test → prove → preserve.
 
 ## Durable-memory rule
 
