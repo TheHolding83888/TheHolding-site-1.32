@@ -22,11 +22,12 @@ permissions:
   contents: read
 
 env:
-  # This lane requires historical eth_getLogs. The candidate preflight proved
-  # Flashbots supports the required deployment-era log range while several
-  # general public RPCs reject it. The adapter still validates chain/deployment
-  # and fails closed if this historical capability is unavailable.
+  # This lane requires historical eth_getLogs. Candidate probes proved
+  # Flashbots supports the required deployment-era range while several generic
+  # public RPCs reject it. Small fixed windows avoid retry storms and every
+  # window must succeed before scan.complete may be true.
   ETH_RPC_URL: https://rpc.flashbots.net
+  YB_LOG_WINDOW: '5000'
 
 concurrency:
   group: realised-cash-flow-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
@@ -88,6 +89,7 @@ jobs:
             console.log(`Status: **${x.status}**`);
             console.log(`Deployment block: **${x.source.deploymentBlock}**`);
             console.log(`Scanned through block: **${x.scan.toBlock}**`);
+            console.log(`Scan windows: **${x.scan.windowCount} × ${x.scan.requestedWindow} max blocks**`);
             console.log(`Yield Basis direct Claim events: **${x.summary.realisedIncomeEventCount}**`);
             console.log(`Companies with direct claims: **${x.summary.companiesWithDirectClaims}/${x.summary.companyCount}**`);
             console.log(`Historical USD aggregate: **null by design**`);
