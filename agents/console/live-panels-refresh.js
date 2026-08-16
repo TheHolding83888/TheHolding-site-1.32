@@ -30,6 +30,18 @@
     document.head.appendChild(ownerUi);
   }
 
+  // Whole-OS Neural Graph telemetry. Owner Intelligence remains the owner-
+  // teaching contribution view; this instrument covers canonical knowledge
+  // nodes and provenance-aware relationships across economic, memory, security,
+  // Brain, decision and owner-context sources.
+  if (!document.querySelector('script[data-th-neural-graph-loader]')) {
+    const neuralGraph = document.createElement('script');
+    neuralGraph.src = '/agents/console/neural-graph-dashboard.js?v=0.1';
+    neuralGraph.defer = true;
+    neuralGraph.dataset.thNeuralGraphLoader = 'v0.1';
+    document.head.appendChild(neuralGraph);
+  }
+
   // Bounded conversational cortex. This is a read-only owner-context / graph
   // synthesis layer over the existing Ask router. safety.js is the parent
   // loader and therefore registers its capture guard before this script can
@@ -46,7 +58,7 @@
   // Desktop-safe ownership of THI spacing. This lives outside The Holding News
   // so the score layout never depends on whether the News component loaded.
   const style = document.createElement('style');
-  style.dataset.thLivePanelsRefresh = 'v0.3';
+  style.dataset.thLivePanelsRefresh = 'v0.4';
   style.textContent = `
     @media (min-width: 901px) {
       #intelligenceProgress .thi-index-row {
