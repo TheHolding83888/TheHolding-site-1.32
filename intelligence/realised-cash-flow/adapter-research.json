@@ -1,17 +1,18 @@
 {
-  "version": "0.1-realised-cash-flow-adapter-research",
-  "generatedAt": "2026-08-15T20:20:00Z",
+  "version": "0.2-realised-cash-flow-adapter-research",
+  "generatedAt": "2026-08-16T05:10:00Z",
   "adapters": [
     {
       "adapterId": "yield-basis-fee-distributor-claim",
       "protocol": "Yield Basis",
-      "status": "researched-not-live",
+      "status": "live-candidate-bounded-direct-claim",
       "evidenceTierTarget": "A",
       "productionConfigEvidence": {
         "holdingFile": "rewards/company-rewards-engine.mjs",
         "configuredFeeDistributor": "0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90",
         "currentAccruedMetric": "FeeDistributor.preview_claim(receiver, 50, false)",
-        "currentClassification": "unclaimed"
+        "currentClassification": "unclaimed",
+        "cashFlowSeparation": "preview_claim remains Accrued Rewards. Historical realised income is a separate event-attributed plane and is never inferred from a decrease in claimable value."
       },
       "upstreamSourceEvidence": {
         "repository": "yield-basis/yb-core",
@@ -20,20 +21,35 @@
         "blobSha": "8456fa2298f30692694f1e0f810b7cd404990fc7",
         "contractVersion": "0.4.3",
         "claimEvent": "Claim(address indexed user, IERC20 indexed token, uint256 amount)",
-        "semanticObservation": "_claim transfers the payout token to the receiver and then emits Claim(user=user, token=token, amount=amount)."
+        "semanticObservation": "_claim transfers the payout token to the receiver and then emits Claim(user=user, token=token, amount=amount).",
+        "officialAddressBinding": {
+          "path": "scripts/voting/add_weth_to_fees.py",
+          "blobSha": "cbe6c89c3c13bff22bd050f3142e20367e78d003",
+          "observation": "The official Yield Basis script sets FEE_DISTRIBUTOR to 0xD11b...7A90 and binds contracts/dao/FeeDistributor.vy at that address."
+        }
       },
       "deploymentBinding": {
+        "configuredAddressHasRuntimeCodeRequiredByLivePreflight": true,
+        "officialRepositoryBindsSourceContractToConfiguredAddress": true,
         "sourceCodeToConfiguredAddressBytecodeVerified": false,
-        "reason": "Official source semantics and The Holding production address are both known, but exact deployed-bytecode/source binding is intentionally left unclaimed until the live adapter preflight proves it."
+        "reason": "v0.2 does not claim compiler-reproduced bytecode equivalence. It instead requires three independent facts before counting: official source semantics, official repository address binding, and a successful onchain Claim plus exact matching ERC20 Transfer from the configured contract."
       },
-      "promotionRequirements": [
-        "verify configured deployment/event signature on Ethereum",
-        "bind beneficiary to canonical company identity",
-        "collect historical Claim logs over a declared complete horizon",
-        "dedupe by physical event before adapter identity",
-        "verify token metadata and receipt semantics",
-        "publish token quantities without inventing historical USD valuation",
-        "pass independent ledger review"
+      "liveCandidateContract": {
+        "collector": "intelligence/realised-cash-flow/yield-basis-live-adapter.mjs",
+        "reviewer": "verification/realised-cash-flow/review-live-v0.2.mjs",
+        "workflow": ".github/workflows/update-realised-cash-flow.yml",
+        "scanHorizon": "ethereum block 0 through exact latest block of the run",
+        "semanticRequirement": "Claim.user must equal an exact canonical company wallet",
+        "receiptRequirement": "same successful transaction must contain exactly one ERC20 Transfer of the same token and raw amount from FeeDistributor to that exact company wallet",
+        "historicalUsd": "not-valued in v0.2",
+        "overallCompanyCoverage": "incomplete",
+        "askPromotionEligible": false
+      },
+      "remainingExpansionRequirements": [
+        "add other protocol-attributed payout mechanisms one at a time",
+        "add vesting/cliff Yield Basis ownership only when economic beneficiary attribution is independently proved",
+        "add block/timestamp-bound historical valuation only where methodology is reproducible",
+        "do not promote company-wide Realised Cash Flow to measured until declared economic coverage is actually complete"
       ],
       "executionAuthority": "none"
     }
