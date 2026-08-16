@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { Interface, JsonRpcProvider, formatUnits, getAddress } from 'ethers';
+import { Contract, Interface, JsonRpcProvider, formatUnits, getAddress } from 'ethers';
 import { buildLedger } from './classifier.mjs';
 
 const ROOT = process.cwd();
 const OUT = process.env.REALISED_CASH_FLOW_OUTPUT || path.join(ROOT, 'intelligence/realised-cash-flow/realised-cash-flow.json');
-const VERSION = '0.2-yield-basis-live-realised-cash-flow';
+const VERSION = '0.2.1-yield-basis-live-realised-cash-flow';
 const ADAPTER_ID = 'yield-basis-fee-distributor-claim';
-const FEE_DISTRIBUTOR = getAddress('0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90');
 const CHAIN_ID = 1;
-const WINDOW = Number(process.env.YB_LOG_WINDOW || 500_000);
+const FEE_DISTRIBUTOR = getAddress('0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90');
+const DEPLOY_TX = '0xcd7321d6f67dc74f861266e56a7fee8285c3f5af663619ebb96581a083f0ef62';
+const WINDOW = Math.max(5_000, Math.min(250_000, Number(process.env.YB_LOG_WINDOW || 100_000)));
 const RPCS = [...new Set([
   process.env.ETH_RPC_URL,
   'https://ethereum-rpc.publicnode.com',
@@ -26,40 +27,15 @@ const ERC20_IFACE = new Interface([
 const CLAIM_TOPIC = CLAIM_IFACE.getEvent('Claim').topicHash;
 const TRANSFER_TOPIC = ERC20_IFACE.getEvent('Transfer').topicHash;
 
-// Scope is intentionally inherited from the already-live Rewards route registry.
-// These are the canonical company beneficiaries for which The Holding currently
-// queries Yield Basis FeeDistributor.preview_claim. v0.2 measures only the
-// historical direct-Claim lane for these exact identities.
 const COMPANIES = [
-  {
-    company: 'dinaz.eth',
-    wallets: [
-      { alias: 'dinaz.eth', address: '0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc' }
-    ]
-  },
-  {
-    company: 'defitea.eth',
-    wallets: [
-      { alias: 'defitea.eth', address: '0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3' },
-      { alias: 'Defitea Operations', address: '0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d' }
-    ]
-  },
-  {
-    company: 'aerocrvyb.eth',
-    wallets: [
-      { alias: 'Yield Basis wallet', address: '0x6c6543eBA07946706Fd10a1064FA773326B5f5a9' }
-    ]
-  },
-  {
-    company: '1milliondollar.eth',
-    wallets: [
-      { alias: '1milliondollar.eth', address: '0xe4b9c9ced406baffe406e63f83d39daaef150596' }
-    ]
-  }
-].map(c => ({
-  ...c,
-  wallets: c.wallets.map(w => ({ ...w, address: getAddress(w.address) }))
-}));
+  { company: 'dinaz.eth', wallets: [{ alias: 'dinaz.eth', address: '0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc' }] },
+  { company: 'defitea.eth', wallets: [
+    { alias: 'defitea.eth', address: '0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3' },
+    { alias: 'Defitea Operations', address: '0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d' }
+  ] },
+  { company: 'aerocrvyb.eth', wallets: [{ alias: 'Yield Basis wallet', address: '0x6c6543eBA07946706Fd10a1064FA773326B5f5a9' }] },
+  { company: '1milliondollar.eth', wallets: [{ alias: '1milliondollar.eth', address: '0xe4b9c9ced406baffe406e63f83d39daaef150596' }] }
+].map(c => ({ ...c, wallets: c.wallets.map(w => ({ ...w, address: getAddress(w.address) })) }));
 
 const WALLET_INDEX = new Map();
 for (const company of COMPANIES) {
@@ -83,8 +59,6 @@ function redact(value) {
   return text;
 }
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
 async function connectProvider() {
   let last = null;
   for (const url of RPCS) {
@@ -92,30 +66,39 @@ async function connectProvider() {
       const provider = new JsonRpcProvider(url, CHAIN_ID, { staticNetwork: true });
       const network = await Promise.race([
         provider.getNetwork(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('RPC timeout')), 10_000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('RPC network timeout')), 10_000))
       ]);
       if (Number(network.chainId) !== CHAIN_ID) throw new Error(`wrong chainId ${network.chainId}`);
-      const block = await provider.getBlockNumber();
-      if (!Number.isInteger(block) || block <= 0) throw new Error('invalid latest block');
-      return { provider, url, latestBlock: block };
-    } catch (error) {
-      last = error;
-    }
+      const latestBlock = await provider.getBlockNumber();
+      if (!Number.isInteger(latestBlock) || latestBlock <= 0) throw new Error('invalid latest block');
+      return { provider, url, latestBlock };
+    } catch (error) { last = error; }
   }
   throw new Error(`No Ethereum RPC available: ${redact(last?.message || last)}`);
 }
 
+async function proveDeployment(provider, latestBlock) {
+  const receipt = await provider.getTransactionReceipt(DEPLOY_TX);
+  if (!receipt) throw new Error('Yield Basis FeeDistributor deployment receipt unavailable');
+  if (Number(receipt.status) !== 1) throw new Error('Yield Basis FeeDistributor deployment transaction is not successful');
+  if (!receipt.contractAddress || getAddress(receipt.contractAddress) !== FEE_DISTRIBUTOR) {
+    throw new Error(`Deployment contract mismatch: ${receipt.contractAddress || 'null'}`);
+  }
+  const deploymentBlock = Number(receipt.blockNumber);
+  if (!Number.isInteger(deploymentBlock) || deploymentBlock <= 0 || deploymentBlock > latestBlock) {
+    throw new Error(`Invalid deployment block: ${receipt.blockNumber}`);
+  }
+  const code = await provider.getCode(FEE_DISTRIBUTOR, latestBlock);
+  if (!code || code === '0x') throw new Error('Configured Yield Basis FeeDistributor has no runtime code');
+  return { deploymentBlock, deploymentTx: DEPLOY_TX, contractAddress: FEE_DISTRIBUTOR };
+}
+
 async function getLogsRange(provider, fromBlock, toBlock, depth = 0) {
   try {
-    return await provider.getLogs({
-      address: FEE_DISTRIBUTOR,
-      topics: [CLAIM_TOPIC],
-      fromBlock,
-      toBlock
-    });
+    return await provider.getLogs({ address: FEE_DISTRIBUTOR, topics: [CLAIM_TOPIC], fromBlock, toBlock });
   } catch (error) {
     const span = toBlock - fromBlock;
-    if (span > 5_000 && depth < 20) {
+    if (span > 2_500 && depth < 16) {
       const mid = Math.floor((fromBlock + toBlock) / 2);
       const left = await getLogsRange(provider, fromBlock, mid, depth + 1);
       const right = await getLogsRange(provider, mid + 1, toBlock, depth + 1);
@@ -125,34 +108,16 @@ async function getLogsRange(provider, fromBlock, toBlock, depth = 0) {
   }
 }
 
-async function collectAllClaimLogs(provider, latestBlock) {
+async function collectClaimLogs(provider, fromBlock, latestBlock) {
   const logs = [];
   let windows = 0;
-  for (let from = 0; from <= latestBlock; from += WINDOW) {
+  for (let from = fromBlock; from <= latestBlock; from += WINDOW) {
     const to = Math.min(latestBlock, from + WINDOW - 1);
-    const chunk = await getLogsRange(provider, from, to);
-    logs.push(...chunk);
+    logs.push(...await getLogsRange(provider, from, to));
     windows += 1;
-    if (windows % 10 === 0) console.log(`Yield Basis Claim scan progress: ${to}/${latestBlock}, logs=${logs.length}`);
-    await sleep(35);
   }
+  logs.sort((a, b) => Number(a.blockNumber) - Number(b.blockNumber) || Number(a.index ?? a.logIndex) - Number(b.index ?? b.logIndex));
   return { logs, windows };
-}
-
-const tokenMetaCache = new Map();
-async function tokenMeta(provider, token) {
-  const address = getAddress(token);
-  const key = address.toLowerCase();
-  if (tokenMetaCache.has(key)) return tokenMetaCache.get(key);
-  const contract = new (await import('ethers')).Contract(address, ERC20_IFACE.fragments, provider);
-  let symbol = 'TOKEN';
-  let decimals = 18;
-  try { symbol = String(await contract.symbol()); } catch {}
-  try { decimals = Number(await contract.decimals()); } catch {}
-  if (!Number.isInteger(decimals) || decimals < 0 || decimals > 36) throw new Error(`Invalid token decimals for ${address}`);
-  const meta = { address, symbol, decimals };
-  tokenMetaCache.set(key, meta);
-  return meta;
 }
 
 function parseClaim(log) {
@@ -162,10 +127,20 @@ function parseClaim(log) {
     user: getAddress(parsed.args.user),
     token: getAddress(parsed.args.token),
     amountRaw: BigInt(parsed.args.amount),
-    transactionHash: log.transactionHash,
+    transactionHash: String(log.transactionHash).toLowerCase(),
     logIndex: Number(log.index ?? log.logIndex),
     blockNumber: Number(log.blockNumber)
   };
+}
+
+function directCompanyClaims(allLogs) {
+  const matched = [];
+  for (const log of allLogs) {
+    const claim = parseClaim(log);
+    const owner = WALLET_INDEX.get(claim.user.toLowerCase());
+    if (owner) matched.push({ ...claim, owner });
+  }
+  return matched;
 }
 
 function parseTransfer(log) {
@@ -182,63 +157,62 @@ function parseTransfer(log) {
   } catch { return null; }
 }
 
-async function proveValueReceipt(provider, claim, expectedWallet) {
+async function proveValueReceipt(provider, claim) {
   const receipt = await provider.getTransactionReceipt(claim.transactionHash);
   if (!receipt || Number(receipt.status) !== 1) throw new Error(`Claim tx is not successful: ${claim.transactionHash}`);
-  const candidates = receipt.logs
+  const matches = receipt.logs
     .filter(log => String(log.address || '').toLowerCase() === claim.token.toLowerCase())
     .map(parseTransfer)
     .filter(Boolean)
-    .filter(x =>
-      x.from.toLowerCase() === FEE_DISTRIBUTOR.toLowerCase() &&
-      x.to.toLowerCase() === expectedWallet.toLowerCase() &&
-      x.value === claim.amountRaw
-    );
-  if (candidates.length !== 1) {
-    throw new Error(`Expected exactly one matching payout Transfer for ${claim.transactionHash}:${claim.logIndex}; got ${candidates.length}`);
-  }
-  return candidates[0];
+    .filter(x => x.from.toLowerCase() === FEE_DISTRIBUTOR.toLowerCase() && x.to.toLowerCase() === claim.owner.address.toLowerCase() && x.value === claim.amountRaw);
+  if (matches.length !== 1) throw new Error(`Expected exactly one matching payout Transfer for ${claim.transactionHash}:${claim.logIndex}; got ${matches.length}`);
+  return matches[0];
 }
 
-async function blockTimestamp(provider, blockNumber, cache) {
-  if (cache.has(blockNumber)) return cache.get(blockNumber);
+const tokenMetaCache = new Map();
+async function tokenMeta(provider, token) {
+  const address = getAddress(token);
+  const key = address.toLowerCase();
+  if (tokenMetaCache.has(key)) return tokenMetaCache.get(key);
+  const contract = new Contract(address, ERC20_IFACE.fragments, provider);
+  let symbol = 'TOKEN';
+  let decimals = 18;
+  try { symbol = String(await contract.symbol()); } catch {}
+  try { decimals = Number(await contract.decimals()); } catch {}
+  if (!Number.isInteger(decimals) || decimals < 0 || decimals > 36) throw new Error(`Invalid token decimals for ${address}`);
+  const meta = { address, symbol, decimals };
+  tokenMetaCache.set(key, meta);
+  return meta;
+}
+
+const blockTimeCache = new Map();
+async function blockTimestamp(provider, blockNumber) {
+  if (blockTimeCache.has(blockNumber)) return blockTimeCache.get(blockNumber);
   const block = await provider.getBlock(blockNumber);
   if (!block || !Number.isFinite(Number(block.timestamp))) throw new Error(`Missing block ${blockNumber}`);
-  const value = new Date(Number(block.timestamp) * 1000).toISOString();
-  cache.set(blockNumber, value);
-  return value;
-}
-
-function directCompanyClaims(allLogs) {
-  const matched = [];
-  for (const log of allLogs) {
-    const claim = parseClaim(log);
-    const owner = WALLET_INDEX.get(claim.user.toLowerCase());
-    if (owner) matched.push({ ...claim, owner });
-  }
-  return matched;
+  const timestamp = new Date(Number(block.timestamp) * 1000).toISOString();
+  blockTimeCache.set(blockNumber, timestamp);
+  return timestamp;
 }
 
 async function main() {
   const startedAt = new Date().toISOString();
   const { provider, url, latestBlock } = await connectProvider();
-  const code = await provider.getCode(FEE_DISTRIBUTOR);
-  if (!code || code === '0x') throw new Error('Configured Yield Basis FeeDistributor has no deployed code');
-
-  const scan = await collectAllClaimLogs(provider, latestBlock);
+  const deployment = await proveDeployment(provider, latestBlock);
+  const scan = await collectClaimLogs(provider, deployment.deploymentBlock, latestBlock);
   const matched = directCompanyClaims(scan.logs);
-  const blockTimes = new Map();
   const candidatesByCompany = new Map(COMPANIES.map(x => [x.company, []]));
   const proofsByCompany = new Map(COMPANIES.map(x => [x.company, []]));
 
   for (const claim of matched) {
-    const transfer = await proveValueReceipt(provider, claim, claim.owner.address);
+    const transfer = await proveValueReceipt(provider, claim);
     const meta = await tokenMeta(provider, claim.token);
-    const timestamp = await blockTimestamp(provider, claim.blockNumber, blockTimes);
-    const amount = Number(formatUnits(claim.amountRaw, meta.decimals));
+    const timestamp = await blockTimestamp(provider, claim.blockNumber);
+    const amountText = formatUnits(claim.amountRaw, meta.decimals);
+    const amount = Number(amountText);
     if (!Number.isFinite(amount) || amount < 0) throw new Error(`Invalid normalized amount for ${claim.transactionHash}:${claim.logIndex}`);
 
-    const candidate = {
+    candidatesByCompany.get(claim.owner.company).push({
       adapterId: ADAPTER_ID,
       company: claim.owner.company,
       beneficiary: claim.owner.address,
@@ -259,9 +233,9 @@ async function main() {
       principalOrInternalContradiction: false,
       valuationStatus: 'not-valued',
       usdValue: null,
-      source: `onchain: Yield Basis FeeDistributor Claim + ERC20 Transfer, block ${claim.blockNumber}`
-    };
-    candidatesByCompany.get(claim.owner.company).push(candidate);
+      source: `onchain: Yield Basis FeeDistributor Claim + exact ERC20 Transfer, block ${claim.blockNumber}`
+    });
+
     proofsByCompany.get(claim.owner.company).push({
       chainId: CHAIN_ID,
       contract: FEE_DISTRIBUTOR,
@@ -277,13 +251,8 @@ async function main() {
       symbol: meta.symbol,
       decimals: meta.decimals,
       amountRaw: claim.amountRaw.toString(),
-      amount,
-      claimSemantics: 'official FeeDistributor _claim transfers token then emits Claim(user, token, amount)',
-      matchingTransfer: {
-        from: transfer.from,
-        to: transfer.to,
-        valueRaw: transfer.value.toString()
-      }
+      amount: amountText,
+      matchingTransfer: { from: transfer.from, to: transfer.to, valueRaw: transfer.value.toString() }
     });
   }
 
@@ -292,9 +261,9 @@ async function main() {
     const candidates = candidatesByCompany.get(company.company) || [];
     const ledger = buildLedger(candidates, {
       generatedAt: new Date().toISOString(),
-      scope: `${company.company}:supported-yield-basis-direct-claim-lane`,
+      scope: `${company.company}:yield-basis-direct-claim-lane`,
       coverageComplete: false,
-      coverageDeclaration: 'Yield Basis direct Claim(user=company wallet) history is completely scanned from block 0 through scan.toBlock. Overall company Realised Cash Flow remains incomplete until all economically relevant payout adapters are supported.'
+      coverageDeclaration: `Yield Basis direct Claim.user=company-wallet history is completely scanned from proven FeeDistributor deployment block ${deployment.deploymentBlock} through block ${latestBlock}. Overall company Realised Cash Flow remains incomplete.`
     });
     companies[company.company] = {
       status: ledger.status,
@@ -302,10 +271,10 @@ async function main() {
         adapterId: ADAPTER_ID,
         status: 'measured',
         completeForDeclaredLane: true,
-        declaredLane: 'direct FeeDistributor Claim where Claim.user is an exact canonical company wallet and the same tx contains exactly one matching FeeDistributor ERC20 Transfer to that wallet',
+        declaredLane: 'Claim.user is an exact canonical company wallet and the same successful tx contains exactly one matching FeeDistributor ERC20 Transfer to that wallet',
         excluded: [
-          'claims economically owned by the company but emitted with a different Claim.user (for example vesting/cliff ownership) unless separately proven',
-          'other Yield Basis income mechanisms',
+          'claims where economic ownership exists but Claim.user differs from the receiving company boundary unless separately proven',
+          'other Yield Basis realised-income mechanisms',
           'all non-Yield-Basis realised-income mechanisms'
         ]
       },
@@ -322,10 +291,10 @@ async function main() {
     generatedAt: new Date().toISOString(),
     startedAt,
     status: allIncomeRows.length ? 'partial' : 'unknown',
-    scope: 'Realised Cash Flow evidence plane; first live adapter is Yield Basis direct FeeDistributor claims for currently supported Holding company wallets.',
+    scope: 'Realised Cash Flow evidence plane; first live adapter is Yield Basis direct FeeDistributor claims for supported Holding company wallets.',
     methodology: {
       primaryRule: 'receipt alone is not income',
-      liveLaneRule: 'count only when official Claim semantics and an exact same-transaction ERC20 payout to the company wallet both agree',
+      liveLaneRule: 'count only when official Claim semantics and an exact same-transaction ERC20 payout to the exact company wallet both agree',
       valuationRule: 'historical token quantity is factual; USD remains null until block/timestamp-bound valuation is separately proven',
       overallCoverageComplete: false,
       askPromotionEligible: false
@@ -335,16 +304,21 @@ async function main() {
       chainId: CHAIN_ID,
       contract: FEE_DISTRIBUTOR,
       event: 'Claim(address indexed user,address indexed token,uint256 amount)',
+      deploymentTx: DEPLOY_TX,
+      deploymentBlock: deployment.deploymentBlock,
+      deploymentReceiptVerified: true,
       upstreamRepository: 'yield-basis/yb-core',
       upstreamTreeSha: '0c46a683f1187d2be1929f18dba44ad5dfd39006',
       upstreamPath: 'contracts/dao/FeeDistributor.vy',
       upstreamBlobSha: '8456fa2298f30692694f1e0f810b7cd404990fc7',
-      productionAddressAlsoPresentInOfficialScripts: true
+      productionAddressAlsoPresentInOfficialScripts: true,
+      compilerReproducedBytecodeBindingClaimed: false
     },
     scan: {
-      fromBlock: 0,
+      fromBlock: deployment.deploymentBlock,
       toBlock: latestBlock,
       complete: true,
+      startRule: 'exact successful contract-creation receipt for the configured FeeDistributor',
       requestedWindow: WINDOW,
       windowCount: scan.windows,
       allContractClaimLogCount: scan.logs.length,
@@ -356,7 +330,7 @@ async function main() {
       companiesWithDirectClaims: Object.values(companies).filter(x => x.directClaimEventCount > 0).length,
       realisedIncomeEventCount: allIncomeRows.length,
       realisedCashFlowUsd: null,
-      note: 'USD aggregate is intentionally null because v0.2 does not fabricate historical wrapper-token valuation.'
+      note: 'USD aggregate is intentionally null because v0.2 does not fabricate historical wrapper/reward-token valuation.'
     },
     companies,
     authority: {
@@ -373,6 +347,7 @@ async function main() {
   console.log(JSON.stringify({
     status: output.status,
     generatedAt: output.generatedAt,
+    deploymentBlock: deployment.deploymentBlock,
     toBlock: latestBlock,
     allClaims: scan.logs.length,
     matchedCompanyClaims: matched.length,
