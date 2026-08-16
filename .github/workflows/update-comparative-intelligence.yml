@@ -1,0 +1,170 @@
+# THE HOLDING · COMPARATIVE INTELLIGENCE v0.1
+name: "The Holding · Comparative Intelligence"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "intelligence/comparative/**"
+      - ".github/workflows/update-comparative-intelligence.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "intelligence/capital-state/capital-state.json"
+      - "companies/productivity-data.json"
+      - "intelligence/income-performance/income-performance.json"
+      - "intelligence/comparative/comparative-intelligence.mjs"
+      - ".github/workflows/update-comparative-intelligence.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-comparative-intelligence
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/comparative/comparative-intelligence.mjs
+          test -s intelligence/capital-state/capital-state.json
+          test -s companies/productivity-data.json
+          test -s intelligence/income-performance/income-performance.json
+          node --check intelligence/comparative/comparative-intelligence.mjs
+          grep -q "noUniversalLeaderboard" intelligence/comparative/comparative-intelligence.mjs
+          grep -q "comparabilityRule" intelligence/comparative/comparative-intelligence.mjs
+          grep -q "executionAuthority: 'none'" intelligence/comparative/comparative-intelligence.mjs
+
+      - name: Build Comparative Intelligence
+        run: node intelligence/comparative/comparative-intelligence.mjs
+
+      - name: Validate comparability and ranking semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('intelligence/comparative/comparative-intelligence.json','utf8'));
+          if (x.version !== '0.1-comparative-intelligence') throw new Error('unexpected version');
+          if (x.engineVersion !== '0.1-comparability-first-ranking-engine') throw new Error('unexpected engine');
+          if (x.status !== 'partial') throw new Error('v0.1 must remain partial');
+          if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('authority regression');
+          if (x.authority?.capitalExecution !== false || x.authority?.allocationAuthority !== false || x.authority?.recommendationAuthority !== false) throw new Error('capital/recommendation authority regression');
+
+          const c = x.comparisons?.companyCapitalScale;
+          if (c?.eligibleCount !== 9 || c?.rows?.length !== 9) throw new Error('capital ranking must cover 9/9');
+          if (!Number.isFinite(c.networkTvlUsd) || c.networkTvlUsd <= 0) throw new Error('network TVL unavailable');
+          const capSum = c.rows.reduce((a,r)=>a+Number(r.capitalUsd||0),0);
+          if (Math.abs(capSum - c.networkTvlUsd) > 0.02) throw new Error('capital ranking does not reconcile to Network TVL');
+          for (let i=1;i<c.rows.length;i++) if (c.rows[i-1].capitalUsd < c.rows[i].capitalUsd) throw new Error('capital ranking order broken');
+
+          const g = x.comparisons?.generalCompanyReferenceProductivity;
+          if (g?.eligibleCount !== 8) throw new Error('expected 8 comparable general companies');
+          if (!Array.isArray(g.byReferenceApr) || g.byReferenceApr.length !== 8) throw new Error('APR ranking missing');
+          if (!Array.isArray(g.byProductiveCapital) || g.byProductiveCapital.length !== 8) throw new Error('productive capital ranking missing');
+          if (!Array.isArray(g.byAnnualizedReferenceOutput) || g.byAnnualizedReferenceOutput.length !== 8) throw new Error('reference output ranking missing');
+          if (!g.exclusions?.some(v=>String(v).includes('Monetra.eth'))) throw new Error('stable/general separation missing');
+          if (g.byReferenceApr.some(r=>r.coverage!==1 || r.aprScope!=='full-productive-capital')) throw new Error('partial productivity row leaked into ranking');
+
+          const p = x.comparisons?.protocolReferenceApr;
+          if (!Number.isInteger(p?.eligibleCount) || p.eligibleCount < 1 || p.rows.length !== p.eligibleCount) throw new Error('protocol ranking missing');
+          if (!p.exclusions?.some(v=>String(v).includes('realised'))) throw new Error('APR realised-return guard missing');
+
+          const m = x.comparisons?.monetraLatestMeasuredIncomeContribution;
+          if (m?.eligibleCount !== 8 || m?.measuredPositionCount !== 8 || m?.totalPositionCount !== 10) throw new Error('Monetra latest interval coverage regression');
+          const incomeSum = m.rows.reduce((a,r)=>a+Number(r.latestMeasuredIncomeUsd||0),0);
+          if (Math.abs(incomeSum - m.latestMeasuredIncomeUsd) > 0.00002) throw new Error('Monetra protocol ranking drift');
+          if (!m.exclusions?.some(v=>String(v).includes('Not MTD'))) throw new Error('MTD attribution guard missing');
+
+          if (x.answerability?.['best-company-overall'] !== 'blocked-no-universal-score') throw new Error('universal company score leaked');
+          if (x.answerability?.['best-protocol-overall'] !== 'blocked-no-universal-score') throw new Error('universal protocol score leaked');
+          if (x.answerability?.['cross-company-realised-performance-ranking'] !== 'blocked-insufficient-comparable-realised-performance-coverage') throw new Error('realised performance must remain blocked');
+
+          console.log('COMPARATIVE INTELLIGENCE v0.1 PASS', {
+            networkTvlUsd: c.networkTvlUsd,
+            largestCompany: c.rows[0]?.name,
+            topGeneralReferenceApr: g.byReferenceApr[0]?.name,
+            topGeneralReferenceAprPct: g.byReferenceApr[0]?.referenceAprPct,
+            largestProductiveCompany: g.byProductiveCapital[0]?.name,
+            topProtocolEngine: p.rows[0]?.engineId,
+            topProtocolReferenceAprPct: p.rows[0]?.referenceAprPct,
+            topMonetraLatestContributor: m.rows[0]?.protocol,
+            topMonetraLatestIncomeUsd: m.rows[0]?.latestMeasuredIncomeUsd,
+            executionAuthority: x.authority.executionAuthority
+          });
+          NODE
+          git diff --check
+
+      - name: Publish generated Comparative Intelligence
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED="intelligence/comparative/comparative-intelligence.json"
+          test -s "$GENERATED"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$GENERATED"
+
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/comparative/comparative-intelligence\.json$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Comparative Intelligence attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "Comparative Intelligence already current."
+            exit 0
+          fi
+
+          git commit -m "intelligence: refresh comparative state"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Publish conflict; refusing to guess."
+              exit 1
+            fi
+
+            node intelligence/comparative/comparative-intelligence.mjs
+            git add "$GENERATED"
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              git cat-file -e "origin/main:$GENERATED"
+              REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+              test "$REMOTE_VERSION" = "0.1-comparative-intelligence"
+              echo "Verified Comparative Intelligence v0.1 on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "Comparative Intelligence publish failed after 3 attempts."
+          exit 1
