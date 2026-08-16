@@ -62,6 +62,15 @@ jobs:
           node verification/realised-cash-flow/review-live-v0.2.mjs
           git diff --check
 
+      - name: Upload temporary exact live evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: realised-cash-flow-candidate-${{ github.run_id }}
+          path: intelligence/realised-cash-flow/realised-cash-flow.json
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Candidate summary
         if: always()
         shell: bash
@@ -72,6 +81,8 @@ jobs:
             console.log('# Realised Cash Flow · live candidate');
             console.log('');
             console.log(`Status: **${x.status}**`);
+            console.log(`Deployment block: **${x.source.deploymentBlock}**`);
+            console.log(`Scanned through block: **${x.scan.toBlock}**`);
             console.log(`Yield Basis direct Claim events: **${x.summary.realisedIncomeEventCount}**`);
             console.log(`Companies with direct claims: **${x.summary.companiesWithDirectClaims}/${x.summary.companyCount}**`);
             console.log(`Historical USD aggregate: **null by design**`);
@@ -150,9 +161,6 @@ jobs:
               exit 1
             fi
 
-            # main may have moved while the onchain scan was running. Rebuild on
-            # the rebased exact code before every push attempt and amend only the
-            # canonical machine state if evidence changed.
             node intelligence/realised-cash-flow/yield-basis-live-adapter.mjs
             node verification/realised-cash-flow/review-live-v0.2.mjs
             stage_and_validate
@@ -179,7 +187,7 @@ jobs:
             console.log('# The Holding · Realised Cash Flow');
             console.log('');
             console.log(`Status: **${x.status}**`);
-            console.log(`Scanned through Ethereum block: **${x.scan.toBlock}**`);
+            console.log(`Scanned from proven deployment block **${x.scan.fromBlock}** through Ethereum block **${x.scan.toBlock}**`);
             console.log(`Direct Yield Basis Claim events: **${x.summary.realisedIncomeEventCount}**`);
             console.log(`Companies with direct claims: **${x.summary.companiesWithDirectClaims}/${x.summary.companyCount}**`);
             console.log('Overall company coverage remains incomplete. Ask promotion remains disabled.');
