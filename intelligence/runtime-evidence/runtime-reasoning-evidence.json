@@ -1,45 +1,157 @@
 {
-  "version": "0.1-runtime-reasoning-evidence",
-  "engineVersion": "0.1-runtime-capability-to-bounded-reasoning-packet",
-  "generatedAt": "2026-08-16T17:24:22.572Z",
+  "version": "0.2-runtime-reasoning-evidence",
+  "engineVersion": "0.2-registry-driven-bounded-reasoning-packet",
+  "generatedAt": "2026-08-16T18:25:53.968Z",
   "status": "ok",
-  "purpose": "Expose current production-proven capabilities as a small, source-bound reasoning packet for Ask and future release-coherent Brain ingestion.",
+  "purpose": "Expose current production-proven capabilities as a small, source-bound reasoning packet for Ask and future release-coherent Brain ingestion using a reusable capability registry rather than capability-specific routing.",
   "authority": {
     "readOnly": true,
     "executionAuthority": "none",
     "capitalExecution": false,
     "policyMutationAuthority": false,
     "methodologyMutationAuthority": false,
-    "ownerContextMarketFactAuthority": false
+    "ownerContextMarketFactAuthority": false,
+    "automaticCapabilityActivation": false
   },
   "semantics": {
-    "capabilityBoundary": "Only runtime-activated capabilities with fresh current production evidence enter this packet.",
+    "capabilityBoundary": "Only runtime-activated capabilities with registry-declared adapters and fresh current production evidence enter active capabilities.",
+    "registryBoundary": "Registry membership alone is not activation and does not place a fact into an answer.",
     "ownerContextBoundary": "Owner teaching supplies interpretation context only; live market/account facts come from named canonical evidence sources.",
+    "economicObjectBoundary": "Rewards, Reference APR/Productivity, Embedded Yield and Realised Cash Flow remain distinct evidence families.",
     "healthFactorBoundary": "Zero-debt accounts expose healthFactor=null/not-applicable. Owner HF ranges remain review context, never hard automatic thresholds.",
     "missingDimensionBoundary": "Unresolved dimensions remain explicit and cannot be inferred from a partial capability.",
-    "degradation": "If a source becomes stale, unavailable, or invalid, the capability is omitted rather than fabricated as zero or carried forward as current."
+    "degradation": "If a source becomes stale, unavailable, invalid, schema-unbound, or semantically unsupported, the capability is omitted rather than fabricated as zero or carried forward as current."
   },
-  "freshness": {
-    "maxSourceAgeHours": 30,
-    "riskSourceAgeHours": 0.0055,
-    "riskSourceFresh": true
+  "registry": {
+    "file": "intelligence/runtime-evidence/runtime-capability-registry.json",
+    "version": "0.2-runtime-evidence-capability-registry",
+    "capabilityCount": 5,
+    "catalog": [
+      {
+        "capabilityId": "health-factor-monitoring",
+        "label": "Health Factor Monitoring",
+        "family": "risk",
+        "runtimeEmission": "enabled-when-explicitly-activated",
+        "runtimeAdapter": "health-factor-v1",
+        "sourceFile": "intelligence/risk/health-factor-intelligence.json",
+        "sourceExists": true,
+        "schemaInspected": true,
+        "fresh": true,
+        "adapterReady": true,
+        "activeInCurrentPacket": true,
+        "unresolvedDimensions": [
+          "cross-protocol-health-factor-coverage",
+          "canonical-health-factor-history-and-trend-for-all-supported-positions",
+          "owner-regime-review-remains-context-not-hard-threshold"
+        ]
+      },
+      {
+        "capabilityId": "claimable-rewards-observation",
+        "label": "Claimable Rewards Observation",
+        "family": "rewards",
+        "runtimeEmission": "disabled-pending-schema-bound-adapter",
+        "runtimeAdapter": "rewards-v1",
+        "sourceFile": "companies/rewards-data.json",
+        "sourceExists": true,
+        "schemaInspected": false,
+        "fresh": false,
+        "adapterReady": false,
+        "activeInCurrentPacket": false,
+        "unresolvedDimensions": [
+          "runtime-field-map",
+          "reward-units-vs-price-effect-decomposition",
+          "complete-company-coverage-semantics"
+        ]
+      },
+      {
+        "capabilityId": "reference-productivity-observation",
+        "label": "Reference APR / Productivity Observation",
+        "family": "productivity",
+        "runtimeEmission": "available-for-future-explicit-activation",
+        "runtimeAdapter": "productivity-v1",
+        "sourceFile": "companies/productivity-data.json",
+        "sourceExists": true,
+        "schemaInspected": true,
+        "fresh": true,
+        "adapterReady": true,
+        "activeInCurrentPacket": false,
+        "unresolvedDimensions": [
+          "explicit-runtime-owner-activation-binding",
+          "question-specific-history-comparison-adapter"
+        ]
+      },
+      {
+        "capabilityId": "realised-cash-flow-observation",
+        "label": "Realised Cash Flow Observation",
+        "family": "realised-cash-flow",
+        "runtimeEmission": "available-for-future-explicit-activation",
+        "runtimeAdapter": "realised-cash-flow-v1",
+        "sourceFile": "intelligence/realised-cash-flow/realised-cash-flow.json",
+        "sourceExists": true,
+        "schemaInspected": true,
+        "fresh": true,
+        "adapterReady": true,
+        "activeInCurrentPacket": false,
+        "unresolvedDimensions": [
+          "overall-company-realised-cash-flow-coverage",
+          "historical-block-bound-usd-valuation",
+          "non-yield-basis-realised-income-mechanisms"
+        ]
+      },
+      {
+        "capabilityId": "embedded-yield-observation",
+        "label": "Embedded Yield Observation",
+        "family": "embedded-yield",
+        "runtimeEmission": "disabled-pending-schema-audit",
+        "runtimeAdapter": "embedded-yield-v1",
+        "sourceFile": "companies/embedded-yield-ledger.json",
+        "sourceExists": true,
+        "schemaInspected": false,
+        "fresh": false,
+        "adapterReady": false,
+        "activeInCurrentPacket": false,
+        "unresolvedDimensions": [
+          "runtime-field-map",
+          "explicit-runtime-owner-activation-binding"
+        ]
+      }
+    ],
+    "omittedActivatedCapabilities": []
+  },
+  "sourceState": {
+    "file": "intelligence/runtime-evidence/runtime-capability-source-state.json",
+    "version": "0.2-runtime-capability-source-state",
+    "summary": {
+      "capabilityCount": 5,
+      "sourcePresentCount": 5,
+      "freshSchemaBoundCount": 3,
+      "adapterReadyCount": 3,
+      "schemaPendingCount": 2,
+      "missingSourceCount": 0
+    }
   },
   "capabilities": [
     {
       "capabilityId": "health-factor-monitoring",
       "capabilityLabel": "Canonical company Health Factor monitoring",
+      "family": "risk",
+      "runtimeAdapter": "health-factor-v1",
       "ownerUnitId": "owner-context:audio-owner-q:q7",
       "declaredStatus": "blocked",
       "runtimeStatus": "activated",
       "runtimeCoverage": "partial",
       "evidenceStatus": "proven-current",
-      "sourceGeneratedAt": "2026-08-16T17:24:02.912Z",
-      "sourceAgeHours": 0.0055,
+      "sourceFile": "intelligence/risk/health-factor-intelligence.json",
+      "sourceGeneratedAt": "2026-08-16T18:25:34.620Z",
+      "sourceAgeHours": 0.0054,
       "maxSourceAgeHours": 30,
       "supportedMarkets": [
         "Aave v3 Base"
       ],
       "unresolvedDimensions": [
+        "cross-protocol-health-factor-coverage",
+        "canonical-health-factor-history-and-trend-for-all-supported-positions",
+        "owner-regime-review-remains-context-not-hard-threshold",
         "market-regime inference",
         "cross-market lending coverage beyond supported Aave v3 Base targets",
         "collateral-volatility model",
@@ -58,16 +170,16 @@
           "chainId": 8453,
           "protocol": "Aave v3",
           "pool": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
-          "observedAt": "2026-08-16T17:24:02.912Z",
-          "blockNumber": 50055847,
+          "observedAt": "2026-08-16T18:25:34.620Z",
+          "blockNumber": 50057693,
           "debtPresent": false,
           "healthFactorApplicable": false,
           "healthFactor": null,
           "state": "no-debt",
           "attention": "none",
-          "totalCollateralBaseRaw": "1001253017",
+          "totalCollateralBaseRaw": "1001296401",
           "totalDebtBaseRaw": "0",
-          "availableBorrowsBaseRaw": "750939762",
+          "availableBorrowsBaseRaw": "750972300",
           "currentLiquidationThresholdBps": 7800,
           "ltvBps": 7500,
           "provenance": {
@@ -86,20 +198,25 @@
     }
   ],
   "summary": {
+    "registeredCapabilityCount": 5,
     "activeCapabilityCount": 1,
+    "omittedActivatedCapabilityCount": 0,
     "observationCount": 1,
     "companyCount": 1,
     "supportedMarketCount": 1
   },
   "integrity": {
-    "runtimeActivationHash": "5c26e351ddb250902f68a5a2a6fb35552734f972da4004e26d2b01102b93d72f",
-    "runtimeGraphOverlayHash": "c222421a68fa4f2f1481572f894e3b7a181c7fdd0e633636e9917af6a70f58fe",
-    "riskStateHash": "948eb664f4de55b05e092dae95d897a2718971814f3e188e70e053c1386e31cc",
+    "runtimeActivationHash": "48193182feb48aa4eb4343ba941fe67c7e9034ad4318c384dc0688a3c3a08e4e",
+    "runtimeGraphOverlayHash": "52522fc6f2e65ffe4776cade02f6ee827d57cc46cec331193fa95ccd947c0e0b",
+    "capabilityRegistryHash": "8d813120fbf70b07ece1a2d7b816670f48ff81bf8feb094aca535b02066a3caa",
+    "capabilitySourceStateHash": "1f19d993f4714907a842e4ebeab76a4ec2e945b154e1a04313f9e5828747ac06",
     "sourceHashes": {
-      "intelligence/owner-context/runtime-owner-activation.json": "923b274fdc51b3e302d642a799961fee83946f5c413dba7112094a03b08f9f40",
-      "intelligence/neural-graph/runtime-capability-overlay.json": "1724309f7a8260b53152e5858dc4f513faf54611741476d07fc6db0631af9c20",
-      "intelligence/risk/health-factor-intelligence.json": "cc2914f345e8f7ebf1932265764f961a0d58f439415531f407925ec2919915b1"
+      "intelligence/owner-context/runtime-owner-activation.json": "544a0596c59c0e2a207a2945cd6c88ec10e71e68132411b23f5cc82ef82e6475",
+      "intelligence/neural-graph/runtime-capability-overlay.json": "4e8cb5c4e37434d5661b8bd68fb66122819614df7eb3c92311177bcdf438a55c",
+      "intelligence/runtime-evidence/runtime-capability-registry.json": "8d813120fbf70b07ece1a2d7b816670f48ff81bf8feb094aca535b02066a3caa",
+      "intelligence/runtime-evidence/runtime-capability-source-state.json": "7413dc739843fdeb65872ff121b9ff05238eaa25b38f6e588bd7ef2bf3a47bdf",
+      "intelligence/risk/health-factor-intelligence.json": "be6744aa68133aae4a4df44dac8ea509f390006d6f17e8eb96c45c7f343e2ed9"
     },
-    "packetHash": "ad97eb44255a4babe712467f8ad9379ad19160dadaefc15ff105c58dfab13b1e"
+    "packetHash": "960fb2ad20eec25d0a09946debe6de8c303419940b8372d44beae31359716dbc"
   }
 }
