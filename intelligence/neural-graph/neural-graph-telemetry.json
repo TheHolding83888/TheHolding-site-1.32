@@ -1,7 +1,7 @@
 {
   "version": "0.1-neural-graph-telemetry",
   "engineVersion": "0.1-canonical-neuron-and-connection-counter",
-  "generatedAt": "2026-08-16T13:04:40.913Z",
+  "generatedAt": "2026-08-16T13:21:05.318Z",
   "status": "ok",
   "purpose": "Compact instrument telemetry for how The Holding knowledge graph grows and changes.",
   "semantics": {
@@ -21,7 +21,7 @@
     "marketFactAuthorityForOwnerContext": false
   },
   "totals": {
-    "neurons": 353,
+    "neurons": 354,
     "candidateNeurons": 64,
     "neuralConnections": 262,
     "candidateConnections": 5,
@@ -39,7 +39,7 @@
       "metric-definition": 6,
       "owner-context": 35,
       "protocol": 22,
-      "security-finding": 26,
+      "security-finding": 27,
       "strategy": 25
     },
     "candidateNodeTypes": {
@@ -65,13 +65,15 @@
     }
   },
   "deltaSincePreviousSnapshot": {
-    "previousGeneratedAt": "2026-08-16T13:04:40.329Z",
+    "previousGeneratedAt": "2026-08-16T13:21:04.200Z",
     "neurons": {
       "mode": "delta",
-      "added": 0,
+      "added": 1,
       "removed": 0,
       "updated": 0,
-      "addedIds": [],
+      "addedIds": [
+        "security-finding:f96fab8fa2457d5b254fa0d6de4ded581c24b378db030a66708f2abebf465813"
+      ],
       "removedIds": [],
       "updatedIds": []
     },
@@ -87,9 +89,9 @@
   },
   "activity24h": {
     "mode": "activity",
-    "snapshotCount": 1,
+    "snapshotCount": 3,
     "neurons": {
-      "added": 0,
+      "added": 1,
       "removed": 0,
       "updated": 0
     },
@@ -132,8 +134,8 @@
     },
     "security": {
       "file": "security/security-intelligence.json",
-      "sha256": "4a7904cd165249a709c9bb15c6e1b26854316ff027fc08bfe2a0e43d93f4e6a4",
-      "generatedAt": "2026-08-16T12:45:47.429Z"
+      "sha256": "a35cf6940d03ed707f15b5ae752a089382263970afc28a2f4dff7ee2896253cb",
+      "generatedAt": "2026-08-16T13:21:00.546Z"
     },
     "owner": {
       "file": "intelligence/owner-context/owner-decision-context.json",
@@ -5453,6 +5455,21 @@
         },
         "fingerprint": "9de74b5f3bfe6e91c1c26a2e38b3d11c84bae102b7fa02a167d226f067f848b2"
       },
+      "security-finding:f96fab8fa2457d5b254fa0d6de4ded581c24b378db030a66708f2abebf465813": {
+        "id": "security-finding:f96fab8fa2457d5b254fa0d6de4ded581c24b378db030a66708f2abebf465813",
+        "type": "security-finding",
+        "label": "Security-sensitive surface changed: .github/workflows/update-neural-graph-telemetry.yml.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "critical-surface-change",
+          "file": ".github/workflows/update-neural-graph-telemetry.yml"
+        },
+        "fingerprint": "7f8116fc8a56f0b525bf4d8bc59b0a5208c309b44b40d6859fad036baebea6ad"
+      },
       "security-finding:fedb97ff102b9723a0095f5e809315937dde66e499d846523007147edb1494cd": {
         "id": "security-finding:fedb97ff102b9723a0095f5e809315937dde66e499d846523007147edb1494cd",
         "type": "security-finding",
@@ -8594,9 +8611,9 @@
     }
   },
   "integrity": {
-    "nodeCompositeHash": "d954971bbef5009bbb056f18304a712670fb5adeb86ee03b747e622e8cda6caf",
+    "nodeCompositeHash": "f907bd453108e81f221a67976481ad32d38278074d7aaca32d2f114ad9740565",
     "connectionCompositeHash": "0f1dcaa8e18e7286ce1f1f8841e4eb420b6d1ffc30e3d7d13a4c002e2191fd1a",
-    "sourceCompositeHash": "3530e3409f7b6a26e90d2f627e1b86e76eb44fdb4c433480d070b88d5395866a",
-    "telemetryHash": "9001e73b8774c153b0d01006853f34a9e0f91081299c1758d0c39d2fa991b27e"
+    "sourceCompositeHash": "e29e4f1ddb8fd11b147e8f700aa64b52077edb5185e3c900cc6ca2e9342a9dad",
+    "telemetryHash": "f01abfe716ad234068a30f57798ec7279411008045db41ff6c88eb205a2586d4"
   }
 }
