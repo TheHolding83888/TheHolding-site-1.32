@@ -8,6 +8,8 @@ on:
     paths:
       - "intelligence/neural-graph/**"
       - "agents/console/neural-graph-dashboard.js"
+      - "agents/console/neural-graph-daily-delta.js"
+      - "agents/console/neural-map-explorer.js"
       - "agents/console/live-panels-refresh.js"
       - ".github/workflows/update-neural-graph-telemetry.yml"
   push:
@@ -25,6 +27,8 @@ on:
       - "intelligence/owner-context/intelligence-graph-growth-directive.json"
       - "intelligence/neural-graph/neural-graph-telemetry.mjs"
       - "agents/console/neural-graph-dashboard.js"
+      - "agents/console/neural-graph-daily-delta.js"
+      - "agents/console/neural-map-explorer.js"
       - "agents/console/live-panels-refresh.js"
       - ".github/workflows/update-neural-graph-telemetry.yml"
 
@@ -58,11 +62,20 @@ jobs:
         run: |
           set -euo pipefail
           test -s intelligence/neural-graph/neural-graph-telemetry.mjs
+          test -s agents/console/neural-graph-dashboard.js
+          test -s agents/console/neural-graph-daily-delta.js
+          test -s agents/console/neural-map-explorer.js
+          test -s agents/console/live-panels-refresh.js
           node --check intelligence/neural-graph/neural-graph-telemetry.mjs
-          if [ -f agents/console/neural-graph-dashboard.js ]; then node --check agents/console/neural-graph-dashboard.js; fi
+          node --check agents/console/neural-graph-dashboard.js
+          node --check agents/console/neural-graph-daily-delta.js
+          node --check agents/console/neural-map-explorer.js
+          node --check agents/console/live-panels-refresh.js
           grep -q "executionAuthority: 'none'" intelligence/neural-graph/neural-graph-telemetry.mjs
           grep -q "candidate-not-tracked" intelligence/neural-graph/neural-graph-telemetry.mjs
           grep -q "candidateBoundary" intelligence/neural-graph/neural-graph-telemetry.mjs
+          grep -q "MAX_NEIGHBORS" agents/console/neural-map-explorer.js
+          grep -q "daily comparison warming" agents/console/neural-graph-daily-delta.js
 
       - name: Build canonical neural graph telemetry
         run: node intelligence/neural-graph/neural-graph-telemetry.mjs
