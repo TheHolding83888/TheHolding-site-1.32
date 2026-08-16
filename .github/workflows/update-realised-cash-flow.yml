@@ -1,0 +1,188 @@
+name: "The Holding · Update Realised Cash Flow"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * *'
+  pull_request:
+    paths:
+      - 'intelligence/realised-cash-flow/**'
+      - 'verification/realised-cash-flow/**'
+      - '.github/workflows/update-realised-cash-flow.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence/realised-cash-flow/yield-basis-live-adapter.mjs'
+      - 'intelligence/realised-cash-flow/classifier.mjs'
+      - 'intelligence/realised-cash-flow/policy.json'
+      - 'verification/realised-cash-flow/review-live-v0.2.mjs'
+      - '.github/workflows/update-realised-cash-flow.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: realised-cash-flow-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  cancel-in-progress: false
+
+jobs:
+  candidate-proof:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Install bounded runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Re-prove accounting boundary
+        run: |
+          set -euo pipefail
+          node --check intelligence/realised-cash-flow/classifier.mjs
+          node verification/realised-cash-flow/evaluator-v0.1.mjs
+
+      - name: Collect live Yield Basis realised cash flow
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: node intelligence/realised-cash-flow/yield-basis-live-adapter.mjs
+
+      - name: Independent live review
+        run: |
+          set -euo pipefail
+          node --check intelligence/realised-cash-flow/yield-basis-live-adapter.mjs
+          node --check verification/realised-cash-flow/review-live-v0.2.mjs
+          node verification/realised-cash-flow/review-live-v0.2.mjs
+          git diff --check
+
+      - name: Candidate summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -s intelligence/realised-cash-flow/realised-cash-flow.json ]; then
+            node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+            const x=require('./intelligence/realised-cash-flow/realised-cash-flow.json');
+            console.log('# Realised Cash Flow · live candidate');
+            console.log('');
+            console.log(`Status: **${x.status}**`);
+            console.log(`Yield Basis direct Claim events: **${x.summary.realisedIncomeEventCount}**`);
+            console.log(`Companies with direct claims: **${x.summary.companiesWithDirectClaims}/${x.summary.companyCount}**`);
+            console.log(`Historical USD aggregate: **null by design**`);
+            console.log(`Ask promotion: **disabled**`);
+            console.log(`Execution authority: **none**`);
+            NODE
+          fi
+
+  publish-main:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout canonical repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Install bounded runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Prove foundation before live collection
+        run: |
+          set -euo pipefail
+          node verification/realised-cash-flow/evaluator-v0.1.mjs
+          node --check intelligence/realised-cash-flow/yield-basis-live-adapter.mjs
+          node --check verification/realised-cash-flow/review-live-v0.2.mjs
+
+      - name: Collect and review canonical live state
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node intelligence/realised-cash-flow/yield-basis-live-adapter.mjs
+          node verification/realised-cash-flow/review-live-v0.2.mjs
+          git diff --check
+
+      - name: Publish only the machine-readable ledger
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Realised Cash Flow"
+          git config user.email "realised-cash-flow@theholding.ai"
+
+          stage_and_validate() {
+            git add intelligence/realised-cash-flow/realised-cash-flow.json
+            mapfile -t staged < <(git diff --cached --name-only)
+            if [ "${#staged[@]}" -gt 1 ] || { [ "${#staged[@]}" -eq 1 ] && [ "${staged[0]}" != "intelligence/realised-cash-flow/realised-cash-flow.json" ]; }; then
+              echo "Unexpected staged files: ${staged[*]}"
+              exit 1
+            fi
+          }
+
+          stage_and_validate
+          if git diff --cached --quiet; then
+            echo "No Realised Cash Flow state change to publish."
+            exit 0
+          fi
+          git commit -m "intelligence: refresh realised cash flow"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Realised Cash Flow publish conflict; fail closed."
+              exit 1
+            fi
+
+            # main may have moved while the onchain scan was running. Rebuild on
+            # the rebased exact code before every push attempt and amend only the
+            # canonical machine state if evidence changed.
+            node intelligence/realised-cash-flow/yield-basis-live-adapter.mjs
+            node verification/realised-cash-flow/review-live-v0.2.mjs
+            stage_and_validate
+            if ! git diff --cached --quiet; then
+              git commit --amend --no-edit
+            fi
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; retrying."
+            sleep $((attempt * 2))
+          done
+          echo "Realised Cash Flow could not publish after 3 attempts."
+          exit 1
+
+      - name: Publication summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -s intelligence/realised-cash-flow/realised-cash-flow.json ]; then
+            node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+            const x=require('./intelligence/realised-cash-flow/realised-cash-flow.json');
+            console.log('# The Holding · Realised Cash Flow');
+            console.log('');
+            console.log(`Status: **${x.status}**`);
+            console.log(`Scanned through Ethereum block: **${x.scan.toBlock}**`);
+            console.log(`Direct Yield Basis Claim events: **${x.summary.realisedIncomeEventCount}**`);
+            console.log(`Companies with direct claims: **${x.summary.companiesWithDirectClaims}/${x.summary.companyCount}**`);
+            console.log('Overall company coverage remains incomplete. Ask promotion remains disabled.');
+            console.log('Execution authority: `none`.');
+            NODE
+          fi
