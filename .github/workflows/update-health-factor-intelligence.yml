@@ -1,0 +1,147 @@
+name: "The Holding Risk · Health Factor Intelligence"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "57 5 * * *"
+  pull_request:
+    paths:
+      - "intelligence/risk/health-factor-intelligence.mjs"
+      - ".github/workflows/update-health-factor-intelligence.yml"
+      - "companies/company-*-resolve.json"
+  push:
+    branches:
+      - main
+    paths:
+      - "intelligence/risk/health-factor-intelligence.mjs"
+      - ".github/workflows/update-health-factor-intelligence.yml"
+      - "companies/company-*-resolve.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-health-factor-intelligence
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/risk/health-factor-intelligence.mjs
+          node --check intelligence/risk/health-factor-intelligence.mjs
+          grep -q "executionAuthority: 'none'" intelligence/risk/health-factor-intelligence.mjs
+          grep -q "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5" intelligence/risk/health-factor-intelligence.mjs
+          grep -q "getUserAccountData(address)" intelligence/risk/health-factor-intelligence.mjs
+          grep -q "healthFactorApplicable: false" intelligence/risk/health-factor-intelligence.mjs
+
+      - name: Collect live Aave company risk state
+        run: node intelligence/risk/health-factor-intelligence.mjs
+
+      - name: Validate live Health Factor semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('intelligence/risk/health-factor-intelligence.json', 'utf8'));
+          const h = JSON.parse(fs.readFileSync('intelligence/risk/health-factor-history.json', 'utf8'));
+          if (x.version !== '0.1-health-factor-risk-intelligence') throw new Error('unexpected risk intelligence version');
+          if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('risk collector gained execution authority');
+          if (x.source?.pool !== '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5') throw new Error('unexpected Aave v3 Base pool');
+          if (!Array.isArray(x.observations) || x.observations.length < 1) throw new Error('no canonical Aave company observation');
+          const monetra = x.observations.find(o => o.companyRegistry === '008');
+          if (!monetra) throw new Error('Monetra Base Aave target not discovered');
+          if (monetra.wallet?.toLowerCase() !== '0x888d39aee2aec979c81f125ea94bb3ceb60f6bbb') throw new Error('unexpected Monetra wallet');
+          if (monetra.onchain?.status !== 'ok') throw new Error(`Monetra live Aave read unavailable: ${monetra.onchain?.error || 'unknown'}`);
+          if (typeof monetra.onchain.totalDebtBaseRaw !== 'string') throw new Error('debt raw value unavailable');
+          if (monetra.assessment?.debtPresent === false && monetra.assessment?.healthFactor !== null) throw new Error('zero-debt account must expose HF as null/not-applicable');
+          if (monetra.assessment?.debtPresent === true && !(Number(monetra.assessment?.healthFactor) > 0)) throw new Error('debt account must expose numeric HF');
+          if (monetra.ownerContext?.hardAutomaticThreshold !== false || monetra.ownerContext?.marketRegimeInferred !== false) throw new Error('owner contextual thresholds became hard policy');
+          if (h.version !== '0.1-health-factor-history' || !Array.isArray(h.snapshots) || h.snapshots.length < 1) throw new Error('HF history unavailable');
+          if (!x.integrity?.stateHash || !x.integrity?.observationHash) throw new Error('risk intelligence integrity missing');
+          console.log('Health Factor Intelligence PASS', {
+            status: x.status,
+            targetCount: x.coverage.discoveredTargetCount,
+            monetra: {
+              collateralRaw: monetra.onchain.totalCollateralBaseRaw,
+              debtRaw: monetra.onchain.totalDebtBaseRaw,
+              hf: monetra.assessment.healthFactor,
+              state: monetra.assessment.state
+            },
+            executionAuthority: x.authority.executionAuthority
+          });
+          NODE
+          git diff --check
+
+      - name: Publish generated Health Factor intelligence
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED=(
+            "intelligence/risk/health-factor-intelligence.json"
+            "intelligence/risk/health-factor-history.json"
+          )
+          for f in "${GENERATED[@]}"; do test -s "$f"; done
+
+          git config user.name "The Holding Risk Intelligence"
+          git config user.email "risk-intelligence@theholding.ai"
+          git add "${GENERATED[@]}"
+
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/risk/(health-factor-intelligence\.json|health-factor-history\.json)$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Risk Intelligence attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "Health Factor intelligence already current."
+            exit 0
+          fi
+
+          git commit -m "risk: refresh health factor intelligence"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Risk Intelligence publish conflict; refusing to guess."
+              exit 1
+            fi
+
+            node intelligence/risk/health-factor-intelligence.mjs
+            git add "${GENERATED[@]}"
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+              echo "Verified Health Factor intelligence on remote main."
+              exit 0
+            fi
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "ERROR: unable to publish Health Factor intelligence after 3 attempts."
+          exit 1
