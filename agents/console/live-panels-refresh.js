@@ -75,6 +75,18 @@
     document.head.appendChild(neuralMap);
   }
 
+  // Activation-aware companion for the proven base Neural Map renderer. It does
+  // not invent browser-side relations: it visualizes only the canonical overlay
+  // published by neural-graph-quality.json (semantic domains, capabilities,
+  // blockers, security/code surfaces, memory chain and architecture demand).
+  if (!document.querySelector('script[data-th-neural-map-activation-loader]')) {
+    const activationOverlay = document.createElement('script');
+    activationOverlay.src = '/agents/console/neural-map-activation-overlay.js?v=0.2';
+    activationOverlay.defer = true;
+    activationOverlay.dataset.thNeuralMapActivationLoader = 'v0.2';
+    document.head.appendChild(activationOverlay);
+  }
+
   // Bounded conversational cortex. This is a read-only owner-context / graph
   // synthesis layer over the existing Ask router. safety.js is the parent
   // loader and therefore registers its capture guard before this script can
