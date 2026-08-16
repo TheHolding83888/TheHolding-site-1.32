@@ -7,6 +7,7 @@ const OWNER_FILE = 'intelligence/owner-context/owner-decision-context.json';
 const ACTIVATION_FILE = 'intelligence/owner-context/owner-teaching-activation.json';
 const EVENTS_FILE = 'intelligence/event-intelligence.json';
 const SECURITY_FILE = 'security/security-intelligence.json';
+const MEMORY_FILE = 'intelligence/memory-vault/manifest.json';
 const ACTIVE_CANDIDATE_CAP = 24;
 
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -15,7 +16,7 @@ const arr = value => Array.isArray(value) ? value : [];
 const obj = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 const norm = value => String(value ?? '').trim().toLowerCase().replace(/[^a-z0-9._:-]+/g, '-').replace(/^-+|-+$/g, '');
 
-for (const file of [BASE_FILE, OWNER_FILE, ACTIVATION_FILE, EVENTS_FILE, SECURITY_FILE]) {
+for (const file of [BASE_FILE, OWNER_FILE, ACTIVATION_FILE, EVENTS_FILE, SECURITY_FILE, MEMORY_FILE]) {
   if (!fs.existsSync(file)) throw new Error(`Missing required graph-quality source: ${file}`);
 }
 
@@ -24,6 +25,7 @@ const owner = read(OWNER_FILE);
 const activation = read(ACTIVATION_FILE);
 const events = read(EVENTS_FILE);
 const security = read(SECURITY_FILE);
+const memory = read(MEMORY_FILE);
 
 if (base?.authority?.executionAuthority !== 'none' || base?.authority?.readOnly !== true) throw new Error('Base graph authority boundary failed');
 if (owner?.authority?.executionAuthority !== 'none' || owner?.authority?.executable !== false) throw new Error('Owner authority boundary failed');
@@ -35,10 +37,10 @@ const baseConnections = new Map(Object.entries(obj(base?.catalog?.connections)))
 const overlayNodes = new Map();
 const overlayConnections = new Map();
 
-function addOverlayNode(type, rawId, label, data = {}, provenance = {}) {
+function addOverlayNode(type, rawId, label, data = {}, provenance = {}, status = 'established') {
   const id = `${type}:${norm(rawId)}`;
   if (baseNodes.has(id)) return id;
-  const value = { id, type, label: String(label ?? rawId), status: 'established', provenance, data };
+  const value = { id, type, label: String(label ?? rawId), status, provenance, data };
   value.fingerprint = sha256({ type, label: value.label, status: value.status, provenance, data });
   overlayNodes.set(id, value);
   return id;
@@ -120,7 +122,26 @@ for (const finding of arr(security?.currentFindings)) {
   addOverlayConnection('security-finding-surface', findingId, surface, { severity: finding?.severity ?? null }, 'established', 'direct');
 }
 
-// Explicit coverage gaps point to candidate measurements rather than floating without demand targets.
+// Permanent Memory already has a real append-only hash chain. Expose that exact temporal relation instead of leaving records as islands.
+const memoryRuns = arr(memory?.runs);
+for (let i = 1; i < memoryRuns.length; i += 1) {
+  const previous = memoryRuns[i - 1];
+  const current = memoryRuns[i];
+  if (current?.previousRecordHash && previous?.recordHash && current.previousRecordHash !== previous.recordHash) {
+    throw new Error(`Memory chain mismatch between ${previous?.runId} and ${current?.runId}`);
+  }
+  const from = `memory-record:${norm(previous?.runId)}`;
+  const to = `memory-record:${norm(current?.runId)}`;
+  if (!baseNodes.has(from) || !baseNodes.has(to)) throw new Error(`Memory record missing from base graph: ${from} / ${to}`);
+  addOverlayConnection('memory-record-next', from, to, {
+    previousRecordHash: previous?.recordHash ?? null,
+    currentPreviousRecordHash: current?.previousRecordHash ?? null,
+    generatedAt: current?.generatedAt ?? null
+  }, 'established', 'direct');
+}
+
+// Explicit coverage gaps are established architecture demand. Candidate targets remain candidate and do not become established simply because a gap points at them.
+const architectureDemand = addOverlayNode('context-domain', 'architecture-demand', 'Architecture Demand', { semantics: 'known-missing-capability-domain' }, { source: EVENTS_FILE });
 const gapCandidateMap = {
   'protocol-trading-volume-change': ['protocol-trading-volume', 'volume'],
   'protocol-fees-revenue-change': ['protocol-fees', 'protocol-revenue-or-fee-capture', 'fees', 'protocol-revenue-fee-capture'],
@@ -132,9 +153,10 @@ const gapCandidateMap = {
 for (const gap of arr(events?.tracked?.coverageGaps)) {
   const gapId = `coverage-gap:${norm(gap?.id)}`;
   const resolvedGapId = baseNodes.has(gapId) ? gapId : addOverlayNode('coverage-gap', gap?.id, gap?.id, { why: gap?.why ?? null }, { source: EVENTS_FILE });
+  addOverlayConnection('coverage-gap-domain', resolvedGapId, architectureDemand, { why: gap?.why ?? null }, 'established', 'derived');
   for (const candidateId of gapCandidateMap[gap?.id] || []) {
     const candidate = `candidate-metric:${norm(candidateId)}`;
-    const target = baseNodes.has(candidate) ? candidate : addOverlayNode('candidate-metric', candidateId, candidateId, { lifecycle: 'blocked' }, { source: EVENTS_FILE });
+    const target = baseNodes.has(candidate) ? candidate : addOverlayNode('candidate-metric', candidateId, candidateId, { lifecycle: 'blocked' }, { source: EVENTS_FILE }, 'candidate');
     addOverlayConnection('coverage-gap-candidate', resolvedGapId, target, { reason: gap?.why ?? null }, 'candidate', 'unknown');
   }
 }
@@ -242,7 +264,7 @@ const blockedDemand = dispositions.filter(x => x.status === 'blocked').map(x => 
 
 const quality = {
   version: '0.2-neural-graph-quality-and-activation',
-  engineVersion: '0.2-connectivity-activation-candidate-capacity-evaluator',
+  engineVersion: '0.2.1-connectivity-activation-candidate-capacity-evaluator',
   generatedAt: new Date().toISOString(),
   status: 'ok',
   purpose: 'Measure graph usefulness and relational depth beside raw growth, while classifying every owner teaching unit by real activation state.',
@@ -258,7 +280,8 @@ const quality = {
     ownerContext: { file: OWNER_FILE, asOf: owner?.asOf ?? null, sha256: sha256(fs.readFileSync(OWNER_FILE, 'utf8')) },
     activationContract: { file: ACTIVATION_FILE, asOf: activation?.asOf ?? null, sha256: sha256(fs.readFileSync(ACTIVATION_FILE, 'utf8')) },
     eventIntelligence: { file: EVENTS_FILE, generatedAt: events?.generatedAt ?? null, sha256: sha256(fs.readFileSync(EVENTS_FILE, 'utf8')) },
-    security: { file: SECURITY_FILE, generatedAt: security?.generatedAt ?? null, sha256: sha256(fs.readFileSync(SECURITY_FILE, 'utf8')) }
+    security: { file: SECURITY_FILE, generatedAt: security?.generatedAt ?? null, sha256: sha256(fs.readFileSync(SECURITY_FILE, 'utf8')) },
+    memory: { file: MEMORY_FILE, generatedAt: memory?.lastUpdatedAt ?? null, sha256: sha256(fs.readFileSync(MEMORY_FILE, 'utf8')) }
   },
   ownerActivation: {
     teachingUnitCount: dispositions.length,
