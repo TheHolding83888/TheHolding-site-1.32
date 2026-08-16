@@ -1,0 +1,191 @@
+name: "The Holding Brain · Owner Decision Context Overlay"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "intelligence/owner-context/**"
+      - ".github/workflows/update-owner-context-runtime.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "intelligence/owner-context/owner-operating-profile*.json"
+      - "intelligence/brain-intelligence.json"
+      - "intelligence/owner-context/owner-context-runtime.mjs"
+      - "intelligence/owner-context/brain-owner-context-overlay.mjs"
+      - ".github/workflows/update-owner-context-runtime.yml"
+  workflow_run:
+    workflows:
+      - "The Holding Brain · Refresh Cognitive Stack"
+      - "The Holding Brain · Grounded Reasoning"
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-owner-decision-context
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Preflight owner context runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/owner-context/owner-operating-profile.json
+          test -s intelligence/owner-context/owner-context-runtime.mjs
+          test -s intelligence/owner-context/brain-owner-context-overlay.mjs
+          test -s intelligence/brain-intelligence.json
+          node --check intelligence/owner-context/owner-context-runtime.mjs
+          node --check intelligence/owner-context/brain-owner-context-overlay.mjs
+
+      - name: Compile owner decision context
+        run: node intelligence/owner-context/owner-context-runtime.mjs
+
+      - name: Build Brain owner context overlay
+        run: node intelligence/owner-context/brain-owner-context-overlay.mjs
+
+      - name: Validate owner context authority and exact binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const context = JSON.parse(fs.readFileSync('intelligence/owner-context/owner-decision-context.json', 'utf8'));
+          const overlay = JSON.parse(fs.readFileSync('intelligence/owner-context/brain-owner-context-overlay.json', 'utf8'));
+          const brainText = fs.readFileSync('intelligence/brain-intelligence.json', 'utf8');
+          const contextText = fs.readFileSync('intelligence/owner-context/owner-decision-context.json', 'utf8');
+          const sha256 = (text) => crypto.createHash('sha256').update(text).digest('hex');
+
+          if (context.version !== '0.1-owner-decision-context-runtime') {
+            throw new Error(`Unexpected owner context version: ${context.version}`);
+          }
+          if (context.authority?.executionAuthority !== 'none' || context.authority?.executable !== false) {
+            throw new Error('Owner context gained execution authority');
+          }
+          if (context.authority?.marketFactAuthority !== false || context.authority?.evidenceOverrideAuthority !== false) {
+            throw new Error('Owner context gained fact/evidence authority');
+          }
+          if (overlay.version !== '0.1-brain-owner-context-overlay') {
+            throw new Error(`Unexpected overlay version: ${overlay.version}`);
+          }
+          if (overlay.sourceBrain?.sha256 !== sha256(brainText)) {
+            throw new Error('Overlay is not exact-byte bound to current Brain');
+          }
+          if (overlay.ownerDecisionContext?.sha256 !== sha256(contextText)) {
+            throw new Error('Overlay is not exact-byte bound to compiled owner context');
+          }
+          if (overlay.constraints?.executionAllowed !== false || overlay.constraints?.proposalOnly !== true) {
+            throw new Error('Overlay escaped proposal-only / no-execution boundary');
+          }
+          if (overlay.interpretationContract?.factAuthority !== 'grounded-brain-canonical-evidence') {
+            throw new Error('Canonical fact authority was not preserved');
+          }
+          if (overlay.interpretationContract?.noAutomaticPolicyPromotion !== true) {
+            throw new Error('Owner heuristics could be promoted automatically');
+          }
+
+          const questions = context.provenance?.questionsCovered ?? [];
+          if (!Array.isArray(questions) || new Set(questions).size !== questions.length) {
+            throw new Error('Owner question coverage is invalid');
+          }
+
+          console.log('Owner Decision Context Overlay PASS', {
+            sources: context.provenance?.sourceCount ?? null,
+            questions: context.provenance?.questionCount ?? null,
+            brainCases: overlay.sourceBrain?.reasoningCaseCount ?? null,
+            brainSnapshotHash: overlay.sourceBrain?.snapshotHash ?? null,
+            contextHash: context.contextHash,
+            overlayHash: overlay.integrity?.overlayHash ?? null,
+            executionAuthority: context.authority?.executionAuthority,
+          });
+          NODE
+          git diff --check
+
+      - name: Publish generated owner context runtime state
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED=(
+            "intelligence/owner-context/owner-decision-context.json"
+            "intelligence/owner-context/brain-owner-context-overlay.json"
+          )
+          for f in "${GENERATED[@]}"; do
+            test -s "$f"
+          done
+
+          git config user.name "The Holding Owner Context"
+          git config user.email "owner-context@theholding.ai"
+          git add "${GENERATED[@]}"
+
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/owner-context/(owner-decision-context\.json|brain-owner-context-overlay\.json)$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Owner Context attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "Owner decision context is already current."
+            exit 0
+          fi
+
+          git commit -m "intelligence: refresh owner decision context overlay"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Owner Context publish conflict; refusing to guess."
+              exit 1
+            fi
+
+            # Rebuild after every rebase so the overlay remains tied to the exact
+            # current Brain and exact current owner-context source bytes.
+            node intelligence/owner-context/owner-context-runtime.mjs
+            node intelligence/owner-context/brain-owner-context-overlay.mjs
+            git add "${GENERATED[@]}"
+            if ! git diff --cached --quiet; then
+              git commit --amend --no-edit
+            fi
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+                echo "ERROR: pushed Owner Context commit is not current remote main."
+                exit 1
+              fi
+              echo "Verified Owner Decision Context Overlay on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "ERROR: unable to publish Owner Context after 3 attempts."
+          exit 1
