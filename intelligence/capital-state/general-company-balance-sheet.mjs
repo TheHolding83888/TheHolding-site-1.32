@@ -102,20 +102,10 @@ if (gitBlobSha(UI_BOOK_SOURCE) !== EXPECTED_UI_BLOB_SHA) {
   throw new Error('companies/index.html changed since Company Book normalization; review browser Company Book before publishing balance sheet');
 }
 
-const productivePrice = new Map();
-for (const [name,c] of Object.entries(productivity.companies||{})) {
-  for (const p of c.breakdown||[]) {
-    const id=p.principalId;
-    const price=Number(p.price);
-    if (!id || !Number.isFinite(price) || price<=0) continue;
-    if (productivePrice.has(id) && Math.abs(productivePrice.get(id)-price)>1e-9) throw new Error(`inconsistent Productivity price for ${id}`);
-    productivePrice.set(id,price);
-  }
-}
-
 const cg=await livePrices();
 const companies=[];
 let networkTotal=0;
+let networkProductiveExposure=0;
 const layerTotals={foundationUsd:0,productiveDividendUsd:0,stableReserveUsd:0,rwaUsd:0,ventureUsd:0,unclassifiedUsd:0};
 
 for (const [registry,name] of REGISTRY) {
@@ -123,27 +113,44 @@ for (const [registry,name] of REGISTRY) {
   const pCompany=productivity.companies?.[name];
   if (!sourceRows || !pCompany) throw new Error(`${name}: missing Company Book or Productivity binding`);
 
-  const productiveById=new Map((pCompany.breakdown||[]).map(p=>[p.principalId,p]));
+  const pBreakdown=pCompany.breakdown||[];
+  const productiveById=new Map(pBreakdown.map(p=>[p.principalId,p]));
+  const productiveByEngine=new Map(pBreakdown.map(p=>[p.engineId,p]));
   const positions=[];
   const layers={foundationUsd:0,productiveDividendUsd:0,stableReserveUsd:0,rwaUsd:0,ventureUsd:0,unclassifiedUsd:0};
+  let representedProductiveExposure=0;
 
   for (const row of sourceRows) {
     if (row.productivityOnly) {
-      positions.push({...row, valueUsd:null, inclusion:'excluded-from-total-productivity-representation', doubleCountPolicy:'excluded because underlying economic exposure is already represented by the parent Company Book BTC/ETH holding'});
+      const pp=productiveByEngine.get(row.engineId);
+      if (!pp) throw new Error(`${name}: productivityOnly row ${row.engineId} missing from canonical Productivity breakdown`);
+      if (Math.abs(Number(pp.units)-Number(row.qty)) > Math.max(1e-9,Math.abs(Number(row.qty))*1e-9)) throw new Error(`${name}: productivityOnly quantity drift for ${row.engineId}`);
+      const exposureValue=Number(pp.value);
+      if (!Number.isFinite(exposureValue)||exposureValue<0) throw new Error(`${name}: invalid productive exposure for ${row.engineId}`);
+      representedProductiveExposure+=exposureValue;
+      positions.push({
+        assetId:row.id,engineId:row.engineId,units:round(row.qty,12),priceUsd:round(pp.price,12),productiveExposureValueUsd:round(exposureValue),
+        primaryCapitalLayer:null,productiveAttribute:true,productivityOnly:true,
+        inclusion:'excluded-from-capital-total-productivity-representation',
+        doubleCountPolicy:'excluded from capital total because the same economic BTC/ETH exposure is already represented by the parent Company Book holding; retained only as a Productivity attribute/proof'
+      });
       continue;
     }
 
     let price=null;
     let priceProvenance=null;
+    let productiveAttribute=false;
+    const pp=productiveById.get(row.id);
     if (row.priceSource==='coingecko') {
       price=Number(cg.prices[row.id]);
       priceProvenance='coingecko-live-simple-price';
     } else {
-      const pp=productiveById.get(row.id);
       if (!pp) throw new Error(`${name}: productive Company Book row ${row.id} missing from canonical Productivity breakdown`);
       if (Math.abs(Number(pp.units)-Number(row.qty)) > Math.max(1e-9,Math.abs(Number(row.qty))*1e-9)) throw new Error(`${name}: quantity drift for ${row.id}`);
       price=Number(pp.price);
       priceProvenance='canonical-productivity-breakdown';
+      productiveAttribute=true;
+      representedProductiveExposure+=Number(pp.value);
     }
     if (!Number.isFinite(price)||price<=0) throw new Error(`${name}: invalid price for ${row.id}`);
     const value=Number(row.qty)*price;
@@ -152,22 +159,28 @@ for (const [registry,name] of REGISTRY) {
     layers[key]+=value;
     positions.push({
       assetId:row.id, units:round(row.qty,12), priceUsd:round(price,12), valueUsd:round(value),
-      primaryCapitalLayer:row.layer, priceProvenance,
+      primaryCapitalLayer:row.layer, productiveAttribute, priceProvenance,
       evidenceStatus:row.evidenceStatus||'established', note:row.note||null,
       inclusion:'included-once-in-company-total', productivityOnly:false
     });
   }
 
-  const total=Object.values(layers).reduce((s,v)=>s+v,0);
   const productiveExpected=Number(pCompany.productiveValue);
-  if (Math.abs(layers.productiveDividendUsd-productiveExpected)>0.05) throw new Error(`${name}: productive layer does not reconcile to canonical Productivity total`);
+  if (!Number.isFinite(productiveExpected)||productiveExpected<0) throw new Error(`${name}: canonical Productive exposure unavailable`);
+  if (Math.abs(representedProductiveExposure-productiveExpected)>0.05) throw new Error(`${name}: Company Book representations do not reconcile to canonical Productive exposure`);
+
+  const total=Object.values(layers).reduce((s,v)=>s+v,0);
   if (!(total>0)) throw new Error(`${name}: total capital unavailable`);
 
   for (const k of Object.keys(layers)) { layers[k]=round(layers[k]); layerTotals[k]+=layers[k]; }
   networkTotal+=total;
+  networkProductiveExposure+=productiveExpected;
   companies.push({
     registry,name,status:'total-capital-complete',totalCapitalUsd:round(total),totalCapitalComplete:true,
     sourceScope:'browser-company-book-normalized-to-machine-readable-balance-sheet',
+    productiveMeasuredExposureUsd:round(productiveExpected),
+    primaryProductiveDividendCapitalUsd:round(layers.productiveDividendUsd),
+    productiveExposureOutsidePrimaryProductiveLayerUsd:round(Math.max(0,productiveExpected-layers.productiveDividendUsd)),
     layerValues:layers,
     epistemicNote:name==='1milliondollar.eth'?'Total includes an explicitly disclosed owner-observed WETH component; provenance is preserved rather than silently upgraded to independently reproduced onchain evidence.':null,
     positions
@@ -179,15 +192,27 @@ const output={
   version:'0.1-general-company-balance-sheet',
   engineVersion:'0.1-browser-book-bound-balance-sheet-normalizer',
   generatedAt:new Date().toISOString(),status:'ok',
-  purpose:'Machine-readable total-capital binding for the eight general Registry companies, normalized from the existing browser Company Book and reconciled against canonical Productivity.',
+  purpose:'Machine-readable total-capital binding for the eight general Registry companies, normalized from the existing browser Company Book and reconciled against canonical Productivity without conflating productive exposure with primary capital layer.',
   authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,allocationAuthority:false,policyMutationAuthority:false,methodologyMutationAuthority:false},
-  semantics:{unknownPolicy:'unknown != zero',doubleCountPolicy:'productivityOnly rows never add a second copy of parent BTC/ETH economic exposure',layerTaxonomy:['foundation','productive-dividend','stable-reserve','rwa','venture','unclassified']},
+  semantics:{
+    unknownPolicy:'unknown != zero',
+    doubleCountPolicy:'productivityOnly rows never add a second copy of parent BTC/ETH economic exposure',
+    productiveExposure:'A capital position can be economically productive while its primary capital layer remains Foundation or another layer; Productivity is an earning attribute, not automatically a Productive Dividend capital classification.',
+    layerTaxonomy:['foundation','productive-dividend','stable-reserve','rwa','venture','unclassified']
+  },
   sourceState:{
     browserCompanyBook:{file:UI_BOOK_SOURCE,gitBlobSha:EXPECTED_UI_BLOB_SHA,sha256:sha256File(UI_BOOK_SOURCE),role:'existing UI Company Book quantities and inclusion semantics'},
-    productivity:{file:PRODUCTIVITY,version:productivity.version,generatedAt:productivity.generatedAt||null,sha256:sha256File(PRODUCTIVITY),role:'productive quantity reconciliation and productive-asset current prices'},
+    productivity:{file:PRODUCTIVITY,version:productivity.version,generatedAt:productivity.generatedAt||null,sha256:sha256File(PRODUCTIVITY),role:'productive quantity/exposure reconciliation and productive-asset current prices'},
     livePrices:{provider:'CoinGecko',ids:COINGECKO_IDS,sourceUrl:cg.sourceUrl,fetchedAt:cg.fetchedAt,role:'current BTC/ETH/ZK prices already used by the public browser TVL surface'}
   },
-  network:{generalCompanyCount:REGISTRY.length,totalCapitalCompleteCompanyCount:companies.length,generalCompanyTvlUsd:round(networkTotal),layerValues:layerTotals},
+  network:{
+    generalCompanyCount:REGISTRY.length,
+    totalCapitalCompleteCompanyCount:companies.length,
+    generalCompanyTvlUsd:round(networkTotal),
+    productiveMeasuredExposureUsd:round(networkProductiveExposure),
+    primaryProductiveDividendCapitalUsd:round(layerTotals.productiveDividendUsd),
+    layerValues:layerTotals
+  },
   companies,
   gaps:[
     {id:'company-009-owner-observed-weth-proof',severity:'evidence-quality',affects:['company-009-foundation-provenance'],detail:'0.1606 WETH remains owner-observed and is not silently represented as independently reproduced onchain evidence.'},
@@ -197,4 +222,10 @@ const output={
 
 fs.mkdirSync(path.dirname(OUT),{recursive:true});
 fs.writeFileSync(OUT,JSON.stringify(output,null,2)+'\n');
-console.log('General company balance sheet built',{companies:companies.length,generalCompanyTvlUsd:output.network.generalCompanyTvlUsd,executionAuthority:output.authority.executionAuthority});
+console.log('General company balance sheet built',{
+  companies:companies.length,
+  generalCompanyTvlUsd:output.network.generalCompanyTvlUsd,
+  productiveMeasuredExposureUsd:output.network.productiveMeasuredExposureUsd,
+  primaryProductiveDividendCapitalUsd:output.network.primaryProductiveDividendCapitalUsd,
+  executionAuthority:output.authority.executionAuthority
+});
