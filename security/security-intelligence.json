@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-16T16:41:43.543Z",
+  "generatedAt": "2026-08-16T16:50:03.554Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 21,
+    "medium": 20,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 328,
-    "bytesScanned": 8080567,
+    "filesScanned": 330,
+    "bytesScanned": 8104759,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "ef4c0c55c45ea7454751045961e7944337cc1b55aa3ae224f8d6d5e46ef54a8a",
         "severity": "medium",
@@ -68,22 +69,6 @@
         "evidence": {
           "previousSha256": "cdadbb003125fd768eb8b0183edf3bac215b33a2158d947983c16a2357b7e72b",
           "currentSha256": "b2b1767e28c60c57340e8dc64420cc0c49e58587beaf002350717385de848d1a"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "312363b4d53a0160c69e05ebb7ca9ceaf90586908aa05fcf317ba095f859ce42",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-neural-graph-telemetry.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-neural-graph-telemetry.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "09d413a25149156c0d755cb3642362d2c72e17efa17966d1af01dbb7fc7406ef",
-          "currentSha256": "cdadbb003125fd768eb8b0183edf3bac215b33a2158d947983c16a2357b7e72b"
         }
       }
     ]
@@ -154,20 +139,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "ef4c0c55c45ea7454751045961e7944337cc1b55aa3ae224f8d6d5e46ef54a8a",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-neural-graph-telemetry.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-neural-graph-telemetry.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "cdadbb003125fd768eb8b0183edf3bac215b33a2158d947983c16a2357b7e72b",
-        "currentSha256": "b2b1767e28c60c57340e8dc64420cc0c49e58587beaf002350717385de848d1a"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -510,12 +481,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "181907cf957f850dac81fa214b892bd959ce475ab2d568f4c4adcc80d385e87f",
+    "snapshotHash": "b9408ca8e93c696f37152a8a1433f2c49a2a4595b14b002a0c303e0af48bd7cb",
     "securityVault": {
-      "runCount": 238,
+      "runCount": 239,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-16T16-41-43-543Z-181907cf95.json",
-      "latestRecordHash": "e1691022dbf1721e87c6bb6f4a2c543788f86f91e425819a04e410e7c3d7fb83",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-16T16-50-03-554Z-b9408ca8e9.json",
+      "latestRecordHash": "ce1cba75457f5c99516d538e3963e2a2abf9cd4fdecc5fecfc9e69b06b014ee0",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
