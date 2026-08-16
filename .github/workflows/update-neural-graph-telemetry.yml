@@ -127,7 +127,8 @@ jobs:
           if (!Number.isFinite(q.ownerActivation?.activationRatePct)) throw new Error('owner activation rate unavailable');
           if (!Number.isFinite(q.connectivity?.base?.edgesPerNode) || !Number.isFinite(q.connectivity?.enriched?.edgesPerNode)) throw new Error('graph connectivity ratio unavailable');
           if (!Number.isInteger(q.connectivity?.base?.zeroDegreeCount) || !Number.isInteger(q.connectivity?.enriched?.zeroDegreeCount)) throw new Error('zero-degree counts unavailable');
-          if (q.connectivity.enriched.zeroDegreeCount > q.connectivity.base.zeroDegreeCount) throw new Error('activation overlay unexpectedly increased isolation');
+          if (q.connectivity.enriched.zeroDegreeCount !== 0) throw new Error(`established graph contains isolated neurons after enrichment: ${q.connectivity.enriched.zeroDegreeCount}`);
+          if (q.connectivity.enriched.singletonComponentCount !== 0) throw new Error('established graph contains singleton components after enrichment');
           if (q.ownerActivation?.enrichedGraphZeroDegreeOwnerUnits !== 0) throw new Error('owner teaching remains non-traversable after activation overlay');
           if (q.candidateCapacity?.activeReviewCount > q.candidateCapacity?.activeReviewCap) throw new Error('candidate active review exceeds cap');
           if (q.utility?.questionsMadeAnswerableByGraph !== null || q.utility?.measurementStatus !== 'warming') throw new Error('graph-only utility must remain warming until causally evaluated');
