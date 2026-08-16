@@ -1,0 +1,165 @@
+name: "The Holding · Capital State"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "intelligence/capital-state/**"
+      - ".github/workflows/update-capital-state.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "companies/productivity-data.json"
+      - "companies/stable-index-data.json"
+      - "intelligence/capital-state/capital-state.mjs"
+      - ".github/workflows/update-capital-state.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-capital-state
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/capital-state/capital-state.mjs
+          test -s companies/productivity-data.json
+          test -s companies/stable-index-data.json
+          node --check intelligence/capital-state/capital-state.mjs
+          grep -q "executionAuthority: 'none'" intelligence/capital-state/capital-state.mjs
+          grep -q "unknown != zero" intelligence/capital-state/capital-state.mjs
+          grep -q "networkTvlUsd" intelligence/capital-state/capital-state.mjs
+          grep -q "measuredCapitalFloorUsd" intelligence/capital-state/capital-state.mjs
+
+      - name: Build Capital State
+        run: node intelligence/capital-state/capital-state.mjs
+
+      - name: Validate Capital State semantics and authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json', 'utf8'));
+
+          if (x.version !== '0.1-capital-state') throw new Error('unexpected Capital State version');
+          if (x.engineVersion !== '0.1-evidence-bound-capital-substrate') throw new Error('unexpected engine version');
+          if (x.status !== 'partial') throw new Error('v0.1 must remain partial until total-capital coverage is proven');
+          if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('Capital State gained execution authority');
+          if (x.authority?.capitalExecution !== false || x.authority?.allocationAuthority !== false) throw new Error('Capital State gained capital/allocation authority');
+
+          if (!Array.isArray(x.companies) || x.companies.length !== 9) throw new Error('expected exactly 9 Registry companies');
+          if (x.network?.registryCompanyCount !== 9) throw new Error('registry count mismatch');
+          if (x.network?.measuredCompanyCount !== 9) throw new Error('expected scoped measured capital for all 9 companies');
+          if (x.network?.totalCapitalCompleteCompanyCount !== 1) throw new Error('only Monetra total-capital binding is complete in v0.1');
+          if (x.network?.networkTvlUsd !== null) throw new Error('Network TVL must be withheld while total-capital coverage is incomplete');
+          if (x.network?.networkTvlStatus !== 'withheld-incomplete-total-capital-coverage') throw new Error('Network TVL status must disclose incomplete coverage');
+          if (!Number.isFinite(x.network?.measuredCapitalFloorUsd) || x.network.measuredCapitalFloorUsd <= 0) throw new Error('measured capital floor unavailable');
+          if (!Number.isFinite(x.network?.measuredProductiveCapitalUsd) || x.network.measuredProductiveCapitalUsd <= 0) throw new Error('productive capital floor unavailable');
+          if (!Number.isFinite(x.network?.measuredStableCapitalUsd) || x.network.measuredStableCapitalUsd <= 0) throw new Error('stable capital unavailable');
+
+          const monetra = x.companies.find(c => c.registry === '008');
+          if (!monetra || monetra.name !== 'Monetra.eth') throw new Error('Monetra identity missing');
+          if (monetra.totalCapitalComplete !== true || monetra.measurementStatus !== 'total-capital-complete') throw new Error('Monetra complete-capital contract missing');
+          if (!Number.isFinite(monetra.layerValues?.stableReserveUsd) || monetra.layerValues.stableReserveUsd <= 0) throw new Error('Monetra stable layer unavailable');
+          if (monetra.layerValues?.productiveDividendUsd !== null) throw new Error('Stable principal must not be double-classified as Productive layer');
+
+          for (const c of x.companies.filter(c => c.registry !== '008')) {
+            if (c.totalCapitalComplete !== false) throw new Error(`${c.registry}: general company incorrectly marked total-complete`);
+            if (c.capitalScope !== 'productive-capital-only') throw new Error(`${c.registry}: expected productive-only scope`);
+            if (!Number.isFinite(c.layerValues?.productiveDividendUsd) || c.layerValues.productiveDividendUsd <= 0) throw new Error(`${c.registry}: productive layer unavailable`);
+            if (c.coverage?.companyCapitalCoverage !== null) throw new Error(`${c.registry}: unknown whole-company coverage must remain null`);
+          }
+
+          const blocker = (x.gaps || []).find(g => g.id === 'general-company-total-capital-binding');
+          if (!blocker || blocker.severity !== 'blocking') throw new Error('general total-capital blocker missing');
+          if (x.readiness?.networkTvl !== 'blocked') throw new Error('network TVL readiness must remain blocked');
+          if (x.readiness?.q12AllocationContext !== 'partial') throw new Error('Q12 must remain partial');
+
+          console.log('CAPITAL STATE v0.1 PASS', {
+            companies: x.network.registryCompanyCount,
+            measuredCompanies: x.network.measuredCompanyCount,
+            completeCompanies: x.network.totalCapitalCompleteCompanyCount,
+            measuredCapitalFloorUsd: x.network.measuredCapitalFloorUsd,
+            networkTvlUsd: x.network.networkTvlUsd,
+            q12: x.readiness.q12AllocationContext,
+            executionAuthority: x.authority.executionAuthority
+          });
+          NODE
+          git diff --check
+
+      - name: Publish generated Capital State
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED="intelligence/capital-state/capital-state.json"
+          test -s "$GENERATED"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$GENERATED"
+
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/capital-state/capital-state\.json$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Capital State attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "Capital State already current."
+            exit 0
+          fi
+
+          git commit -m "capital: refresh canonical capital state"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Capital State publish conflict; refusing to guess."
+              exit 1
+            fi
+
+            node intelligence/capital-state/capital-state.mjs
+            git add "$GENERATED"
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              git cat-file -e "origin/main:$GENERATED"
+              REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+              test "$REMOTE_VERSION" = "0.1-capital-state"
+              echo "Verified Capital State v0.1 on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "Capital State publish failed after 3 attempts."
+          exit 1
