@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-16T12:10:56.990Z",
+  "generatedAt": "2026-08-16T12:21:56.002Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -12,8 +12,8 @@
     "info": 0
   },
   "source": {
-    "filesScanned": 312,
-    "bytesScanned": 7313456,
+    "filesScanned": 313,
+    "bytesScanned": 7350323,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
+        "lastModified": "Fri, 14 Aug 2026 06:09:13 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,35 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
-      {
-        "id": "e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "agents/console/owner-intelligence.js",
-        "line": 113,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "2ea885c8d14f150990d49bd93ef09436952a1b9a610363f101c3c454d4ac46b6",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-owner-context-runtime.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-owner-context-runtime.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "db7b67cbc23f31a772da65d8b645ef62edb23e81c6a6022d7c118c0460c24859",
-          "currentSha256": "65d1d7b799d8ad94acbe13c49d29e18d32e126d031b890b3553b96225be3c44b"
-        }
-      }
-    ]
+    "newFindings": [],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -493,12 +466,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "6f32bd5e71c3bf70678b031515f9a2fb2ed43221587e4d70143a71ed2e4384dd",
+    "snapshotHash": "4293ca785f1e2cb17a6b2a70a813feafa4e14763e810906a4c9517325f1a3d10",
     "securityVault": {
-      "runCount": 230,
+      "runCount": 231,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-16T12-10-56-990Z-6f32bd5e71.json",
-      "latestRecordHash": "12f739ff1b8b169a7151e68f203b8220aaa5e0f0bb7c397b145ccf9e00c49620",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-16T12-21-56-002Z-4293ca785f.json",
+      "latestRecordHash": "3ec6d7267bf160ecc626e1374e604200ff8a5d7f0018a4b8278c30a0a1508eac",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
