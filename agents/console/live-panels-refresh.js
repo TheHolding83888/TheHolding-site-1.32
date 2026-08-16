@@ -19,10 +19,21 @@
     document.head.appendChild(askUi);
   }
 
+  // Owner Intelligence is deliberately separate from THI. It visualizes
+  // provenance-bound teaching/graph growth without rewarding raw answer volume
+  // as maturity or pretending candidate metrics are already live.
+  if (!document.querySelector('script[data-th-owner-intelligence-loader]')) {
+    const ownerUi = document.createElement('script');
+    ownerUi.src = '/agents/console/owner-intelligence.js?v=0.1';
+    ownerUi.defer = true;
+    ownerUi.dataset.thOwnerIntelligenceLoader = 'v0.1';
+    document.head.appendChild(ownerUi);
+  }
+
   // Desktop-safe ownership of THI spacing. This lives outside The Holding News
   // so the score layout never depends on whether the News component loaded.
   const style = document.createElement('style');
-  style.dataset.thLivePanelsRefresh = 'v0.1';
+  style.dataset.thLivePanelsRefresh = 'v0.2';
   style.textContent = `
     @media (min-width: 901px) {
       #intelligenceProgress .thi-index-row {
