@@ -32,12 +32,14 @@ if (manifest?.version !== '0.1-learning-release') fail(`Unexpected Learning rele
 if (manifest?.releaseId !== '0.1-decision-outcome-learning-production') fail(`Unexpected Learning releaseId: ${manifest?.releaseId}`);
 const REQUIRED_FILES = [
   'intelligence/learning/decision-recorder.mjs',
+  'intelligence/learning/owner-initiated-decision-recorder.mjs',
   'intelligence/learning/decision-learning-engine.mjs',
   'intelligence/learning/independent-learning-reviewer.mjs',
   'intelligence/learning/decision-policy.json',
   'intelligence/learning/learning-release-guard.mjs',
   '.github/workflows/update-learning-loop.yml',
   '.github/workflows/record-brain-decision.yml',
+  '.github/workflows/record-owner-economic-decision.yml',
   '.github/workflows/security-sentinel.yml',
   'intelligence/cognitive-stack-release.json',
 ];

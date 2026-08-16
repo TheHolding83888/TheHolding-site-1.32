@@ -37,6 +37,32 @@
     "maximumExpectedOutcomeCharacters": 1200,
     "maximumModifiedActionCharacters": 2000
   },
+  "ownerInitiatedDecisions": {
+    "version": "0.1-pre-outcome-owner-economic-decision",
+    "enabled": true,
+    "allowedDomains": [
+      "economic"
+    ],
+    "allowedRecommendationClasses": [
+      "owner-capital-allocation"
+    ],
+    "requiredFields": [
+      "entity",
+      "category",
+      "disposition",
+      "rationale",
+      "expectedOutcome",
+      "evaluationCriterion",
+      "reviewOnOrAfter",
+      "counterevidence",
+      "invalidationCondition",
+      "deferredAlternative"
+    ],
+    "outcomeStateAtRecord": "open",
+    "calibrationEligibility": "not-scored-until-explicit-future-outcome-review",
+    "provenanceRule": "The owner-initiated recorder captures a decision authored by the Holding owner. Peer-owner statements must not be written through this path or silently promoted into Founder Decision DNA.",
+    "freshnessRule": "The record must bind to the exact current coherent Grounded Brain and Cognitive Stack bytes. If those bytes moved before publish, fail closed."
+  },
   "predictions": {
     "allowedEvents": [
       "none",
@@ -101,7 +127,8 @@
       "security-review",
       "security-provenance-triage",
       "third-party-trust-review",
-      "human-security-escalation"
+      "human-security-escalation",
+      "owner-capital-allocation"
     ],
     "dataHygieneRecommendationClasses": [
       "data-gap-resolution",
@@ -114,6 +141,6 @@
       "high",
       "critical"
     ],
-    "rule": "All Brain cases remain observable lifecycle memory. Only decision-worthy cases may receive owner Decision Learning records, scored outcomes, calibration, deterministic lessons, or active Proposal work. Unknown eligibility fails closed."
+    "rule": "All Brain cases remain observable lifecycle memory. Brain-originated owner Decision Learning remains limited to decision-worthy cases. Owner-initiated economic decisions may enter the same append-only Decision Ledger only through the bounded owner-initiated recorder and remain unscored/open until a future explicit outcome-review mechanism is justified."
   }
 }
