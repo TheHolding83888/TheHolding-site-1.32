@@ -42,6 +42,17 @@
     document.head.appendChild(neuralGraph);
   }
 
+  // Graph-quality telemetry sits beside raw growth. It measures owner-teaching
+  // activation, graph isolation/components and bounded candidate review so raw
+  // neuron counts cannot masquerade as useful intelligence.
+  if (!document.querySelector('script[data-th-neural-graph-quality-loader]')) {
+    const graphQuality = document.createElement('script');
+    graphQuality.src = '/agents/console/neural-graph-quality.js?v=0.1';
+    graphQuality.defer = true;
+    graphQuality.dataset.thNeuralGraphQualityLoader = 'v0.1';
+    document.head.appendChild(graphQuality);
+  }
+
   // Day-over-day badges are a companion to canonical graph history. They do
   // not backfill or invent yesterday's state: the badge remains warming until
   // a real prior daily snapshot exists.
