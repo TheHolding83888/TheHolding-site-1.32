@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-16T11:48:20.653Z",
+  "lastUpdatedAt": "2026-08-16T12:10:56.990Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 229,
-    "vaultRunCount": 229,
+    "runCount": 230,
+    "vaultRunCount": 230,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -2761,6 +2761,18 @@
       "highCount": 6,
       "newFindingCount": 1,
       "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-16T12:10:56.990Z",
+      "status": "watch",
+      "snapshotHash": "6f32bd5e71c3bf70678b031515f9a2fb2ed43221587e4d70143a71ed2e4384dd",
+      "recordPath": "security/security-vault/2026/08/2026-08-16T12-10-56-990Z-6f32bd5e71.json",
+      "recordHash": "12f739ff1b8b169a7151e68f203b8220aaa5e0f0bb7c397b145ccf9e00c49620",
+      "findingCount": 26,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -9845,6 +9857,28 @@
       "severity": "medium",
       "category": "critical-surface-change",
       "summary": "Security-sensitive surface changed: .github/workflows/update-owner-context-runtime.yml.",
+      "file": ".github/workflows/update-owner-context-runtime.yml",
+      "entity": null
+    },
+    {
+      "id": "93b2af491af15cd6f7c1b4077ef502a451138238f308a930d378832206ff234e",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-16T12:10:56.990Z",
+      "findingId": "e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "summary": "Dynamic innerHTML assignment detected.",
+      "file": "agents/console/owner-intelligence.js",
+      "entity": null
+    },
+    {
+      "id": "48f8aa9a7072c96dc553eb68db6f9c1ef6bf3871355c73eff0bf48356b278183",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-16T12:10:56.990Z",
+      "findingId": "2ea885c8d14f150990d49bd93ef09436952a1b9a610363f101c3c454d4ac46b6",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/update-owner-context-runtime.yml.",
       "file": ".github/workflows/update-owner-context-runtime.yml",
       "entity": null
     }

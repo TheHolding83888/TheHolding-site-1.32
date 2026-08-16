@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-16T11:48:20.653Z",
+  "generatedAt": "2026-08-16T12:10:56.990Z",
   "status": "watch",
-  "snapshotHash": "ae4c62c542385e271b67d506bc10eadcabf2934fd6f23eba49e21c53fa1a5540",
+  "snapshotHash": "6f32bd5e71c3bf70678b031515f9a2fb2ed43221587e4d70143a71ed2e4384dd",
   "repository": {
-    "filesScanned": 311,
-    "bytesScanned": 7271080,
+    "filesScanned": 312,
+    "bytesScanned": 7313456,
     "criticalHashes": {
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
@@ -191,6 +191,16 @@
         "rationale": null
       },
       {
+        "file": "agents/console/owner-intelligence.js",
+        "status": "unreviewed",
+        "classification": null,
+        "sinkCount": 1,
+        "expectedCount": null,
+        "currentGitBlobSha1": "727184dd66e30baccb0426e138c9663c620dd682",
+        "reviewedGitBlobSha1": null,
+        "rationale": null
+      },
+      {
         "file": "companies/index.html",
         "status": "unreviewed",
         "classification": "trusted-canonical-company-registry-and-generated-data",
@@ -252,7 +262,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -261,7 +271,7 @@
     "summary": {
       "reviewedDomFileCount": 6,
       "reviewedDomSinkCount": 15,
-      "unreviewedDomFileCount": 2,
+      "unreviewedDomFileCount": 3,
       "trustedExternalScriptCount": 1,
       "trustedExternalScriptUsageCount": 7
     }
@@ -334,25 +344,22 @@
       "evidence": null
     },
     {
-      "id": "2ea885c8d14f150990d49bd93ef09436952a1b9a610363f101c3c454d4ac46b6",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-owner-context-runtime.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-owner-context-runtime.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "db7b67cbc23f31a772da65d8b645ef62edb23e81c6a6022d7c118c0460c24859",
-        "currentSha256": "65d1d7b799d8ad94acbe13c49d29e18d32e126d031b890b3553b96225be3c44b"
-      }
-    },
-    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "agents/console/learning-notice.html",
       "line": 25,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "agents/console/owner-intelligence.js",
+      "line": 113,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
@@ -667,10 +674,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 229,
+    "runCount": 230,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-16T11-48-20-653Z-ae4c62c542.json",
-    "latestRecordHash": "4da1654bc31d47b721e582cb191cb45c8dce532ac6722f2649770db1d1877fdd",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-16T12-10-56-990Z-6f32bd5e71.json",
+    "latestRecordHash": "12f739ff1b8b169a7151e68f203b8220aaa5e0f0bb7c397b145ccf9e00c49620",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
