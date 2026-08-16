@@ -1,5 +1,5 @@
 # THE HOLDING — OWNER OPERATING CONTEXT
-## 2026-08-16 · tranche 1
+## 2026-08-16 · tranches 1–2
 
 ## Purpose
 
@@ -167,7 +167,7 @@ Current contextual interpretation:
 
 Future use of rewards to add BTC is a hypothesis / possible capital-allocation path, not yet an observed action and not yet a confirmed peer-owner decision. The system should watch actual behavior over time rather than prematurely converting this hypothesis into policy.
 
-## 10. Learning model implied by this tranche
+## 10. Learning model implied by this context
 
 The owner wants the Brain to improve through complementary evidence streams:
 1. daily autonomous observation of protocol/company metrics and system state;
@@ -183,18 +183,97 @@ Intended progression:
 
 Owner teaching alone does not equal model-weight training, and repeated Q&A alone does not prove improved economic judgment. The value comes from linking reasoning to durable evidence and later outcomes.
 
-## 11. Questions still unanswered in tranche 1
+## 11. Fee evaluation — no fixed percentage rule
+
+Provenance: explicit owner answer.
+
+The owner does **not** primarily evaluate claim/harvest gas through a fixed percentage threshold such as 1%, 3% or 5% of harvest value.
+
+Examples given by the owner:
+- paying about $5 gas to realize about $100 of rewards can be acceptable even though this is approximately 5%;
+- paying about $10 gas on about $1,000 of rewards can also be acceptable even though this is approximately 1%.
+
+The key point is that neither 1% nor 5% has historically been a hard rule.
+
+Learning implication: gas should be evaluated contextually rather than by a single ratio. Relevant context includes absolute fee, harvest size, urgency, expected reinvestment value, available low-gas windows, collateral needs and personal/liquidity needs.
+
+Gas as % of harvest should still be preserved as an observable comparison metric, but must not be mistaken for the owner's sole decision rule.
+
+## 12. Reward-token handling — accumulate by default, convert when capital has a target use
+
+Provenance: explicit owner answer.
+
+For rewards arriving in non-stable tokens such as AERO, CRV, CVX or similar assets, the owner generally does not see a need to convert immediately when there is no near-term use for the capital.
+
+Current owner preference/thesis:
+- while prices are viewed as low, allow reward balances to accumulate in the reward tokens themselves;
+- preserve upside optionality because those tokens may appreciate over a longer horizon;
+- conversion becomes more natural when rewards are actually being harvested to fund a specific purchase or reinvestment.
+
+This is a preference/thesis, not a universal rule. Future Brain reasoning must still challenge it when token-specific fundamentals, liquidity, security, concentration, tax/accounting or opportunity-cost evidence materially changes.
+
+## 13. Early harvest / conversion triggers — opportunity, collateral and liquidity driven
+
+Provenance: explicit owner answer.
+
+The owner's most natural reason for harvesting earlier than planned is often **not fear/risk alone**, but the appearance of a useful capital deployment opportunity or a new liquidity need.
+
+Examples explicitly given:
+- a desired asset falls substantially in price and the owner wants to buy it earlier than planned;
+- BTC collateral/foundation needs strengthening because health factor (HF) has declined;
+- a new token should be added to the company balance sheet;
+- a new asset class becomes attractive, including possible tokenized real estate;
+- an RWA asset becomes attractive;
+- a higher-risk venture-style investment becomes attractive;
+- additional personal living liquidity is required because circumstances can change.
+
+Owner preference nevertheless remains to accumulate a larger reward pool and make capital allocations **less frequently but more substantially** when conditions permit.
+
+Learning implication: a future harvest decision should compare the value of continued batching against the opportunity cost of missing a high-conviction deployment, collateral need or genuine liquidity requirement.
+
+This is not automatic authorization to sell rewards or move capital. `executionAuthority = none`.
+
+## 14. Stable reserve / liquidity buffer philosophy
+
+Provenance: explicit owner answer.
+
+The owner considers some form of stable-value liquidity buffer generally desirable for a company, but does not require that the stable reserve always sit on the same wallet/balance sheet surface.
+
+Possible forms include:
+- stables directly on the company balance;
+- stables held separately for the company;
+- part of accrued rewards already being denominated in stables.
+
+The owner expressed that some percentage of company TVL in stables can be reasonable and wrote the examples as **`50-10-20%`**. This wording is ambiguous as written and is intentionally preserved without normalization. It must **not** be converted into a precise 5%, 10%, 20%, 50%, or fixed-range policy until the owner explicitly clarifies the intended percentages.
+
+What is clear from the answer:
+- exact reserve sizing is owner/company-specific;
+- some liquidity cushion is generally desirable;
+- reserve size can change with market regime.
+
+### Market-cycle reserve thesis
+
+During periods when risk assets rise materially, the owner sees value in gradually moving some gains/cash flow into stables and building a cushion.
+
+During periods when assets decline, those stables can gradually be redeployed through DCA to strengthen asset positions.
+
+This is a tactical capital-management thesis, not an automatic market-timing system and not a guarantee that such rotations improve outcomes.
+
+Future learning should compare actual reserve decisions against later drawdowns, buying opportunities, liquidity needs and company-level outcomes.
+
+## 15. Questions still unanswered after tranche 2
 
 These remain intentionally open and must not be filled by inference:
 1. Are there assets/protocols the owner categorically would not add even at high yield?
 2. How does the owner personally distinguish generated income, accrued rewards, realised cash flow and unrealised reward-token appreciation?
+3. Clarify the intended stable-reserve percentage examples currently written as `50-10-20%` if a precise numerical heuristic is desired.
 
-Future answers should append/extend owner context rather than inventing answers here.
+Future answers should extend owner context rather than inventing answers here.
 
 ## Memory / authority boundary
 
 This checkpoint is human-readable owner context. It does not execute transactions, authorize wallets, automatically modify capital allocation, automatically change Brain policy, prove future market outcomes, convert owner hypotheses into facts, or convert peer-owner context into Founder Decision DNA.
 
-executionAuthority = none
+`executionAuthority = none`
 
-The strongest future evidence will come from genuine pre-outcome Decision Records and later observed outcomes. Stable patterns should only be compressed into Founder Decision DNA after repeated evidence, consistent with THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md.
+The strongest future evidence will come from genuine pre-outcome Decision Records and later observed outcomes. Stable patterns should only be compressed into Founder Decision DNA after repeated evidence, consistent with `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`.
