@@ -1,0 +1,160 @@
+name: "The Holding Brain · Runtime Owner Activation"
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "The Holding Risk · Health Factor Intelligence"
+    types:
+      - completed
+  pull_request:
+    paths:
+      - "intelligence/owner-context/runtime-owner-activation.mjs"
+      - "intelligence/neural-graph/runtime-capability-overlay.mjs"
+      - "intelligence/risk/health-factor-intelligence.json"
+      - "intelligence/owner-context/owner-teaching-activation.json"
+      - ".github/workflows/update-runtime-owner-activation.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-runtime-owner-activation
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/owner-context/runtime-owner-activation.mjs
+          test -s intelligence/neural-graph/runtime-capability-overlay.mjs
+          test -s intelligence/risk/health-factor-intelligence.json
+          test -s intelligence/owner-context/owner-teaching-activation.json
+          node --check intelligence/owner-context/runtime-owner-activation.mjs
+          node --check intelligence/neural-graph/runtime-capability-overlay.mjs
+          grep -q "executionAuthority: 'none'" intelligence/owner-context/runtime-owner-activation.mjs
+          grep -q "executionAuthority: 'none'" intelligence/neural-graph/runtime-capability-overlay.mjs
+          grep -q "health-factor-monitoring" intelligence/owner-context/runtime-owner-activation.mjs
+          grep -q "runtimeStatus" intelligence/owner-context/runtime-owner-activation.mjs
+
+      - name: Resolve runtime owner activation
+        run: node intelligence/owner-context/runtime-owner-activation.mjs
+
+      - name: Build runtime capability graph overlay
+        run: node intelligence/neural-graph/runtime-capability-overlay.mjs
+
+      - name: Validate runtime promotion and graph binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const a = JSON.parse(fs.readFileSync('intelligence/owner-context/runtime-owner-activation.json', 'utf8'));
+          const g = JSON.parse(fs.readFileSync('intelligence/neural-graph/runtime-capability-overlay.json', 'utf8'));
+          const r = JSON.parse(fs.readFileSync('intelligence/risk/health-factor-intelligence.json', 'utf8'));
+
+          if (a.version !== '0.1-runtime-owner-activation') throw new Error('unexpected runtime activation version');
+          if (a.authority?.executionAuthority !== 'none' || a.authority?.readOnly !== true) throw new Error('runtime activation gained execution authority');
+          const q7 = (a.units || []).find(x => x.unitId === 'owner-context:audio-owner-q:q7');
+          if (!q7) throw new Error('Q7 runtime activation missing');
+          if (r.status === 'ok' && (r.observations || []).some(x => x?.onchain?.status === 'ok')) {
+            if (q7.runtimeStatus !== 'activated' || q7.runtimeCoverage !== 'partial') throw new Error('fresh HF primitive did not runtime-activate Q7 partially');
+          }
+          if (q7.declaredStatus !== 'blocked') throw new Error('durable declared Q7 disposition was silently mutated');
+          if (q7.authority?.executionAuthority !== 'none' || q7.authority?.hardThresholdPolicy !== false) throw new Error('Q7 runtime activation gained policy authority');
+
+          if (g.version !== '0.1-runtime-capability-graph-overlay') throw new Error('unexpected runtime capability overlay version');
+          if (g.authority?.executionAuthority !== 'none' || g.authority?.readOnly !== true) throw new Error('runtime graph overlay gained execution authority');
+          if (g.totals?.runtimeCapabilityCount < 1) throw new Error('no runtime capability node produced');
+          if (g.totals?.riskObservationCount < 1) throw new Error('no runtime risk observation node produced');
+          const edges = Object.values(g.catalog?.connections || {});
+          if (!edges.some(x => x.kind === 'owner-runtime-capability' && x.from === 'owner-context:audio-owner-q:q7')) throw new Error('Q7 not bound to runtime capability');
+          if (!edges.some(x => x.kind === 'capability-observes-risk')) throw new Error('runtime capability not bound to live risk observation');
+          if (!edges.some(x => x.kind === 'risk-observation-company')) throw new Error('live risk observation not bound to company');
+          if (!g.integrity?.overlayHash || !a.integrity?.runtimeActivationHash) throw new Error('runtime integrity hashes missing');
+
+          console.log('Runtime Owner Activation PASS', {
+            q7Declared: q7.declaredStatus,
+            q7Runtime: q7.runtimeStatus,
+            q7Coverage: q7.runtimeCoverage,
+            capabilityNodes: g.totals.runtimeCapabilityCount,
+            riskObservations: g.totals.riskObservationCount,
+            graphEdges: g.totals.connectionCount,
+            executionAuthority: g.authority.executionAuthority
+          });
+          NODE
+          git diff --check
+
+      - name: Publish runtime activation state
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED=(
+            "intelligence/owner-context/runtime-owner-activation.json"
+            "intelligence/neural-graph/runtime-capability-overlay.json"
+          )
+          for f in "${GENERATED[@]}"; do test -s "$f"; done
+
+          git config user.name "The Holding Runtime Activation"
+          git config user.email "runtime-activation@theholding.ai"
+          git add "${GENERATED[@]}"
+
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^(intelligence/owner-context/runtime-owner-activation\.json|intelligence/neural-graph/runtime-capability-overlay\.json)$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Runtime Activation attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "Runtime activation state already current."
+            exit 0
+          fi
+
+          git commit -m "intelligence: refresh runtime owner activation"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Runtime activation publish conflict; refusing to guess."
+              exit 1
+            fi
+
+            node intelligence/owner-context/runtime-owner-activation.mjs
+            node intelligence/neural-graph/runtime-capability-overlay.mjs
+            git add "${GENERATED[@]}"
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+              echo "Verified runtime activation state on remote main."
+              exit 0
+            fi
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "ERROR: unable to publish Runtime Activation state after 3 attempts."
+          exit 1
