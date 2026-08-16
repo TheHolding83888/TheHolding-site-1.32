@@ -23,7 +23,7 @@ On the first substantive The Holding request in a new chat/session, the assistan
 3. `THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`;
 4. when the task depends on how the system was built or what earlier work already taught us, read `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`;
 5. when the task concerns founder alignment, The Holding AI, decision style or the future digital-founder model, read `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`;
-6. when the task concerns company strategy, capital philosophy, reward harvesting/reinvestment, diversification, stable reserves, company decision points or future Company Curator logic, read both `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md` and the latest `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*` extension; when machine-readable owner context is useful, also read `intelligence/owner-context/owner-operating-profile.json`;
+6. when the task concerns company strategy, capital philosophy, reward harvesting/reinvestment, diversification, stable reserves, leverage/Health Factor, company decision points or future Company Curator logic, read both `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md` and the latest `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*` extensions; when machine-readable owner context is useful, read `intelligence/owner-context/owner-operating-profile.json` plus the latest additive `intelligence/owner-context/owner-operating-profile-tranche-*.json`;
 7. when the task concerns public dialogue, conversation learning, model safety, financial-advice boundaries or owner teaching through the console, read `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`;
 8. when the task touches Cloudflare, Workers, Wrangler, deployment routing, Durable Objects, production permissions, or homepage ownership, read `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md` before proposing changes;
 9. only then the live machine-readable artifacts needed for the task.
@@ -64,6 +64,7 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 - `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md`
 - `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*`
 - `intelligence/owner-context/owner-operating-profile.json`
+- `intelligence/owner-context/owner-operating-profile-tranche-*.json`
 - `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`
 - `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md`
 
@@ -73,7 +74,7 @@ The historical operating knowledge file is deliberately compact and contains dur
 
 The Founder Decision DNA canon is a strategic/evidence rule, not a current runtime layer. A formal machine-readable founder model should only be built after enough genuine owner decision → outcome cycles exist to support stable patterns rather than guesses.
 
-The Owner Operating Context preserves explicit owner principles, theses, heuristics and peer-owner context with provenance. Later owner-teaching tranches extend the original context without silently rewriting earlier answers. The structured `owner-operating-profile.json` makes high-value owner context machine-readable, but its current `runtimeBinding` is deliberately none: it is context for future reasoning/Curator integration, not automatic policy, market-fact source or execution authority.
+The Owner Operating Context preserves explicit owner principles, theses, heuristics and peer-owner context with provenance. Later owner-teaching tranches extend the original context without silently rewriting earlier answers. The structured `owner-operating-profile.json` plus additive tranche profiles make high-value owner context machine-readable, but their current `runtimeBinding` is deliberately none: they are context for future reasoning/Curator integration, not automatic policy, market-fact source or execution authority.
 
 The Conversation Learning canon defines how real public dialogue may become a learning signal without allowing untrusted visitors to directly mutate facts, memory, code, methodology, security policy or capital authority. Owner teaching through the public console is not trusted until a real authenticated owner channel exists.
 
@@ -92,4 +93,4 @@ The memory model is therefore:
 
 `Git history + Memory Vault + Decision/Learning memory + project continuity + generated CURRENT bootstrap`
 
-The model may change. The memory must remain The Holding's.
+The model may change. **The memory must remain The Holding's.**
