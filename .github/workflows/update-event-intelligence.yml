@@ -1,0 +1,107 @@
+name: Update The Holding Operating Event Intelligence
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Update The Holding Change Intelligence
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence/event-intelligence-engine.mjs'
+      - 'intelligence/event-intelligence-policy.json'
+      - '.github/workflows/update-event-intelligence.yml'
+  schedule:
+    # Backstop after daily Reporting (06:07) and Observer (06:27 UTC).
+    - cron: '42 6 * * *'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: operating-event-intelligence-main
+  cancel-in-progress: false
+
+jobs:
+  update-event-intelligence:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/event-intelligence-engine.mjs
+          test -s intelligence/event-intelligence-policy.json
+          test -s intelligence/change-history.json
+          test -s reporting/reporting-data.json
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/event-intelligence-policy.json','utf8'))"
+
+      - name: Build source-backed operating events
+        run: node intelligence/event-intelligence-engine.mjs
+
+      - name: Validate event intelligence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('intelligence/event-intelligence.json','utf8'));
+          if (x.version !== '0.1-operating-event-intelligence') throw new Error('unexpected Event Intelligence version');
+          if (x.engineVersion !== '0.1-source-backed-event-synthesizer') throw new Error('unexpected Event Intelligence engine version');
+          if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('Event Intelligence authority escaped read-only');
+          if (!Number.isInteger(x.tracked?.activeEventTypeCount) || x.tracked.activeEventTypeCount < 1) throw new Error('tracked event type count invalid');
+          if (!Array.isArray(x.tracked?.eventTypes) || !Array.isArray(x.tracked?.coverageGaps)) throw new Error('coverage arrays missing');
+          if (x.tracked.eventTypes.length !== x.tracked.activeEventTypeCount) throw new Error('tracked type count mismatch');
+          if (x.tracked.coverageGaps.length !== x.tracked.coverageGapCount) throw new Error('coverage gap count mismatch');
+          if (!Array.isArray(x.feed?.items)) throw new Error('feed items missing');
+          console.log('Operating Event Intelligence validation OK');
+          console.log('Status:', x.status);
+          console.log('Tracked event types:', x.tracked.activeEventTypeCount);
+          console.log('Coverage gaps:', x.tracked.coverageGapCount);
+          console.log('Feed items:', x.feed.itemCount);
+          NODE
+
+      - name: Publish operating event intelligence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/event-intelligence.json
+          git config user.name "The Holding Event Intelligence"
+          git config user.email "event-intelligence@theholding.ai"
+          git add intelligence/event-intelligence.json
+          if git diff --cached --quiet; then
+            echo "No operating event intelligence changes to publish."
+            exit 0
+          fi
+          git commit -m "intelligence: refresh operating event feed"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Safe writer guard: main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
