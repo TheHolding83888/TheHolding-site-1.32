@@ -1,0 +1,153 @@
+{
+  "version": "0.1-runtime-capability-graph-overlay",
+  "engineVersion": "0.1-runtime-evidence-to-graph-binding",
+  "generatedAt": "2026-08-16T17:02:18.613Z",
+  "status": "ok",
+  "purpose": "Bind runtime-proven owner capabilities to live canonical observations and graph entities without mutating the base graph or inferring causality.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "policyMutationAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "semantics": {
+    "runtimeCapability": "A capability exists only while its runtime activation evidence is current and valid.",
+    "observationEdge": "Observation edges show source-backed relation, not causal influence or action authority.",
+    "baseGraphBoundary": "This overlay augments traversal; it does not rewrite neural-graph-telemetry.json or historical graph counts."
+  },
+  "totals": {
+    "nodeCount": 3,
+    "connectionCount": 4,
+    "runtimeCapabilityCount": 1,
+    "riskObservationCount": 1
+  },
+  "catalog": {
+    "nodes": {
+      "capability:health-factor-monitoring": {
+        "id": "capability:health-factor-monitoring",
+        "type": "capability",
+        "label": "Canonical company Health Factor monitoring",
+        "status": "established",
+        "data": {
+          "runtimeCoverage": "partial",
+          "evidenceStatus": "proven-current",
+          "sourceGeneratedAt": "2026-08-16T17:01:58.519Z",
+          "unresolvedDimensions": [
+            "market-regime inference",
+            "cross-market lending coverage beyond supported Aave v3 Base targets",
+            "collateral-volatility model",
+            "debt-asset risk semantics",
+            "stable/foundation buffer integration",
+            "unlock-latency integration",
+            "automatic borrow/repay/deleveraging remains forbidden"
+          ]
+        },
+        "provenance": {
+          "source": "intelligence/owner-context/runtime-owner-activation.json",
+          "evidenceSource": "intelligence/risk/health-factor-intelligence.json"
+        },
+        "fingerprint": "2371a5f941c566f69e9b03c1c1fbd8746c77f49d8920cc1be710179f029e57c4"
+      },
+      "protocol-runtime:base:aave-v3": {
+        "id": "protocol-runtime:base:aave-v3",
+        "type": "protocol-runtime",
+        "label": "Aave v3 · Base",
+        "status": "established",
+        "data": {
+          "chain": "Base",
+          "chainId": 8453,
+          "pool": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5"
+        },
+        "provenance": {
+          "source": "intelligence/risk/health-factor-intelligence.json"
+        },
+        "fingerprint": "5919e17f59e001af9fdd46bc5d25f15a96a384b34e1d6bee67e5c68a5e490d2d"
+      },
+      "risk-observation:008:base:aave-v3:50055185": {
+        "id": "risk-observation:008:base:aave-v3:50055185",
+        "type": "risk-observation",
+        "label": "Monetra.eth · Health Factor",
+        "status": "established",
+        "data": {
+          "companyRegistry": "008",
+          "wallet": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
+          "observedAt": "2026-08-16T17:01:58.519Z",
+          "blockNumber": 50055185,
+          "totalCollateralBaseRaw": "1001251518",
+          "totalDebtBaseRaw": "0",
+          "healthFactor": null,
+          "healthFactorApplicable": false,
+          "state": "no-debt",
+          "attention": "none"
+        },
+        "provenance": {
+          "source": "intelligence/risk/health-factor-intelligence.json",
+          "method": "IPool.getUserAccountData(address)",
+          "rpc": "https://mainnet.base.org"
+        },
+        "fingerprint": "9fc7a8d6cf3cbea36d751c4776e540ce616db59d758c47329d05864435bed3bb"
+      }
+    },
+    "connections": {
+      "owner-runtime-capability:owner-context:audio-owner-q:q7->capability:health-factor-monitoring": {
+        "id": "owner-runtime-capability:owner-context:audio-owner-q:q7->capability:health-factor-monitoring",
+        "kind": "owner-runtime-capability",
+        "from": "owner-context:audio-owner-q:q7",
+        "to": "capability:health-factor-monitoring",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {
+          "declaredStatus": "blocked",
+          "runtimeStatus": "activated",
+          "runtimeCoverage": "partial"
+        },
+        "fingerprint": "79533f52656c38015160ec02cfcac980104e450e1fc5382af7acd7112f90f3c7"
+      },
+      "capability-observes-risk:capability:health-factor-monitoring->risk-observation:008:base:aave-v3:50055185": {
+        "id": "capability-observes-risk:capability:health-factor-monitoring->risk-observation:008:base:aave-v3:50055185",
+        "kind": "capability-observes-risk",
+        "from": "capability:health-factor-monitoring",
+        "to": "risk-observation:008:base:aave-v3:50055185",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {
+          "semantic": "live-risk-observation"
+        },
+        "fingerprint": "d6dd8187cbc0fb1be21222089a7c75546539e56cbb6c91b8b20317602d029e32"
+      },
+      "risk-observation-company:risk-observation:008:base:aave-v3:50055185->company:monetra.eth": {
+        "id": "risk-observation-company:risk-observation:008:base:aave-v3:50055185->company:monetra.eth",
+        "kind": "risk-observation-company",
+        "from": "risk-observation:008:base:aave-v3:50055185",
+        "to": "company:monetra.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {
+          "companyRegistry": "008"
+        },
+        "fingerprint": "87dba322140ac68bdc3c0883b58eac783121bd5fefb5203dc61b15bae3f73948"
+      },
+      "risk-observation-protocol:risk-observation:008:base:aave-v3:50055185->protocol-runtime:base:aave-v3": {
+        "id": "risk-observation-protocol:risk-observation:008:base:aave-v3:50055185->protocol-runtime:base:aave-v3",
+        "kind": "risk-observation-protocol",
+        "from": "risk-observation:008:base:aave-v3:50055185",
+        "to": "protocol-runtime:base:aave-v3",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {
+          "market": "Aave v3 Base"
+        },
+        "fingerprint": "44f6fd6fd9abd468ad525ffd47c2653de3e7844ba98a4dad45e36c0314c3fcc7"
+      }
+    }
+  },
+  "integrity": {
+    "graphQualityHash": "73d06dce2c5ab03684f224ec245c78aecd79485a6ae0830c7732563c9ac3b339",
+    "runtimeActivationHash": "47770f5eb08065f949b7ec242172c2d121821b4bdfe5d2af9439c1a95b648e4b",
+    "riskStateHash": "ee2107be20ef9233fa5211feb8a773290141838f7b365a49910e70229c77941a",
+    "nodeCompositeHash": "89de1e91283e9272fb6939fde605267a4ef436998c48321866b5a0ea4dd3c7fa",
+    "connectionCompositeHash": "2de82432e8069ac497a6421db61acf5d0e93834cf2bb9413bfb3342ddaa9c60f",
+    "overlayHash": "c7e4ac9524798f95f5045776a756763524a186a9424bd94be055dc0e5f9205af"
+  }
+}
