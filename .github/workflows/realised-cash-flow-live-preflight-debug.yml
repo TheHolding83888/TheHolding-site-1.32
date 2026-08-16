@@ -18,40 +18,46 @@ jobs:
           package-manager-cache: false
       - run: npm install --no-save --no-package-lock ethers@6
 
-      - name: Validate all boundary address checksums
-        run: |
-          node --input-type=module <<'NODE'
-          import {getAddress} from 'ethers';
-          const xs=[
-            '0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90',
-            '0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc',
-            '0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3',
-            '0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d',
-            '0x6c6543eBA07946706Fd10a1064FA773326B5f5a9',
-            '0xe4b9c9ced406baffe406e63f83d39daaef150596'
-          ];
-          for(const x of xs) console.log(getAddress(x));
-          NODE
-
-      - name: Probe provider and deployment transaction
+      - name: Probe historical getLogs capability
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
           mkdir -p artifacts
-          node --input-type=module <<'NODE' > artifacts/preflight.json
-          import {JsonRpcProvider} from 'ethers';
-          const p=new JsonRpcProvider('https://ethereum-rpc.publicnode.com',1,{staticNetwork:true});
-          const tx='0xcd7321d6f67dc74f861266e56a7fee8285c3f5af663619ebb96581a083f0ef62';
-          const r=await p.getTransactionReceipt(tx);
-          console.log(JSON.stringify({
-            chainId:Number((await p.getNetwork()).chainId),
-            latestBlock:await p.getBlockNumber(),
-            deployTx:tx,
-            deployBlock:r?.blockNumber ?? null,
-            deployStatus:r?.status ?? null,
-            contractAddress:r?.contractAddress ?? null
-          },null,2));
+          node --input-type=module <<'NODE' > artifacts/rpc-probes.json
+          import {JsonRpcProvider, Interface} from 'ethers';
+          const iface=new Interface(['event Claim(address indexed user,address indexed token,uint256 amount)']);
+          const topic=iface.getEvent('Claim').topicHash;
+          const address='0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90';
+          const from=23925586, to=23928000;
+          const urls=[
+            process.env.ETH_RPC_URL,
+            'https://ethereum-rpc.publicnode.com',
+            'https://eth.llamarpc.com',
+            'https://1rpc.io/eth',
+            'https://rpc.flashbots.net',
+            'https://eth.drpc.org'
+          ].filter(Boolean);
+          const seen=new Set(); const out=[];
+          for(const url of urls){
+            let label='configured'; try{label=new URL(url).hostname}catch{}
+            if(seen.has(url)) continue; seen.add(url);
+            const row={label};
+            try{
+              const p=new JsonRpcProvider(url,1,{staticNetwork:true});
+              row.chainId=Number((await p.getNetwork()).chainId);
+              row.latest=await p.getBlockNumber();
+              const logs=await p.getLogs({address,topics:[topic],fromBlock:from,toBlock:to});
+              row.historicalGetLogs='ok'; row.logCount=logs.length;
+            }catch(e){
+              row.historicalGetLogs='error';
+              row.error=String(e?.shortMessage||e?.message||e).replace(url,'[redacted]').slice(0,300);
+            }
+            out.push(row);
+          }
+          console.log(JSON.stringify(out,null,2));
           NODE
 
-      - name: Capture exact adapter failure
+      - name: Capture exact adapter result
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         shell: bash
@@ -66,6 +72,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: realised-cash-flow-live-preflight-${{ github.run_id }}
+          name: realised-cash-flow-rpc-preflight-${{ github.run_id }}
           path: artifacts/
           retention-days: 2
