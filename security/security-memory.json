@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-16T11:36:39.550Z",
+  "generatedAt": "2026-08-16T11:48:20.653Z",
   "status": "watch",
-  "snapshotHash": "537148d2b72af91854d409dc441de396b1073aaac7c26472cb8911f666d28b83",
+  "snapshotHash": "ae4c62c542385e271b67d506bc10eadcabf2934fd6f23eba49e21c53fa1a5540",
   "repository": {
-    "filesScanned": 310,
-    "bytesScanned": 7253411,
+    "filesScanned": 311,
+    "bytesScanned": 7271080,
     "criticalHashes": {
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
       ".github/workflows/discover-company-006.yml": "696186e51e47e5a99455307c9b536feaa91497d19d3b9077f4cf908c5991910e",
@@ -40,7 +40,7 @@
       ".github/workflows/update-guardian-state.yml": "12b24c0609d70c2ae0ab387772ccda17ed6a9ec8ffa50a46686b0bb559913b97",
       ".github/workflows/update-intelligence-progress.yml": "5333fb61d5561aae8a981b413762995f9972815da491a0902509face9d49ca14",
       ".github/workflows/update-learning-loop.yml": "8fcd4c80f877ffd5e9934e0f19d37a4eb57334c99457dcb2088f907f75216478",
-      ".github/workflows/update-owner-context-runtime.yml": "db7b67cbc23f31a772da65d8b645ef62edb23e81c6a6022d7c118c0460c24859",
+      ".github/workflows/update-owner-context-runtime.yml": "65d1d7b799d8ad94acbe13c49d29e18d32e126d031b890b3553b96225be3c44b",
       ".github/workflows/update-productivity.yml": "68f0c508323e571692f5940200213d2e21d0134ce616060e1dde74bf4e584834",
       ".github/workflows/update-project-memory-bootstrap.yml": "04a4f8951627bdd570fc06d4b633a1a92dda2263894fbb543df4b675c8936288",
       ".github/workflows/update-proposal-work-queue.yml": "1e4930fe6fd4011c37220e8dfdad83779d971eaf68d04a9dfd26d282ee111691",
@@ -332,6 +332,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "2ea885c8d14f150990d49bd93ef09436952a1b9a610363f101c3c454d4ac46b6",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-owner-context-runtime.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-owner-context-runtime.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "db7b67cbc23f31a772da65d8b645ef62edb23e81c6a6022d7c118c0460c24859",
+        "currentSha256": "65d1d7b799d8ad94acbe13c49d29e18d32e126d031b890b3553b96225be3c44b"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -653,10 +667,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 228,
+    "runCount": 229,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-16T11-36-39-550Z-537148d2b7.json",
-    "latestRecordHash": "1bbba689f29344c1dadd1054c2faaff0e91e03bbd6d37c48f21ad7ca324d9b77",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-16T11-48-20-653Z-ae4c62c542.json",
+    "latestRecordHash": "4da1654bc31d47b721e582cb191cb45c8dce532ac6722f2649770db1d1877fdd",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
