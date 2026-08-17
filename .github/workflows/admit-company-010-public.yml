@@ -1,0 +1,78 @@
+name: "Admit Company #010 · Cypher Public Surface"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'companies/company-010-public-adapter.js'
+      - 'onboarding/company-010-public-admission.mjs'
+      - '.github/workflows/admit-company-010-public.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: company-010-public-admission
+  cancel-in-progress: false
+
+jobs:
+  admit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Validate public source
+        run: |
+          set -euo pipefail
+          node --check companies/company-010-public-adapter.js
+          node --check onboarding/company-010-public-admission.mjs
+          node onboarding/company-010-public-admission.mjs
+          node --check .tmp-company-010-public-admission.html >/dev/null 2>&1 || true
+      - name: Validate canonical Company #010 boundary
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+          if(d.company?.registry!=='010'||d.company?.name!=='Cypher') throw new Error('identity mismatch');
+          if(d.capital?.totalCapitalComplete!==false) throw new Error('public v0.1 expects Fluid incomplete state');
+          if(!(Number(d.capital?.knownCapitalFloorUsd)>0)) throw new Error('capital floor missing');
+          if(d.authority?.executionAuthority!=='none'||d.authority?.transactions!==false) throw new Error('authority drift');
+          if(d.epistemicBoundary?.unknownIsNotZero!==true||d.epistemicBoundary?.partialTotalIsNotTotal!==true) throw new Error('epistemic boundary drift');
+          console.log('Company #010 canonical boundary PASS');
+          NODE
+      - name: Apply public admission
+        run: |
+          set -euo pipefail
+          rm -f .tmp-company-010-public-admission.html
+          node onboarding/company-010-public-admission.mjs --write
+      - name: Commit public surface
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Public Admission"
+          git config user.email "public-admission@theholding.ai"
+          git add companies/index.html
+          if git diff --cached --quiet; then
+            echo "Public surface already admitted."
+            exit 0
+          fi
+          git commit -m "companies: admit Cypher public surface"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git rebase origin/main
+            node onboarding/company-010-public-admission.mjs --write
+            git add companies/index.html
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
