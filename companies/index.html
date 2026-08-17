@@ -8824,6 +8824,8 @@
 }
         .ib-item[data-index-pending="true"] .ipx-composite{display:none}
         .ib-item[data-index-pending="true"] .ibw-track{opacity:.28}
+        .index-comp-seg.pending{min-width:3px;opacity:.58}
+        .icl-item.pending .icl-w{color:var(--gold)}
     </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
@@ -11241,7 +11243,8 @@ function renderIndex(lang) {
     const money = v => '$' + Math.round(v).toLocaleString('en-US');
     const list  = computeIndex();
     const eligibleList = list.filter(c => c.indexEligible !== false);
-    const total = eligibleList.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);
+    const measuredTotal = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);
+    const hasPending = list.some(c => c.indexEligible === false);
     const pct   = c => activeWeight(c) * 100;
     // Noble green ramp — deepest for the largest holding, lighter down the ranks
     const shade = i => (list[i] && list[i].color) || 'rgb(29,74,58)';
@@ -11264,32 +11267,32 @@ function renderIndex(lang) {
     const nv = document.getElementById('idxNetworkValue');
     const cn = document.getElementById('idxCount');
     const ld = document.getElementById('idxLeader');
-    if (nv) nv.textContent = total > 0 ? money(total) : 'Live';
-    if (cn) cn.textContent = eligibleList.length;
+    if (nv) nv.textContent = measuredTotal > 0 ? ((hasPending ? '≥ ' : '') + money(measuredTotal)) : 'Live';
+    if (cn) cn.textContent = list.length;
     if (ld) ld.textContent = eligibleList[0] ? companyDisplayName(eligibleList[0].nm) : '—';
 
     const bar = document.getElementById('idxCompBar');
     if (bar) {
         bar.innerHTML = '';
-        eligibleList.forEach((c, i) => {
+        list.forEach((c, i) => {
             const seg = document.createElement('div');
-            seg.className = 'index-comp-seg';
+            seg.className = 'index-comp-seg' + (c.indexEligible === false ? ' pending' : '');
             seg.dataset.nm = c.nm;
-            seg.style.width = pct(c).toFixed(2) + '%';
+            seg.style.width = c.indexEligible === false ? '0%' : pct(c).toFixed(2) + '%';
             seg.style.background = shade(i);
-            seg.title = companyDisplayName(c.nm) + ' · ' + pct(c).toFixed(1) + '%';
+            seg.title = companyDisplayName(c.nm) + ' · ' + (c.indexEligible === false ? (lang === 'ru' ? 'Вес ожидается' : 'Weight pending') : pct(c).toFixed(1) + '%');
             bar.appendChild(seg);
         });
     }
     const leg = document.getElementById('idxCompLegend');
     if (leg) {
         leg.innerHTML = '';
-        eligibleList.forEach((c, i) => {
+        list.forEach((c, i) => {
             const it = document.createElement('span');
-            it.className = 'icl-item';
+            it.className = 'icl-item' + (c.indexEligible === false ? ' pending' : '');
             it.dataset.nm = c.nm;
             it.innerHTML = '<span class="icl-swatch" style="background:' + shade(i) + '"></span>'
-                         + '<b>' + companyDisplayName(c.nm) + '</b> <span class="icl-w">' + pct(c).toFixed(1) + '%</span>';
+                         + '<b>' + companyDisplayName(c.nm) + '</b> <span class="icl-w">' + (c.indexEligible === false ? (lang === 'ru' ? 'Ожидание' : 'Pending') : pct(c).toFixed(1) + '%') + '</span>';
             leg.appendChild(it);
         });
     }
@@ -12252,7 +12255,7 @@ function buildGraph() {
 
     // Layout order is stable (always composite) so switching lenses morphs node
     // sizes in place rather than reshuffling the map; only the SIZES follow the lens.
-    const comps = computeIndex().filter(c => c.indexEligible !== false).slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
+    const comps = computeIndex().slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
     const wt = c => Math.max(activeWeight(c), 0);                // active lens weight 0..1
     const shade  = i => (comps[i] && comps[i].color) || 'rgb(29,74,58)';
 
@@ -12281,7 +12284,7 @@ function buildGraph() {
     const prY = j => nPr   > 1 ? P.padY + j * ((H - 2 * P.padY) / (nPr - 1))   : H / 2;
     // Area-proportional to the company's share of the whole network, so every node —
     // including the largest — visibly re-weights when the lens changes.
-    const rCo = c => P.rCoMax * Math.sqrt(Math.min(wt(c), 1));
+    const rCo = c => c.indexEligible === false ? P.rCoMin : P.rCoMax * Math.sqrt(Math.min(wt(c), 1));
     const protocolAprMap = computeGraphProtocolAprMap();
     const estimateTextWidth = (label, fontPx) => Math.max(26, String(label || '').length * fontPx * 0.58);
     const maxPr = Math.max.apply(null, Object.keys(protoCount).map(k => protoCount[k]).concat([1]));
