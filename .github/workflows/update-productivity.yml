@@ -6,6 +6,11 @@ on:
     # One synchronized The Holding snapshot per week.
     # Sunday 04:17 UTC avoids common top-of-hour cron congestion.
     - cron: '17 4 * * 0'
+  push:
+    branches: [main]
+    paths:
+      - 'productivity/company-010-productivity-overlay.mjs'
+      - '.github/workflows/update-productivity.yml'
 
 permissions:
   contents: write
@@ -37,21 +42,33 @@ jobs:
         working-directory: productivity
         run: npx playwright install --with-deps chromium
 
-      - name: Update protocol APRs and company Productivity
+      - name: Update protocol APRs and established company Productivity
         working-directory: productivity
         env:
-          # Optional. The engine also works with CoinGecko's public endpoint for
-          # this tiny weekly load. Add a repository secret later if desired.
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          # Built-in ephemeral token: raises official GitHub API rate limits for Pendle Merkle discovery.
-          # The value stays in Actions secrets and is never written to public snapshots.
           GITHUB_TOKEN: ${{ github.token }}
           PAGE_FILE: ../companies/index.html
           DATA_FILE: ../companies/productivity-data.json
           REPORT_FILE: ../companies/productivity-source-report.json
         run: npm run update
+
+      - name: Admit Company #010 Cypher from canonical state
+        run: |
+          set -euo pipefail
+          node --check productivity/company-010-productivity-overlay.mjs
+          node productivity/company-010-productivity-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const c=d.companies?.Cypher;
+          if(d.version!=='1.16'||d.collectorVersion!=='1.16-company-010-state-backed-productivity-admission')throw new Error('Productivity v1.16 not produced');
+          if(!c||!(Number(c.productiveValue)>0)||!(Number(c.coveredProductiveValue)>0))throw new Error('Cypher Productivity missing');
+          if(!(Number(c.coverage)>0&&Number(c.coverage)<=1))throw new Error('Cypher coverage invalid');
+          if((c.breakdown||[]).some(x=>x.apr===0&&['projectx_hype','concentrator_sdcrv'].includes(x.engineId)))throw new Error('unknown Cypher APR collapsed to zero');
+          console.log('Productivity v1.16 Cypher admission PASS',{aprLatest:c.aprLatest,productiveValue:c.productiveValue,covered:c.coveredProductiveValue,coverage:c.coverage});
+          NODE
 
       - name: Commit new snapshot
         run: |
@@ -69,6 +86,9 @@ jobs:
                 echo "Safe writer guard: rebase conflict; refusing to guess."
                 exit 1
               fi
+              node productivity/company-010-productivity-overlay.mjs
+              git add companies/productivity-data.json companies/productivity-source-report.json
+              git commit --amend --no-edit
               if git push origin HEAD:main; then
                 exit 0
               fi

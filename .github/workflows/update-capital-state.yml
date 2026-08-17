@@ -51,7 +51,7 @@ jobs:
           node -e "const fs=require('fs');const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json'));if(g.version!=='0.1-general-company-balance-sheet'||g.status!=='ok'||g.companies?.length!==8)throw new Error('canonical established General Balance unavailable');"
       - name: Build Capital State
         run: node intelligence/capital-state/capital-state.mjs
-      - name: Validate partial Registry admission semantics
+      - name: Validate complete Registry admission semantics
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -59,20 +59,19 @@ jobs:
           const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
           if(g.version!=='0.1-general-company-balance-sheet'||g.status!=='ok'||(g.companies||[]).length!==8) throw new Error('established General Balance regression');
-          if(c.version!=='0.3-capital-state'||c.engineVersion!=='0.3-partial-registry-admission-capital-substrate') throw new Error('Capital State v0.3 mismatch');
-          if(c.status!=='partial'||c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10) throw new Error('Registry #010 admission missing');
-          if(c.network?.totalCapitalCompleteCompanyCount!==9||c.network?.totalCapitalCoverage!==0.9) throw new Error('expected 9/10 complete total-capital coverage');
-          if(c.network?.networkTvlUsd!==null||c.network?.networkTvlStatus!=='withheld-incomplete-total-capital-coverage') throw new Error('Network TVL must be withheld while Fluid is unresolved');
-          if(!(Number(c.network?.measuredCapitalFloorUsd)>0)) throw new Error('measured network capital floor unavailable');
-          if(Object.values(c.network?.layerWeights||{}).some(v=>v!==null)) throw new Error('full Network layer weights must remain withheld');
-          if(!Object.values(c.network?.measuredFloorLayerWeights||{}).some(v=>Number.isFinite(Number(v)))) throw new Error('measured-floor layer composition unavailable');
+          if(c.version!=='0.3-capital-state'||c.engineVersion!=='0.4-complete-registry-admission-capital-substrate') throw new Error('Capital State complete engine mismatch');
+          if(c.status!=='ok'||c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10) throw new Error('Registry #010 complete admission missing');
+          if(c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1) throw new Error('expected 10/10 complete total-capital coverage');
+          if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete') throw new Error('exact Network TVL must be available');
+          if(Math.abs(Number(c.network.networkTvlUsd)-Number(c.network.measuredCapitalFloorUsd))>0.05) throw new Error('exact Network TVL/floor drift');
+          if(Object.values(c.network?.layerWeights||{}).some(v=>!Number.isFinite(Number(v)))) throw new Error('full Network layer weights unavailable');
           const cypher=(c.companies||[]).find(x=>x.registry==='010');
-          if(!cypher||cypher.name!=='Cypher'||cypher.totalCapitalComplete!==false||cypher.measurementStatus!=='partial-total-capital-floor') throw new Error('Cypher partial state mismatch');
-          if(cypher.knownButUnboundCapitalMayExist!==true||cypher.coverage?.companyCapitalCoverage!==null) throw new Error('Cypher unknown denominator must remain explicit');
-          if(!cypher.gaps?.some(x=>x.id==='fluid-net-eth')) throw new Error('Cypher Fluid gap missing');
-          if(c.readiness?.networkTvl!=='blocked-by-company-010-fluid-net-exposure') throw new Error('Network TVL blocker mismatch');
+          if(!cypher||cypher.name!=='Cypher'||cypher.totalCapitalComplete!==true||cypher.measurementStatus!=='total-capital-complete') throw new Error('Cypher complete state mismatch');
+          if(cypher.knownButUnboundCapitalMayExist!==false||cypher.coverage?.companyCapitalCoverage!==1) throw new Error('Cypher complete denominator mismatch');
+          if(cypher.gaps?.some(x=>x.id==='fluid-net-eth')) throw new Error('Cypher Fluid gap must be absent');
+          if(c.readiness?.networkTvl!=='available') throw new Error('Network TVL readiness mismatch');
           if(c.authority?.executionAuthority!=='none') throw new Error('authority drift');
-          console.log('Capital State v0.3 partial Registry admission PASS',{registry:c.network.registryCompanyCount,measured:c.network.measuredCompanyCount,complete:c.network.totalCapitalCompleteCompanyCount,floor:c.network.measuredCapitalFloorUsd,networkTvl:c.network.networkTvlUsd});
+          console.log('Capital State v0.3 complete Registry admission PASS',{registry:c.network.registryCompanyCount,measured:c.network.measuredCompanyCount,complete:c.network.totalCapitalCompleteCompanyCount,networkTvl:c.network.networkTvlUsd});
           NODE
       - name: Commit generated state safely
         run: |
