@@ -8,9 +8,13 @@ on:
       - 'onboarding/company-010-production-baseline.mjs'
       - 'onboarding/company-010-production-state.mjs'
       - 'onboarding/company-010-stakedao-overlay.mjs'
+      - 'productivity/company-010-productivity-overlay.mjs'
+      - 'rewards/company-010-rewards-overlay.mjs'
       - 'intelligence/capital-state/capital-state.mjs'
       - '.github/workflows/update-company-010-state.yml'
       - '.github/workflows/update-capital-state.yml'
+      - '.github/workflows/update-productivity.yml'
+      - '.github/workflows/update-company-rewards.yml'
       - '.github/workflows/verify-company-010-production-integration.yml'
 
 permissions:
@@ -39,6 +43,8 @@ jobs:
           node --check onboarding/company-010-production-baseline.mjs
           node --check onboarding/company-010-production-state.mjs
           node --check onboarding/company-010-stakedao-overlay.mjs
+          node --check productivity/company-010-productivity-overlay.mjs
+          node --check rewards/company-010-rewards-overlay.mjs
           node --check intelligence/capital-state/capital-state.mjs
       - name: Install bounded Company #010 dependencies
         run: npm install --no-save ethers@6 @aave-dao/aave-address-book
@@ -110,4 +116,34 @@ jobs:
           if(c.authority?.executionAuthority!=='none'||s.authority?.executionAuthority!=='none'||r.authority?.executionAuthority!=='none')errors.push('authority drift');
           if(errors.length)throw new Error(`Company #010 complete review failed: ${errors.join(', ')}`);
           console.log('COMPANY #010 STAKE DAO COMPLETE REVIEW GREEN',{totalCapitalUsd:s.capital.totalCapitalUsd,stakeDaoValueUsd:stake.valueUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoReferenceAprPct:prod.referenceAprPct,networkTvlUsd:c.network.networkTvlUsd,fluid:'out-of-scope',performance:s.performance.status,executionAuthority:'none'});
+          NODE
+      - name: Verify global Productivity and Rewards admission
+        run: |
+          set -euo pipefail
+          node productivity/company-010-productivity-overlay.mjs
+          node rewards/company-010-rewards-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const r=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const pc=p.companies?.Cypher,rc=r.companies?.Cypher;
+          const errors=[];
+          if(p.version!=='1.16'||p.collectorVersion!=='1.16-company-010-state-backed-productivity-admission')errors.push('Productivity v1.16');
+          if(!pc||!(Number(pc.productiveValue)>0)||!(Number(pc.coveredProductiveValue)>0))errors.push('Cypher Productivity');
+          if(!(Number(pc.coverage)>0&&Number(pc.coverage)<=1))errors.push('Productivity coverage');
+          for(const id of ['projectx_hype','concentrator_sdcrv']){
+            const row=(pc?.breakdown||[]).find(x=>x.engineId===id);
+            if(row&&row.apr===0)errors.push(id+' unknown collapsed to zero');
+          }
+          if(r.version!=='0.3.10'||r.collectorVersion!=='0.3.10-company-010-stakedao-state-admission')errors.push('Rewards v0.3.10');
+          if(!rc||rc.totalUsdIsComplete!==false||rc.status!=='partial')errors.push('Cypher Rewards partial semantics');
+          const crv=(rc?.rewards||[]).find(x=>x.route==='stakedao-base-curve-4pool'&&x.symbol==='CRV');
+          if(!crv||!(Number(crv.amount)>=0)||!(Number(crv.usdValue)>=0))errors.push('Stake DAO CRV global reward');
+          for(const route of ['aerodrome-ve','velodrome-ve-direct','votium-union']){
+            const s=(rc?.sources||[]).find(x=>x.route===route);
+            if(!s||s.status!=='warming'||s.details?.unknownIsNotZero!==true)errors.push('Rewards unknown route '+route);
+          }
+          if(rc?.settlement?.unknownRouteIsNotZero!==true||rc?.settlement?.totalUsdIsComplete!==false)errors.push('Rewards completion guard');
+          if(errors.length)throw new Error('Global Company #010 admission failed: '+errors.join(', '));
+          console.log('COMPANY #010 GLOBAL PRODUCTIVITY + REWARDS GREEN',{productivityApr:pc.aprLatest,productivityCoverage:pc.coverage,rewardsKnownUsd:rc.totalUsd,claimableCrv:crv.amount,rewardsComplete:rc.totalUsdIsComplete});
           NODE
