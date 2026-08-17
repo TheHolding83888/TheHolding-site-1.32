@@ -59,7 +59,8 @@ jobs:
           const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
           if(g.version!=='0.1-general-company-balance-sheet'||g.status!=='ok'||(g.companies||[]).length!==8) throw new Error('established General Balance regression');
-          if(c.version!=='0.3-capital-state'||c.engineVersion!=='0.4-complete-registry-admission-capital-substrate') throw new Error('Capital State complete engine mismatch');
+          const allowedEngines=new Set(['0.4-complete-registry-admission-capital-substrate','0.4.1-generation-bound-productivity-coherence']);
+          if(c.version!=='0.3-capital-state'||!allowedEngines.has(c.engineVersion)) throw new Error('Capital State complete engine mismatch');
           if(c.status!=='ok'||c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10) throw new Error('Registry #010 complete admission missing');
           if(c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1) throw new Error('expected 10/10 complete total-capital coverage');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete') throw new Error('exact Network TVL must be available');
@@ -71,7 +72,7 @@ jobs:
           if(cypher.gaps?.some(x=>x.id==='fluid-net-eth')) throw new Error('Cypher Fluid gap must be absent');
           if(c.readiness?.networkTvl!=='available') throw new Error('Network TVL readiness mismatch');
           if(c.authority?.executionAuthority!=='none') throw new Error('authority drift');
-          console.log('Capital State v0.3 complete Registry admission PASS',{registry:c.network.registryCompanyCount,measured:c.network.measuredCompanyCount,complete:c.network.totalCapitalCompleteCompanyCount,networkTvl:c.network.networkTvlUsd});
+          console.log('Capital State v0.3 complete Registry admission PASS',{engine:c.engineVersion,registry:c.network.registryCompanyCount,measured:c.network.measuredCompanyCount,complete:c.network.totalCapitalCompleteCompanyCount,networkTvl:c.network.networkTvlUsd});
           NODE
       - name: Commit generated state safely
         run: |
