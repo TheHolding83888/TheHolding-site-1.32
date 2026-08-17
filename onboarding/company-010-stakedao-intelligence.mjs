@@ -20,15 +20,15 @@ const ACCOUNTANT_ABI=[
   'function accounts(address vault,address account) view returns(uint128 balance,uint256 integral,uint256 pendingRewards)'
 ];
 const CONTROLLER_ABI=['function vault(address gauge) view returns(address)'];
-const round=(x,d=12)=>Number.isFinite(Number(x))?Number(Number(x).toFixed(d)):null;
+const num=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x))?Number(x):null;
+const round=(x,d=12)=>num(x)===null?null:Number(Number(x).toFixed(d));
 const err=e=>String(e?.shortMessage||e?.message||e||'unknown').replace(/https?:\/\/[^\s)]+/g,'[url-redacted]');
 const lower=x=>String(x||'').toLowerCase();
-const num=x=>Number.isFinite(Number(x))?Number(x):null;
 async function fetchJson(url,timeoutMs=25000){const c=new AbortController(),t=setTimeout(()=>c.abort(),timeoutMs);try{const r=await fetch(url,{headers:{accept:'application/json','user-agent':'The-Holding-Cypher-StakeDAO-Intelligence/0.2'},signal:c.signal,cache:'no-store'});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.json()}finally{clearTimeout(t)}}
 async function providerMesh(fn){const failures=[];for(const url of RPC){try{const p=new JsonRpcProvider(url,8453,{staticNetwork:true});if(Number((await p.getNetwork()).chainId)!==8453)throw new Error('wrong chain');return{result:await fn(p),failures}}catch(e){failures.push(err(e))}}throw new Error(`Base provider mesh failed: ${failures.join(' | ')}`)}
 function findAddressNode(root,address){const target=lower(address),seen=new Set();function walk(x,d=0){if(d>10||x==null)return null;if(Array.isArray(x)){for(const v of x){const r=walk(v,d+1);if(r)return r}return null}if(typeof x!=='object'||seen.has(x))return null;seen.add(x);for(const[k,v]of Object.entries(x)){if(lower(k)===target||(typeof v==='string'&&lower(v)===target))return x}for(const v of Object.values(x)){const r=walk(v,d+1);if(r)return r}return null}return walk(root)}
 function flattenNumbers(node){const out=[];function walk(x,p='',d=0){if(d>8||x==null)return;if(Array.isArray(x)){x.forEach((v,i)=>walk(v,`${p}.${i}`,d+1));return}if(typeof x==='object'){Object.entries(x).forEach(([k,v])=>walk(v,p?`${p}.${k}`:k,d+1));return}const n=num(x);if(n!==null)out.push({path:p,value:n})}walk(node);return out}
-function normalizePercent(value,path=''){if(!Number.isFinite(value))return null;if(/pcent|percent|pct/i.test(path))return round(value,8);if(Math.abs(value)<=1)return round(value*100,8);return round(value,8)}
+function normalizePercent(value,path=''){const v=num(value);if(v===null)return null;if(/pcent|percent|pct/i.test(path))return round(v,8);if(Math.abs(v)<=1)return round(v*100,8);return round(v,8)}
 function findBaseApy(root){const candidates=flattenNumbers(root).filter(x=>/(latest.*daily.*apy|daily.*apy|base.*apy|apy)/i.test(x.path)&&!/(reward|crv|gauge|future|weekly|monthly)/i.test(x.path));if(!candidates.length)return null;const preferred=candidates.find(x=>/latest.*daily.*apy/i.test(x.path))||candidates.find(x=>/daily.*apy/i.test(x.path))||candidates[0];return{valuePct:normalizePercent(preferred.value,preferred.path),path:preferred.path,raw:preferred.value}}
 function findCrvApr(root){const candidates=flattenNumbers(root).filter(x=>/(crv.*apr|apr.*crv|gauge.*apr|apr)/i.test(x.path));if(!candidates.length)return null;const preferred=candidates.find(x=>/crv.*apr|apr.*crv/i.test(x.path))||candidates[0];return{valuePct:normalizePercent(preferred.value,preferred.path),path:preferred.path,raw:preferred.value}}
 
