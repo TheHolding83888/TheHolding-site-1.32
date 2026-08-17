@@ -1,0 +1,150 @@
+{
+  "version": "0.1-company-010-capital-reconciliation",
+  "generatedAt": "2026-08-17T12:44:58.266Z",
+  "company": {
+    "registry": "010",
+    "name": "Cypher"
+  },
+  "aaveArbitrum": {
+    "ok": true,
+    "result": {
+      "protocol": "Aave",
+      "chain": "Arbitrum",
+      "wstEthPerEth": 1.241884438915,
+      "oraclePricesUsd": {
+        "wstETH": 2356.21173903,
+        "WETH": 1897.28743287
+      },
+      "wallets": [
+        {
+          "wallet": "0xd90d1e395DE36e1e59C42F5dF537801C26BbC03f",
+          "walletAlias": "Wallet 1",
+          "wstETH": {
+            "supplied": 0.981456271008,
+            "ethEquivalent": 1.21885527044,
+            "usageAsCollateralEnabled": true
+          },
+          "WBTC": {
+            "supplied": 0.00844426,
+            "usageAsCollateralEnabled": true
+          }
+        },
+        {
+          "wallet": "0x64688F4Adc3f72CdB44d07e4879C724CD7025696",
+          "walletAlias": "Wallet 2",
+          "wstETH": {
+            "supplied": 0,
+            "ethEquivalent": 0,
+            "usageAsCollateralEnabled": false
+          },
+          "WBTC": {
+            "supplied": 0.00017049,
+            "usageAsCollateralEnabled": true
+          }
+        }
+      ],
+      "totalWstETH": 0.981456271008,
+      "totalEthEquivalent": 1.21885527044,
+      "totalWBTC": 0.00861475,
+      "source": "Aave V3 official ProtocolDataProvider + Aave Oracle wstETH/WETH price ratio",
+      "treatment": "supplied collateral is gross company capital; liabilities remain diagnostic-only under current Holding public-gross policy"
+    },
+    "provider": "arbitrum-one-rpc.publicnode.com",
+    "failures": []
+  },
+  "hyperlend": {
+    "ok": true,
+    "result": {
+      "protocol": "HyperLend",
+      "chain": "HyperEVM",
+      "positions": [
+        {
+          "wallet": "0x64688F4Adc3f72CdB44d07e4879C724CD7025696",
+          "walletAlias": "Wallet 2",
+          "asset": "0x5555555555555555555555555555555555555555",
+          "symbol": "WHYPE",
+          "supplied": 1.51174e-7,
+          "priceUsd": 59.18632335,
+          "valueUsd": 0,
+          "referenceAprPct": 59.257815,
+          "referenceAprStatus": "measured",
+          "usageAsCollateralEnabled": true
+        },
+        {
+          "wallet": "0x64688F4Adc3f72CdB44d07e4879C724CD7025696",
+          "walletAlias": "Wallet 2",
+          "asset": "0xfD739d4e423301CE9385c1fb8850539D657C296D",
+          "symbol": "kHYPE",
+          "supplied": 6.115119918,
+          "priceUsd": 60.60204404,
+          "valueUsd": 370.59,
+          "referenceAprPct": 59.257815,
+          "referenceAprStatus": "measured",
+          "usageAsCollateralEnabled": true
+        }
+      ],
+      "debts": [
+        {
+          "wallet": "0x64688F4Adc3f72CdB44d07e4879C724CD7025696",
+          "walletAlias": "Wallet 2",
+          "asset": "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
+          "symbol": "USD₮0",
+          "variableDebt": 164.380496,
+          "stableDebt": 0,
+          "treatment": "diagnostic-only; not subtracted from public gross capital under current Holding policy"
+        }
+      ],
+      "positionCount": 2,
+      "totalSuppliedValueUsd": 370.59,
+      "source": "HyperLend official ProtocolDataProvider + Oracle + /data/markets/rates",
+      "ratesStatus": "available",
+      "ratesError": null
+    },
+    "provider": "rpc.hyperlend.finance",
+    "failures": []
+  },
+  "convexCvxCrv": {
+    "ok": true,
+    "result": {
+      "protocol": "Convex",
+      "asset": "cvxCRV",
+      "token": "0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7",
+      "staking": "0x3Fe65692bfCD0e6CF84cB1E7d24108E434A7587e",
+      "wallets": [
+        {
+          "wallet": "0xd90d1e395DE36e1e59C42F5dF537801C26BbC03f",
+          "walletAlias": "Wallet 1",
+          "directCvxCRV": 0,
+          "stakedCvxCRV": 0
+        },
+        {
+          "wallet": "0x64688F4Adc3f72CdB44d07e4879C724CD7025696",
+          "walletAlias": "Wallet 2",
+          "directCvxCRV": 0,
+          "stakedCvxCRV": 0
+        }
+      ],
+      "directCvxCRV": 0,
+      "stakedCvxCRV": 0,
+      "totalCvxCRV": 0,
+      "source": "Convex official cvxCRV token + cvxCRV staking reward contract onchain balances",
+      "capitalRule": "cvxCRV is separate current economic exposure; do not double count it as CRV unless a proven conversion/entry accounting rule explicitly aggregates it"
+    },
+    "provider": "ethereum-rpc.publicnode.com",
+    "failures": []
+  },
+  "epistemicBoundary": {
+    "unknownIsNotZero": true,
+    "partialIsNotTotal": true,
+    "protocolPresenceIsNotYield": true,
+    "noDoubleCount": true,
+    "noTransactions": true,
+    "executionAuthority": "none"
+  },
+  "authority": {
+    "readOnly": true,
+    "transactions": false,
+    "walletSigning": false,
+    "executionAuthority": "none"
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "version": "0.1-company-010-production-state",
-  "engineVersion": "0.1-cypher-reviewed-current-state-admission",
-  "generatedAt": "2026-08-17T10:24:52.035Z",
+  "version": "0.2-company-010-production-state-reconciled",
+  "engineVersion": "0.2-cypher-aave-hyperlend-cvxcrv-reconciliation",
+  "generatedAt": "2026-08-17T12:44:58.494Z",
   "company": {
     "registry": "010",
     "name": "Cypher",
@@ -25,15 +25,15 @@
   },
   "status": "partial-total-capital",
   "capital": {
-    "knownCapitalFloorUsd": 2005.97,
+    "knownCapitalFloorUsd": 4692.57,
     "totalCapitalUsd": null,
     "totalCapitalComplete": false,
     "knownButUnboundCapitalMayExist": true,
-    "valuedPositionCount": 10,
-    "positionCount": 10,
+    "valuedPositionCount": 11,
+    "positionCount": 11,
     "layerValues": {
-      "foundation": 553.67,
-      "productiveDividend": 1452.3,
+      "foundation": 2866.76,
+      "productiveDividend": 1825.81,
       "stableReserve": 0,
       "rwa": 0,
       "venture": 0,
@@ -43,44 +43,52 @@
       {
         "symbol": "BTC",
         "quantity": 0.00861475,
-        "priceUsd": 63269,
-        "valueUsd": 545.05,
+        "priceUsd": 63507,
+        "valueUsd": 547.1,
         "priceSource": "CoinGecko simple price",
         "assetId": "bitcoin",
         "capitalLayer": "foundation",
-        "source": "reviewed Company #010 closure"
+        "source": "reviewed Company #010 closure; Aave WBTC independently reconciled without duplication",
+        "components": {
+          "aaveArbitrumWbtc": 0.00861475
+        }
       },
       {
         "symbol": "ETH",
-        "quantity": 0.004555980765,
-        "priceUsd": 1891.15,
-        "valueUsd": 8.62,
+        "quantity": 1.223411251205,
+        "priceUsd": 1896.06,
+        "valueUsd": 2319.66,
         "priceSource": "CoinGecko simple price",
         "assetId": "ethereum",
         "capitalLayer": "foundation",
-        "source": "reviewed Company #010 closure",
-        "fluidExcluded": true
+        "source": "reviewed Company #010 closure + independently reconciled Aave Arbitrum wstETH",
+        "fluidExcluded": true,
+        "components": {
+          "priorSupportedEth": 0.004555980765,
+          "aaveArbitrumWstEth": 0.981456271008,
+          "aaveArbitrumWstEthEquivalentEth": 1.21885527044
+        }
       },
       {
         "symbol": "HYPE",
-        "quantity": 3.137160792668,
-        "priceUsd": 59.17,
-        "valueUsd": 185.63,
+        "quantity": 3.14656518018,
+        "priceUsd": 59.05,
+        "valueUsd": 185.8,
         "priceSource": "CoinGecko simple price",
         "assetId": "hyperliquid",
         "capitalLayer": "productiveDividend",
         "source": "reviewed Company #010 closure",
         "components": {
           "hyperEvmNative": 0.035058952046,
-          "projectXPrincipal": 3.102101840622,
+          "projectXPrincipal": 3.111506228134,
           "hyperCoreSpot": 0
         }
       },
       {
         "symbol": "CVX",
         "quantity": 210.322024662375,
-        "priceUsd": 1.61,
-        "valueUsd": 338.62,
+        "priceUsd": 1.6,
+        "valueUsd": 336.52,
         "priceSource": "CoinGecko simple price",
         "assetId": "convex-finance",
         "capitalLayer": "productiveDividend",
@@ -90,8 +98,8 @@
       {
         "symbol": "CRV",
         "quantity": 1114.421457543693,
-        "priceUsd": 0.242614,
-        "valueUsd": 270.37,
+        "priceUsd": 0.244737,
+        "valueUsd": 272.74,
         "priceSource": "CoinGecko simple price",
         "assetId": "curve-dao-token",
         "capitalLayer": "productiveDividend",
@@ -104,8 +112,8 @@
       {
         "symbol": "AERO",
         "quantity": 716.274089171168,
-        "priceUsd": 0.409863,
-        "valueUsd": 293.57,
+        "priceUsd": 0.413249,
+        "valueUsd": 296,
         "priceSource": "CoinGecko simple price",
         "assetId": "aerodrome-finance",
         "capitalLayer": "productiveDividend",
@@ -115,8 +123,8 @@
       {
         "symbol": "LDO",
         "quantity": 372.830386493323,
-        "priceUsd": 0.303644,
-        "valueUsd": 113.21,
+        "priceUsd": 0.301489,
+        "valueUsd": 112.4,
         "priceSource": "CoinGecko simple price",
         "assetId": "lido-dao",
         "capitalLayer": "productiveDividend",
@@ -126,8 +134,8 @@
       {
         "symbol": "VELO",
         "quantity": 3329.368603727376,
-        "priceUsd": 0.01685223,
-        "valueUsd": 56.11,
+        "priceUsd": 0.01704686,
+        "valueUsd": 56.76,
         "priceSource": "CoinGecko simple price",
         "assetId": "velodrome-finance",
         "capitalLayer": "productiveDividend",
@@ -135,15 +143,30 @@
         "productiveQuantity": 3329.368603727376
       },
       {
+        "symbol": "HL-KHYPE",
+        "assetId": "hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d",
+        "quantity": 6.115119918,
+        "priceUsd": 60.60204404,
+        "valueUsd": 370.59,
+        "priceSource": "HyperLend official Oracle",
+        "capitalLayer": "productiveDividend",
+        "source": "HyperLend official ProtocolDataProvider + Oracle",
+        "protocol": "HyperLend",
+        "underlyingAsset": "0xfD739d4e423301CE9385c1fb8850539D657C296D",
+        "underlyingSymbol": "kHYPE",
+        "referenceAprPct": 59.257815,
+        "referenceAprStatus": "measured"
+      },
+      {
         "symbol": "GM-ETH-USDC",
         "assetId": "gmx-gm-eth-usdc",
         "quantity": 51.924349479019,
-        "priceUsd": 1.686854420186,
-        "valueUsd": 87.59,
+        "priceUsd": 1.688102681214,
+        "valueUsd": 87.65,
         "capitalLayer": "productiveDividend",
         "source": "official GMX Reader current market-token valuation",
         "marketToken": "0x70d95587d40A2caf56bd97485aB3Eec10Bee6336",
-        "referenceAprPct": 10.544298,
+        "referenceAprPct": 10.672784,
         "referenceAprStatus": "measured",
         "referenceAprSource": "GMX official 30D APY exact market-token address"
       },
@@ -151,12 +174,12 @@
         "symbol": "GM-BTC-USDC",
         "assetId": "gmx-gm-btc-usdc",
         "quantity": 48.432598162895,
-        "priceUsd": 2.213433235582,
-        "valueUsd": 107.2,
+        "priceUsd": 2.216577134354,
+        "valueUsd": 107.35,
         "capitalLayer": "productiveDividend",
         "source": "official GMX Reader current market-token valuation",
         "marketToken": "0x47c031236e19d024b42f8AE6780E44A573170703",
-        "referenceAprPct": 5.063289,
+        "referenceAprPct": 5.090252,
         "referenceAprStatus": "measured",
         "referenceAprSource": "GMX official 30D APY exact market-token address"
       }
@@ -164,15 +187,15 @@
   },
   "productivity": {
     "status": "partial",
-    "knownProductiveValueUsd": 1328.12,
-    "currentlyAprCoveredValueUsd": 874.25,
-    "coverage": 0.658261,
+    "knownProductiveValueUsd": 1702.49,
+    "currentlyAprCoveredValueUsd": 1246.08,
+    "coverage": 0.731916,
     "positions": [
       {
         "id": "convex_vlcvx",
         "label": "Convex vlCVX",
         "quantity": 204.831127747285,
-        "valueUsd": 329.78,
+        "valueUsd": 327.73,
         "referenceAprPct": 0,
         "status": "supported-existing-adapter",
         "source": "The Holding Productivity engine convex_vlcvx"
@@ -181,7 +204,7 @@
         "id": "aerodrome_veaero",
         "label": "Aerodrome veAERO",
         "quantity": 716.274089171168,
-        "valueUsd": 293.57,
+        "valueUsd": 296,
         "referenceAprPct": 0,
         "status": "supported-existing-adapter",
         "source": "The Holding Productivity engine aerodrome_veaero"
@@ -190,7 +213,7 @@
         "id": "velodrome_vevelo",
         "label": "Velodrome veVELO",
         "quantity": 3329.368603727376,
-        "valueUsd": 56.11,
+        "valueUsd": 56.76,
         "referenceAprPct": 0,
         "status": "supported-existing-adapter",
         "source": "The Holding Productivity engine velodrome_vevelo"
@@ -199,8 +222,8 @@
         "id": "gmx-gm-eth-usdc",
         "label": "GM-ETH-USDC",
         "quantity": 51.924349479019,
-        "valueUsd": 87.59,
-        "referenceAprPct": 10.544298,
+        "valueUsd": 87.65,
+        "referenceAprPct": 10.672784,
         "status": "measured",
         "source": "GMX official 30D APY exact market-token address"
       },
@@ -208,16 +231,25 @@
         "id": "gmx-gm-btc-usdc",
         "label": "GM-BTC-USDC",
         "quantity": 48.432598162895,
-        "valueUsd": 107.2,
-        "referenceAprPct": 5.063289,
+        "valueUsd": 107.35,
+        "referenceAprPct": 5.090252,
         "status": "measured",
         "source": "GMX official 30D APY exact market-token address"
       },
       {
+        "id": "hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d",
+        "label": "HyperLend · kHYPE",
+        "quantity": 6.115119918,
+        "valueUsd": 370.59,
+        "referenceAprPct": 59.257815,
+        "status": "measured",
+        "source": "HyperLend official ProtocolDataProvider + /data/markets/rates"
+      },
+      {
         "id": "projectx_hype",
         "label": "Project X HYPE",
-        "quantity": 3.102101840622,
-        "valueUsd": 183.55,
+        "quantity": 3.111506228134,
+        "valueUsd": 183.73,
         "referenceAprPct": 0,
         "status": "warming",
         "source": "principal measured; Reference APR not yet reproducibly bound"
@@ -226,7 +258,7 @@
         "id": "concentrator_sdcrv",
         "label": "Concentrator sdCRV underlying CRV",
         "quantity": 1114.191165699531,
-        "valueUsd": 270.32,
+        "valueUsd": 272.68,
         "referenceAprPct": 0,
         "status": "warming",
         "source": "underlying CRV principal measured; Reference APR not yet reproducibly bound"
@@ -253,7 +285,8 @@
     "unboundMechanisms": [
       "Project X HYPE",
       "GMX GM markets",
-      "Concentrator sdCRV"
+      "Concentrator sdCRV",
+      "HyperLend"
     ],
     "rule": "Route readiness is not claimable amount and is not realised cash flow."
   },
@@ -280,11 +313,15 @@
   "provenance": {
     "closure": {
       "version": "0.4.1-company-010-economic-closure-reviewed",
-      "generatedAt": "2026-08-17T10:24:46.712Z"
+      "generatedAt": "2026-08-17T12:43:17.762Z"
     },
     "gmxReader": {
       "version": "0.1.3-company-010-gmx-reader-valuation",
-      "generatedAt": "2026-08-17T10:24:51.858Z"
+      "generatedAt": "2026-08-17T12:43:22.287Z"
+    },
+    "reconciliation": {
+      "version": "0.1-company-010-capital-reconciliation",
+      "generatedAt": "2026-08-17T12:44:58.266Z"
     },
     "priceSource": "CoinGecko simple price at production-state collection time"
   },
@@ -294,6 +331,7 @@
     "fluidExcluded": true,
     "referenceAprIsNotRealisedIncome": true,
     "claimableRewardsAreNotRealisedCashFlow": true,
+    "noDoubleCount": true,
     "noTransactions": true,
     "executionAuthority": "none"
   },
