@@ -84,7 +84,14 @@ jobs:
           node onboarding/company-010-stakedao-intelligence.mjs
           node onboarding/company-010-production-baseline.mjs
           node onboarding/company-010-stakedao-overlay.mjs
-          node onboarding/company-010-crv-strategy-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('companies/company-010-resolve.json','utf8'));
+          const c=r.exactProbes?.concentrator;
+          if(r.version!=='0.2-company-010-new-mechanism-measured-stakedao-asdcrv'||!c?.result) throw new Error('canonical Concentrator resolver projection unavailable');
+          fs.writeFileSync('/tmp/company-010-crv-resolve.json',JSON.stringify({version:r.version,concentrator:c},null,2)+'\n');
+          NODE
+          COMPANY_010_RESOLVE_INPUT=/tmp/company-010-crv-resolve.json node onboarding/company-010-crv-strategy-overlay.mjs
           node onboarding/company-010-gmx-strategy-overlay.mjs
       - name: Preserve established Company State schema
         run: |
