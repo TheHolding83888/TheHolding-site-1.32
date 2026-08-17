@@ -1,4 +1,4 @@
-/* The Holding · Company #010 Cypher public adapter · v0.6.1-performance-pending-explicit
+/* The Holding · Company #010 Cypher public adapter · v0.6.2-acceptance-polish
  * Compatibility sentinel: supersedes v0.6-stakedao-complete without changing that native surface contract.
  * Canonical source: /companies/company-010-production-state.json
  * Presentation: native Collection + General Index/Passport/Graph surfaces.
@@ -11,10 +11,12 @@
   const PRODUCTIVITY_URL='/companies/productivity-data.json';
   const CAPITAL_URL='/intelligence/capital-state/capital-state.json';
   const ENTRY=Object.freeze({BTC:73482,ETH:2476,HYPE:38.62,CVX:1.84,CRV:0.228,AERO:0.60,LDO:0.8408,VELO:0.04762});
-  let state=null,productivity=null,installed=false;
+  const UNIQUE_INDEX_GREENS=Object.freeze(['#183F34','#244B3F','#315748','#40634F','#506F54','#637B59','#788861','#8E966C','#A4A77A','#B9B88B']);
+  let state=null,productivity=null,installed=false,indexColorHooked=false;
 
   const lang=()=> (document.documentElement.lang||'en').toLowerCase().startsWith('ru')?'ru':'en';
   const money=v=>'$'+Math.round(Number(v)||0).toLocaleString('en-US');
+  const money2=v=>'$'+Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   const pct=v=>Number(v).toFixed(1)+'%';
 
   function protocols(){
@@ -43,13 +45,23 @@
     ?'Компания The Holding Standard с резервным капиталом и продуктивными позициями в Aave, Stake DAO, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X и Concentrator.'
     :'A The Holding Standard company combining reserve capital with productive positions across Aave, Stake DAO, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X and Concentrator.';}
 
+  function canonicalNetworkTvl(){
+    const net=window.__TH_CAPITAL_STATE__?.network;
+    if(!net)return null;
+    const value=net.networkTvlUsd;
+    return value!==null&&value!==undefined&&Number.isFinite(Number(value))?Number(value):null;
+  }
+
   function syncNetworkStats(){
     const net=window.__TH_CAPITAL_STATE__?.network;
-    const stat=document.getElementById('statTVL');
-    if(!stat||!net)return;
-    const hasCompleteNetworkTvl=net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined&&Number.isFinite(Number(net.networkTvlUsd));
-    if(hasCompleteNetworkTvl){stat.textContent=money(net.networkTvlUsd);return;}
-    if(Number.isFinite(Number(net.measuredCapitalFloorUsd))&&Number(net.measuredCapitalFloorUsd)>0)stat.textContent='≥ '+money(net.measuredCapitalFloorUsd);
+    if(!net)return;
+    const exact=canonicalNetworkTvl();
+    const top=document.getElementById('statTVL');
+    const index=document.getElementById('idxNetworkValue');
+    const display=exact!==null?money(exact):(Number.isFinite(Number(net.measuredCapitalFloorUsd))&&Number(net.measuredCapitalFloorUsd)>0?'≥ '+money(net.measuredCapitalFloorUsd):null);
+    if(!display)return;
+    if(top&&top.textContent!==display)top.textContent=display;
+    if(index&&index.textContent!==display)index.textContent=display;
   }
 
   function ensureCollectionCard(){
@@ -70,12 +82,7 @@
     syncNetworkStats();
   }
 
-  function stakeDaoLabel(p){
-    const u=Array.isArray(p?.underlying)?p.underlying:[];
-    const q=sym=>{const v=Number(u.find(x=>x.symbol===sym)?.quantity);return Number.isFinite(v)?v.toFixed(2):null};
-    const parts=['USDC','USDbC','axlUSDC','crvUSD'].map(sym=>q(sym)!==null?`${q(sym)} ${sym}`:null).filter(Boolean);
-    return parts.length===4?`Stake DAO · 4pool (${parts.join(' · ')})`:'Stake DAO · 4pool · USDC/USDbC/axlUSDC/crvUSD';
-  }
+  function stakeDaoLabel(){return 'Stake DAO · 4pool stables';}
 
   function installRuntimeBook(){
     if(!state)return;
@@ -85,7 +92,7 @@
       Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','gmx-gm-eth-usdc':'GMX · ETH-USDC','gmx-gm-btc-usdc':'GMX · BTC-USDC'});
       for(const p of state.capital?.positions||[]){
         if(String(p.assetId||'').startsWith('hyperlend-'))COMPANY_ASSET_LABELS[p.assetId]=`HyperLend · ${p.underlyingSymbol||p.symbol||'Position'}`;
-        if(p.assetId==='stakedao-base-curve-4pool')COMPANY_ASSET_LABELS[p.assetId]=stakeDaoLabel(p);
+        if(p.assetId==='stakedao-base-curve-4pool')COMPANY_ASSET_LABELS[p.assetId]=stakeDaoLabel();
         const wstEth=Number(p.components?.aaveArbitrumWstEth);
         if(p.assetId==='ethereum'&&Number.isFinite(wstEth)&&wstEth>0)COMPANY_ASSET_LABELS['cypher-eth-equivalent']=`ETH (${wstEth.toFixed(6)} wstETH)`;
       }
@@ -115,6 +122,51 @@
     return true;
   }
 
+  function hookUniqueIndexColors(){
+    if(indexColorHooked||typeof computeIndex!=='function')return false;
+    const originalCompute=computeIndex;
+    computeIndex=function(...args){
+      const list=originalCompute.apply(this,args);
+      const composite=list.slice().sort((a,b)=>(b.weight||0)-(a.weight||0));
+      composite.forEach((c,i)=>{c.color=UNIQUE_INDEX_GREENS[Math.min(i,UNIQUE_INDEX_GREENS.length-1)];});
+      return list;
+    };
+    indexColorHooked=true;
+    return true;
+  }
+
+  function polishBalanceSheet(){
+    if(!state)return;
+    const item=document.querySelector('.ib-item[data-nm="Cypher"]');
+    if(!item)return;
+    const pills=[...item.querySelectorAll('.ipx-balance-card .ipx-position-pill')];
+    if(!pills.length)return;
+    const byLabel=needle=>pills.find(p=>String(p.querySelector('.ipx-position-symbol')?.textContent||'').includes(needle));
+
+    const stake=byLabel('Stake DAO');
+    const stakePosition=(state.capital?.positions||[]).find(p=>p.assetId==='stakedao-base-curve-4pool');
+    if(stake&&stakePosition){
+      const symbol=stake.querySelector('.ipx-position-symbol');
+      const qty=stake.querySelector('.ipx-position-qty');
+      if(symbol)symbol.textContent=stakeDaoLabel();
+      if(qty)qty.textContent=money2(stakePosition.valueUsd);
+      stake.dataset.cypherDisplay='stakedao-combined';
+    }
+
+    const gmxEth=byLabel('GMX · ETH-USDC');
+    const gmxBtc=byLabel('GMX · BTC-USDC');
+    const gmxPositions=(state.capital?.positions||[]).filter(p=>p.assetId==='gmx-gm-eth-usdc'||p.assetId==='gmx-gm-btc-usdc');
+    const gmxValue=gmxPositions.reduce((s,p)=>s+(Number(p.valueUsd)||0),0);
+    if(gmxEth&&gmxBtc&&gmxValue>0){
+      const symbol=gmxEth.querySelector('.ipx-position-symbol');
+      const qty=gmxEth.querySelector('.ipx-position-qty');
+      if(symbol)symbol.textContent='GMX · ETH-USDC + BTC-USDC';
+      if(qty)qty.textContent=money2(gmxValue);
+      gmxEth.dataset.cypherDisplay='gmx-combined';
+      gmxBtc.remove();
+    }
+  }
+
   function markPendingPerformance(){
     if(state?.performance?.complete===true)return;
     const item=document.querySelector('.ib-item[data-nm="Cypher"]');
@@ -131,19 +183,28 @@
     }
   }
 
+  function postRenderPolish(){
+    ensureCollectionCard();
+    syncNetworkStats();
+    polishBalanceSheet();
+    markPendingPerformance();
+  }
+
   function hookRender(){
     if(installed||typeof renderIndex!=='function')return false;
+    hookUniqueIndexColors();
     const original=renderIndex;
-    renderIndex=function(...args){if(state)installIndexRecord();const out=original.apply(this,args);ensureCollectionCard();syncNetworkStats();markPendingPerformance();return out;};
+    renderIndex=function(...args){if(state)installIndexRecord();const out=original.apply(this,args);postRenderPolish();return out;};
     installed=true;return true;
   }
 
   function rerenderNativeSurfaces(){
+    hookUniqueIndexColors();
     hookRender();
     if(!installIndexRecord())return false;
     ensureCollectionCard();syncNetworkStats();
     if(typeof renderIndex==='function')renderIndex(typeof idxLang==='function'?idxLang():lang());
-    markPendingPerformance();
+    postRenderPolish();
     if(typeof buildGraph==='function')buildGraph();
     return true;
   }
@@ -158,7 +219,8 @@
     let attempts=0;
     const timer=setInterval(()=>{attempts+=1;if(rerenderNativeSurfaces()||attempts>600)clearInterval(timer);},100);
     rerenderNativeSurfaces();
-    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
+    setInterval(syncNetworkStats,1000);
+    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishBalanceSheet();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 
