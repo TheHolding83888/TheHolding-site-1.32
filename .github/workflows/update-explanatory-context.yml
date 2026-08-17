@@ -1,0 +1,159 @@
+# THE HOLDING · EXPLANATORY CONTEXT v0.1
+name: "The Holding · Explanatory Context"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "intelligence/explanatory/**"
+      - ".github/workflows/update-explanatory-context.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "intelligence/comparative/comparative-intelligence.json"
+      - "intelligence/income-performance/income-performance.json"
+      - "intelligence/explanatory/explanatory-context.mjs"
+      - ".github/workflows/update-explanatory-context.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-explanatory-context
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/explanatory/explanatory-context.mjs
+          test -s intelligence/comparative/comparative-intelligence.json
+          test -s intelligence/income-performance/income-performance.json
+          node --check intelligence/explanatory/explanatory-context.mjs
+          grep -q "mechanismRule" intelligence/explanatory/explanatory-context.mjs
+          grep -q "associationRule" intelligence/explanatory/explanatory-context.mjs
+          grep -q "executionAuthority: 'none'" intelligence/explanatory/explanatory-context.mjs
+
+      - name: Build Explanatory Context
+        run: node intelligence/explanatory/explanatory-context.mjs
+
+      - name: Validate explanation semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('intelligence/explanatory/explanatory-context.json','utf8'));
+          if (x.version !== '0.1-explanatory-context') throw new Error('unexpected version');
+          if (x.engineVersion !== '0.1-evidence-bound-reason-decomposition') throw new Error('unexpected engine');
+          if (x.status !== 'partial') throw new Error('v0.1 must remain partial');
+          if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('authority regression');
+          if (x.authority?.capitalExecution !== false || x.authority?.allocationAuthority !== false || x.authority?.recommendationAuthority !== false) throw new Error('capital/recommendation authority regression');
+
+          const r = x.explanations?.referenceProductivity;
+          if (r?.status !== 'answerable-by-metric-identity') throw new Error('reference productivity explanation missing');
+          const a = r.highestReferenceApr;
+          const o = r.highestAnnualizedReferenceOutput;
+          if (!a || !o) throw new Error('top APR/output rows missing');
+          if (Math.abs(a.identities.reproducedUsd - a.annualizedReferenceOutputUsd) > 0.02) throw new Error('top APR output identity drift');
+          if (Math.abs(o.identities.reproducedUsd - o.annualizedReferenceOutputUsd) > 0.02) throw new Error('top output identity drift');
+          if (r.causalClass !== 'definition-mechanical') throw new Error('causal class regression');
+
+          const m = x.explanations?.monetraLatestIncome;
+          if (m?.status !== 'answerable-for-latest-measured-interval-only') throw new Error('Monetra latest explanation missing');
+          if (m.interval?.exactCalendarDay !== false) throw new Error('latest interval mislabeled as calendar day');
+          const inc = m.contributors.reduce((s,v)=>s+Number(v.latestMeasuredIncomeUsd||0),0);
+          if (Math.abs(inc - Number(m.interval.incomeUsd)) > 0.00002) throw new Error('Monetra contributor reconciliation drift');
+
+          const p = x.explanations?.monetraPerformanceReconciliation;
+          if (p?.status !== 'answerable-by-reconciliation-identity') throw new Error('performance reconciliation missing');
+          if (Math.abs(Number(p.reproducedNetMarketPnlUsd) - Number(p.netMarketPnlUsd)) > 0.00002) throw new Error('net P&L reconciliation drift');
+
+          if (x.answerability?.['why-protocol-apr-changed'] !== 'blocked-no-canonical-driver-context') throw new Error('protocol causal guard missing');
+          if (x.answerability?.['why-market-moved'] !== 'blocked-no-market-causal-evidence') throw new Error('market causal guard missing');
+          if (x.answerability?.['best-company-overall-explanation'] !== 'blocked-no-universal-score') throw new Error('universal score leaked');
+
+          console.log('EXPLANATORY CONTEXT v0.1 PASS', {
+            topApr: a.name,
+            topOutput: o.name,
+            outputGapUsd: r.decomposition.outputGapUsd,
+            topMonetraContributor: m.concentration.topProtocol,
+            topMonetraSharePct: m.concentration.topProtocolSharePct,
+            monetraNetPnlUsd: p.netMarketPnlUsd,
+            executionAuthority: x.authority.executionAuthority
+          });
+          NODE
+          git diff --check
+
+      - name: Publish generated Explanatory Context
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED="intelligence/explanatory/explanatory-context.json"
+          test -s "$GENERATED"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$GENERATED"
+
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/explanatory/explanatory-context\.json$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Explanatory Context attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "Explanatory Context already current."
+            exit 0
+          fi
+
+          git commit -m "intelligence: refresh explanatory context"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Publish conflict; refusing to guess."
+              exit 1
+            fi
+
+            node intelligence/explanatory/explanatory-context.mjs
+            git add "$GENERATED"
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+
+            if git push origin HEAD:main; then
+              git fetch origin main
+              git cat-file -e "origin/main:$GENERATED"
+              REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+              test "$REMOTE_VERSION" = "0.1-explanatory-context"
+              echo "Verified Explanatory Context v0.1 on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+
+          echo "Explanatory Context publish failed after 3 attempts."
+          exit 1
