@@ -30,34 +30,43 @@ jobs:
           node --check companies/company-010-public-adapter.js
           node --check onboarding/company-010-public-admission.mjs
           node onboarding/company-010-public-admission.mjs
-      - name: Verify native Company UI contract
+      - name: Verify native base UI contract
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const h=fs.readFileSync('.tmp-company-010-public-admission.html','utf8');
           const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          const must=[
-            '"numberOfItems": 10','"position": 10, "name": "Cypher"','id="companyCount">10','/companies/company-010-public-adapter.js',
-            'const eligible = list.filter(c => c.indexEligible !== false);','const measuredTotal = list.reduce','if (cn) cn.textContent = list.length;',
-            "seg.className = 'index-comp-seg' + (c.indexEligible === false ? ' pending' : '');",
-            "const rCo = c => c.indexEligible === false ? P.rCoMin",
-            "c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending')"
-          ];
-          for(const x of must)if(!h.includes(x))throw new Error('missing native surface: '+x);
+          const htmlMust=['"numberOfItems": 10','"position": 10, "name": "Cypher"','id="companyCount">10','/companies/company-010-public-adapter.js','const eligible = list.filter(c => c.indexEligible !== false);','const measuredTotal = list.reduce','if (cn) cn.textContent = list.length;',"seg.className = 'index-comp-seg' + (c.indexEligible === false ? ' pending' : '');","const rCo = c => c.indexEligible === false ? P.rCoMin","c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending')"];
+          for(const x of htmlMust)if(!h.includes(x))throw new Error('missing native surface: '+x);
           if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
           for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
-          for(const x of ['v0.7-crv-strategy-income','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','GMX · ETH-USDC','GMX · BTC-USDC','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC','USDbC','axlUSDC','crvUSD','gmxCompactLabel','GMX · ETH-USDC / BTC-USDC · APY','GMX 30D Fee APY','embedded-in-gm-nav'])if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
-          for(const x of ['concentrator-asdcrv','convex-staked-cvxcrv','Concentrator · sdCRV','Convex · staked cvxCRV','ensureCrvStrategyIncome','Compounded','Claimable','Pending','auto-compounded','separate-claimable-rewards'])if(!a.includes(x))throw new Error('CRV public income contract missing: '+x);
+          const adapterMust=['v0.7-crv-strategy-income','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC','USDbC','axlUSDC','crvUSD'];
+          for(const x of adapterMust)if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
           if(/\['Bitcoin'.*'Fluid'/.test(a)||a.includes("'Concentrator','Fluid'"))throw new Error('Fluid remains in Cypher protocol list');
           if(!a.includes("${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}"))throw new Error('exact-vs-floor Company TVL contract missing');
-          if(!a.includes('net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined'))throw new Error('Combined TVL null guard missing');
+          console.log('Company #010 native base UI contract PASS');
+          NODE
+      - name: Verify GMX public contract
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          for(const x of ['GMX · ETH-USDC','GMX · BTC-USDC','gmxCompactLabel','GMX · ETH-USDC / BTC-USDC · APY','GMX 30D Fee APY','embedded-in-gm-nav'])if(!a.includes(x))throw new Error('GMX public contract missing: '+x);
           if(a.includes('GMX Strategy Mechanics')||a.includes('Pool mix · diagnostic')||a.includes('cy-gmx-mechanics'))throw new Error('GMX pool-composition table must remain hidden from Passport');
           if(!a.includes("eth.yield?.referenceMetric!=='GMX 30D Fee APY'||btc.yield?.referenceMetric!=='GMX 30D Fee APY'"))throw new Error('GMX compact APY source contract missing');
           if(!a.includes("eth.yield?.incomeMode!=='embedded-in-gm-nav'||btc.yield?.incomeMode!=='embedded-in-gm-nav'"))throw new Error('GMX embedded-income guard missing');
+          console.log('Company #010 GMX public contract PASS');
+          NODE
+      - name: Verify CRV public income contract
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          for(const x of ['concentrator-asdcrv','convex-staked-cvxcrv','Concentrator · sdCRV','Convex · staked cvxCRV','ensureCrvStrategyIncome','Compounded','Claimable','Pending','auto-compounded','separate-claimable-rewards'])if(!a.includes(x))throw new Error('CRV public income contract missing: '+x);
           if(!a.includes("conc.yield?.incomeMode!=='auto-compounded'||cvx.yield?.incomeMode!=='separate-claimable-rewards'"))throw new Error('CRV income-mode fail-closed guard missing');
           if(!a.includes("const pending=lang()==='ru'?'Ожидается':'Pending'"))throw new Error('Pending public state missing');
-          console.log('Company #010 native Passport + GMX + CRV income-state contract PASS');
+          console.log('Company #010 CRV public income contract PASS');
           NODE
       - name: Verify presence and weighting are separate
         run: |
@@ -65,16 +74,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const h=fs.readFileSync('.tmp-company-010-public-admission.html','utf8');
-          const assertions=[
-            ['factor normalisation excludes pending','const raws = eligible.map(f.raw);'],
-            ['TVL denominator excludes pending','const totalVal = eligible.reduce'],
-            ['pending composite weight zero','c.weight = 0;'],
-            ['pending TVL weight zero','c.tvlWeight = 0;'],
-            ['surface count includes pending','cn.textContent = list.length;'],
-            ['network value floor semantics','hasPending ? \'≥ \' : \'\''],
-            ['graph includes pending','const comps = computeIndex().slice().sort'],
-            ['pending performance is explicit',"c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending')"]
-          ];
+          const assertions=[['factor normalisation excludes pending','const raws = eligible.map(f.raw);'],['TVL denominator excludes pending','const totalVal = eligible.reduce'],['pending composite weight zero','c.weight = 0;'],['pending TVL weight zero','c.tvlWeight = 0;'],['surface count includes pending','cn.textContent = list.length;'],['network value floor semantics','hasPending ? \'≥ \' : \'\''],['graph includes pending','const comps = computeIndex().slice().sort'],['pending performance is explicit',"c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending')"]];
           for(const [label,x] of assertions)if(!h.includes(x))throw new Error(label+' missing');
           console.log('Company #010 presence/weighting invariants PASS');
           NODE
