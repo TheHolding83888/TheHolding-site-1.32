@@ -15,6 +15,7 @@ on:
       - 'onboarding/company-010-gmx-reader.mjs'
       - 'onboarding/company-010-reconciliation.mjs'
       - 'onboarding/company-010-production-state.mjs'
+      - 'onboarding/company-010-stakedao-overlay.mjs'
       - '.github/workflows/update-company-010-state.yml'
 
 permissions:
@@ -27,7 +28,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -48,6 +49,7 @@ jobs:
           node --check onboarding/company-010-gmx-reader.mjs
           node --check onboarding/company-010-reconciliation.mjs
           node --check onboarding/company-010-production-state.mjs
+          node --check onboarding/company-010-stakedao-overlay.mjs
       - name: Install bounded dependencies
         run: npm install --no-save ethers@6 @aave-dao/aave-address-book
       - name: Collect reviewed Company #010 state
@@ -71,32 +73,39 @@ jobs:
           node onboarding/company-010-gmx-reader.mjs
           node onboarding/company-010-reconciliation.mjs
           node onboarding/company-010-production-state.mjs
-      - name: Validate reconciled admission boundary
+          node onboarding/company-010-stakedao-overlay.mjs
+      - name: Validate complete admission boundary
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
           const r=JSON.parse(fs.readFileSync('companies/company-010-reconciliation.json','utf8'));
-          if(d.version!=='0.2-company-010-production-state-reconciled') throw new Error('version mismatch');
+          if(d.version!=='0.3-company-010-production-state-stakedao-complete') throw new Error('version mismatch');
+          if(r.version!=='0.2-company-010-capital-reconciliation-stakedao-base') throw new Error('reconciliation version mismatch');
           if(d.company?.registry!=='010'||d.company?.name!=='Cypher') throw new Error('identity mismatch');
-          if(d.status!=='partial-total-capital'||d.capital?.totalCapitalComplete!==false) throw new Error('Cypher must remain partial while Fluid is unresolved');
-          if(!(Number(d.capital?.knownCapitalFloorUsd)>0)) throw new Error('known capital floor missing');
+          if(d.company?.architecture!=='The Holding Standard') throw new Error('architecture mismatch');
+          if(d.status!=='complete-total-capital'||d.capital?.totalCapitalComplete!==true) throw new Error('Cypher total capital not complete');
+          if(!(Number(d.capital?.totalCapitalUsd)>0)||d.capital?.totalCapitalUsd!==d.capital?.knownCapitalFloorUsd) throw new Error('exact Cypher total missing');
           const eth=(d.capital?.positions||[]).find(x=>x.symbol==='ETH');
           if(!(Number(eth?.components?.aaveArbitrumWstEthEquivalentEth)>0)) throw new Error('Aave wstETH reconciliation missing');
-          const btc=(d.capital?.positions||[]).find(x=>x.symbol==='BTC');
-          if(Number(btc?.quantity||0)<Number(r.aaveArbitrum?.result?.totalWBTC||0)) throw new Error('BTC reconciliation undercount');
-          if((d.capital?.positions||[]).filter(x=>String(x.assetId||'').startsWith('gmx-gm-')).length!==2) throw new Error('GMX exact two positions missing');
-          if(d.gaps?.find(x=>x.id==='fluid-net-eth')?.severity!=='blocking-total-capital') throw new Error('Fluid blocker missing');
-          if(d.epistemicBoundary?.unknownIsNotZero!==true||d.epistemicBoundary?.partialTotalIsNotTotal!==true||d.epistemicBoundary?.noDoubleCount!==true) throw new Error('epistemic guard missing');
+          const stake=(d.capital?.positions||[]).find(x=>x.assetId==='stakedao-base-curve-4pool');
+          if(!(Number(stake?.valueUsd)>0)||stake?.underlying?.length!==4) throw new Error('Stake DAO capital/decomposition missing');
+          const syms=new Set(stake.underlying.map(x=>x.symbol));
+          for(const s of ['USDC','USDbC','axlUSDC','crvUSD'])if(!syms.has(s))throw new Error('Stake DAO underlying missing '+s);
+          const reward=(d.rewards?.observations||[]).find(x=>x.id==='stakedao-base-curve-4pool-crv');
+          if(!reward||reward.token!=='CRV'||reward.status!=='measured') throw new Error('Stake DAO CRV reward not measured');
+          if((d.gaps||[]).some(x=>x.id==='fluid-net-eth')) throw new Error('Fluid blocker must be absent');
+          if(d.epistemicBoundary?.fluidOwnerPolicy!=='out-of-scope') throw new Error('Fluid owner policy missing');
+          if((d.capital?.positions||[]).some(x=>String(x.protocol||'').toLowerCase()==='fluid')) throw new Error('Fluid capital leaked into Company #010');
           if(d.authority?.executionAuthority!=='none'||d.authority?.transactions!==false) throw new Error('authority drift');
-          console.log('Company #010 reconciled production admission PASS',{knownCapitalFloorUsd:d.capital.knownCapitalFloorUsd,eth:eth.quantity,aaveWstEthEq:eth.components.aaveArbitrumWstEthEquivalentEth,hyperlend:(r.hyperlend?.result?.positions||[]).length,cvxCRV:r.convexCvxCrv?.result?.totalCvxCRV||0,gaps:d.gaps.map(x=>x.id)});
+          console.log('Company #010 complete production admission PASS',{totalCapitalUsd:d.capital.totalCapitalUsd,stakeDaoValueUsd:stake.valueUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoBaseApyPct:(d.productivity.positions||[]).find(x=>x.id==='stakedao_base_curve_4pool')?.referenceAprPct,fluid:'out-of-scope'});
           NODE
       - name: Fingerprint source contract
         id: fingerprint
         run: |
           set -euo pipefail
-          sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,reconciliation,production-state}.mjs | sha256sum | awk '{print "sha="$1}' >> "$GITHUB_OUTPUT"
+          sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,reconciliation,production-state,stakedao-overlay}.mjs | sha256sum | awk '{print "sha="$1}' >> "$GITHUB_OUTPUT"
       - name: Commit production state
         run: |
           set -euo pipefail
@@ -107,16 +116,16 @@ jobs:
             echo "No Company #010 state changes."
             exit 0
           fi
-          git commit -m "companies: refresh reconciled Cypher state"
+          git commit -m "companies: refresh complete Cypher state"
           for attempt in 1 2 3; do
             git fetch origin main
             git rebase origin/main
-            AFTER=$(sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,reconciliation,production-state}.mjs | sha256sum | awk '{print $1}')
+            AFTER=$(sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,reconciliation,production-state,stakedao-overlay}.mjs | sha256sum | awk '{print $1}')
             if [ "$AFTER" != "${{ steps.fingerprint.outputs.sha }}" ]; then
               echo "Company #010 source contract changed during publication; fresh collection required."
               exit 1
             fi
-            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));if(d.version!=='0.2-company-010-production-state-reconciled'||d.authority?.executionAuthority!=='none')process.exit(1);"
+            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));if(d.version!=='0.3-company-010-production-state-stakedao-complete'||d.capital?.totalCapitalComplete!==true||d.authority?.executionAuthority!=='none')process.exit(1);"
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
           done
