@@ -6,11 +6,12 @@ import { Contract, JsonRpcProvider, formatUnits, getAddress } from 'ethers';
 const ROOT=process.cwd();
 const FILE=process.env.COMPANY_010_RECONCILIATION_OUTPUT||path.join(ROOT,'companies/company-010-reconciliation.json');
 const addr=x=>getAddress(String(x).toLowerCase());
-const WALLETS=[{alias:'Wallet 1',address:addr('0xd90d1e395de36e1e59c42f5df537801c26bbc03f')},{alias:'Wallet 2',address:addr('0x64688f4adc3f72cdb44d07e4879c724cd7025696')}];
+const WALLETS=[{alias:'Wallet 1',address:addr('0xd90d1e395de36e1e59c42f5df537801c26bbc03f')},{alias:'Wallet 2',address:addr('0x64688f4adc3f72cdB44d07e4879c724cd7025696')}];
 const VAULT=addr('0x6f6533b7e0730d150e617001e331ff2faa41fde4');
+const POOL=addr('0xf6c5f01c7f3148891ad0e19df78743d31e390d1f');
 const EXPECTED_CRV=addr('0x8ee73c484a26e0a5df2ee2a4960b789967dd0415');
 const RPC=[...new Set([process.env.BASE_RPC_URL,process.env.BASE_RPC_URL_2,'https://base-rpc.publicnode.com','https://mainnet.base.org'].filter(Boolean))];
-const VAULT_ABI=['function ACCOUNTANT() view returns(address)','function gauge() view returns(address)'];
+const VAULT_ABI=['function ACCOUNTANT() view returns(address)','function gauge() view returns(address)','function asset() view returns(address)'];
 const ACCOUNTANT_ABI=[
   'function REWARD_TOKEN() view returns(address)',
   'function PROTOCOL_CONTROLLER() view returns(address)',
@@ -22,14 +23,18 @@ const CONTROLLER_ABI=['function vault(address gauge) view returns(address)'];
 const round=(x,d=12)=>Number.isFinite(Number(x))?Number(Number(x).toFixed(d)):null;
 const err=e=>String(e?.shortMessage||e?.message||e||'unknown').replace(/https?:\/\/[^\s)]+/g,'[url-redacted]');
 const lower=x=>String(x||'').toLowerCase();
-async function fetchJson(url,timeoutMs=25000){const c=new AbortController(),t=setTimeout(()=>c.abort(),timeoutMs);try{const r=await fetch(url,{headers:{accept:'application/json','user-agent':'The-Holding-Cypher-StakeDAO-Intelligence/0.1'},signal:c.signal,cache:'no-store'});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.json()}finally{clearTimeout(t)}}
-function strategyList(x){if(Array.isArray(x))return x;if(Array.isArray(x?.deployed))return x.deployed;if(Array.isArray(x?.parsed?.deployed))return x.parsed.deployed;if(Array.isArray(x?.data?.deployed))return x.data.deployed;return[]}
-function num(x){return Number.isFinite(Number(x))?Number(x):null}
-
+const num=x=>Number.isFinite(Number(x))?Number(x):null;
+async function fetchJson(url,timeoutMs=25000){const c=new AbortController(),t=setTimeout(()=>c.abort(),timeoutMs);try{const r=await fetch(url,{headers:{accept:'application/json','user-agent':'The-Holding-Cypher-StakeDAO-Intelligence/0.2'},signal:c.signal,cache:'no-store'});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.json()}finally{clearTimeout(t)}}
 async function providerMesh(fn){const failures=[];for(const url of RPC){try{const p=new JsonRpcProvider(url,8453,{staticNetwork:true});if(Number((await p.getNetwork()).chainId)!==8453)throw new Error('wrong chain');return{result:await fn(p),failures}}catch(e){failures.push(err(e))}}throw new Error(`Base provider mesh failed: ${failures.join(' | ')}`)}
+function findAddressNode(root,address){const target=lower(address),seen=new Set();function walk(x,d=0){if(d>10||x==null)return null;if(Array.isArray(x)){for(const v of x){const r=walk(v,d+1);if(r)return r}return null}if(typeof x!=='object'||seen.has(x))return null;seen.add(x);for(const[k,v]of Object.entries(x)){if(lower(k)===target||(typeof v==='string'&&lower(v)===target))return x}for(const v of Object.values(x)){const r=walk(v,d+1);if(r)return r}return null}return walk(root)}
+function flattenNumbers(node){const out=[];function walk(x,p='',d=0){if(d>8||x==null)return;if(Array.isArray(x)){x.forEach((v,i)=>walk(v,`${p}.${i}`,d+1));return}if(typeof x==='object'){Object.entries(x).forEach(([k,v])=>walk(v,p?`${p}.${k}`:k,d+1));return}const n=num(x);if(n!==null)out.push({path:p,value:n})}walk(node);return out}
+function normalizePercent(value,path=''){if(!Number.isFinite(value))return null;if(/pcent|percent|pct/i.test(path))return round(value,8);if(Math.abs(value)<=1)return round(value*100,8);return round(value,8)}
+function findBaseApy(root){const candidates=flattenNumbers(root).filter(x=>/(latest.*daily.*apy|daily.*apy|base.*apy|apy)/i.test(x.path)&&!/(reward|crv|gauge|future|weekly|monthly)/i.test(x.path));if(!candidates.length)return null;const preferred=candidates.find(x=>/latest.*daily.*apy/i.test(x.path))||candidates.find(x=>/daily.*apy/i.test(x.path))||candidates[0];return{valuePct:normalizePercent(preferred.value,preferred.path),path:preferred.path,raw:preferred.value}}
+function findCrvApr(root){const candidates=flattenNumbers(root).filter(x=>/(crv.*apr|apr.*crv|gauge.*apr|apr)/i.test(x.path));if(!candidates.length)return null;const preferred=candidates.find(x=>/crv.*apr|apr.*crv/i.test(x.path))||candidates[0];return{valuePct:normalizePercent(preferred.value,preferred.path),path:preferred.path,raw:preferred.value}}
 
 async function accountantState(){return providerMesh(async provider=>{
-  const vault=new Contract(VAULT,VAULT_ABI,provider),accountantAddress=addr(await vault.ACCOUNTANT()),gauge=addr(await vault.gauge()),accountant=new Contract(accountantAddress,ACCOUNTANT_ABI,provider);
+  const vault=new Contract(VAULT,VAULT_ABI,provider),asset=addr(await vault.asset());if(lower(asset)!==lower(POOL))throw new Error(`Stake DAO vault asset mismatch ${asset}`);
+  const accountantAddress=addr(await vault.ACCOUNTANT()),gauge=addr(await vault.gauge()),accountant=new Contract(accountantAddress,ACCOUNTANT_ABI,provider);
   const rewardToken=addr(await accountant.REWARD_TOKEN());if(lower(rewardToken)!==lower(EXPECTED_CRV))throw new Error(`Stake DAO Accountant reward token mismatch ${rewardToken}`);
   const controllerAddress=addr(await accountant.PROTOCOL_CONTROLLER()),controller=new Contract(controllerAddress,CONTROLLER_ABI,provider),registeredVault=addr(await controller.vault(gauge));
   if(lower(registeredVault)!==lower(VAULT))throw new Error(`Stake DAO gauge/vault registry mismatch ${registeredVault}`);
@@ -38,23 +43,24 @@ async function accountantState(){return providerMesh(async provider=>{
   return{accountant:accountantAddress,controller:controllerAddress,gauge,rewardToken,scalingFactor:scaling.toString(),vaultIntegral:vaultIntegral.toString(),claimableCrv:round(Number(formatUnits(total,18)),12),byWallet,source:'Stake DAO verified Accountant integral state on Base',formula:'pendingRewards + max(vaultIntegral-accountIntegral,0) * balance / 1e27'};
 })}
 
-async function strategyApr(){const api=await fetchJson('https://api.stakedao.org/api/strategies/curve/8453.json');const list=strategyList(api),s=list.find(x=>lower(x?.vault)===lower(VAULT));if(!s)throw new Error(`Stake DAO official API did not contain Base vault ${VAULT}; deployed=${list.length}`);const coins=(s.coins||[]).map(x=>({symbol:x.symbol||null,address:x.address||null,decimals:num(x.decimals)}));const rewards=(s.rewards||[]).map(x=>({symbol:x?.token?.symbol||null,address:x?.token?.address||null,apr:num(x.apr),price:num(x.price),streaming:Boolean(x.streaming),periodFinish:num(x.periodFinish)}));const currentTotal=num(s?.apr?.current?.total),tradingApy=num(s.tradingApy),minApr=num(s.minApr),maxApr=num(s.maxApr);if(currentTotal===null)throw new Error('Stake DAO current total APR unavailable');return{key:s.key||null,name:s.name||null,vault:s.vault,gaugeAddress:s.gaugeAddress||null,lpToken:s.lpToken||null,coins,rewards,tradingApy,minApr,maxApr,currentAprPct:currentTotal,currentAprDetails:s?.apr?.current?.details||[],lpPriceInUsd:num(s.lpPriceInUsd),tvl:num(s.tvl),source:'Stake DAO official /api/strategies/curve/8453.json'};}
+async function curveYield(gauge){const[base,rewards]=await Promise.all([fetchJson('https://api.curve.finance/v1/getBaseApys/base'),fetchJson('https://api.curve.finance/v1/getFactoGaugesCrvRewards/base').catch(()=>null)]);let poolNode=findAddressNode(base,POOL);if(!poolNode&&base?.data)poolNode=findAddressNode(base.data,POOL);if(!poolNode&&base?.apys){const direct=base.apys[lower(POOL)]??base.apys[POOL]??null;if(direct!==null)poolNode={apy:direct,poolAddress:POOL}};const baseApy=findBaseApy(poolNode);if(!baseApy||baseApy.valuePct===null)throw new Error(`Curve Base APY unavailable for ${POOL}`);let rewardNode=rewards?findAddressNode(rewards,gauge):null;const crvApr=rewardNode?findCrvApr(rewardNode):null;return{pool:POOL,gauge,baseApyPct:baseApy.valuePct,baseApyPath:baseApy.path,unboostedCrvAprPct:crvApr?.valuePct??null,unboostedCrvAprPath:crvApr?.path??null,referenceAprPct:baseApy.valuePct,referenceAprScope:'Curve trading/base APY only; Stake DAO boosted CRV reward APR is intentionally separate until exact annualisation is proven',source:'Curve official /v1/getBaseApys/base',crvAprSource:crvApr?'Curve official /v1/getFactoGaugesCrvRewards/base · unboosted diagnostic only':null};}
 
 const recon=JSON.parse(fs.readFileSync(FILE,'utf8'));
 if(recon?.version!=='0.2-company-010-capital-reconciliation-stakedao-base'||!recon?.stakeDaoBase?.result)throw new Error('Stake DAO reconciliation v0.2 required');
 if(recon?.authority?.executionAuthority!=='none')throw new Error('authority drift');
-const[accounting,apr]=await Promise.all([accountantState(),strategyApr()]);
+const accounting=await accountantState(),yieldData=await curveYield(accounting.result.gauge);
 const r=recon.stakeDaoBase.result;
 r.crvClaimable=accounting.result.claimableCrv;
 r.rewardAccounting=accounting.result;
-r.referenceAprPct=apr.currentAprPct;
-r.referenceAprStatus='measured';
-r.referenceAprSource=apr.source;
-r.stakeDaoStrategy=apr;
-r.baseApyPct=apr.tradingApy;
-r.baseApyStatus=apr.tradingApy!==null?'measured':'warming';
-r.source='Stake DAO RewardVault + Stake DAO verified Accountant + Stake DAO official strategy API + Curve pool onchain balances';
+r.referenceAprPct=yieldData.referenceAprPct;
+r.referenceAprStatus='measured-base-yield';
+r.referenceAprSource=yieldData.source;
+r.referenceAprScope=yieldData.referenceAprScope;
+r.baseApyPct=yieldData.baseApyPct;
+r.baseApyStatus='measured';
+r.curveYield=yieldData;
+r.source='Stake DAO RewardVault + Stake DAO verified Accountant + Curve official Base APY + Curve pool onchain balances';
 recon.generatedAt=new Date().toISOString();
-recon.stakeDaoIntelligence={version:'0.1-stakedao-accountant-strategy-api',claimableMethod:'verified-accountant-integral',aprMethod:'official-stakedao-current-total-apr'};
+recon.stakeDaoIntelligence={version:'0.2-stakedao-accountant-curve-base-yield',claimableMethod:'verified-accountant-integral',yieldMethod:'curve-official-base-apy',boostedRewardAprStatus:'warming'};
 fs.writeFileSync(FILE,JSON.stringify(recon,null,2)+'\n');
-console.log(JSON.stringify({status:'PASS',stakeDaoValueUsd:r.totalPositionUsd,crvClaimable:r.crvClaimable,currentAprPct:r.referenceAprPct,tradingApyPct:r.baseApyPct,apiStrategy:apr.name,accountant:accounting.result.accountant,gauge:accounting.result.gauge,executionAuthority:'none'},null,2));
+console.log(JSON.stringify({status:'PASS',stakeDaoValueUsd:r.totalPositionUsd,crvClaimable:r.crvClaimable,referenceAprPct:r.referenceAprPct,referenceAprScope:r.referenceAprScope,unboostedCrvAprPct:yieldData.unboostedCrvAprPct,accountant:accounting.result.accountant,gauge:accounting.result.gauge,executionAuthority:'none'},null,2));
