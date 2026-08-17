@@ -1,7 +1,7 @@
-/* The Holding · Company #010 Cypher public adapter · v0.6.3-gmx-mechanics
+/* The Holding · Company #010 Cypher public adapter · v0.6.4-gmx-compact-apy
  * Compatibility sentinel: supersedes v0.6-stakedao-complete without changing that native surface contract.
  * Stake DAO underlying decomposition remains canonical in state: USDC / USDbC / axlUSDC / crvUSD. Public Passport intentionally renders the strategy as one compact economic row.
- * GMX Passport mechanics: GM token NAV is counted once; pool mix is diagnostic exposure context only; LP fee income is embedded in GM NAV and has no separate claim step.
+ * GMX pool composition remains canonical diagnostic state and is not rendered publicly. GM token NAV is counted once; LP fee income is embedded in GM NAV and has no separate claim step.
  * Combined TVL compatibility sentinel: net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined remains enforced through canonicalNetworkTvl().
  * Canonical source: /companies/company-010-production-state.json
  * Presentation: native Collection + General Index/Passport/Graph surfaces.
@@ -88,6 +88,17 @@
 
   function stakeDaoLabel(){return 'Stake DAO · 4pool stables';}
 
+  function gmxCompactLabel(){
+    const strategies=Array.isArray(state?.strategies?.gmx?.strategies)?state.strategies.gmx.strategies:[];
+    const eth=strategies.find(x=>x.id==='gmx-gm-eth-usdc');
+    const btc=strategies.find(x=>x.id==='gmx-gm-btc-usdc');
+    const ethApy=Number(eth?.yield?.referenceAprPct),btcApy=Number(btc?.yield?.referenceAprPct);
+    if(!eth||!btc||!Number.isFinite(ethApy)||!Number.isFinite(btcApy))return null;
+    if(eth.yield?.referenceMetric!=='GMX 30D Fee APY'||btc.yield?.referenceMetric!=='GMX 30D Fee APY')return null;
+    if(eth.yield?.incomeMode!=='embedded-in-gm-nav'||btc.yield?.incomeMode!=='embedded-in-gm-nav'||eth.yield?.claimableApplicable!==false||btc.yield?.claimableApplicable!==false)return null;
+    return `GMX · ETH-USDC / BTC-USDC · APY ${pct2(ethApy)} / ${pct2(btcApy)}`;
+  }
+
   function installRuntimeBook(){
     if(!state)return;
     if(typeof COMPANY_PROTOCOLS!=='undefined')COMPANY_PROTOCOLS.Cypher=protocols();
@@ -161,77 +172,15 @@
     const gmxBtc=byLabel('GMX · BTC-USDC');
     const gmxPositions=(state.capital?.positions||[]).filter(p=>p.assetId==='gmx-gm-eth-usdc'||p.assetId==='gmx-gm-btc-usdc');
     const gmxValue=gmxPositions.reduce((s,p)=>s+(Number(p.valueUsd)||0),0);
-    if(gmxEth&&gmxBtc&&gmxValue>0){
+    const compactLabel=gmxCompactLabel();
+    if(gmxEth&&gmxBtc&&gmxValue>0&&compactLabel){
       const symbol=gmxEth.querySelector('.ipx-position-symbol');
       const qty=gmxEth.querySelector('.ipx-position-qty');
-      if(symbol)symbol.textContent='GMX · ETH-USDC + BTC-USDC';
+      if(symbol)symbol.textContent=compactLabel;
       if(qty)qty.textContent=money2(gmxValue);
-      gmxEth.dataset.cypherDisplay='gmx-combined';
+      gmxEth.dataset.cypherDisplay='gmx-combined-apy';
       gmxBtc.remove();
     }
-  }
-
-  function ensureGmxMechanicsStyle(){
-    if(document.getElementById('cypher-gmx-mechanics-style'))return;
-    const style=document.createElement('style');
-    style.id='cypher-gmx-mechanics-style';
-    style.textContent=`
-      .ib-item[data-nm="Cypher"] .cy-gmx-mechanics{margin:-.38rem 0 1.22rem;padding:.96rem .98rem .92rem;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(253,254,254,.985),rgba(247,250,249,.955));box-shadow:0 18px 42px -34px rgba(15,23,42,.34),inset 0 1px 0 rgba(255,255,255,.96)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-head{display:flex;justify-content:space-between;gap:.8rem;align-items:flex-start;margin-bottom:.72rem}
-      .ib-item[data-nm="Cypher"] .cy-gmx-kicker{font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--text-3);font-weight:500}
-      .ib-item[data-nm="Cypher"] .cy-gmx-title{margin-top:.13rem;font-family:'Cormorant Garamond',serif;font-size:1.18rem;line-height:1.1;font-weight:500;color:var(--text)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-total{font-size:.72rem;color:var(--text-3);white-space:nowrap;padding-top:.12rem}
-      .ib-item[data-nm="Cypher"] .cy-gmx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.56rem}
-      .ib-item[data-nm="Cypher"] .cy-gmx-market{padding:.72rem .76rem .68rem;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.72)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-market-top{display:flex;align-items:baseline;justify-content:space-between;gap:.65rem;margin-bottom:.5rem}
-      .ib-item[data-nm="Cypher"] .cy-gmx-market-name{font-size:.78rem;font-weight:500;color:var(--text)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-nav{font-size:.78rem;color:var(--gold);font-weight:500;white-space:nowrap}
-      .ib-item[data-nm="Cypher"] .cy-gmx-metrics{display:grid;grid-template-columns:1fr 1fr;gap:.42rem;margin-bottom:.52rem}
-      .ib-item[data-nm="Cypher"] .cy-gmx-metric{padding:.44rem .48rem;border-radius:8px;background:var(--bg-soft)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-label{display:block;font-size:.57rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:.09rem}
-      .ib-item[data-nm="Cypher"] .cy-gmx-value{display:block;font-size:.77rem;font-weight:500;color:var(--text)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-value.apy{color:var(--green)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-mix{font-size:.65rem;color:var(--text-2);line-height:1.55}
-      .ib-item[data-nm="Cypher"] .cy-gmx-mix strong{color:var(--text);font-weight:500}
-      .ib-item[data-nm="Cypher"] .cy-gmx-bar{height:3px;display:flex;overflow:hidden;border-radius:999px;background:var(--line);margin:.4rem 0 .44rem}
-      .ib-item[data-nm="Cypher"] .cy-gmx-bar-long{background:var(--gold)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-bar-short{background:var(--green)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-income{margin-top:.66rem;padding-top:.62rem;border-top:1px solid var(--line);font-size:.64rem;line-height:1.55;color:var(--text-3)}
-      .ib-item[data-nm="Cypher"] .cy-gmx-income strong{font-weight:500;color:var(--text-2)}
-      @media(max-width:720px){.ib-item[data-nm="Cypher"] .cy-gmx-mechanics{margin-top:-.24rem;margin-bottom:.98rem;padding:.76rem .74rem .72rem}.ib-item[data-nm="Cypher"] .cy-gmx-grid{grid-template-columns:1fr}.ib-item[data-nm="Cypher"] .cy-gmx-title{font-size:1.08rem}}
-    `;
-    document.head.appendChild(style);
-  }
-
-  function renderGmxMechanics(){
-    const gmx=state?.strategies?.gmx;
-    const strategies=Array.isArray(gmx?.strategies)?gmx.strategies:[];
-    if(gmx?.status!=='measured'||strategies.length!==2)return;
-    const valid=strategies.every(x=>{
-      const d=x.poolExposureDiagnostic||{};
-      const lw=Number(d.long?.grossTokenWeight),sw=Number(d.short?.grossTokenWeight);
-      return Number(x.companyPosition?.strategyNavUsd)>0&&Number.isFinite(Number(x.yield?.referenceAprPct))&&x.yield?.incomeMode==='embedded-in-gm-nav'&&x.yield?.claimableApplicable===false&&Number.isFinite(lw)&&Number.isFinite(sw)&&lw>0&&sw>0&&Math.abs(lw+sw-1)<0.001;
-    });
-    if(!valid)return;
-    const item=document.querySelector('.ib-item[data-nm="Cypher"]');
-    const ledger=item?.querySelector('.ipx-live-ledger');
-    if(!item||!ledger)return;
-    ensureGmxMechanicsStyle();
-    let block=item.querySelector('.cy-gmx-mechanics');
-    if(!block){block=document.createElement('section');block.className='cy-gmx-mechanics';block.dataset.gmxAccounting='gm-nav-counted-once';block.dataset.gmxClaimable='not-applicable';ledger.insertAdjacentElement('afterend',block);}
-    const ru=lang()==='ru';
-    const cards=strategies.map(x=>{
-      const d=x.poolExposureDiagnostic||{},y=x.yield||{},p=x.companyPosition||{};
-      const longPct=Number(d.long.grossTokenWeight)*100,shortPct=Number(d.short.grossTokenWeight)*100;
-      const market=String(x.id||'').includes('eth')?'ETH–USDC':'BTC–USDC';
-      return `<div class="cy-gmx-market" data-gmx-market="${x.id}">
-        <div class="cy-gmx-market-top"><span class="cy-gmx-market-name">${market}</span><span class="cy-gmx-nav">${money2(p.strategyNavUsd)}</span></div>
-        <div class="cy-gmx-metrics"><div class="cy-gmx-metric"><span class="cy-gmx-label">${ru?'NAV стратегии':'Strategy NAV'}</span><span class="cy-gmx-value">${money2(p.strategyNavUsd)}</span></div><div class="cy-gmx-metric"><span class="cy-gmx-label">30D Fee APY</span><span class="cy-gmx-value apy">${pct2(y.referenceAprPct)}</span></div></div>
-        <div class="cy-gmx-mix"><strong>${ru?'Состав пула · диагностический':'Pool mix · diagnostic'}</strong><br>${d.long.symbol} ${pct2(longPct)} · ${d.short.symbol} ${pct2(shortPct)}</div>
-        <div class="cy-gmx-bar" aria-hidden="true"><span class="cy-gmx-bar-long" style="width:${longPct.toFixed(3)}%"></span><span class="cy-gmx-bar-short" style="width:${shortPct.toFixed(3)}%"></span></div>
-      </div>`;
-    }).join('');
-    block.innerHTML=`<div class="cy-gmx-head"><div><div class="cy-gmx-kicker">GMX · Arbitrum</div><div class="cy-gmx-title">${ru?'Механика стратегий GMX':'GMX Strategy Mechanics'}</div></div><div class="cy-gmx-total">${ru?'NAV двух стратегий':'2-strategy NAV'} · ${money2(gmx.totalStrategyNavUsd)}</div></div><div class="cy-gmx-grid">${cards}</div><div class="cy-gmx-income"><strong>${ru?'Доход':'Income'}:</strong> ${ru?'комиссии LP автоматически накапливаются внутри GM NAV · отдельного claim нет. Состав пула – контекст экспозиции, а не дополнительный капитал компании.':'LP fees auto-accrue inside GM NAV · no separate claim. Pool mix is exposure context, not additional Company capital.'}</div>`;
   }
 
   function markPendingPerformance(){
@@ -254,7 +203,6 @@
     ensureCollectionCard();
     syncNetworkStats();
     polishBalanceSheet();
-    renderGmxMechanics();
     markPendingPerformance();
   }
 
@@ -288,7 +236,7 @@
     const timer=setInterval(()=>{attempts+=1;if(rerenderNativeSurfaces()||attempts>600)clearInterval(timer);},100);
     rerenderNativeSurfaces();
     setInterval(syncNetworkStats,1000);
-    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishBalanceSheet();renderGmxMechanics();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
+    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishBalanceSheet();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 
