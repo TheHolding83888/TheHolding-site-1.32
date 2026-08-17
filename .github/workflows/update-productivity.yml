@@ -6,11 +6,10 @@ on:
     # One synchronized The Holding snapshot per week.
     # Sunday 04:17 UTC avoids common top-of-hour cron congestion.
     - cron: '17 4 * * 0'
-  push:
-    branches: [main]
-    paths:
-      - 'productivity/company-010-productivity-overlay.mjs'
-      - '.github/workflows/update-productivity.yml'
+  workflow_run:
+    workflows:
+      - "Update Company #010 · Cypher Production State"
+    types: [completed]
 
 permissions:
   contents: write
@@ -21,12 +20,19 @@ concurrency:
 
 jobs:
   update-productivity:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Setup Node
