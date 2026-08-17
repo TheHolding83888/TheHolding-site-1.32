@@ -80,7 +80,7 @@ jobs:
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
           const errors=[];
           if(r.version!=='0.2-company-010-capital-reconciliation-stakedao-base')errors.push('reconciliation version');
-          if(r.stakeDaoIntelligence?.version!=='0.1-stakedao-accountant-strategy-api')errors.push('Stake DAO intelligence');
+          if(r.stakeDaoIntelligence?.version!=='0.2-stakedao-accountant-curve-base-yield')errors.push('Stake DAO intelligence');
           if(s.version!=='0.3-company-010-production-state-stakedao-complete')errors.push('Cypher state version');
           if(s.company?.architecture!=='The Holding Standard')errors.push('architecture');
           if(s.capital?.totalCapitalComplete!==true||s.capital?.knownButUnboundCapitalMayExist!==false)errors.push('Cypher complete-total semantics');
@@ -97,8 +97,8 @@ jobs:
           const reward=(s.rewards?.observations||[]).find(x=>x.id==='stakedao-base-curve-4pool-crv');
           if(!reward||reward.token!=='CRV'||reward.status!=='measured'||!(Number(reward.claimable)>=0))errors.push('Stake DAO CRV claimable');
           const prod=(s.productivity?.positions||[]).find(x=>x.id==='stakedao_base_curve_4pool');
-          if(!prod||prod.status!=='measured'||!(Number(prod.referenceAprPct)>=0))errors.push('Stake DAO official APR');
-          if(r.stakeDaoBase?.result?.referenceAprSource!=='Stake DAO official /api/strategies/curve/8453.json')errors.push('Stake DAO APR source');
+          if(!prod||prod.status!=='measured'||!(Number(prod.referenceAprPct)>=0))errors.push('Stake DAO Curve Base APY');
+          if(r.stakeDaoBase?.result?.referenceAprSource!=='Curve official /v1/getBaseApys/base')errors.push('Stake DAO APY source');
           if(r.stakeDaoBase?.result?.rewardAccounting?.source!=='Stake DAO verified Accountant integral state on Base')errors.push('Stake DAO reward source');
           if((s.gaps||[]).some(x=>x.id==='fluid-net-eth'))errors.push('Fluid blocker remains');
           if(s.epistemicBoundary?.fluidOwnerPolicy!=='out-of-scope')errors.push('Fluid owner policy');
