@@ -86,6 +86,7 @@ state.rewards.unboundMechanisms=(state.rewards.unboundMechanisms||[]).filter(x=>
 state.gaps=(state.gaps||[]).filter(x=>x.id!=='fluid-net-eth');
 if(n(s.baseApyPct)===null&&!state.gaps.some(x=>x.id==='stakedao-base-apy'))state.gaps.push({id:'stakedao-base-apy',severity:'productivity',status:'warming',meaning:'Stake DAO principal and CRV claimable are measured; Curve Base pool APY was unavailable in this run.'});
 state.status='complete-total-capital';
+state.performance={status:'partial-cost-basis',complete:false,reason:'Current capital is complete, but company-level Performance remains withheld until acquisition basis is reproducibly bound for wrapper and strategy positions including Stake DAO, GMX and HyperLend.'};
 state.provenance=state.provenance||{};
 state.provenance.stakeDaoBase={reconciliationVersion:recon.version,generatedAt:recon.generatedAt||null,vault:s.vault,pool:s.pool};
 state.epistemicBoundary=state.epistemicBoundary||{};
@@ -95,4 +96,4 @@ state.epistemicBoundary.partialTotalIsNotTotal=true;
 state.epistemicBoundary.noDoubleCount=true;
 
 fs.writeFileSync(STATE,JSON.stringify(state,null,2)+'\n');
-console.log(JSON.stringify({status:'PASS',version:state.version,totalCapitalUsd:state.capital.totalCapitalUsd,totalCapitalComplete:state.capital.totalCapitalComplete,stakeDaoValueUsd:s.totalPositionUsd,stakeDaoBaseApyPct:s.baseApyPct,stakeDaoClaimableCrv:claimableCrv,fluid:'out-of-scope',executionAuthority:state.authority.executionAuthority},null,2));
+console.log(JSON.stringify({status:'PASS',version:state.version,totalCapitalUsd:state.capital.totalCapitalUsd,totalCapitalComplete:state.capital.totalCapitalComplete,performance:state.performance.status,stakeDaoValueUsd:s.totalPositionUsd,stakeDaoBaseApyPct:s.baseApyPct,stakeDaoClaimableCrv:claimableCrv,fluid:'out-of-scope',executionAuthority:state.authority.executionAuthority},null,2));
