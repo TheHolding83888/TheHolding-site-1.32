@@ -1,4 +1,4 @@
-/* The Holding · Company #010 Cypher public adapter · v0.6-stakedao-complete
+/* The Holding · Company #010 Cypher public adapter · v0.6.1-performance-pending-explicit
  * Canonical source: /companies/company-010-production-state.json
  * Presentation: native Collection + General Index/Passport/Graph surfaces.
  * Capital completeness, Productivity coverage and Performance evidence remain separate contracts.
@@ -103,7 +103,7 @@
     const apr=currentReferenceApr(),coverage=Number(state.productivity?.coverage||0)*100;
     const complete=state.capital?.totalCapitalComplete===true;
     const performancePending=state.performance?.complete!==true;
-    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:0,pnl:0,pct:0,performancePending,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'The Holding Standard',ru:'The Holding Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Measuring':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Измеряется':`${apr.toFixed(1)}% · покрыто ${coverage.toFixed(1)}%`},aprSource:'canonical-company-state',aprObservationCount:0,pendingReason:complete?null:{en:'An in-scope capital mechanism is not yet fully bound',ru:'Один из учитываемых механизмов капитала ещё не полностью связан'}};
+    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:null,pnl:null,pct:null,performancePending,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'The Holding Standard',ru:'The Holding Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Measuring':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Измеряется':`${apr.toFixed(1)}% · покрыто ${coverage.toFixed(1)}%`},aprSource:'canonical-company-state',aprObservationCount:0,pendingReason:complete?null:{en:'An in-scope capital mechanism is not yet fully bound',ru:'Один из учитываемых механизмов капитала ещё не полностью связан'}};
   }
 
   function installIndexRecord(){
@@ -114,10 +114,26 @@
     return true;
   }
 
+  function markPendingPerformance(){
+    if(state?.performance?.complete===true)return;
+    const item=document.querySelector('.ib-item[data-nm="Cypher"]');
+    if(!item)return;
+    item.dataset.performancePending='true';
+    const pending=lang()==='ru'?'Ожидается':'Pending';
+    const factor=item.querySelector('.ipx-factor.f-perf');
+    if(factor){
+      const value=factor.querySelector('.ipx-f-val');
+      if(value)value.textContent=pending;
+      const note=factor.querySelector('.ipx-f-note');
+      if(note)note.textContent=lang()==='ru'?'Performance ещё не имеет полного подтверждённого cost basis. Для Composite используется нейтральный prior, а не наблюдаемая доходность.':'Performance does not yet have a complete verified cost basis. Composite uses a neutral prior here, not an observed return.';
+      factor.setAttribute('data-performance-pending','true');
+    }
+  }
+
   function hookRender(){
     if(installed||typeof renderIndex!=='function')return false;
     const original=renderIndex;
-    renderIndex=function(...args){if(state)installIndexRecord();const out=original.apply(this,args);ensureCollectionCard();syncNetworkStats();return out;};
+    renderIndex=function(...args){if(state)installIndexRecord();const out=original.apply(this,args);ensureCollectionCard();syncNetworkStats();markPendingPerformance();return out;};
     installed=true;return true;
   }
 
@@ -126,6 +142,7 @@
     if(!installIndexRecord())return false;
     ensureCollectionCard();syncNetworkStats();
     if(typeof renderIndex==='function')renderIndex(typeof idxLang==='function'?idxLang():lang());
+    markPendingPerformance();
     if(typeof buildGraph==='function')buildGraph();
     return true;
   }
@@ -140,7 +157,7 @@
     let attempts=0;
     const timer=setInterval(()=>{attempts+=1;if(rerenderNativeSurfaces()||attempts>600)clearInterval(timer);},100);
     rerenderNativeSurfaces();
-    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();if(!installed)rerenderNativeSurfaces();});
+    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 
