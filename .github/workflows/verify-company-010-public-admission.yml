@@ -47,11 +47,13 @@ jobs:
           for(const x of must)if(!h.includes(x))throw new Error('missing native surface: '+x);
           if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
           for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
-          for(const x of ['v0.6-stakedao-complete','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','GMX · ETH-USDC','GMX · BTC-USDC','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC','USDbC','axlUSDC','crvUSD'])if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
+          for(const x of ['v0.6-stakedao-complete','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','GMX · ETH-USDC','GMX · BTC-USDC','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC','USDbC','axlUSDC','crvUSD','GMX Strategy Mechanics','Pool mix · diagnostic','LP fees auto-accrue inside GM NAV · no separate claim','gm-nav-counted-once','not-applicable'])if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
           if(/\['Bitcoin'.*'Fluid'/.test(a)||a.includes("'Concentrator','Fluid'"))throw new Error('Fluid remains in Cypher protocol list');
           if(!a.includes("${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}"))throw new Error('exact-vs-floor Company TVL contract missing');
           if(!a.includes('net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined'))throw new Error('Combined TVL null guard missing');
-          console.log('Company #010 Stake DAO native Passport contract PASS');
+          if(!a.includes("x.yield?.incomeMode==='embedded-in-gm-nav'&&x.yield?.claimableApplicable===false"))throw new Error('GMX mechanics must fail closed on income/claim semantics');
+          if(!a.includes('Math.abs(lw+sw-1)<0.001'))throw new Error('GMX mechanics finite pool-weight guard missing');
+          console.log('Company #010 native Passport + GMX mechanics contract PASS');
           NODE
       - name: Verify presence and weighting are separate
         run: |
