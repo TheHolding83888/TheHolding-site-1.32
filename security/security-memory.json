@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-17T04:05:33.174Z",
+  "generatedAt": "2026-08-17T04:14:52.404Z",
   "status": "watch",
-  "snapshotHash": "60ce399e977c8724bae368c8db39da8773618e0e1fd9f854122a0c9143790089",
+  "snapshotHash": "6dc1707eff452f2fc2a959cc3d806b75e557b37dcbc6ed442b7fecaea2a03193",
   "repository": {
-    "filesScanned": 367,
-    "bytesScanned": 8521163,
+    "filesScanned": 370,
+    "bytesScanned": 8544146,
     "criticalHashes": {
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
       ".github/workflows/commit-identity-privacy-guard.yml": "5e97bd21f64fffc21b6c8354579224aa09ee8932d7c069e2ead73236e3361361",
@@ -55,7 +55,8 @@
       ".github/workflows/update-realised-cash-flow.yml": "9cc60e783e44a73b33a0a1fa9983d7c8b11d42a306dd1c8a8b0718d6d1ce6292",
       ".github/workflows/update-reporting.yml": "53bfa8be818c1e58b13f4660c5d9482dc0a6ad974db62e43901161a2ae2a66d2",
       ".github/workflows/update-runtime-owner-activation.yml": "aa8b4173da2462c1b0285d80e00afbed8b248d1d6b2d264ae066ac1eadea42db",
-      ".github/workflows/update-stable-capital.yml": "a2383747017ac6e6522c668a6187a85afab7a9e257e92fb0d2ee2b16fdb6b5b0",
+      ".github/workflows/update-stable-capital.yml": "2cab5cc5b960b633f7131e84d83a751036a73cdd6a60decc37910beb30d33954",
+      ".github/workflows/validate-embedded-yield-interval-history.yml": "cd34c8a29f25c5e5f2db3dd8052013e95cea3f3b8aa60cbbcb2547bb7feecb4a",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "246d6be079b34400a5cee907d0440abdff57ebc3b94764ecaf1ced556a0a061b",
       "index.html": "1378d080ce878189b39602216ca09ea0a3aab58c0e34e9c9e590dff835603189",
@@ -271,7 +272,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Fri, 14 Aug 2026 06:09:13 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -351,6 +352,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "bfeeb034e47bb60650c31da495027b4c11feddbeb3a98230415e5952c13e3bab",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-stable-capital.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-stable-capital.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "a2383747017ac6e6522c668a6187a85afab7a9e257e92fb0d2ee2b16fdb6b5b0",
+        "currentSha256": "2cab5cc5b960b633f7131e84d83a751036a73cdd6a60decc37910beb30d33954"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -683,10 +698,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 251,
+    "runCount": 252,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-17T04-05-33-174Z-60ce399e97.json",
-    "latestRecordHash": "df4eee3ec5c776af9e1985e42816b116ea1db1f3fff1c38fe2a6f3d67f15bc40",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-17T04-14-52-404Z-6dc1707eff.json",
+    "latestRecordHash": "4bb8754d288e6fe35361e692cd0608123923b516f6033c66883c1e6616b4e458",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
