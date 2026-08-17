@@ -1,0 +1,99 @@
+name: "Resolve Company #010 · Cypher New Mechanisms"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-discovery.mjs'
+      - 'onboarding/company-010-resolve.mjs'
+      - '.github/workflows/discover-company-010.yml'
+      - '.github/workflows/resolve-company-010.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: resolve-company-010-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate resolver sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-discovery.mjs
+          node --check onboarding/company-010-resolve.mjs
+          grep -F "const VERSION = '0.2-company-010-new-mechanism-measured-stakedao-asdcrv';" onboarding/company-010-resolve.mjs
+          grep -F "LDO_ARBITRUM" onboarding/company-010-resolve.mjs
+          grep -F "api.stakedao.org/api/strategies/curve/1.json" onboarding/company-010-resolve.mjs
+          grep -F "30D asdCRV share" onboarding/company-010-resolve.mjs
+      - name: Install bounded dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+      - name: Rebuild exact bounded discovery input
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COMPANY_010_DISCOVERY_OUTPUT: companies/company-010-discovery.json
+        run: node onboarding/company-010-discovery.mjs
+      - name: Resolve measured new mechanisms
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COMPANY_010_DISCOVERY_INPUT: companies/company-010-discovery.json
+          COMPANY_010_RESOLVE_OUTPUT: companies/company-010-resolve.json
+        run: node onboarding/company-010-resolve.mjs
+      - name: Validate resolver evidence boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-010-resolve.json','utf8'));
+          if(d.version!=='0.2-company-010-new-mechanism-measured-stakedao-asdcrv') throw new Error('version mismatch');
+          if(d.sourceDiscovery?.registry!=='010'||d.sourceDiscovery?.name!=='Cypher') throw new Error('source binding mismatch');
+          if(d.epistemicBoundary?.debankIsCanonical!==false) throw new Error('DeBank must stay hint-only');
+          if(d.epistemicBoundary?.onchainProbesAreCanonicalForExactState!==true) throw new Error('onchain exact-state boundary missing');
+          if(d.epistemicBoundary?.stakeDaoApiIsCanonicalForStrategyMetadata!==true) throw new Error('Stake DAO metadata boundary missing');
+          if(d.epistemicBoundary?.noFabricatedApr!==true) throw new Error('APR safety missing');
+          if(d.epistemicBoundary?.executionAuthority!=='none') throw new Error('execution authority changed');
+          if(!d.exactProbes?.projectX || !d.exactProbes?.concentrator || !d.exactProbes?.stakeDao || !d.exactProbes?.ldoArbitrum) throw new Error('exact probes missing');
+          if(!(Number(d.resolvedAssets?.CRV_FAMILY_CONCENTRATOR?.sdCRVUnderlying)>0)) throw new Error('expected measured Concentrator sdCRV underlying');
+          if(!(Number(d.resolvedAssets?.LDO?.quantity)>0)) throw new Error('expected measured Arbitrum LDO');
+          console.log('Company #010 resolver v0.2 PASS', {
+            LDO:d.resolvedAssets?.LDO?.quantity,
+            asdCRVShares:d.resolvedAssets?.CRV_FAMILY_CONCENTRATOR?.asdCRVShares,
+            sdCRVUnderlying:d.resolvedAssets?.CRV_FAMILY_CONCENTRATOR?.sdCRVUnderlying,
+            asdCRVReferenceAprPct:d.resolvedAssets?.CRV_FAMILY_CONCENTRATOR?.referenceAprPct,
+            stakeDaoStablePositions:d.resolutionState?.stakeDaoStable?.positions?.map(x=>({name:x.name,valueUsd:x.currentValueUsd,aprPct:x.referenceAprPct,wallet:x.walletAlias})),
+            projectXNfts:d.exactProbes?.projectX?.result?.wallets
+          });
+          NODE
+      - name: Upload resolver evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: company-010-cypher-resolve-${{ github.sha }}
+          path: |
+            companies/company-010-discovery.json
+            companies/company-010-resolve.json
+          if-no-files-found: error
+          retention-days: 7
