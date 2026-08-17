@@ -34,6 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check stable-capital/stable-capital-engine.mjs
+          node --check stable-capital/embedded-yield-interval-history.mjs
           node --check stable-capital/stable-index-bridge.mjs
           test -s companies/company-008-resolve.json
           test -s companies/stable-capital-data.json
@@ -97,6 +98,9 @@ jobs:
           FRAXTAL_RPC_URL_2: ${{ secrets.FRAXTAL_RPC_URL_2 }}
         run: node stable-capital/stable-capital-engine.mjs
 
+      - name: Build canonical Embedded Yield interval history
+        run: node stable-capital/embedded-yield-interval-history.mjs
+
       - name: Build Stable Companies Index + verified Performance
         run: node stable-capital/stable-index-bridge.mjs
 
@@ -118,6 +122,12 @@ jobs:
 
           if(l.version!=='0.4-flow-aware-recurring-checkpoints') throw new Error('unexpected Embedded Ledger version');
           if(l.company?.registry!=='008'||Object.keys(l.positions||{}).length!==10) throw new Error('Embedded Ledger regression');
+          if(l.intervalHistory?.schemaVersion!=='0.1-canonical-embedded-yield-interval-history') throw new Error('canonical interval history missing');
+          if(!Array.isArray(l.intervalHistory?.rows)||l.intervalHistory.rows.length<1) throw new Error('canonical interval rows missing');
+          if(!(Number(l.intervalHistory?.acceptedCount)>0)) throw new Error('no accepted canonical intervals');
+          for(const p of Object.values(l.positions||{})) {
+            if(!Array.isArray(p.intervalHistory)) throw new Error('position intervalHistory missing');
+          }
 
           if(i.version!=='0.2-stable-companies-index-strategy-performance') throw new Error('unexpected Stable Index version');
           if(i.methodologyVersion!=='0.2-separate-stable-universe-strategy-entry-performance') throw new Error('unexpected Stable Index methodology');
@@ -131,7 +141,8 @@ jobs:
           if(!Number.isFinite(Number(c.performance?.sinceInceptionPct))) throw new Error('Performance pct missing');
           if(i.source?.strategyEntryVersion!=='0.7-monetra-lido-capital-transfer-close') throw new Error('Strategy Entry provenance missing');
 
-          console.log('PERFORMANCE LIVE VALIDATION OK');
+          console.log('PERFORMANCE LIVE + CANONICAL INTERVAL HISTORY VALIDATION OK');
+          console.log('Accepted interval rows:',l.intervalHistory.acceptedCount);
           console.log('Invested:',c.investedUsd);
           console.log('Performance:',c.performance.sinceInceptionUsd,c.performance.sinceInceptionPct+'%');
           console.log('Performance as of:',c.performance.asOf);
@@ -176,4 +187,4 @@ jobs:
           test "$REMOTE_STABLE" = "0.4.1-monetra-recurring-stable-index-semantics"
           test "$REMOTE_INDEX" = "0.2-stable-companies-index-strategy-performance"
 
-          echo "Verified Monetra Invested + Performance published to origin/main."
+          echo "Verified Monetra Invested + Performance + canonical interval history published to origin/main."
