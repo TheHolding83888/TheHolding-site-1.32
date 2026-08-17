@@ -20,7 +20,7 @@ jobs:
           node-version: '22'
       - name: Build deterministic preview
         run: node onboarding/company-010-public-admission.mjs
-      - name: Report every Public Admission invariant
+      - name: Report failed Public Admission invariants
         run: |
           node - <<'NODE'
           const fs=require('fs');
@@ -41,7 +41,8 @@ jobs:
           add('guard','GMX embedded income',a.includes("eth.yield?.incomeMode!=='embedded-in-gm-nav'||btc.yield?.incomeMode!=='embedded-in-gm-nav'"));
           add('guard','CRV income modes',a.includes("conc.yield?.incomeMode!=='auto-compounded'||cvx.yield?.incomeMode!=='separate-claimable-rewards'"));
           add('guard','Pending state',a.includes("const pending=lang()==='ru'?'Ожидается':'Pending'"));
-          for(const c of checks)console.log(`${c.ok?'PASS':'FAIL'} | ${c.group} | ${c.label}`);
           const bad=checks.filter(x=>!x.ok);
-          if(bad.length)throw new Error('Public Admission diagnostic failures: '+bad.map(x=>x.label).join(' | '));
+          for(const x of bad)console.log(`::error title=Company 010 public invariant::${x.group} | ${x.label}`);
+          if(bad.length)process.exit(1);
+          console.log('All Company #010 Public Admission invariants PASS');
           NODE
