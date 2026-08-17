@@ -1,0 +1,88 @@
+name: "Verify Company #010 · Production Integration"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-production-state.mjs'
+      - 'intelligence/capital-state/capital-state.mjs'
+      - '.github/workflows/update-company-010-state.yml'
+      - '.github/workflows/update-capital-state.yml'
+      - '.github/workflows/verify-company-010-production-integration.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-company-010-production-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate candidate syntax
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-production-state.mjs
+          node --check intelligence/capital-state/capital-state.mjs
+      - name: Install bounded Company #010 dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+      - name: Rebuild reviewed Company #010 evidence and canonical production state
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: |
+          set -euo pipefail
+          node onboarding/company-010-discovery.mjs
+          node onboarding/company-010-resolve.mjs
+          node onboarding/company-010-deep-resolve.mjs
+          node onboarding/company-010-closure.mjs
+          node onboarding/company-010-closure-review.mjs
+          node onboarding/company-010-gmx-reader.mjs
+          node onboarding/company-010-production-state.mjs
+      - name: Rebuild established General Balance and Capital State v0.3
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: |
+          set -euo pipefail
+          node intelligence/capital-state/general-company-balance-sheet.mjs
+          node intelligence/capital-state/capital-state.mjs
+      - name: Independent admission review
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+          const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
+          const errors=[];
+          if(s.version!=='0.1-company-010-production-state') errors.push('Cypher state version');
+          if(s.company?.registry!=='010'||s.company?.name!=='Cypher') errors.push('Cypher identity');
+          if(s.capital?.totalCapitalComplete!==false||s.capital?.knownButUnboundCapitalMayExist!==true) errors.push('Cypher partial-total semantics');
+          if(!(Number(s.capital?.knownCapitalFloorUsd)>0)) errors.push('Cypher measured floor');
+          if(!s.gaps?.some(x=>x.id==='fluid-net-eth'&&x.severity==='blocking-total-capital')) errors.push('Fluid blocker');
+          if((s.capital?.positions||[]).filter(x=>String(x.assetId||'').startsWith('gmx-gm-')).length!==2) errors.push('GMX two-market valuation');
+          if((s.productivity?.positions||[]).filter(x=>String(x.id||'').startsWith('gmx-gm-')&&x.status==='measured'&&Number.isFinite(Number(x.referenceAprPct))).length!==2) errors.push('GMX APY proof');
+          if(c.version!=='0.3-capital-state'||c.status!=='partial') errors.push('Capital State v0.3 partial');
+          if(c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==9) errors.push('10 measured / 9 complete');
+          if(c.network?.networkTvlUsd!==null) errors.push('Network TVL not withheld');
+          if(!(Number(c.network?.measuredCapitalFloorUsd)>0)) errors.push('network measured floor');
+          const cypher=(c.companies||[]).find(x=>x.registry==='010');
+          if(!cypher||cypher.totalCapitalComplete!==false||cypher.measurementStatus!=='partial-total-capital-floor') errors.push('Capital State Cypher binding');
+          if(c.authority?.executionAuthority!=='none'||s.authority?.executionAuthority!=='none') errors.push('authority drift');
+          if(errors.length) throw new Error(`Company #010 production integration review failed: ${errors.join(', ')}`);
+          console.log('COMPANY #010 PRODUCTION INTEGRATION REVIEW GREEN', {knownCapitalFloorUsd:s.capital.knownCapitalFloorUsd,productivityCoverage:s.productivity.coverage,registryCompanyCount:c.network.registryCompanyCount,totalCapitalCompleteCompanyCount:c.network.totalCapitalCompleteCompanyCount,networkTvlUsd:c.network.networkTvlUsd,executionAuthority:'none'});
+          NODE

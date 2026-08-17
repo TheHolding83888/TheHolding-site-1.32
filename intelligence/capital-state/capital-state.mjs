@@ -2,272 +2,52 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
 
-const ROOT = process.cwd();
-const OUT = path.join(ROOT, 'intelligence/capital-state/capital-state.json');
-const PRODUCTIVITY = 'companies/productivity-data.json';
-const STABLE_INDEX = 'companies/stable-index-data.json';
-const GENERAL_BALANCE = 'intelligence/capital-state/general-company-balance-sheet.json';
+const ROOT=process.cwd();
+const OUT=path.join(ROOT,'intelligence/capital-state/capital-state.json');
+const PRODUCTIVITY='companies/productivity-data.json';
+const STABLE_INDEX='companies/stable-index-data.json';
+const GENERAL_BALANCE='intelligence/capital-state/general-company-balance-sheet.json';
+const CYPHER_STATE='companies/company-010-production-state.json';
+const REGISTRY=[['001','05081966.eth'],['002','YieldRing.eth'],['003','dinaz.eth'],['004','defitea.eth'],['005','0x5860...83CA8.eth'],['006','aerocvxyb.eth'],['007',"Rook's portfolio"],['008','Monetra.eth'],['009','1milliondollar.eth'],['010','Cypher']];
+const readJson=rel=>JSON.parse(fs.readFileSync(path.join(ROOT,rel),'utf8'));
+const sha256File=rel=>crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT,rel))).digest('hex');
+const round=(n,d=6)=>Number.isFinite(Number(n))?Number(Number(n).toFixed(d)):null;
+const isoMax=values=>{const v=values.filter(Boolean).filter(x=>Number.isFinite(Date.parse(x)));return v.length?v.sort((a,b)=>Date.parse(b)-Date.parse(a))[0]:null};
+const zeroLayers=()=>({foundationUsd:0,productiveDividendUsd:0,stableReserveUsd:0,rwaUsd:0,ventureUsd:0,unclassifiedUsd:0});
 
-const REGISTRY = [
-  ['001', '05081966.eth'],
-  ['002', 'YieldRing.eth'],
-  ['003', 'dinaz.eth'],
-  ['004', 'defitea.eth'],
-  ['005', '0x5860...83CA8.eth'],
-  ['006', 'aerocvxyb.eth'],
-  ['007', "Rook's portfolio"],
-  ['008', 'Monetra.eth'],
-  ['009', '1milliondollar.eth']
-];
+const productivity=readJson(PRODUCTIVITY),stableIndex=readJson(STABLE_INDEX),generalBalance=readJson(GENERAL_BALANCE),cypher=readJson(CYPHER_STATE);
+if(productivity.version!=='1.15')throw new Error(`unexpected Productivity version ${productivity.version}`);
+if(stableIndex.version!=='0.2-stable-companies-index-strategy-performance')throw new Error(`unexpected Stable Index version ${stableIndex.version}`);
+if(generalBalance.version!=='0.1-general-company-balance-sheet'||generalBalance.status!=='ok')throw new Error(`unexpected General Balance Sheet state ${generalBalance.version}/${generalBalance.status}`);
+if(cypher.version!=='0.1-company-010-production-state'||cypher.company?.registry!=='010'||cypher.company?.name!=='Cypher')throw new Error('Company #010 canonical production state unavailable');
+if(cypher.authority?.executionAuthority!=='none'||cypher.epistemicBoundary?.unknownIsNotZero!==true)throw new Error('Company #010 authority/epistemic boundary mismatch');
 
-function readJson(rel) {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
-}
-function sha256File(rel) {
-  return crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, rel))).digest('hex');
-}
-function round(n, digits = 6) {
-  if (!Number.isFinite(Number(n))) return null;
-  const p = 10 ** digits;
-  return Math.round(Number(n) * p) / p;
-}
-function isoMax(values) {
-  const valid = values.filter(Boolean).filter(v => Number.isFinite(Date.parse(v)));
-  if (!valid.length) return null;
-  return valid.sort((a, b) => Date.parse(b) - Date.parse(a))[0];
-}
+const productiveCompanies=productivity.companies||{};
+const stableCompanies=new Map((stableIndex.companies||[]).map(c=>[c.name,c]));
+const generalCompanies=new Map((generalBalance.companies||[]).map(c=>[c.name,c]));
+const companyStates=[];const layerTotals=zeroLayers();let productiveMeasuredExposureUsd=0,stableMeasuredUsd=0,totalMeasuredUsd=0;
 
-const productivity = readJson(PRODUCTIVITY);
-const stableIndex = readJson(STABLE_INDEX);
-const generalBalance = readJson(GENERAL_BALANCE);
-
-if (productivity.version !== '1.15') throw new Error(`unexpected Productivity version ${productivity.version}`);
-if (stableIndex.version !== '0.2-stable-companies-index-strategy-performance') throw new Error(`unexpected Stable Index version ${stableIndex.version}`);
-if (generalBalance.version !== '0.1-general-company-balance-sheet') throw new Error(`unexpected General Balance Sheet version ${generalBalance.version}`);
-if (generalBalance.status !== 'ok') throw new Error('general company balance sheet is not healthy');
-
-const productiveCompanies = productivity.companies || {};
-const stableCompanies = new Map((stableIndex.companies || []).map(c => [c.name, c]));
-const generalCompanies = new Map((generalBalance.companies || []).map(c => [c.name, c]));
-
-const companyStates = [];
-const layerTotals = {
-  foundationUsd: 0,
-  productiveDividendUsd: 0,
-  stableReserveUsd: 0,
-  rwaUsd: 0,
-  ventureUsd: 0,
-  unclassifiedUsd: 0
-};
-let productiveMeasuredExposureUsd = 0;
-let stableMeasuredUsd = 0;
-let totalMeasuredUsd = 0;
-
-for (const [registry, name] of REGISTRY) {
-  const p = productiveCompanies[name] || null;
-  const s = stableCompanies.get(name) || null;
-  const g = generalCompanies.get(name) || null;
-  let measuredCapitalUsd = null;
-  let capitalScope = 'unbound';
-  let totalCapitalComplete = false;
-  let layerValues = {
-    foundationUsd: null,
-    productiveDividendUsd: null,
-    stableReserveUsd: null,
-    rwaUsd: null,
-    ventureUsd: null,
-    unclassifiedUsd: null
-  };
-  let measuredPositions = [];
-  let epistemicNote = null;
-  let productiveExposureUsd = 0;
-
-  if (g) {
-    const total = Number(g.totalCapitalUsd);
-    if (!Number.isFinite(total) || total <= 0 || g.totalCapitalComplete !== true) throw new Error(`${name}: invalid general total-capital binding`);
-    measuredCapitalUsd = total;
-    totalCapitalComplete = true;
-    capitalScope = 'general-company-total-current-capital';
-    layerValues = { ...g.layerValues };
-    measuredPositions = (g.positions || []).map(pos => ({ sourceKind:'general-balance-sheet', ...pos }));
-    epistemicNote = g.epistemicNote || null;
-
-    const canonicalProductive = Number(p?.productiveValue);
-    const boundProductiveExposure = Number(g.productiveMeasuredExposureUsd);
-    if (!Number.isFinite(canonicalProductive) || !Number.isFinite(boundProductiveExposure)) throw new Error(`${name}: canonical Productive exposure unavailable`);
-    if (Math.abs(boundProductiveExposure - canonicalProductive) > 0.05) throw new Error(`${name}: productive exposure drift`);
-    productiveExposureUsd = canonicalProductive;
-    productiveMeasuredExposureUsd += canonicalProductive;
+for(const [registry,name] of REGISTRY){
+  const p=productiveCompanies[name]||null,s=stableCompanies.get(name)||null,g=generalCompanies.get(name)||null;
+  if(registry==='010'){
+    const measured=Number(cypher.capital?.knownCapitalFloorUsd);if(!Number.isFinite(measured)||measured<=0)throw new Error('Cypher measured capital floor unavailable');
+    const lv={foundationUsd:Number(cypher.capital?.layerValues?.foundation||0),productiveDividendUsd:Number(cypher.capital?.layerValues?.productiveDividend||0),stableReserveUsd:Number(cypher.capital?.layerValues?.stableReserve||0),rwaUsd:Number(cypher.capital?.layerValues?.rwa||0),ventureUsd:Number(cypher.capital?.layerValues?.venture||0),unclassifiedUsd:Number(cypher.capital?.layerValues?.unclassified||0)};
+    const sum=Object.values(lv).reduce((a,b)=>a+b,0);if(Math.abs(sum-measured)>0.05)throw new Error('Cypher known layers do not reconcile to measured floor');
+    totalMeasuredUsd+=measured;for(const k of Object.keys(layerTotals))layerTotals[k]+=lv[k];
+    const prod=Number(cypher.productivity?.knownProductiveValueUsd);if(Number.isFinite(prod)&&prod>=0){productiveMeasuredExposureUsd+=prod}
+    companyStates.push({registry,name,measurementStatus:'partial-total-capital-floor',measuredCapitalUsd:round(measured),productiveMeasuredExposureUsd:Number.isFinite(prod)?round(prod):null,capitalScope:'known-current-capital-floor-fluid-excluded',totalCapitalComplete:false,knownButUnboundCapitalMayExist:true,layerValues:Object.fromEntries(Object.entries(lv).map(([k,v])=>[k,round(v)])),coverage:{companyCapitalCoverage:null,reason:'Supported non-Fluid positions are valued and included once. Fluid net ETH remains intentionally unresolved, so a full company denominator is unknown and the measured amount is a floor, not total TVL.'},epistemicNote:'Fluid ETH loop is excluded until collateral, borrowing and net economic exposure are independently resolved. Unknown is not zero.',measuredPositions:(cypher.capital?.positions||[]).map(x=>({sourceKind:'company-010-production-state',assetId:x.assetId||null,symbol:x.symbol||null,units:x.quantity??null,priceUsd:x.priceUsd??null,valueUsd:x.valueUsd??null,primaryCapitalLayer:String(x.capitalLayer||'unclassified').replace('productiveDividend','productive-dividend'),productiveAttribute:(Number(x.productiveQuantity||0)>0||Number(x.components?.projectXPrincipal||0)>0||Number(x.components?.concentratorSdCrvUnderlying||0)>0||String(x.assetId||'').startsWith('gmx-gm-')),priceProvenance:x.priceSource||x.source||null,evidenceStatus:Number.isFinite(Number(x.valueUsd))?'established':'unknown',inclusion:'included-once-in-known-capital-floor'})),gaps:cypher.gaps||[]});
+    continue;
   }
-
-  if (s) {
-    const currentCapital = Number(s.currentCapitalUsd);
-    if (!Number.isFinite(currentCapital) || currentCapital <= 0) throw new Error(`${name}: stable currentCapitalUsd unavailable`);
-    measuredCapitalUsd = currentCapital;
-    stableMeasuredUsd += currentCapital;
-    totalCapitalComplete = true;
-    capitalScope = 'stable-company-total-current-capital';
-    layerValues = {
-      foundationUsd: 0,
-      productiveDividendUsd: 0,
-      stableReserveUsd: round(currentCapital),
-      rwaUsd: 0,
-      ventureUsd: 0,
-      unclassifiedUsd: 0
-    };
-    measuredPositions = (s.positions || []).map(pos => {
-      const value = Number(pos.marketValueUsd ?? pos.currentValueUsd ?? pos.valueUsd);
-      return {
-        sourceKind: 'stable-index',
-        positionId: pos.id || null,
-        protocol: pos.protocolFamily || pos.protocol || null,
-        chain: pos.chain || null,
-        asset: pos.asset || pos.underlyingSymbol || pos.terminalSymbol || null,
-        valueUsd: Number.isFinite(value) ? round(value) : null,
-        primaryCapitalLayer: 'stable-reserve',
-        productiveAttribute: true,
-        classificationRule: 'Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer',
-        classificationStatus: 'established',
-        doubleCountPolicy: 'position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once'
-      };
-    });
-  }
-
-  if (!totalCapitalComplete || !Number.isFinite(Number(measuredCapitalUsd))) throw new Error(`${name}: complete total-capital binding missing`);
-  totalMeasuredUsd += Number(measuredCapitalUsd);
-  for (const key of Object.keys(layerTotals)) {
-    const v = Number(layerValues[key] || 0);
-    if (!Number.isFinite(v) || v < 0) throw new Error(`${name}: invalid layer value ${key}`);
-    layerTotals[key] += v;
-  }
-
-  const layerSum = Object.values(layerValues).reduce((sum, value) => sum + Number(value || 0), 0);
-  if (Math.abs(layerSum - Number(measuredCapitalUsd)) > 0.05) throw new Error(`${name}: capital layers do not reconcile to company total`);
-
-  companyStates.push({
-    registry,
-    name,
-    measurementStatus: 'total-capital-complete',
-    measuredCapitalUsd: round(measuredCapitalUsd),
-    productiveMeasuredExposureUsd: round(productiveExposureUsd),
-    capitalScope,
-    totalCapitalComplete: true,
-    knownButUnboundCapitalMayExist: false,
-    layerValues: Object.fromEntries(Object.entries(layerValues).map(([k,v]) => [k, round(Number(v || 0))])),
-    coverage: {
-      companyCapitalCoverage: 1,
-      reason: g
-        ? 'Existing browser Company Book is normalized into the canonical machine-readable General Company Balance Sheet and its Productive exposure is reconciled against canonical Productivity without forcing that exposure into the Productive Dividend capital layer.'
-        : 'Canonical Stable Index covers the complete current strategy capital state.'
-    },
-    epistemicNote,
-    measuredPositions
-  });
+  let measuredCapitalUsd=null,capitalScope='unbound',layerValues=zeroLayers(),measuredPositions=[],epistemicNote=null,productiveExposureUsd=0;
+  if(g){const total=Number(g.totalCapitalUsd);if(!Number.isFinite(total)||total<=0||g.totalCapitalComplete!==true)throw new Error(`${name}: invalid general total-capital binding`);measuredCapitalUsd=total;capitalScope='general-company-total-current-capital';layerValues={...g.layerValues};measuredPositions=(g.positions||[]).map(pos=>({sourceKind:'general-balance-sheet',...pos}));epistemicNote=g.epistemicNote||null;const cp=Number(p?.productiveValue),bp=Number(g.productiveMeasuredExposureUsd);if(!Number.isFinite(cp)||!Number.isFinite(bp)||Math.abs(bp-cp)>0.05)throw new Error(`${name}: productive exposure drift`);productiveExposureUsd=cp;productiveMeasuredExposureUsd+=cp}
+  if(s){const current=Number(s.currentCapitalUsd);if(!Number.isFinite(current)||current<=0)throw new Error(`${name}: stable currentCapitalUsd unavailable`);measuredCapitalUsd=current;stableMeasuredUsd+=current;capitalScope='stable-company-total-current-capital';layerValues={...zeroLayers(),stableReserveUsd:round(current)};measuredPositions=(s.positions||[]).map(pos=>({sourceKind:'stable-index',positionId:pos.id||null,protocol:pos.protocolFamily||pos.protocol||null,chain:pos.chain||null,asset:pos.asset||pos.underlyingSymbol||pos.terminalSymbol||null,valueUsd:Number.isFinite(Number(pos.marketValueUsd??pos.currentValueUsd??pos.valueUsd))?round(Number(pos.marketValueUsd??pos.currentValueUsd??pos.valueUsd)):null,primaryCapitalLayer:'stable-reserve',productiveAttribute:true,classificationStatus:'established',doubleCountPolicy:'company aggregate uses stableIndex.currentCapitalUsd exactly once'}))}
+  if(!Number.isFinite(Number(measuredCapitalUsd)))throw new Error(`${name}: complete total-capital binding missing`);
+  totalMeasuredUsd+=Number(measuredCapitalUsd);for(const k of Object.keys(layerTotals)){const v=Number(layerValues[k]||0);if(!Number.isFinite(v)||v<0)throw new Error(`${name}: invalid layer ${k}`);layerTotals[k]+=v}
+  const sum=Object.values(layerValues).reduce((a,b)=>a+Number(b||0),0);if(Math.abs(sum-Number(measuredCapitalUsd))>0.05)throw new Error(`${name}: capital layers do not reconcile`);
+  companyStates.push({registry,name,measurementStatus:'total-capital-complete',measuredCapitalUsd:round(measuredCapitalUsd),productiveMeasuredExposureUsd:round(productiveExposureUsd),capitalScope,totalCapitalComplete:true,knownButUnboundCapitalMayExist:false,layerValues:Object.fromEntries(Object.entries(layerValues).map(([k,v])=>[k,round(Number(v||0))])),coverage:{companyCapitalCoverage:1,reason:g?'Canonical General Company Balance Sheet total with Productive reconciliation.':'Canonical Stable Index complete current strategy capital state.'},epistemicNote,measuredPositions});
 }
-
-for (const key of Object.keys(layerTotals)) layerTotals[key] = round(layerTotals[key]);
-const measuredCompanyCount = companyStates.length;
-const totalCapitalCompleteCompanyCount = companyStates.filter(c => c.totalCapitalComplete).length;
-const measuredCapitalFloorUsd = round(totalMeasuredUsd);
-const networkTvlUsd = totalCapitalCompleteCompanyCount === REGISTRY.length ? measuredCapitalFloorUsd : null;
-const layerWeight = key => networkTvlUsd > 0 ? round(layerTotals[key] / networkTvlUsd) : null;
-
-const output = {
-  version: '0.2-capital-state',
-  engineVersion: '0.2-complete-balance-sheet-capital-substrate',
-  generatedAt: new Date().toISOString(),
-  status: networkTvlUsd !== null ? 'ok' : 'partial',
-  purpose: 'Canonical machine-readable Capital State with complete current total-capital binding across the Registry, explicit primary capital layers, productive-exposure attributes, provenance, and fail-closed double-count protection.',
-  semantics: {
-    measuredCapitalFloorUsd: 'Sum of non-overlapping capital amounts proven by canonical machine-readable sources. With 9/9 complete bindings this equals Network TVL.',
-    networkTvlUsd: 'Populated only when every registered company has a complete, non-overlapping total-capital binding. Unknown is never treated as zero.',
-    capitalLayer: 'Primary economic role used for allocation reasoning. Productivity is an orthogonal earning attribute and does not automatically force capital into Productive Dividend.',
-    productiveMeasuredExposureUsd: 'Canonical Productivity exposure. It may include capital whose primary economic layer is Foundation or another layer, so it must not be added to Network TVL or primary layer totals as a separate copy.',
-    layerTaxonomy: ['foundation', 'productive-dividend', 'stable-reserve', 'rwa', 'venture', 'unclassified'],
-    unknownPolicy: 'unknown != zero; ambiguous classification remains unclassified rather than guessed',
-    doubleCountPolicy: 'wrapper/LP/underlying/productivity representations may contribute only through one canonical economic path to company/network capital aggregates'
-  },
-  authority: {
-    readOnly: true,
-    executionAuthority: 'none',
-    capitalExecution: false,
-    allocationAuthority: false,
-    policyMutationAuthority: false,
-    methodologyMutationAuthority: false
-  },
-  sourceState: {
-    generalBalanceSheet: {
-      file: GENERAL_BALANCE,
-      version: generalBalance.version,
-      generatedAt: generalBalance.generatedAt || null,
-      sha256: sha256File(GENERAL_BALANCE),
-      role: 'complete total-capital binding for eight general companies'
-    },
-    productivity: {
-      file: PRODUCTIVITY,
-      version: productivity.version,
-      generatedAt: productivity.generatedAt || null,
-      sha256: sha256File(PRODUCTIVITY),
-      role: 'productive-exposure reconciliation and productive current prices'
-    },
-    stableIndex: {
-      file: STABLE_INDEX,
-      version: stableIndex.version,
-      generatedAt: stableIndex.generatedAt || null,
-      sha256: sha256File(STABLE_INDEX),
-      role: 'complete current capital state for Stable Capital company Monetra.eth'
-    }
-  },
-  network: {
-    registryCompanyCount: REGISTRY.length,
-    measuredCompanyCount,
-    totalCapitalCompleteCompanyCount,
-    totalCapitalCoverage: round(totalCapitalCompleteCompanyCount / REGISTRY.length),
-    productiveMeasuredExposureUsd: round(productiveMeasuredExposureUsd),
-    primaryProductiveDividendCapitalUsd: round(layerTotals.productiveDividendUsd),
-    measuredStableCapitalUsd: round(stableMeasuredUsd),
-    measuredCapitalFloorUsd,
-    networkTvlUsd,
-    networkTvlStatus: networkTvlUsd !== null ? 'complete' : 'withheld-incomplete-total-capital-coverage',
-    indexedCoverageStatus: `${totalCapitalCompleteCompanyCount}/${REGISTRY.length} companies have canonical complete total-capital binding`,
-    layerValues: layerTotals,
-    layerWeights: {
-      foundation: layerWeight('foundationUsd'),
-      productiveDividend: layerWeight('productiveDividendUsd'),
-      stableReserve: layerWeight('stableReserveUsd'),
-      rwa: layerWeight('rwaUsd'),
-      venture: layerWeight('ventureUsd'),
-      unclassified: layerWeight('unclassifiedUsd')
-    },
-    latestUpstreamGeneratedAt: isoMax([generalBalance.generatedAt, productivity.generatedAt, stableIndex.generatedAt])
-  },
-  companies: companyStates,
-  gaps: [
-    ...(generalBalance.gaps || []),
-    {
-      id: 'rwa-and-venture-current-capital-coverage',
-      severity: 'non-blocking',
-      affects: ['rwa-weight', 'venture-weight'],
-      detail: 'Current Registry Company Books contain no proven current RWA or Venture capital rows. Their zero weights describe the present bound Company Books, not a permanent architectural target.'
-    }
-  ],
-  readiness: {
-    q12AllocationContext: networkTvlUsd !== null ? 'available-with-layer-provenance' : 'partial',
-    companyCurrentMeasuredCapital: 'complete-current-total-capital',
-    networkCapitalFloor: 'available',
-    networkTvl: networkTvlUsd !== null ? 'available' : 'blocked',
-    capitalLayerWeights: networkTvlUsd !== null ? 'available-with-unclassified-disclosure' : 'partial'
-  }
-};
-
-fs.mkdirSync(path.dirname(OUT), { recursive: true });
-fs.writeFileSync(OUT, JSON.stringify(output, null, 2) + '\n');
-console.log('Capital State v0.2 built', {
-  measuredCompanyCount,
-  totalCapitalCompleteCompanyCount,
-  networkTvlUsd: output.network.networkTvlUsd,
-  productiveMeasuredExposureUsd: output.network.productiveMeasuredExposureUsd,
-  primaryProductiveDividendCapitalUsd: output.network.primaryProductiveDividendCapitalUsd,
-  layerWeights: output.network.layerWeights,
-  executionAuthority: output.authority.executionAuthority
-});
+for(const k of Object.keys(layerTotals))layerTotals[k]=round(layerTotals[k]);
+const measuredCompanyCount=companyStates.filter(c=>Number.isFinite(Number(c.measuredCapitalUsd))).length,totalCapitalCompleteCompanyCount=companyStates.filter(c=>c.totalCapitalComplete).length,measuredCapitalFloorUsd=round(totalMeasuredUsd),networkTvlUsd=totalCapitalCompleteCompanyCount===REGISTRY.length?measuredCapitalFloorUsd:null;
+const measuredFloorLayerWeight=k=>measuredCapitalFloorUsd>0?round(layerTotals[k]/measuredCapitalFloorUsd):null;
+const output={version:'0.3-capital-state',engineVersion:'0.3-partial-registry-admission-capital-substrate',generatedAt:new Date().toISOString(),status:networkTvlUsd===null?'partial':'ok',purpose:'Canonical machine-readable Capital State across the Registry with complete totals where proven and measured capital floors where unresolved economic exposure remains.',semantics:{measuredCapitalFloorUsd:'Sum of non-overlapping current capital amounts proven by canonical sources. It is a lower bound when any registered company has unresolved capital.',networkTvlUsd:'Populated only when every registered company has a complete non-overlapping total-capital binding. With Cypher Fluid unresolved, Network TVL is withheld.',capitalLayer:'Primary economic role. Productivity remains orthogonal and is not added again as a second capital copy.',productiveMeasuredExposureUsd:'Measured productive exposure; never added to Network capital as a separate copy.',layerTaxonomy:['foundation','productive-dividend','stable-reserve','rwa','venture','unclassified'],unknownPolicy:'unknown != zero; partial != total',doubleCountPolicy:'wrapper/LP/underlying/productivity representations contribute through one canonical economic path only'},authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,allocationAuthority:false,policyMutationAuthority:false,methodologyMutationAuthority:false},sourceState:{generalBalanceSheet:{file:GENERAL_BALANCE,version:generalBalance.version,generatedAt:generalBalance.generatedAt||null,sha256:sha256File(GENERAL_BALANCE),role:'complete total-capital binding for eight established general companies'},productivity:{file:PRODUCTIVITY,version:productivity.version,generatedAt:productivity.generatedAt||null,sha256:sha256File(PRODUCTIVITY),role:'canonical Productivity for established routes'},stableIndex:{file:STABLE_INDEX,version:stableIndex.version,generatedAt:stableIndex.generatedAt||null,sha256:sha256File(STABLE_INDEX),role:'complete current capital state for Monetra.eth'},company010:{file:CYPHER_STATE,version:cypher.version,generatedAt:cypher.generatedAt||null,sha256:sha256File(CYPHER_STATE),role:'Cypher current measured capital floor, GMX valuation, route readiness and explicit unresolved Fluid boundary'}},network:{registryCompanyCount:REGISTRY.length,measuredCompanyCount,totalCapitalCompleteCompanyCount,totalCapitalCoverage:round(totalCapitalCompleteCompanyCount/REGISTRY.length),productiveMeasuredExposureUsd:round(productiveMeasuredExposureUsd),primaryProductiveDividendCapitalUsd:round(layerTotals.productiveDividendUsd),measuredStableCapitalUsd:round(stableMeasuredUsd),measuredCapitalFloorUsd,networkTvlUsd,networkTvlStatus:networkTvlUsd!==null?'complete':'withheld-incomplete-total-capital-coverage',indexedCoverageStatus:`${totalCapitalCompleteCompanyCount}/${REGISTRY.length} companies have canonical complete total-capital binding; ${measuredCompanyCount}/${REGISTRY.length} have measured current capital`,layerValues:layerTotals,layerWeights:networkTvlUsd?Object.fromEntries([['foundation','foundationUsd'],['productiveDividend','productiveDividendUsd'],['stableReserve','stableReserveUsd'],['rwa','rwaUsd'],['venture','ventureUsd'],['unclassified','unclassifiedUsd']].map(([k,v])=>[k,round(layerTotals[v]/networkTvlUsd)])):Object.fromEntries(['foundation','productiveDividend','stableReserve','rwa','venture','unclassified'].map(k=>[k,null])),measuredFloorLayerWeights:{foundation:measuredFloorLayerWeight('foundationUsd'),productiveDividend:measuredFloorLayerWeight('productiveDividendUsd'),stableReserve:measuredFloorLayerWeight('stableReserveUsd'),rwa:measuredFloorLayerWeight('rwaUsd'),venture:measuredFloorLayerWeight('ventureUsd'),unclassified:measuredFloorLayerWeight('unclassifiedUsd')},latestUpstreamGeneratedAt:isoMax([generalBalance.generatedAt,productivity.generatedAt,stableIndex.generatedAt,cypher.generatedAt])},companies:companyStates,gaps:[...(generalBalance.gaps||[]),...(cypher.gaps||[]).map(x=>({...x,company:'Cypher',registry:'010'})),{id:'rwa-and-venture-current-capital-coverage',severity:'non-blocking',affects:['rwa-weight','venture-weight'],detail:'Current bound Registry state contains no proven RWA or Venture capital rows; this is current evidence, not a permanent architectural target.'}],readiness:{q12AllocationContext:networkTvlUsd!==null?'available-with-layer-provenance':'partial-known-capital-floor-only',companyCurrentMeasuredCapital:'available-10-of-10-with-cypher-partial-total',networkCapitalFloor:'available',networkTvl:networkTvlUsd!==null?'available':'blocked-by-company-010-fluid-net-exposure',capitalLayerWeights:networkTvlUsd!==null?'available-with-unclassified-disclosure':'measured-floor-only'}};
+fs.mkdirSync(path.dirname(OUT),{recursive:true});fs.writeFileSync(OUT,JSON.stringify(output,null,2)+'\n');console.log('Capital State v0.3 built',{registryCompanyCount:REGISTRY.length,measuredCompanyCount,totalCapitalCompleteCompanyCount,measuredCapitalFloorUsd,networkTvlUsd,cypherStatus:companyStates.find(x=>x.registry==='010')?.measurementStatus,executionAuthority:output.authority.executionAuthority});
