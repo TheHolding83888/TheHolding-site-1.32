@@ -1,14 +1,14 @@
 {
-  "version": "0.2-capital-state",
-  "engineVersion": "0.2-complete-balance-sheet-capital-substrate",
-  "generatedAt": "2026-08-16T19:52:26.420Z",
-  "status": "ok",
-  "purpose": "Canonical machine-readable Capital State with complete current total-capital binding across the Registry, explicit primary capital layers, productive-exposure attributes, provenance, and fail-closed double-count protection.",
+  "version": "0.3-capital-state",
+  "engineVersion": "0.3-partial-registry-admission-capital-substrate",
+  "generatedAt": "2026-08-17T10:29:18.303Z",
+  "status": "partial",
+  "purpose": "Canonical machine-readable Capital State across the Registry with complete totals where proven and measured capital floors where unresolved economic exposure remains.",
   "semantics": {
-    "measuredCapitalFloorUsd": "Sum of non-overlapping capital amounts proven by canonical machine-readable sources. With 9/9 complete bindings this equals Network TVL.",
-    "networkTvlUsd": "Populated only when every registered company has a complete, non-overlapping total-capital binding. Unknown is never treated as zero.",
-    "capitalLayer": "Primary economic role used for allocation reasoning. Productivity is an orthogonal earning attribute and does not automatically force capital into Productive Dividend.",
-    "productiveMeasuredExposureUsd": "Canonical Productivity exposure. It may include capital whose primary economic layer is Foundation or another layer, so it must not be added to Network TVL or primary layer totals as a separate copy.",
+    "measuredCapitalFloorUsd": "Sum of non-overlapping current capital amounts proven by canonical sources. It is a lower bound when any registered company has unresolved capital.",
+    "networkTvlUsd": "Populated only when every registered company has a complete non-overlapping total-capital binding. With Cypher Fluid unresolved, Network TVL is withheld.",
+    "capitalLayer": "Primary economic role. Productivity remains orthogonal and is not added again as a second capital copy.",
+    "productiveMeasuredExposureUsd": "Measured productive exposure; never added to Network capital as a separate copy.",
     "layerTaxonomy": [
       "foundation",
       "productive-dividend",
@@ -17,8 +17,8 @@
       "venture",
       "unclassified"
     ],
-    "unknownPolicy": "unknown != zero; ambiguous classification remains unclassified rather than guessed",
-    "doubleCountPolicy": "wrapper/LP/underlying/productivity representations may contribute only through one canonical economic path to company/network capital aggregates"
+    "unknownPolicy": "unknown != zero; partial != total",
+    "doubleCountPolicy": "wrapper/LP/underlying/productivity representations contribute through one canonical economic path only"
   },
   "authority": {
     "readOnly": true,
@@ -32,54 +32,69 @@
     "generalBalanceSheet": {
       "file": "intelligence/capital-state/general-company-balance-sheet.json",
       "version": "0.1-general-company-balance-sheet",
-      "generatedAt": "2026-08-16T19:52:26.336Z",
-      "sha256": "4d52fa28ddbb04b4782a502416acdb0de951e2b924d65ae2f0efa9cb39c996d8",
-      "role": "complete total-capital binding for eight general companies"
+      "generatedAt": "2026-08-17T10:29:17.678Z",
+      "sha256": "d3125355f70e91d1e578b62669bc2ea3fe0004739c7168021f9046684a067610",
+      "role": "complete total-capital binding for eight established general companies"
     },
     "productivity": {
       "file": "companies/productivity-data.json",
       "version": "1.15",
       "generatedAt": "2026-08-16T04:50:50.379Z",
       "sha256": "662b28e20df7ef30fe40b54982714ef9199cd807c0ec54dddf4f56b8390547e1",
-      "role": "productive-exposure reconciliation and productive current prices"
+      "role": "canonical Productivity for established routes"
     },
     "stableIndex": {
       "file": "companies/stable-index-data.json",
       "version": "0.2-stable-companies-index-strategy-performance",
-      "generatedAt": "2026-08-16T05:59:41.376Z",
-      "sha256": "77ec3e6f61dbefdf724f4de0e99bdf89546a1154099c1f38ee0149002555b1ad",
-      "role": "complete current capital state for Stable Capital company Monetra.eth"
+      "generatedAt": "2026-08-17T06:04:45.502Z",
+      "sha256": "daa870d1ff3a8d91a77ac70020a010207882d19a9bdbaf25144b2267491627ba",
+      "role": "complete current capital state for Monetra.eth"
+    },
+    "company010": {
+      "file": "companies/company-010-production-state.json",
+      "version": "0.1-company-010-production-state",
+      "generatedAt": "2026-08-17T10:24:52.035Z",
+      "sha256": "548a15a9b8ba810f034a1b224eed717a39732c52144a5abba79e1feb7a5c0e0d",
+      "role": "Cypher current measured capital floor, GMX valuation, route readiness and explicit unresolved Fluid boundary"
     }
   },
   "network": {
-    "registryCompanyCount": 9,
-    "measuredCompanyCount": 9,
+    "registryCompanyCount": 10,
+    "measuredCompanyCount": 10,
     "totalCapitalCompleteCompanyCount": 9,
-    "totalCapitalCoverage": 1,
-    "productiveMeasuredExposureUsd": 28307.69,
-    "primaryProductiveDividendCapitalUsd": 27544.626681,
-    "measuredStableCapitalUsd": 100.182938,
-    "measuredCapitalFloorUsd": 50650.491766,
-    "networkTvlUsd": 50650.491766,
-    "networkTvlStatus": "complete",
-    "indexedCoverageStatus": "9/9 companies have canonical complete total-capital binding",
+    "totalCapitalCoverage": 0.9,
+    "productiveMeasuredExposureUsd": 29635.81,
+    "primaryProductiveDividendCapitalUsd": 28996.926681,
+    "measuredStableCapitalUsd": 100.214302,
+    "measuredCapitalFloorUsd": 52728.349591,
+    "networkTvlUsd": null,
+    "networkTvlStatus": "withheld-incomplete-total-capital-coverage",
+    "indexedCoverageStatus": "9/10 companies have canonical complete total-capital binding; 10/10 have measured current capital",
     "layerValues": {
-      "foundationUsd": 22941.151994,
-      "productiveDividendUsd": 27544.626681,
-      "stableReserveUsd": 100.182938,
+      "foundationUsd": 23565.33518,
+      "productiveDividendUsd": 28996.926681,
+      "stableReserveUsd": 100.214302,
       "rwaUsd": 0,
       "ventureUsd": 0,
-      "unclassifiedUsd": 64.530154
+      "unclassifiedUsd": 65.873428
     },
     "layerWeights": {
-      "foundation": 0.45293,
-      "productiveDividend": 0.543818,
-      "stableReserve": 0.001978,
+      "foundation": null,
+      "productiveDividend": null,
+      "stableReserve": null,
+      "rwa": null,
+      "venture": null,
+      "unclassified": null
+    },
+    "measuredFloorLayerWeights": {
+      "foundation": 0.44692,
+      "productiveDividend": 0.54993,
+      "stableReserve": 0.001901,
       "rwa": 0,
       "venture": 0,
-      "unclassified": 0.001274
+      "unclassified": 0.001249
     },
-    "latestUpstreamGeneratedAt": "2026-08-16T19:52:26.336Z"
+    "latestUpstreamGeneratedAt": "2026-08-17T10:29:17.678Z"
   },
   "companies": [
     {
@@ -101,7 +116,7 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Existing browser Company Book is normalized into the canonical machine-readable General Company Balance Sheet and its Productive exposure is reconciled against canonical Productivity without forcing that exposure into the Productive Dividend capital layer."
+        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
       },
       "epistemicNote": null,
       "measuredPositions": [
@@ -153,13 +168,13 @@
       "registry": "002",
       "name": "YieldRing.eth",
       "measurementStatus": "total-capital-complete",
-      "measuredCapitalUsd": 2695.60632,
+      "measuredCapitalUsd": 2701.30632,
       "productiveMeasuredExposureUsd": 802.7,
       "capitalScope": "general-company-total-current-capital",
       "totalCapitalComplete": true,
       "knownButUnboundCapitalMayExist": false,
       "layerValues": {
-        "foundationUsd": 1892.91,
+        "foundationUsd": 1898.61,
         "productiveDividendUsd": 802.69632,
         "stableReserveUsd": 0,
         "rwaUsd": 0,
@@ -168,7 +183,7 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Existing browser Company Book is normalized into the canonical machine-readable General Company Balance Sheet and its Productive exposure is reconciled against canonical Productivity without forcing that exposure into the Productive Dividend capital layer."
+        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
       },
       "epistemicNote": null,
       "measuredPositions": [
@@ -176,8 +191,8 @@
           "sourceKind": "general-balance-sheet",
           "assetId": "bitcoin",
           "units": 0.03,
-          "priceUsd": 63097,
-          "valueUsd": 1892.91,
+          "priceUsd": 63287,
+          "valueUsd": 1898.61,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "coingecko-live-simple-price",
@@ -249,7 +264,7 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Existing browser Company Book is normalized into the canonical machine-readable General Company Balance Sheet and its Productive exposure is reconciled against canonical Productivity without forcing that exposure into the Productive Dividend capital layer."
+        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
       },
       "epistemicNote": null,
       "measuredPositions": [
@@ -288,7 +303,7 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Existing browser Company Book is normalized into the canonical machine-readable General Company Balance Sheet and its Productive exposure is reconciled against canonical Productivity without forcing that exposure into the Productive Dividend capital layer."
+        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
       },
       "epistemicNote": null,
       "measuredPositions": [
@@ -452,13 +467,13 @@
       "registry": "005",
       "name": "0x5860...83CA8.eth",
       "measurementStatus": "total-capital-complete",
-      "measuredCapitalUsd": 13355.503708,
+      "measuredCapitalUsd": 13379.082708,
       "productiveMeasuredExposureUsd": 5525.17,
       "capitalScope": "general-company-total-current-capital",
       "totalCapitalComplete": true,
       "knownButUnboundCapitalMayExist": false,
       "layerValues": {
-        "foundationUsd": 7830.3377,
+        "foundationUsd": 7853.9167,
         "productiveDividendUsd": 5525.166008,
         "stableReserveUsd": 0,
         "rwaUsd": 0,
@@ -467,7 +482,7 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Existing browser Company Book is normalized into the canonical machine-readable General Company Balance Sheet and its Productive exposure is reconciled against canonical Productivity without forcing that exposure into the Productive Dividend capital layer."
+        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
       },
       "epistemicNote": null,
       "measuredPositions": [
@@ -475,8 +490,8 @@
           "sourceKind": "general-balance-sheet",
           "assetId": "bitcoin",
           "units": 0.1241,
-          "priceUsd": 63097,
-          "valueUsd": 7830.3377,
+          "priceUsd": 63287,
+          "valueUsd": 7853.9167,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "coingecko-live-simple-price",
@@ -548,7 +563,7 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Existing browser Company Book is normalized into the canonical machine-readable General Company Balance Sheet and its Productive exposure is reconciled against canonical Productivity without forcing that exposure into the Productive Dividend capital layer."
+        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
       },
       "epistemicNote": null,
       "measuredPositions": [
@@ -614,22 +629,22 @@
       "registry": "007",
       "name": "Rook's portfolio",
       "measurementStatus": "total-capital-complete",
-      "measuredCapitalUsd": 10984.478624,
+      "measuredCapitalUsd": 11012.11428,
       "productiveMeasuredExposureUsd": 3363.58,
       "capitalScope": "general-company-total-current-capital",
       "totalCapitalComplete": true,
       "knownButUnboundCapitalMayExist": false,
       "layerValues": {
-        "foundationUsd": 8319.416556,
+        "foundationUsd": 8345.708937,
         "productiveDividendUsd": 2600.531915,
         "stableReserveUsd": 0,
         "rwaUsd": 0,
         "ventureUsd": 0,
-        "unclassifiedUsd": 64.530154
+        "unclassifiedUsd": 65.873428
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Existing browser Company Book is normalized into the canonical machine-readable General Company Balance Sheet and its Productive exposure is reconciled against canonical Productivity without forcing that exposure into the Productive Dividend capital layer."
+        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
       },
       "epistemicNote": null,
       "measuredPositions": [
@@ -637,8 +652,8 @@
           "sourceKind": "general-balance-sheet",
           "assetId": "bitcoin",
           "units": 0.09949873,
-          "priceUsd": 63097,
-          "valueUsd": 6278.071367,
+          "priceUsd": 63287,
+          "valueUsd": 6296.976126,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "coingecko-live-simple-price",
@@ -651,8 +666,8 @@
           "sourceKind": "general-balance-sheet",
           "assetId": "ethereum",
           "units": 1.083229073375,
-          "priceUsd": 1884.5,
-          "valueUsd": 2041.345189,
+          "priceUsd": 1891.32,
+          "valueUsd": 2048.732811,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "coingecko-live-simple-price",
@@ -707,8 +722,8 @@
           "sourceKind": "general-balance-sheet",
           "assetId": "zksync",
           "units": 8573.908961603593,
-          "priceUsd": 0.00752634,
-          "valueUsd": 64.530154,
+          "priceUsd": 0.00768301,
+          "valueUsd": 65.873428,
           "primaryCapitalLayer": "unclassified",
           "productiveAttribute": false,
           "priceProvenance": "coingecko-live-simple-price",
@@ -749,7 +764,7 @@
       "registry": "008",
       "name": "Monetra.eth",
       "measurementStatus": "total-capital-complete",
-      "measuredCapitalUsd": 100.182938,
+      "measuredCapitalUsd": 100.214302,
       "productiveMeasuredExposureUsd": 0,
       "capitalScope": "stable-company-total-current-capital",
       "totalCapitalComplete": true,
@@ -757,14 +772,14 @@
       "layerValues": {
         "foundationUsd": 0,
         "productiveDividendUsd": 0,
-        "stableReserveUsd": 100.182938,
+        "stableReserveUsd": 100.214302,
         "rwaUsd": 0,
         "ventureUsd": 0,
         "unclassifiedUsd": 0
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Canonical Stable Index covers the complete current strategy capital state."
+        "reason": "Canonical Stable Index complete current strategy capital state."
       },
       "epistemicNote": null,
       "measuredPositions": [
@@ -774,12 +789,11 @@
           "protocol": "Aave",
           "chain": "Base",
           "asset": "USDC",
-          "valueUsd": 10.010357,
+          "valueUsd": 10.010416,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         },
         {
           "sourceKind": "stable-index",
@@ -787,12 +801,11 @@
           "protocol": "Curve",
           "chain": "Ethereum",
           "asset": "scrvUSD",
-          "valueUsd": 10.004005,
+          "valueUsd": 10.003891,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         },
         {
           "sourceKind": "stable-index",
@@ -800,12 +813,11 @@
           "protocol": "f(x) Protocol",
           "chain": "Ethereum",
           "asset": "fxSAVE",
-          "valueUsd": 10.057672,
+          "valueUsd": 10.061082,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         },
         {
           "sourceKind": "stable-index",
@@ -813,12 +825,11 @@
           "protocol": "Inverse",
           "chain": "Ethereum",
           "asset": "sDOLA",
-          "valueUsd": 10.042428,
+          "valueUsd": 10.051638,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         },
         {
           "sourceKind": "stable-index",
@@ -826,12 +837,11 @@
           "protocol": "Sky",
           "chain": "Ethereum",
           "asset": "sUSDS",
-          "valueUsd": 10.034276,
+          "valueUsd": 10.035489,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         },
         {
           "sourceKind": "stable-index",
@@ -839,12 +849,11 @@
           "protocol": "Aave",
           "chain": "Ethereum",
           "asset": "sGho",
-          "valueUsd": 10.026643,
+          "valueUsd": 10.030076,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         },
         {
           "sourceKind": "stable-index",
@@ -852,12 +861,11 @@
           "protocol": "Yearn",
           "chain": "Ethereum",
           "asset": "ysyBOLD",
-          "valueUsd": 10.017223,
+          "valueUsd": 10.019132,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         },
         {
           "sourceKind": "stable-index",
@@ -865,12 +873,11 @@
           "protocol": "Lido",
           "chain": "Ethereum",
           "asset": "earnUSD",
-          "valueUsd": 9.997359,
+          "valueUsd": 10.00359,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         },
         {
           "sourceKind": "stable-index",
@@ -878,12 +885,11 @@
           "protocol": "Liquity",
           "chain": "Ethereum",
           "asset": "BOLD",
-          "valueUsd": 9.998354,
+          "valueUsd": 9.997668,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         },
         {
           "sourceKind": "stable-index",
@@ -891,12 +897,11 @@
           "protocol": "Frax",
           "chain": "Fraxtal",
           "asset": "sfrxUSD",
-          "valueUsd": 9.951522,
+          "valueUsd": 9.956754,
           "primaryCapitalLayer": "stable-reserve",
           "productiveAttribute": true,
-          "classificationRule": "Registry 008 is canonical Stable Capital universe; principal remains Stable Reserve while productivity is an attribute, not a second capital layer",
           "classificationStatus": "established",
-          "doubleCountPolicy": "position detail is descriptive; company aggregate uses stableIndex.currentCapitalUsd exactly once"
+          "doubleCountPolicy": "company aggregate uses stableIndex.currentCapitalUsd exactly once"
         }
       ]
     },
@@ -904,13 +909,13 @@
       "registry": "009",
       "name": "1milliondollar.eth",
       "measurementStatus": "total-capital-complete",
-      "measuredCapitalUsd": 5330.637744,
+      "measuredCapitalUsd": 5345.579549,
       "productiveMeasuredExposureUsd": 432.15,
       "capitalScope": "general-company-total-current-capital",
       "totalCapitalComplete": true,
       "knownButUnboundCapitalMayExist": false,
       "layerValues": {
-        "foundationUsd": 4898.487738,
+        "foundationUsd": 4913.429543,
         "productiveDividendUsd": 432.150006,
         "stableReserveUsd": 0,
         "rwaUsd": 0,
@@ -919,7 +924,7 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Existing browser Company Book is normalized into the canonical machine-readable General Company Balance Sheet and its Productive exposure is reconciled against canonical Productivity without forcing that exposure into the Productive Dividend capital layer."
+        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
       },
       "epistemicNote": "Total includes an explicitly disclosed owner-observed WETH component; provenance is preserved rather than silently upgraded to independently reproduced onchain evidence.",
       "measuredPositions": [
@@ -927,8 +932,8 @@
           "sourceKind": "general-balance-sheet",
           "assetId": "bitcoin",
           "units": 0.07264572,
-          "priceUsd": 63097,
-          "valueUsd": 4583.726995,
+          "priceUsd": 63287,
+          "valueUsd": 4597.529682,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "coingecko-live-simple-price",
@@ -941,8 +946,8 @@
           "sourceKind": "general-balance-sheet",
           "assetId": "ethereum",
           "units": 0.167026130614,
-          "priceUsd": 1884.5,
-          "valueUsd": 314.760743,
+          "priceUsd": 1891.32,
+          "valueUsd": 315.899861,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "coingecko-live-simple-price",
@@ -994,6 +999,181 @@
           "productivityOnly": false
         }
       ]
+    },
+    {
+      "registry": "010",
+      "name": "Cypher",
+      "measurementStatus": "partial-total-capital-floor",
+      "measuredCapitalUsd": 2005.97,
+      "productiveMeasuredExposureUsd": 1328.12,
+      "capitalScope": "known-current-capital-floor-fluid-excluded",
+      "totalCapitalComplete": false,
+      "knownButUnboundCapitalMayExist": true,
+      "layerValues": {
+        "foundationUsd": 553.67,
+        "productiveDividendUsd": 1452.3,
+        "stableReserveUsd": 0,
+        "rwaUsd": 0,
+        "ventureUsd": 0,
+        "unclassifiedUsd": 0
+      },
+      "coverage": {
+        "companyCapitalCoverage": null,
+        "reason": "Supported non-Fluid positions are valued and included once. Fluid net ETH remains intentionally unresolved, so a full company denominator is unknown and the measured amount is a floor, not total TVL."
+      },
+      "epistemicNote": "Fluid ETH loop is excluded until collateral, borrowing and net economic exposure are independently resolved. Unknown is not zero.",
+      "measuredPositions": [
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "bitcoin",
+          "symbol": "BTC",
+          "units": 0.00861475,
+          "priceUsd": 63269,
+          "valueUsd": 545.05,
+          "primaryCapitalLayer": "foundation",
+          "productiveAttribute": false,
+          "priceProvenance": "CoinGecko simple price",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "ethereum",
+          "symbol": "ETH",
+          "units": 0.004555980765,
+          "priceUsd": 1891.15,
+          "valueUsd": 8.62,
+          "primaryCapitalLayer": "foundation",
+          "productiveAttribute": false,
+          "priceProvenance": "CoinGecko simple price",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "hyperliquid",
+          "symbol": "HYPE",
+          "units": 3.137160792668,
+          "priceUsd": 59.17,
+          "valueUsd": 185.63,
+          "primaryCapitalLayer": "productive-dividend",
+          "productiveAttribute": true,
+          "priceProvenance": "CoinGecko simple price",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "convex-finance",
+          "symbol": "CVX",
+          "units": 210.322024662375,
+          "priceUsd": 1.61,
+          "valueUsd": 338.62,
+          "primaryCapitalLayer": "productive-dividend",
+          "productiveAttribute": true,
+          "priceProvenance": "CoinGecko simple price",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "curve-dao-token",
+          "symbol": "CRV",
+          "units": 1114.421457543693,
+          "priceUsd": 0.242614,
+          "valueUsd": 270.37,
+          "primaryCapitalLayer": "productive-dividend",
+          "productiveAttribute": true,
+          "priceProvenance": "CoinGecko simple price",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "aerodrome-finance",
+          "symbol": "AERO",
+          "units": 716.274089171168,
+          "priceUsd": 0.409863,
+          "valueUsd": 293.57,
+          "primaryCapitalLayer": "productive-dividend",
+          "productiveAttribute": true,
+          "priceProvenance": "CoinGecko simple price",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "lido-dao",
+          "symbol": "LDO",
+          "units": 372.830386493323,
+          "priceUsd": 0.303644,
+          "valueUsd": 113.21,
+          "primaryCapitalLayer": "productive-dividend",
+          "productiveAttribute": false,
+          "priceProvenance": "CoinGecko simple price",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "velodrome-finance",
+          "symbol": "VELO",
+          "units": 3329.368603727376,
+          "priceUsd": 0.01685223,
+          "valueUsd": 56.11,
+          "primaryCapitalLayer": "productive-dividend",
+          "productiveAttribute": true,
+          "priceProvenance": "CoinGecko simple price",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "gmx-gm-eth-usdc",
+          "symbol": "GM-ETH-USDC",
+          "units": 51.924349479019,
+          "priceUsd": 1.686854420186,
+          "valueUsd": 87.59,
+          "primaryCapitalLayer": "productive-dividend",
+          "productiveAttribute": true,
+          "priceProvenance": "official GMX Reader current market-token valuation",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "gmx-gm-btc-usdc",
+          "symbol": "GM-BTC-USDC",
+          "units": 48.432598162895,
+          "priceUsd": 2.213433235582,
+          "valueUsd": 107.2,
+          "primaryCapitalLayer": "productive-dividend",
+          "productiveAttribute": true,
+          "priceProvenance": "official GMX Reader current market-token valuation",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-known-capital-floor"
+        }
+      ],
+      "gaps": [
+        {
+          "id": "fluid-net-eth",
+          "severity": "blocking-total-capital",
+          "status": "explicitly-deferred",
+          "meaning": "Fluid ETH loop may contain economic capital but is excluded until deposited collateral, borrowed ETH and net exposure are independently resolved."
+        },
+        {
+          "id": "project-x-reference-apr",
+          "severity": "productivity",
+          "status": "warming",
+          "meaning": "Project X HYPE principal is measured; Reference APR is not yet reproducibly bound."
+        },
+        {
+          "id": "concentrator-reference-apr",
+          "severity": "productivity",
+          "status": "warming",
+          "meaning": "Concentrator sdCRV underlying CRV principal is measured; Reference APR is not yet reproducibly bound."
+        }
+      ]
     }
   ],
   "gaps": [
@@ -1014,20 +1194,44 @@
       "detail": "ZK is included in total capital but remains unclassified rather than being promoted into Foundation/Productive/RWA/Venture without a proven economic-layer rule."
     },
     {
+      "id": "fluid-net-eth",
+      "severity": "blocking-total-capital",
+      "status": "explicitly-deferred",
+      "meaning": "Fluid ETH loop may contain economic capital but is excluded until deposited collateral, borrowed ETH and net exposure are independently resolved.",
+      "company": "Cypher",
+      "registry": "010"
+    },
+    {
+      "id": "project-x-reference-apr",
+      "severity": "productivity",
+      "status": "warming",
+      "meaning": "Project X HYPE principal is measured; Reference APR is not yet reproducibly bound.",
+      "company": "Cypher",
+      "registry": "010"
+    },
+    {
+      "id": "concentrator-reference-apr",
+      "severity": "productivity",
+      "status": "warming",
+      "meaning": "Concentrator sdCRV underlying CRV principal is measured; Reference APR is not yet reproducibly bound.",
+      "company": "Cypher",
+      "registry": "010"
+    },
+    {
       "id": "rwa-and-venture-current-capital-coverage",
       "severity": "non-blocking",
       "affects": [
         "rwa-weight",
         "venture-weight"
       ],
-      "detail": "Current Registry Company Books contain no proven current RWA or Venture capital rows. Their zero weights describe the present bound Company Books, not a permanent architectural target."
+      "detail": "Current bound Registry state contains no proven RWA or Venture capital rows; this is current evidence, not a permanent architectural target."
     }
   ],
   "readiness": {
-    "q12AllocationContext": "available-with-layer-provenance",
-    "companyCurrentMeasuredCapital": "complete-current-total-capital",
+    "q12AllocationContext": "partial-known-capital-floor-only",
+    "companyCurrentMeasuredCapital": "available-10-of-10-with-cypher-partial-total",
     "networkCapitalFloor": "available",
-    "networkTvl": "available",
-    "capitalLayerWeights": "available-with-unclassified-disclosure"
+    "networkTvl": "blocked-by-company-010-fluid-net-exposure",
+    "capitalLayerWeights": "measured-floor-only"
   }
 }
