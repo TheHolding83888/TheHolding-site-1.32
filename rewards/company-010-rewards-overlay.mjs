@@ -5,57 +5,52 @@ import path from 'node:path';
 const ROOT=process.cwd();
 const DATA=process.env.REWARDS_DATA||path.join(ROOT,'companies/rewards-data.json');
 const STATE=process.env.COMPANY_010_STATE||path.join(ROOT,'companies/company-010-production-state.json');
-const VERSION='0.3.10';
-const COLLECTOR='0.3.10-company-010-stakedao-state-admission';
+const VERSION='0.3.11';
+const COLLECTOR='0.3.11-company-010-crv-strategy-admission';
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
 const finite=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x));
 const round=(x,d=8)=>finite(x)?Number(Number(x).toFixed(d)):null;
 
 const data=read(DATA),state=read(STATE);
-if(!['0.3.9','0.3.10'].includes(String(data.version)))throw new Error(`Rewards v0.3.9/v0.3.10 required, got ${data.version}`);
+if(!['0.3.9','0.3.10','0.3.11'].includes(String(data.version)))throw new Error(`Rewards v0.3.9-v0.3.11 required, got ${data.version}`);
 if(data.methodologyVersion!=='0.2.2-earned-inside-protocols-multiwallet')throw new Error('Rewards methodology mismatch');
-if(state?.version!=='0.3-company-010-production-state-stakedao-complete'||state?.company?.registry!=='010'||state?.company?.name!=='Cypher')throw new Error('complete Cypher canonical state required');
+if(state?.version!=='0.4-company-010-production-state-crv-strategies'||state?.company?.registry!=='010'||state?.company?.name!=='Cypher')throw new Error('CRV-strategy-complete Cypher canonical state required');
 if(state?.authority?.executionAuthority!=='none'||state?.epistemicBoundary?.unknownIsNotZero!==true)throw new Error('Cypher authority/epistemic boundary mismatch');
 
-const obs=(state.rewards?.observations||[]).find(x=>x.id==='stakedao-base-curve-4pool-crv');
-if(!obs||obs.status!=='measured'||obs.token!=='CRV'||!finite(obs.claimable)||Number(obs.claimable)<0)throw new Error('measured Stake DAO CRV observation required');
+const stakeObs=(state.rewards?.observations||[]).find(x=>x.id==='stakedao-base-curve-4pool-crv');
+if(!stakeObs||stakeObs.status!=='measured'||stakeObs.token!=='CRV'||!finite(stakeObs.claimable)||Number(stakeObs.claimable)<0)throw new Error('measured Stake DAO CRV observation required');
 const crvRow=(state.capital?.positions||[]).find(x=>x.assetId==='curve-dao-token'||x.symbol==='CRV');
 if(!crvRow||!finite(crvRow.priceUsd)||Number(crvRow.priceUsd)<=0)throw new Error('current CRV price required from canonical Cypher state');
+const crvStrategy=state.strategies?.crv;
+if(crvStrategy?.version!=='0.1-company-010-crv-strategy-intelligence'||crvStrategy.strategies?.length!==2)throw new Error('CRV strategy intelligence required');
+const conc=crvStrategy.strategies.find(x=>x.id==='concentrator-asdcrv');
+const cvx=crvStrategy.strategies.find(x=>x.id==='convex-staked-cvxcrv');
+if(conc?.yield?.publicStatus!=='Compounded'||conc?.yield?.claimableApplicable!==false)throw new Error('Concentrator compounded semantics missing');
+if(cvx?.yield?.publicStatus!=='Claimable'||cvx?.yield?.claimableApplicable!==true)throw new Error('Convex claimable semantics missing');
 const wallets=(state.company?.wallets||[]).map((w,i)=>({alias:w.alias||`Wallet ${i+1}`,ens:w.ens||null,address:w.address,resolution:'canonical-company-state',fallbackMatched:null}));
 if(!wallets.length)throw new Error('Cypher wallets unavailable');
-const amount=Number(obs.claimable),price=Number(crvRow.priceUsd),usd=round(amount*price,6);
-const reward={protocol:'Stake DAO',route:'stakedao-base-curve-4pool',chain:'Base',token:'0x8ee73c484a26e0a5df2ee2a4960b789967dd0415',symbol:'CRV',amountRaw:null,decimals:18,amount:round(amount,10),classification:'unclaimed',source:obs.source||'Stake DAO verified Accountant integral state on Base',usdValue:usd,priceUsd:round(price,8),priceMethod:'canonical-company-010-current-crv-price',details:{strategy:'Curve 4pool · USDC/USDbC/axlUSDC/crvUSD',vault:state.provenance?.stakeDaoBase?.vault||null,stateVersion:state.version,stateGeneratedAt:state.generatedAt,claimableMethod:obs.method||'Stake DAO Accountant integral',walletScope:'canonical Company #010 wallets'}};
+
+const rewards=[];
+const stakeAmount=Number(stakeObs.claimable),crvPrice=Number(crvRow.priceUsd),stakeUsd=round(stakeAmount*crvPrice,6);
+rewards.push({protocol:'Stake DAO',route:'stakedao-base-curve-4pool',chain:'Base',token:'0x8ee73c484a26e0a5df2ee2a4960b789967dd0415',symbol:'CRV',amountRaw:null,decimals:18,amount:round(stakeAmount,10),classification:'unclaimed',source:stakeObs.source||'Stake DAO verified Accountant integral state on Base',usdValue:stakeUsd,priceUsd:round(crvPrice,8),priceMethod:'canonical-company-010-current-crv-price',details:{strategy:'Curve 4pool · USDC/USDbC/axlUSDC/crvUSD',vault:state.provenance?.stakeDaoBase?.vault||null,stateVersion:state.version,stateGeneratedAt:state.generatedAt,claimableMethod:stakeObs.method||'Stake DAO Accountant integral',walletScope:'canonical Company #010 wallets'}});
+
+const cvxObs=(state.rewards?.observations||[]).filter(x=>x.route==='convex-staked-cvxcrv'&&x.status==='measured');
+for(const x of cvxObs){if(!finite(x.claimable)||Number(x.claimable)<0)throw new Error('invalid Convex cvxCRV claimable observation');rewards.push({protocol:'Convex',route:'convex-staked-cvxcrv',chain:'Ethereum',token:x.token||null,symbol:x.symbol||'Reward',amountRaw:null,decimals:null,amount:round(x.claimable,12),classification:'unclaimed',source:x.source||'Convex CvxCrvStakingWrapper earned(account) read-only simulation',usdValue:finite(x.usdValue)?round(x.usdValue,6):null,priceUsd:null,priceMethod:'canonical-company-010-crv-strategy-observation',details:{strategy:'staked cvxCRV',wallet:x.wallet||null,walletAlias:x.walletAlias||null,stateVersion:state.version,stateGeneratedAt:state.generatedAt,referenceAprPct:cvx.yield.referenceAprPct,referenceAprStatus:cvx.yield.status,rewardState:'Claimable'}})}
+if(!(Number(cvx.principal?.cvxCRV)>0))throw new Error('Convex cvxCRV principal missing');
 
 const sources=[
-  {protocol:'Stake DAO',route:'stakedao-base-curve-4pool',status:'ok',chain:'Base',metric:'Stake DAO Accountant claimable CRV',note:'Current CRV accrued inside the Stake DAO strategy is measured from the canonical Company #010 state backed by verified Accountant integral accounting.',details:{stateVersion:state.version,rewardCount:1}},
-  {protocol:'Aerodrome',route:'aerodrome-ve',status:'warming',chain:'Base',metric:'existing global direct veAERO reward collector',note:'Cypher route is proven present, but this overlay does not fabricate a reward amount before the mature global route collector is bound to Company #010.',details:{walletAlias:'Wallet 2',unknownIsNotZero:true}},
-  {protocol:'Velodrome',route:'velodrome-ve-direct',status:'warming',chain:'Optimism',metric:'existing global direct veVELO reward collector',note:'Cypher route is proven present, but this overlay does not fabricate a reward amount before the mature global route collector is bound to Company #010.',details:{walletAlias:'Wallet 2',unknownIsNotZero:true}},
-  {protocol:'Votium · The Union',route:'votium-union',status:'warming',chain:'Ethereum',metric:'member-level Votium/Union accrued rewards',note:'Cypher vlCVX route is known; current claimable amount remains unresolved in this global snapshot and is not treated as zero.',details:{walletAlias:'Wallet 2',unknownIsNotZero:true}}
+  {protocol:'Stake DAO',route:'stakedao-base-curve-4pool',status:'ok',chain:'Base',metric:'Stake DAO Accountant claimable CRV',note:'Current CRV accrued inside the Stake DAO strategy is measured from canonical Company #010 state.',details:{stateVersion:state.version,rewardCount:1,rewardState:'Claimable'}},
+  {protocol:'Convex',route:'convex-staked-cvxcrv',status:'ok',chain:'Ethereum',metric:'CvxCrvStakingWrapper earned(account)',note:'staked cvxCRV is a separate principal position. Rewards returned by the official Convex wrapper are accrued and separately claimable; they are not principal and not realised cash flow.',details:{stateVersion:state.version,rewardCount:cvxObs.length,rewardState:'Claimable',referenceAprPct:cvx.yield.referenceAprPct,referenceAprStatus:cvx.yield.status}},
+  {protocol:'Aerodrome',route:'aerodrome-ve',status:'warming',chain:'Base',metric:'existing global direct veAERO reward collector',note:'Cypher route is proven present, but this CRV-focused admission intentionally leaves the existing Company #010 route binding unchanged.',details:{walletAlias:'Wallet 2',unknownIsNotZero:true}},
+  {protocol:'Velodrome',route:'velodrome-ve-direct',status:'warming',chain:'Optimism',metric:'existing global direct veVELO reward collector',note:'Cypher route is proven present, but this CRV-focused admission intentionally leaves the existing Company #010 route binding unchanged.',details:{walletAlias:'Wallet 2',unknownIsNotZero:true}},
+  {protocol:'Votium · The Union',route:'votium-union',status:'warming',chain:'Ethereum',metric:'member-level Votium/Union accrued rewards',note:'Cypher vlCVX route is known; current claimable amount remains unresolved and is not treated as zero.',details:{walletAlias:'Wallet 2',unknownIsNotZero:true}}
 ];
-const measuredSources=sources.filter(x=>x.status==='ok'||x.status==='partial').length;
-const completeSources=sources.filter(x=>x.status==='ok').length;
-const routeCount=sources.length;
-const unresolvedRoutes=sources.filter(x=>x.status!=='ok').map(x=>x.route);
-const cypher={status:'partial',ens:'Cypher',address:wallets[0].address,resolution:'canonical-company-state',fallbackMatched:null,wallets,totalUsd:usd,totalUsdIsComplete:false,knownAccruedUsd:usd,routeCoverage:round(measuredSources/routeCount,6),completeRouteCoverage:round(completeSources/routeCount,6),measuredRoutes:measuredSources,completeRoutes:completeSources,routeCount,pendingRoutes:routeCount-completeSources,unpricedRewards:0,rewards:[reward],rewardTokens:[{symbol:'CRV',token:reward.token,amount:round(amount,10),usdValue:usd,usdComplete:true}],sources,updatedAt:state.generatedAt||new Date().toISOString(),settlementStatus:'partial-known-accrual',settlement:{readinessStatus:'partial',deferred:true,method:'known-measured-rewards-plus-unbound-proven-routes',knownAccruedUsd:usd,totalUsd:usd,unpricedTokenCount:0,unpricedTokens:[],priceCoverage:1,totalUsdIsComplete:false,unknownPriceIsNotZero:true,unknownRouteIsNotZero:true,unresolvedRoutes}};
+const measuredSources=sources.filter(x=>x.status==='ok'||x.status==='partial').length,completeSources=sources.filter(x=>x.status==='ok').length,routeCount=sources.length,unresolvedRoutes=sources.filter(x=>x.status!=='ok').map(x=>x.route);
+const knownAccruedUsd=round(rewards.reduce((s,x)=>s+(finite(x.usdValue)?Number(x.usdValue):0),0),6),unpricedRewards=rewards.filter(x=>!finite(x.usdValue)).length;
+const tokenMap=new Map();for(const r of rewards){const k=`${r.token||r.symbol}|${r.symbol}`;if(!tokenMap.has(k))tokenMap.set(k,{symbol:r.symbol,token:r.token,amount:0,usdValue:0,usdComplete:true});const t=tokenMap.get(k);t.amount+=Number(r.amount)||0;if(finite(r.usdValue))t.usdValue+=Number(r.usdValue);else t.usdComplete=false}const rewardTokens=[...tokenMap.values()].map(x=>({...x,amount:round(x.amount,12),usdValue:x.usdComplete?round(x.usdValue,6):null}));
+const cypher={status:'partial',ens:'Cypher',address:wallets[0].address,resolution:'canonical-company-state',fallbackMatched:null,wallets,totalUsd:knownAccruedUsd,totalUsdIsComplete:false,knownAccruedUsd,routeCoverage:round(measuredSources/routeCount,6),completeRouteCoverage:round(completeSources/routeCount,6),measuredRoutes:measuredSources,completeRoutes:completeSources,routeCount,pendingRoutes:routeCount-completeSources,unpricedRewards,rewards,rewardTokens,sources,embeddedIncome:[{protocol:'Concentrator',route:'concentrator-asdcrv',state:'Compounded',claimableApplicable:false,referenceAprPct:conc.yield.referenceAprPct,referenceAprStatus:conc.yield.status,metric:conc.yield.metric,note:'Yield is automatically compounded into the asdCRV share / sdCRV assets and is not a separate claimable reward.'}],updatedAt:state.generatedAt||new Date().toISOString(),settlementStatus:'partial-known-accrual',settlement:{readinessStatus:'partial',deferred:true,method:'known-measured-rewards-plus-unbound-proven-routes',knownAccruedUsd,totalUsd:knownAccruedUsd,unpricedTokenCount:unpricedRewards,unpricedTokens:rewards.filter(x=>!finite(x.usdValue)).map(x=>x.symbol),priceCoverage:rewards.length?round((rewards.length-unpricedRewards)/rewards.length,6):1,totalUsdIsComplete:false,unknownPriceIsNotZero:true,unknownRouteIsNotZero:true,unresolvedRoutes}};
 
-data.companies=data.companies&&typeof data.companies==='object'&&!Array.isArray(data.companies)?data.companies:{};
-data.companies.Cypher=cypher;
-data.version=VERSION;data.collectorVersion=COLLECTOR;data.generatedAt=new Date().toISOString();data.date=data.generatedAt.slice(0,10);
-data.scope='protocol-side accrued rewards for The Holding companies and Defitea Fund, including state-backed Company #010 Stake DAO admission';
-data.methodology=data.methodology||{};
-data.methodology.company010='Cypher Stake DAO CRV is measured from the verified Stake DAO Accountant via canonical Company #010 state. Proven Aerodrome veAERO, Velodrome veVELO and Votium/Union routes remain explicit unresolved routes until their mature global collectors are bound; unknown route amounts are never treated as zero.';
-data.methodology.tvlTreatment='Accrued Rewards remain separate from Company TVL and Treasury cash.';
-data.engineErrors=data.engineErrors||{};
-delete data.engineErrors.Cypher;
-data.diagnostics=data.diagnostics||{};
-data.diagnostics.company010={status:'partial-route-binding',knownAccruedUsd:usd,measuredRoute:'stakedao-base-curve-4pool',unresolvedRoutes,note:'Known reward mechanisms awaiting global collector binding are diagnostics, not engine failures and not zero rewards.',executionAuthority:'none'};
-
-const history=Array.isArray(data.history)?data.history:[];
-let snap=history.find(x=>x?.date===data.date);
-if(!snap){snap={date:data.date,generatedAt:data.generatedAt,companies:{}};history.push(snap)}
-snap.generatedAt=data.generatedAt;snap.companies=snap.companies||{};snap.companies.Cypher={status:cypher.status,totalUsd:cypher.totalUsd,totalUsdIsComplete:false,rewardTokens:cypher.rewardTokens};
-data.history=history.slice(-400);
-
-data.summary={companyCount:Object.keys(data.companies).length,totalAccruedUsd:round(Object.values(data.companies).reduce((sum,c)=>sum+(finite(c?.totalUsd)?Number(c.totalUsd):0),0),6),completeCompanyCount:Object.values(data.companies).filter(c=>c?.totalUsdIsComplete===true).length,partialCompanyCount:Object.values(data.companies).filter(c=>c?.totalUsdIsComplete!==true).length,company010KnownAccruedUsd:usd,company010TotalUsdIsComplete:false,unknownRouteIsNotZero:true};
-fs.writeFileSync(DATA,JSON.stringify(data,null,2)+'\n');
-console.log(JSON.stringify({status:'PASS',version:VERSION,company:'Cypher',knownAccruedUsd:usd,claimableCrv:amount,crvPriceUsd:price,totalUsdIsComplete:false,completeRoutes:completeSources,routeCount,unresolvedRoutes,executionAuthority:'none'},null,2));
+data.companies=data.companies&&typeof data.companies==='object'&&!Array.isArray(data.companies)?data.companies:{};data.companies.Cypher=cypher;data.version=VERSION;data.collectorVersion=COLLECTOR;data.generatedAt=new Date().toISOString();data.date=data.generatedAt.slice(0,10);data.scope='protocol-side accrued rewards for The Holding companies and Defitea Fund, including Company #010 Stake DAO and staked cvxCRV claimables';data.methodology=data.methodology||{};data.methodology.company010='Cypher separates principal, claimable rewards and embedded/compounded income. Stake DAO and Convex staked cvxCRV claimables come from canonical measured state. Concentrator asdCRV is auto-compounded and therefore not represented as a fake zero claimable. Aerodrome, Velodrome and Votium route binding remains outside this CRV-focused change.';data.methodology.tvlTreatment='Accrued Rewards and embedded income remain separate from Company TVL principal and Treasury cash.';data.engineErrors=data.engineErrors||{};delete data.engineErrors.Cypher;data.diagnostics=data.diagnostics||{};data.diagnostics.company010={status:'partial-route-binding',knownAccruedUsd,measuredRoutes:['stakedao-base-curve-4pool','convex-staked-cvxcrv'],embeddedRoutes:['concentrator-asdcrv'],unresolvedRoutes,note:'Claimable, Compounded and unresolved routes are explicitly separated; unknown route amounts are not zero.',executionAuthority:'none'};
+const history=Array.isArray(data.history)?data.history:[];let snap=history.find(x=>x?.date===data.date);if(!snap){snap={date:data.date,generatedAt:data.generatedAt,companies:{}};history.push(snap)}snap.generatedAt=data.generatedAt;snap.companies=snap.companies||{};snap.companies.Cypher={status:cypher.status,totalUsd:cypher.totalUsd,totalUsdIsComplete:false,rewardTokens:cypher.rewardTokens};data.history=history.slice(-400);
+data.summary={companyCount:Object.keys(data.companies).length,totalAccruedUsd:round(Object.values(data.companies).reduce((sum,c)=>sum+(finite(c?.totalUsd)?Number(c.totalUsd):0),0),6),completeCompanyCount:Object.values(data.companies).filter(c=>c?.totalUsdIsComplete===true).length,partialCompanyCount:Object.values(data.companies).filter(c=>c?.totalUsdIsComplete!==true).length,company010KnownAccruedUsd:knownAccruedUsd,company010TotalUsdIsComplete:false,unknownRouteIsNotZero:true};
+fs.writeFileSync(DATA,JSON.stringify(data,null,2)+'\n');console.log(JSON.stringify({status:'PASS',version:VERSION,company:'Cypher',knownAccruedUsd,stakeDaoClaimableUsd:stakeUsd,convexClaimableCount:cvxObs.length,convexReferenceAprPct:cvx.yield.referenceAprPct,concentratorReferenceAprPct:conc.yield.referenceAprPct,concentratorState:'Compounded',convexState:'Claimable',totalUsdIsComplete:false,unresolvedRoutes,executionAuthority:'none'},null,2));
