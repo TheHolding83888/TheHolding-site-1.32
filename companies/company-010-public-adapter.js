@@ -1,4 +1,4 @@
-/* The Holding · Company #010 Cypher public adapter · v0.4-passport-surface-complete
+/* The Holding · Company #010 Cypher public adapter · v0.5-wrapper-aware-labels
  * Canonical source: /companies/company-010-production-state.json
  * Presentation: native Collection + General Index/Passport/Graph surfaces.
  * Presence and comparability are separate: Cypher is visible while weight stays Pending until total capital is complete.
@@ -74,16 +74,20 @@
     if(typeof COMPANY_PROTOCOLS!=='undefined')COMPANY_PROTOCOLS.Cypher=protocols();
     if(typeof COMPANY_REWARDS_SCOPE!=='undefined'&&COMPANY_REWARDS_SCOPE?.add)COMPANY_REWARDS_SCOPE.add('Cypher');
     if(typeof COMPANY_ASSET_LABELS!=='undefined'){
-      Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','gmx-gm-eth-usdc':'GM · ETH-USDC','gmx-gm-btc-usdc':'GM · BTC-USDC'});
+      Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','gmx-gm-eth-usdc':'GMX · ETH-USDC','gmx-gm-btc-usdc':'GMX · BTC-USDC'});
       for(const p of state.capital?.positions||[]){
         if(String(p.assetId||'').startsWith('hyperlend-'))COMPANY_ASSET_LABELS[p.assetId]=`HyperLend · ${p.underlyingSymbol||p.symbol||'Position'}`;
+        const wstEth=Number(p.components?.aaveArbitrumWstEth);
+        if(p.assetId==='ethereum'&&Number.isFinite(wstEth)&&wstEth>0)COMPANY_ASSET_LABELS['cypher-eth-equivalent']=`ETH (${wstEth.toFixed(6)} wstETH)`;
       }
     }
     if(typeof COMPANY_BOOK!=='undefined')COMPANY_BOOK.Cypher=(state.capital?.positions||[]).map(p=>{
       const underlying=String(p.underlyingSymbol||'').toUpperCase();
       const symbol=String(p.symbol||'');
       const entry=ENTRY[symbol]??ENTRY[underlying]??null;
-      return{id:p.assetId||symbol.toLowerCase(),qty:Number(p.quantity)||0,entry,costBasisUsd:entry!==null?(Number(p.quantity)||0)*entry:null,fixed:Number(p.priceUsd)||0};
+      const wstEth=Number(p.components?.aaveArbitrumWstEth);
+      const displayId=p.assetId==='ethereum'&&Number.isFinite(wstEth)&&wstEth>0?'cypher-eth-equivalent':(p.assetId||symbol.toLowerCase());
+      return{id:displayId,qty:Number(p.quantity)||0,entry,costBasisUsd:entry!==null?(Number(p.quantity)||0)*entry:null,fixed:Number(p.priceUsd)||0};
     });
   }
 
