@@ -1,0 +1,80 @@
+name: "Extend Company #010 · Cypher Strategy Proof"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-extended-proof.mjs'
+      - '.github/workflows/extend-company-010-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: extend-company-010-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  extend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate sources
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-extended-proof.mjs
+          node --check onboarding/company-010-closure-review.mjs
+      - name: Install bounded dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+      - name: Rebuild complete closure and extended proof
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node onboarding/company-010-discovery.mjs
+          node onboarding/company-010-resolve.mjs
+          node onboarding/company-010-deep-resolve.mjs
+          node onboarding/company-010-closure.mjs
+          node onboarding/company-010-closure-review.mjs
+          node onboarding/company-010-extended-proof.mjs
+      - name: Validate extended proof boundary
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-010-closure.json','utf8'));
+          if(d.version!=='0.4.1-company-010-economic-closure-reviewed') throw new Error('reviewed closure missing');
+          if(!d.extendedProof?.stakeDao||!d.extendedProof?.gmxWalletApi) throw new Error('extended proof missing');
+          if(d.epistemicBoundary?.executionAuthority!=='none'||d.epistemicBoundary?.noTransactions!==true) throw new Error('authority boundary changed');
+          const g=d.closure?.gmx?.positions||[];
+          if(g.length!==2||g.some(x=>String(x.referenceAprEvidence?.matchedKey||'').toLowerCase()!==String(x.token).toLowerCase())) throw new Error('exact GMX APR proof regressed');
+          console.log('Company #010 extended proof PASS', {
+            stakeDao:d.extendedProof.stakeDao,
+            gmxWalletApi:d.extendedProof.gmxWalletApi,
+            unresolved:d.unresolved
+          });
+          NODE
+      - name: Upload extended evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: company-010-cypher-extended-${{ github.sha }}
+          path: |
+            companies/company-010-discovery.json
+            companies/company-010-resolve.json
+            companies/company-010-deep-resolve.json
+            companies/company-010-closure.json
+          if-no-files-found: error
+          retention-days: 7
