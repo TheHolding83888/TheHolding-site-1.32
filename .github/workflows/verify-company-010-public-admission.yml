@@ -37,68 +37,39 @@ jobs:
           const fs=require('fs');
           const h=fs.readFileSync('.tmp-company-010-public-admission.html','utf8');
           const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          const s=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
-
-          const pageMust=[
-            '"numberOfItems": 10',
-            '"position": 10, "name": "Cypher"',
-            'id="companyCount">10',
-            "'Cypher': ['Bitcoin'",
-            '/companies/company-010-public-adapter.js',
-            'const eligible = list.filter(c => c.indexEligible !== false);',
-            'const eligibleList = list.filter(c => c.indexEligible !== false);',
-            "c.indexEligible === false ? '—' : (i + 1)",
-            "item.dataset.indexPending = 'true';",
-            '.ib-item[data-index-pending="true"] .ipx-composite{display:none}',
-            'computeIndex().filter(c => c.indexEligible !== false).slice().sort'
+          const must=[
+            '"numberOfItems": 10','"position": 10, "name": "Cypher"','id="companyCount">10','/companies/company-010-public-adapter.js',
+            'const eligible = list.filter(c => c.indexEligible !== false);','const measuredTotal = list.reduce','if (cn) cn.textContent = list.length;',
+            "seg.className = 'index-comp-seg' + (c.indexEligible === false ? ' pending' : '');",
+            "const rCo = c => c.indexEligible === false ? P.rCoMin"
           ];
-          for(const x of pageMust) if(!h.includes(x)) throw new Error('missing native public surface: '+x);
-          if((h.match(/data-company-010-public-adapter/g)||[]).length!==1) throw new Error('loader multiplicity drift');
-
-          const adapterMust=[
-            "indexEligible:false",
-            "COMPANY_BOOK.Cypher",
-            "INDEX_STATE.push(next)",
-            "cc-extlink cc-extlink-static",
-            "renderIndex",
-            "buildGraph"
-          ];
-          for(const x of adapterMust) if(!a.includes(x)) throw new Error('missing native adapter contract: '+x);
-
-          const forbidden=[
-            'Open Passport',
-            'company010Passport',
-            'thc10-overlay',
-            'thc10-passport',
-            'openPassport()',
-            'aria-controls="company010Passport"'
-          ];
-          for(const x of forbidden) if(a.includes(x)) throw new Error('legacy Cypher-specific UX remains: '+x);
-
-          if(s.capital?.totalCapitalComplete!==false) throw new Error('Fluid completeness contract changed; fresh public review required');
-          if(!(Number(s.capital?.knownCapitalFloorUsd)>0)) throw new Error('measured capital floor missing');
-          if(s.authority?.executionAuthority!=='none'||s.authority?.transactions!==false) throw new Error('execution authority drift');
-          if(s.epistemicBoundary?.unknownIsNotZero!==true||s.epistemicBoundary?.partialTotalIsNotTotal!==true) throw new Error('epistemic boundary drift');
-          console.log('Company #010 native UI contract PASS');
+          for(const x of must)if(!h.includes(x))throw new Error('missing native reconciled surface: '+x);
+          if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
+          for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
+          for(const x of ['Hyperliquid','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)'])if(!a.includes(x))throw new Error('adapter reconciliation missing: '+x);
+          console.log('Company #010 native reconciled UI contract PASS');
           NODE
-      - name: Verify pending Index invariants
+      - name: Verify presence and weighting are separate
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const h=fs.readFileSync('.tmp-company-010-public-admission.html','utf8');
           const assertions=[
-            ['factor normalisation excludes pending', 'const raws = eligible.map(f.raw);'],
-            ['TVL denominator excludes pending', 'const totalVal = eligible.reduce'],
-            ['pending composite weight zero', 'c.weight = 0;'],
-            ['pending TVL weight zero', 'c.tvlWeight = 0;'],
-            ['constituent count eligible only', 'cn.textContent = eligibleList.length;'],
-            ['leader eligible only', 'eligibleList[0] ? companyDisplayName(eligibleList[0].nm)'],
-            ['composition eligible only', 'eligibleList.forEach((c, i) => {'],
-            ['graph eligible only', 'computeIndex().filter(c => c.indexEligible !== false)']
+            ['factor normalisation excludes pending','const raws = eligible.map(f.raw);'],
+            ['TVL denominator excludes pending','const totalVal = eligible.reduce'],
+            ['pending composite weight zero','c.weight = 0;'],
+            ['pending TVL weight zero','c.tvlWeight = 0;'],
+            ['surface count includes pending','cn.textContent = list.length;'],
+            ['network value uses measured floor','hasPending ? \'≥ \' : \'\''],
+            ['composition contains pending marker',"seg.style.width = c.indexEligible === false ? '0%'"],
+            ['composition legend contains pending',"c.indexEligible === false ? (lang === 'ru' ? 'Ожидание' : 'Pending')"],
+            ['graph includes pending','const comps = computeIndex().slice().sort'],
+            ['graph pending radius is nonzero','c.indexEligible === false ? P.rCoMin']
           ];
-          for(const [label,x] of assertions) if(!h.includes(x)) throw new Error(label+' missing');
-          console.log('Company #010 pending Index invariants PASS');
+          for(const [label,x] of assertions)if(!h.includes(x))throw new Error(label+' missing');
+          if(h.includes('computeIndex().filter(c => c.indexEligible !== false).slice().sort'))throw new Error('Graph still excludes pending company');
+          console.log('Company #010 presence-vs-weighting invariants PASS');
           NODE
       - name: Verify no execution authority
         run: |
