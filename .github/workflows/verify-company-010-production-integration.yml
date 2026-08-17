@@ -57,12 +57,10 @@ jobs:
           node onboarding/company-010-gmx-reader.mjs
           node onboarding/company-010-reconciliation.mjs
           node onboarding/company-010-production-state.mjs
-      - name: Rebuild established General Balance and Capital State
-        env:
-          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+      - name: Build Capital State from canonical established balance plus reconciled Cypher
         run: |
           set -euo pipefail
-          node intelligence/capital-state/general-company-balance-sheet.mjs
+          node -e "const fs=require('fs');const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json'));if(g.version!=='0.1-general-company-balance-sheet'||g.status!=='ok'||g.companies?.length!==8)throw new Error('canonical established General Balance unavailable');"
           node intelligence/capital-state/capital-state.mjs
       - name: Independent reconciliation review
         run: |
@@ -93,5 +91,5 @@ jobs:
           if(!(Number(c.network?.measuredCapitalFloorUsd)>0))errors.push('network measured floor');
           if(c.authority?.executionAuthority!=='none'||s.authority?.executionAuthority!=='none'||r.authority?.executionAuthority!=='none')errors.push('authority drift');
           if(errors.length)throw new Error(`Company #010 reconciliation review failed: ${errors.join(', ')}`);
-          console.log('COMPANY #010 RECONCILIATION REVIEW GREEN',{knownCapitalFloorUsd:s.capital.knownCapitalFloorUsd,ethQuantity:eth.quantity,aaveWstEthEq:eth.components.aaveArbitrumWstEthEquivalentEth,hyperlendPositions:hl.length,cvxCRV:cvx,networkMeasuredFloor:c.network.measuredCapitalFloorUsd,executionAuthority:'none'});
+          console.log('COMPANY #010 RECONCILIATION REVIEW GREEN',{knownCapitalFloorUsd:s.capital.knownCapitalFloorUsd,ethQuantity:eth.quantity,aaveWstEthEq:eth.components.aaveArbitrumWstEthEquivalentEth,hyperlendPositions:hl.length,hyperlendValueUsd:r.hyperlend?.result?.totalSuppliedValueUsd??null,cvxCRV:cvx,networkMeasuredFloor:c.network.measuredCapitalFloorUsd,executionAuthority:'none'});
           NODE
