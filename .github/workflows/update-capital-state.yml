@@ -13,8 +13,6 @@ on:
       - 'companies/stable-index-data.json'
       - 'companies/company-010-production-state.json'
       - 'intelligence/capital-state/general-company-balance-sheet.mjs'
-      - 'intelligence/capital-state/capital-state.mjs'
-      - '.github/workflows/update-capital-state.yml'
 
 permissions:
   contents: write
@@ -30,11 +28,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
       - name: Validate engines
@@ -42,10 +40,15 @@ jobs:
           set -euo pipefail
           node --check intelligence/capital-state/general-company-balance-sheet.mjs
           node --check intelligence/capital-state/capital-state.mjs
-      - name: Rebuild General Balance Sheet
+      - name: Rebuild General Balance Sheet when its upstream changed
+        if: ${{ github.event_name != 'workflow_run' }}
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
         run: node intelligence/capital-state/general-company-balance-sheet.mjs
+      - name: Validate canonical established General Balance
+        if: ${{ github.event_name == 'workflow_run' }}
+        run: |
+          node -e "const fs=require('fs');const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json'));if(g.version!=='0.1-general-company-balance-sheet'||g.status!=='ok'||g.companies?.length!==8)throw new Error('canonical established General Balance unavailable');"
       - name: Build Capital State
         run: node intelligence/capital-state/capital-state.mjs
       - name: Validate partial Registry admission semantics
@@ -69,7 +72,7 @@ jobs:
           if(!cypher.gaps?.some(x=>x.id==='fluid-net-eth')) throw new Error('Cypher Fluid gap missing');
           if(c.readiness?.networkTvl!=='blocked-by-company-010-fluid-net-exposure') throw new Error('Network TVL blocker mismatch');
           if(c.authority?.executionAuthority!=='none') throw new Error('authority drift');
-          console.log('Capital State v0.3 partial Registry admission PASS', {registry:c.network.registryCompanyCount,measured:c.network.measuredCompanyCount,complete:c.network.totalCapitalCompleteCompanyCount,floor:c.network.measuredCapitalFloorUsd,networkTvl:c.network.networkTvlUsd});
+          console.log('Capital State v0.3 partial Registry admission PASS',{registry:c.network.registryCompanyCount,measured:c.network.measuredCompanyCount,complete:c.network.totalCapitalCompleteCompanyCount,floor:c.network.measuredCapitalFloorUsd,networkTvl:c.network.networkTvlUsd});
           NODE
       - name: Commit generated state safely
         run: |
