@@ -86,6 +86,18 @@ jobs:
           node onboarding/company-010-stakedao-overlay.mjs
           node onboarding/company-010-crv-strategy-overlay.mjs
           node onboarding/company-010-gmx-strategy-overlay.mjs
+      - name: Preserve established Company State schema
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='companies/company-010-production-state.json';
+          const d=JSON.parse(fs.readFileSync(p,'utf8'));
+          if(d.strategies?.crv?.version!=='0.1-company-010-crv-strategy-intelligence') throw new Error('CRV strategy overlay did not run');
+          d.version='0.3-company-010-production-state-stakedao-complete';
+          d.engineVersion='0.4-cypher-crv-strategy-intelligence';
+          fs.writeFileSync(p,JSON.stringify(d,null,2)+'\n');
+          NODE
       - name: Validate complete admission boundary
         run: |
           set -euo pipefail
@@ -93,7 +105,8 @@ jobs:
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
           const r=JSON.parse(fs.readFileSync('companies/company-010-reconciliation.json','utf8'));
-          if(d.version!=='0.4-company-010-production-state-crv-strategies') throw new Error('version mismatch');
+          if(d.version!=='0.3-company-010-production-state-stakedao-complete') throw new Error('version mismatch');
+          if(d.engineVersion!=='0.4-cypher-crv-strategy-intelligence') throw new Error('CRV engine version mismatch');
           if(r.version!=='0.2-company-010-capital-reconciliation-stakedao-base') throw new Error('reconciliation version mismatch');
           if(r.stakeDaoIntelligence?.version!=='0.2-stakedao-accountant-curve-base-yield') throw new Error('Stake DAO intelligence missing');
           if(d.company?.registry!=='010'||d.company?.name!=='Cypher') throw new Error('identity mismatch');
@@ -112,7 +125,6 @@ jobs:
           if(!prod||prod.status!=='measured'||!(Number(prod.referenceAprPct)>=0)) throw new Error('Stake DAO base yield not measured');
           if(r.stakeDaoBase?.result?.referenceAprSource!=='Curve official /v1/getBaseApys/base') throw new Error('Stake DAO yield provenance mismatch');
           if(r.stakeDaoBase?.result?.rewardAccounting?.source!=='Stake DAO verified Accountant integral state on Base') throw new Error('Stake DAO reward provenance mismatch');
-
           const crv=d.strategies?.crv;
           if(crv?.version!=='0.1-company-010-crv-strategy-intelligence'||crv.status!=='measured'||crv.strategies?.length!==2) throw new Error('CRV strategy intelligence missing');
           if(crv.accountingBoundary?.wrappersNotSummedAsCrvUnits!==true||crv.accountingBoundary?.noDoubleCount!==true) throw new Error('CRV accounting boundary drift');
@@ -128,7 +140,6 @@ jobs:
           const cvxCapital=(d.capital?.positions||[]).find(x=>x.assetId==='convex-staked-cvxcrv');
           if(!direct||!concCapital||!cvxCapital||!(Number(concCapital.valueUsd)>0)||!(Number(cvxCapital.valueUsd)>0)) throw new Error('split CRV capital rows missing');
           if(d.epistemicBoundary?.crvWrapperUnitsAreNotAdditiveCrv!==true||d.epistemicBoundary?.compoundedIncomeIsNotClaimableReward!==true||d.epistemicBoundary?.claimableRewardIsNotPrincipal!==true) throw new Error('CRV epistemic boundary missing');
-
           const g=d.strategies?.gmx;
           if(g?.version!=='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'||g.status!=='measured'||g.strategyCount!==2) throw new Error('GMX strategy intelligence missing');
           if(g.accountingBoundary?.underlyingPoolTokensAddedToReserveBalances!==false||g.accountingBoundary?.gmTokenNavCountedOnce!==true) throw new Error('GMX accounting boundary drift');
@@ -168,7 +179,7 @@ jobs:
               echo "Company #010 source contract changed during publication; fresh collection required."
               exit 1
             fi
-            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));if(d.version!=='0.4-company-010-production-state-crv-strategies'||d.capital?.totalCapitalComplete!==true||d.strategies?.crv?.version!=='0.1-company-010-crv-strategy-intelligence'||d.strategies?.gmx?.version!=='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'||d.authority?.executionAuthority!=='none')process.exit(1);"
+            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));if(d.version!=='0.3-company-010-production-state-stakedao-complete'||d.engineVersion!=='0.4-cypher-crv-strategy-intelligence'||d.capital?.totalCapitalComplete!==true||d.strategies?.crv?.version!=='0.1-company-010-crv-strategy-intelligence'||d.strategies?.gmx?.version!=='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'||d.authority?.executionAuthority!=='none')process.exit(1);"
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
           done
