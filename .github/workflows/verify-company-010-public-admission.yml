@@ -47,14 +47,17 @@ jobs:
           for(const x of must)if(!h.includes(x))throw new Error('missing native surface: '+x);
           if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
           for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
-          for(const x of ['v0.6-stakedao-complete','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','GMX · ETH-USDC','GMX · BTC-USDC','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC','USDbC','axlUSDC','crvUSD','gmxCompactLabel','GMX · ETH-USDC / BTC-USDC · APY','GMX 30D Fee APY','embedded-in-gm-nav'])if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
+          for(const x of ['v0.7-crv-strategy-income','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','GMX · ETH-USDC','GMX · BTC-USDC','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC','USDbC','axlUSDC','crvUSD','gmxCompactLabel','GMX · ETH-USDC / BTC-USDC · APY','GMX 30D Fee APY','embedded-in-gm-nav'])if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
+          for(const x of ['concentrator-asdcrv','convex-staked-cvxcrv','Concentrator · sdCRV','Convex · staked cvxCRV','ensureCrvStrategyIncome','Compounded','Claimable','Pending','auto-compounded','separate-claimable-rewards'])if(!a.includes(x))throw new Error('CRV public income contract missing: '+x);
           if(/\['Bitcoin'.*'Fluid'/.test(a)||a.includes("'Concentrator','Fluid'"))throw new Error('Fluid remains in Cypher protocol list');
           if(!a.includes("${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}"))throw new Error('exact-vs-floor Company TVL contract missing');
           if(!a.includes('net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined'))throw new Error('Combined TVL null guard missing');
           if(a.includes('GMX Strategy Mechanics')||a.includes('Pool mix · diagnostic')||a.includes('cy-gmx-mechanics'))throw new Error('GMX pool-composition table must remain hidden from Passport');
           if(!a.includes("eth.yield?.referenceMetric!=='GMX 30D Fee APY'||btc.yield?.referenceMetric!=='GMX 30D Fee APY'"))throw new Error('GMX compact APY source contract missing');
           if(!a.includes("eth.yield?.incomeMode!=='embedded-in-gm-nav'||btc.yield?.incomeMode!=='embedded-in-gm-nav'"))throw new Error('GMX embedded-income guard missing');
-          console.log('Company #010 native Passport + compact GMX APY contract PASS');
+          if(!a.includes("conc.yield?.incomeMode!=='auto-compounded'||cvx.yield?.incomeMode!=='separate-claimable-rewards'"))throw new Error('CRV income-mode fail-closed guard missing');
+          if(!a.includes("const pending=lang()==='ru'?'Ожидается':'Pending'"))throw new Error('Pending public state missing');
+          console.log('Company #010 native Passport + GMX + CRV income-state contract PASS');
           NODE
       - name: Verify presence and weighting are separate
         run: |
