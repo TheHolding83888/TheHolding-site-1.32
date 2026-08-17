@@ -83,6 +83,10 @@ if(!html.includes('.index-comp-seg.pending{min-width:3px;opacity:.58}')){
         .icl-item.pending .icl-w{color:var(--gold)}`,'pending composition style');
 }
 
+const oldPerf="econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : '—')";
+const pendingPerf="econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : (c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending') : '—'))";
+if(html.includes(oldPerf))replaceOnce(oldPerf,pendingPerf,'explicit pending Performance state');
+
 const required=[
   'const measuredTotal = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);',
   "if (cn) cn.textContent = list.length;",
@@ -90,14 +94,15 @@ const required=[
   "c.indexEligible === false ? (lang === 'ru' ? 'Ожидание' : 'Pending')",
   'const comps = computeIndex().slice().sort',
   "const rCo = c => c.indexEligible === false ? P.rCoMin",
-  '.index-comp-seg.pending{min-width:3px;opacity:.58}'
+  '.index-comp-seg.pending{min-width:3px;opacity:.58}',
+  "c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending')"
 ];
 for(const x of required)if(!html.includes(x))throw new Error('Missing reconciled General Index/Graph integration: '+x);
 
 if(mode==='write'){
   if(html!==original)fs.writeFileSync(pagePath,html);
-  console.log(JSON.stringify({status:'PASS',mode,changed:html!==original,page:'companies/index.html',ui:'native-general-passport',surfacePresence:'all-general-companies',weighting:'eligible-only',graphPendingPresence:true},null,2));
+  console.log(JSON.stringify({status:'PASS',mode,changed:html!==original,page:'companies/index.html',ui:'native-general-passport',surfacePresence:'all-general-companies',weighting:'eligible-only',graphPendingPresence:true,pendingPerformanceExplicit:true},null,2));
 }else{
   const out=path.join(ROOT,'.tmp-company-010-public-admission.html');fs.writeFileSync(out,html);
-  console.log(JSON.stringify({status:'PASS',mode,changed:html!==original,preview:out,surfacePresence:'all-general-companies',weighting:'eligible-only',graphPendingPresence:true},null,2));
+  console.log(JSON.stringify({status:'PASS',mode,changed:html!==original,preview:out,surfacePresence:'all-general-companies',weighting:'eligible-only',graphPendingPresence:true,pendingPerformanceExplicit:true},null,2));
 }

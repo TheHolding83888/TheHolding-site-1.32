@@ -1,4 +1,4 @@
-/* The Holding · Company #010 Cypher public adapter · v0.3-reconciled-native-ui
+/* The Holding · Company #010 Cypher public adapter · v0.4-passport-surface-complete
  * Canonical source: /companies/company-010-production-state.json
  * Presentation: native Collection + General Index/Passport/Graph surfaces.
  * Presence and comparability are separate: Cypher is visible while weight stays Pending until total capital is complete.
@@ -46,7 +46,8 @@
     const net=window.__TH_CAPITAL_STATE__?.network;
     const stat=document.getElementById('statTVL');
     if(!stat||!net)return;
-    if(Number.isFinite(Number(net.networkTvlUsd))){stat.textContent=money(net.networkTvlUsd);return;}
+    const hasCompleteNetworkTvl=net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined&&Number.isFinite(Number(net.networkTvlUsd));
+    if(hasCompleteNetworkTvl){stat.textContent=money(net.networkTvlUsd);return;}
     if(Number.isFinite(Number(net.measuredCapitalFloorUsd))&&Number(net.measuredCapitalFloorUsd)>0)stat.textContent='≥ '+money(net.measuredCapitalFloorUsd);
   }
 
@@ -71,7 +72,13 @@
   function installRuntimeBook(){
     if(!state)return;
     if(typeof COMPANY_PROTOCOLS!=='undefined')COMPANY_PROTOCOLS.Cypher=protocols();
-    if(typeof COMPANY_ASSET_LABELS!=='undefined')Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','gmx-gm-eth-usdc':'GM · ETH-USDC','gmx-gm-btc-usdc':'GM · BTC-USDC'});
+    if(typeof COMPANY_REWARDS_SCOPE!=='undefined'&&COMPANY_REWARDS_SCOPE?.add)COMPANY_REWARDS_SCOPE.add('Cypher');
+    if(typeof COMPANY_ASSET_LABELS!=='undefined'){
+      Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','gmx-gm-eth-usdc':'GM · ETH-USDC','gmx-gm-btc-usdc':'GM · BTC-USDC'});
+      for(const p of state.capital?.positions||[]){
+        if(String(p.assetId||'').startsWith('hyperlend-'))COMPANY_ASSET_LABELS[p.assetId]=`HyperLend · ${p.underlyingSymbol||p.symbol||'Position'}`;
+      }
+    }
     if(typeof COMPANY_BOOK!=='undefined')COMPANY_BOOK.Cypher=(state.capital?.positions||[]).map(p=>{
       const underlying=String(p.underlyingSymbol||'').toUpperCase();
       const symbol=String(p.symbol||'');
@@ -83,7 +90,7 @@
   function cypherIndexRecord(){
     const apr=currentReferenceApr(),coverage=Number(state.productivity?.coverage||0)*100;
     const complete=state.capital?.totalCapitalComplete===true;
-    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:0,pnl:0,pct:0,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'Layered Capital / Bitcoin Standard',ru:'Layered Capital / Bitcoin Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Measuring':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Измеряется':`${apr.toFixed(1)}% · покрыто ${coverage.toFixed(1)}%`},aprSource:'canonical-partial',aprObservationCount:0,pendingReason:complete?null:{en:'Fluid net ETH remains unresolved',ru:'Чистая ETH-экспозиция Fluid ещё не закрыта'}};
+    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:0,pnl:0,pct:0,performancePending:!complete,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'The Holding Standard',ru:'The Holding Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Measuring':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Измеряется':`${apr.toFixed(1)}% · покрыто ${coverage.toFixed(1)}%`},aprSource:'canonical-partial',aprObservationCount:0,pendingReason:complete?null:{en:'Fluid net ETH remains unresolved',ru:'Чистая ETH-экспозиция Fluid ещё не закрыта'}};
   }
 
   function installIndexRecord(){
