@@ -8,6 +8,7 @@ on:
       - 'onboarding/company-010-production-baseline.mjs'
       - 'onboarding/company-010-production-state.mjs'
       - 'onboarding/company-010-stakedao-overlay.mjs'
+      - 'onboarding/company-010-crv-strategy-overlay.mjs'
       - 'onboarding/company-010-gmx-strategy-overlay.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
       - 'rewards/company-010-rewards-overlay.mjs'
@@ -44,6 +45,7 @@ jobs:
           node --check onboarding/company-010-production-baseline.mjs
           node --check onboarding/company-010-production-state.mjs
           node --check onboarding/company-010-stakedao-overlay.mjs
+          node --check onboarding/company-010-crv-strategy-overlay.mjs
           node --check onboarding/company-010-gmx-strategy-overlay.mjs
           node --check productivity/company-010-productivity-overlay.mjs
           node --check rewards/company-010-rewards-overlay.mjs
@@ -73,13 +75,30 @@ jobs:
           node onboarding/company-010-stakedao-intelligence.mjs
           node onboarding/company-010-production-baseline.mjs
           node onboarding/company-010-stakedao-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('companies/company-010-resolve.json','utf8'));
+          const c=r.exactProbes?.concentrator;
+          if(r.version!=='0.2-company-010-new-mechanism-measured-stakedao-asdcrv'||!c?.result) throw new Error('canonical Concentrator resolver projection unavailable');
+          fs.writeFileSync('/tmp/company-010-crv-resolve.json',JSON.stringify({version:r.version,concentrator:c},null,2)+'\n');
+          NODE
+          COMPANY_010_RESOLVE_INPUT=/tmp/company-010-crv-resolve.json node onboarding/company-010-crv-strategy-overlay.mjs
           node onboarding/company-010-gmx-strategy-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='companies/company-010-production-state.json';
+          const d=JSON.parse(fs.readFileSync(p,'utf8'));
+          if(d.strategies?.crv?.version!=='0.1-company-010-crv-strategy-intelligence') throw new Error('CRV strategy overlay did not run');
+          d.version='0.3-company-010-production-state-stakedao-complete';
+          d.engineVersion='0.4-cypher-crv-strategy-intelligence';
+          fs.writeFileSync(p,JSON.stringify(d,null,2)+'\n');
+          NODE
       - name: Build Capital State with complete Cypher
         run: |
           set -euo pipefail
           node -e "const fs=require('fs');const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json'));if(g.version!=='0.1-general-company-balance-sheet'||g.status!=='ok'||g.companies?.length!==8)throw new Error('canonical established General Balance unavailable');"
           node intelligence/capital-state/capital-state.mjs
-      - name: Independent Stake DAO, GMX and network review
+      - name: Independent Stake DAO, GMX, CRV and network review
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -91,11 +110,26 @@ jobs:
           if(r.version!=='0.2-company-010-capital-reconciliation-stakedao-base')errors.push('reconciliation version');
           if(r.stakeDaoIntelligence?.version!=='0.2-stakedao-accountant-curve-base-yield')errors.push('Stake DAO intelligence');
           if(s.version!=='0.3-company-010-production-state-stakedao-complete')errors.push('Cypher state version');
+          if(s.engineVersion!=='0.4-cypher-crv-strategy-intelligence')errors.push('Cypher CRV engine version');
           if(s.company?.architecture!=='The Holding Standard')errors.push('architecture');
           if(s.capital?.totalCapitalComplete!==true||s.capital?.knownButUnboundCapitalMayExist!==false)errors.push('Cypher complete-total semantics');
           if(!(Number(s.capital?.totalCapitalUsd)>0))errors.push('Cypher total capital');
           const eth=(s.capital?.positions||[]).find(x=>x.symbol==='ETH');
           if(!(Number(eth?.components?.aaveArbitrumWstEthEquivalentEth)>0))errors.push('Aave Arbitrum wstETH missing');
+          const crv=s.strategies?.crv;
+          if(crv?.version!=='0.1-company-010-crv-strategy-intelligence'||crv.status!=='measured'||crv.strategies?.length!==2)errors.push('CRV strategy intelligence');
+          if(crv?.accountingBoundary?.wrappersNotSummedAsCrvUnits!==true||crv?.accountingBoundary?.noDoubleCount!==true)errors.push('CRV accounting boundary');
+          const conc=crv?.strategies?.find(x=>x.id==='concentrator-asdcrv');
+          const cvx=crv?.strategies?.find(x=>x.id==='convex-staked-cvxcrv');
+          if(!(Number(conc?.principal?.asdCRVShares)>0)||!(Number(conc?.principal?.sdCRVUnderlying)>0)||!(Number(conc?.principal?.navUsd)>0))errors.push('Concentrator principal');
+          if(conc?.yield?.incomeMode!=='auto-compounded'||conc?.yield?.publicStatus!=='Compounded'||conc?.yield?.claimableApplicable!==false)errors.push('Concentrator semantics');
+          if(!(Number(cvx?.principal?.cvxCRV)>0)||!(Number(cvx?.principal?.navUsd)>0))errors.push('staked cvxCRV principal');
+          if(cvx?.yield?.incomeMode!=='separate-claimable-rewards'||cvx?.yield?.publicStatus!=='Claimable'||cvx?.yield?.claimableApplicable!==true)errors.push('staked cvxCRV semantics');
+          const directCrv=(s.capital?.positions||[]).find(x=>x.assetId==='curve-dao-token');
+          const concCapital=(s.capital?.positions||[]).find(x=>x.assetId==='concentrator-asdcrv');
+          const cvxCapital=(s.capital?.positions||[]).find(x=>x.assetId==='convex-staked-cvxcrv');
+          if(!directCrv||!concCapital||!cvxCapital||!(Number(concCapital.valueUsd)>0)||!(Number(cvxCapital.valueUsd)>0))errors.push('split CRV capital');
+          if(s.epistemicBoundary?.crvWrapperUnitsAreNotAdditiveCrv!==true||s.epistemicBoundary?.compoundedIncomeIsNotClaimableReward!==true||s.epistemicBoundary?.claimableRewardIsNotPrincipal!==true)errors.push('CRV epistemic boundary');
           const gmxRows=(s.capital?.positions||[]).filter(x=>String(x.assetId||'').startsWith('gmx-gm-'));
           if(gmxRows.length!==2||gmxRows.some(x=>!(Number(x.valueUsd)>0)))errors.push('GMX two-market valuation');
           const gmx=s.strategies?.gmx;
@@ -131,15 +165,21 @@ jobs:
           if(c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10)errors.push('network not 10/10 complete');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')errors.push('Network TVL not restored');
           if(Math.abs(Number(c.network?.networkTvlUsd)-Number(c.network?.measuredCapitalFloorUsd))>0.05)errors.push('network exact/floor drift');
-          if(c.authority?.executionAuthority!=='none'||s.authority?.executionAuthority!=='none'||r.authority?.executionAuthority!=='none'||gmx?.authority?.executionAuthority!=='none')errors.push('authority drift');
+          if(c.authority?.executionAuthority!=='none'||s.authority?.executionAuthority!=='none'||r.authority?.executionAuthority!=='none'||gmx?.authority?.executionAuthority!=='none'||crv?.authority?.executionAuthority!=='none')errors.push('authority drift');
           if(errors.length)throw new Error(`Company #010 complete review failed: ${errors.join(', ')}`);
-          console.log('COMPANY #010 GMX + STAKE DAO COMPLETE REVIEW GREEN',{totalCapitalUsd:s.capital.totalCapitalUsd,gmxNavUsd:gmx.totalStrategyNavUsd,gmxMarkets:gmx.strategies.map(x=>({id:x.id,feeApyPct:x.yield.referenceAprPct,longWeight:x.poolExposureDiagnostic.long.grossTokenWeight,shortWeight:x.poolExposureDiagnostic.short.grossTokenWeight})),stakeDaoValueUsd:stake.valueUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoReferenceAprPct:prod.referenceAprPct,networkTvlUsd:c.network.networkTvlUsd,fluid:'out-of-scope',performance:s.performance.status,executionAuthority:'none'});
+          console.log('COMPANY #010 CRV + GMX + STAKE DAO COMPLETE REVIEW GREEN',{totalCapitalUsd:s.capital.totalCapitalUsd,concentratorUsd:conc.principal.navUsd,cvxCrvUsd:cvx.principal.navUsd,cvxCrvClaimableUsd:cvx.claimable.usd,gmxNavUsd:gmx.totalStrategyNavUsd,gmxMarkets:gmx.strategies.map(x=>({id:x.id,feeApyPct:x.yield.referenceAprPct,longWeight:x.poolExposureDiagnostic.long.grossTokenWeight,shortWeight:x.poolExposureDiagnostic.short.grossTokenWeight})),stakeDaoValueUsd:stake.valueUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoReferenceAprPct:prod.referenceAprPct,networkTvlUsd:c.network.networkTvlUsd,fluid:'out-of-scope',performance:s.performance.status,executionAuthority:'none'});
           NODE
-      - name: Verify global Productivity and Rewards admission
+      - name: Run Company #010 Productivity overlay
         run: |
           set -euo pipefail
           node productivity/company-010-productivity-overlay.mjs
+      - name: Run Company #010 Rewards overlay
+        run: |
+          set -euo pipefail
           node rewards/company-010-rewards-overlay.mjs
+      - name: Verify global Productivity and Rewards admission
+        run: |
+          set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
@@ -149,19 +189,23 @@ jobs:
           if(p.version!=='1.16'||p.collectorVersion!=='1.16-company-010-state-backed-productivity-admission')errors.push('Productivity v1.16');
           if(!pc||!(Number(pc.productiveValue)>0)||!(Number(pc.coveredProductiveValue)>0))errors.push('Cypher Productivity');
           if(!(Number(pc.coverage)>0&&Number(pc.coverage)<=1))errors.push('Productivity coverage');
-          for(const id of ['projectx_hype','concentrator_sdcrv']){
+          for(const id of ['projectx_hype','concentrator_asdcrv','convex_staked_cvxcrv']){
             const row=(pc?.breakdown||[]).find(x=>x.engineId===id);
             if(row&&row.apr===0)errors.push(id+' unknown collapsed to zero');
           }
           if(r.version!=='0.3.10'||r.collectorVersion!=='0.3.10-company-010-stakedao-state-admission')errors.push('Rewards v0.3.10');
           if(!rc||rc.totalUsdIsComplete!==false||rc.status!=='partial')errors.push('Cypher Rewards partial semantics');
-          const crv=(rc?.rewards||[]).find(x=>x.route==='stakedao-base-curve-4pool'&&x.symbol==='CRV');
-          if(!crv||!(Number(crv.amount)>=0)||!(Number(crv.usdValue)>=0))errors.push('Stake DAO CRV global reward');
+          const stakeCrv=(rc?.rewards||[]).find(x=>x.route==='stakedao-base-curve-4pool'&&x.symbol==='CRV');
+          if(!stakeCrv||!(Number(stakeCrv.amount)>=0)||!(Number(stakeCrv.usdValue)>=0))errors.push('Stake DAO CRV global reward');
+          const cvxSource=(rc?.sources||[]).find(x=>x.route==='convex-staked-cvxcrv');
+          if(!cvxSource||cvxSource.status!=='ok'||cvxSource.details?.rewardState!=='Claimable')errors.push('Convex staked cvxCRV route');
+          const concEmbedded=(rc?.embeddedIncome||[]).find(x=>x.route==='concentrator-asdcrv');
+          if(!concEmbedded||concEmbedded.state!=='Compounded'||concEmbedded.claimableApplicable!==false)errors.push('Concentrator compounded route');
           for(const route of ['aerodrome-ve','velodrome-ve-direct','votium-union']){
             const s=(rc?.sources||[]).find(x=>x.route===route);
             if(!s||s.status!=='warming'||s.details?.unknownIsNotZero!==true)errors.push('Rewards unknown route '+route);
           }
           if(rc?.settlement?.unknownRouteIsNotZero!==true||rc?.settlement?.totalUsdIsComplete!==false)errors.push('Rewards completion guard');
           if(errors.length)throw new Error('Global Company #010 admission failed: '+errors.join(', '));
-          console.log('COMPANY #010 GLOBAL PRODUCTIVITY + REWARDS GREEN',{productivityApr:pc.aprLatest,productivityCoverage:pc.coverage,rewardsKnownUsd:rc.totalUsd,claimableCrv:crv.amount,rewardsComplete:rc.totalUsdIsComplete});
+          console.log('COMPANY #010 GLOBAL PRODUCTIVITY + REWARDS GREEN',{productivityApr:pc.aprLatest,productivityCoverage:pc.coverage,rewardsKnownUsd:rc.totalUsd,stakeDaoClaimableCrv:stakeCrv.amount,convexClaimableCount:(rc.rewards||[]).filter(x=>x.route==='convex-staked-cvxcrv').length,rewardsComplete:rc.totalUsdIsComplete});
           NODE
