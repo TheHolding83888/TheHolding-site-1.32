@@ -6,6 +6,11 @@ on:
     # One synchronized The Holding snapshot per week.
     # Sunday 04:17 UTC avoids common top-of-hour cron congestion.
     - cron: '17 4 * * 0'
+  push:
+    branches: [main]
+    paths:
+      - 'productivity/company-010-productivity-overlay.mjs'
+      - '.github/workflows/update-productivity.yml'
 
 permissions:
   contents: write
@@ -81,6 +86,9 @@ jobs:
                 echo "Safe writer guard: rebase conflict; refusing to guess."
                 exit 1
               fi
+              node productivity/company-010-productivity-overlay.mjs
+              git add companies/productivity-data.json companies/productivity-source-report.json
+              git commit --amend --no-edit
               if git push origin HEAD:main; then
                 exit 0
               fi
