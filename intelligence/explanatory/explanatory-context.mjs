@@ -1,3 +1,4 @@
+// PR synchronize bootstrap: workflow already exists in head; no economic semantics changed.
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 
