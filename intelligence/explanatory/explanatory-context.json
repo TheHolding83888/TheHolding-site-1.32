@@ -1,0 +1,229 @@
+{
+  "version": "0.1-explanatory-context",
+  "engineVersion": "0.1-evidence-bound-reason-decomposition",
+  "generatedAt": "2026-08-17T04:05:32.529Z",
+  "status": "partial",
+  "purpose": "Explain proven metric differences through reproducible identities and bounded reason decomposition without turning association into causation.",
+  "semantics": {
+    "mechanismRule": "Use causal language only when the relationship follows from an explicit accounting or metric identity, or when a mechanism-specific source proves the causal link.",
+    "associationRule": "Observed co-movement, rank order, or contextual proximity is association/context only unless a mechanism is proven.",
+    "noNarrativeGuessing": "Do not invent market, protocol, governance, volume, fee, or user-behavior explanations when no canonical source binds them.",
+    "aprRule": "Reference APR is productive capacity, not realised return.",
+    "rankingRule": "A rank is explained by the metric definition and its measured inputs, not by a universal quality score."
+  },
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "allocationAuthority": false,
+    "recommendationAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "sourceState": {
+    "comparative": {
+      "file": "intelligence/comparative/comparative-intelligence.json",
+      "version": "0.1-comparative-intelligence",
+      "generatedAt": "2026-08-16T20:29:02.343Z",
+      "sha256": "64b07c8cca750c0baa7b5897efa7fa463c1192ce52e60d9b9e975c1898804f44"
+    },
+    "incomePerformance": {
+      "file": "intelligence/income-performance/income-performance.json",
+      "version": "0.1-income-performance-intelligence",
+      "generatedAt": "2026-08-16T20:09:29.134Z",
+      "sha256": "ce6cb86c9cd60d164bb5c3e650a167bf73be2f1511ac4acbdae04efed03cd6e3"
+    }
+  },
+  "explanations": {
+    "referenceProductivity": {
+      "question": "Why can the highest-APR company differ from the highest annualized-output company?",
+      "status": "answerable-by-metric-identity",
+      "highestReferenceApr": {
+        "registry": "007",
+        "name": "Rook's portfolio",
+        "totalCapitalUsd": 10984.478624,
+        "productiveCapitalUsd": 3363.58,
+        "productiveShareOfCompanyPct": 30.621208,
+        "referenceAprPct": 16.1467,
+        "annualizedReferenceOutputUsd": 543.10717186,
+        "identities": {
+          "annualizedReferenceOutput": "productiveCapitalUsd * referenceAprPct / 100",
+          "reproducedUsd": 543.10717186,
+          "productiveShare": "productiveCapitalUsd / totalCapitalUsd * 100",
+          "reproducedProductiveSharePct": 30.621208
+        }
+      },
+      "highestAnnualizedReferenceOutput": {
+        "registry": "006",
+        "name": "aerocvxyb.eth",
+        "totalCapitalUsd": 7692.523611,
+        "productiveCapitalUsd": 7692.52,
+        "productiveShareOfCompanyPct": 99.999953,
+        "referenceAprPct": 15.8513,
+        "annualizedReferenceOutputUsd": 1219.36442276,
+        "identities": {
+          "annualizedReferenceOutput": "productiveCapitalUsd * referenceAprPct / 100",
+          "reproducedUsd": 1219.36442276,
+          "productiveShare": "productiveCapitalUsd / totalCapitalUsd * 100",
+          "reproducedProductiveSharePct": 99.999953
+        }
+      },
+      "decomposition": {
+        "higherOutputCompany": "aerocvxyb.eth",
+        "higherAprCompany": "Rook's portfolio",
+        "outputGapUsd": 676.2572509,
+        "productiveCapitalMultipleVsTopAprCompany": 2.287004,
+        "aprDifferencePctPoints": -0.2954,
+        "explanation": "aerocvxyb.eth has lower Reference APR than Rook's portfolio but more productive capital. Because annualized Reference Output = productive capital × Reference APR, the larger productive-capital base more than offsets the APR gap."
+      },
+      "causalClass": "definition-mechanical"
+    },
+    "capitalScaleVsProductivity": {
+      "question": "Why is the largest company not necessarily the most productive by APR?",
+      "status": "answerable-by-separate-metric-definitions",
+      "largestCompany": {
+        "registry": "005",
+        "name": "0x5860...83CA8.eth",
+        "capitalUsd": 13355.503708,
+        "shareOfNetworkPct": 26.367965
+      },
+      "highestReferenceAprCompany": {
+        "registry": "007",
+        "name": "Rook's portfolio",
+        "referenceAprPct": 16.1467,
+        "productiveCapitalUsd": 3363.58
+      },
+      "explanation": "Current total capital measures scale. Reference APR measures annualized productive capacity on the productive subset. They use different denominators and answer different questions, so rank divergence is expected and is not evidence that one company is universally better.",
+      "causalClass": "definition-semantic"
+    },
+    "productiveCapitalScale": {
+      "question": "Which company currently contributes the largest productive-capital base?",
+      "status": "answerable",
+      "company": {
+        "registry": "004",
+        "name": "defitea.eth",
+        "productiveCapitalUsd": 9236.53,
+        "referenceAprPct": 12.4862,
+        "annualizedReferenceOutputUsd": 1153.29160886
+      },
+      "explanation": "This is a scale statement about measured productive capital, not a realised-performance or quality statement.",
+      "causalClass": "measurement-only"
+    },
+    "monetraLatestIncome": {
+      "question": "What explains Monetra latest measured Embedded Yield?",
+      "status": "answerable-for-latest-measured-interval-only",
+      "interval": {
+        "label": "latest measured checkpoint interval, not calendar-day income",
+        "incomeUsd": 0.01004892,
+        "stablePriceEffectUsd": 0.0068621,
+        "exactCalendarDay": false,
+        "measuredPositionCount": 8,
+        "totalPositionCount": 10
+      },
+      "contributors": [
+        {
+          "rank": 1,
+          "protocol": "Yearn V3",
+          "latestMeasuredIncomeUsd": 0.00210273,
+          "shareOfMeasuredIncomePct": 20.924935,
+          "interpretation": "share of the latest measured checkpoint-interval Embedded Yield only"
+        },
+        {
+          "rank": 2,
+          "protocol": "Inverse",
+          "latestMeasuredIncomeUsd": 0.00186773,
+          "shareOfMeasuredIncomePct": 18.586375,
+          "interpretation": "share of the latest measured checkpoint-interval Embedded Yield only"
+        },
+        {
+          "rank": 3,
+          "protocol": "f(x) Protocol",
+          "latestMeasuredIncomeUsd": 0.00135721,
+          "shareOfMeasuredIncomePct": 13.506029,
+          "interpretation": "share of the latest measured checkpoint-interval Embedded Yield only"
+        },
+        {
+          "rank": 4,
+          "protocol": "Frax Finance",
+          "latestMeasuredIncomeUsd": 0.00119373,
+          "shareOfMeasuredIncomePct": 11.879187,
+          "interpretation": "share of the latest measured checkpoint-interval Embedded Yield only"
+        },
+        {
+          "rank": 5,
+          "protocol": "Aave",
+          "latestMeasuredIncomeUsd": 0.00116871,
+          "shareOfMeasuredIncomePct": 11.630205,
+          "interpretation": "share of the latest measured checkpoint-interval Embedded Yield only"
+        },
+        {
+          "rank": 6,
+          "protocol": "Aave v3",
+          "latestMeasuredIncomeUsd": 0.0009747,
+          "shareOfMeasuredIncomePct": 9.69955,
+          "interpretation": "share of the latest measured checkpoint-interval Embedded Yield only"
+        },
+        {
+          "rank": 7,
+          "protocol": "Sky",
+          "latestMeasuredIncomeUsd": 0.00095206,
+          "shareOfMeasuredIncomePct": 9.474252,
+          "interpretation": "share of the latest measured checkpoint-interval Embedded Yield only"
+        },
+        {
+          "rank": 8,
+          "protocol": "Curve",
+          "latestMeasuredIncomeUsd": 0.00043205,
+          "shareOfMeasuredIncomePct": 4.299467,
+          "interpretation": "share of the latest measured checkpoint-interval Embedded Yield only"
+        }
+      ],
+      "concentration": {
+        "topProtocol": "Yearn V3",
+        "topProtocolIncomeUsd": 0.00210273,
+        "topProtocolSharePct": 20.924935,
+        "top3SharePct": 53.017339
+      },
+      "explanation": "Protocol contribution shares reproduce the latest measured Embedded Yield interval only. They do not explain MTD, calendar-day income, claimable rewards, or realised cash flow.",
+      "causalClass": "accounting-attribution"
+    },
+    "monetraPerformanceReconciliation": {
+      "question": "Why does Monetra Strategy Performance differ from net market P&L?",
+      "status": "answerable-by-reconciliation-identity",
+      "strategyPerformanceUsd": 0.32892938,
+      "strategyPerformancePct": 0.328935,
+      "stablePriceEffectUsd": -0.14432843,
+      "netMarketPnlUsd": 0.18460096,
+      "netMarketPnlPct": 0.184604,
+      "identity": "strategyPerformanceUsd + stablePriceEffectUsd = netMarketPnlUsd",
+      "reproducedNetMarketPnlUsd": 0.18460095,
+      "explanation": "Strategy Performance measures strategy-unit performance against verified entry principal. Net market P&L additionally includes current stable-price effects; the stable-price effect therefore reconciles the difference mechanically.",
+      "causalClass": "accounting-identity"
+    }
+  },
+  "answerability": {
+    "why-top-apr-differs-from-top-output": "answerable",
+    "why-largest-company-is-not-best-apr": "answerable-by-separate-metric-definitions",
+    "what-drove-monetra-latest-measured-income": "answerable-latest-interval-only",
+    "why-monetra-strategy-performance-differs-from-net-pnl": "answerable-by-reconciliation-identity",
+    "why-protocol-apr-changed": "blocked-no-canonical-driver-context",
+    "why-company-tvl-changed": "blocked-no-time-series-driver-decomposition",
+    "why-market-moved": "blocked-no-market-causal-evidence",
+    "mtd-monetra-protocol-driver-attribution": "blocked-no-canonical-interval-history",
+    "best-company-overall-explanation": "blocked-no-universal-score"
+  },
+  "nextEvidenceGaps": [
+    {
+      "id": "protocol-driver-context",
+      "need": "Canonical protocol-level context such as volume, fees, TVL, reward rate or mechanism-specific state before explaining APR changes.",
+      "rule": "Context may be reported as association unless the protocol mechanism proves causation."
+    },
+    {
+      "id": "capital-change-decomposition",
+      "need": "Comparable historical Capital State snapshots and explicit boundary-flow classification before explaining company TVL changes over time."
+    },
+    {
+      "id": "monetra-interval-history",
+      "need": "Canonical interval-by-interval Embedded Yield attribution before MTD protocol driver explanations are allowed."
+    }
+  ]
+}
