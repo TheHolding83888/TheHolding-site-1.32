@@ -1,41 +1,40 @@
 # The Holding — Autonomous Change Intelligence
 
-**Generated:** 2026-08-16T07:08:14.100Z
+**Generated:** 2026-08-17T07:30:56.276Z
 **Observer:** 0.2.1-deterministic-memory-vault-corrections
 
-## 21 material changes detected across The Holding, including 4 high-signal events.
+## 12 material changes detected across The Holding, including 1 high-signal event.
 
-- **liquity_lqty** — Liquity adapter liquity_lqty changed warming → ok.
-- **pendle_spendle** — Pendle adapter pendle_spendle changed warming → ok.
-- **defitea.eth** — defitea.eth Productivity status changed partial → ok.
-- **defitea.eth** — defitea.eth Productivity coverage moved 89.8% → 100.0%.
-- **Stable Companies Index** — Stable Index coverage state changed: current-full-coverage/true → last-full-coverage/false.
-- **0x5860...83CA8.eth** — 0x5860...83CA8.eth Reference APR moved 15.82% → 15.58% (-0.24 pp).
-- **1milliondollar.eth** — 1milliondollar.eth Reference APR moved 7.08% → 6.80% (-0.29 pp).
-- **aerocvxyb.eth** — aerocvxyb.eth Reference APR moved 16.13% → 15.85% (-0.27 pp).
-- **defitea.eth** — defitea.eth Reference APR moved 13.47% → 12.49% (-0.98 pp).
-- **YieldRing.eth** — YieldRing.eth Reference APR moved 14.34% → 15.00% (+0.66 pp).
-- **defitea.eth** — defitea.eth recorded a new daily reporting observation for 2026-08-16.
-- **defitea.eth** — defitea.eth current-month cash-flow/reference-income counter moved $23.10 → $26.25.
+- **Stable Companies Index** — Stable Index coverage state changed: last-full-coverage/false → current-full-coverage/true.
+- **defitea.eth** — defitea.eth recorded a new daily reporting observation for 2026-08-17.
+- **defitea.eth** — defitea.eth current-month cash-flow/reference-income counter moved $26.25 → $29.46.
+- **Monetra.eth** — Monetra.eth recorded a new daily reporting observation for 2026-08-17.
+- **Monetra.eth** — Monetra.eth current-month cash-flow/reference-income counter moved $0.05 → $0.06.
+- **Monetra.eth** — Monetra.eth current-month generated income moved $0.0480 → $0.0601.
+- **0x5860...83CA8.eth** — 0x5860...83CA8.eth accrued rewards moved $56.82 → $58.24 (+$1.42).
+- **1milliondollar.eth** — 1milliondollar.eth accrued rewards moved $24.59 → $25.33 (+$0.74).
+- **aerocvxyb.eth** — aerocvxyb.eth accrued rewards moved $97.49 → $98.37 (+$0.87).
+- **defitea.eth** — defitea.eth accrued rewards moved $100.41 → $102.23 (+$1.82).
+- **Rook's portfolio** — Rook's portfolio accrued rewards moved $149.65 → $154.17 (+$4.51).
+- **Stable Companies Index** — Stable Companies current capital moved $100.1829 → $100.2143 (+$0.0314).
 
 ## Watch next
 
 - **0x5860...83CA8.eth** — 0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.
 - **aerocvxyb.eth** — aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.
 - **defitea.eth** — defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.
-- **Stable Companies Index** — Stable Capital current coverage is not full; display APY is last-full-coverage.
 
 ## Current memory anchors
 
 - Defitea Reference APR: 12.4862% · coverage 100.0%.
-- Defitea current-month cash-flow/reference counter: $26.25.
-- Monetra Current Capital: $100.1829 · display Reference APY 4.434042% · claimable $0.0431.
-- Monetra current-month Generated Income: $0.0480.
+- Defitea current-month cash-flow/reference counter: $29.46.
+- Monetra Current Capital: $100.2143 · display Reference APY 4.493112% · claimable $0.0446.
+- Monetra current-month Generated Income: $0.0601.
 
 ## Long-term memory
 
-- Memory Vault: 6 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
-- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-16T07-08-14-100Z-9b1d3c476c.json`.
+- Memory Vault: 7 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
+- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-17T07-30-56-276Z-02841dceb1.json`.
 - Operational history remains compact; the Memory Vault has no configured lifetime cap.
 - Memory correction ledger: 1 append-only annotation; original Vault records remain immutable.
 
