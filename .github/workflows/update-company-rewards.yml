@@ -43,6 +43,16 @@ jobs:
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
         run: node rewards/company-rewards-engine.mjs
 
+      - name: Measure Company #010 veAERO and veVELO state
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node --check rewards/company-010-ve-rewards.mjs
+          node rewards/company-010-ve-rewards.mjs
+
       - name: Admit Company #010 Cypher rewards from canonical state
         run: |
           set -euo pipefail
@@ -53,20 +63,23 @@ jobs:
           const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
           const c=d.companies?.Cypher;
           if(d.version!=='0.3.10'||d.collectorVersion!=='0.3.10-company-010-stakedao-state-admission')throw new Error('Rewards v0.3.10 compatibility contract not produced');
-          if(d.diagnostics?.company010?.capability!=='crv-strategy-intelligence-0.1')throw new Error('CRV reward capability marker missing');
+          if(d.diagnostics?.company010?.capability!=='crv-and-ve-reward-semantics-0.2')throw new Error('Company #010 CRV + ve reward capability marker missing');
           if(!c||c.status!=='partial'||c.totalUsdIsComplete!==false)throw new Error('Cypher partial rewards semantics missing');
           const crv=(c.rewards||[]).find(x=>x.route==='stakedao-base-curve-4pool'&&x.symbol==='CRV');
           if(!crv||!(Number(crv.amount)>=0)||!(Number(crv.usdValue)>=0))throw new Error('Stake DAO CRV reward missing');
           const cvxSource=(c.sources||[]).find(x=>x.route==='convex-staked-cvxcrv');
           if(!cvxSource||cvxSource.status!=='ok'||cvxSource.details?.rewardState!=='Claimable')throw new Error('Convex staked cvxCRV Claimable source missing');
-          const embedded=(c.embeddedIncome||[]).find(x=>x.route==='concentrator-asdcrv');
-          if(!embedded||embedded.state!=='Compounded'||embedded.claimableApplicable!==false)throw new Error('Concentrator Compounded income state missing');
-          for(const route of ['aerodrome-ve','velodrome-ve-direct','votium-union']){
+          const conc=(c.embeddedIncome||[]).find(x=>x.route==='concentrator-asdcrv');
+          if(!conc||conc.state!=='Compounded'||conc.claimableApplicable!==false)throw new Error('Concentrator Compounded income state missing');
+          for(const route of ['aerodrome-ve','velodrome-ve-direct']){
             const s=(c.sources||[]).find(x=>x.route===route);
-            if(!s||s.status!=='warming'||s.details?.unknownIsNotZero!==true)throw new Error('Cypher unresolved route semantics missing: '+route);
+            if(!s||!['ok','partial'].includes(s.status)||!['Compounded','Claimable'].includes(s.details?.rewardState))throw new Error('Cypher measured ve route semantics missing: '+route);
+            if(s.details?.mode==='unknown')throw new Error('Cypher ve route custody mode unresolved: '+route);
           }
+          const votium=(c.sources||[]).find(x=>x.route==='votium-union');
+          if(!votium||votium.status!=='warming'||votium.details?.unknownIsNotZero!==true)throw new Error('Votium unresolved route semantics missing');
           if(c.settlement?.totalUsdIsComplete!==false||c.settlement?.unknownRouteIsNotZero!==true)throw new Error('Cypher rewards completion guard missing');
-          console.log('Rewards v0.3.10 + CRV intelligence PASS',{knownAccruedUsd:c.totalUsd,claimableCrv:crv.amount,convexClaimableRows:(c.rewards||[]).filter(x=>x.route==='convex-staked-cvxcrv').length,concentrator:embedded.state,completeRoutes:c.completeRoutes,routeCount:c.routeCount,totalUsdIsComplete:c.totalUsdIsComplete});
+          console.log('Rewards v0.3.10 + CRV + ve semantics PASS',{knownAccruedUsd:c.totalUsd,claimableCrv:crv.amount,convexClaimableRows:(c.rewards||[]).filter(x=>x.route==='convex-staked-cvxcrv').length,concentrator:conc.state,aerodrome:(c.sources||[]).find(x=>x.route==='aerodrome-ve')?.details,velodrome:(c.sources||[]).find(x=>x.route==='velodrome-ve-direct')?.details,totalUsdIsComplete:c.totalUsdIsComplete});
           NODE
 
       - name: Commit updated rewards snapshot
