@@ -108,11 +108,7 @@ jobs:
               echo "Company #010 source contract changed during publication; fresh collection required."
               exit 1
             fi
-            node - <<'NODE'
-            const fs=require('fs');
-            const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
-            if(d.version!=='0.1-company-010-production-state'||d.authority?.executionAuthority!=='none') process.exit(1);
-            NODE
+            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));if(d.version!=='0.1-company-010-production-state'||d.authority?.executionAuthority!=='none')process.exit(1);"
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
           done
