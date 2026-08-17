@@ -8,6 +8,7 @@ on:
       - 'onboarding/company-010-production-baseline.mjs'
       - 'onboarding/company-010-production-state.mjs'
       - 'onboarding/company-010-stakedao-overlay.mjs'
+      - 'onboarding/company-010-gmx-strategy-overlay.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
       - 'rewards/company-010-rewards-overlay.mjs'
       - 'intelligence/capital-state/capital-state.mjs'
@@ -43,6 +44,7 @@ jobs:
           node --check onboarding/company-010-production-baseline.mjs
           node --check onboarding/company-010-production-state.mjs
           node --check onboarding/company-010-stakedao-overlay.mjs
+          node --check onboarding/company-010-gmx-strategy-overlay.mjs
           node --check productivity/company-010-productivity-overlay.mjs
           node --check rewards/company-010-rewards-overlay.mjs
           node --check intelligence/capital-state/capital-state.mjs
@@ -71,12 +73,13 @@ jobs:
           node onboarding/company-010-stakedao-intelligence.mjs
           node onboarding/company-010-production-baseline.mjs
           node onboarding/company-010-stakedao-overlay.mjs
+          node onboarding/company-010-gmx-strategy-overlay.mjs
       - name: Build Capital State with complete Cypher
         run: |
           set -euo pipefail
           node -e "const fs=require('fs');const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json'));if(g.version!=='0.1-general-company-balance-sheet'||g.status!=='ok'||g.companies?.length!==8)throw new Error('canonical established General Balance unavailable');"
           node intelligence/capital-state/capital-state.mjs
-      - name: Independent Stake DAO and network review
+      - name: Independent Stake DAO, GMX and network review
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -93,7 +96,22 @@ jobs:
           if(!(Number(s.capital?.totalCapitalUsd)>0))errors.push('Cypher total capital');
           const eth=(s.capital?.positions||[]).find(x=>x.symbol==='ETH');
           if(!(Number(eth?.components?.aaveArbitrumWstEthEquivalentEth)>0))errors.push('Aave Arbitrum wstETH missing');
-          if((s.capital?.positions||[]).filter(x=>String(x.assetId||'').startsWith('gmx-gm-')).length!==2)errors.push('GMX two-market valuation');
+          const gmxRows=(s.capital?.positions||[]).filter(x=>String(x.assetId||'').startsWith('gmx-gm-'));
+          if(gmxRows.length!==2||gmxRows.some(x=>!(Number(x.valueUsd)>0)))errors.push('GMX two-market valuation');
+          const gmx=s.strategies?.gmx;
+          if(gmx?.version!=='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'||gmx?.status!=='measured'||gmx?.strategyCount!==2||!(Number(gmx?.totalStrategyNavUsd)>0))errors.push('GMX strategy intelligence');
+          for(const x of gmx?.strategies||[]){
+            const d=x.poolExposureDiagnostic;
+            const weights=[Number(d?.long?.grossTokenWeight),Number(d?.short?.grossTokenWeight)];
+            if(!(Number(d?.long?.amount)>0)||!(Number(d?.short?.amount)>0)||!(Number(d?.grossPoolTokenValueUsd)>0))errors.push('GMX nonzero pool composition '+x.id);
+            if(weights.some(v=>!Number.isFinite(v)||v<=0||v>=1)||Math.abs(weights[0]+weights[1]-1)>0.00001)errors.push('GMX pool weights '+x.id);
+            if(!(Number(x.yield?.referenceAprPct)>=0)||x.yield?.referenceMetric!=='GMX 30D Fee APY'||x.yield?.incomeMode!=='embedded-in-gm-nav'||x.yield?.claimableApplicable!==false||x.yield?.separateClaimStep!==false)errors.push('GMX yield semantics '+x.id);
+          }
+          if(gmx?.accountingBoundary?.underlyingPoolTokensAddedToReserveBalances!==false||gmx?.accountingBoundary?.gmTokenNavCountedOnce!==true||gmx?.accountingBoundary?.noDoubleCount!==true)errors.push('GMX accounting boundary');
+          if(gmx?.rewardsBoundary?.separateClaimableLpFees!==false||gmx?.rewardsBoundary?.claimableStatus!=='not-applicable-by-mechanism')errors.push('GMX rewards boundary');
+          if((s.rewards?.unboundMechanisms||[]).includes('GMX GM markets'))errors.push('GMX still unbound in rewards');
+          const embedded=(s.rewards?.embeddedIncomeMechanisms||[]).find(x=>x.id==='gmx-v2-market-liquidity');
+          if(!embedded||embedded.incomeMode!=='embedded-in-gm-nav'||embedded.claimableApplicable!==false)errors.push('GMX embedded income mechanism');
           const stake=(s.capital?.positions||[]).find(x=>x.assetId==='stakedao-base-curve-4pool');
           if(!(Number(stake?.valueUsd)>0))errors.push('Stake DAO capital');
           if(stake?.underlying?.length!==4)errors.push('Stake DAO decomposition');
@@ -113,9 +131,9 @@ jobs:
           if(c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10)errors.push('network not 10/10 complete');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')errors.push('Network TVL not restored');
           if(Math.abs(Number(c.network?.networkTvlUsd)-Number(c.network?.measuredCapitalFloorUsd))>0.05)errors.push('network exact/floor drift');
-          if(c.authority?.executionAuthority!=='none'||s.authority?.executionAuthority!=='none'||r.authority?.executionAuthority!=='none')errors.push('authority drift');
+          if(c.authority?.executionAuthority!=='none'||s.authority?.executionAuthority!=='none'||r.authority?.executionAuthority!=='none'||gmx?.authority?.executionAuthority!=='none')errors.push('authority drift');
           if(errors.length)throw new Error(`Company #010 complete review failed: ${errors.join(', ')}`);
-          console.log('COMPANY #010 STAKE DAO COMPLETE REVIEW GREEN',{totalCapitalUsd:s.capital.totalCapitalUsd,stakeDaoValueUsd:stake.valueUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoReferenceAprPct:prod.referenceAprPct,networkTvlUsd:c.network.networkTvlUsd,fluid:'out-of-scope',performance:s.performance.status,executionAuthority:'none'});
+          console.log('COMPANY #010 GMX + STAKE DAO COMPLETE REVIEW GREEN',{totalCapitalUsd:s.capital.totalCapitalUsd,gmxNavUsd:gmx.totalStrategyNavUsd,gmxMarkets:gmx.strategies.map(x=>({id:x.id,feeApyPct:x.yield.referenceAprPct,longWeight:x.poolExposureDiagnostic.long.grossTokenWeight,shortWeight:x.poolExposureDiagnostic.short.grossTokenWeight})),stakeDaoValueUsd:stake.valueUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoReferenceAprPct:prod.referenceAprPct,networkTvlUsd:c.network.networkTvlUsd,fluid:'out-of-scope',performance:s.performance.status,executionAuthority:'none'});
           NODE
       - name: Verify global Productivity and Rewards admission
         run: |
