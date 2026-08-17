@@ -43,11 +43,15 @@ jobs:
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
           if(d.company?.registry!=='010'||d.company?.name!=='Cypher') throw new Error('identity mismatch');
-          if(d.capital?.totalCapitalComplete!==false) throw new Error('public v0.1 expects Fluid incomplete state');
-          if(!(Number(d.capital?.knownCapitalFloorUsd)>0)) throw new Error('capital floor missing');
+          if(d.status!=='complete-total-capital') throw new Error('complete Company #010 state required');
+          if(d.capital?.totalCapitalComplete!==true) throw new Error('complete capital binding required');
+          if(d.capital?.knownButUnboundCapitalMayExist!==false) throw new Error('unexpected unresolved in-scope capital');
+          if(!(Number(d.capital?.totalCapitalUsd)>0)) throw new Error('complete capital total missing');
+          if(Math.abs(Number(d.capital?.totalCapitalUsd)-Number(d.capital?.knownCapitalFloorUsd))>0.01) throw new Error('complete total and measured floor diverge');
+          if((d.capital?.positions||[]).some(p=>String(p.protocol||'').toLowerCase()==='fluid')) throw new Error('Fluid returned inside owner-defined Company #010 scope');
           if(d.authority?.executionAuthority!=='none'||d.authority?.transactions!==false) throw new Error('authority drift');
           if(d.epistemicBoundary?.unknownIsNotZero!==true||d.epistemicBoundary?.partialTotalIsNotTotal!==true) throw new Error('epistemic boundary drift');
-          console.log('Company #010 canonical boundary PASS');
+          console.log('Company #010 complete canonical boundary PASS');
           NODE
       - name: Apply public admission
         run: |
