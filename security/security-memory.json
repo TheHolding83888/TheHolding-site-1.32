@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-17T08:05:07.465Z",
+  "generatedAt": "2026-08-17T10:07:33.105Z",
   "status": "watch",
-  "snapshotHash": "1fd90c6fda11bbad5570d4fe7f4fdb110ada3d321e30fe9ee17a2fbb73f09f3b",
+  "snapshotHash": "dd68f7736982b0dbc95f86f3d02f47542ededc93515ac0afbbd787bdb94eea06",
   "repository": {
-    "filesScanned": 385,
-    "bytesScanned": 8864768,
+    "filesScanned": 388,
+    "bytesScanned": 8905603,
     "criticalHashes": {
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
       ".github/workflows/close-company-010.yml": "8bfd0129acef133faa550cdc919e9ec6450df8caf270f505fcbb4cc997d412ac",
@@ -41,8 +41,9 @@
       ".github/workflows/update-brain-chatgpt-bridge.yml": "17b3a0dcdef4951943f0d0c781596f50f4f193703590e78e2a2f3ca789f47ff5",
       ".github/workflows/update-brain-intelligence.yml": "5fd281572541d7cbab71756c04908ff5ca55bfb5debab5a3de5f146dc7b2bc4a",
       ".github/workflows/update-builder-candidates.yml": "1db4484eedbc26fa454d15632fa1f438e7b4681ccdf59aae8069075ec88127de",
-      ".github/workflows/update-capital-state.yml": "8c879ba6145e99456978d4b521a7ce706c073f0592227977e547a5ad87eea329",
+      ".github/workflows/update-capital-state.yml": "873bb6472a5a83e7cc1709dce4dfdd51fe75aa5cb00d06ee480689597f970271",
       ".github/workflows/update-change-intelligence.yml": "51a176970cd47aa56aa194960b42863474b25eb50080efc896c3fcdbe7a64a28",
+      ".github/workflows/update-company-010-state.yml": "051d76602670028ad1e75b6a893f4e16aeff5810b41da38be2b81bdd9f46c76c",
       ".github/workflows/update-company-rewards.yml": "f48ec1a8994a2dfa90edec4dbdc21527ba409f2df7f5431ff3faf221dda36498",
       ".github/workflows/update-comparative-intelligence.yml": "b9eb1fca7574dffbb9b83948d9f4a1204bb92d4aa0baa40c19bdf7a04d4ab13e",
       ".github/workflows/update-event-intelligence.yml": "d3bed4e02c2d57d4cf742b51b54ddb65a3fdc6301ed466448adf93a369132150",
@@ -63,6 +64,7 @@
       ".github/workflows/update-stable-capital.yml": "2cab5cc5b960b633f7131e84d83a751036a73cdd6a60decc37910beb30d33954",
       ".github/workflows/validate-embedded-yield-interval-history.yml": "cd34c8a29f25c5e5f2db3dd8052013e95cea3f3b8aa60cbbcb2547bb7feecb4a",
       ".github/workflows/value-company-010-gmx-reader.yml": "a96d7751ece9b73d49c463331585b1377e45068910d18535d7937dcfbfa08457",
+      ".github/workflows/verify-company-010-production-integration.yml": "3f878bca2237912aeadf8ad1ec259bb7b9114a49a090ebd32087811442a61022",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "246d6be079b34400a5cee907d0440abdff57ebc3b94764ecaf1ced556a0a061b",
       "index.html": "1378d080ce878189b39602216ca09ea0a3aab58c0e34e9c9e590dff835603189",
@@ -358,6 +360,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "1238a9ba378d4acedcf1faf18d582dacf1d4a4296c829d649ee33db21a7717eb",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-capital-state.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-capital-state.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "8c879ba6145e99456978d4b521a7ce706c073f0592227977e547a5ad87eea329",
+        "currentSha256": "873bb6472a5a83e7cc1709dce4dfdd51fe75aa5cb00d06ee480689597f970271"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -690,10 +706,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 257,
+    "runCount": 258,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-17T08-05-07-465Z-1fd90c6fda.json",
-    "latestRecordHash": "bb4552e9202d2f9435b1400e4d5312ea5ca3eb724e9aa8bb5d1549e8ad8498c6",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-17T10-07-33-105Z-dd68f77369.json",
+    "latestRecordHash": "cafec0486370970848d6001f844014c7f5faae305f55124c21c0e9a39fa6d069",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
