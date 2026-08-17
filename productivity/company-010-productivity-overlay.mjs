@@ -6,17 +6,18 @@ const ROOT=process.cwd();
 const DATA=process.env.PRODUCTIVITY_DATA||path.join(ROOT,'companies/productivity-data.json');
 const STATE=process.env.COMPANY_010_STATE||path.join(ROOT,'companies/company-010-production-state.json');
 const REPORT=process.env.PRODUCTIVITY_REPORT||path.join(ROOT,'companies/productivity-source-report.json');
-const VERSION='1.17';
-const COLLECTOR='1.17-company-010-crv-strategy-productivity';
+const VERSION='1.16';
+const COLLECTOR='1.16-company-010-state-backed-productivity-admission';
 const METHODOLOGY='1.1-simple-safe';
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
 const n=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x))?Number(x):null;
 const round=(x,d=4)=>n(x)===null?null:Number(Number(x).toFixed(d));
 
 const data=read(DATA),state=read(STATE);
-if(!['1.15','1.16','1.17'].includes(String(data.version)))throw new Error(`Productivity v1.15-v1.17 required, got ${data.version}`);
+if(!['1.15','1.16'].includes(String(data.version)))throw new Error(`Productivity v1.15/v1.16 required, got ${data.version}`);
 if(data.methodologyVersion!==METHODOLOGY)throw new Error('Productivity methodology mismatch');
-if(state?.version!=='0.4-company-010-production-state-crv-strategies'||state?.company?.registry!=='010'||state?.company?.name!=='Cypher')throw new Error('CRV-strategy-complete Cypher production state required');
+if(state?.version!=='0.3-company-010-production-state-stakedao-complete'||state?.company?.registry!=='010'||state?.company?.name!=='Cypher')throw new Error('CRV-strategy-complete Cypher production state required');
+if(state?.strategies?.crv?.version!=='0.1-company-010-crv-strategy-intelligence')throw new Error('CRV strategy capability missing from compatible state schema');
 if(state?.authority?.executionAuthority!=='none'||state?.epistemicBoundary?.unknownIsNotZero!==true||state?.epistemicBoundary?.noDoubleCount!==true||state?.epistemicBoundary?.crvWrapperUnitsAreNotAdditiveCrv!==true)throw new Error('Cypher authority/epistemic boundary mismatch');
 
 const positions=Array.isArray(state.productivity?.positions)?state.productivity.positions:[];
@@ -57,15 +58,15 @@ data.companyMetadata.Cypher={registry:'010',foundedISO:'2025-07-04',source:'comp
 data.version=VERSION;
 data.collectorVersion=COLLECTOR;
 data.generatedAt=new Date().toISOString();
-data.note='Reference APRs are normalized from official protocol APIs, onchain state, official protocol frontends, and canonical state-backed company mechanisms. Company APR is capital-weighted across productive positions with valid Reference APRs. Unknown engines are excluded, never treated as 0%. Cypher now keeps Concentrator auto-compounded yield and Convex staked-cvxCRV claimable yield as separate productive mechanisms rather than collapsing wrapper units into CRV.';
+data.note='Reference APRs are normalized from official protocol APIs, onchain state, official protocol frontends, and canonical state-backed company mechanisms. Company APR is capital-weighted across productive positions with valid Reference APRs. Unknown engines are excluded, never treated as 0%. Cypher keeps Concentrator auto-compounded yield and Convex staked-cvxCRV claimable yield as separate productive mechanisms rather than collapsing wrapper units into CRV.';
 data.diagnostics=data.diagnostics||{};
-data.diagnostics.company010={status:'admitted',stateVersion:state.version,stateGeneratedAt:state.generatedAt,totalProductiveValueUsd:round(total,2),coveredProductiveValueUsd:round(covered,2),coverage:round(coverage,6),unknownEngineIds:breakdown.filter(x=>x.apr===null).map(x=>x.engineId),crvStrategyIds:breakdown.filter(x=>x.engineId==='concentrator_asdcrv'||x.engineId==='convex_staked_cvxcrv').map(x=>x.engineId),executionAuthority:'none'};
+data.diagnostics.company010={status:'admitted',capability:'crv-strategy-intelligence-0.1',stateVersion:state.version,stateGeneratedAt:state.generatedAt,totalProductiveValueUsd:round(total,2),coveredProductiveValueUsd:round(covered,2),coverage:round(coverage,6),unknownEngineIds:breakdown.filter(x=>x.apr===null).map(x=>x.engineId),crvStrategyIds:breakdown.filter(x=>x.engineId==='concentrator_asdcrv'||x.engineId==='convex_staked_cvxcrv').map(x=>x.engineId),executionAuthority:'none'};
 fs.writeFileSync(DATA,JSON.stringify(data,null,2)+'\n');
 
 if(fs.existsSync(REPORT)){
   const report=read(REPORT);report.collectorVersion=COLLECTOR;report.generatedAt=data.generatedAt;report.engines=report.engines||{};
   for(const [id,e] of Object.entries(synthetic))report.engines[id]={protocol:e.protocol,status:e.status,apr:e.aprLatest,source:e.source,sourceType:e.sourceType,sourceMetric:e.sourceMetric,periodStart:e.periodStart,periodEnd:e.periodEnd,error:null,details:e.details};
-  report.company010={status:'admitted',company:data.companies.Cypher,stateVersion:state.version};
+  report.company010={status:'admitted',capability:'crv-strategy-intelligence-0.1',company:data.companies.Cypher,stateVersion:state.version};
   fs.writeFileSync(REPORT,JSON.stringify(report,null,2)+'\n');
 }
 console.log(JSON.stringify({status:'PASS',version:VERSION,company:'Cypher',aprLatest:data.companies.Cypher.aprLatest,productiveValue:data.companies.Cypher.productiveValue,coveredProductiveValue:data.companies.Cypher.coveredProductiveValue,coverage:data.companies.Cypher.coverage,unknown:breakdown.filter(x=>x.apr===null).map(x=>x.engineId),crvStrategies:breakdown.filter(x=>x.engineId==='concentrator_asdcrv'||x.engineId==='convex_staked_cvxcrv'),executionAuthority:'none'},null,2));
