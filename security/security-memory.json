@@ -1,13 +1,14 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-17T10:29:17.863Z",
+  "generatedAt": "2026-08-17T11:28:40.595Z",
   "status": "watch",
-  "snapshotHash": "ae08ed3009693c08bb720e0d8f3b0e3999a918ae8b5648c6b6e3cba99d74a22c",
+  "snapshotHash": "53eb10afbde6aea1d4fb5119bad28bba12f20b250b741017f59fea20df4a748b",
   "repository": {
-    "filesScanned": 389,
-    "bytesScanned": 8915839,
+    "filesScanned": 394,
+    "bytesScanned": 8950344,
     "criticalHashes": {
+      ".github/workflows/admit-company-010-public.yml": "d980507a6ae628eea4dd2c3b49053523d3e5948655c3c6f756980f7cc56467f7",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
       ".github/workflows/close-company-010.yml": "8bfd0129acef133faa550cdc919e9ec6450df8caf270f505fcbb4cc997d412ac",
       ".github/workflows/commit-identity-privacy-guard.yml": "5e97bd21f64fffc21b6c8354579224aa09ee8932d7c069e2ead73236e3361361",
@@ -65,6 +66,7 @@
       ".github/workflows/validate-embedded-yield-interval-history.yml": "cd34c8a29f25c5e5f2db3dd8052013e95cea3f3b8aa60cbbcb2547bb7feecb4a",
       ".github/workflows/value-company-010-gmx-reader.yml": "a96d7751ece9b73d49c463331585b1377e45068910d18535d7937dcfbfa08457",
       ".github/workflows/verify-company-010-production-integration.yml": "3f878bca2237912aeadf8ad1ec259bb7b9114a49a090ebd32087811442a61022",
+      ".github/workflows/verify-company-010-public-admission.yml": "fa672f2fe18fccd8c7957c8784f7e8e88f008f70b6271068053c4ccf4f997309",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "246d6be079b34400a5cee907d0440abdff57ebc3b94764ecaf1ced556a0a061b",
       "index.html": "1378d080ce878189b39602216ca09ea0a3aab58c0e34e9c9e590dff835603189",
@@ -219,6 +221,16 @@
         "rationale": null
       },
       {
+        "file": "companies/company-010-public-adapter.js",
+        "status": "unreviewed",
+        "classification": null,
+        "sinkCount": 3,
+        "expectedCount": null,
+        "currentGitBlobSha1": "2d36ac072e96e032fd523d1f5841be14f2553d6e",
+        "reviewedGitBlobSha1": null,
+        "rationale": null
+      },
+      {
         "file": "companies/index.html",
         "status": "unreviewed",
         "classification": "trusted-canonical-company-registry-and-generated-data",
@@ -280,7 +292,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
+        "lastModified": "Fri, 14 Aug 2026 06:09:13 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -289,7 +301,7 @@
     "summary": {
       "reviewedDomFileCount": 6,
       "reviewedDomSinkCount": 15,
-      "unreviewedDomFileCount": 3,
+      "unreviewedDomFileCount": 4,
       "trustedExternalScriptCount": 1,
       "trustedExternalScriptUsageCount": 7
     }
@@ -362,20 +374,6 @@
       "evidence": null
     },
     {
-      "id": "e37879ea75eb23460d9ea19188bab52b7640c831ca0145ca72ab670f4d2c3a50",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-capital-state.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-capital-state.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "873bb6472a5a83e7cc1709dce4dfdd51fe75aa5cb00d06ee480689597f970271",
-        "currentSha256": "40421c83ac47fc4f1c6013d01f60e0ed719f33a125eb6714b1271c41d9551cc1"
-      }
-    },
-    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -392,6 +390,39 @@
       "category": "dom-innerhtml",
       "file": "agents/console/owner-intelligence.js",
       "line": 113,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "51f99eda4715bca52fb91a64772bdd64f94fadeef0a11292436097d12c3c2dac",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "companies/company-010-public-adapter.js",
+      "line": 50,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "cd042c6b1ff78065647d59def9873ec24f36ef43bbb182cec36080c87dcee570",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "companies/company-010-public-adapter.js",
+      "line": 86,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "9b4226cda8440db7461552e69f538cc36197ef56f1d9e76b867f2e66e2d3ace4",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "companies/company-010-public-adapter.js",
+      "line": 117,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
@@ -706,10 +737,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 260,
+    "runCount": 261,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-17T10-29-17-863Z-ae08ed3009.json",
-    "latestRecordHash": "730fbd97a06263f414cc4d9c65041e472804fb076c90610a3f29ea729988031c",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-17T11-28-40-595Z-53eb10afbd.json",
+    "latestRecordHash": "1b5f36a3bf2ccce14613ed9e4b2e3d959a82ec68339a5bfc17e9edfbd37908da",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
