@@ -52,16 +52,21 @@ jobs:
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
           const c=d.companies?.Cypher;
-          if(d.version!=='0.3.10'||d.collectorVersion!=='0.3.10-company-010-stakedao-state-admission')throw new Error('Rewards v0.3.10 not produced');
+          if(d.version!=='0.3.10'||d.collectorVersion!=='0.3.10-company-010-stakedao-state-admission')throw new Error('Rewards v0.3.10 compatibility contract not produced');
+          if(d.diagnostics?.company010?.capability!=='crv-strategy-intelligence-0.1')throw new Error('CRV reward capability marker missing');
           if(!c||c.status!=='partial'||c.totalUsdIsComplete!==false)throw new Error('Cypher partial rewards semantics missing');
           const crv=(c.rewards||[]).find(x=>x.route==='stakedao-base-curve-4pool'&&x.symbol==='CRV');
           if(!crv||!(Number(crv.amount)>=0)||!(Number(crv.usdValue)>=0))throw new Error('Stake DAO CRV reward missing');
+          const cvxSource=(c.sources||[]).find(x=>x.route==='convex-staked-cvxcrv');
+          if(!cvxSource||cvxSource.status!=='ok'||cvxSource.details?.rewardState!=='Claimable')throw new Error('Convex staked cvxCRV Claimable source missing');
+          const embedded=(c.embeddedIncome||[]).find(x=>x.route==='concentrator-asdcrv');
+          if(!embedded||embedded.state!=='Compounded'||embedded.claimableApplicable!==false)throw new Error('Concentrator Compounded income state missing');
           for(const route of ['aerodrome-ve','velodrome-ve-direct','votium-union']){
             const s=(c.sources||[]).find(x=>x.route===route);
             if(!s||s.status!=='warming'||s.details?.unknownIsNotZero!==true)throw new Error('Cypher unresolved route semantics missing: '+route);
           }
           if(c.settlement?.totalUsdIsComplete!==false||c.settlement?.unknownRouteIsNotZero!==true)throw new Error('Cypher rewards completion guard missing');
-          console.log('Rewards v0.3.10 Cypher admission PASS',{knownAccruedUsd:c.totalUsd,claimableCrv:crv.amount,completeRoutes:c.completeRoutes,routeCount:c.routeCount,totalUsdIsComplete:c.totalUsdIsComplete});
+          console.log('Rewards v0.3.10 + CRV intelligence PASS',{knownAccruedUsd:c.totalUsd,claimableCrv:crv.amount,convexClaimableRows:(c.rewards||[]).filter(x=>x.route==='convex-staked-cvxcrv').length,concentrator:embedded.state,completeRoutes:c.completeRoutes,routeCount:c.routeCount,totalUsdIsComplete:c.totalUsdIsComplete});
           NODE
 
       - name: Commit updated rewards snapshot

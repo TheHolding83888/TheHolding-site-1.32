@@ -1,6 +1,7 @@
-/* The Holding · Company #010 Cypher public adapter · v0.6.4-gmx-compact-apy
- * Compatibility sentinel: supersedes v0.6-stakedao-complete without changing that native surface contract.
- * Stake DAO underlying decomposition remains canonical in state: USDC / USDbC / axlUSDC / crvUSD. Public Passport intentionally renders the strategy as one compact economic row.
+/* The Holding · Company #010 Cypher public adapter · v0.7-crv-strategy-income
+ * Compatibility sentinel: preserves v0.6.4 GMX compact APY and v0.6 Stake DAO native surface contracts.
+ * CRV-family wrappers are separate economic positions: direct CRV, Concentrator asdCRV/sdCRV and Convex staked cvxCRV are never summed as one token quantity.
+ * Concentrator income is Compounded; Convex staked cvxCRV income is Claimable; an unproven rate is Pending, never a fake 0%.
  * GMX pool composition remains canonical diagnostic state and is not rendered publicly. GM token NAV is counted once; LP fee income is embedded in GM NAV and has no separate claim step.
  * Combined TVL compatibility sentinel: net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined remains enforced through canonicalNetworkTvl().
  * Canonical source: /companies/company-010-production-state.json
@@ -22,6 +23,7 @@
   const money2=v=>'$'+Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   const pct=v=>Number(v).toFixed(1)+'%';
   const pct2=v=>Number(v).toFixed(2)+'%';
+  const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 
   function protocols(){
     const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aerodrome','Velodrome','GMX','Concentrator'];
@@ -78,7 +80,7 @@
       <div class="cc-regnum"><span><span class="cc-reg-label">${lang()==='ru'?'Реестр':'Registry'}</span> · 010</span><span class="cc-founded">${lang()==='ru'?'Осн. 4 июл 2025':'Est. Jul 4, 2025'}</span></div>
       <div class="cc-top"><div class="cc-seal"><span class="cc-seal-mark" role="img" aria-label="The Holding registry seal"></span></div><div class="cc-status"><span class="cc-dot"></span><span>Live</span></div></div>
       <div class="cc-name">Cypher</div><div class="cc-sub">${cardCopy()}</div>
-      <div class="cc-metrics"><div><div class="cc-metric-label">${lang()==='ru'?'TVL компании':'Company TVL'}</div><div class="cc-metric-value gold" id="tvl-cypher">${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}</div></div><div><div class="cc-metric-label">APR</div><div class="cc-metric-value" id="apr-cypher">${apr===null?(lang()==='ru'?'Измеряется':'Measuring'):pct(apr)}</div></div></div>
+      <div class="cc-metrics"><div><div class="cc-metric-label">${lang()==='ru'?'TVL компании':'Company TVL'}</div><div class="cc-metric-value gold" id="tvl-cypher">${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}</div></div><div><div class="cc-metric-label">APR</div><div class="cc-metric-value" id="apr-cypher">${apr===null?(lang()==='ru'?'Ожидается':'Pending'):pct(apr)}</div></div></div>
       <span class="cc-extlink cc-extlink-static" aria-disabled="true"><span class="cc-ext-label">DeBank · Tracking</span></span>`;
     card.style.opacity='1';card.style.transform='none';
     const count=document.getElementById('companyCount');if(count)count.textContent='10';
@@ -104,7 +106,7 @@
     if(typeof COMPANY_PROTOCOLS!=='undefined')COMPANY_PROTOCOLS.Cypher=protocols();
     if(typeof COMPANY_REWARDS_SCOPE!=='undefined'&&COMPANY_REWARDS_SCOPE?.add)COMPANY_REWARDS_SCOPE.add('Cypher');
     if(typeof COMPANY_ASSET_LABELS!=='undefined'){
-      Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','gmx-gm-eth-usdc':'GMX · ETH-USDC','gmx-gm-btc-usdc':'GMX · BTC-USDC'});
+      Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','concentrator-asdcrv':'Concentrator · sdCRV','convex-staked-cvxcrv':'Convex · staked cvxCRV','gmx-gm-eth-usdc':'GMX · ETH-USDC','gmx-gm-btc-usdc':'GMX · BTC-USDC'});
       for(const p of state.capital?.positions||[]){
         if(String(p.assetId||'').startsWith('hyperlend-'))COMPANY_ASSET_LABELS[p.assetId]=`HyperLend · ${p.underlyingSymbol||p.symbol||'Position'}`;
         if(p.assetId==='stakedao-base-curve-4pool')COMPANY_ASSET_LABELS[p.assetId]=stakeDaoLabel();
@@ -126,7 +128,7 @@
     const apr=currentReferenceApr(),coverage=Number(state.productivity?.coverage||0)*100;
     const complete=state.capital?.totalCapitalComplete===true;
     const performancePending=state.performance?.complete!==true;
-    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:null,pnl:null,pct:null,performancePending,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'The Holding Standard',ru:'The Holding Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Measuring':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Измеряется':`${apr.toFixed(1)}% · покрыто ${coverage.toFixed(1)}%`},aprSource:'canonical-company-state',aprObservationCount:0,pendingReason:complete?null:{en:'An in-scope capital mechanism is not yet fully bound',ru:'Один из учитываемых механизмов капитала ещё не полностью связан'}};
+    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:null,pnl:null,pct:null,performancePending,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'The Holding Standard',ru:'The Holding Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Pending':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Ожидается':`${apr.toFixed(1)}% · покрыто ${coverage.toFixed(1)}%`},aprSource:'canonical-company-state',aprObservationCount:0,pendingReason:complete?null:{en:'An in-scope capital mechanism is not yet fully bound',ru:'Один из учитываемых механизмов капитала ещё не полностью связан'}};
   }
 
   function installIndexRecord(){
@@ -183,6 +185,49 @@
     }
   }
 
+  function ensureCrvIncomeStyles(){
+    if(document.getElementById('cypher-crv-income-style'))return;
+    const s=document.createElement('style');s.id='cypher-crv-income-style';s.textContent=`
+      .cy-crv-income{margin-top:.65rem;padding-top:.62rem;border-top:1px solid rgba(22,21,15,.10)}
+      .cy-crv-income-head{font-size:.54rem;letter-spacing:.13em;text-transform:uppercase;color:rgba(22,21,15,.38);margin-bottom:.38rem}
+      .cy-crv-income-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.65rem;align-items:center;padding:.43rem 0;border-top:1px solid rgba(22,21,15,.06)}
+      .cy-crv-income-row:first-of-type{border-top:0}.cy-crv-income-name{font-size:.62rem;color:rgba(22,21,15,.72)}
+      .cy-crv-income-meta{font-size:.55rem;color:rgba(22,21,15,.42);margin-top:.08rem}.cy-crv-income-right{text-align:right;white-space:nowrap}
+      .cy-crv-income-rate{font-size:.66rem;font-weight:500;color:#16150f}.cy-crv-income-state{display:inline-block;margin-top:.1rem;font-size:.49rem;letter-spacing:.07em;text-transform:uppercase;color:rgba(22,21,15,.42)}
+      .cy-crv-income-state.compounded{color:#0a7c4e}.cy-crv-income-state.claimable{color:rgba(22,21,15,.48)}.cy-crv-income-state.pending{color:#a8842c}
+    `;document.head.appendChild(s);
+  }
+
+  function compactClaimable(strategy){
+    const rows=[];
+    for(const w of strategy?.claimable?.wallets||[])for(const r of w.rewards||[])if(finite(r.amount)&&Number(r.amount)>0)rows.push(r);
+    if(!rows.length)return lang()==='ru'?'Начисления: 0 подтверждено сейчас':'Accrued: no positive balance now';
+    const grouped=new Map();for(const r of rows){const k=r.symbol||'Reward',v=grouped.get(k)||{amount:0,usd:0,usdOk:true};v.amount+=Number(r.amount)||0;if(finite(r.usdValue))v.usd+=Number(r.usdValue);else v.usdOk=false;grouped.set(k,v)}
+    return [...grouped.entries()].slice(0,3).map(([sym,v])=>`${v.amount.toLocaleString('en-US',{maximumFractionDigits:4})} ${sym}${v.usdOk?' · '+money2(v.usd):''}`).join(' / ');
+  }
+
+  function ensureCrvStrategyIncome(){
+    const crv=state?.strategies?.crv;
+    if(crv?.version!=='0.1-company-010-crv-strategy-intelligence'||!Array.isArray(crv.strategies)||crv.strategies.length!==2)return;
+    const conc=crv.strategies.find(x=>x.id==='concentrator-asdcrv');
+    const cvx=crv.strategies.find(x=>x.id==='convex-staked-cvxcrv');
+    if(!conc||!cvx||conc.yield?.incomeMode!=='auto-compounded'||cvx.yield?.incomeMode!=='separate-claimable-rewards')return;
+    const item=document.querySelector('.ib-item[data-nm="Cypher"]');
+    const panel=item?.querySelector('.ipx-rewards-panel');
+    if(!panel)return;
+    ensureCrvIncomeStyles();
+    panel.querySelector('.cy-crv-income')?.remove();
+    const block=document.createElement('div');block.className='cy-crv-income';block.dataset.cypherCrvIncome='true';
+    const concApr=finite(conc.yield.referenceAprPct)?pct2(conc.yield.referenceAprPct):null;
+    const cvxApr=finite(cvx.yield.referenceAprPct)?pct2(cvx.yield.referenceAprPct):null;
+    const pending=lang()==='ru'?'Ожидается':'Pending';
+    block.innerHTML=`
+      <div class="cy-crv-income-head">${lang()==='ru'?'CRV · доходные стратегии':'CRV · strategy income'}</div>
+      <div class="cy-crv-income-row"><div><div class="cy-crv-income-name">Concentrator · sdCRV</div><div class="cy-crv-income-meta">${lang()==='ru'?'Доход автоматически увеличивает стоимость доли':'Yield is automatically reinvested into the share'}</div></div><div class="cy-crv-income-right"><div class="cy-crv-income-rate">${concApr?`Yield ${concApr}`:`Yield ${pending}`}</div><span class="cy-crv-income-state ${concApr?'compounded':'pending'}">Compounded${concApr?'':' · '+pending}</span></div></div>
+      <div class="cy-crv-income-row"><div><div class="cy-crv-income-name">Convex · staked cvxCRV</div><div class="cy-crv-income-meta">${compactClaimable(cvx)}</div></div><div class="cy-crv-income-right"><div class="cy-crv-income-rate">${cvxApr?`vAPR ${cvxApr}`:`vAPR ${pending}`}</div><span class="cy-crv-income-state ${cvxApr?'claimable':'pending'}">Claimable${cvxApr?'':' · '+pending+' rate'}</span></div></div>`;
+    panel.appendChild(block);
+  }
+
   function markPendingPerformance(){
     if(state?.performance?.complete===true)return;
     const item=document.querySelector('.ib-item[data-nm="Cypher"]');
@@ -203,6 +248,7 @@
     ensureCollectionCard();
     syncNetworkStats();
     polishBalanceSheet();
+    ensureCrvStrategyIncome();
     markPendingPerformance();
   }
 
@@ -236,7 +282,7 @@
     const timer=setInterval(()=>{attempts+=1;if(rerenderNativeSurfaces()||attempts>600)clearInterval(timer);},100);
     rerenderNativeSurfaces();
     setInterval(syncNetworkStats,1000);
-    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishBalanceSheet();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
+    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishBalanceSheet();ensureCrvStrategyIncome();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 
