@@ -1,4 +1,5 @@
 /* The Holding · Company #010 Cypher public adapter · v0.6.1-performance-pending-explicit
+ * Compatibility sentinel: supersedes v0.6-stakedao-complete without changing that native surface contract.
  * Canonical source: /companies/company-010-production-state.json
  * Presentation: native Collection + General Index/Passport/Graph surfaces.
  * Capital completeness, Productivity coverage and Performance evidence remain separate contracts.
