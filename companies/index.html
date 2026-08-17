@@ -11853,7 +11853,7 @@ function renderIndex(lang) {
                 + '<div class="ib-passport"><div class="ipx-inner">'
                 +   '<div class="ipx-economic">'
                 +     econ(L.companyTVL, c.val > 0 ? ((c.capitalFloor ? '≥ ' : '') + money(c.val)) : 'Live', 'gold')
-                +     econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : '—')
+                +     econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : (c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending') : '—'))
                 +     econ(L.operatingHistory, ageVal, 'age ipx-age', 'data-founded="' + c.foundedISO + '"')
                 +   '</div>'
                 +   liveLedgerBlock(c)
