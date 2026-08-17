@@ -1,0 +1,98 @@
+name: "Deep Resolve Company #010 · Cypher"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-deep-resolve.mjs'
+      - '.github/workflows/deep-resolve-company-010.yml'
+      - 'onboarding/company-010-resolve.mjs'
+      - 'onboarding/company-010-discovery.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deep-resolve-company-010-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deep-resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-discovery.mjs
+          node --check onboarding/company-010-resolve.mjs
+          node --check onboarding/company-010-deep-resolve.mjs
+          grep -F "const VERSION='0.3-company-010-deep-mechanism-resolver';" onboarding/company-010-deep-resolve.mjs
+      - name: Install bounded dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+      - name: Rebuild discovery
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COMPANY_010_DISCOVERY_OUTPUT: companies/company-010-discovery.json
+        run: node onboarding/company-010-discovery.mjs
+      - name: Rebuild measured resolver
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COMPANY_010_DISCOVERY_INPUT: companies/company-010-discovery.json
+          COMPANY_010_RESOLVE_OUTPUT: companies/company-010-resolve.json
+        run: node onboarding/company-010-resolve.mjs
+      - name: Deep resolve remaining mechanisms
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COMPANY_010_RESOLVE_INPUT: companies/company-010-resolve.json
+          COMPANY_010_DEEP_RESOLVE_OUTPUT: companies/company-010-deep-resolve.json
+        run: node onboarding/company-010-deep-resolve.mjs
+      - name: Validate epistemic boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-010-deep-resolve.json','utf8'));
+          if(d.version!=='0.3-company-010-deep-mechanism-resolver') throw new Error('version mismatch');
+          if(d.epistemicBoundary?.unknownIsNotZero!==true) throw new Error('unknown-is-not-zero boundary missing');
+          if(d.epistemicBoundary?.noFabricatedApr!==true) throw new Error('APR safety missing');
+          if(d.epistemicBoundary?.noTransactions!==true) throw new Error('read-only boundary missing');
+          if(d.epistemicBoundary?.executionAuthority!=='none') throw new Error('execution authority changed');
+          if(!d.deep?.projectX || !d.deep?.hyperliquid || !d.deep?.gmx || !d.deep?.stakeDaoLegacyHints) throw new Error('deep resolver surfaces missing');
+          const px=d.resolutionState?.projectX;
+          if(px?.totalNftCount!==19) throw new Error(`expected 19 Project X NFTs, got ${px?.totalNftCount}`);
+          console.log('Company #010 deep resolver PASS', d.resolutionState);
+          NODE
+      - name: Upload deep evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: company-010-cypher-deep-resolve-${{ github.sha }}
+          path: |
+            companies/company-010-discovery.json
+            companies/company-010-resolve.json
+            companies/company-010-deep-resolve.json
+          if-no-files-found: error
+          retention-days: 7

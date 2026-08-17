@@ -1,0 +1,98 @@
+name: "Discover Company #010 · Cypher"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-discovery.mjs'
+      - '.github/workflows/discover-company-010.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: discover-company-010-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Verify Company #010 source contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-discovery.mjs
+          grep -F "const VERSION='0.1.1-company-010-cypher-bounded-discovery-native-asset-guard';" onboarding/company-010-discovery.mjs
+          grep -F "registry:'010'" onboarding/company-010-discovery.mjs
+          grep -F "name:'Cypher'" onboarding/company-010-discovery.mjs
+          grep -F "foundedAt:'2025-07-04'" onboarding/company-010-discovery.mjs
+          grep -F "category:'Bitcoin Standard'" onboarding/company-010-discovery.mjs
+          grep -F "nativeFamily:null" onboarding/company-010-discovery.mjs
+          grep -F "Fluid loop excluded" onboarding/company-010-discovery.mjs
+
+      - name: Install bounded discovery dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+
+      - name: Discover Company #010 current state
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COMPANY_010_DISCOVERY_OUTPUT: companies/company-010-discovery.json
+        run: node onboarding/company-010-discovery.mjs
+
+      - name: Validate generated discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'companies/company-010-discovery.json';
+          if (!fs.existsSync(p)) throw new Error('Company #010 discovery JSON missing');
+          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (d.version !== '0.1.1-company-010-cypher-bounded-discovery-native-asset-guard') throw new Error('version mismatch');
+          if (d.company?.registry !== '010' || d.company?.name !== 'Cypher') throw new Error('identity mismatch');
+          if (d.company?.foundedAt !== '2025-07-04') throw new Error('founding mismatch');
+          if (d.company?.category !== 'Bitcoin Standard') throw new Error('category mismatch');
+          if (!Array.isArray(d.company?.wallets) || d.company.wallets.length !== 2) throw new Error('expected two wallets');
+          const expected = new Set(['0xd90d1e395de36e1e59c42f5df537801c26bbc03f','0x64688f4adc3f72cdb44d07e4879c724cd7025696']);
+          for (const w of d.company.wallets) if (!expected.has(String(w.address).toLowerCase())) throw new Error('wallet mismatch: '+w.address);
+          const entries = d.ownerDeclaredAccounting?.entryPrices || {};
+          const exact = {ETH:2476,BTC:73482,HYPE:38.62,CVX:1.84,CRV:0.228,AERO:0.60,LDO:0.8408,VELO:0.04762};
+          for (const [k,v] of Object.entries(exact)) if (Number(entries[k]) !== v) throw new Error('entry mismatch '+k);
+          if (d.ownerDeclaredAccounting?.loans?.includes('not subtracted') !== true) throw new Error('liability boundary missing');
+          if (d.foundation?.fluidExplicitlyExcluded !== true) throw new Error('Fluid exclusion missing');
+          const polygonNativeMisclassified = (d.discovery?.direct?.rows || []).some(x => x.chain === 'Polygon' && x.source === 'wallet-native' && x.family === 'ETH');
+          if (polygonNativeMisclassified) throw new Error('Polygon native token must never be classified as ETH');
+          if (!Array.isArray(d.proposedCompanyBook) || d.proposedCompanyBook.length !== 8) throw new Error('expected 8 bounded Company Book rows');
+          if (d.productionReadiness?.readyForFinalIntegrator !== false) throw new Error('Phase A must not claim final integration readiness');
+          if (!Array.isArray(d.newMechanisms) || d.newMechanisms.length < 6) throw new Error('new mechanism registry missing');
+          if (d.authority?.executionAuthority !== 'none') throw new Error('execution authority changed');
+          console.log('Company #010 bounded discovery PASS', {btc:d.foundation?.btcEquivalent,eth:d.foundation?.ethEquivalent,vlCVX:d.discovery?.convex?.productiveVlCVX,veAERO:d.discovery?.aerodrome?.productiveExposure,veVELO:d.discovery?.velodrome?.productiveExposure,hyperliquidStakedHype:d.discovery?.hyperliquid?.totalStakedHype,gaps:d.coverageGaps?.length});
+          NODE
+
+      - name: Upload discovery evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: company-010-cypher-discovery-${{ github.sha }}
+          path: companies/company-010-discovery.json
+          if-no-files-found: error
+          retention-days: 7
