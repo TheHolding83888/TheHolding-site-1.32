@@ -1,0 +1,59 @@
+name: "Value Company #010 · Cypher GMX Reader"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-gmx-reader.mjs'
+      - '.github/workflows/value-company-010-gmx-reader.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: value-company-010-gmx-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  value:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate source
+        run: node --check onboarding/company-010-gmx-reader.mjs
+      - name: Install bounded dependency
+        run: npm install --no-save ethers@6
+      - name: Run official GMX Reader valuation
+        env:
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+        run: node onboarding/company-010-gmx-reader.mjs
+      - name: Validate exact valuation
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-010-gmx-reader.json','utf8'));
+          if(d.version!=='0.1.3-company-010-gmx-reader-valuation') throw new Error('version mismatch');
+          if((d.results||[]).length!==2) throw new Error('expected exactly two GM markets');
+          for(const x of d.results){
+            if(!(Number(x.balance)>0&&Number(x.gmTokenPrice?.minUsd)>0&&Number(x.gmTokenPrice?.maxUsd)>=Number(x.gmTokenPrice?.minUsd))) throw new Error(`invalid GM valuation ${x.label}`);
+            if(!(Number(x.valueUsdMin)>0&&Number(x.valueUsdMax)>=Number(x.valueUsdMin))) throw new Error(`invalid GM value ${x.label}`);
+            if(!Number.isFinite(Number(x.referenceAprPct))) throw new Error(`GM APY missing ${x.label}`);
+          }
+          if(!(Number(d.totalValueUsdMid)>0)) throw new Error('GMX total valuation missing');
+          if(d.authority?.executionAuthority!=='none'||d.authority?.noTransactions!==true) throw new Error('authority changed');
+          console.log('Company #010 GMX Reader valuation PASS', d.results.map(x=>({label:x.label,balance:x.balance,price:x.gmTokenPrice,valueMid:x.valueUsdMid,apr:x.referenceAprPct,metadata:[x.tokens?.index?.metadataSource,x.tokens?.long?.metadataSource,x.tokens?.short?.metadataSource]})), {total:d.totalValueUsdMid});
+          NODE
+      - name: Upload GMX Reader evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: company-010-gmx-reader-${{ github.sha }}
+          path: companies/company-010-gmx-reader.json
+          if-no-files-found: error
+          retention-days: 7

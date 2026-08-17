@@ -1,0 +1,106 @@
+name: "Close Company #010 · Cypher Economic State"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-discovery.mjs'
+      - 'onboarding/company-010-resolve.mjs'
+      - 'onboarding/company-010-deep-resolve.mjs'
+      - 'onboarding/company-010-closure.mjs'
+      - 'onboarding/company-010-closure-review.mjs'
+      - '.github/workflows/close-company-010.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: close-company-010-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  closure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate source syntax
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-discovery.mjs
+          node --check onboarding/company-010-resolve.mjs
+          node --check onboarding/company-010-deep-resolve.mjs
+          node --check onboarding/company-010-closure.mjs
+          node --check onboarding/company-010-closure-review.mjs
+          grep -F "const VERSION='0.4-company-010-economic-closure';" onboarding/company-010-closure.mjs
+          grep -F "const VERSION='0.4.1-company-010-economic-closure-reviewed';" onboarding/company-010-closure-review.mjs
+      - name: Install bounded dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+      - name: Rebuild exact Company #010 evidence chain
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node onboarding/company-010-discovery.mjs
+          node onboarding/company-010-resolve.mjs
+          node onboarding/company-010-deep-resolve.mjs
+          node onboarding/company-010-closure.mjs
+          node onboarding/company-010-closure-review.mjs
+      - name: Validate reviewed economic closure boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-010-closure.json','utf8'));
+          if(d.version!=='0.4.1-company-010-economic-closure-reviewed') throw new Error('reviewed closure version mismatch');
+          if(d.company?.registry!=='010'||d.company?.name!=='Cypher') throw new Error('company binding mismatch');
+          if(d.company?.category!=='Bitcoin Standard') throw new Error('category mismatch');
+          if(d.epistemicBoundary?.unknownIsNotZero!==true) throw new Error('unknown policy missing');
+          if(d.epistemicBoundary?.feeTierIsNotApr!==true) throw new Error('Project X fee-tier guard missing');
+          if(d.epistemicBoundary?.fluidExcluded!==true) throw new Error('Fluid exclusion missing');
+          if(d.epistemicBoundary?.noTransactions!==true||d.epistemicBoundary?.executionAuthority!=='none') throw new Error('authority boundary changed');
+          if(d.review?.gmxExactAddressBinding!==true||d.review?.originalBroadParserRejected!==true) throw new Error('independent GMX exact-address review missing');
+          const b=d.companyBookCandidate||{};
+          for(const k of ['BTC','ETH','HYPE','CVX','CRV','AERO','LDO','VELO']) if(!b[k]||!Number.isFinite(Number(b[k].quantity))||Number(b[k].quantity)<0) throw new Error(`invalid ${k} candidate`);
+          if(Number(b.HYPE.components?.projectXPrincipal||0)<=0) throw new Error('Project X HYPE principal missing');
+          if(Number(b.CRV.components?.concentratorSdCrvUnderlying||0)<=0) throw new Error('Concentrator principal missing');
+          if(Number(b.LDO.quantity||0)<=0) throw new Error('Arbitrum LDO missing');
+          const g=d.closure?.gmx?.positions||[];
+          if(g.length!==2||g.some(x=>x.referenceAprStatus!=='measured'||!Number.isFinite(Number(x.referenceAprPct)))) throw new Error('two exact measured GMX APYs required');
+          for(const x of g){if(String(x.referenceAprEvidence?.matchedKey||'').toLowerCase()!==String(x.token).toLowerCase()) throw new Error(`GMX key mismatch ${x.token}`)}
+          console.log('Company #010 reviewed economic closure PASS', {
+            HYPE:b.HYPE,
+            CRV:b.CRV,
+            LDO:b.LDO.quantity,
+            hyperliquidSpotHype:d.closure.hyperliquid.totalSpotHype,
+            gmx:g.map(x=>({name:x.name,balance:x.aggregateBalance,apr:x.referenceAprPct,matchedKey:x.referenceAprEvidence?.matchedKey,valuation:x.valuationStatus})),
+            unresolved:d.unresolved,
+            ready:d.readiness?.readyForProductionIntegrator
+          });
+          NODE
+      - name: Upload reviewed closure evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: company-010-cypher-closure-${{ github.sha }}
+          path: |
+            companies/company-010-discovery.json
+            companies/company-010-resolve.json
+            companies/company-010-deep-resolve.json
+            companies/company-010-closure.json
+          if-no-files-found: error
+          retention-days: 7
