@@ -2,6 +2,10 @@ name: "The Holding Intelligence · Capital State"
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Update Company #010 · Cypher Production State"
+    types: [completed]
   push:
     branches: [main]
     paths:
@@ -21,6 +25,7 @@ concurrency:
 
 jobs:
   update:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
