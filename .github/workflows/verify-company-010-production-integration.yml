@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'onboarding/company-010-reconciliation.mjs'
+      - 'onboarding/company-010-stakedao-intelligence.mjs'
+      - 'onboarding/company-010-production-baseline.mjs'
       - 'onboarding/company-010-production-state.mjs'
       - 'onboarding/company-010-stakedao-overlay.mjs'
       - 'intelligence/capital-state/capital-state.mjs'
@@ -21,7 +23,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - name: Checkout candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -33,6 +35,8 @@ jobs:
         run: |
           set -euo pipefail
           node --check onboarding/company-010-reconciliation.mjs
+          node --check onboarding/company-010-stakedao-intelligence.mjs
+          node --check onboarding/company-010-production-baseline.mjs
           node --check onboarding/company-010-production-state.mjs
           node --check onboarding/company-010-stakedao-overlay.mjs
           node --check intelligence/capital-state/capital-state.mjs
@@ -58,7 +62,8 @@ jobs:
           node onboarding/company-010-closure-review.mjs
           node onboarding/company-010-gmx-reader.mjs
           node onboarding/company-010-reconciliation.mjs
-          node onboarding/company-010-production-state.mjs
+          node onboarding/company-010-stakedao-intelligence.mjs
+          node onboarding/company-010-production-baseline.mjs
           node onboarding/company-010-stakedao-overlay.mjs
       - name: Build Capital State with complete Cypher
         run: |
@@ -75,6 +80,7 @@ jobs:
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
           const errors=[];
           if(r.version!=='0.2-company-010-capital-reconciliation-stakedao-base')errors.push('reconciliation version');
+          if(r.stakeDaoIntelligence?.version!=='0.1-stakedao-accountant-strategy-api')errors.push('Stake DAO intelligence');
           if(s.version!=='0.3-company-010-production-state-stakedao-complete')errors.push('Cypher state version');
           if(s.company?.architecture!=='The Holding Standard')errors.push('architecture');
           if(s.capital?.totalCapitalComplete!==true||s.capital?.knownButUnboundCapitalMayExist!==false)errors.push('Cypher complete-total semantics');
@@ -89,7 +95,11 @@ jobs:
           for(const x of stake?.underlying||[])expected.delete(x.symbol);
           if(expected.size)errors.push('Stake DAO missing '+[...expected].join(','));
           const reward=(s.rewards?.observations||[]).find(x=>x.id==='stakedao-base-curve-4pool-crv');
-          if(!reward||reward.token!=='CRV'||reward.status!=='measured')errors.push('Stake DAO CRV claimable');
+          if(!reward||reward.token!=='CRV'||reward.status!=='measured'||!(Number(reward.claimable)>=0))errors.push('Stake DAO CRV claimable');
+          const prod=(s.productivity?.positions||[]).find(x=>x.id==='stakedao_base_curve_4pool');
+          if(!prod||prod.status!=='measured'||!(Number(prod.referenceAprPct)>=0))errors.push('Stake DAO official APR');
+          if(r.stakeDaoBase?.result?.referenceAprSource!=='Stake DAO official /api/strategies/curve/8453.json')errors.push('Stake DAO APR source');
+          if(r.stakeDaoBase?.result?.rewardAccounting?.source!=='Stake DAO verified Accountant integral state on Base')errors.push('Stake DAO reward source');
           if((s.gaps||[]).some(x=>x.id==='fluid-net-eth'))errors.push('Fluid blocker remains');
           if(s.epistemicBoundary?.fluidOwnerPolicy!=='out-of-scope')errors.push('Fluid owner policy');
           if((s.capital?.positions||[]).some(x=>String(x.protocol||'').toLowerCase()==='fluid'))errors.push('Fluid capital leaked');
@@ -99,5 +109,5 @@ jobs:
           if(Math.abs(Number(c.network?.networkTvlUsd)-Number(c.network?.measuredCapitalFloorUsd))>0.05)errors.push('network exact/floor drift');
           if(c.authority?.executionAuthority!=='none'||s.authority?.executionAuthority!=='none'||r.authority?.executionAuthority!=='none')errors.push('authority drift');
           if(errors.length)throw new Error(`Company #010 complete review failed: ${errors.join(', ')}`);
-          console.log('COMPANY #010 STAKE DAO COMPLETE REVIEW GREEN',{totalCapitalUsd:s.capital.totalCapitalUsd,stakeDaoValueUsd:stake.valueUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoBaseApyPct:(s.productivity?.positions||[]).find(x=>x.id==='stakedao_base_curve_4pool')?.referenceAprPct,networkTvlUsd:c.network.networkTvlUsd,fluid:'out-of-scope',performance:s.performance.status,executionAuthority:'none'});
+          console.log('COMPANY #010 STAKE DAO COMPLETE REVIEW GREEN',{totalCapitalUsd:s.capital.totalCapitalUsd,stakeDaoValueUsd:stake.valueUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoReferenceAprPct:prod.referenceAprPct,networkTvlUsd:c.network.networkTvlUsd,fluid:'out-of-scope',performance:s.performance.status,executionAuthority:'none'});
           NODE
