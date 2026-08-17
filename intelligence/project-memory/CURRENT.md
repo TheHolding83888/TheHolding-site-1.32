@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-17T07:42:41.601Z**
+Canonical source state represented here: **2026-08-17T08:05:27.498Z**
 
 ## Resume order
 
@@ -31,15 +31,14 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Current cognitive stack
 
-- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: e2f1e0a098587deeb0bd6cf1a81a5714447329cb917e78ff18d1f19d7f8e644e.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 20; generatedAt 2026-08-17T07:42:41.601Z.
-- Cognitive Stack Security snapshot is older (2026-08-16T07:50:27.591Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
+- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: eb6b5ff27764f3ba15f76b0855b72d24b53831646040ba59418d848e147c0537.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 20; generatedAt 2026-08-17T08:05:07.465Z.
 - Grounded Brain: **WATCH**.
-- ChatGPT Bridge: **WATCH**; cases 25; evidence 27; noExecution true.
+- ChatGPT Bridge: **WATCH**; cases 22; evidence 24; noExecution true.
 
 ## Learning / Proposal / Builder / Guardian
 
-- Learning: **READY**; active cases 25; remembered cases 51; Brain observations 13; owner decisions 2; settled outcomes 0; lessons 0.
+- Learning: **READY**; active cases 22; remembered cases 62; Brain observations 14; owner decisions 2; settled outcomes 0; lessons 0.
 - Proposal: **WATCH**; active 7; APPROVED 0; PROPOSED 7; SUPERSEDED 21; production execution disabled.
 - Builder: **READY**; candidates 0; CANDIDATE 0; productionMutationAuthorizedCount 0.
 - Guardian: **READY**; research-only 0; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
