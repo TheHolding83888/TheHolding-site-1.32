@@ -10,7 +10,7 @@ const VERSION='1.16';
 const COLLECTOR='1.16-company-010-state-backed-productivity-admission';
 const METHODOLOGY='1.1-simple-safe';
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
-const n=x=>Number.isFinite(Number(x))?Number(x):null;
+const n=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x))?Number(x):null;
 const round=(x,d=4)=>n(x)===null?null:Number(Number(x).toFixed(d));
 
 const data=read(DATA),state=read(STATE);
