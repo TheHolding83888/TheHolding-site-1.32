@@ -1,6 +1,7 @@
 /* The Holding · Company #010 Cypher public adapter · v0.6.2-acceptance-polish
  * Compatibility sentinel: supersedes v0.6-stakedao-complete without changing that native surface contract.
  * Stake DAO underlying decomposition remains canonical in state: USDC / USDbC / axlUSDC / crvUSD. Public Passport intentionally renders the strategy as one compact economic row.
+ * Combined TVL compatibility sentinel: net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined remains enforced through canonicalNetworkTvl().
  * Canonical source: /companies/company-010-production-state.json
  * Presentation: native Collection + General Index/Passport/Graph surfaces.
  * Capital completeness, Productivity coverage and Performance evidence remain separate contracts.
