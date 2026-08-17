@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-17T16:04:42.673Z",
+  "generatedAt": "2026-08-17T16:26:43.258Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 24,
+    "medium": 23,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 402,
-    "bytesScanned": 8817255,
+    "bytesScanned": 8819973,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,19 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "38c9af327af5922834e65072837d50ad2a4accf74226a3cd17b0d3bd4692e608",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 75,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "6a3d5a6c9d745da20210579f40e298fd5d5fb438e7f919916f1e3cbe5c3e3c26",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -69,9 +82,19 @@
           "previousSha256": "d980507a6ae628eea4dd2c3b49053523d3e5948655c3c6f756980f7cc56467f7",
           "currentSha256": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb"
         }
+      },
+      {
+        "id": "bd67c336e4b36c27ad18dcd0e0ea9932cd26f39a3406c27dbc8e328ec84f6426",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 61,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -141,20 +164,6 @@
       "evidence": null
     },
     {
-      "id": "6a3d5a6c9d745da20210579f40e298fd5d5fb438e7f919916f1e3cbe5c3e3c26",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/admit-company-010-public.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/admit-company-010-public.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "d980507a6ae628eea4dd2c3b49053523d3e5948655c3c6f756980f7cc56467f7",
-        "currentSha256": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb"
-      }
-    },
-    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -177,11 +186,11 @@
       "evidence": null
     },
     {
-      "id": "bd67c336e4b36c27ad18dcd0e0ea9932cd26f39a3406c27dbc8e328ec84f6426",
+      "id": "38c9af327af5922834e65072837d50ad2a4accf74226a3cd17b0d3bd4692e608",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
-      "line": 61,
+      "line": 75,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
@@ -528,12 +537,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "a10781519895ccadf4e57653cd1549114c090cee8c96447f991d7374c3ae2aed",
+    "snapshotHash": "d4d06c68fb498d71464b7068bf79d07a99f5c3903710e3786c22e929d46786ad",
     "securityVault": {
-      "runCount": 270,
+      "runCount": 271,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-17T16-04-42-673Z-a107815198.json",
-      "latestRecordHash": "492bedff3a77caaff128d0ecc4135b93db059ad761bd36d081063096e53a592b",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-17T16-26-43-258Z-d4d06c68fb.json",
+      "latestRecordHash": "ef7a6193d97a0fadca0cf54a892ade97ce7f5d3a3e0e0707995d1a67e6d55ca3",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
