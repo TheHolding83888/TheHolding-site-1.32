@@ -1,0 +1,120 @@
+name: "Update Company #010 · Cypher Production State"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 4 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'onboarding/company-010-discovery.mjs'
+      - 'onboarding/company-010-resolve.mjs'
+      - 'onboarding/company-010-deep-resolve.mjs'
+      - 'onboarding/company-010-closure.mjs'
+      - 'onboarding/company-010-closure-review.mjs'
+      - 'onboarding/company-010-gmx-reader.mjs'
+      - 'onboarding/company-010-production-state.mjs'
+      - '.github/workflows/update-company-010-state.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: company-010-production-state
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate source syntax
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-discovery.mjs
+          node --check onboarding/company-010-resolve.mjs
+          node --check onboarding/company-010-deep-resolve.mjs
+          node --check onboarding/company-010-closure.mjs
+          node --check onboarding/company-010-closure-review.mjs
+          node --check onboarding/company-010-gmx-reader.mjs
+          node --check onboarding/company-010-production-state.mjs
+      - name: Install bounded dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+      - name: Collect reviewed Company #010 state
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: |
+          set -euo pipefail
+          node onboarding/company-010-discovery.mjs
+          node onboarding/company-010-resolve.mjs
+          node onboarding/company-010-deep-resolve.mjs
+          node onboarding/company-010-closure.mjs
+          node onboarding/company-010-closure-review.mjs
+          node onboarding/company-010-gmx-reader.mjs
+          node onboarding/company-010-production-state.mjs
+      - name: Validate admission boundary
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+          if(d.version!=='0.1-company-010-production-state') throw new Error('version mismatch');
+          if(d.company?.registry!=='010'||d.company?.name!=='Cypher') throw new Error('identity mismatch');
+          if(d.status!=='partial-total-capital'||d.capital?.totalCapitalComplete!==false) throw new Error('Cypher must remain partial while Fluid is unresolved');
+          if(!(Number(d.capital?.knownCapitalFloorUsd)>0)) throw new Error('known capital floor missing');
+          if(!Array.isArray(d.capital?.positions)||d.capital.positions.length!==10) throw new Error('expected 8 direct families + 2 GMX positions');
+          if(d.gaps?.find(x=>x.id==='fluid-net-eth')?.severity!=='blocking-total-capital') throw new Error('Fluid blocker missing');
+          if(d.epistemicBoundary?.unknownIsNotZero!==true||d.epistemicBoundary?.partialTotalIsNotTotal!==true) throw new Error('epistemic guard missing');
+          if(d.authority?.executionAuthority!=='none'||d.authority?.transactions!==false) throw new Error('authority drift');
+          console.log('Company #010 production admission PASS', {knownCapitalFloorUsd:d.capital.knownCapitalFloorUsd,productivityCoverage:d.productivity.coverage,gaps:d.gaps.map(x=>x.id)});
+          NODE
+      - name: Fingerprint source contract
+        id: fingerprint
+        run: |
+          set -euo pipefail
+          sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,production-state}.mjs | sha256sum | awk '{print "sha="$1}' >> "$GITHUB_OUTPUT"
+      - name: Commit production state
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Company State"
+          git config user.email "company-state@theholding.ai"
+          git add companies/company-010-production-state.json
+          if git diff --cached --quiet; then
+            echo "No Company #010 state changes."
+            exit 0
+          fi
+          git commit -m "companies: refresh Cypher production state"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git rebase origin/main
+            AFTER=$(sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,production-state}.mjs | sha256sum | awk '{print $1}')
+            if [ "$AFTER" != "${{ steps.fingerprint.outputs.sha }}" ]; then
+              echo "Company #010 source contract changed during publication; fresh collection required."
+              exit 1
+            fi
+            node - <<'NODE'
+            const fs=require('fs');
+            const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+            if(d.version!=='0.1-company-010-production-state'||d.authority?.executionAuthority!=='none') process.exit(1);
+            NODE
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
