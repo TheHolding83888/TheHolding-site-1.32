@@ -1,14 +1,14 @@
 {
   "version": "0.3-capital-state",
-  "engineVersion": "0.4-complete-registry-admission-capital-substrate",
-  "generatedAt": "2026-08-17T15:27:55.362Z",
+  "engineVersion": "0.4.1-generation-bound-productivity-coherence",
+  "generatedAt": "2026-08-17T18:00:44.352Z",
   "status": "ok",
   "purpose": "Canonical machine-readable Capital State across the Registry with complete totals where proven and measured capital floors only where genuinely unresolved in-scope economic exposure remains.",
   "semantics": {
     "measuredCapitalFloorUsd": "Sum of non-overlapping current capital amounts proven by canonical sources. When all companies are complete this equals Network TVL.",
     "networkTvlUsd": "Populated only when every registered company has a complete non-overlapping total-capital binding. Company #010 Fluid is out of scope by owner policy, not an unresolved capital gap.",
     "capitalLayer": "Primary economic role. Productivity remains orthogonal and is not added again as a second capital copy.",
-    "productiveMeasuredExposureUsd": "Measured productive exposure; never added to Network capital as a separate copy.",
+    "productiveMeasuredExposureUsd": "Measured productive exposure; never added to Network capital as a separate copy. Established general companies use the Productive exposure bound to the same General Balance source generation; a newer Productivity snapshot is diagnostic until General Balance is regenerated.",
     "layerTaxonomy": [
       "foundation",
       "productive-dividend",
@@ -34,14 +34,16 @@
       "version": "0.1-general-company-balance-sheet",
       "generatedAt": "2026-08-17T10:29:17.678Z",
       "sha256": "d3125355f70e91d1e578b62669bc2ea3fe0004739c7168021f9046684a067610",
-      "role": "complete total-capital binding for eight established general companies"
+      "role": "complete total-capital binding for eight established general companies, including generation-bound productive exposure"
     },
     "productivity": {
       "file": "companies/productivity-data.json",
-      "version": "1.15",
-      "generatedAt": "2026-08-16T04:50:50.379Z",
-      "sha256": "662b28e20df7ef30fe40b54982714ef9199cd807c0ec54dddf4f56b8390547e1",
-      "role": "canonical Productivity for established routes including optional Company #010 state-backed admission"
+      "version": "1.16",
+      "generatedAt": "2026-08-17T16:58:58.347Z",
+      "sha256": "b0ca5245ee91cc24e8700de8de7e3ef9d3325100f8bf3d3a0fea41aba5351cfa",
+      "sameGenerationAsGeneralBalance": false,
+      "generalBalanceBoundSha256": "662b28e20df7ef30fe40b54982714ef9199cd807c0ec54dddf4f56b8390547e1",
+      "role": "current canonical Productivity; used directly for current diagnostics and Company #010/global routes, while established general-company productive exposure remains bound to its General Balance generation when hashes differ"
     },
     "stableIndex": {
       "file": "companies/stable-index-data.json",
@@ -53,8 +55,8 @@
     "company010": {
       "file": "companies/company-010-production-state.json",
       "version": "0.3-company-010-production-state-stakedao-complete",
-      "generatedAt": "2026-08-17T15:27:34.192Z",
-      "sha256": "b2173d076bc1f0d43d0c78ef9da4ad7f905120a64e73e5f5e282e8f37655c7c9",
+      "generatedAt": "2026-08-17T18:00:17.903Z",
+      "sha256": "6f0786baf56b77f57740c0d2eb4573242054b189279172cb5894d19efcbc9d64",
       "role": "Cypher complete current capital including Stake DAO Base, Aave wstETH, HyperLend and GMX; Fluid explicitly out of scope by owner policy"
     }
   },
@@ -63,38 +65,38 @@
     "measuredCompanyCount": 10,
     "totalCapitalCompleteCompanyCount": 10,
     "totalCapitalCoverage": 1,
-    "productiveMeasuredExposureUsd": 30600.7,
-    "primaryProductiveDividendCapitalUsd": 29961.686681,
+    "productiveMeasuredExposureUsd": 30596.44,
+    "primaryProductiveDividendCapitalUsd": 29957.436681,
     "measuredStableCapitalUsd": 100.214302,
-    "measuredCapitalFloorUsd": 56019.219591,
-    "networkTvlUsd": 56019.219591,
+    "measuredCapitalFloorUsd": 56022.539591,
+    "networkTvlUsd": 56022.539591,
     "networkTvlStatus": "complete",
     "indexedCoverageStatus": "10/10 companies have canonical complete total-capital binding; 10/10 have measured current capital",
     "layerValues": {
-      "foundationUsd": 25891.44518,
-      "productiveDividendUsd": 29961.686681,
+      "foundationUsd": 25899.01518,
+      "productiveDividendUsd": 29957.436681,
       "stableReserveUsd": 100.214302,
       "rwaUsd": 0,
       "ventureUsd": 0,
       "unclassifiedUsd": 65.873428
     },
     "layerWeights": {
-      "foundation": 0.462189,
-      "productiveDividend": 0.534847,
+      "foundation": 0.462296,
+      "productiveDividend": 0.534739,
       "stableReserve": 0.001789,
       "rwa": 0,
       "venture": 0,
       "unclassified": 0.001176
     },
     "measuredFloorLayerWeights": {
-      "foundation": 0.462189,
-      "productiveDividend": 0.534847,
+      "foundation": 0.462296,
+      "productiveDividend": 0.534739,
       "stableReserve": 0.001789,
       "rwa": 0,
       "venture": 0,
       "unclassified": 0.001176
     },
-    "latestUpstreamGeneratedAt": "2026-08-17T15:27:34.192Z"
+    "latestUpstreamGeneratedAt": "2026-08-17T18:00:17.903Z"
   },
   "companies": [
     {
@@ -116,9 +118,15 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
+        "reason": "Canonical General Company Balance Sheet total with generation-bound Productive reconciliation."
       },
       "epistemicNote": null,
+      "productiveReconciliation": {
+        "source": "general-balance-bound-generation",
+        "boundProductiveExposureUsd": 308.87,
+        "currentProductivityDiagnosticUsd": 315.46,
+        "currentProductivitySameGeneration": false
+      },
       "measuredPositions": [
         {
           "sourceKind": "general-balance-sheet",
@@ -183,9 +191,15 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
+        "reason": "Canonical General Company Balance Sheet total with generation-bound Productive reconciliation."
       },
       "epistemicNote": null,
+      "productiveReconciliation": {
+        "source": "general-balance-bound-generation",
+        "boundProductiveExposureUsd": 802.7,
+        "currentProductivityDiagnosticUsd": 804.81,
+        "currentProductivitySameGeneration": false
+      },
       "measuredPositions": [
         {
           "sourceKind": "general-balance-sheet",
@@ -264,9 +278,15 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
+        "reason": "Canonical General Company Balance Sheet total with generation-bound Productive reconciliation."
       },
       "epistemicNote": null,
+      "productiveReconciliation": {
+        "source": "general-balance-bound-generation",
+        "boundProductiveExposureUsd": 946.17,
+        "currentProductivityDiagnosticUsd": 930.8,
+        "currentProductivitySameGeneration": false
+      },
       "measuredPositions": [
         {
           "sourceKind": "general-balance-sheet",
@@ -303,9 +323,15 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
+        "reason": "Canonical General Company Balance Sheet total with generation-bound Productive reconciliation."
       },
       "epistemicNote": null,
+      "productiveReconciliation": {
+        "source": "general-balance-bound-generation",
+        "boundProductiveExposureUsd": 9236.53,
+        "currentProductivityDiagnosticUsd": 9295.49,
+        "currentProductivitySameGeneration": false
+      },
       "measuredPositions": [
         {
           "sourceKind": "general-balance-sheet",
@@ -482,9 +508,15 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
+        "reason": "Canonical General Company Balance Sheet total with generation-bound Productive reconciliation."
       },
       "epistemicNote": null,
+      "productiveReconciliation": {
+        "source": "general-balance-bound-generation",
+        "boundProductiveExposureUsd": 5525.17,
+        "currentProductivityDiagnosticUsd": 5658.4,
+        "currentProductivitySameGeneration": false
+      },
       "measuredPositions": [
         {
           "sourceKind": "general-balance-sheet",
@@ -563,9 +595,15 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
+        "reason": "Canonical General Company Balance Sheet total with generation-bound Productive reconciliation."
       },
       "epistemicNote": null,
+      "productiveReconciliation": {
+        "source": "general-balance-bound-generation",
+        "boundProductiveExposureUsd": 7692.52,
+        "currentProductivityDiagnosticUsd": 7856.76,
+        "currentProductivitySameGeneration": false
+      },
       "measuredPositions": [
         {
           "sourceKind": "general-balance-sheet",
@@ -644,9 +682,15 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
+        "reason": "Canonical General Company Balance Sheet total with generation-bound Productive reconciliation."
       },
       "epistemicNote": null,
+      "productiveReconciliation": {
+        "source": "general-balance-bound-generation",
+        "boundProductiveExposureUsd": 3363.58,
+        "currentProductivityDiagnosticUsd": 3444.85,
+        "currentProductivitySameGeneration": false
+      },
       "measuredPositions": [
         {
           "sourceKind": "general-balance-sheet",
@@ -782,6 +826,7 @@
         "reason": "Canonical Stable Index complete current strategy capital state."
       },
       "epistemicNote": null,
+      "productiveReconciliation": null,
       "measuredPositions": [
         {
           "sourceKind": "stable-index",
@@ -924,9 +969,15 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Canonical General Company Balance Sheet total with Productive reconciliation."
+        "reason": "Canonical General Company Balance Sheet total with generation-bound Productive reconciliation."
       },
       "epistemicNote": "Total includes an explicitly disclosed owner-observed WETH component; provenance is preserved rather than silently upgraded to independently reproduced onchain evidence.",
+      "productiveReconciliation": {
+        "source": "general-balance-bound-generation",
+        "boundProductiveExposureUsd": 432.15,
+        "currentProductivityDiagnosticUsd": 429.36,
+        "currentProductivitySameGeneration": false
+      },
       "measuredPositions": [
         {
           "sourceKind": "general-balance-sheet",
@@ -1004,14 +1055,14 @@
       "registry": "010",
       "name": "Cypher",
       "measurementStatus": "total-capital-complete",
-      "measuredCapitalUsd": 5296.84,
-      "productiveMeasuredExposureUsd": 2293.01,
+      "measuredCapitalUsd": 5300.16,
+      "productiveMeasuredExposureUsd": 2288.75,
       "capitalScope": "company-010-complete-current-capital-fluid-owner-policy-excluded",
       "totalCapitalComplete": true,
       "knownButUnboundCapitalMayExist": false,
       "layerValues": {
-        "foundationUsd": 2879.78,
-        "productiveDividendUsd": 2417.06,
+        "foundationUsd": 2887.35,
+        "productiveDividendUsd": 2412.81,
         "stableReserveUsd": 0,
         "rwaUsd": 0,
         "ventureUsd": 0,
@@ -1029,8 +1080,8 @@
           "symbol": "BTC",
           "protocol": null,
           "units": 0.00861475,
-          "priceUsd": 63818,
-          "valueUsd": 549.78,
+          "priceUsd": 64285,
+          "valueUsd": 553.8,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "CoinGecko simple price",
@@ -1042,9 +1093,9 @@
           "assetId": "ethereum",
           "symbol": "ETH",
           "protocol": null,
-          "units": 1.2234112513,
-          "priceUsd": 1904.51,
-          "valueUsd": 2330,
+          "units": 1.22341125139,
+          "priceUsd": 1907.41,
+          "valueUsd": 2333.55,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "CoinGecko simple price",
@@ -1056,9 +1107,9 @@
           "assetId": "hyperliquid",
           "symbol": "HYPE",
           "protocol": null,
-          "units": 3.115895761048,
-          "priceUsd": 59.27,
-          "valueUsd": 184.68,
+          "units": 3.175047666257,
+          "priceUsd": 58.95,
+          "valueUsd": 187.17,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "CoinGecko simple price",
@@ -1085,8 +1136,8 @@
           "symbol": "CRV",
           "protocol": null,
           "units": 1114.90516955926,
-          "priceUsd": 0.243853,
-          "valueUsd": 271.87,
+          "priceUsd": 0.246173,
+          "valueUsd": 274.46,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "CoinGecko simple price",
@@ -1099,8 +1150,8 @@
           "symbol": "AERO",
           "protocol": null,
           "units": 716.274089171168,
-          "priceUsd": 0.417943,
-          "valueUsd": 299.36,
+          "priceUsd": 0.410635,
+          "valueUsd": 294.13,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "CoinGecko simple price",
@@ -1113,8 +1164,8 @@
           "symbol": "LDO",
           "protocol": null,
           "units": 372.830386493323,
-          "priceUsd": 0.303609,
-          "valueUsd": 113.19,
+          "priceUsd": 0.303611,
+          "valueUsd": 113.2,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": false,
           "priceProvenance": "CoinGecko simple price",
@@ -1127,8 +1178,8 @@
           "symbol": "VELO",
           "protocol": null,
           "units": 3329.368603727376,
-          "priceUsd": 0.0171322,
-          "valueUsd": 57.04,
+          "priceUsd": 0.01693487,
+          "valueUsd": 56.38,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "CoinGecko simple price",
@@ -1140,9 +1191,9 @@
           "assetId": "hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d",
           "symbol": "HL-KHYPE",
           "protocol": "HyperLend",
-          "units": 6.115119918008,
-          "priceUsd": 60.89337285,
-          "valueUsd": 372.37,
+          "units": 6.115119918015,
+          "priceUsd": 60.27035291,
+          "valueUsd": 368.56,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "HyperLend official Oracle",
@@ -1153,10 +1204,10 @@
           "sourceKind": "company-010-production-state",
           "assetId": "gmx-gm-eth-usdc",
           "symbol": "GM-ETH-USDC",
-          "protocol": null,
+          "protocol": "GMX",
           "units": 51.924349479019,
-          "priceUsd": 1.687637694902,
-          "valueUsd": 87.63,
+          "priceUsd": 1.688568036824,
+          "valueUsd": 87.68,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "official GMX Reader current market-token valuation",
@@ -1167,10 +1218,10 @@
           "sourceKind": "company-010-production-state",
           "assetId": "gmx-gm-btc-usdc",
           "symbol": "GM-BTC-USDC",
-          "protocol": null,
+          "protocol": "GMX",
           "units": 48.432598162895,
-          "priceUsd": 2.221215714014,
-          "valueUsd": 107.58,
+          "priceUsd": 2.227601432065,
+          "valueUsd": 107.89,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "official GMX Reader current market-token valuation",
@@ -1240,6 +1291,14 @@
       "meaning": "Concentrator sdCRV underlying CRV principal is measured; Reference APR is not yet reproducibly bound.",
       "company": "Cypher",
       "registry": "010"
+    },
+    {
+      "id": "general-balance-productivity-generation-skew",
+      "severity": "non-blocking",
+      "affects": [
+        "productiveMeasuredExposureUsd"
+      ],
+      "detail": "Current Productivity and the established General Company Balance Sheet come from different source generations. General-company productive exposure remains bound to the General Balance generation; current Productivity is retained as diagnostic and does not block Network TVL."
     },
     {
       "id": "rwa-and-venture-current-capital-coverage",
