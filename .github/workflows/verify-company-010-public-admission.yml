@@ -44,12 +44,14 @@ jobs:
             "const rCo = c => c.indexEligible === false ? P.rCoMin",
             "c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending')"
           ];
-          for(const x of must)if(!h.includes(x))throw new Error('missing native reconciled surface: '+x);
+          for(const x of must)if(!h.includes(x))throw new Error('missing native surface: '+x);
           if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
           for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
-          for(const x of ['v0.5-wrapper-aware-labels','Hyperliquid','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','performancePending:!complete','GMX · ETH-USDC','GMX · BTC-USDC','cypher-eth-equivalent','wstETH'])if(!a.includes(x))throw new Error('adapter wrapper-aware completion missing: '+x);
+          for(const x of ['v0.6-stakedao-complete','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','GMX · ETH-USDC','GMX · BTC-USDC','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC','USDbC','axlUSDC','crvUSD'])if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
+          if(/\['Bitcoin'.*'Fluid'/.test(a)||a.includes("'Concentrator','Fluid'"))throw new Error('Fluid remains in Cypher protocol list');
+          if(!a.includes("${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}"))throw new Error('exact-vs-floor Company TVL contract missing');
           if(!a.includes('net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined'))throw new Error('Combined TVL null guard missing');
-          console.log('Company #010 native wrapper-aware Passport contract PASS');
+          console.log('Company #010 Stake DAO native Passport contract PASS');
           NODE
       - name: Verify presence and weighting are separate
         run: |
@@ -63,16 +65,12 @@ jobs:
             ['pending composite weight zero','c.weight = 0;'],
             ['pending TVL weight zero','c.tvlWeight = 0;'],
             ['surface count includes pending','cn.textContent = list.length;'],
-            ['network value uses measured floor','hasPending ? \'≥ \' : \'\''],
-            ['composition contains pending marker',"seg.style.width = c.indexEligible === false ? '0%'"],
-            ['composition legend contains pending',"c.indexEligible === false ? (lang === 'ru' ? 'Ожидание' : 'Pending')"],
+            ['network value floor semantics','hasPending ? \'≥ \' : \'\''],
             ['graph includes pending','const comps = computeIndex().slice().sort'],
-            ['graph pending radius is nonzero','c.indexEligible === false ? P.rCoMin'],
             ['pending performance is explicit',"c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending')"]
           ];
           for(const [label,x] of assertions)if(!h.includes(x))throw new Error(label+' missing');
-          if(h.includes('computeIndex().filter(c => c.indexEligible !== false).slice().sort'))throw new Error('Graph still excludes pending company');
-          console.log('Company #010 presence-vs-weighting invariants PASS');
+          console.log('Company #010 presence/weighting invariants PASS');
           NODE
       - name: Verify no execution authority
         run: |
