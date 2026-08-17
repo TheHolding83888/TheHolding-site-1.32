@@ -110,7 +110,7 @@ jobs:
           if(r.stakeDaoBase?.result?.referenceAprSource!=='Curve official /v1/getBaseApys/base') throw new Error('Stake DAO yield provenance mismatch');
           if(r.stakeDaoBase?.result?.rewardAccounting?.source!=='Stake DAO verified Accountant integral state on Base') throw new Error('Stake DAO reward provenance mismatch');
           const g=d.strategies?.gmx;
-          if(g?.version!=='0.1-company-010-gmx-strategy-intelligence'||g.status!=='measured'||g.strategyCount!==2) throw new Error('GMX strategy intelligence missing');
+          if(g?.version!=='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'||g.status!=='measured'||g.strategyCount!==2) throw new Error('GMX strategy intelligence missing');
           if(g.accountingBoundary?.underlyingPoolTokensAddedToReserveBalances!==false||g.accountingBoundary?.gmTokenNavCountedOnce!==true) throw new Error('GMX accounting boundary drift');
           if(g.rewardsBoundary?.lpFeeIncome!=='embedded-in-gm-nav'||g.rewardsBoundary?.separateClaimableLpFees!==false) throw new Error('GMX income semantics drift');
           if(g.strategies.some(x=>x.yield?.referenceMetric!=='GMX 30D Fee APY'||x.yield?.claimableApplicable!==false||!(Number(x.companyPosition?.strategyNavUsd)>0))) throw new Error('GMX strategy metric/NAV mismatch');
@@ -148,7 +148,7 @@ jobs:
               echo "Company #010 source contract changed during publication; fresh collection required."
               exit 1
             fi
-            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));if(d.version!=='0.3-company-010-production-state-stakedao-complete'||d.capital?.totalCapitalComplete!==true||d.strategies?.gmx?.version!=='0.1-company-010-gmx-strategy-intelligence'||d.authority?.executionAuthority!=='none')process.exit(1);"
+            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));if(d.version!=='0.3-company-010-production-state-stakedao-complete'||d.capital?.totalCapitalComplete!==true||d.strategies?.gmx?.version!=='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'||d.authority?.executionAuthority!=='none')process.exit(1);"
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
           done
