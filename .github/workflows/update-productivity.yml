@@ -69,13 +69,14 @@ jobs:
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
           const c=d.companies?.Cypher;
-          if(d.version!=='1.17'||d.collectorVersion!=='1.17-company-010-crv-strategy-productivity')throw new Error('Productivity v1.17 not produced');
+          if(d.version!=='1.16'||d.collectorVersion!=='1.16-company-010-state-backed-productivity-admission')throw new Error('Productivity v1.16 compatibility contract not produced');
+          if(d.diagnostics?.company010?.capability!=='crv-strategy-intelligence-0.1')throw new Error('CRV Productivity capability marker missing');
           if(!c||!(Number(c.productiveValue)>0)||!(Number(c.coveredProductiveValue)>0))throw new Error('Cypher Productivity missing');
           if(!(Number(c.coverage)>0&&Number(c.coverage)<=1))throw new Error('Cypher coverage invalid');
           const byId=new Map((c.breakdown||[]).map(x=>[x.engineId,x]));
           for(const id of ['concentrator_asdcrv','convex_staked_cvxcrv'])if(!byId.has(id))throw new Error('CRV strategy Productivity row missing: '+id);
           if((c.breakdown||[]).some(x=>x.apr===0&&['projectx_hype','concentrator_asdcrv','convex_staked_cvxcrv'].includes(x.engineId)&&x.engineStatus==='warming'))throw new Error('unknown Cypher APR collapsed to zero');
-          console.log('Productivity v1.17 Cypher admission PASS',{aprLatest:c.aprLatest,productiveValue:c.productiveValue,covered:c.coveredProductiveValue,coverage:c.coverage,concentrator:byId.get('concentrator_asdcrv'),convex:byId.get('convex_staked_cvxcrv')});
+          console.log('Productivity v1.16 + CRV intelligence PASS',{aprLatest:c.aprLatest,productiveValue:c.productiveValue,covered:c.coveredProductiveValue,coverage:c.coverage,concentrator:byId.get('concentrator_asdcrv'),convex:byId.get('convex_staked_cvxcrv')});
           NODE
 
       - name: Commit new snapshot
