@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '57 4 * * *'
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Update Company #010 · Cypher Production State"
+    types: [completed]
 
 permissions:
   contents: write
@@ -14,8 +18,9 @@ concurrency:
 
 jobs:
   update-company-rewards:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -31,15 +36,33 @@ jobs:
       - name: Install runtime dependency
         run: npm install --no-save --no-package-lock ethers@6
 
-      - name: Collect company accrued rewards
+      - name: Collect established company accrued rewards
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
-          # Optional dedicated Base RPC(s). If unset, the engine automatically
-          # falls back to Base's official public RPC and other public endpoints.
-          # Secret values are never serialized into rewards-data.json.
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
         run: node rewards/company-rewards-engine.mjs
+
+      - name: Admit Company #010 Cypher rewards from canonical state
+        run: |
+          set -euo pipefail
+          node --check rewards/company-010-rewards-overlay.mjs
+          node rewards/company-010-rewards-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const c=d.companies?.Cypher;
+          if(d.version!=='0.3.10'||d.collectorVersion!=='0.3.10-company-010-stakedao-state-admission')throw new Error('Rewards v0.3.10 not produced');
+          if(!c||c.status!=='partial'||c.totalUsdIsComplete!==false)throw new Error('Cypher partial rewards semantics missing');
+          const crv=(c.rewards||[]).find(x=>x.route==='stakedao-base-curve-4pool'&&x.symbol==='CRV');
+          if(!crv||!(Number(crv.amount)>=0)||!(Number(crv.usdValue)>=0))throw new Error('Stake DAO CRV reward missing');
+          for(const route of ['aerodrome-ve','velodrome-ve-direct','votium-union']){
+            const s=(c.sources||[]).find(x=>x.route===route);
+            if(!s||s.status!=='warming'||s.details?.unknownIsNotZero!==true)throw new Error('Cypher unresolved route semantics missing: '+route);
+          }
+          if(c.settlement?.totalUsdIsComplete!==false||c.settlement?.unknownRouteIsNotZero!==true)throw new Error('Cypher rewards completion guard missing');
+          console.log('Rewards v0.3.10 Cypher admission PASS',{knownAccruedUsd:c.totalUsd,claimableCrv:crv.amount,completeRoutes:c.completeRoutes,routeCount:c.routeCount,totalUsdIsComplete:c.totalUsdIsComplete});
+          NODE
 
       - name: Commit updated rewards snapshot
         run: |
@@ -53,9 +76,6 @@ jobs:
           git add companies/rewards-data.json
           git commit -m "data: update company accrued rewards"
 
-          # Another data workflow may have advanced main while this collector was running.
-          # Rebase our one-file data commit onto the latest main and retry the push
-          # instead of failing with a non-fast-forward race.
           for attempt in 1 2 3; do
             git fetch origin main
             if ! git rebase origin/main; then
@@ -63,6 +83,9 @@ jobs:
               echo "Safe writer guard: rebase conflict; refusing to guess."
               exit 1
             fi
+            node rewards/company-010-rewards-overlay.mjs
+            git add companies/rewards-data.json
+            git commit --amend --no-edit
             if git push origin HEAD:main; then
               exit 0
             fi
