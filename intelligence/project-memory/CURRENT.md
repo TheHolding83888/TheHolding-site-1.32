@@ -4,11 +4,11 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-17T07:39:43.349Z**
+Canonical source state represented here: **2026-08-17T07:42:41.601Z**
 
 ## Resume order
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-16_2200_PRIVACY_HYGIENE_CLOSED_CAPITAL_INTELLIGENCE_NEXT.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-16_2200_PRIVACY_HYGIENE_CLOSED_CAPITAL_INTELLIGENCE_NEXT.md)
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-17_1045_COMPANY_010_CYPHER_PRODUCTION_ADMISSION_PROVEN.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-17_1045_COMPANY_010_CYPHER_PRODUCTION_ADMISSION_PROVEN.md)
 2. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
 3. [Project Memory README](./README.md)
 4. Read only the live machine-readable subsystem artifacts needed for the current task.
@@ -32,7 +32,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: e2f1e0a098587deeb0bd6cf1a81a5714447329cb917e78ff18d1f19d7f8e644e.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 20; generatedAt 2026-08-17T07:39:43.349Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 20; generatedAt 2026-08-17T07:42:41.601Z.
 - Cognitive Stack Security snapshot is older (2026-08-16T07:50:27.591Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 25; evidence 27; noExecution true.
