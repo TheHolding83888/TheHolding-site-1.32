@@ -1,12 +1,12 @@
 {
   "version": "0.3-capital-state",
-  "engineVersion": "0.3-partial-registry-admission-capital-substrate",
-  "generatedAt": "2026-08-17T12:45:15.125Z",
-  "status": "partial",
-  "purpose": "Canonical machine-readable Capital State across the Registry with complete totals where proven and measured capital floors where unresolved economic exposure remains.",
+  "engineVersion": "0.4-complete-registry-admission-capital-substrate",
+  "generatedAt": "2026-08-17T14:47:04.774Z",
+  "status": "ok",
+  "purpose": "Canonical machine-readable Capital State across the Registry with complete totals where proven and measured capital floors only where genuinely unresolved in-scope economic exposure remains.",
   "semantics": {
-    "measuredCapitalFloorUsd": "Sum of non-overlapping current capital amounts proven by canonical sources. It is a lower bound when any registered company has unresolved capital.",
-    "networkTvlUsd": "Populated only when every registered company has a complete non-overlapping total-capital binding. With Cypher Fluid unresolved, Network TVL is withheld.",
+    "measuredCapitalFloorUsd": "Sum of non-overlapping current capital amounts proven by canonical sources. When all companies are complete this equals Network TVL.",
+    "networkTvlUsd": "Populated only when every registered company has a complete non-overlapping total-capital binding. Company #010 Fluid is out of scope by owner policy, not an unresolved capital gap.",
     "capitalLayer": "Primary economic role. Productivity remains orthogonal and is not added again as a second capital copy.",
     "productiveMeasuredExposureUsd": "Measured productive exposure; never added to Network capital as a separate copy.",
     "layerTaxonomy": [
@@ -41,7 +41,7 @@
       "version": "1.15",
       "generatedAt": "2026-08-16T04:50:50.379Z",
       "sha256": "662b28e20df7ef30fe40b54982714ef9199cd807c0ec54dddf4f56b8390547e1",
-      "role": "canonical Productivity for established routes"
+      "role": "canonical Productivity for established routes including optional Company #010 state-backed admission"
     },
     "stableIndex": {
       "file": "companies/stable-index-data.json",
@@ -52,49 +52,49 @@
     },
     "company010": {
       "file": "companies/company-010-production-state.json",
-      "version": "0.2-company-010-production-state-reconciled",
-      "generatedAt": "2026-08-17T12:44:58.494Z",
-      "sha256": "c78465d187218cd1bba86b566974bd689eeb0739f55ca0d4a239f1096892dd2e",
-      "role": "Cypher reconciled measured capital floor including Aave wstETH and detected HyperLend/cvxCRV, with explicit unresolved Fluid boundary"
+      "version": "0.3-company-010-production-state-stakedao-complete",
+      "generatedAt": "2026-08-17T14:46:44.683Z",
+      "sha256": "5fd8ccd2fe1a2ccaca300c71de1f0928a99d66339cf7c04cc771775d00be521f",
+      "role": "Cypher complete current capital including Stake DAO Base, Aave wstETH, HyperLend and GMX; Fluid explicitly out of scope by owner policy"
     }
   },
   "network": {
     "registryCompanyCount": 10,
     "measuredCompanyCount": 10,
-    "totalCapitalCompleteCompanyCount": 9,
-    "totalCapitalCoverage": 0.9,
-    "productiveMeasuredExposureUsd": 30010.18,
-    "primaryProductiveDividendCapitalUsd": 29370.436681,
+    "totalCapitalCompleteCompanyCount": 10,
+    "totalCapitalCoverage": 1,
+    "productiveMeasuredExposureUsd": 30593.3,
+    "primaryProductiveDividendCapitalUsd": 29954.316681,
     "measuredStableCapitalUsd": 100.214302,
-    "measuredCapitalFloorUsd": 55414.949591,
-    "networkTvlUsd": null,
-    "networkTvlStatus": "withheld-incomplete-total-capital-coverage",
-    "indexedCoverageStatus": "9/10 companies have canonical complete total-capital binding; 10/10 have measured current capital",
+    "measuredCapitalFloorUsd": 56003.329591,
+    "networkTvlUsd": 56003.329591,
+    "networkTvlStatus": "complete",
+    "indexedCoverageStatus": "10/10 companies have canonical complete total-capital binding; 10/10 have measured current capital",
     "layerValues": {
-      "foundationUsd": 25878.42518,
-      "productiveDividendUsd": 29370.436681,
+      "foundationUsd": 25882.92518,
+      "productiveDividendUsd": 29954.316681,
       "stableReserveUsd": 100.214302,
       "rwaUsd": 0,
       "ventureUsd": 0,
       "unclassifiedUsd": 65.873428
     },
     "layerWeights": {
-      "foundation": null,
-      "productiveDividend": null,
-      "stableReserve": null,
-      "rwa": null,
-      "venture": null,
-      "unclassified": null
-    },
-    "measuredFloorLayerWeights": {
-      "foundation": 0.466994,
-      "productiveDividend": 0.530009,
-      "stableReserve": 0.001808,
+      "foundation": 0.462168,
+      "productiveDividend": 0.534867,
+      "stableReserve": 0.001789,
       "rwa": 0,
       "venture": 0,
-      "unclassified": 0.001189
+      "unclassified": 0.001176
     },
-    "latestUpstreamGeneratedAt": "2026-08-17T12:44:58.494Z"
+    "measuredFloorLayerWeights": {
+      "foundation": 0.462168,
+      "productiveDividend": 0.534867,
+      "stableReserve": 0.001789,
+      "rwa": 0,
+      "venture": 0,
+      "unclassified": 0.001176
+    },
+    "latestUpstreamGeneratedAt": "2026-08-17T14:46:44.683Z"
   },
   "companies": [
     {
@@ -1003,25 +1003,25 @@
     {
       "registry": "010",
       "name": "Cypher",
-      "measurementStatus": "partial-total-capital-floor",
-      "measuredCapitalUsd": 4692.57,
-      "productiveMeasuredExposureUsd": 1702.49,
-      "capitalScope": "known-current-capital-floor-fluid-excluded",
-      "totalCapitalComplete": false,
-      "knownButUnboundCapitalMayExist": true,
+      "measurementStatus": "total-capital-complete",
+      "measuredCapitalUsd": 5280.95,
+      "productiveMeasuredExposureUsd": 2285.61,
+      "capitalScope": "company-010-complete-current-capital-fluid-owner-policy-excluded",
+      "totalCapitalComplete": true,
+      "knownButUnboundCapitalMayExist": false,
       "layerValues": {
-        "foundationUsd": 2866.76,
-        "productiveDividendUsd": 1825.81,
+        "foundationUsd": 2871.26,
+        "productiveDividendUsd": 2409.69,
         "stableReserveUsd": 0,
         "rwaUsd": 0,
         "ventureUsd": 0,
         "unclassifiedUsd": 0
       },
       "coverage": {
-        "companyCapitalCoverage": null,
-        "reason": "All currently proven non-Fluid positions are included once. Fluid net ETH remains unresolved, so the company amount is a measured floor rather than complete TVL."
+        "companyCapitalCoverage": 1,
+        "reason": "All in-scope Company #010 capital is bound once, including Stake DAO Base; Fluid is explicitly out of scope by owner policy and cannot block completeness."
       },
-      "epistemicNote": "Fluid ETH loop is excluded until collateral, borrowing and net economic exposure are independently resolved. Unknown is not zero.",
+      "epistemicNote": "Fluid and positions held through Fluid are outside Company #010 measurement scope by owner policy. Stake DAO vault principal is counted once; underlying stablecoins are decomposition only.",
       "measuredPositions": [
         {
           "sourceKind": "company-010-production-state",
@@ -1029,41 +1029,41 @@
           "symbol": "BTC",
           "protocol": null,
           "units": 0.00861475,
-          "priceUsd": 63507,
-          "valueUsd": 547.1,
+          "priceUsd": 63564,
+          "valueUsd": 547.59,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "CoinGecko simple price",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
           "assetId": "ethereum",
           "symbol": "ETH",
           "protocol": null,
-          "units": 1.223411251205,
-          "priceUsd": 1896.06,
-          "valueUsd": 2319.66,
+          "units": 1.223411251279,
+          "priceUsd": 1899.34,
+          "valueUsd": 2323.67,
           "primaryCapitalLayer": "foundation",
           "productiveAttribute": false,
           "priceProvenance": "CoinGecko simple price",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
           "assetId": "hyperliquid",
           "symbol": "HYPE",
           "protocol": null,
-          "units": 3.14656518018,
-          "priceUsd": 59.05,
-          "valueUsd": 185.8,
+          "units": 3.15012552098,
+          "priceUsd": 59.07,
+          "valueUsd": 186.08,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "CoinGecko simple price",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
@@ -1071,27 +1071,27 @@
           "symbol": "CVX",
           "protocol": null,
           "units": 210.322024662375,
-          "priceUsd": 1.6,
-          "valueUsd": 336.52,
+          "priceUsd": 1.59,
+          "valueUsd": 334.41,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "CoinGecko simple price",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
           "assetId": "curve-dao-token",
           "symbol": "CRV",
           "protocol": null,
-          "units": 1114.421457543693,
-          "priceUsd": 0.244737,
-          "valueUsd": 272.74,
+          "units": 1114.90516955926,
+          "priceUsd": 0.242717,
+          "valueUsd": 270.61,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "CoinGecko simple price",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
@@ -1099,13 +1099,13 @@
           "symbol": "AERO",
           "protocol": null,
           "units": 716.274089171168,
-          "priceUsd": 0.413249,
-          "valueUsd": 296,
+          "priceUsd": 0.413788,
+          "valueUsd": 296.39,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "CoinGecko simple price",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
@@ -1113,13 +1113,13 @@
           "symbol": "LDO",
           "protocol": null,
           "units": 372.830386493323,
-          "priceUsd": 0.301489,
-          "valueUsd": 112.4,
+          "priceUsd": 0.303672,
+          "valueUsd": 113.22,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": false,
           "priceProvenance": "CoinGecko simple price",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
@@ -1127,27 +1127,27 @@
           "symbol": "VELO",
           "protocol": null,
           "units": 3329.368603727376,
-          "priceUsd": 0.01704686,
-          "valueUsd": 56.76,
+          "priceUsd": 0.01699979,
+          "valueUsd": 56.6,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "CoinGecko simple price",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
           "assetId": "hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d",
           "symbol": "HL-KHYPE",
           "protocol": "HyperLend",
-          "units": 6.115119918,
-          "priceUsd": 60.60204404,
-          "valueUsd": 370.59,
+          "units": 6.115119918006,
+          "priceUsd": 60.24856943,
+          "valueUsd": 368.43,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "HyperLend official Oracle",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
@@ -1155,13 +1155,13 @@
           "symbol": "GM-ETH-USDC",
           "protocol": null,
           "units": 51.924349479019,
-          "priceUsd": 1.688102681214,
-          "valueUsd": 87.65,
+          "priceUsd": 1.687537814982,
+          "valueUsd": 87.62,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "official GMX Reader current market-token valuation",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
         },
         {
           "sourceKind": "company-010-production-state",
@@ -1169,22 +1169,30 @@
           "symbol": "GM-BTC-USDC",
           "protocol": null,
           "units": 48.432598162895,
-          "priceUsd": 2.216577134354,
-          "valueUsd": 107.35,
+          "priceUsd": 2.217745490927,
+          "valueUsd": 107.41,
           "primaryCapitalLayer": "productive-dividend",
           "productiveAttribute": true,
           "priceProvenance": "official GMX Reader current market-token valuation",
           "evidenceStatus": "established",
-          "inclusion": "included-once-in-known-capital-floor"
+          "inclusion": "included-once-in-complete-company-capital"
+        },
+        {
+          "sourceKind": "company-010-production-state",
+          "assetId": "stakedao-base-curve-4pool",
+          "symbol": "STAKE-DAO-4POOL",
+          "protocol": "Stake DAO",
+          "units": 577.469943269753,
+          "priceUsd": 1.019827970033,
+          "valueUsd": 588.92,
+          "primaryCapitalLayer": "productive-dividend",
+          "productiveAttribute": true,
+          "priceProvenance": "Stake DAO RewardVault shares + Curve official Base pool TVL",
+          "evidenceStatus": "established",
+          "inclusion": "included-once-in-complete-company-capital"
         }
       ],
       "gaps": [
-        {
-          "id": "fluid-net-eth",
-          "severity": "blocking-total-capital",
-          "status": "explicitly-deferred",
-          "meaning": "Fluid ETH loop may contain economic capital but is excluded until deposited collateral, borrowed ETH and net exposure are independently resolved."
-        },
         {
           "id": "project-x-reference-apr",
           "severity": "productivity",
@@ -1218,14 +1226,6 @@
       "detail": "ZK is included in total capital but remains unclassified rather than being promoted into Foundation/Productive/RWA/Venture without a proven economic-layer rule."
     },
     {
-      "id": "fluid-net-eth",
-      "severity": "blocking-total-capital",
-      "status": "explicitly-deferred",
-      "meaning": "Fluid ETH loop may contain economic capital but is excluded until deposited collateral, borrowed ETH and net exposure are independently resolved.",
-      "company": "Cypher",
-      "registry": "010"
-    },
-    {
       "id": "project-x-reference-apr",
       "severity": "productivity",
       "status": "warming",
@@ -1252,10 +1252,10 @@
     }
   ],
   "readiness": {
-    "q12AllocationContext": "partial-known-capital-floor-only",
-    "companyCurrentMeasuredCapital": "available-10-of-10-with-cypher-partial-total",
+    "q12AllocationContext": "available-with-layer-provenance",
+    "companyCurrentMeasuredCapital": "available-10-of-10-complete",
     "networkCapitalFloor": "available",
-    "networkTvl": "blocked-by-company-010-fluid-net-exposure",
-    "capitalLayerWeights": "measured-floor-only"
+    "networkTvl": "available",
+    "capitalLayerWeights": "available-with-unclassified-disclosure"
   }
 }
