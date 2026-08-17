@@ -8822,7 +8822,9 @@
 @media (prefers-reduced-motion: reduce) {
     .so-structure .so-ring:nth-of-type(3) { animation: none; }
 }
-</style>
+        .ib-item[data-index-pending="true"] .ipx-composite{display:none}
+        .ib-item[data-index-pending="true"] .ibw-track{opacity:.28}
+    </style>
 
 <script data-th-addon="premium-prepaint-v1.17">(function(){
     'use strict';
@@ -11086,43 +11088,34 @@ const IDX_FACTORS = [
 function computeIndex() {
     if (!INDEX_STATE) return [];
     const list = INDEX_STATE.slice();
+    const eligible = list.filter(c => c.indexEligible !== false);
+    const pending = list.filter(c => c.indexEligible === false);
     list.forEach(c => { c.score = {}; c.rel = {}; });
     IDX_FACTORS.forEach(f => {
-        const raws = list.map(f.raw);
+        const raws = eligible.map(f.raw);
         const sum  = raws.reduce((s, v) => s + v, 0) || 1;
-        list.forEach((c, i) => {
-            c.score[f.key] = raws[i] / sum;   // factor score: share of all constituents (sums to 1)
-        });
+        eligible.forEach((c, i) => { c.score[f.key] = raws[i] / sum; });
+        pending.forEach(c => { c.score[f.key] = 0; });
     });
-    // One global reference for the signature, so the drawn radius on every axis is
-    // directly proportional to the percentage printed beside it — a bigger number
-    // always means a longer arm, both within a company and between companies.
     let maxShare = 1e-9;
-    list.forEach(c => IDX_FACTORS.forEach(f => { maxShare = Math.max(maxShare, c.score[f.key]); }));
-    const totalVal = list.reduce((s, c) => s + Math.max(c.val, 0), 0);
-    list.forEach(c => {
+    eligible.forEach(c => IDX_FACTORS.forEach(f => { maxShare = Math.max(maxShare, c.score[f.key]); }));
+    const totalVal = eligible.reduce((s, c) => s + Math.max(c.val, 0), 0);
+    eligible.forEach(c => {
         IDX_FACTORS.forEach(f => { c.rel[f.key] = c.score[f.key] / maxShare; });
-        c.weight    = IDX_FACTORS.reduce((s, f) => s + f.weight * c.score[f.key], 0);
-        // Alternative analytical lens — a plain capital-weighted view of the same
-        // constituents. Not a second methodology; the index itself stays composite.
-        // If prices are unavailable every value is 0, which would collapse the whole
-        // TVL lens to zero-radius (invisible) nodes; fall back to equal shares so the
-        // map stays readable. The cards show "Live" in that state, so nothing is
-        // presented as a real figure.
-        c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : 1 / list.length;
+        c.weight = IDX_FACTORS.reduce((s, f) => s + f.weight * c.score[f.key], 0);
+        c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);
     });
-    // A company keeps its colour across both lenses: the ramp is assigned once from
-    // its composite standing, so a lens switch re-proportions the network without
-    // repainting it. Only lengths move, which is what makes the change readable.
-    const byComposite = list.slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
-    // Noble-green family: ranking still drives visual weight, but each tier has
-    // its own botanical character (bottle / juniper / laurel / olive / sage)
-    // rather than being a mechanical lightness ramp of one RGB value.
+    pending.forEach(c => {
+        IDX_FACTORS.forEach(f => { c.rel[f.key] = 0; });
+        c.weight = 0;
+        c.tvlWeight = 0;
+        c.color = '#819064';
+    });
+    const byComposite = eligible.slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
     const NOBLE_GREENS = ['#183F34','#2C574B','#466956','#647653','#819064','#9AA57A','#AFB78C'];
     byComposite.forEach((c, i) => { c.color = NOBLE_GREENS[Math.min(i, NOBLE_GREENS.length - 1)]; });
-
     const key = IDX_MODE === 'tvl' ? 'tvlWeight' : 'weight';
-    return list.sort((a, b) => b[key] - a[key]);
+    return eligible.sort((a,b)=>b[key]-a[key]).concat(pending);
 }
 
 // Which weighting lens the index is currently displayed through
@@ -11247,7 +11240,8 @@ function renderIndex(lang) {
     if (!INDEX_STATE) return;
     const money = v => '$' + Math.round(v).toLocaleString('en-US');
     const list  = computeIndex();
-    const total = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);
+    const eligibleList = list.filter(c => c.indexEligible !== false);
+    const total = eligibleList.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);
     const pct   = c => activeWeight(c) * 100;
     // Noble green ramp — deepest for the largest holding, lighter down the ranks
     const shade = i => (list[i] && list[i].color) || 'rgb(29,74,58)';
@@ -11271,13 +11265,13 @@ function renderIndex(lang) {
     const cn = document.getElementById('idxCount');
     const ld = document.getElementById('idxLeader');
     if (nv) nv.textContent = total > 0 ? money(total) : 'Live';
-    if (cn) cn.textContent = list.length;
-    if (ld) ld.textContent = list[0] ? companyDisplayName(list[0].nm) : '—';
+    if (cn) cn.textContent = eligibleList.length;
+    if (ld) ld.textContent = eligibleList[0] ? companyDisplayName(eligibleList[0].nm) : '—';
 
     const bar = document.getElementById('idxCompBar');
     if (bar) {
         bar.innerHTML = '';
-        list.forEach((c, i) => {
+        eligibleList.forEach((c, i) => {
             const seg = document.createElement('div');
             seg.className = 'index-comp-seg';
             seg.dataset.nm = c.nm;
@@ -11290,7 +11284,7 @@ function renderIndex(lang) {
     const leg = document.getElementById('idxCompLegend');
     if (leg) {
         leg.innerHTML = '';
-        list.forEach((c, i) => {
+        eligibleList.forEach((c, i) => {
             const it = document.createElement('span');
             it.className = 'icl-item';
             it.dataset.nm = c.nm;
@@ -11839,22 +11833,23 @@ function renderIndex(lang) {
             const item = document.createElement('div');
             item.className = 'ib-item';
             item.dataset.nm = c.nm;
+            if (c.indexEligible === false) item.dataset.indexPending = 'true';
             const ageVal = ageDays(c.foundedISO).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US') + ' ' + L.days;
             item.innerHTML =
                 '<div class="ib-row" role="button" tabindex="0" aria-expanded="false">'
-                +   '<span class="ib-rank">' + (i + 1) + '</span>'
+                +   '<span class="ib-rank">' + (c.indexEligible === false ? '—' : (i + 1)) + '</span>'
                 +   '<span class="ib-name"><span class="ib-swatch" style="background:' + shade(i) + '"></span>'
                 +     '<span class="ib-nm-wrap"><div class="ib-nm">' + companyDisplayName(c.nm) + '</div>'
                 +     '<div class="ib-cat">' + c.cat[lang] + '</div></span></span>'
-                +   '<span class="ib-value">' + (c.val > 0 ? money(c.val) : 'Live') + '</span>'
+                +   '<span class="ib-value">' + (c.val > 0 ? ((c.capitalFloor ? '≥ ' : '') + money(c.val)) : 'Live') + '</span>'
                 +   '<span class="ib-weight"><span class="ibw-track"><span class="ibw-fill" style="width:' + w.toFixed(2) + '%;background:' + shade(i) + '"></span></span>'
-                +     '<span class="ibw-pct">' + w.toFixed(1) + '%</span></span>'
+                +     '<span class="ibw-pct">' + (c.indexEligible === false ? (lang === 'ru' ? 'Ожидание' : 'Pending') : w.toFixed(1) + '%') + '</span></span>'
                 +   '<span class="ib-since">' + c.since[lang] + '</span>'
                 +   '<span class="ib-chev">' + chev + '</span>'
                 + '</div>'
                 + '<div class="ib-passport"><div class="ipx-inner">'
                 +   '<div class="ipx-economic">'
-                +     econ(L.companyTVL, c.val > 0 ? money(c.val) : 'Live', 'gold')
+                +     econ(L.companyTVL, c.val > 0 ? ((c.capitalFloor ? '≥ ' : '') + money(c.val)) : 'Live', 'gold')
                 +     econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : '—')
                 +     econ(L.operatingHistory, ageVal, 'age ipx-age', 'data-founded="' + c.foundedISO + '"')
                 +   '</div>'
@@ -11862,8 +11857,8 @@ function renderIndex(lang) {
                 +   '<div class="ipx-grid">'
                 +     fld(L.registry, c.reg)
                 +     fld(L.founded, c.founded[lang])
-                +     wfld(L.weight, ((c.weight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'composite')
-                +     wfld(L.tvlWeight, ((c.tvlWeight || 0) * 100).toFixed(1) + '%', IDX_MODE === 'tvl')
+                +     wfld(L.weight, c.indexEligible === false ? (lang === 'ru' ? 'Ожидание' : 'Pending') : ((c.weight || 0) * 100).toFixed(1) + '%', c.indexEligible !== false && IDX_MODE === 'composite')
+                +     wfld(L.tvlWeight, c.indexEligible === false ? (lang === 'ru' ? 'Ожидание' : 'Pending') : ((c.tvlWeight || 0) * 100).toFixed(1) + '%', c.indexEligible !== false && IDX_MODE === 'tvl')
                 +     fld(L.arch, c.arch[lang])
                 +     protocolFld(c)
                 +     aprFld(c)
@@ -12257,7 +12252,7 @@ function buildGraph() {
 
     // Layout order is stable (always composite) so switching lenses morphs node
     // sizes in place rather than reshuffling the map; only the SIZES follow the lens.
-    const comps = computeIndex().slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
+    const comps = computeIndex().filter(c => c.indexEligible !== false).slice().sort((a, b) => (b.weight || 0) - (a.weight || 0));
     const wt = c => Math.max(activeWeight(c), 0);                // active lens weight 0..1
     const shade  = i => (comps[i] && comps[i].color) || 'rgb(29,74,58)';
 
