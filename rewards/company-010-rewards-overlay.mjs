@@ -35,7 +35,8 @@ const sources=[
 const measuredSources=sources.filter(x=>x.status==='ok'||x.status==='partial').length;
 const completeSources=sources.filter(x=>x.status==='ok').length;
 const routeCount=sources.length;
-const cypher={status:'partial',ens:'Cypher',address:wallets[0].address,resolution:'canonical-company-state',fallbackMatched:null,wallets,totalUsd:usd,totalUsdIsComplete:false,knownAccruedUsd:usd,routeCoverage:round(measuredSources/routeCount,6),completeRouteCoverage:round(completeSources/routeCount,6),measuredRoutes:measuredSources,completeRoutes:completeSources,routeCount,pendingRoutes:routeCount-completeSources,unpricedRewards:0,rewards:[reward],rewardTokens:[{symbol:'CRV',token:reward.token,amount:round(amount,10),usdValue:usd,usdComplete:true}],sources,updatedAt:state.generatedAt||new Date().toISOString(),settlementStatus:'partial-known-accrual',settlement:{readinessStatus:'partial',deferred:true,method:'known-measured-rewards-plus-unbound-proven-routes',knownAccruedUsd:usd,totalUsd:usd,unpricedTokenCount:0,unpricedTokens:[],priceCoverage:1,totalUsdIsComplete:false,unknownPriceIsNotZero:true,unknownRouteIsNotZero:true,unresolvedRoutes:sources.filter(x=>x.status!=='ok').map(x=>x.route)}};
+const unresolvedRoutes=sources.filter(x=>x.status!=='ok').map(x=>x.route);
+const cypher={status:'partial',ens:'Cypher',address:wallets[0].address,resolution:'canonical-company-state',fallbackMatched:null,wallets,totalUsd:usd,totalUsdIsComplete:false,knownAccruedUsd:usd,routeCoverage:round(measuredSources/routeCount,6),completeRouteCoverage:round(completeSources/routeCount,6),measuredRoutes:measuredSources,completeRoutes:completeSources,routeCount,pendingRoutes:routeCount-completeSources,unpricedRewards:0,rewards:[reward],rewardTokens:[{symbol:'CRV',token:reward.token,amount:round(amount,10),usdValue:usd,usdComplete:true}],sources,updatedAt:state.generatedAt||new Date().toISOString(),settlementStatus:'partial-known-accrual',settlement:{readinessStatus:'partial',deferred:true,method:'known-measured-rewards-plus-unbound-proven-routes',knownAccruedUsd:usd,totalUsd:usd,unpricedTokenCount:0,unpricedTokens:[],priceCoverage:1,totalUsdIsComplete:false,unknownPriceIsNotZero:true,unknownRouteIsNotZero:true,unresolvedRoutes}};
 
 data.companies=data.companies&&typeof data.companies==='object'&&!Array.isArray(data.companies)?data.companies:{};
 data.companies.Cypher=cypher;
@@ -45,8 +46,9 @@ data.methodology=data.methodology||{};
 data.methodology.company010='Cypher Stake DAO CRV is measured from the verified Stake DAO Accountant via canonical Company #010 state. Proven Aerodrome veAERO, Velodrome veVELO and Votium/Union routes remain explicit unresolved routes until their mature global collectors are bound; unknown route amounts are never treated as zero.';
 data.methodology.tvlTreatment='Accrued Rewards remain separate from Company TVL and Treasury cash.';
 data.engineErrors=data.engineErrors||{};
-data.engineErrors.Cypher=cypher.settlement.unresolvedRoutes.length?{status:'partial-route-binding',unresolvedRoutes:cypher.settlement.unresolvedRoutes,note:'These are known reward mechanisms awaiting global collector binding, not zero rewards.'}:null;
-if(data.engineErrors.Cypher===null)delete data.engineErrors.Cypher;
+delete data.engineErrors.Cypher;
+data.diagnostics=data.diagnostics||{};
+data.diagnostics.company010={status:'partial-route-binding',knownAccruedUsd:usd,measuredRoute:'stakedao-base-curve-4pool',unresolvedRoutes,note:'Known reward mechanisms awaiting global collector binding are diagnostics, not engine failures and not zero rewards.',executionAuthority:'none'};
 
 const history=Array.isArray(data.history)?data.history:[];
 let snap=history.find(x=>x?.date===data.date);
@@ -56,4 +58,4 @@ data.history=history.slice(-400);
 
 data.summary={companyCount:Object.keys(data.companies).length,totalAccruedUsd:round(Object.values(data.companies).reduce((sum,c)=>sum+(finite(c?.totalUsd)?Number(c.totalUsd):0),0),6),completeCompanyCount:Object.values(data.companies).filter(c=>c?.totalUsdIsComplete===true).length,partialCompanyCount:Object.values(data.companies).filter(c=>c?.totalUsdIsComplete!==true).length,company010KnownAccruedUsd:usd,company010TotalUsdIsComplete:false,unknownRouteIsNotZero:true};
 fs.writeFileSync(DATA,JSON.stringify(data,null,2)+'\n');
-console.log(JSON.stringify({status:'PASS',version:VERSION,company:'Cypher',knownAccruedUsd:usd,claimableCrv:amount,crvPriceUsd:price,totalUsdIsComplete:false,completeRoutes:completeSources,routeCount,unresolvedRoutes:cypher.settlement.unresolvedRoutes,executionAuthority:'none'},null,2));
+console.log(JSON.stringify({status:'PASS',version:VERSION,company:'Cypher',knownAccruedUsd:usd,claimableCrv:amount,crvPriceUsd:price,totalUsdIsComplete:false,completeRoutes:completeSources,routeCount,unresolvedRoutes,executionAuthority:'none'},null,2));
