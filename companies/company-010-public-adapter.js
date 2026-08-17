@@ -1,7 +1,7 @@
-/* The Holding · Company #010 Cypher public adapter · v0.5-wrapper-aware-labels
+/* The Holding · Company #010 Cypher public adapter · v0.6-stakedao-complete
  * Canonical source: /companies/company-010-production-state.json
  * Presentation: native Collection + General Index/Passport/Graph surfaces.
- * Presence and comparability are separate: Cypher is visible while weight stays Pending until total capital is complete.
+ * Capital completeness, Productivity coverage and Performance evidence remain separate contracts.
  */
 (() => {
   'use strict';
@@ -17,8 +17,8 @@
   const pct=v=>Number(v).toFixed(1)+'%';
 
   function protocols(){
-    const p=['Bitcoin','Ethereum','Hyperliquid','Project X','Convex','Curve','Aerodrome','Velodrome','GMX','Concentrator','Fluid'];
-    if((state?.capital?.positions||[]).some(x=>x.protocol==='HyperLend'||String(x.assetId||'').startsWith('hyperlend-')))p.splice(4,0,'HyperLend');
+    const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aerodrome','Velodrome','GMX','Concentrator'];
+    if((state?.capital?.positions||[]).some(x=>x.protocol==='HyperLend'||String(x.assetId||'').startsWith('hyperlend-')))p.splice(5,0,'HyperLend');
     return p;
   }
 
@@ -39,8 +39,8 @@
   }
 
   function cardCopy(){return lang()==='ru'
-    ?'Компания Bitcoin Standard с резервным капиталом и продуктивными позициями в Aave, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X и Concentrator.'
-    :'A Bitcoin Standard company combining reserve capital with productive positions across Aave, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X and Concentrator.';}
+    ?'Компания The Holding Standard с резервным капиталом и продуктивными позициями в Aave, Stake DAO, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X и Concentrator.'
+    :'A The Holding Standard company combining reserve capital with productive positions across Aave, Stake DAO, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X and Concentrator.';}
 
   function syncNetworkStats(){
     const net=window.__TH_CAPITAL_STATE__?.network;
@@ -56,17 +56,24 @@
     if(!placeholder||!state)return;
     let card=document.querySelector('.company-card-010');
     if(!card){card=document.createElement('div');card.className='company-card company-card-010 reveal';card.dataset.category='standard';placeholder.parentNode.insertBefore(card,placeholder);}
-    const apr=currentReferenceApr();
+    const apr=currentReferenceApr(),complete=state.capital?.totalCapitalComplete===true;
     card.innerHTML=`
       <div class="cc-regnum"><span><span class="cc-reg-label">${lang()==='ru'?'Реестр':'Registry'}</span> · 010</span><span class="cc-founded">${lang()==='ru'?'Осн. 4 июл 2025':'Est. Jul 4, 2025'}</span></div>
       <div class="cc-top"><div class="cc-seal"><span class="cc-seal-mark" role="img" aria-label="The Holding registry seal"></span></div><div class="cc-status"><span class="cc-dot"></span><span>Live</span></div></div>
       <div class="cc-name">Cypher</div><div class="cc-sub">${cardCopy()}</div>
-      <div class="cc-metrics"><div><div class="cc-metric-label">${lang()==='ru'?'TVL компании':'Company TVL'}</div><div class="cc-metric-value gold" id="tvl-cypher">≥ ${money(state.capital.knownCapitalFloorUsd)}</div></div><div><div class="cc-metric-label">APR</div><div class="cc-metric-value" id="apr-cypher">${apr===null?(lang()==='ru'?'Измеряется':'Measuring'):pct(apr)}</div></div></div>
+      <div class="cc-metrics"><div><div class="cc-metric-label">${lang()==='ru'?'TVL компании':'Company TVL'}</div><div class="cc-metric-value gold" id="tvl-cypher">${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}</div></div><div><div class="cc-metric-label">APR</div><div class="cc-metric-value" id="apr-cypher">${apr===null?(lang()==='ru'?'Измеряется':'Measuring'):pct(apr)}</div></div></div>
       <span class="cc-extlink cc-extlink-static" aria-disabled="true"><span class="cc-ext-label">DeBank · Tracking</span></span>`;
     card.style.opacity='1';card.style.transform='none';
     const count=document.getElementById('companyCount');if(count)count.textContent='10';
     const stat=document.getElementById('statCompanies');if(stat)stat.textContent='10';
     syncNetworkStats();
+  }
+
+  function stakeDaoLabel(p){
+    const u=Array.isArray(p?.underlying)?p.underlying:[];
+    const q=sym=>{const v=Number(u.find(x=>x.symbol===sym)?.quantity);return Number.isFinite(v)?v.toFixed(2):null};
+    const parts=['USDC','USDbC','axlUSDC','crvUSD'].map(sym=>q(sym)!==null?`${q(sym)} ${sym}`:null).filter(Boolean);
+    return parts.length===4?`Stake DAO · 4pool (${parts.join(' · ')})`:'Stake DAO · 4pool · USDC/USDbC/axlUSDC/crvUSD';
   }
 
   function installRuntimeBook(){
@@ -77,6 +84,7 @@
       Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','gmx-gm-eth-usdc':'GMX · ETH-USDC','gmx-gm-btc-usdc':'GMX · BTC-USDC'});
       for(const p of state.capital?.positions||[]){
         if(String(p.assetId||'').startsWith('hyperlend-'))COMPANY_ASSET_LABELS[p.assetId]=`HyperLend · ${p.underlyingSymbol||p.symbol||'Position'}`;
+        if(p.assetId==='stakedao-base-curve-4pool')COMPANY_ASSET_LABELS[p.assetId]=stakeDaoLabel(p);
         const wstEth=Number(p.components?.aaveArbitrumWstEth);
         if(p.assetId==='ethereum'&&Number.isFinite(wstEth)&&wstEth>0)COMPANY_ASSET_LABELS['cypher-eth-equivalent']=`ETH (${wstEth.toFixed(6)} wstETH)`;
       }
@@ -94,7 +102,8 @@
   function cypherIndexRecord(){
     const apr=currentReferenceApr(),coverage=Number(state.productivity?.coverage||0)*100;
     const complete=state.capital?.totalCapitalComplete===true;
-    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:0,pnl:0,pct:0,performancePending:!complete,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'The Holding Standard',ru:'The Holding Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Measuring':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Измеряется':`${apr.toFixed(1)}% · покрыто ${coverage.toFixed(1)}%`},aprSource:'canonical-partial',aprObservationCount:0,pendingReason:complete?null:{en:'Fluid net ETH remains unresolved',ru:'Чистая ETH-экспозиция Fluid ещё не закрыта'}};
+    const performancePending=state.performance?.complete!==true;
+    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:0,pnl:0,pct:0,performancePending,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'The Holding Standard',ru:'The Holding Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Measuring':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Измеряется':`${apr.toFixed(1)}% · покрыто ${coverage.toFixed(1)}%`},aprSource:'canonical-company-state',aprObservationCount:0,pendingReason:complete?null:{en:'An in-scope capital mechanism is not yet fully bound',ru:'Один из учитываемых механизмов капитала ещё не полностью связан'}};
   }
 
   function installIndexRecord(){
@@ -135,6 +144,6 @@
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 
-  const run=()=>start().catch(err=>console.error('[Company #010 reconciled native public adapter]',err));
+  const run=()=>start().catch(err=>console.error('[Company #010 native public adapter]',err));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 })();
