@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-18T09:31:04.844Z",
+  "generatedAt": "2026-08-18T09:58:45.334Z",
   "status": "watch",
-  "snapshotHash": "0caddab79f524d403dedc7235b62da45988c11e3bbc7e615e1320ed004edb99d",
+  "snapshotHash": "59fea5dcbc94c3ca7f9b662df089604f93e459d16432334467e9f21808900c3a",
   "repository": {
-    "filesScanned": 417,
-    "bytesScanned": 9531315,
+    "filesScanned": 419,
+    "bytesScanned": 9541884,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -72,6 +72,7 @@
       ".github/workflows/verify-known-mechanism-reuse-parity.yml": "b9f5469848b666ed72a01ca7dd8dbefd6da36430a0020825eb8d1a24b084791d",
       ".github/workflows/verify-passport-rate-badge-layout.yml": "3e733390e90e5800aeab3d05a070c56352283c69fa5eb9896d63efc49d24957a",
       ".github/workflows/verify-project-memory-bootstrap.yml": "cb5ba8171e3069b39ef88de9c40ade06d1f69b21bf288ac64c06f719278f9466",
+      ".github/workflows/verify-rewards-drawer-row-coverage-parity.yml": "e48d71e01451ec186bf3e3f857b8d38b8b4a3f0c65368a67ebd9a5bbb354cbd9",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "ff52d216b4537858a1b661fffa9e9a8a99e7eee40e9ec25da6f5c003dcf4c4f5",
       "index.html": "1378d080ce878189b39602216ca09ea0a3aab58c0e34e9c9e590dff835603189",
@@ -231,7 +232,7 @@
         "classification": null,
         "sinkCount": 4,
         "expectedCount": null,
-        "currentGitBlobSha1": "87156fd416881f5094bf41059d5fb4adc0490ed3",
+        "currentGitBlobSha1": "7b2d9a0d96268514fc927028a83e271599dd05e1",
         "reviewedGitBlobSha1": null,
         "rationale": null
       },
@@ -307,7 +308,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -387,62 +388,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "58cc64eb52307012666718c690994ea257a4f396349d98234c27b97776ffa373",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-company-rewards.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-company-rewards.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "1bc71bd8776d005e57480e2458bb633ede802f8083866b666fe6b6b9126e3b9c",
-        "currentSha256": "30ef42b8ad5425b4b47423b7a98863b0de7f763d79ea7504c7a5a0c0f0e935d2"
-      }
-    },
-    {
-      "id": "b435a20d627d00bbe10ffc303d10677904ea8405c33d8ae3d80f34df4cd44695",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-company-010-rewards-drawer.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-rewards-drawer.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "0a6b3b1e2bab0190887f1b353de21d922df5b3bc9207a1f341c311c17bb10485",
-        "currentSha256": "9879de2afd5b92228aad77ee49f86026acc57e21f24ab05d1951cac9a904f967"
-      }
-    },
-    {
-      "id": "847b50eac451eb0066eaaa5cb7e40c15f9763d3bc17685ad90cefac062dc05a5",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-company-010-ve-rewards.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-ve-rewards.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "34dc2493b59af13fc25d9a4f8078b95f1db98b20e14bc92750154c461ae424e5",
-        "currentSha256": "206240bef1b841722357ec9f90c7130ff77f7fc1bac931b962144fd2a448dbb2"
-      }
-    },
-    {
-      "id": "bf42e6096cbbf1e4d16936f983cab7e0e8ce4a22abf5f10d71baf868b7fdaeb2",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "892a56a1c8b44851ced3a941b7ebeb9207d914c59a901c30811d44afb437d6a7",
-        "currentSha256": "b9f5469848b666ed72a01ca7dd8dbefd6da36430a0020825eb8d1a24b084791d"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -841,10 +786,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 288,
+    "runCount": 289,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-18T09-31-04-844Z-0caddab79f.json",
-    "latestRecordHash": "c0fe148d3acab90d41bf8c0b35f5b04ad1fd06b4a44ab316116a65f1d13ad154",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-18T09-58-45-334Z-59fea5dcbc.json",
+    "latestRecordHash": "5e0a10f364330c5bbac3c9d5babec6f37455e2861ea923911d490f24a6db108a",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }

@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-18T09:31:04.844Z",
+  "generatedAt": "2026-08-18T09:58:45.334Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 30,
+    "medium": 26,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 417,
-    "bytesScanned": 9531315,
+    "filesScanned": 419,
+    "bytesScanned": 9541884,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "58cc64eb52307012666718c690994ea257a4f396349d98234c27b97776ffa373",
         "severity": "medium",
@@ -111,124 +112,6 @@
           "previousSha256": "892a56a1c8b44851ced3a941b7ebeb9207d914c59a901c30811d44afb437d6a7",
           "currentSha256": "b9f5469848b666ed72a01ca7dd8dbefd6da36430a0020825eb8d1a24b084791d"
         }
-      },
-      {
-        "id": "93039d7ab8ea7d7acc5418c9af19082ad841d680a5d6dccea6520c46dbf53ffa",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/company-010-public-adapter.js",
-        "line": 93,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "eddceca148dbee4041a59cd9e0aac8b390ee6575fd5ec0d45b66a6f089cb9a2e",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/company-010-public-adapter.js",
-        "line": 226,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "812610ce657d78bc7674b0e9fe18c0fb3031cd817deff89fa2b29d8d86657f9d",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/company-010-public-adapter.js",
-        "line": 287,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "4cc374a07cb8a3b8a76131ec7c116e2bf15a474104097ae6b33f045674f890c9",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/company-010-public-adapter.js",
-        "line": 353,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "b7e123e680b2e7e894ee7f46418816466e0c9f56ac39d88806916190d5ca5365",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-company-rewards.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-company-rewards.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "a8071542e34bd4785c11453e934745039398f94557ead9a5dd6c525208ab97f3",
-          "currentSha256": "1bc71bd8776d005e57480e2458bb633ede802f8083866b666fe6b6b9126e3b9c"
-        }
-      },
-      {
-        "id": "5a8eda394636c67af2b47cab8e7f91e3e0fc6d688a9b16ba5c310d16db58b60c",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "a41133ef82b130ef76c6deb640a00e03d157684f855fb6f5acbc1e62e4829ab0",
-          "currentSha256": "892a56a1c8b44851ced3a941b7ebeb9207d914c59a901c30811d44afb437d6a7"
-        }
-      },
-      {
-        "id": "f02b972b7f10711b27ca0c0accd08751d42f38ba0c4ab05aab04ad99a8d13a76",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/company-010-public-adapter.js",
-        "line": 92,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "7c9d6c338e4b7bcc791ea9e988799282bfda81cba1b19f44530df97a947b9da5",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/company-010-public-adapter.js",
-        "line": 225,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "097fcdfe61da0d7bea61af5c7683078d4df9c7667feafa7bef57265da75faa55",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/company-010-public-adapter.js",
-        "line": 286,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "76e994d3b1671c556e75c9ec6a7224aed257bbb453b7cb6f18595179cc37a3f9",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/company-010-public-adapter.js",
-        "line": 316,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
       }
     ]
   },
@@ -298,62 +181,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "58cc64eb52307012666718c690994ea257a4f396349d98234c27b97776ffa373",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-company-rewards.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-company-rewards.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "1bc71bd8776d005e57480e2458bb633ede802f8083866b666fe6b6b9126e3b9c",
-        "currentSha256": "30ef42b8ad5425b4b47423b7a98863b0de7f763d79ea7504c7a5a0c0f0e935d2"
-      }
-    },
-    {
-      "id": "b435a20d627d00bbe10ffc303d10677904ea8405c33d8ae3d80f34df4cd44695",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-company-010-rewards-drawer.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-rewards-drawer.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "0a6b3b1e2bab0190887f1b353de21d922df5b3bc9207a1f341c311c17bb10485",
-        "currentSha256": "9879de2afd5b92228aad77ee49f86026acc57e21f24ab05d1951cac9a904f967"
-      }
-    },
-    {
-      "id": "847b50eac451eb0066eaaa5cb7e40c15f9763d3bc17685ad90cefac062dc05a5",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-company-010-ve-rewards.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-ve-rewards.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "34dc2493b59af13fc25d9a4f8078b95f1db98b20e14bc92750154c461ae424e5",
-        "currentSha256": "206240bef1b841722357ec9f90c7130ff77f7fc1bac931b962144fd2a448dbb2"
-      }
-    },
-    {
-      "id": "bf42e6096cbbf1e4d16936f983cab7e0e8ce4a22abf5f10d71baf868b7fdaeb2",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "892a56a1c8b44851ced3a941b7ebeb9207d914c59a901c30811d44afb437d6a7",
-        "currentSha256": "b9f5469848b666ed72a01ca7dd8dbefd6da36430a0020825eb8d1a24b084791d"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -762,12 +589,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "0caddab79f524d403dedc7235b62da45988c11e3bbc7e615e1320ed004edb99d",
+    "snapshotHash": "59fea5dcbc94c3ca7f9b662df089604f93e459d16432334467e9f21808900c3a",
     "securityVault": {
-      "runCount": 288,
+      "runCount": 289,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T09-31-04-844Z-0caddab79f.json",
-      "latestRecordHash": "c0fe148d3acab90d41bf8c0b35f5b04ad1fd06b4a44ab316116a65f1d13ad154",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T09-58-45-334Z-59fea5dcbc.json",
+      "latestRecordHash": "5e0a10f364330c5bbac3c9d5babec6f37455e2861ea923911d490f24a6db108a",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
