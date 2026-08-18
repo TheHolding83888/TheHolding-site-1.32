@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'rewards/company-rewards-engine.mjs'
+      - 'rewards/defitea-union-scrvusd-overlay.mjs'
       - 'rewards/company-010-rewards-overlay.mjs'
       - 'rewards/company-010-ve-rewards.mjs'
       - '.github/workflows/update-company-rewards.yml'
@@ -115,7 +116,37 @@ jobs:
           console.log('Rewards v0.3.10 Project X multi-leg parity PASS',{claimableUsd:c.claimableUsd,projectXUsd:projectUsd,measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd,projectX:projectRewards.map(x=>({symbol:x.symbol,amount:x.amount,usdValue:x.usdValue})),totalUsdIsComplete:c.totalUsdIsComplete});
           NODE
 
+      - name: Measure Defitea Votium Union scrvUSD member rewards
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node --check rewards/defitea-union-scrvusd-overlay.mjs
+          node rewards/defitea-union-scrvusd-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const c=d.companies?.['defitea.eth'];
+          const diag=d.diagnostics?.defiteaUnion;
+          const src=(c?.sources||[]).find(x=>x.route==='votium-union');
+          if(!diag||diag.capability!=='0.2-defitea-votium-union-scrvusd-member-proof')throw new Error('Defitea Union capability missing');
+          if(diag.executionAuthority!=='none'||diag.claimTransactionAuthority!=='none')throw new Error('Defitea Union authority expansion');
+          if(diag.unknownIsNotZero!==true||src?.details?.unknownIsNotZero!==true)throw new Error('Defitea Union unknown != zero guard missing');
+          const u=src?.details?.union;
+          if(!u)throw new Error('Defitea Union source missing');
+          if(u.forwarding?.configured!==true||u.forwarding?.effective!==true)throw new Error('Defitea Union forwarding not effective');
+          if(u.allocation?.scrvUsdSelected!==true||!(Number(u.allocation?.scrvUsdSharePct)>0))throw new Error('Defitea scrvUSD allocation not proven');
+          const rows=(c.rewards||[]).filter(x=>x.route==='votium-union-scrvusd');
+          const ent=u.airdrop?.entitlement;
+          if(ent?.claimed===false){
+            if(ent.proofValid!==true||rows.length!==1||rows[0].classification!=='unclaimed')throw new Error('Defitea Union Unclaimed entitlement parity failed');
+          }else if(rows.length)throw new Error('Union reward fabricated without unclaimed entitlement');
+          console.log('Defitea Union writer contract PASS',{state:u.state,sharePct:u.allocation.scrvUsdSharePct,entitlement:ent?.status||'not-published',rows:rows.length});
+          NODE
+
       - name: Commit updated rewards snapshot
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
           if git diff --quiet -- companies/rewards-data.json; then
             echo "No company rewards changes to commit."
@@ -135,6 +166,7 @@ jobs:
               exit 1
             fi
             node rewards/company-010-rewards-overlay.mjs
+            node rewards/defitea-union-scrvusd-overlay.mjs
             git add companies/rewards-data.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then
