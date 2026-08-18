@@ -1,0 +1,87 @@
+name: "Verify Known Mechanisms · reuse parity"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'rewards/company-rewards-engine.mjs'
+      - 'rewards/company-010-rewards-overlay.mjs'
+      - 'companies/company-010-public-adapter.js'
+      - 'intelligence/project-memory/THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md'
+      - 'intelligence/project-memory/README.md'
+      - '.github/workflows/verify-known-mechanism-reuse-parity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          set -euo pipefail
+          node --check rewards/company-rewards-engine.mjs
+          node --check rewards/company-010-rewards-overlay.mjs
+          node --check companies/company-010-public-adapter.js
+      - name: Verify established generic ve capability exists
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const generic=fs.readFileSync('rewards/company-rewards-engine.mjs','utf8');
+          for(const x of ['collectVeProtocol','compounded-locked','applyPrices','priceUsd','usdValue','priceMethod']){
+            if(!generic.includes(x))throw new Error('generic known ve capability missing: '+x);
+          }
+          console.log('Established generic ve Compounded + pricing capability PASS');
+          NODE
+      - name: Verify Company #010 preserves full capability parity
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const overlay=fs.readFileSync('rewards/company-010-rewards-overlay.mjs','utf8');
+          const ui=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          const canon=fs.readFileSync('intelligence/project-memory/THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md','utf8');
+          const readme=fs.readFileSync('intelligence/project-memory/README.md','utf8');
+
+          const overlayMust=[
+            "classification:'compounded-locked'",
+            "usdValue:price!==null?round(amount*price,6):null",
+            'priceUsd:price',
+            "priceMethod:price!==null?'canonical-company-010-current-token-price':null",
+            'usdValueIncludedInClaimableTotal:false',
+            'crv-and-ve-reward-semantics-0.3-compounded-usd-parity'
+          ];
+          for(const x of overlayMust)if(!overlay.includes(x))throw new Error('Company #010 known-mechanism output parity missing: '+x);
+
+          const uiMust=['v0.10.1-known-mechanism-compounded-usd-parity','compactEmbeddedAmount','usd:finite(x.usdValue)?money2(x.usdValue):','Embedded income · ${embedded.usd}'];
+          for(const x of uiMust)if(!ui.includes(x))throw new Error('Company #010 known-mechanism public parity missing: '+x);
+
+          const canonMust=['reuse regression / promotion gap','full capability parity','No partial reuse','priceUsd','usdValue','aggregation correctness','Company #011 and beyond','Solved mechanism = reusable end-to-end capability'];
+          for(const x of canonMust)if(!canon.includes(x))throw new Error('known-mechanism canon incomplete: '+x);
+          if(!readme.includes('THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md'))throw new Error('known-mechanism canon not linked from project-memory bootstrap');
+
+          console.log('Known-mechanism full capability parity PASS');
+          NODE
+      - name: Verify no claimable-total collapse
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');const overlay=fs.readFileSync('rewards/company-010-rewards-overlay.mjs','utf8');
+          if(!overlay.includes("knownAccruedUsd=round(rewards.reduce"))throw new Error('claimable total source changed');
+          if(!overlay.includes('usdValueIncludedInClaimableTotal:false'))throw new Error('embedded USD aggregate exclusion missing');
+          if(/knownAccruedUsd[^\n]*embeddedIncome/.test(overlay))throw new Error('embedded income appears in claimable total expression');
+          console.log('Embedded USD remains informational, not claimable total PASS');
+          NODE
+      - name: Verify no execution authority
+        run: |
+          set -euo pipefail
+          ! grep -Eqi 'wallet\.send|sendTransaction|eth_sendTransaction|eth_sendRawTransaction|private[_ -]?key|mnemonic|signer\.send' rewards/company-010-rewards-overlay.mjs companies/company-010-public-adapter.js
