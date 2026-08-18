@@ -1,4 +1,4 @@
-/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges
+/* The Holding · Company #010 Cypher public adapter · v0.9.1-right-centered-strategy-rate-badges
  * Compatibility sentinel: preserves v0.6.4 GMX compact APY and v0.6 Stake DAO native surface contracts.
  * Productive-position badges are presentation-only projections of canonical Productivity breakdowns; reserve assets stay unbadged.
  * CRV-family wrappers are separate economic positions: direct CRV, Concentrator asdCRV/sdCRV and Convex staked cvxCRV are never summed as one token quantity.
@@ -172,9 +172,10 @@
   function ensureStrategyRateStyles(){
     if(document.getElementById('passport-strategy-rate-style'))return;
     const s=document.createElement('style');s.id='passport-strategy-rate-style';s.textContent=`
-      .ipx-strategy-rate-badge{display:inline-flex;align-items:center;justify-content:center;align-self:center;margin-top:.16rem;padding:.12rem .38rem;border-radius:999px;border:1px solid rgba(22,21,15,.10);background:rgba(22,21,15,.035);color:rgba(22,21,15,.52);font-size:.48rem;line-height:1.05;font-weight:600;letter-spacing:.015em;font-variant-numeric:tabular-nums;white-space:nowrap}
+      .ipx-position-pill.has-strategy-rate{position:relative;padding-right:5.45rem}
+      .ipx-strategy-rate-badge{position:absolute;right:.58rem;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;gap:.22rem;min-height:23px;margin:0;padding:.18rem .52rem;border-radius:999px;border:1px solid rgba(22,21,15,.10);background:rgba(22,21,15,.035);color:rgba(22,21,15,.52);font-size:.50rem;line-height:1;font-weight:600;letter-spacing:.015em;font-variant-numeric:tabular-nums;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.72)}
       .ipx-strategy-rate-badge strong{color:#0a7c4e;font-weight:650}.ipx-strategy-rate-badge.pending strong{color:#8f7430}
-      @media(max-width:760px){.ipx-strategy-rate-badge{font-size:.43rem;padding:.1rem .31rem;margin-top:.12rem}}
+      @media(max-width:760px){.ipx-position-pill.has-strategy-rate{padding-right:4.9rem}.ipx-strategy-rate-badge{right:.44rem;min-height:21px;font-size:.45rem;padding:.16rem .44rem}}
     `;document.head.appendChild(s);
   }
 
@@ -204,14 +205,15 @@
       const nm=item.dataset.nm;
       const book=(COMPANY_BOOK[nm]||[]).filter(pos=>!pos.productivityOnly);
       const pills=[...item.querySelectorAll('.ipx-balance-card .ipx-position-pill')];
+      for(const pill of pills){pill.classList.remove('has-strategy-rate');pill.querySelector('.ipx-strategy-rate-badge')?.remove();}
       for(const pos of book){
         const rate=rateForPosition(nm,pos);if(!rate)continue;
         const expected=typeof COMPANY_ASSET_LABELS!=='undefined'?(COMPANY_ASSET_LABELS[pos.id]||pos.id):pos.id;
         const pill=pills.find(p=>String(p.querySelector('.ipx-position-symbol')?.textContent||'').includes(expected));
         if(!pill)continue;
-        pill.querySelector('.ipx-strategy-rate-badge')?.remove();
+        pill.classList.add('has-strategy-rate');
         const badge=document.createElement('span');badge.className='ipx-strategy-rate-badge'+(rate.pending?' pending':'');
-        badge.innerHTML=rate.pending?`<span>${rate.kind}</span>&nbsp;<strong>Pending</strong>`:`<span>${rate.kind}</span>&nbsp;<strong>${pct2(rate.value)}</strong>`;
+        badge.innerHTML=rate.pending?`<span>${rate.kind}</span><strong>Pending</strong>`:`<span>${rate.kind}</span><strong>${pct2(rate.value)}</strong>`;
         pill.appendChild(badge);
       }
     }
