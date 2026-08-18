@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-18T15:34:16.408Z",
+  "generatedAt": "2026-08-18T15:48:15.196Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 26,
+    "medium": 27,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 434,
-    "bytesScanned": 9775034,
+    "filesScanned": 435,
+    "bytesScanned": 9781021,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,22 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "a8505f06c0dcc74b805827d09b6d125231ac80cfb76cdecdb1b498625af289b8",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-defitea-union-scrvusd.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-defitea-union-scrvusd.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "fe1699eff185b01c8c91dca0898a181de4bc9003e94588656935ce0ebef588be",
+          "currentSha256": "1b7011abebac9dc6953c045e2f1f7166ce0caf976bff2003e8b2e1677c6403f6"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -124,6 +139,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "a8505f06c0dcc74b805827d09b6d125231ac80cfb76cdecdb1b498625af289b8",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-defitea-union-scrvusd.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-defitea-union-scrvusd.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "fe1699eff185b01c8c91dca0898a181de4bc9003e94588656935ce0ebef588be",
+        "currentSha256": "1b7011abebac9dc6953c045e2f1f7166ce0caf976bff2003e8b2e1677c6403f6"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -532,12 +561,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "e6aa80c70186d6df5ccf59d2d3608775ee8b0ffeb54828cee7bc3b18bb3f505f",
+    "snapshotHash": "b0015863bdebb4647d15fe3132feb5d25ccdb47552d8289ddcd200316186b8ff",
     "securityVault": {
-      "runCount": 297,
+      "runCount": 298,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T15-34-16-408Z-e6aa80c701.json",
-      "latestRecordHash": "f9a8afd9e57e61a4e97b2205acd84a699d9694661e20bc815aeb378bb11c201e",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T15-48-15-196Z-b0015863bd.json",
+      "latestRecordHash": "f3bd4ddcf4020dd8222b2aa526b58dde50d3507ef5e18836fb27291945572cb8",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
