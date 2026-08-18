@@ -5,6 +5,7 @@ on:
     paths:
       - 'onboarding/company-010-projectx-strategy-overlay.mjs'
       - 'rewards/company-010-rewards-overlay.mjs'
+      - 'companies/company-010-public-adapter.js'
       - '.github/workflows/update-company-010-state.yml'
       - '.github/workflows/update-company-rewards.yml'
       - '.github/workflows/verify-company-010-projectx-full-parity.yml'
@@ -32,13 +33,16 @@ jobs:
           set -euo pipefail
           node --check onboarding/company-010-projectx-strategy-overlay.mjs
           node --check rewards/company-010-rewards-overlay.mjs
+          node --check companies/company-010-public-adapter.js
           node - <<'NODE'
           const fs=require('fs');
           const px=fs.readFileSync('onboarding/company-010-projectx-strategy-overlay.mjs','utf8');
           const rw=fs.readFileSync('rewards/company-010-rewards-overlay.mjs','utf8');
+          const ui=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
           const wf=fs.readFileSync('.github/workflows/update-company-010-state.yml','utf8');
-          for(const s of ['principalAmount0','principalAmount1','collect.staticCall','WHYPE','USDC','projectx-whype-usdc','multiLegResolvedMustPromoteAllEconomicLegs'])if(!px.includes(s))throw new Error('Project X overlay contract missing '+s);
+          for(const s of ['principalAmount0','principalAmount1','collect.staticCall','WHYPE','USDC','projectx-whype-usdc','EXPECTED_ACTIVE_NFTS=2','empty-zero-liquidity','multiLegResolvedMustPromoteAllEconomicLegs'])if(!px.includes(s))throw new Error('Project X overlay contract missing '+s);
           for(const s of ['projectx-whype-usdc','WHYPE','USDC','multiLegComplete'])if(!rw.includes(s))throw new Error('Rewards multi-leg contract missing '+s);
+          if(!ui.includes('Project X · WHYPE-USDC'))throw new Error('Project X Passport label missing');
           if(!wf.includes('node onboarding/company-010-projectx-strategy-overlay.mjs'))throw new Error('canonical Company #010 writer does not execute Project X overlay');
           if(!wf.includes('projectx-strategy-overlay'))throw new Error('Project X producer is not source-fingerprinted/triggered');
           NODE
@@ -95,18 +99,22 @@ jobs:
           const cap=(d.capital?.positions||[]).find(x=>x.assetId==='projectx-whype-usdc');
           const hype=(d.capital?.positions||[]).find(x=>x.assetId==='hyperliquid'||x.symbol==='HYPE');
           if(px?.version!=='0.1-company-010-projectx-full-parity'||px.status!=='measured-principal-and-claimable')throw new Error('Project X capability missing');
-          if(!(px.nftCount>0)||px.positions?.length!==px.nftCount)throw new Error('NFT decomposition mismatch');
+          if(px.nftCount!==2||px.positions?.length!==2||px.admission?.expectedActiveNftCount!==2||px.admission?.actualActiveNftCount!==2)throw new Error('Project X must contain exactly two active capital NFTs');
+          if(!px.positions.every(x=>Number(x.navUsd)>=1&&BigInt(x.liquidity)>0n))throw new Error('active Project X NFT admission boundary violated');
+          if(!(px.ignoredNfts||[]).every(x=>['different-pair-or-token','empty-zero-liquidity','dust-below-active-nav-floor'].includes(x.reason)))throw new Error('ignored NFT reason escaped bounded vocabulary');
           if(!(Number(px.principal?.WHYPE)>=0)||!(Number(px.principal?.USDC)>0)||!(Number(px.principal?.navUsd)>0))throw new Error('principal legs incomplete');
           if(!cap||Math.abs(Number(cap.valueUsd)-Number(px.principal.navUsd))>0.011)throw new Error('strategy NAV/capital mismatch');
+          if(cap.principal?.nftCount!==2||cap.admission?.expectedActiveNftCount!==2)throw new Error('capital row lost active NFT admission contract');
           if(hype?.components?.projectXPrincipal!==undefined||hype?.components?.projectXSeparatedToStrategy!=='projectx-whype-usdc')throw new Error('WHYPE remains double-counted in HYPE');
           if((d.productivity?.positions||[]).some(x=>x.id==='projectx_hype'))throw new Error('legacy single-leg productivity survived');
           const prod=(d.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
           if(!prod||prod.referenceAprPct!==null||prod.status!=='warming')throw new Error('APR Pending boundary missing');
           const obs=(d.rewards?.observations||[]).filter(x=>x.route==='projectx-whype-usdc');
           if(obs.length!==2||!['USDC','WHYPE'].every(s=>obs.some(x=>x.token===s&&x.status==='measured'&&Number(x.claimable)>=0)))throw new Error('both reward legs not measured');
-          if(px.accountingBoundary?.claimableFeesExcludedFromCapital!==true||d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs!==true)throw new Error('accounting/epistemic boundary missing');
+          if(px.accountingBoundary?.activeNftCountExactlyTwo!==true||px.accountingBoundary?.dustAndEmptyNftsExcluded!==true||px.accountingBoundary?.claimableFeesExcludedFromCapital!==true)throw new Error('Project X active-NFT/accounting boundary missing');
+          if(d.epistemicBoundary?.projectXNonzeroLiquidityRequiresMeasuredPrincipal!==true||d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs!==true)throw new Error('fail-closed multi-leg boundary missing');
           if(d.authority?.executionAuthority!=='none')throw new Error('authority drift');
-          console.log('Project X economic proof PASS',{nftCount:px.nftCount,principal:px.principal,rewards:px.rewards.tokens,totalCapitalUsd:d.capital.totalCapitalUsd,executionAuthority:'none'});
+          console.log('Project X economic proof PASS',{activeTokenIds:px.positions.map(x=>x.tokenId),ignored:px.ignoredNfts,principal:px.principal,rewards:px.rewards.tokens,totalCapitalUsd:d.capital.totalCapitalUsd,executionAuthority:'none'});
           NODE
       - name: Admit Project X into Rewards snapshot
         run: |
@@ -119,6 +127,7 @@ jobs:
           if(d.diagnostics?.company010?.capability!=='crv-ve-and-projectx-reward-semantics-0.5-multileg-parity')throw new Error('Project X reward capability marker missing');
           const rows=(c?.rewards||[]).filter(x=>x.route==='projectx-whype-usdc');
           if(rows.length!==2||!['WHYPE','USDC'].every(s=>rows.some(x=>x.symbol===s&&x.classification==='unclaimed'&&Number(x.usdValue)>=0)))throw new Error('Project X Rewards projection incomplete');
+          if(!rows.every(x=>x.details?.nftCount===2&&x.details?.multiLegComplete===true))throw new Error('Project X Rewards lost two-active-NFT multi-leg provenance');
           if(c.totalUsdIsComplete!==false)throw new Error('Votium unresolved completion semantics regressed');
           console.log('Project X Rewards proof PASS',{projectX:rows.map(x=>({symbol:x.symbol,amount:x.amount,usdValue:x.usdValue})),claimableUsd:c.claimableUsd,totalUsdIsComplete:c.totalUsdIsComplete});
           NODE
