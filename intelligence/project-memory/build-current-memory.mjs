@@ -19,11 +19,11 @@ const continuityFiles = exists('intelligence/project-memory')
   : [];
 const latestContinuity = continuityFiles.at(-1) ?? null;
 
-// This file is a durable collaboration contract, not a personality profile.
-// It is intentionally first-class in CURRENT so a new chat/model learns how to
-// work with the owner before performing substantive project work.
+// These are durable bootstrap contracts, not changing production facts.
 const ownerCollaborationCanon = 'THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md';
+const memoryRoutingIndex = 'THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md';
 const ownerCollaborationCanonExists = exists(`intelligence/project-memory/${ownerCollaborationCanon}`);
+const memoryRoutingIndexExists = exists(`intelligence/project-memory/${memoryRoutingIndex}`);
 
 const systemMemory = readJson('intelligence/system-memory.json');
 const vault = readJson('intelligence/memory-vault/manifest.json');
@@ -70,7 +70,7 @@ const lines = [
   '',
   '> **IRON RULE FOR NEW CHATS / NEW MODELS**',
   '>',
-  '> Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores what is being worked on; the Owner Collaboration Operating Style restores how to work with the owner. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.',
+  '> Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores the deep current state; the Memory Routing Index selects only the durable blocks relevant to the current task. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.',
   '',
   `Canonical source state represented here: **${sourceStateAsOf}**`,
   '',
@@ -79,8 +79,15 @@ const lines = [
   `1. ${latestContinuity ? `[${latestContinuity}](./${latestContinuity})` : 'No continuity checkpoint found.'}`,
   `2. ${ownerCollaborationCanonExists ? `[Owner Collaboration Operating Style](./${ownerCollaborationCanon})` : `MISSING: ${ownerCollaborationCanon}`}`,
   '3. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)',
-  '4. [Project Memory README](./README.md)',
-  '5. Read only the live machine-readable subsystem artifacts and task-specific canons needed for the current task.',
+  `4. ${memoryRoutingIndexExists ? `[Memory Routing Index](./${memoryRoutingIndex})` : `MISSING: ${memoryRoutingIndex}`}`,
+  '5. [Project Memory README](./README.md)',
+  '6. Follow the Routing Index: read only the task-specific durable blocks and live machine-readable artifacts needed for the current objective.',
+  '',
+  '## Task-aware retrieval',
+  '',
+  '- Canonical retrieval path: `CURRENT → latest continuity → routing index → task-specific canon/context → live artifact → exact evidence`.',
+  '- Do not load every historical checkpoint by default. Use the smallest relevant memory set, then verify changing facts from live state.',
+  '- After material work, write changing numeric state to machine artifacts, durable lessons to canons, major resume state to continuity, and routing improvements to the Routing Index/README.',
   '',
   '## Owner collaboration bootstrap',
   '',
@@ -104,7 +111,7 @@ const lines = [
   `- **Permanent Memory Vault** — ${val(vault?.runCount, 0)} Observer record(s), ${val(vault?.eventCount, 0)} material event(s), retention: ${val(vault?.policy?.canonicalRetention)}; hard lifetime cap: ${vault?.policy?.hardLifetimeCap === null ? 'none' : val(vault?.policy?.hardLifetimeCap)}.`,
   `- **Latest Vault record** — ${val(vault?.latestRecord?.recordPath)}.`,
   `- **Decision Memory** — ${val(decisions?.decisionCount, 0)} append-only owner decision(s); executionAuthority: ${val(decisions?.authority?.executionAuthority ?? decisions?.executionAuthority, 'none')}.`,
-  '- **Project continuity** — this bootstrap + latest master continuity + owner collaboration canon + specialized canons + Git history.',
+  '- **Project continuity** — this bootstrap + latest master continuity + task-aware routing + owner collaboration canon + specialized canons + Git history.',
   '',
   '## Current cognitive stack',
   '',
@@ -143,7 +150,8 @@ const lines = [
   '2. fresh generated production JSON / exact workflow evidence',
   '3. current subsystem machine-readable state',
   '4. latest continuity checkpoint',
-  '5. older project-memory / handoff files',
+  '5. task-specific canons/context selected by the Routing Index',
+  '6. older project-memory / handoff files',
   '',
   'The model can change. **The memory must remain The Holding\'s.**',
   ''
@@ -155,6 +163,8 @@ console.log('Project Memory CURRENT.md rebuilt', {
   latestContinuity,
   ownerCollaborationCanon,
   ownerCollaborationCanonExists,
+  memoryRoutingIndex,
+  memoryRoutingIndexExists,
   securityGeneratedAt,
   securityCounts: { critical: securityCritical, high: securityHigh, medium: securityMedium },
   cognitiveSecurityGeneratedAt,
