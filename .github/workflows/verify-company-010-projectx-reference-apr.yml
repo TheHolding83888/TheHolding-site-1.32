@@ -1,0 +1,118 @@
+name: "Verify Company #010 · Project X Reference APR"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-projectx-reference-apr.mjs'
+      - '.github/workflows/update-company-010-projectx-reference-apr.yml'
+      - '.github/workflows/update-productivity.yml'
+      - '.github/workflows/verify-company-010-projectx-reference-apr.yml'
+      - 'companies/company-010-public-adapter.js'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-company-010-projectx-reference-apr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+
+      - name: Static Reference APR contract
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-projectx-reference-apr.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('onboarding/company-010-projectx-reference-apr.mjs','utf8');
+          const writer=fs.readFileSync('.github/workflows/update-company-010-projectx-reference-apr.yml','utf8');
+          const prod=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
+          const ui=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          for(const s of ['MIN_WINDOW_HOURS=24','MAX_WINDOW_HOURS=24*7','feeTierIsNotYield:true','collect.staticCall','strategy fingerprint changed','claimable fee amount decreased','average endpoint token prices','average endpoint strategy NAV'])if(!src.includes(s))throw new Error('Project X observed APR contract missing '+s);
+          if(!writer.includes('Update Company #010 · Cypher Production State')||!writer.includes('company-010-projectx-rate-history.json'))throw new Error('Project X APR autonomous writer contract missing');
+          if(!prod.includes('Update Company #010 · Project X Reference APR'))throw new Error('Productivity does not follow Project X rate writer');
+          if(!ui.includes("if(pos.id==='projectx-whype-usdc')")||!ui.includes('pending:!finite(px.referenceAprPct)'))throw new Error('Passport does not auto-promote numeric Project X APR');
+          if(/feeTier\s*[*\/+-]?=?.*referenceApr/i.test(src))throw new Error('Project X fee tier leaked into Reference APR arithmetic');
+          NODE
+
+      - name: Seed current Project X observation
+        run: |
+          set -euo pipefail
+          cp companies/company-010-production-state.json /tmp/px-state.json
+          rm -f /tmp/px-history.json
+          COMPANY_010_STATE=/tmp/px-state.json COMPANY_010_PROJECTX_RATE_HISTORY=/tmp/px-history.json node onboarding/company-010-projectx-reference-apr.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('/tmp/px-state.json','utf8'));
+          const h=JSON.parse(fs.readFileSync('/tmp/px-history.json','utf8'));
+          const px=s.strategies?.projectX;
+          if(px?.yield?.status!=='warming'||px?.yield?.referenceAprPct!==null)throw new Error('first Project X observation must remain Pending');
+          if(h.observations?.length!==1||h.current?.status!=='warming')throw new Error('first Project X history observation missing');
+          NODE
+
+      - name: Prove 25h observed-fee APR promotion
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='/tmp/px-history.json';
+          const h=JSON.parse(fs.readFileSync(p,'utf8'));
+          const o=h.observations[0];
+          o.observedAt=new Date(Date.parse(o.observedAt)-25*3600*1000).toISOString();
+          o.stateGeneratedAt=o.observedAt;
+          o.fees.WHYPE=Math.max(0,Number(o.fees.WHYPE)-0.0001);
+          o.fees.USDC=Math.max(0,Number(o.fees.USDC)-0.01);
+          h.current={status:'warming',referenceAprPct:null,windowHours:0,reason:'deterministic fixture'};
+          fs.writeFileSync(p,JSON.stringify(h,null,2)+'\n');
+          NODE
+          COMPANY_010_STATE=/tmp/px-state.json COMPANY_010_PROJECTX_RATE_HISTORY=/tmp/px-history.json node onboarding/company-010-projectx-reference-apr.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('/tmp/px-state.json','utf8'));
+          const h=JSON.parse(fs.readFileSync('/tmp/px-history.json','utf8'));
+          const px=s.strategies?.projectX;
+          const prod=(s.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
+          if(px?.yield?.status!=='measured'||!(Number(px.yield.referenceAprPct)>0))throw new Error('Project X 25h fee growth did not promote to measured APR');
+          if(prod?.status!=='measured'||Number(prod.referenceAprPct)!==Number(px.yield.referenceAprPct))throw new Error('Project X productivity promotion mismatch');
+          if(!(Number(px.yield.windowHours)>=24&&Number(px.yield.windowHours)<=168))throw new Error('Project X rate window outside bounded horizon');
+          if(h.current?.status!=='measured'||h.observations?.length!==2)throw new Error('Project X measured history state missing');
+          if(s.epistemicBoundary?.projectXFeeTierIsNotApr!==true||s.epistemicBoundary?.projectXReferenceAprUsesObservedFeeGrowth!==true)throw new Error('Project X APR epistemic boundary missing');
+          console.log('Project X observed APR promotion PASS',{apr:px.yield.referenceAprPct,windowHours:px.yield.windowHours,feeDeltaUsd:px.yield.feeDeltaUsd});
+          NODE
+
+      - name: Prove claim/reset returns to Pending
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='/tmp/px-state.json';
+          const s=JSON.parse(fs.readFileSync(p,'utf8'));
+          s.generatedAt=new Date(Date.parse(s.generatedAt)+3600*1000).toISOString();
+          const px=s.strategies.projectX;
+          const whype=px.rewards.tokens.find(x=>x.symbol==='WHYPE');
+          whype.amount=Math.max(0,Number(whype.amount)-0.001);
+          whype.usdValue=whype.amount*Number(whype.priceUsd);
+          fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n');
+          NODE
+          COMPANY_010_STATE=/tmp/px-state.json COMPANY_010_PROJECTX_RATE_HISTORY=/tmp/px-history.json node onboarding/company-010-projectx-reference-apr.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('/tmp/px-state.json','utf8'));
+          const h=JSON.parse(fs.readFileSync('/tmp/px-history.json','utf8'));
+          const px=s.strategies.projectX;
+          if(px.yield.status!=='warming'||px.yield.referenceAprPct!==null||!String(px.yield.reason).includes('decreased'))throw new Error('Project X claim/reset did not fail closed to Pending');
+          if(h.current?.status!=='warming')throw new Error('Project X history did not reset to warming');
+          if(s.authority?.executionAuthority!=='none')throw new Error('Project X APR engine changed authority');
+          console.log('Project X claim/reset guard PASS',{status:px.yield.status,reason:px.yield.reason});
+          NODE
