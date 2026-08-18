@@ -1,7 +1,8 @@
-/* The Holding · Company #010 Cypher public adapter · v0.7-crv-strategy-income
+/* The Holding · Company #010 Cypher public adapter · v0.8-strategy-rewards-polish
  * Compatibility sentinel: preserves v0.6.4 GMX compact APY and v0.6 Stake DAO native surface contracts.
  * CRV-family wrappers are separate economic positions: direct CRV, Concentrator asdCRV/sdCRV and Convex staked cvxCRV are never summed as one token quantity.
- * Concentrator income is Compounded; Convex staked cvxCRV income is Claimable; an unproven rate is Pending, never a fake 0%.
+ * Concentrator income is Compounded; Convex staked cvxCRV income is Claimable; an unproven rate is APR Pending, never a fake 0%.
+ * veAERO / veVELO public reward state is read from current Company #010 rewards-data semantics, never inferred from another company.
  * GMX pool composition remains canonical diagnostic state and is not rendered publicly. GM token NAV is counted once; LP fee income is embedded in GM NAV and has no separate claim step.
  * Combined TVL compatibility sentinel: net.networkTvlUsd!==null&&net.networkTvlUsd!==undefined remains enforced through canonicalNetworkTvl().
  * Canonical source: /companies/company-010-production-state.json
@@ -14,9 +15,10 @@
   const STATE_URL='/companies/company-010-production-state.json';
   const PRODUCTIVITY_URL='/companies/productivity-data.json';
   const CAPITAL_URL='/intelligence/capital-state/capital-state.json';
+  const REWARDS_URL='/companies/rewards-data.json';
   const ENTRY=Object.freeze({BTC:73482,ETH:2476,HYPE:38.62,CVX:1.84,CRV:0.228,AERO:0.60,LDO:0.8408,VELO:0.04762});
   const UNIQUE_INDEX_GREENS=Object.freeze(['#183F34','#244B3F','#315748','#40634F','#506F54','#637B59','#788861','#8E966C','#A4A77A','#B9B88B']);
-  let state=null,productivity=null,installed=false,indexColorHooked=false;
+  let state=null,productivity=null,rewardsData=null,installed=false,indexColorHooked=false;
 
   const lang=()=> (document.documentElement.lang||'en').toLowerCase().startsWith('ru')?'ru':'en';
   const money=v=>'$'+Math.round(Number(v)||0).toLocaleString('en-US');
@@ -152,13 +154,26 @@
     return true;
   }
 
+  function polishPassportTitles(){
+    for(const card of document.querySelectorAll('.ipx-balance-card')){
+      const walker=document.createTreeWalker(card,NodeFilter.SHOW_TEXT);
+      let node;while((node=walker.nextNode())){if(node.nodeValue?.trim()==='Balance Sheet')node.nodeValue=node.nodeValue.replace('Balance Sheet','Balance Sheet · Strategies.');}
+    }
+  }
+
+  function strategyAprLabel(strategy){return finite(strategy?.yield?.referenceAprPct)?`APR ${pct2(strategy.yield.referenceAprPct)}`:'APR Pending';}
+
   function polishBalanceSheet(){
     if(!state)return;
+    polishPassportTitles();
     const item=document.querySelector('.ib-item[data-nm="Cypher"]');
     if(!item)return;
-    const pills=[...item.querySelectorAll('.ipx-balance-card .ipx-position-pill')];
+    let pills=[...item.querySelectorAll('.ipx-balance-card .ipx-position-pill')];
     if(!pills.length)return;
     const byLabel=needle=>pills.find(p=>String(p.querySelector('.ipx-position-symbol')?.textContent||'').includes(needle));
+
+    const falseVeCrv=byLabel('veCRV');
+    if(falseVeCrv){falseVeCrv.remove();pills=pills.filter(x=>x!==falseVeCrv);}
 
     const stake=byLabel('Stake DAO');
     const stakePosition=(state.capital?.positions||[]).find(p=>p.assetId==='stakedao-base-curve-4pool');
@@ -183,6 +198,14 @@
       gmxEth.dataset.cypherDisplay='gmx-combined-apy';
       gmxBtc.remove();
     }
+
+    const crvStrategies=state.strategies?.crv?.strategies||[];
+    const conc=crvStrategies.find(x=>x.id==='concentrator-asdcrv');
+    const cvx=crvStrategies.find(x=>x.id==='convex-staked-cvxcrv');
+    const concPill=byLabel('Concentrator');
+    const cvxPill=byLabel('Convex · staked cvxCRV');
+    if(concPill&&conc){const symbol=concPill.querySelector('.ipx-position-symbol');if(symbol)symbol.textContent=`Concentrator · sdCRV · ${strategyAprLabel(conc)}`;concPill.dataset.cypherDisplay='concentrator-apr';}
+    if(cvxPill&&cvx){const symbol=cvxPill.querySelector('.ipx-position-symbol');if(symbol)symbol.textContent=`Convex · staked cvxCRV · ${strategyAprLabel(cvx)}`;cvxPill.dataset.cypherDisplay='convex-cvxcrv-apr';}
   }
 
   function ensureCrvIncomeStyles(){
@@ -201,7 +224,7 @@
   function compactClaimable(strategy){
     const rows=[];
     for(const w of strategy?.claimable?.wallets||[])for(const r of w.rewards||[])if(finite(r.amount)&&Number(r.amount)>0)rows.push(r);
-    if(!rows.length)return lang()==='ru'?'Начисления: 0 подтверждено сейчас':'Accrued: no positive balance now';
+    if(!rows.length)return lang()==='ru'?'Сейчас нет положительного начисления':'No positive accrued balance now';
     const grouped=new Map();for(const r of rows){const k=r.symbol||'Reward',v=grouped.get(k)||{amount:0,usd:0,usdOk:true};v.amount+=Number(r.amount)||0;if(finite(r.usdValue))v.usd+=Number(r.usdValue);else v.usdOk=false;grouped.set(k,v)}
     return [...grouped.entries()].slice(0,3).map(([sym,v])=>`${v.amount.toLocaleString('en-US',{maximumFractionDigits:4})} ${sym}${v.usdOk?' · '+money2(v.usd):''}`).join(' / ');
   }
@@ -223,8 +246,35 @@
     const pending=lang()==='ru'?'Ожидается':'Pending';
     block.innerHTML=`
       <div class="cy-crv-income-head">${lang()==='ru'?'CRV · доходные стратегии':'CRV · strategy income'}</div>
-      <div class="cy-crv-income-row"><div><div class="cy-crv-income-name">Concentrator · sdCRV</div><div class="cy-crv-income-meta">${lang()==='ru'?'Доход автоматически увеличивает стоимость доли':'Yield is automatically reinvested into the share'}</div></div><div class="cy-crv-income-right"><div class="cy-crv-income-rate">${concApr?`Yield ${concApr}`:`Yield ${pending}`}</div><span class="cy-crv-income-state ${concApr?'compounded':'pending'}">Compounded${concApr?'':' · '+pending}</span></div></div>
-      <div class="cy-crv-income-row"><div><div class="cy-crv-income-name">Convex · staked cvxCRV</div><div class="cy-crv-income-meta">${compactClaimable(cvx)}</div></div><div class="cy-crv-income-right"><div class="cy-crv-income-rate">${cvxApr?`vAPR ${cvxApr}`:`vAPR ${pending}`}</div><span class="cy-crv-income-state ${cvxApr?'claimable':'pending'}">Claimable${cvxApr?'':' · '+pending+' rate'}</span></div></div>`;
+      <div class="cy-crv-income-row"><div><div class="cy-crv-income-name">Concentrator · sdCRV</div><div class="cy-crv-income-meta">${lang()==='ru'?'Доход автоматически увеличивает стоимость доли':'Yield is automatically reinvested into the share'}</div></div><div class="cy-crv-income-right"><div class="cy-crv-income-rate">APR ${concApr||pending}</div><span class="cy-crv-income-state compounded">Compounded</span></div></div>
+      <div class="cy-crv-income-row"><div><div class="cy-crv-income-name">Convex · staked cvxCRV</div><div class="cy-crv-income-meta">${compactClaimable(cvx)}</div></div><div class="cy-crv-income-right"><div class="cy-crv-income-rate">APR ${cvxApr||pending}</div><span class="cy-crv-income-state claimable">Claimable</span></div></div>`;
+    panel.appendChild(block);
+  }
+
+  function compactVeAmount(route,stateName){
+    const c=rewardsData?.companies?.Cypher;
+    if(!c)return '';
+    if(stateName==='Compounded'){
+      const x=(c.embeddedIncome||[]).find(v=>v.route===route&&v.state==='Compounded');
+      return finite(x?.amount)&&Number(x.amount)>0?`${Number(x.amount).toLocaleString('en-US',{maximumFractionDigits:4})} ${x.symbol||''}`:'';
+    }
+    const rows=(c.rewards||[]).filter(x=>x.route===route&&finite(x.amount)&&Number(x.amount)>0);
+    if(!rows.length)return '';
+    return rows.map(x=>`${Number(x.amount).toLocaleString('en-US',{maximumFractionDigits:4})} ${x.symbol||''}`).join(' / ');
+  }
+
+  function ensureVeStrategyIncome(){
+    const c=rewardsData?.companies?.Cypher;
+    const item=document.querySelector('.ib-item[data-nm="Cypher"]');
+    const panel=item?.querySelector('.ipx-rewards-panel');
+    if(!c||!panel)return;
+    const routes=[['Aerodrome','aerodrome-ve'],['Velodrome','velodrome-ve-direct']];
+    const resolved=routes.map(([name,route])=>{const s=(c.sources||[]).find(x=>x.route===route);return{name,route,source:s,state:s?.details?.rewardState||'Pending'};});
+    ensureCrvIncomeStyles();
+    panel.querySelector('.cy-ve-income')?.remove();
+    const block=document.createElement('div');block.className='cy-crv-income cy-ve-income';block.dataset.cypherVeIncome='true';
+    const rows=resolved.map(x=>{const valid=['Compounded','Claimable'].includes(x.state),stateName=valid?x.state:'Pending',amount=valid?compactVeAmount(x.route,stateName):'',klass=stateName==='Compounded'?'compounded':stateName==='Claimable'?'claimable':'pending';const meta=amount|| (stateName==='Compounded'?(lang()==='ru'?'Доход остаётся внутри managed veNFT':'Yield remains inside the managed veNFT'):stateName==='Claimable'?(lang()==='ru'?'Отдельно доступно к получению':'Separately claimable when accrued'):(lang()==='ru'?'Маршрут известен, измерение ожидается':'Known route · measurement pending'));return `<div class="cy-crv-income-row"><div><div class="cy-crv-income-name">${x.name} · ve${x.name==='Aerodrome'?'AERO':'VELO'}</div><div class="cy-crv-income-meta">${meta}</div></div><div class="cy-crv-income-right"><span class="cy-crv-income-state ${klass}">${stateName}</span></div></div>`;}).join('');
+    block.innerHTML=`<div class="cy-crv-income-head">${lang()==='ru'?'veAERO / veVELO · доход':'veAERO / veVELO · income'}</div>${rows}`;
     panel.appendChild(block);
   }
 
@@ -247,8 +297,10 @@
   function postRenderPolish(){
     ensureCollectionCard();
     syncNetworkStats();
+    polishPassportTitles();
     polishBalanceSheet();
     ensureCrvStrategyIncome();
+    ensureVeStrategyIncome();
     markPendingPerformance();
   }
 
@@ -272,9 +324,9 @@
   }
 
   async function start(){
-    const[stateRes,prodRes,capitalRes]=await Promise.all([fetch(STATE_URL,{cache:'no-store'}),fetch(PRODUCTIVITY_URL,{cache:'no-store'}).catch(()=>null),fetch(CAPITAL_URL,{cache:'no-store'}).catch(()=>null)]);
+    const[stateRes,prodRes,capitalRes,rewardsRes]=await Promise.all([fetch(STATE_URL,{cache:'no-store'}),fetch(PRODUCTIVITY_URL,{cache:'no-store'}).catch(()=>null),fetch(CAPITAL_URL,{cache:'no-store'}).catch(()=>null),fetch(REWARDS_URL,{cache:'no-store'}).catch(()=>null)]);
     if(!stateRes.ok)throw new Error('Cypher canonical state unavailable: '+stateRes.status);
-    state=await stateRes.json();productivity=prodRes?.ok?await prodRes.json():null;window.__TH_CAPITAL_STATE__=capitalRes?.ok?await capitalRes.json():null;
+    state=await stateRes.json();productivity=prodRes?.ok?await prodRes.json():null;window.__TH_CAPITAL_STATE__=capitalRes?.ok?await capitalRes.json():null;rewardsData=rewardsRes?.ok?await rewardsRes.json():null;
     if(state.company?.registry!=='010'||state.company?.name!=='Cypher')throw new Error('Cypher identity mismatch');
     if(state.authority?.executionAuthority!=='none'||state.authority?.transactions!==false)throw new Error('Cypher authority boundary drift');
     installRuntimeBook();ensureCollectionCard();syncNetworkStats();
@@ -282,7 +334,7 @@
     const timer=setInterval(()=>{attempts+=1;if(rerenderNativeSurfaces()||attempts>600)clearInterval(timer);},100);
     rerenderNativeSurfaces();
     setInterval(syncNetworkStats,1000);
-    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishBalanceSheet();ensureCrvStrategyIncome();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
+    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishPassportTitles();polishBalanceSheet();ensureCrvStrategyIncome();ensureVeStrategyIncome();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 

@@ -41,11 +41,19 @@ jobs:
           for(const x of htmlMust)if(!h.includes(x))throw new Error('missing native surface: '+x);
           if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
           for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
-          const adapterMust=['v0.7-crv-strategy-income','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC'];
+          const adapterMust=['v0.8-strategy-rewards-polish','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC'];
           for(const x of adapterMust)if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
           if(/\['Bitcoin'.*'Fluid'/.test(a)||a.includes("'Concentrator','Fluid'"))throw new Error('Fluid remains in Cypher protocol list');
           if(!a.includes("${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}"))throw new Error('exact-vs-floor Company TVL contract missing');
           console.log('Company #010 native base UI contract PASS');
+          NODE
+      - name: Verify Passport strategy heading and Cypher CRV rows
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          for(const x of ['Balance Sheet · Strategies.','polishPassportTitles',"byLabel('veCRV')",'falseVeCrv.remove()','strategyAprLabel','Concentrator · sdCRV · ${strategyAprLabel(conc)}','Convex · staked cvxCRV · ${strategyAprLabel(cvx)}','APR Pending'])if(!a.includes(x))throw new Error('strategy Passport contract missing: '+x);
+          console.log('Passport heading + Cypher CRV row contract PASS');
           NODE
       - name: Verify GMX public contract
         run: |
@@ -58,15 +66,15 @@ jobs:
           if(!a.includes("eth.yield?.incomeMode!=='embedded-in-gm-nav'||btc.yield?.incomeMode!=='embedded-in-gm-nav'"))throw new Error('GMX embedded-income guard missing');
           console.log('Company #010 GMX public contract PASS');
           NODE
-      - name: Verify CRV public income contract
+      - name: Verify CRV and ve public income contract
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          for(const x of ['concentrator-asdcrv','convex-staked-cvxcrv','Concentrator · sdCRV','Convex · staked cvxCRV','ensureCrvStrategyIncome','Compounded','Claimable','Pending','auto-compounded','separate-claimable-rewards'])if(!a.includes(x))throw new Error('CRV public income contract missing: '+x);
+          for(const x of ['concentrator-asdcrv','convex-staked-cvxcrv','Concentrator · sdCRV','Convex · staked cvxCRV','ensureCrvStrategyIncome','Compounded','Claimable','Pending','auto-compounded','separate-claimable-rewards','ensureVeStrategyIncome','aerodrome-ve','velodrome-ve-direct','REWARDS_URL'])if(!a.includes(x))throw new Error('strategy public income contract missing: '+x);
           if(!a.includes("conc.yield?.incomeMode!=='auto-compounded'||cvx.yield?.incomeMode!=='separate-claimable-rewards'"))throw new Error('CRV income-mode fail-closed guard missing');
           if(!a.includes("const pending=lang()==='ru'?'Ожидается':'Pending'"))throw new Error('Pending public state missing');
-          console.log('Company #010 CRV public income contract PASS');
+          console.log('Company #010 CRV + ve public income contract PASS');
           NODE
       - name: Verify presence and weighting are separate
         run: |
