@@ -1,8 +1,9 @@
-/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges · v0.9.2-mobile-two-row-strategy-rate-badges · v0.10-unified-rewards-gmx-apy-capsule
+/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges · v0.9.2-mobile-two-row-strategy-rate-badges · v0.10-unified-rewards-gmx-apy-capsule · v0.10.1-known-mechanism-compounded-usd-parity
  * Compatibility sentinel: preserves v0.6 Stake DAO native surface contracts while promoting GMX APY into the shared capsule vocabulary.
  * Productive-position badges are presentation-only projections of canonical Productivity breakdowns; reserve assets stay unbadged.
  * Mobile Passport canon: productive cards use title on row one, value bottom-left and APR/APY capsule bottom-right; desktop keeps right-centered capsules unchanged.
  * Rewards Drawer canon: one ledger, one row per strategy/reward state; no duplicate CRV or veAERO/veVELO sub-ledgers.
+ * Known-mechanism parity: measured Compounded ve income preserves token amount + current USD valuation when canonical pricing exists; embedded USD is informational and excluded from claimable totals.
  * CRV-family wrappers are separate economic positions: direct CRV, Concentrator asdCRV/sdCRV and Convex staked cvxCRV are never summed as one token quantity.
  * Concentrator income is Compounded; Convex staked cvxCRV income is Claimable; an unproven rate is APR Pending, never a fake 0%.
  * veAERO / veVELO public reward state is read from current Company #010 rewards-data semantics, never inferred from another company.
@@ -299,7 +300,14 @@
   function panelHasStrategy(panel,label){return [...panel.querySelectorAll('.ipx-reward-protocol')].some(x=>String(x.textContent||'').includes(label));}
   function embeddedRoute(route){return (rewardsData?.companies?.Cypher?.embeddedIncome||[]).find(x=>x.route===route&&x.state==='Compounded');}
   function rewardSource(route){return (rewardsData?.companies?.Cypher?.sources||[]).find(x=>x.route===route);}
-  function compactEmbeddedAmount(route){const x=embeddedRoute(route);return finite(x?.amount)&&Number(x.amount)>0?`${Number(x.amount).toLocaleString('en-US',{maximumFractionDigits:4})} ${x.symbol||''}`:'';}
+  function compactEmbeddedAmount(route){
+    const x=embeddedRoute(route);
+    if(!finite(x?.amount)||Number(x.amount)<=0)return {amount:'',usd:''};
+    return {
+      amount:`${Number(x.amount).toLocaleString('en-US',{maximumFractionDigits:4})} ${x.symbol||''}`,
+      usd:finite(x.usdValue)?money2(x.usdValue):''
+    };
+  }
 
   function appendStrategyStateRow(panel,{label,meta,stateName,amount='',amountMeta=''}){
     if(panelHasStrategy(panel,label))return;
@@ -328,13 +336,14 @@
       const source=rewardSource(route),rawState=source?.details?.rewardState;
       const stateName=['Compounded','Claimable'].includes(rawState)?rawState:'Pending';
       if(stateName==='Claimable'&&panelHasStrategy(panel,name))continue;
-      const amount=stateName==='Compounded'?compactEmbeddedAmount(route):'';
+      const embedded=stateName==='Compounded'?compactEmbeddedAmount(route):{amount:'',usd:''};
       const meta=stateName==='Compounded'
         ? (lang()==='ru'?'Доход остаётся внутри managed veNFT':'Yield remains inside the managed veNFT')
         : stateName==='Claimable'
           ? (lang()==='ru'?'Отдельно доступно к получению':'Separately claimable when accrued')
           : (lang()==='ru'?'Маршрут известен · измерение ожидается':'Known route · measurement pending');
-      appendStrategyStateRow(panel,{label:`${name} · ve${symbol}`,meta,stateName,amount:amount||'—',amountMeta:stateName==='Compounded'?'Embedded income':''});
+      const amountMeta=stateName==='Compounded'?(embedded.usd?`Embedded income · ${embedded.usd}`:'Embedded income'):'';
+      appendStrategyStateRow(panel,{label:`${name} · ve${symbol}`,meta,stateName,amount:embedded.amount||'—',amountMeta});
     }
   }
 
@@ -368,14 +377,22 @@
   function hookRender(){
     if(installed||typeof renderIndex!=='function')return false;
     hookUniqueIndexColors();
-    const original=renderIndex;
-    renderIndex=function(...args){if(state)installIndexRecord();const out=original.apply(this,args);postRenderPolish();return out;};
-    installed=true;return true;
+    hookRender();
+    if(!installIndexRecord())return false;
+    ensureCollectionCard();syncNetworkStats();
+    if(typeof renderIndex==='function')renderIndex(typeof idxLang==='function'?idxLang():lang());
+    postRenderPolish();
+    if(typeof buildGraph==='function')buildGraph();
+    return true;
   }
 
   function rerenderNativeSurfaces(){
     hookUniqueIndexColors();
-    hookRender();
+    if(!installed&&typeof renderIndex==='function'){
+      const original=renderIndex;
+      renderIndex=function(...args){if(state)installIndexRecord();const out=original.apply(this,args);postRenderPolish();return out;};
+      installed=true;
+    }
     if(!installIndexRecord())return false;
     ensureCollectionCard();syncNetworkStats();
     if(typeof renderIndex==='function')renderIndex(typeof idxLang==='function'?idxLang():lang());
