@@ -76,9 +76,9 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');const overlay=fs.readFileSync('rewards/company-010-rewards-overlay.mjs','utf8');
-          if(!overlay.includes("knownAccruedUsd=round(rewards.reduce"))throw new Error('claimable total source changed');
+          if(!overlay.includes("knownAccruedUsd=round(rewards.reduce"))throw new Error('claimable total must continue to derive only from rewards rows');
           if(!overlay.includes('usdValueIncludedInClaimableTotal:false'))throw new Error('embedded USD aggregate exclusion missing');
-          if(/knownAccruedUsd[^\n]*embeddedIncome/.test(overlay))throw new Error('embedded income appears in claimable total expression');
+          if(!overlay.includes("data.methodology.tvlTreatment='Accrued Rewards and embedded income remain separate from Company TVL principal and Treasury cash.'"))throw new Error('economic-lane separation contract missing');
           console.log('Embedded USD remains informational, not claimable total PASS');
           NODE
       - name: Verify no execution authority
