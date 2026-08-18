@@ -27,8 +27,9 @@ On the first substantive The Holding request in a new chat/session, the assistan
 7. when the task concerns company strategy, capital philosophy, reward harvesting/reinvestment, diversification, stable reserves, leverage/Health Factor, company decision points or future Company Curator logic, read both `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md` and the latest `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*` extensions; when machine-readable owner context is useful, read `intelligence/owner-context/owner-operating-profile.json` plus the latest additive `intelligence/owner-context/owner-operating-profile-tranche-*.json`;
 8. when the task concerns public dialogue, conversation learning, model safety, financial-advice boundaries or owner teaching through the console, read `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`;
 9. when the task concerns Company Passport responsive UI, `Balance Sheet · Strategies`, productive APR/APY capsules, or mobile-versus-desktop Passport layout, read `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md` before proposing local visual fixes;
-10. when the task touches Cloudflare, Workers, Wrangler, deployment routing, Durable Objects, production permissions, or homepage ownership, read `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md` before proposing changes;
-11. only then the live machine-readable artifacts needed for the task.
+10. when the task concerns the Company Passport Rewards Drawer, claimable/Unclaimed rewards, Compounded embedded income, Pending/Warming reward routes, or adding a new reward strategy to the public Passport, read `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md` before creating protocol-specific UI sections;
+11. when the task touches Cloudflare, Workers, Wrangler, deployment routing, Durable Objects, production permissions, or homepage ownership, read `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md` before proposing changes;
+12. only then the live machine-readable artifacts needed for the task.
 
 Changing production facts always outrank prose memory. If a continuity document conflicts with live generated state, live `main` + fresh production artifacts win.
 
@@ -72,9 +73,10 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 - `intelligence/owner-context/owner-operating-profile-tranche-*.json`
 - `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`
 - `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md`
+- `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md`
 - `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md`
 
-This is the fastest way for a future model/session to recover the project architecture, operating rules, current stage, resume point, durable lessons from earlier company/product/infrastructure work, owner collaboration style, founder-alignment direction, owner capital philosophy/company strategy context, conversation-learning safety rules, responsive Passport UI canon, and production deployment lessons already paid for in live operation.
+This is the fastest way for a future model/session to recover the project architecture, operating rules, current stage, resume point, durable lessons from earlier company/product/infrastructure work, owner collaboration style, founder-alignment direction, owner capital philosophy/company strategy context, conversation-learning safety rules, responsive Passport UI canon, unified Rewards Drawer semantics, and production deployment lessons already paid for in live operation.
 
 The historical operating knowledge file is deliberately compact and contains durable lessons only. It must not be used as a substitute for fresh production data and must not be treated as retrospective Decision/Outcome Learning.
 
@@ -87,6 +89,8 @@ The Owner Operating Context preserves explicit owner principles, theses, heurist
 The Conversation Learning canon defines how real public dialogue may become a learning signal without allowing untrusted visitors to directly mutate facts, memory, code, methodology, security policy or capital authority. Owner teaching through the public console is not trusted until a real authenticated owner channel exists.
 
 The Passport Responsive UI canon defines the reusable desktop/mobile presentation contract for productive APR/APY capsules in Company Passports. It prevents future long strategy labels from being fixed with one-off per-asset nudges and explicitly preserves the accepted desktop geometry while using a two-row mobile composition.
+
+The Rewards Drawer UI canon defines a single semantic ledger for claimable/Unclaimed rewards, embedded/Compounded income and Pending/Warming routes. It prevents duplicate protocol-specific mini-ledgers and requires new blockchain information to update row state/data rather than trigger a new one-off UI architecture.
 
 The production incident postmortem defines the deployment-plane lesson from the 2026-08-14 root-routing incident. Its key rule is that model memory is not a sufficient production control: canonical homepage ownership, auxiliary Worker scope and Durable Object lifecycle must be machine-enforced and smoke-tested against rendered production surfaces.
 

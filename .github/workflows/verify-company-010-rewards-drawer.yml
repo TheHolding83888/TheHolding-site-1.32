@@ -1,0 +1,79 @@
+name: "Verify Company #010 · Unified Rewards Drawer"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'companies/company-010-public-adapter.js'
+      - 'rewards/company-010-rewards-overlay.mjs'
+      - 'rewards/company-010-ve-rewards.mjs'
+      - 'intelligence/project-memory/THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md'
+      - '.github/workflows/verify-company-010-rewards-drawer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify unified semantic ledger
+        run: |
+          set -euo pipefail
+          node --check companies/company-010-public-adapter.js
+          node - <<'NODE'
+          const fs=require('fs');
+          const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          const canon=fs.readFileSync('intelligence/project-memory/THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md','utf8');
+
+          const must=[
+            'v0.10-unified-rewards-gmx-apy-capsule',
+            'ensureUnifiedStrategyRewards',
+            'panelHasStrategy',
+            'embeddedRoute',
+            'rewardSource',
+            'compactEmbeddedAmount',
+            'cy-strategy-state-row',
+            'Concentrator · sdCRV',
+            'Aerodrome',
+            'Velodrome',
+            'embeddedIncome',
+            'Compounded',
+            'Claimable',
+            'Pending'
+          ];
+          for(const x of must)if(!a.includes(x))throw new Error('unified drawer contract missing: '+x);
+
+          for(const legacy of ['ensureCrvStrategyIncome','ensureVeStrategyIncome','CRV · strategy income','veAERO / veVELO · income']){
+            if(a.includes(legacy))throw new Error('duplicate legacy sub-ledger remains: '+legacy);
+          }
+
+          if(!a.includes("if(panelHasStrategy(panel,label))return"))throw new Error('native-row dedupe invariant missing');
+          if(!a.includes("panel.querySelector('.cy-crv-income')?.remove()")||!a.includes("panel.querySelector('.cy-ve-income')?.remove()"))throw new Error('legacy DOM cleanup missing');
+          if(!a.includes("const stateName=['Compounded','Claimable'].includes(rawState)?rawState:'Pending'"))throw new Error('backend state projection missing');
+          if(!a.includes("stateName==='Compounded'?compactEmbeddedAmount(route):''"))throw new Error('embedded Compounded amount projection missing');
+
+          const canonMust=['one primary Accrued Rewards / strategy-income drawer','native measured row wins','Unclaimed','Compounded','Pending / Warming','embeddedIncome','unknown != zero','The Rewards Drawer is a unified state ledger'];
+          for(const x of canonMust)if(!canon.includes(x))throw new Error('Rewards Drawer canon missing: '+x);
+          console.log('Unified Rewards Drawer semantic contract PASS');
+          NODE
+      - name: Verify GMX uses shared responsive capsule
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          for(const x of ['gmxCompactState','ensureGmxApyCapsule','gmx-combined-apy-capsule','ipx-strategy-rate-badge gmx-multi',"<span>APY</span><strong>${compact.apy}</strong>","pill.classList.add('has-strategy-rate')"]){if(!a.includes(x))throw new Error('GMX APY capsule contract missing: '+x)}
+          if(a.includes('GMX · ETH-USDC / BTC-USDC · APY'))throw new Error('GMX APY still inline in strategy label');
+          console.log('GMX shared responsive APY capsule PASS');
+          NODE
+      - name: Verify read-only presentation boundary
+        run: |
+          set -euo pipefail
+          ! grep -Eqi 'wallet\.send|sendTransaction|eth_sendTransaction|eth_sendRawTransaction|private[_ -]?key|mnemonic|signer\.send' companies/company-010-public-adapter.js

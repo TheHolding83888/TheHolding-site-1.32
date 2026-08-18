@@ -41,7 +41,7 @@ jobs:
           for(const x of htmlMust)if(!h.includes(x))throw new Error('missing native surface: '+x);
           if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
           for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
-          const adapterMust=['v0.9-global-strategy-rate-badges','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC'];
+          const adapterMust=['v0.10-unified-rewards-gmx-apy-capsule','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC'];
           for(const x of adapterMust)if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
           if(/\['Bitcoin'.*'Fluid'/.test(a)||a.includes("'Concentrator','Fluid'"))throw new Error('Fluid remains in Cypher protocol list');
           if(!a.includes("${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}"))throw new Error('exact-vs-floor Company TVL contract missing');
@@ -60,26 +60,30 @@ jobs:
           if(/rate\.pending[^\n]{0,180}<strong>0(?:\.0+)?%?<\/strong>/.test(a))throw new Error('unknown productive rate rendered as zero');
           console.log('Global Passport productive rate badge contract PASS');
           NODE
-      - name: Verify GMX public contract
+      - name: Verify GMX APY capsule contract
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          for(const x of ['GMX · ETH-USDC','GMX · BTC-USDC','gmxCompactLabel','GMX · ETH-USDC / BTC-USDC · APY','GMX 30D Fee APY','embedded-in-gm-nav'])if(!a.includes(x))throw new Error('GMX public contract missing: '+x);
-          if(a.includes('GMX Strategy Mechanics')||a.includes('Pool mix · diagnostic')||a.includes('cy-gmx-mechanics'))throw new Error('GMX pool-composition table must remain hidden from Passport');
-          if(!a.includes("eth.yield?.referenceMetric!=='GMX 30D Fee APY'||btc.yield?.referenceMetric!=='GMX 30D Fee APY'"))throw new Error('GMX compact APY source contract missing');
+          for(const x of ['GMX · ETH-USDC','GMX · BTC-USDC','gmxCompactState','GMX · ETH-USDC / BTC-USDC','GMX 30D Fee APY','embedded-in-gm-nav','ensureGmxApyCapsule','gmx-combined-apy-capsule','gmx-multi',"<span>APY</span><strong>${compact.apy}</strong>"])if(!a.includes(x))throw new Error('GMX capsule contract missing: '+x);
+          if(a.includes('GMX · ETH-USDC / BTC-USDC · APY'))throw new Error('legacy inline GMX APY returned');
+          if(!a.includes("eth.yield?.referenceMetric!=='GMX 30D Fee APY'||btc.yield?.referenceMetric!=='GMX 30D Fee APY'"))throw new Error('GMX APY source contract missing');
           if(!a.includes("eth.yield?.incomeMode!=='embedded-in-gm-nav'||btc.yield?.incomeMode!=='embedded-in-gm-nav'"))throw new Error('GMX embedded-income guard missing');
-          console.log('Company #010 GMX public contract PASS');
+          if(!a.includes("pill.classList.add('has-strategy-rate')"))throw new Error('GMX capsule does not reuse responsive rate layout');
+          console.log('Company #010 GMX APY capsule contract PASS');
           NODE
-      - name: Verify CRV and ve public income contract
+      - name: Verify unified Rewards Drawer contract
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          for(const x of ['concentrator-asdcrv','convex-staked-cvxcrv','Concentrator · sdCRV','Convex · staked cvxCRV','ensureCrvStrategyIncome','Compounded','Claimable','Pending','auto-compounded','separate-claimable-rewards','ensureVeStrategyIncome','aerodrome-ve','velodrome-ve-direct','REWARDS_URL'])if(!a.includes(x))throw new Error('strategy public income contract missing: '+x);
-          if(!a.includes("conc.yield?.incomeMode!=='auto-compounded'||cvx.yield?.incomeMode!=='separate-claimable-rewards'"))throw new Error('CRV income-mode fail-closed guard missing');
-          if(!a.includes("const pending=lang()==='ru'?'Ожидается':'Pending'"))throw new Error('Pending public state missing');
-          console.log('Company #010 CRV + ve public income contract PASS');
+          for(const x of ['ensureUnifiedStrategyRewards','cy-strategy-state-row','panelHasStrategy','embeddedIncome','rewardSource','embeddedRoute','Concentrator · sdCRV','aerodrome-ve','velodrome-ve-direct','AERO','VELO','Compounded','Claimable','Pending','REWARDS_URL'])if(!a.includes(x))throw new Error('unified Rewards contract missing: '+x);
+          for(const legacy of ['ensureCrvStrategyIncome','ensureVeStrategyIncome','CRV · strategy income','veAERO / veVELO · income'])if(a.includes(legacy))throw new Error('legacy duplicate rewards sub-ledger remains: '+legacy);
+          if(!a.includes("panel.querySelector('.cy-crv-income')?.remove()")||!a.includes("panel.querySelector('.cy-ve-income')?.remove()"))throw new Error('legacy runtime cleanup missing');
+          if(!a.includes("if(panelHasStrategy(panel,label))return"))throw new Error('native reward row dedupe guard missing');
+          if(!a.includes("source?.details?.rewardState"))throw new Error('ve public state not sourced from backend');
+          if(!a.includes("compactEmbeddedAmount(route)"))throw new Error('Compounded amount not sourced from embeddedIncome');
+          console.log('Company #010 unified Rewards Drawer contract PASS');
           NODE
       - name: Verify presence and weighting are separate
         run: |
