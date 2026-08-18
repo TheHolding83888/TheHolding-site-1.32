@@ -64,7 +64,12 @@ jobs:
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8')),c=d.companies?.Cypher;
           const finite=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x));
-          if(d.diagnostics?.company010?.capability!=='crv-and-ve-reward-semantics-0.4-measured-earned-presentation-parity')throw new Error('ve measured-earned presentation parity capability marker missing');
+          const capability=d.diagnostics?.company010?.capability;
+          const compatibleCapabilities=[
+            'crv-and-ve-reward-semantics-0.4-measured-earned-presentation-parity',
+            'crv-ve-and-projectx-reward-semantics-0.5-multileg-parity'
+          ];
+          if(!compatibleCapabilities.includes(capability))throw new Error('ve measured-earned presentation parity capability marker missing/incompatible: '+capability);
           const embeddedUsd=[];
           for(const route of ['aerodrome-ve','velodrome-ve-direct']){
             const s=(c?.sources||[]).find(x=>x.route===route);
@@ -89,7 +94,7 @@ jobs:
           const votium=(c?.sources||[]).find(x=>x.route==='votium-union');
           if(!votium||votium.status!=='warming'||votium.details?.unknownIsNotZero!==true)throw new Error('Votium must remain unresolved');
           if(c.totalUsdIsComplete!==false||c.settlement?.unknownRouteIsNotZero!==true)throw new Error('partial-total guard missing');
-          console.log('Company #010 rewards overlay dual-total known-mechanism parity PASS',{embeddedUsd,claimableOnly,measuredEarnedUsd:c.measuredEarnedUsd});
+          console.log('Company #010 rewards overlay dual-total known-mechanism parity PASS',{capability,embeddedUsd,claimableOnly,measuredEarnedUsd:c.measuredEarnedUsd});
           NODE
       - name: Verify public measured-earned projection and fail-closed unknown pricing
         run: |
