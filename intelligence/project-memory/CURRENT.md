@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores what is being worked on; the Owner Collaboration Operating Style restores how to work with the owner. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-18T07:59:10.648Z**
+Canonical source state represented here: **2026-08-18T08:51:54.473Z**
 
 ## Resume order
 
@@ -41,7 +41,8 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 4ac4eb1e8433247875328cd30b8da43aa835adef4cb2bdf8262ae8e3a98d6469.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 26; generatedAt 2026-08-18T07:58:48.991Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 28; generatedAt 2026-08-18T08:51:54.473Z.
+- Cognitive Stack Security snapshot is older (2026-08-18T07:58:48.991Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 25; evidence 27; noExecution true.
 
