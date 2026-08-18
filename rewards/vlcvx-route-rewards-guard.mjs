@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { AbiCoder, Contract, JsonRpcProvider, concat, getAddress, keccak256, solidityPackedKeccak256 } from 'ethers';
+const executionAuthority='none';
 const REWARDS=process.env.REWARDS_OUTPUT||'companies/rewards-data.json';
 const AUDIT=process.env.VLCVX_AUDIT_OUTPUT||'/tmp/vlcvx-route-audit.json';
 const UNION_AUDIT=process.env.UNION_AUDIT_OUTPUT||'/tmp/union-vlcvx-allocation-audit.json';
@@ -16,6 +17,7 @@ function stakeProof(wallet,token,amount,proof,root){let x=keccak256(keccak256(co
 async function provider(){let last;for(const u of RPCS){try{const p=new JsonRpcProvider(u,1,{staticNetwork:true});await p.getBlockNumber();return p}catch(e){last=e}}throw last||new Error('RPC unavailable')}
 async function json(url,{allow404=false}={}){const r=await fetch(url,{headers:{accept:'application/json'}});if(r.status===404&&allow404)return null;if(!r.ok)throw new Error(`${url} HTTP ${r.status}`);return r.json()}
 async function main(){
+ if(executionAuthority!=='none')throw new Error('execution authority expanded');
  const d=JSON.parse(fs.readFileSync(REWARDS,'utf8')),a=JSON.parse(fs.readFileSync(AUDIT,'utf8')),ua=JSON.parse(fs.readFileSync(UNION_AUDIT,'utf8')),p=await provider();
  if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRoutePromotion?.claimTransactionAuthority!=='none')throw new Error('vlCVX promotion authority drift');
  const positives=a.companies.filter(x=>x.hasVlCvx);if(positives.map(x=>x.registry).sort().join(',')!=='002,004,007,010')throw new Error('current vlCVX registry set drift');
