@@ -1,0 +1,96 @@
+name: "Update Company #010 · Project X Reference APR"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7 5 * * *'
+  workflow_run:
+    workflows:
+      - "Update Company #010 · Cypher Production State"
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'onboarding/company-010-projectx-reference-apr.mjs'
+      - '.github/workflows/update-company-010-projectx-reference-apr.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: company-010-projectx-reference-apr
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.head_branch == 'main')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+
+      - name: Measure Project X observed fee Reference APR
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-projectx-reference-apr.mjs
+          node onboarding/company-010-projectx-reference-apr.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+          const h=JSON.parse(fs.readFileSync('companies/company-010-projectx-rate-history.json','utf8'));
+          const px=s.strategies?.projectX;
+          const prod=(s.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
+          if(h.version!=='0.1-projectx-rate-history'||h.authority?.executionAuthority!=='none')throw new Error('Project X rate history contract missing');
+          if(!Array.isArray(h.observations)||!h.observations.length)throw new Error('Project X rate observation not recorded');
+          if(px?.yield?.status==='measured'){
+            if(!(Number(px.yield.referenceAprPct)>=0)||prod?.status!=='measured'||Number(prod.referenceAprPct)!==Number(px.yield.referenceAprPct))throw new Error('Project X measured APR promotion mismatch');
+          }else{
+            if(px?.yield?.status!=='warming'||px?.yield?.referenceAprPct!==null||prod?.status!=='warming'||prod?.referenceAprPct!==null)throw new Error('Project X Pending boundary mismatch');
+          }
+          if(s.epistemicBoundary?.projectXFeeTierIsNotApr!==true||s.epistemicBoundary?.projectXReferenceAprUsesObservedFeeGrowth!==true||s.authority?.executionAuthority!=='none')throw new Error('Project X APR epistemic/authority boundary missing');
+          console.log('Project X Reference APR state PASS',{status:px.yield.status,referenceAprPct:px.yield.referenceAprPct,windowHours:px.yield.windowHours,observations:h.observations.length});
+          NODE
+
+      - name: Commit Project X rate state
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Project X Rate"
+          git config user.email "projectx-rate@theholding.ai"
+          git add companies/company-010-production-state.json companies/company-010-projectx-rate-history.json
+          if git diff --cached --quiet; then
+            echo "No Project X rate changes to commit."
+            exit 0
+          fi
+          git commit -m "data: update Project X observed fee APR"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+            node onboarding/company-010-projectx-reference-apr.mjs
+            git add companies/company-010-production-state.json companies/company-010-projectx-rate-history.json
+            git commit --amend --no-edit
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Safe writer guard: main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
