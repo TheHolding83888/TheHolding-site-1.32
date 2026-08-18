@@ -450,3 +450,46 @@
   const run=()=>start().catch(err=>console.error('[Company #010 native public adapter]',err));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 })();
+
+/* The Holding · Global Rewards Drawer row-coverage parity · v0.1
+ * Presentation only: route-level coverage uncertainty belongs to the aggregate/footer,
+ * never to an individual reward row whose quantity/state is already measured.
+ */
+(() => {
+  'use strict';
+  if(window.__TH_REWARDS_ROW_COVERAGE_PARITY__)return;
+  const selector='.ipx-reward-meta';
+  const suffixes=[
+    /\s*·\s*\+\s*route not fully closed(?: yet)?\s*$/i,
+    /\s*·\s*\+\s*маршрут ещё не закрыт\s*$/i
+  ];
+  const clean=meta=>{
+    if(!meta||typeof meta.textContent!=='string')return false;
+    const before=meta.textContent;
+    let after=before;
+    for(const suffix of suffixes)after=after.replace(suffix,'');
+    if(after===before)return false;
+    meta.textContent=after.trimEnd();
+    return true;
+  };
+  const scrub=root=>{
+    if(root?.matches?.(selector))clean(root);
+    for(const meta of root?.querySelectorAll?.(selector)||[])clean(meta);
+  };
+  const install=()=>{
+    scrub(document);
+    const observer=new MutationObserver(records=>{
+      for(const record of records){
+        if(record.type==='characterData'){
+          const meta=record.target?.parentElement?.closest?.(selector);
+          if(meta)clean(meta);
+          continue;
+        }
+        for(const node of record.addedNodes||[])if(node?.nodeType===1)scrub(node);
+      }
+    });
+    observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
+    window.__TH_REWARDS_ROW_COVERAGE_PARITY__={version:'0.1-route-coverage-footer-only',scrub};
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
