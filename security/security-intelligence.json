@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-18T15:48:15.196Z",
+  "generatedAt": "2026-08-18T17:04:38.987Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -12,8 +12,8 @@
     "info": 0
   },
   "source": {
-    "filesScanned": 435,
-    "bytesScanned": 9781021,
+    "filesScanned": 441,
+    "bytesScanned": 9831202,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,22 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "f93b4058f936b46b7884700a79a597ff687911c3c89ffb5808b7ecde5807a81e",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-company-rewards.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-company-rewards.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "4a8b9c3a380966b37fd90da56e4c23fb66f0ccab246e01af0d21cc0e229f8466",
+          "currentSha256": "f4029db378414fe20b0bee2fdb29eb9f98dbc77bf1b5c21f575ac1cac5f847ab"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "a8505f06c0dcc74b805827d09b6d125231ac80cfb76cdecdb1b498625af289b8",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -70,8 +86,7 @@
           "currentSha256": "1b7011abebac9dc6953c045e2f1f7166ce0caf976bff2003e8b2e1677c6403f6"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -141,17 +156,17 @@
       "evidence": null
     },
     {
-      "id": "a8505f06c0dcc74b805827d09b6d125231ac80cfb76cdecdb1b498625af289b8",
+      "id": "f93b4058f936b46b7884700a79a597ff687911c3c89ffb5808b7ecde5807a81e",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/verify-defitea-union-scrvusd.yml",
+      "file": ".github/workflows/update-company-rewards.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-defitea-union-scrvusd.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-company-rewards.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "fe1699eff185b01c8c91dca0898a181de4bc9003e94588656935ce0ebef588be",
-        "currentSha256": "1b7011abebac9dc6953c045e2f1f7166ce0caf976bff2003e8b2e1677c6403f6"
+        "previousSha256": "4a8b9c3a380966b37fd90da56e4c23fb66f0ccab246e01af0d21cc0e229f8466",
+        "currentSha256": "f4029db378414fe20b0bee2fdb29eb9f98dbc77bf1b5c21f575ac1cac5f847ab"
       }
     },
     {
@@ -561,12 +576,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "b0015863bdebb4647d15fe3132feb5d25ccdb47552d8289ddcd200316186b8ff",
+    "snapshotHash": "4be77db98025e7045f97995a906e341f609fcb4ef2a25ba1cf1713b9b1f88def",
     "securityVault": {
-      "runCount": 298,
+      "runCount": 299,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T15-48-15-196Z-b0015863bd.json",
-      "latestRecordHash": "f3bd4ddcf4020dd8222b2aa526b58dde50d3507ef5e18836fb27291945572cb8",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T17-04-38-987Z-4be77db980.json",
+      "latestRecordHash": "d41aaf6816073924ff63b757c04d21b28ef7ed48cb8f7d94648cd49b0f39d097",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
