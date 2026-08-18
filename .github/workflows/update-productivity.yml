@@ -9,6 +9,7 @@ on:
   workflow_run:
     workflows:
       - "Update Company #010 · Cypher Production State"
+      - "Update Company #010 · Project X Reference APR"
     types: [completed]
 
 permissions:
@@ -74,9 +75,10 @@ jobs:
           if(!c||!(Number(c.productiveValue)>0)||!(Number(c.coveredProductiveValue)>0))throw new Error('Cypher Productivity missing');
           if(!(Number(c.coverage)>0&&Number(c.coverage)<=1))throw new Error('Cypher coverage invalid');
           const byId=new Map((c.breakdown||[]).map(x=>[x.engineId,x]));
-          for(const id of ['concentrator_asdcrv','convex_staked_cvxcrv'])if(!byId.has(id))throw new Error('CRV strategy Productivity row missing: '+id);
-          if((c.breakdown||[]).some(x=>x.apr===0&&['projectx_hype','concentrator_asdcrv','convex_staked_cvxcrv'].includes(x.engineId)&&x.engineStatus==='warming'))throw new Error('unknown Cypher APR collapsed to zero');
-          console.log('Productivity v1.16 + CRV intelligence PASS',{aprLatest:c.aprLatest,productiveValue:c.productiveValue,covered:c.coveredProductiveValue,coverage:c.coverage,concentrator:byId.get('concentrator_asdcrv'),convex:byId.get('convex_staked_cvxcrv')});
+          for(const id of ['concentrator_asdcrv','convex_staked_cvxcrv','projectx-whype-usdc'])if(!byId.has(id))throw new Error('Company #010 strategy Productivity row missing: '+id);
+          const px=byId.get('projectx-whype-usdc');
+          if(px.apr===0&&px.engineStatus==='warming')throw new Error('Project X unknown APR collapsed to zero');
+          console.log('Productivity v1.16 + Project X rate follow-through PASS',{aprLatest:c.aprLatest,productiveValue:c.productiveValue,covered:c.coveredProductiveValue,coverage:c.coverage,projectX:px,concentrator:byId.get('concentrator_asdcrv'),convex:byId.get('convex_staked_cvxcrv')});
           NODE
 
       - name: Commit new snapshot
