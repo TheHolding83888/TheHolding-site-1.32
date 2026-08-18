@@ -65,7 +65,7 @@ jobs:
           const uiMust=['v0.10.1-known-mechanism-compounded-usd-parity','compactEmbeddedAmount','usd:finite(x.usdValue)?money2(x.usdValue):','Embedded income · ${embedded.usd}'];
           for(const x of uiMust)if(!ui.includes(x))throw new Error('Company #010 known-mechanism public parity missing: '+x);
 
-          const canonMust=['reuse regression / promotion gap','full capability parity','No partial reuse','priceUsd','usdValue','aggregation correctness','Company #011 and beyond','Solved mechanism = reusable end-to-end capability'];
+          const canonMust=['reuse regression / promotion gap','full capability parity','partial reuse','priceUsd','usdValue','aggregation correctness','Company #011 and beyond','Solved mechanism = reusable end-to-end capability'];
           for(const x of canonMust)if(!canon.includes(x))throw new Error('known-mechanism canon incomplete: '+x);
           if(!readme.includes('THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md'))throw new Error('known-mechanism canon not linked from project-memory bootstrap');
 
