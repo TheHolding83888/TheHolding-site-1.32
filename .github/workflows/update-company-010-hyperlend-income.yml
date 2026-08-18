@@ -1,0 +1,94 @@
+name: "Update Company #010 · HyperLend Income"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_run:
+    workflows:
+      - "Update Company Rewards"
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'onboarding/company-010-hyperlend-income-overlay.mjs'
+      - '.github/workflows/update-company-010-hyperlend-income.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: company-010-hyperlend-income
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: >-
+      ${{ github.event_name != 'workflow_run' ||
+          (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install bounded dependency
+        run: npm install --no-save --no-package-lock ethers@6
+      - name: Measure HyperLend income semantics
+        env:
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-hyperlend-income-overlay.mjs
+          node onboarding/company-010-hyperlend-income-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+          const r=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const h=s.strategies?.hyperlend;
+          if(h?.version!=='0.1-company-010-hyperlend-income-parity'||h.status!=='measured')throw new Error('HyperLend income capability missing');
+          if(h.income?.primary?.state!=='Compounded'||h.income?.primary?.claimableApplicable!==false)throw new Error('HyperLend embedded income semantics drift');
+          if(h.accountingBoundary?.embeddedInterestNotAdditiveCapital!==true||h.accountingBoundary?.embeddedInterestNotClaimable!==true||h.accountingBoundary?.externalIncentivesSeparateFromSupplyApr!==true)throw new Error('HyperLend accounting boundary missing');
+          const c=r.companies?.Cypher;
+          const e=(c?.embeddedIncome||[]).find(x=>x.route==='hyperlend-khype');
+          if(!e||e.state!=='Compounded'||e.claimableApplicable!==false||e.usdValueIncludedInClaimableTotal!==false)throw new Error('HyperLend Rewards Drawer projection missing');
+          const src=(c?.sources||[]).find(x=>x.route==='hyperlend-khype');
+          if(!src||!['ok','partial'].includes(src.status)||src.details?.rewardState!=='Compounded')throw new Error('HyperLend source projection missing');
+          if(s.authority?.executionAuthority!=='none'||h.authority?.executionAuthority!=='none')throw new Error('authority drift');
+          console.log('HyperLend income state PASS',{hToken:h.hToken,referenceAprPct:h.referenceAprPct,embedded:h.income.primary,externalIncentives:h.income.externalIncentives,rewardsDrawer:{measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd}});
+          NODE
+      - name: Commit HyperLend income state
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding HyperLend Income"
+          git config user.email "hyperlend-income@theholding.ai"
+          git add companies/company-010-production-state.json companies/rewards-data.json
+          if git diff --cached --quiet; then
+            echo "No HyperLend income changes to commit."
+            exit 0
+          fi
+          git commit -m "data: update HyperLend income semantics"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+            HYPEREVM_RPC_URL='${{ secrets.HYPEREVM_RPC_URL }}' node onboarding/company-010-hyperlend-income-overlay.mjs
+            git add companies/company-010-production-state.json companies/rewards-data.json
+            git commit --amend --no-edit
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Safe writer guard: main moved; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
