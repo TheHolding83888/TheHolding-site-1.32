@@ -1,9 +1,10 @@
-/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges · v0.9.2-mobile-two-row-strategy-rate-badges · v0.10-unified-rewards-gmx-apy-capsule · v0.10.1-known-mechanism-compounded-usd-parity
+/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges · v0.9.2-mobile-two-row-strategy-rate-badges · v0.10-unified-rewards-gmx-apy-capsule · v0.10.1-known-mechanism-compounded-usd-parity · v0.10.2-measured-earned-presentation-parity
  * Compatibility sentinel: preserves v0.6 Stake DAO native surface contracts while promoting GMX APY into the shared capsule vocabulary.
  * Productive-position badges are presentation-only projections of canonical Productivity breakdowns; reserve assets stay unbadged.
  * Mobile Passport canon: productive cards use title on row one, value bottom-left and APR/APY capsule bottom-right; desktop keeps right-centered capsules unchanged.
  * Rewards Drawer canon: one ledger, one row per strategy/reward state; no duplicate CRV or veAERO/veVELO sub-ledgers.
- * Known-mechanism parity: measured Compounded ve income preserves token amount + current USD valuation when canonical pricing exists; embedded USD is informational and excluded from claimable totals.
+ * Known-mechanism parity: measured Compounded ve income preserves token amount + current USD valuation and reuses the generic Aerodrome/Velodrome Rebase presentation.
+ * Accounting boundary: claimableUsd stays claimable-only; measuredEarnedUsd may add priced Compounded income for Passport presentation and never changes claimability or TVL.
  * CRV-family wrappers are separate economic positions: direct CRV, Concentrator asdCRV/sdCRV and Convex staked cvxCRV are never summed as one token quantity.
  * Concentrator income is Compounded; Convex staked cvxCRV income is Claimable; an unproven rate is APR Pending, never a fake 0%.
  * veAERO / veVELO public reward state is read from current Company #010 rewards-data semantics, never inferred from another company.
@@ -296,17 +297,53 @@
     `;document.head.appendChild(s);
   }
 
-  function rewardPanel(){return document.querySelector('.ib-item[data-nm="Cypher"] .ipx-rewards-panel');}
+  function rewardItem(){return document.querySelector('.ib-item[data-nm="Cypher"]');}
+  function rewardPanel(){return rewardItem()?.querySelector('.ipx-rewards-panel')||null;}
   function panelHasStrategy(panel,label){return [...panel.querySelectorAll('.ipx-reward-protocol')].some(x=>String(x.textContent||'').includes(label));}
   function embeddedRoute(route){return (rewardsData?.companies?.Cypher?.embeddedIncome||[]).find(x=>x.route===route&&x.state==='Compounded');}
   function rewardSource(route){return (rewardsData?.companies?.Cypher?.sources||[]).find(x=>x.route===route);}
   function compactEmbeddedAmount(route){
     const x=embeddedRoute(route);
-    if(!finite(x?.amount)||Number(x.amount)<=0)return {amount:'',usd:''};
+    if(!finite(x?.amount)||Number(x.amount)<=0)return {amount:'',usd:'',symbol:'',chain:''};
     return {
       amount:`${Number(x.amount).toLocaleString('en-US',{maximumFractionDigits:4})} ${x.symbol||''}`,
-      usd:finite(x.usdValue)?money2(x.usdValue):''
+      usd:finite(x.usdValue)?money2(x.usdValue):'',
+      symbol:x.symbol||'',
+      chain:x.chain||rewardSource(route)?.chain||''
     };
+  }
+
+  function measuredEarnedTotal(){
+    const c=rewardsData?.companies?.Cypher;
+    if(!c)return null;
+    if(finite(c.measuredEarnedUsd))return Number(c.measuredEarnedUsd);
+    const claimable=finite(c.claimableUsd)?Number(c.claimableUsd):(finite(c.knownAccruedUsd)?Number(c.knownAccruedUsd):(finite(c.totalUsd)?Number(c.totalUsd):0));
+    const embedded=(c.embeddedIncome||[]).reduce((s,x)=>s+(finite(x?.usdValue)?Number(x.usdValue):0),0);
+    return claimable+embedded;
+  }
+
+  function syncMeasuredEarnedPresentation(){
+    const item=rewardItem(),c=rewardsData?.companies?.Cypher,total=measuredEarnedTotal();
+    if(!item||!c||!finite(total))return;
+    const incomplete=c.measuredEarnedUsdIsComplete!==true;
+    const label=money2(total)+(incomplete?'+':'');
+    const headline=item.querySelector('.ipx-rewards-value');
+    const panelTotal=item.querySelector('.ipx-reward-panel-total');
+    if(headline)headline.textContent=label;
+    if(panelTotal)panelTotal.textContent=label;
+
+    const strip=item.querySelector('.ipx-reward-token-strip');
+    if(strip){
+      const symbols=new Set([...strip.querySelectorAll('.ipx-reward-token')].map(x=>String(x.textContent||'').trim()).filter(x=>x&&!x.startsWith('+')));
+      const desired=Array.isArray(c.measuredEarnedTokens)?c.measuredEarnedTokens:[];
+      for(const symbol of desired){
+        if(!symbol||symbols.has(symbol))continue;
+        const chip=document.createElement('span');chip.className='ipx-reward-token';chip.textContent=symbol;
+        const more=strip.querySelector('.ipx-reward-token-more');
+        if(more)strip.insertBefore(chip,more);else strip.appendChild(chip);
+        symbols.add(symbol);
+      }
+    }
   }
 
   function appendStrategyStateRow(panel,{label,meta,stateName,amount='',amountMeta=''}){
@@ -332,19 +369,20 @@
       appendStrategyStateRow(panel,{label:'Concentrator · sdCRV',meta:lang()==='ru'?'Доход автоматически реинвестируется в долю':'Yield is automatically reinvested into the share',stateName:'Compounded',amount:lang()==='ru'?'В доле':'Embedded',amountMeta:finite(conc.yield.referenceAprPct)?`APR ${pct2(conc.yield.referenceAprPct)}`:'APR Pending'});
     }
 
-    for(const [name,route,symbol] of [['Aerodrome','aerodrome-ve','AERO'],['Velodrome','velodrome-ve-direct','VELO']]){
+    for(const [name,route,fallbackSymbol,fallbackChain] of [['Aerodrome','aerodrome-ve','AERO','Base'],['Velodrome','velodrome-ve-direct','VELO','Optimism']]){
       const source=rewardSource(route),rawState=source?.details?.rewardState;
       const stateName=['Compounded','Claimable'].includes(rawState)?rawState:'Pending';
       if(stateName==='Claimable'&&panelHasStrategy(panel,name))continue;
-      const embedded=stateName==='Compounded'?compactEmbeddedAmount(route):{amount:'',usd:''};
+      const embedded=stateName==='Compounded'?compactEmbeddedAmount(route):{amount:'',usd:'',symbol:'',chain:''};
+      const symbol=embedded.symbol||fallbackSymbol,chain=embedded.chain||source?.chain||fallbackChain;
       const meta=stateName==='Compounded'
-        ? (lang()==='ru'?'Доход остаётся внутри managed veNFT':'Yield remains inside the managed veNFT')
+        ? `${symbol} · ${chain} · Rebase`
         : stateName==='Claimable'
-          ? (lang()==='ru'?'Отдельно доступно к получению':'Separately claimable when accrued')
-          : (lang()==='ru'?'Маршрут известен · измерение ожидается':'Known route · measurement pending');
-      const amountMeta=stateName==='Compounded'?(embedded.usd?`Embedded income · ${embedded.usd}`:'Embedded income'):'';
-      appendStrategyStateRow(panel,{label:`${name} · ve${symbol}`,meta,stateName,amount:embedded.amount||'—',amountMeta});
+          ? `${symbol} · ${chain}`
+          : `${chain} · ${lang()==='ru'?'Измеряется':'Measuring'}`;
+      appendStrategyStateRow(panel,{label:name,meta,stateName,amount:embedded.amount||'—',amountMeta:stateName==='Compounded'?embedded.usd:''});
     }
+    syncMeasuredEarnedPresentation();
   }
 
   function markPendingPerformance(){
@@ -371,6 +409,7 @@
     ensureStrategyRateBadges();
     ensureGmxApyCapsule();
     ensureUnifiedStrategyRewards();
+    syncMeasuredEarnedPresentation();
     markPendingPerformance();
   }
 
@@ -404,7 +443,7 @@
     const timer=setInterval(()=>{attempts+=1;if(rerenderNativeSurfaces()||attempts>600)clearInterval(timer);},100);
     rerenderNativeSurfaces();
     setInterval(syncNetworkStats,1000);
-    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishPassportTitles();polishBalanceSheet();ensureStrategyRateBadges();ensureGmxApyCapsule();ensureUnifiedStrategyRewards();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
+    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishPassportTitles();polishBalanceSheet();ensureStrategyRateBadges();ensureGmxApyCapsule();ensureUnifiedStrategyRewards();syncMeasuredEarnedPresentation();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 
