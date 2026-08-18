@@ -20,16 +20,19 @@ On the first substantive The Holding request in a new chat/session, the assistan
 
 1. `intelligence/project-memory/CURRENT.md`;
 2. the latest `THE_HOLDING_MASTER_CONTINUITY_*.md` referenced there;
-3. `THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`;
-4. when the task depends on how the system was built or what earlier work already taught us, read `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`;
-5. when the task concerns founder alignment, The Holding AI, decision style or the future digital-founder model, read `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`;
-6. when the task concerns company strategy, capital philosophy, reward harvesting/reinvestment, diversification, stable reserves, leverage/Health Factor, company decision points or future Company Curator logic, read both `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md` and the latest `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*` extensions; when machine-readable owner context is useful, read `intelligence/owner-context/owner-operating-profile.json` plus the latest additive `intelligence/owner-context/owner-operating-profile-tranche-*.json`;
-7. when the task concerns public dialogue, conversation learning, model safety, financial-advice boundaries or owner teaching through the console, read `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`;
-8. when the task concerns Company Passport responsive UI, `Balance Sheet · Strategies`, productive APR/APY capsules, or mobile-versus-desktop Passport layout, read `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md` before proposing local visual fixes;
-9. when the task touches Cloudflare, Workers, Wrangler, deployment routing, Durable Objects, production permissions, or homepage ownership, read `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md` before proposing changes;
-10. only then the live machine-readable artifacts needed for the task.
+3. `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md` for the durable owner/AI working contract — language, dictation handling, strict sequencing, proof expectations, visual review workflow, reusable-fix preference and merge authorization boundary;
+4. `THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`;
+5. when the task depends on how the system was built or what earlier work already taught us, read `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`;
+6. when the task concerns founder alignment, The Holding AI, decision style or the future digital-founder model, read `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`;
+7. when the task concerns company strategy, capital philosophy, reward harvesting/reinvestment, diversification, stable reserves, leverage/Health Factor, company decision points or future Company Curator logic, read both `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md` and the latest `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*` extensions; when machine-readable owner context is useful, read `intelligence/owner-context/owner-operating-profile.json` plus the latest additive `intelligence/owner-context/owner-operating-profile-tranche-*.json`;
+8. when the task concerns public dialogue, conversation learning, model safety, financial-advice boundaries or owner teaching through the console, read `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`;
+9. when the task concerns Company Passport responsive UI, `Balance Sheet · Strategies`, productive APR/APY capsules, or mobile-versus-desktop Passport layout, read `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md` before proposing local visual fixes;
+10. when the task touches Cloudflare, Workers, Wrangler, deployment routing, Durable Objects, production permissions, or homepage ownership, read `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md` before proposing changes;
+11. only then the live machine-readable artifacts needed for the task.
 
 Changing production facts always outrank prose memory. If a continuity document conflicts with live generated state, live `main` + fresh production artifacts win.
+
+The collaboration-style canon is operational context, not a personality profile. A newer explicit owner instruction always overrides an older working preference.
 
 ## Memory tiers
 
@@ -59,6 +62,7 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 ### 4. Human continuity / project canon
 - `intelligence/project-memory/CURRENT.md`
 - `THE_HOLDING_MASTER_CONTINUITY_*.md`
+- `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md`
 - `THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`
 - `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`
 - `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`
@@ -70,9 +74,11 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 - `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md`
 - `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md`
 
-This is the fastest way for a future model/session to recover the project architecture, operating rules, current stage, resume point, durable lessons from earlier company/product/infrastructure work, founder-alignment direction, owner capital philosophy/company strategy context, conversation-learning safety rules, responsive Passport UI canon, and production deployment lessons already paid for in live operation.
+This is the fastest way for a future model/session to recover the project architecture, operating rules, current stage, resume point, durable lessons from earlier company/product/infrastructure work, owner collaboration style, founder-alignment direction, owner capital philosophy/company strategy context, conversation-learning safety rules, responsive Passport UI canon, and production deployment lessons already paid for in live operation.
 
 The historical operating knowledge file is deliberately compact and contains durable lessons only. It must not be used as a substitute for fresh production data and must not be treated as retrospective Decision/Outcome Learning.
+
+The Owner Collaboration Operating Style preserves directly observed working preferences — not private speculation or psychology. Its purpose is to prevent a new model from forcing the owner to reteach language/input conventions, sequencing, evidence standards, merge governance and accepted collaboration patterns.
 
 The Founder Decision DNA canon is a strategic/evidence rule, not a current runtime layer. A formal machine-readable founder model should only be built after enough genuine owner decision → outcome cycles exist to support stable patterns rather than guesses.
 
@@ -92,6 +98,8 @@ The production incident postmortem defines the deployment-plane lesson from the 
 - on manual dispatch.
 
 The updater writes only `CURRENT.md`, contains no model/API call, and emits no commit when the canonical source state has not changed.
+
+`CURRENT.md` deliberately remains compact. The latest lexicographically named `THE_HOLDING_MASTER_CONTINUITY_*.md` is linked as the first detailed resume checkpoint, so a new detailed continuity file should be preferred over manually stuffing transient details into `CURRENT.md`.
 
 The memory model is therefore:
 
