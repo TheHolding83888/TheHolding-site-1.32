@@ -1,7 +1,9 @@
-/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges · v0.9.2-mobile-two-row-strategy-rate-badges · v0.10-unified-rewards-gmx-apy-capsule · v0.10.1-known-mechanism-compounded-usd-parity · v0.10.2-measured-earned-presentation-parity
+/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges · v0.9.2-mobile-two-row-strategy-rate-badges · v0.10-unified-rewards-gmx-apy-capsule · v0.10.1-known-mechanism-compounded-usd-parity · v0.10.2-measured-earned-presentation-parity · v0.10.3-defitea-spendle-cypher-density
  * Compatibility sentinel: preserves v0.6 Stake DAO native surface contracts while promoting GMX APY into the shared capsule vocabulary.
  * Productive-position badges are presentation-only projections of canonical Productivity breakdowns; reserve assets stay unbadged.
- * Mobile Passport canon: productive cards use title on row one, value bottom-left and APR/APY capsule bottom-right; desktop keeps right-centered capsules unchanged.
+ * Defitea Pendle canon: the combined two-wallet legacy vePENDLE + current sPENDLE principal is presented publicly as one sPENDLE position and uses the current sPENDLE Productivity reference rate.
+ * Cypher desktop density: 14 positions use a bounded three-column ledger; productive cards place the title on row one and value/rate on row two so long GMX/Stake DAO labels remain contained.
+ * Mobile Passport canon: productive cards use title on row one, value bottom-left and APR/APY capsule bottom-right; long labels and the dual GMX APY capsule remain inside the card.
  * Rewards Drawer canon: one ledger, one row per strategy/reward state; no duplicate CRV or veAERO/veVELO sub-ledgers.
  * Known-mechanism parity: measured Compounded ve income preserves token amount + current USD valuation and reuses the generic Aerodrome/Velodrome Rebase presentation.
  * Accounting boundary: claimableUsd stays claimable-only; measuredEarnedUsd may add priced Compounded income for Passport presentation and never changes claimability or TVL.
@@ -162,8 +164,7 @@
       composite.forEach((c,i)=>{c.color=UNIQUE_INDEX_GREENS[Math.min(i,UNIQUE_INDEX_GREENS.length-1)];});
       return list;
     };
-    indexColorHooked=true;
-    return true;
+    indexColorHooked=true;return true;
   }
 
   function polishPassportTitles(){
@@ -173,6 +174,19 @@
     }
   }
 
+  function normalizeDefiteaPendleSurface(){
+    const item=document.querySelector('.ib-item[data-nm="defitea.eth"]');
+    if(!item)return;
+    const pill=[...item.querySelectorAll('.ipx-balance-card .ipx-position-pill')].find(p=>{
+      const symbol=String(p.querySelector('.ipx-position-symbol')?.textContent||'').trim();
+      return symbol==='PENDLE'||symbol==='sPENDLE';
+    });
+    if(!pill)return;
+    const symbol=pill.querySelector('.ipx-position-symbol');
+    if(symbol)symbol.textContent='sPENDLE';
+    pill.dataset.defiteaPendle='combined-two-wallet-spendle-reference';
+  }
+
   function ensureStrategyRateStyles(){
     if(document.getElementById('passport-strategy-rate-style'))return;
     const s=document.createElement('style');s.id='passport-strategy-rate-style';s.textContent=`
@@ -180,11 +194,35 @@
       .ipx-strategy-rate-badge{position:absolute;right:.58rem;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;gap:.22rem;min-height:23px;margin:0;padding:.18rem .52rem;border-radius:999px;border:1px solid rgba(22,21,15,.10);background:rgba(22,21,15,.035);color:rgba(22,21,15,.52);font-size:.50rem;line-height:1;font-weight:600;letter-spacing:.015em;font-variant-numeric:tabular-nums;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.72)}
       .ipx-strategy-rate-badge strong{color:#0a7c4e;font-weight:650}.ipx-strategy-rate-badge.pending strong{color:#8f7430}
       .ipx-strategy-rate-badge.gmx-multi{padding-left:.58rem;padding-right:.58rem}
+      @media(min-width:761px){
+        .ib-item[data-nm="Cypher"] .ipx-balance-card{padding:.72rem .76rem .68rem}
+        .ib-item[data-nm="Cypher"] .ipx-balance-card .ipx-ledger-head{margin-bottom:.48rem}
+        .ib-item[data-nm="Cypher"] .ipx-balance-card .ipx-position-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:.28rem}
+        .ib-item[data-nm="Cypher"] .ipx-balance-card .ipx-position-pill{min-width:0;min-height:46px;padding:.34rem .4rem .31rem;border-radius:9px;gap:.1rem;overflow:hidden}
+        .ib-item[data-nm="Cypher"] .ipx-balance-card .ipx-position-symbol{min-width:0;max-width:100%;font-size:.50rem;line-height:1.08;white-space:normal;overflow-wrap:anywhere}
+        .ib-item[data-nm="Cypher"] .ipx-balance-card .ipx-position-qty{min-width:0;font-size:.90rem;line-height:1;white-space:nowrap}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill.has-strategy-rate{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:.24rem;row-gap:.10rem;align-items:end;padding:.34rem .4rem .31rem}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill.has-strategy-rate .ipx-position-symbol{grid-column:1 / -1;grid-row:1;min-width:0;max-width:100%;padding:0;white-space:normal;overflow-wrap:anywhere}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill.has-strategy-rate .ipx-position-qty{grid-column:1;grid-row:2;align-self:end;padding:0}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill.has-strategy-rate .ipx-strategy-rate-badge{position:static;grid-column:2;grid-row:2;justify-self:end;align-self:end;right:auto;top:auto;transform:none;min-height:19px;margin:0;padding:.13rem .34rem;font-size:.40rem;gap:.14rem;max-width:100%}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"] .ipx-position-symbol{font-size:.46rem;overflow-wrap:normal;word-break:normal}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"] .ipx-strategy-rate-badge{font-size:.36rem;padding:.12rem .25rem;letter-spacing:0}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="stakedao-combined"] .ipx-position-symbol{font-size:.47rem}
+        .ib-item[data-nm="Cypher"] .ipx-balance-card .ipx-ledger-caption{margin-top:.4rem;font-size:.54rem}
+      }
       @media(max-width:760px){
         .ipx-position-pill.has-strategy-rate{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:.34rem;row-gap:.16rem;align-items:end;min-height:52px;padding:.38rem .44rem .34rem}
         .ipx-position-pill.has-strategy-rate .ipx-position-symbol{grid-column:1 / -1;grid-row:1;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;padding:0}
         .ipx-position-pill.has-strategy-rate .ipx-position-qty{grid-column:1;grid-row:2;min-width:0;align-self:end;padding:0}
         .ipx-position-pill.has-strategy-rate .ipx-strategy-rate-badge{position:static;grid-column:2;grid-row:2;justify-self:end;align-self:end;right:auto;top:auto;transform:none;min-height:21px;margin:0;font-size:.45rem;padding:.16rem .44rem}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill{min-width:0;overflow:hidden}
+        .ib-item[data-nm="Cypher"] .ipx-position-symbol{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"] .ipx-position-symbol{font-size:.49rem;overflow-wrap:normal;word-break:normal}
+      }
+      @media(max-width:420px){
+        .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"]{column-gap:.22rem;padding-left:.38rem;padding-right:.38rem}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"] .ipx-position-qty{font-size:.84rem}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"] .ipx-strategy-rate-badge{min-height:19px;font-size:.39rem;padding:.12rem .28rem;gap:.12rem;letter-spacing:0}
       }
     `;document.head.appendChild(s);
   }
@@ -305,12 +343,7 @@
   function compactEmbeddedAmount(route){
     const x=embeddedRoute(route);
     if(!finite(x?.amount)||Number(x.amount)<=0)return {amount:'',usd:'',symbol:'',chain:''};
-    return {
-      amount:`${Number(x.amount).toLocaleString('en-US',{maximumFractionDigits:4})} ${x.symbol||''}`,
-      usd:finite(x.usdValue)?money2(x.usdValue):'',
-      symbol:x.symbol||'',
-      chain:x.chain||rewardSource(route)?.chain||''
-    };
+    return {amount:`${Number(x.amount).toLocaleString('en-US',{maximumFractionDigits:4})} ${x.symbol||''}`,usd:finite(x.usdValue)?money2(x.usdValue):'',symbol:x.symbol||'',chain:x.chain||rewardSource(route)?.chain||''};
   }
 
   function measuredEarnedTotal(){
@@ -375,11 +408,7 @@
       if(stateName==='Claimable'&&panelHasStrategy(panel,name))continue;
       const embedded=stateName==='Compounded'?compactEmbeddedAmount(route):{amount:'',usd:'',symbol:'',chain:''};
       const symbol=embedded.symbol||fallbackSymbol,chain=embedded.chain||source?.chain||fallbackChain;
-      const meta=stateName==='Compounded'
-        ? `${symbol} · ${chain} · Rebase`
-        : stateName==='Claimable'
-          ? `${symbol} · ${chain}`
-          : `${chain} · ${lang()==='ru'?'Измеряется':'Measuring'}`;
+      const meta=stateName==='Compounded'?`${symbol} · ${chain} · Rebase`:stateName==='Claimable'?`${symbol} · ${chain}`:`${chain} · ${lang()==='ru'?'Измеряется':'Measuring'}`;
       appendStrategyStateRow(panel,{label:name,meta,stateName,amount:embedded.amount||'—',amountMeta:stateName==='Compounded'?embedded.usd:''});
     }
     syncMeasuredEarnedPresentation();
@@ -393,8 +422,7 @@
     const pending=lang()==='ru'?'Ожидается':'Pending';
     const factor=item.querySelector('.ipx-factor.f-perf');
     if(factor){
-      const value=factor.querySelector('.ipx-f-val');
-      if(value)value.textContent=pending;
+      const value=factor.querySelector('.ipx-f-val');if(value)value.textContent=pending;
       const note=factor.querySelector('.ipx-f-note');
       if(note)note.textContent=lang()==='ru'?'Performance ещё не имеет полного подтверждённого cost basis. Для Composite используется нейтральный prior, а не наблюдаемая доходность.':'Performance does not yet have a complete verified cost basis. Composite uses a neutral prior here, not an observed return.';
       factor.setAttribute('data-performance-pending','true');
@@ -402,15 +430,7 @@
   }
 
   function postRenderPolish(){
-    ensureCollectionCard();
-    syncNetworkStats();
-    polishPassportTitles();
-    polishBalanceSheet();
-    ensureStrategyRateBadges();
-    ensureGmxApyCapsule();
-    ensureUnifiedStrategyRewards();
-    syncMeasuredEarnedPresentation();
-    markPendingPerformance();
+    ensureCollectionCard();syncNetworkStats();polishPassportTitles();normalizeDefiteaPendleSurface();polishBalanceSheet();ensureStrategyRateBadges();ensureGmxApyCapsule();ensureUnifiedStrategyRewards();syncMeasuredEarnedPresentation();markPendingPerformance();
   }
 
   function hookRender(){
@@ -422,8 +442,7 @@
   }
 
   function rerenderNativeSurfaces(){
-    hookUniqueIndexColors();
-    hookRender();
+    hookUniqueIndexColors();hookRender();
     if(!installIndexRecord())return false;
     ensureCollectionCard();syncNetworkStats();
     if(typeof renderIndex==='function')renderIndex(typeof idxLang==='function'?idxLang():lang());
@@ -443,7 +462,7 @@
     const timer=setInterval(()=>{attempts+=1;if(rerenderNativeSurfaces()||attempts>600)clearInterval(timer);},100);
     rerenderNativeSurfaces();
     setInterval(syncNetworkStats,1000);
-    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishPassportTitles();polishBalanceSheet();ensureStrategyRateBadges();ensureGmxApyCapsule();ensureUnifiedStrategyRewards();syncMeasuredEarnedPresentation();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
+    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishPassportTitles();normalizeDefiteaPendleSurface();polishBalanceSheet();ensureStrategyRateBadges();ensureGmxApyCapsule();ensureUnifiedStrategyRewards();syncMeasuredEarnedPresentation();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 
@@ -459,31 +478,21 @@
   'use strict';
   if(window.__TH_REWARDS_ROW_COVERAGE_PARITY__)return;
   const selector='.ipx-reward-meta';
-  const suffixes=[
-    /\s*·\s*\+\s*route not fully closed(?: yet)?\s*$/i,
-    /\s*·\s*\+\s*маршрут ещё не закрыт\s*$/i
-  ];
+  const suffixes=[/\s*·\s*\+\s*route not fully closed(?: yet)?\s*$/i,/\s*·\s*\+\s*маршрут ещё не закрыт\s*$/i];
   const clean=meta=>{
     if(!meta||typeof meta.textContent!=='string')return false;
-    const before=meta.textContent;
-    let after=before;
+    const before=meta.textContent;let after=before;
     for(const suffix of suffixes)after=after.replace(suffix,'');
     if(after===before)return false;
-    meta.textContent=after.trimEnd();
-    return true;
+    meta.textContent=after.trimEnd();return true;
   };
-  const scrub=root=>{
-    if(root?.matches?.(selector))clean(root);
-    for(const meta of root?.querySelectorAll?.(selector)||[])clean(meta);
-  };
+  const scrub=root=>{if(root?.matches?.(selector))clean(root);for(const meta of root?.querySelectorAll?.(selector)||[])clean(meta);};
   const install=()=>{
     scrub(document);
     const observer=new MutationObserver(records=>{
       for(const record of records){
         if(record.type==='characterData'){
-          const meta=record.target?.parentElement?.closest?.(selector);
-          if(meta)clean(meta);
-          continue;
+          const meta=record.target?.parentElement?.closest?.(selector);if(meta)clean(meta);continue;
         }
         for(const node of record.addedNodes||[])if(node?.nodeType===1)scrub(node);
       }
