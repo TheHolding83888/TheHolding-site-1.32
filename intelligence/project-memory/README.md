@@ -23,13 +23,14 @@ On the first substantive The Holding request in a new chat/session, the assistan
 3. `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md` for the durable owner/AI working contract — language, dictation handling, strict sequencing, proof expectations, visual review workflow, reusable-fix preference and merge authorization boundary;
 4. `THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`;
 5. when the task depends on how the system was built or what earlier work already taught us, read `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`;
-6. when the task concerns founder alignment, The Holding AI, decision style or the future digital-founder model, read `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`;
-7. when the task concerns company strategy, capital philosophy, reward harvesting/reinvestment, diversification, stable reserves, leverage/Health Factor, company decision points or future Company Curator logic, read both `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md` and the latest `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*` extensions; when machine-readable owner context is useful, read `intelligence/owner-context/owner-operating-profile.json` plus the latest additive `intelligence/owner-context/owner-operating-profile-tranche-*.json`;
-8. when the task concerns public dialogue, conversation learning, model safety, financial-advice boundaries or owner teaching through the console, read `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`;
-9. when the task concerns Company Passport responsive UI, `Balance Sheet · Strategies`, productive APR/APY capsules, or mobile-versus-desktop Passport layout, read `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md` before proposing local visual fixes;
-10. when the task concerns the Company Passport Rewards Drawer, claimable/Unclaimed rewards, Compounded embedded income, Pending/Warming reward routes, or adding a new reward strategy to the public Passport, read `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md` before creating protocol-specific UI sections;
-11. when the task touches Cloudflare, Workers, Wrangler, deployment routing, Durable Objects, production permissions, or homepage ownership, read `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md` before proposing changes;
-12. only then the live machine-readable artifacts needed for the task.
+6. when onboarding a new company, implementing a mechanism already seen in another company, or fixing a repeated capability/presentation gap, read `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md` and preserve full proven capability parity before researching or coding from zero;
+7. when the task concerns founder alignment, The Holding AI, decision style or the future digital-founder model, read `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`;
+8. when the task concerns company strategy, capital philosophy, reward harvesting/reinvestment, diversification, stable reserves, leverage/Health Factor, company decision points or future Company Curator logic, read both `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md` and the latest `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*` extensions; when machine-readable owner context is useful, read `intelligence/owner-context/owner-operating-profile.json` plus the latest additive `intelligence/owner-context/owner-operating-profile-tranche-*.json`;
+9. when the task concerns public dialogue, conversation learning, model safety, financial-advice boundaries or owner teaching through the console, read `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`;
+10. when the task concerns Company Passport responsive UI, `Balance Sheet · Strategies`, productive APR/APY capsules, or mobile-versus-desktop Passport layout, read `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md` before proposing local visual fixes;
+11. when the task concerns the Company Passport Rewards Drawer, claimable/Unclaimed rewards, Compounded embedded income, Pending/Warming reward routes, or adding a new reward strategy to the public Passport, read `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md` before creating protocol-specific UI sections;
+12. when the task touches Cloudflare, Workers, Wrangler, deployment routing, Durable Objects, production permissions, or homepage ownership, read `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md` before proposing changes;
+13. only then the live machine-readable artifacts needed for the task.
 
 Changing production facts always outrank prose memory. If a continuity document conflicts with live generated state, live `main` + fresh production artifacts win.
 
@@ -66,6 +67,7 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 - `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md`
 - `THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`
 - `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`
+- `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
 - `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`
 - `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md`
 - `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*`
@@ -76,9 +78,11 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 - `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md`
 - `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md`
 
-This is the fastest way for a future model/session to recover the project architecture, operating rules, current stage, resume point, durable lessons from earlier company/product/infrastructure work, owner collaboration style, founder-alignment direction, owner capital philosophy/company strategy context, conversation-learning safety rules, responsive Passport UI canon, unified Rewards Drawer semantics, and production deployment lessons already paid for in live operation.
+This is the fastest way for a future model/session to recover the project architecture, operating rules, current stage, resume point, durable lessons from earlier company/product/infrastructure work, owner collaboration style, known-mechanism reuse requirements, founder-alignment direction, owner capital philosophy/company strategy context, conversation-learning safety rules, responsive Passport UI canon, unified Rewards Drawer semantics, and production deployment lessons already paid for in live operation.
 
 The historical operating knowledge file is deliberately compact and contains durable lessons only. It must not be used as a substitute for fresh production data and must not be treated as retrospective Decision/Outcome Learning.
+
+The Known Mechanism Reuse & Promotion canon turns “we solved this before” into an explicit engineering gate. A new company must start from the strongest matching production precedent, preserve the full proven capability contract — source, classification, quantity, pricing, USD valuation, null/completion semantics, aggregation boundary, public projection, refresh behavior and verifier — and isolate only the genuinely new delta. Partial reuse that silently drops a previously-supported field is a regression unless semantically justified.
 
 The Owner Collaboration Operating Style preserves directly observed working preferences — not private speculation or psychology. Its purpose is to prevent a new model from forcing the owner to reteach language/input conventions, sequencing, evidence standards, merge governance and accepted collaboration patterns.
 
