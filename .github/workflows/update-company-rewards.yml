@@ -8,6 +8,11 @@ on:
       - 'rewards/defitea-union-scrvusd-overlay.mjs'
       - 'rewards/company-010-rewards-overlay.mjs'
       - 'rewards/company-010-ve-rewards.mjs'
+      - 'rewards/vlcvx-registry-route-audit.mjs'
+      - 'rewards/union-vlcvx-allocation-audit.mjs'
+      - 'rewards/vlcvx-route-rewards-overlay.mjs'
+      - 'rewards/vlcvx-route-rewards-finalize.mjs'
+      - 'rewards/vlcvx-route-rewards-guard.mjs'
       - '.github/workflows/update-company-rewards.yml'
   schedule:
     - cron: '57 4 * * *'
@@ -110,13 +115,10 @@ jobs:
           if(!finite(c.measuredEarnedUsd)||Math.abs(Number(c.measuredEarnedUsd)-(claimableBefore+embeddedUsd))>0.00001)throw new Error('Measured earned total must equal claimable + priced Compounded');
           if(c.measuredEarnedUsdIsComplete!==false)throw new Error('Measured earned completeness must preserve unresolved route semantics');
           for(const symbol of ['AERO','VELO','WHYPE','USDC'])if(!(c.measuredEarnedTokens||[]).includes(symbol))throw new Error('Measured earned token strip missing '+symbol);
-          const votium=(c.sources||[]).find(x=>x.route==='votium-union');
-          if(!votium||votium.status!=='warming'||votium.details?.unknownIsNotZero!==true)throw new Error('Votium unresolved route semantics missing');
-          if(c.settlement?.totalUsdIsComplete!==false||c.settlement?.unknownRouteIsNotZero!==true)throw new Error('Cypher rewards completion guard missing');
-          console.log('Rewards v0.3.10 Project X multi-leg parity PASS',{claimableUsd:c.claimableUsd,projectXUsd:projectUsd,measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd,projectX:projectRewards.map(x=>({symbol:x.symbol,amount:x.amount,usdValue:x.usdValue})),totalUsdIsComplete:c.totalUsdIsComplete});
+          console.log('Rewards v0.3.10 Company #010 base parity PASS',{claimableUsd:c.claimableUsd,measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd});
           NODE
 
-      - name: Measure Defitea Votium Union scrvUSD member rewards
+      - name: Measure Defitea Votium + Union scrvUSD member rewards
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
@@ -129,25 +131,94 @@ jobs:
           const c=d.companies?.['defitea.eth'];
           const diag=d.diagnostics?.defiteaUnion;
           const src=(c?.sources||[]).find(x=>x.route==='votium-union');
-          if(!diag||diag.capability!=='0.2-defitea-votium-union-scrvusd-member-proof')throw new Error('Defitea Union capability missing');
-          if(diag.executionAuthority!=='none'||diag.claimTransactionAuthority!=='none')throw new Error('Defitea Union authority expansion');
+          if(!diag||diag.capability!=='0.3-defitea-vlcvx-route-graph-scrvusd-proof')throw new Error('Defitea vlCVX route capability missing');
+          if(diag.executionAuthority!=='none'||diag.claimTransactionAuthority!=='none')throw new Error('Defitea vlCVX authority expansion');
           if(diag.unknownIsNotZero!==true||src?.details?.unknownIsNotZero!==true)throw new Error('Defitea Union unknown != zero guard missing');
-          const u=src?.details?.union;
-          if(!u)throw new Error('Defitea Union source missing');
+          const u=src?.details?.union,graph=src?.details?.vlCvxRouteGraph;
+          if(!u||!graph)throw new Error('Defitea vlCVX route graph missing');
+          if(graph.principalAsset!=='vlCVX'||graph.currentRoute!=='Votium + Union')throw new Error('Defitea current route graph drift');
           if(u.forwarding?.configured!==true||u.forwarding?.effective!==true)throw new Error('Defitea Union forwarding not effective');
           if(u.allocation?.scrvUsdSelected!==true||!(Number(u.allocation?.scrvUsdSharePct)>0))throw new Error('Defitea scrvUSD allocation not proven');
           const rows=(c.rewards||[]).filter(x=>x.route==='votium-union-scrvusd');
           const ent=u.airdrop?.entitlement;
           if(ent?.claimed===false){
-            if(ent.proofValid!==true||rows.length!==1||rows[0].classification!=='unclaimed')throw new Error('Defitea Union Unclaimed entitlement parity failed');
+            if(ent.proofValid!==true||rows.length!==1||rows[0].classification!=='unclaimed'||rows[0].protocol!=='Votium + Union · vlCVX')throw new Error('Defitea Union Unclaimed entitlement parity failed');
           }else if(rows.length)throw new Error('Union reward fabricated without unclaimed entitlement');
-          console.log('Defitea Union writer contract PASS',{state:u.state,sharePct:u.allocation.scrvUsdSharePct,entitlement:ent?.status||'not-published',rows:rows.length});
+          console.log('Defitea vlCVX route writer contract PASS',{state:u.state,sharePct:u.allocation.scrvUsdSharePct,entitlement:ent?.status||'not-published',rows:rows.length});
+          NODE
+
+      - name: Audit current vlCVX routes across all companies
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-registry-route-audit.mjs
+          node rewards/vlcvx-registry-route-audit.mjs
+
+      - name: Audit Union settlement allocations
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          UNION_AUDIT_OUTPUT: /tmp/union-vlcvx-allocation-audit.json
+        run: |
+          set -euo pipefail
+          node --check rewards/union-vlcvx-allocation-audit.mjs
+          node rewards/union-vlcvx-allocation-audit.mjs
+
+      - name: Promote audited vlCVX routes into canonical Rewards
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          REWARDS_OUTPUT: companies/rewards-data.json
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          UNION_AUDIT_OUTPUT: /tmp/union-vlcvx-allocation-audit.json
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-route-rewards-overlay.mjs
+          node rewards/vlcvx-route-rewards-overlay.mjs
+          node --check rewards/vlcvx-route-rewards-finalize.mjs
+          node rewards/vlcvx-route-rewards-finalize.mjs
+          node --check rewards/vlcvx-route-rewards-guard.mjs
+          node rewards/vlcvx-route-rewards-guard.mjs
+
+      - name: Verify final Rewards aggregate parity
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
+          const expected={'YieldRing.eth':'Votium + Union · vlCVX','defitea.eth':'Votium + Union · vlCVX',"Rook's portfolio":'Convex Finance · vlCVX','Cypher':'Stake DAO · vlCVX'};
+          for(const [key,route] of Object.entries(expected)){
+            const c=d.companies?.[key];if(!c)throw new Error('vlCVX company missing '+key);
+            if(c.vlCvxRoute?.currentRoute?.publicLabel!==route)throw new Error('current vlCVX route missing '+key);
+            const claimable=(c.rewards||[]).reduce((s,r)=>s+(finite(r.usdValue)?Number(r.usdValue):0),0);
+            const aggregate=Number(c.claimableUsd??c.totalUsd);
+            if(!Number.isFinite(aggregate)||Math.abs(aggregate-claimable)>0.00001)throw new Error('claimable aggregate drift '+key);
+            if(Array.isArray(c.embeddedIncome)&&finite(c.measuredEarnedUsd)){
+              const embedded=c.embeddedIncome.reduce((s,r)=>s+(finite(r.usdValue)?Number(r.usdValue):0),0);
+              if(Math.abs(Number(c.measuredEarnedUsd)-(claimable+embedded))>0.00001)throw new Error('measured-earned aggregate drift '+key);
+            }
+          }
+          const cy=d.companies?.Cypher;
+          const stake=(cy?.rewards||[]).filter(x=>x.route==='stake-dao-vlcvx');
+          if(!stake.length||stake.some(x=>x.protocol!=='Stake DAO · vlCVX'))throw new Error('Cypher Stake DAO current vlCVX reward missing');
+          const rook=d.companies?.["Rook's portfolio"];
+          const rookCurrent=(rook?.sources||[]).find(x=>x.route==='vlcvx-current-route');
+          if(rookCurrent?.protocol!=='Convex Finance · vlCVX'||rookCurrent?.details?.currentRewardSettlement!=='unresolved'||rookCurrent?.details?.unknownIsNotZero!==true)throw new Error('Rook current Convex route epistemics missing');
+          if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none')throw new Error('vlCVX authority drift');
+          console.log('Final vlCVX Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length});
           NODE
 
       - name: Commit updated rewards snapshot
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          UNION_AUDIT_OUTPUT: /tmp/union-vlcvx-allocation-audit.json
         run: |
+          set -euo pipefail
           if git diff --quiet -- companies/rewards-data.json; then
             echo "No company rewards changes to commit."
             exit 0
@@ -165,8 +236,15 @@ jobs:
               echo "Safe writer guard: rebase conflict; refusing to guess."
               exit 1
             fi
+
             node rewards/company-010-rewards-overlay.mjs
             node rewards/defitea-union-scrvusd-overlay.mjs
+            node rewards/vlcvx-registry-route-audit.mjs
+            node rewards/union-vlcvx-allocation-audit.mjs
+            node rewards/vlcvx-route-rewards-overlay.mjs
+            node rewards/vlcvx-route-rewards-finalize.mjs
+            node rewards/vlcvx-route-rewards-guard.mjs
+
             git add companies/rewards-data.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then

@@ -1,0 +1,124 @@
+name: Verify vlCVX · Full Registry Route Audit
+
+on:
+  pull_request:
+    paths:
+      - 'rewards/vlcvx-registry-route-audit.mjs'
+      - 'rewards/union-vlcvx-allocation-audit.mjs'
+      - 'rewards/vlcvx-route-rewards-overlay.mjs'
+      - 'rewards/vlcvx-route-rewards-finalize.mjs'
+      - 'rewards/vlcvx-route-rewards-guard.mjs'
+      - 'rewards/defitea-union-scrvusd-overlay.mjs'
+      - '.github/workflows/update-company-rewards.yml'
+      - '.github/workflows/verify-vlcvx-full-registry-audit.yml'
+      - 'intelligence/project-memory/THE_HOLDING_VLCVX_ROUTE_GRAPH_CANON_2026-08-18.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install read-only runtime
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Run live full-registry route audit
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-registry-route-audit.mjs
+          node rewards/vlcvx-registry-route-audit.mjs
+
+      - name: Inspect live Union settlement allocations
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          UNION_AUDIT_OUTPUT: /tmp/union-vlcvx-allocation-audit.json
+        run: |
+          set -euo pipefail
+          node --check rewards/union-vlcvx-allocation-audit.mjs
+          node rewards/union-vlcvx-allocation-audit.mjs
+
+      - name: Verify registry coverage and exact route identities
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('/tmp/vlcvx-route-audit.json','utf8'));
+          const u=JSON.parse(fs.readFileSync('/tmp/union-vlcvx-allocation-audit.json','utf8'));
+          if(d.version!=='0.2-vlcvx-full-registry-route-audit')throw new Error('audit version drift');
+          if(d.executionAuthority!=='none'||d.methodology?.claimAuthority!=='none'||u.executionAuthority!=='none')throw new Error('authority expansion');
+          if(d.summary?.companyCount!==10||d.companies?.length!==10)throw new Error('full registry coverage missing');
+          const positives=d.companies.filter(x=>x.hasVlCvx);
+          if(positives.map(x=>x.registry).sort().join(',')!=='002,004,007,010')throw new Error('vlCVX company set drift');
+          const expected={'002':'Votium + Union · vlCVX','004':'Votium + Union · vlCVX','007':'Convex Finance · vlCVX','010':'Stake DAO · vlCVX'};
+          for(const c of positives){const w=c.wallets.find(x=>x.hasVlCvx);if(w.route?.publicLabel!==expected[c.registry])throw new Error(`route identity drift ${c.registry}`)}
+          if(String(d.contracts?.votiumEnsResolved).toLowerCase()!==String(d.contracts?.votiumDelegate).toLowerCase())throw new Error('Votium identity not resolved');
+          if(!d.contracts?.convexFinanceDelegate)throw new Error('Convex Finance delegate identity missing');
+          if(u.members?.length!==2||u.members.some(m=>m.selected?.length!==1||m.selected[0].settlementAsset!=='scrvUSD'||m.selected[0].sharePct!==100))throw new Error('Union settlement allocation drift');
+          console.log('vlCVX FULL REGISTRY ROUTES PASS',{companies:positives.map(c=>({registry:c.registry,name:c.name,route:c.routes[0],vlCVX:c.totalVlCvx})),union:u.members.map(m=>({registry:m.registry,asset:m.selected[0].settlementAsset,share:m.selected[0].sharePct}))});
+          NODE
+
+      - name: Simulate exact Rewards route promotion
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          REWARDS_OUTPUT: /tmp/vlcvx-rewards.json
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          UNION_AUDIT_OUTPUT: /tmp/union-vlcvx-allocation-audit.json
+        run: |
+          set -euo pipefail
+          cp companies/rewards-data.json /tmp/vlcvx-rewards.json
+          node --check rewards/defitea-union-scrvusd-overlay.mjs
+          node rewards/defitea-union-scrvusd-overlay.mjs
+          node --check rewards/vlcvx-route-rewards-overlay.mjs
+          node rewards/vlcvx-route-rewards-overlay.mjs
+          node --check rewards/vlcvx-route-rewards-finalize.mjs
+          node rewards/vlcvx-route-rewards-finalize.mjs
+          node --check rewards/vlcvx-route-rewards-guard.mjs
+          node rewards/vlcvx-route-rewards-guard.mjs
+
+      - name: Verify aggregate parity after route promotion
+        env:
+          REWARDS_OUTPUT: /tmp/vlcvx-rewards.json
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync(process.env.REWARDS_OUTPUT,'utf8'));
+          const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
+          for(const key of ['YieldRing.eth','defitea.eth',"Rook's portfolio",'Cypher']){
+            const c=d.companies?.[key]; if(!c)throw new Error('company missing '+key);
+            const claimable=(c.rewards||[]).reduce((s,r)=>s+(finite(r.usdValue)?Number(r.usdValue):0),0);
+            const aggregate=Number(c.claimableUsd??c.totalUsd);
+            if(!Number.isFinite(aggregate)||Math.abs(aggregate-claimable)>0.00001)throw new Error('claimable aggregate drift '+key);
+            if(Array.isArray(c.embeddedIncome)&&finite(c.measuredEarnedUsd)){
+              const embedded=c.embeddedIncome.reduce((s,r)=>s+(finite(r.usdValue)?Number(r.usdValue):0),0);
+              if(Math.abs(Number(c.measuredEarnedUsd)-(claimable+embedded))>0.00001)throw new Error('measured-earned aggregate drift '+key);
+            }
+          }
+          if(d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none')throw new Error('aggregate finalizer authority drift');
+          console.log('vlCVX aggregate parity PASS');
+          NODE
+
+      - name: Static no-execution guard
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          for(const p of ['rewards/vlcvx-registry-route-audit.mjs','rewards/union-vlcvx-allocation-audit.mjs','rewards/vlcvx-route-rewards-overlay.mjs','rewards/vlcvx-route-rewards-finalize.mjs','rewards/vlcvx-route-rewards-guard.mjs']){
+            const s=fs.readFileSync(p,'utf8');
+            for(const bad of ['sendTransaction(','new Wallet(','setDelegate(','recordAllocation(','distributor.claim('])if(s.includes(bad))throw new Error('forbidden execution surface in '+p+': '+bad);
+            if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing in '+p);
+          }
+          console.log('vlCVX full route no-execution guard PASS');
+          NODE
