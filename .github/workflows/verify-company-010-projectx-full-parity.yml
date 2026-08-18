@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Static multi-leg contract
+      - name: Static multi-leg and Passport contract
         run: |
           set -euo pipefail
           node --check onboarding/company-010-projectx-strategy-overlay.mjs
@@ -42,7 +42,7 @@ jobs:
           const wf=fs.readFileSync('.github/workflows/update-company-010-state.yml','utf8');
           for(const s of ['principalAmount0','principalAmount1','collect.staticCall','WHYPE','USDC','projectx-whype-usdc','EXPECTED_ACTIVE_NFTS=2','empty-zero-liquidity','multiLegResolvedMustPromoteAllEconomicLegs'])if(!px.includes(s))throw new Error('Project X overlay contract missing '+s);
           for(const s of ['projectx-whype-usdc','WHYPE','USDC','multiLegComplete'])if(!rw.includes(s))throw new Error('Rewards multi-leg contract missing '+s);
-          if(!ui.includes('Project X'))throw new Error('Project X public adapter protocol surface missing');
+          for(const s of ['v0.10.4-projectx-full-parity','Project X · WHYPE-USDC','projectx-whype-usdc-nav','qty.textContent=money2(projectXPosition.valueUsd)',"if(pos.id==='projectx-whype-usdc')",'pending:!finite(px.referenceAprPct)'])if(!ui.includes(s))throw new Error('Project X Passport parity missing '+s);
           if(!wf.includes('node onboarding/company-010-projectx-strategy-overlay.mjs'))throw new Error('canonical Company #010 writer does not execute Project X overlay');
           if(!wf.includes('projectx-strategy-overlay'))throw new Error('Project X producer is not source-fingerprinted/triggered');
           NODE
