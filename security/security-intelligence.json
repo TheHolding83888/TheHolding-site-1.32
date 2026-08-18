@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-18T06:33:06.418Z",
+  "generatedAt": "2026-08-18T06:56:24.786Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 26,
+    "medium": 27,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 412,
-    "bytesScanned": 9309700,
+    "filesScanned": 414,
+    "bytesScanned": 9322484,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,21 +55,110 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "0f7bc263a14967009f06cf3f63d79c362cd1bc1759399dc82fd8862f2d7c961e",
+        "id": "acb24489b42d2215bfb44ae39e40a06de6fea090a6f8e485f170f77fc274498b",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": ".github/workflows/verify-passport-rate-badge-layout.yml",
+        "file": ".github/workflows/verify-company-010-public-admission.yml",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-passport-rate-badge-layout.yml.",
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-public-admission.yml.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "04b674ee0b71d799208514012673b5c4df4ad5303107bbbc7a25d68cb494c820",
-          "currentSha256": "3e733390e90e5800aeab3d05a070c56352283c69fa5eb9896d63efc49d24957a"
+          "previousSha256": "ad6a694a0aaf64de36d5708960da9a8eb88650ce4f4b890a60400c1cb924dd3a",
+          "currentSha256": "e1718d1335e4067ed0b004cf5a743403b8574f2e815631e63a1d6ce860651248"
         }
+      },
+      {
+        "id": "d4571976da2b73fe27a8ae927616dc3e2ec3c53416561043e7173b2d7eebf694",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 91,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "48259f223cf9e6774dfe68249a88957abc8a5a2702b2cfd860e284b4a9c24d86",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 224,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "a847efa9a750c409c259775ea5a7dae4e7af0c4d2d602b59d36fcd842dc7e5f9",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 285,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "6402ae500f08f9c321a61e55960ff0bcdfedb33ebaaab1db392c320ddd254fb5",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 308,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      }
+    ],
+    "resolvedFindings": [
+      {
+        "id": "e76f718a1cc0ad0eba5d566623eed594b8182da608090d1f362fa2d66d4bf543",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 90,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "1274ca31e6875a74170e66181510e5e785add3fa0f5bcf18d710f2364ca49323",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 222,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "7d8ffc36010189c7e8480c2c3f31a819f65cf96caabe522407bfd1774891168d",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 309,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "110c55d3b91ea7274e93224aad64fa59a071ab34b858abab6919d31043311b90",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/company-010-public-adapter.js",
+        "line": 339,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
       }
     ]
   },
@@ -141,6 +230,20 @@
       "evidence": null
     },
     {
+      "id": "acb24489b42d2215bfb44ae39e40a06de6fea090a6f8e485f170f77fc274498b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-company-010-public-admission.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-public-admission.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "ad6a694a0aaf64de36d5708960da9a8eb88650ce4f4b890a60400c1cb924dd3a",
+        "currentSha256": "e1718d1335e4067ed0b004cf5a743403b8574f2e815631e63a1d6ce860651248"
+      }
+    },
+    {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -163,44 +266,44 @@
       "evidence": null
     },
     {
-      "id": "e76f718a1cc0ad0eba5d566623eed594b8182da608090d1f362fa2d66d4bf543",
+      "id": "d4571976da2b73fe27a8ae927616dc3e2ec3c53416561043e7173b2d7eebf694",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
-      "line": 90,
+      "line": 91,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": null
     },
     {
-      "id": "1274ca31e6875a74170e66181510e5e785add3fa0f5bcf18d710f2364ca49323",
+      "id": "48259f223cf9e6774dfe68249a88957abc8a5a2702b2cfd860e284b4a9c24d86",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
-      "line": 222,
+      "line": 224,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": null
     },
     {
-      "id": "7d8ffc36010189c7e8480c2c3f31a819f65cf96caabe522407bfd1774891168d",
+      "id": "a847efa9a750c409c259775ea5a7dae4e7af0c4d2d602b59d36fcd842dc7e5f9",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
-      "line": 309,
+      "line": 285,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": null
     },
     {
-      "id": "110c55d3b91ea7274e93224aad64fa59a071ab34b858abab6919d31043311b90",
+      "id": "6402ae500f08f9c321a61e55960ff0bcdfedb33ebaaab1db392c320ddd254fb5",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
-      "line": 339,
+      "line": 308,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
@@ -547,12 +650,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "e9ae8dec448f3eb46976f9c9be3d1bf68ce7623972cbefeb3904d39a5a178cf1",
+    "snapshotHash": "4158b8a44abe7902c7a72bcd8cd3c0269433b3c5ea4544168f64bafe3ea07907",
     "securityVault": {
-      "runCount": 282,
+      "runCount": 283,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T06-33-06-418Z-e9ae8dec44.json",
-      "latestRecordHash": "f42db4c624a6835dc4e8ed9b14c6a7c15fcba491d9d7dafd7767c8d06ad26efa",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T06-56-24-786Z-4158b8a44a.json",
+      "latestRecordHash": "9dd8a58abfc498612846150e2ebdd59c96cb2aa799e250a82869aebc50c939e7",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
