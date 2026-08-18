@@ -1,8 +1,9 @@
-/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges · v0.9.2-mobile-two-row-strategy-rate-badges · v0.10-unified-rewards-gmx-apy-capsule · v0.10.1-known-mechanism-compounded-usd-parity · v0.10.2-measured-earned-presentation-parity · v0.10.3-defitea-spendle-cypher-density
+/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges · v0.9.2-mobile-two-row-strategy-rate-badges · v0.10-unified-rewards-gmx-apy-capsule · v0.10.1-known-mechanism-compounded-usd-parity · v0.10.2-measured-earned-presentation-parity · v0.10.3-defitea-spendle-cypher-density · v0.10.4-projectx-full-parity
  * Compatibility sentinel: preserves v0.6 Stake DAO native surface contracts while promoting GMX APY into the shared capsule vocabulary.
  * Productive-position badges are presentation-only projections of canonical Productivity breakdowns; reserve assets stay unbadged.
  * Defitea Pendle canon: the combined two-wallet legacy vePENDLE + current sPENDLE principal is presented publicly as one sPENDLE position and uses the current sPENDLE Productivity reference rate.
- * Cypher desktop density: 14 positions use a bounded three-column ledger; productive cards place the title on row one and value/rate on row two so long GMX/Stake DAO labels remain contained.
+ * Cypher desktop density: the dense multi-position ledger uses a bounded three-column layout; productive cards place the title on row one and value/rate on row two so long strategy labels remain contained.
+ * Project X canon: exactly two economically active WHYPE-USDC NFTs are presented as one `Project X · WHYPE-USDC` strategy. Passport shows aggregate strategy NAV, never technical NFT quantity; Reference APR stays Pending until independently proven.
  * Mobile Passport canon: productive cards use title on row one, value bottom-left and APR/APY capsule bottom-right; long labels and the dual GMX APY capsule remain inside the card.
  * Rewards Drawer canon: one ledger, one row per strategy/reward state; no duplicate CRV or veAERO/veVELO sub-ledgers.
  * Known-mechanism parity: measured Compounded ve income preserves token amount + current USD valuation and reuses the generic Aerodrome/Velodrome Rebase presentation.
@@ -30,7 +31,8 @@
     'velodrome-finance':'velodrome_vevelo',
     'stakedao-base-curve-4pool':'stakedao_base_curve_4pool',
     'concentrator-asdcrv':'concentrator_asdcrv',
-    'convex-staked-cvxcrv':'convex_staked_cvxcrv'
+    'convex-staked-cvxcrv':'convex_staked_cvxcrv',
+    'projectx-whype-usdc':'projectx-whype-usdc'
   });
   let state=null,productivity=null,rewardsData=null,installed=false,indexColorHooked=false;
 
@@ -122,7 +124,7 @@
     if(typeof COMPANY_PROTOCOLS!=='undefined')COMPANY_PROTOCOLS.Cypher=protocols();
     if(typeof COMPANY_REWARDS_SCOPE!=='undefined'&&COMPANY_REWARDS_SCOPE?.add)COMPANY_REWARDS_SCOPE.add('Cypher');
     if(typeof COMPANY_ASSET_LABELS!=='undefined'){
-      Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','concentrator-asdcrv':'Concentrator · sdCRV','convex-staked-cvxcrv':'Convex · staked cvxCRV','gmx-gm-eth-usdc':'GMX · ETH-USDC','gmx-gm-btc-usdc':'GMX · BTC-USDC'});
+      Object.assign(COMPANY_ASSET_LABELS,{hyperliquid:'HYPE','lido-dao':'LDO','convex-crv':'cvxCRV','concentrator-asdcrv':'Concentrator · sdCRV','convex-staked-cvxcrv':'Convex · staked cvxCRV','gmx-gm-eth-usdc':'GMX · ETH-USDC','gmx-gm-btc-usdc':'GMX · BTC-USDC','projectx-whype-usdc':'Project X · WHYPE-USDC'});
       for(const p of state.capital?.positions||[]){
         if(String(p.assetId||'').startsWith('hyperlend-'))COMPANY_ASSET_LABELS[p.assetId]=`HyperLend · ${p.underlyingSymbol||p.symbol||'Position'}`;
         if(p.assetId==='stakedao-base-curve-4pool')COMPANY_ASSET_LABELS[p.assetId]=stakeDaoLabel();
@@ -208,6 +210,7 @@
         .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"] .ipx-position-symbol{font-size:.46rem;overflow-wrap:normal;word-break:normal}
         .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"] .ipx-strategy-rate-badge{font-size:.36rem;padding:.12rem .25rem;letter-spacing:0}
         .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="stakedao-combined"] .ipx-position-symbol{font-size:.47rem}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="projectx-whype-usdc-nav"] .ipx-position-symbol{font-size:.47rem;overflow-wrap:normal;word-break:normal}
         .ib-item[data-nm="Cypher"] .ipx-balance-card .ipx-ledger-caption{margin-top:.4rem;font-size:.54rem}
       }
       @media(max-width:760px){
@@ -218,6 +221,7 @@
         .ib-item[data-nm="Cypher"] .ipx-position-pill{min-width:0;overflow:hidden}
         .ib-item[data-nm="Cypher"] .ipx-position-symbol{max-width:100%;white-space:normal;overflow-wrap:anywhere}
         .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"] .ipx-position-symbol{font-size:.49rem;overflow-wrap:normal;word-break:normal}
+        .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="projectx-whype-usdc-nav"] .ipx-position-symbol{font-size:.49rem;overflow-wrap:normal;word-break:normal}
       }
       @media(max-width:420px){
         .ib-item[data-nm="Cypher"] .ipx-position-pill[data-cypher-display="gmx-combined-apy-capsule"]{column-gap:.22rem;padding-left:.38rem;padding-right:.38rem}
@@ -236,6 +240,11 @@
     if(nm==='Cypher'){
       if(pos.id==='bitcoin'||pos.id==='cypher-eth-equivalent'||pos.id==='ethereum'||pos.id==='hyperliquid'||pos.id==='convex-finance'||pos.id==='curve-dao-token'||pos.id==='lido-dao')return null;
       if(String(pos.id).startsWith('gmx-gm-'))return null;
+      if(pos.id==='projectx-whype-usdc'){
+        const px=(state?.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
+        if(!px)return null;
+        return {kind:'APR',value:finite(px.referenceAprPct)?Number(px.referenceAprPct):null,pending:!finite(px.referenceAprPct),engineStatus:px.status||'warming'};
+      }
     }
     const principal=nm==='Cypher'?(CYPHER_PRODUCTIVITY_ID[pos.id]||pos.id):pos.id;
     const row=productiveBreakdown(nm).find(x=>x&&x.principalId===principal);
@@ -287,6 +296,16 @@
       if(symbol)symbol.textContent=stakeDaoLabel();
       if(qty)qty.textContent=money2(stakePosition.valueUsd);
       stake.dataset.cypherDisplay='stakedao-combined';
+    }
+
+    const projectXPosition=(state.capital?.positions||[]).find(p=>p.assetId==='projectx-whype-usdc');
+    const projectXPill=byLabel('Project X · WHYPE-USDC');
+    if(projectXPill&&projectXPosition){
+      const symbol=projectXPill.querySelector('.ipx-position-symbol');
+      const qty=projectXPill.querySelector('.ipx-position-qty');
+      if(symbol)symbol.textContent='Project X · WHYPE-USDC';
+      if(qty)qty.textContent=money2(projectXPosition.valueUsd);
+      projectXPill.dataset.cypherDisplay='projectx-whype-usdc-nav';
     }
 
     const gmxEth=byLabel('GMX · ETH-USDC');

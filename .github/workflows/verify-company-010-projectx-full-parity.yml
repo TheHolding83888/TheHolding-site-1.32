@@ -1,0 +1,133 @@
+name: "Verify Company #010 · Project X Full Parity"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-projectx-strategy-overlay.mjs'
+      - 'rewards/company-010-rewards-overlay.mjs'
+      - 'companies/company-010-public-adapter.js'
+      - '.github/workflows/update-company-010-state.yml'
+      - '.github/workflows/update-company-rewards.yml'
+      - '.github/workflows/verify-company-010-projectx-full-parity.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-company-010-projectx-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Static multi-leg and Passport contract
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-projectx-strategy-overlay.mjs
+          node --check rewards/company-010-rewards-overlay.mjs
+          node --check companies/company-010-public-adapter.js
+          node - <<'NODE'
+          const fs=require('fs');
+          const px=fs.readFileSync('onboarding/company-010-projectx-strategy-overlay.mjs','utf8');
+          const rw=fs.readFileSync('rewards/company-010-rewards-overlay.mjs','utf8');
+          const ui=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          const wf=fs.readFileSync('.github/workflows/update-company-010-state.yml','utf8');
+          for(const s of ['principalAmount0','principalAmount1','collect.staticCall','WHYPE','USDC','projectx-whype-usdc','EXPECTED_ACTIVE_NFTS=2','empty-zero-liquidity','multiLegResolvedMustPromoteAllEconomicLegs'])if(!px.includes(s))throw new Error('Project X overlay contract missing '+s);
+          for(const s of ['projectx-whype-usdc','WHYPE','USDC','multiLegComplete'])if(!rw.includes(s))throw new Error('Rewards multi-leg contract missing '+s);
+          for(const s of ['v0.10.4-projectx-full-parity','Project X · WHYPE-USDC','projectx-whype-usdc-nav','qty.textContent=money2(projectXPosition.valueUsd)',"if(pos.id==='projectx-whype-usdc')",'pending:!finite(px.referenceAprPct)'])if(!ui.includes(s))throw new Error('Project X Passport parity missing '+s);
+          if(!wf.includes('node onboarding/company-010-projectx-strategy-overlay.mjs'))throw new Error('canonical Company #010 writer does not execute Project X overlay');
+          if(!wf.includes('projectx-strategy-overlay'))throw new Error('Project X producer is not source-fingerprinted/triggered');
+          NODE
+      - name: Install bounded dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+      - name: Rebuild current Company #010 through Project X
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: |
+          set -euo pipefail
+          node onboarding/company-010-discovery.mjs
+          node onboarding/company-010-resolve.mjs
+          node onboarding/company-010-deep-resolve.mjs
+          node onboarding/company-010-closure.mjs
+          node onboarding/company-010-closure-review.mjs
+          node onboarding/company-010-gmx-reader.mjs
+          node onboarding/company-010-reconciliation.mjs
+          node onboarding/company-010-stakedao-intelligence.mjs
+          node onboarding/company-010-production-baseline.mjs
+          node onboarding/company-010-stakedao-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('companies/company-010-resolve.json','utf8'));
+          const c=r.exactProbes?.concentrator;
+          if(r.version!=='0.2-company-010-new-mechanism-measured-stakedao-asdcrv'||!c?.result)throw new Error('canonical Concentrator resolver projection unavailable');
+          fs.writeFileSync('/tmp/company-010-crv-resolve.json',JSON.stringify({version:r.version,concentrator:c},null,2)+'\n');
+          NODE
+          COMPANY_010_RESOLVE_INPUT=/tmp/company-010-crv-resolve.json node onboarding/company-010-crv-strategy-overlay.mjs
+          node onboarding/company-010-gmx-strategy-overlay.mjs
+          node onboarding/company-010-projectx-strategy-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='companies/company-010-production-state.json';
+          const d=JSON.parse(fs.readFileSync(p,'utf8'));
+          d.version='0.3-company-010-production-state-stakedao-complete';
+          d.engineVersion='0.4-cypher-crv-strategy-intelligence';
+          fs.writeFileSync(p,JSON.stringify(d,null,2)+'\n');
+          NODE
+      - name: Independent Project X economic proof
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+          const px=d.strategies?.projectX;
+          const cap=(d.capital?.positions||[]).find(x=>x.assetId==='projectx-whype-usdc');
+          const hype=(d.capital?.positions||[]).find(x=>x.assetId==='hyperliquid'||x.symbol==='HYPE');
+          if(px?.version!=='0.1-company-010-projectx-full-parity'||px.status!=='measured-principal-and-claimable')throw new Error('Project X capability missing');
+          if(px.nftCount!==2||px.positions?.length!==2||px.admission?.expectedActiveNftCount!==2||px.admission?.actualActiveNftCount!==2)throw new Error('Project X must contain exactly two active capital NFTs');
+          if(!px.positions.every(x=>Number(x.navUsd)>=1&&BigInt(x.liquidity)>0n))throw new Error('active Project X NFT admission boundary violated');
+          if(!(px.ignoredNfts||[]).every(x=>['different-pair-or-token','empty-zero-liquidity','dust-below-active-nav-floor'].includes(x.reason)))throw new Error('ignored NFT reason escaped bounded vocabulary');
+          if(!(Number(px.principal?.WHYPE)>=0)||!(Number(px.principal?.USDC)>0)||!(Number(px.principal?.navUsd)>0))throw new Error('principal legs incomplete');
+          if(!cap||Math.abs(Number(cap.valueUsd)-Number(px.principal.navUsd))>0.011)throw new Error('strategy NAV/capital mismatch');
+          if(cap.principal?.nftCount!==2||cap.admission?.expectedActiveNftCount!==2)throw new Error('capital row lost active NFT admission contract');
+          if(hype?.components?.projectXPrincipal!==undefined||hype?.components?.projectXSeparatedToStrategy!=='projectx-whype-usdc')throw new Error('WHYPE remains double-counted in HYPE');
+          if((d.productivity?.positions||[]).some(x=>x.id==='projectx_hype'))throw new Error('legacy single-leg productivity survived');
+          const prod=(d.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
+          if(!prod||prod.referenceAprPct!==null||prod.status!=='warming')throw new Error('APR Pending boundary missing');
+          const obs=(d.rewards?.observations||[]).filter(x=>x.route==='projectx-whype-usdc');
+          if(obs.length!==2||!['USDC','WHYPE'].every(s=>obs.some(x=>x.token===s&&x.status==='measured'&&Number(x.claimable)>=0)))throw new Error('both reward legs not measured');
+          if(px.accountingBoundary?.activeNftCountExactlyTwo!==true||px.accountingBoundary?.dustAndEmptyNftsExcluded!==true||px.accountingBoundary?.claimableFeesExcludedFromCapital!==true)throw new Error('Project X active-NFT/accounting boundary missing');
+          if(d.epistemicBoundary?.projectXNonzeroLiquidityRequiresMeasuredPrincipal!==true||d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs!==true)throw new Error('fail-closed multi-leg boundary missing');
+          if(d.authority?.executionAuthority!=='none')throw new Error('authority drift');
+          console.log('Project X economic proof PASS',{activeTokenIds:px.positions.map(x=>x.tokenId),ignored:px.ignoredNfts,principal:px.principal,rewards:px.rewards.tokens,totalCapitalUsd:d.capital.totalCapitalUsd,executionAuthority:'none'});
+          NODE
+      - name: Admit Project X into Rewards snapshot
+        run: |
+          set -euo pipefail
+          node rewards/company-010-rewards-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const c=d.companies?.Cypher;
+          if(d.diagnostics?.company010?.capability!=='crv-ve-and-projectx-reward-semantics-0.5-multileg-parity')throw new Error('Project X reward capability marker missing');
+          const rows=(c?.rewards||[]).filter(x=>x.route==='projectx-whype-usdc');
+          if(rows.length!==2||!['WHYPE','USDC'].every(s=>rows.some(x=>x.symbol===s&&x.classification==='unclaimed'&&Number(x.usdValue)>=0)))throw new Error('Project X Rewards projection incomplete');
+          if(!rows.every(x=>x.details?.nftCount===2&&x.details?.multiLegComplete===true))throw new Error('Project X Rewards lost two-active-NFT multi-leg provenance');
+          if(c.totalUsdIsComplete!==false)throw new Error('Votium unresolved completion semantics regressed');
+          console.log('Project X Rewards proof PASS',{projectX:rows.map(x=>({symbol:x.symbol,amount:x.amount,usdValue:x.usdValue})),claimableUsd:c.claimableUsd,totalUsdIsComplete:c.totalUsdIsComplete});
+          NODE

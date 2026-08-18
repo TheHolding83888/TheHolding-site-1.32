@@ -49,12 +49,13 @@ jobs:
             "const pending = sources.filter(s => s && s.status !== 'ok')"
           ]) if(!index.includes(x)) throw new Error('aggregate coverage disclosure missing: '+x);
 
-          // Known ve mechanism presentation remains clean and shared.
+          // Known ve mechanism presentation remains clean and shared. Formatting whitespace is irrelevant;
+          // the semantic ternary must still project Compounded ve income as SYMBOL · CHAIN · Rebase.
+          if(!/\?\s*`\$\{symbol\} · \$\{chain\} · Rebase`/.test(adapter)) throw new Error('Cypher known-mechanism Rebase presentation drift');
           for(const x of [
-            "? `${symbol} · ${chain} · Rebase`",
             "['Aerodrome','aerodrome-ve','AERO','Base']",
             "['Velodrome','velodrome-ve-direct','VELO','Optimism']"
-          ]) if(!adapter.includes(x)) throw new Error('Cypher known-mechanism presentation drift: '+x);
+          ]) if(!adapter.includes(x)) throw new Error('Cypher known-mechanism route presentation drift: '+x);
 
           const clean=s=>s
             .replace(/\s*·\s*\+\s*route not fully closed(?: yet)?\s*$/i,'')
