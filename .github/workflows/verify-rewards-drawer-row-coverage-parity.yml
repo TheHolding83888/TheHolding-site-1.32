@@ -1,0 +1,110 @@
+name: "Verify Rewards Drawer · row coverage parity"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'companies/company-010-public-adapter.js'
+      - 'companies/index.html'
+      - 'companies/rewards-data.json'
+      - 'intelligence/project-memory/THE_HOLDING_REWARDS_DRAWER_COVERAGE_PLACEMENT_CANON_2026-08-18.md'
+      - '.github/workflows/verify-rewards-drawer-row-coverage-parity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify global row coverage placement
+        run: |
+          set -euo pipefail
+          node --check companies/company-010-public-adapter.js
+          node - <<'NODE'
+          const fs=require('fs');
+          const adapter=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          const index=fs.readFileSync('companies/index.html','utf8');
+          const canon=fs.readFileSync('intelligence/project-memory/THE_HOLDING_REWARDS_DRAWER_COVERAGE_PLACEMENT_CANON_2026-08-18.md','utf8');
+
+          for(const x of [
+            '__TH_REWARDS_ROW_COVERAGE_PARITY__',
+            "const selector='.ipx-reward-meta'",
+            'route not fully closed(?: yet)?',
+            'маршрут ещё не закрыт',
+            "version:'0.1-route-coverage-footer-only'"
+          ]) if(!adapter.includes(x)) throw new Error('global row-coverage guard missing: '+x);
+
+          // Aggregate/footer truth must remain in the native renderer.
+          for(const x of [
+            "routeNotIncluded:'route not fully closed yet'",
+            "routesNotIncluded:'routes not fully closed yet'",
+            "const pending = sources.filter(s => s && s.status !== 'ok')"
+          ]) if(!index.includes(x)) throw new Error('aggregate coverage disclosure missing: '+x);
+
+          // Known ve mechanism presentation remains clean and shared.
+          for(const x of [
+            "? `${symbol} · ${chain} · Rebase`",
+            "['Aerodrome','aerodrome-ve','AERO','Base']",
+            "['Velodrome','velodrome-ve-direct','VELO','Optimism']"
+          ]) if(!adapter.includes(x)) throw new Error('Cypher known-mechanism presentation drift: '+x);
+
+          const clean=s=>s
+            .replace(/\s*·\s*\+\s*route not fully closed(?: yet)?\s*$/i,'')
+            .replace(/\s*·\s*\+\s*маршрут ещё не закрыт\s*$/i,'');
+          const cases=[
+            ['AERO · Base · Rebase · + route not fully closed','AERO · Base · Rebase'],
+            ['VELO · Optimism · Rebase · + route not fully closed yet','VELO · Optimism · Rebase'],
+            ['AERO · Base · Rebase · + маршрут ещё не закрыт','AERO · Base · Rebase'],
+            ['Base · current accrual','Base · current accrual'],
+            ['CRV · Base','CRV · Base']
+          ];
+          for(const [input,expected] of cases){
+            const actual=clean(input);
+            if(actual!==expected)throw new Error(`coverage cleanup mismatch: ${input} -> ${actual}`);
+          }
+
+          for(const x of [
+            'Route-level coverage uncertainty is not row-level economic uncertainty.',
+            'Do not append route-level phrases',
+            'incomplete measured total may retain `+`',
+            'Presentation cleanup must never convert `partial` to `ok`'
+          ]) if(!canon.includes(x)) throw new Error('coverage placement canon missing: '+x);
+
+          console.log('Global Rewards Drawer row coverage placement PASS');
+          NODE
+      - name: Audit current partial ve routes without changing source truth
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const targets=['0x5860...83CA8.eth','aerocvxyb.eth'];
+          let audited=0;
+          for(const name of targets){
+            const c=d.companies?.[name];
+            if(!c)continue;
+            const compounded=(c.rewards||[]).filter(x=>x.classification==='compounded-locked'&&['aerodrome-ve','velodrome-ve-direct','velodrome-ve'].includes(x.route));
+            if(!compounded.length)continue;
+            for(const row of compounded){
+              if(!(Number(row.amount)>0))throw new Error(name+' compounded amount invalid');
+              if(!Number.isFinite(Number(row.usdValue)))throw new Error(name+' compounded USD missing');
+            }
+            const partial=(c.sources||[]).filter(x=>['aerodrome-ve','velodrome-ve-direct','velodrome-ve'].includes(x.route)&&x.status!=='ok');
+            if(partial.length&&c.totalUsdIsComplete===true)throw new Error(name+' source partial but total marked complete');
+            audited++;
+          }
+          if(audited<1)throw new Error('no existing compounded ve Passport route audited');
+          console.log('Existing generic Passport ve audit PASS',{audited});
+          NODE
+      - name: Verify read-only presentation boundary
+        run: |
+          set -euo pipefail
+          ! grep -Eqi 'wallet\.send|sendTransaction|eth_sendTransaction|eth_sendRawTransaction|private[_ -]?key|mnemonic|signer\.send' companies/company-010-public-adapter.js
