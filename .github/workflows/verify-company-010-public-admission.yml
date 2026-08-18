@@ -56,7 +56,8 @@ jobs:
           if(a.includes('Balance Sheet · Strategies.'))throw new Error('terminal dot returned to Balance Sheet · Strategies');
           for(const reserveGuard of ["pos.id==='bitcoin'","pos.id==='cypher-eth-equivalent'","pos.id==='ethereum'","pos.id==='hyperliquid'","pos.id==='convex-finance'","pos.id==='curve-dao-token'","pos.id==='lido-dao'"])if(!a.includes(reserveGuard))throw new Error('Cypher reserve/mixed guard missing: '+reserveGuard);
           if(!a.includes("const kind=/\\bAPY\\b/i.test(metric)?'APY':'APR'"))throw new Error('APR/APY metric distinction missing');
-          if(!a.includes("rate.pending?`<span>${rate.kind}</span>&nbsp;<strong>Pending</strong>`"))throw new Error('unknown != zero Pending badge contract missing');
+          if(!a.includes("rate.pending?`<span>${rate.kind}</span>")||!a.includes('<strong>Pending</strong>'))throw new Error('unknown != zero Pending badge contract missing');
+          if(/rate\.pending[^\n]{0,180}<strong>0(?:\.0+)?%?<\/strong>/.test(a))throw new Error('unknown productive rate rendered as zero');
           console.log('Global Passport productive rate badge contract PASS');
           NODE
       - name: Verify GMX public contract
