@@ -76,7 +76,7 @@ jobs:
             'Economic inventory != enumerable inventory' \
             'Nonzero economic state with missing measurement must fail closed' \
             'HyperLend / Aave-like lending semantic lanes' \
-            'RewardsController existence alone does not establish an active reward'; do
+            'controller existence alone does not establish an active reward'; do
             grep -Fqi "$phrase" "$f" || { echo "Missing reusable canon coverage: $phrase"; exit 1; }
           done
 
