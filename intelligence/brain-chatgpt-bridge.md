@@ -1,16 +1,16 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-17T08:05:08.576Z
+Generated: 2026-08-18T07:58:49.895Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-17T08:05:08.391Z
-Brain snapshot: 512ddd941922f6b574c5279b53a742ba186e1ae7407ac20e7f60365cde7772d4
-Cases: 22
-Evidence objects: 24
+Brain generated: 2026-08-18T07:58:49.694Z
+Brain snapshot: 7939ea4f678bddbf285608e9bdfad26c27af79a5609845891d7b3279db550b31
+Cases: 25
+Evidence objects: 27
 
 ## What changed
 
-Current canonical inputs contain 12 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s).
+Current canonical inputs contain 15 material Observer change(s), 0 new security finding event(s), and 3 resolved security finding event(s).
 
 ## Active deterministic cases
 
@@ -27,7 +27,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-a2e42e59e1a74835
+Evidence: EV-01d722b1b4c691d6
 
 ### 2. verification/ask-experience/runner-v0.1.mjs
 
@@ -42,7 +42,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-12e04741b518b9d8
+Evidence: EV-5b74273ba0513d45
 
 ### 3. verification/ask-experience/runner-v0.1.mjs
 
@@ -57,7 +57,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-ef0266f5938c384e
+Evidence: EV-f36c0a4466572af5
 
 ### 4. verification/ask-experience/runner-v0.1.mjs
 
@@ -72,7 +72,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-eaf69dbb93759f6c
+Evidence: EV-5acff202818f1234
 
 ### 5. .github/workflows/production-boundary-guard.yml
 
@@ -87,7 +87,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-ab62e30987e91ab5
+Evidence: EV-6277393a51f5e6a8
 
 ### 6. .github/workflows/production-deployment-smoke.yml
 
@@ -102,14 +102,14 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-b90bef9591fafe43
+Evidence: EV-f6c124598e3728ed
 
-### 7. 20 current findings
+### 7. 26 current findings
 
-Case: `5b70442e6a74624d9e7a0d46`
+Case: `ea9066704e6a54fc106d0c49`
 Domain: security · Severity: medium · Risk: medium
 
-Signal: 20 current medium security finding(s) in category dom-innerhtml.
+Signal: 26 current medium security finding(s) in category dom-innerhtml.
 
 Why it matters: If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.
 
@@ -117,9 +117,69 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-4c0e8abcdfc823a2
+Evidence: EV-98e24600428a5297
 
-### 8. 0x5860...83CA8.eth
+### 8. concentrator_asdcrv
+
+Case: `ba4ba213d666c4e8db79a063`
+Domain: economic · Severity: watch · Risk: low
+
+Signal: Concentrator / concentrator_asdcrv remains warming.
+
+Why it matters: A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.
+
+What follows: Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.
+
+Deterministic action: Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.
+
+Evidence: EV-9e031c9ed1323606
+
+### 9. convex_staked_cvxcrv
+
+Case: `c6d4aa0f0f3360ae12b19b2a`
+Domain: economic · Severity: watch · Risk: low
+
+Signal: Convex / convex_staked_cvxcrv remains warming.
+
+Why it matters: A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.
+
+What follows: Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.
+
+Deterministic action: Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.
+
+Evidence: EV-e5cccb7d6e8c966f
+
+### 10. projectx_hype
+
+Case: `b43cd092bc1940b7bf0ba4ba`
+Domain: economic · Severity: watch · Risk: low
+
+Signal: Project X HYPE / projectx_hype remains warming.
+
+Why it matters: A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.
+
+What follows: Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.
+
+Deterministic action: Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.
+
+Evidence: EV-8ec27d4773312bc4
+
+### 11. Cypher
+
+Case: `b5b5c40716cebf319a8df131`
+Domain: economic · Severity: watch · Risk: low
+
+Signal: Cypher Productivity coverage is 80.4%.
+
+Why it matters: Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood.
+
+What follows: The covered productive rate remains useful only within its stated coverage; unresolved productive capital must stay excluded rather than be fabricated.
+
+Deterministic action: Prioritize the unresolved adapter(s) contributing to the coverage gap, preserve covered-rate semantics, and promote to full coverage only after reproducible evidence exists.
+
+Evidence: EV-6234bdef1e21f4ac
+
+### 12. 0x5860...83CA8.eth
 
 Case: `752ad1fa5d5c4b4db1804346`
 Domain: economic · Severity: watch · Risk: low
@@ -132,9 +192,9 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-13b2fe01d19a021b
+Evidence: EV-141fe5b197e1e7d5
 
-### 9. aerocvxyb.eth
+### 13. aerocvxyb.eth
 
 Case: `9407adbb1115d285937ffb3d`
 Domain: economic · Severity: watch · Risk: low
@@ -147,9 +207,24 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-977f38f8b390d6b3
+Evidence: EV-52721b23f3d4ce1e
 
-### 10. defitea.eth
+### 14. Cypher
+
+Case: `883b17705d454eef9a2d16c4`
+Domain: economic · Severity: watch · Risk: low
+
+Signal: Cypher Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.
+
+Why it matters: Unresolved reward routes reduce the completeness of earned-value memory.
+
+What follows: Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.
+
+Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
+
+Evidence: EV-681875ef03b77724
+
+### 15. defitea.eth
 
 Case: `d57ad616b19f94c0c5e8b6e7`
 Domain: economic · Severity: watch · Risk: low
@@ -162,14 +237,59 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-fb145b6a101564be
+Evidence: EV-6404b910eb833e0d
 
-### 11. defitea.eth
+### 16. 1milliondollar.eth
 
-Case: `2618e8729c526ef6472b77db`
+Case: `cba9d9adaf0e4047f7010e96`
 Domain: system-change · Severity: info · Risk: low
 
-Signal: defitea.eth recorded a new daily reporting observation for 2026-08-17.
+Signal: 1milliondollar.eth Reference APR moved 6.80% → 7.09% (+0.29 pp).
+
+Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
+
+What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+
+Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+
+Evidence: EV-d8c994bf08e17a83
+
+### 17. defitea.eth
+
+Case: `21146f998b7fd6e059eeafb7`
+Domain: system-change · Severity: info · Risk: low
+
+Signal: defitea.eth Reference APR moved 12.49% → 12.02% (-0.47 pp).
+
+Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
+
+What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+
+Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+
+Evidence: EV-1749efe1f42c237b
+
+### 18. Cypher
+
+Case: `11c98f83e8cf11fc160df621`
+Domain: system-change · Severity: important · Risk: low
+
+Signal: Cypher entered the Productivity intelligence snapshot.
+
+Why it matters: A new measured company expands the system’s reusable operating knowledge.
+
+What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+
+Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+
+Evidence: EV-89d7aa096aa57cb5
+
+### 19. defitea.eth
+
+Case: `8b9f7e4fc3d41323b076295e`
+Domain: system-change · Severity: info · Risk: low
+
+Signal: defitea.eth recorded a new daily reporting observation for 2026-08-18.
 
 Why it matters: Every new daily observation extends the operating memory used by future analytics and decision support.
 
@@ -177,14 +297,14 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-76310b5638c4d6cc
+Evidence: EV-600b0e78b3a5e948
 
-### 12. defitea.eth
+### 20. defitea.eth
 
-Case: `ffeb79a39b30a942d8546dfd`
+Case: `61fd531cadedcf4e4055a8f6`
 Domain: system-change · Severity: info · Risk: low
 
-Signal: defitea.eth current-month cash-flow/reference-income counter moved $26.25 → $29.46.
+Signal: defitea.eth current-month cash-flow/reference-income counter moved $29.46 → $32.50.
 
 Why it matters: Autonomous reporting is turning recurring observations into a continuously growing economic history.
 
@@ -192,14 +312,14 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-c5c898f20db1bfc1
+Evidence: EV-b0af15eacdf3434e
 
-### 13. Monetra.eth
+### 21. Monetra.eth
 
-Case: `7e5d7a3740700e4a2516faa9`
+Case: `d0284f6df1f15b2c6975aa02`
 Domain: system-change · Severity: info · Risk: low
 
-Signal: Monetra.eth recorded a new daily reporting observation for 2026-08-17.
+Signal: Monetra.eth recorded a new daily reporting observation for 2026-08-18.
 
 Why it matters: Every new daily observation extends the operating memory used by future analytics and decision support.
 
@@ -207,14 +327,14 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-696d7d8783a51de3
+Evidence: EV-6754cc44797f33a8
 
-### 14. Monetra.eth
+### 22. Monetra.eth
 
-Case: `a83e821cf5049043ffe69dbf`
+Case: `957311e4c986a8f0be93e964`
 Domain: system-change · Severity: info · Risk: low
 
-Signal: Monetra.eth current-month cash-flow/reference-income counter moved $0.05 → $0.06.
+Signal: Monetra.eth current-month cash-flow/reference-income counter moved $0.06 → $0.07.
 
 Why it matters: Autonomous reporting is turning recurring observations into a continuously growing economic history.
 
@@ -222,14 +342,14 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-a0681c68dca4bf62
+Evidence: EV-9da8b6ac541668e0
 
-### 15. Monetra.eth
+### 23. Monetra.eth
 
-Case: `2044d2fba966a40d1e34979c`
+Case: `2411ad4e4a4731c4fc4a2c98`
 Domain: system-change · Severity: info · Risk: low
 
-Signal: Monetra.eth current-month generated income moved $0.0480 → $0.0601.
+Signal: Monetra.eth current-month generated income moved $0.0601 → $0.0723.
 
 Why it matters: Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.
 
@@ -237,112 +357,37 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-386dff1043274bd0
+Evidence: EV-7e7ffbd15f6370db
 
-### 16. 0x5860...83CA8.eth
+### 24. Cypher
 
-Case: `9cd11c3aad8c1a29c88c9008`
-Domain: system-change · Severity: info · Risk: low
-
-Signal: 0x5860...83CA8.eth accrued rewards moved $56.82 → $58.24 (+$1.42).
-
-Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-07a759f9ea0b2e15
-
-### 17. 1milliondollar.eth
-
-Case: `cc47b03453d90c64a481f504`
-Domain: system-change · Severity: info · Risk: low
-
-Signal: 1milliondollar.eth accrued rewards moved $24.59 → $25.33 (+$0.74).
-
-Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-a4c97f1accf40232
-
-### 18. aerocvxyb.eth
-
-Case: `c588057f80d9c33c5ebbfc03`
-Domain: system-change · Severity: info · Risk: low
-
-Signal: aerocvxyb.eth accrued rewards moved $97.49 → $98.37 (+$0.87).
-
-Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-44f2b9957d1dc1d1
-
-### 19. defitea.eth
-
-Case: `b0e3530c94db2a6c78ce9b58`
-Domain: system-change · Severity: info · Risk: low
-
-Signal: defitea.eth accrued rewards moved $100.41 → $102.23 (+$1.82).
-
-Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-70aec968d5e31376
-
-### 20. Rook's portfolio
-
-Case: `b187e014610d7709850ebb63`
-Domain: system-change · Severity: info · Risk: low
-
-Signal: Rook's portfolio accrued rewards moved $149.65 → $154.17 (+$4.51).
-
-Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-43cd2a0b47943452
-
-### 21. Stable Companies Index
-
-Case: `49889c5d6ab0dfba40740bd5`
+Case: `9e8247ded726ebcc145c4d44`
 Domain: system-change · Severity: important · Risk: low
 
-Signal: Stable Index coverage state changed: last-full-coverage/false → current-full-coverage/true.
+Signal: Cypher entered the Accrued Rewards snapshot.
 
-Why it matters: Stable Reference APY is fail-closed; coverage state determines whether the current rate is fully observed or the latest full observation is being carried forward.
+Why it matters: The system can now observe another company’s protocol-side earned value.
 
 What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-f7cd4dd004a6f365
+Evidence: EV-2e271df99cb66c28
 
-### 22. Stable Companies Index
+### 25. 0x5860...83CA8.eth
 
-Case: `9e86ad5582b192e7805a1e71`
+Case: `37032f2affc52a74d0e6bb4b`
 Domain: system-change · Severity: info · Risk: low
 
-Signal: Stable Companies current capital moved $100.1829 → $100.2143 (+$0.0314).
+Signal: 0x5860...83CA8.eth accrued rewards moved $58.24 → $57.37 ($-0.86).
 
-Why it matters: Current Capital is the market-value state of Stable Capital plus separately earned claimable value.
+Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
 
 What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-f0af6a390488f4ee
+Evidence: EV-9bf349b6a4fc4a3f
 
 ## Manual ChatGPT handoff
 

@@ -1,21 +1,21 @@
 {
   "version": "0.1-grounded-reasoning-gateway",
   "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-  "generatedAt": "2026-08-17T08:05:08.391Z",
+  "generatedAt": "2026-08-18T07:58:49.694Z",
   "mode": "delta",
   "status": "watch",
-  "headline": "22 evidence-bound reasoning case(s) are active across economic and security memory.",
+  "headline": "25 evidence-bound reasoning case(s) are active across economic and security memory.",
   "currentPosture": {
     "observer": {
       "mode": "delta",
-      "materialChangeCount": 12,
-      "watchCount": 3,
-      "snapshotHash": "02841dceb14cd47b957048a2bf92c84fdda8b900119e098af1d38adebaab34b1",
-      "sourceCompositeHash": "ebf68bfcafbb13be1ec874b456bd8fab45cd404ba6ea6483a96f4ab113435c42"
+      "materialChangeCount": 15,
+      "watchCount": 8,
+      "snapshotHash": "b76f649001a3315acd87b76e7add333f269a9c9f71b2ca4dd981cf8a45c96f75",
+      "sourceCompositeHash": "da14e32ef90981f5b7ebe3b0b8453d1c4f6e59beeb880fa545317afe21e7817a"
     },
     "memory": {
-      "vaultRunCount": 7,
-      "vaultEventCount": 53,
+      "vaultRunCount": 8,
+      "vaultEventCount": 68,
       "correctionEntryCount": 1,
       "correctionPrecedence": "correction-ledger-over-target-record-field"
     },
@@ -23,14 +23,14 @@
       "status": "watch",
       "critical": 0,
       "high": 6,
-      "medium": 20,
+      "medium": 26,
       "newFindingEvents": 0,
-      "resolvedFindingEvents": 0
+      "resolvedFindingEvents": 3
     }
   },
   "questions": {
     "whatChanged": {
-      "answer": "Current canonical inputs contain 12 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s).",
+      "answer": "Current canonical inputs contain 15 material Observer change(s), 0 new security finding event(s), and 3 resolved security finding event(s).",
       "confidence": "high",
       "evidence": [
         {
@@ -38,207 +38,248 @@
           "pointer": "/whatChanged",
           "value": [
             {
-              "id": "f678902387ba6342af97",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
-              "category": "stable-capital",
-              "entity": "Stable Companies Index",
-              "metric": "coverage-state",
-              "previousValue": {
-                "status": "last-full-coverage",
-                "fullCoverage": false
-              },
-              "currentValue": {
-                "status": "current-full-coverage",
-                "fullCoverage": true
-              },
+              "id": "8f799139f963736385f6",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
+              "category": "registry-intelligence",
+              "entity": "Cypher",
+              "metric": "productivity-company-added",
+              "previousValue": null,
+              "currentValue": "present",
               "unit": null,
               "severity": "important",
-              "summary": "Stable Index coverage state changed: last-full-coverage/false → current-full-coverage/true.",
-              "whyItMatters": "Stable Reference APY is fail-closed; coverage state determines whether the current rate is fully observed or the latest full observation is being carried forward.",
+              "summary": "Cypher entered the Productivity intelligence snapshot.",
+              "whyItMatters": "A new measured company expands the system’s reusable operating knowledge.",
               "sourceKeys": [
-                "stableCapital",
-                "stableIndex"
+                "productivity"
               ]
             },
             {
-              "id": "9b26ab879acbb819feac",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
+              "id": "00ab1bc1ecd079d7a813",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
+              "category": "rewards",
+              "entity": "Cypher",
+              "metric": "company-added",
+              "previousValue": null,
+              "currentValue": "present",
+              "unit": null,
+              "severity": "important",
+              "summary": "Cypher entered the Accrued Rewards snapshot.",
+              "whyItMatters": "The system can now observe another company’s protocol-side earned value.",
+              "sourceKeys": [
+                "rewards"
+              ]
+            },
+            {
+              "id": "62280637ff6ffc0b3baa",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
+              "category": "system",
+              "entity": "productivity",
+              "metric": "source-version",
+              "previousValue": "1.15",
+              "currentValue": "1.16",
+              "unit": null,
+              "severity": "important",
+              "summary": "productivity source version changed 1.15 → 1.16.",
+              "whyItMatters": "A source/schema version change can unlock new capabilities or alter downstream assumptions and should be observed explicitly.",
+              "sourceKeys": [
+                "productivity"
+              ]
+            },
+            {
+              "id": "c4bfc87dfd11a135a344",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
+              "category": "system",
+              "entity": "rewards",
+              "metric": "source-version",
+              "previousValue": "0.3.9",
+              "currentValue": "0.3.10",
+              "unit": null,
+              "severity": "important",
+              "summary": "rewards source version changed 0.3.9 → 0.3.10.",
+              "whyItMatters": "A source/schema version change can unlock new capabilities or alter downstream assumptions and should be observed explicitly.",
+              "sourceKeys": [
+                "rewards"
+              ]
+            },
+            {
+              "id": "64e85864c9cdab59a303",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
+              "category": "productivity",
+              "entity": "1milliondollar.eth",
+              "metric": "aprLatestPct",
+              "previousValue": 6.7961,
+              "currentValue": 7.091,
+              "unit": "percentage-points",
+              "severity": "info",
+              "summary": "1milliondollar.eth Reference APR moved 6.80% → 7.09% (+0.29 pp).",
+              "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+              "sourceKeys": [
+                "productivity"
+              ]
+            },
+            {
+              "id": "05ae70279d577248526d",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
+              "category": "productivity",
+              "entity": "defitea.eth",
+              "metric": "aprLatestPct",
+              "previousValue": 12.4862,
+              "currentValue": 12.0183,
+              "unit": "percentage-points",
+              "severity": "info",
+              "summary": "defitea.eth Reference APR moved 12.49% → 12.02% (-0.47 pp).",
+              "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+              "sourceKeys": [
+                "productivity"
+              ]
+            },
+            {
+              "id": "4936f9ad9710283ca87e",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
               "category": "reporting",
               "entity": "defitea.eth",
               "metric": "new-daily-snapshot",
-              "previousValue": "2026-08-16",
-              "currentValue": "2026-08-17",
+              "previousValue": "2026-08-17",
+              "currentValue": "2026-08-18",
               "unit": null,
               "severity": "info",
-              "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-17.",
+              "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-18.",
               "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
               "sourceKeys": [
                 "reporting"
               ]
             },
             {
-              "id": "129bd2f225f92fdee17b",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
+              "id": "4b4234327229b1f8a197",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
               "category": "reporting",
               "entity": "defitea.eth",
               "metric": "currentMonthCashFlowUsd",
-              "previousValue": 26.25,
-              "currentValue": 29.46,
+              "previousValue": 29.46,
+              "currentValue": 32.5,
               "unit": "USD",
               "severity": "info",
-              "summary": "defitea.eth current-month cash-flow/reference-income counter moved $26.25 → $29.46.",
+              "summary": "defitea.eth current-month cash-flow/reference-income counter moved $29.46 → $32.50.",
               "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
               "sourceKeys": [
                 "reporting"
               ]
             },
             {
-              "id": "39da3078cea67f18bae0",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
+              "id": "b8c62897df8fd02602d6",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
               "category": "reporting",
               "entity": "Monetra.eth",
               "metric": "new-daily-snapshot",
-              "previousValue": "2026-08-16",
-              "currentValue": "2026-08-17",
+              "previousValue": "2026-08-17",
+              "currentValue": "2026-08-18",
               "unit": null,
               "severity": "info",
-              "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-17.",
+              "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-18.",
               "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
               "sourceKeys": [
                 "reporting"
               ]
             },
             {
-              "id": "1ee897538f24dbd88ba4",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
+              "id": "5f6cd6d349aac0904a22",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
               "category": "reporting",
               "entity": "Monetra.eth",
               "metric": "currentMonthCashFlowUsd",
-              "previousValue": 0.048,
-              "currentValue": 0.0601,
+              "previousValue": 0.0601,
+              "currentValue": 0.0723,
               "unit": "USD",
               "severity": "info",
-              "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.05 → $0.06.",
+              "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.06 → $0.07.",
               "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
               "sourceKeys": [
                 "reporting"
               ]
             },
             {
-              "id": "b6def0e0c9cc3e307c3b",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
+              "id": "70a18621309e43864c82",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
               "category": "reporting",
               "entity": "Monetra.eth",
               "metric": "currentMonthGeneratedIncomeUsd",
-              "previousValue": 0.048,
-              "currentValue": 0.0601,
+              "previousValue": 0.0601,
+              "currentValue": 0.0723,
               "unit": "USD",
               "severity": "info",
-              "summary": "Monetra.eth current-month generated income moved $0.0480 → $0.0601.",
+              "summary": "Monetra.eth current-month generated income moved $0.0601 → $0.0723.",
               "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
               "sourceKeys": [
                 "reporting"
               ]
             },
             {
-              "id": "c1cc16876a8664b98965",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
+              "id": "42a30ef8305c8ad9f646",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
               "category": "rewards",
               "entity": "0x5860...83CA8.eth",
               "metric": "totalUsd",
-              "previousValue": 56.820731,
-              "currentValue": 58.236582,
+              "previousValue": 58.236582,
+              "currentValue": 57.374242,
               "unit": "USD",
               "severity": "info",
-              "summary": "0x5860...83CA8.eth accrued rewards moved $56.82 → $58.24 (+$1.42).",
+              "summary": "0x5860...83CA8.eth accrued rewards moved $58.24 → $57.37 ($-0.86).",
               "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
               "sourceKeys": [
                 "rewards"
               ]
             },
             {
-              "id": "a47f34482ca8de104d69",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
+              "id": "da04b841026faac4c989",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
               "category": "rewards",
               "entity": "1milliondollar.eth",
               "metric": "totalUsd",
-              "previousValue": 24.591643,
-              "currentValue": 25.329493,
+              "previousValue": 25.329493,
+              "currentValue": 24.917983,
               "unit": "USD",
               "severity": "info",
-              "summary": "1milliondollar.eth accrued rewards moved $24.59 → $25.33 (+$0.74).",
+              "summary": "1milliondollar.eth accrued rewards moved $25.33 → $24.92 ($-0.41).",
               "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
               "sourceKeys": [
                 "rewards"
               ]
             },
             {
-              "id": "7e4c04ab17e86952f67c",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
-              "category": "rewards",
-              "entity": "aerocvxyb.eth",
-              "metric": "totalUsd",
-              "previousValue": 97.494506,
-              "currentValue": 98.366537,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "aerocvxyb.eth accrued rewards moved $97.49 → $98.37 (+$0.87).",
-              "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-              "sourceKeys": [
-                "rewards"
-              ]
-            },
-            {
-              "id": "89c816770c87a00de28c",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
+              "id": "6e8330b80c98bd366467",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
               "category": "rewards",
               "entity": "defitea.eth",
               "metric": "totalUsd",
-              "previousValue": 100.407758,
-              "currentValue": 102.226683,
+              "previousValue": 102.226683,
+              "currentValue": 101.886149,
               "unit": "USD",
               "severity": "info",
-              "summary": "defitea.eth accrued rewards moved $100.41 → $102.23 (+$1.82).",
+              "summary": "defitea.eth accrued rewards moved $102.23 → $101.89 ($-0.34).",
               "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
               "sourceKeys": [
                 "rewards"
               ]
             },
             {
-              "id": "d02f3ebfd723c5968ca5",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
+              "id": "fe1bbeb3db181d4e0234",
+              "detectedAt": "2026-08-18T07:13:11.245Z",
               "category": "rewards",
               "entity": "Rook's portfolio",
               "metric": "totalUsd",
-              "previousValue": 149.653278,
-              "currentValue": 154.167564,
+              "previousValue": 154.167564,
+              "currentValue": 151.450046,
               "unit": "USD",
               "severity": "info",
-              "summary": "Rook's portfolio accrued rewards moved $149.65 → $154.17 (+$4.51).",
+              "summary": "Rook's portfolio accrued rewards moved $154.17 → $151.45 ($-2.72).",
               "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
               "sourceKeys": [
                 "rewards"
               ]
-            },
-            {
-              "id": "24a966370f8afd4f328c",
-              "detectedAt": "2026-08-17T07:30:56.276Z",
-              "category": "stable-capital",
-              "entity": "Stable Companies Index",
-              "metric": "currentCapitalUsd",
-              "previousValue": 100.18293767,
-              "currentValue": 100.21430175,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "Stable Companies current capital moved $100.1829 → $100.2143 (+$0.0314).",
-              "whyItMatters": "Current Capital is the market-value state of Stable Capital plus separately earned claimable value.",
-              "sourceKeys": [
-                "stableIndex"
-              ]
             }
           ],
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
           "interpretation": "direct"
         },
         {
@@ -246,10 +287,53 @@
           "pointer": "/whatChanged",
           "value": {
             "newFindings": [],
-            "resolvedFindings": []
+            "resolvedFindings": [
+              {
+                "id": "c379d4be2ced3023e4e9008b75bce35bae33c675c5b02b1e9b11f28668200de7",
+                "severity": "medium",
+                "category": "critical-surface-change",
+                "file": ".github/workflows/update-company-rewards.yml",
+                "line": null,
+                "entity": null,
+                "summary": "Security-sensitive surface changed: .github/workflows/update-company-rewards.yml.",
+                "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+                "evidence": {
+                  "previousSha256": "c4d52969269b6f6f9d2354a160e386883fc7d6569e209c13335c147d1a2b55ce",
+                  "currentSha256": "a8071542e34bd4785c11453e934745039398f94557ead9a5dd6c525208ab97f3"
+                }
+              },
+              {
+                "id": "05ab62107da51c2a13e080726f307fae57c4914b9947ace77b4c6fde2c4ae98c",
+                "severity": "medium",
+                "category": "critical-surface-change",
+                "file": ".github/workflows/verify-company-010-rewards-drawer.yml",
+                "line": null,
+                "entity": null,
+                "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-rewards-drawer.yml.",
+                "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+                "evidence": {
+                  "previousSha256": "5515f215acaa359610f2a9b64be030107c46fe149527b7a7af69d46398f94f76",
+                  "currentSha256": "0a6b3b1e2bab0190887f1b353de21d922df5b3bc9207a1f341c311c17bb10485"
+                }
+              },
+              {
+                "id": "2643196faa1beedb45f404ec2725754ff383677a8d9fee7c698ebe841b1e3261",
+                "severity": "medium",
+                "category": "critical-surface-change",
+                "file": ".github/workflows/verify-company-010-ve-rewards.yml",
+                "line": null,
+                "entity": null,
+                "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-ve-rewards.yml.",
+                "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+                "evidence": {
+                  "previousSha256": "4f46f3d5bc8f38d38a7d44c65c98cde2b32a008a20620625c02c11b197857a10",
+                  "currentSha256": "34dc2493b59af13fc25d9a4f8078b95f1db98b20e14bc92750154c461ae424e5"
+                }
+              }
+            ]
           },
-          "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-          "observedAt": "2026-08-17T08:05:07.465Z",
+          "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+          "observedAt": "2026-08-18T07:58:48.991Z",
           "interpretation": "direct"
         }
       ]
@@ -264,7 +348,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/0",
             "selector": null,
-            "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256"
+            "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f"
           }
         ]
       },
@@ -277,7 +361,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/1",
             "selector": null,
-            "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256"
+            "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f"
           }
         ]
       },
@@ -290,7 +374,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/2",
             "selector": null,
-            "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256"
+            "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f"
           }
         ]
       },
@@ -303,7 +387,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/3",
             "selector": null,
-            "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256"
+            "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f"
           }
         ]
       },
@@ -316,7 +400,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/4",
             "selector": null,
-            "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256"
+            "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f"
           }
         ]
       },
@@ -329,20 +413,72 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/5",
             "selector": null,
-            "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256"
+            "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f"
           }
         ]
       },
       {
-        "id": "5b70442e6a74624d9e7a0d46",
-        "entity": "20 current findings",
+        "id": "ea9066704e6a54fc106d0c49",
+        "entity": "26 current findings",
         "answer": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
         "evidenceRefs": [
           {
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings",
             "selector": "severity=medium&category=dom-innerhtml",
-            "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256"
+            "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f"
+          }
+        ]
+      },
+      {
+        "id": "ba4ba213d666c4e8db79a063",
+        "entity": "concentrator_asdcrv",
+        "answer": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/0",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "c6d4aa0f0f3360ae12b19b2a",
+        "entity": "convex_staked_cvxcrv",
+        "answer": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/1",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "b43cd092bc1940b7bf0ba4ba",
+        "entity": "projectx_hype",
+        "answer": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/2",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "b5b5c40716cebf319a8df131",
+        "entity": "Cypher",
+        "answer": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/3",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
           }
         ]
       },
@@ -353,9 +489,9 @@
         "evidenceRefs": [
           {
             "source": "intelligence/change-intelligence.json",
-            "pointer": "/watchNext/0",
+            "pointer": "/watchNext/4",
             "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
           }
         ]
       },
@@ -366,9 +502,22 @@
         "evidenceRefs": [
           {
             "source": "intelligence/change-intelligence.json",
-            "pointer": "/watchNext/1",
+            "pointer": "/watchNext/5",
             "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "883b17705d454eef9a2d16c4",
+        "entity": "Cypher",
+        "answer": "Unresolved reward routes reduce the completeness of earned-value memory.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/watchNext/6",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
           }
         ]
       },
@@ -379,165 +528,139 @@
         "evidenceRefs": [
           {
             "source": "intelligence/change-intelligence.json",
-            "pointer": "/watchNext/2",
+            "pointer": "/watchNext/7",
             "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
           }
         ]
       },
       {
-        "id": "2618e8729c526ef6472b77db",
-        "entity": "defitea.eth",
-        "answer": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/1",
-            "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
-          }
-        ]
-      },
-      {
-        "id": "ffeb79a39b30a942d8546dfd",
-        "entity": "defitea.eth",
-        "answer": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/2",
-            "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
-          }
-        ]
-      },
-      {
-        "id": "7e5d7a3740700e4a2516faa9",
-        "entity": "Monetra.eth",
-        "answer": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/3",
-            "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
-          }
-        ]
-      },
-      {
-        "id": "a83e821cf5049043ffe69dbf",
-        "entity": "Monetra.eth",
-        "answer": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+        "id": "cba9d9adaf0e4047f7010e96",
+        "entity": "1milliondollar.eth",
+        "answer": "Meaningful changes in productive capacity are part of the company’s operating history.",
         "evidenceRefs": [
           {
             "source": "intelligence/change-intelligence.json",
             "pointer": "/whatChanged/4",
             "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
           }
         ]
       },
       {
-        "id": "2044d2fba966a40d1e34979c",
-        "entity": "Monetra.eth",
-        "answer": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+        "id": "21146f998b7fd6e059eeafb7",
+        "entity": "defitea.eth",
+        "answer": "Meaningful changes in productive capacity are part of the company’s operating history.",
         "evidenceRefs": [
           {
             "source": "intelligence/change-intelligence.json",
             "pointer": "/whatChanged/5",
             "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
           }
         ]
       },
       {
-        "id": "9cd11c3aad8c1a29c88c9008",
-        "entity": "0x5860...83CA8.eth",
-        "answer": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/6",
-            "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
-          }
-        ]
-      },
-      {
-        "id": "cc47b03453d90c64a481f504",
-        "entity": "1milliondollar.eth",
-        "answer": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/7",
-            "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
-          }
-        ]
-      },
-      {
-        "id": "c588057f80d9c33c5ebbfc03",
-        "entity": "aerocvxyb.eth",
-        "answer": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/8",
-            "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
-          }
-        ]
-      },
-      {
-        "id": "b0e3530c94db2a6c78ce9b58",
-        "entity": "defitea.eth",
-        "answer": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/9",
-            "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
-          }
-        ]
-      },
-      {
-        "id": "b187e014610d7709850ebb63",
-        "entity": "Rook's portfolio",
-        "answer": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/10",
-            "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
-          }
-        ]
-      },
-      {
-        "id": "49889c5d6ab0dfba40740bd5",
-        "entity": "Stable Companies Index",
-        "answer": "Stable Reference APY is fail-closed; coverage state determines whether the current rate is fully observed or the latest full observation is being carried forward.",
+        "id": "11c98f83e8cf11fc160df621",
+        "entity": "Cypher",
+        "answer": "A new measured company expands the system’s reusable operating knowledge.",
         "evidenceRefs": [
           {
             "source": "intelligence/change-intelligence.json",
             "pointer": "/whatChanged/0",
             "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
           }
         ]
       },
       {
-        "id": "9e86ad5582b192e7805a1e71",
-        "entity": "Stable Companies Index",
-        "answer": "Current Capital is the market-value state of Stable Capital plus separately earned claimable value.",
+        "id": "8b9f7e4fc3d41323b076295e",
+        "entity": "defitea.eth",
+        "answer": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/whatChanged/6",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "61fd531cadedcf4e4055a8f6",
+        "entity": "defitea.eth",
+        "answer": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/whatChanged/7",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "d0284f6df1f15b2c6975aa02",
+        "entity": "Monetra.eth",
+        "answer": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/whatChanged/8",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "957311e4c986a8f0be93e964",
+        "entity": "Monetra.eth",
+        "answer": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/whatChanged/9",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "2411ad4e4a4731c4fc4a2c98",
+        "entity": "Monetra.eth",
+        "answer": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/whatChanged/10",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "9e8247ded726ebcc145c4d44",
+        "entity": "Cypher",
+        "answer": "The system can now observe another company’s protocol-side earned value.",
+        "evidenceRefs": [
+          {
+            "source": "intelligence/change-intelligence.json",
+            "pointer": "/whatChanged/1",
+            "selector": null,
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
+          }
+        ]
+      },
+      {
+        "id": "37032f2affc52a74d0e6bb4b",
+        "entity": "0x5860...83CA8.eth",
+        "answer": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
         "evidenceRefs": [
           {
             "source": "intelligence/change-intelligence.json",
             "pointer": "/whatChanged/11",
             "selector": null,
-            "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d"
+            "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168"
           }
         ]
       }
@@ -580,9 +703,33 @@
         "confidence": "high"
       },
       {
-        "id": "5b70442e6a74624d9e7a0d46",
-        "entity": "20 current findings",
+        "id": "ea9066704e6a54fc106d0c49",
+        "entity": "26 current findings",
         "answer": "A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.",
+        "confidence": "high"
+      },
+      {
+        "id": "ba4ba213d666c4e8db79a063",
+        "entity": "concentrator_asdcrv",
+        "answer": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+        "confidence": "high"
+      },
+      {
+        "id": "c6d4aa0f0f3360ae12b19b2a",
+        "entity": "convex_staked_cvxcrv",
+        "answer": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+        "confidence": "high"
+      },
+      {
+        "id": "b43cd092bc1940b7bf0ba4ba",
+        "entity": "projectx_hype",
+        "answer": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+        "confidence": "high"
+      },
+      {
+        "id": "b5b5c40716cebf319a8df131",
+        "entity": "Cypher",
+        "answer": "The covered productive rate remains useful only within its stated coverage; unresolved productive capital must stay excluded rather than be fabricated.",
         "confidence": "high"
       },
       {
@@ -598,80 +745,74 @@
         "confidence": "high"
       },
       {
+        "id": "883b17705d454eef9a2d16c4",
+        "entity": "Cypher",
+        "answer": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
+        "confidence": "high"
+      },
+      {
         "id": "d57ad616b19f94c0c5e8b6e7",
         "entity": "defitea.eth",
         "answer": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
         "confidence": "high"
       },
       {
-        "id": "2618e8729c526ef6472b77db",
-        "entity": "defitea.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "ffeb79a39b30a942d8546dfd",
-        "entity": "defitea.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "7e5d7a3740700e4a2516faa9",
-        "entity": "Monetra.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "a83e821cf5049043ffe69dbf",
-        "entity": "Monetra.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "2044d2fba966a40d1e34979c",
-        "entity": "Monetra.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "9cd11c3aad8c1a29c88c9008",
-        "entity": "0x5860...83CA8.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "cc47b03453d90c64a481f504",
+        "id": "cba9d9adaf0e4047f7010e96",
         "entity": "1milliondollar.eth",
         "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
         "confidence": "high"
       },
       {
-        "id": "c588057f80d9c33c5ebbfc03",
-        "entity": "aerocvxyb.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "b0e3530c94db2a6c78ce9b58",
+        "id": "21146f998b7fd6e059eeafb7",
         "entity": "defitea.eth",
         "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
         "confidence": "high"
       },
       {
-        "id": "b187e014610d7709850ebb63",
-        "entity": "Rook's portfolio",
+        "id": "11c98f83e8cf11fc160df621",
+        "entity": "Cypher",
         "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
         "confidence": "high"
       },
       {
-        "id": "49889c5d6ab0dfba40740bd5",
-        "entity": "Stable Companies Index",
+        "id": "8b9f7e4fc3d41323b076295e",
+        "entity": "defitea.eth",
         "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
         "confidence": "high"
       },
       {
-        "id": "9e86ad5582b192e7805a1e71",
-        "entity": "Stable Companies Index",
+        "id": "61fd531cadedcf4e4055a8f6",
+        "entity": "defitea.eth",
+        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+        "confidence": "high"
+      },
+      {
+        "id": "d0284f6df1f15b2c6975aa02",
+        "entity": "Monetra.eth",
+        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+        "confidence": "high"
+      },
+      {
+        "id": "957311e4c986a8f0be93e964",
+        "entity": "Monetra.eth",
+        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+        "confidence": "high"
+      },
+      {
+        "id": "2411ad4e4a4731c4fc4a2c98",
+        "entity": "Monetra.eth",
+        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+        "confidence": "high"
+      },
+      {
+        "id": "9e8247ded726ebcc145c4d44",
+        "entity": "Cypher",
+        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+        "confidence": "high"
+      },
+      {
+        "id": "37032f2affc52a74d0e6bb4b",
+        "entity": "0x5860...83CA8.eth",
         "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
         "confidence": "high"
       }
@@ -726,11 +867,43 @@
         "actionMode": "proposal-only"
       },
       {
-        "id": "5b70442e6a74624d9e7a0d46",
-        "entity": "20 current findings",
+        "id": "ea9066704e6a54fc106d0c49",
+        "entity": "26 current findings",
         "answer": "Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.",
         "recommendationClass": "security-provenance-triage",
         "riskTier": "medium",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "ba4ba213d666c4e8db79a063",
+        "entity": "concentrator_asdcrv",
+        "answer": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+        "recommendationClass": "data-gap-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "c6d4aa0f0f3360ae12b19b2a",
+        "entity": "convex_staked_cvxcrv",
+        "answer": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+        "recommendationClass": "data-gap-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "b43cd092bc1940b7bf0ba4ba",
+        "entity": "projectx_hype",
+        "answer": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+        "recommendationClass": "data-gap-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "b5b5c40716cebf319a8df131",
+        "entity": "Cypher",
+        "answer": "Prioritize the unresolved adapter(s) contributing to the coverage gap, preserve covered-rate semantics, and promote to full coverage only after reproducible evidence exists.",
+        "recommendationClass": "coverage-resolution",
+        "riskTier": "low",
         "actionMode": "proposal-only"
       },
       {
@@ -750,6 +923,14 @@
         "actionMode": "proposal-only"
       },
       {
+        "id": "883b17705d454eef9a2d16c4",
+        "entity": "Cypher",
+        "answer": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
+        "recommendationClass": "reward-route-resolution",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
         "id": "d57ad616b19f94c0c5e8b6e7",
         "entity": "defitea.eth",
         "answer": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
@@ -758,55 +939,7 @@
         "actionMode": "proposal-only"
       },
       {
-        "id": "2618e8729c526ef6472b77db",
-        "entity": "defitea.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "ffeb79a39b30a942d8546dfd",
-        "entity": "defitea.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "7e5d7a3740700e4a2516faa9",
-        "entity": "Monetra.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "a83e821cf5049043ffe69dbf",
-        "entity": "Monetra.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "2044d2fba966a40d1e34979c",
-        "entity": "Monetra.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "9cd11c3aad8c1a29c88c9008",
-        "entity": "0x5860...83CA8.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "cc47b03453d90c64a481f504",
+        "id": "cba9d9adaf0e4047f7010e96",
         "entity": "1milliondollar.eth",
         "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
         "recommendationClass": "evidence-review",
@@ -814,15 +947,7 @@
         "actionMode": "proposal-only"
       },
       {
-        "id": "c588057f80d9c33c5ebbfc03",
-        "entity": "aerocvxyb.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "b0e3530c94db2a6c78ce9b58",
+        "id": "21146f998b7fd6e059eeafb7",
         "entity": "defitea.eth",
         "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
         "recommendationClass": "evidence-review",
@@ -830,24 +955,64 @@
         "actionMode": "proposal-only"
       },
       {
-        "id": "b187e014610d7709850ebb63",
-        "entity": "Rook's portfolio",
+        "id": "11c98f83e8cf11fc160df621",
+        "entity": "Cypher",
         "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
         "recommendationClass": "evidence-review",
         "riskTier": "low",
         "actionMode": "proposal-only"
       },
       {
-        "id": "49889c5d6ab0dfba40740bd5",
-        "entity": "Stable Companies Index",
+        "id": "8b9f7e4fc3d41323b076295e",
+        "entity": "defitea.eth",
         "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
         "recommendationClass": "evidence-review",
         "riskTier": "low",
         "actionMode": "proposal-only"
       },
       {
-        "id": "9e86ad5582b192e7805a1e71",
-        "entity": "Stable Companies Index",
+        "id": "61fd531cadedcf4e4055a8f6",
+        "entity": "defitea.eth",
+        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+        "recommendationClass": "evidence-review",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "d0284f6df1f15b2c6975aa02",
+        "entity": "Monetra.eth",
+        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+        "recommendationClass": "evidence-review",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "957311e4c986a8f0be93e964",
+        "entity": "Monetra.eth",
+        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+        "recommendationClass": "evidence-review",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "2411ad4e4a4731c4fc4a2c98",
+        "entity": "Monetra.eth",
+        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+        "recommendationClass": "evidence-review",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "9e8247ded726ebcc145c4d44",
+        "entity": "Cypher",
+        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+        "recommendationClass": "evidence-review",
+        "riskTier": "low",
+        "actionMode": "proposal-only"
+      },
+      {
+        "id": "37032f2affc52a74d0e6bb4b",
+        "entity": "0x5860...83CA8.eth",
         "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
         "recommendationClass": "evidence-review",
         "riskTier": "low",
@@ -885,8 +1050,8 @@
             "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
             "evidence": null
           },
-          "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-          "observedAt": "2026-08-17T08:05:07.465Z",
+          "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+          "observedAt": "2026-08-18T07:58:48.991Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -921,8 +1086,8 @@
             "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
             "evidence": null
           },
-          "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-          "observedAt": "2026-08-17T08:05:07.465Z",
+          "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+          "observedAt": "2026-08-18T07:58:48.991Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -957,8 +1122,8 @@
             "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
             "evidence": null
           },
-          "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-          "observedAt": "2026-08-17T08:05:07.465Z",
+          "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+          "observedAt": "2026-08-18T07:58:48.991Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -993,8 +1158,8 @@
             "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
             "evidence": null
           },
-          "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-          "observedAt": "2026-08-17T08:05:07.465Z",
+          "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+          "observedAt": "2026-08-18T07:58:48.991Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -1029,8 +1194,8 @@
             "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
             "evidence": null
           },
-          "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-          "observedAt": "2026-08-17T08:05:07.465Z",
+          "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+          "observedAt": "2026-08-18T07:58:48.991Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -1065,20 +1230,20 @@
             "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
             "evidence": null
           },
-          "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-          "observedAt": "2026-08-17T08:05:07.465Z",
+          "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+          "observedAt": "2026-08-18T07:58:48.991Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
       ]
     },
     {
-      "id": "5b70442e6a74624d9e7a0d46",
+      "id": "ea9066704e6a54fc106d0c49",
       "domain": "security",
       "severity": "medium",
       "category": "dom-innerhtml",
-      "entity": "20 current findings",
-      "signal": "20 current medium security finding(s) in category dom-innerhtml.",
+      "entity": "26 current findings",
+      "signal": "26 current medium security finding(s) in category dom-innerhtml.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "whatFollows": "A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.",
       "whatShouldBeDone": "Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.",
@@ -1091,7 +1256,7 @@
           "source": "security/security-intelligence.json",
           "pointer": "/currentFindings",
           "value": {
-            "derivedCount": 20,
+            "derivedCount": 26,
             "representative": [
               {
                 "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1106,18 +1271,146 @@
                 "summary": "Dynamic innerHTML assignment detected."
               },
               {
-                "id": "2a408b66e348d3d6c2a67c74f31f2676c58557e75ca7b99bd5d72aefa6f542c6",
-                "file": "companies/index.html",
-                "line": 10291,
+                "id": "f02b972b7f10711b27ca0c0accd08751d42f38ba0c4ab05aab04ad99a8d13a76",
+                "file": "companies/company-010-public-adapter.js",
+                "line": 92,
                 "summary": "Dynamic innerHTML assignment detected."
               }
             ]
           },
-          "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-          "observedAt": "2026-08-17T08:05:07.465Z",
+          "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+          "observedAt": "2026-08-18T07:58:48.991Z",
           "interpretation": "derived-from-direct-findings",
           "selector": "severity=medium&category=dom-innerhtml",
           "note": "Count is derived deterministically from current Security Sentinel findings."
+        }
+      ]
+    },
+    {
+      "id": "ba4ba213d666c4e8db79a063",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "adapter-state",
+      "entity": "concentrator_asdcrv",
+      "signal": "Concentrator / concentrator_asdcrv remains warming.",
+      "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+      "whatFollows": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+      "whatShouldBeDone": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+      "recommendationClass": "data-gap-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/0",
+          "value": {
+            "severity": "watch",
+            "category": "adapter-state",
+            "entity": "concentrator_asdcrv",
+            "summary": "Concentrator / concentrator_asdcrv remains warming.",
+            "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "c6d4aa0f0f3360ae12b19b2a",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "adapter-state",
+      "entity": "convex_staked_cvxcrv",
+      "signal": "Convex / convex_staked_cvxcrv remains warming.",
+      "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+      "whatFollows": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+      "whatShouldBeDone": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+      "recommendationClass": "data-gap-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/1",
+          "value": {
+            "severity": "watch",
+            "category": "adapter-state",
+            "entity": "convex_staked_cvxcrv",
+            "summary": "Convex / convex_staked_cvxcrv remains warming.",
+            "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "b43cd092bc1940b7bf0ba4ba",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "adapter-state",
+      "entity": "projectx_hype",
+      "signal": "Project X HYPE / projectx_hype remains warming.",
+      "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.",
+      "whatFollows": "Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.",
+      "whatShouldBeDone": "Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.",
+      "recommendationClass": "data-gap-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/2",
+          "value": {
+            "severity": "watch",
+            "category": "adapter-state",
+            "entity": "projectx_hype",
+            "summary": "Project X HYPE / projectx_hype remains warming.",
+            "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "b5b5c40716cebf319a8df131",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "productivity-coverage",
+      "entity": "Cypher",
+      "signal": "Cypher Productivity coverage is 80.4%.",
+      "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood.",
+      "whatFollows": "The covered productive rate remains useful only within its stated coverage; unresolved productive capital must stay excluded rather than be fabricated.",
+      "whatShouldBeDone": "Prioritize the unresolved adapter(s) contributing to the coverage gap, preserve covered-rate semantics, and promote to full coverage only after reproducible evidence exists.",
+      "recommendationClass": "coverage-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/3",
+          "value": {
+            "severity": "watch",
+            "category": "productivity-coverage",
+            "entity": "Cypher",
+            "summary": "Cypher Productivity coverage is 80.4%.",
+            "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood."
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
         }
       ]
     },
@@ -1138,7 +1431,7 @@
       "evidence": [
         {
           "source": "intelligence/change-intelligence.json",
-          "pointer": "/watchNext/0",
+          "pointer": "/watchNext/4",
           "value": {
             "severity": "watch",
             "category": "rewards-completeness",
@@ -1146,8 +1439,8 @@
             "summary": "0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
             "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
           },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
           "interpretation": "direct",
           "note": "Direct normalized watch item emitted by The Holding Observer."
         }
@@ -1170,7 +1463,7 @@
       "evidence": [
         {
           "source": "intelligence/change-intelligence.json",
-          "pointer": "/watchNext/1",
+          "pointer": "/watchNext/5",
           "value": {
             "severity": "watch",
             "category": "rewards-completeness",
@@ -1178,8 +1471,40 @@
             "summary": "aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
             "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
           },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct normalized watch item emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "883b17705d454eef9a2d16c4",
+      "domain": "economic",
+      "severity": "watch",
+      "category": "rewards-completeness",
+      "entity": "Cypher",
+      "signal": "Cypher Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
+      "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory.",
+      "whatFollows": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
+      "whatShouldBeDone": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
+      "recommendationClass": "reward-route-resolution",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/watchNext/6",
+          "value": {
+            "severity": "watch",
+            "category": "rewards-completeness",
+            "entity": "Cypher",
+            "summary": "Cypher Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
+            "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
           "interpretation": "direct",
           "note": "Direct normalized watch item emitted by The Holding Observer."
         }
@@ -1202,7 +1527,7 @@
       "evidence": [
         {
           "source": "intelligence/change-intelligence.json",
-          "pointer": "/watchNext/2",
+          "pointer": "/watchNext/7",
           "value": {
             "severity": "watch",
             "category": "rewards-completeness",
@@ -1210,144 +1535,21 @@
             "summary": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
             "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
           },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
           "interpretation": "direct",
           "note": "Direct normalized watch item emitted by The Holding Observer."
         }
       ]
     },
     {
-      "id": "2618e8729c526ef6472b77db",
+      "id": "cba9d9adaf0e4047f7010e96",
       "domain": "system-change",
       "severity": "info",
-      "category": "reporting",
-      "entity": "defitea.eth",
-      "signal": "defitea.eth recorded a new daily reporting observation for 2026-08-17.",
-      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/1",
-          "value": {
-            "id": "9b26ab879acbb819feac",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "reporting",
-            "entity": "defitea.eth",
-            "metric": "new-daily-snapshot",
-            "previousValue": "2026-08-16",
-            "currentValue": "2026-08-17",
-            "unit": null,
-            "severity": "info",
-            "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-17.",
-            "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-            "sourceKeys": [
-              "reporting"
-            ]
-          },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "ffeb79a39b30a942d8546dfd",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "reporting",
-      "entity": "defitea.eth",
-      "signal": "defitea.eth current-month cash-flow/reference-income counter moved $26.25 → $29.46.",
-      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/2",
-          "value": {
-            "id": "129bd2f225f92fdee17b",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "reporting",
-            "entity": "defitea.eth",
-            "metric": "currentMonthCashFlowUsd",
-            "previousValue": 26.25,
-            "currentValue": 29.46,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "defitea.eth current-month cash-flow/reference-income counter moved $26.25 → $29.46.",
-            "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-            "sourceKeys": [
-              "reporting"
-            ]
-          },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "7e5d7a3740700e4a2516faa9",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "reporting",
-      "entity": "Monetra.eth",
-      "signal": "Monetra.eth recorded a new daily reporting observation for 2026-08-17.",
-      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/3",
-          "value": {
-            "id": "39da3078cea67f18bae0",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "reporting",
-            "entity": "Monetra.eth",
-            "metric": "new-daily-snapshot",
-            "previousValue": "2026-08-16",
-            "currentValue": "2026-08-17",
-            "unit": null,
-            "severity": "info",
-            "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-17.",
-            "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-            "sourceKeys": [
-              "reporting"
-            ]
-          },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "a83e821cf5049043ffe69dbf",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "reporting",
-      "entity": "Monetra.eth",
-      "signal": "Monetra.eth current-month cash-flow/reference-income counter moved $0.05 → $0.06.",
-      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "category": "productivity",
+      "entity": "1milliondollar.eth",
+      "signal": "1milliondollar.eth Reference APR moved 6.80% → 7.09% (+0.29 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
       "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
       "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
       "recommendationClass": "evidence-review",
@@ -1359,36 +1561,36 @@
           "source": "intelligence/change-intelligence.json",
           "pointer": "/whatChanged/4",
           "value": {
-            "id": "1ee897538f24dbd88ba4",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "reporting",
-            "entity": "Monetra.eth",
-            "metric": "currentMonthCashFlowUsd",
-            "previousValue": 0.048,
-            "currentValue": 0.0601,
-            "unit": "USD",
+            "id": "64e85864c9cdab59a303",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "productivity",
+            "entity": "1milliondollar.eth",
+            "metric": "aprLatestPct",
+            "previousValue": 6.7961,
+            "currentValue": 7.091,
+            "unit": "percentage-points",
             "severity": "info",
-            "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.05 → $0.06.",
-            "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+            "summary": "1milliondollar.eth Reference APR moved 6.80% → 7.09% (+0.29 pp).",
+            "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
             "sourceKeys": [
-              "reporting"
+              "productivity"
             ]
           },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
           "interpretation": "direct",
           "note": "Direct material-change event emitted by The Holding Observer."
         }
       ]
     },
     {
-      "id": "2044d2fba966a40d1e34979c",
+      "id": "21146f998b7fd6e059eeafb7",
       "domain": "system-change",
       "severity": "info",
-      "category": "reporting",
-      "entity": "Monetra.eth",
-      "signal": "Monetra.eth current-month generated income moved $0.0480 → $0.0601.",
-      "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+      "category": "productivity",
+      "entity": "defitea.eth",
+      "signal": "defitea.eth Reference APR moved 12.49% → 12.02% (-0.47 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
       "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
       "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
       "recommendationClass": "evidence-review",
@@ -1400,241 +1602,36 @@
           "source": "intelligence/change-intelligence.json",
           "pointer": "/whatChanged/5",
           "value": {
-            "id": "b6def0e0c9cc3e307c3b",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "reporting",
-            "entity": "Monetra.eth",
-            "metric": "currentMonthGeneratedIncomeUsd",
-            "previousValue": 0.048,
-            "currentValue": 0.0601,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "Monetra.eth current-month generated income moved $0.0480 → $0.0601.",
-            "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
-            "sourceKeys": [
-              "reporting"
-            ]
-          },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "9cd11c3aad8c1a29c88c9008",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "rewards",
-      "entity": "0x5860...83CA8.eth",
-      "signal": "0x5860...83CA8.eth accrued rewards moved $56.82 → $58.24 (+$1.42).",
-      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/6",
-          "value": {
-            "id": "c1cc16876a8664b98965",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "rewards",
-            "entity": "0x5860...83CA8.eth",
-            "metric": "totalUsd",
-            "previousValue": 56.820731,
-            "currentValue": 58.236582,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "0x5860...83CA8.eth accrued rewards moved $56.82 → $58.24 (+$1.42).",
-            "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-            "sourceKeys": [
-              "rewards"
-            ]
-          },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "cc47b03453d90c64a481f504",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "rewards",
-      "entity": "1milliondollar.eth",
-      "signal": "1milliondollar.eth accrued rewards moved $24.59 → $25.33 (+$0.74).",
-      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/7",
-          "value": {
-            "id": "a47f34482ca8de104d69",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "rewards",
-            "entity": "1milliondollar.eth",
-            "metric": "totalUsd",
-            "previousValue": 24.591643,
-            "currentValue": 25.329493,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "1milliondollar.eth accrued rewards moved $24.59 → $25.33 (+$0.74).",
-            "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-            "sourceKeys": [
-              "rewards"
-            ]
-          },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "c588057f80d9c33c5ebbfc03",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "rewards",
-      "entity": "aerocvxyb.eth",
-      "signal": "aerocvxyb.eth accrued rewards moved $97.49 → $98.37 (+$0.87).",
-      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/8",
-          "value": {
-            "id": "7e4c04ab17e86952f67c",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "rewards",
-            "entity": "aerocvxyb.eth",
-            "metric": "totalUsd",
-            "previousValue": 97.494506,
-            "currentValue": 98.366537,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "aerocvxyb.eth accrued rewards moved $97.49 → $98.37 (+$0.87).",
-            "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-            "sourceKeys": [
-              "rewards"
-            ]
-          },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "b0e3530c94db2a6c78ce9b58",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "rewards",
-      "entity": "defitea.eth",
-      "signal": "defitea.eth accrued rewards moved $100.41 → $102.23 (+$1.82).",
-      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/9",
-          "value": {
-            "id": "89c816770c87a00de28c",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "rewards",
+            "id": "05ae70279d577248526d",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "productivity",
             "entity": "defitea.eth",
-            "metric": "totalUsd",
-            "previousValue": 100.407758,
-            "currentValue": 102.226683,
-            "unit": "USD",
+            "metric": "aprLatestPct",
+            "previousValue": 12.4862,
+            "currentValue": 12.0183,
+            "unit": "percentage-points",
             "severity": "info",
-            "summary": "defitea.eth accrued rewards moved $100.41 → $102.23 (+$1.82).",
-            "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+            "summary": "defitea.eth Reference APR moved 12.49% → 12.02% (-0.47 pp).",
+            "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
             "sourceKeys": [
-              "rewards"
+              "productivity"
             ]
           },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
           "interpretation": "direct",
           "note": "Direct material-change event emitted by The Holding Observer."
         }
       ]
     },
     {
-      "id": "b187e014610d7709850ebb63",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "rewards",
-      "entity": "Rook's portfolio",
-      "signal": "Rook's portfolio accrued rewards moved $149.65 → $154.17 (+$4.51).",
-      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/10",
-          "value": {
-            "id": "d02f3ebfd723c5968ca5",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "rewards",
-            "entity": "Rook's portfolio",
-            "metric": "totalUsd",
-            "previousValue": 149.653278,
-            "currentValue": 154.167564,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "Rook's portfolio accrued rewards moved $149.65 → $154.17 (+$4.51).",
-            "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-            "sourceKeys": [
-              "rewards"
-            ]
-          },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "49889c5d6ab0dfba40740bd5",
+      "id": "11c98f83e8cf11fc160df621",
       "domain": "system-change",
       "severity": "important",
-      "category": "stable-capital",
-      "entity": "Stable Companies Index",
-      "signal": "Stable Index coverage state changed: last-full-coverage/false → current-full-coverage/true.",
-      "whyItMatters": "Stable Reference APY is fail-closed; coverage state determines whether the current rate is fully observed or the latest full observation is being carried forward.",
+      "category": "registry-intelligence",
+      "entity": "Cypher",
+      "signal": "Cypher entered the Productivity intelligence snapshot.",
+      "whyItMatters": "A new measured company expands the system’s reusable operating knowledge.",
       "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
       "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
       "recommendationClass": "evidence-review",
@@ -1646,43 +1643,282 @@
           "source": "intelligence/change-intelligence.json",
           "pointer": "/whatChanged/0",
           "value": {
-            "id": "f678902387ba6342af97",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "stable-capital",
-            "entity": "Stable Companies Index",
-            "metric": "coverage-state",
-            "previousValue": {
-              "status": "last-full-coverage",
-              "fullCoverage": false
-            },
-            "currentValue": {
-              "status": "current-full-coverage",
-              "fullCoverage": true
-            },
+            "id": "8f799139f963736385f6",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "registry-intelligence",
+            "entity": "Cypher",
+            "metric": "productivity-company-added",
+            "previousValue": null,
+            "currentValue": "present",
             "unit": null,
             "severity": "important",
-            "summary": "Stable Index coverage state changed: last-full-coverage/false → current-full-coverage/true.",
-            "whyItMatters": "Stable Reference APY is fail-closed; coverage state determines whether the current rate is fully observed or the latest full observation is being carried forward.",
+            "summary": "Cypher entered the Productivity intelligence snapshot.",
+            "whyItMatters": "A new measured company expands the system’s reusable operating knowledge.",
             "sourceKeys": [
-              "stableCapital",
-              "stableIndex"
+              "productivity"
             ]
           },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
           "interpretation": "direct",
           "note": "Direct material-change event emitted by The Holding Observer."
         }
       ]
     },
     {
-      "id": "9e86ad5582b192e7805a1e71",
+      "id": "8b9f7e4fc3d41323b076295e",
       "domain": "system-change",
       "severity": "info",
-      "category": "stable-capital",
-      "entity": "Stable Companies Index",
-      "signal": "Stable Companies current capital moved $100.1829 → $100.2143 (+$0.0314).",
-      "whyItMatters": "Current Capital is the market-value state of Stable Capital plus separately earned claimable value.",
+      "category": "reporting",
+      "entity": "defitea.eth",
+      "signal": "defitea.eth recorded a new daily reporting observation for 2026-08-18.",
+      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+      "recommendationClass": "evidence-review",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/whatChanged/6",
+          "value": {
+            "id": "4936f9ad9710283ca87e",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "reporting",
+            "entity": "defitea.eth",
+            "metric": "new-daily-snapshot",
+            "previousValue": "2026-08-17",
+            "currentValue": "2026-08-18",
+            "unit": null,
+            "severity": "info",
+            "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-18.",
+            "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+            "sourceKeys": [
+              "reporting"
+            ]
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct material-change event emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "61fd531cadedcf4e4055a8f6",
+      "domain": "system-change",
+      "severity": "info",
+      "category": "reporting",
+      "entity": "defitea.eth",
+      "signal": "defitea.eth current-month cash-flow/reference-income counter moved $29.46 → $32.50.",
+      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+      "recommendationClass": "evidence-review",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/whatChanged/7",
+          "value": {
+            "id": "4b4234327229b1f8a197",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "reporting",
+            "entity": "defitea.eth",
+            "metric": "currentMonthCashFlowUsd",
+            "previousValue": 29.46,
+            "currentValue": 32.5,
+            "unit": "USD",
+            "severity": "info",
+            "summary": "defitea.eth current-month cash-flow/reference-income counter moved $29.46 → $32.50.",
+            "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+            "sourceKeys": [
+              "reporting"
+            ]
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct material-change event emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "d0284f6df1f15b2c6975aa02",
+      "domain": "system-change",
+      "severity": "info",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "signal": "Monetra.eth recorded a new daily reporting observation for 2026-08-18.",
+      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+      "recommendationClass": "evidence-review",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/whatChanged/8",
+          "value": {
+            "id": "b8c62897df8fd02602d6",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "reporting",
+            "entity": "Monetra.eth",
+            "metric": "new-daily-snapshot",
+            "previousValue": "2026-08-17",
+            "currentValue": "2026-08-18",
+            "unit": null,
+            "severity": "info",
+            "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-18.",
+            "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+            "sourceKeys": [
+              "reporting"
+            ]
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct material-change event emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "957311e4c986a8f0be93e964",
+      "domain": "system-change",
+      "severity": "info",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "signal": "Monetra.eth current-month cash-flow/reference-income counter moved $0.06 → $0.07.",
+      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+      "recommendationClass": "evidence-review",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/whatChanged/9",
+          "value": {
+            "id": "5f6cd6d349aac0904a22",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "reporting",
+            "entity": "Monetra.eth",
+            "metric": "currentMonthCashFlowUsd",
+            "previousValue": 0.0601,
+            "currentValue": 0.0723,
+            "unit": "USD",
+            "severity": "info",
+            "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.06 → $0.07.",
+            "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+            "sourceKeys": [
+              "reporting"
+            ]
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct material-change event emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "2411ad4e4a4731c4fc4a2c98",
+      "domain": "system-change",
+      "severity": "info",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "signal": "Monetra.eth current-month generated income moved $0.0601 → $0.0723.",
+      "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+      "recommendationClass": "evidence-review",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/whatChanged/10",
+          "value": {
+            "id": "70a18621309e43864c82",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "reporting",
+            "entity": "Monetra.eth",
+            "metric": "currentMonthGeneratedIncomeUsd",
+            "previousValue": 0.0601,
+            "currentValue": 0.0723,
+            "unit": "USD",
+            "severity": "info",
+            "summary": "Monetra.eth current-month generated income moved $0.0601 → $0.0723.",
+            "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+            "sourceKeys": [
+              "reporting"
+            ]
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct material-change event emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "9e8247ded726ebcc145c4d44",
+      "domain": "system-change",
+      "severity": "important",
+      "category": "rewards",
+      "entity": "Cypher",
+      "signal": "Cypher entered the Accrued Rewards snapshot.",
+      "whyItMatters": "The system can now observe another company’s protocol-side earned value.",
+      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
+      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
+      "recommendationClass": "evidence-review",
+      "riskTier": "low",
+      "actionMode": "proposal-only",
+      "confidence": "high",
+      "evidence": [
+        {
+          "source": "intelligence/change-intelligence.json",
+          "pointer": "/whatChanged/1",
+          "value": {
+            "id": "00ab1bc1ecd079d7a813",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "rewards",
+            "entity": "Cypher",
+            "metric": "company-added",
+            "previousValue": null,
+            "currentValue": "present",
+            "unit": null,
+            "severity": "important",
+            "summary": "Cypher entered the Accrued Rewards snapshot.",
+            "whyItMatters": "The system can now observe another company’s protocol-side earned value.",
+            "sourceKeys": [
+              "rewards"
+            ]
+          },
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
+          "interpretation": "direct",
+          "note": "Direct material-change event emitted by The Holding Observer."
+        }
+      ]
+    },
+    {
+      "id": "37032f2affc52a74d0e6bb4b",
+      "domain": "system-change",
+      "severity": "info",
+      "category": "rewards",
+      "entity": "0x5860...83CA8.eth",
+      "signal": "0x5860...83CA8.eth accrued rewards moved $58.24 → $57.37 ($-0.86).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
       "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
       "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
       "recommendationClass": "evidence-review",
@@ -1694,23 +1930,23 @@
           "source": "intelligence/change-intelligence.json",
           "pointer": "/whatChanged/11",
           "value": {
-            "id": "24a966370f8afd4f328c",
-            "detectedAt": "2026-08-17T07:30:56.276Z",
-            "category": "stable-capital",
-            "entity": "Stable Companies Index",
-            "metric": "currentCapitalUsd",
-            "previousValue": 100.18293767,
-            "currentValue": 100.21430175,
+            "id": "42a30ef8305c8ad9f646",
+            "detectedAt": "2026-08-18T07:13:11.245Z",
+            "category": "rewards",
+            "entity": "0x5860...83CA8.eth",
+            "metric": "totalUsd",
+            "previousValue": 58.236582,
+            "currentValue": 57.374242,
             "unit": "USD",
             "severity": "info",
-            "summary": "Stable Companies current capital moved $100.1829 → $100.2143 (+$0.0314).",
-            "whyItMatters": "Current Capital is the market-value state of Stable Capital plus separately earned claimable value.",
+            "summary": "0x5860...83CA8.eth accrued rewards moved $58.24 → $57.37 ($-0.86).",
+            "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
             "sourceKeys": [
-              "stableIndex"
+              "rewards"
             ]
           },
-          "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-          "observedAt": "2026-08-17T07:30:56.276Z",
+          "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+          "observedAt": "2026-08-18T07:13:11.245Z",
           "interpretation": "direct",
           "note": "Direct material-change event emitted by The Holding Observer."
         }
@@ -1732,8 +1968,8 @@
         "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
         "evidence": null
       },
-      "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-      "observedAt": "2026-08-17T08:05:07.465Z",
+      "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+      "observedAt": "2026-08-18T07:58:48.991Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -1751,8 +1987,8 @@
         "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
         "evidence": null
       },
-      "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-      "observedAt": "2026-08-17T08:05:07.465Z",
+      "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+      "observedAt": "2026-08-18T07:58:48.991Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -1770,8 +2006,8 @@
         "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
         "evidence": null
       },
-      "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-      "observedAt": "2026-08-17T08:05:07.465Z",
+      "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+      "observedAt": "2026-08-18T07:58:48.991Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -1789,8 +2025,8 @@
         "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
         "evidence": null
       },
-      "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-      "observedAt": "2026-08-17T08:05:07.465Z",
+      "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+      "observedAt": "2026-08-18T07:58:48.991Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -1808,8 +2044,8 @@
         "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
         "evidence": null
       },
-      "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-      "observedAt": "2026-08-17T08:05:07.465Z",
+      "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+      "observedAt": "2026-08-18T07:58:48.991Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -1827,8 +2063,8 @@
         "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
         "evidence": null
       },
-      "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-      "observedAt": "2026-08-17T08:05:07.465Z",
+      "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+      "observedAt": "2026-08-18T07:58:48.991Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -1836,7 +2072,7 @@
       "source": "security/security-intelligence.json",
       "pointer": "/currentFindings",
       "value": {
-        "derivedCount": 20,
+        "derivedCount": 26,
         "representative": [
           {
             "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1851,15 +2087,15 @@
             "summary": "Dynamic innerHTML assignment detected."
           },
           {
-            "id": "2a408b66e348d3d6c2a67c74f31f2676c58557e75ca7b99bd5d72aefa6f542c6",
-            "file": "companies/index.html",
-            "line": 10291,
+            "id": "f02b972b7f10711b27ca0c0accd08751d42f38ba0c4ab05aab04ad99a8d13a76",
+            "file": "companies/company-010-public-adapter.js",
+            "line": 92,
             "summary": "Dynamic innerHTML assignment detected."
           }
         ]
       },
-      "sourceSha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-      "observedAt": "2026-08-17T08:05:07.465Z",
+      "sourceSha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+      "observedAt": "2026-08-18T07:58:48.991Z",
       "interpretation": "derived-from-direct-findings",
       "selector": "severity=medium&category=dom-innerhtml",
       "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -1869,13 +2105,13 @@
       "pointer": "/watchNext/0",
       "value": {
         "severity": "watch",
-        "category": "rewards-completeness",
-        "entity": "0x5860...83CA8.eth",
-        "summary": "0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
-        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+        "category": "adapter-state",
+        "entity": "concentrator_asdcrv",
+        "summary": "Concentrator / concentrator_asdcrv remains warming.",
+        "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
@@ -1884,13 +2120,13 @@
       "pointer": "/watchNext/1",
       "value": {
         "severity": "watch",
-        "category": "rewards-completeness",
-        "entity": "aerocvxyb.eth",
-        "summary": "aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
-        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+        "category": "adapter-state",
+        "entity": "convex_staked_cvxcrv",
+        "summary": "Convex / convex_staked_cvxcrv remains warming.",
+        "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
@@ -1899,109 +2135,112 @@
       "pointer": "/watchNext/2",
       "value": {
         "severity": "watch",
-        "category": "rewards-completeness",
-        "entity": "defitea.eth",
-        "summary": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
-        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+        "category": "adapter-state",
+        "entity": "projectx_hype",
+        "summary": "Project X HYPE / projectx_hype remains warming.",
+        "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
       "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/1",
+      "pointer": "/watchNext/3",
       "value": {
-        "id": "9b26ab879acbb819feac",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "reporting",
-        "entity": "defitea.eth",
-        "metric": "new-daily-snapshot",
-        "previousValue": "2026-08-16",
-        "currentValue": "2026-08-17",
-        "unit": null,
-        "severity": "info",
-        "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-17.",
-        "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "sourceKeys": [
-          "reporting"
-        ]
+        "severity": "watch",
+        "category": "productivity-coverage",
+        "entity": "Cypher",
+        "summary": "Cypher Productivity coverage is 80.4%.",
+        "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood."
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
+      "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
       "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/2",
+      "pointer": "/watchNext/4",
       "value": {
-        "id": "129bd2f225f92fdee17b",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "reporting",
-        "entity": "defitea.eth",
-        "metric": "currentMonthCashFlowUsd",
-        "previousValue": 26.25,
-        "currentValue": 29.46,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "defitea.eth current-month cash-flow/reference-income counter moved $26.25 → $29.46.",
-        "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "sourceKeys": [
-          "reporting"
-        ]
+        "severity": "watch",
+        "category": "rewards-completeness",
+        "entity": "0x5860...83CA8.eth",
+        "summary": "0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
+        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
+      "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
       "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/3",
+      "pointer": "/watchNext/5",
       "value": {
-        "id": "39da3078cea67f18bae0",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "reporting",
-        "entity": "Monetra.eth",
-        "metric": "new-daily-snapshot",
-        "previousValue": "2026-08-16",
-        "currentValue": "2026-08-17",
-        "unit": null,
-        "severity": "info",
-        "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-17.",
-        "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "sourceKeys": [
-          "reporting"
-        ]
+        "severity": "watch",
+        "category": "rewards-completeness",
+        "entity": "aerocvxyb.eth",
+        "summary": "aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
+      "note": "Direct normalized watch item emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/watchNext/6",
+      "value": {
+        "severity": "watch",
+        "category": "rewards-completeness",
+        "entity": "Cypher",
+        "summary": "Cypher Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
+        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+      },
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
+      "interpretation": "direct",
+      "note": "Direct normalized watch item emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/watchNext/7",
+      "value": {
+        "severity": "watch",
+        "category": "rewards-completeness",
+        "entity": "defitea.eth",
+        "summary": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+        "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
+      },
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
+      "interpretation": "direct",
+      "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
       "source": "intelligence/change-intelligence.json",
       "pointer": "/whatChanged/4",
       "value": {
-        "id": "1ee897538f24dbd88ba4",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "reporting",
-        "entity": "Monetra.eth",
-        "metric": "currentMonthCashFlowUsd",
-        "previousValue": 0.048,
-        "currentValue": 0.0601,
-        "unit": "USD",
+        "id": "64e85864c9cdab59a303",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "productivity",
+        "entity": "1milliondollar.eth",
+        "metric": "aprLatestPct",
+        "previousValue": 6.7961,
+        "currentValue": 7.091,
+        "unit": "percentage-points",
         "severity": "info",
-        "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.05 → $0.06.",
-        "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+        "summary": "1milliondollar.eth Reference APR moved 6.80% → 7.09% (+0.29 pp).",
+        "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
         "sourceKeys": [
-          "reporting"
+          "productivity"
         ]
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
       "note": "Direct material-change event emitted by The Holding Observer."
     },
@@ -2009,143 +2248,23 @@
       "source": "intelligence/change-intelligence.json",
       "pointer": "/whatChanged/5",
       "value": {
-        "id": "b6def0e0c9cc3e307c3b",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "reporting",
-        "entity": "Monetra.eth",
-        "metric": "currentMonthGeneratedIncomeUsd",
-        "previousValue": 0.048,
-        "currentValue": 0.0601,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "Monetra.eth current-month generated income moved $0.0480 → $0.0601.",
-        "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
-        "sourceKeys": [
-          "reporting"
-        ]
-      },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/6",
-      "value": {
-        "id": "c1cc16876a8664b98965",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "rewards",
-        "entity": "0x5860...83CA8.eth",
-        "metric": "totalUsd",
-        "previousValue": 56.820731,
-        "currentValue": 58.236582,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "0x5860...83CA8.eth accrued rewards moved $56.82 → $58.24 (+$1.42).",
-        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "sourceKeys": [
-          "rewards"
-        ]
-      },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/7",
-      "value": {
-        "id": "a47f34482ca8de104d69",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "rewards",
-        "entity": "1milliondollar.eth",
-        "metric": "totalUsd",
-        "previousValue": 24.591643,
-        "currentValue": 25.329493,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "1milliondollar.eth accrued rewards moved $24.59 → $25.33 (+$0.74).",
-        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "sourceKeys": [
-          "rewards"
-        ]
-      },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/8",
-      "value": {
-        "id": "7e4c04ab17e86952f67c",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "rewards",
-        "entity": "aerocvxyb.eth",
-        "metric": "totalUsd",
-        "previousValue": 97.494506,
-        "currentValue": 98.366537,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "aerocvxyb.eth accrued rewards moved $97.49 → $98.37 (+$0.87).",
-        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "sourceKeys": [
-          "rewards"
-        ]
-      },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/9",
-      "value": {
-        "id": "89c816770c87a00de28c",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "rewards",
+        "id": "05ae70279d577248526d",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "productivity",
         "entity": "defitea.eth",
-        "metric": "totalUsd",
-        "previousValue": 100.407758,
-        "currentValue": 102.226683,
-        "unit": "USD",
+        "metric": "aprLatestPct",
+        "previousValue": 12.4862,
+        "currentValue": 12.0183,
+        "unit": "percentage-points",
         "severity": "info",
-        "summary": "defitea.eth accrued rewards moved $100.41 → $102.23 (+$1.82).",
-        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "summary": "defitea.eth Reference APR moved 12.49% → 12.02% (-0.47 pp).",
+        "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
         "sourceKeys": [
-          "rewards"
+          "productivity"
         ]
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/10",
-      "value": {
-        "id": "d02f3ebfd723c5968ca5",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "rewards",
-        "entity": "Rook's portfolio",
-        "metric": "totalUsd",
-        "previousValue": 149.653278,
-        "currentValue": 154.167564,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "Rook's portfolio accrued rewards moved $149.65 → $154.17 (+$4.51).",
-        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "sourceKeys": [
-          "rewards"
-        ]
-      },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
       "note": "Direct material-change event emitted by The Holding Observer."
     },
@@ -2153,30 +2272,167 @@
       "source": "intelligence/change-intelligence.json",
       "pointer": "/whatChanged/0",
       "value": {
-        "id": "f678902387ba6342af97",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "stable-capital",
-        "entity": "Stable Companies Index",
-        "metric": "coverage-state",
-        "previousValue": {
-          "status": "last-full-coverage",
-          "fullCoverage": false
-        },
-        "currentValue": {
-          "status": "current-full-coverage",
-          "fullCoverage": true
-        },
+        "id": "8f799139f963736385f6",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "registry-intelligence",
+        "entity": "Cypher",
+        "metric": "productivity-company-added",
+        "previousValue": null,
+        "currentValue": "present",
         "unit": null,
         "severity": "important",
-        "summary": "Stable Index coverage state changed: last-full-coverage/false → current-full-coverage/true.",
-        "whyItMatters": "Stable Reference APY is fail-closed; coverage state determines whether the current rate is fully observed or the latest full observation is being carried forward.",
+        "summary": "Cypher entered the Productivity intelligence snapshot.",
+        "whyItMatters": "A new measured company expands the system’s reusable operating knowledge.",
         "sourceKeys": [
-          "stableCapital",
-          "stableIndex"
+          "productivity"
         ]
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
+      "interpretation": "direct",
+      "note": "Direct material-change event emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/whatChanged/6",
+      "value": {
+        "id": "4936f9ad9710283ca87e",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "reporting",
+        "entity": "defitea.eth",
+        "metric": "new-daily-snapshot",
+        "previousValue": "2026-08-17",
+        "currentValue": "2026-08-18",
+        "unit": null,
+        "severity": "info",
+        "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-18.",
+        "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+        "sourceKeys": [
+          "reporting"
+        ]
+      },
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
+      "interpretation": "direct",
+      "note": "Direct material-change event emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/whatChanged/7",
+      "value": {
+        "id": "4b4234327229b1f8a197",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "reporting",
+        "entity": "defitea.eth",
+        "metric": "currentMonthCashFlowUsd",
+        "previousValue": 29.46,
+        "currentValue": 32.5,
+        "unit": "USD",
+        "severity": "info",
+        "summary": "defitea.eth current-month cash-flow/reference-income counter moved $29.46 → $32.50.",
+        "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+        "sourceKeys": [
+          "reporting"
+        ]
+      },
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
+      "interpretation": "direct",
+      "note": "Direct material-change event emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/whatChanged/8",
+      "value": {
+        "id": "b8c62897df8fd02602d6",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "reporting",
+        "entity": "Monetra.eth",
+        "metric": "new-daily-snapshot",
+        "previousValue": "2026-08-17",
+        "currentValue": "2026-08-18",
+        "unit": null,
+        "severity": "info",
+        "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-18.",
+        "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+        "sourceKeys": [
+          "reporting"
+        ]
+      },
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
+      "interpretation": "direct",
+      "note": "Direct material-change event emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/whatChanged/9",
+      "value": {
+        "id": "5f6cd6d349aac0904a22",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "reporting",
+        "entity": "Monetra.eth",
+        "metric": "currentMonthCashFlowUsd",
+        "previousValue": 0.0601,
+        "currentValue": 0.0723,
+        "unit": "USD",
+        "severity": "info",
+        "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.06 → $0.07.",
+        "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+        "sourceKeys": [
+          "reporting"
+        ]
+      },
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
+      "interpretation": "direct",
+      "note": "Direct material-change event emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/whatChanged/10",
+      "value": {
+        "id": "70a18621309e43864c82",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "reporting",
+        "entity": "Monetra.eth",
+        "metric": "currentMonthGeneratedIncomeUsd",
+        "previousValue": 0.0601,
+        "currentValue": 0.0723,
+        "unit": "USD",
+        "severity": "info",
+        "summary": "Monetra.eth current-month generated income moved $0.0601 → $0.0723.",
+        "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+        "sourceKeys": [
+          "reporting"
+        ]
+      },
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
+      "interpretation": "direct",
+      "note": "Direct material-change event emitted by The Holding Observer."
+    },
+    {
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/whatChanged/1",
+      "value": {
+        "id": "00ab1bc1ecd079d7a813",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "rewards",
+        "entity": "Cypher",
+        "metric": "company-added",
+        "previousValue": null,
+        "currentValue": "present",
+        "unit": null,
+        "severity": "important",
+        "summary": "Cypher entered the Accrued Rewards snapshot.",
+        "whyItMatters": "The system can now observe another company’s protocol-side earned value.",
+        "sourceKeys": [
+          "rewards"
+        ]
+      },
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
       "note": "Direct material-change event emitted by The Holding Observer."
     },
@@ -2184,23 +2440,23 @@
       "source": "intelligence/change-intelligence.json",
       "pointer": "/whatChanged/11",
       "value": {
-        "id": "24a966370f8afd4f328c",
-        "detectedAt": "2026-08-17T07:30:56.276Z",
-        "category": "stable-capital",
-        "entity": "Stable Companies Index",
-        "metric": "currentCapitalUsd",
-        "previousValue": 100.18293767,
-        "currentValue": 100.21430175,
+        "id": "42a30ef8305c8ad9f646",
+        "detectedAt": "2026-08-18T07:13:11.245Z",
+        "category": "rewards",
+        "entity": "0x5860...83CA8.eth",
+        "metric": "totalUsd",
+        "previousValue": 58.236582,
+        "currentValue": 57.374242,
         "unit": "USD",
         "severity": "info",
-        "summary": "Stable Companies current capital moved $100.1829 → $100.2143 (+$0.0314).",
-        "whyItMatters": "Current Capital is the market-value state of Stable Capital plus separately earned claimable value.",
+        "summary": "0x5860...83CA8.eth accrued rewards moved $58.24 → $57.37 ($-0.86).",
+        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
         "sourceKeys": [
-          "stableIndex"
+          "rewards"
         ]
       },
-      "sourceSha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-      "observedAt": "2026-08-17T07:30:56.276Z",
+      "sourceSha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+      "observedAt": "2026-08-18T07:13:11.245Z",
       "interpretation": "direct",
       "note": "Direct material-change event emitted by The Holding Observer."
     }
@@ -2210,32 +2466,32 @@
     "sources": {
       "change": {
         "file": "intelligence/change-intelligence.json",
-        "sha256": "3cd79c2e58b3dda5cc3a35ad2e94b330db1e3b8a091e3be3be4fadedb3f8ba0d",
-        "generatedAt": "2026-08-17T07:30:56.276Z",
-        "ageHours": 0.57,
+        "sha256": "3ef4dba520d7ac3cda67cec2dda6971b4116c9ff9765de8e2d0c40bf9ab29168",
+        "generatedAt": "2026-08-18T07:13:11.245Z",
+        "ageHours": 0.761,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "systemMemory": {
         "file": "intelligence/system-memory.json",
-        "sha256": "a908e7be84715afb7572e1f09e231da606c5fb030efc609d32b09bcdc46b7bbc",
-        "generatedAt": "2026-08-17T07:30:56.276Z",
-        "ageHours": 0.57,
+        "sha256": "1e55816f49bb94159bec8e1e3f16d0d717f9eb193a0c23e50dcc6ced72f5de40",
+        "generatedAt": "2026-08-18T07:13:11.245Z",
+        "ageHours": 0.761,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "security": {
         "file": "security/security-intelligence.json",
-        "sha256": "040ee14095fbb3d8c49578df76b366d2598b5c51b46a9550c09fd30df9db4256",
-        "generatedAt": "2026-08-17T08:05:07.465Z",
+        "sha256": "8613db5f64d08f6c16ba7d8d78186a67c63fb251ca44c845baf6e5cc0f43ec6f",
+        "generatedAt": "2026-08-18T07:58:48.991Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "securityMemory": {
         "file": "security/security-memory.json",
-        "sha256": "19cc6fd44aecf24bb8ca729f383938e495c5f9bd3c0040a4d2ebcfab9755330a",
-        "generatedAt": "2026-08-17T08:05:07.465Z",
+        "sha256": "2e3d4587d8348036422029957f11b13bd413ffc1ad088319349d832ba6e99564",
+        "generatedAt": "2026-08-18T07:58:48.991Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
@@ -2266,8 +2522,8 @@
   },
   "bridge": {
     "purpose": "Canonical evidence-bound reasoning packet for future human/AI interpretation. Read this before opening large memory artifacts.",
-    "inputCompositeHash": "eefb9fb5d8767b8f12389d88398ad576b50f6da49caff8424f866c08bb145c6c",
-    "snapshotHash": "512ddd941922f6b574c5279b53a742ba186e1ae7407ac20e7f60365cde7772d4",
-    "previousInputCompositeHash": "dca2f76ef38366e9875bfe7269b97c4081f8c3c63b09a0dc8400592fb4535718"
+    "inputCompositeHash": "83758c0781bacd938de4ad070eca616f4fc92a8b89e069082d1a12f9f59f0349",
+    "snapshotHash": "7939ea4f678bddbf285608e9bdfad26c27af79a5609845891d7b3279db550b31",
+    "previousInputCompositeHash": "eefb9fb5d8767b8f12389d88398ad576b50f6da49caff8424f866c08bb145c6c"
   }
 }
