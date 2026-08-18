@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-18T15:15:21.238Z",
+  "generatedAt": "2026-08-18T15:33:49.759Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 27,
+    "medium": 26,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 434,
-    "bytesScanned": 9757562,
+    "bytesScanned": 9775034,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Mon, 17 Aug 2026 14:11:27 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "92960bffa2adc5c3b18ac11f76dae25e4ce87ea9c2637e77ddacfe49610f1251",
         "severity": "medium",
@@ -68,64 +69,6 @@
         "evidence": {
           "previousSha256": "80c1644f981c38c5177cf1a377b69a5298a17e9c62b73ff962fb5326f45069b8",
           "currentSha256": "4a8b9c3a380966b37fd90da56e4c23fb66f0ccab246e01af0d21cc0e229f8466"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "6fab50798cb000473f7ac74c5c162447359fc4cc21f2eb7aab4adeff491cf0bb",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-project-memory-bootstrap.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-project-memory-bootstrap.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "04a4f8951627bdd570fc06d4b633a1a92dda2263894fbb543df4b675c8936288",
-          "currentSha256": "a0fa01ecb1dbb284084b928490a4f8288a76c212c3c512bf10440ef68caf809c"
-        }
-      },
-      {
-        "id": "1b3363c25a641ed0a6779d16d21c96e985f551e8c49bd196a76d82ace6e8356b",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-company-010-ve-rewards.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-ve-rewards.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "206240bef1b841722357ec9f90c7130ff77f7fc1bac931b962144fd2a448dbb2",
-          "currentSha256": "e0b400d6feadd8a2fe163c99ee9cd400992f5dac5c9738354f5284d23d2b7ebd"
-        }
-      },
-      {
-        "id": "962729337cced6aa02991c5a53938c081f5bd92533e5ac4d6d56dad949176880",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "b9f5469848b666ed72a01ca7dd8dbefd6da36430a0020825eb8d1a24b084791d",
-          "currentSha256": "3c21427317d4665b60b6f4e950704ff6b605cf586ad6ae1c81c7be79d203ae77"
-        }
-      },
-      {
-        "id": "932332b170dabfdf2f978dcac7228bf77685c177378d3718a26de67aaa109f47",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-project-memory-bootstrap.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-project-memory-bootstrap.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "cb5ba8171e3069b39ef88de9c40ade06d1f69b21bf288ac64c06f719278f9466",
-          "currentSha256": "20e773fce2c6eaef588dc87f58eb39c28be8d32f1c51c69c9ea7368fa2c2bcd5"
         }
       }
     ]
@@ -196,20 +139,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "92960bffa2adc5c3b18ac11f76dae25e4ce87ea9c2637e77ddacfe49610f1251",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-company-rewards.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-company-rewards.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "80c1644f981c38c5177cf1a377b69a5298a17e9c62b73ff962fb5326f45069b8",
-        "currentSha256": "4a8b9c3a380966b37fd90da56e4c23fb66f0ccab246e01af0d21cc0e229f8466"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -618,12 +547,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "bc3d07707d10baadde486b1d11fb6d9dd31849cacae0008c3b2624b7613d40bd",
+    "snapshotHash": "ed1f45a189d4d51a6b5179a248a780924d1b4c930c4b3df6b06451f0d345243a",
     "securityVault": {
-      "runCount": 295,
+      "runCount": 296,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T15-15-21-238Z-bc3d07707d.json",
-      "latestRecordHash": "65e96ea698bb00c15cbe680a045ad8e647045e1d759fa41c6bc2d2ddfd02ac65",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T15-33-49-759Z-ed1f45a189.json",
+      "latestRecordHash": "4a613da3254fa18f23ea01b8cf4f03d5242f0ea2a7644b38a18537d26e4ee5b7",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
