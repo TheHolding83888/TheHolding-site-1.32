@@ -19,6 +19,12 @@ const continuityFiles = exists('intelligence/project-memory')
   : [];
 const latestContinuity = continuityFiles.at(-1) ?? null;
 
+// This file is a durable collaboration contract, not a personality profile.
+// It is intentionally first-class in CURRENT so a new chat/model learns how to
+// work with the owner before performing substantive project work.
+const ownerCollaborationCanon = 'THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md';
+const ownerCollaborationCanonExists = exists(`intelligence/project-memory/${ownerCollaborationCanon}`);
+
 const systemMemory = readJson('intelligence/system-memory.json');
 const vault = readJson('intelligence/memory-vault/manifest.json');
 const cognitive = readJson('intelligence/cognitive-stack-state.json');
@@ -64,16 +70,25 @@ const lines = [
   '',
   '> **IRON RULE FOR NEW CHATS / NEW MODELS**',
   '>',
-  '> Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.',
+  '> Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores what is being worked on; the Owner Collaboration Operating Style restores how to work with the owner. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.',
   '',
   `Canonical source state represented here: **${sourceStateAsOf}**`,
   '',
   '## Resume order',
   '',
   `1. ${latestContinuity ? `[${latestContinuity}](./${latestContinuity})` : 'No continuity checkpoint found.'}`,
-  '2. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)',
-  '3. [Project Memory README](./README.md)',
-  '4. Read only the live machine-readable subsystem artifacts needed for the current task.',
+  `2. ${ownerCollaborationCanonExists ? `[Owner Collaboration Operating Style](./${ownerCollaborationCanon})` : `MISSING: ${ownerCollaborationCanon}`}`,
+  '3. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)',
+  '4. [Project Memory README](./README.md)',
+  '5. Read only the live machine-readable subsystem artifacts and task-specific canons needed for the current task.',
+  '',
+  '## Owner collaboration bootstrap',
+  '',
+  '- Default working language with the owner is **Russian**; voice-dictated messages may contain transcription noise, so resolve obvious intent from live project context instead of repeatedly asking the owner to restate known information.',
+  '- Work **one primary objective at a time**, preserve the owner\'s requested sequence, and prefer systemic reusable fixes over one-off patches.',
+  '- `делай / продолжай / ок делай` authorizes implementation/branch/PR preparation, **not a new production merge**. Every PR still requires fresh explicit merge authorization and exact-head pre-merge proof.',
+  '- Live-site screenshots are visual acceptance evidence. Preserve already accepted desktop/laptop surfaces while fixing mobile unless the owner explicitly asks to redesign both.',
+  '- A newer explicit owner instruction always overrides an older collaboration preference. The collaboration canon is an operating contract, not a psychological profile.',
   '',
   '## Project identity',
   '',
@@ -89,7 +104,7 @@ const lines = [
   `- **Permanent Memory Vault** — ${val(vault?.runCount, 0)} Observer record(s), ${val(vault?.eventCount, 0)} material event(s), retention: ${val(vault?.policy?.canonicalRetention)}; hard lifetime cap: ${vault?.policy?.hardLifetimeCap === null ? 'none' : val(vault?.policy?.hardLifetimeCap)}.`,
   `- **Latest Vault record** — ${val(vault?.latestRecord?.recordPath)}.`,
   `- **Decision Memory** — ${val(decisions?.decisionCount, 0)} append-only owner decision(s); executionAuthority: ${val(decisions?.authority?.executionAuthority ?? decisions?.executionAuthority, 'none')}.`,
-  '- **Project continuity** — this bootstrap + human continuity checkpoints + build-discipline canon.',
+  '- **Project continuity** — this bootstrap + latest master continuity + owner collaboration canon + specialized canons + Git history.',
   '',
   '## Current cognitive stack',
   '',
@@ -120,7 +135,7 @@ const lines = [
   '',
   '## Durable-memory rule',
   '',
-  'Material architecture decisions, owner directives, production milestones, important failure/recovery lessons and roadmap shifts must be preserved in GitHub-owned project memory. Trivial run noise should remain in machine logs/history rather than being copied into prose continuity.',
+  'Material architecture decisions, owner directives, durable collaboration preferences, production milestones, important failure/recovery lessons and roadmap shifts must be preserved in GitHub-owned project memory. Trivial run noise should remain in machine logs/history rather than being copied into prose continuity.',
   '',
   '## Canonical priority when facts conflict',
   '',
@@ -138,6 +153,8 @@ fs.writeFileSync(rel('intelligence/project-memory/CURRENT.md'), lines.join('\n')
 console.log('Project Memory CURRENT.md rebuilt', {
   sourceStateAsOf,
   latestContinuity,
+  ownerCollaborationCanon,
+  ownerCollaborationCanonExists,
   securityGeneratedAt,
   securityCounts: { critical: securityCritical, high: securityHigh, medium: securityMedium },
   cognitiveSecurityGeneratedAt,
