@@ -14,6 +14,7 @@ on:
       - 'onboarding/company-010-closure-review.mjs'
       - 'onboarding/company-010-gmx-reader.mjs'
       - 'onboarding/company-010-gmx-strategy-overlay.mjs'
+      - 'onboarding/company-010-projectx-strategy-overlay.mjs'
       - 'onboarding/company-010-reconciliation.mjs'
       - 'onboarding/company-010-stakedao-intelligence.mjs'
       - 'onboarding/company-010-production-baseline.mjs'
@@ -53,6 +54,7 @@ jobs:
           node --check onboarding/company-010-closure-review.mjs
           node --check onboarding/company-010-gmx-reader.mjs
           node --check onboarding/company-010-gmx-strategy-overlay.mjs
+          node --check onboarding/company-010-projectx-strategy-overlay.mjs
           node --check onboarding/company-010-reconciliation.mjs
           node --check onboarding/company-010-stakedao-intelligence.mjs
           node --check onboarding/company-010-production-baseline.mjs
@@ -93,6 +95,7 @@ jobs:
           NODE
           COMPANY_010_RESOLVE_INPUT=/tmp/company-010-crv-resolve.json node onboarding/company-010-crv-strategy-overlay.mjs
           node onboarding/company-010-gmx-strategy-overlay.mjs
+          node onboarding/company-010-projectx-strategy-overlay.mjs
       - name: Preserve established Company State schema
         run: |
           set -euo pipefail
@@ -101,6 +104,7 @@ jobs:
           const p='companies/company-010-production-state.json';
           const d=JSON.parse(fs.readFileSync(p,'utf8'));
           if(d.strategies?.crv?.version!=='0.1-company-010-crv-strategy-intelligence') throw new Error('CRV strategy overlay did not run');
+          if(d.strategies?.projectX?.version!=='0.1-company-010-projectx-full-parity') throw new Error('Project X full-parity overlay did not run');
           d.version='0.3-company-010-production-state-stakedao-complete';
           d.engineVersion='0.4-cypher-crv-strategy-intelligence';
           fs.writeFileSync(p,JSON.stringify(d,null,2)+'\n');
@@ -155,18 +159,31 @@ jobs:
           if((d.rewards?.unboundMechanisms||[]).includes('GMX GM markets')) throw new Error('GMX incorrectly remains unbound reward mechanism');
           const embedded=(d.rewards?.embeddedIncomeMechanisms||[]).find(x=>x.id==='gmx-v2-market-liquidity');
           if(!embedded||embedded.claimableApplicable!==false||embedded.incomeMode!=='embedded-in-gm-nav') throw new Error('GMX embedded income contract missing');
+          const px=d.strategies?.projectX;
+          if(px?.version!=='0.1-company-010-projectx-full-parity'||px.status!=='measured-principal-and-claimable') throw new Error('Project X full-parity strategy missing');
+          if(!(Number(px.nftCount)>0)||px.positions?.length!==px.nftCount) throw new Error('Project X NFT decomposition incomplete');
+          if(!(Number(px.principal?.WHYPE)>=0)||!(Number(px.principal?.USDC)>0)||!(Number(px.principal?.navUsd)>0)) throw new Error('Project X multi-leg principal incomplete');
+          if(px.accountingBoundary?.multiLegPrincipalComplete!==true||px.accountingBoundary?.whypeRemovedFromGeneralHype!==true||px.accountingBoundary?.usdcIncludedInStrategyNav!==true||px.accountingBoundary?.noDoubleCount!==true) throw new Error('Project X accounting boundary drift');
+          const pxCap=(d.capital?.positions||[]).find(x=>x.assetId==='projectx-whype-usdc');
+          const hype=(d.capital?.positions||[]).find(x=>x.assetId==='hyperliquid'||x.symbol==='HYPE');
+          if(!(Number(pxCap?.valueUsd)>0)||hype?.components?.projectXPrincipal!==undefined||hype?.components?.projectXSeparatedToStrategy!=='projectx-whype-usdc') throw new Error('Project X/HYPE separation incomplete');
+          if((d.productivity?.positions||[]).some(x=>x.id==='projectx_hype')) throw new Error('legacy single-leg Project X productivity row survived');
+          const pxProd=(d.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
+          if(!pxProd||pxProd.status!=='warming'||pxProd.referenceAprPct!==null||pxProd.claimableApplicable!==true) throw new Error('Project X APR Pending semantics drift');
+          for(const token of ['WHYPE','USDC']){const obs=(d.rewards?.observations||[]).find(x=>x.route==='projectx-whype-usdc'&&x.token===token);if(!obs||obs.status!=='measured'||!(Number(obs.claimable)>=0)||!(Number(obs.usdValue)>=0))throw new Error('Project X measured reward leg missing: '+token)}
+          if(d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs!==true||d.epistemicBoundary?.projectXClaimableFeesAreNotPrincipal!==true) throw new Error('multi-leg promotion invariant missing');
           if((d.gaps||[]).some(x=>x.id==='fluid-net-eth')) throw new Error('Fluid blocker must be absent');
           if(d.epistemicBoundary?.fluidOwnerPolicy!=='out-of-scope') throw new Error('Fluid owner policy missing');
           if((d.capital?.positions||[]).some(x=>String(x.protocol||'').toLowerCase()==='fluid')) throw new Error('Fluid capital leaked into Company #010');
           if(d.performance?.complete!==false||d.performance?.status!=='partial-cost-basis') throw new Error('Performance completeness drift');
           if(d.authority?.executionAuthority!=='none'||d.authority?.transactions!==false) throw new Error('authority drift');
-          console.log('Company #010 complete production admission PASS',{totalCapitalUsd:d.capital.totalCapitalUsd,stakeDaoValueUsd:stake.valueUsd,concentratorUsd:conc.principal.navUsd,cvxCrvUsd:cvx.principal.navUsd,cvxCrvClaimableUsd:cvx.claimable.usd,gmxNavUsd:g.totalStrategyNavUsd,fluid:'out-of-scope',performance:d.performance.status});
+          console.log('Company #010 complete production admission PASS',{totalCapitalUsd:d.capital.totalCapitalUsd,stakeDaoValueUsd:stake.valueUsd,concentratorUsd:conc.principal.navUsd,cvxCrvUsd:cvx.principal.navUsd,cvxCrvClaimableUsd:cvx.claimable.usd,gmxNavUsd:g.totalStrategyNavUsd,projectXNavUsd:px.principal.navUsd,projectXNfts:px.nftCount,fluid:'out-of-scope',performance:d.performance.status});
           NODE
       - name: Fingerprint source contract
         id: fingerprint
         run: |
           set -euo pipefail
-          sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay}.mjs | sha256sum | awk '{print "sha="$1}' >> "$GITHUB_OUTPUT"
+          sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay}.mjs | sha256sum | awk '{print "sha="$1}' >> "$GITHUB_OUTPUT"
       - name: Commit production state
         run: |
           set -euo pipefail
@@ -181,12 +198,12 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             git rebase origin/main
-            AFTER=$(sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay}.mjs | sha256sum | awk '{print $1}')
+            AFTER=$(sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay}.mjs | sha256sum | awk '{print $1}')
             if [ "$AFTER" != "${{ steps.fingerprint.outputs.sha }}" ]; then
               echo "Company #010 source contract changed during publication; fresh collection required."
               exit 1
             fi
-            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));if(d.version!=='0.3-company-010-production-state-stakedao-complete'||d.engineVersion!=='0.4-cypher-crv-strategy-intelligence'||d.capital?.totalCapitalComplete!==true||d.strategies?.crv?.version!=='0.1-company-010-crv-strategy-intelligence'||d.strategies?.gmx?.version!=='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'||d.authority?.executionAuthority!=='none')process.exit(1);"
+            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));if(d.version!=='0.3-company-010-production-state-stakedao-complete'||d.engineVersion!=='0.4-cypher-crv-strategy-intelligence'||d.capital?.totalCapitalComplete!==true||d.strategies?.crv?.version!=='0.1-company-010-crv-strategy-intelligence'||d.strategies?.gmx?.version!=='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'||d.strategies?.projectX?.version!=='0.1-company-010-projectx-full-parity'||d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs!==true||d.authority?.executionAuthority!=='none')process.exit(1);"
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
           done
