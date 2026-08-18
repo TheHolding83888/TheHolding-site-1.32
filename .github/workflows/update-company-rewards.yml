@@ -13,6 +13,8 @@ on:
       - 'rewards/vlcvx-route-rewards-overlay.mjs'
       - 'rewards/vlcvx-route-rewards-finalize.mjs'
       - 'rewards/vlcvx-route-rewards-guard.mjs'
+      - 'rewards/company-009-beefy-cvxcrv-income.mjs'
+      - 'rewards/rewards-passport-hygiene.mjs'
       - '.github/workflows/update-company-rewards.yml'
   schedule:
     - cron: '57 4 * * *'
@@ -181,6 +183,22 @@ jobs:
           node --check rewards/vlcvx-route-rewards-guard.mjs
           node rewards/vlcvx-route-rewards-guard.mjs
 
+      - name: Measure Company #009 Beefy cvxCRV embedded income
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          BEEFY_CVXCRV_OBSERVATION_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          node --check rewards/company-009-beefy-cvxcrv-income.mjs
+          node rewards/company-009-beefy-cvxcrv-income.mjs
+
+      - name: Apply current Rewards Passport route hygiene
+        run: |
+          set -euo pipefail
+          node --check rewards/rewards-passport-hygiene.mjs
+          node rewards/rewards-passport-hygiene.mjs
+
       - name: Verify final Rewards aggregate parity
         run: |
           node - <<'NODE'
@@ -199,34 +217,44 @@ jobs:
               if(Math.abs(Number(c.measuredEarnedUsd)-(claimable+embedded))>0.00001)throw new Error('measured-earned aggregate drift '+key);
             }
           }
+          const y=d.companies?.['YieldRing.eth'];
+          const yLegacy=(y?.rewards||[]).filter(x=>x.protocol==='Votium · vlCVX'&&x.details?.vlCvxRoute?.routeRole==='legacy-residual');
+          if(yLegacy.length===0&&(y?.sources||[]).some(x=>x.route==='votium-union'&&x.protocol!=='Votium + Union · vlCVX'))throw new Error('YieldRing empty legacy route survived');
           const cy=d.companies?.Cypher;
           const stake=(cy?.rewards||[]).filter(x=>x.route==='stake-dao-vlcvx');
           if(!stake.length||stake.some(x=>x.protocol!=='Stake DAO · vlCVX'))throw new Error('Cypher Stake DAO current vlCVX reward missing');
+          const cyCvx=(cy?.rewards||[]).filter(x=>x.route==='convex-staked-cvxcrv');
+          if(!cyCvx.length||cyCvx.some(x=>x.protocol!=='Convex · staked cvxCRV'||x.classification!=='unclaimed'))throw new Error('Cypher direct Convex reward identity drift');
+          const nine=d.companies?.['1milliondollar.eth'];
+          if((nine?.rewards||[]).some(x=>x.route==='convex-staked-cvxcrv'||x.route==='beefy-cvxcrv'))throw new Error('Company #009 embedded cvxCRV leaked into Claimable');
+          if(!['warming-baseline','ok','needs-flow-reconciliation'].includes(nine?.embeddedIncomeStatus))throw new Error('Company #009 embedded income state missing');
           const rook=d.companies?.["Rook's portfolio"];
           const rookCurrent=(rook?.sources||[]).find(x=>x.route==='vlcvx-current-route');
           if(rookCurrent?.protocol!=='Convex Finance · vlCVX'||rookCurrent?.details?.currentRewardSettlement!=='unresolved'||rookCurrent?.details?.unknownIsNotZero!==true)throw new Error('Rook current Convex route epistemics missing');
-          if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none')throw new Error('vlCVX authority drift');
-          console.log('Final vlCVX Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length});
+          if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none'||d.diagnostics?.rewardsPassportHygiene?.executionAuthority!=='none'||d.diagnostics?.company009BeefyCvxCrv?.executionAuthority!=='none')throw new Error('Rewards authority drift');
+          console.log('Final Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length,cypherCvxCrvRows:cyCvx.length,company009Embedded:nine.embeddedIncomeStatus});
           NODE
 
       - name: Commit updated rewards snapshot
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
           VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
           UNION_AUDIT_OUTPUT: /tmp/union-vlcvx-allocation-audit.json
+          BEEFY_CVXCRV_OBSERVATION_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
-          if git diff --quiet -- companies/rewards-data.json; then
-            echo "No company rewards changes to commit."
+          if [ -z "$(git status --porcelain -- companies/rewards-data.json companies/company-009-beefy-cvxcrv-income.json)" ]; then
+            echo "No company rewards or Beefy income changes to commit."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add companies/rewards-data.json
+          git add companies/rewards-data.json companies/company-009-beefy-cvxcrv-income.json
           git commit -m "data: update company accrued rewards"
 
           for attempt in 1 2 3; do
@@ -244,8 +272,10 @@ jobs:
             node rewards/vlcvx-route-rewards-overlay.mjs
             node rewards/vlcvx-route-rewards-finalize.mjs
             node rewards/vlcvx-route-rewards-guard.mjs
+            node rewards/company-009-beefy-cvxcrv-income.mjs
+            node rewards/rewards-passport-hygiene.mjs
 
-            git add companies/rewards-data.json
+            git add companies/rewards-data.json companies/company-009-beefy-cvxcrv-income.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then
               exit 0
