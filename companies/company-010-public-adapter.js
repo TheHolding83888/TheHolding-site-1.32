@@ -377,22 +377,14 @@
   function hookRender(){
     if(installed||typeof renderIndex!=='function')return false;
     hookUniqueIndexColors();
-    hookRender();
-    if(!installIndexRecord())return false;
-    ensureCollectionCard();syncNetworkStats();
-    if(typeof renderIndex==='function')renderIndex(typeof idxLang==='function'?idxLang():lang());
-    postRenderPolish();
-    if(typeof buildGraph==='function')buildGraph();
-    return true;
+    const original=renderIndex;
+    renderIndex=function(...args){if(state)installIndexRecord();const out=original.apply(this,args);postRenderPolish();return out;};
+    installed=true;return true;
   }
 
   function rerenderNativeSurfaces(){
     hookUniqueIndexColors();
-    if(!installed&&typeof renderIndex==='function'){
-      const original=renderIndex;
-      renderIndex=function(...args){if(state)installIndexRecord();const out=original.apply(this,args);postRenderPolish();return out;};
-      installed=true;
-    }
+    hookRender();
     if(!installIndexRecord())return false;
     ensureCollectionCard();syncNetworkStats();
     if(typeof renderIndex==='function')renderIndex(typeof idxLang==='function'?idxLang():lang());
