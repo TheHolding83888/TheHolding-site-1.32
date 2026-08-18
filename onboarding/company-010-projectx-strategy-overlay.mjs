@@ -28,7 +28,7 @@ function recalcProductivity(state){const rows=state.productivity?.positions||[];
 async function main(){
   const deep=read(DEEP),state=read(STATE);
   if(deep?.version!=='0.3-company-010-deep-mechanism-resolver')throw new Error(`Company #010 deep resolver v0.3 required, got ${deep?.version}`);
-  if(state?.version!=='0.3-company-010-production-state-stakedao-complete'||state?.company?.registry!=='010'||state?.company?.name!=='Cypher')throw new Error('compatible Company #010 production state required');
+  if(!['0.3-company-010-production-state-stakedao-complete','0.4-company-010-production-state-crv-strategies'].includes(String(state?.version))||state?.company?.registry!=='010'||state?.company?.name!=='Cypher')throw new Error('compatible Company #010 production state required');
   if(state?.authority?.executionAuthority!=='none'||state?.epistemicBoundary?.unknownIsNotZero!==true)throw new Error('Company #010 authority/epistemic boundary mismatch');
   const px=deep?.deep?.projectX;
   if(!px?.ok||!px.result)throw new Error('Project X deep resolver result unavailable');
