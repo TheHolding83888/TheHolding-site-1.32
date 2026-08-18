@@ -1,6 +1,7 @@
-/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges
+/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges · v0.9.2-mobile-two-row-strategy-rate-badges
  * Compatibility sentinel: preserves v0.6.4 GMX compact APY and v0.6 Stake DAO native surface contracts.
  * Productive-position badges are presentation-only projections of canonical Productivity breakdowns; reserve assets stay unbadged.
+ * Mobile Passport canon: productive cards use title on row one, value bottom-left and APR/APY capsule bottom-right; desktop keeps right-centered capsules unchanged.
  * CRV-family wrappers are separate economic positions: direct CRV, Concentrator asdCRV/sdCRV and Convex staked cvxCRV are never summed as one token quantity.
  * Concentrator income is Compounded; Convex staked cvxCRV income is Claimable; an unproven rate is APR Pending, never a fake 0%.
  * veAERO / veVELO public reward state is read from current Company #010 rewards-data semantics, never inferred from another company.
@@ -175,7 +176,12 @@
       .ipx-position-pill.has-strategy-rate{position:relative;padding-right:5.45rem}
       .ipx-strategy-rate-badge{position:absolute;right:.58rem;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;gap:.22rem;min-height:23px;margin:0;padding:.18rem .52rem;border-radius:999px;border:1px solid rgba(22,21,15,.10);background:rgba(22,21,15,.035);color:rgba(22,21,15,.52);font-size:.50rem;line-height:1;font-weight:600;letter-spacing:.015em;font-variant-numeric:tabular-nums;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.72)}
       .ipx-strategy-rate-badge strong{color:#0a7c4e;font-weight:650}.ipx-strategy-rate-badge.pending strong{color:#8f7430}
-      @media(max-width:760px){.ipx-position-pill.has-strategy-rate{padding-right:4.9rem}.ipx-strategy-rate-badge{right:.44rem;min-height:21px;font-size:.45rem;padding:.16rem .44rem}}
+      @media(max-width:760px){
+        .ipx-position-pill.has-strategy-rate{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:.34rem;row-gap:.16rem;align-items:end;min-height:52px;padding:.38rem .44rem .34rem}
+        .ipx-position-pill.has-strategy-rate .ipx-position-symbol{grid-column:1 / -1;grid-row:1;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;padding:0}
+        .ipx-position-pill.has-strategy-rate .ipx-position-qty{grid-column:1;grid-row:2;min-width:0;align-self:end;padding:0}
+        .ipx-position-pill.has-strategy-rate .ipx-strategy-rate-badge{position:static;grid-column:2;grid-row:2;justify-self:end;align-self:end;right:auto;top:auto;transform:none;min-height:21px;margin:0;font-size:.45rem;padding:.16rem .44rem}
+      }
     `;document.head.appendChild(s);
   }
 
