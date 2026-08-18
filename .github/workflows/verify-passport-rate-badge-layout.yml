@@ -1,0 +1,49 @@
+name: "Verify Passports · strategy rate badge layout"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'companies/company-010-public-adapter.js'
+      - '.github/workflows/verify-passport-rate-badge-layout.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify right-centered rate badge contract
+        run: |
+          set -euo pipefail
+          node --check companies/company-010-public-adapter.js
+          node - <<'NODE'
+          const fs=require('fs');
+          const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          const must=[
+            'v0.9.1-right-centered-strategy-rate-badges',
+            '.ipx-position-pill.has-strategy-rate{position:relative;padding-right:5.45rem}',
+            'right:.58rem;top:50%;transform:translateY(-50%)',
+            'min-height:23px',
+            'border-radius:999px',
+            "pill.classList.add('has-strategy-rate')",
+            "pill.classList.remove('has-strategy-rate')",
+            "pill.querySelector('.ipx-strategy-rate-badge')?.remove()",
+            "rate.pending?' pending':''"
+          ];
+          for(const x of must) if(!a.includes(x)) throw new Error('missing right-centered rate badge contract: '+x);
+          if(a.includes('align-self:center;margin-top:.16rem')) throw new Error('legacy bottom-centered badge layout remains');
+          console.log('Passport strategy rate badge right-center layout PASS');
+          NODE
+      - name: Verify no execution authority
+        run: |
+          set -euo pipefail
+          ! grep -Eqi 'wallet\.send|sendTransaction|eth_sendTransaction|eth_sendRawTransaction|private[_ -]?key|mnemonic|signer\.send' companies/company-010-public-adapter.js
