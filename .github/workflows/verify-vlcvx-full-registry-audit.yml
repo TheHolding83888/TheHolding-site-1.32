@@ -61,6 +61,20 @@ jobs:
           console.log('vlCVX FULL REGISTRY LIVE PASS',JSON.stringify({epoch:d.epochs,positives:positives.map(x=>({registry:x.registry,name:x.name,totalVlCvx:x.totalVlCvx,routes:x.routes,wallets:x.wallets.filter(w=>w.hasVlCvx).map(w=>({alias:w.alias,address:w.address,balance:w.vlCvx.balance,delegate:w.delegate,forwarding:w.forwarding,route:w.route}))}))},null,2));
           NODE
 
+      - name: Inspect existing canonical rewards atoms for vlCVX companies
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          for(const key of ['YieldRing.eth','defitea.eth',"Rook's portfolio",'Cypher']){
+            const c=d.companies?.[key];
+            if(!c){console.log('REWARDS COMPANY MISSING',key);continue}
+            const rewards=(c.rewards||[]).filter(x=>/vlcvx|votium|union|stake dao|convex/i.test(`${x.protocol||''} ${x.route||''} ${x.source||''}`));
+            const sources=(c.sources||[]).filter(x=>/vlcvx|votium|union|stake dao|convex/i.test(`${x.protocol||''} ${x.route||''} ${x.metric||''}`));
+            console.log('CURRENT VLCVX REWARDS',key,JSON.stringify({status:c.status,rewards:rewards.map(x=>({protocol:x.protocol,route:x.route,symbol:x.symbol,amount:x.amount,classification:x.classification,usdValue:x.usdValue,wallet:x.details?.wallet})),sources:sources.map(x=>({protocol:x.protocol,route:x.route,status:x.status,metric:x.metric,note:x.note}))},null,2));
+          }
+          NODE
+
       - name: Static no-execution guard
         run: |
           node - <<'NODE'
