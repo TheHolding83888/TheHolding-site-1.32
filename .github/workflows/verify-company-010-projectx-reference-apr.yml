@@ -43,7 +43,10 @@ jobs:
           if(!writer.includes('Update Company #010 · Cypher Production State')||!writer.includes('company-010-projectx-rate-history.json'))throw new Error('Project X APR autonomous writer contract missing');
           if(!prod.includes('Update Company #010 · Project X Reference APR'))throw new Error('Productivity does not follow Project X rate writer');
           if(!ui.includes("if(pos.id==='projectx-whype-usdc')")||!ui.includes('pending:!finite(px.referenceAprPct)'))throw new Error('Passport does not auto-promote numeric Project X APR');
-          if(/feeTier\s*[*\/+-]?=?.*referenceApr/i.test(src))throw new Error('Project X fee tier leaked into Reference APR arithmetic');
+          const start=src.indexOf('function feeApr('),end=src.indexOf('function recalcProductivity',start);
+          if(start<0||end<0)throw new Error('Project X fee APR function boundary missing');
+          const arithmetic=src.slice(start,end);
+          if(arithmetic.includes('feeTier'))throw new Error('Project X fee tier leaked into Reference APR arithmetic');
           NODE
 
       - name: Seed current Project X observation
