@@ -77,7 +77,7 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          for(const x of ['ensureUnifiedStrategyRewards','cy-strategy-state-row','panelHasStrategy','embeddedIncome','rewardSource','embeddedRoute','Concentrator · sdCRV','Aerodrome · ve','Velodrome · ve','Compounded','Claimable','Pending','REWARDS_URL'])if(!a.includes(x))throw new Error('unified Rewards contract missing: '+x);
+          for(const x of ['ensureUnifiedStrategyRewards','cy-strategy-state-row','panelHasStrategy','embeddedIncome','rewardSource','embeddedRoute','Concentrator · sdCRV','aerodrome-ve','velodrome-ve-direct','AERO','VELO','Compounded','Claimable','Pending','REWARDS_URL'])if(!a.includes(x))throw new Error('unified Rewards contract missing: '+x);
           for(const legacy of ['ensureCrvStrategyIncome','ensureVeStrategyIncome','CRV · strategy income','veAERO / veVELO · income'])if(a.includes(legacy))throw new Error('legacy duplicate rewards sub-ledger remains: '+legacy);
           if(!a.includes("panel.querySelector('.cy-crv-income')?.remove()")||!a.includes("panel.querySelector('.cy-ve-income')?.remove()"))throw new Error('legacy runtime cleanup missing');
           if(!a.includes("if(panelHasStrategy(panel,label))return"))throw new Error('native reward row dedupe guard missing');
