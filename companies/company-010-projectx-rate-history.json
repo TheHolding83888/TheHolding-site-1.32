@@ -1,0 +1,71 @@
+{
+  "version": "0.1-projectx-rate-history",
+  "engineVersion": "0.1-projectx-observed-fee-reference-apr",
+  "company": {
+    "registry": "010",
+    "name": "Cypher"
+  },
+  "methodology": {
+    "metric": "Project X observed collectible fee APR · trailing stable-window",
+    "minimumWindowHours": 24,
+    "maximumWindowHours": 168,
+    "annualizationDays": 365.25,
+    "feeTierIsNotYield": true,
+    "priceMethod": "average endpoint token prices",
+    "navMethod": "average endpoint strategy NAV",
+    "resetRules": [
+      "strategy fingerprint changed",
+      "claimable token amount decreased materially (claim/reward reset)",
+      "insufficient stable window"
+    ],
+    "interpretation": "Annualized observed collectible fee growth only. Excludes token-price PnL, impermanent loss and unproven incentives."
+  },
+  "observations": [
+    {
+      "observedAt": "2026-08-18T11:54:34.085Z",
+      "stateGeneratedAt": "2026-08-18T11:54:34.085Z",
+      "fingerprint": "39ce4ef72e9e085982718276002beef400cc0638a2f672a2af19d9cf25957565",
+      "strategy": {
+        "manager": "0xeaD19AE861c29bBb2101E834922B2FEee69B9091",
+        "pair": "WHYPE-USDC",
+        "positions": [
+          {
+            "tokenId": "496029",
+            "liquidity": "170440922693621",
+            "tickLower": -236250,
+            "tickUpper": -232500
+          },
+          {
+            "tokenId": "523124",
+            "liquidity": "79948018909887",
+            "tickLower": -239950,
+            "tickUpper": -236250
+          }
+        ]
+      },
+      "navUsd": 332.95,
+      "fees": {
+        "WHYPE": 0.016869645269,
+        "USDC": 0.972758
+      },
+      "prices": {
+        "WHYPE": 59.87,
+        "USDC": 0.999663
+      },
+      "source": "Company #010 Project X full-parity state · collect.staticCall max uint128"
+    }
+  ],
+  "current": {
+    "status": "warming",
+    "referenceAprPct": null,
+    "windowHours": 0,
+    "reason": "Need at least 24 hours of stable Project X observations; current stable window 0h."
+  },
+  "authority": {
+    "readOnly": true,
+    "walletSigning": false,
+    "transactions": false,
+    "executionAuthority": "none"
+  },
+  "generatedAt": "2026-08-18T12:36:48.921Z"
+}
