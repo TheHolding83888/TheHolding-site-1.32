@@ -9,6 +9,7 @@ on:
       - '.github/workflows/update-company-rewards.yml'
       - '.github/workflows/verify-company-010-ve-rewards.yml'
       - 'companies/company-010-public-adapter.js'
+      - 'intelligence/project-memory/THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md'
 
 permissions:
   contents: read
@@ -55,21 +56,45 @@ jobs:
           if(d.authority?.executionAuthority!=='none')throw new Error('authority drift');
           console.log('Company #010 exact ve custody PASS',Object.fromEntries(Object.entries(d.routes).map(([k,v])=>[k,{status:v.status,veNftCount:v.veNftCount,mode:v.mode,publicState:v.publicState,compounded:v.compounded?.amount,claimable:v.claimable?.amount}])));
           NODE
-      - name: Build Company #010 rewards overlay
+      - name: Build Company #010 rewards overlay and verify known-mechanism parity
         run: |
           set -euo pipefail
           node rewards/company-010-rewards-overlay.mjs
           node - <<'NODE'
-          const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8')),c=d.companies?.Cypher;
-          if(d.diagnostics?.company010?.capability!=='crv-and-ve-reward-semantics-0.2')throw new Error('ve capability marker missing');
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8')),c=d.companies?.Cypher;
+          const finite=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x));
+          if(d.diagnostics?.company010?.capability!=='crv-and-ve-reward-semantics-0.3-compounded-usd-parity')throw new Error('ve Compounded USD parity capability marker missing');
+          const embeddedUsd=[];
           for(const route of ['aerodrome-ve','velodrome-ve-direct']){
             const s=(c?.sources||[]).find(x=>x.route===route);
             if(!s||!['ok','partial'].includes(s.status)||!['Compounded','Claimable'].includes(s.details?.rewardState))throw new Error('measured public state missing: '+route);
+            if(s.details?.rewardState==='Compounded'){
+              const e=(c.embeddedIncome||[]).find(x=>x.route===route&&x.state==='Compounded');
+              if(!e||e.claimableApplicable!==false||e.classification!=='compounded-locked'||!(Number(e.amount)>0))throw new Error('Compounded economic row missing: '+route);
+              if(!finite(e.priceUsd)||!(Number(e.priceUsd)>0)||!finite(e.usdValue)||!(Number(e.usdValue)>0)||!e.priceMethod)throw new Error('known mechanism USD parity missing: '+route);
+              const expected=Number(e.amount)*Number(e.priceUsd);
+              if(Math.abs(Number(e.usdValue)-expected)>0.00001)throw new Error(`embedded USD arithmetic mismatch ${route}: ${e.usdValue} != ${expected}`);
+              if(e.usdValueIncludedInClaimableTotal!==false)throw new Error('embedded aggregate exclusion missing: '+route);
+              embeddedUsd.push({route,amount:e.amount,priceUsd:e.priceUsd,usdValue:e.usdValue});
+            }
           }
+          const claimableOnly=(c.rewards||[]).reduce((s,x)=>s+(finite(x.usdValue)?Number(x.usdValue):0),0);
+          if(Math.abs(Number(c.knownAccruedUsd)-claimableOnly)>0.000001||Math.abs(Number(c.totalUsd)-claimableOnly)>0.000001)throw new Error('Compounded embedded USD leaked into Accrued Rewards total');
           const votium=(c?.sources||[]).find(x=>x.route==='votium-union');
           if(!votium||votium.status!=='warming'||votium.details?.unknownIsNotZero!==true)throw new Error('Votium must remain unresolved');
           if(c.totalUsdIsComplete!==false||c.settlement?.unknownRouteIsNotZero!==true)throw new Error('partial-total guard missing');
-          console.log('Company #010 rewards overlay ve semantics PASS');
+          console.log('Company #010 rewards overlay known-mechanism parity PASS',{embeddedUsd,claimableOnly});
+          NODE
+      - name: Verify public USD projection and fail-closed unknown pricing
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
+          for(const x of ['v0.10.1-known-mechanism-compounded-usd-parity','compactEmbeddedAmount','finite(x.usdValue)?money2(x.usdValue):','Embedded income · ${embedded.usd}'])if(!a.includes(x))throw new Error('public Compounded USD projection missing: '+x);
+          if(a.includes("finite(x.usdValue)?money2(x.usdValue):money2(0)"))throw new Error('unknown embedded price rendered as fake zero USD');
+          for(const x of ['const original=renderIndex;','renderIndex=function(...args)','hookRender();'])if(!a.includes(x))throw new Error('established render hook contract drift: '+x);
+          console.log('Company #010 public Compounded USD projection PASS');
           NODE
       - name: Verify read-only boundary
         run: |
