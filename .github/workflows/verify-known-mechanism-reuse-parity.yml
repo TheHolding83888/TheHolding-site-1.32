@@ -81,11 +81,25 @@ jobs:
           if(ui.includes('Embedded income · ${embedded.usd}'))throw new Error('Cypher-specific Embedded income label regressed generic ve presentation parity');
           if(ui.includes('Yield remains inside the managed veNFT'))throw new Error('Cypher-specific managed-ve prose regressed generic ve presentation parity');
 
-          const canonMust=['reuse regression / promotion gap','full capability parity','partial reuse','priceUsd','usdValue','aggregation correctness','Company #011 and beyond','Solved mechanism = reusable end-to-end capability'];
-          for(const x of canonMust)if(!canon.includes(x))throw new Error('known-mechanism canon incomplete: '+x);
+          const canonMust=[
+            'reuse regression / promotion gap',
+            'full capability parity',
+            'partial reuse',
+            'priceUsd',
+            'usdValue',
+            'aggregation correctness',
+            'Company #011 and beyond',
+            'Solved mechanism = reusable end-to-end',
+            'resolver completeness != promotion completeness',
+            'Economic inventory != enumerable inventory',
+            'Nonzero economic state with missing measurement must fail closed',
+            'HyperLend / Aave-like lending semantic lanes',
+            'controller existence alone does not establish an active reward'
+          ];
+          for(const x of canonMust)if(!canon.toLowerCase().includes(x.toLowerCase()))throw new Error('known-mechanism canon incomplete: '+x);
           if(!readme.includes('THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md'))throw new Error('known-mechanism canon not linked from project-memory bootstrap');
 
-          console.log('Known-mechanism data + presentation parity PASS');
+          console.log('Known-mechanism data + presentation + expanded canon parity PASS');
           NODE
       - name: Verify dual totals preserve accounting boundary
         run: |

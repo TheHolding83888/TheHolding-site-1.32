@@ -54,6 +54,7 @@ jobs:
           set -euo pipefail
           test -s intelligence/project-memory/README.md
           test -s intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md
+          test -s intelligence/project-memory/THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md
           test -s intelligence/project-memory/build-current-memory.mjs
           test -s intelligence/project-memory/verify-current-memory.mjs
           node --check intelligence/project-memory/build-current-memory.mjs
@@ -111,6 +112,8 @@ jobs:
             echo "# The Holding · Project Memory Bootstrap"
             echo
             echo "**Canonical entrypoint:** \`intelligence/project-memory/CURRENT.md\`"
+            echo "**Deep current checkpoint:** latest \`THE_HOLDING_MASTER_CONTINUITY_*.md\`"
+            echo "**Task-aware retrieval:** \`THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md\`"
             echo "**Permanent factual archive:** \`intelligence/memory-vault/\`"
             echo "**Current Security authority:** fresh \`security/security-intelligence.json\`"
             echo "**Post-Sentinel refresh:** enabled after successful main Security Sentinel runs"
@@ -118,5 +121,5 @@ jobs:
             echo "**Generated mutation boundary:** CURRENT.md only"
             echo "**Schedule:** hourly backstop at minute 17"
             echo
-            echo "The updater is deterministic, verifies CURRENT against the fresh Security artifact, and emits no commit when canonical source state has not changed."
+            echo "The updater is deterministic, verifies CURRENT against fresh Security plus the durable collaboration/routing contracts, and emits no commit when canonical source state has not changed."
           } >> "$GITHUB_STEP_SUMMARY"
