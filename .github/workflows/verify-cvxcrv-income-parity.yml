@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'onboarding/company-010-convex-cvxcrv-rate-overlay.mjs'
+      - 'rewards/company-009-beefy-cvxcrv-income.mjs'
       - 'rewards/rewards-passport-hygiene.mjs'
       - '.github/workflows/verify-cvxcrv-income-parity.yml'
       - '.github/workflows/update-company-010-state.yml'
@@ -31,6 +32,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check onboarding/company-010-convex-cvxcrv-rate-overlay.mjs
+          node --check rewards/company-009-beefy-cvxcrv-income.mjs
           node --check rewards/rewards-passport-hygiene.mjs
       - name: Measure Cypher direct Convex cvxCRV rate
         env:
@@ -51,7 +53,10 @@ jobs:
           if((d.gaps||[]).some(x=>x.id==='convex-staked-cvxcrv-reference-apr'))throw new Error('resolved Convex APR gap survived');
           console.log('Cypher direct Convex APR verified',cvx.yield.referenceAprPct,cvx.yield.proof.streams.map(x=>x.symbol));
           NODE
-      - name: Verify Company #009 mechanism is not Cypher mechanism
+      - name: Verify Company #009 Beefy embedded-income checkpointing
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -61,7 +66,19 @@ jobs:
           const b=row?.internalBreakdown;
           if(!row||b?.vaultId!=='convex-staked-cvxCRV'||b?.incomeMode!=='compounded-embedded'||b?.separateClaimableRewards!==false)throw new Error('Company #009 Beefy cvxCRV semantics drift');
           if(!(Number(b.ppfs)>0)||!(Number(b.shares)>0)||!(Number(b.currentApy)>0))throw new Error('Company #009 Beefy measurement basis missing');
-          console.log('Company #009 Beefy embedded cvxCRV verified',{shares:b.shares,ppfs:b.ppfs,currentApy:b.currentApy});
+          NODE
+          cp companies/rewards-data.json /tmp/rewards009.json
+          REWARDS_OUTPUT=/tmp/rewards009.json BEEFY_CVXCRV_HISTORY_OUTPUT=/tmp/beefy009.json node rewards/company-009-beefy-cvxcrv-income.mjs
+          REWARDS_OUTPUT=/tmp/rewards009.json BEEFY_CVXCRV_HISTORY_OUTPUT=/tmp/beefy009.json node rewards/company-009-beefy-cvxcrv-income.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const h=JSON.parse(fs.readFileSync('/tmp/beefy009.json','utf8')),d=JSON.parse(fs.readFileSync('/tmp/rewards009.json','utf8')),c=d.companies?.['1milliondollar.eth'];
+          if(h.version!=='0.1-company-009-beefy-cvxcrv-embedded-income'||h.strategy?.incomeMode!=='compounded-embedded'||h.strategy?.claimableApplicable!==false)throw new Error('Beefy history semantics missing');
+          if(h.checkpoints?.length!==2||h.latestInterval?.status!=='ok'||h.latestInterval?.shareBalanceStable!==true)throw new Error('adjacent Beefy checkpoint interval not proven');
+          if(h.authority?.executionAuthority!=='none'||h.authority?.transactions!==false)throw new Error('Beefy authority drift');
+          if((c.rewards||[]).some(x=>x.route==='beefy-cvxcrv'))throw new Error('embedded Beefy income leaked into Claimable rewards');
+          if(c.embeddedIncomeStatus!=='ok')throw new Error('Company #009 embedded income state not admitted');
+          console.log('Company #009 Beefy embedded checkpoint verified',{checkpoints:h.checkpoints.length,income:h.latestInterval.incomeCvxCrv,status:h.latestInterval.status});
           NODE
       - name: Verify Rewards Passport hygiene
         run: |
