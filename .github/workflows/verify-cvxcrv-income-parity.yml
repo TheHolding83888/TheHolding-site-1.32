@@ -1,0 +1,87 @@
+name: "Verify cvxCRV · Income Parity"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-convex-cvxcrv-rate-overlay.mjs'
+      - 'rewards/rewards-passport-hygiene.mjs'
+      - '.github/workflows/verify-cvxcrv-income-parity.yml'
+      - '.github/workflows/update-company-010-state.yml'
+      - '.github/workflows/update-company-rewards.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install bounded dependency
+        run: npm install --no-save --no-package-lock ethers@6
+      - name: Static preflight
+        run: |
+          set -euo pipefail
+          node --check onboarding/company-010-convex-cvxcrv-rate-overlay.mjs
+          node --check rewards/rewards-passport-hygiene.mjs
+      - name: Measure Cypher direct Convex cvxCRV rate
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+        run: |
+          set -euo pipefail
+          cp companies/company-010-production-state.json /tmp/company-010-state.json
+          COMPANY_010_STATE=/tmp/company-010-state.json node onboarding/company-010-convex-cvxcrv-rate-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('/tmp/company-010-state.json','utf8'));
+          const cvx=d.strategies?.crv?.strategies?.find(x=>x.id==='convex-staked-cvxcrv');
+          const prod=(d.productivity?.positions||[]).find(x=>x.id==='convex_staked_cvxcrv');
+          if(cvx?.yield?.status!=='measured'||!(Number(cvx?.yield?.referenceAprPct)>0))throw new Error('Cypher direct Convex APR not measured');
+          if(prod?.status!=='measured'||Number(prod.referenceAprPct)!==Number(cvx.yield.referenceAprPct))throw new Error('Cypher productivity parity drift');
+          if(cvx.yield?.proof?.executionAuthority!=='none'||!(cvx.yield?.proof?.streams?.length>0))throw new Error('Convex proof/authority missing');
+          if((d.gaps||[]).some(x=>x.id==='convex-staked-cvxcrv-reference-apr'))throw new Error('resolved Convex APR gap survived');
+          console.log('Cypher direct Convex APR verified',cvx.yield.referenceAprPct,cvx.yield.proof.streams.map(x=>x.symbol));
+          NODE
+      - name: Verify Company #009 mechanism is not Cypher mechanism
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/company-009-discovery.json','utf8'));
+          const row=(d.proposedCompanyBook||[]).find(x=>x.id==='convex-crv');
+          const b=row?.internalBreakdown;
+          if(!row||b?.vaultId!=='convex-staked-cvxCRV'||b?.incomeMode!=='compounded-embedded'||b?.separateClaimableRewards!==false)throw new Error('Company #009 Beefy cvxCRV semantics drift');
+          if(!(Number(b.ppfs)>0)||!(Number(b.shares)>0)||!(Number(b.currentApy)>0))throw new Error('Company #009 Beefy measurement basis missing');
+          console.log('Company #009 Beefy embedded cvxCRV verified',{shares:b.shares,ppfs:b.ppfs,currentApy:b.currentApy});
+          NODE
+      - name: Verify Rewards Passport hygiene
+        run: |
+          set -euo pipefail
+          cp companies/rewards-data.json /tmp/rewards.json
+          REWARDS_OUTPUT=/tmp/rewards.json node rewards/rewards-passport-hygiene.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('/tmp/rewards.json','utf8'));
+          const y=d.companies?.['YieldRing.eth'],def=d.companies?.['defitea.eth'],rook=d.companies?.["Rook's portfolio"],cy=d.companies?.Cypher,nine=d.companies?.['1milliondollar.eth'];
+          const yLegacy=(y.rewards||[]).filter(x=>x.protocol==='Votium · vlCVX'&&x.details?.vlCvxRoute?.routeRole==='legacy-residual');
+          if(yLegacy.length===0&&(y.sources||[]).some(x=>x.route==='votium-union'&&x.protocol!=='Votium + Union · vlCVX'))throw new Error('YieldRing empty legacy Votium source survived');
+          for(const [name,c] of [['Defitea',def],['Rook',rook]]){
+            const legacy=(c.rewards||[]).filter(x=>x.protocol==='Votium · vlCVX'&&x.details?.vlCvxRoute?.routeRole==='legacy-residual');
+            if(legacy.length<1)throw new Error(`${name} real legacy Votium residuals were lost`);
+          }
+          const crv=(cy.rewards||[]).filter(x=>x.route==='convex-staked-cvxcrv');
+          if(crv.length<1||crv.some(x=>x.protocol!=='Convex · staked cvxCRV'||x.classification!=='unclaimed'))throw new Error('Cypher Convex public identity mismatch');
+          if((nine.rewards||[]).some(x=>x.route==='convex-staked-cvxcrv'))throw new Error('Cypher claimables leaked into Company #009');
+          if(d.diagnostics?.rewardsPassportHygiene?.executionAuthority!=='none')throw new Error('authority drift');
+          console.log('Rewards Passport hygiene verified',{yieldRingLegacy:yLegacy.length,defiteaLegacy:true,rookLegacy:true,cypherConvexRows:crv.length});
+          NODE
+          git diff --check
