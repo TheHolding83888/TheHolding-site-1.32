@@ -1,0 +1,89 @@
+name: "Verify Project Memory · continuity routing"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/project-memory/**'
+      - '.github/workflows/update-project-memory-bootstrap.yml'
+      - '.github/workflows/verify-project-memory-continuity-routing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Verify memory architecture and deterministic CURRENT
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/project-memory/CURRENT.md
+          test -s intelligence/project-memory/README.md
+          test -s intelligence/project-memory/THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md
+          test -s intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_2026-08-18_1616_PROJECT_X_HYPERLEND_MEMORY_ROUTING_UPGRADE.md
+          test -s intelligence/project-memory/THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md
+          test -s intelligence/project-memory/THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md
+          test -s intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md
+          node --check intelligence/project-memory/build-current-memory.mjs
+          node --check intelligence/project-memory/verify-current-memory.mjs
+
+          cp intelligence/project-memory/CURRENT.md /tmp/current.before.md
+          node intelligence/project-memory/build-current-memory.mjs
+          node intelligence/project-memory/verify-current-memory.mjs
+          cmp -s /tmp/current.before.md intelligence/project-memory/CURRENT.md || {
+            echo 'ERROR: committed CURRENT.md is not the deterministic output of build-current-memory.mjs'
+            diff -u /tmp/current.before.md intelligence/project-memory/CURRENT.md || true
+            exit 1
+          }
+
+      - name: Verify deep continuity coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          f='intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_2026-08-18_1616_PROJECT_X_HYPERLEND_MEMORY_ROUTING_UPGRADE.md'
+          for phrase in \
+            'PR #142 — PROJECT X FULL MULTI-LEG PARITY' \
+            'PROJECT X OBSERVED-FEE REFERENCE APR' \
+            'PR #144 — HYPERLEND INCOME PARITY' \
+            'enumerable NFT inventory is not the same as strategy economic inventory' \
+            'HyperLend base lending interest = Compounded / Embedded' \
+            'CURRENT PROJECT MEMORY ARCHITECTURE' \
+            'NEXT-CHAT QUICK START — COMPANY #010' \
+            'DO-NOT-DO LIST FOR FUTURE MODELS'; do
+            grep -Fq "$phrase" "$f" || { echo "Missing continuity coverage: $phrase"; exit 1; }
+          done
+
+      - name: Verify routed mechanism canon coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          f='intelligence/project-memory/THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md'
+          for phrase in \
+            'multi-leg promotion gap' \
+            'resolver completeness != promotion completeness' \
+            'Economic inventory != enumerable inventory' \
+            'Nonzero economic state with missing measurement must fail closed' \
+            'HyperLend / Aave-like lending semantic lanes' \
+            'RewardsController existence alone does not establish an active reward'; do
+            grep -Fqi "$phrase" "$f" || { echo "Missing reusable canon coverage: $phrase"; exit 1; }
+          done
+
+      - name: Verify no authority expansion
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'executionAuthority = none' intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_2026-08-18_1616_PROJECT_X_HYPERLEND_MEMORY_ROUTING_UPGRADE.md
+          grep -Fq 'not a new production merge' intelligence/project-memory/CURRENT.md
+          echo 'Project Memory continuity routing PASS — read-only, no production mutation authority.'
