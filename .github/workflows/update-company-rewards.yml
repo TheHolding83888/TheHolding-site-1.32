@@ -129,7 +129,7 @@ jobs:
           const c=d.companies?.['defitea.eth'];
           const diag=d.diagnostics?.defiteaUnion;
           const src=(c?.sources||[]).find(x=>x.route==='votium-union');
-          if(!diag||diag.capability!=='0.1-defitea-votium-union-scrvusd-member-proof')throw new Error('Defitea Union capability missing');
+          if(!diag||diag.capability!=='0.2-defitea-votium-union-scrvusd-member-proof')throw new Error('Defitea Union capability missing');
           if(diag.executionAuthority!=='none'||diag.claimTransactionAuthority!=='none')throw new Error('Defitea Union authority expansion');
           if(diag.unknownIsNotZero!==true||src?.details?.unknownIsNotZero!==true)throw new Error('Defitea Union unknown != zero guard missing');
           const u=src?.details?.union;
