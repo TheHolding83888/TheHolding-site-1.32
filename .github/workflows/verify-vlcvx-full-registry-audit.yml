@@ -1,0 +1,72 @@
+name: Verify vlCVX · Full Registry Route Audit
+
+on:
+  pull_request:
+    paths:
+      - 'rewards/vlcvx-registry-route-audit.mjs'
+      - '.github/workflows/verify-vlcvx-full-registry-audit.yml'
+      - 'intelligence/project-memory/THE_HOLDING_VLCVX_ROUTE_GRAPH_CANON_2026-08-18.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install read-only runtime
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Run live full-registry route audit
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-registry-route-audit.mjs
+          node rewards/vlcvx-registry-route-audit.mjs
+
+      - name: Verify registry coverage and route epistemics
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('/tmp/vlcvx-route-audit.json','utf8'));
+          if(d.version!=='0.1-vlcvx-full-registry-route-audit')throw new Error('audit version drift');
+          if(d.executionAuthority!=='none'||d.methodology?.claimAuthority!=='none')throw new Error('authority expansion');
+          if(d.methodology?.unknownIsNotZero!==true)throw new Error('unknown != zero missing');
+          if(d.summary?.companyCount!==10||d.companies?.length!==10)throw new Error('full registry coverage missing');
+          const regs=d.companies.map(x=>x.registry).sort().join(',');
+          if(regs!=='001,002,003,004,005,006,007,008,009,010')throw new Error('registry slots drift: '+regs);
+          if(!d.contracts?.votiumEnsResolved||String(d.contracts.votiumEnsResolved).toLowerCase()!==String(d.contracts.votiumDelegate).toLowerCase())throw new Error('Votium delegate identity not independently resolved');
+          const positives=d.companies.filter(x=>x.hasVlCvx);
+          if(!positives.length)throw new Error('no vlCVX companies discovered');
+          for(const c of positives){
+            const wallets=c.wallets.filter(w=>w.hasVlCvx);
+            if(!wallets.length)throw new Error('positive company without positive wallet '+c.registry);
+            for(const w of wallets){
+              if(!(Number(w.vlCvx?.balance)>0||Number(w.vlCvx?.locked)>0))throw new Error('principal not measured '+c.registry);
+              if(!w.delegate?.address||!w.delegate?.identity||!w.forwarding?.identity||!w.route?.routeId)throw new Error('route atom incomplete '+c.registry);
+            }
+          }
+          console.log('vlCVX FULL REGISTRY LIVE PASS',JSON.stringify({epoch:d.epochs,positives:positives.map(x=>({registry:x.registry,name:x.name,totalVlCvx:x.totalVlCvx,routes:x.routes,wallets:x.wallets.filter(w=>w.hasVlCvx).map(w=>({alias:w.alias,address:w.address,balance:w.vlCvx.balance,delegate:w.delegate,forwarding:w.forwarding,route:w.route}))}))},null,2));
+          NODE
+
+      - name: Static no-execution guard
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('rewards/vlcvx-registry-route-audit.mjs','utf8');
+          for(const bad of ['sendTransaction(','new Wallet(','setDelegate(','recordAllocation(','claim('])if(s.includes(bad))throw new Error('forbidden execution surface: '+bad);
+          if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing');
+          console.log('vlCVX audit no-execution guard PASS');
+          NODE
