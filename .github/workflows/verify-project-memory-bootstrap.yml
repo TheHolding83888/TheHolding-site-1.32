@@ -34,6 +34,7 @@ jobs:
           test -s intelligence/project-memory/README.md
           test -s intelligence/project-memory/THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md
           test -s intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md
+          test -s intelligence/project-memory/THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md
           test -s intelligence/project-memory/build-current-memory.mjs
           test -s intelligence/project-memory/verify-current-memory.mjs
           node --check intelligence/project-memory/build-current-memory.mjs
@@ -47,7 +48,7 @@ jobs:
           node intelligence/project-memory/verify-current-memory.mjs
           git diff --check
 
-      - name: Verify first-class resume order
+      - name: Verify first-class routed resume order
         shell: bash
         run: |
           set -euo pipefail
@@ -57,23 +58,37 @@ jobs:
 
           p = Path('intelligence/project-memory/CURRENT.md')
           text = p.read_text()
-          section = re.search(r'## Resume order\n\n(.*?)\n\n## Owner collaboration bootstrap', text, re.S)
+          section = re.search(r'## Resume order\n\n(.*?)\n\n## Task-aware retrieval', text, re.S)
           if not section:
-              raise SystemExit('Resume order section missing')
+              raise SystemExit('Resume order section missing or not followed by Task-aware retrieval')
           lines = [x.strip() for x in section.group(1).splitlines() if x.strip()]
-          if len(lines) != 5:
-              raise SystemExit(f'Expected exactly 5 resume items, got {len(lines)}: {lines}')
+          if len(lines) != 6:
+              raise SystemExit(f'Expected exactly 6 resume items, got {len(lines)}: {lines}')
           expected = [
               (1, 'THE_HOLDING_MASTER_CONTINUITY_'),
               (2, 'Owner Collaboration Operating Style'),
               (3, 'THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md'),
-              (4, 'Project Memory README'),
-              (5, 'Read only the live machine-readable subsystem artifacts'),
+              (4, 'Memory Routing Index'),
+              (5, 'Project Memory README'),
+              (6, 'Follow the Routing Index'),
           ]
           for (n, needle), line in zip(expected, lines):
               if not line.startswith(f'{n}. ') or needle not in line:
                   raise SystemExit(f'Resume item {n} mismatch: {line}')
-          print('First-class CURRENT resume order PASS')
+
+          routed = re.search(r'## Task-aware retrieval\n\n(.*?)\n\n## Owner collaboration bootstrap', text, re.S)
+          if not routed:
+              raise SystemExit('Task-aware retrieval section missing')
+          routed_text = routed.group(1)
+          required = [
+              'CURRENT → latest continuity → routing index → task-specific canon/context → live artifact → exact evidence',
+              'Do not load every historical checkpoint by default',
+              'write changing numeric state to machine artifacts',
+          ]
+          for needle in required:
+              if needle not in routed_text:
+                  raise SystemExit(f'Task-aware retrieval contract missing: {needle}')
+          print('First-class routed CURRENT resume order PASS')
           PY
 
       - name: Verify generated mutation boundary
