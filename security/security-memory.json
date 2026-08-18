@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-18T05:17:00.045Z",
+  "generatedAt": "2026-08-18T06:17:59.063Z",
   "status": "watch",
-  "snapshotHash": "821c3b935899a9f790f489ddd74186f68a178e719ce19f33b13dc00019d4c706",
+  "snapshotHash": "2a5ec4c51a4f358ca4dfea0c719f0f3c56257da50fe1010bcffabe8daa1cd31c",
   "repository": {
-    "filesScanned": 408,
-    "bytesScanned": 9211106,
+    "filesScanned": 409,
+    "bytesScanned": 9268205,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -68,7 +68,7 @@
       ".github/workflows/verify-company-010-production-integration.yml": "ed1f04408fea7be12f1c4b3532ace22ca6e96bb63efa9227e281435dad25df40",
       ".github/workflows/verify-company-010-public-admission.yml": "ad6a694a0aaf64de36d5708960da9a8eb88650ce4f4b890a60400c1cb924dd3a",
       ".github/workflows/verify-company-010-ve-rewards.yml": "4f46f3d5bc8f38d38a7d44c65c98cde2b32a008a20620625c02c11b197857a10",
-      ".github/workflows/verify-passport-rate-badge-layout.yml": "04b674ee0b71d799208514012673b5c4df4ad5303107bbbc7a25d68cb494c820",
+      ".github/workflows/verify-passport-rate-badge-layout.yml": "3e733390e90e5800aeab3d05a070c56352283c69fa5eb9896d63efc49d24957a",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "ff52d216b4537858a1b661fffa9e9a8a99e7eee40e9ec25da6f5c003dcf4c4f5",
       "index.html": "1378d080ce878189b39602216ca09ea0a3aab58c0e34e9c9e590dff835603189",
@@ -228,7 +228,7 @@
         "classification": null,
         "sinkCount": 4,
         "expectedCount": null,
-        "currentGitBlobSha1": "715513cf67f79562ddfc39f994d207ca8641089f",
+        "currentGitBlobSha1": "21d3a0ce1a7ad120cb7254b5fd76bdd8b2159b6f",
         "reviewedGitBlobSha1": null,
         "rationale": null
       },
@@ -304,7 +304,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Fri, 14 Aug 2026 06:09:13 GMT",
+        "lastModified": "Mon, 17 Aug 2026 14:11:27 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -386,17 +386,17 @@
       "evidence": null
     },
     {
-      "id": "bd7e3b9586bac70580196c0f6746d883bbaa83cc945dd02e7faf145986c4c719",
+      "id": "0f7bc263a14967009f06cf3f63d79c362cd1bc1759399dc82fd8862f2d7c961e",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/verify-company-010-public-admission.yml",
+      "file": ".github/workflows/verify-passport-rate-badge-layout.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-public-admission.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-passport-rate-badge-layout.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "0f124469b6cdc607c9c7882a2d976608d8ea8479aefbeb5bb5f696d2856e4418",
-        "currentSha256": "ad6a694a0aaf64de36d5708960da9a8eb88650ce4f4b890a60400c1cb924dd3a"
+        "previousSha256": "04b674ee0b71d799208514012673b5c4df4ad5303107bbbc7a25d68cb494c820",
+        "currentSha256": "3e733390e90e5800aeab3d05a070c56352283c69fa5eb9896d63efc49d24957a"
       }
     },
     {
@@ -422,44 +422,44 @@
       "evidence": null
     },
     {
-      "id": "615fe7156dae8d589230078e56e14d700fb233abc8d16c99101f63713e7a466b",
+      "id": "e76f718a1cc0ad0eba5d566623eed594b8182da608090d1f362fa2d66d4bf543",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
-      "line": 89,
+      "line": 90,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": null
     },
     {
-      "id": "932f0fd1e9fb09e54f4cee837413772ad2e897c7a861b0e534f2843da732dc1e",
+      "id": "1274ca31e6875a74170e66181510e5e785add3fa0f5bcf18d710f2364ca49323",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
-      "line": 216,
+      "line": 222,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": null
     },
     {
-      "id": "d7174a90c74cc4929de1598c5bd104a3c0a69563d43b450d2d3138c20d9a15a1",
+      "id": "7d8ffc36010189c7e8480c2c3f31a819f65cf96caabe522407bfd1774891168d",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
-      "line": 303,
+      "line": 309,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": null
     },
     {
-      "id": "f2d542b7bf73397e8b9c4d58626cb7907dbbbaac29ee067ed5721960bf40f202",
+      "id": "110c55d3b91ea7274e93224aad64fa59a071ab34b858abab6919d31043311b90",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
-      "line": 333,
+      "line": 339,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
@@ -796,10 +796,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 280,
+    "runCount": 281,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-18T05-17-00-045Z-821c3b9358.json",
-    "latestRecordHash": "10452914902026bf7ff05bb0be77cc20991ff609230faeaea17cd3889c664821",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-18T06-17-59-063Z-2a5ec4c51a.json",
+    "latestRecordHash": "d3b70e32feccf5569bda958b8a081efbdf8e892682fd8cee6ebeed2b338876df",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
