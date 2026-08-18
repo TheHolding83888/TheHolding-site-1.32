@@ -10,7 +10,8 @@ For every material architecture decision, owner directive, production milestone,
 
 1. preserve the machine-readable fact in its canonical subsystem where one exists;
 2. preserve the human continuity meaning in `intelligence/project-memory/` when it materially changes how the project should be understood or resumed;
-3. keep `CURRENT.md` automatically refreshed as the compact bootstrap entrypoint.
+3. keep `CURRENT.md` automatically refreshed as the compact bootstrap entrypoint;
+4. route future sessions to the smallest relevant set of durable memory blocks rather than forcing every task to load every historical document.
 
 Do **not** create a memory file for trivial noise. Memory should compress the project, not duplicate every log line.
 
@@ -22,19 +23,31 @@ On the first substantive The Holding request in a new chat/session, the assistan
 2. the latest `THE_HOLDING_MASTER_CONTINUITY_*.md` referenced there;
 3. `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md` for the durable owner/AI working contract — language, dictation handling, strict sequencing, proof expectations, visual review workflow, reusable-fix preference and merge authorization boundary;
 4. `THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`;
-5. when the task depends on how the system was built or what earlier work already taught us, read `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`;
-6. when onboarding a new company, implementing a mechanism already seen in another company, or fixing a repeated capability/presentation gap, read `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md` and preserve full proven capability parity before researching or coding from zero;
-7. when the task concerns founder alignment, The Holding AI, decision style or the future digital-founder model, read `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`;
-8. when the task concerns company strategy, capital philosophy, reward harvesting/reinvestment, diversification, stable reserves, leverage/Health Factor, company decision points or future Company Curator logic, read both `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md` and the latest `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*` extensions; when machine-readable owner context is useful, read `intelligence/owner-context/owner-operating-profile.json` plus the latest additive `intelligence/owner-context/owner-operating-profile-tranche-*.json`;
-9. when the task concerns public dialogue, conversation learning, model safety, financial-advice boundaries or owner teaching through the console, read `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`;
-10. when the task concerns Company Passport responsive UI, `Balance Sheet · Strategies`, productive APR/APY capsules, or mobile-versus-desktop Passport layout, read `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md` before proposing local visual fixes;
-11. when the task concerns the Company Passport Rewards Drawer, claimable/Unclaimed rewards, Compounded embedded income, Pending/Warming reward routes, or adding a new reward strategy to the public Passport, read `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md` before creating protocol-specific UI sections;
-12. when the task touches Cloudflare, Workers, Wrangler, deployment routing, Durable Objects, production permissions, or homepage ownership, read `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md` before proposing changes;
-13. only then the live machine-readable artifacts needed for the task.
+5. `THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md` to select the task-specific memory blocks and live artifacts needed for the current objective;
+6. only the routed task-specific canons/context and current machine-readable evidence.
+
+Do not read every historical continuity/canon by default. The Routing Index is the first-class retrieval map.
 
 Changing production facts always outrank prose memory. If a continuity document conflicts with live generated state, live `main` + fresh production artifacts win.
 
 The collaboration-style canon is operational context, not a personality profile. A newer explicit owner instruction always overrides an older working preference.
+
+## Task-aware retrieval
+
+Canonical retrieval path:
+
+`CURRENT → latest continuity → Memory Routing Index → relevant task blocks → live artifacts → exact evidence`
+
+Examples:
+- new company / known mechanism → Known Mechanism Reuse canon + onboarding knowledge + strongest current production precedent;
+- Company #010 Project X → latest continuity + Project X route in the Routing Index + live Company state + Project X rate history;
+- HyperLend/Aave-like lending → latest continuity + HyperLend route + live Company/Rewards state;
+- Rewards Drawer → Rewards Drawer canon + live Rewards state;
+- Passport mobile/desktop → Passport Responsive UI canon;
+- founder/company strategy → Owner Operating Context + Founder Decision DNA only when relevant;
+- Security/deployment → fresh Security state + Production Incident postmortem.
+
+The router is not a replacement for fresh state. It tells the model **where to look**, not **what the current number is**.
 
 ## Memory tiers
 
@@ -64,6 +77,7 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 ### 4. Human continuity / project canon
 - `intelligence/project-memory/CURRENT.md`
 - `THE_HOLDING_MASTER_CONTINUITY_*.md`
+- `THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md`
 - `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md`
 - `THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`
 - `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`
@@ -78,39 +92,86 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 - `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md`
 - `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md`
 
-This is the fastest way for a future model/session to recover the project architecture, operating rules, current stage, resume point, durable lessons from earlier company/product/infrastructure work, owner collaboration style, known-mechanism reuse requirements, founder-alignment direction, owner capital philosophy/company strategy context, conversation-learning safety rules, responsive Passport UI canon, unified Rewards Drawer semantics, and production deployment lessons already paid for in live operation.
+This layer lets a future model/session recover project architecture, operating rules, current stage, exact resume point, durable failure lessons, owner collaboration contract, mechanism reuse requirements, founder-alignment direction, owner capital philosophy, responsive UI rules, Rewards semantics and deployment lessons already paid for in live operation.
 
-The historical operating knowledge file is deliberately compact and contains durable lessons only. It must not be used as a substitute for fresh production data and must not be treated as retrospective Decision/Outcome Learning.
+### 5. Task-aware routing layer
 
-The Known Mechanism Reuse & Promotion canon turns “we solved this before” into an explicit engineering gate. A new company must start from the strongest matching production precedent, preserve the full proven capability contract — source, classification, quantity, pricing, USD valuation, null/completion semantics, aggregation boundary, public projection, refresh behavior and verifier — and isolate only the genuinely new delta. Partial reuse that silently drops a previously-supported field is a regression unless semantically justified.
+`THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md`
 
-The Owner Collaboration Operating Style preserves directly observed working preferences — not private speculation or psychology. Its purpose is to prevent a new model from forcing the owner to reteach language/input conventions, sequencing, evidence standards, merge governance and accepted collaboration patterns.
+This is deliberately separate from the detailed memory blocks. It maps task classes to the memory/canonical state needed for them.
 
-The Founder Decision DNA canon is a strategic/evidence rule, not a current runtime layer. A formal machine-readable founder model should only be built after enough genuine owner decision → outcome cycles exist to support stable patterns rather than guesses.
+Why this matters:
+- `CURRENT.md` must stay compact;
+- the latest continuity must be deep enough to restore current project state;
+- durable canons should remain specialized;
+- a new model should not pollute context with unrelated Founder/Stable/UI history when working on one protocol mechanism;
+- a task must still be able to retrieve deep precedent when it matters.
 
-The Owner Operating Context preserves explicit owner principles, theses, heuristics and peer-owner context with provenance. Later owner-teaching tranches extend the original context without silently rewriting earlier answers. The structured `owner-operating-profile.json` plus additive tranche profiles make high-value owner context machine-readable, but their current `runtimeBinding` is deliberately none: they are context for future reasoning/Curator integration, not automatic policy, market-fact source or execution authority.
+The router therefore turns the existing block architecture into an explicit retrieval contract.
 
-The Conversation Learning canon defines how real public dialogue may become a learning signal without allowing untrusted visitors to directly mutate facts, memory, code, methodology, security policy or capital authority. Owner teaching through the public console is not trusted until a real authenticated owner channel exists.
+## Important durable blocks
 
-The Passport Responsive UI canon defines the reusable desktop/mobile presentation contract for productive APR/APY capsules in Company Passports. It prevents future long strategy labels from being fixed with one-off per-asset nudges and explicitly preserves the accepted desktop geometry while using a two-row mobile composition.
+### Historical Operating Knowledge
+Deliberately compact durable lessons. It must not substitute for fresh production data and must not be treated as retrospective Decision/Outcome Learning.
 
-The Rewards Drawer UI canon defines a single semantic ledger for claimable/Unclaimed rewards, embedded/Compounded income and Pending/Warming routes. It prevents duplicate protocol-specific mini-ledgers and requires new blockchain information to update row state/data rather than trigger a new one-off UI architecture.
+### Known Mechanism Reuse & Promotion
+Turns “we solved this before” into an engineering gate. A new company must start from the strongest matching production precedent and preserve the full capability contract: source, economic scope, every in-scope leg, classification, quantity, pricing, USD valuation, null/completion semantics, aggregation boundary, rate lifecycle, public projection, refresh behavior and verifier.
 
-The production incident postmortem defines the deployment-plane lesson from the 2026-08-14 root-routing incident. Its key rule is that model memory is not a sufficient production control: canonical homepage ownership, auxiliary Worker scope and Durable Object lifecycle must be machine-enforced and smoke-tested against rendered production surfaces.
+It now also captures:
+- multi-leg promotion parity from Project X;
+- enumerable inventory vs economic active inventory;
+- nonzero-liquidity unresolved principal fail-closed behavior;
+- Aave-like lending split between embedded reserve-index interest and separate RewardsController incentives.
+
+### Owner Collaboration Operating Style
+Preserves directly observed working preferences — not private speculation or psychology. It prevents a new model from forcing the owner to reteach language/input conventions, sequencing, evidence standards, merge governance and accepted collaboration patterns.
+
+### Founder Decision DNA
+Strategic/evidence rule, not current runtime policy. A formal founder model should be built only from enough genuine decision→outcome cycles.
+
+### Owner Operating Context
+Preserves explicit owner principles, theses, heuristics and peer-owner context with provenance. Structured profiles currently provide context, not automatic policy, market fact or execution authority.
+
+### Conversation Learning Canon
+Defines how public dialogue may become a learning signal without allowing untrusted visitors to mutate facts, memory, code, methodology, security policy or capital authority.
+
+### Passport Responsive UI Canon
+Defines reusable desktop/mobile productive APR/APY presentation and protects accepted desktop geometry while using the two-row mobile composition.
+
+### Rewards Drawer UI Canon
+Defines one semantic ledger for Unclaimed, Compounded/Embedded and Pending/Warming states. New mechanisms should update canonical rows/data, not create protocol-specific mini-ledgers.
+
+### Production Incident Postmortem
+Encodes deployment-plane lessons such as canonical homepage ownership, Worker scope and Durable Object lifecycle as machine-enforced concerns rather than relying on model recollection.
+
+## Memory write-back discipline
+
+After material work, classify the new knowledge:
+
+- current numeric/state fact → canonical machine-readable subsystem artifact;
+- durable architecture/mechanism/UI lesson → relevant canon;
+- major milestone/resume point → new master continuity checkpoint;
+- task discovery/routing improvement → Routing Index / README;
+- formal owner decision → Decision Memory under its capture contract;
+- observational material event → Observer / Memory Vault;
+- trivial run output → workflow/Git logs only.
+
+Do not stuff everything into `CURRENT.md`. CURRENT is a bootstrap, not the archive.
 
 ## Automation
 
 `.github/workflows/update-project-memory-bootstrap.yml` rebuilds `CURRENT.md` deterministically:
 - after ordinary `main` pushes that GitHub can observe;
+- after successful Security Sentinel updates;
 - hourly as a backstop for GitHub-token generated production updates;
 - on manual dispatch.
 
-The updater writes only `CURRENT.md`, contains no model/API call, and emits no commit when the canonical source state has not changed.
+The updater writes only `CURRENT.md`, contains no model/API call, and emits no commit when canonical source state has not changed.
 
-`CURRENT.md` deliberately remains compact. The latest lexicographically named `THE_HOLDING_MASTER_CONTINUITY_*.md` is linked as the first detailed resume checkpoint, so a new detailed continuity file should be preferred over manually stuffing transient details into `CURRENT.md`.
+`CURRENT.md` deliberately remains compact. The latest lexicographically named `THE_HOLDING_MASTER_CONTINUITY_*.md` is linked as the first detailed resume checkpoint. The Routing Index is separately linked so the model can choose only the memory blocks relevant to the current task.
 
 The memory model is therefore:
 
-`Git history + Memory Vault + Decision/Learning memory + project continuity + generated CURRENT bootstrap`
+`Git history + Memory Vault + Decision/Learning memory + project continuity + task-aware routing + generated CURRENT bootstrap`
 
 The model may change. **The memory must remain The Holding's.**
