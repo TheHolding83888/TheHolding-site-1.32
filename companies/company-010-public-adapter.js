@@ -1,4 +1,4 @@
-/* The Holding · Company #010 Cypher public adapter · v0.9.1-right-centered-strategy-rate-badges
+/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges · v0.9.1-right-centered-strategy-rate-badges
  * Compatibility sentinel: preserves v0.6.4 GMX compact APY and v0.6 Stake DAO native surface contracts.
  * Productive-position badges are presentation-only projections of canonical Productivity breakdowns; reserve assets stay unbadged.
  * CRV-family wrappers are separate economic positions: direct CRV, Concentrator asdCRV/sdCRV and Convex staked cvxCRV are never summed as one token quantity.
