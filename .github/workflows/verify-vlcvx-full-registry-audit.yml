@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'rewards/vlcvx-registry-route-audit.mjs'
+      - 'rewards/union-vlcvx-allocation-audit.mjs'
       - '.github/workflows/verify-vlcvx-full-registry-audit.yml'
       - 'intelligence/project-memory/THE_HOLDING_VLCVX_ROUTE_GRAPH_CANON_2026-08-18.md'
   workflow_dispatch:
@@ -36,13 +37,24 @@ jobs:
           node --check rewards/vlcvx-registry-route-audit.mjs
           node rewards/vlcvx-registry-route-audit.mjs
 
+      - name: Inspect live Union settlement allocations
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          UNION_AUDIT_OUTPUT: /tmp/union-vlcvx-allocation-audit.json
+        run: |
+          set -euo pipefail
+          node --check rewards/union-vlcvx-allocation-audit.mjs
+          node rewards/union-vlcvx-allocation-audit.mjs
+
       - name: Verify registry coverage and route epistemics
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('/tmp/vlcvx-route-audit.json','utf8'));
+          const u=JSON.parse(fs.readFileSync('/tmp/union-vlcvx-allocation-audit.json','utf8'));
           if(d.version!=='0.1-vlcvx-full-registry-route-audit')throw new Error('audit version drift');
-          if(d.executionAuthority!=='none'||d.methodology?.claimAuthority!=='none')throw new Error('authority expansion');
+          if(d.executionAuthority!=='none'||d.methodology?.claimAuthority!=='none'||u.executionAuthority!=='none')throw new Error('authority expansion');
           if(d.methodology?.unknownIsNotZero!==true)throw new Error('unknown != zero missing');
           if(d.summary?.companyCount!==10||d.companies?.length!==10)throw new Error('full registry coverage missing');
           const regs=d.companies.map(x=>x.registry).sort().join(',');
@@ -58,7 +70,10 @@ jobs:
               if(!w.delegate?.address||!w.delegate?.identity||!w.forwarding?.identity||!w.route?.routeId)throw new Error('route atom incomplete '+c.registry);
             }
           }
-          console.log('vlCVX FULL REGISTRY LIVE PASS',JSON.stringify({epoch:d.epochs,positives:positives.map(x=>({registry:x.registry,name:x.name,totalVlCvx:x.totalVlCvx,routes:x.routes,wallets:x.wallets.filter(w=>w.hasVlCvx).map(w=>({alias:w.alias,address:w.address,balance:w.vlCvx.balance,delegate:w.delegate,forwarding:w.forwarding,route:w.route}))}))},null,2));
+          const unionWallets=positives.flatMap(c=>c.wallets.filter(w=>w.hasVlCvx&&w.forwarding?.effective&&w.forwarding?.identity==='union'));
+          if(u.members?.length!==unionWallets.length)throw new Error('Union member allocation coverage mismatch');
+          for(const m of u.members||[])if(!Array.isArray(m.selected)||!m.selected.length||m.totalWeight<=0)throw new Error('Union allocation unresolved for '+m.company);
+          console.log('vlCVX FULL REGISTRY LIVE PASS',JSON.stringify({epoch:d.epochs,positives:positives.map(x=>({registry:x.registry,name:x.name,totalVlCvx:x.totalVlCvx,routes:x.routes,wallets:x.wallets.filter(w=>w.hasVlCvx).map(w=>({alias:w.alias,address:w.address,balance:w.vlCvx.balance,delegate:w.delegate,forwarding:w.forwarding,route:w.route}))})),unionAllocations:u.members},null,2));
           NODE
 
       - name: Inspect existing canonical rewards atoms for vlCVX companies
@@ -79,8 +94,10 @@ jobs:
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const s=fs.readFileSync('rewards/vlcvx-registry-route-audit.mjs','utf8');
-          for(const bad of ['sendTransaction(','new Wallet(','setDelegate(','recordAllocation(','claim('])if(s.includes(bad))throw new Error('forbidden execution surface: '+bad);
-          if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing');
+          for(const p of ['rewards/vlcvx-registry-route-audit.mjs','rewards/union-vlcvx-allocation-audit.mjs']){
+            const s=fs.readFileSync(p,'utf8');
+            for(const bad of ['sendTransaction(','new Wallet(','setDelegate(','recordAllocation(','claim('])if(s.includes(bad))throw new Error('forbidden execution surface in '+p+': '+bad);
+            if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing in '+p);
+          }
           console.log('vlCVX audit no-execution guard PASS');
           NODE
