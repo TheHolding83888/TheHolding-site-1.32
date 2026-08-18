@@ -1,0 +1,62 @@
+{
+  "version": "0.1-company-009-beefy-cvxcrv-embedded-income",
+  "generatedAt": "2026-08-18T18:44:52.355Z",
+  "company": {
+    "registry": "009",
+    "name": "1milliondollar.eth",
+    "address": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596"
+  },
+  "strategy": {
+    "id": "beefy-cvxcrv",
+    "vaultId": "convex-staked-cvxCRV",
+    "vault": "0x4115150523599D1F6C6Fa27F5A4C27D578Fd8ce5",
+    "want": "0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7",
+    "incomeMode": "compounded-embedded",
+    "claimableApplicable": false
+  },
+  "latestCheckpoint": {
+    "observationId": "32172094493",
+    "generatedAt": "2026-08-18T18:44:52.355Z",
+    "blockNumber": 25783850,
+    "sharesRaw": "276049119332507070873",
+    "shares": 276.049119332507,
+    "ppfsRaw": "1699945563516377617",
+    "ppfs": 1.6999455635163776,
+    "underlyingCvxCrv": 469.268475721898,
+    "cvxCrvPriceUsd": 0.10798983,
+    "valueUsd": 50.676223
+  },
+  "latestInterval": {
+    "status": "warming-baseline",
+    "startAt": null,
+    "endAt": "2026-08-18T18:44:52.355Z",
+    "incomeCvxCrv": null,
+    "incomeUsd": null,
+    "reason": "First canonical live checkpoint; no historical income is invented."
+  },
+  "checkpoints": [
+    {
+      "observationId": "32172094493",
+      "generatedAt": "2026-08-18T18:44:52.355Z",
+      "blockNumber": 25783850,
+      "sharesRaw": "276049119332507070873",
+      "shares": 276.049119332507,
+      "ppfsRaw": "1699945563516377617",
+      "ppfs": 1.6999455635163776,
+      "underlyingCvxCrv": 469.268475721898,
+      "cvxCrvPriceUsd": 0.10798983,
+      "valueUsd": 50.676223
+    }
+  ],
+  "methodology": {
+    "rule": "Beefy harvested Convex rewards are embedded in vault PPFS. A measured interval is admitted only when adjacent checkpoints have the exact same vault share balance; otherwise flow reconciliation is required.",
+    "noBackfill": "No historical income is inferred from current APY or from a single checkpoint.",
+    "claimableBoundary": "Embedded Beefy income is never added to Accrued Rewards / Claimable.",
+    "idempotency": "A workflow observationId may create at most one canonical checkpoint; safe-writer replays reuse the same checkpoint."
+  },
+  "authority": {
+    "executionAuthority": "none",
+    "transactions": false,
+    "claimingAuthority": false
+  }
+}
