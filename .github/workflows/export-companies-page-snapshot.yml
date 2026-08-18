@@ -1,0 +1,41 @@
+name: Export Companies Page Snapshot
+
+on:
+  push:
+    branches:
+      - artifact/companies-page-snapshot-2026-08-18
+    paths:
+      - '.github/workflows/export-companies-page-snapshot.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout snapshot
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Prepare snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p snapshot/companies
+          cp companies/index.html snapshot/companies/index.html
+          cp companies/company-010-public-adapter.js snapshot/companies/company-010-public-adapter.js
+          cat > snapshot/SNAPSHOT.txt <<'EOF'
+          The Holding · Companies Page Production Snapshot
+          Source repository: TheHolding83888/TheHolding-site-1.32
+          Source main commit: 01ac88ef523a2ddf357c4d6f6f63fd8992b6ce4e
+          Includes:
+          - companies/index.html
+          - companies/company-010-public-adapter.js
+          EOF
+          (cd snapshot && sha256sum companies/index.html companies/company-010-public-adapter.js > SHA256SUMS.txt)
+      - name: Upload snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: THE_HOLDING_COMPANIES_PAGE_2026-08-18
+          path: snapshot/
+          if-no-files-found: error
+          retention-days: 1
