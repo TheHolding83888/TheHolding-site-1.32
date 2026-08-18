@@ -1,0 +1,103 @@
+name: Verify Defitea · Union scrvUSD Rewards
+
+on:
+  pull_request:
+    paths:
+      - 'rewards/defitea-union-scrvusd-overlay.mjs'
+      - 'rewards/company-rewards-engine.mjs'
+      - '.github/workflows/update-company-rewards.yml'
+      - '.github/workflows/verify-defitea-union-scrvusd.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install read-only runtime
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Run Defitea Union overlay against temporary rewards snapshot
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          REWARDS_OUTPUT: /tmp/defitea-union-rewards.json
+        run: |
+          set -euo pipefail
+          cp companies/rewards-data.json /tmp/defitea-union-rewards.json
+          node --check rewards/defitea-union-scrvusd-overlay.mjs
+          node rewards/defitea-union-scrvusd-overlay.mjs
+
+      - name: Verify forwarding allocation entitlement and accounting boundaries
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('/tmp/defitea-union-rewards.json','utf8'));
+          const diag=d.diagnostics?.defiteaUnion;
+          const c=d.companies?.['defitea.eth'];
+          const src=(c?.sources||[]).find(x=>x.route==='votium-union');
+          if(!diag||diag.capability!=='0.1-defitea-votium-union-scrvusd-member-proof')throw new Error('Defitea Union capability missing');
+          if(diag.executionAuthority!=='none'||diag.claimTransactionAuthority!=='none')throw new Error('Union collector authority expanded');
+          if(diag.unknownIsNotZero!==true)throw new Error('unknown != zero contract missing');
+          if(!src?.details?.union)throw new Error('combined Votium/Union source missing');
+          const u=src.details.union;
+          if(u.forwarding?.registry?.toLowerCase()!=='0x92e6e43f99809df84ed2d533e1fd8017eb966ee2')throw new Error('Votium registry mismatch');
+          if(u.forwarding?.expectedUnionForward?.toLowerCase()!=='0xcc2a0f5e95c88aabd7b8e0db5c5252820cd47f91')throw new Error('Union forwarding address mismatch');
+          if(u.forwarding?.configured!==true||u.forwarding?.effective!==true)throw new Error('Defitea Union forwarding is not currently effective');
+          if(u.allocation?.registry?.toLowerCase()!=='0xcfa23b8f9062369b21049b9f4a4ce79d640d1873')throw new Error('Union AssetRegistry mismatch');
+          if(u.allocation?.unionZap?.toLowerCase()!=='0xd52ca71aafa4d2590aac1e35e3005242dd31e5ed')throw new Error('Union V9 mismatch');
+          if(u.allocation?.scrvUsdOutputIndex==null||u.allocation?.scrvUsdOutputIndex<0)throw new Error('scrvUSD not discovered in live Union outputTokens');
+          if(u.allocation?.scrvUsdSelected!==true||!(Number(u.allocation?.scrvUsdWeight)>0)||!(Number(u.allocation?.scrvUsdSharePct)>0))throw new Error('Defitea scrvUSD allocation not proven onchain');
+          if(u.contracts?.distributor?.toLowerCase()!=='0x17ac69dd3fb8f22b4f52dbdb8a3a0eb059367efc')throw new Error('scrvUSD distributor mismatch');
+          if(u.contracts?.token?.toLowerCase()!=='0x0655977feb2f289a4ab78af67bab0d17aab84367')throw new Error('scrvUSD token mismatch');
+          if(u.contracts?.underlying?.toLowerCase()!=='0xf939e0a03fb07f59a73314e73794be0e57ac1b4e')throw new Error('crvUSD underlying mismatch');
+          if(!/^0x[0-9a-f]{64}$/i.test(String(u.contracts?.merkleRoot||'')))throw new Error('live Union merkle root missing');
+          const unionRows=(c.rewards||[]).filter(x=>x.route==='votium-union-scrvusd');
+          const ent=u.airdrop?.entitlement;
+          if(ent){
+            if(ent.proofValid!==true)throw new Error('Union entitlement Merkle proof invalid');
+            if(ent.claimed===false){
+              if(unionRows.length!==1)throw new Error('unclaimed Union entitlement must produce exactly one scrvUSD row');
+              const r=unionRows[0];
+              if(r.classification!=='unclaimed'||r.symbol.toLowerCase()!=='scrvusd'||!(Number(r.amount)>0))throw new Error('scrvUSD Unclaimed row invalid');
+              if(r.details?.proofValid!==true||r.details?.claimed!==false)throw new Error('scrvUSD proof/claimed provenance missing');
+              if(r.details?.allocationSharePct!==u.allocation.scrvUsdSharePct)throw new Error('allocation provenance drift');
+              if(Number.isFinite(Number(r.usdValue)) && !(Number(r.usdValue)>0))throw new Error('priced Union entitlement must be positive');
+            } else if(unionRows.length!==0) throw new Error('claimed Union entitlement leaked into Unclaimed rows');
+          } else {
+            if(unionRows.length!==0)throw new Error('absent entitlement fabricated a Union reward');
+            if(u.airdrop?.unknownIsNotZero!==true)throw new Error('absent entitlement must stay unknown, not zero');
+            if(!['warming','partial'].includes(src.status))throw new Error('unpublished entitlement must keep route non-complete');
+          }
+          if(src.details?.directVotium==null)throw new Error('direct Votium provenance was not preserved');
+          if(!String(d.methodology?.convex||'').includes('API 404/absent entitlement remains warming'))throw new Error('Union methodology boundary missing');
+          console.log('Defitea Union scrvUSD LIVE PASS',{
+            forwarding:u.forwarding,
+            allocation:{index:u.allocation.scrvUsdOutputIndex,weight:u.allocation.scrvUsdWeight,sharePct:u.allocation.scrvUsdSharePct},
+            state:u.state,
+            entitlement:ent?{status:ent.status,amount:ent.amount,usdValue:ent.usdValue,week:ent.distributorWeek}:null,
+            routeStatus:src.status
+          });
+          NODE
+
+      - name: Static no-execution guard
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('rewards/defitea-union-scrvusd-overlay.mjs','utf8');
+          for(const bad of ['sendTransaction(','Wallet(','claim.staticCall(','distributor.claim(','recordAllocation(']){
+            if(s.includes(bad))throw new Error('forbidden execution surface in Union collector: '+bad);
+          }
+          if(!s.includes("claimTransactionAuthority: 'none'"))throw new Error('claim authority guard missing');
+          console.log('Union collector no-execution guard PASS');
+          NODE
