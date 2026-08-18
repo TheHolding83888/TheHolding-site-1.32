@@ -2,16 +2,25 @@
 
 > **IRON RULE FOR NEW CHATS / NEW MODELS**
 >
-> Before substantive The Holding work, read this file from live GitHub `main`, then read the latest continuity checkpoint linked below. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
+> Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores what is being worked on; the Owner Collaboration Operating Style restores how to work with the owner. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-18T06:17:59.063Z**
+Canonical source state represented here: **2026-08-18T06:33:06.418Z**
 
 ## Resume order
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-17_1930_COMPANY_010_ACCEPTED_GMX_NEXT.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-17_1930_COMPANY_010_ACCEPTED_GMX_NEXT.md)
-2. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
-3. [Project Memory README](./README.md)
-4. Read only the live machine-readable subsystem artifacts needed for the current task.
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-18_0917_COMPANY_010_PASSPORT_RESPONSIVE_PRODUCTION_AND_MEMORY_SYNC.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-18_0917_COMPANY_010_PASSPORT_RESPONSIVE_PRODUCTION_AND_MEMORY_SYNC.md)
+2. [Owner Collaboration Operating Style](./THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md)
+3. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
+4. [Project Memory README](./README.md)
+5. Read only the live machine-readable subsystem artifacts and task-specific canons needed for the current task.
+
+## Owner collaboration bootstrap
+
+- Default working language with the owner is **Russian**; voice-dictated messages may contain transcription noise, so resolve obvious intent from live project context instead of repeatedly asking the owner to restate known information.
+- Work **one primary objective at a time**, preserve the owner's requested sequence, and prefer systemic reusable fixes over one-off patches.
+- `делай / продолжай / ок делай` authorizes implementation/branch/PR preparation, **not a new production merge**. Every PR still requires fresh explicit merge authorization and exact-head pre-merge proof.
+- Live-site screenshots are visual acceptance evidence. Preserve already accepted desktop/laptop surfaces while fixing mobile unless the owner explicitly asks to redesign both.
+- A newer explicit owner instruction always overrides an older collaboration preference. The collaboration canon is an operating contract, not a psychological profile.
 
 ## Project identity
 
@@ -27,12 +36,12 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 - **Permanent Memory Vault** — 7 Observer record(s), 53 material event(s), retention: indefinite; hard lifetime cap: none.
 - **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-17T07-30-56-276Z-02841dceb1.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
-- **Project continuity** — this bootstrap + human continuity checkpoints + build-discipline canon.
+- **Project continuity** — this bootstrap + latest master continuity + owner collaboration canon + specialized canons + Git history.
 
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: eb6b5ff27764f3ba15f76b0855b72d24b53831646040ba59418d848e147c0537.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 27; generatedAt 2026-08-18T06:17:59.063Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 26; generatedAt 2026-08-18T06:33:06.418Z.
 - Cognitive Stack Security snapshot is older (2026-08-17T08:05:07.465Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 22; evidence 24; noExecution true.
@@ -56,7 +65,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Durable-memory rule
 
-Material architecture decisions, owner directives, production milestones, important failure/recovery lessons and roadmap shifts must be preserved in GitHub-owned project memory. Trivial run noise should remain in machine logs/history rather than being copied into prose continuity.
+Material architecture decisions, owner directives, durable collaboration preferences, production milestones, important failure/recovery lessons and roadmap shifts must be preserved in GitHub-owned project memory. Trivial run noise should remain in machine logs/history rather than being copied into prose continuity.
 
 ## Canonical priority when facts conflict
 
