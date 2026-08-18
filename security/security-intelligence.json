@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-18T12:36:50.867Z",
+  "generatedAt": "2026-08-18T13:02:05.522Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 27,
+    "medium": 26,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 424,
-    "bytesScanned": 9616284,
+    "filesScanned": 428,
+    "bytesScanned": 9645440,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Mon, 17 Aug 2026 14:11:27 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "195e9fec0e2c623f24cbdcfa24db32156a8ea3b5e6752f376a1258ce94c13e59",
         "severity": "medium",
@@ -68,50 +69,6 @@
         "evidence": {
           "previousSha256": "2d703f6539c0e35becf2416e34b7cdb48b45bd0b497a1d4738c5f751801b0f2f",
           "currentSha256": "b8e17c638b9e55aa8ec2353267c85ecc2b0c0af88b62714ffa4c370eecf363a3"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "e3acb9ba4b7129202ee554f1961e664f392e8e376d5198aa8e4bed5d888286c6",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-company-010-state.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-company-010-state.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "908a65815a3879fbabcfdc64e6f2de6f3f7d8475dbe68fde720e9421979c1375",
-          "currentSha256": "18ff331bffb6aa4c26741a89e96f382ded91e6a24fc6420d89907143b2a3e34c"
-        }
-      },
-      {
-        "id": "d03dd78aa7ec6e0407b34b990af16e097d9008effaefdb1344a5ceaa65157354",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-company-rewards.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-company-rewards.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "30ef42b8ad5425b4b47423b7a98863b0de7f763d79ea7504c7a5a0c0f0e935d2",
-          "currentSha256": "80c1644f981c38c5177cf1a377b69a5298a17e9c62b73ff962fb5326f45069b8"
-        }
-      },
-      {
-        "id": "ff6594c1bf427db0e828d375a7ec78ab0aa7e2935b65a45d3860e9cd051a78f7",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-rewards-drawer-row-coverage-parity.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-rewards-drawer-row-coverage-parity.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "e48d71e01451ec186bf3e3f857b8d38b8b4a3f0c65368a67ebd9a5bbb354cbd9",
-          "currentSha256": "0c8967d5dfc436228d118423fc9498268f102ecab5db896aff8961fc9617aa76"
         }
       }
     ]
@@ -182,20 +139,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "195e9fec0e2c623f24cbdcfa24db32156a8ea3b5e6752f376a1258ce94c13e59",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-productivity.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-productivity.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "2d703f6539c0e35becf2416e34b7cdb48b45bd0b497a1d4738c5f751801b0f2f",
-        "currentSha256": "b8e17c638b9e55aa8ec2353267c85ecc2b0c0af88b62714ffa4c370eecf363a3"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -604,12 +547,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "9d83d30f17cff0877b75b8bd298718ffdda0394a46c7e85ddffde69155947a59",
+    "snapshotHash": "637c581ca50958078ac13d4990d64ddd09e688762a7e54d8d616b6d3f85bec73",
     "securityVault": {
-      "runCount": 292,
+      "runCount": 293,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T12-36-50-867Z-9d83d30f17.json",
-      "latestRecordHash": "0ff2f3ea751c3b3cd596c7dd8939de3e3b7d7e52c5b9376ab7116e5f6a42ef37",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-18T13-02-05-522Z-637c581ca5.json",
+      "latestRecordHash": "4acb0628dd7301847d2d90722de6d74b72c5556460edf71a781c38d13bda74c3",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
