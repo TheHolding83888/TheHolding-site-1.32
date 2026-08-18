@@ -1,5 +1,6 @@
-/* The Holding · Company #010 Cypher public adapter · v0.8-strategy-rewards-polish
+/* The Holding · Company #010 Cypher public adapter · v0.9-global-strategy-rate-badges
  * Compatibility sentinel: preserves v0.6.4 GMX compact APY and v0.6 Stake DAO native surface contracts.
+ * Productive-position badges are presentation-only projections of canonical Productivity breakdowns; reserve assets stay unbadged.
  * CRV-family wrappers are separate economic positions: direct CRV, Concentrator asdCRV/sdCRV and Convex staked cvxCRV are never summed as one token quantity.
  * Concentrator income is Compounded; Convex staked cvxCRV income is Claimable; an unproven rate is APR Pending, never a fake 0%.
  * veAERO / veVELO public reward state is read from current Company #010 rewards-data semantics, never inferred from another company.
@@ -18,6 +19,13 @@
   const REWARDS_URL='/companies/rewards-data.json';
   const ENTRY=Object.freeze({BTC:73482,ETH:2476,HYPE:38.62,CVX:1.84,CRV:0.228,AERO:0.60,LDO:0.8408,VELO:0.04762});
   const UNIQUE_INDEX_GREENS=Object.freeze(['#183F34','#244B3F','#315748','#40634F','#506F54','#637B59','#788861','#8E966C','#A4A77A','#B9B88B']);
+  const CYPHER_PRODUCTIVITY_ID=Object.freeze({
+    'aerodrome-finance':'aerodrome_veaero',
+    'velodrome-finance':'velodrome_vevelo',
+    'stakedao-base-curve-4pool':'stakedao_base_curve_4pool',
+    'concentrator-asdcrv':'concentrator_asdcrv',
+    'convex-staked-cvxcrv':'convex_staked_cvxcrv'
+  });
   let state=null,productivity=null,rewardsData=null,installed=false,indexColorHooked=false;
 
   const lang=()=> (document.documentElement.lang||'en').toLowerCase().startsWith('ru')?'ru':'en';
@@ -156,12 +164,58 @@
 
   function polishPassportTitles(){
     for(const card of document.querySelectorAll('.ipx-balance-card')){
-      const walker=document.createTreeWalker(card,NodeFilter.SHOW_TEXT);
-      let node;while((node=walker.nextNode())){if(node.nodeValue?.trim()==='Balance Sheet')node.nodeValue=node.nodeValue.replace('Balance Sheet','Balance Sheet · Strategies.');}
+      const kicker=card.querySelector('.ipx-ledger-kicker');
+      if(kicker)kicker.textContent=lang()==='ru'?'Баланс · Стратегии':'Balance Sheet · Strategies';
     }
   }
 
-  function strategyAprLabel(strategy){return finite(strategy?.yield?.referenceAprPct)?`APR ${pct2(strategy.yield.referenceAprPct)}`:'APR Pending';}
+  function ensureStrategyRateStyles(){
+    if(document.getElementById('passport-strategy-rate-style'))return;
+    const s=document.createElement('style');s.id='passport-strategy-rate-style';s.textContent=`
+      .ipx-strategy-rate-badge{display:inline-flex;align-items:center;justify-content:center;align-self:center;margin-top:.16rem;padding:.12rem .38rem;border-radius:999px;border:1px solid rgba(22,21,15,.10);background:rgba(22,21,15,.035);color:rgba(22,21,15,.52);font-size:.48rem;line-height:1.05;font-weight:600;letter-spacing:.015em;font-variant-numeric:tabular-nums;white-space:nowrap}
+      .ipx-strategy-rate-badge strong{color:#0a7c4e;font-weight:650}.ipx-strategy-rate-badge.pending strong{color:#8f7430}
+      @media(max-width:760px){.ipx-strategy-rate-badge{font-size:.43rem;padding:.1rem .31rem;margin-top:.12rem}}
+    `;document.head.appendChild(s);
+  }
+
+  function productiveBreakdown(nm){return Array.isArray(productivity?.companies?.[nm]?.breakdown)?productivity.companies[nm].breakdown:[];}
+
+  function rateForPosition(nm,pos){
+    if(!pos||pos.productivityOnly)return null;
+    const allBook=typeof COMPANY_BOOK!=='undefined'?(COMPANY_BOOK[nm]||[]):[];
+    if(allBook.some(x=>x&&x.productivityOnly===true&&x.id===pos.id))return null;
+    if(nm==='Cypher'){
+      if(pos.id==='bitcoin'||pos.id==='cypher-eth-equivalent'||pos.id==='ethereum'||pos.id==='hyperliquid'||pos.id==='convex-finance'||pos.id==='curve-dao-token'||pos.id==='lido-dao')return null;
+      if(String(pos.id).startsWith('gmx-gm-'))return null;
+    }
+    const principal=nm==='Cypher'?(CYPHER_PRODUCTIVITY_ID[pos.id]||pos.id):pos.id;
+    const row=productiveBreakdown(nm).find(x=>x&&x.principalId===principal);
+    if(!row)return null;
+    const engine=productivity?.engines?.[row.engineId];
+    const metric=String(engine?.sourceMetric||'');
+    const kind=/\bAPY\b/i.test(metric)?'APY':'APR';
+    return {kind,value:finite(row.apr)?Number(row.apr):null,pending:!finite(row.apr),engineStatus:row.engineStatus||null};
+  }
+
+  function ensureStrategyRateBadges(){
+    if(!productivity||typeof COMPANY_BOOK==='undefined')return;
+    ensureStrategyRateStyles();
+    for(const item of document.querySelectorAll('.ib-item[data-nm]')){
+      const nm=item.dataset.nm;
+      const book=(COMPANY_BOOK[nm]||[]).filter(pos=>!pos.productivityOnly);
+      const pills=[...item.querySelectorAll('.ipx-balance-card .ipx-position-pill')];
+      for(const pos of book){
+        const rate=rateForPosition(nm,pos);if(!rate)continue;
+        const expected=typeof COMPANY_ASSET_LABELS!=='undefined'?(COMPANY_ASSET_LABELS[pos.id]||pos.id):pos.id;
+        const pill=pills.find(p=>String(p.querySelector('.ipx-position-symbol')?.textContent||'').includes(expected));
+        if(!pill)continue;
+        pill.querySelector('.ipx-strategy-rate-badge')?.remove();
+        const badge=document.createElement('span');badge.className='ipx-strategy-rate-badge'+(rate.pending?' pending':'');
+        badge.innerHTML=rate.pending?`<span>${rate.kind}</span>&nbsp;<strong>Pending</strong>`:`<span>${rate.kind}</span>&nbsp;<strong>${pct2(rate.value)}</strong>`;
+        pill.appendChild(badge);
+      }
+    }
+  }
 
   function polishBalanceSheet(){
     if(!state)return;
@@ -204,8 +258,8 @@
     const cvx=crvStrategies.find(x=>x.id==='convex-staked-cvxcrv');
     const concPill=byLabel('Concentrator');
     const cvxPill=byLabel('Convex · staked cvxCRV');
-    if(concPill&&conc){const symbol=concPill.querySelector('.ipx-position-symbol');if(symbol)symbol.textContent=`Concentrator · sdCRV · ${strategyAprLabel(conc)}`;concPill.dataset.cypherDisplay='concentrator-apr';}
-    if(cvxPill&&cvx){const symbol=cvxPill.querySelector('.ipx-position-symbol');if(symbol)symbol.textContent=`Convex · staked cvxCRV · ${strategyAprLabel(cvx)}`;cvxPill.dataset.cypherDisplay='convex-cvxcrv-apr';}
+    if(concPill&&conc)concPill.dataset.cypherDisplay='concentrator-apr';
+    if(cvxPill&&cvx)cvxPill.dataset.cypherDisplay='convex-cvxcrv-apr';
   }
 
   function ensureCrvIncomeStyles(){
@@ -299,6 +353,7 @@
     syncNetworkStats();
     polishPassportTitles();
     polishBalanceSheet();
+    ensureStrategyRateBadges();
     ensureCrvStrategyIncome();
     ensureVeStrategyIncome();
     markPendingPerformance();
@@ -334,7 +389,7 @@
     const timer=setInterval(()=>{attempts+=1;if(rerenderNativeSurfaces()||attempts>600)clearInterval(timer);},100);
     rerenderNativeSurfaces();
     setInterval(syncNetworkStats,1000);
-    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishPassportTitles();polishBalanceSheet();ensureCrvStrategyIncome();ensureVeStrategyIncome();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
+    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishPassportTitles();polishBalanceSheet();ensureStrategyRateBadges();ensureCrvStrategyIncome();ensureVeStrategyIncome();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 

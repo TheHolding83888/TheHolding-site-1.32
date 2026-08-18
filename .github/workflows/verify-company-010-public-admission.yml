@@ -41,19 +41,23 @@ jobs:
           for(const x of htmlMust)if(!h.includes(x))throw new Error('missing native surface: '+x);
           if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
           for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
-          const adapterMust=['v0.8-strategy-rewards-polish','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC'];
+          const adapterMust=['v0.9-global-strategy-rate-badges','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC'];
           for(const x of adapterMust)if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
           if(/\['Bitcoin'.*'Fluid'/.test(a)||a.includes("'Concentrator','Fluid'"))throw new Error('Fluid remains in Cypher protocol list');
           if(!a.includes("${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}"))throw new Error('exact-vs-floor Company TVL contract missing');
           console.log('Company #010 native base UI contract PASS');
           NODE
-      - name: Verify Passport strategy heading and Cypher CRV rows
+      - name: Verify global Passport strategy heading and productive rate badges
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          for(const x of ['Balance Sheet · Strategies.','polishPassportTitles',"byLabel('veCRV')",'falseVeCrv.remove()','strategyAprLabel','Concentrator · sdCRV · ${strategyAprLabel(conc)}','Convex · staked cvxCRV · ${strategyAprLabel(cvx)}','APR Pending'])if(!a.includes(x))throw new Error('strategy Passport contract missing: '+x);
-          console.log('Passport heading + Cypher CRV row contract PASS');
+          for(const x of ['Balance Sheet · Strategies','polishPassportTitles','ensureStrategyRateBadges','ipx-strategy-rate-badge','productiveBreakdown','rateForPosition','APR Pending',"productivityOnly===true&&x.id===pos.id","String(pos.id).startsWith('gmx-gm-')","byLabel('veCRV')",'falseVeCrv.remove()','Concentrator · sdCRV','Convex · staked cvxCRV'])if(!a.includes(x))throw new Error('strategy Passport contract missing: '+x);
+          if(a.includes('Balance Sheet · Strategies.'))throw new Error('terminal dot returned to Balance Sheet · Strategies');
+          for(const reserveGuard of ["pos.id==='bitcoin'","pos.id==='cypher-eth-equivalent'","pos.id==='ethereum'","pos.id==='hyperliquid'","pos.id==='convex-finance'","pos.id==='curve-dao-token'","pos.id==='lido-dao'"])if(!a.includes(reserveGuard))throw new Error('Cypher reserve/mixed guard missing: '+reserveGuard);
+          if(!a.includes("const kind=/\\bAPY\\b/i.test(metric)?'APY':'APR'"))throw new Error('APR/APY metric distinction missing');
+          if(!a.includes("rate.pending?`<span>${rate.kind}</span>&nbsp;<strong>Pending</strong>`"))throw new Error('unknown != zero Pending badge contract missing');
+          console.log('Global Passport productive rate badge contract PASS');
           NODE
       - name: Verify GMX public contract
         run: |
