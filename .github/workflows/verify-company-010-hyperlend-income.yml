@@ -1,0 +1,60 @@
+name: "Verify Company #010 · HyperLend Income"
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding/company-010-hyperlend-income-overlay.mjs'
+      - '.github/workflows/update-company-010-hyperlend-income.yml'
+      - '.github/workflows/verify-company-010-hyperlend-income.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install bounded dependency
+        run: npm install --no-save --no-package-lock ethers@6
+      - name: Verify HyperLend live read-only semantics
+        env:
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+        run: |
+          set -euo pipefail
+          cp companies/company-010-production-state.json /tmp/company-010-production-state.before.json
+          cp companies/rewards-data.json /tmp/rewards-data.before.json
+          node --check onboarding/company-010-hyperlend-income-overlay.mjs
+          node onboarding/company-010-hyperlend-income-overlay.mjs | tee /tmp/hyperlend.out
+          node - <<'NODE'
+          const fs=require('fs');
+          const before=JSON.parse(fs.readFileSync('/tmp/company-010-production-state.before.json','utf8'));
+          const s=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+          const r=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const h=s.strategies?.hyperlend;
+          if(h?.version!=='0.1-company-010-hyperlend-income-parity'||h.status!=='measured')throw new Error('HyperLend strategy capability missing');
+          if(h.protocol!=='HyperLend'||h.chain!=='HyperEVM'||h.market!=='kHYPE supply')throw new Error('HyperLend identity mismatch');
+          if(!(Number(h.referenceAprPct)>=0))throw new Error('HyperLend Reference APR missing');
+          const p=h.income?.primary;if(p?.state!=='Compounded'||p.classification!=='embedded-lending-interest'||p.claimableApplicable!==false)throw new Error('HyperLend primary income semantics wrong');
+          if(p.measurementStatus==='measured'&&(!(Number(p.amount)>=0)||!(Number(p.usdValue)>=0)))throw new Error('HyperLend measured embedded amount invalid');
+          if(h.accountingBoundary?.embeddedInterestAlreadyInPrincipalBalance!==true||h.accountingBoundary?.embeddedInterestNotAdditiveCapital!==true||h.accountingBoundary?.embeddedInterestNotClaimable!==true||h.accountingBoundary?.externalIncentivesSeparateFromSupplyApr!==true||h.accountingBoundary?.noDoubleCount!==true)throw new Error('HyperLend no-double-count boundary missing');
+          if(s.capital?.totalCapitalUsd!==before.capital?.totalCapitalUsd)throw new Error('HyperLend income overlay changed Company TVL');
+          const ext=h.income?.externalIncentives;if(!ext||!['none','configured'].includes(ext.status))throw new Error('HyperLend incentives status invalid');
+          if(ext.rewardAssetCount!==ext.rewards.length)throw new Error('HyperLend reward asset enumeration mismatch');
+          for(const x of ext.rewards){if(x.classification!=='unclaimed'||x.status!=='measured'||!(Number(x.claimable)>=0))throw new Error('HyperLend incentive semantics invalid')}
+          const c=r.companies?.Cypher,e=(c?.embeddedIncome||[]).find(x=>x.route==='hyperlend-khype'),src=(c?.sources||[]).find(x=>x.route==='hyperlend-khype');
+          if(!e||e.state!=='Compounded'||e.claimableApplicable!==false||e.usdValueIncludedInClaimableTotal!==false)throw new Error('HyperLend drawer embedded row missing');
+          if(!src||src.details?.rewardState!=='Compounded'||src.details?.incomeMode!=='embedded-lending-interest')throw new Error('HyperLend drawer source semantics missing');
+          const inc=(c?.rewards||[]).filter(x=>x.route==='hyperlend-khype-incentives');
+          if(ext.rewardAssetCount===0&&inc.length!==0)throw new Error('fabricated HyperLend Unclaimed row');
+          if(ext.rewardAssetCount>0&&inc.length!==ext.rewardAssetCount)throw new Error('HyperLend Unclaimed reward projection mismatch');
+          if(s.epistemicBoundary?.hyperlendSupplyInterestIsEmbedded!==true||s.epistemicBoundary?.hyperlendEmbeddedInterestIsNotClaimable!==true||s.epistemicBoundary?.hyperlendExternalIncentivesAreSeparate!==true||s.authority?.executionAuthority!=='none')throw new Error('HyperLend epistemic/authority boundary missing');
+          console.log('HYPERLEND FULL INCOME PARITY PASS',{hToken:h.hToken,hTokenSymbol:h.hTokenSymbol,referenceAprPct:h.referenceAprPct,embedded:{status:p.measurementStatus,amount:p.amount,usdValue:p.usdValue},externalIncentives:{status:ext.status,controller:ext.controller,rewardAssetCount:ext.rewardAssetCount,rewards:ext.rewards.map(x=>({symbol:x.symbol,claimable:x.claimable,emissionPerSecondRaw:x.emissionPerSecondRaw,distributionEnd:x.distributionEnd}))},companyTvlUnchanged:s.capital.totalCapitalUsd,rewardsDrawer:{claimableUsd:c.claimableUsd,measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd}});
+          NODE
