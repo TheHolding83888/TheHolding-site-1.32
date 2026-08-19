@@ -1,0 +1,81 @@
+{
+  "version": "0.1-yieldring-canonical-state",
+  "company": "YieldRing.eth",
+  "registry": "002",
+  "effectiveAt": "2026-08-19",
+  "authority": {
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAction": false
+  },
+  "capital": {
+    "bitcoin": {
+      "assetId": "bitcoin",
+      "quantity": 0.0334,
+      "costBasisUsd": 2121.88,
+      "lots": [
+        {
+          "quantity": 0.03,
+          "entryPriceUsd": 63442,
+          "costBasisUsd": 1903.26,
+          "evidenceStatus": "established"
+        },
+        {
+          "quantity": 0.0034,
+          "entryPriceUsd": 64300,
+          "costBasisUsd": 218.62,
+          "evidenceStatus": "owner-provided"
+        }
+      ]
+    },
+    "aerodrome": {
+      "assetId": "aerodrome-finance",
+      "quantity": 678,
+      "costBasisUsd": 274.464,
+      "lots": [
+        {
+          "quantity": 480,
+          "entryPriceUsd": 0.4068,
+          "costBasisUsd": 195.264,
+          "evidenceStatus": "established"
+        },
+        {
+          "quantity": 198,
+          "entryPriceUsd": 0.4,
+          "costBasisUsd": 79.2,
+          "evidenceStatus": "owner-provided"
+        }
+      ]
+    },
+    "convex": {
+      "assetId": "convex-finance",
+      "quantity": 240,
+      "entryPriceUsd": 1.28,
+      "costBasisUsd": 307.2,
+      "evidenceStatus": "established"
+    },
+    "frax": {
+      "assetId": "frax-share",
+      "quantity": 800,
+      "entryPriceUsd": 0.2628,
+      "costBasisUsd": 210.24,
+      "evidenceStatus": "established"
+    }
+  },
+  "aerodromeRelay": {
+    "mode": "veAERO Maxi",
+    "managerId": "10298",
+    "managerAddress": "0xc9814f18a8751214f719de15c54d01b3d78ef14f",
+    "expectedUnderlyingLockCount": 2,
+    "aggregatePrincipalAero": 678,
+    "rewardsPresentation": "single-aggregated-aerodrome-line",
+    "evidenceStatus": "owner-provided-not-yet-independently-reproduced",
+    "semanticGuard": "Manager metadata is provenance/expectation only and must not create a second economic AERO position or alter measured rewards by itself."
+  },
+  "semantics": {
+    "oneEconomicPositionOnce": true,
+    "unknownIsNotZero": true,
+    "costBasisLotsPreserved": true,
+    "rewardAggregation": "Two managed veAERO locks may be represented as one YieldRing Aerodrome reward line while preserving underlying lock provenance."
+  }
+}
