@@ -51,6 +51,7 @@ Trigger examples:
 
 Read:
 - `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
+- `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
 - `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`
 - latest company-specific continuity if one exists
 - onboarding playbook(s) present in repository
@@ -150,6 +151,7 @@ Trigger examples:
 
 Read:
 - `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md`
+- `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
 - `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
 - latest master continuity
 - live `companies/rewards-data.json`
@@ -224,6 +226,7 @@ Trigger examples:
 
 Read:
 - `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md`
+- `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
 - latest master continuity
 - Rewards Drawer canon if drawer is touched
 - current public adapter / `companies/index.html`

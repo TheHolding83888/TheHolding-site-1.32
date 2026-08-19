@@ -21,7 +21,7 @@ When the productive mechanism is proven, prefer:
 
 `Protocol · productive asset / strategy`
 
-Current examples include `Aerodrome · veAERO`, `Velodrome · veVELO`, `Curve · veCRV`, `Frax · veFRAX`, `Yield Basis · veYB`, `Pendle · sPENDLE`, `f(x) Protocol · veFXN`, `Liquity · staked LQTY`, `Stake DAO · 4pool stables`, and `Convex · staked cvxCRV`.
+Current examples include `Aerodrome · veAERO`, `Velodrome · veVELO`, `Curve · veCRV`, `Frax · veFRAX`, `Yield Basis · veYB`, `Pendle · sPENDLE`, `f(x) Protocol · veFXN`, `Liquity · staked LQTY`, `Venice · sVVV`, `Resupply · staked RSUP`, `Stake DAO · 4pool stables`, and `Convex · staked cvxCRV`.
 
 More-specific proven strategy identity may override the generic productive-asset form when it carries real meaning, for example `Velodrome · 40 Acres`.
 
