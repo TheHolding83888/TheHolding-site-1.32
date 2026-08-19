@@ -23,6 +23,10 @@ on:
       - 'productivity/yieldring-productivity-overlay.mjs'
       - 'intelligence/capital-state/capital-state.mjs'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
+      - 'intelligence/market-data/market-price-registry.json'
+      - 'intelligence/market-data/market-data-engine.mjs'
+      - 'intelligence/market-data/coingecko-fetch-shim.mjs'
+      - 'intelligence/market-data/public-capital-engine.mjs'
       - '.github/workflows/unified-capital-refresh.yml'
 
 permissions:
@@ -72,14 +76,26 @@ jobs:
           node --check productivity/yieldring-productivity-overlay.mjs
           node --check intelligence/capital-state/general-company-balance-sheet.mjs
           node --check intelligence/capital-state/capital-state.mjs
+          node --check intelligence/market-data/market-data-engine.mjs
+          node --check intelligence/market-data/coingecko-fetch-shim.mjs
+          node --check intelligence/market-data/public-capital-engine.mjs
 
-      - name: Refresh all coherent capital surfaces in one working tree
+      - name: Ensure one reusable shared market-price snapshot
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          MARKET_DATA_FORCE_REFRESH: 'false'
+        run: node intelligence/market-data/market-data-engine.mjs
+
+      - name: Refresh all coherent capital surfaces from shared Market Data
+        env:
+          NODE_OPTIONS: --import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           GITHUB_TOKEN: ${{ github.token }}
         run: node intelligence/capital-state/unified-capital-refresh.mjs
+
+      - name: Rebuild coherent public capital projection
+        run: node intelligence/market-data/public-capital-engine.mjs
 
       - name: Validate final coherent snapshot
         run: |
@@ -89,6 +105,8 @@ jobs:
           const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
           const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
+          const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const d=p.companies?.['defitea.eth'];
           const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const df=(d?.breakdown||[]).find(x=>x.engineId==='fx_vefxn'||x.principalId==='fxn-token');
@@ -107,8 +125,10 @@ jobs:
           if(Number(btc?.units)!==0.0334||Number(aero?.units)!==678)throw new Error('YieldRing Capital State coherence missing');
           if(c.network?.registryCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1)throw new Error('Registry capital coverage drift');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
-          if(c.authority?.executionAuthority!=='none')throw new Error('authority drift');
-          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd});
+          if(c.authority?.executionAuthority!=='none'||pub.authority?.executionAuthority!=='none')throw new Error('authority drift');
+          if(m.semantics?.browserExternalPriceRequestsAllowed!==false||pub.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('browser price authority drift');
+          if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital incomplete');
+          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,publicDefiteaTvl:pub.funds.defitea.tvlUsd});
           NODE
           git diff --check
 
@@ -124,7 +144,9 @@ jobs:
             companies/productivity-source-report.json \
             intelligence/capital-state/general-company-balance-sheet.mjs \
             intelligence/capital-state/general-company-balance-sheet.json \
-            intelligence/capital-state/capital-state.json
+            intelligence/capital-state/capital-state.json \
+            intelligence/market-data/market-data.json \
+            intelligence/market-data/public-capital-state.json
           if git diff --cached --quiet; then
             echo "Unified capital surfaces already current."
             exit 0
@@ -137,11 +159,14 @@ jobs:
               echo "Unified capital writer conflict; refusing to guess."
               exit 1
             fi
-            COINGECKO_API_KEY='${{ secrets.COINGECKO_API_KEY }}' \
+            COINGECKO_API_KEY='${{ secrets.COINGECKO_API_KEY }}' MARKET_DATA_FORCE_REFRESH='false' \
+              node intelligence/market-data/market-data-engine.mjs
+            NODE_OPTIONS='--import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs' \
             ETH_RPC_URL='${{ secrets.ETH_RPC_URL }}' \
             BASE_RPC_URL='${{ secrets.BASE_RPC_URL }}' \
             GITHUB_TOKEN='${{ github.token }}' \
               node intelligence/capital-state/unified-capital-refresh.mjs
+            node intelligence/market-data/public-capital-engine.mjs
             git add \
               companies/index.html \
               yieldring/index.html \
@@ -149,7 +174,9 @@ jobs:
               companies/productivity-source-report.json \
               intelligence/capital-state/general-company-balance-sheet.mjs \
               intelligence/capital-state/general-company-balance-sheet.json \
-              intelligence/capital-state/capital-state.json
+              intelligence/capital-state/capital-state.json \
+              intelligence/market-data/market-data.json \
+              intelligence/market-data/public-capital-state.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
