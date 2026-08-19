@@ -52,14 +52,18 @@ if (!forceRefresh && previousHasFullRegistry && Number.isFinite(previousAgeMs) &
 }
 
 const apiKey = String(process.env.COINGECKO_API_KEY || '').trim();
-if (!apiKey) throw new Error('COINGECKO_API_KEY is required for an external Market Data refresh; browser credentials are forbidden');
+const keylessFallbackAllowed = registry?.bootstrap?.serverSideKeylessFallbackAllowed === true;
+if (!apiKey && !keylessFallbackAllowed) {
+  throw new Error('COINGECKO_API_KEY is required for an external Market Data refresh; browser credentials are forbidden');
+}
 
 const providerIds = [...new Set(registry.assets.map(x => x.providerId).filter(Boolean))];
 const url = new URL(registry.provider?.endpoint || 'https://api.coingecko.com/api/v3/simple/price');
 url.searchParams.set('ids', providerIds.join(','));
 url.searchParams.set('vs_currencies', registry.provider?.currency || 'usd');
-url.searchParams.set('x_cg_demo_api_key', apiKey);
+if (apiKey) url.searchParams.set('x_cg_demo_api_key', apiKey);
 
+const authMode = apiKey ? 'github-actions-secret' : 'server-side-keyless-fallback';
 const requestedAt = iso();
 let payload = null;
 let requestError = null;
@@ -128,8 +132,8 @@ for (const asset of registry.assets) {
 
 const status = unknownCount > 0 ? 'partial' : fallbackCount > 0 ? 'stale-fallback' : 'ok';
 const output = {
-  version: '0.2-market-data',
-  engineVersion: '0.2-single-external-fetch-deduped-shared-snapshot',
+  version: '0.2.1-market-data-writer-resilience',
+  engineVersion: '0.2.1-single-external-fetch-first-snapshot-resilient',
   generatedAt: iso(),
   requestedAt,
   observedAt: freshCount > 0 ? observedAt : previous?.observedAt || null,
@@ -139,6 +143,7 @@ const output = {
     externalRequestCount: 1,
     minimumOffCycleReuseMinutes: MIN_EXTERNAL_REFRESH_MS / 60000,
     browserExternalPriceRequestsAllowed: false,
+    serverSideKeylessFallbackAllowed: keylessFallbackAllowed,
     unknownIsNotZero: true,
     staleFallbackMaxAgeHours: MAX_PREVIOUS_AGE_MS / 3600000,
     wrapperNavAndProtocolValuationStayUpstream: true
@@ -146,6 +151,7 @@ const output = {
   provider: {
     id: 'coingecko',
     endpoint: url.origin + url.pathname,
+    authMode,
     credentialExposed: false,
     httpStatus,
     error: requestError
@@ -170,6 +176,7 @@ const output = {
 fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2) + '\n');
 console.log('Market Data snapshot written', {
   status,
+  authMode,
   freshCount,
   fallbackCount,
   unknownCount,
