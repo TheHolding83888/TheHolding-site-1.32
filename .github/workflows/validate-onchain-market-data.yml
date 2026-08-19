@@ -20,59 +20,50 @@ jobs:
     steps:
       - name: Checkout PR head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-
       - name: Validate resolver syntax and deterministic RPC failover
         run: |
           set -euo pipefail
           node --check intelligence/market-data/onchain-price-resolver.mjs
           node --check intelligence/market-data/onchain-price-resolver-validation.mjs
           node intelligence/market-data/onchain-price-resolver-validation.mjs
-
-      - name: Prove shadow authority boundary
+      - name: Prove shadow authority boundary and cohort routes
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const reg=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
-          const eth=reg.assets?.ethereum?.route;
-          if(reg.mode!=='shadow')throw new Error('Onchain registry must remain shadow in foundation phase');
+          if(reg.mode!=='shadow')throw new Error('Onchain registry must remain shadow');
           if(reg.semantics?.productionPriceAuthority!==false)throw new Error('Onchain production authority activated prematurely');
           if(reg.semantics?.paidRpcRequired!==false)throw new Error('Paid RPC dependency introduced');
           if(reg.semantics?.browserRpcRequestsAllowed!==false)throw new Error('Browser RPC authority introduced');
           if(reg.semantics?.coinGeckoRemainsFallbackAndSanityCheck!==true)throw new Error('CoinGecko fallback contract missing');
           if(reg.semantics?.executionAuthority!=='none')throw new Error('Execution authority drift');
-          if(!eth||eth.type!=='chainlink-v3'||eth.network!=='ethereum'||eth.authority!=='shadow')throw new Error('ETH shadow route invalid');
-          if(!/^0x[0-9a-fA-F]{40}$/.test(eth.contract))throw new Error('ETH feed contract invalid');
+          const requiredAssets=['ethereum','bitcoin','curve-dao-token','tether-gold','physical-silver'];
+          for(const assetId of requiredAssets){
+            const route=reg.assets?.[assetId]?.route;
+            if(!route||route.type!=='chainlink-v3'||route.network!=='ethereum'||route.authority!=='shadow')throw new Error(`${assetId} shadow route invalid`);
+            if(!/^0x[0-9a-fA-F]{40}$/.test(route.contract))throw new Error(`${assetId} feed contract invalid`);
+          }
+          const silver=reg.assets?.['physical-silver']?.route;
+          if(silver?.feedBase!=='XAG'||silver?.referenceKind!=='direct-commodity-spot-reference')throw new Error('Silver direct XAG route missing');
+          if(silver?.emergencyFallback?.type!=='gold-ratio'||Number(silver?.emergencyFallback?.divideGoldUsdBy)!==68)throw new Error('Silver owner fallback drift');
+          const gold=reg.assets?.['tether-gold']?.route;
+          if(gold?.feedBase!=='XAU'||gold?.referenceKind!=='backing-value-reference')throw new Error('Gold backing reference route missing');
           const rpc=reg.networks?.ethereum?.rpcFailover||[];
           if(rpc.length<2)throw new Error('Public RPC failover requires at least two endpoints');
-          console.log('Onchain Market Data authority boundary PASS',{
-            mode:reg.mode,
-            routes:Object.keys(reg.assets||{}).length,
-            publicRpcEndpoints:rpc.length,
-            productionPriceAuthority:reg.semantics.productionPriceAuthority,
-            paidRpcRequired:reg.semantics.paidRpcRequired
-          });
+          console.log('Onchain Market Data cohort route contract PASS',{routes:Object.keys(reg.assets||{}).length,publicRpcEndpoints:rpc.length,productionPriceAuthority:false,paidRpcRequired:false,silverPrimary:'XAG/USD',silverEmergencyGoldDivisor:68});
           NODE
-
       - name: Prove shared heartbeat remains shadow-only and fail-open
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const workflow=fs.readFileSync('.github/workflows/market-data-refresh.yml','utf8');
-          const required=[
-            'Observe onchain prices in fail-open shadow mode',
-            'onchain-price-resolver.mjs',
-            'onchain-price-shadow.json',
-            'canonical Market Data continues unchanged',
-            "shadow.semantics?.productionPriceAuthority!==false",
-            "shadow.semantics?.paidRpcRequired!==false"
-          ];
+          const required=['Observe onchain prices in fail-open shadow mode','onchain-price-resolver.mjs','onchain-price-shadow.json','canonical Market Data continues unchanged',"shadow.semantics?.productionPriceAuthority!==false","shadow.semantics?.paidRpcRequired!==false"];
           for(const token of required){if(!workflow.includes(token))throw new Error(`Heartbeat shadow contract missing: ${token}`);}
           const marketIndex=workflow.indexOf('Refresh one shared external market-price snapshot');
           const shadowIndex=workflow.indexOf('Observe onchain prices in fail-open shadow mode');

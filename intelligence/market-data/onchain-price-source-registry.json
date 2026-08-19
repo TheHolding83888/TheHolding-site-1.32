@@ -1,5 +1,5 @@
 {
-  "version": "0.1-onchain-price-source-registry",
+  "version": "0.2-onchain-price-source-registry-core-commodities",
   "purpose": "Machine-readable routing for zero-paid-data onchain market observations. Shadow routes collect and validate blockchain-native prices without changing production price authority.",
   "mode": "shadow",
   "semantics": {
@@ -26,16 +26,27 @@
     "ethereum": {
       "assetId": "ethereum",
       "symbol": "ETH",
-      "route": {
-        "type": "chainlink-v3",
-        "network": "ethereum",
-        "contract": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-        "quote": "USD",
-        "maxAgeSeconds": 7200,
-        "maxDivergencePct": 2,
-        "authority": "shadow",
-        "provenance": "Chainlink ETH/USD Data Feed on Ethereum Mainnet"
-      }
+      "route": {"type":"chainlink-v3","network":"ethereum","contract":"0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419","quote":"USD","maxAgeSeconds":7200,"maxDivergencePct":2,"authority":"shadow","provenance":"Chainlink ETH/USD Data Feed on Ethereum Mainnet"}
+    },
+    "bitcoin": {
+      "assetId": "bitcoin",
+      "symbol": "BTC",
+      "route": {"type":"chainlink-v3","network":"ethereum","contract":"0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c","quote":"USD","maxAgeSeconds":7200,"maxDivergencePct":2,"authority":"shadow","provenance":"Chainlink BTC/USD Data Feed on Ethereum Mainnet"}
+    },
+    "curve-dao-token": {
+      "assetId": "curve-dao-token",
+      "symbol": "CRV",
+      "route": {"type":"chainlink-v3","network":"ethereum","contract":"0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f","quote":"USD","maxAgeSeconds":90000,"maxDivergencePct":4,"authority":"shadow","provenance":"Chainlink CRV/USD Data Feed on Ethereum Mainnet"}
+    },
+    "tether-gold": {
+      "assetId": "tether-gold",
+      "symbol": "XAUT",
+      "route": {"type":"chainlink-v3","network":"ethereum","contract":"0x214eD9Da11D2fbe465a6fc601a91E62EbEc1a0D6","quote":"USD","feedBase":"XAU","economicMapping":"one-xaut-represents-one-fine-troy-ounce-of-gold","referenceKind":"backing-value-reference","maxAgeSeconds":90000,"maxDivergencePct":4,"authority":"shadow","provenance":"Chainlink XAU/USD Data Feed on Ethereum Mainnet mapped to Tether Gold backing reference"}
+    },
+    "physical-silver": {
+      "assetId": "physical-silver",
+      "symbol": "Ag",
+      "route": {"type":"chainlink-v3","network":"ethereum","contract":"0x379589227b15F1a12195D3f2d90bBc9F31f95235","quote":"USD","feedBase":"XAG","referenceKind":"direct-commodity-spot-reference","maxAgeSeconds":90000,"maxDivergencePct":8,"authority":"shadow","provenance":"Chainlink XAG/USD Data Feed on Ethereum Mainnet","emergencyFallback":{"type":"gold-ratio","referenceAssetId":"tether-gold","divideGoldUsdBy":68,"authority":"owner-declared-fallback-only","note":"Use only if a dedicated silver source is unavailable; direct XAG/USD remains preferred."}}
     }
   }
 }
