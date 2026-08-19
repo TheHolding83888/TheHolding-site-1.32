@@ -6,6 +6,8 @@ on:
       - 'onboarding/company-010-projectx-reference-apr.mjs'
       - '.github/workflows/update-company-010-projectx-reference-apr.yml'
       - '.github/workflows/update-productivity.yml'
+      - '.github/workflows/unified-capital-refresh.yml'
+      - 'intelligence/capital-state/unified-capital-refresh.mjs'
       - '.github/workflows/verify-company-010-projectx-reference-apr.yml'
       - 'companies/company-010-public-adapter.js'
 
@@ -37,11 +39,13 @@ jobs:
           const fs=require('fs');
           const src=fs.readFileSync('onboarding/company-010-projectx-reference-apr.mjs','utf8');
           const writer=fs.readFileSync('.github/workflows/update-company-010-projectx-reference-apr.yml','utf8');
-          const prod=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
+          const unified=fs.readFileSync('.github/workflows/unified-capital-refresh.yml','utf8');
+          const orchestrator=fs.readFileSync('intelligence/capital-state/unified-capital-refresh.mjs','utf8');
           const ui=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
           for(const s of ['MIN_WINDOW_HOURS=24','MAX_WINDOW_HOURS=24*7','feeTierIsNotYield:true','collect.staticCall','strategy fingerprint changed','claimable fee amount decreased','average endpoint token prices','average endpoint strategy NAV'])if(!src.includes(s))throw new Error('Project X observed APR contract missing '+s);
           if(!writer.includes('Update Company #010 · Cypher Production State')||!writer.includes('company-010-projectx-rate-history.json'))throw new Error('Project X APR autonomous writer contract missing');
-          if(!prod.includes('Update Company #010 · Project X Reference APR'))throw new Error('Productivity does not follow Project X rate writer');
+          if(!unified.includes('Update Company #010 · Project X Reference APR'))throw new Error('Unified Capital Refresh does not follow Project X rate writer');
+          if(!orchestrator.includes("run('2/6 Refresh protocol APRs and established Productivity'")||!orchestrator.includes("run('3/6 Admit Company #010 compatibility layer'"))throw new Error('Unified Capital Refresh does not execute Productivity after Project X wakeup');
           if(!ui.includes("if(pos.id==='projectx-whype-usdc')")||!ui.includes('pending:!finite(px.referenceAprPct)'))throw new Error('Passport does not auto-promote numeric Project X APR');
           const start=src.indexOf('function feeApr('),end=src.indexOf('function recalcProductivity',start);
           if(start<0||end<0)throw new Error('Project X fee APR function boundary missing');
