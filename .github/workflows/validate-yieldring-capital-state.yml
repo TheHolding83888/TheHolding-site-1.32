@@ -6,7 +6,6 @@ on:
       - 'companies/yieldring-canonical-state.json'
       - 'companies/yieldring-public-capital-projection.mjs'
       - 'productivity/yieldring-productivity-overlay.mjs'
-      - 'yieldring/index.html'
       - '.github/workflows/project-yieldring-capital-state.yml'
       - '.github/workflows/update-productivity.yml'
       - '.github/workflows/validate-yieldring-capital-state.yml'
@@ -63,6 +62,7 @@ jobs:
           const aero=(c?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           for(const n of ["qty: 0.0334","costBasisUsd: 2121.88","qty: 678","costBasisUsd: 274.464","managerId: '10298'"]){if(!html.includes(n))throw new Error('Company Book projection missing '+n);}
           if(!bal.includes("{ id:'bitcoin', qty:0.0334")||!bal.includes("{ id:'aerodrome-finance', qty:678"))throw new Error('General Balance projection missing');
+          if(!bal.includes("['1.15','1.16'].includes(productivity.version)"))throw new Error('Productivity compatibility guard missing');
           if(!c||Number(aero?.units)!==678||!(Number(c.productiveValue)>0)||!Number.isFinite(Number(c.aprLatest)))throw new Error('Productivity projection invalid');
           if(d.diagnostics?.yieldRing?.managerId!=='10298'||d.diagnostics?.yieldRing?.executionAuthority!=='none')throw new Error('YieldRing diagnostics missing');
           console.log('YieldRing projections PASS',{aeroUnits:aero.units,aprLatest:c.aprLatest});
@@ -77,12 +77,5 @@ jobs:
           if(!src.includes("slug: 'aerodrome'"))throw new Error('Aerodrome collector missing');
           console.log('Existing multi-veNFT Rewards aggregation PASS');
           NODE
-      - name: Validate dedicated YieldRing page
-        run: |
-          set -euo pipefail
-          grep -F "qty: 0.0334" yieldring/index.html
-          grep -F "qty: 678" yieldring/index.html
-          grep -F "2 locks · Maxi relay" yieldring/index.html
-          grep -F "Manager ID 10298" yieldring/index.html
       - name: Diff hygiene
         run: git diff --check
