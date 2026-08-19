@@ -1,0 +1,47 @@
+name: "Validate YieldRing Production Cascade"
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/update-productivity.yml'
+      - '.github/workflows/update-capital-state.yml'
+      - '.github/workflows/validate-yieldring-production-cascade.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate orchestration contract
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
+          const c=fs.readFileSync('.github/workflows/update-capital-state.yml','utf8');
+          for(const n of ["companies/yieldring-canonical-state.json","productivity/yieldring-productivity-overlay.mjs",".github/workflows/update-productivity.yml"]){if(!p.includes(n))throw new Error('Productivity self-start path missing: '+n);}
+          if(!p.includes("Number(aero?.units)!==678"))throw new Error('YieldRing Productivity 678 AERO guard missing');
+          if(!p.includes("Number(s.capital?.bitcoin?.quantity)!==0.0334"))throw new Error('YieldRing BTC canonical guard missing');
+          if(!c.includes('Update The Holding Productivity Data'))throw new Error('Capital State workflow_run dependency on Productivity missing');
+          if(!c.includes("github.event.workflow_run.name == 'Update The Holding Productivity Data'"))throw new Error('Capital State Productivity-specific General Balance rebuild missing');
+          if(!c.includes("Number(yrBtc?.units)!==0.0334")||!c.includes("Number(yrAero?.units)!==678"))throw new Error('Capital State YieldRing quantity proof missing');
+          if(!c.includes("github.event.workflow_run.head_branch == 'main'"))throw new Error('workflow_run main-branch gate missing');
+          console.log('YieldRing production cascade contract PASS',{productivitySelfStart:true,capitalWorkflowRun:true,generalBalanceRebuild:true,capitalProof:true,executionAuthority:'none'});
+          NODE
+      - name: Syntax and diff hygiene
+        run: |
+          set -euo pipefail
+          node --check productivity/yieldring-productivity-overlay.mjs
+          node --check intelligence/capital-state/general-company-balance-sheet.mjs
+          node --check intelligence/capital-state/capital-state.mjs
+          git diff --check

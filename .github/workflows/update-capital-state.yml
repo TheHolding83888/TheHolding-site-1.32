@@ -5,6 +5,7 @@ on:
   workflow_run:
     workflows:
       - "Update Company #010 · Cypher Production State"
+      - "Update The Holding Productivity Data"
     types: [completed]
   push:
     branches: [main]
@@ -13,6 +14,7 @@ on:
       - 'companies/stable-index-data.json'
       - 'companies/company-010-production-state.json'
       - 'intelligence/capital-state/general-company-balance-sheet.mjs'
+      - '.github/workflows/update-capital-state.yml'
 
 permissions:
   contents: write
@@ -23,13 +25,18 @@ concurrency:
 
 jobs:
   update:
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: main
           fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -40,13 +47,21 @@ jobs:
           set -euo pipefail
           node --check intelligence/capital-state/general-company-balance-sheet.mjs
           node --check intelligence/capital-state/capital-state.mjs
-      - name: Rebuild General Balance Sheet when its upstream changed
-        if: ${{ github.event_name != 'workflow_run' }}
+      - name: Rebuild General Balance Sheet when a capital/productivity upstream changed
+        if: >-
+          ${{
+            github.event_name != 'workflow_run' ||
+            github.event.workflow_run.name == 'Update The Holding Productivity Data'
+          }}
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
         run: node intelligence/capital-state/general-company-balance-sheet.mjs
-      - name: Validate canonical established General Balance
-        if: ${{ github.event_name == 'workflow_run' }}
+      - name: Validate canonical established General Balance for Company #010 follow-through
+        if: >-
+          ${{
+            github.event_name == 'workflow_run' &&
+            github.event.workflow_run.name == 'Update Company #010 · Cypher Production State'
+          }}
         run: |
           node -e "const fs=require('fs');const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json'));if(g.version!=='0.1-general-company-balance-sheet'||g.status!=='ok'||g.companies?.length!==8)throw new Error('canonical established General Balance unavailable');"
       - name: Build Capital State
@@ -66,13 +81,18 @@ jobs:
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete') throw new Error('exact Network TVL must be available');
           if(Math.abs(Number(c.network.networkTvlUsd)-Number(c.network.measuredCapitalFloorUsd))>0.05) throw new Error('exact Network TVL/floor drift');
           if(Object.values(c.network?.layerWeights||{}).some(v=>!Number.isFinite(Number(v)))) throw new Error('full Network layer weights unavailable');
+          const yieldRing=(c.companies||[]).find(x=>x.registry==='002');
+          if(!yieldRing||yieldRing.name!=='YieldRing.eth'||yieldRing.totalCapitalComplete!==true) throw new Error('YieldRing complete Capital State missing');
+          const yrBtc=(yieldRing.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
+          const yrAero=(yieldRing.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
+          if(Number(yrBtc?.units)!==0.0334||Number(yrAero?.units)!==678) throw new Error('YieldRing canonical quantities not propagated into Capital State');
           const cypher=(c.companies||[]).find(x=>x.registry==='010');
           if(!cypher||cypher.name!=='Cypher'||cypher.totalCapitalComplete!==true||cypher.measurementStatus!=='total-capital-complete') throw new Error('Cypher complete state mismatch');
           if(cypher.knownButUnboundCapitalMayExist!==false||cypher.coverage?.companyCapitalCoverage!==1) throw new Error('Cypher complete denominator mismatch');
           if(cypher.gaps?.some(x=>x.id==='fluid-net-eth')) throw new Error('Cypher Fluid gap must be absent');
           if(c.readiness?.networkTvl!=='available') throw new Error('Network TVL readiness mismatch');
           if(c.authority?.executionAuthority!=='none') throw new Error('authority drift');
-          console.log('Capital State v0.3 complete Registry admission PASS',{engine:c.engineVersion,registry:c.network.registryCompanyCount,measured:c.network.measuredCompanyCount,complete:c.network.totalCapitalCompleteCompanyCount,networkTvl:c.network.networkTvlUsd});
+          console.log('Capital State v0.3 complete Registry admission PASS',{engine:c.engineVersion,registry:c.network.registryCompanyCount,measured:c.network.measuredCompanyCount,complete:c.network.totalCapitalCompleteCompanyCount,networkTvl:c.network.networkTvlUsd,yieldRing:{btc:yrBtc.units,aero:yrAero.units}});
           NODE
       - name: Commit generated state safely
         run: |
