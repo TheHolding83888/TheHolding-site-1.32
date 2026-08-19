@@ -47,8 +47,8 @@ jobs:
             'compactEmbeddedAmount',
             'cy-strategy-state-row',
             'Concentrator · sdCRV',
-            'Aerodrome',
-            'Velodrome',
+            'Aerodrome · veAERO',
+            'Velodrome · veVELO',
             'embeddedIncome',
             'Compounded',
             'Claimable',
@@ -65,7 +65,10 @@ jobs:
           if(!a.includes("const stateName=['Compounded','Claimable'].includes(rawState)?rawState:'Pending'"))throw new Error('backend state projection missing');
           if(!a.includes("stateName==='Compounded'?compactEmbeddedAmount(route):{amount:'',usd:'',symbol:'',chain:''}"))throw new Error('embedded Compounded projection missing');
           if(!a.includes("usd:finite(x.usdValue)?money2(x.usdValue):''"))throw new Error('embedded USD projection missing');
-          if(!a.includes("['Aerodrome','aerodrome-ve','AERO','Base']")||!a.includes("['Velodrome','velodrome-ve-direct','VELO','Optimism']"))throw new Error('known ve route presentation mapping missing');
+          if(!a.includes("['Aerodrome','Aerodrome · veAERO','aerodrome-ve','AERO','Base']")||!a.includes("['Velodrome','Velodrome · veVELO','velodrome-ve-direct','VELO','Optimism']"))throw new Error('known ve productive identity mapping missing');
+          if(a.includes("['Aerodrome','aerodrome-ve','AERO','Base']")||a.includes("['Velodrome','velodrome-ve-direct','VELO','Optimism']"))throw new Error('generic ve identity mapping regression remains');
+          if(!a.includes("appendStrategyStateRow(panel,{label,meta,stateName"))throw new Error('productive label projection missing');
+          if(a.includes("appendStrategyStateRow(panel,{label:name,meta,stateName"))throw new Error('custom adapter still degrades productive identity to protocol-only label');
           if(!a.includes('`${symbol} · ${chain} · Rebase`'))throw new Error('generic ve Rebase metadata missing');
           if(!a.includes("amountMeta:stateName==='Compounded'?embedded.usd:''"))throw new Error('clean Compounded USD display missing');
           if(a.includes('Embedded income · ${embedded.usd}')||a.includes('Yield remains inside the managed veNFT'))throw new Error('Cypher-specific ve presentation regression remains');
@@ -74,7 +77,7 @@ jobs:
 
           const canonMust=['one primary Accrued Rewards / strategy-income drawer','native measured row wins','Unclaimed','Compounded','Pending / Warming','embeddedIncome','unknown != zero','The Rewards Drawer is a unified state ledger'];
           for(const x of canonMust)if(!canon.includes(x))throw new Error('Rewards Drawer canon missing: '+x);
-          console.log('Unified Rewards Drawer + known ve presentation parity PASS');
+          console.log('Unified Rewards Drawer + productive ve identity parity PASS');
           NODE
       - name: Verify GMX uses shared responsive capsule
         run: |
