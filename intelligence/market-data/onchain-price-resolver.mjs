@@ -10,6 +10,17 @@ const RPC_TIMEOUT_MS = 10_000;
 const UINT256_MOD = 1n << 256n;
 const INT256_SIGN = 1n << 255n;
 const SUPPORTED_ROUTE_TYPES = new Set(['chainlink-v3', 'chainlink-v3-relative']);
+const RETRYABLE_RPC_ERROR_PATTERNS = [
+  /rate.?limit/i,
+  /too many requests/i,
+  /throttl/i,
+  /temporar(?:y|ily) unavailable/i,
+  /service unavailable/i,
+  /upstream.*(?:unavailable|error|timeout)/i,
+  /gateway.*(?:unavailable|error|timeout)/i,
+  /request timeout/i,
+  /timed? out/i
+];
 
 function readJson(file, fallback = null) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
@@ -31,6 +42,10 @@ export function decodeUint256(hex) { return word(hex, 0); }
 export function decodeRpcQuantity(hex) {
   if (!/^0x[0-9a-f]+$/i.test(String(hex || ''))) throw new Error('Invalid RPC quantity');
   return BigInt(hex);
+}
+export function isRetryableRpcError(error) {
+  const message = typeof error === 'string' ? error : error?.message;
+  return RETRYABLE_RPC_ERROR_PATTERNS.some(pattern => pattern.test(String(message || '')));
 }
 
 function buildNetworkBatch(entries) {
@@ -61,6 +76,16 @@ async function postRpc(endpoint, payload, fetchImpl) {
   for (const request of payload) if (!byId.has(request.id)) throw new Error(`RPC result ${request.id} missing`);
   const block = byId.get(1);
   if (block?.error || !block?.result) throw new Error(`RPC block error: ${block?.error?.message || 'missing block result'}`);
+
+  const retryableRows = payload
+    .filter(request => request.id !== 1)
+    .map(request => byId.get(request.id))
+    .filter(row => row?.error && isRetryableRpcError(row.error));
+  if (retryableRows.length) {
+    const reasons = [...new Set(retryableRows.map(row => String(row.error?.message || 'retryable RPC error')))];
+    throw new Error(`Retryable RPC endpoint error: ${reasons.join(' | ')}`);
+  }
+
   const assetCalls = payload.filter(x => x.id !== 1).map(x => byId.get(x.id));
   if (assetCalls.length && assetCalls.every(row => row?.error || !row?.result)) throw new Error('All asset calls failed on RPC endpoint');
   return byId;
@@ -270,8 +295,8 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
 
   const assetCount = Object.keys(registry.assets).length;
   return {
-    version: '0.3-onchain-price-shadow-multinetwork-composable',
-    engineVersion: '0.3-network-batched-composable-public-rpc-shadow-resolver',
+    version: '0.4-onchain-price-shadow-retryable-rpc-failover',
+    engineVersion: '0.4-network-batched-composable-retryable-rpc-failover',
     generatedAt: iso(nowMs),
     status: unavailableCount > 0 ? 'partial' : warningCount > 0 ? 'warning' : 'ok',
     mode: 'shadow',
@@ -280,6 +305,8 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       productionPriceAuthority: false,
       browserRpcRequestsAllowed: false,
       publicRpcFailover: true,
+      retryableJsonRpcErrorsTriggerEndpointFailover: true,
+      contractSpecificErrorsRemainIsolated: true,
       oneHttpBatchPerNetworkPerAttempt: true,
       duplicateBlockRequestsWithinNetwork: false,
       composableRelativePriceRoutes: true,
