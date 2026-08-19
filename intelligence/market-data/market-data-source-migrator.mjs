@@ -70,6 +70,34 @@ function migrateCompanies(html) {
       'companies Defitea holdings'
     );
   }
+
+  if (!html.includes('const publicCapitalSnapshot = await window.THPublicCapital.load();')) {
+    html = replaceOnce(
+      html,
+      /const \[prices, _productivity, _rewards, stableIndex\] = await Promise\.all\(\[\s*cgPrices\(IDS\),\s*loadProductivitySnapshot\(\),\s*loadCompanyRewardsSnapshot\(\),\s*loadStableIndexSnapshot\(\)\s*\]\);/,
+      `const [prices, _productivity, _rewards, stableIndex, publicCapitalSnapshot] = await Promise.all([\n        cgPrices(IDS),\n        loadProductivitySnapshot(),\n        loadCompanyRewardsSnapshot(),\n        loadStableIndexSnapshot(),\n        window.THPublicCapital ? window.THPublicCapital.load() : Promise.resolve(null)\n    ]);`,
+      'companies shared Public Capital load'
+    );
+  }
+
+  if (!html.includes('const publicCompanyTvl = (key, fallback) =>')) {
+    html = replaceOnce(
+      html,
+      /const F1 = bookFigures\('05081966\.eth', prices\);([\s\S]*?)const tvl1 = F1\.value, tvl2 = F2\.value, tvl3 = F3\.value, tvl4 = F4\.value, tvl5 = F5\.value, tvl6 = F6\.value, tvl7 = F7\.value, tvl9 = F9\.value;/,
+      `const F1 = bookFigures('05081966.eth', prices);$1const publicCompanyTvl = (key, fallback) => {\n        const row = publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)\n            ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key))\n            : null;\n        const value = Number(row && row.tvlUsd);\n        return Number.isFinite(value) && value >= 0 ? value : fallback;\n    };\n    const tvl1 = publicCompanyTvl('001', F1.value);\n    const tvl2 = publicCompanyTvl('002', F2.value);\n    const tvl3 = publicCompanyTvl('003', F3.value);\n    const tvl4 = publicCompanyTvl('004', F4.value);\n    const tvl5 = publicCompanyTvl('005', F5.value);\n    const tvl6 = publicCompanyTvl('006', F6.value);\n    const tvl7 = publicCompanyTvl('007', F7.value);\n    const tvl9 = publicCompanyTvl('009', F9.value);\n    const canonicalNetworkTvl = Number(publicCapitalSnapshot?.totals?.companyNetworkTvlUsd);\n    [[F1,tvl1],[F2,tvl2],[F3,tvl3],[F4,tvl4],[F5,tvl5],[F6,tvl6],[F7,tvl7],[F9,tvl9]].forEach(([f,v]) => {\n        f.value = v;\n        f.pnl = Number.isFinite(Number(f.cost)) ? v - Number(f.cost) : 0;\n        f.pct = Number(f.cost) > 0 ? (v / Number(f.cost) - 1) * 100 : 0;\n    });`,
+      'companies current TVL authority'
+    );
+  }
+
+  if (!html.includes("const tvl8Public = publicCompanyTvl('008', tvl8);")) {
+    html = replaceOnce(
+      html,
+      /if \(el9\)\s+el9\.textContent = fmt\(tvl9\);\s*if \(statEl\) statEl\.textContent = fmt\(tvl1 \+ tvl2 \+ tvl3 \+ tvl4 \+ tvl5 \+ tvl6 \+ tvl7 \+ tvl8 \+ tvl9\);/,
+      `if (el9)    el9.textContent = fmt(tvl9);\n    const tvl8Public = publicCompanyTvl('008', tvl8);\n    if (el8) el8.textContent = tvl8Public > 0 ? fmt(tvl8Public) : 'Live';\n    if (statEl) statEl.textContent = Number.isFinite(canonicalNetworkTvl) && canonicalNetworkTvl >= 0\n        ? fmt(canonicalNetworkTvl)\n        : fmt(tvl1 + tvl2 + tvl3 + tvl4 + tvl5 + tvl6 + tvl7 + tvl8Public + tvl9);`,
+      'companies network TVL authority'
+    );
+  }
+
   return html;
 }
 
@@ -145,5 +173,9 @@ const homepage = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 if (!/aero:\s*2632\b/.test(homepage) || !/fxn:\s*64\.81\b/.test(homepage)) {
   throw new Error('Homepage Defitea canonical quantities not migrated');
 }
+
+const companies = fs.readFileSync(path.join(ROOT, 'companies/index.html'), 'utf8');
+if (!companies.includes('const publicCompanyTvl = (key, fallback) =>')) throw new Error('Companies current TVL is not Public Capital authoritative');
+if (!companies.includes('canonicalNetworkTvl')) throw new Error('Companies Network TVL is not Public Capital authoritative');
 
 console.log('Market Data public surface migration PASS');
