@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+// Trigger the branch-local parity patch after the workflow exists.
 const adapter='companies/company-010-public-adapter.js';
 let a=fs.readFileSync(adapter,'utf8');
 if(!a.includes("'convex-finance':'convex_vlcvx'")){
