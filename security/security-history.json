@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-19T09:38:47.148Z",
+  "lastUpdatedAt": "2026-08-19T09:39:21.748Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 310,
-    "vaultRunCount": 310,
+    "runCount": 311,
+    "vaultRunCount": 311,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -3733,6 +3733,18 @@
       "highCount": 8,
       "newFindingCount": 2,
       "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-19T09:39:21.748Z",
+      "status": "watch",
+      "snapshotHash": "a77e4e44f1644a6619650f1b5c189f34f50fa72be8766600831e04a854a89987",
+      "recordPath": "security/security-vault/2026/08/2026-08-19T09-39-21-748Z-a77e4e44f1.json",
+      "recordHash": "e589a488dcbba8b951deb38658e5e440114a5c351225335a14a8876e65f8e11d",
+      "findingCount": 33,
+      "criticalCount": 0,
+      "highCount": 7,
+      "newFindingCount": 0,
+      "resolvedFindingCount": 2
     }
   ],
   "events": [
@@ -15978,6 +15990,28 @@
       "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/checkout@v4.",
       "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
       "entity": "actions/checkout@v4"
+    },
+    {
+      "id": "d79d42b132b662680da69926944064a948eae3e10fc5ab3cdef9d7e47d7d384c",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T09:39:21.748Z",
+      "findingId": "dac3c8db66c66867fa4995652f87f12c1f6a9cd7c1fccec9147486b4b36d893f",
+      "severity": "high",
+      "category": "unpinned-action",
+      "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/checkout@v4.",
+      "file": ".github/workflows/_temp_passport_label_patch.yml",
+      "entity": "actions/checkout@v4"
+    },
+    {
+      "id": "3204c48a1214651485e88e7cec004fa231c8e77e16d2fc00cfc181e8fa8949e4",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T09:39:21.748Z",
+      "findingId": "03f8471cec3a555294f314b2b9b9fe662942d88801e49a2a2c7954f721cc19ed",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/_temp_passport_label_patch_pr.yml.",
+      "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
+      "entity": null
     }
   ]
 }
