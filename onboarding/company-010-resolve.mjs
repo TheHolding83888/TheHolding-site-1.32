@@ -20,7 +20,7 @@ const CONCENTRATOR = {
 const MULTICALL3=getAddress('0xcA11bde05977b3631167028862bE2a173976CA11');
 const LDO_ARBITRUM=getAddress('0x13ad51ed4f1b7e9dc168d8a00cb3f4ddd85efa60');
 const RPC={
-  ethereum:[...new Set([process.env.ETH_RPC_URL,process.env.ETH_RPC_URL_2,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com'].filter(Boolean))],
+  ethereum:[...new Set([process.env.ETH_RPC_URL,process.env.ETH_RPC_URL_2,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com','https://eth.blockscout.com/api/eth-rpc'].filter(Boolean))],
   arbitrum:[...new Set([process.env.ARBITRUM_RPC_URL,'https://arbitrum-one-rpc.publicnode.com','https://arb1.arbitrum.io/rpc'].filter(Boolean))],
   hyperevm:[...new Set([process.env.HYPEREVM_RPC_URL,'https://rpc.hyperliquid.xyz/evm'].filter(Boolean))]
 };
