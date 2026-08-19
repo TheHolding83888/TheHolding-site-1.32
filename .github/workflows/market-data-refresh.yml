@@ -1,0 +1,125 @@
+name: "The Holding Market Data · Shared Refresh"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7,37 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence/market-data/market-price-registry.json'
+      - 'intelligence/market-data/fund-capital-registry.json'
+      - 'intelligence/market-data/market-data-engine.mjs'
+      - 'intelligence/market-data/public-capital-engine.mjs'
+      - 'intelligence/market-data/coingecko-fetch-shim.mjs'
+      - 'intelligence/market-data/public-capital-client.js'
+      - 'companies/defitea-canonical-state.json'
+      - 'companies/stable-index-data.json'
+      - 'companies/productivity-data.json'
+      - 'intelligence/capital-state/capital-state.json'
+      - '.github/workflows/market-data-refresh.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shared-market-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Validate shared Market Data engines
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/market-data-engine.mjs
+          node --check intelligence/market-data/public-capital-engine.mjs
+          node --check intelligence/market-data/coingecko-fetch-shim.mjs
+          node --check intelligence/market-data/public-capital-client.js
+
+      - name: Refresh one shared external market-price snapshot
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          MARKET_DATA_FORCE_REFRESH: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
+        run: node intelligence/market-data/market-data-engine.mjs
+
+      - name: Rebuild public fund + company capital view
+        run: node intelligence/market-data/public-capital-engine.mjs
+
+      - name: Validate canonical quantities and semantics
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
+          const reg=JSON.parse(fs.readFileSync('intelligence/market-data/fund-capital-registry.json','utf8'));
+          const d=pub.funds?.defitea;
+          const f=reg.funds?.fructus;
+          const s=reg.funds?.singul;
+          const ondo=f?.positions?.find(x=>x.assetId==='ondo-finance');
+          const eliza=s?.positions?.find(x=>x.assetId==='elizaos');
+          const excluded=(f?.excludedFromTvl||[]).map(x=>x.assetId);
+          if(Number(ondo?.quantity)!==542)throw new Error('Fructus ONDO canonical quantity drift');
+          if(Number(eliza?.quantity)!==80808)throw new Error('Singul ELIZA canonical quantity drift');
+          if(!excluded.includes('dbcon')||!excluded.includes('copxon'))throw new Error('Fructus exclusions missing');
+          if((f?.positions||[]).some(x=>['dbcon','copxon'].includes(x.assetId)))throw new Error('DBCon/COPXon re-entered Fructus TVL');
+          if(!d||!Number.isFinite(Number(d.tvlUsd))||!Number.isFinite(Number(d.referenceAprPct)))throw new Error('Defitea public state incomplete');
+          if(pub.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('browser external-price authority drift');
+          if(pub.authority?.executionAuthority!=='none')throw new Error('execution authority drift');
+          if(market.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('market browser authority drift');
+          if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd)))throw new Error('Fund ecosystem TVL unavailable');
+          if(!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Company network TVL unavailable');
+          console.log('Shared Market Data validation PASS',{
+            marketStatus:market.status,
+            observedAt:market.observedAt,
+            fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd,
+            companyNetworkTvlUsd:pub.totals.companyNetworkTvlUsd,
+            defiteaTvlUsd:d.tvlUsd,
+            defiteaReferenceAprPct:d.referenceAprPct
+          });
+          NODE
+          git diff --check
+
+      - name: Publish generated shared state safely
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Market Data Orchestrator"
+          git config user.email "market-data-orchestrator@theholding.ai"
+          git add \
+            intelligence/market-data/market-data.json \
+            intelligence/market-data/public-capital-state.json
+          if git diff --cached --quiet; then
+            echo 'Shared Market Data state already current.'
+            exit 0
+          fi
+          git commit -m "market data: refresh shared public snapshot"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo 'Market Data writer conflict; refusing to guess.'
+              exit 1
+            fi
+            COINGECKO_API_KEY='${{ secrets.COINGECKO_API_KEY }}' MARKET_DATA_FORCE_REFRESH='false' \
+              node intelligence/market-data/market-data-engine.mjs
+            node intelligence/market-data/public-capital-engine.mjs
+            git add intelligence/market-data/market-data.json intelligence/market-data/public-capital-state.json
+            git commit --amend --no-edit
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1
