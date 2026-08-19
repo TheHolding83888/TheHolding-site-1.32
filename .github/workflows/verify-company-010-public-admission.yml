@@ -54,7 +54,8 @@ jobs:
           const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
           for(const x of ['Balance Sheet · Strategies','polishPassportTitles','ensureStrategyRateBadges','ipx-strategy-rate-badge','productiveBreakdown','rateForPosition','APR Pending',"productivityOnly===true&&x.id===pos.id","String(pos.id).startsWith('gmx-gm-')","byLabel('veCRV')",'falseVeCrv.remove()','Concentrator · sdCRV','Convex · staked cvxCRV'])if(!a.includes(x))throw new Error('strategy Passport contract missing: '+x);
           if(a.includes('Balance Sheet · Strategies.'))throw new Error('terminal dot returned to Balance Sheet · Strategies');
-          for(const reserveGuard of ["pos.id==='bitcoin'","pos.id==='cypher-eth-equivalent'","pos.id==='ethereum'","pos.id==='hyperliquid'","pos.id==='convex-finance'","pos.id==='curve-dao-token'","pos.id==='lido-dao'"])if(!a.includes(reserveGuard))throw new Error('Cypher reserve/mixed guard missing: '+reserveGuard);
+          for(const reserveGuard of ["pos.id==='bitcoin'","pos.id==='cypher-eth-equivalent'","pos.id==='ethereum'","pos.id==='hyperliquid'","pos.id==='curve-dao-token'","pos.id==='lido-dao'"])if(!a.includes(reserveGuard))throw new Error('Cypher reserve/mixed guard missing: '+reserveGuard);
+          if(!a.includes("'convex-finance':'convex_vlcvx'"))throw new Error('Cypher vlCVX Productivity mapping missing');
           if(!a.includes("const kind=/\\bAPY\\b/i.test(metric)?'APY':'APR'"))throw new Error('APR/APY metric distinction missing');
           if(!a.includes("rate.pending?`<span>${rate.kind}</span>")||!a.includes('<strong>Pending</strong>'))throw new Error('unknown != zero Pending badge contract missing');
           if(/rate\.pending[^\n]{0,180}<strong>0(?:\.0+)?%?<\/strong>/.test(a))throw new Error('unknown productive rate rendered as zero');
