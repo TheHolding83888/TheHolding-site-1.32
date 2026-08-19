@@ -1,7 +1,7 @@
 name: temp patch passport labels
 on:
-  push:
-    branches: [fix/passport-custom-rewards-label-parity]
+  pull_request:
+    types: [opened, synchronize]
 permissions:
   contents: write
 jobs:
@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: Patch Cypher adapter and verifier
         run: |
           python - <<'PY2'
@@ -35,6 +37,5 @@ jobs:
           git config user.name 'The Holding Passport Hygiene'
           git config user.email 'passport-hygiene@theholding.ai'
           git add companies/company-010-public-adapter.js .github/workflows/verify-passport-productive-label-parity.yml
-          git commit -m 'fix: preserve Cypher productive reward labels'
-          git push origin fix/passport-custom-rewards-label-parity
-          echo "patch workflow complete"
+          git diff --cached --quiet || git commit -m 'fix: preserve Cypher productive reward labels'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
