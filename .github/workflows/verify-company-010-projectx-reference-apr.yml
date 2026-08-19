@@ -45,7 +45,9 @@ jobs:
           for(const s of ['MIN_WINDOW_HOURS=24','MAX_WINDOW_HOURS=24*7','feeTierIsNotYield:true','collect.staticCall','strategy fingerprint changed','claimable fee amount decreased','average endpoint token prices','average endpoint strategy NAV'])if(!src.includes(s))throw new Error('Project X observed APR contract missing '+s);
           if(!writer.includes('Update Company #010 · Cypher Production State')||!writer.includes('company-010-projectx-rate-history.json'))throw new Error('Project X APR autonomous writer contract missing');
           if(!unified.includes('Update Company #010 · Project X Reference APR'))throw new Error('Unified Capital Refresh does not follow Project X rate writer');
-          if(!orchestrator.includes("run('2/6 Refresh protocol APRs and established Productivity'")||!orchestrator.includes("run('3/6 Admit Company #010 compatibility layer'"))throw new Error('Unified Capital Refresh does not execute Productivity after Project X wakeup');
+          const prodStep=orchestrator.indexOf('Refresh protocol APRs and established Productivity');
+          const company010Step=orchestrator.indexOf('Admit Company #010 compatibility layer');
+          if(prodStep<0||company010Step<0||prodStep>=company010Step)throw new Error('Unified Capital Refresh does not execute Productivity before Company #010 compatibility');
           if(!ui.includes("if(pos.id==='projectx-whype-usdc')")||!ui.includes('pending:!finite(px.referenceAprPct)'))throw new Error('Passport does not auto-promote numeric Project X APR');
           const start=src.indexOf('function feeApr('),end=src.indexOf('function recalcProductivity',start);
           if(start<0||end<0)throw new Error('Project X fee APR function boundary missing');
