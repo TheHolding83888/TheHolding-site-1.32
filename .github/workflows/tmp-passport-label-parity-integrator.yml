@@ -1,14 +1,8 @@
 name: "TMP · Passport productive label parity integrator"
 
 on:
-  push:
-    branches:
-      - agent/passport-productive-label-parity-2026-08-19
-    paths:
-      - '.github/workflows/tmp-passport-label-parity-integrator.yml'
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - '.github/workflows/tmp-passport-label-parity-integrator.yml'
 
@@ -30,10 +24,8 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-
           p=Path('companies/index.html')
           s=p.read_text()
-
           replacements={
             "'aerodrome-finance': 'veAERO'":"'aerodrome-finance': 'Aerodrome · veAERO'",
             "'curve-dao-token': 'veCRV'":"'curve-dao-token': 'Curve · veCRV'",
@@ -57,26 +49,19 @@ jobs:
             "+ '<span class=\"ipx-position-symbol\">PENDLE</span>'":"+ '<span class=\"ipx-position-symbol\">' + label + '</span>'"
           }
           for old,new in replacements.items():
-            count=s.count(old)
-            if count!=1:
-              raise SystemExit(f'Expected exactly one occurrence, got {count}: {old}')
+            n=s.count(old)
+            if n!=1: raise SystemExit(f'Expected exactly one occurrence, got {n}: {old}')
             s=s.replace(old,new)
           p.write_text(s)
-
           canon=Path('intelligence/project-memory/THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md')
           c=canon.read_text()
           marker='## 6. Productive identity label canon'
           if marker not in c:
             c += '''\n\n## 6. Productive identity label canon\n\nWhen a productive mechanism identity is already proven, Passport presentation should use one readable `Protocol · productive asset / strategy` title rather than a bare ticker or a generic protocol name. Examples include `Aerodrome · veAERO`, `Velodrome · veVELO`, `Curve · veCRV`, `Yield Basis · veYB`, `Pendle · sPENDLE`, and `f(x) Protocol · veFXN`.\n\nThis rule applies consistently across Balance Sheet and Accrued Rewards surfaces. The renderer must not downgrade a canonical specific label back to a generic `Aerodrome`, `Velodrome`, `Curve`, or similar title. Route-specific strategy identity may remain when it is more precise than the generic productive asset, such as Defitea's accepted `Velodrome · 40 Acres` route.\n\nReserve assets remain concise (`BTC`, `ETH`, etc.). Unknown or ambiguous mechanism identity must not be guessed merely for visual symmetry.\n'''
           canon.write_text(c)
-
-          verifier=Path('.github/workflows/verify-passport-productive-label-parity.yml')
-          verifier.write_text('''name: "Verify Passports · productive label parity"\n\non:\n  pull_request:\n    paths:\n      - 'companies/index.html'\n      - 'intelligence/project-memory/THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md'\n      - '.github/workflows/verify-passport-productive-label-parity.yml'\n\npermissions:\n  contents: read\n\njobs:\n  verify:\n    runs-on: ubuntu-latest\n    timeout-minutes: 8\n    steps:\n      - name: Checkout candidate\n        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262\n      - name: Prove productive identity labels stay specific\n        shell: bash\n        run: |\n          set -euo pipefail\n          python - <<'PY2'\n          from pathlib import Path\n          s=Path('companies/index.html').read_text()\n          expected=[\n            "'aerodrome-finance': 'Aerodrome · veAERO'",\n            "'velodrome-finance': 'Velodrome · veVELO'",\n            "'curve-dao-token': 'Curve · veCRV'",\n            "'yield-basis': 'Yield Basis · veYB'",\n            "'pendle': 'Pendle · sPENDLE'",\n            "'fxn-token': 'f(x) Protocol · veFXN'",\n            "'aerodrome-relay': 'Aerodrome · veAERO'",\n            "'aerodrome-ve': 'Aerodrome · veAERO'",\n            "'velodrome-ve': 'Velodrome · veVELO'",\n            "'velodrome-ve-direct': 'Velodrome · veVELO'",\n            "'curve-fees': 'Curve · veCRV'",\n            "'liquity-staking': 'Liquity · staked LQTY'",\n            "'Velodrome · 40 Acres'"\n          ]\n          for x in expected:\n            if x not in s: raise SystemExit(f'missing label contract: {x}')\n          forbidden=[\n            "protocol: isAerodrome ? 'Aerodrome' : (isVelodrome ? 'Velodrome' : x.protocol)",\n            "(x.aerodromeRollup ? 'Aerodrome' : 'Velodrome')",\n            '<span class="ipx-position-symbol">PENDLE</span>'\n          ]\n          for x in forbidden:\n            if x in s: raise SystemExit(f'generic-label regression remains: {x}')\n          if "'bitcoin': 'BTC'" not in s or "'ethereum': 'ETH'" not in s:\n            raise SystemExit('reserve labels must stay concise')\n          canon=Path('intelligence/project-memory/THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md').read_text()\n          if '## 6. Productive identity label canon' not in canon:\n            raise SystemExit('durable label canon missing')\n          print('Passport productive label parity PASS')\n          PY2\n''')
           PY
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add companies/index.html intelligence/project-memory/THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md .github/workflows/verify-passport-productive-label-parity.yml
-          git rm .github/workflows/tmp-passport-label-parity-integrator.yml
+          git add companies/index.html intelligence/project-memory/THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md
           git commit -m "passports: unify productive identity labels"
           git push origin HEAD:agent/passport-productive-label-parity-2026-08-19
