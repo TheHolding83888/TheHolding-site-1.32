@@ -10947,10 +10947,16 @@ const COMPANY_BOOK = {
         { id: 'resupply',          qty: 3682,  entry: 0.069  }
     ],
     'YieldRing.eth': [
-        { id: 'bitcoin',           qty: 0.03,  entry: 63442  },
-        { id: 'aerodrome-finance', qty: 480,   entry: 0.4068 },
-        { id: 'convex-finance',    qty: 240,   entry: 1.28   },
-        { id: 'frax-share',        qty: 800,   entry: 0.2628 }
+        { id: 'bitcoin', qty: 0.0334, entry: 63442, costBasisUsd: 2121.88, acquisition: 'mixed', acquisitionLots: [
+            { qty: 0.03, entry: 63442, costBasisUsd: 1903.26, evidenceStatus: 'established' },
+            { qty: 0.0034, entry: 64300, costBasisUsd: 218.62, evidenceStatus: 'owner-provided' }
+        ] },
+        { id: 'aerodrome-finance', qty: 678, entry: 0.4068, costBasisUsd: 274.464, acquisition: 'mixed', acquisitionLots: [
+            { qty: 480, entry: 0.4068, costBasisUsd: 195.264, evidenceStatus: 'established' },
+            { qty: 198, entry: 0.4, costBasisUsd: 79.2, evidenceStatus: 'owner-provided' }
+        ], relay: { mode: 'veAERO Maxi', managerId: '10298', managerAddress: '0xc9814f18a8751214f719de15c54d01b3d78ef14f', expectedUnderlyingLockCount: 2, evidenceStatus: 'owner-provided-not-yet-independently-reproduced' } },
+        { id: 'convex-finance', qty: 240, entry: 1.28 },
+        { id: 'frax-share', qty: 800, entry: 0.2628 }
     ],
     '05081966.eth': [
         { id: 'aerodrome-finance', qty: 202,   entry: 0.4954 },

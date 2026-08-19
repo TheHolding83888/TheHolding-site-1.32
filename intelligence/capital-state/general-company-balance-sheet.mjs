@@ -7,7 +7,7 @@ const OUT = path.join(ROOT, 'intelligence/capital-state/general-company-balance-
 const PRODUCTIVITY = 'companies/productivity-data.json';
 const UI_BOOK_SOURCE = 'companies/index.html';
 
-const EXPECTED_UI_BLOB_SHA = '3cefbc20d06e296c166a42e15795e82c20edbe34';
+const EXPECTED_UI_BLOB_SHA = '9ee576198e4bb82a1b579f7366bc67ea192bfd3a';
 
 const BOOK = {
   'defitea.eth': [
@@ -24,8 +24,8 @@ const BOOK = {
     { id:'resupply', qty:3682, layer:'productive-dividend' }
   ],
   'YieldRing.eth': [
-    { id:'bitcoin', qty:0.03, layer:'foundation', priceSource:'coingecko' },
-    { id:'aerodrome-finance', qty:480, layer:'productive-dividend' },
+    { id:'bitcoin', qty:0.0334, layer:'foundation', priceSource:'coingecko' },
+    { id:'aerodrome-finance', qty:678, layer:'productive-dividend' },
     { id:'convex-finance', qty:240, layer:'productive-dividend' },
     { id:'frax-share', qty:800, layer:'productive-dividend' }
   ],
@@ -97,7 +97,7 @@ async function livePrices() {
 }
 
 const productivity=readJson(PRODUCTIVITY);
-if (productivity.version !== '1.15') throw new Error(`unexpected Productivity version ${productivity.version}`);
+if (!['1.15','1.16'].includes(productivity.version)) throw new Error(`unexpected Productivity version ${productivity.version}`);
 if (gitBlobSha(UI_BOOK_SOURCE) !== EXPECTED_UI_BLOB_SHA) {
   throw new Error('companies/index.html changed since Company Book normalization; review browser Company Book before publishing balance sheet');
 }
