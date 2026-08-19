@@ -54,19 +54,19 @@ if(cyCvx.length<1)throw new Error('Cypher measured staked-cvxCRV reward missing'
 // into vault share value. It must never inherit Cypher's direct claimable row.
 if((nine.rewards||[]).some(r=>r.route==='convex-staked-cvxcrv'))throw new Error('Company #009 incorrectly contains direct Convex staked-cvxCRV claimable rewards');
 
-// Route-specific semantic guards. These protect the title/subtitle hierarchy:
-// the main label identifies the productive position while token + chain remain
-// the separate earned-asset provenance rendered underneath.
+// Route-specific semantic guards. A ve-position can earn several different
+// incentive tokens; therefore the title identifies veAERO / veVELO while the
+// actual reward symbol is deliberately preserved on the detail line.
 for(const company of Object.values(data.companies||{})){
   for(const r of company?.rewards||[]){
     if(r.route==='curve-fees'&&(r.symbol!=='crvUSD'||r.chain!=='Ethereum'))throw new Error('Curve veCRV reward provenance drift');
-    if(['aerodrome-relay','aerodrome-ve'].includes(r.route)&&(r.symbol!=='AERO'||r.chain!=='Base'))throw new Error('Aerodrome veAERO reward provenance drift');
-    if(['velodrome-ve','velodrome-ve-direct'].includes(r.route)&&(r.symbol!=='VELO'||r.chain!=='Optimism'))throw new Error('Velodrome veVELO reward provenance drift');
+    if(['aerodrome-relay','aerodrome-ve'].includes(r.route)&&r.chain!=='Base')throw new Error('Aerodrome veAERO chain provenance drift');
+    if(['velodrome-ve','velodrome-ve-direct'].includes(r.route)&&r.chain!=='Optimism')throw new Error('Velodrome veVELO chain provenance drift');
   }
 }
 
 data.methodology=data.methodology||{};
-data.methodology.rewardsPassportRouteHygiene='Current Passport hides historical routes with zero residual claimables. Legacy routes remain visible only while residual Unclaimed exists. Public reward rows use Protocol · productive asset/strategy as the main identity, while the earned token and network remain separate provenance. Direct Convex staked-cvxCRV claimables and Beefy auto-compounded cvxCRV are distinct mechanisms and must never be cross-projected.';
+data.methodology.rewardsPassportRouteHygiene='Current Passport hides historical routes with zero residual claimables. Legacy routes remain visible only while residual Unclaimed exists. Public reward rows use Protocol · productive asset/strategy as the main identity, while the actual earned token and network remain separate provenance. Direct Convex staked-cvxCRV claimables and Beefy auto-compounded cvxCRV are distinct mechanisms and must never be cross-projected.';
 data.diagnostics=data.diagnostics||{};
 data.diagnostics.rewardsPassportHygiene={version:'0.2-protocol-asset-label-parity',generatedAt:new Date().toISOString(),yieldRingLegacyResidualRows:yLegacy.length,yieldRingEmptyLegacySourceRemoved:yLegacy.length===0,cypherCvxCrvRowsRenamed:cyCvx.length,company009DirectConvexRows:0,protocolAssetLabelCounts:labelCounts,executionAuthority:'none'};
 fs.writeFileSync(OUTPUT,JSON.stringify(data,null,2)+'\n');
