@@ -451,8 +451,8 @@
   "productivity": {
     "status": "partial",
     "knownProductiveValueUsd": 2455.2,
-    "currentlyAprCoveredValueUsd": 1873.76,
-    "coverage": 0.76318,
+    "currentlyAprCoveredValueUsd": 1976.6,
+    "coverage": 0.805067,
     "positions": [
       {
         "id": "convex_vlcvx",
@@ -559,11 +559,11 @@
         "valueUsd": 328.84,
         "referenceAprPct": null,
         "status": "warming",
-        "source": "two active Project X WHYPE-USDC NFTs",
-        "referenceMetric": null,
+        "source": "Project X canonical onchain collect.staticCall observation history",
+        "referenceMetric": "Project X observed collectible fee APR · trailing stable-window",
         "incomeMode": "separate-claimable-fees",
         "claimableApplicable": true,
-        "methodology": "Fee tier is not yield. APR stays Pending until a reproducible first-party yield time series is bound."
+        "methodology": "Fee tier is not yield. APR promotes automatically after a stable >=24h two-NFT observation window with non-decreasing collectible fees."
       }
     ],
     "rule": "Unknown Reference APR is excluded, never treated as 0%."
@@ -702,7 +702,7 @@
       "id": "project-x-reference-apr",
       "severity": "productivity",
       "status": "warming",
-      "meaning": "Two active Project X WHYPE-USDC NFTs have complete principal and claimable-fee measurement; Reference APR remains Pending."
+      "meaning": "Need at least 24 hours of stable Project X observations; current stable window 17.27h."
     }
   ],
   "provenance": {
@@ -779,6 +779,14 @@
       ],
       "source": "Convex official CvxCrvUtilities accountRewardRates + accountExtraRewardRates; DeFiLlama contract prices",
       "executionAuthority": "none"
+    },
+    "projectXReferenceApr": {
+      "version": "0.1-projectx-observed-fee-reference-apr",
+      "historyFile": "companies/company-010-projectx-rate-history.json",
+      "metric": "Project X observed collectible fee APR · trailing stable-window",
+      "minimumWindowHours": 24,
+      "maximumWindowHours": 168,
+      "generatedAt": "2026-08-19T05:11:18.459Z"
     }
   },
   "epistemicBoundary": {
@@ -806,7 +814,10 @@
     "projectXUsdcIsPartOfStrategyNav": true,
     "projectXClaimableFeesAreNotPrincipal": true,
     "projectXFeeTierIsNotApr": true,
-    "multiLegResolvedMustPromoteAllEconomicLegs": true
+    "multiLegResolvedMustPromoteAllEconomicLegs": true,
+    "projectXReferenceAprUsesObservedFeeGrowth": true,
+    "projectXAprResetsOnStrategyChangeOrClaim": true,
+    "projectXAprMinimumStableWindowHours": 24
   },
   "authority": {
     "readOnly": true,
@@ -1216,7 +1227,13 @@
         "status": "warming",
         "referenceAprPct": null,
         "publicStatus": "APR Pending",
-        "reason": "Fee tier is not yield; no reproducible first-party Project X Reference APR time series has been proven."
+        "referenceMetric": "Project X observed collectible fee APR · trailing stable-window",
+        "source": "Project X canonical onchain collect.staticCall observation history",
+        "windowHours": 17.272,
+        "reason": "Need at least 24 hours of stable Project X observations; current stable window 17.27h.",
+        "methodology": "Fee tier is not yield. APR promotes automatically after a stable >=24h two-NFT observation window with non-decreasing collectible fees.",
+        "claimableApplicable": true,
+        "incomeMode": "separate-claimable-fees"
       },
       "accountingBoundary": {
         "multiLegPrincipalComplete": true,
