@@ -73,9 +73,8 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const src=fs.readFileSync('rewards/company-rewards-engine.mjs','utf8');
-          for(const n of ['idToManaged','rewardBreakdownByPosition','tokenIds','positions'])if(!src.includes(n))throw new Error('Rewards aggregation primitive missing '+n);
-          if(!src.includes("slug: 'aerodrome'"))throw new Error('Aerodrome collector missing');
-          console.log('Existing multi-veNFT Rewards aggregation PASS');
+          for(const n of ['idToManaged','managedPositions','veNfts: positions',"route: 'aerodrome-relay'"]){if(!src.includes(n))throw new Error('Aerodrome managed-veNFT aggregation contract missing '+n);}
+          console.log('Existing Aerodrome managed-veNFT aggregation PASS');
           NODE
       - name: Diff hygiene
         run: git diff --check
