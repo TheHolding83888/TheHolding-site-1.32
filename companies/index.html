@@ -10745,38 +10745,38 @@ const COMPANY_REWARDS_SCOPE = new Set(['YieldRing.eth', '05081966.eth', 'dinaz.e
 const COMPANY_ASSET_LABELS = {
     'bitcoin': 'BTC',
     'internet-computer': 'ICP',
-    'aerodrome-finance': 'veAERO',
+    'aerodrome-finance': 'Aerodrome · veAERO',
     'convex-finance': 'vlCVX',
     'convex-crv': 'CRV / cvxCRV',
-    'curve-dao-token': 'veCRV',
-    'frax-share': 'veFRAX',
-    'yield-basis': 'veYB',
-    'pendle': 'sPENDLE',
-    'velodrome-finance': 'veVELO',
+    'curve-dao-token': 'Curve · veCRV',
+    'frax-share': 'Frax · veFRAX',
+    'yield-basis': 'Yield Basis · veYB',
+    'pendle': 'Pendle · sPENDLE',
+    'velodrome-finance': 'Velodrome · veVELO',
     'venice-token': 'sVVV',
     'liquity': 'LQTY',
     'resupply': 'RSUP',
-    'fxn-token': 'veFXN'
+    'fxn-token': 'f(x) Protocol · veFXN'
 ,
     'ethereum': 'ETH',
     'zksync': 'ZK'
 };
 const REWARD_ROUTE_LABELS = {
-    'aerodrome-relay': 'Aerodrome Relay',
-    'aerodrome-ve': 'Aerodrome',
-    'velodrome-ve': 'Velodrome',
-    'velodrome-ve-direct': 'Velodrome',
-    'curve-fees': 'Curve',
+    'aerodrome-relay': 'Aerodrome · veAERO',
+    'aerodrome-ve': 'Aerodrome · veAERO',
+    'velodrome-ve': 'Velodrome · veVELO',
+    'velodrome-ve-direct': 'Velodrome · veVELO',
+    'curve-fees': 'Curve · veCRV',
     'curve-fees-votemarket': 'Curve · VoteMarket', // legacy v0.2.1 data
     'votemarket-vecrv': 'VoteMarket · veCRV',
-    'pendle-spendle': 'Pendle',
-    'fx-fees': 'f(x) Protocol',
+    'pendle-spendle': 'Pendle · sPENDLE',
+    'fx-fees': 'f(x) Protocol · veFXN',
     'fx-fees-votemarket': 'f(x) Protocol · VoteMarket', // legacy v0.2.1 data
     'votemarket-vefxn': 'VoteMarket · veFXN',
     'frax-yield': 'Frax',
     'yield-basis-fees': 'Yield Basis · veYB',
     'venice-staking': 'Venice',
-    'liquity-staking': 'Liquity',
+    'liquity-staking': 'Liquity · staked LQTY',
     'resupply-staking': 'Resupply',
     'votium-union': 'Votium · vlCVX'
 };
@@ -11429,7 +11429,7 @@ function renderIndex(lang) {
                 if (!grouped.has(key)) {
                     grouped.set(key, {
                         ...x,
-                        protocol: isAerodrome ? 'Aerodrome' : (isVelodrome ? 'Velodrome' : x.protocol),
+                        protocol: isAerodrome ? REWARD_ROUTE_LABELS['aerodrome-ve'] : (isVelodrome ? REWARD_ROUTE_LABELS['velodrome-ve'] : x.protocol),
                         displayRoute: isAerodrome ? 'aerodrome-ve' : (isVelodrome ? 'velodrome-ve' : x.route),
                         classification,
                         amount: 0,
@@ -11483,7 +11483,7 @@ function renderIndex(lang) {
                     // COMPANY_BOOK already stores Defitea's combined PENDLE principal
                     // across both wallets/forms. Do not append legacy vePENDLE again.
                     return '<span class="ipx-position-pill">'
-                        + '<span class="ipx-position-symbol">PENDLE</span>'
+                        + '<span class="ipx-position-symbol">' + label + '</span>'
                         + '<span class="ipx-position-qty">' + fmtQty(pos.qty) + '</span>'
                         + '</span>';
                 }
@@ -11581,7 +11581,7 @@ function renderIndex(lang) {
 
                 if (managedAeroTracked && !hasAeroUnclaimed) {
                     displayRewards.push({
-                        protocol: 'Aerodrome',
+                        protocol: REWARD_ROUTE_LABELS['aerodrome-ve'],
                         route: 'aerodrome-ve',
                         displayRoute: 'aerodrome-ve',
                         chain: 'Base',
@@ -11660,7 +11660,7 @@ function renderIndex(lang) {
                             : (assetCount === 1 ? '1 reward asset' : assetCount + ' reward assets'));
                     const routeLabel = isDefitea && x.velodromeRollup
                         ? 'Velodrome · 40 Acres'
-                        : (x.aerodromeRollup ? 'Aerodrome' : 'Velodrome');
+                        : (REWARD_ROUTE_LABELS[x.displayRoute || x.route] || x.protocol || 'Protocol');
                     const routeMeta = chainLabel + (tokenMeta ? ' · ' + tokenMeta : '') + pendingHint;
 
                     rows += '<div class="ipx-reward-row">'
@@ -11711,11 +11711,9 @@ function renderIndex(lang) {
 
                 // Normal rows, including AERO/VELO Compounded, intentionally remain
                 // separate from the Unclaimed route rollup.
-                const protocolLabel = x.route === 'yield-basis-fees'
-                    ? 'Yield Basis · veYB'
-                    : (isDefitea && x.velodromeRollup
-                        ? 'Velodrome · 40 Acres'
-                        : (x.protocol || 'Protocol'));
+                const protocolLabel = isDefitea && x.velodromeRollup
+                    ? 'Velodrome · 40 Acres'
+                    : (REWARD_ROUTE_LABELS[x.route] || x.protocol || 'Protocol');
                 rows += '<div class="ipx-reward-row">'
                     + '<div><div class="ipx-reward-protocol">' + protocolLabel
                     + '<span class="ipx-reward-state' + stateCls + '">' + state + '</span></div>'
