@@ -37,7 +37,9 @@ function removeBrowserCoinGecko(html) {
   return html
     .replaceAll('https://api.coingecko.com/api/v3/simple/price', LOCAL_SIMPLE_PRICE)
     .replace(/CG-[A-Za-z0-9_-]{12,}/g, 'LOCAL-SNAPSHOT')
-    .replace(/^\s*<link[^>]+(?:preconnect|dns-prefetch)[^>]+api\.coingecko\.com[^>]*>\s*\n?/gmi, '');
+    .replace(/^\s*<link(?=[^>]*(?:preconnect|dns-prefetch))(?=[^>]*api\.coingecko\.com)[^>]*>\s*\n?/gmi, '')
+    .replace(/\s+https:\/\/api\.coingecko\.com(?=[;\s])/g, '')
+    .replace(/Fully transparent with real-time TVL via CoinGecko API\./g, 'Fully transparent with centrally refreshed market data and live TVL projection.');
 }
 
 function canonicalDefiteaHoldingsBlock() {
@@ -72,35 +74,41 @@ function migrateCompanies(html) {
 }
 
 function migrateSingul(html) {
-  html = replaceOnce(
-    html,
-    /elizaos:\s*130000\s*,?\s*\/\/\s*ElizaOS[^\n]*/,
-    'elizaos: 80808,               // ElizaOS · canonical owner quantity',
-    'Singul ELIZA quantity'
-  );
+  if (/elizaos:\s*130000\b/.test(html)) {
+    html = replaceOnce(
+      html,
+      /elizaos:\s*130000\s*,?\s*\/\/\s*ElizaOS[^\n]*/,
+      'elizaos: 80808,               // ElizaOS · canonical owner quantity',
+      'Singul ELIZA quantity'
+    );
+  }
   return html;
 }
 
 function migrateFructus(html) {
-  html = replaceOnce(
-    html,
-    /const fructusHoldings\s*=\s*\{[\s\S]*?\n\s*\};\s*\n\s*const FIXED_DBCON_VALUE[^\n]*\n\s*const FIXED_COPXON_VALUE[^\n]*\n/,
-    `const fructusHoldings = {\n            ondo: 542          // ONDO Finance · canonical owner quantity\n        };\n\n`,
-    'Fructus canonical holdings'
-  );
+  if (/\bdbcon:\s*5\b|\bcopxon:\s*2\b/.test(html)) {
+    html = replaceOnce(
+      html,
+      /const fructusHoldings\s*=\s*\{[\s\S]*?\n\s*\};\s*\n\s*const FIXED_DBCON_VALUE[^\n]*\n\s*const FIXED_COPXON_VALUE[^\n]*\n/,
+      `const fructusHoldings = {\n            ondo: 542          // ONDO Finance · canonical owner quantity\n        };\n\n`,
+      'Fructus canonical holdings'
+    );
+  }
 
-  html = replaceOnce(
-    html,
-    /const ondoValue\s*=\s*fructusHoldings\.ondo[\s\S]*?const fructusTVL\s*=\s*ondoValue\s*\+\s*dbconValue\s*\+\s*copxonValue\s*;/,
-    `const ondoValue = fructusHoldings.ondo * (prices['ondo-finance']?.usd || 0);\n                const fructusTVL = ondoValue;`,
-    'Fructus TVL calculation'
-  );
+  if (/const fructusTVL\s*=\s*ondoValue\s*\+\s*dbconValue\s*\+\s*copxonValue/.test(html)) {
+    html = replaceOnce(
+      html,
+      /const ondoValue\s*=\s*fructusHoldings\.ondo[\s\S]*?const fructusTVL\s*=\s*ondoValue\s*\+\s*dbconValue\s*\+\s*copxonValue\s*;/,
+      `const ondoValue = fructusHoldings.ondo * (prices['ondo-finance']?.usd || 0);\n                const fructusTVL = ondoValue;`,
+      'Fructus TVL calculation'
+    );
+  }
   return html;
 }
 
 function assertNoDirectCoinGecko(html, rel) {
-  if (/api\.coingecko\.com\/api\/v3\/simple\/price/i.test(html)) {
-    throw new Error(`${rel}: direct browser CoinGecko simple-price path remains`);
+  if (/api\.coingecko\.com/i.test(html)) {
+    throw new Error(`${rel}: browser-facing CoinGecko host remains`);
   }
   if (/CG-[A-Za-z0-9_-]{12,}/.test(html)) {
     throw new Error(`${rel}: public CoinGecko credential-like literal remains`);
