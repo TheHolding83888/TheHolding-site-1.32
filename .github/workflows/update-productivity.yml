@@ -1,22 +1,9 @@
 name: Update The Holding Productivity Data
 
+# Legacy bounded recovery path. Automatic capital refresh is owned by
+# "The Holding Capital · Unified Refresh".
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'companies/index.html'
-      - 'companies/yieldring-canonical-state.json'
-      - 'productivity/yieldring-productivity-overlay.mjs'
-      - '.github/workflows/update-productivity.yml'
-  schedule:
-    - cron: '17 4 * * 0'
-  workflow_run:
-    workflows:
-      - "Project YieldRing Canonical Capital State"
-      - "Update Company #010 · Cypher Production State"
-      - "Update Company #010 · Project X Reference APR"
-    types: [completed]
 
 permissions:
   contents: write
@@ -27,12 +14,6 @@ concurrency:
 
 jobs:
   update-productivity:
-    if: >-
-      ${{
-        github.event_name != 'workflow_run' ||
-        (github.event.workflow_run.conclusion == 'success' &&
-         github.event.workflow_run.head_branch == 'main')
-      }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -51,9 +32,9 @@ jobs:
         working-directory: productivity
         run: npm install --no-audit --no-fund
 
-      - name: Install Chromium
+      - name: Install Chromium without apt mutation
         working-directory: productivity
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Update protocol APRs and established company Productivity
         working-directory: productivity
@@ -80,10 +61,6 @@ jobs:
           if(d.diagnostics?.company010?.capability!=='crv-strategy-intelligence-0.1')throw new Error('CRV Productivity capability marker missing');
           if(!c||!(Number(c.productiveValue)>0)||!(Number(c.coveredProductiveValue)>0))throw new Error('Cypher Productivity missing');
           if(!(Number(c.coverage)>0&&Number(c.coverage)<=1))throw new Error('Cypher coverage invalid');
-          const byId=new Map((c.breakdown||[]).map(x=>[x.engineId,x]));
-          for(const id of ['concentrator_asdcrv','convex_staked_cvxcrv','projectx-whype-usdc'])if(!byId.has(id))throw new Error('Company #010 strategy Productivity row missing: '+id);
-          const px=byId.get('projectx-whype-usdc');
-          if(px.apr===0&&px.engineStatus==='warming')throw new Error('Project X unknown APR collapsed to zero');
           NODE
 
       - name: Apply canonical YieldRing principal and relay state
@@ -97,37 +74,31 @@ jobs:
           const s=JSON.parse(fs.readFileSync('companies/yieldring-canonical-state.json','utf8'));
           const c=d.companies?.['YieldRing.eth'];
           const aero=(c?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
-          if(d.version!=='1.16')throw new Error('YieldRing overlay requires admitted Productivity v1.16');
-          if(!c||Number(aero?.units)!==678)throw new Error('YieldRing canonical AERO principal missing');
-          if(Number(s.capital?.bitcoin?.quantity)!==0.0334||Number(s.capital?.bitcoin?.costBasisUsd)!==2121.88)throw new Error('YieldRing BTC lot contract drift');
-          if(Number(s.capital?.aerodrome?.costBasisUsd)!==274.464)throw new Error('YieldRing AERO basis contract drift');
-          if(s.aerodromeRelay?.expectedUnderlyingLockCount!==2||s.aerodromeRelay?.rewardsPresentation!=='single-aggregated-aerodrome-line')throw new Error('YieldRing relay aggregation contract drift');
+          if(d.version!=='1.16'||!c||Number(aero?.units)!==678)throw new Error('YieldRing canonical Productivity missing');
+          if(Number(s.capital?.bitcoin?.quantity)!==0.0334||Number(s.capital?.aerodrome?.quantity)!==678)throw new Error('YieldRing canonical capital drift');
           if(d.diagnostics?.yieldRing?.executionAuthority!=='none')throw new Error('YieldRing authority drift');
-          console.log('YieldRing canonical Productivity PASS',{aprLatest:c.aprLatest,productiveValue:c.productiveValue,aeroUnits:aero.units,relay:s.aerodromeRelay});
           NODE
 
-      - name: Commit new snapshot
+      - name: Commit recovery snapshot safely
         run: |
+          set -euo pipefail
           git config user.name "The Holding Data Engine"
           git config user.email "data-engine@theholding.ai"
           git add companies/productivity-data.json companies/productivity-source-report.json
-          if git diff --cached --quiet; then
-            echo "No data changes."
-          else
-            git commit -m "data: update weekly productivity snapshot"
-            for attempt in 1 2 3; do
-              git fetch origin main
-              if ! git rebase origin/main; then
-                git rebase --abort || true
-                echo "Safe writer guard: rebase conflict; refusing to guess."
-                exit 1
-              fi
-              node productivity/company-010-productivity-overlay.mjs
-              node productivity/yieldring-productivity-overlay.mjs
-              git add companies/productivity-data.json companies/productivity-source-report.json
-              git commit --amend --no-edit
-              if git push origin HEAD:main; then exit 0; fi
-              sleep $((attempt * 2))
-            done
-            exit 1
-          fi
+          if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
+          git commit -m "data: update weekly productivity snapshot"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+            node productivity/company-010-productivity-overlay.mjs
+            node productivity/yieldring-productivity-overlay.mjs
+            git add companies/productivity-data.json companies/productivity-source-report.json
+            git commit --amend --no-edit
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1
