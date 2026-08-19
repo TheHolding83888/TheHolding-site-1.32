@@ -1,5 +1,5 @@
 {
-  "version": "0.2-onchain-price-source-registry-core-commodities",
+  "version": "0.3-onchain-price-source-registry-oracle-cohort-3",
   "purpose": "Machine-readable routing for zero-paid-data onchain market observations. Shadow routes collect and validate blockchain-native prices without changing production price authority.",
   "mode": "shadow",
   "semantics": {
@@ -10,6 +10,7 @@
     "paidRpcRequired": false,
     "browserRpcRequestsAllowed": false,
     "unknownIsNotZero": true,
+    "composableRelativePriceRoutesAllowed": true,
     "executionAuthority": "none"
   },
   "networks": {
@@ -19,6 +20,14 @@
         {"id": "publicnode", "url": "https://ethereum-rpc.publicnode.com"},
         {"id": "1rpc", "url": "https://1rpc.io/eth"},
         {"id": "llamarpc", "url": "https://eth.llamarpc.com"}
+      ]
+    },
+    "optimism": {
+      "chainId": 10,
+      "rpcFailover": [
+        {"id": "optimism-foundation", "url": "https://mainnet.optimism.io"},
+        {"id": "publicnode", "url": "https://optimism-rpc.publicnode.com"},
+        {"id": "1rpc", "url": "https://1rpc.io/op"}
       ]
     }
   },
@@ -37,6 +46,21 @@
       "assetId": "curve-dao-token",
       "symbol": "CRV",
       "route": {"type":"chainlink-v3","network":"ethereum","contract":"0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f","quote":"USD","maxAgeSeconds":90000,"maxDivergencePct":4,"authority":"shadow","provenance":"Chainlink CRV/USD Data Feed on Ethereum Mainnet"}
+    },
+    "frax-share": {
+      "assetId": "frax-share",
+      "symbol": "FXS",
+      "route": {"type":"chainlink-v3","network":"ethereum","contract":"0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f","quote":"USD","maxAgeSeconds":90000,"maxDivergencePct":5,"authority":"shadow","provenance":"Chainlink FXS/USD Data Feed on Ethereum Mainnet"}
+    },
+    "convex-finance": {
+      "assetId": "convex-finance",
+      "symbol": "CVX",
+      "route": {"type":"chainlink-v3-relative","network":"ethereum","contract":"0xC9CbF687f43176B302F03f5e58470b77D07c61c6","quoteAssetId":"ethereum","feedQuote":"ETH","outputQuote":"USD","maxAgeSeconds":90000,"maxDivergencePct":6,"authority":"shadow","provenance":"Chainlink CVX/ETH Data Feed multiplied by the same-cycle ETH/USD onchain observation"}
+    },
+    "pendle": {
+      "assetId": "pendle",
+      "symbol": "PENDLE",
+      "route": {"type":"chainlink-v3","network":"optimism","contract":"0x58F23F80bF389DB1af9e3aA8c59679806749A8a4","quote":"USD","maxAgeSeconds":7200,"maxDivergencePct":4,"authority":"shadow","provenance":"Chainlink PENDLE/USD Data Feed on OP Mainnet"}
     },
     "tether-gold": {
       "assetId": "tether-gold",
