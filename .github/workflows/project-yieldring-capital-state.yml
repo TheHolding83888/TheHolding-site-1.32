@@ -1,0 +1,76 @@
+name: "Project YieldRing Canonical Capital State"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'companies/yieldring-canonical-state.json'
+      - 'companies/yieldring-public-capital-projection.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: yieldring-capital-projection-main
+  cancel-in-progress: false
+
+jobs:
+  project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Project YieldRing into public Company Book and General Balance source
+        run: |
+          set -euo pipefail
+          node --check companies/yieldring-public-capital-projection.mjs
+          node companies/yieldring-public-capital-projection.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('companies/yieldring-canonical-state.json','utf8'));
+          const html=fs.readFileSync('companies/index.html','utf8');
+          const bal=fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.mjs','utf8');
+          if(!html.includes("qty: 0.0334")||!html.includes("qty: 678")||!html.includes("managerId: '10298'"))throw new Error('YieldRing public Company Book projection missing');
+          if(!bal.includes("qty:0.0334")||!bal.includes("qty:678"))throw new Error('YieldRing General Balance projection missing');
+          if(s.authority?.executionAuthority!=='none')throw new Error('YieldRing authority drift');
+          console.log('YieldRing projection validation PASS',{btc:s.capital.bitcoin.quantity,aero:s.capital.aerodrome.quantity,relay:s.aerodromeRelay.mode});
+          NODE
+          git diff --check
+
+      - name: Publish deterministic projection safely
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding YieldRing Projector"
+          git config user.email "yieldring-projector@theholding.ai"
+          git add companies/index.html intelligence/capital-state/general-company-balance-sheet.mjs
+          if git diff --cached --quiet; then
+            echo "YieldRing projection already current."
+            exit 0
+          fi
+          git commit -m "data: project YieldRing canonical capital state"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "YieldRing projection conflict; fail closed."
+              exit 1
+            fi
+            node companies/yieldring-public-capital-projection.mjs
+            git add companies/index.html intelligence/capital-state/general-company-balance-sheet.mjs
+            git commit --amend --no-edit
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          echo "YieldRing projection publish failed after 3 attempts."
+          exit 1
