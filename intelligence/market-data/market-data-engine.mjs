@@ -6,7 +6,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REGISTRY_PATH = path.join(__dirname, 'market-price-registry.json');
 const OUTPUT_PATH = path.join(__dirname, 'market-data.json');
 const MAX_PREVIOUS_AGE_MS = 6 * 60 * 60 * 1000;
-const MIN_EXTERNAL_REFRESH_MS = 25 * 60 * 1000;
+// Scheduled refreshes are the only normal forced external observations. Push,
+// manual recovery and coherent-capital runs reuse a recent snapshot so they do
+// not spend a second provider request immediately around the 30-minute cadence.
+const MIN_EXTERNAL_REFRESH_MS = 40 * 60 * 1000;
 
 function readJson(file, fallback = null) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
