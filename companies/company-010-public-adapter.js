@@ -147,7 +147,7 @@
     const apr=currentReferenceApr(),coverage=Number(state.productivity?.coverage||0)*100;
     const complete=state.capital?.totalCapitalComplete===true;
     const performancePending=state.performance?.complete!==true;
-    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:null,pnl:null,pct:null,performancePending,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'The Holding Standard',ru:'The Holding Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Pending':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Ожидается':`${apr.toFixed(1)}% · покрыто ${coverage.toFixed(1)}%`},aprSource:'canonical-company-state',aprObservationCount:0,pendingReason:complete?null:{en:'An in-scope capital mechanism is not yet fully bound',ru:'Один из учитываемых механизмов капитала ещё не полностью связан'}};
+    return{nm:'Cypher',displayName:'Cypher',val:Number(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)||0,cost:null,pnl:null,pct:null,performancePending,href:null,indexEligible:complete,capitalFloor:!complete,capitalComplete:complete,cat:{en:complete?'Bitcoin Standard':'Bitcoin Standard · measured floor',ru:complete?'Bitcoin Standard':'Bitcoin Standard · измеренный минимум'},since:{en:'Jul 2025',ru:'Июл 2025'},reg:'010',foundedISO:'2025-07-04',founded:{en:'Jul 4, 2025',ru:'4 июл 2025'},arch:{en:'The Holding Standard',ru:'The Holding Standard'},protocols:protocols().length,status:{en:complete?'Productive':'Pending capital completion',ru:complete?'Активна':'Ожидает закрытия капитала'},aprNumeric:apr??0,aprLatest:apr,aprDisplay:{en:apr===null?'Pending':`${apr.toFixed(1)}% · ${coverage.toFixed(1)}% covered`,ru:apr===null?'Ожидается':`${apr.toFixed(1)}% · покрыто ${coverage.toFixedFixed(1)}%`},aprSource:'canonical-company-state',aprObservationCount:0,pendingReason:complete?null:{en:'An in-scope capital mechanism is not yet fully bound',ru:'Один из учитываемых механизмов капитала ещё не полностью связан'}};
   }
 
   function installIndexRecord(){
@@ -429,14 +429,14 @@
       appendStrategyStateRow(panel,{label:'Concentrator · sdCRV',meta:lang()==='ru'?'Доход автоматически реинвестируется в долю':'Yield is automatically reinvested into the share',stateName:'Compounded',amount:lang()==='ru'?'В доле':'Embedded',amountMeta:finite(conc.yield.referenceAprPct)?`APR ${pct2(conc.yield.referenceAprPct)}`:'APR Pending'});
     }
 
-    for(const [name,route,fallbackSymbol,fallbackChain] of [['Aerodrome','aerodrome-ve','AERO','Base'],['Velodrome','velodrome-ve-direct','VELO','Optimism']]){
+    for(const [name,label,route,fallbackSymbol,fallbackChain] of [['Aerodrome','Aerodrome · veAERO','aerodrome-ve','AERO','Base'],['Velodrome','Velodrome · veVELO','velodrome-ve-direct','VELO','Optimism']]){
       const source=rewardSource(route),rawState=source?.details?.rewardState;
       const stateName=['Compounded','Claimable'].includes(rawState)?rawState:'Pending';
       if(stateName==='Claimable'&&panelHasStrategy(panel,name))continue;
       const embedded=stateName==='Compounded'?compactEmbeddedAmount(route):{amount:'',usd:'',symbol:'',chain:''};
       const symbol=embedded.symbol||fallbackSymbol,chain=embedded.chain||source?.chain||fallbackChain;
       const meta=stateName==='Compounded'?`${symbol} · ${chain} · Rebase`:stateName==='Claimable'?`${symbol} · ${chain}`:`${chain} · ${lang()==='ru'?'Измеряется':'Measuring'}`;
-      appendStrategyStateRow(panel,{label:name,meta,stateName,amount:embedded.amount||'—',amountMeta:stateName==='Compounded'?embedded.usd:''});
+      appendStrategyStateRow(panel,{label,meta,stateName,amount:embedded.amount||'—',amountMeta:stateName==='Compounded'?embedded.usd:''});
     }
     syncMeasuredEarnedPresentation();
   }
@@ -529,4 +529,3 @@
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
-
