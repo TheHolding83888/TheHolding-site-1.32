@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-19T09:38:21.543Z",
+  "lastUpdatedAt": "2026-08-19T09:38:47.148Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 309,
-    "vaultRunCount": 309,
+    "runCount": 310,
+    "vaultRunCount": 310,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -3721,6 +3721,18 @@
       "highCount": 8,
       "newFindingCount": 1,
       "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-19T09:38:47.148Z",
+      "status": "watch",
+      "snapshotHash": "90a637b41ad80436861f10f6324050d18a1bc213a88b0c7aa408425255c22b9e",
+      "recordPath": "security/security-vault/2026/08/2026-08-19T09-38-47-148Z-90a637b41a.json",
+      "recordHash": "8cb7c4c430a43c61c3a2091ea8d15585848dcd66e021fcd5998f3fa06d2cd895",
+      "findingCount": 35,
+      "criticalCount": 0,
+      "highCount": 8,
+      "newFindingCount": 2,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -15931,6 +15943,39 @@
       "severity": "high",
       "category": "unpinned-action",
       "summary": "GitHub Action is referenced by mutable ref: actions/checkout@v4.",
+      "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
+      "entity": "actions/checkout@v4"
+    },
+    {
+      "id": "9161cdb4aad68e3605b66ea1b984a8be5423fe642870e355024466dfc93e05f1",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-19T09:38:47.148Z",
+      "findingId": "d2f20a640ba0ac985597a0f5c83c9dcbef41d1e44aebb9ce7a28872835541584",
+      "severity": "high",
+      "category": "unpinned-action",
+      "summary": "GitHub Action is referenced by mutable ref: actions/checkout@v4.",
+      "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
+      "entity": "actions/checkout@v4"
+    },
+    {
+      "id": "677c56f8217e69a8f817d820ca631a3da51ff8ddbe5969dfad5462d053cf5c7d",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-19T09:38:47.148Z",
+      "findingId": "03f8471cec3a555294f314b2b9b9fe662942d88801e49a2a2c7954f721cc19ed",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/_temp_passport_label_patch_pr.yml.",
+      "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
+      "entity": null
+    },
+    {
+      "id": "4583764c3f8cdfd42f00e1f1093ed0aeea75e7ee1fa34e81ca0fef91b988663e",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T09:38:47.148Z",
+      "findingId": "c21b80f86ae4cd315bb9a4dd506f20df38a4875e5152899b7988027c27ed34bd",
+      "severity": "high",
+      "category": "unpinned-action",
+      "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/checkout@v4.",
       "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
       "entity": "actions/checkout@v4"
     }

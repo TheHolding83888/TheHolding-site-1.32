@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-19T09:38:21.543Z",
+  "generatedAt": "2026-08-19T09:38:47.148Z",
   "status": "watch",
   "headline": "8 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 8,
-    "medium": 26,
+    "medium": 27,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 452,
-    "bytesScanned": 10095492,
+    "bytesScanned": 10094911,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
+        "lastModified": "Fri, 14 Aug 2026 09:40:49 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,33 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "d2f20a640ba0ac985597a0f5c83c9dcbef41d1e44aebb9ce7a28872835541584",
+        "severity": "high",
+        "category": "unpinned-action",
+        "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
+        "line": 12,
+        "entity": "actions/checkout@v4",
+        "summary": "GitHub Action is referenced by mutable ref: actions/checkout@v4.",
+        "whyItMatters": "This workflow has write capability; a moved or compromised action tag would have a larger blast radius.",
+        "evidence": null
+      },
+      {
+        "id": "03f8471cec3a555294f314b2b9b9fe662942d88801e49a2a2c7954f721cc19ed",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/_temp_passport_label_patch_pr.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "681d6fcc6a6065d4c056f08f947037d3ef660c7411256bea20f0d46ea0dff89e",
+          "currentSha256": "f6217f9c6bb3311799364ec81c08ac604f550664b8e75cb6452743727b2419af"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "c21b80f86ae4cd315bb9a4dd506f20df38a4875e5152899b7988027c27ed34bd",
         "severity": "high",
@@ -67,8 +94,7 @@
         "whyItMatters": "This workflow has write capability; a moved or compromised action tag would have a larger blast radius.",
         "evidence": null
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -138,11 +164,11 @@
       "evidence": null
     },
     {
-      "id": "c21b80f86ae4cd315bb9a4dd506f20df38a4875e5152899b7988027c27ed34bd",
+      "id": "d2f20a640ba0ac985597a0f5c83c9dcbef41d1e44aebb9ce7a28872835541584",
       "severity": "high",
       "category": "unpinned-action",
       "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
-      "line": 13,
+      "line": 12,
       "entity": "actions/checkout@v4",
       "summary": "GitHub Action is referenced by mutable ref: actions/checkout@v4.",
       "whyItMatters": "This workflow has write capability; a moved or compromised action tag would have a larger blast radius.",
@@ -158,6 +184,20 @@
       "summary": "GitHub Action is referenced by mutable ref: actions/checkout@v4.",
       "whyItMatters": "This workflow has write capability; a moved or compromised action tag would have a larger blast radius.",
       "evidence": null
+    },
+    {
+      "id": "03f8471cec3a555294f314b2b9b9fe662942d88801e49a2a2c7954f721cc19ed",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/_temp_passport_label_patch_pr.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "681d6fcc6a6065d4c056f08f947037d3ef660c7411256bea20f0d46ea0dff89e",
+        "currentSha256": "f6217f9c6bb3311799364ec81c08ac604f550664b8e75cb6452743727b2419af"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -570,12 +610,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "f51011c4bb91acee3eb46e9218ca932c25294098ada7882e23c75202c6ae69a1",
+    "snapshotHash": "90a637b41ad80436861f10f6324050d18a1bc213a88b0c7aa408425255c22b9e",
     "securityVault": {
-      "runCount": 309,
+      "runCount": 310,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-19T09-38-21-543Z-f51011c4bb.json",
-      "latestRecordHash": "9f6824320f2479969becfd2ed23c0b88a14c4c6cf6aa85d63c8dfea3e66eac82",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-19T09-38-47-148Z-90a637b41a.json",
+      "latestRecordHash": "8cb7c4c430a43c61c3a2091ea8d15585848dcd66e021fcd5998f3fa06d2cd895",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
