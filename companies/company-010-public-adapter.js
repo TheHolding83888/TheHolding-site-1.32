@@ -29,6 +29,7 @@
   const CYPHER_PRODUCTIVITY_ID=Object.freeze({
     'aerodrome-finance':'aerodrome_veaero',
     'velodrome-finance':'velodrome_vevelo',
+    'convex-finance':'convex_vlcvx',
     'stakedao-base-curve-4pool':'stakedao_base_curve_4pool',
     'concentrator-asdcrv':'concentrator_asdcrv',
     'convex-staked-cvxcrv':'convex_staked_cvxcrv',
@@ -238,7 +239,7 @@
     const allBook=typeof COMPANY_BOOK!=='undefined'?(COMPANY_BOOK[nm]||[]):[];
     if(allBook.some(x=>x&&x.productivityOnly===true&&x.id===pos.id))return null;
     if(nm==='Cypher'){
-      if(pos.id==='bitcoin'||pos.id==='cypher-eth-equivalent'||pos.id==='ethereum'||pos.id==='hyperliquid'||pos.id==='convex-finance'||pos.id==='curve-dao-token'||pos.id==='lido-dao')return null;
+      if(pos.id==='bitcoin'||pos.id==='cypher-eth-equivalent'||pos.id==='ethereum'||pos.id==='hyperliquid'||pos.id==='curve-dao-token'||pos.id==='lido-dao')return null;
       if(String(pos.id).startsWith('gmx-gm-'))return null;
       if(pos.id==='projectx-whype-usdc'){
         const px=(state?.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
@@ -521,3 +522,4 @@
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
+
