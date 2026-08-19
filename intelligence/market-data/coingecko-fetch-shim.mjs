@@ -19,6 +19,14 @@ function isCoinGeckoSimplePrice(input) {
   } catch { return false; }
 }
 
+function providerIndex(snapshot) {
+  const index = new Map();
+  for (const row of Object.values(snapshot?.prices || {})) {
+    if (row?.providerId) index.set(String(row.providerId), row);
+  }
+  return index;
+}
+
 function localCoinGeckoResponse(input) {
   const raw = typeof input === 'string' || input instanceof URL ? input : input?.url;
   const url = new URL(raw);
@@ -26,9 +34,10 @@ function localCoinGeckoResponse(input) {
   const snapshot = readSnapshot();
   if (!snapshot?.prices) throw new Error('Market Data snapshot unavailable for CoinGecko compatibility shim');
 
+  const byProviderId = providerIndex(snapshot);
   const body = {};
   for (const id of requested) {
-    const row = snapshot.prices[id];
+    const row = byProviderId.get(id);
     const usd = Number(row?.usd);
     if (Number.isFinite(usd) && usd >= 0) body[id] = { usd };
   }
