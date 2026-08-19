@@ -10,6 +10,8 @@ if(s.version!=='0.1-defitea-canonical-state')fail('unexpected Defitea state vers
 const byId=new Map(s.productivePositions.map(x=>[x.assetId,x]));
 if(Number(byId.get('aerodrome-finance')?.quantity)!==2632||Number(byId.get('fxn-token')?.quantity)!==64.81)fail('Defitea canonical delta drift');
 if(s.productivePositions.length!==11)fail('Defitea expected 11 productive positions');
+if(s.costBasis?.aerodrome?.status!=='complete'||Number(s.costBasis.aerodrome.costBasisUsd)!==1121.3)fail('Defitea AERO basis incomplete');
+if(s.costBasis?.fxn?.status!=='complete'||Number(s.costBasis.fxn.costBasisUsd)!==983.2386)fail('Defitea FXN basis incomplete');
 if(s.authority?.executionAuthority!=='none')fail('Defitea authority drift');
 
 function replaceOnce(text,oldText,newText,label){
@@ -22,62 +24,12 @@ function replaceOnce(text,oldText,newText,label){
 let html=fs.readFileSync(INDEX,'utf8');
 html=replaceOnce(html,
 "        { id: 'aerodrome-finance', qty: 2440,  entry: 0.4265 },",
-"        { id: 'aerodrome-finance', qty: 2632, entry: 0.4265, costBasisStatus: 'partial', establishedCostBasisUsd: 1040.66, incrementalQtyCostBasisUnknown: 192 },",
+"        { id: 'aerodrome-finance', qty: 2632, entry: 0.4265, costBasisUsd: 1121.3, acquisition: 'mixed', acquisitionLots: [\n            { qty: 2440, entry: 0.4265, costBasisUsd: 1040.66, evidenceStatus: 'established' },\n            { qty: 192, entry: 0.42, costBasisUsd: 80.64, evidenceStatus: 'owner-provided' }\n        ] },",
 'Defitea AERO Company Book');
 html=replaceOnce(html,
 "        { id: 'fxn-token',         qty: 59.81, entry: 15.06 },",
-"        { id: 'fxn-token', qty: 64.81, entry: 15.06, costBasisStatus: 'partial', establishedCostBasisUsd: 900.7386, incrementalQtyCostBasisUnknown: 5 },",
+"        { id: 'fxn-token', qty: 64.81, entry: 15.06, costBasisUsd: 983.2386, acquisition: 'mixed', acquisitionLots: [\n            { qty: 59.81, entry: 15.06, costBasisUsd: 900.7386, evidenceStatus: 'established' },\n            { qty: 5, entry: 16.5, costBasisUsd: 82.5, evidenceStatus: 'owner-provided' }\n        ] },",
 'Defitea FXN Company Book');
-
-const oldBookFigures=`function bookFigures(nm, prices) {
-    const pos = COMPANY_BOOK[nm] || [];
-    let value = 0, cost = 0;
-    pos.forEach(p => {
-        if (p.productivityOnly) return;
-        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);
-        value += p.qty * price;
-        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''
-            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;
-        cost += explicitCost !== null ? explicitCost : p.qty * p.entry;
-    });
-    return { value: value, cost: cost, pnl: value - cost, pct: cost > 0 ? (value / cost - 1) * 100 : 0 };
-}`;
-const newBookFigures=`function bookFigures(nm, prices) {
-    const pos = COMPANY_BOOK[nm] || [];
-    let value = 0, knownCost = 0, costComplete = true;
-    pos.forEach(p => {
-        if (p.productivityOnly) return;
-        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);
-        value += p.qty * price;
-        if (p.costBasisStatus === 'partial') {
-            costComplete = false;
-            const established = Number(p.establishedCostBasisUsd);
-            if (Number.isFinite(established) && established >= 0) knownCost += established;
-            return;
-        }
-        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''
-            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;
-        const entry = p.entry !== null && p.entry !== undefined && Number.isFinite(Number(p.entry)) ? Number(p.entry) : null;
-        if (explicitCost !== null) knownCost += explicitCost;
-        else if (entry !== null) knownCost += p.qty * entry;
-        else costComplete = false;
-    });
-    const cost = costComplete ? knownCost : 0;
-    return {
-        value,
-        cost,
-        knownCostBasisUsd: knownCost,
-        costComplete,
-        performancePending: !costComplete,
-        pnl: costComplete ? value - knownCost : undefined,
-        pct: costComplete && knownCost > 0 ? (value / knownCost - 1) * 100 : undefined
-    };
-}`;
-html=replaceOnce(html,oldBookFigures,newBookFigures,'Company Book partial cost-basis semantics');
-html=replaceOnce(html,
-"        { nm: 'defitea.eth',   val: tvl4, cost: F4.cost, pnl: F4.pnl, pct: F4.pct, href: 'https://theholding.ai/defitea/',",
-"        { nm: 'defitea.eth',   val: tvl4, cost: F4.cost, pnl: F4.pnl, pct: F4.pct, performancePending: F4.performancePending, knownCostBasisUsd: F4.knownCostBasisUsd, href: 'https://theholding.ai/defitea/',",
-'Defitea Performance pending projection');
 fs.writeFileSync(INDEX,html);
 
 let bal=fs.readFileSync(BALANCE,'utf8');
@@ -91,6 +43,14 @@ bal=replaceOnce(bal,
 'Defitea FXN General Balance');
 fs.writeFileSync(BALANCE,bal);
 
-if(!html.includes("performancePending: F4.performancePending"))fail('Defitea Performance must fail closed while incremental basis is unknown');
-if(!html.includes("incrementalQtyCostBasisUnknown: 192")||!html.includes("incrementalQtyCostBasisUnknown: 5"))fail('Defitea partial cost-basis provenance missing');
-console.log('Defitea canonical projection PASS',{positions:s.productivePositions.length,aero:byId.get('aerodrome-finance').quantity,fxn:byId.get('fxn-token').quantity,performance:'pending-partial-cost-basis',executionAuthority:'none'});
+if(!html.includes('costBasisUsd: 1121.3')||!html.includes('qty: 192, entry: 0.42'))fail('Defitea AERO lot projection missing');
+if(!html.includes('costBasisUsd: 983.2386')||!html.includes('qty: 5, entry: 16.5'))fail('Defitea FXN lot projection missing');
+console.log('Defitea canonical projection PASS',{
+  positions:s.productivePositions.length,
+  aero:byId.get('aerodrome-finance').quantity,
+  aeroCostBasisUsd:s.costBasis.aerodrome.costBasisUsd,
+  fxn:byId.get('fxn-token').quantity,
+  fxnCostBasisUsd:s.costBasis.fxn.costBasisUsd,
+  performance:'complete-lot-aware-cost-basis',
+  executionAuthority:'none'
+});
