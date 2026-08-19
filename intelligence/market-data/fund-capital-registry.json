@@ -1,0 +1,62 @@
+{
+  "version": "0.1-fund-capital-registry",
+  "purpose": "Canonical public fund-capital inventory for The Holding fund surfaces. Defitea and Monetra delegate to their existing canonical company/protocol states; Substantia, Singul and Fructus are declared here so homepage and dedicated fund pages cannot drift independently.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "methodologyMutationAuthority": false
+  },
+  "funds": {
+    "substantia": {
+      "name": "Substantia",
+      "valuationMode": "market-registry",
+      "positions": [
+        {"assetId":"bitcoin","symbol":"BTC","quantity":0.1,"pricing":"market"},
+        {"assetId":"ethereum","symbol":"ETH","quantity":1,"pricing":"market"},
+        {"assetId":"tether-gold","symbol":"XAUT","quantity":0.5,"pricing":"market"},
+        {"assetId":"physical-silver","symbol":"Ag","quantity":20,"pricing":"legacy-xaut-ratio","ratioToXaut":67,"note":"Preserves the existing public Substantia silver valuation convention until a dedicated canonical silver source is promoted."}
+      ]
+    },
+    "defitea": {
+      "name": "Defitea",
+      "valuationMode": "delegate-defitea-canonical-state",
+      "canonicalSource": "companies/defitea-canonical-state.json",
+      "referenceAprSource": "companies/productivity-data.json",
+      "companyName": "defitea.eth"
+    },
+    "monetra": {
+      "name": "Monetra",
+      "valuationMode": "delegate-stable-index",
+      "canonicalSource": "companies/stable-index-data.json",
+      "companyName": "Monetra.eth",
+      "note": "Wrapper, savings, lending and stable-strategy NAV stays protocol/onchain-derived and is never replaced by CoinGecko token pricing."
+    },
+    "singul": {
+      "name": "Singul",
+      "valuationMode": "market-registry-plus-explicit-fixed",
+      "positions": [
+        {"assetId":"decentraland","symbol":"MANA","quantity":276,"pricing":"market"},
+        {"assetId":"the-sandbox","symbol":"SAND","quantity":282,"pricing":"market"},
+        {"assetId":"ovr","symbol":"OVR","quantity":838,"pricing":"market"},
+        {"assetId":"autonolas","symbol":"OLAS","quantity":800,"pricing":"market"},
+        {"assetId":"virtual-protocol","symbol":"VIRTUAL","quantity":669,"pricing":"market"},
+        {"assetId":"beam-2","symbol":"BEAM","quantity":11309,"pricing":"market"},
+        {"assetId":"mode","symbol":"MODE","quantity":1000000,"pricing":"market","fallbackTotalValueUsd":90},
+        {"assetId":"elizaos","symbol":"ELIZA","quantity":80808,"pricing":"market","ownerDirective":"2026-08-19 canonical quantity"},
+        {"assetId":"diem","symbol":"DIEM","quantity":0.07,"pricing":"fixed-total","fixedTotalValueUsd":86,"note":"No validated dynamic market source is currently promoted."}
+      ]
+    },
+    "fructus": {
+      "name": "Fructus",
+      "valuationMode": "market-registry",
+      "positions": [
+        {"assetId":"ondo-finance","symbol":"ONDO","quantity":542,"pricing":"market","ownerDirective":"2026-08-19 canonical quantity"}
+      ],
+      "excludedFromTvl": [
+        {"assetId":"dbcon","reason":"owner directive 2026-08-19: remove from calculations everywhere"},
+        {"assetId":"copxon","reason":"owner directive 2026-08-19: remove from calculations everywhere"}
+      ]
+    }
+  }
+}
