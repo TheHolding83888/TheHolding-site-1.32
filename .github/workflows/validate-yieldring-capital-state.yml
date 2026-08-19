@@ -1,0 +1,88 @@
+name: "Validate YieldRing Capital + veAERO Relay"
+
+on:
+  pull_request:
+    paths:
+      - 'companies/yieldring-canonical-state.json'
+      - 'companies/yieldring-public-capital-projection.mjs'
+      - 'productivity/yieldring-productivity-overlay.mjs'
+      - 'yieldring/index.html'
+      - '.github/workflows/project-yieldring-capital-state.yml'
+      - '.github/workflows/update-productivity.yml'
+      - '.github/workflows/validate-yieldring-capital-state.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate owner-provided lots and semantic contract
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('companies/yieldring-canonical-state.json','utf8'));
+          const close=(a,b,t=1e-9)=>Math.abs(Number(a)-Number(b))<=t;
+          const sum=(xs,key)=>xs.reduce((n,x)=>n+Number(x[key]||0),0);
+          if(s.version!=='0.1-yieldring-canonical-state'||s.company!=='YieldRing.eth'||s.registry!=='002')throw new Error('YieldRing canonical identity drift');
+          const btc=s.capital?.bitcoin,aero=s.capital?.aerodrome;
+          if(!btc||!aero)throw new Error('YieldRing BTC/AERO capital missing');
+          if(!close(0.0034*64300,218.62)||!close(198*0.4,79.2))throw new Error('new lot arithmetic drift');
+          if(!close(sum(btc.lots,'quantity'),0.0334)||!close(sum(btc.lots,'costBasisUsd'),2121.88)||!close(Number(btc.quantity),0.0334)||!close(Number(btc.costBasisUsd),2121.88))throw new Error('BTC aggregation drift');
+          if(!close(sum(aero.lots,'quantity'),678)||!close(sum(aero.lots,'costBasisUsd'),274.464)||!close(Number(aero.quantity),678)||!close(Number(aero.costBasisUsd),274.464))throw new Error('AERO aggregation drift');
+          const r=s.aerodromeRelay;
+          if(r?.mode!=='veAERO Maxi'||r?.managerId!=='10298'||String(r?.managerAddress).toLowerCase()!=='0xc9814f18a8751214f719de15c54d01b3d78ef14f')throw new Error('veAERO Maxi manager drift');
+          if(r?.expectedUnderlyingLockCount!==2||r?.aggregatePrincipalAero!==678||r?.rewardsPresentation!=='single-aggregated-aerodrome-line')throw new Error('veAERO aggregation drift');
+          if(r?.evidenceStatus!=='owner-provided-not-yet-independently-reproduced')throw new Error('Relay provenance must remain bounded');
+          if(s.authority?.executionAuthority!=='none'||s.authority?.capitalExecution!==false||s.authority?.walletAction!==false)throw new Error('authority drift');
+          console.log('YieldRing canonical contract PASS');
+          NODE
+      - name: Validate deterministic projections
+        run: |
+          set -euo pipefail
+          node --check companies/yieldring-public-capital-projection.mjs
+          node companies/yieldring-public-capital-projection.mjs
+          node --check productivity/yieldring-productivity-overlay.mjs
+          node productivity/yieldring-productivity-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const html=fs.readFileSync('companies/index.html','utf8');
+          const bal=fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.mjs','utf8');
+          const d=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const c=d.companies?.['YieldRing.eth'];
+          const aero=(c?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          for(const n of ["qty: 0.0334","costBasisUsd: 2121.88","qty: 678","costBasisUsd: 274.464","managerId: '10298'"]){if(!html.includes(n))throw new Error('Company Book projection missing '+n);}
+          if(!bal.includes("{ id:'bitcoin', qty:0.0334")||!bal.includes("{ id:'aerodrome-finance', qty:678"))throw new Error('General Balance projection missing');
+          if(!c||Number(aero?.units)!==678||!(Number(c.productiveValue)>0)||!Number.isFinite(Number(c.aprLatest)))throw new Error('Productivity projection invalid');
+          if(d.diagnostics?.yieldRing?.managerId!=='10298'||d.diagnostics?.yieldRing?.executionAuthority!=='none')throw new Error('YieldRing diagnostics missing');
+          console.log('YieldRing projections PASS',{aeroUnits:aero.units,aprLatest:c.aprLatest});
+          NODE
+      - name: Validate existing Rewards aggregation architecture
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('rewards/company-rewards-engine.mjs','utf8');
+          for(const n of ['idToManaged','rewardBreakdownByPosition','tokenIds','positions'])if(!src.includes(n))throw new Error('Rewards aggregation primitive missing '+n);
+          if(!src.includes("slug: 'aerodrome'"))throw new Error('Aerodrome collector missing');
+          console.log('Existing multi-veNFT Rewards aggregation PASS');
+          NODE
+      - name: Validate dedicated YieldRing page
+        run: |
+          set -euo pipefail
+          grep -F "qty: 0.0334" yieldring/index.html
+          grep -F "qty: 678" yieldring/index.html
+          grep -F "2 locks · Maxi relay" yieldring/index.html
+          grep -F "Manager ID 10298" yieldring/index.html
+      - name: Diff hygiene
+        run: git diff --check
