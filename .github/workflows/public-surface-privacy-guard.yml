@@ -1,0 +1,51 @@
+name: "The Holding Security · Public Surface Privacy Guard"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-surface-privacy-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static privacy contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s security/public-surface-privacy-policy.json
+          test -s security/public-surface-privacy-guard.mjs
+          node --check security/public-surface-privacy-guard.mjs
+          grep -q '"executionAuthority": "none"' security/public-surface-privacy-policy.json
+          grep -q '"repositoryMutationAuthority": false' security/public-surface-privacy-policy.json
+          grep -q '"historicalRewriteAuthority": false' security/public-surface-privacy-policy.json
+          grep -qi 'theholding83888' security/public-surface-privacy-policy.json
+
+      - name: Scan browser-facing text assets
+        run: node security/public-surface-privacy-guard.mjs
+
+      - name: Verify read-only boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          git diff --check

@@ -1,0 +1,49 @@
+{
+  "version": "0.1-public-surface-privacy-policy",
+  "status": "defensive-public-web-metadata-boundary",
+  "purpose": "Prevent accidental developer, repository-owner, private-development, local-environment and natural-person email metadata from being published in browser-facing web assets unless explicitly allowed for a proven functional reason.",
+  "scope": {
+    "extensions": [".html", ".htm", ".js", ".mjs", ".css", ".json", ".xml", ".svg", ".txt"],
+    "excludedPathPrefixes": [
+      ".github/",
+      "security/",
+      "intelligence/project-memory/"
+    ],
+    "excludedExactPaths": [
+      "robots.txt"
+    ]
+  },
+  "forbidden": {
+    "literalFragmentsCaseInsensitive": [
+      "theholding83888",
+      "github.com/theholding83888",
+      "api.github.com/repos/theholding83888",
+      "raw.githubusercontent.com/theholding83888",
+      "sandbox:/mnt/data/",
+      "/home/oai/",
+      "c:\\users\\"
+    ],
+    "regexes": [
+      "(?:^|[\\s\\\"'(<])(?:file:\\/\\/|/Users/|/home/)[^\\s\\\"')>]+",
+      "(?:^|[\\s\\\"'(<])[A-Z]:\\\\Users\\\\[^\\s\\\"')>]+"
+    ]
+  },
+  "emailBoundary": {
+    "scanEmails": true,
+    "allowedExact": [
+      "noreply@github.com"
+    ],
+    "allowedSuffixes": [
+      "@users.noreply.github.com",
+      "@theholding.ai"
+    ],
+    "allowedPublicAddresses": []
+  },
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "repositoryMutationAuthority": false,
+    "historicalRewriteAuthority": false
+  }
+}
