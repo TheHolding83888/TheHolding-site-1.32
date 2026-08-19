@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-19T08:39:56.684Z",
+  "lastUpdatedAt": "2026-08-19T09:37:34.810Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 307,
-    "vaultRunCount": 307,
+    "runCount": 308,
+    "vaultRunCount": 308,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -3697,6 +3697,18 @@
       "highCount": 6,
       "newFindingCount": 21,
       "resolvedFindingCount": 18
+    },
+    {
+      "generatedAt": "2026-08-19T09:37:34.810Z",
+      "status": "watch",
+      "snapshotHash": "00057aeec16173d88a7488dc287de7bd304466bc19e5022bb5613617755b8d77",
+      "recordPath": "security/security-vault/2026/08/2026-08-19T09-37-34-810Z-00057aeec1.json",
+      "recordHash": "147e1df31108dec7065346d30e1ef781522dfeb9af873fe290f2e6fe18091ce5",
+      "findingCount": 33,
+      "criticalCount": 0,
+      "highCount": 7,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 3
     }
   ],
   "events": [
@@ -15852,6 +15864,50 @@
       "severity": "medium",
       "category": "dom-innerhtml",
       "summary": "Resolved: Dynamic innerHTML assignment detected.",
+      "file": "companies/index.html",
+      "entity": null
+    },
+    {
+      "id": "a7efdba78d373b45497005963c99ca3859f7bd86a03cc477fc0ff5c764a0df6d",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-19T09:37:34.810Z",
+      "findingId": "dac3c8db66c66867fa4995652f87f12c1f6a9cd7c1fccec9147486b4b36d893f",
+      "severity": "high",
+      "category": "unpinned-action",
+      "summary": "GitHub Action is referenced by mutable ref: actions/checkout@v4.",
+      "file": ".github/workflows/_temp_passport_label_patch.yml",
+      "entity": "actions/checkout@v4"
+    },
+    {
+      "id": "f44d2c0b2d3b3e25c7bf4de5f906fc7ad6d573982706eeabe09b14ab69b2148a",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T09:37:34.810Z",
+      "findingId": "00be6b0c37ea876f71a405a06c07f2ac6e48093a8e60e8c103582541c57c962d",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-passport-productive-label-parity.yml.",
+      "file": ".github/workflows/verify-passport-productive-label-parity.yml",
+      "entity": null
+    },
+    {
+      "id": "c0a87ac292964acf55f898839253e8de293b7eb691d203b1d99b41d546919f73",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T09:37:34.810Z",
+      "findingId": "724bfba522a4a7ceeccec0a78fe86f1b51024159ef5f21c715f9a700d8bf160b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-project-memory-continuity-routing.yml.",
+      "file": ".github/workflows/verify-project-memory-continuity-routing.yml",
+      "entity": null
+    },
+    {
+      "id": "9d8330412b03247e353bafa541647e4366462a7764f28352ad146b4269753e79",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T09:37:34.810Z",
+      "findingId": "fad823c2447c2e2001ffc551e7f0fda404dd041a89ce1f43e8b1478165b69b5f",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: companies/index.html.",
       "file": "companies/index.html",
       "entity": null
     }
