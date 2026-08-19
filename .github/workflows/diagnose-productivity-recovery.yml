@@ -1,0 +1,62 @@
+name: "Diagnose Productivity Recovery"
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/diagnose-productivity-recovery.yml'
+      - '.github/workflows/update-productivity.yml'
+      - 'productivity/**'
+      - 'companies/index.html'
+      - 'companies/yieldring-canonical-state.json'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install collector dependencies
+        working-directory: productivity
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: productivity
+        run: npx playwright install --with-deps chromium
+
+      - name: Run exact Productivity collector without publish
+        working-directory: productivity
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          GITHUB_TOKEN: ${{ github.token }}
+          PAGE_FILE: ../companies/index.html
+          DATA_FILE: ../companies/productivity-data.json
+          REPORT_FILE: ../companies/productivity-source-report.json
+        run: npm run update
+
+      - name: Apply compatibility overlays in production order
+        run: |
+          set -euo pipefail
+          node productivity/company-010-productivity-overlay.mjs
+          node productivity/yieldring-productivity-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const y=d.companies?.['YieldRing.eth'];
+          const a=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          if(d.version!=='1.16') throw new Error('Productivity recovery did not finish at v1.16');
+          if(!y||Number(a?.units)!==678) throw new Error('YieldRing 678 AERO not present after exact recovery diagnostic');
+          if(d.diagnostics?.company010?.executionAuthority!=='none'||d.diagnostics?.yieldRing?.executionAuthority!=='none') throw new Error('authority drift');
+          console.log('Productivity recovery diagnostic PASS',{generatedAt:d.generatedAt,yieldRingApr:y.aprLatest,yieldRingProductiveValue:y.productiveValue,aeroUnits:a.units,coverage:y.coverage,version:d.version});
+          NODE
