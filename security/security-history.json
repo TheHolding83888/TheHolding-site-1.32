@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-19T09:39:21.748Z",
+  "lastUpdatedAt": "2026-08-19T12:02:04.322Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 311,
-    "vaultRunCount": 311,
+    "runCount": 312,
+    "vaultRunCount": 312,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -3745,6 +3745,18 @@
       "highCount": 7,
       "newFindingCount": 0,
       "resolvedFindingCount": 2
+    },
+    {
+      "generatedAt": "2026-08-19T12:02:04.322Z",
+      "status": "watch",
+      "snapshotHash": "5bb1e85e51209689e74303b38226b388bb42359da8a016a13fcca095ddc68a06",
+      "recordPath": "security/security-vault/2026/08/2026-08-19T12-02-04-322Z-5bb1e85e51.json",
+      "recordHash": "92e6818aedfb271671754110a71fd750a0358e47be7b7950c9b140b87f911b27",
+      "findingCount": 35,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 3,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -16012,6 +16024,50 @@
       "summary": "Resolved: Security-sensitive surface changed: .github/workflows/_temp_passport_label_patch_pr.yml.",
       "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
       "entity": null
+    },
+    {
+      "id": "27e68bdc840468aaa802c303d5ee6479bdb065f26c4fa68dbe85723323b7d075",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-19T12:02:04.322Z",
+      "findingId": "cb97c3dcb714cb64fc3f21a5c5abf43b96d05462d1b0c4cd96c533f8559ee47b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-rewards-drawer.yml.",
+      "file": ".github/workflows/verify-company-010-rewards-drawer.yml",
+      "entity": null
+    },
+    {
+      "id": "08cc156bff576fe3d4a2f7af5b8094606446fe072df51702a70d0b7d39de654b",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-19T12:02:04.322Z",
+      "findingId": "40500a36bbf653d2c1708990e182ab4804db34184112ad3742f55db547660f14",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
+      "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
+      "entity": null
+    },
+    {
+      "id": "1265829795678eaec637fb758cd29775471235d035628913afdb26c6246b98b3",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-19T12:02:04.322Z",
+      "findingId": "a6c728e0e9d3d0a7dfe1080def263676d80fb2d7b41853fe631e5f52d73f82c2",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-rewards-drawer-row-coverage-parity.yml.",
+      "file": ".github/workflows/verify-rewards-drawer-row-coverage-parity.yml",
+      "entity": null
+    },
+    {
+      "id": "f362d2d39acf0df1a0a0f6eb70ff9da406c6f335c5a45ac0a055f31314a3d01e",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T12:02:04.322Z",
+      "findingId": "d2f20a640ba0ac985597a0f5c83c9dcbef41d1e44aebb9ce7a28872835541584",
+      "severity": "high",
+      "category": "unpinned-action",
+      "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/checkout@v4.",
+      "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
+      "entity": "actions/checkout@v4"
     }
   ]
 }
