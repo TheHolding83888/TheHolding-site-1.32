@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-19T16:09:30.636Z",
+  "generatedAt": "2026-08-19T16:41:32.774Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 28,
+    "medium": 34,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 461,
-    "bytesScanned": 10135121,
+    "filesScanned": 464,
+    "bytesScanned": 10149277,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:20:13 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -57,26 +57,49 @@
   "whatChanged": {
     "newFindings": [
       {
-        "id": "0c044d4f0d2d96b3aee258d8d6386eaf5ef081060db56849f1c0f112555a40a7",
+        "id": "20ea1a9a24951ae8ffc075e56c664fa4c0165fc873dc259e89515f5edd7e6f43",
         "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "defitea/index.html",
-        "line": 2542,
+        "category": "critical-surface-change",
+        "file": ".github/workflows/diagnose-productivity-recovery.yml",
+        "line": null,
         "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "summary": "Security-sensitive surface changed: .github/workflows/diagnose-productivity-recovery.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "reviewInvalidated": true,
-          "expectedGitBlobSha1": "5d10039eec556375fb310641cf090439bd069c42",
-          "currentGitBlobSha1": "9bc51b96c300698a763c8c21e1bc42941759f1d0",
-          "expectedCount": 1,
-          "currentCount": 1
+          "previousSha256": "1f5b34db4146017f3255e3d2c5e66d83acb23d4c718b575f77ad3ea35eda0c72",
+          "currentSha256": "c3ad28da28402ed493454452e9252efd1255af45c8ce34ae7735884d5884e6c4"
         }
-      }
-    ],
-    "resolvedFindings": [
+      },
       {
-        "id": "d630a43749ca472ab14e8ef94cb4c2b17dd6bbf40070f2c85fb6bd8a1eed2c21",
+        "id": "5bd6be752d4772247cd9f817d2b0ccdcf39cf073f904cb93b708a53ec2fdf59e",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/project-yieldring-capital-state.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/project-yieldring-capital-state.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "41694664a6cce697eb2f0367272f868ddc0946e961afc337a318b2fc826bb472",
+          "currentSha256": "3eef6bcfa649c55e07f1f69f91ef72946518c3d6edc609105097f806cc78903d"
+        }
+      },
+      {
+        "id": "3625ab67e229160fa211f3814091a9fa83b4fd6cc8f03ec76eba1af933b79405",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-capital-state.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-capital-state.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "ca3173042f50897ebcefb9f6707ab8c6b48b433b08ea9c797185b3ac77caa477",
+          "currentSha256": "d0a324d323fa1e4e5822f315315b8572a0ac9d81aa3d8f97a2a739671e3415b5"
+        }
+      },
+      {
+        "id": "9cb8efc0d7decdcd94a2676b8b1bc8cd004169a5ec7d969e8dfa8831d4f757b5",
         "severity": "medium",
         "category": "critical-surface-change",
         "file": ".github/workflows/update-productivity.yml",
@@ -85,11 +108,40 @@
         "summary": "Security-sensitive surface changed: .github/workflows/update-productivity.yml.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "4b07ebe4e73ac754cd249a96b8c130e828353f8f3f7be7cce483fc442a9b2afa",
-          "currentSha256": "ec44b0bdb8abe78e2d3b8c06e9f910907cf98cf1f015e5657e5136fc36441077"
+          "previousSha256": "ec44b0bdb8abe78e2d3b8c06e9f910907cf98cf1f015e5657e5136fc36441077",
+          "currentSha256": "ba22c94a1b8e9951d5db2080a6fb9a1d5c429f020c5eb6c6d11f77bb03900abd"
+        }
+      },
+      {
+        "id": "da2aca5a4e90e0be18d0abcc97ab97c67473df2d2fbe8f0b6c9268569f76dc73",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/validate-yieldring-production-cascade.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/validate-yieldring-production-cascade.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "8deb6a63b979ee3dc628f02c543afa980c59ad64aaf2e6dce5b6862a9543eb29",
+          "currentSha256": "430e77a8dc142525a1df118dc063fb43970f3b793939a075fb01568b96c4515c"
+        }
+      },
+      {
+        "id": "3e84dbd0538ede2fc7d80bddb0ed39f54e17ecf204ec9e408fa91fe3a6e9baa8",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-company-010-projectx-reference-apr.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-projectx-reference-apr.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "631e583ce3ec1f04574f102f6548b17125451617e1c635861e6552163827d98c",
+          "currentSha256": "6090c671e036fddcd2a304d0bf6fe6c41629f0e69a392c94222bd55eb70bd1a8"
         }
       }
-    ]
+    ],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -157,6 +209,90 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "20ea1a9a24951ae8ffc075e56c664fa4c0165fc873dc259e89515f5edd7e6f43",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/diagnose-productivity-recovery.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/diagnose-productivity-recovery.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "1f5b34db4146017f3255e3d2c5e66d83acb23d4c718b575f77ad3ea35eda0c72",
+        "currentSha256": "c3ad28da28402ed493454452e9252efd1255af45c8ce34ae7735884d5884e6c4"
+      }
+    },
+    {
+      "id": "5bd6be752d4772247cd9f817d2b0ccdcf39cf073f904cb93b708a53ec2fdf59e",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/project-yieldring-capital-state.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/project-yieldring-capital-state.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "41694664a6cce697eb2f0367272f868ddc0946e961afc337a318b2fc826bb472",
+        "currentSha256": "3eef6bcfa649c55e07f1f69f91ef72946518c3d6edc609105097f806cc78903d"
+      }
+    },
+    {
+      "id": "3625ab67e229160fa211f3814091a9fa83b4fd6cc8f03ec76eba1af933b79405",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-capital-state.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-capital-state.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "ca3173042f50897ebcefb9f6707ab8c6b48b433b08ea9c797185b3ac77caa477",
+        "currentSha256": "d0a324d323fa1e4e5822f315315b8572a0ac9d81aa3d8f97a2a739671e3415b5"
+      }
+    },
+    {
+      "id": "9cb8efc0d7decdcd94a2676b8b1bc8cd004169a5ec7d969e8dfa8831d4f757b5",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-productivity.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-productivity.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "ec44b0bdb8abe78e2d3b8c06e9f910907cf98cf1f015e5657e5136fc36441077",
+        "currentSha256": "ba22c94a1b8e9951d5db2080a6fb9a1d5c429f020c5eb6c6d11f77bb03900abd"
+      }
+    },
+    {
+      "id": "da2aca5a4e90e0be18d0abcc97ab97c67473df2d2fbe8f0b6c9268569f76dc73",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/validate-yieldring-production-cascade.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-yieldring-production-cascade.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "8deb6a63b979ee3dc628f02c543afa980c59ad64aaf2e6dce5b6862a9543eb29",
+        "currentSha256": "430e77a8dc142525a1df118dc063fb43970f3b793939a075fb01568b96c4515c"
+      }
+    },
+    {
+      "id": "3e84dbd0538ede2fc7d80bddb0ed39f54e17ecf204ec9e408fa91fe3a6e9baa8",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-company-010-projectx-reference-apr.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-projectx-reference-apr.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "631e583ce3ec1f04574f102f6548b17125451617e1c635861e6552163827d98c",
+        "currentSha256": "6090c671e036fddcd2a304d0bf6fe6c41629f0e69a392c94222bd55eb70bd1a8"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -599,12 +735,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "81894d27e5af6b31d6643fe841fe87b55b419b23bf448e1529e4b2e74142df25",
+    "snapshotHash": "b7500f4336bd26de248bb5537bb05293aec83c272f9f4176ea826d75ed50162b",
     "securityVault": {
-      "runCount": 318,
+      "runCount": 319,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-19T16-09-30-636Z-81894d27e5.json",
-      "latestRecordHash": "8ce5194a14ec55855ed8f25a53c0aa814aac36cf511231c2d2594fd7a7110f4a",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-19T16-41-32-774Z-b7500f4336.json",
+      "latestRecordHash": "3052df5a5cef628b9e0999077a701372b58ad002d250c45c4bb1b8ba564087e8",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
