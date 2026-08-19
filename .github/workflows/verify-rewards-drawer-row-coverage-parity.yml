@@ -53,9 +53,10 @@ jobs:
           // the semantic ternary must still project Compounded ve income as SYMBOL · CHAIN · Rebase.
           if(!/\?\s*`\$\{symbol\} · \$\{chain\} · Rebase`/.test(adapter)) throw new Error('Cypher known-mechanism Rebase presentation drift');
           for(const x of [
-            "['Aerodrome','aerodrome-ve','AERO','Base']",
-            "['Velodrome','velodrome-ve-direct','VELO','Optimism']"
+            "['Aerodrome','Aerodrome · veAERO','aerodrome-ve','AERO','Base']",
+            "['Velodrome','Velodrome · veVELO','velodrome-ve-direct','VELO','Optimism']"
           ]) if(!adapter.includes(x)) throw new Error('Cypher known-mechanism route presentation drift: '+x);
+          if(adapter.includes("['Aerodrome','aerodrome-ve','AERO','Base']")||adapter.includes("['Velodrome','velodrome-ve-direct','VELO','Optimism']"))throw new Error('Cypher productive identity regressed to protocol-only mapping');
 
           const clean=s=>s
             .replace(/\s*·\s*\+\s*route not fully closed(?: yet)?\s*$/i,'')

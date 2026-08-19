@@ -429,14 +429,14 @@
       appendStrategyStateRow(panel,{label:'Concentrator · sdCRV',meta:lang()==='ru'?'Доход автоматически реинвестируется в долю':'Yield is automatically reinvested into the share',stateName:'Compounded',amount:lang()==='ru'?'В доле':'Embedded',amountMeta:finite(conc.yield.referenceAprPct)?`APR ${pct2(conc.yield.referenceAprPct)}`:'APR Pending'});
     }
 
-    for(const [name,route,fallbackSymbol,fallbackChain] of [['Aerodrome','aerodrome-ve','AERO','Base'],['Velodrome','velodrome-ve-direct','VELO','Optimism']]){
+    for(const [name,label,route,fallbackSymbol,fallbackChain] of [['Aerodrome','Aerodrome · veAERO','aerodrome-ve','AERO','Base'],['Velodrome','Velodrome · veVELO','velodrome-ve-direct','VELO','Optimism']]){
       const source=rewardSource(route),rawState=source?.details?.rewardState;
       const stateName=['Compounded','Claimable'].includes(rawState)?rawState:'Pending';
       if(stateName==='Claimable'&&panelHasStrategy(panel,name))continue;
       const embedded=stateName==='Compounded'?compactEmbeddedAmount(route):{amount:'',usd:'',symbol:'',chain:''};
       const symbol=embedded.symbol||fallbackSymbol,chain=embedded.chain||source?.chain||fallbackChain;
       const meta=stateName==='Compounded'?`${symbol} · ${chain} · Rebase`:stateName==='Claimable'?`${symbol} · ${chain}`:`${chain} · ${lang()==='ru'?'Измеряется':'Measuring'}`;
-      appendStrategyStateRow(panel,{label:name,meta,stateName,amount:embedded.amount||'—',amountMeta:stateName==='Compounded'?embedded.usd:''});
+      appendStrategyStateRow(panel,{label,meta,stateName,amount:embedded.amount||'—',amountMeta:stateName==='Compounded'?embedded.usd:''});
     }
     syncMeasuredEarnedPresentation();
   }

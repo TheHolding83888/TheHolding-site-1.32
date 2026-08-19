@@ -72,12 +72,13 @@ jobs:
             'compactEmbeddedAmount',
             'measuredEarnedTotal',
             'syncMeasuredEarnedPresentation',
-            "['Aerodrome','aerodrome-ve','AERO','Base']",
-            "['Velodrome','velodrome-ve-direct','VELO','Optimism']",
+            "['Aerodrome','Aerodrome · veAERO','aerodrome-ve','AERO','Base']",
+            "['Velodrome','Velodrome · veVELO','velodrome-ve-direct','VELO','Optimism']",
             '`${symbol} · ${chain} · Rebase`',
             "amountMeta:stateName==='Compounded'?embedded.usd:''"
           ];
           for(const x of uiMust)if(!ui.includes(x))throw new Error('Company #010 known-mechanism public parity missing: '+x);
+          if(ui.includes("['Aerodrome','aerodrome-ve','AERO','Base']")||ui.includes("['Velodrome','velodrome-ve-direct','VELO','Optimism']"))throw new Error('Company #010 productive identity regressed to protocol-only mapping');
           if(ui.includes('Embedded income · ${embedded.usd}'))throw new Error('Cypher-specific Embedded income label regressed generic ve presentation parity');
           if(ui.includes('Yield remains inside the managed veNFT'))throw new Error('Cypher-specific managed-ve prose regressed generic ve presentation parity');
 
