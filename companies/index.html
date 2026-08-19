@@ -12782,11 +12782,12 @@ function renderFramework(lang) {
 
     // Price data and protocol-productivity data are independent. Fetch them in
     // parallel so the new engine cannot slow down or block the existing TVL path.
-    const [prices, _productivity, _rewards, stableIndex] = await Promise.all([
+    const [prices, _productivity, _rewards, stableIndex, publicCapitalSnapshot] = await Promise.all([
         cgPrices(IDS),
         loadProductivitySnapshot(),
         loadCompanyRewardsSnapshot(),
-        loadStableIndexSnapshot()
+        loadStableIndexSnapshot(),
+        window.THPublicCapital ? window.THPublicCapital.load() : Promise.resolve(null)
     ]);
 
     const monetraStable = stableIndex?.companies?.find(x => x && x.registry === '008') || null;
@@ -12808,7 +12809,27 @@ function renderFramework(lang) {
     const F6 = bookFigures('aerocvxyb.eth', prices);
     const F7 = bookFigures("Rook's portfolio", prices);
     const F9 = bookFigures('1milliondollar.eth', prices);
-    const tvl1 = F1.value, tvl2 = F2.value, tvl3 = F3.value, tvl4 = F4.value, tvl5 = F5.value, tvl6 = F6.value, tvl7 = F7.value, tvl9 = F9.value;
+    const publicCompanyTvl = (key, fallback) => {
+        const row = publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)
+            ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key))
+            : null;
+        const value = Number(row && row.tvlUsd);
+        return Number.isFinite(value) && value >= 0 ? value : fallback;
+    };
+    const tvl1 = publicCompanyTvl('001', F1.value);
+    const tvl2 = publicCompanyTvl('002', F2.value);
+    const tvl3 = publicCompanyTvl('003', F3.value);
+    const tvl4 = publicCompanyTvl('004', F4.value);
+    const tvl5 = publicCompanyTvl('005', F5.value);
+    const tvl6 = publicCompanyTvl('006', F6.value);
+    const tvl7 = publicCompanyTvl('007', F7.value);
+    const tvl9 = publicCompanyTvl('009', F9.value);
+    const canonicalNetworkTvl = Number(publicCapitalSnapshot?.totals?.companyNetworkTvlUsd);
+    [[F1,tvl1],[F2,tvl2],[F3,tvl3],[F4,tvl4],[F5,tvl5],[F6,tvl6],[F7,tvl7],[F9,tvl9]].forEach(([f,v]) => {
+        f.value = v;
+        f.pnl = Number.isFinite(Number(f.cost)) ? v - Number(f.cost) : 0;
+        f.pct = Number(f.cost) > 0 ? (v / Number(f.cost) - 1) * 100 : 0;
+    });
 
     if (el1)    el1.textContent = fmt(tvl1);
     if (el2)    el2.textContent = fmt(tvl2);
@@ -12819,7 +12840,11 @@ function renderFramework(lang) {
     if (el7)    el7.textContent = fmt(tvl7);
     if (el8)    el8.textContent = tvl8 > 0 ? fmt(tvl8) : 'Live';
     if (el9)    el9.textContent = fmt(tvl9);
-    if (statEl) statEl.textContent = fmt(tvl1 + tvl2 + tvl3 + tvl4 + tvl5 + tvl6 + tvl7 + tvl8 + tvl9);
+    const tvl8Public = publicCompanyTvl('008', tvl8);
+    if (el8) el8.textContent = tvl8Public > 0 ? fmt(tvl8Public) : 'Live';
+    if (statEl) statEl.textContent = Number.isFinite(canonicalNetworkTvl) && canonicalNetworkTvl >= 0
+        ? fmt(canonicalNetworkTvl)
+        : fmt(tvl1 + tvl2 + tvl3 + tvl4 + tvl5 + tvl6 + tvl7 + tvl8Public + tvl9);
 
     // Feed the live index with real per-company values
     // Adding a company: append an entry here AND to MEMBERSHIP inside buildGraph().
