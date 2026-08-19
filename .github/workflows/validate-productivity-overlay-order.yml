@@ -1,0 +1,74 @@
+name: "Validate Productivity Overlay Order"
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/update-productivity.yml'
+      - '.github/workflows/validate-productivity-overlay-order.yml'
+      - 'productivity/company-010-productivity-overlay.mjs'
+      - 'productivity/yieldring-productivity-overlay.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Prove production overlay order and compatibility
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const wf=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
+          const first=wf.indexOf('node productivity/company-010-productivity-overlay.mjs');
+          const second=wf.indexOf('node productivity/yieldring-productivity-overlay.mjs');
+          if(first<0||second<0||first>=second) throw new Error('production overlay order must be Company #010 -> YieldRing');
+          const y=fs.readFileSync('productivity/yieldring-productivity-overlay.mjs','utf8');
+          if(!y.includes("data.version!=='1.16'")) throw new Error('YieldRing v1.16 input guard missing');
+          const c=fs.readFileSync('productivity/company-010-productivity-overlay.mjs','utf8');
+          if(!c.includes("['1.15','1.16'].includes(String(data.version))")) throw new Error('Company #010 v1.15/v1.16 compatibility guard missing');
+          console.log('Static overlay order contract PASS');
+          NODE
+
+      - name: Simulate collector v1.15 to final v1.16 chain
+        run: |
+          set -euo pipefail
+          cp companies/productivity-data.json /tmp/productivity-data.original.json
+          cp companies/productivity-source-report.json /tmp/productivity-source-report.original.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='companies/productivity-data.json';
+          const d=JSON.parse(fs.readFileSync(p,'utf8'));
+          d.version='1.15';
+          d.collectorVersion='1.15-company-009-beefy-cvxcrv';
+          delete d.diagnostics?.company010;
+          delete d.diagnostics?.yieldRing;
+          fs.writeFileSync(p,JSON.stringify(d,null,2)+'\n');
+          NODE
+          node productivity/company-010-productivity-overlay.mjs
+          node productivity/yieldring-productivity-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const y=d.companies?.['YieldRing.eth'];
+          const a=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          if(d.version!=='1.16') throw new Error('final Productivity version is not 1.16');
+          if(d.diagnostics?.company010?.executionAuthority!=='none') throw new Error('Company #010 overlay missing');
+          if(d.diagnostics?.yieldRing?.executionAuthority!=='none') throw new Error('YieldRing overlay missing');
+          if(Number(a?.units)!==678) throw new Error('YieldRing AERO principal != 678');
+          if(!Number.isFinite(Number(y?.aprLatest))) throw new Error('YieldRing APR unavailable');
+          console.log('Overlay compatibility simulation PASS',{version:d.version,aeroUnits:a.units,aprLatest:y.aprLatest,coverage:y.coverage});
+          NODE
+          mv /tmp/productivity-data.original.json companies/productivity-data.json
+          mv /tmp/productivity-source-report.original.json companies/productivity-source-report.json
+          git diff --exit-code -- companies/productivity-data.json companies/productivity-source-report.json
