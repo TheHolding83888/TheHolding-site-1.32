@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
@@ -1914,6 +1913,36 @@
             .hero-metric { padding: 0 1rem; }
             .philosophy-stats { padding: 1.75rem 1.25rem; }
         }
+        /* ── Position holdings on the engine rows ────────────────────────
+           The bottom line of each row carried only the word APR. It now
+           carries the actual position on the left and keeps the APR label on
+           the right, so the row reads: what we hold, and what it earns.
+           Quantities are static today; the data-th-holding hooks are there so
+           they can later be bound to the same layer that already feeds APR. */
+        .er-bottom {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.7rem;
+            min-width: 0;
+        }
+        .er-holding {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            opacity: 0.85;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+        .er-bottom .er-apr-lbl { flex-shrink: 0; }
+        @media (max-width: 640px) {
+            .er-bottom { gap: 0.4rem; }
+            .er-holding { font-size: 0.55rem; letter-spacing: 0.03em; }
+        }
+
     </style>
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -2028,77 +2057,110 @@
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Aerodrome</span></span>
                         <span class="er-apr" data-apy-aero data-th-apr>20+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="veAERO" data-th-holding-qty>veAERO 2,632</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="convex_vlcvx">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Convex</span></span>
                         <span class="er-apr" data-apy-cvx data-th-apr>15+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="vlCVX" data-th-holding-qty>vlCVX 1,333</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="curve_vecrv">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Curve</span></span>
                         <span class="er-apr" data-apy-crv data-th-apr>8+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="veCRV" data-th-holding-qty>veCRV 4,125</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="pendle_spendle">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Pendle</span></span>
                         <span class="er-apr" data-apy-pendle data-th-apr>10+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="PENDLE" data-th-holding-qty>PENDLE 500</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="fx_vefxn">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">f(x) Protocol</span></span>
                         <span class="er-apr" data-th-apr>15+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="veFXN" data-th-holding-qty>veFXN 64.81</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="yieldbasis_veyb">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Yield Basis</span></span>
                         <span class="er-apr" data-apy-yb data-th-apr>10+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="veYB" data-th-holding-qty>veYB 10,846</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="frax_vefrax">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Frax</span></span>
                         <span class="er-apr" data-apy-fxs data-th-apr>2+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="veFRAX" data-th-holding-qty>veFRAX 4,224</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="velodrome_vevelo">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Velodrome</span></span>
                         <span class="er-apr" data-apy-velo data-th-apr>20+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="veVELO" data-th-holding-qty>veVELO 12,180</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="venice_svvv">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Venice</span></span>
                         <span class="er-apr" data-apy-vvv data-th-apr>8+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="sVVV" data-th-holding-qty>sVVV 50</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="liquity_lqty">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Liquity</span></span>
                         <span class="er-apr" data-apy-lqty data-th-apr>5+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="LQTY" data-th-holding-qty>LQTY 1,488</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <div class="engine-row" data-th-engine="resupply_rsup">
                     <div class="er-top">
                         <span class="er-left"><i class="er-dot"></i><span class="er-name">Resupply</span></span>
                         <span class="er-apr" data-apy-rsup data-th-apr>15+%</span>
                     </div>
-                    <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    <div class="er-bottom">
+                        <span class="er-holding" data-th-holding="RSUP" data-th-holding-qty>RSUP 3,682</span>
+                        <span class="er-apr-lbl" data-th-apr-label>APR</span>
+                    </div>
                 </div>
                 <p class="engines-list-note">APR is variable and not guaranteed. Validated Reference APR values are refreshed automatically by The Holding Productivity Intelligence Layer.</p>
             </div>
