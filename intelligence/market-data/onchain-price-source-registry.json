@@ -1,0 +1,41 @@
+{
+  "version": "0.1-onchain-price-source-registry",
+  "purpose": "Machine-readable routing for zero-paid-data onchain market observations. Shadow routes collect and validate blockchain-native prices without changing production price authority.",
+  "mode": "shadow",
+  "semantics": {
+    "onchainPrimaryTarget": true,
+    "productionPriceAuthority": false,
+    "coinGeckoRemainsFallbackAndSanityCheck": true,
+    "publicRpcOnly": true,
+    "paidRpcRequired": false,
+    "browserRpcRequestsAllowed": false,
+    "unknownIsNotZero": true,
+    "executionAuthority": "none"
+  },
+  "networks": {
+    "ethereum": {
+      "chainId": 1,
+      "rpcFailover": [
+        {"id": "publicnode", "url": "https://ethereum-rpc.publicnode.com"},
+        {"id": "1rpc", "url": "https://1rpc.io/eth"},
+        {"id": "llamarpc", "url": "https://eth.llamarpc.com"}
+      ]
+    }
+  },
+  "assets": {
+    "ethereum": {
+      "assetId": "ethereum",
+      "symbol": "ETH",
+      "route": {
+        "type": "chainlink-v3",
+        "network": "ethereum",
+        "contract": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+        "quote": "USD",
+        "maxAgeSeconds": 7200,
+        "maxDivergencePct": 2,
+        "authority": "shadow",
+        "provenance": "Chainlink ETH/USD Data Feed on Ethereum Mainnet"
+      }
+    }
+  }
+}
