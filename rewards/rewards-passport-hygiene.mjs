@@ -22,6 +22,9 @@ const ROUTE_LABELS=new Map([
   ['pendle-spendle','Pendle · sPENDLE'],
   ['fx-fees','f(x) Protocol · veFXN'],
   ['liquity-staking','Liquity · staked LQTY'],
+  ['frax-yield','Frax · veFRAX'],
+  ['venice-staking','Venice · sVVV'],
+  ['resupply-staking','Resupply · staked RSUP'],
   ['stakedao-base-curve-4pool','Stake DAO · 4pool stables'],
   ['convex-staked-cvxcrv','Convex · staked cvxCRV']
 ]);
