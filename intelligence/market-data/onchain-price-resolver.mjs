@@ -9,6 +9,7 @@ const OUTPUT_PATH = path.join(__dirname, 'onchain-price-shadow.json');
 const RPC_TIMEOUT_MS = 10_000;
 const UINT256_MOD = 1n << 256n;
 const INT256_SIGN = 1n << 255n;
+const SUPPORTED_ROUTE_TYPES = new Set(['chainlink-v3', 'chainlink-v3-relative']);
 
 function readJson(file, fallback = null) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
@@ -98,11 +99,51 @@ function unavailableObservation(entry, status, error = null) {
   };
 }
 
+function decodeFeed(entry, byId, ids, nowMs) {
+  const decimalsRow = byId.get(ids.decimalsId);
+  const roundRow = byId.get(ids.roundId);
+  if (decimalsRow?.error || roundRow?.error || !decimalsRow?.result || !roundRow?.result) {
+    throw new Error(decimalsRow?.error?.message || roundRow?.error?.message || 'asset RPC result missing');
+  }
+  const decimals = Number(decodeUint256(decimalsRow.result));
+  const round = decodeChainlinkRoundData(roundRow.result);
+  const updatedAtSeconds = Number(round.updatedAt);
+  const feedAgeSeconds = Math.max(0, Math.floor(nowMs / 1000) - updatedAtSeconds);
+  const rawAnswer = Number(round.answer);
+  const feedValue = Number.isFinite(rawAnswer) ? rawAnswer / 10 ** decimals : null;
+  const stale = !(updatedAtSeconds > 0) || feedAgeSeconds > Number(entry.route.maxAgeSeconds || 0);
+  const invalid = !(feedValue > 0) || round.answeredInRound < round.roundId;
+  return { decimals, round, updatedAtSeconds, feedAgeSeconds, feedValue, stale, invalid };
+}
+
+function observationBase(entry, network, networkId, endpointId, attempts, blockNumber, feed) {
+  return {
+    assetId: entry.assetId,
+    symbol: entry.asset.symbol || null,
+    authority: 'shadow',
+    source: entry.route.type,
+    network: networkId,
+    chainId: network.chainId,
+    contract: entry.route.contract,
+    rpcEndpointId: endpointId,
+    rpcFailoverAttempts: attempts.length,
+    blockNumber,
+    roundId: feed.round.roundId.toString(),
+    answeredInRound: feed.round.answeredInRound.toString(),
+    feedUpdatedAt: feed.updatedAtSeconds > 0 ? iso(feed.updatedAtSeconds * 1000) : null,
+    feedAgeSeconds: feed.feedAgeSeconds,
+    maxAgeSeconds: Number(entry.route.maxAgeSeconds || 0),
+    maxDivergencePct: Number(entry.route.maxDivergencePct ?? 0),
+    productionPriceAuthority: false
+  };
+}
+
 export async function resolveOnchainPrices({ registry, marketData = null, fetchImpl = fetch, nowMs = Date.now() }) {
   if (!registry?.assets || !registry?.networks) throw new Error('Onchain source registry missing or invalid');
   const observations = {};
   const networks = {};
   const grouped = new Map();
+  const relativePending = [];
   let okCount = 0;
   let warningCount = 0;
   let unavailableCount = 0;
@@ -111,7 +152,7 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
   for (const [assetId, asset] of Object.entries(registry.assets)) {
     const route = asset?.route;
     const entry = { assetId, asset, route };
-    if (!route || route.type !== 'chainlink-v3') {
+    if (!route || !SUPPORTED_ROUTE_TYPES.has(route.type)) {
       observations[assetId] = unavailableObservation(entry, 'unsupported-route');
       unavailableCount += 1;
       continue;
@@ -147,56 +188,35 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
 
       for (const entry of entries) {
         const ids = requestMap.get(entry.assetId);
-        const decimalsRow = result.byId.get(ids.decimalsId);
-        const roundRow = result.byId.get(ids.roundId);
-        if (decimalsRow?.error || roundRow?.error || !decimalsRow?.result || !roundRow?.result) {
-          const err = decimalsRow?.error?.message || roundRow?.error?.message || 'asset RPC result missing';
-          observations[entry.assetId] = unavailableObservation(entry, 'rpc-call-error', err);
+        let feed;
+        try {
+          feed = decodeFeed(entry, result.byId, ids, nowMs);
+        } catch (error) {
+          observations[entry.assetId] = unavailableObservation(entry, 'rpc-call-or-decode-error', error instanceof Error ? error.message : String(error));
           unavailableCount += 1;
           continue;
         }
-        try {
-          const decimals = Number(decodeUint256(decimalsRow.result));
-          const round = decodeChainlinkRoundData(roundRow.result);
-          const updatedAtSeconds = Number(round.updatedAt);
-          const feedAgeSeconds = Math.max(0, Math.floor(nowMs / 1000) - updatedAtSeconds);
-          const rawAnswer = Number(round.answer);
-          const usd = Number.isFinite(rawAnswer) ? rawAnswer / 10 ** decimals : null;
-          const canonicalUsd = finite(marketData?.prices?.[entry.assetId]?.usd);
-          const diffPct = divergencePct(usd, canonicalUsd);
-          const stale = !(updatedAtSeconds > 0) || feedAgeSeconds > Number(entry.route.maxAgeSeconds || 0);
-          const invalid = !(usd > 0) || round.answeredInRound < round.roundId;
-          const divergent = diffPct !== null && diffPct > Number(entry.route.maxDivergencePct ?? Infinity);
-          const status = invalid ? 'invalid' : stale ? 'stale' : divergent ? 'divergent' : 'shadow-ok';
-          if (status === 'shadow-ok') okCount += 1; else warningCount += 1;
-          observations[entry.assetId] = {
-            assetId: entry.assetId,
-            symbol: entry.asset.symbol || null,
-            usd: invalid ? null : usd,
-            status,
-            authority: 'shadow',
-            source: 'chainlink-v3',
-            network: networkId,
-            chainId: network.chainId,
-            contract: entry.route.contract,
-            quote: entry.route.quote || 'USD',
-            rpcEndpointId: result.endpointId,
-            rpcFailoverAttempts: result.attempts.length,
-            blockNumber,
-            roundId: round.roundId.toString(),
-            answeredInRound: round.answeredInRound.toString(),
-            feedUpdatedAt: updatedAtSeconds > 0 ? iso(updatedAtSeconds * 1000) : null,
-            feedAgeSeconds,
-            maxAgeSeconds: Number(entry.route.maxAgeSeconds || 0),
-            canonicalPriceUsd: canonicalUsd,
-            divergencePct: diffPct === null ? null : Number(diffPct.toFixed(6)),
-            maxDivergencePct: Number(entry.route.maxDivergencePct ?? 0),
-            productionPriceAuthority: false
-          };
-        } catch (error) {
-          observations[entry.assetId] = unavailableObservation(entry, 'decode-error', error instanceof Error ? error.message : String(error));
-          unavailableCount += 1;
+
+        const base = observationBase(entry, network, networkId, result.endpointId, result.attempts, blockNumber, feed);
+        if (entry.route.type === 'chainlink-v3-relative') {
+          relativePending.push({ entry, feed, base });
+          continue;
         }
+
+        const usd = feed.invalid ? null : feed.feedValue;
+        const canonicalUsd = finite(marketData?.prices?.[entry.assetId]?.usd);
+        const diffPct = divergencePct(usd, canonicalUsd);
+        const divergent = diffPct !== null && diffPct > Number(entry.route.maxDivergencePct ?? Infinity);
+        const status = feed.invalid ? 'invalid' : feed.stale ? 'stale' : divergent ? 'divergent' : 'shadow-ok';
+        if (status === 'shadow-ok') okCount += 1; else warningCount += 1;
+        observations[entry.assetId] = {
+          ...base,
+          usd,
+          status,
+          quote: entry.route.quote || 'USD',
+          canonicalPriceUsd: canonicalUsd,
+          divergencePct: diffPct === null ? null : Number(diffPct.toFixed(6))
+        };
       }
     } catch (error) {
       for (const entry of entries) {
@@ -206,10 +226,52 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
     }
   }
 
+  for (const pending of relativePending) {
+    const { entry, feed, base } = pending;
+    const quoteAssetId = entry.route.quoteAssetId;
+    const quoteObservation = observations[quoteAssetId];
+    if (!quoteObservation || !(finite(quoteObservation.usd) > 0)) {
+      observations[entry.assetId] = {
+        ...base,
+        usd: null,
+        status: 'dependency-unavailable',
+        feedValue: feed.invalid ? null : feed.feedValue,
+        feedQuote: entry.route.feedQuote || null,
+        quoteAssetId,
+        quoteAssetUsd: finite(quoteObservation?.usd),
+        error: `Relative-price dependency unavailable: ${quoteAssetId}`
+      };
+      unavailableCount += 1;
+      continue;
+    }
+
+    const usd = feed.invalid ? null : feed.feedValue * Number(quoteObservation.usd);
+    const canonicalUsd = finite(marketData?.prices?.[entry.assetId]?.usd);
+    const diffPct = divergencePct(usd, canonicalUsd);
+    const divergent = diffPct !== null && diffPct > Number(entry.route.maxDivergencePct ?? Infinity);
+    const dependencyWarning = quoteObservation.status !== 'shadow-ok';
+    const status = feed.invalid ? 'invalid' : feed.stale ? 'stale' : dependencyWarning ? 'dependency-warning' : divergent ? 'divergent' : 'shadow-ok';
+    if (status === 'shadow-ok') okCount += 1; else warningCount += 1;
+    observations[entry.assetId] = {
+      ...base,
+      usd,
+      status,
+      feedValue: feed.invalid ? null : feed.feedValue,
+      feedQuote: entry.route.feedQuote || null,
+      quoteAssetId,
+      quoteAssetUsd: Number(quoteObservation.usd),
+      outputQuote: entry.route.outputQuote || 'USD',
+      composition: `${entry.asset.symbol || entry.assetId}/${entry.route.feedQuote || quoteAssetId} × ${quoteAssetId}/USD`,
+      canonicalPriceUsd: canonicalUsd,
+      divergencePct: diffPct === null ? null : Number(diffPct.toFixed(6)),
+      dependencyStatus: quoteObservation.status
+    };
+  }
+
   const assetCount = Object.keys(registry.assets).length;
   return {
-    version: '0.2-onchain-price-shadow-network-batched',
-    engineVersion: '0.2-provider-agnostic-network-batched-public-rpc-shadow-resolver',
+    version: '0.3-onchain-price-shadow-multinetwork-composable',
+    engineVersion: '0.3-network-batched-composable-public-rpc-shadow-resolver',
     generatedAt: iso(nowMs),
     status: unavailableCount > 0 ? 'partial' : warningCount > 0 ? 'warning' : 'ok',
     mode: 'shadow',
@@ -220,6 +282,8 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       publicRpcFailover: true,
       oneHttpBatchPerNetworkPerAttempt: true,
       duplicateBlockRequestsWithinNetwork: false,
+      composableRelativePriceRoutes: true,
+      relativeRoutesReuseSameCycleQuoteObservation: true,
       paidRpcRequired: false,
       unknownIsNotZero: true,
       coinGeckoRemainsFallbackAndSanityCheck: true
