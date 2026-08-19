@@ -694,6 +694,7 @@
         }
     </style>
     <script defer src="https://cloud.umami.is/script.js" data-website-id="f969f142-7fbe-47a2-b971-78c8b59c2ddb"></script>
+    <script src="/intelligence/market-data/public-capital-client.js"></script>
 </head>
 <body>
 
@@ -1006,11 +1007,11 @@
         document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
         const holdings = { btc: 0.1, eth: 1, xaut: 0.5, silverOz: 20 };
-        const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
+        const API_KEY = 'LOCAL-SNAPSHOT';
 
         async function updateTVL() {
             try {
-                const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether-gold&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`);
+                const r = await fetch(`/intelligence/market-data/simple-price?ids=bitcoin,ethereum,tether-gold&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`);
                 const p = await r.json();
                 const goldPx = p['tether-gold']?.usd || 0;
                 const tvl = holdings.btc * (p.bitcoin?.usd || 0)

@@ -41,8 +41,7 @@
     <meta name="ai:entities" content="Virtuals Protocol, ElizaOS, OLAS, DIEM, Mode Network, Filecoin, Arweave, Decentraland, The Sandbox, Over the Reality, BEAM, TON Numbers, TheHolding.ai">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://api.coingecko.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-void: #0d0d0d;
@@ -721,6 +720,7 @@
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebPage","name":"Singul — Venture Capital Layer","description":"Frontier capital fund within TheHolding.ai — AI protocols, decentralized storage, metaverse, digital ownership.","url":"https://theholding.ai/singul","isPartOf":{"@type":"WebSite","name":"TheHolding.ai","url":"https://theholding.ai"}}
     </script>
+    <script src="/intelligence/market-data/public-capital-client.js"></script>
 </head>
 <body>
     <nav>
@@ -960,13 +960,13 @@
             'virtual-protocol': 669,      // Virtual Protocol (updated)
             'beam-2': 11309,              // BEAM
             mode: 1000000,                // MODE (updated, dynamic w/ fallback)
-            elizaos: 130000,              // ElizaOS (updated)
+            elizaos: 80808,               // ElizaOS · canonical owner quantity
             diem: 0.07                    // DIEM - fixed $86 (not on CoinGecko)
         };
 
         const FIXED_MODE_VALUE = 90;      // Fixed $90 total value for MODE (1,000,000 tokens) — fallback only
         const FIXED_DIEM_VALUE = 86;      // Fixed $86 total value for DIEM (0.07 tokens)
-        const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
+        const API_KEY = 'LOCAL-SNAPSHOT';
 
         // Update TVL function - direct calculation like main site
         async function updateTVL() {
@@ -983,7 +983,7 @@
                     // 'diem' - not on CoinGecko, using fixed $86 value instead
                 ].join(',');
 
-                const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`;
+                const url = `/intelligence/market-data/simple-price?ids=${ids}&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`;
                 const response = await fetch(url);
                 
                 if (!response.ok) {

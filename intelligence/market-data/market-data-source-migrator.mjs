@@ -1,0 +1,181 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, '../..');
+const CLIENT_TAG = '<script src="/intelligence/market-data/public-capital-client.js"></script>';
+const LOCAL_SIMPLE_PRICE = '/intelligence/market-data/simple-price';
+const TARGETS = [
+  'index.html',
+  'companies/index.html',
+  'defitea/index.html',
+  'yield-reports/index.html',
+  'substantia/index.html',
+  'singul/index.html',
+  'fructus/index.html',
+  'monetra/index.html'
+];
+
+function replaceOnce(text, rx, replacement, label, {required = true} = {}) {
+  const matches = [...text.matchAll(new RegExp(rx.source, rx.flags.includes('g') ? rx.flags : rx.flags + 'g'))];
+  if (!matches.length) {
+    if (required) throw new Error(`${label}: expected anchor missing`);
+    return text;
+  }
+  if (matches.length !== 1) throw new Error(`${label}: expected exactly one anchor, found ${matches.length}`);
+  return text.replace(rx, replacement);
+}
+
+function injectClient(html, rel) {
+  if (html.includes(CLIENT_TAG)) return html;
+  if (!html.includes('</head>')) throw new Error(`${rel}: </head> anchor missing`);
+  return html.replace('</head>', `    ${CLIENT_TAG}\n</head>`);
+}
+
+function removeBrowserCoinGecko(html) {
+  return html
+    .replaceAll('https://api.coingecko.com/api/v3/simple/price', LOCAL_SIMPLE_PRICE)
+    .replace(/CG-[A-Za-z0-9_-]{12,}/g, 'LOCAL-SNAPSHOT')
+    .replace(/^\s*<link(?=[^>]*(?:preconnect|dns-prefetch))(?=[^>]*api\.coingecko\.com)[^>]*>\s*\n?/gmi, '')
+    .replace(/\s+https:\/\/api\.coingecko\.com(?=[;\s])/g, '')
+    .replace(/Fully transparent with real-time TVL via CoinGecko API\./g, 'Fully transparent with centrally refreshed market data and live TVL projection.');
+}
+
+function canonicalDefiteaHoldingsBlock() {
+  return `const defiteaHoldings = {\n            aero: 2632,\n            cvx: 1333,\n            crv: 4125,\n            pendle: 500,\n            fxn: 64.81,\n            yb: 10846,\n            fxs: 4224,\n            velo: 12180,\n            vvv: 50,\n            lqty: 1488,\n            rsup: 3682\n        };`;
+}
+
+function migrateHomepage(html) {
+  html = replaceOnce(
+    html,
+    /const defiteaHoldings\s*=\s*\{[\s\S]*?\n\s*\};/,
+    canonicalDefiteaHoldingsBlock(),
+    'homepage Defitea holdings'
+  );
+
+  html = html.replace(
+    /const co4\s*=\s*2440\s*\*\s*p\('aerodrome-finance'\)([\s\S]*?)59\.81\s*\*\s*p\('fxn-token'\)([\s\S]*?);/,
+    "const co4 = 2632 * p('aerodrome-finance')$1" + "64.81 * p('fxn-token')$2;"
+  );
+  return html;
+}
+
+function migrateCompanies(html) {
+  if (/const defiteaHoldings\s*=/.test(html)) {
+    html = replaceOnce(
+      html,
+      /const defiteaHoldings\s*=\s*\{[\s\S]*?\n\s*\};/,
+      canonicalDefiteaHoldingsBlock(),
+      'companies Defitea holdings'
+    );
+  }
+
+  if (!html.includes('const publicCapitalSnapshot = await window.THPublicCapital.load();')) {
+    html = replaceOnce(
+      html,
+      /const \[prices, _productivity, _rewards, stableIndex\] = await Promise\.all\(\[\s*cgPrices\(IDS\),\s*loadProductivitySnapshot\(\),\s*loadCompanyRewardsSnapshot\(\),\s*loadStableIndexSnapshot\(\)\s*\]\);/,
+      `const [prices, _productivity, _rewards, stableIndex, publicCapitalSnapshot] = await Promise.all([\n        cgPrices(IDS),\n        loadProductivitySnapshot(),\n        loadCompanyRewardsSnapshot(),\n        loadStableIndexSnapshot(),\n        window.THPublicCapital ? window.THPublicCapital.load() : Promise.resolve(null)\n    ]);`,
+      'companies shared Public Capital load'
+    );
+  }
+
+  if (!html.includes('const publicCompanyTvl = (key, fallback) =>')) {
+    html = replaceOnce(
+      html,
+      /const F1 = bookFigures\('05081966\.eth', prices\);([\s\S]*?)const tvl1 = F1\.value, tvl2 = F2\.value, tvl3 = F3\.value, tvl4 = F4\.value, tvl5 = F5\.value, tvl6 = F6\.value, tvl7 = F7\.value, tvl9 = F9\.value;/,
+      `const F1 = bookFigures('05081966.eth', prices);$1const publicCompanyTvl = (key, fallback) => {\n        const row = publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)\n            ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key))\n            : null;\n        const value = Number(row && row.tvlUsd);\n        return Number.isFinite(value) && value >= 0 ? value : fallback;\n    };\n    const tvl1 = publicCompanyTvl('001', F1.value);\n    const tvl2 = publicCompanyTvl('002', F2.value);\n    const tvl3 = publicCompanyTvl('003', F3.value);\n    const tvl4 = publicCompanyTvl('004', F4.value);\n    const tvl5 = publicCompanyTvl('005', F5.value);\n    const tvl6 = publicCompanyTvl('006', F6.value);\n    const tvl7 = publicCompanyTvl('007', F7.value);\n    const tvl9 = publicCompanyTvl('009', F9.value);\n    const canonicalNetworkTvl = Number(publicCapitalSnapshot?.totals?.companyNetworkTvlUsd);\n    [[F1,tvl1],[F2,tvl2],[F3,tvl3],[F4,tvl4],[F5,tvl5],[F6,tvl6],[F7,tvl7],[F9,tvl9]].forEach(([f,v]) => {\n        f.value = v;\n        f.pnl = Number.isFinite(Number(f.cost)) ? v - Number(f.cost) : 0;\n        f.pct = Number(f.cost) > 0 ? (v / Number(f.cost) - 1) * 100 : 0;\n    });`,
+      'companies current TVL authority'
+    );
+  }
+
+  if (!html.includes("const tvl8Public = publicCompanyTvl('008', tvl8);")) {
+    html = replaceOnce(
+      html,
+      /if \(el9\)\s+el9\.textContent = fmt\(tvl9\);\s*if \(statEl\) statEl\.textContent = fmt\(tvl1 \+ tvl2 \+ tvl3 \+ tvl4 \+ tvl5 \+ tvl6 \+ tvl7 \+ tvl8 \+ tvl9\);/,
+      `if (el9)    el9.textContent = fmt(tvl9);\n    const tvl8Public = publicCompanyTvl('008', tvl8);\n    if (el8) el8.textContent = tvl8Public > 0 ? fmt(tvl8Public) : 'Live';\n    if (statEl) statEl.textContent = Number.isFinite(canonicalNetworkTvl) && canonicalNetworkTvl >= 0\n        ? fmt(canonicalNetworkTvl)\n        : fmt(tvl1 + tvl2 + tvl3 + tvl4 + tvl5 + tvl6 + tvl7 + tvl8Public + tvl9);`,
+      'companies network TVL authority'
+    );
+  }
+
+  return html;
+}
+
+function migrateSingul(html) {
+  if (/elizaos:\s*130000\b/.test(html)) {
+    html = replaceOnce(
+      html,
+      /elizaos:\s*130000\s*,?\s*\/\/\s*ElizaOS[^\n]*/,
+      'elizaos: 80808,               // ElizaOS · canonical owner quantity',
+      'Singul ELIZA quantity'
+    );
+  }
+  return html;
+}
+
+function migrateFructus(html) {
+  if (/\bdbcon:\s*5\b|\bcopxon:\s*2\b/.test(html)) {
+    html = replaceOnce(
+      html,
+      /const fructusHoldings\s*=\s*\{[\s\S]*?\n\s*\};\s*\n\s*const FIXED_DBCON_VALUE[^\n]*\n\s*const FIXED_COPXON_VALUE[^\n]*\n/,
+      `const fructusHoldings = {\n            ondo: 542          // ONDO Finance · canonical owner quantity\n        };\n\n`,
+      'Fructus canonical holdings'
+    );
+  }
+
+  if (/const fructusTVL\s*=\s*ondoValue\s*\+\s*dbconValue\s*\+\s*copxonValue/.test(html)) {
+    html = replaceOnce(
+      html,
+      /const ondoValue\s*=\s*fructusHoldings\.ondo[\s\S]*?const fructusTVL\s*=\s*ondoValue\s*\+\s*dbconValue\s*\+\s*copxonValue\s*;/,
+      `const ondoValue = fructusHoldings.ondo * (prices['ondo-finance']?.usd || 0);\n                const fructusTVL = ondoValue;`,
+      'Fructus TVL calculation'
+    );
+  }
+  return html;
+}
+
+function assertNoDirectCoinGecko(html, rel) {
+  if (/api\.coingecko\.com/i.test(html)) {
+    throw new Error(`${rel}: browser-facing CoinGecko host remains`);
+  }
+  if (/CG-[A-Za-z0-9_-]{12,}/.test(html)) {
+    throw new Error(`${rel}: public CoinGecko credential-like literal remains`);
+  }
+}
+
+for (const rel of TARGETS) {
+  const file = path.join(ROOT, rel);
+  if (!fs.existsSync(file)) throw new Error(`${rel}: target file missing`);
+  let html = fs.readFileSync(file, 'utf8');
+  const before = html;
+
+  html = injectClient(html, rel);
+  html = removeBrowserCoinGecko(html);
+  if (rel === 'index.html') html = migrateHomepage(html);
+  if (rel === 'companies/index.html') html = migrateCompanies(html);
+  if (rel === 'singul/index.html') html = migrateSingul(html);
+  if (rel === 'fructus/index.html') html = migrateFructus(html);
+
+  assertNoDirectCoinGecko(html, rel);
+  if (html !== before) fs.writeFileSync(file, html);
+  console.log(`${rel}: ${html === before ? 'already migrated' : 'migrated'}`);
+}
+
+const fructus = fs.readFileSync(path.join(ROOT, 'fructus/index.html'), 'utf8');
+for (const forbidden of ['fructusHoldings.dbcon', 'fructusHoldings.copxon', 'FIXED_DBCON_VALUE', 'FIXED_COPXON_VALUE']) {
+  if (fructus.includes(forbidden)) throw new Error(`Fructus calculation still contains ${forbidden}`);
+}
+
+const singul = fs.readFileSync(path.join(ROOT, 'singul/index.html'), 'utf8');
+if (!/elizaos:\s*80808\b/.test(singul)) throw new Error('Singul ELIZA canonical quantity not migrated');
+
+const homepage = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+if (!/aero:\s*2632\b/.test(homepage) || !/fxn:\s*64\.81\b/.test(homepage)) {
+  throw new Error('Homepage Defitea canonical quantities not migrated');
+}
+
+const companies = fs.readFileSync(path.join(ROOT, 'companies/index.html'), 'utf8');
+if (!companies.includes('const publicCompanyTvl = (key, fallback) =>')) throw new Error('Companies current TVL is not Public Capital authoritative');
+if (!companies.includes('canonicalNetworkTvl')) throw new Error('Companies Network TVL is not Public Capital authoritative');
+
+console.log('Market Data public surface migration PASS');

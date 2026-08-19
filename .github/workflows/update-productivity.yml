@@ -1,7 +1,8 @@
 name: Update The Holding Productivity Data
 
 # Legacy bounded recovery path. Automatic capital refresh is owned by
-# "The Holding Capital · Unified Refresh".
+# "The Holding Capital · Unified Refresh". Market prices remain owned by the
+# shared Market Data layer even when this manual recovery path is used.
 on:
   workflow_dispatch:
 
@@ -36,10 +37,20 @@ jobs:
         working-directory: productivity
         run: npx playwright install chromium
 
+      - name: Ensure one reusable shared market-price snapshot
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          MARKET_DATA_FORCE_REFRESH: 'false'
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/market-data-engine.mjs
+          node --check intelligence/market-data/coingecko-fetch-shim.mjs
+          node intelligence/market-data/market-data-engine.mjs
+
       - name: Update protocol APRs and established company Productivity
         working-directory: productivity
         env:
-          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          NODE_OPTIONS: --import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -79,12 +90,22 @@ jobs:
           if(d.diagnostics?.yieldRing?.executionAuthority!=='none')throw new Error('YieldRing authority drift');
           NODE
 
+      - name: Rebuild public capital projection from shared prices
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/public-capital-engine.mjs
+          node intelligence/market-data/public-capital-engine.mjs
+
       - name: Commit recovery snapshot safely
         run: |
           set -euo pipefail
           git config user.name "The Holding Data Engine"
           git config user.email "data-engine@theholding.ai"
-          git add companies/productivity-data.json companies/productivity-source-report.json
+          git add \
+            companies/productivity-data.json \
+            companies/productivity-source-report.json \
+            intelligence/market-data/market-data.json \
+            intelligence/market-data/public-capital-state.json
           if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
           git commit -m "data: update weekly productivity snapshot"
           for attempt in 1 2 3; do
@@ -94,9 +115,21 @@ jobs:
               echo "Safe writer guard: rebase conflict; refusing to guess."
               exit 1
             fi
+            COINGECKO_API_KEY='${{ secrets.COINGECKO_API_KEY }}' MARKET_DATA_FORCE_REFRESH='false' \
+              node intelligence/market-data/market-data-engine.mjs
+            NODE_OPTIONS='--import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs' \
+            ETH_RPC_URL='${{ secrets.ETH_RPC_URL }}' \
+            BASE_RPC_URL='${{ secrets.BASE_RPC_URL }}' \
+            GITHUB_TOKEN='${{ github.token }}' \
+              npm --prefix productivity run update
             node productivity/company-010-productivity-overlay.mjs
             node productivity/yieldring-productivity-overlay.mjs
-            git add companies/productivity-data.json companies/productivity-source-report.json
+            node intelligence/market-data/public-capital-engine.mjs
+            git add \
+              companies/productivity-data.json \
+              companies/productivity-source-report.json \
+              intelligence/market-data/market-data.json \
+              intelligence/market-data/public-capital-state.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))

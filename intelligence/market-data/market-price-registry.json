@@ -1,0 +1,45 @@
+{
+  "version": "0.1-market-price-registry",
+  "purpose": "Canonical registry of externally priced market assets used by The Holding public capital surfaces. One external market-price observation is shared by every downstream consumer.",
+  "semantics": {
+    "oneExternalFetchPerRefresh": true,
+    "unknownIsNotZero": true,
+    "providerIdIsNotEconomicIdentity": true,
+    "wrapperNavAndProtocolValuationStayUpstream": true,
+    "executionAuthority": "none"
+  },
+  "provider": {
+    "id": "coingecko",
+    "endpoint": "https://api.coingecko.com/api/v3/simple/price",
+    "currency": "usd",
+    "credentialSource": "github-actions-secret-only"
+  },
+  "assets": [
+    {"assetId":"bitcoin","providerId":"bitcoin","symbol":"BTC"},
+    {"assetId":"ethereum","providerId":"ethereum","symbol":"ETH"},
+    {"assetId":"tether-gold","providerId":"tether-gold","symbol":"XAUT"},
+    {"assetId":"aerodrome-finance","providerId":"aerodrome-finance","symbol":"AERO"},
+    {"assetId":"convex-finance","providerId":"convex-finance","symbol":"CVX"},
+    {"assetId":"curve-dao-token","providerId":"curve-dao-token","symbol":"CRV"},
+    {"assetId":"pendle","providerId":"pendle","symbol":"PENDLE"},
+    {"assetId":"fxn-token","providerId":"fxn-token","symbol":"FXN"},
+    {"assetId":"internet-computer","providerId":"internet-computer","symbol":"ICP"},
+    {"assetId":"yield-basis","providerId":"yield-basis","symbol":"YB"},
+    {"assetId":"frax-share","providerId":"frax-share","symbol":"FXS"},
+    {"assetId":"velodrome-finance","providerId":"velodrome-finance","symbol":"VELO"},
+    {"assetId":"venice-token","providerId":"venice-token","symbol":"VVV"},
+    {"assetId":"liquity","providerId":"liquity","symbol":"LQTY"},
+    {"assetId":"resupply","providerId":"resupply","symbol":"RSUP"},
+    {"assetId":"decentraland","providerId":"decentraland","symbol":"MANA"},
+    {"assetId":"the-sandbox","providerId":"the-sandbox","symbol":"SAND"},
+    {"assetId":"ovr","providerId":"ovr","symbol":"OVR"},
+    {"assetId":"autonolas","providerId":"autonolas","symbol":"OLAS"},
+    {"assetId":"virtual-protocol","providerId":"virtual-protocol","symbol":"VIRTUAL"},
+    {"assetId":"beam-2","providerId":"beam-2","symbol":"BEAM"},
+    {"assetId":"mode","providerId":"mode","symbol":"MODE"},
+    {"assetId":"elizaos","providerId":"elizaos","symbol":"ELIZA"},
+    {"assetId":"ondo-finance","providerId":"ondo-finance","symbol":"ONDO"},
+    {"assetId":"zksync","providerId":"zksync","symbol":"ZK"},
+    {"assetId":"convex-crv","providerId":"convex-crv","symbol":"cvxCRV"}
+  ]
+}
