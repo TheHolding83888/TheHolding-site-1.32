@@ -1,0 +1,54 @@
+{
+  "version": "0.1-defitea-canonical-state",
+  "company": {
+    "registry": "004",
+    "name": "defitea.eth",
+    "category": "Income Layer"
+  },
+  "productivePositions": [
+    {"assetId":"aerodrome-finance","display":"veAERO","quantity":2632,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"convex-finance","display":"vlCVX","quantity":1333,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"curve-dao-token","display":"veCRV","quantity":4125,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"pendle","display":"PENDLE","quantity":500,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"fxn-token","display":"veFXN","quantity":64.81,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"yield-basis","display":"veYB","quantity":10846,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"frax-share","display":"veFRAX","quantity":4224,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"velodrome-finance","display":"veVELO","quantity":12180,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"venice-token","display":"sVVV","quantity":50,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"liquity","display":"LQTY","quantity":1488,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"resupply","display":"RSUP","quantity":3682,"evidenceStatus":"owner-provided-current"}
+  ],
+  "costBasis": {
+    "policy": "lot-preserved-owner-supplied-entry-basis",
+    "aerodrome": {
+      "quantity": 2632,
+      "costBasisUsd": 1121.3,
+      "status": "complete",
+      "lots": [
+        {"quantity":2440,"entryPriceUsd":0.4265,"costBasisUsd":1040.66,"evidenceStatus":"established"},
+        {"quantity":192,"entryPriceUsd":0.42,"costBasisUsd":80.64,"evidenceStatus":"owner-provided"}
+      ]
+    },
+    "fxn": {
+      "quantity": 64.81,
+      "costBasisUsd": 983.2386,
+      "status": "complete",
+      "lots": [
+        {"quantity":59.81,"entryPriceUsd":15.06,"costBasisUsd":900.7386,"evidenceStatus":"established"},
+        {"quantity":5,"entryPriceUsd":16.5,"costBasisUsd":82.5,"evidenceStatus":"owner-provided"}
+      ]
+    }
+  },
+  "semantics": {
+    "allPositionsPrimaryCapitalLayer": "productive-dividend",
+    "unknownCostBasisIsNotZero": true,
+    "costBasisLotsPreserved": true,
+    "oneEconomicPositionOnce": true
+  },
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "methodologyMutationAuthority": false
+  }
+}

@@ -6,6 +6,8 @@ on:
       - '.github/workflows/unified-capital-refresh.yml'
       - '.github/workflows/validate-unified-capital-refresh.yml'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
+      - 'companies/defitea-canonical-state.json'
+      - 'companies/defitea-public-capital-projection.mjs'
       - 'companies/yieldring-canonical-state.json'
       - 'companies/yieldring-public-capital-projection.mjs'
       - 'productivity/productivity-engine.mjs'
@@ -47,13 +49,24 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: node intelligence/capital-state/unified-capital-refresh.mjs
 
-      - name: Prove coherent YieldRing and Network output
+      - name: Prove coherent Defitea, YieldRing and Network output
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
+          const html=fs.readFileSync('companies/index.html','utf8');
+          const d=p.companies?.['defitea.eth'];
+          const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          const df=(d?.breakdown||[]).find(x=>x.engineId==='fx_vefxn'||x.principalId==='fxn-token');
+          const dc=(c.companies||[]).find(x=>x.registry==='004');
+          const dca=(dc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
+          const dcf=(dc?.measuredPositions||[]).find(x=>x.assetId==='fxn-token');
+          if(!d||Number(da?.units)!==2632||Number(df?.units)!==64.81)throw new Error('Defitea Productivity mismatch');
+          if(!dc||Number(dca?.units)!==2632||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State mismatch');
+          if(!html.includes('costBasisUsd: 1121.3')||!html.includes('qty: 192, entry: 0.42'))throw new Error('Defitea AERO lot basis missing');
+          if(!html.includes('costBasisUsd: 983.2386')||!html.includes('qty: 5, entry: 16.5'))throw new Error('Defitea FXN lot basis missing');
           const y=p.companies?.['YieldRing.eth'];
           const pa=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const yc=(c.companies||[]).find(x=>x.registry==='002');
@@ -64,6 +77,6 @@ jobs:
           if(c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1)throw new Error('Network coverage mismatch');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
           if(c.authority?.executionAuthority!=='none')throw new Error('authority drift');
-          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,yieldRingApr:y.aprLatest,yieldRingProductiveValue:y.productiveValue,btc:btc.units,aero:aero.units,networkTvlUsd:c.network.networkTvlUsd});
+          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaProductiveValue:d.productiveValue,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvlUsd:c.network.networkTvlUsd});
           NODE
           git diff --check
