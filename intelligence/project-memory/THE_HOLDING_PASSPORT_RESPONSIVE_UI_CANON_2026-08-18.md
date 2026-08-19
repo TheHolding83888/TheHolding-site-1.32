@@ -62,3 +62,12 @@ A Passport rate-badge change is not complete until it preserves:
 - EN/RU rendering and existing mobile Passport containment.
 
 This canon records the owner-approved design direction after mobile review on 2026-08-18. It should be treated as durable UI operating knowledge unless the owner explicitly replaces it with a newer responsive Passport canon.
+
+
+## 6. Productive identity label canon
+
+When a productive mechanism identity is already proven, Passport presentation should use one readable `Protocol · productive asset / strategy` title rather than a bare ticker or a generic protocol name. Examples include `Aerodrome · veAERO`, `Velodrome · veVELO`, `Curve · veCRV`, `Yield Basis · veYB`, `Pendle · sPENDLE`, and `f(x) Protocol · veFXN`.
+
+This rule applies consistently across Balance Sheet and Accrued Rewards surfaces. The renderer must not downgrade a canonical specific label back to a generic `Aerodrome`, `Velodrome`, `Curve`, or similar title. Route-specific strategy identity may remain when it is more precise than the generic productive asset, such as Defitea's accepted `Velodrome · 40 Acres` route.
+
+Reserve assets remain concise (`BTC`, `ETH`, etc.). Unknown or ambiguous mechanism identity must not be guessed merely for visual symmetry.
