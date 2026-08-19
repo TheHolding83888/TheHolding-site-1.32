@@ -10,11 +10,10 @@ on:
       - 'productivity/yieldring-productivity-overlay.mjs'
       - '.github/workflows/update-productivity.yml'
   schedule:
-    # One synchronized The Holding snapshot per week.
-    # Sunday 04:17 UTC avoids common top-of-hour cron congestion.
     - cron: '17 4 * * 0'
   workflow_run:
     workflows:
+      - "Project YieldRing Canonical Capital State"
       - "Update Company #010 · Cypher Production State"
       - "Update Company #010 · Project X Reference APR"
     types: [completed]
@@ -104,7 +103,6 @@ jobs:
           for(const id of ['concentrator_asdcrv','convex_staked_cvxcrv','projectx-whype-usdc'])if(!byId.has(id))throw new Error('Company #010 strategy Productivity row missing: '+id);
           const px=byId.get('projectx-whype-usdc');
           if(px.apr===0&&px.engineStatus==='warming')throw new Error('Project X unknown APR collapsed to zero');
-          console.log('Productivity v1.16 + Project X rate follow-through PASS',{aprLatest:c.aprLatest,productiveValue:c.productiveValue,covered:c.coveredProductiveValue,coverage:c.coverage,projectX:px,concentrator:byId.get('concentrator_asdcrv'),convex:byId.get('convex_staked_cvxcrv')});
           NODE
 
       - name: Commit new snapshot
@@ -127,12 +125,8 @@ jobs:
               node productivity/company-010-productivity-overlay.mjs
               git add companies/productivity-data.json companies/productivity-source-report.json
               git commit --amend --no-edit
-              if git push origin HEAD:main; then
-                exit 0
-              fi
-              echo "Safe writer guard: main moved during push; retrying ($attempt/3)..."
+              if git push origin HEAD:main; then exit 0; fi
               sleep $((attempt * 2))
             done
-            echo "Safe writer guard: push failed after 3 attempts."
             exit 1
           fi
