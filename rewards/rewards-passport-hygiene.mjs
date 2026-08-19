@@ -19,11 +19,14 @@ const ROUTE_LABELS=new Map([
   ['aerodrome-ve','Aerodrome · veAERO'],
   ['velodrome-ve','Velodrome · veVELO'],
   ['velodrome-ve-direct','Velodrome · veVELO'],
+  ['pendle-spendle','Pendle · sPENDLE'],
+  ['fx-fees','f(x) Protocol · veFXN'],
+  ['liquity-staking','Liquity · staked LQTY'],
   ['stakedao-base-curve-4pool','Stake DAO · 4pool stables'],
   ['convex-staked-cvxcrv','Convex · staked cvxCRV']
 ]);
 const labelCounts={};
-for(const [companyName,company] of Object.entries(data.companies||{})){
+for(const company of Object.values(data.companies||{})){
   for(const bucket of ['rewards','sources','embeddedIncome']){
     for(const row of company?.[bucket]||[]){
       const label=ROUTE_LABELS.get(row?.route);
@@ -54,19 +57,21 @@ if(cyCvx.length<1)throw new Error('Cypher measured staked-cvxCRV reward missing'
 // into vault share value. It must never inherit Cypher's direct claimable row.
 if((nine.rewards||[]).some(r=>r.route==='convex-staked-cvxcrv'))throw new Error('Company #009 incorrectly contains direct Convex staked-cvxCRV claimable rewards');
 
-// Route-specific semantic guards. A ve-position can earn several different
-// incentive tokens; therefore the title identifies veAERO / veVELO while the
-// actual reward symbol is deliberately preserved on the detail line.
+// Route-specific semantic guards. A productive position can earn several
+// different incentive tokens; the title identifies the working asset while the
+// actual earned symbol + chain remain deliberately untouched underneath.
 for(const company of Object.values(data.companies||{})){
   for(const r of company?.rewards||[]){
     if(r.route==='curve-fees'&&(r.symbol!=='crvUSD'||r.chain!=='Ethereum'))throw new Error('Curve veCRV reward provenance drift');
     if(['aerodrome-relay','aerodrome-ve'].includes(r.route)&&r.chain!=='Base')throw new Error('Aerodrome veAERO chain provenance drift');
     if(['velodrome-ve','velodrome-ve-direct'].includes(r.route)&&r.chain!=='Optimism')throw new Error('Velodrome veVELO chain provenance drift');
+    if(r.route==='fx-fees'&&r.chain!=='Ethereum')throw new Error('f(x) veFXN chain provenance drift');
+    if(r.route==='liquity-staking'&&r.chain!=='Ethereum')throw new Error('Liquity staked LQTY chain provenance drift');
   }
 }
 
 data.methodology=data.methodology||{};
-data.methodology.rewardsPassportRouteHygiene='Current Passport hides historical routes with zero residual claimables. Legacy routes remain visible only while residual Unclaimed exists. Public reward rows use Protocol · productive asset/strategy as the main identity, while the actual earned token and network remain separate provenance. Direct Convex staked-cvxCRV claimables and Beefy auto-compounded cvxCRV are distinct mechanisms and must never be cross-projected.';
+data.methodology.rewardsPassportRouteHygiene='Current Passport hides historical routes with zero residual claimables. Legacy routes remain visible only while residual Unclaimed exists. Public reward rows use Protocol · productive asset/strategy as the main identity, while the actual earned token and network remain separate provenance. Only routes with already-proven productive-asset identity are normalized; ambiguous multi-position routes remain unchanged rather than guessed. Direct Convex staked-cvxCRV claimables and Beefy auto-compounded cvxCRV are distinct mechanisms and must never be cross-projected.';
 data.diagnostics=data.diagnostics||{};
 data.diagnostics.rewardsPassportHygiene={version:'0.2-protocol-asset-label-parity',generatedAt:new Date().toISOString(),yieldRingLegacyResidualRows:yLegacy.length,yieldRingEmptyLegacySourceRemoved:yLegacy.length===0,cypherCvxCrvRowsRenamed:cyCvx.length,company009DirectConvexRows:0,protocolAssetLabelCounts:labelCounts,executionAuthority:'none'};
 fs.writeFileSync(OUTPUT,JSON.stringify(data,null,2)+'\n');
