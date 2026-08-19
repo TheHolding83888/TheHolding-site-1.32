@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-19T16:03:31.110Z",
+  "generatedAt": "2026-08-19T16:09:30.636Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,16 +13,16 @@
   },
   "source": {
     "filesScanned": 461,
-    "bytesScanned": 10131814,
+    "bytesScanned": 10135121,
     "siteProbes": 6
   },
   "browserTrust": {
     "policyVersion": "0.1-browser-trust-policy",
     "policySha256": "7e6a8597eb217f888ba03c3ef2ea8397e34d84456e3e8c2d9f16725780e22d8d",
     "summary": {
-      "reviewedDomFileCount": 5,
-      "reviewedDomSinkCount": 14,
-      "unreviewedDomFileCount": 6,
+      "reviewedDomFileCount": 4,
+      "reviewedDomSinkCount": 13,
+      "unreviewedDomFileCount": 7,
       "trustedExternalScriptCount": 1,
       "trustedExternalScriptUsageCount": 7
     },
@@ -57,6 +57,25 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "0c044d4f0d2d96b3aee258d8d6386eaf5ef081060db56849f1c0f112555a40a7",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "defitea/index.html",
+        "line": 2542,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": {
+          "reviewInvalidated": true,
+          "expectedGitBlobSha1": "5d10039eec556375fb310641cf090439bd069c42",
+          "currentGitBlobSha1": "9bc51b96c300698a763c8c21e1bc42941759f1d0",
+          "expectedCount": 1,
+          "currentCount": 1
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "d630a43749ca472ab14e8ef94cb4c2b17dd6bbf40070f2c85fb6bd8a1eed2c21",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -68,67 +87,6 @@
         "evidence": {
           "previousSha256": "4b07ebe4e73ac754cd249a96b8c130e828353f8f3f7be7cce483fc442a9b2afa",
           "currentSha256": "ec44b0bdb8abe78e2d3b8c06e9f910907cf98cf1f015e5657e5136fc36441077"
-        }
-      },
-      {
-        "id": "d31000a73dcbc5bfa9edf486cdbbfcab3bc8a76740ce03c1e1a309b2832a7055",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "yieldring/index.html",
-        "line": 189,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": {
-          "reviewInvalidated": true,
-          "expectedGitBlobSha1": "132a095d65be61716ff82160049bf86a25589925",
-          "currentGitBlobSha1": "5cafec4ca618cba37cd84549bf24dd7e5235d39e",
-          "expectedCount": 1,
-          "currentCount": 1
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "1b1990673158a43885261a213a36bf03f99e73f32b28aa6dcf7a782b9825a9b8",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/project-yieldring-capital-state.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/project-yieldring-capital-state.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "bb3b5b2e43b879e9cb5a2875f1e4478a91ec9730d39f8ef6ed0faf9396d9ed9c",
-          "currentSha256": "41694664a6cce697eb2f0367272f868ddc0946e961afc337a318b2fc826bb472"
-        }
-      },
-      {
-        "id": "073113f1be41dd599b9534be0ef2931e33307a4a022f1e2ab0ddd200f3d63553",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-productivity.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-productivity.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "22392f0f114ff35db8c693c4cbf3ff6436692c72550fa49eede0b4f4e3aadb09",
-          "currentSha256": "4b07ebe4e73ac754cd249a96b8c130e828353f8f3f7be7cce483fc442a9b2afa"
-        }
-      },
-      {
-        "id": "c8104afe96009274d0514c5253a4448944e8294f40f433b09863f7e882e142ba",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/validate-yieldring-production-cascade.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/validate-yieldring-production-cascade.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "7f4324dfe0ab468993c4050e81a29c93973cf887acad12da6677d43d9b1baa93",
-          "currentSha256": "8deb6a63b979ee3dc628f02c543afa980c59ad64aaf2e6dce5b6862a9543eb29"
         }
       }
     ]
@@ -199,20 +157,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "d630a43749ca472ab14e8ef94cb4c2b17dd6bbf40070f2c85fb6bd8a1eed2c21",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-productivity.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-productivity.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "4b07ebe4e73ac754cd249a96b8c130e828353f8f3f7be7cce483fc442a9b2afa",
-        "currentSha256": "ec44b0bdb8abe78e2d3b8c06e9f910907cf98cf1f015e5657e5136fc36441077"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -587,6 +531,23 @@
       }
     },
     {
+      "id": "0c044d4f0d2d96b3aee258d8d6386eaf5ef081060db56849f1c0f112555a40a7",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "defitea/index.html",
+      "line": 2542,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": {
+        "reviewInvalidated": true,
+        "expectedGitBlobSha1": "5d10039eec556375fb310641cf090439bd069c42",
+        "currentGitBlobSha1": "9bc51b96c300698a763c8c21e1bc42941759f1d0",
+        "expectedCount": 1,
+        "currentCount": 1
+      }
+    },
+    {
       "id": "d64d971c588b1c7c1729eb139d96d8561897baff9119fc140a19c056dabce90e",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -638,12 +599,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "827fca0f656a5bc1df7667eeac24b2db98256c579955cb77fb2cf6d8203b6e34",
+    "snapshotHash": "81894d27e5af6b31d6643fe841fe87b55b419b23bf448e1529e4b2e74142df25",
     "securityVault": {
-      "runCount": 317,
+      "runCount": 318,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-19T16-03-31-110Z-827fca0f65.json",
-      "latestRecordHash": "cf8eb6b24adc67b8479d4f41ae924f80b8b1cd21c067a4caafb4804d073fc838",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-19T16-09-30-636Z-81894d27e5.json",
+      "latestRecordHash": "8ce5194a14ec55855ed8f25a53c0aa814aac36cf511231c2d2594fd7a7110f4a",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
