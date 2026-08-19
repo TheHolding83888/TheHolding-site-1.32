@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-19T05:36:28.546Z",
+  "lastUpdatedAt": "2026-08-19T06:20:11.006Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 301,
-    "vaultRunCount": 301,
+    "runCount": 302,
+    "vaultRunCount": 302,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -3625,6 +3625,18 @@
       "highCount": 6,
       "newFindingCount": 5,
       "resolvedFindingCount": 6
+    },
+    {
+      "generatedAt": "2026-08-19T06:20:11.006Z",
+      "status": "watch",
+      "snapshotHash": "60c0d1515d467086608f2dadadc7f4bbdc45e38c7db1dedc924e06a43f58b937",
+      "recordPath": "security/security-vault/2026/08/2026-08-19T06-20-11-006Z-60c0d1515d.json",
+      "recordHash": "b8f486f7733a84b76bc94fa3c5b1e410b230fd8583b59dc2a4906e7cb822352a",
+      "findingCount": 32,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 2
     }
   ],
   "events": [
@@ -14897,6 +14909,39 @@
       "type": "finding-resolved",
       "detectedAt": "2026-08-19T05:36:28.546Z",
       "findingId": "823945f7ca76ada5d2334d2bc8c36c2675823cb7ea8e90b26a49b8001a60c1e4",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "summary": "Resolved: Dynamic innerHTML assignment detected.",
+      "file": "companies/company-010-public-adapter.js",
+      "entity": null
+    },
+    {
+      "id": "16dc210a1bb8c3767b5ef889ca9b268e4a72e1e87d9364f1e8280b77e962f663",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-19T06:20:11.006Z",
+      "findingId": "c01484996821c3c350d621caabf209e287b428aa30d6f2c7f6f62f94628651d5",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "summary": "Dynamic innerHTML assignment detected.",
+      "file": "companies/company-010-public-adapter.js",
+      "entity": null
+    },
+    {
+      "id": "72e12289c3fe280ec88e085aa073ab00f6a5d54cf1f037bb729f33f2ade763d3",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T06:20:11.006Z",
+      "findingId": "09f6567a8c7cc483635f4e41a5d39ee529c6605097f3d6714a96685b8b6a97c5",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-company-010-public-admission.yml.",
+      "file": ".github/workflows/verify-company-010-public-admission.yml",
+      "entity": null
+    },
+    {
+      "id": "21e326940db9daf4e3d852e11dad1e95755d6d984af0018b95fb9d0ac2cc2db4",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T06:20:11.006Z",
+      "findingId": "019157b4aba2932a2e85d6f3fc5969a6b3d685159df425c6a0641f7f723eb8ae",
       "severity": "medium",
       "category": "dom-innerhtml",
       "summary": "Resolved: Dynamic innerHTML assignment detected.",
