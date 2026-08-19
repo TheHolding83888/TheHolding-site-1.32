@@ -3,6 +3,8 @@ name: "Validate YieldRing Production Cascade"
 on:
   pull_request:
     paths:
+      - 'companies/yieldring-public-capital-projection.mjs'
+      - '.github/workflows/project-yieldring-capital-state.yml'
       - '.github/workflows/update-productivity.yml'
       - '.github/workflows/update-capital-state.yml'
       - '.github/workflows/validate-yieldring-production-cascade.yml'
@@ -27,20 +29,26 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
+          const projector=fs.readFileSync('.github/workflows/project-yieldring-capital-state.yml','utf8');
           const p=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
           const c=fs.readFileSync('.github/workflows/update-capital-state.yml','utf8');
-          for(const n of ["companies/yieldring-canonical-state.json","productivity/yieldring-productivity-overlay.mjs",".github/workflows/update-productivity.yml"]){if(!p.includes(n))throw new Error('Productivity self-start path missing: '+n);}
+          const projection=fs.readFileSync('companies/yieldring-public-capital-projection.mjs','utf8');
+          if(!projector.includes("yieldring/index.html"))throw new Error('dedicated YieldRing page is not published by projector');
+          if(!projection.includes("const PAGE='yieldring/index.html'"))throw new Error('dedicated YieldRing page projection missing');
+          if(!projection.includes("qty: 0.0334")||!projection.includes("qty: 678")||!projection.includes('2 locks · Maxi relay'))throw new Error('dedicated YieldRing canonical quantities missing');
+          if(!p.includes('Project YieldRing Canonical Capital State'))throw new Error('Projector -> Productivity workflow_run dependency missing');
           if(!p.includes("Number(aero?.units)!==678"))throw new Error('YieldRing Productivity 678 AERO guard missing');
           if(!p.includes("Number(s.capital?.bitcoin?.quantity)!==0.0334"))throw new Error('YieldRing BTC canonical guard missing');
-          if(!c.includes('Update The Holding Productivity Data'))throw new Error('Capital State workflow_run dependency on Productivity missing');
+          if(!c.includes('Update The Holding Productivity Data'))throw new Error('Productivity -> Capital State workflow_run dependency missing');
           if(!c.includes("github.event.workflow_run.name == 'Update The Holding Productivity Data'"))throw new Error('Capital State Productivity-specific General Balance rebuild missing');
           if(!c.includes("Number(yrBtc?.units)!==0.0334")||!c.includes("Number(yrAero?.units)!==678"))throw new Error('Capital State YieldRing quantity proof missing');
-          if(!c.includes("github.event.workflow_run.head_branch == 'main'"))throw new Error('workflow_run main-branch gate missing');
-          console.log('YieldRing production cascade contract PASS',{productivitySelfStart:true,capitalWorkflowRun:true,generalBalanceRebuild:true,capitalProof:true,executionAuthority:'none'});
+          if(!c.includes("github.event.workflow_run.head_branch == 'main'"))throw new Error('Capital State workflow_run main-branch gate missing');
+          console.log('YieldRing full production cascade PASS',{projectorToProductivity:true,productivityToCapital:true,dedicatedPage:true,capitalProof:true,executionAuthority:'none'});
           NODE
       - name: Syntax and diff hygiene
         run: |
           set -euo pipefail
+          node --check companies/yieldring-public-capital-projection.mjs
           node --check productivity/yieldring-productivity-overlay.mjs
           node --check intelligence/capital-state/general-company-balance-sheet.mjs
           node --check intelligence/capital-state/capital-state.mjs

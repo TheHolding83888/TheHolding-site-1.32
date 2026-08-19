@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 
 const STATE='companies/yieldring-canonical-state.json';
 const INDEX='companies/index.html';
+const PAGE='yieldring/index.html';
 const BALANCE='intelligence/capital-state/general-company-balance-sheet.mjs';
 const state=JSON.parse(fs.readFileSync(STATE,'utf8'));
 const fail=m=>{throw new Error(m);};
@@ -32,6 +33,23 @@ html=replaceOnce(html,oldBook,newBook,'companies/index.html YieldRing Company Bo
 fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
 
+let page=fs.readFileSync(PAGE,'utf8');
+page=replaceOnce(page,
+`  var BTC = { id: 'bitcoin', name: 'Bitcoin', sub: 'Reserve · pledged as collateral', qty: 0.03 };`,
+`  var BTC = { id: 'bitcoin', name: 'Bitcoin', sub: 'Reserve · pledged as collateral', qty: 0.0334 };`,
+'YieldRing dedicated BTC');
+page=replaceOnce(page,
+`    { id: 'aerodrome-finance', name: 'veAERO', sub: 'Aero · locked', qty: 480 },`,
+`    { id: 'aerodrome-finance', name: 'veAERO', sub: 'Aero · 2 locks · Maxi relay', qty: 678 },`,
+'YieldRing dedicated veAERO');
+if(!page.includes('veAERO Maxi')){
+  page=replaceOnce(page,
+`    <p class="note">The reserve is pledged on Llamalend, where roughly <b>$700 of liquidity</b> was drawn against it and committed to three long-term positions. The Bitcoin itself is never sold — a loan is serviced instead.</p>`,
+`    <p class="note">The reserve is pledged on Llamalend, where roughly <b>$700 of liquidity</b> was drawn against it and committed to three long-term positions. The Bitcoin itself is never sold — a loan is serviced instead.</p>\n    <p class="note"><b>veAERO Maxi</b> · two managed veAERO locks are tracked as one Aerodrome productive position and one aggregated rewards line. Manager ID 10298 · 0xc981…14f.</p>`,
+'YieldRing dedicated relay note');
+}
+fs.writeFileSync(PAGE,page);
+
 let balance=fs.readFileSync(BALANCE,'utf8');
 balance=replaceOnce(balance,
 `    { id:'bitcoin', qty:0.03, layer:'foundation', priceSource:'coingecko' },\n    { id:'aerodrome-finance', qty:480, layer:'productive-dividend' },`,
@@ -50,6 +68,7 @@ console.log('YieldRing public/capital projection PASS',{
   aeroQuantity:aero.quantity,
   aeroCostBasisUsd:aero.costBasisUsd,
   expectedIndexBlob:indexBlob,
+  dedicatedPageProjected:true,
   relayMode:state.aerodromeRelay.mode,
   expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,
   executionAuthority:'none'
