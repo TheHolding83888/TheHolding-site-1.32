@@ -13,6 +13,8 @@ on:
       - 'intelligence/market-data/public-capital-engine.mjs'
       - 'intelligence/market-data/coingecko-fetch-shim.mjs'
       - 'intelligence/market-data/public-capital-client.js'
+      - 'intelligence/market-data/onchain-price-source-registry.json'
+      - 'intelligence/market-data/onchain-price-resolver.mjs'
       - 'companies/defitea-canonical-state.json'
       - 'companies/stable-index-data.json'
       - 'companies/productivity-data.json'
@@ -49,12 +51,27 @@ jobs:
           node --check intelligence/market-data/public-capital-engine.mjs
           node --check intelligence/market-data/coingecko-fetch-shim.mjs
           node --check intelligence/market-data/public-capital-client.js
+          node --check intelligence/market-data/onchain-price-resolver.mjs
 
       - name: Refresh one shared external market-price snapshot
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           MARKET_DATA_FORCE_REFRESH: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
         run: node intelligence/market-data/market-data-engine.mjs
+
+      - name: Observe onchain prices in fail-open shadow mode
+        run: |
+          set +e
+          node intelligence/market-data/onchain-price-resolver.mjs
+          shadow_code=$?
+          set -e
+          if [ ! -f intelligence/market-data/onchain-price-shadow.json ]; then
+            echo 'Onchain shadow resolver failed before producing diagnostic state.' >&2
+            exit 1
+          fi
+          if [ "$shadow_code" -ne 0 ]; then
+            echo '::warning::No healthy onchain shadow observation this cycle; canonical Market Data continues unchanged.'
+          fi
 
       - name: Rebuild public fund + company capital view
         run: node intelligence/market-data/public-capital-engine.mjs
@@ -65,6 +82,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const reg=JSON.parse(fs.readFileSync('intelligence/market-data/fund-capital-registry.json','utf8'));
           const d=pub.funds?.defitea;
@@ -81,11 +99,15 @@ jobs:
           if(pub.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('browser external-price authority drift');
           if(pub.authority?.executionAuthority!=='none')throw new Error('execution authority drift');
           if(market.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('market browser authority drift');
+          if(shadow.mode!=='shadow'||shadow.semantics?.productionPriceAuthority!==false)throw new Error('onchain shadow authority drift');
+          if(shadow.semantics?.paidRpcRequired!==false||shadow.authority?.executionAuthority!=='none')throw new Error('onchain zero-cost/authority contract drift');
           if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd)))throw new Error('Fund ecosystem TVL unavailable');
           if(!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Company network TVL unavailable');
           console.log('Shared Market Data validation PASS',{
             marketStatus:market.status,
             observedAt:market.observedAt,
+            onchainShadowStatus:shadow.status,
+            onchainShadowCoverage:shadow.coverage,
             fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd,
             companyNetworkTvlUsd:pub.totals.companyNetworkTvlUsd,
             defiteaTvlUsd:d.tvlUsd,
@@ -101,6 +123,7 @@ jobs:
           git config user.email "market-data-orchestrator@theholding.ai"
           git add \
             intelligence/market-data/market-data.json \
+            intelligence/market-data/onchain-price-shadow.json \
             intelligence/market-data/public-capital-state.json
           if git diff --cached --quiet; then
             echo 'Shared Market Data state already current.'
@@ -116,8 +139,19 @@ jobs:
             fi
             COINGECKO_API_KEY='${{ secrets.COINGECKO_API_KEY }}' MARKET_DATA_FORCE_REFRESH='false' \
               node intelligence/market-data/market-data-engine.mjs
+            set +e
+            node intelligence/market-data/onchain-price-resolver.mjs
+            shadow_code=$?
+            set -e
+            if [ ! -f intelligence/market-data/onchain-price-shadow.json ]; then
+              echo 'Onchain shadow resolver failed before producing diagnostic state during publish retry.' >&2
+              exit 1
+            fi
+            if [ "$shadow_code" -ne 0 ]; then
+              echo '::warning::Onchain shadow unavailable during publish retry; canonical Market Data continues unchanged.'
+            fi
             node intelligence/market-data/public-capital-engine.mjs
-            git add intelligence/market-data/market-data.json intelligence/market-data/public-capital-state.json
+            git add intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json intelligence/market-data/public-capital-state.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
