@@ -14,56 +14,42 @@ function readJson(file, fallback = null) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
   catch { return fallback; }
 }
-
-function finite(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
+function finite(value) { const n = Number(value); return Number.isFinite(n) ? n : null; }
 function iso(value = Date.now()) { return new Date(value).toISOString(); }
-
 function word(hex, index) {
   const clean = String(hex || '').replace(/^0x/, '');
-  const start = index * 64;
-  const part = clean.slice(start, start + 64);
+  const part = clean.slice(index * 64, index * 64 + 64);
   if (part.length !== 64) throw new Error(`ABI word ${index} missing`);
   return BigInt(`0x${part}`);
 }
-
-function signedInt256(value) {
-  return value >= INT256_SIGN ? value - UINT256_MOD : value;
-}
-
+function signedInt256(value) { return value >= INT256_SIGN ? value - UINT256_MOD : value; }
 export function decodeChainlinkRoundData(hex) {
-  const roundId = word(hex, 0);
-  const answer = signedInt256(word(hex, 1));
-  const startedAt = word(hex, 2);
-  const updatedAt = word(hex, 3);
-  const answeredInRound = word(hex, 4);
-  return { roundId, answer, startedAt, updatedAt, answeredInRound };
+  return { roundId: word(hex, 0), answer: signedInt256(word(hex, 1)), startedAt: word(hex, 2), updatedAt: word(hex, 3), answeredInRound: word(hex, 4) };
 }
-
-export function decodeUint256(hex) {
-  return word(hex, 0);
-}
-
+export function decodeUint256(hex) { return word(hex, 0); }
 export function decodeRpcQuantity(hex) {
   if (!/^0x[0-9a-f]+$/i.test(String(hex || ''))) throw new Error('Invalid RPC quantity');
   return BigInt(hex);
 }
 
-function rpcBatchForChainlink(route) {
-  return [
-    { jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] },
-    { jsonrpc: '2.0', id: 2, method: 'eth_call', params: [{ to: route.contract, data: '0x313ce567' }, 'latest'] },
-    { jsonrpc: '2.0', id: 3, method: 'eth_call', params: [{ to: route.contract, data: '0xfeaf968c' }, 'latest'] }
-  ];
+function buildNetworkBatch(entries) {
+  const payload = [{ jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }];
+  const requestMap = new Map();
+  let nextId = 1000;
+  for (const entry of entries) {
+    const decimalsId = nextId++;
+    const roundId = nextId++;
+    payload.push({ jsonrpc: '2.0', id: decimalsId, method: 'eth_call', params: [{ to: entry.route.contract, data: '0x313ce567' }, 'latest'] });
+    payload.push({ jsonrpc: '2.0', id: roundId, method: 'eth_call', params: [{ to: entry.route.contract, data: '0xfeaf968c' }, 'latest'] });
+    requestMap.set(entry.assetId, { decimalsId, roundId });
+  }
+  return { payload, requestMap };
 }
 
 async function postRpc(endpoint, payload, fetchImpl) {
   const response = await fetchImpl(endpoint.url, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', 'accept': 'application/json' },
+    headers: { 'content-type': 'application/json', accept: 'application/json' },
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(RPC_TIMEOUT_MS)
   });
@@ -71,11 +57,11 @@ async function postRpc(endpoint, payload, fetchImpl) {
   const body = await response.json();
   if (!Array.isArray(body)) throw new Error('RPC batch response is not an array');
   const byId = new Map(body.map(row => [Number(row?.id), row]));
-  for (const request of payload) {
-    const result = byId.get(request.id);
-    if (!result) throw new Error(`RPC result ${request.id} missing`);
-    if (result.error) throw new Error(`RPC error ${request.id}: ${result.error.message || 'unknown'}`);
-  }
+  for (const request of payload) if (!byId.has(request.id)) throw new Error(`RPC result ${request.id} missing`);
+  const block = byId.get(1);
+  if (block?.error || !block?.result) throw new Error(`RPC block error: ${block?.error?.message || 'missing block result'}`);
+  const assetCalls = payload.filter(x => x.id !== 1).map(x => byId.get(x.id));
+  if (assetCalls.length && assetCalls.every(row => row?.error || !row?.result)) throw new Error('All asset calls failed on RPC endpoint');
   return byId;
 }
 
@@ -97,100 +83,133 @@ function divergencePct(onchainUsd, canonicalUsd) {
   return Math.abs(onchainUsd - canonicalUsd) / canonicalUsd * 100;
 }
 
+function unavailableObservation(entry, status, error = null) {
+  return {
+    assetId: entry.assetId,
+    symbol: entry.asset?.symbol || null,
+    usd: null,
+    status,
+    authority: 'shadow',
+    source: entry.route?.type || null,
+    network: entry.route?.network || null,
+    contract: entry.route?.contract || null,
+    ...(error ? { error } : {}),
+    productionPriceAuthority: false
+  };
+}
+
 export async function resolveOnchainPrices({ registry, marketData = null, fetchImpl = fetch, nowMs = Date.now() }) {
   if (!registry?.assets || !registry?.networks) throw new Error('Onchain source registry missing or invalid');
   const observations = {};
   const networks = {};
+  const grouped = new Map();
   let okCount = 0;
   let warningCount = 0;
   let unavailableCount = 0;
+  let httpBatchRequestCount = 0;
 
   for (const [assetId, asset] of Object.entries(registry.assets)) {
     const route = asset?.route;
+    const entry = { assetId, asset, route };
     if (!route || route.type !== 'chainlink-v3') {
-      observations[assetId] = { assetId, status: 'unsupported-route', usd: null, authority: 'shadow' };
+      observations[assetId] = unavailableObservation(entry, 'unsupported-route');
       unavailableCount += 1;
       continue;
     }
-
-    const network = registry.networks[route.network];
-    if (!network) {
-      observations[assetId] = { assetId, status: 'network-unavailable', usd: null, authority: 'shadow' };
+    if (!registry.networks[route.network]) {
+      observations[assetId] = unavailableObservation(entry, 'network-unavailable');
       unavailableCount += 1;
       continue;
     }
+    if (!grouped.has(route.network)) grouped.set(route.network, []);
+    grouped.get(route.network).push(entry);
+  }
 
+  for (const [networkId, entries] of grouped.entries()) {
+    const network = registry.networks[networkId];
+    const { payload, requestMap } = buildNetworkBatch(entries);
     try {
-      const payload = rpcBatchForChainlink(route);
-      const { byId, endpointId, attempts } = await withRpcFailover(network, payload, fetchImpl);
-      const blockNumber = Number(decodeRpcQuantity(byId.get(1).result));
-      const decimals = Number(decodeUint256(byId.get(2).result));
-      const round = decodeChainlinkRoundData(byId.get(3).result);
-      const updatedAtSeconds = Number(round.updatedAt);
-      const feedAgeSeconds = Math.max(0, Math.floor(nowMs / 1000) - updatedAtSeconds);
-      const rawAnswer = Number(round.answer);
-      const usd = Number.isFinite(rawAnswer) ? rawAnswer / 10 ** decimals : null;
-      const canonicalUsd = finite(marketData?.prices?.[assetId]?.usd);
-      const diffPct = divergencePct(usd, canonicalUsd);
-      const stale = !(updatedAtSeconds > 0) || feedAgeSeconds > Number(route.maxAgeSeconds || 0);
-      const invalid = !(usd > 0) || round.answeredInRound < round.roundId;
-      const divergent = diffPct !== null && diffPct > Number(route.maxDivergencePct ?? Infinity);
-      const status = invalid ? 'invalid' : stale ? 'stale' : divergent ? 'divergent' : 'shadow-ok';
-
-      if (status === 'shadow-ok') okCount += 1;
-      else warningCount += 1;
-
-      observations[assetId] = {
-        assetId,
-        symbol: asset.symbol || null,
-        usd: invalid ? null : usd,
-        status,
-        authority: 'shadow',
-        source: 'chainlink-v3',
-        network: route.network,
+      const result = await withRpcFailover(network, payload, async (...args) => {
+        httpBatchRequestCount += 1;
+        return fetchImpl(...args);
+      });
+      const blockNumber = Number(decodeRpcQuantity(result.byId.get(1).result));
+      networks[networkId] = {
         chainId: network.chainId,
-        contract: route.contract,
-        quote: route.quote || 'USD',
-        rpcEndpointId: endpointId,
-        rpcFailoverAttempts: attempts.length,
+        rpcEndpointId: result.endpointId,
         blockNumber,
-        roundId: round.roundId.toString(),
-        answeredInRound: round.answeredInRound.toString(),
-        feedUpdatedAt: updatedAtSeconds > 0 ? iso(updatedAtSeconds * 1000) : null,
-        feedAgeSeconds,
-        maxAgeSeconds: Number(route.maxAgeSeconds || 0),
-        canonicalPriceUsd: canonicalUsd,
-        divergencePct: diffPct === null ? null : Number(diffPct.toFixed(6)),
-        maxDivergencePct: Number(route.maxDivergencePct ?? 0),
-        productionPriceAuthority: false
+        paidRpcRequired: false,
+        routeCount: entries.length,
+        batchCallCount: payload.length,
+        httpBatchRequestCount: result.attempts.length + 1,
+        rpcFailoverAttempts: result.attempts.length
       };
-      networks[route.network] = {
-        chainId: network.chainId,
-        rpcEndpointId: endpointId,
-        blockNumber,
-        paidRpcRequired: false
-      };
+
+      for (const entry of entries) {
+        const ids = requestMap.get(entry.assetId);
+        const decimalsRow = result.byId.get(ids.decimalsId);
+        const roundRow = result.byId.get(ids.roundId);
+        if (decimalsRow?.error || roundRow?.error || !decimalsRow?.result || !roundRow?.result) {
+          const err = decimalsRow?.error?.message || roundRow?.error?.message || 'asset RPC result missing';
+          observations[entry.assetId] = unavailableObservation(entry, 'rpc-call-error', err);
+          unavailableCount += 1;
+          continue;
+        }
+        try {
+          const decimals = Number(decodeUint256(decimalsRow.result));
+          const round = decodeChainlinkRoundData(roundRow.result);
+          const updatedAtSeconds = Number(round.updatedAt);
+          const feedAgeSeconds = Math.max(0, Math.floor(nowMs / 1000) - updatedAtSeconds);
+          const rawAnswer = Number(round.answer);
+          const usd = Number.isFinite(rawAnswer) ? rawAnswer / 10 ** decimals : null;
+          const canonicalUsd = finite(marketData?.prices?.[entry.assetId]?.usd);
+          const diffPct = divergencePct(usd, canonicalUsd);
+          const stale = !(updatedAtSeconds > 0) || feedAgeSeconds > Number(entry.route.maxAgeSeconds || 0);
+          const invalid = !(usd > 0) || round.answeredInRound < round.roundId;
+          const divergent = diffPct !== null && diffPct > Number(entry.route.maxDivergencePct ?? Infinity);
+          const status = invalid ? 'invalid' : stale ? 'stale' : divergent ? 'divergent' : 'shadow-ok';
+          if (status === 'shadow-ok') okCount += 1; else warningCount += 1;
+          observations[entry.assetId] = {
+            assetId: entry.assetId,
+            symbol: entry.asset.symbol || null,
+            usd: invalid ? null : usd,
+            status,
+            authority: 'shadow',
+            source: 'chainlink-v3',
+            network: networkId,
+            chainId: network.chainId,
+            contract: entry.route.contract,
+            quote: entry.route.quote || 'USD',
+            rpcEndpointId: result.endpointId,
+            rpcFailoverAttempts: result.attempts.length,
+            blockNumber,
+            roundId: round.roundId.toString(),
+            answeredInRound: round.answeredInRound.toString(),
+            feedUpdatedAt: updatedAtSeconds > 0 ? iso(updatedAtSeconds * 1000) : null,
+            feedAgeSeconds,
+            maxAgeSeconds: Number(entry.route.maxAgeSeconds || 0),
+            canonicalPriceUsd: canonicalUsd,
+            divergencePct: diffPct === null ? null : Number(diffPct.toFixed(6)),
+            maxDivergencePct: Number(entry.route.maxDivergencePct ?? 0),
+            productionPriceAuthority: false
+          };
+        } catch (error) {
+          observations[entry.assetId] = unavailableObservation(entry, 'decode-error', error instanceof Error ? error.message : String(error));
+          unavailableCount += 1;
+        }
+      }
     } catch (error) {
-      observations[assetId] = {
-        assetId,
-        symbol: asset.symbol || null,
-        usd: null,
-        status: 'rpc-unavailable',
-        authority: 'shadow',
-        source: route.type,
-        network: route.network,
-        contract: route.contract,
-        error: error instanceof Error ? error.message : String(error),
-        productionPriceAuthority: false
-      };
-      unavailableCount += 1;
+      for (const entry of entries) {
+        observations[entry.assetId] = unavailableObservation(entry, 'rpc-unavailable', error instanceof Error ? error.message : String(error));
+        unavailableCount += 1;
+      }
     }
   }
 
   const assetCount = Object.keys(registry.assets).length;
   return {
-    version: '0.1-onchain-price-shadow',
-    engineVersion: '0.1-provider-agnostic-public-rpc-shadow-resolver',
+    version: '0.2-onchain-price-shadow-network-batched',
+    engineVersion: '0.2-provider-agnostic-network-batched-public-rpc-shadow-resolver',
     generatedAt: iso(nowMs),
     status: unavailableCount > 0 ? 'partial' : warningCount > 0 ? 'warning' : 'ok',
     mode: 'shadow',
@@ -199,19 +218,21 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       productionPriceAuthority: false,
       browserRpcRequestsAllowed: false,
       publicRpcFailover: true,
+      oneHttpBatchPerNetworkPerAttempt: true,
+      duplicateBlockRequestsWithinNetwork: false,
       paidRpcRequired: false,
       unknownIsNotZero: true,
       coinGeckoRemainsFallbackAndSanityCheck: true
     },
+    rpcEfficiency: {
+      networkCount: grouped.size,
+      routeCount: [...grouped.values()].reduce((sum, rows) => sum + rows.length, 0),
+      httpBatchRequestCount
+    },
     coverage: { assetCount, okCount, warningCount, unavailableCount },
     networks,
     observations,
-    authority: {
-      readOnly: true,
-      executionAuthority: 'none',
-      capitalExecution: false,
-      policyMutationAuthority: false
-    }
+    authority: { readOnly: true, executionAuthority: 'none', capitalExecution: false, policyMutationAuthority: false }
   };
 }
 
@@ -221,14 +242,8 @@ export async function runCli() {
   const marketData = readJson(MARKET_DATA_PATH, null);
   const output = await resolveOnchainPrices({ registry, marketData });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2) + '\n');
-  console.log('Onchain price shadow written', {
-    status: output.status,
-    coverage: output.coverage,
-    productionPriceAuthority: false
-  });
+  console.log('Onchain price shadow written', { status: output.status, coverage: output.coverage, rpcEfficiency: output.rpcEfficiency, productionPriceAuthority: false });
   if (output.coverage.okCount === 0) throw new Error('No healthy onchain shadow observations');
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  await runCli();
-}
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await runCli();
