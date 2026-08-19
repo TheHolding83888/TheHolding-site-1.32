@@ -9,7 +9,7 @@ const OUTPUT_PATH = path.join(__dirname, 'onchain-price-shadow.json');
 const RPC_TIMEOUT_MS = 10_000;
 const UINT256_MOD = 1n << 256n;
 const INT256_SIGN = 1n << 255n;
-const SUPPORTED_ROUTE_TYPES = new Set(['chainlink-v3', 'chainlink-v3-relative']);
+const SUPPORTED_ROUTE_TYPES = new Set(['chainlink-v3', 'chainlink-v3-relative', 'velodrome-v2-twap-relative']);
 const RETRYABLE_RPC_ERROR_PATTERNS = [
   /rate.?limit/i,
   /too many requests/i,
@@ -35,6 +35,21 @@ function word(hex, index) {
   return BigInt(`0x${part}`);
 }
 function signedInt256(value) { return value >= INT256_SIGN ? value - UINT256_MOD : value; }
+function addressWord(address) {
+  const clean = String(address || '').replace(/^0x/, '').toLowerCase();
+  if (!/^[0-9a-f]{40}$/.test(clean)) throw new Error(`Invalid EVM address: ${address}`);
+  return clean.padStart(64, '0');
+}
+function uintWord(value) {
+  const n = BigInt(value);
+  if (n < 0n) throw new Error('Negative uint');
+  return n.toString(16).padStart(64, '0');
+}
+function boolWord(value) { return uintWord(value ? 1n : 0n); }
+function decodeAddress(hex) {
+  const raw = word(hex, 0).toString(16).padStart(64, '0').slice(24);
+  return `0x${raw}`;
+}
 export function decodeChainlinkRoundData(hex) {
   return { roundId: word(hex, 0), answer: signedInt256(word(hex, 1)), startedAt: word(hex, 2), updatedAt: word(hex, 3), answeredInRound: word(hex, 4) };
 }
@@ -47,12 +62,29 @@ export function isRetryableRpcError(error) {
   const message = typeof error === 'string' ? error : error?.message;
   return RETRYABLE_RPC_ERROR_PATTERNS.some(pattern => pattern.test(String(message || '')));
 }
+export function encodeVelodromeGetPool({ token, quoteToken, stable = false }) {
+  return `0x79bc57d5${addressWord(token)}${addressWord(quoteToken)}${boolWord(stable)}`;
+}
+export function encodeVelodromeQuote({ token, amountIn, granularity }) {
+  return `0x9e8cc04b${addressWord(token)}${uintWord(amountIn)}${uintWord(granularity)}`;
+}
 
 function buildNetworkBatch(entries) {
   const payload = [{ jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }];
   const requestMap = new Map();
   let nextId = 1000;
   for (const entry of entries) {
+    if (entry.route.type === 'velodrome-v2-twap-relative') {
+      const poolId = nextId++;
+      payload.push({
+        jsonrpc: '2.0',
+        id: poolId,
+        method: 'eth_call',
+        params: [{ to: entry.route.factory, data: encodeVelodromeGetPool(entry.route) }, 'latest']
+      });
+      requestMap.set(entry.assetId, { poolId });
+      continue;
+    }
     const decimalsId = nextId++;
     const roundId = nextId++;
     payload.push({ jsonrpc: '2.0', id: decimalsId, method: 'eth_call', params: [{ to: entry.route.contract, data: '0x313ce567' }, 'latest'] });
@@ -74,11 +106,15 @@ async function postRpc(endpoint, payload, fetchImpl) {
   if (!Array.isArray(body)) throw new Error('RPC batch response is not an array');
   const byId = new Map(body.map(row => [Number(row?.id), row]));
   for (const request of payload) if (!byId.has(request.id)) throw new Error(`RPC result ${request.id} missing`);
-  const block = byId.get(1);
-  if (block?.error || !block?.result) throw new Error(`RPC block error: ${block?.error?.message || 'missing block result'}`);
+
+  const blockRequest = payload.find(request => request.method === 'eth_blockNumber');
+  if (blockRequest) {
+    const block = byId.get(blockRequest.id);
+    if (block?.error || !block?.result) throw new Error(`RPC block error: ${block?.error?.message || 'missing block result'}`);
+  }
 
   const retryableRows = payload
-    .filter(request => request.id !== 1)
+    .filter(request => request.method !== 'eth_blockNumber')
     .map(request => byId.get(request.id))
     .filter(row => row?.error && isRetryableRpcError(row.error));
   if (retryableRows.length) {
@@ -86,8 +122,8 @@ async function postRpc(endpoint, payload, fetchImpl) {
     throw new Error(`Retryable RPC endpoint error: ${reasons.join(' | ')}`);
   }
 
-  const assetCalls = payload.filter(x => x.id !== 1).map(x => byId.get(x.id));
-  if (assetCalls.length && assetCalls.every(row => row?.error || !row?.result)) throw new Error('All asset calls failed on RPC endpoint');
+  const callRows = payload.filter(x => x.method !== 'eth_blockNumber').map(x => byId.get(x.id));
+  if (callRows.length && callRows.every(row => row?.error || !row?.result)) throw new Error('All asset calls failed on RPC endpoint');
   return byId;
 }
 
@@ -118,7 +154,7 @@ function unavailableObservation(entry, status, error = null) {
     authority: 'shadow',
     source: entry.route?.type || null,
     network: entry.route?.network || null,
-    contract: entry.route?.contract || null,
+    contract: entry.route?.contract || entry.route?.factory || null,
     ...(error ? { error } : {}),
     productionPriceAuthority: false
   };
@@ -163,12 +199,17 @@ function observationBase(entry, network, networkId, endpointId, attempts, blockN
   };
 }
 
+function relativeStatus({ invalid = false, stale = false, dependencyWarning = false, divergent = false }) {
+  return invalid ? 'invalid' : stale ? 'stale' : dependencyWarning ? 'dependency-warning' : divergent ? 'divergent' : 'shadow-ok';
+}
+
 export async function resolveOnchainPrices({ registry, marketData = null, fetchImpl = fetch, nowMs = Date.now() }) {
   if (!registry?.assets || !registry?.networks) throw new Error('Onchain source registry missing or invalid');
   const observations = {};
   const networks = {};
   const grouped = new Map();
   const relativePending = [];
+  const protocolRelativePending = [];
   let okCount = 0;
   let warningCount = 0;
   let unavailableCount = 0;
@@ -199,8 +240,9 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
         httpBatchRequestCount += 1;
         return fetchImpl(...args);
       });
-      const blockNumber = Number(decodeRpcQuantity(result.byId.get(1).result));
-      networks[networkId] = {
+      const blockTag = result.byId.get(1).result;
+      const blockNumber = Number(decodeRpcQuantity(blockTag));
+      const telemetry = {
         chainId: network.chainId,
         rpcEndpointId: result.endpointId,
         blockNumber,
@@ -208,11 +250,104 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
         routeCount: entries.length,
         batchCallCount: payload.length,
         httpBatchRequestCount: result.attempts.length + 1,
-        rpcFailoverAttempts: result.attempts.length
+        rpcFailoverAttempts: result.attempts.length,
+        protocolReadPhases: 1
       };
+      networks[networkId] = telemetry;
 
       for (const entry of entries) {
         const ids = requestMap.get(entry.assetId);
+
+        if (entry.route.type === 'velodrome-v2-twap-relative') {
+          const poolRow = result.byId.get(ids.poolId);
+          if (poolRow?.error || !poolRow?.result) {
+            observations[entry.assetId] = unavailableObservation(entry, 'pool-discovery-error', poolRow?.error?.message || 'Velodrome pool result missing');
+            unavailableCount += 1;
+            continue;
+          }
+          let pool;
+          try { pool = decodeAddress(poolRow.result); }
+          catch (error) {
+            observations[entry.assetId] = unavailableObservation(entry, 'pool-discovery-error', error instanceof Error ? error.message : String(error));
+            unavailableCount += 1;
+            continue;
+          }
+          if (/^0x0{40}$/i.test(pool)) {
+            observations[entry.assetId] = unavailableObservation(entry, 'pool-unavailable', 'Velodrome factory returned zero address');
+            unavailableCount += 1;
+            continue;
+          }
+
+          const granularity = Number(entry.route.granularity || 0);
+          const amountIn = BigInt(entry.route.amountIn || 0);
+          if (!(granularity >= 2) || amountIn <= 0n) {
+            observations[entry.assetId] = unavailableObservation(entry, 'route-invalid', 'Velodrome TWAP granularity/amountIn invalid');
+            unavailableCount += 1;
+            continue;
+          }
+
+          const phase2Payload = [
+            { jsonrpc: '2.0', id: 5000 + ids.poolId * 2, method: 'eth_call', params: [{ to: pool, data: '0xebeb31db' }, blockTag] },
+            { jsonrpc: '2.0', id: 5001 + ids.poolId * 2, method: 'eth_call', params: [{ to: pool, data: encodeVelodromeQuote(entry.route) }, blockTag] }
+          ];
+          try {
+            const phase2 = await withRpcFailover(network, phase2Payload, async (...args) => {
+              httpBatchRequestCount += 1;
+              return fetchImpl(...args);
+            });
+            telemetry.protocolReadPhases += 1;
+            telemetry.protocolTwapBatchCallCount = (telemetry.protocolTwapBatchCallCount || 0) + phase2Payload.length;
+            telemetry.httpBatchRequestCount += phase2.attempts.length + 1;
+            telemetry.rpcFailoverAttempts += phase2.attempts.length;
+            telemetry.protocolTwapEndpointId = phase2.endpointId;
+
+            const obsRow = phase2.byId.get(phase2Payload[0].id);
+            const quoteRow = phase2.byId.get(phase2Payload[1].id);
+            if (obsRow?.error || quoteRow?.error || !obsRow?.result || !quoteRow?.result) {
+              throw new Error(obsRow?.error?.message || quoteRow?.error?.message || 'Velodrome TWAP result missing');
+            }
+            const observationLength = Number(decodeUint256(obsRow.result));
+            if (observationLength <= granularity) throw new Error(`Insufficient Velodrome observations: ${observationLength} <= ${granularity}`);
+            const amountOut = decodeUint256(quoteRow.result);
+            const quoteTokenDecimals = Number(entry.route.quoteTokenDecimals ?? 18);
+            const tokenAmount = Number(amountIn) / 10 ** Number(entry.route.tokenDecimals ?? 18);
+            const quoteAmount = Number(amountOut) / 10 ** quoteTokenDecimals;
+            const feedValue = tokenAmount > 0 ? quoteAmount / tokenAmount : null;
+            if (!(feedValue > 0)) throw new Error('Velodrome TWAP quote is zero or invalid');
+
+            protocolRelativePending.push({
+              entry,
+              feedValue,
+              base: {
+                assetId: entry.assetId,
+                symbol: entry.asset.symbol || null,
+                authority: 'shadow',
+                source: entry.route.type,
+                network: networkId,
+                chainId: network.chainId,
+                contract: pool,
+                factory: entry.route.factory,
+                pool,
+                rpcEndpointId: phase2.endpointId,
+                rpcFailoverAttempts: result.attempts.length + phase2.attempts.length,
+                blockNumber,
+                blockTag,
+                observationLength,
+                observationPeriodSeconds: Number(entry.route.observationPeriodSeconds || 1800),
+                granularity,
+                amountIn: amountIn.toString(),
+                amountOut: amountOut.toString(),
+                maxDivergencePct: Number(entry.route.maxDivergencePct ?? 0),
+                productionPriceAuthority: false
+              }
+            });
+          } catch (error) {
+            observations[entry.assetId] = unavailableObservation(entry, 'protocol-twap-error', error instanceof Error ? error.message : String(error));
+            unavailableCount += 1;
+          }
+          continue;
+        }
+
         let feed;
         try {
           feed = decodeFeed(entry, result.byId, ids, nowMs);
@@ -232,7 +367,7 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
         const canonicalUsd = finite(marketData?.prices?.[entry.assetId]?.usd);
         const diffPct = divergencePct(usd, canonicalUsd);
         const divergent = diffPct !== null && diffPct > Number(entry.route.maxDivergencePct ?? Infinity);
-        const status = feed.invalid ? 'invalid' : feed.stale ? 'stale' : divergent ? 'divergent' : 'shadow-ok';
+        const status = relativeStatus({ invalid: feed.invalid, stale: feed.stale, divergent });
         if (status === 'shadow-ok') okCount += 1; else warningCount += 1;
         observations[entry.assetId] = {
           ...base,
@@ -275,7 +410,7 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
     const diffPct = divergencePct(usd, canonicalUsd);
     const divergent = diffPct !== null && diffPct > Number(entry.route.maxDivergencePct ?? Infinity);
     const dependencyWarning = quoteObservation.status !== 'shadow-ok';
-    const status = feed.invalid ? 'invalid' : feed.stale ? 'stale' : dependencyWarning ? 'dependency-warning' : divergent ? 'divergent' : 'shadow-ok';
+    const status = relativeStatus({ invalid: feed.invalid, stale: feed.stale, dependencyWarning, divergent });
     if (status === 'shadow-ok') okCount += 1; else warningCount += 1;
     observations[entry.assetId] = {
       ...base,
@@ -293,10 +428,52 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
     };
   }
 
+  for (const pending of protocolRelativePending) {
+    const { entry, feedValue, base } = pending;
+    const quoteAssetId = entry.route.quoteAssetId;
+    const quoteObservation = observations[quoteAssetId];
+    if (!quoteObservation || !(finite(quoteObservation.usd) > 0)) {
+      observations[entry.assetId] = {
+        ...base,
+        usd: null,
+        status: 'dependency-unavailable',
+        feedValue,
+        feedQuote: entry.route.feedQuote || null,
+        quoteAssetId,
+        quoteAssetUsd: finite(quoteObservation?.usd),
+        error: `Protocol-TWAP dependency unavailable: ${quoteAssetId}`
+      };
+      unavailableCount += 1;
+      continue;
+    }
+
+    const usd = feedValue * Number(quoteObservation.usd);
+    const canonicalUsd = finite(marketData?.prices?.[entry.assetId]?.usd);
+    const diffPct = divergencePct(usd, canonicalUsd);
+    const divergent = diffPct !== null && diffPct > Number(entry.route.maxDivergencePct ?? Infinity);
+    const dependencyWarning = quoteObservation.status !== 'shadow-ok';
+    const status = relativeStatus({ dependencyWarning, divergent });
+    if (status === 'shadow-ok') okCount += 1; else warningCount += 1;
+    observations[entry.assetId] = {
+      ...base,
+      usd,
+      status,
+      feedValue,
+      feedQuote: entry.route.feedQuote || null,
+      quoteAssetId,
+      quoteAssetUsd: Number(quoteObservation.usd),
+      outputQuote: entry.route.outputQuote || 'USD',
+      composition: `${entry.asset.symbol || entry.assetId}/${entry.route.feedQuote || quoteAssetId} observation TWAP × ${quoteAssetId}/USD`,
+      canonicalPriceUsd: canonicalUsd,
+      divergencePct: diffPct === null ? null : Number(diffPct.toFixed(6)),
+      dependencyStatus: quoteObservation.status
+    };
+  }
+
   const assetCount = Object.keys(registry.assets).length;
   return {
-    version: '0.4-onchain-price-shadow-retryable-rpc-failover',
-    engineVersion: '0.4-network-batched-composable-retryable-rpc-failover',
+    version: '0.5-onchain-price-shadow-protocol-twap',
+    engineVersion: '0.5-network-batched-multiphase-protocol-twap-resolver',
     generatedAt: iso(nowMs),
     status: unavailableCount > 0 ? 'partial' : warningCount > 0 ? 'warning' : 'ok',
     mode: 'shadow',
@@ -307,7 +484,10 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       publicRpcFailover: true,
       retryableJsonRpcErrorsTriggerEndpointFailover: true,
       contractSpecificErrorsRemainIsolated: true,
-      oneHttpBatchPerNetworkPerAttempt: true,
+      networkBatching: true,
+      maxOneHttpBatchPerNetworkPhasePerAttempt: true,
+      multiPhaseProtocolReadsAllowed: true,
+      protocolTwapReadsPinnedToDiscoveryBlock: true,
       duplicateBlockRequestsWithinNetwork: false,
       composableRelativePriceRoutes: true,
       relativeRoutesReuseSameCycleQuoteObservation: true,
