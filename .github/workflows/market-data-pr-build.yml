@@ -1,0 +1,86 @@
+name: "The Holding Market Data · Branch Build"
+
+on:
+  push:
+    branches:
+      - agent/market-data-unification
+    paths:
+      - 'intelligence/market-data/**'
+      - 'index.html'
+      - 'companies/index.html'
+      - 'defitea/index.html'
+      - 'yield-reports/index.html'
+      - 'substantia/index.html'
+      - 'singul/index.html'
+      - 'fructus/index.html'
+      - 'monetra/index.html'
+      - '.github/workflows/market-data-pr-build.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-data-pr-build
+  cancel-in-progress: false
+
+jobs:
+  migrate-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: agent/market-data-unification
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Validate Market Data source code
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/market-data-engine.mjs
+          node --check intelligence/market-data/public-capital-engine.mjs
+          node --check intelligence/market-data/coingecko-fetch-shim.mjs
+          node --check intelligence/market-data/market-data-source-migrator.mjs
+          node --check intelligence/market-data/public-capital-client.js
+
+      - name: Apply guarded public-surface migration
+        run: node intelligence/market-data/market-data-source-migrator.mjs
+
+      - name: Verify no direct browser CoinGecko price calls remain
+        run: |
+          set -euo pipefail
+          targets=(index.html companies/index.html defitea/index.html yield-reports/index.html substantia/index.html singul/index.html fructus/index.html monetra/index.html)
+          if grep -nE 'api\.coingecko\.com/api/v3/simple/price|CG-[A-Za-z0-9_-]{12,}' "${targets[@]}"; then
+            echo 'Direct browser CoinGecko path or credential remains.'
+            exit 1
+          fi
+          grep -n 'elizaos: 80808' singul/index.html
+          grep -n 'ondo: 542' fructus/index.html
+          ! grep -nE 'fructusHoldings\.(dbcon|copxon)|FIXED_(DBCON|COPXON)_VALUE' fructus/index.html
+          git diff --check
+
+      - name: Commit generated migration to branch
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Market Data Builder"
+          git config user.email "market-data-builder@theholding.ai"
+          git add \
+            index.html \
+            companies/index.html \
+            defitea/index.html \
+            yield-reports/index.html \
+            substantia/index.html \
+            singul/index.html \
+            fructus/index.html \
+            monetra/index.html
+          if git diff --cached --quiet; then
+            echo 'Public surfaces already migrated.'
+            exit 0
+          fi
+          git commit -m "market data: migrate public price consumers"
+          git push origin HEAD:agent/market-data-unification
