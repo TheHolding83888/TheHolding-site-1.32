@@ -1,6 +1,6 @@
 /*
- * The Holding · Public Capital Client v0.2
- * ----------------------------------------
+ * The Holding · Public Capital Client v0.2.1
+ * ------------------------------------------
  * Read-only browser client for generated local Market Data / Public Capital.
  * Legacy simple-price calls are intercepted locally; browsers never need to
  * contact CoinGecko directly and never need a CoinGecko credential.
@@ -8,7 +8,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION = '0.2';
+  const VERSION = '0.2.1';
   const DEFAULT_URL = '/intelligence/market-data/public-capital-state.json';
   const MARKET_URL = '/intelligence/market-data/market-data.json';
   const LEGACY_SIMPLE_PRICE_PATH = '/intelligence/market-data/simple-price';
@@ -62,6 +62,18 @@
     } catch (_) { return false; }
   }
 
+  function marketRowForProviderId(market, providerId) {
+    const prices = market && market.prices ? market.prices : {};
+    const direct = prices[providerId] || null;
+    if (direct && (!direct.providerId || direct.providerId === providerId)) return direct;
+    const rows = Object.values(prices);
+    for (let i = 0; i < rows.length; i += 1) {
+      const row = rows[i];
+      if (row && row.providerId === providerId) return row;
+    }
+    return direct;
+  }
+
   async function legacySimplePriceResponse(input) {
     const raw = typeof input === 'string' || input instanceof URL ? input : input && input.url;
     const u = new URL(raw, global.location && global.location.origin ? global.location.origin : 'https://theholding.ai');
@@ -69,7 +81,8 @@
     const market = await loadMarket();
     const body = {};
     ids.forEach(function (id) {
-      const usd = finite(market.prices && market.prices[id] && market.prices[id].usd);
+      const row = marketRowForProviderId(market, id);
+      const usd = finite(row && row.usd);
       if (Number.isFinite(usd) && usd >= 0) body[id] = { usd: usd };
     });
     return new Response(JSON.stringify(body), {
