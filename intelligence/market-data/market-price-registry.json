@@ -1,6 +1,10 @@
 {
-  "version": "0.1-market-price-registry",
+  "version": "0.1.1-market-price-registry-production-bootstrap",
   "purpose": "Canonical registry of externally priced market assets used by The Holding public capital surfaces. One external market-price observation is shared by every downstream consumer.",
+  "bootstrap": {
+    "firstProductionSnapshotRequired": true,
+    "trigger": "tracked-main-push-after-workflow-install"
+  },
   "semantics": {
     "oneExternalFetchPerRefresh": true,
     "unknownIsNotZero": true,
