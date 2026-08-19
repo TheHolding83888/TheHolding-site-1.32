@@ -1,0 +1,80 @@
+name: "Verify Rewards · protocol asset label parity"
+
+on:
+  pull_request:
+    paths:
+      - 'rewards/rewards-passport-hygiene.mjs'
+      - '.github/workflows/verify-rewards-protocol-asset-label-parity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Prove protocol · productive asset label contract
+        run: |
+          set -euo pipefail
+          node --check rewards/rewards-passport-hygiene.mjs
+          cp companies/rewards-data.json /tmp/rewards-before.json
+          cp companies/rewards-data.json /tmp/rewards-after.json
+          REWARDS_OUTPUT=/tmp/rewards-after.json node rewards/rewards-passport-hygiene.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const before=JSON.parse(fs.readFileSync('/tmp/rewards-before.json','utf8'));
+          const after=JSON.parse(fs.readFileSync('/tmp/rewards-after.json','utf8'));
+          const labels={
+            'curve-fees':'Curve · veCRV',
+            'aerodrome-relay':'Aerodrome · veAERO',
+            'aerodrome-ve':'Aerodrome · veAERO',
+            'velodrome-ve':'Velodrome · veVELO',
+            'velodrome-ve-direct':'Velodrome · veVELO',
+            'pendle-spendle':'Pendle · sPENDLE',
+            'fx-fees':'f(x) Protocol · veFXN',
+            'liquity-staking':'Liquity · staked LQTY',
+            'stakedao-base-curve-4pool':'Stake DAO · 4pool stables',
+            'convex-staked-cvxcrv':'Convex · staked cvxCRV'
+          };
+          let seen=0,curve=0,aero=0,velo=0;
+          for(const [name,c] of Object.entries(after.companies||{})){
+            for(const bucket of ['rewards','sources','embeddedIncome']){
+              for(const row of c?.[bucket]||[]){
+                const expected=labels[row.route];
+                if(!expected)continue;
+                seen++;
+                if(row.protocol!==expected)throw new Error(`${name} ${bucket} ${row.route} label mismatch`);
+                if(row.route==='curve-fees')curve++;
+                if(['aerodrome-relay','aerodrome-ve'].includes(row.route))aero++;
+                if(['velodrome-ve','velodrome-ve-direct'].includes(row.route))velo++;
+              }
+            }
+            const b=before.companies?.[name]||{};
+            for(const k of ['totalUsd','knownAccruedUsd','claimableUsd','measuredEmbeddedUsd','measuredEarnedUsd']){
+              if((b[k]??null)!==(c[k]??null))throw new Error(`${name} economic aggregate changed: ${k}`);
+            }
+            const br=b.rewards||[],ar=c.rewards||[];
+            if(br.length!==ar.length)throw new Error(`${name} reward row count changed`);
+            for(let i=0;i<br.length;i++){
+              for(const k of ['route','chain','symbol','amount','usdValue','classification']){
+                if((br[i]?.[k]??null)!==(ar[i]?.[k]??null))throw new Error(`${name} reward economics/provenance changed at ${i}:${k}`);
+              }
+            }
+          }
+          if(!seen||!curve||!aero)throw new Error('expected known route families not exercised by canonical rewards fixture');
+          const rook=after.companies?.["Rook's portfolio"];
+          const rookCurve=(rook?.rewards||[]).find(x=>x.route==='curve-fees');
+          if(!rookCurve||rookCurve.protocol!=='Curve · veCRV'||rookCurve.symbol!=='crvUSD'||rookCurve.chain!=='Ethereum')throw new Error('Rook veCRV reward presentation parity missing');
+          const rookAero=(rook?.rewards||[]).find(x=>x.route==='aerodrome-relay');
+          if(!rookAero||rookAero.protocol!=='Aerodrome · veAERO'||rookAero.symbol!=='AERO'||rookAero.chain!=='Base'||rookAero.classification!=='compounded-locked')throw new Error('Rook veAERO Compounded presentation parity missing');
+          const diag=after.diagnostics?.rewardsPassportHygiene;
+          if(diag?.version!=='0.2-protocol-asset-label-parity'||diag.executionAuthority!=='none')throw new Error('Rewards label hygiene diagnostic/authority mismatch');
+          console.log('Rewards protocol · asset label parity PASS',{seen,curve,aero,velo,rookCurve:rookCurve.protocol,rookAero:rookAero.protocol});
+          NODE
