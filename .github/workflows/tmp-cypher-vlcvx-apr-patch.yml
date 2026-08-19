@@ -6,6 +6,14 @@ on:
     paths:
       - 'scripts/tmp-cypher-vlcvx-apr-patch.mjs'
       - '.github/workflows/tmp-cypher-vlcvx-apr-patch.yml'
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'scripts/tmp-cypher-vlcvx-apr-patch.mjs'
+      - '.github/workflows/tmp-cypher-vlcvx-apr-patch.yml'
+      - 'companies/company-010-public-adapter.js'
+      - '.github/workflows/verify-company-010-public-admission.yml'
 
 permissions:
   contents: write
