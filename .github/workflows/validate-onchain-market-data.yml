@@ -3,9 +3,13 @@ name: "Validate Onchain Market Data"
 on:
   pull_request:
     paths:
+      - 'intelligence/market-data/market-price-registry.json'
+      - 'intelligence/market-data/fund-capital-registry.json'
+      - 'intelligence/market-data/public-capital-state.json'
       - 'intelligence/market-data/onchain-price-source-registry.json'
       - 'intelligence/market-data/onchain-price-resolver.mjs'
       - 'intelligence/market-data/onchain-price-resolver-validation.mjs'
+      - 'intelligence/market-data/onchain-price-coverage-audit.mjs'
       - '.github/workflows/market-data-refresh.yml'
       - '.github/workflows/validate-onchain-market-data.yml'
   workflow_dispatch:
@@ -29,7 +33,12 @@ jobs:
           set -euo pipefail
           node --check intelligence/market-data/onchain-price-resolver.mjs
           node --check intelligence/market-data/onchain-price-resolver-validation.mjs
+          node --check intelligence/market-data/onchain-price-coverage-audit.mjs
           node intelligence/market-data/onchain-price-resolver-validation.mjs
+      - name: Audit canonical market universe coverage
+        run: |
+          set -euo pipefail
+          node intelligence/market-data/onchain-price-coverage-audit.mjs
       - name: Prove shadow authority boundary and cohort routes
         run: |
           set -euo pipefail
