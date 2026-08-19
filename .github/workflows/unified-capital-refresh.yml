@@ -13,6 +13,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'companies/defitea-canonical-state.json'
+      - 'companies/defitea-public-capital-projection.mjs'
       - 'companies/yieldring-canonical-state.json'
       - 'companies/yieldring-public-capital-projection.mjs'
       - 'companies/company-010-production-state.json'
@@ -63,6 +65,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check intelligence/capital-state/unified-capital-refresh.mjs
+          node --check companies/defitea-public-capital-projection.mjs
           node --check companies/yieldring-public-capital-projection.mjs
           node --check productivity/productivity-engine.mjs
           node --check productivity/company-010-productivity-overlay.mjs
@@ -86,6 +89,14 @@ jobs:
           const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
           const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
+          const d=p.companies?.['defitea.eth'];
+          const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          const df=(d?.breakdown||[]).find(x=>x.engineId==='fx_vefxn'||x.principalId==='fxn-token');
+          const dc=(c.companies||[]).find(x=>x.registry==='004');
+          const dca=(dc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
+          const dcf=(dc?.measuredPositions||[]).find(x=>x.assetId==='fxn-token');
+          if(!d||Number(da?.units)!==2632||Number(df?.units)!==64.81)throw new Error('Defitea Productivity coherence missing');
+          if(!dc||Number(dca?.units)!==2632||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State coherence missing');
           const y=p.companies?.['YieldRing.eth'];
           const a=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const yc=(c.companies||[]).find(x=>x.registry==='002');
@@ -97,7 +108,7 @@ jobs:
           if(c.network?.registryCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1)throw new Error('Registry capital coverage drift');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
           if(c.authority?.executionAuthority!=='none')throw new Error('authority drift');
-          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,yieldRingApr:y.aprLatest,btc:btc.units,aero:aero.units,networkTvl:c.network.networkTvlUsd});
+          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd});
           NODE
           git diff --check
 
