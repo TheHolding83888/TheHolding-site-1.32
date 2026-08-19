@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-19T20:16:10.413Z",
+  "generatedAt": "2026-08-19T20:31:33.953Z",
   "status": "watch",
-  "snapshotHash": "59695bb65ed030d8442ceb7a94abf161c94483ee6e1d82545e66682f5b4243d4",
+  "snapshotHash": "9e590af034bbbe1adec389ceead8f39a6a281c713251aac400dbea63b0ed66d7",
   "repository": {
     "filesScanned": 483,
-    "bytesScanned": 10296504,
+    "bytesScanned": 10304895,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -71,7 +71,7 @@
       ".github/workflows/update-runtime-owner-activation.yml": "aa8b4173da2462c1b0285d80e00afbed8b248d1d6b2d264ae066ac1eadea42db",
       ".github/workflows/update-stable-capital.yml": "2cab5cc5b960b633f7131e84d83a751036a73cdd6a60decc37910beb30d33954",
       ".github/workflows/validate-embedded-yield-interval-history.yml": "cd34c8a29f25c5e5f2db3dd8052013e95cea3f3b8aa60cbbcb2547bb7feecb4a",
-      ".github/workflows/validate-onchain-market-data.yml": "ff051fb5182449aca4da976485c48e170a5ec3b74470c9dc2bbad5d6c411ab0b",
+      ".github/workflows/validate-onchain-market-data.yml": "440b377d29fbb12465ce1813426c273b0b3b225ae7b46bb1fb7882f11be9357e",
       ".github/workflows/validate-productivity-overlay-order.yml": "b4fd0ded5de1471870ae75ec4641db694bf7fa0d935270526d05966d88ba3a5d",
       ".github/workflows/validate-unified-capital-refresh.yml": "a176f00587f78349dde647164fccdec803c4fe91d760a9d642c81287922c0bba",
       ".github/workflows/validate-yieldring-capital-state.yml": "4acd7e083560a7c066fc30d0798adaab57483866855edcf06e26e15a8e23a961",
@@ -329,7 +329,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Fri, 14 Aug 2026 06:09:13 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -409,6 +409,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "883ea4e40b0bb62af08c76db0e580b1f5e53de0921d7c8f345c9d46280a1b206",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/validate-onchain-market-data.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "ff051fb5182449aca4da976485c48e170a5ec3b74470c9dc2bbad5d6c411ab0b",
+        "currentSha256": "440b377d29fbb12465ce1813426c273b0b3b225ae7b46bb1fb7882f11be9357e"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1011,10 +1025,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 328,
+    "runCount": 329,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-19T20-16-10-413Z-59695bb65e.json",
-    "latestRecordHash": "8a09eed5334aeba0916cbd39a465cec28119a19c4a6f3436db37386332c48ffc",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-19T20-31-33-953Z-9e590af034.json",
+    "latestRecordHash": "7ea9b7276ff86c42ff0f891ea4df809947afc916cb0499fbb9fbd05b8784f45e",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
