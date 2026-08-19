@@ -34,6 +34,7 @@ jobs:
           test -s intelligence/project-memory/THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md
           test -s intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_2026-08-18_1616_PROJECT_X_HYPERLEND_MEMORY_ROUTING_UPGRADE.md
           test -s intelligence/project-memory/THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md
+          test -s intelligence/project-memory/THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md
           test -s intelligence/project-memory/THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md
           test -s intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md
           node --check intelligence/project-memory/build-current-memory.mjs
@@ -79,6 +80,35 @@ jobs:
             'controller existence alone does not establish an active reward'; do
             grep -Fqi "$phrase" "$f" || { echo "Missing reusable canon coverage: $phrase"; exit 1; }
           done
+
+      - name: Verify Company Passport inheritance routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          current='intelligence/project-memory/CURRENT.md'
+          routing='intelligence/project-memory/THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md'
+          canon='intelligence/project-memory/THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md'
+
+          grep -Fq 'Memory Routing Index' "$current" || { echo 'CURRENT no longer routes through Memory Routing Index'; exit 1; }
+          test "$(grep -Fc 'THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md' "$routing")" -ge 3 || {
+            echo 'Passport inheritance canon must be routed for onboarding + rewards + passport UI'; exit 1;
+          }
+          for phrase in \
+            'COMPANY ONBOARDING / NEW COMPANY / NEW WALLET' \
+            'REWARDS / ACCRUED REWARDS DRAWER / UNCLAIMED / COMPOUNDED' \
+            'PASSPORT UI / MOBILE / DESKTOP'; do
+            grep -Fq "$phrase" "$routing" || { echo "Routing section missing: $phrase"; exit 1; }
+          done
+          for phrase in \
+            'new company must inherit the strongest current production presentation contract' \
+            'Protocol · productive asset / strategy' \
+            'Frax · veFRAX' \
+            'Venice · sVVV' \
+            'Resupply · staked RSUP' \
+            'solved mechanism = reusable economic capability + reusable public presentation + verifier + memory'; do
+            grep -Fqi "$phrase" "$canon" || { echo "Passport inheritance canon coverage missing: $phrase"; exit 1; }
+          done
+          echo 'CURRENT -> Routing Index -> Company Passport Inheritance Canon PASS'
 
       - name: Verify no authority expansion
         shell: bash
