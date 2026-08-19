@@ -39,6 +39,22 @@ jobs:
         run: |
           set -euo pipefail
           node intelligence/market-data/onchain-price-coverage-audit.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-price-registry.json','utf8'));
+          const onchain=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
+          const marketIds=(market.assets||[]).map(x=>x.assetId);
+          const routes=Object.keys(onchain.assets||{});
+          const routed=marketIds.filter(id=>routes.includes(id));
+          const pending=marketIds.filter(id=>!routes.includes(id));
+          const special=routes.filter(id=>!marketIds.includes(id));
+          if(marketIds.length!==26)throw new Error(`Expected current canonical 26-asset market universe, got ${marketIds.length}`);
+          if(routed.length!==7)throw new Error(`Expected 7 routed market assets after cohort 3, got ${routed.length}`);
+          if(pending.length!==19)throw new Error(`Expected 19 pending market assets after cohort 3, got ${pending.length}`);
+          if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
+          if(routed.length+special.length!==8)throw new Error('Expected 8 total live onchain observation targets');
+          console.log('Onchain coverage cohort 3 PASS',{marketAssets:26,routedMarketAssets:7,pendingMarketAssets:19,specialOnchainReferences:1,totalObservationTargets:8});
+          NODE
       - name: Prove shadow authority boundary and cohort routes
         run: |
           set -euo pipefail
@@ -50,21 +66,39 @@ jobs:
           if(reg.semantics?.paidRpcRequired!==false)throw new Error('Paid RPC dependency introduced');
           if(reg.semantics?.browserRpcRequestsAllowed!==false)throw new Error('Browser RPC authority introduced');
           if(reg.semantics?.coinGeckoRemainsFallbackAndSanityCheck!==true)throw new Error('CoinGecko fallback contract missing');
+          if(reg.semantics?.composableRelativePriceRoutesAllowed!==true)throw new Error('Composable route contract missing');
           if(reg.semantics?.executionAuthority!=='none')throw new Error('Execution authority drift');
-          const requiredAssets=['ethereum','bitcoin','curve-dao-token','tether-gold','physical-silver'];
-          for(const assetId of requiredAssets){
+
+          const directEthereum=['ethereum','bitcoin','curve-dao-token','tether-gold','physical-silver','frax-share'];
+          for(const assetId of directEthereum){
             const route=reg.assets?.[assetId]?.route;
-            if(!route||route.type!=='chainlink-v3'||route.network!=='ethereum'||route.authority!=='shadow')throw new Error(`${assetId} shadow route invalid`);
+            if(!route||route.type!=='chainlink-v3'||route.network!=='ethereum'||route.authority!=='shadow')throw new Error(`${assetId} direct Ethereum shadow route invalid`);
             if(!/^0x[0-9a-fA-F]{40}$/.test(route.contract))throw new Error(`${assetId} feed contract invalid`);
           }
+
+          const pendle=reg.assets?.pendle?.route;
+          if(!pendle||pendle.type!=='chainlink-v3'||pendle.network!=='optimism'||pendle.authority!=='shadow')throw new Error('PENDLE Optimism route invalid');
+          if(pendle.contract.toLowerCase()!=='0x58f23f80bf389db1af9e3aa8c59679806749a8a4')throw new Error('PENDLE feed contract drift');
+
+          const cvx=reg.assets?.['convex-finance']?.route;
+          if(!cvx||cvx.type!=='chainlink-v3-relative'||cvx.network!=='ethereum'||cvx.authority!=='shadow')throw new Error('CVX relative route invalid');
+          if(cvx.contract.toLowerCase()!=='0xc9cbf687f43176b302f03f5e58470b77d07c61c6')throw new Error('CVX/ETH feed contract drift');
+          if(cvx.quoteAssetId!=='ethereum'||cvx.feedQuote!=='ETH'||cvx.outputQuote!=='USD')throw new Error('CVX composition contract drift');
+
+          const fxs=reg.assets?.['frax-share']?.route;
+          if(fxs.contract.toLowerCase()!=='0x6ebc52c8c1089be9eb3945c4350b68b8e4c2233f')throw new Error('FXS feed contract drift');
+
           const silver=reg.assets?.['physical-silver']?.route;
           if(silver?.feedBase!=='XAG'||silver?.referenceKind!=='direct-commodity-spot-reference')throw new Error('Silver direct XAG route missing');
           if(silver?.emergencyFallback?.type!=='gold-ratio'||Number(silver?.emergencyFallback?.divideGoldUsdBy)!==68)throw new Error('Silver owner fallback drift');
           const gold=reg.assets?.['tether-gold']?.route;
           if(gold?.feedBase!=='XAU'||gold?.referenceKind!=='backing-value-reference')throw new Error('Gold backing reference route missing');
-          const rpc=reg.networks?.ethereum?.rpcFailover||[];
-          if(rpc.length<2)throw new Error('Public RPC failover requires at least two endpoints');
-          console.log('Onchain Market Data cohort route contract PASS',{routes:Object.keys(reg.assets||{}).length,publicRpcEndpoints:rpc.length,productionPriceAuthority:false,paidRpcRequired:false,silverPrimary:'XAG/USD',silverEmergencyGoldDivisor:68});
+
+          const ethRpc=reg.networks?.ethereum?.rpcFailover||[];
+          const opRpc=reg.networks?.optimism?.rpcFailover||[];
+          if(ethRpc.length<2)throw new Error('Ethereum public RPC failover requires at least two endpoints');
+          if(reg.networks?.optimism?.chainId!==10||opRpc.length<2)throw new Error('Optimism public RPC failover contract invalid');
+          console.log('Onchain Market Data cohort 3 route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,productionPriceAuthority:false,paidRpcRequired:false,cvxComposition:'CVX/ETH × ETH/USD',pendleNetwork:'optimism'});
           NODE
       - name: Prove shared heartbeat remains shadow-only and fail-open
         run: |
