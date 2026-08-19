@@ -47,6 +47,11 @@ export function decodeUint256(hex) {
   return word(hex, 0);
 }
 
+export function decodeRpcQuantity(hex) {
+  if (!/^0x[0-9a-f]+$/i.test(String(hex || ''))) throw new Error('Invalid RPC quantity');
+  return BigInt(hex);
+}
+
 function rpcBatchForChainlink(route) {
   return [
     { jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] },
@@ -118,7 +123,7 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
     try {
       const payload = rpcBatchForChainlink(route);
       const { byId, endpointId, attempts } = await withRpcFailover(network, payload, fetchImpl);
-      const blockNumber = Number(decodeUint256(byId.get(1).result));
+      const blockNumber = Number(decodeRpcQuantity(byId.get(1).result));
       const decimals = Number(decodeUint256(byId.get(2).result));
       const round = decodeChainlinkRoundData(byId.get(3).result);
       const updatedAtSeconds = Number(round.updatedAt);
@@ -128,7 +133,7 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       const canonicalUsd = finite(marketData?.prices?.[assetId]?.usd);
       const diffPct = divergencePct(usd, canonicalUsd);
       const stale = !(updatedAtSeconds > 0) || feedAgeSeconds > Number(route.maxAgeSeconds || 0);
-      const invalid = !(usd > 0) || Number(round.answeredInRound) < Number(round.roundId);
+      const invalid = !(usd > 0) || round.answeredInRound < round.roundId;
       const divergent = diffPct !== null && diffPct > Number(route.maxDivergencePct ?? Infinity);
       const status = invalid ? 'invalid' : stale ? 'stale' : divergent ? 'divergent' : 'shadow-ok';
 
