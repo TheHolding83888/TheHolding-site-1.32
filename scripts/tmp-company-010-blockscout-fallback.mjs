@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+// Trigger after the branch-local workflow exists.
 const p='onboarding/company-010-resolve.mjs';
 let s=fs.readFileSync(p,'utf8');
 const old="  ethereum:[...new Set([process.env.ETH_RPC_URL,process.env.ETH_RPC_URL_2,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com'].filter(Boolean))],";
