@@ -596,6 +596,7 @@
 
     </style>
     <script defer src="https://cloud.umami.is/script.js" data-website-id="f969f142-7fbe-47a2-b971-78c8b59c2ddb"></script>
+    <script src="/intelligence/market-data/public-capital-client.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -1058,28 +1059,21 @@
         // ========================================================================
         
         const fructusHoldings = {
-            ondo: 800,         // ONDO Finance (dynamic)
-            dbcon: 5,          // DBCon - 5 tokens × $27 = $135 total
-            copxon: 2          // COPXon - 2 tokens × $87.5 = $175 total
+            ondo: 542          // ONDO Finance · canonical owner quantity
         };
 
-        const FIXED_DBCON_VALUE = 27;        // $135 / 5 = $27 per token
-        const FIXED_COPXON_VALUE = 87.5;     // $175 / 2 = $87.5 per token
-        const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
+        const API_KEY = 'LOCAL-SNAPSHOT';
 
         async function updateFructusTVL() {
             try {
                 const response = await fetch(
-                    `https://api.coingecko.com/api/v3/simple/price?ids=ondo-finance&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`
+                    `/intelligence/market-data/simple-price?ids=ondo-finance&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`
                 );
                 
                 const prices = await response.json();
                 
                 const ondoValue = fructusHoldings.ondo * (prices['ondo-finance']?.usd || 0);
-                const dbconValue = fructusHoldings.dbcon * FIXED_DBCON_VALUE;
-                const copxonValue = fructusHoldings.copxon * FIXED_COPXON_VALUE;
-                
-                const fructusTVL = ondoValue + dbconValue + copxonValue;
+                const fructusTVL = ondoValue;
                 
                 const tvlElement = document.querySelector('[data-tvl="fructus"]');
                 if (tvlElement) {

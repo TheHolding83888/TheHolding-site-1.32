@@ -73,8 +73,7 @@
     <meta name="referrer" content="strict-origin-when-cross-origin">
     
     <!-- Performance Hints -->
-    <link rel="preconnect" href="https://api.coingecko.com">
-    <link rel="dns-prefetch" href="https://api.coingecko.com">
+<link rel="dns-prefetch" href="https://api.coingecko.com">
     
     <!-- Structured Data - Organization -->
     <script type="application/ld+json">
@@ -3189,6 +3188,7 @@
             .mobile-fund-list { display: none; }
         }
     </style>
+    <script src="/intelligence/market-data/public-capital-client.js"></script>
 </head>
 <body>
     <div class="grain" aria-hidden="true"></div>
@@ -4886,17 +4886,17 @@
         };
 
         const defiteaHoldings = {
-            aero: 2440,
+            aero: 2632,
             cvx: 1333,
             crv: 4125,
             pendle: 500,
-            fxn: 59.81,
+            fxn: 64.81,
             yb: 10846,
             fxs: 4224,
             velo: 12180,
-            vvv: 50,          // Venice — moved in from Singul
-            lqty: 1488,       // Liquity
-            rsup: 3682        // Resupply
+            vvv: 50,
+            lqty: 1488,
+            rsup: 3682
         };
 
         // Singul token holdings
@@ -4922,7 +4922,7 @@
 
         const MONETRA_TVL_CONTRIBUTION = 100;  // Added to total TVL; card displays static $800
 
-        const API_KEY = 'CG-4x76YsJW1WRy2PzcLF4e9TJf';
+        const API_KEY = 'LOCAL-SNAPSHOT';
 
         // ── Shared CoinGecko price cache (cross-page, TTL-based) ──
         // One localStorage store shared by every page on the site.
@@ -4940,7 +4940,7 @@
             const wrap    = flat => { const o = {}; for (const id in flat) o[id] = { usd: flat[id] }; return o; };
             if (fresh && missing.length === 0) return wrap(have);   // fully cached → no call
             try {
-                const url = 'https://api.coingecko.com/api/v3/simple/price?ids='
+                const url = '/intelligence/market-data/simple-price?ids='
                           + idsArr.join(',') + '&vs_currencies=usd&x_cg_demo_api_key=' + API_KEY;
                 const res = await fetch(url);
                 if (!res.ok) return wrap(have);
@@ -5199,8 +5199,8 @@
                     const co2 = 0.03 * p('bitcoin') + 480 * p('aerodrome-finance')
                               + 240 * p('convex-finance') + 800 * p('frax-share');
                     const co3 = 12029 * p('yield-basis');
-                    const co4 = 2440 * p('aerodrome-finance') + 1333 * p('convex-finance')
-                              + 4125 * p('curve-dao-token') + 500 * p('pendle') + 59.81 * p('fxn-token')
+                    const co4 = 2632 * p('aerodrome-finance') + 1333 * p('convex-finance')
+                              + 4125 * p('curve-dao-token') + 500 * p('pendle') + 64.81 * p('fxn-token')
                               + 10846 * p('yield-basis') + 4224 * p('frax-share')
                               + 12180 * p('velodrome-finance') + 50 * p('venice-token')
                               + 1488 * p('liquity') + 3682 * p('resupply');
