@@ -56,7 +56,9 @@ assert(defitea?.productivePositions?.length === 11, 'Defitea 11-position invento
 const dp = new Map(defitea.productivePositions.map(x=>[x.assetId,x]));
 assert(Number(dp.get('aerodrome-finance')?.quantity) === 2632, 'Defitea canonical AERO drift');
 assert(Number(dp.get('fxn-token')?.quantity) === 64.81, 'Defitea canonical FXN drift');
-assert(defitea?.costBasis?.aerodrome?.status === 'partial' && defitea?.costBasis?.fxn?.status === 'partial', 'Defitea unknown incremental cost basis must remain partial');
+assert(defitea?.costBasis?.aerodrome?.status === 'complete' && Number(defitea.costBasis.aerodrome.costBasisUsd) === 1121.3, 'Defitea AERO lot basis incomplete');
+assert(defitea?.costBasis?.fxn?.status === 'complete' && Number(defitea.costBasis.fxn.costBasisUsd) === 983.2386, 'Defitea FXN lot basis incomplete');
+assert(defitea?.semantics?.costBasisLotsPreserved === true, 'Defitea lot preservation contract missing');
 
 assert(canonical?.authority?.executionAuthority === 'none', 'YieldRing authority drift');
 assert(Number(canonical?.capital?.bitcoin?.quantity) === 0.0334, 'YieldRing canonical BTC drift');
@@ -102,6 +104,8 @@ assert(yc && Number(ycb?.units) === 0.0334 && Number(yca?.units) === 678, 'Yield
 assert(capital?.authority?.executionAuthority === 'none', 'Capital State authority drift');
 
 assert(companiesHtml.includes('qty: 2632') && companiesHtml.includes('qty: 64.81'), 'Defitea Registry projection drift');
+assert(companiesHtml.includes('costBasisUsd: 1121.3') && companiesHtml.includes('qty: 192, entry: 0.42'), 'Defitea AERO cost-basis projection drift');
+assert(companiesHtml.includes('costBasisUsd: 983.2386') && companiesHtml.includes('qty: 5, entry: 16.5'), 'Defitea FXN cost-basis projection drift');
 assert(companiesHtml.includes('qty: 0.0334') && companiesHtml.includes('qty: 678'), 'YieldRing Registry projection drift');
 assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678'), 'YieldRing dedicated page projection drift');
 
@@ -110,7 +114,9 @@ console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   defiteaAprLatest: dpProd.aprLatest,
   defiteaProductiveValue: dpProd.productiveValue,
   defiteaAero: dca.units,
+  defiteaAeroCostBasisUsd: defitea.costBasis.aerodrome.costBasisUsd,
   defiteaFxn: dcf.units,
+  defiteaFxnCostBasisUsd: defitea.costBasis.fxn.costBasisUsd,
   yieldRingAprLatest: yp.aprLatest,
   networkTvlUsd: capital.network.networkTvlUsd,
   registryCompanies: capital.network.registryCompanyCount,
