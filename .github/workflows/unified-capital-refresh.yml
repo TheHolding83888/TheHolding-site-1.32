@@ -1,0 +1,146 @@
+name: "The Holding Capital · Unified Refresh"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * 0'
+  workflow_run:
+    workflows:
+      - "Update Stable Capital"
+      - "Update Company #010 · Cypher Production State"
+      - "Update Company #010 · Project X Reference APR"
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'companies/yieldring-canonical-state.json'
+      - 'companies/yieldring-public-capital-projection.mjs'
+      - 'companies/company-010-production-state.json'
+      - 'productivity/productivity-engine.mjs'
+      - 'productivity/company-010-productivity-overlay.mjs'
+      - 'productivity/yieldring-productivity-overlay.mjs'
+      - 'intelligence/capital-state/capital-state.mjs'
+      - 'intelligence/capital-state/unified-capital-refresh.mjs'
+      - '.github/workflows/unified-capital-refresh.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: unified-capital-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install Productivity dependencies
+        working-directory: productivity
+        run: npm install --no-audit --no-fund
+
+      - name: Install Playwright Chromium without apt mutation
+        working-directory: productivity
+        run: npx playwright install chromium
+
+      - name: Validate unified orchestrator and existing engines
+        run: |
+          set -euo pipefail
+          node --check intelligence/capital-state/unified-capital-refresh.mjs
+          node --check companies/yieldring-public-capital-projection.mjs
+          node --check productivity/productivity-engine.mjs
+          node --check productivity/company-010-productivity-overlay.mjs
+          node --check productivity/yieldring-productivity-overlay.mjs
+          node --check intelligence/capital-state/general-company-balance-sheet.mjs
+          node --check intelligence/capital-state/capital-state.mjs
+
+      - name: Refresh all coherent capital surfaces in one working tree
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node intelligence/capital-state/unified-capital-refresh.mjs
+
+      - name: Validate final coherent snapshot
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
+          const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
+          const y=p.companies?.['YieldRing.eth'];
+          const a=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          const yc=(c.companies||[]).find(x=>x.registry==='002');
+          const btc=(yc?.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
+          const aero=(yc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
+          if(p.version!=='1.16'||Number(a?.units)!==678)throw new Error('YieldRing Productivity coherence missing');
+          if(g.status!=='ok'||c.status!=='ok')throw new Error('capital substrate not coherent');
+          if(Number(btc?.units)!==0.0334||Number(aero?.units)!==678)throw new Error('YieldRing Capital State coherence missing');
+          if(c.network?.registryCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1)throw new Error('Registry capital coverage drift');
+          if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
+          if(c.authority?.executionAuthority!=='none')throw new Error('authority drift');
+          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,yieldRingApr:y.aprLatest,btc:btc.units,aero:aero.units,networkTvl:c.network.networkTvlUsd});
+          NODE
+          git diff --check
+
+      - name: Publish one coherent capital snapshot safely
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Capital Orchestrator"
+          git config user.email "capital-orchestrator@theholding.ai"
+          git add \
+            companies/index.html \
+            yieldring/index.html \
+            companies/productivity-data.json \
+            companies/productivity-source-report.json \
+            intelligence/capital-state/general-company-balance-sheet.mjs \
+            intelligence/capital-state/general-company-balance-sheet.json \
+            intelligence/capital-state/capital-state.json
+          if git diff --cached --quiet; then
+            echo "Unified capital surfaces already current."
+            exit 0
+          fi
+          git commit -m "capital: refresh coherent production snapshot"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Unified capital writer conflict; refusing to guess."
+              exit 1
+            fi
+            COINGECKO_API_KEY='${{ secrets.COINGECKO_API_KEY }}' \
+            ETH_RPC_URL='${{ secrets.ETH_RPC_URL }}' \
+            BASE_RPC_URL='${{ secrets.BASE_RPC_URL }}' \
+            GITHUB_TOKEN='${{ github.token }}' \
+              node intelligence/capital-state/unified-capital-refresh.mjs
+            git add \
+              companies/index.html \
+              yieldring/index.html \
+              companies/productivity-data.json \
+              companies/productivity-source-report.json \
+              intelligence/capital-state/general-company-balance-sheet.mjs \
+              intelligence/capital-state/general-company-balance-sheet.json \
+              intelligence/capital-state/capital-state.json
+            git commit --amend --no-edit
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1

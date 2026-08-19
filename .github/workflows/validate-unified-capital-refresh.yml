@@ -1,0 +1,69 @@
+name: "Validate Unified Capital Refresh"
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/unified-capital-refresh.yml'
+      - '.github/workflows/validate-unified-capital-refresh.yml'
+      - 'intelligence/capital-state/unified-capital-refresh.mjs'
+      - 'companies/yieldring-canonical-state.json'
+      - 'companies/yieldring-public-capital-projection.mjs'
+      - 'productivity/productivity-engine.mjs'
+      - 'productivity/company-010-productivity-overlay.mjs'
+      - 'productivity/yieldring-productivity-overlay.mjs'
+      - 'intelligence/capital-state/general-company-balance-sheet.mjs'
+      - 'intelligence/capital-state/capital-state.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install Productivity dependencies
+        working-directory: productivity
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium without apt mutation
+        working-directory: productivity
+        run: npx playwright install chromium
+
+      - name: Execute complete unified refresh without publish
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node intelligence/capital-state/unified-capital-refresh.mjs
+
+      - name: Prove coherent YieldRing and Network output
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
+          const y=p.companies?.['YieldRing.eth'];
+          const pa=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          const yc=(c.companies||[]).find(x=>x.registry==='002');
+          const btc=(yc?.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
+          const aero=(yc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
+          if(p.version!=='1.16'||Number(pa?.units)!==678)throw new Error('YieldRing Productivity mismatch');
+          if(Number(btc?.units)!==0.0334||Number(aero?.units)!==678)throw new Error('YieldRing Capital State mismatch');
+          if(c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1)throw new Error('Network coverage mismatch');
+          if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
+          if(c.authority?.executionAuthority!=='none')throw new Error('authority drift');
+          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,yieldRingApr:y.aprLatest,yieldRingProductiveValue:y.productiveValue,btc:btc.units,aero:aero.units,networkTvlUsd:c.network.networkTvlUsd});
+          NODE
+          git diff --check

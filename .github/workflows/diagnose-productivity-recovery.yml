@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/diagnose-productivity-recovery.yml'
       - '.github/workflows/update-productivity.yml'
+      - '.github/workflows/unified-capital-refresh.yml'
       - 'productivity/**'
+      - 'intelligence/capital-state/unified-capital-refresh.mjs'
       - 'companies/index.html'
       - 'companies/yieldring-canonical-state.json'
 
@@ -29,9 +31,9 @@ jobs:
         working-directory: productivity
         run: npm install --no-audit --no-fund
 
-      - name: Install Chromium
+      - name: Install Chromium without apt mutation
         working-directory: productivity
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Run exact Productivity collector without publish
         working-directory: productivity

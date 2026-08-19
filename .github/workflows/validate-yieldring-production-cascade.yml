@@ -4,9 +4,12 @@ on:
   pull_request:
     paths:
       - 'companies/yieldring-public-capital-projection.mjs'
+      - 'intelligence/capital-state/unified-capital-refresh.mjs'
+      - '.github/workflows/unified-capital-refresh.yml'
       - '.github/workflows/project-yieldring-capital-state.yml'
       - '.github/workflows/update-productivity.yml'
       - '.github/workflows/update-capital-state.yml'
+      - '.github/workflows/diagnose-productivity-recovery.yml'
       - '.github/workflows/validate-yieldring-production-cascade.yml'
   workflow_dispatch:
 
@@ -24,32 +27,57 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Validate orchestration contract
+      - name: Validate unified orchestration contract
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
+          const unified=fs.readFileSync('.github/workflows/unified-capital-refresh.yml','utf8');
+          const engine=fs.readFileSync('intelligence/capital-state/unified-capital-refresh.mjs','utf8');
           const projector=fs.readFileSync('.github/workflows/project-yieldring-capital-state.yml','utf8');
-          const p=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
-          const c=fs.readFileSync('.github/workflows/update-capital-state.yml','utf8');
+          const productivity=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
+          const capital=fs.readFileSync('.github/workflows/update-capital-state.yml','utf8');
+          const diagnostic=fs.readFileSync('.github/workflows/diagnose-productivity-recovery.yml','utf8');
           const projection=fs.readFileSync('companies/yieldring-public-capital-projection.mjs','utf8');
-          if(!projector.includes("yieldring/index.html"))throw new Error('dedicated YieldRing page is not published by projector');
+
+          const sequence=[
+            "run('1/6 Project canonical YieldRing state'",
+            "run('2/6 Refresh protocol APRs and established Productivity'",
+            "run('3/6 Admit Company #010 compatibility layer'",
+            "run('4/6 Apply canonical YieldRing Productivity overlay'",
+            "run('5/6 Rebuild General Company Balance Sheet'",
+            "run('6/6 Build Capital State'"
+          ];
+          let last=-1;
+          for(const token of sequence){const i=engine.indexOf(token);if(i<0||i<=last)throw new Error('Unified engine sequence drift at '+token);last=i;}
+
+          if(!unified.includes('The Holding Capital · Unified Refresh'))throw new Error('Unified workflow identity missing');
+          if(!unified.includes('npx playwright install chromium')||unified.includes('playwright install --with-deps'))throw new Error('Unified browser install still mutates apt');
+          if(!unified.includes('Publish one coherent capital snapshot safely'))throw new Error('single coherent publish contract missing');
+          if(!unified.includes('Update Stable Capital')||!unified.includes('Update Company #010 · Cypher Production State')||!unified.includes('Update Company #010 · Project X Reference APR'))throw new Error('external upstream wakeups missing');
+          if(!unified.includes("github.event.workflow_run.conclusion == 'success'")||!unified.includes("head_branch == 'main'"))throw new Error('workflow_run fail-closed gate missing');
+
+          for(const [name,text] of [['projector',projector],['productivity',productivity],['capital',capital]]){
+            if(!text.includes('workflow_dispatch:'))throw new Error(name+' manual recovery trigger missing');
+            if(/\n\s+push:/.test(text)||/\n\s+workflow_run:/.test(text)||/\n\s+schedule:/.test(text))throw new Error(name+' still has automatic domino trigger');
+          }
+          if(productivity.includes('playwright install --with-deps')||diagnostic.includes('playwright install --with-deps'))throw new Error('legacy/diagnostic apt mutation remains');
+          if(!productivity.includes('node productivity/company-010-productivity-overlay.mjs')||productivity.indexOf('node productivity/company-010-productivity-overlay.mjs')>productivity.indexOf('node productivity/yieldring-productivity-overlay.mjs'))throw new Error('legacy recovery overlay order drift');
+
+          if(!projector.includes('yieldring/index.html'))throw new Error('dedicated YieldRing page recovery projection missing');
           if(!projection.includes("const PAGE='yieldring/index.html'"))throw new Error('dedicated YieldRing page projection missing');
-          if(!projection.includes("qty: 0.0334")||!projection.includes("qty: 678")||!projection.includes('2 locks · Maxi relay'))throw new Error('dedicated YieldRing canonical quantities missing');
-          if(!p.includes('Project YieldRing Canonical Capital State'))throw new Error('Projector -> Productivity workflow_run dependency missing');
-          if(!p.includes("Number(aero?.units)!==678"))throw new Error('YieldRing Productivity 678 AERO guard missing');
-          if(!p.includes("Number(s.capital?.bitcoin?.quantity)!==0.0334"))throw new Error('YieldRing BTC canonical guard missing');
-          if(!c.includes('Update The Holding Productivity Data'))throw new Error('Productivity -> Capital State workflow_run dependency missing');
-          if(!c.includes("github.event.workflow_run.name == 'Update The Holding Productivity Data'"))throw new Error('Capital State Productivity-specific General Balance rebuild missing');
-          if(!c.includes("Number(yrBtc?.units)!==0.0334")||!c.includes("Number(yrAero?.units)!==678"))throw new Error('Capital State YieldRing quantity proof missing');
-          if(!c.includes("github.event.workflow_run.head_branch == 'main'"))throw new Error('Capital State workflow_run main-branch gate missing');
-          console.log('YieldRing full production cascade PASS',{projectorToProductivity:true,productivityToCapital:true,dedicatedPage:true,capitalProof:true,executionAuthority:'none'});
+          if(!projection.includes('qty: 0.0334')||!projection.includes('qty: 678')||!projection.includes('2 locks · Maxi relay'))throw new Error('YieldRing canonical projection guards missing');
+          if(!engine.includes("Number(canonical?.capital?.bitcoin?.quantity) === 0.0334")||!engine.includes("Number(canonical?.capital?.aerodrome?.quantity) === 678"))throw new Error('Unified YieldRing canonical guards missing');
+          if(!engine.includes("capital?.authority?.executionAuthority === 'none'"))throw new Error('Unified authority guard missing');
+
+          console.log('Unified YieldRing production architecture PASS',{singleOrchestrator:true,legacyRecoveryOnly:true,noAptMutation:true,coherentPublish:true,executionAuthority:'none'});
           NODE
       - name: Syntax and diff hygiene
         run: |
           set -euo pipefail
           node --check companies/yieldring-public-capital-projection.mjs
           node --check productivity/yieldring-productivity-overlay.mjs
+          node --check intelligence/capital-state/unified-capital-refresh.mjs
           node --check intelligence/capital-state/general-company-balance-sheet.mjs
           node --check intelligence/capital-state/capital-state.mjs
           git diff --check
