@@ -19,25 +19,30 @@
     {"assetId":"resupply","display":"RSUP","quantity":3682,"evidenceStatus":"owner-provided-current"}
   ],
   "costBasis": {
-    "policy": "preserve-established-basis; new incremental basis remains unknown until supplied",
+    "policy": "lot-preserved-owner-supplied-entry-basis",
     "aerodrome": {
-      "establishedQuantity": 2440,
-      "establishedEntryPriceUsd": 0.4265,
-      "incrementalQuantity": 192,
-      "incrementalEntryPriceUsd": null,
-      "status": "partial"
+      "quantity": 2632,
+      "costBasisUsd": 1121.3,
+      "status": "complete",
+      "lots": [
+        {"quantity":2440,"entryPriceUsd":0.4265,"costBasisUsd":1040.66,"evidenceStatus":"established"},
+        {"quantity":192,"entryPriceUsd":0.42,"costBasisUsd":80.64,"evidenceStatus":"owner-provided"}
+      ]
     },
     "fxn": {
-      "establishedQuantity": 59.81,
-      "establishedEntryPriceUsd": 15.06,
-      "incrementalQuantity": 5,
-      "incrementalEntryPriceUsd": null,
-      "status": "partial"
+      "quantity": 64.81,
+      "costBasisUsd": 983.2386,
+      "status": "complete",
+      "lots": [
+        {"quantity":59.81,"entryPriceUsd":15.06,"costBasisUsd":900.7386,"evidenceStatus":"established"},
+        {"quantity":5,"entryPriceUsd":16.5,"costBasisUsd":82.5,"evidenceStatus":"owner-provided"}
+      ]
     }
   },
   "semantics": {
     "allPositionsPrimaryCapitalLayer": "productive-dividend",
     "unknownCostBasisIsNotZero": true,
+    "costBasisLotsPreserved": true,
     "oneEconomicPositionOnce": true
   },
   "authority": {
