@@ -357,6 +357,13 @@
 
   function rewardItem(){return document.querySelector('.ib-item[data-nm="Cypher"]');}
   function rewardPanel(){return rewardItem()?.querySelector('.ipx-rewards-panel')||null;}
+  function normalizeCypherStakeDaoRewardLabel(){
+    const item=rewardItem();if(!item)return;
+    for(const el of item.querySelectorAll('.ipx-reward-protocol')){
+      const textNode=[...el.childNodes].find(n=>n.nodeType===3&&String(n.textContent||'').trim());
+      if(textNode&&String(textNode.textContent||'').trim()==='Stake DAO')textNode.textContent='Stake DAO · 4pool stables';
+    }
+  }
   function panelHasStrategy(panel,label){return [...panel.querySelectorAll('.ipx-reward-protocol')].some(x=>String(x.textContent||'').includes(label));}
   function embeddedRoute(route){return (rewardsData?.companies?.Cypher?.embeddedIncome||[]).find(x=>x.route===route&&x.state==='Compounded');}
   function rewardSource(route){return (rewardsData?.companies?.Cypher?.sources||[]).find(x=>x.route===route);}
@@ -450,7 +457,7 @@
   }
 
   function postRenderPolish(){
-    ensureCollectionCard();syncNetworkStats();polishPassportTitles();normalizeDefiteaPendleSurface();polishBalanceSheet();ensureStrategyRateBadges();ensureGmxApyCapsule();ensureUnifiedStrategyRewards();syncMeasuredEarnedPresentation();markPendingPerformance();
+    ensureCollectionCard();syncNetworkStats();polishPassportTitles();normalizeDefiteaPendleSurface();polishBalanceSheet();ensureStrategyRateBadges();ensureGmxApyCapsule();ensureUnifiedStrategyRewards();normalizeCypherStakeDaoRewardLabel();syncMeasuredEarnedPresentation();markPendingPerformance();
   }
 
   function hookRender(){
@@ -482,7 +489,7 @@
     const timer=setInterval(()=>{attempts+=1;if(rerenderNativeSurfaces()||attempts>600)clearInterval(timer);},100);
     rerenderNativeSurfaces();
     setInterval(syncNetworkStats,1000);
-    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishPassportTitles();normalizeDefiteaPendleSurface();polishBalanceSheet();ensureStrategyRateBadges();ensureGmxApyCapsule();ensureUnifiedStrategyRewards();syncMeasuredEarnedPresentation();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
+    const observer=new MutationObserver(()=>{ensureCollectionCard();syncNetworkStats();polishPassportTitles();normalizeDefiteaPendleSurface();polishBalanceSheet();ensureStrategyRateBadges();ensureGmxApyCapsule();ensureUnifiedStrategyRewards();normalizeCypherStakeDaoRewardLabel();syncMeasuredEarnedPresentation();if(!installed)rerenderNativeSurfaces();else markPendingPerformance();});
     observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','class']});
   }
 
