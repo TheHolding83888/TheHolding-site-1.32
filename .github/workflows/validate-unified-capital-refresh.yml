@@ -43,17 +43,14 @@ jobs:
         working-directory: productivity
         run: npx playwright install chromium
 
-      - name: Build one shared Market Data snapshot for validation
-        env:
-          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
-          MARKET_DATA_FORCE_REFRESH: 'false'
+      - name: Build zero-request deterministic Market Data fixture
         run: |
           set -euo pipefail
-          node --check intelligence/market-data/market-data-engine.mjs
+          node --check intelligence/market-data/market-data-validation-fixture.mjs
           node --check intelligence/market-data/coingecko-fetch-shim.mjs
-          node intelligence/market-data/market-data-engine.mjs
+          node intelligence/market-data/market-data-validation-fixture.mjs
 
-      - name: Execute complete unified refresh without second market-price request
+      - name: Execute complete unified refresh with local Market Data only
         env:
           NODE_OPTIONS: --import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
@@ -95,9 +92,9 @@ jobs:
           if(c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1)throw new Error('Network coverage mismatch');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
           if(c.authority?.executionAuthority!=='none'||pub.authority?.executionAuthority!=='none')throw new Error('authority drift');
-          if(m.semantics?.externalRequestCount!==1||m.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('Market Data request contract drift');
+          if(m.validationFixture!==true||m.semantics?.externalRequestCount!==0||m.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('Zero-request CI Market Data contract drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital unavailable');
           if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
-          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketObservedAt:m.observedAt,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd});
+          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketFixture:true,externalPriceRequests:0,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd});
           NODE
           git diff --check
