@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-19T12:02:04.322Z",
+  "lastUpdatedAt": "2026-08-19T13:46:18.871Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 312,
-    "vaultRunCount": 312,
+    "runCount": 313,
+    "vaultRunCount": 313,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -3757,6 +3757,18 @@
       "highCount": 6,
       "newFindingCount": 3,
       "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-19T13:46:18.871Z",
+      "status": "watch",
+      "snapshotHash": "713b8b98e2332ca2eeee479e0e5521a201a5200d62a3463d6136229d06aace45",
+      "recordPath": "security/security-vault/2026/08/2026-08-19T13-46-18-871Z-713b8b98e2.json",
+      "recordHash": "9efaa2218269213524debfd18958d87bd1d33f58a1cc9f24cf53e825aa6d916c",
+      "findingCount": 32,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 0,
+      "resolvedFindingCount": 3
     }
   ],
   "events": [
@@ -16068,6 +16080,39 @@
       "summary": "Resolved: GitHub Action is referenced by mutable ref: actions/checkout@v4.",
       "file": ".github/workflows/_temp_passport_label_patch_pr.yml",
       "entity": "actions/checkout@v4"
+    },
+    {
+      "id": "573c10894b7553388bfe294e3752b736732bf369c8831b2b180a38af0406fb28",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T13:46:18.871Z",
+      "findingId": "cb97c3dcb714cb64fc3f21a5c5abf43b96d05462d1b0c4cd96c533f8559ee47b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-company-010-rewards-drawer.yml.",
+      "file": ".github/workflows/verify-company-010-rewards-drawer.yml",
+      "entity": null
+    },
+    {
+      "id": "cd6e6a94b5e7ad9665750cce803a5f24e5055d65e88462cab130edf3578b3470",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T13:46:18.871Z",
+      "findingId": "40500a36bbf653d2c1708990e182ab4804db34184112ad3742f55db547660f14",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
+      "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
+      "entity": null
+    },
+    {
+      "id": "352fdc5cc876dd2d67cc634d01ff28a8116940b5d7c19fb597b071737f072d11",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-19T13:46:18.871Z",
+      "findingId": "a6c728e0e9d3d0a7dfe1080def263676d80fb2d7b41853fe631e5f52d73f82c2",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-rewards-drawer-row-coverage-parity.yml.",
+      "file": ".github/workflows/verify-rewards-drawer-row-coverage-parity.yml",
+      "entity": null
     }
   ]
 }
