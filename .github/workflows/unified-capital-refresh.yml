@@ -4,6 +4,12 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '17 4 * * 0'
+  workflow_run:
+    workflows:
+      - "Update Stable Capital"
+      - "Update Company #010 · Cypher Production State"
+      - "Update Company #010 · Project X Reference APR"
+    types: [completed]
   push:
     branches: [main]
     paths:
@@ -13,7 +19,6 @@ on:
       - 'productivity/productivity-engine.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
       - 'productivity/yieldring-productivity-overlay.mjs'
-      - 'intelligence/capital-state/general-company-balance-sheet.mjs'
       - 'intelligence/capital-state/capital-state.mjs'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
       - '.github/workflows/unified-capital-refresh.yml'
@@ -27,6 +32,11 @@ concurrency:
 
 jobs:
   refresh:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
