@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/unified-capital-refresh.yml'
       - '.github/workflows/validate-unified-capital-refresh.yml'
+      - '.github/workflows/market-data-refresh.yml'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
+      - 'intelligence/market-data/**'
       - 'companies/defitea-canonical-state.json'
       - 'companies/defitea-public-capital-projection.mjs'
       - 'companies/yieldring-canonical-state.json'
@@ -41,21 +43,36 @@ jobs:
         working-directory: productivity
         run: npx playwright install chromium
 
-      - name: Execute complete unified refresh without publish
+      - name: Build one shared Market Data snapshot for validation
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          MARKET_DATA_FORCE_REFRESH: 'false'
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/market-data-engine.mjs
+          node --check intelligence/market-data/coingecko-fetch-shim.mjs
+          node intelligence/market-data/market-data-engine.mjs
+
+      - name: Execute complete unified refresh without second market-price request
+        env:
+          NODE_OPTIONS: --import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           GITHUB_TOKEN: ${{ github.token }}
         run: node intelligence/capital-state/unified-capital-refresh.mjs
 
-      - name: Prove coherent Defitea, YieldRing and Network output
+      - name: Rebuild Public Capital from coherent validation state
+        run: node intelligence/market-data/public-capital-engine.mjs
+
+      - name: Prove coherent Defitea, YieldRing, Market Data and Network output
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
+          const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const html=fs.readFileSync('companies/index.html','utf8');
           const d=p.companies?.['defitea.eth'];
           const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
@@ -67,6 +84,7 @@ jobs:
           if(!dc||Number(dca?.units)!==2632||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State mismatch');
           if(!html.includes('costBasisUsd: 1121.3')||!html.includes('qty: 192, entry: 0.42'))throw new Error('Defitea AERO lot basis missing');
           if(!html.includes('costBasisUsd: 983.2386')||!html.includes('qty: 5, entry: 16.5'))throw new Error('Defitea FXN lot basis missing');
+          if(!html.includes('const publicCompanyTvl = (key, fallback) =>')||!html.includes('canonicalNetworkTvl'))throw new Error('Companies Public Capital binding missing');
           const y=p.companies?.['YieldRing.eth'];
           const pa=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const yc=(c.companies||[]).find(x=>x.registry==='002');
@@ -76,7 +94,10 @@ jobs:
           if(Number(btc?.units)!==0.0334||Number(aero?.units)!==678)throw new Error('YieldRing Capital State mismatch');
           if(c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1)throw new Error('Network coverage mismatch');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
-          if(c.authority?.executionAuthority!=='none')throw new Error('authority drift');
-          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaProductiveValue:d.productiveValue,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvlUsd:c.network.networkTvlUsd});
+          if(c.authority?.executionAuthority!=='none'||pub.authority?.executionAuthority!=='none')throw new Error('authority drift');
+          if(m.semantics?.externalRequestCount!==1||m.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('Market Data request contract drift');
+          if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital unavailable');
+          if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
+          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketObservedAt:m.observedAt,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd});
           NODE
           git diff --check
