@@ -1,22 +1,24 @@
 {
-  "version": "0.1.1-market-price-registry-production-bootstrap",
+  "version": "0.1.2-market-price-registry-writer-resilience",
   "purpose": "Canonical registry of externally priced market assets used by The Holding public capital surfaces. One external market-price observation is shared by every downstream consumer.",
   "bootstrap": {
     "firstProductionSnapshotRequired": true,
-    "trigger": "tracked-main-push-after-workflow-install"
+    "trigger": "tracked-main-push-after-workflow-install",
+    "serverSideKeylessFallbackAllowed": true
   },
   "semantics": {
     "oneExternalFetchPerRefresh": true,
     "unknownIsNotZero": true,
     "providerIdIsNotEconomicIdentity": true,
     "wrapperNavAndProtocolValuationStayUpstream": true,
+    "browserExternalPriceRequestsAllowed": false,
     "executionAuthority": "none"
   },
   "provider": {
     "id": "coingecko",
     "endpoint": "https://api.coingecko.com/api/v3/simple/price",
     "currency": "usd",
-    "credentialSource": "github-actions-secret-only"
+    "credentialSource": "github-actions-secret-preferred-server-side-keyless-fallback"
   },
   "assets": [
     {"assetId":"bitcoin","providerId":"bitcoin","symbol":"BTC"},
