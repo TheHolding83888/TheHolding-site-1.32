@@ -3,10 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '../..');
 const REGISTRY_PATH = path.join(__dirname, 'market-price-registry.json');
 const OUTPUT_PATH = path.join(__dirname, 'market-data.json');
 const MAX_PREVIOUS_AGE_MS = 6 * 60 * 60 * 1000;
+const MIN_EXTERNAL_REFRESH_MS = 25 * 60 * 1000;
 
 function readJson(file, fallback = null) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
@@ -34,8 +34,22 @@ const registry = readJson(REGISTRY_PATH);
 if (!registry?.assets?.length) throw new Error('Market price registry missing or empty');
 
 const previous = readJson(OUTPUT_PATH, null);
+const forceRefresh = String(process.env.MARKET_DATA_FORCE_REFRESH || '').toLowerCase() === 'true';
+const previousObservedAt = previous?.observedAt || previous?.generatedAt || null;
+const previousAgeMs = previousObservedAt ? Date.now() - Date.parse(previousObservedAt) : Infinity;
+const previousHasFullRegistry = registry.assets.every(asset => finite(previous?.prices?.[asset.assetId]?.usd) !== null);
+
+if (!forceRefresh && previousHasFullRegistry && Number.isFinite(previousAgeMs) && previousAgeMs >= 0 && previousAgeMs < MIN_EXTERNAL_REFRESH_MS) {
+  console.log('Market Data external fetch skipped; fresh shared snapshot reused', {
+    observedAt: previousObservedAt,
+    ageMinutes: Number((previousAgeMs / 60000).toFixed(2)),
+    externalRequestCount: 0
+  });
+  process.exit(0);
+}
+
 const apiKey = String(process.env.COINGECKO_API_KEY || '').trim();
-if (!apiKey) throw new Error('COINGECKO_API_KEY is required; browser credentials are forbidden');
+if (!apiKey) throw new Error('COINGECKO_API_KEY is required for an external Market Data refresh; browser credentials are forbidden');
 
 const providerIds = [...new Set(registry.assets.map(x => x.providerId).filter(Boolean))];
 const url = new URL(registry.provider?.endpoint || 'https://api.coingecko.com/api/v3/simple/price');
@@ -111,15 +125,16 @@ for (const asset of registry.assets) {
 
 const status = unknownCount > 0 ? 'partial' : fallbackCount > 0 ? 'stale-fallback' : 'ok';
 const output = {
-  version: '0.1-market-data',
-  engineVersion: '0.1-single-external-fetch-shared-snapshot',
+  version: '0.2-market-data',
+  engineVersion: '0.2-single-external-fetch-deduped-shared-snapshot',
   generatedAt: iso(),
   requestedAt,
   observedAt: freshCount > 0 ? observedAt : previous?.observedAt || null,
   status,
   semantics: {
-    oneExternalRequestPerRun: true,
+    oneExternalRequestPerRefresh: true,
     externalRequestCount: 1,
+    minimumOffCycleReuseMinutes: MIN_EXTERNAL_REFRESH_MS / 60000,
     browserExternalPriceRequestsAllowed: false,
     unknownIsNotZero: true,
     staleFallbackMaxAgeHours: MAX_PREVIOUS_AGE_MS / 3600000,
