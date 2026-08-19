@@ -7,15 +7,15 @@ const OUT = path.join(ROOT, 'intelligence/capital-state/general-company-balance-
 const PRODUCTIVITY = 'companies/productivity-data.json';
 const UI_BOOK_SOURCE = 'companies/index.html';
 
-const EXPECTED_UI_BLOB_SHA = '9ee576198e4bb82a1b579f7366bc67ea192bfd3a';
+const EXPECTED_UI_BLOB_SHA = 'cc4ed2fb9919846a65805af3f2906280a65c8728';
 
 const BOOK = {
   'defitea.eth': [
-    { id:'aerodrome-finance', qty:2440, layer:'productive-dividend' },
+    { id:'aerodrome-finance', qty:2632, layer:'productive-dividend' },
     { id:'convex-finance', qty:1333, layer:'productive-dividend' },
     { id:'curve-dao-token', qty:4125, layer:'productive-dividend' },
     { id:'pendle', qty:500, layer:'productive-dividend' },
-    { id:'fxn-token', qty:59.81, layer:'productive-dividend' },
+    { id:'fxn-token', qty:64.81, layer:'productive-dividend' },
     { id:'yield-basis', qty:10846, layer:'productive-dividend' },
     { id:'frax-share', qty:4224, layer:'productive-dividend' },
     { id:'velodrome-finance', qty:12180, layer:'productive-dividend' },

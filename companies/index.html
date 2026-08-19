@@ -10934,11 +10934,17 @@ function updateAges() {
    `fixed` marks an asset priced manually because it is not on the price feed.  */
 const COMPANY_BOOK = {
     'defitea.eth': [
-        { id: 'aerodrome-finance', qty: 2440,  entry: 0.4265 },
+        { id: 'aerodrome-finance', qty: 2632, entry: 0.4265, costBasisUsd: 1121.3, acquisition: 'mixed', acquisitionLots: [
+            { qty: 2440, entry: 0.4265, costBasisUsd: 1040.66, evidenceStatus: 'established' },
+            { qty: 192, entry: 0.42, costBasisUsd: 80.64, evidenceStatus: 'owner-provided' }
+        ] },
         { id: 'convex-finance',    qty: 1333,  entry: 1.28   },
         { id: 'curve-dao-token',   qty: 4125,  entry: 0.2722 },
         { id: 'pendle',            qty: 500,   entry: 1.49   },
-        { id: 'fxn-token',         qty: 59.81, entry: 15.06 },
+        { id: 'fxn-token', qty: 64.81, entry: 15.06, costBasisUsd: 983.2386, acquisition: 'mixed', acquisitionLots: [
+            { qty: 59.81, entry: 15.06, costBasisUsd: 900.7386, evidenceStatus: 'established' },
+            { qty: 5, entry: 16.5, costBasisUsd: 82.5, evidenceStatus: 'owner-provided' }
+        ] },
         { id: 'yield-basis',       qty: 10846, entry: 0.1281 },
         { id: 'frax-share',        qty: 4224,  entry: 0.4042 },
         { id: 'velodrome-finance', qty: 12180, entry: 0.03   },
