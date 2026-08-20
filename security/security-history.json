@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-20T11:24:37.943Z",
+  "lastUpdatedAt": "2026-08-20T11:48:14.733Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 358,
-    "vaultRunCount": 358,
+    "runCount": 359,
+    "vaultRunCount": 359,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -4308,6 +4308,18 @@
       "criticalCount": 0,
       "highCount": 6,
       "newFindingCount": 4,
+      "resolvedFindingCount": 4
+    },
+    {
+      "generatedAt": "2026-08-20T11:48:14.733Z",
+      "status": "watch",
+      "snapshotHash": "06b53a6d30e4f4b8cfd54d65afdef0a3a9994d7e1f3dcf41a9c9437d2ed11bff",
+      "recordPath": "security/security-vault/2026/08/2026-08-20T11-48-14-733Z-06b53a6d30.json",
+      "recordHash": "b6e928ca1be5ffe46f0c730a06eb5b109193339ea3ef4f1aa8b7429487f40d72",
+      "findingCount": 47,
+      "criticalCount": 0,
+      "highCount": 6,
+      "newFindingCount": 3,
       "resolvedFindingCount": 4
     }
   ],
@@ -19178,6 +19190,83 @@
       "type": "finding-resolved",
       "detectedAt": "2026-08-20T11:24:37.943Z",
       "findingId": "f96a1fba8367ebcfc5fe4b67a95555c0bd8cb2bab1c60259001ec696771c6c72",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
+      "file": ".github/workflows/validate-onchain-market-data.yml",
+      "entity": null
+    },
+    {
+      "id": "e6ad0ae89cdbe1dd9541a3022e8547169b5bd045523923172254ef7958ff67ea",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-20T11:48:14.733Z",
+      "findingId": "4c56241866c2ebe4e56cb2006334a089ee07238e1eb4de439942b477b80e1062",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/market-data-refresh.yml.",
+      "file": ".github/workflows/market-data-refresh.yml",
+      "entity": null
+    },
+    {
+      "id": "a3e5643a3bb7b39e0d8b1d33530296ffb87f5e4aa8d19a829496a70ed396d273",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-20T11:48:14.733Z",
+      "findingId": "0c621a309f2831578bb826fc8d125a03cc04cd12c31539802bda879acab1a59d",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-authority-promotion-framework.yml.",
+      "file": ".github/workflows/validate-market-data-authority-promotion-framework.yml",
+      "entity": null
+    },
+    {
+      "id": "6ee31661677aeb7cda65e3e54aeb5ef209a1c4249565c66c30247aee94d43102",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-20T11:48:14.733Z",
+      "findingId": "9a9cd00032ba104dd6748d3af4d7a4f2e28dfe865da1cb86d9e0dbf434ee389f",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml.",
+      "file": ".github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml",
+      "entity": null
+    },
+    {
+      "id": "66994aaf1ec0f064e67f81a6178ae3483479a5b3100791aed105005d5ec80450",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-20T11:48:14.733Z",
+      "findingId": "cf4e5b5ff036af56de355e4844c06a54a148006b25d4a75329048f7584a49a86",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/market-data-refresh.yml.",
+      "file": ".github/workflows/market-data-refresh.yml",
+      "entity": null
+    },
+    {
+      "id": "87cfbc684309e3d120463b447354e72bd07225be1a9ef07e62c4b90860a36a7b",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-20T11:48:14.733Z",
+      "findingId": "1fdc759cfe96a5cc8e5f44832f82a587eb812f138d0b1580adc9964fa874f61d",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/validate-market-data-authority-promotion-framework.yml.",
+      "file": ".github/workflows/validate-market-data-authority-promotion-framework.yml",
+      "entity": null
+    },
+    {
+      "id": "cf72e967571dcbe305f2b8130265e310fa0d17d8dfcd643637bb07dd6047417b",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-20T11:48:14.733Z",
+      "findingId": "4527637791e0bea79ce6c9e8d37af20f9e6c4fe54c99060c4da613ed12b18f83",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml.",
+      "file": ".github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml",
+      "entity": null
+    },
+    {
+      "id": "cdf4d4bdae0d5c450a33debc82f3ac22546a64c2a7eb9e6d5dcbba0623f04aad",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-20T11:48:14.733Z",
+      "findingId": "9ab4d16d5a2f888c4718eb3a33ee0cc74bbc5897a26e9e3a535883d57c2740c2",
       "severity": "medium",
       "category": "critical-surface-change",
       "summary": "Resolved: Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
