@@ -1,0 +1,58 @@
+name: "Validate Market Data Source Lane Separation"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/market-data/market-data-engine.mjs'
+      - 'intelligence/market-data/market-data-coingecko.json'
+      - 'intelligence/market-data/market-data-validation-fixture.mjs'
+      - '.github/workflows/market-data-refresh.yml'
+      - '.github/workflows/validate-market-data-source-lane-separation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate source-lane engines
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/market-data-engine.mjs
+          node --check intelligence/market-data/market-data-validation-fixture.mjs
+          node intelligence/market-data/market-data-validation-fixture.mjs
+          cmp intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const source=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
+          const canonical=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          if(source.semantics?.dedicatedCoinGeckoSourceLane!==true)throw new Error('Dedicated CoinGecko source lane missing');
+          if(source.semantics?.canonicalMirrorEqualsCoinGeckoSourceLane!==true)throw new Error('Canonical mirror contract missing');
+          if(source.semantics?.perAssetAuthoritySelectionApplied!==false)throw new Error('Authority selection applied too early');
+          if(source.authority?.productionPriceLane!=='coingecko-lane')throw new Error('Production lane changed in Stage 2A');
+          if(Number(source.authority?.onchainSelectedAssetCount)!==0)throw new Error('Stage 2A selected onchain assets');
+          if(JSON.stringify(source)!==JSON.stringify(canonical))throw new Error('Source/canonical JSON mismatch');
+          if(Object.keys(source.prices||{}).length!==26)throw new Error('Source lane coverage drift');
+          console.log('Stage 2A deterministic mirror PASS',{assetCount:26,productionPriceLane:'coingecko-lane',onchainSelectedAssetCount:0});
+          NODE
+          git diff --check
+      - name: Prove authority policy remains dry-run
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
+          if(p.mode!=='framework-dry-run'||p.globalOnchainPromotionEnabled!==false)throw new Error('Authority framework left dry-run mode');
+          if(Object.keys(p.assetOverrides||{}).length!==0)throw new Error('Stage 2A must not promote assets');
+          if(p.semantics?.productionWriterIntegrationEnabled!==false)throw new Error('Selector integrated too early');
+          console.log('Stage 2A authority non-promotion PASS');
+          NODE
