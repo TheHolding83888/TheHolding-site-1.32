@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-20T12:46:49.080Z",
+  "generatedAt": "2026-08-20T19:52:49.865Z",
   "status": "watch",
-  "snapshotHash": "b73606b7c655ec80b1d8a523649e4757cf483e3a9601e978deeecec253517a43",
+  "snapshotHash": "c5019f550de2a0d549d72c6ca9de5c31842471cd612d73b64c12cb1f5e717e56",
   "repository": {
     "filesScanned": 515,
-    "bytesScanned": 10848664,
+    "bytesScanned": 10865042,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -73,8 +73,8 @@
       ".github/workflows/validate-beam-onchain-market-data.yml": "d342791883c8f1f0de758930572614ff255b31d183f819d204bef18b676447b3",
       ".github/workflows/validate-eliza-adaptive-twap.yml": "c24744cf69d34776bf6148b7ccba75c293249ddb8492cc71dd7173e1abf50272",
       ".github/workflows/validate-embedded-yield-interval-history.yml": "cd34c8a29f25c5e5f2db3dd8052013e95cea3f3b8aa60cbbcb2547bb7feecb4a",
-      ".github/workflows/validate-market-data-authority-promotion-framework.yml": "ed6452eb6a7b522ca84da1befc2f8c4e8ea19d972785512b5257198002dd3f9f",
-      ".github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml": "ef82f9571d2f740975f250941c6a0b5bb12ca221d059266027abf932e862c6f5",
+      ".github/workflows/validate-market-data-authority-promotion-framework.yml": "e46f6649ed11cfeeb812bde956af70f8a3e44b56fce82e8d0e76d7eef798b7c1",
+      ".github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml": "d1e5938189e0d5dba2719e0e4cf973680eefefd2bf54e37e85a1dfa48854773d",
       ".github/workflows/validate-market-data-source-lane-separation.yml": "24108525e2e25b5b8bcefd63ab7fdf7c04e31bc9b78baded124e80db1fb1ab67",
       ".github/workflows/validate-olas-onchain-market-data.yml": "196432dd4c5458ae62015ace19994e388d97256c8d7a934da3c9bbf95d445e81",
       ".github/workflows/validate-onchain-market-data.yml": "054f0108c683003f87b403016ba312915f73f2ca3e06ad3d12cb4c1c851d55ae",
@@ -337,7 +337,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Wed, 19 Aug 2026 19:51:07 GMT",
+        "lastModified": "Thu, 20 Aug 2026 10:16:30 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -417,6 +417,34 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "edc0cc0e31ae5eb0545a3944203db93b943d5acc3fea7afcea00b8dd5170658a",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/validate-market-data-authority-promotion-framework.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-authority-promotion-framework.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "ed6452eb6a7b522ca84da1befc2f8c4e8ea19d972785512b5257198002dd3f9f",
+        "currentSha256": "e46f6649ed11cfeeb812bde956af70f8a3e44b56fce82e8d0e76d7eef798b7c1"
+      }
+    },
+    {
+      "id": "493a3232f5a39220b56cfc98b74afa71cc30b943819c55563a327aa32063cffc",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "ef82f9571d2f740975f250941c6a0b5bb12ca221d059266027abf932e862c6f5",
+        "currentSha256": "d1e5938189e0d5dba2719e0e4cf973680eefefd2bf54e37e85a1dfa48854773d"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1019,10 +1047,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 361,
+    "runCount": 362,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-20T12-46-49-080Z-b73606b7c6.json",
-    "latestRecordHash": "931d2b1876d592ea3b6cbf22cb562712f03211fb48828eff35eb5eda16b96547",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-20T19-52-49-865Z-c5019f550d.json",
+    "latestRecordHash": "f4fa9de7b7a346d60b28723f240e7e2d41926a95d467db308b6d5153215f6f16",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
