@@ -1,0 +1,48 @@
+name: "Validate YB Curve crvUSD Onchain Market Data"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/market-data/onchain-price-resolver.mjs'
+      - 'intelligence/market-data/onchain-curve-ema-chainlink-quote.mjs'
+      - 'intelligence/market-data/onchain-price-source-registry-extensions.json'
+      - 'intelligence/market-data/onchain-yb-curve-crvusd-live-validation.mjs'
+      - '.github/workflows/validate-yb-curve-crvusd-onchain-market-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Prove static YB Curve + Chainlink contract
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/onchain-price-resolver.mjs
+          node --check intelligence/market-data/onchain-curve-ema-chainlink-quote.mjs
+          node --check intelligence/market-data/onchain-yb-curve-crvusd-live-validation.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
+          const route=ext.overrides?.['yield-basis']?.route;
+          if(ext.semantics?.curveEmaChainlinkQuoteRoutesAllowed!==true)throw new Error('Curve/Chainlink quoted route semantic missing');
+          if(ext.semantics?.stablecoinPegHardcoded!==false)throw new Error('Stablecoin peg hardcoding enabled');
+          if(route?.type!=='curve-ema-chainlink-quote'||route?.network!=='ethereum')throw new Error('YB route type/network drift');
+          if(String(route?.pool).toLowerCase()!=='0xec977f46467a3021785cff88894886e617abd65b')throw new Error('YB Curve pool drift');
+          if(String(route?.quoteFeed?.contract).toLowerCase()!=='0xeef0c605546958c1f899b6fb336c20671f9cd49f')throw new Error('crvUSD/USD Chainlink feed drift');
+          if(route?.authority!=='shadow'||ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority boundary drift');
+          NODE
+          git diff --check
+      - name: Prove YB route live through top-level resolver
+        run: |
+          set -euo pipefail
+          node intelligence/market-data/onchain-yb-curve-crvusd-live-validation.mjs

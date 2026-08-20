@@ -1,6 +1,6 @@
 {
-  "version": "0.9-eliza-adaptive-twap-resilience",
-  "effectiveRegistryVersion": "0.24-onchain-price-source-registry-eliza-adaptive-twap-resilience",
+  "version": "0.10-yb-curve-crvusd-shadow-route",
+  "effectiveRegistryVersion": "0.25-onchain-price-source-registry-yb-curve-crvusd",
   "purpose": "Bounded extension routes plus explicit reviewed replacements for canonical onchain Market Data routes. Base v0.15 remains byte-stable; route overrides are fail-closed and may only target existing canonical asset ids.",
   "semantics": {
     "uniswapV2HistoricalTwapRoutesAllowed": true,
@@ -14,6 +14,7 @@
     "minimumAdaptiveTwapWindowSeconds": 60,
     "uniswapV3SpotPriceAuthority": false,
     "curveEmaRoutesAllowed": true,
+    "curveEmaChainlinkQuoteRoutesAllowed": true,
     "curveSpotPriceAuthority": false,
     "stablecoinPegHardcoded": false,
     "quoteFeedFreshnessRequired": true,
@@ -74,7 +75,7 @@
         "network": "ethereum",
         "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
         "token": "0x62D0A8458eD7719FDAF978fe5929C6D342B0bFcE",
-        "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2",
         "tokenDecimals": 18,
         "quoteTokenDecimals": 18,
         "fee": 10000,
@@ -116,6 +117,31 @@
     }
   },
   "overrides": {
+    "yield-basis": {
+      "assetId": "yield-basis",
+      "symbol": "YB",
+      "route": {
+        "type": "curve-ema-chainlink-quote",
+        "network": "ethereum",
+        "pool": "0xec977f46467a3021785cff88894886e617abd65b",
+        "token": "0x01791f726b4103694969820be083196cc7c045ff",
+        "quoteToken": "0xf939e0a03fb07f59a73314e73794be0e57ac1b4e",
+        "oracleDirection": "coin0-per-coin1",
+        "oracleScale": "1000000000000000000",
+        "quoteAssetId": "ethereum-crvusd-usd",
+        "quoteFeed": {
+          "type": "chainlink-v3",
+          "contract": "0xEEf0C605546958c1f899b6fB336C20671f9cD49F",
+          "maxAgeSeconds": 90000,
+          "quote": "USD"
+        },
+        "feedQuote": "crvUSD",
+        "outputQuote": "USD",
+        "maxDivergencePct": 10,
+        "authority": "shadow",
+        "provenance": "Yield Basis YB token priced from the primary YB/crvUSD Curve trading venue. Uses block-pinned Curve price_oracle() EMA for crvUSD per YB, composed with same-cycle Ethereum Chainlink crvUSD/USD with round-integrity and freshness checks. Live discovery proved the Curve route within 0.04% of canonical while alternative YB/USDC and YB/USDT V3 pools were materially off-market. Replaces the intermittently OLD YB/WETH Uniswap V3 history route. No Curve spot quote, hardcoded stablecoin peg, paid RPC, signing, or execution authority."
+      }
+    },
     "mode": {
       "assetId": "mode",
       "symbol": "MODE",
