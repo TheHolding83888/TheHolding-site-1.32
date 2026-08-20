@@ -43,10 +43,12 @@ jobs:
           NODE
           git diff --check
       - name: Prove PR cannot silently mutate Market Data production data plane
+        if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
-          git fetch origin "${{ github.base_ref }}" --depth=1
-          changed="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          base_sha='${{ github.event.pull_request.base.sha }}'
+          git fetch origin "$base_sha" --depth=1
+          changed="$(git diff --name-only "$base_sha" HEAD)"
           printf '%s\n' "$changed"
           forbidden='^(intelligence/market-data/market-data-engine\.mjs|intelligence/market-data/public-capital-engine\.mjs|intelligence/market-data/onchain-price-resolver\.mjs|intelligence/market-data/market-data\.json|intelligence/market-data/onchain-price-shadow\.json|intelligence/market-data/public-capital-state\.json|\.github/workflows/market-data-refresh\.yml)$'
           if printf '%s\n' "$changed" | grep -Eq "$forbidden"; then
