@@ -1,5 +1,5 @@
 {
-  "version": "0.7-market-data-authority-direct-plus-relative-chainlink-cvx",
+  "version": "0.8-market-data-authority-direct-plus-relative-plus-v3-relative",
   "mode": "bounded-production-pilot",
   "defaultProductionAuthority": "coingecko-lane",
   "globalOnchainPromotionEnabled": true,
@@ -47,6 +47,24 @@
       "convex-finance": {"network": "ethereum", "contract": "0xC9CbF687f43176B302F03f5e58470b77D07c61c6"}
     }
   },
+  "v3RelativePilot": {
+    "cohortId": "uniswap-v3-relative-ovr-beam-lqty-virtual-ondo-zk-v0.1",
+    "assetIds": ["ovr", "beam-2", "liquity", "virtual-protocol", "ondo-finance", "zksync"],
+    "maxPromotedAssetCount": 6,
+    "requiredRouteType": "uniswap-v3-twap-relative",
+    "requiredFeedQuote": "ETH",
+    "requiredQuoteAssetId": "ethereum",
+    "requiredOutputQuote": "USD",
+    "requiredDependencyStatus": "shadow-ok",
+    "routeRequirements": {
+      "ovr": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0x21BfBDa47A0B4B5b1248c767Ee49F7caA9B23697", "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2", "fee": 10000, "twapWindowSeconds": 1800},
+      "beam-2": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0x62D0A8458eD7719FDAF978fe5929C6D342B0bFcE", "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2", "fee": 10000, "twapWindowSeconds": 1800},
+      "liquity": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D", "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "fee": 3000, "twapWindowSeconds": 1800},
+      "virtual-protocol": {"network": "base", "factory": "0x33128a8fC17869897dcE68Ed026d694621f6FDfD", "token": "0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b", "quoteToken": "0x4200000000000000000000000000000000000006", "fee": 500, "twapWindowSeconds": 1800},
+      "ondo-finance": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3", "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "fee": 3000, "twapWindowSeconds": 1800},
+      "zksync": {"network": "zksync", "factory": "0x8FdA5a7a8dCA67BBcDd10F02Fa0649A937215422", "token": "0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E", "quoteToken": "0x5aea5775959fbc2557cc8789bc1bf90a239d9a91", "fee": 3000, "twapWindowSeconds": 1800}
+    }
+  },
   "onchainEligibility": {
     "requiredSnapshotMode": "shadow",
     "requiredObservationStatus": "shadow-ok",
@@ -78,6 +96,12 @@
       "requiredQuoteAssetId": "ethereum",
       "requiredFeedQuote": "ETH",
       "requiredOutputQuote": "USD"
-    }
+    },
+    "ovr": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "beam-2": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "liquity": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "virtual-protocol": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "ondo-finance": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "zksync": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"}
   }
 }
