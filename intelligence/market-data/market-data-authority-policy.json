@@ -1,5 +1,5 @@
 {
-  "version": "0.3-market-data-authority-direct-oracle-cohort-aero-pendle",
+  "version": "0.4-market-data-authority-direct-oracle-cohort-crv-fxs",
   "mode": "bounded-production-pilot",
   "defaultProductionAuthority": "coingecko-lane",
   "globalOnchainPromotionEnabled": true,
@@ -16,16 +16,18 @@
     "executionAuthority": "none"
   },
   "pilot": {
-    "cohortId": "direct-chainlink-usd-btc-eth-aero-pendle-v0.2",
-    "assetIds": ["bitcoin", "ethereum", "aerodrome-finance", "pendle"],
-    "maxPromotedAssetCount": 4,
+    "cohortId": "direct-chainlink-usd-btc-eth-aero-pendle-crv-fxs-v0.3",
+    "assetIds": ["bitcoin", "ethereum", "aerodrome-finance", "pendle", "curve-dao-token", "frax-share"],
+    "maxPromotedAssetCount": 6,
     "requiredRouteType": "chainlink-v3",
     "requiredQuote": "USD",
     "routeRequirements": {
       "bitcoin": {"network": "ethereum", "contract": "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c"},
       "ethereum": {"network": "ethereum", "contract": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"},
       "aerodrome-finance": {"network": "base", "contract": "0x4EC5970fC728C5f65ba413992CD5fF6FD70fcfF0"},
-      "pendle": {"network": "optimism", "contract": "0x58F23F80bF389DB1af9e3aA8c59679806749A8a4"}
+      "pendle": {"network": "optimism", "contract": "0x58F23F80bF389DB1af9e3aA8c59679806749A8a4"},
+      "curve-dao-token": {"network": "ethereum", "contract": "0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f"},
+      "frax-share": {"network": "ethereum", "contract": "0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f"}
     }
   },
   "onchainEligibility": {
@@ -45,6 +47,8 @@
     "bitcoin": {"requestedPrimary": "onchain"},
     "ethereum": {"requestedPrimary": "onchain"},
     "aerodrome-finance": {"requestedPrimary": "onchain"},
-    "pendle": {"requestedPrimary": "onchain"}
+    "pendle": {"requestedPrimary": "onchain"},
+    "curve-dao-token": {"requestedPrimary": "onchain"},
+    "frax-share": {"requestedPrimary": "onchain"}
   }
 }
