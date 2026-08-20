@@ -30,6 +30,7 @@ function onchainLane(policy, shadow, assetId, nowMs) {
   const usd = finite(observation?.usd);
   const snapshotAgeSeconds = isoAgeSeconds(shadow?.generatedAt, nowMs);
   const override = policy.assetOverrides?.[assetId] || {};
+  // Runtime source/dependency health is eligibility, not structural route identity: failed checks fall back through policy order.
   const checks = {
     snapshotMode: shadow?.mode === policy.onchainEligibility.requiredSnapshotMode,
     observationStatus: observation?.status === policy.onchainEligibility.requiredObservationStatus,
