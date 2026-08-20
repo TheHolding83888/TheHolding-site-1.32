@@ -1,16 +1,16 @@
 # The Holding — Decision & Outcome Learning Loop
 
-Generated: 2026-08-19T07:58:52.499Z
+Generated: 2026-08-20T08:01:52.722Z
 Status: ready
-Cognitive chain: a90c3a3d2883ddd19f7a70f0ab06b8d8a115d9acf704ced5cf410d74fefbcf1f
+Cognitive chain: cb4710d3021302f48ad54c0a89b9f9e3b04bbc06471642d93bc48a982c4653bb
 
 ## Memory
 
 Active Brain cases observed: 25
 Decision-worthy active cases: 7
 Data-hygiene active cases: 18
-Remembered cases: 91
-Coherent Brain observations: 16
+Remembered cases: 106
+Coherent Brain observations: 17
 Owner decisions: 2
 Settled outcomes: 0
 Lessons: 0
