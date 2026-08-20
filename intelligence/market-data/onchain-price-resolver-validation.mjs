@@ -227,7 +227,7 @@ assert.equal(sawPinnedVelodromePhase, true);
 assert.equal(sawPythReadonlyCall, true);
 assert.equal(output.status, 'ok');
 assert.equal(output.mode, 'shadow');
-assert.equal(output.version, '0.6-onchain-price-shadow-pyth-core-readonly');
+assert.equal(output.version, '0.7-onchain-price-shadow-uniswap-v3-twap');
 assert.equal(output.semantics.productionPriceAuthority, false);
 assert.equal(output.semantics.paidRpcRequired, false);
 assert.equal(output.semantics.networkBatching, true);

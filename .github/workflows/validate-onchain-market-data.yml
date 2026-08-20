@@ -10,6 +10,8 @@ on:
       - 'intelligence/market-data/onchain-price-resolver.mjs'
       - 'intelligence/market-data/onchain-price-resolver-core.mjs'
       - 'intelligence/market-data/onchain-price-resolver-validation.mjs'
+      - 'intelligence/market-data/onchain-uniswap-v3-twap.mjs'
+      - 'intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs'
       - 'intelligence/market-data/onchain-price-coverage-audit.mjs'
       - '.github/workflows/market-data-refresh.yml'
       - '.github/workflows/validate-onchain-market-data.yml'
@@ -35,8 +37,11 @@ jobs:
           node --check intelligence/market-data/onchain-price-resolver.mjs
           node --check intelligence/market-data/onchain-price-resolver-core.mjs
           node --check intelligence/market-data/onchain-price-resolver-validation.mjs
+          node --check intelligence/market-data/onchain-uniswap-v3-twap.mjs
+          node --check intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs
           node --check intelligence/market-data/onchain-price-coverage-audit.mjs
           node intelligence/market-data/onchain-price-resolver-validation.mjs
+          node intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs
       - name: Audit canonical market universe coverage
         run: |
           set -euo pipefail
@@ -51,11 +56,11 @@ jobs:
           const pending=marketIds.filter(id=>!routes.includes(id));
           const special=routes.filter(id=>!marketIds.includes(id));
           if(marketIds.length!==26)throw new Error(`Expected current canonical 26-asset market universe, got ${marketIds.length}`);
-          if(routed.length!==14)throw new Error(`Expected 14 routed market assets after MODE Pyth cohort, got ${routed.length}`);
-          if(pending.length!==12)throw new Error(`Expected 12 pending market assets after MODE Pyth cohort, got ${pending.length}`);
+          if(routed.length!==15)throw new Error(`Expected 15 routed market assets after YB Uniswap V3 TWAP cohort, got ${routed.length}`);
+          if(pending.length!==11)throw new Error(`Expected 11 pending market assets after YB Uniswap V3 TWAP cohort, got ${pending.length}`);
           if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
-          if(routed.length+special.length!==15)throw new Error('Expected 15 total live onchain observation targets');
-          console.log('Onchain coverage MODE Pyth cohort PASS',{marketAssets:26,routedMarketAssets:14,pendingMarketAssets:12,specialOnchainReferences:1,totalObservationTargets:15});
+          if(routed.length+special.length!==16)throw new Error('Expected 16 total live onchain observation targets');
+          console.log('Onchain coverage YB Uniswap V3 TWAP cohort PASS',{marketAssets:26,routedMarketAssets:15,pendingMarketAssets:11,specialOnchainReferences:1,totalObservationTargets:16});
           NODE
       - name: Prove shadow authority boundary and cohort routes
         run: |
@@ -72,6 +77,8 @@ jobs:
           if(reg.semantics?.pythCoreReadonlyRoutesAllowed!==true)throw new Error('Pyth Core readonly contract missing');
           if(reg.semantics?.pythHermesDependency!==false)throw new Error('Hermes dependency introduced');
           if(reg.semantics?.pythPriceUpdatesSubmitted!==false)throw new Error('Pyth write/update authority introduced');
+          if(reg.semantics?.uniswapV3TwapRoutesAllowed!==true)throw new Error('Uniswap V3 TWAP route contract missing');
+          if(reg.semantics?.uniswapV3SpotPriceAuthority!==false)throw new Error('Uniswap V3 spot price authority enabled');
           if(reg.semantics?.executionAuthority!=='none')throw new Error('Execution authority drift');
           const exact={
             'aerodrome-finance':['base','0x4ec5970fc728c5f65ba413992cd5ff6fd70fcff0'],
@@ -98,6 +105,14 @@ jobs:
           if(mode.priceId.toLowerCase()!=='0x0386e113cc716a7c6a55decd97b19c90ce080d9f2f5255ac78a0e26889446d1e')throw new Error('MODE Pyth price id drift');
           if(mode.token.toLowerCase()!=='0xdfc7c877a950e49d2610114102175a06c2e3167a')throw new Error('MODE token drift');
           if(Number(mode.maxAgeSeconds)!==3600||Number(mode.maxConfidencePct)!==5||Number(mode.maxDivergencePct)!==8)throw new Error('MODE Pyth safety thresholds drift');
+          const yb=reg.assets?.['yield-basis']?.route;
+          if(!yb||yb.type!=='uniswap-v3-twap-relative'||yb.network!=='ethereum'||yb.authority!=='shadow')throw new Error('YB Uniswap V3 TWAP route invalid');
+          if(yb.factory.toLowerCase()!=='0x1f98431c8ad98523631ae4a59f267346ea31f984')throw new Error('YB Uniswap V3 Factory drift');
+          if(yb.token.toLowerCase()!=='0x01791f726b4103694969820be083196cc7c045ff')throw new Error('YB token drift');
+          if(yb.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('YB WETH quote-token drift');
+          if(Number(yb.fee)!==10000||Number(yb.tokenDecimals)!==18||Number(yb.quoteTokenDecimals)!==18)throw new Error('YB Uniswap V3 pool contract drift');
+          if(Number(yb.twapWindowSeconds)!==1800||yb.quoteAssetId!=='ethereum'||yb.feedQuote!=='ETH'||yb.outputQuote!=='USD')throw new Error('YB TWAP composition drift');
+          if(Number(yb.maxDivergencePct)!==10)throw new Error('YB divergence threshold drift');
           const networkContracts={ethereum:1,optimism:10,base:8453,bsc:56,polygon:137,mode:34443};
           for(const [id,chainId] of Object.entries(networkContracts)){
             if(reg.networks?.[id]?.chainId!==chainId||(reg.networks[id].rpcFailover||[]).length<2)throw new Error(`${id} public RPC contract invalid`);
@@ -109,7 +124,7 @@ jobs:
           if(!cvx||cvx.type!=='chainlink-v3-relative'||cvx.quoteAssetId!=='ethereum')throw new Error('Existing CVX composition drift');
           const silver=reg.assets?.['physical-silver']?.route;
           if(silver?.feedBase!=='XAG'||silver?.emergencyFallback?.type!=='gold-ratio'||Number(silver?.emergencyFallback?.divideGoldUsdBy)!==68)throw new Error('Silver direct/fallback contract drift');
-          console.log('Onchain Market Data MODE Pyth route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,modePyth:true,productionPriceAuthority:false,paidRpcRequired:false,pythHermesDependency:false});
+          console.log('Onchain Market Data YB Uniswap V3 TWAP route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,ybTwapSeconds:yb.twapWindowSeconds,ybPoolDiscovery:true,spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
           NODE
       - name: Prove shared heartbeat remains shadow-only and fail-open
         run: |
@@ -119,18 +134,24 @@ jobs:
           const workflow=fs.readFileSync('.github/workflows/market-data-refresh.yml','utf8');
           const resolver=fs.readFileSync('intelligence/market-data/onchain-price-resolver.mjs','utf8');
           const core=fs.readFileSync('intelligence/market-data/onchain-price-resolver-core.mjs','utf8');
+          const uniswap=fs.readFileSync('intelligence/market-data/onchain-uniswap-v3-twap.mjs','utf8');
           const required=['Observe onchain prices in fail-open shadow mode','onchain-price-resolver.mjs','onchain-price-shadow.json','canonical Market Data continues unchanged',"shadow.semantics?.productionPriceAuthority!==false","shadow.semantics?.paidRpcRequired!==false"];
           for(const token of required){if(!workflow.includes(token))throw new Error(`Heartbeat shadow contract missing: ${token}`);}
           const coreRequired=['velodrome-v2-twap-relative','protocolTwapReadsPinnedToDiscoveryBlock','maxOneHttpBatchPerNetworkPhasePerAttempt','0x79bc57d5','0xebeb31db','0x9e8cc04b'];
           for(const token of coreRequired){if(!core.includes(token))throw new Error(`Protocol-TWAP core contract missing: ${token}`);}
           const pythRequired=['pyth-core-readonly','96834ad3','pythHermesDependency: false','pythPriceUpdatesSubmitted: false','pythPublishTimeFreshnessChecked: true','pythConfidenceIntervalChecked: true'];
           for(const token of pythRequired){if(!resolver.includes(token))throw new Error(`Pyth readonly resolver contract missing: ${token}`);}
+          const uniswapRequired=['uniswap-v3-twap-relative','1698ee82','0dfe1681','d21220a7','1a686502','883bdbfd','arithmeticMeanTick','quoteRatioAtTick'];
+          for(const token of uniswapRequired){if(!uniswap.toLowerCase().includes(token.toLowerCase()))throw new Error(`Uniswap V3 TWAP adapter contract missing: ${token}`);}
+          const resolverUniswapRequired=['uniswapV3TwapRoutes: true','uniswapV3FactoryDiscovery: true','uniswapV3TwapReadsPinnedToDiscoveryBlock: true','uniswapV3UsesObserveNotSpot: true','dexSpotPriceAuthority: false'];
+          for(const token of resolverUniswapRequired){if(!resolver.includes(token))throw new Error(`Uniswap V3 composite contract missing: ${token}`);}
           const forbidden=['updatePriceFeeds(','updatePriceFeedsIfNecessary(','hermes.pyth.network'];
           for(const token of forbidden){if(resolver.includes(token))throw new Error(`Forbidden Pyth runtime dependency/write surface present: ${token}`);}
+          if(uniswap.toLowerCase().includes('3850c7bd'))throw new Error('Uniswap V3 slot0/spot selector must not be used as YB price authority');
           const marketIndex=workflow.indexOf('Refresh one shared external market-price snapshot');
           const shadowIndex=workflow.indexOf('Observe onchain prices in fail-open shadow mode');
           const publicIndex=workflow.indexOf('Rebuild public fund + company capital view');
           if(!(marketIndex>=0&&shadowIndex>marketIndex&&publicIndex>shadowIndex))throw new Error('Heartbeat order drift');
-          console.log('Onchain shadow heartbeat + MODE Pyth readonly integration PASS',{failOpen:true,blockPinnedProtocolTwap:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
+          console.log('Onchain shadow heartbeat + YB Uniswap V3 TWAP integration PASS',{failOpen:true,blockPinnedTwap:true,observeNotSpot:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
           NODE
           git diff --check
