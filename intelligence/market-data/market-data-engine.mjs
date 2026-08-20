@@ -4,25 +4,26 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REGISTRY_PATH = path.join(__dirname, 'market-price-registry.json');
-const OUTPUT_PATH = path.join(__dirname, 'market-data.json');
+const SOURCE_OUTPUT_PATH = path.join(__dirname, 'market-data-coingecko.json');
+const CANONICAL_OUTPUT_PATH = path.join(__dirname, 'market-data.json');
 const MAX_PREVIOUS_AGE_MS = 6 * 60 * 60 * 1000;
-// Scheduled refreshes are the only normal forced external observations. Push,
-// manual recovery and coherent-capital runs reuse a recent snapshot so they do
-// not spend a second provider request immediately around the 30-minute cadence.
 const MIN_EXTERNAL_REFRESH_MS = 40 * 60 * 1000;
 
 function readJson(file, fallback = null) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
   catch { return fallback; }
 }
-
 function finite(value) {
+  if (value === null || value === undefined || value === '') return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
-
 function iso(value = Date.now()) { return new Date(value).toISOString(); }
-
+function writeMirroredSnapshot(output) {
+  const bytes = JSON.stringify(output, null, 2) + '\n';
+  fs.writeFileSync(SOURCE_OUTPUT_PATH, bytes);
+  fs.writeFileSync(CANONICAL_OUTPUT_PATH, bytes);
+}
 function previousPrice(previous, assetId) {
   const row = previous?.prices?.[assetId];
   const px = finite(row?.usd);
@@ -36,14 +37,18 @@ function previousPrice(previous, assetId) {
 const registry = readJson(REGISTRY_PATH);
 if (!registry?.assets?.length) throw new Error('Market price registry missing or empty');
 
-const previous = readJson(OUTPUT_PATH, null);
+// CoinGecko fallback history is now isolated from the canonical selected lane.
+// Stage 2A still mirrors this source lane byte-for-byte into market-data.json,
+// so production price selection remains unchanged.
+const previous = readJson(SOURCE_OUTPUT_PATH, readJson(CANONICAL_OUTPUT_PATH, null));
 const forceRefresh = String(process.env.MARKET_DATA_FORCE_REFRESH || '').toLowerCase() === 'true';
 const previousObservedAt = previous?.observedAt || previous?.generatedAt || null;
 const previousAgeMs = previousObservedAt ? Date.now() - Date.parse(previousObservedAt) : Infinity;
 const previousHasFullRegistry = registry.assets.every(asset => finite(previous?.prices?.[asset.assetId]?.usd) !== null);
 
 if (!forceRefresh && previousHasFullRegistry && Number.isFinite(previousAgeMs) && previousAgeMs >= 0 && previousAgeMs < MIN_EXTERNAL_REFRESH_MS) {
-  console.log('Market Data external fetch skipped; fresh shared snapshot reused', {
+  writeMirroredSnapshot(previous);
+  console.log('Market Data external fetch skipped; CoinGecko source lane reused and canonical mirror preserved', {
     observedAt: previousObservedAt,
     ageMinutes: Number((previousAgeMs / 60000).toFixed(2)),
     externalRequestCount: 0
@@ -113,7 +118,7 @@ for (const asset of registry.assets) {
       usd: prior.usd,
       status: 'stale-fallback',
       observedAt: prior.observedAt,
-      source: 'previous-market-data-snapshot'
+      source: 'previous-coingecko-source-snapshot'
     };
     fallbackCount += 1;
   } else {
@@ -132,8 +137,8 @@ for (const asset of registry.assets) {
 
 const status = unknownCount > 0 ? 'partial' : fallbackCount > 0 ? 'stale-fallback' : 'ok';
 const output = {
-  version: '0.2.1-market-data-writer-resilience',
-  engineVersion: '0.2.1-single-external-fetch-first-snapshot-resilient',
+  version: '0.3-market-data-source-lane-separation',
+  engineVersion: '0.3-coingecko-source-lane-plus-canonical-mirror',
   generatedAt: iso(),
   requestedAt,
   observedAt: freshCount > 0 ? observedAt : previous?.observedAt || null,
@@ -146,7 +151,10 @@ const output = {
     serverSideKeylessFallbackAllowed: keylessFallbackAllowed,
     unknownIsNotZero: true,
     staleFallbackMaxAgeHours: MAX_PREVIOUS_AGE_MS / 3600000,
-    wrapperNavAndProtocolValuationStayUpstream: true
+    wrapperNavAndProtocolValuationStayUpstream: true,
+    dedicatedCoinGeckoSourceLane: true,
+    canonicalMirrorEqualsCoinGeckoSourceLane: true,
+    perAssetAuthoritySelectionApplied: false
   },
   provider: {
     id: 'coingecko',
@@ -166,6 +174,8 @@ const output = {
   },
   prices,
   authority: {
+    productionPriceLane: 'coingecko-lane',
+    onchainSelectedAssetCount: 0,
     readOnly: true,
     executionAuthority: 'none',
     capitalExecution: false,
@@ -173,14 +183,15 @@ const output = {
   }
 };
 
-fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2) + '\n');
-console.log('Market Data snapshot written', {
+writeMirroredSnapshot(output);
+console.log('CoinGecko source lane and canonical Market Data mirror written', {
   status,
   authMode,
   freshCount,
   fallbackCount,
   unknownCount,
-  externalRequestCount: 1
+  externalRequestCount: 1,
+  onchainSelectedAssetCount: 0
 });
 
 if (unknownCount === registry.assets.length) {
