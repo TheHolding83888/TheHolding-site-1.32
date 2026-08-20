@@ -65,7 +65,7 @@ jobs:
           if(pending.length!==4)throw new Error(`Expected 4 pending market assets after VIRTUAL/ONDO/ZK cohort, got ${pending.length}`);
           if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
           if(routed.length+special.length!==23)throw new Error('Expected 23 total live onchain observation targets');
-          console.log('Onchain coverage VIRTUAL ONDO ZK cohort PASS',{marketAssets:26,routedMarketAssets:22,pendingMarketAssets:4,specialOnchainReferences:1,totalObservationTargets:23});
+          console.log('Onchain coverage YB + FXN bounded 5m resilience PASS',{marketAssets:26,routedMarketAssets:22,pendingMarketAssets:4,specialOnchainReferences:1,totalObservationTargets:23});
           NODE
       - name: Prove shadow authority boundary and cohort routes
         run: |
@@ -113,7 +113,7 @@ jobs:
           if(mode.token.toLowerCase()!=='0xdfc7c877a950e49d2610114102175a06c2e3167a')throw new Error('MODE token drift');
           if(Number(mode.maxAgeSeconds)!==3600||Number(mode.maxConfidencePct)!==5||Number(mode.maxDivergencePct)!==8)throw new Error('MODE Pyth safety thresholds drift');
           const v3Routes={
-            'yield-basis': {network:'ethereum',factory:'0x1f98431c8ad98523631ae4a59f267346ea31f984',token:'0x01791f726b4103694969820be083196cc7c045ff',quoteToken:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',symbol:'YB',fee:10000,twapSeconds:1800},
+            'yield-basis': {network:'ethereum',factory:'0x1f98431c8ad98523631ae4a59f267346ea31f984',token:'0x01791f726b4103694969820be083196cc7c045ff',quoteToken:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',symbol:'YB',fee:10000,twapSeconds:300},
             'fxn-token': {network:'ethereum',factory:'0x1f98431c8ad98523631ae4a59f267346ea31f984',token:'0x365accfca291e7d3914637abf1f7635db165bb09',quoteToken:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',symbol:'FXN',fee:10000,twapSeconds:300},
             'liquity': {network:'ethereum',factory:'0x1f98431c8ad98523631ae4a59f267346ea31f984',token:'0x6dea81c8171d0ba574754ef6f8b412f2ed88c54d',quoteToken:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',symbol:'LQTY',fee:3000,twapSeconds:1800},
             'virtual-protocol': {network:'base',factory:'0x33128a8fc17869897dce68ed026d694621f6fdfd',token:'0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b',quoteToken:'0x4200000000000000000000000000000000000006',symbol:'VIRTUAL',fee:500,twapSeconds:1800},
@@ -156,7 +156,7 @@ jobs:
           if(!cvx||cvx.type!=='chainlink-v3-relative'||cvx.quoteAssetId!=='ethereum')throw new Error('Existing CVX composition drift');
           const silver=reg.assets?.['physical-silver']?.route;
           if(silver?.feedBase!=='XAG'||silver?.emergencyFallback?.type!=='gold-ratio'||Number(silver?.emergencyFallback?.divideGoldUsdBy)!==68)throw new Error('Silver direct/fallback contract drift');
-          console.log('Onchain Market Data VIRTUAL ONDO ZK V3 reuse contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,v3Assets:Object.keys(v3Routes),spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
+          console.log('Onchain Market Data YB + FXN bounded 5m TWAP contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,ybTwapSeconds:v3Routes['yield-basis'].twapSeconds,fxnTwapSeconds:v3Routes['fxn-token'].twapSeconds,spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
           NODE
       - name: Prove shared heartbeat remains shadow-only and fail-open
         run: |
@@ -190,6 +190,6 @@ jobs:
           const shadowIndex=workflow.indexOf('Observe onchain prices in fail-open shadow mode');
           const publicIndex=workflow.indexOf('Rebuild public fund + company capital view');
           if(!(marketIndex>=0&&shadowIndex>marketIndex&&publicIndex>shadowIndex))throw new Error('Heartbeat order drift');
-          console.log('Onchain shadow heartbeat + cross-network Uniswap V3 reuse PASS',{failOpen:true,v3Networks:['ethereum','base','zksync'],spotAuthority:false,blockPinnedCurveOracle:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
+          console.log('Onchain shadow heartbeat + bounded YB/FXN 5m TWAP PASS',{failOpen:true,ybAndFxnStillTwap:true,spotAuthority:false,blockPinnedCurveOracle:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
           NODE
           git diff --check
