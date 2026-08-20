@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-20T09:43:10.033Z",
+  "generatedAt": "2026-08-20T10:03:12.296Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 39,
+    "medium": 42,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 507,
-    "bytesScanned": 10770739,
+    "filesScanned": 509,
+    "bytesScanned": 10783597,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 20 Aug 2026 05:27:57 GMT",
+        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,64 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "6b3c661ceaaec4b93ff3527978774f55e74f8c50dde738368b24758957d572a1",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/market-data-refresh.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/market-data-refresh.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "bdbdc47631a2db39b42862ca25be59e850e8bbaa073901e36bcac365767a7701",
+          "currentSha256": "11869e845172d341411d29cb8e067aa7136b1f53668a9715ced23f0fe17e0457"
+        }
+      },
+      {
+        "id": "188fbfc0620e10ae7e6e7fec2108fc1c632e753c96c679a77b688bdbfc8442c5",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/validate-market-data-authority-promotion-framework.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-authority-promotion-framework.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "0418daf807885be05ea71739853b7d716cd633292b1a40756ca23a21b3a9bc04",
+          "currentSha256": "685534c7748a1e3e9705431f83b5f9a9682b5506579c85e7eb4dd7d384da5246"
+        }
+      },
+      {
+        "id": "69620ed8d83695d364c1a99a053102c90ebd6c24ced88e41948b4f8a46c4837b",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/validate-market-data-source-lane-separation.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-source-lane-separation.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "728448cdaa7079b54ea5cf86432ee9f1095c846f0845fc2a47fd5add35f011b7",
+          "currentSha256": "24108525e2e25b5b8bcefd63ab7fdf7c04e31bc9b78baded124e80db1fb1ab67"
+        }
+      },
+      {
+        "id": "0fa1efb03dc2a651ac2e7a91a27b7c7f5ce3b4fb615e09f75aa72ec071d753f7",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/validate-onchain-market-data.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "db88c2d9b78baff13583fe509882b086fa5b1253ff0e333b7a1c99b63fba5ff3",
+          "currentSha256": "6c2522c8a5a3083285a7fecf1af5479b2316e1b872ee4d3a089afe336968b238"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "54874e1b91a63aa3df6f37a30b6121520af90020ff182d461d0c0a7d1a8549bc",
         "severity": "medium",
@@ -70,8 +128,7 @@
           "currentSha256": "bdbdc47631a2db39b42862ca25be59e850e8bbaa073901e36bcac365767a7701"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -141,7 +198,7 @@
       "evidence": null
     },
     {
-      "id": "54874e1b91a63aa3df6f37a30b6121520af90020ff182d461d0c0a7d1a8549bc",
+      "id": "6b3c661ceaaec4b93ff3527978774f55e74f8c50dde738368b24758957d572a1",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/market-data-refresh.yml",
@@ -150,8 +207,50 @@
       "summary": "Security-sensitive surface changed: .github/workflows/market-data-refresh.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "210a38df009d4670e5f66660b0e2a8bf6889903b169ac315902a86f1da7fcd97",
-        "currentSha256": "bdbdc47631a2db39b42862ca25be59e850e8bbaa073901e36bcac365767a7701"
+        "previousSha256": "bdbdc47631a2db39b42862ca25be59e850e8bbaa073901e36bcac365767a7701",
+        "currentSha256": "11869e845172d341411d29cb8e067aa7136b1f53668a9715ced23f0fe17e0457"
+      }
+    },
+    {
+      "id": "188fbfc0620e10ae7e6e7fec2108fc1c632e753c96c679a77b688bdbfc8442c5",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/validate-market-data-authority-promotion-framework.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-authority-promotion-framework.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "0418daf807885be05ea71739853b7d716cd633292b1a40756ca23a21b3a9bc04",
+        "currentSha256": "685534c7748a1e3e9705431f83b5f9a9682b5506579c85e7eb4dd7d384da5246"
+      }
+    },
+    {
+      "id": "69620ed8d83695d364c1a99a053102c90ebd6c24ced88e41948b4f8a46c4837b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/validate-market-data-source-lane-separation.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-source-lane-separation.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "728448cdaa7079b54ea5cf86432ee9f1095c846f0845fc2a47fd5add35f011b7",
+        "currentSha256": "24108525e2e25b5b8bcefd63ab7fdf7c04e31bc9b78baded124e80db1fb1ab67"
+      }
+    },
+    {
+      "id": "0fa1efb03dc2a651ac2e7a91a27b7c7f5ce3b4fb615e09f75aa72ec071d753f7",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/validate-onchain-market-data.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "db88c2d9b78baff13583fe509882b086fa5b1253ff0e333b7a1c99b63fba5ff3",
+        "currentSha256": "6c2522c8a5a3083285a7fecf1af5479b2316e1b872ee4d3a089afe336968b238"
       }
     },
     {
@@ -765,12 +864,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "8e8542984912aeab630eb1b931c7c8b2b56609ec7adc121c6718291425f0d466",
+    "snapshotHash": "855e83b9eec193dbb1d22a0caafbf6dbc9174d2a6cbf415376265a8d787416cf",
     "securityVault": {
-      "runCount": 353,
+      "runCount": 354,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-20T09-43-10-033Z-8e85429849.json",
-      "latestRecordHash": "90fb0280a9ef4f9e5fb52603b4c8e96975ad70107569f6db192c38747f5ba56e",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-20T10-03-12-296Z-855e83b9ee.json",
+      "latestRecordHash": "c94c5599e715fa754492c64af36f21d678db3af24b7cfc8cdf9646bacd7d87e9",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
