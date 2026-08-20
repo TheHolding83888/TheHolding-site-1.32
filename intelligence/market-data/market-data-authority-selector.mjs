@@ -29,6 +29,7 @@ function onchainLane(policy, shadow, assetId, nowMs) {
   const observation = shadow?.observations?.[assetId] || null;
   const usd = finite(observation?.usd);
   const snapshotAgeSeconds = isoAgeSeconds(shadow?.generatedAt, nowMs);
+  const override = policy.assetOverrides?.[assetId] || {};
   const checks = {
     snapshotMode: shadow?.mode === policy.onchainEligibility.requiredSnapshotMode,
     observationStatus: observation?.status === policy.onchainEligibility.requiredObservationStatus,
@@ -36,7 +37,12 @@ function onchainLane(policy, shadow, assetId, nowMs) {
     finitePositiveUsd: policy.onchainEligibility.requireFinitePositiveUsd !== true || (usd !== null && usd > 0),
     snapshotNotProductionAuthority: policy.onchainEligibility.requireSnapshotProductionPriceAuthorityFalse !== true || shadow?.semantics?.productionPriceAuthority === false,
     observationNotProductionAuthority: policy.onchainEligibility.requireObservationProductionPriceAuthorityFalse !== true || observation?.productionPriceAuthority === false,
-    noExecutionAuthority: policy.onchainEligibility.requireExecutionAuthorityNone !== true || shadow?.authority?.executionAuthority === 'none'
+    noExecutionAuthority: policy.onchainEligibility.requireExecutionAuthorityNone !== true || shadow?.authority?.executionAuthority === 'none',
+    requiredObservationSource: !override.requiredObservationSource || observation?.source === override.requiredObservationSource,
+    requiredDependencyStatus: !override.requiredDependencyStatus || observation?.dependencyStatus === override.requiredDependencyStatus,
+    requiredQuoteAssetId: !override.requiredQuoteAssetId || observation?.quoteAssetId === override.requiredQuoteAssetId,
+    requiredFeedQuote: !override.requiredFeedQuote || observation?.feedQuote === override.requiredFeedQuote,
+    requiredOutputQuote: !override.requiredOutputQuote || observation?.outputQuote === override.requiredOutputQuote
   };
   const eligible = Object.values(checks).every(Boolean);
   return {
@@ -98,12 +104,13 @@ export function evaluateMarketDataAuthority({ policy, marketData, shadow, nowMs 
   }
 
   return {
-    version: '0.1-market-data-authority-evaluation',
+    version: '0.2-market-data-authority-evaluation-dependency-aware',
     mode: policy.mode,
     generatedAt: new Date(nowMs).toISOString(),
     semantics: {
       dryRunOnly: policy.semantics?.productionWriterIntegrationEnabled === false,
       perAssetAuthority: true,
+      dependencyAwareEligibility: true,
       productionMutationPerformed: false,
       executionAuthority: 'none'
     },
