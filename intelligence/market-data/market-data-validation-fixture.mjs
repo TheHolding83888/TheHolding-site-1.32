@@ -8,8 +8,6 @@ const generatedAt = new Date().toISOString();
 const prices = {};
 
 for (const [index, asset] of (registry.assets || []).entries()) {
-  // Deterministic positive values keep valuation/weighting code exercised while
-  // making CI independent of credentials, network price providers and market moves.
   const usd = Number((1 + (index + 1) / 1000).toFixed(6));
   prices[asset.assetId] = {
     assetId: asset.assetId,
@@ -23,8 +21,8 @@ for (const [index, asset] of (registry.assets || []).entries()) {
 }
 
 const output = {
-  version: '0.2-market-data-validation-fixture',
-  engineVersion: '0.1-zero-external-request-ci-fixture',
+  version: '0.3-market-data-validation-fixture-source-lane-separated',
+  engineVersion: '0.2-zero-external-request-ci-source-lane-mirror',
   generatedAt,
   requestedAt: null,
   observedAt: generatedAt,
@@ -36,7 +34,10 @@ const output = {
     browserExternalPriceRequestsAllowed: false,
     unknownIsNotZero: true,
     wrapperNavAndProtocolValuationStayUpstream: true,
-    productionPriceAuthority: false
+    productionPriceAuthority: false,
+    dedicatedCoinGeckoSourceLane: true,
+    canonicalMirrorEqualsCoinGeckoSourceLane: true,
+    perAssetAuthoritySelectionApplied: false
   },
   provider: {
     id: 'validation-fixture',
@@ -56,6 +57,8 @@ const output = {
   },
   prices,
   authority: {
+    productionPriceLane: 'coingecko-lane',
+    onchainSelectedAssetCount: 0,
     readOnly: true,
     executionAuthority: 'none',
     capitalExecution: false,
@@ -63,8 +66,11 @@ const output = {
   }
 };
 
-fs.writeFileSync(path.join(__dirname, 'market-data.json'), JSON.stringify(output, null, 2) + '\n');
-console.log('Market Data validation fixture written', {
+const bytes = JSON.stringify(output, null, 2) + '\n';
+fs.writeFileSync(path.join(__dirname, 'market-data-coingecko.json'), bytes);
+fs.writeFileSync(path.join(__dirname, 'market-data.json'), bytes);
+console.log('Market Data validation source lane + canonical mirror written', {
   assetCount: registry.assets.length,
-  externalRequestCount: 0
+  externalRequestCount: 0,
+  onchainSelectedAssetCount: 0
 });

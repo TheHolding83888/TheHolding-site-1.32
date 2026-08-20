@@ -10,6 +10,7 @@ on:
       - 'intelligence/market-data/market-price-registry.json'
       - 'intelligence/market-data/fund-capital-registry.json'
       - 'intelligence/market-data/market-data-engine.mjs'
+      - 'intelligence/market-data/market-data-coingecko.json'
       - 'intelligence/market-data/public-capital-engine.mjs'
       - 'intelligence/market-data/coingecko-fetch-shim.mjs'
       - 'intelligence/market-data/public-capital-client.js'
@@ -60,6 +61,22 @@ jobs:
           MARKET_DATA_FORCE_REFRESH: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
         run: node intelligence/market-data/market-data-engine.mjs
 
+      - name: Prove Stage 2A canonical mirror is unchanged
+        run: |
+          set -euo pipefail
+          cmp intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const source=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
+          const canonical=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          if(source.semantics?.dedicatedCoinGeckoSourceLane!==true)throw new Error('CoinGecko source lane not explicit');
+          if(source.semantics?.canonicalMirrorEqualsCoinGeckoSourceLane!==true)throw new Error('Stage 2A mirror contract missing');
+          if(source.semantics?.perAssetAuthoritySelectionApplied!==false)throw new Error('Stage 2A unexpectedly applied authority selector');
+          if(source.authority?.productionPriceLane!=='coingecko-lane'||source.authority?.onchainSelectedAssetCount!==0)throw new Error('Stage 2A changed production authority');
+          if(JSON.stringify(source)!==JSON.stringify(canonical))throw new Error('Canonical Market Data diverged from CoinGecko source lane');
+          console.log('Stage 2A source-lane mirror PASS',{assetCount:Object.keys(source.prices||{}).length,onchainSelectedAssetCount:0});
+          NODE
+
       - name: Observe onchain prices in fail-open shadow mode
         run: |
           set +e
@@ -83,6 +100,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          const source=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
           const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const reg=JSON.parse(fs.readFileSync('intelligence/market-data/fund-capital-registry.json','utf8'));
@@ -100,6 +118,8 @@ jobs:
           if(pub.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('browser external-price authority drift');
           if(pub.authority?.executionAuthority!=='none')throw new Error('execution authority drift');
           if(market.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('market browser authority drift');
+          if(source.authority?.productionPriceLane!=='coingecko-lane'||source.authority?.onchainSelectedAssetCount!==0)throw new Error('Stage 2A authority drift');
+          if(JSON.stringify(source)!==JSON.stringify(market))throw new Error('Stage 2A source/canonical mirror drift');
           if(shadow.mode!=='shadow'||shadow.semantics?.productionPriceAuthority!==false)throw new Error('onchain shadow authority drift');
           if(shadow.semantics?.paidRpcRequired!==false||shadow.authority?.executionAuthority!=='none')throw new Error('onchain zero-cost/authority contract drift');
           if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd)))throw new Error('Fund ecosystem TVL unavailable');
@@ -107,6 +127,8 @@ jobs:
           console.log('Shared Market Data validation PASS',{
             marketStatus:market.status,
             observedAt:market.observedAt,
+            productionPriceLane:source.authority.productionPriceLane,
+            onchainSelectedAssetCount:source.authority.onchainSelectedAssetCount,
             onchainShadowStatus:shadow.status,
             onchainShadowCoverage:shadow.coverage,
             fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd,
@@ -123,6 +145,7 @@ jobs:
           git config user.name "The Holding Market Data Orchestrator"
           git config user.email "market-data-orchestrator@theholding.ai"
           git add \
+            intelligence/market-data/market-data-coingecko.json \
             intelligence/market-data/market-data.json \
             intelligence/market-data/onchain-price-shadow.json \
             intelligence/market-data/public-capital-state.json
@@ -140,6 +163,7 @@ jobs:
             fi
             COINGECKO_API_KEY='${{ secrets.COINGECKO_API_KEY }}' MARKET_DATA_FORCE_REFRESH='false' \
               node intelligence/market-data/market-data-engine.mjs
+            cmp intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json
             set +e
             node intelligence/market-data/onchain-price-resolver.mjs
             shadow_code=$?
@@ -152,7 +176,7 @@ jobs:
               echo '::warning::Onchain shadow unavailable during publish retry; canonical Market Data continues unchanged.'
             fi
             node intelligence/market-data/public-capital-engine.mjs
-            git add intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json intelligence/market-data/public-capital-state.json
+            git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json intelligence/market-data/public-capital-state.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
