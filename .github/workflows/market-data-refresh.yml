@@ -100,18 +100,22 @@ jobs:
           const reg=JSON.parse(fs.readFileSync('intelligence/market-data/fund-capital-registry.json','utf8'));
           const direct=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share','venice-token','internet-computer','decentraland','the-sandbox'];
           const relative=['convex-finance'];
-          const promoted=[...direct,...relative];
+          const v3=['ovr','beam-2','liquity','virtual-protocol','ondo-finance','zksync'];
+          const promoted=[...direct,...relative,...v3];
           if(market.authority?.productionPriceLane!=='per-asset')throw new Error('Per-asset production authority missing');
           if(JSON.stringify(market.authority?.pilotAssetIds)!==JSON.stringify(direct))throw new Error('Direct pilot cohort drift');
           if(JSON.stringify(market.authority?.relativePilotAssetIds)!==JSON.stringify(relative))throw new Error('Relative pilot cohort drift');
+          if(JSON.stringify(market.authority?.v3RelativePilotAssetIds)!==JSON.stringify(v3))throw new Error('V3 relative pilot cohort drift');
           if(Number(market.authority?.directOnchainSelectedAssetCount)>10)throw new Error('Direct pilot cap exceeded');
           if(Number(market.authority?.relativeOnchainSelectedAssetCount)>1)throw new Error('Relative pilot cap exceeded');
-          if(Number(market.authority?.onchainSelectedAssetCount)>11)throw new Error('Combined promoted cap exceeded');
+          if(Number(market.authority?.v3RelativeOnchainSelectedAssetCount)>6)throw new Error('V3 relative pilot cap exceeded');
+          if(Number(market.authority?.onchainSelectedAssetCount)>17)throw new Error('Combined promoted cap exceeded');
           for(const id of Object.keys(source.prices||{})){
             const row=market.prices?.[id];
             if(!row)throw new Error(`${id}: canonical row missing`);
             if(!promoted.includes(id)&&row.authority?.selectedLane!=='coingecko-lane')throw new Error(`${id}: non-promoted authority drift`);
           }
+          if(market.prices?.elizaos?.authority?.selectedLane!=='coingecko-lane')throw new Error('ELIZA must remain CoinGecko authority');
           for(const id of direct){
             const row=market.prices?.[id];
             if(!['onchain','coingecko-lane'].includes(row?.authority?.selectedLane))throw new Error(`${id}: invalid direct pilot lane`);
@@ -121,6 +125,14 @@ jobs:
             const row=market.prices?.[id];
             if(!['onchain','coingecko-lane'].includes(row?.authority?.selectedLane))throw new Error(`${id}: invalid relative pilot lane`);
             if(row.authority.selectedLane==='onchain'&&row.source!=='onchain-chainlink-v3-relative')throw new Error(`${id}: unexpected relative onchain provenance`);
+          }
+          for(const id of v3){
+            const row=market.prices?.[id];
+            if(!['onchain','coingecko-lane'].includes(row?.authority?.selectedLane))throw new Error(`${id}: invalid V3 relative pilot lane`);
+            if(row.authority.selectedLane==='onchain'&&row.source!=='onchain-uniswap-v3-twap-relative')throw new Error(`${id}: unexpected V3 relative onchain provenance`);
+            const obs=shadow.observations?.[id];
+            if(obs?.source!=='uniswap-v3-twap-relative'||obs?.quoteAssetId!=='ethereum'||obs?.feedQuote!=='ETH'||obs?.outputQuote!=='USD')throw new Error(`${id}: V3 relative route contract drift`);
+            if(obs?.status==='shadow-ok'&&obs?.dependencyStatus!=='shadow-ok')throw new Error(`${id}: healthy V3 observation lacks healthy dependency`);
           }
           const cvxShadow=shadow.observations?.['convex-finance'];
           if(cvxShadow?.source!=='chainlink-v3-relative'||cvxShadow?.quoteAssetId!=='ethereum'||cvxShadow?.feedQuote!=='ETH'||cvxShadow?.outputQuote!=='USD')throw new Error('CVX relative route contract drift');
@@ -134,7 +146,7 @@ jobs:
           if(pub.authority?.executionAuthority!=='none'||market.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
           if(shadow.mode!=='shadow'||shadow.semantics?.productionPriceAuthority!==false)throw new Error('Shadow contract drift');
           if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
-          console.log('Bounded Market Data authority PASS',{direct,relative,onchainSelectedAssetCount:market.authority.onchainSelectedAssetCount,fallbackCount:market.authority.fallbackCount});
+          console.log('Bounded Market Data authority PASS',{direct,relative,v3,onchainSelectedAssetCount:market.authority.onchainSelectedAssetCount,fallbackCount:market.authority.fallbackCount});
           NODE
           git diff --check
 
