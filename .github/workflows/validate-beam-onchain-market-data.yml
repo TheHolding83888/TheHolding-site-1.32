@@ -79,9 +79,9 @@ jobs:
       - name: Prove MODE stale Pyth route is replaced by Velodrome observation TWAP
         run: |
           set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');
-          const {mergeOnchainRegistryExtensions}=await import('./intelligence/market-data/onchain-price-resolver.mjs');
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { mergeOnchainRegistryExtensions } from './intelligence/market-data/onchain-price-resolver.mjs';
           const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
           const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
           if(base.assets?.mode?.route?.type!=='pyth-core-readonly')throw new Error('Expected byte-stable base MODE route to remain Pyth before effective override');
