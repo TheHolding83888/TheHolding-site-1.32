@@ -1,6 +1,6 @@
 # The Holding — Cognitive Stack State
 
-Generated: 2026-08-19T07:58:31.031Z
+Generated: 2026-08-20T08:01:32.071Z
 Status: watch
 Ready for manual interpretation: YES
 Immediate human review: YES
@@ -20,7 +20,7 @@ Execution authority: none
 
 ## Chain
 
-Security Sentinel: watch · critical 0 · high 6 · medium 26
+Security Sentinel: watch · critical 0 · high 6 · medium 38
 Grounded Brain: watch · upstream exact true
 ChatGPT Bridge: watch · cases 25 · evidence 27
 
@@ -32,7 +32,7 @@ Execution enabled: NO
 
 ## Integrity
 
-Chain hash: a90c3a3d2883ddd19f7a70f0ab06b8d8a115d9acf704ced5cf410d74fefbcf1f
+Chain hash: cb4710d3021302f48ad54c0a89b9f9e3b04bbc06471642d93bc48a982c4653bb
 
 Warnings: 6 high security finding(s) require explicit human review
 

@@ -1,13 +1,13 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-19T07:58:30.714Z
+Generated: 2026-08-20T08:01:31.714Z
 Mode: delta
 Status: watch
 
 ## 25 evidence-bound reasoning case(s) are active across economic and security memory.
 
 ### What changed
-Current canonical inputs contain 20 material Observer change(s), 0 new security finding event(s), and 1 resolved security finding event(s).
+Current canonical inputs contain 20 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s).
 
 ### Why it matters / What follows / What should be done
 
@@ -59,96 +59,96 @@ Current canonical inputs contain 20 material Observer change(s), 0 new security 
 - Action mode: proposal-only
 - Evidence: security/security-intelligence.json/currentFindings/5
 
-#### 7. 26 current findings
-- Signal: 26 current medium security finding(s) in category dom-innerhtml.
+#### 7. 38 current findings
+- Signal: 38 current medium security finding(s) in category dom-innerhtml.
 - Why it matters: If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.
 - What follows: A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.
 - Proposed next step: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 - Action mode: proposal-only
 - Evidence: security/security-intelligence.json/currentFindings
 
-#### 8. projectx-whype-usdc
-- Signal: Project X / projectx-whype-usdc remains warming.
-- Why it matters: A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement.
-- What follows: Until the adapter returns to a reproducible ok state, any full-current measurement that depends on it remains unsupported.
-- Proposed next step: Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.
+#### 8. 0x5860...83CA8.eth
+- Signal: 0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.
+- Why it matters: Unresolved reward routes reduce the completeness of earned-value memory.
+- What follows: Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.
+- Proposed next step: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/watchNext/0
 
-#### 9. Cypher
-- Signal: Cypher Productivity coverage moved 80.4% → 86.6%.
-- Why it matters: Coverage tells us how much productive capital is currently understood rather than guessed or treated as zero.
-- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-- Action mode: proposal-only
-- Evidence: intelligence/change-intelligence.json/whatChanged/4
-
-#### 10. Cypher
-- Signal: Cypher Productivity coverage is 86.6%.
-- Why it matters: Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood.
-- What follows: The covered productive rate remains useful only within its stated coverage; unresolved productive capital must stay excluded rather than be fabricated.
-- Proposed next step: Prioritize the unresolved adapter(s) contributing to the coverage gap, preserve covered-rate semantics, and promote to full coverage only after reproducible evidence exists.
+#### 9. aerocvxyb.eth
+- Signal: aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.
+- Why it matters: Unresolved reward routes reduce the completeness of earned-value memory.
+- What follows: Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.
+- Proposed next step: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/watchNext/1
 
-#### 11. defitea.eth
-- Signal: defitea.eth Rewards completeness changed: pending routes 2 → 1, unpriced 0 → 0.
-- Why it matters: Completeness improvements turn previously partial observations into reusable verified intelligence.
-- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-- Action mode: proposal-only
-- Evidence: intelligence/change-intelligence.json/whatChanged/5
-
-#### 12. 0x5860...83CA8.eth
-- Signal: 0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.
+#### 10. defitea.eth
+- Signal: defitea.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.
 - Why it matters: Unresolved reward routes reduce the completeness of earned-value memory.
 - What follows: Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.
 - Proposed next step: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/watchNext/2
 
-#### 13. aerocvxyb.eth
-- Signal: aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.
-- Why it matters: Unresolved reward routes reduce the completeness of earned-value memory.
-- What follows: Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.
-- Proposed next step: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
-- Action mode: proposal-only
-- Evidence: intelligence/change-intelligence.json/watchNext/3
-
-#### 14. defitea.eth
-- Signal: defitea.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.
-- Why it matters: Unresolved reward routes reduce the completeness of earned-value memory.
-- What follows: Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.
-- Proposed next step: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
-- Action mode: proposal-only
-- Evidence: intelligence/change-intelligence.json/watchNext/4
-
-#### 15. concentrator_asdcrv
-- Signal: Concentrator adapter concentrator_asdcrv changed warming → ok.
+#### 11. projectx-whype-usdc
+- Signal: Project X adapter projectx-whype-usdc changed warming → ok.
 - Why it matters: A previously unresolved mechanism is now reproducibly measurable and becomes reusable intelligence.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/whatChanged/0
 
-#### 16. convex_staked_cvxcrv
-- Signal: Convex adapter convex_staked_cvxcrv changed warming → ok.
-- Why it matters: A previously unresolved mechanism is now reproducibly measurable and becomes reusable intelligence.
+#### 12. Cypher
+- Signal: Cypher Productivity status changed partial → ok.
+- Why it matters: Status changes alter how much of the company’s productive capital is currently reproducibly measured.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/whatChanged/1
 
-#### 17. Cypher
-- Signal: Cypher Reference APR moved 20.60% → 19.24% (-1.36 pp).
+#### 13. Cypher
+- Signal: Cypher Productivity coverage moved 86.6% → 100.0%.
+- Why it matters: Coverage tells us how much productive capital is currently understood rather than guessed or treated as zero.
+- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+- Action mode: proposal-only
+- Evidence: intelligence/change-intelligence.json/whatChanged/2
+
+#### 14. 05081966.eth
+- Signal: 05081966.eth Reference APR moved 9.77% → 10.15% (+0.38 pp).
+- Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
+- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+- Action mode: proposal-only
+- Evidence: intelligence/change-intelligence.json/whatChanged/3
+
+#### 15. 0x5860...83CA8.eth
+- Signal: 0x5860...83CA8.eth Reference APR moved 15.58% → 16.15% (+0.57 pp).
+- Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
+- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+- Action mode: proposal-only
+- Evidence: intelligence/change-intelligence.json/whatChanged/4
+
+#### 16. 1milliondollar.eth
+- Signal: 1milliondollar.eth Reference APR moved 6.98% → 11.45% (+4.47 pp).
+- Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
+- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+- Action mode: proposal-only
+- Evidence: intelligence/change-intelligence.json/whatChanged/5
+
+#### 17. aerocvxyb.eth
+- Signal: aerocvxyb.eth Reference APR moved 15.98% → 17.31% (+1.33 pp).
 - Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/whatChanged/6
 
-#### 18. defitea.eth
-- Signal: defitea.eth Reference APR moved 12.02% → 16.39% (+4.37 pp).
+#### 18. Cypher
+- Signal: Cypher Reference APR moved 19.24% → 27.31% (+8.07 pp).
 - Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
@@ -156,60 +156,60 @@ Current canonical inputs contain 20 material Observer change(s), 0 new security 
 - Evidence: intelligence/change-intelligence.json/whatChanged/7
 
 #### 19. defitea.eth
-- Signal: defitea.eth recorded a new daily reporting observation for 2026-08-19.
-- Why it matters: Every new daily observation extends the operating memory used by future analytics and decision support.
+- Signal: defitea.eth Reference APR moved 16.39% → 12.60% (-3.78 pp).
+- Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/whatChanged/8
 
-#### 20. defitea.eth
-- Signal: defitea.eth current-month cash-flow/reference-income counter moved $32.50 → $36.56.
-- Why it matters: Autonomous reporting is turning recurring observations into a continuously growing economic history.
+#### 20. dinaz.eth
+- Signal: dinaz.eth Reference APR moved 0.01% → 6.15% (+6.14 pp).
+- Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/whatChanged/9
 
-#### 21. Monetra.eth
-- Signal: Monetra.eth recorded a new daily reporting observation for 2026-08-19.
-- Why it matters: Every new daily observation extends the operating memory used by future analytics and decision support.
+#### 21. YieldRing.eth
+- Signal: YieldRing.eth Reference APR moved 14.93% → 16.08% (+1.15 pp).
+- Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/whatChanged/10
 
-#### 22. Monetra.eth
-- Signal: Monetra.eth current-month cash-flow/reference-income counter moved $0.07 → $0.08.
-- Why it matters: Autonomous reporting is turning recurring observations into a continuously growing economic history.
+#### 22. defitea.eth
+- Signal: defitea.eth recorded a new daily reporting observation for 2026-08-20.
+- Why it matters: Every new daily observation extends the operating memory used by future analytics and decision support.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/whatChanged/11
 
-#### 23. Monetra.eth
-- Signal: Monetra.eth current-month generated income moved $0.0723 → $0.0843.
-- Why it matters: Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.
+#### 23. defitea.eth
+- Signal: defitea.eth current-month cash-flow/reference-income counter moved $36.56 → $40.08.
+- Why it matters: Autonomous reporting is turning recurring observations into a continuously growing economic history.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/whatChanged/12
 
-#### 24. Cypher
-- Signal: Cypher Rewards status changed partial → ok.
-- Why it matters: Reward measurement completeness affects the reliability of current earned-but-unclaimed value.
+#### 24. Monetra.eth
+- Signal: Monetra.eth recorded a new daily reporting observation for 2026-08-20.
+- Why it matters: Every new daily observation extends the operating memory used by future analytics and decision support.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
-- Evidence: intelligence/change-intelligence.json/whatChanged/2
+- Evidence: intelligence/change-intelligence.json/whatChanged/13
 
-#### 25. Cypher
-- Signal: Cypher Rewards completeness changed: pending routes 1 → 0, unpriced 0 → 0.
-- Why it matters: Completeness improvements turn previously partial observations into reusable verified intelligence.
+#### 25. Monetra.eth
+- Signal: Monetra.eth current-month cash-flow/reference-income counter moved $0.08 → $0.10.
+- Why it matters: Autonomous reporting is turning recurring observations into a continuously growing economic history.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
-- Evidence: intelligence/change-intelligence.json/whatChanged/3
+- Evidence: intelligence/change-intelligence.json/whatChanged/14
 
 ---
 
