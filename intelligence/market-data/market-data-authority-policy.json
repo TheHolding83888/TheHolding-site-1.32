@@ -1,0 +1,38 @@
+{
+  "version": "0.1-market-data-authority-promotion-framework",
+  "mode": "framework-dry-run",
+  "defaultProductionAuthority": "coingecko-lane",
+  "globalOnchainPromotionEnabled": false,
+  "semantics": {
+    "perAssetAuthorityRequired": true,
+    "globalAllAssetSwitchForbidden": true,
+    "coinGeckoRemainsFallbackAndSanityCheck": true,
+    "canonicalCoinGeckoLaneRetainsItsExistingPreviousSnapshotFallback": true,
+    "unknownIsNotZero": true,
+    "productionWriterIntegrationEnabled": false,
+    "automaticPolicyMutationAllowed": false,
+    "automaticProductionMergeAllowed": false,
+    "executionAuthority": "none"
+  },
+  "onchainEligibility": {
+    "requiredSnapshotMode": "shadow",
+    "requiredObservationStatus": "shadow-ok",
+    "maxShadowSnapshotAgeSeconds": 3600,
+    "requireFinitePositiveUsd": true,
+    "requireSnapshotProductionPriceAuthorityFalse": true,
+    "requireObservationProductionPriceAuthorityFalse": true,
+    "requireExecutionAuthorityNone": true
+  },
+  "fallbackOrderByRequestedPrimary": {
+    "coingecko-lane": [
+      "coingecko-lane",
+      "unknown"
+    ],
+    "onchain": [
+      "onchain-shadow",
+      "coingecko-lane",
+      "unknown"
+    ]
+  },
+  "assetOverrides": {}
+}

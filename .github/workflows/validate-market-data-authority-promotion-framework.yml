@@ -1,0 +1,58 @@
+name: "Validate Market Data Authority Promotion Framework"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/market-data/market-data-authority-policy.json'
+      - 'intelligence/market-data/market-data-authority-selector.mjs'
+      - 'intelligence/market-data/market-data-authority-selector-validation.mjs'
+      - '.github/workflows/validate-market-data-authority-promotion-framework.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate dry-run authority framework
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/market-data-authority-selector.mjs
+          node --check intelligence/market-data/market-data-authority-selector-validation.mjs
+          node intelligence/market-data/market-data-authority-selector-validation.mjs
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
+          if(p.mode!=='framework-dry-run')throw new Error('Framework must remain dry-run');
+          if(p.globalOnchainPromotionEnabled!==false)throw new Error('Global promotion gate must remain disabled');
+          if(p.defaultProductionAuthority!=='coingecko-lane')throw new Error('Default production authority changed');
+          if(p.semantics?.productionWriterIntegrationEnabled!==false)throw new Error('Production writer integration unexpectedly enabled');
+          if(p.semantics?.automaticPolicyMutationAllowed!==false||p.semantics?.automaticProductionMergeAllowed!==false)throw new Error('Automatic authority mutation enabled');
+          if(p.semantics?.executionAuthority!=='none')throw new Error('Execution authority drift');
+          if(Object.keys(p.assetOverrides||{}).length!==0)throw new Error('Stage 1 must promote zero assets');
+          console.log('Stage 1 authority boundary PASS');
+          NODE
+          git diff --check
+      - name: Prove PR cannot silently mutate Market Data production data plane
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          base_sha='${{ github.event.pull_request.base.sha }}'
+          git fetch origin "$base_sha" --depth=1
+          changed="$(git diff --name-only "$base_sha" HEAD)"
+          printf '%s\n' "$changed"
+          forbidden='^(intelligence/market-data/market-data-engine\.mjs|intelligence/market-data/public-capital-engine\.mjs|intelligence/market-data/onchain-price-resolver\.mjs|intelligence/market-data/market-data\.json|intelligence/market-data/onchain-price-shadow\.json|intelligence/market-data/public-capital-state\.json|\.github/workflows/market-data-refresh\.yml)$'
+          if printf '%s\n' "$changed" | grep -Eq "$forbidden"; then
+            echo 'Stage 1 PR touched a forbidden production data-plane file.' >&2
+            exit 1
+          fi
+          echo 'Production data plane untouched PASS'
