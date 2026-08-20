@@ -65,7 +65,6 @@ for (const assetId of relativeIds) {
   if (observation?.feedQuote !== policy.relativePilot.requiredFeedQuote) throw new Error(`${assetId}: relative feed quote drift`);
   if (observation?.quoteAssetId !== policy.relativePilot.requiredQuoteAssetId) throw new Error(`${assetId}: relative dependency asset drift`);
   if (observation?.outputQuote !== policy.relativePilot.requiredOutputQuote) throw new Error(`${assetId}: relative output quote drift`);
-  if (observation?.dependencyStatus !== policy.relativePilot.requiredDependencyStatus) throw new Error(`${assetId}: relative dependency status drift`);
 }
 
 if (forceCoinGeckoFailback) {
