@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolveOnchainPrices as resolveLegacyOnchainPrices, mergeOnchainRegistryExtensions } from './onchain-price-resolver-v09.mjs';
+import {
+  resolveOnchainPrices as resolveLegacyOnchainPrices,
+  mergeOnchainRegistryExtensions as mergeLegacyRegistryExtensions
+} from './onchain-price-resolver-v09.mjs';
 import {
   UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE,
   resolveUniswapV3ChainlinkQuotePrices
@@ -12,8 +15,8 @@ export { UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE } from './onchain-uniswap-v3-chai
 
 /*
  * Backward-compatible validation markers. The complete proven v0.9 resolver
- * is preserved byte-for-byte in onchain-price-resolver-v09.mjs; this v0.10
- * wrapper adds only a Chainlink-quoted Uniswap V3 lane.
+ * is preserved byte-for-byte in onchain-price-resolver-v09.mjs; this wrapper
+ * adds the Chainlink-quoted V3 lane and explicit bounded route replacement.
  *
  * pyth-core-readonly
  * 96834ad3
@@ -40,6 +43,26 @@ const OUTPUT_PATH = path.join(__dirname, 'onchain-price-shadow.json');
 function readJson(file, fallback = null) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
   catch { return fallback; }
+}
+
+export function mergeOnchainRegistryExtensions(baseRegistry, extensionRegistry) {
+  const extended = mergeLegacyRegistryExtensions(baseRegistry, extensionRegistry);
+  const overrides = extensionRegistry?.overrides || {};
+  const ids = Object.keys(overrides);
+  if (!ids.length) return extended;
+  const unknown = ids.filter(id => !extended?.assets?.[id]);
+  if (unknown.length) throw new Error(`Onchain route override targets unknown canonical assets: ${unknown.join(', ')}`);
+  const assets = { ...(extended.assets || {}) };
+  for (const id of ids) {
+    const replacement = overrides[id];
+    if (!replacement?.route || replacement.assetId !== id) throw new Error(`Invalid route override contract for ${id}`);
+    assets[id] = { ...assets[id], ...replacement, route: replacement.route };
+  }
+  return {
+    ...extended,
+    semantics: { ...(extended.semantics || {}), boundedRouteOverridesApplied: true },
+    assets
+  };
 }
 
 function mergeNetworkTelemetry(baseNetworks, quoteNetworks) {
@@ -98,6 +121,7 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       chainlinkQuoteRoundIntegrityChecked: true,
       tokenDecimalsReadOnchain: true,
       stablecoinPegHardcoded: false,
+      boundedRouteOverridesApplied: registry.semantics?.boundedRouteOverridesApplied === true,
       uniswapV3SpotPriceAuthority: false,
       dexSpotPriceAuthority: false
     },
