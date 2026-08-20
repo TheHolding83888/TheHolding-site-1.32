@@ -1,6 +1,6 @@
 {
-  "version": "0.7-full-coverage-runtime-resilience",
-  "effectiveRegistryVersion": "0.22-onchain-price-source-registry-full-26-runtime-resilient",
+  "version": "0.8-final-runtime-close",
+  "effectiveRegistryVersion": "0.23-onchain-price-source-registry-full-26-final-runtime-close",
   "purpose": "Bounded extension routes plus explicit reviewed replacements for canonical onchain Market Data routes. Base v0.15 remains byte-stable; route overrides are fail-closed and may only target existing canonical asset ids.",
   "semantics": {
     "uniswapV2HistoricalTwapRoutesAllowed": true,
@@ -19,37 +19,28 @@
     "productionPriceAuthority": false,
     "executionAuthority": "none"
   },
-  "networks": {
-    "ethereum-historical": {
-      "chainId": 1,
-      "rpcFailover": [
-        {"id":"1rpc","url":"https://1rpc.io/eth"},
-        {"id":"llamarpc","url":"https://eth.llamarpc.com"},
-        {"id":"publicnode","url":"https://ethereum-rpc.publicnode.com"}
-      ]
-    }
-  },
+  "networks": {},
   "assets": {
     "autonolas": {
       "assetId": "autonolas",
       "symbol": "OLAS",
       "route": {
         "type": "uniswap-v2-historical-twap-relative",
-        "network": "ethereum-historical",
+        "network": "ethereum",
         "pair": "0x09D1d767eDF8Fa23A64C51fa559E0688E526812F",
         "token": "0x0001A500A6B18995B03f44bb040A5fFc28E45CB0",
         "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         "tokenDecimals": 18,
         "quoteTokenDecimals": 18,
-        "lookbackBlocks": 150,
-        "minTwapWindowSeconds": 1200,
-        "maxTwapWindowSeconds": 2700,
+        "lookbackBlocks": 60,
+        "minTwapWindowSeconds": 500,
+        "maxTwapWindowSeconds": 1100,
         "quoteAssetId": "ethereum",
         "feedQuote": "ETH",
         "outputQuote": "USD",
         "maxDivergencePct": 10,
         "authority": "shadow",
-        "provenance": "Official Olas OLAS token and protocol-owned OLAS/WETH Uniswap V2 pair. Read-only cumulative-price historical TWAP from two block-pinned pair states through a route-scoped public-RPC fabric that prefers recent-history-capable endpoints, composed with same-cycle ETH/USD. No updatePrice transaction, keeper dependency, reserve spot price, paid RPC, signing, or execution authority."
+        "provenance": "Official Olas OLAS token and protocol-owned OLAS/WETH Uniswap V2 pair. Read-only cumulative-price historical TWAP from two block-pinned pair states using a 60-block recent-history window proven live on the standard public Ethereum RPC fabric; composed with same-cycle ETH/USD. No updatePrice transaction, keeper dependency, reserve spot price, paid RPC, signing, or execution authority."
       }
     },
     "ovr": {
@@ -77,22 +68,21 @@
       "assetId": "beam-2",
       "symbol": "BEAM",
       "route": {
-        "type": "uniswap-v2-historical-twap-relative",
-        "network": "ethereum-historical",
-        "pair": "0x180EFC1349A69390aDE25667487a826164C9c6E4",
+        "type": "uniswap-v3-twap-relative",
+        "network": "ethereum",
+        "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
         "token": "0x62D0A8458eD7719FDAF978fe5929C6D342B0bFcE",
         "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         "tokenDecimals": 18,
         "quoteTokenDecimals": 18,
-        "lookbackBlocks": 150,
-        "minTwapWindowSeconds": 1200,
-        "maxTwapWindowSeconds": 2700,
+        "fee": 10000,
+        "twapWindowSeconds": 1800,
         "quoteAssetId": "ethereum",
         "feedQuote": "ETH",
         "outputQuote": "USD",
         "maxDivergencePct": 10,
         "authority": "shadow",
-        "provenance": "Beam official Ethereum BEAM token and established BEAM/WETH Uniswap V2 pair. Read-only cumulative-price historical TWAP from two block-pinned pair states through a route-scoped public-RPC fabric that prefers recent-history-capable endpoints, composed with same-cycle ETH/USD. No reserve spot-price authority, keeper/updater dependency, paid RPC, signing, or execution authority."
+        "provenance": "Beam official Ethereum BEAM token. Read-only canonical Uniswap V3 Factory-discovered BEAM/WETH 1% pool geometric 30-minute observe() TWAP, live-proven with positive active liquidity and sub-1% divergence, composed with same-cycle ETH/USD. No slot0 spot-price authority, paid RPC, signing, or execution authority."
       }
     },
     "elizaos": {
@@ -117,7 +107,7 @@
         "outputQuote": "USD",
         "maxDivergencePct": 10,
         "authority": "shadow",
-        "provenance": "Canonical multichain elizaOS token on BNB Chain priced from the PancakeSwap V3 elizaOS/USDC 0.25% pool using observe()-based 5-minute geometric TWAP after the 30-minute window returned OLD in production. Token and quote decimals are read onchain each cycle. USDC/USD is independently read from the BNB Chain Chainlink Data Feed and freshness/integrity checked; no hardcoded stablecoin peg, slot0 spot authority, paid RPC, signing, or execution authority."
+        "provenance": "Canonical multichain elizaOS token on BNB Chain priced from the PancakeSwap V3 elizaOS/USDC 0.25% pool using observe()-based 5-minute geometric TWAP. Token and quote decimals are read onchain each cycle. USDC/USD is independently read from the BNB Chain Chainlink Data Feed and freshness/integrity checked; no hardcoded stablecoin peg, slot0 spot authority, paid RPC, signing, or execution authority."
       }
     }
   },
