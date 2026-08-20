@@ -61,11 +61,11 @@ jobs:
           const pending=marketIds.filter(id=>!routes.includes(id));
           const special=routes.filter(id=>!marketIds.includes(id));
           if(marketIds.length!==26)throw new Error(`Expected current canonical 26-asset market universe, got ${marketIds.length}`);
-          if(routed.length!==18)throw new Error(`Expected 18 routed market assets after RSUP Curve EMA cohort, got ${routed.length}`);
-          if(pending.length!==8)throw new Error(`Expected 8 pending market assets after RSUP Curve EMA cohort, got ${pending.length}`);
+          if(routed.length!==19)throw new Error(`Expected 19 routed market assets after cvxCRV Curve EMA cohort, got ${routed.length}`);
+          if(pending.length!==7)throw new Error(`Expected 7 pending market assets after cvxCRV Curve EMA cohort, got ${pending.length}`);
           if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
-          if(routed.length+special.length!==19)throw new Error('Expected 19 total live onchain observation targets');
-          console.log('Onchain coverage RSUP Curve EMA cohort PASS',{marketAssets:26,routedMarketAssets:18,pendingMarketAssets:8,specialOnchainReferences:1,totalObservationTargets:19});
+          if(routed.length+special.length!==20)throw new Error('Expected 20 total live onchain observation targets');
+          console.log('Onchain coverage cvxCRV Curve EMA cohort PASS',{marketAssets:26,routedMarketAssets:19,pendingMarketAssets:7,specialOnchainReferences:1,totalObservationTargets:20});
           NODE
       - name: Prove shadow authority boundary and cohort routes
         run: |
@@ -122,18 +122,24 @@ jobs:
             if(!route||route.type!=='uniswap-v3-twap-relative'||route.network!=='ethereum'||route.authority!=='shadow')throw new Error(`${expected.symbol} Uniswap V3 TWAP route invalid`);
             if(route.factory.toLowerCase()!=='0x1f98431c8ad98523631ae4a59f267346ea31f984')throw new Error(`${expected.symbol} Uniswap V3 Factory drift`);
             if(route.token.toLowerCase()!==expected.token)throw new Error(`${expected.symbol} token drift`);
-            if(route.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error(`${expected.symbol} WETH quote-token drift`);
+            if(route.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27eAD9083C756Cc2'.toLowerCase())throw new Error(`${expected.symbol} WETH quote-token drift`);
             if(Number(route.fee)!==expected.fee||Number(route.tokenDecimals)!==18||Number(route.quoteTokenDecimals)!==18)throw new Error(`${expected.symbol} Uniswap V3 pool contract drift`);
             if(Number(route.twapWindowSeconds)!==1800||route.quoteAssetId!=='ethereum'||route.feedQuote!=='ETH'||route.outputQuote!=='USD')throw new Error(`${expected.symbol} TWAP composition drift`);
             if(Number(route.maxDivergencePct)!==10)throw new Error(`${expected.symbol} divergence threshold drift`);
           }
-          const rsup=reg.assets?.resupply?.route;
-          if(!rsup||rsup.type!=='curve-ema-relative'||rsup.network!=='ethereum'||rsup.authority!=='shadow')throw new Error('RSUP Curve EMA route invalid');
-          if(rsup.pool.toLowerCase()!=='0xee351f12eae8c2b8b9d1b9bfd3c5dd565234578d')throw new Error('RSUP official Curve pool drift');
-          if(rsup.token.toLowerCase()!=='0x419905009e4656fdc02418c7df35b1e61ed5f726')throw new Error('RSUP GOV_TOKEN drift');
-          if(rsup.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('RSUP WETH quote token drift');
-          if(rsup.oracleDirection!=='coin0-per-coin1'||String(rsup.oracleScale)!=='1000000000000000000')throw new Error('RSUP Curve oracle direction/scale drift');
-          if(rsup.quoteAssetId!=='ethereum'||rsup.feedQuote!=='ETH'||rsup.outputQuote!=='USD'||Number(rsup.maxDivergencePct)!==10)throw new Error('RSUP Curve composition drift');
+          const curveRoutes={
+            resupply:{symbol:'RSUP',pool:'0xee351f12eae8c2b8b9d1b9bfd3c5dd565234578d',token:'0x419905009e4656fdc02418c7df35b1e61ed5f726',quoteToken:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',quoteAssetId:'ethereum',feedQuote:'ETH'},
+            'convex-crv':{symbol:'cvxCRV',pool:'0x971add32ea87f10bd192671630be3be8a11b8623',token:'0x62b9c7356a2dc64a1969e19c23e4f579f9810aa7',quoteToken:'0xd533a949740bb3306d119cc777fa900ba034cd52',quoteAssetId:'curve-dao-token',feedQuote:'CRV'}
+          };
+          for(const [assetId,expected] of Object.entries(curveRoutes)){
+            const route=reg.assets?.[assetId]?.route;
+            if(!route||route.type!=='curve-ema-relative'||route.network!=='ethereum'||route.authority!=='shadow')throw new Error(`${expected.symbol} Curve EMA route invalid`);
+            if(route.pool.toLowerCase()!==expected.pool)throw new Error(`${expected.symbol} Curve pool drift`);
+            if(route.token.toLowerCase()!==expected.token)throw new Error(`${expected.symbol} token drift`);
+            if(route.quoteToken.toLowerCase()!==expected.quoteToken)throw new Error(`${expected.symbol} quote token drift`);
+            if(route.oracleDirection!=='coin0-per-coin1'||String(route.oracleScale)!=='1000000000000000000')throw new Error(`${expected.symbol} Curve oracle direction/scale drift`);
+            if(route.quoteAssetId!==expected.quoteAssetId||route.feedQuote!==expected.feedQuote||route.outputQuote!=='USD'||Number(route.maxDivergencePct)!==10)throw new Error(`${expected.symbol} Curve composition drift`);
+          }
           const networkContracts={ethereum:1,optimism:10,base:8453,bsc:56,polygon:137,mode:34443};
           for(const [id,chainId] of Object.entries(networkContracts)){
             if(reg.networks?.[id]?.chainId!==chainId||(reg.networks[id].rpcFailover||[]).length<2)throw new Error(`${id} public RPC contract invalid`);
@@ -145,7 +151,7 @@ jobs:
           if(!cvx||cvx.type!=='chainlink-v3-relative'||cvx.quoteAssetId!=='ethereum')throw new Error('Existing CVX composition drift');
           const silver=reg.assets?.['physical-silver']?.route;
           if(silver?.feedBase!=='XAG'||silver?.emergencyFallback?.type!=='gold-ratio'||Number(silver?.emergencyFallback?.divideGoldUsdBy)!==68)throw new Error('Silver direct/fallback contract drift');
-          console.log('Onchain Market Data RSUP Curve EMA route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,curveEmaAssets:['RSUP'],spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
+          console.log('Onchain Market Data reusable Curve EMA route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,curveEmaAssets:['RSUP','cvxCRV'],spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
           NODE
       - name: Prove shared heartbeat remains shadow-only and fail-open
         run: |
@@ -179,6 +185,6 @@ jobs:
           const shadowIndex=workflow.indexOf('Observe onchain prices in fail-open shadow mode');
           const publicIndex=workflow.indexOf('Rebuild public fund + company capital view');
           if(!(marketIndex>=0&&shadowIndex>marketIndex&&publicIndex>shadowIndex))throw new Error('Heartbeat order drift');
-          console.log('Onchain shadow heartbeat + Curve EMA integration PASS',{failOpen:true,blockPinnedCurveOracle:true,curveSpotAuthority:false,uniswapObserveNotSpot:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
+          console.log('Onchain shadow heartbeat + reusable Curve EMA integration PASS',{failOpen:true,blockPinnedCurveOracle:true,curveSpotAuthority:false,uniswapObserveNotSpot:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
           NODE
           git diff --check
