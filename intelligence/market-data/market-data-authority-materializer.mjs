@@ -10,10 +10,7 @@ const PATHS = {
   shadow: path.join(__dirname, 'onchain-price-shadow.json'),
   output: path.join(__dirname, 'market-data.json')
 };
-
-function readJson(file) {
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
-}
+function readJson(file) { return JSON.parse(fs.readFileSync(file, 'utf8')); }
 function finite(value) {
   if (value === null || value === undefined || value === '') return null;
   const n = Number(value);
@@ -22,7 +19,9 @@ function finite(value) {
 
 const policy = readJson(PATHS.policy);
 const source = readJson(PATHS.source);
-const shadow = readJson(PATHS.shadow);
+const rawShadow = readJson(PATHS.shadow);
+const forceCoinGeckoFailback = String(process.env.MARKET_DATA_FORCE_COINGECKO_FAILBACK || '').toLowerCase() === 'true';
+const shadow = forceCoinGeckoFailback ? structuredClone(rawShadow) : rawShadow;
 const nowMs = Date.now();
 
 if (policy.mode !== 'bounded-production-pilot') throw new Error('Authority materializer requires bounded-production-pilot mode');
@@ -42,6 +41,7 @@ for (const assetId of pilotIds) {
   if (observation?.source !== policy.pilot.requiredRouteType) throw new Error(`${assetId}: pilot route type drift`);
   if (observation?.network !== policy.pilot.requiredNetwork) throw new Error(`${assetId}: pilot network drift`);
   if (observation?.quote !== policy.pilot.requiredQuote) throw new Error(`${assetId}: pilot quote drift`);
+  if (forceCoinGeckoFailback) shadow.observations[assetId] = { ...observation, status: 'cycle-forced-failback', usd: null };
 }
 
 const evaluation = evaluateMarketDataAuthority({ policy, marketData: source, shadow, nowMs });
@@ -54,7 +54,6 @@ let unknownCount = 0;
 for (const [assetId, sourceRow] of Object.entries(source.prices || {})) {
   const selection = evaluation.selections?.[assetId];
   if (!selection) throw new Error(`${assetId}: authority selection missing`);
-
   if (selection.selectedLane === 'onchain-shadow') {
     const usd = finite(selection.selected?.usd);
     if (!(usd > 0)) throw new Error(`${assetId}: selected onchain price invalid`);
@@ -62,57 +61,37 @@ for (const [assetId, sourceRow] of Object.entries(source.prices || {})) {
       ...sourceRow,
       usd,
       status: 'fresh',
-      observedAt: selection.selected?.observedAt || shadow.generatedAt || null,
+      observedAt: selection.selected?.observedAt || rawShadow.generatedAt || null,
       source: `onchain-${selection.selected?.source || 'unknown'}`,
-      authority: {
-        requestedPrimary: selection.requestedPrimary,
-        selectedLane: 'onchain',
-        fallbackUsed: false,
-        sourceSnapshotGeneratedAt: shadow.generatedAt || null
-      }
+      authority: { requestedPrimary: selection.requestedPrimary, selectedLane: 'onchain', fallbackUsed: false, sourceSnapshotGeneratedAt: rawShadow.generatedAt || null }
     };
     onchainSelectedAssetCount += 1;
-    continue;
-  }
-
-  if (selection.selectedLane === 'coingecko-lane') {
+  } else if (selection.selectedLane === 'coingecko-lane') {
     prices[assetId] = {
       ...sourceRow,
-      authority: {
-        requestedPrimary: selection.requestedPrimary,
-        selectedLane: 'coingecko-lane',
-        fallbackUsed: selection.fallbackUsed === true,
-        sourceSnapshotGeneratedAt: source.generatedAt || null
-      }
+      authority: { requestedPrimary: selection.requestedPrimary, selectedLane: 'coingecko-lane', fallbackUsed: selection.fallbackUsed === true, sourceSnapshotGeneratedAt: source.generatedAt || null }
     };
     coingeckoSelectedAssetCount += 1;
     if (selection.fallbackUsed) fallbackCount += 1;
-    continue;
+  } else {
+    prices[assetId] = {
+      ...sourceRow,
+      usd: null,
+      status: 'unknown',
+      observedAt: null,
+      source: null,
+      authority: { requestedPrimary: selection.requestedPrimary, selectedLane: 'unknown', fallbackUsed: true, sourceSnapshotGeneratedAt: null }
+    };
+    unknownCount += 1;
+    fallbackCount += 1;
   }
-
-  prices[assetId] = {
-    ...sourceRow,
-    usd: null,
-    status: 'unknown',
-    observedAt: null,
-    source: null,
-    authority: {
-      requestedPrimary: selection.requestedPrimary,
-      selectedLane: 'unknown',
-      fallbackUsed: true,
-      sourceSnapshotGeneratedAt: null
-    }
-  };
-  unknownCount += 1;
-  fallbackCount += 1;
 }
 
 if (onchainSelectedAssetCount > Number(policy.pilot.maxPromotedAssetCount)) throw new Error('Onchain selected asset count exceeds pilot cap');
 for (const assetId of Object.keys(prices)) {
-  if (!pilotIds.includes(assetId) && prices[assetId]?.authority?.selectedLane !== 'coingecko-lane') {
-    throw new Error(`${assetId}: non-pilot asset left CoinGecko lane`);
-  }
+  if (!pilotIds.includes(assetId) && prices[assetId]?.authority?.selectedLane !== 'coingecko-lane') throw new Error(`${assetId}: non-pilot asset left CoinGecko lane`);
 }
+if (forceCoinGeckoFailback && onchainSelectedAssetCount !== 0) throw new Error('Cycle failback did not remove onchain selections');
 
 const output = {
   ...source,
@@ -127,6 +106,7 @@ const output = {
     boundedOnchainPrimaryPilot: true,
     coinGeckoRemainsFallbackAndSanityCheck: true,
     automaticCohortExpansionAllowed: false,
+    cycleForcedCoinGeckoFailback: forceCoinGeckoFailback,
     unknownIsNotZero: true
   },
   prices,
@@ -146,17 +126,11 @@ const output = {
   },
   sourceState: {
     coinGeckoGeneratedAt: source.generatedAt || null,
-    onchainShadowGeneratedAt: shadow.generatedAt || null,
-    onchainShadowStatus: shadow.status || null
+    onchainShadowGeneratedAt: rawShadow.generatedAt || null,
+    onchainShadowStatus: rawShadow.status || null,
+    forceCoinGeckoFailback
   }
 };
 
 fs.writeFileSync(PATHS.output, JSON.stringify(output, null, 2) + '\n');
-console.log('Market Data authority materialized', {
-  pilotAssetIds: pilotIds,
-  onchainSelectedAssetCount,
-  coingeckoSelectedAssetCount,
-  fallbackCount,
-  unknownCount,
-  executionAuthority: 'none'
-});
+console.log('Market Data authority materialized', { pilotAssetIds: pilotIds, onchainSelectedAssetCount, coingeckoSelectedAssetCount, fallbackCount, unknownCount, forceCoinGeckoFailback, executionAuthority: 'none' });
