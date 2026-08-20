@@ -78,7 +78,7 @@ jobs:
             exit 1
           fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
-          if [ "$code" -ne 0 ]; then echo '::warning::Shadow cycle unhealthy; BTC/ETH will fail back to CoinGecko.'; fi
+          if [ "$code" -ne 0 ]; then echo '::warning::Shadow cycle unhealthy; bounded direct-oracle cohort will fail back to CoinGecko.'; fi
 
       - name: Materialize bounded production authority
         env:
@@ -98,10 +98,10 @@ jobs:
           const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const reg=JSON.parse(fs.readFileSync('intelligence/market-data/fund-capital-registry.json','utf8'));
-          const pilot=['bitcoin','ethereum'];
+          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle'];
           if(market.authority?.productionPriceLane!=='per-asset')throw new Error('Per-asset production authority missing');
           if(JSON.stringify(market.authority?.pilotAssetIds)!==JSON.stringify(pilot))throw new Error('Pilot cohort drift');
-          if(Number(market.authority?.onchainSelectedAssetCount)>2)throw new Error('Pilot cap exceeded');
+          if(Number(market.authority?.onchainSelectedAssetCount)>4)throw new Error('Pilot cap exceeded');
           for(const id of Object.keys(source.prices||{})){
             const row=market.prices?.[id];
             if(!row)throw new Error(`${id}: canonical row missing`);
