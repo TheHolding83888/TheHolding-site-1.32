@@ -47,20 +47,24 @@ function readJson(file, fallback = null) {
 
 export function mergeOnchainRegistryExtensions(baseRegistry, extensionRegistry) {
   const extended = mergeLegacyRegistryExtensions(baseRegistry, extensionRegistry);
+  const withNetworks = {
+    ...extended,
+    networks: { ...(extended.networks || {}), ...(extensionRegistry?.networks || {}) }
+  };
   const overrides = extensionRegistry?.overrides || {};
   const ids = Object.keys(overrides);
-  if (!ids.length) return extended;
-  const unknown = ids.filter(id => !extended?.assets?.[id]);
+  if (!ids.length) return withNetworks;
+  const unknown = ids.filter(id => !withNetworks?.assets?.[id]);
   if (unknown.length) throw new Error(`Onchain route override targets unknown canonical assets: ${unknown.join(', ')}`);
-  const assets = { ...(extended.assets || {}) };
+  const assets = { ...(withNetworks.assets || {}) };
   for (const id of ids) {
     const replacement = overrides[id];
     if (!replacement?.route || replacement.assetId !== id) throw new Error(`Invalid route override contract for ${id}`);
     assets[id] = { ...assets[id], ...replacement, route: replacement.route };
   }
   return {
-    ...extended,
-    semantics: { ...(extended.semantics || {}), boundedRouteOverridesApplied: true },
+    ...withNetworks,
+    semantics: { ...(withNetworks.semantics || {}), boundedRouteOverridesApplied: true },
     assets
   };
 }
@@ -122,6 +126,7 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       tokenDecimalsReadOnchain: true,
       stablecoinPegHardcoded: false,
       boundedRouteOverridesApplied: registry.semantics?.boundedRouteOverridesApplied === true,
+      routeScopedExtensionNetworksApplied: true,
       uniswapV3SpotPriceAuthority: false,
       dexSpotPriceAuthority: false
     },
