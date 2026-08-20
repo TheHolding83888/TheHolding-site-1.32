@@ -1,5 +1,5 @@
 {
-  "version": "0.5-market-data-authority-direct-oracle-cohort-vvv-icp",
+  "version": "0.6-market-data-authority-direct-oracle-cohort-mana-sand",
   "mode": "bounded-production-pilot",
   "defaultProductionAuthority": "coingecko-lane",
   "globalOnchainPromotionEnabled": true,
@@ -16,9 +16,9 @@
     "executionAuthority": "none"
   },
   "pilot": {
-    "cohortId": "direct-chainlink-usd-btc-eth-aero-pendle-crv-fxs-vvv-icp-v0.4",
-    "assetIds": ["bitcoin", "ethereum", "aerodrome-finance", "pendle", "curve-dao-token", "frax-share", "venice-token", "internet-computer"],
-    "maxPromotedAssetCount": 8,
+    "cohortId": "direct-chainlink-usd-btc-eth-aero-pendle-crv-fxs-vvv-icp-mana-sand-v0.5",
+    "assetIds": ["bitcoin", "ethereum", "aerodrome-finance", "pendle", "curve-dao-token", "frax-share", "venice-token", "internet-computer", "decentraland", "the-sandbox"],
+    "maxPromotedAssetCount": 10,
     "requiredRouteType": "chainlink-v3",
     "requiredQuote": "USD",
     "routeRequirements": {
@@ -29,7 +29,9 @@
       "curve-dao-token": {"network": "ethereum", "contract": "0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f"},
       "frax-share": {"network": "ethereum", "contract": "0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f"},
       "venice-token": {"network": "base", "contract": "0xaabc55ca55d70b034e4daa2551a224239890282f"},
-      "internet-computer": {"network": "bsc", "contract": "0x84210d9013a30c6ab169e28840a6cc54b60fa042"}
+      "internet-computer": {"network": "bsc", "contract": "0x84210d9013a30c6ab169e28840a6cc54b60fa042"},
+      "decentraland": {"network": "polygon", "contract": "0xA1CbF3Fe43BC3501e3Fc4b573e822c70e76A7512"},
+      "the-sandbox": {"network": "polygon", "contract": "0x3D49406EDd4D52Fb7FFd25485f32E073b529C924"}
     }
   },
   "onchainEligibility": {
@@ -53,6 +55,8 @@
     "curve-dao-token": {"requestedPrimary": "onchain"},
     "frax-share": {"requestedPrimary": "onchain"},
     "venice-token": {"requestedPrimary": "onchain"},
-    "internet-computer": {"requestedPrimary": "onchain"}
+    "internet-computer": {"requestedPrimary": "onchain"},
+    "decentraland": {"requestedPrimary": "onchain"},
+    "the-sandbox": {"requestedPrimary": "onchain"}
   }
 }
