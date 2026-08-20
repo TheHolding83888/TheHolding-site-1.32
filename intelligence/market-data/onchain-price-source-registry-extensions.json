@@ -1,6 +1,6 @@
 {
-  "version": "0.8-final-runtime-close",
-  "effectiveRegistryVersion": "0.23-onchain-price-source-registry-full-26-final-runtime-close",
+  "version": "0.9-eliza-adaptive-twap-resilience",
+  "effectiveRegistryVersion": "0.24-onchain-price-source-registry-eliza-adaptive-twap-resilience",
   "purpose": "Bounded extension routes plus explicit reviewed replacements for canonical onchain Market Data routes. Base v0.15 remains byte-stable; route overrides are fail-closed and may only target existing canonical asset ids.",
   "semantics": {
     "uniswapV2HistoricalTwapRoutesAllowed": true,
@@ -10,6 +10,8 @@
     "routeScopedExtensionNetworksAllowed": true,
     "uniswapV3TwapRoutesAllowed": true,
     "uniswapV3ChainlinkQuoteRoutesAllowed": true,
+    "uniswapV3AdaptiveFallbackOnlyOnOldAllowed": true,
+    "minimumAdaptiveTwapWindowSeconds": 60,
     "uniswapV3SpotPriceAuthority": false,
     "curveEmaRoutesAllowed": true,
     "curveSpotPriceAuthority": false,
@@ -51,7 +53,7 @@
         "network": "ethereum",
         "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
         "token": "0x21BfBDa47A0B4B5b1248c767Ee49F7caA9B23697",
-        "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2",
         "tokenDecimals": 18,
         "quoteTokenDecimals": 18,
         "fee": 10000,
@@ -96,6 +98,8 @@
         "quoteToken": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
         "fee": 2500,
         "twapWindowSeconds": 300,
+        "twapFallbackOnError": "OLD",
+        "twapFallbackWindowsSeconds": [180, 120, 60],
         "quoteAssetId": "bsc-usdc-usd",
         "quoteFeed": {
           "type": "chainlink-v3",
@@ -107,7 +111,7 @@
         "outputQuote": "USD",
         "maxDivergencePct": 10,
         "authority": "shadow",
-        "provenance": "Canonical multichain elizaOS token on BNB Chain priced from the PancakeSwap V3 elizaOS/USDC 0.25% pool using observe()-based 5-minute geometric TWAP. Token and quote decimals are read onchain each cycle. USDC/USD is independently read from the BNB Chain Chainlink Data Feed and freshness/integrity checked; no hardcoded stablecoin peg, slot0 spot authority, paid RPC, signing, or execution authority."
+        "provenance": "Canonical multichain elizaOS token on BNB Chain priced from the PancakeSwap V3 elizaOS/USDC 0.25% pool. Preferred pricing is an observe()-based 5-minute geometric TWAP; if and only if the pool returns Uniswap V3 OLD because retained observation history is shorter, the resolver retries explicitly bounded shorter observe() windows 180s, 120s, then 60s and uses the longest successful window. Token and quote decimals are read onchain each cycle. USDC/USD is independently read from the BNB Chain Chainlink Data Feed and freshness/integrity checked; no hardcoded stablecoin peg, slot0 spot authority, paid RPC, signing, or execution authority."
       }
     }
   },

@@ -1,0 +1,55 @@
+name: "Validate ELIZA Adaptive TWAP"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs'
+      - 'intelligence/market-data/onchain-eliza-adaptive-twap-validation.mjs'
+      - 'intelligence/market-data/onchain-eliza-live-validation.mjs'
+      - 'intelligence/market-data/onchain-price-source-registry-extensions.json'
+      - '.github/workflows/validate-eliza-adaptive-twap.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Prove OLD-only adaptive fallback deterministically
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs
+          node --check intelligence/market-data/onchain-eliza-adaptive-twap-validation.mjs
+          node --check intelligence/market-data/onchain-eliza-live-validation.mjs
+          node intelligence/market-data/onchain-eliza-adaptive-twap-validation.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
+          const route=ext.assets?.elizaos?.route;
+          if(ext.semantics?.uniswapV3AdaptiveFallbackOnlyOnOldAllowed!==true)throw new Error('OLD-only adaptive fallback semantic missing');
+          if(Number(ext.semantics?.minimumAdaptiveTwapWindowSeconds)!==60)throw new Error('Adaptive TWAP floor drift');
+          if(route?.type!=='uniswap-v3-twap-chainlink-quote'||route?.network!=='bsc')throw new Error('ELIZA route identity drift');
+          if(Number(route?.twapWindowSeconds)!==300)throw new Error('ELIZA preferred TWAP must remain 300s');
+          if(route?.twapFallbackOnError!=='OLD')throw new Error('ELIZA fallback trigger must remain OLD only');
+          if(JSON.stringify(route?.twapFallbackWindowsSeconds)!==JSON.stringify([180,120,60]))throw new Error('ELIZA fallback windows drift');
+          if(route?.quoteFeed?.type!=='chainlink-v3'||route?.quoteFeed?.quote!=='USD')throw new Error('ELIZA Chainlink quote dependency drift');
+          if(route?.authority!=='shadow')throw new Error('ELIZA route must remain shadow');
+          if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('ELIZA authority boundary drift');
+          NODE
+          git diff --check
+
+      - name: Prove current ELIZA route live on public BSC RPC
+        run: |
+          set -euo pipefail
+          node intelligence/market-data/onchain-eliza-live-validation.mjs
