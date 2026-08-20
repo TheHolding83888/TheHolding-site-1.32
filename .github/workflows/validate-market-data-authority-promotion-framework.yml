@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Validate bounded authority pilot
+      - name: Validate bounded direct-oracle cohort
         run: |
           set -euo pipefail
           node --check intelligence/market-data/market-data-authority-selector.mjs
@@ -35,19 +35,25 @@ jobs:
           node --input-type=module - <<'NODE'
           import fs from 'node:fs';
           const p=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
-          const pilot=['bitcoin','ethereum'];
+          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle'];
+          const networks={bitcoin:'ethereum',ethereum:'ethereum','aerodrome-finance':'base',pendle:'optimism'};
           if(p.mode!=='bounded-production-pilot')throw new Error('Pilot mode missing');
           if(p.globalOnchainPromotionEnabled!==true)throw new Error('Pilot gate disabled');
           if(p.defaultProductionAuthority!=='coingecko-lane')throw new Error('Default production authority changed');
           if(p.semantics?.productionWriterIntegrationEnabled!==true)throw new Error('Writer integration missing');
           if(p.semantics?.automaticPolicyMutationAllowed!==false||p.semantics?.automaticProductionMergeAllowed!==false||p.semantics?.automaticCohortExpansionAllowed!==false)throw new Error('Automatic authority mutation enabled');
           if(p.semantics?.executionAuthority!=='none')throw new Error('Execution authority drift');
-          if(JSON.stringify(p.pilot?.assetIds)!==JSON.stringify(pilot)||Number(p.pilot?.maxPromotedAssetCount)!==2)throw new Error('Pilot cohort drift');
+          if(JSON.stringify(p.pilot?.assetIds)!==JSON.stringify(pilot)||Number(p.pilot?.maxPromotedAssetCount)!==4)throw new Error('Pilot cohort drift');
+          if(p.pilot?.requiredRouteType!=='chainlink-v3'||p.pilot?.requiredQuote!=='USD')throw new Error('Direct Chainlink/USD boundary drift');
           if(JSON.stringify(Object.keys(p.assetOverrides||{}).sort())!==JSON.stringify([...pilot].sort()))throw new Error('Overrides exceed pilot');
-          console.log('Bounded BTC/ETH authority boundary PASS');
+          for(const id of pilot){
+            const req=p.pilot?.routeRequirements?.[id];
+            if(!req||req.network!==networks[id]||!/^0x[0-9a-fA-F]{40}$/.test(req.contract||''))throw new Error(`${id}: exact route requirement drift`);
+          }
+          console.log('Bounded BTC/ETH/AERO/PENDLE authority boundary PASS');
           NODE
           git diff --check
-      - name: Prove pilot scope cannot silently expand
+      - name: Prove cohort scope cannot silently expand
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
@@ -57,7 +63,7 @@ jobs:
           printf '%s\n' "$changed"
           forbidden='^(intelligence/market-data/onchain-price-source-registry\.json|intelligence/market-data/onchain-price-source-registry-extensions\.json|intelligence/market-data/onchain-price-resolver\.mjs|intelligence/market-data/public-capital-engine\.mjs|intelligence/market-data/market-price-registry\.json)$'
           if printf '%s\n' "$changed" | grep -Eq "$forbidden"; then
-            echo 'Pilot PR touched routing or valuation surfaces outside authority integration.' >&2
+            echo 'Authority PR touched routing or valuation surfaces outside bounded integration.' >&2
             exit 1
           fi
-          echo 'Pilot scope containment PASS'
+          echo 'Direct-oracle cohort scope containment PASS'
