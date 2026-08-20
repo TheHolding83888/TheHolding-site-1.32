@@ -5,6 +5,10 @@ import {
   resolveOnchainPrices as resolveCorePrices,
   isRetryableRpcError
 } from './onchain-price-resolver-core.mjs';
+import {
+  UNISWAP_V3_TWAP_ROUTE_TYPE,
+  resolveUniswapV3TwapPrices
+} from './onchain-uniswap-v3-twap.mjs';
 
 export {
   decodeChainlinkRoundData,
@@ -14,6 +18,14 @@ export {
   encodeVelodromeGetPool,
   encodeVelodromeQuote
 } from './onchain-price-resolver-core.mjs';
+export {
+  UNISWAP_V3_TWAP_ROUTE_TYPE,
+  encodeUniswapV3GetPool,
+  encodeUniswapV3Observe,
+  decodeUniswapV3Observe,
+  arithmeticMeanTick,
+  quoteRatioAtTick
+} from './onchain-uniswap-v3-twap.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REGISTRY_PATH = path.join(__dirname, 'onchain-price-source-registry.json');
@@ -284,30 +296,55 @@ function mergeNetworkTelemetry(coreNetworks, pythNetworks) {
   return merged;
 }
 
+function mergeUniswapTelemetry(baseNetworks, uniswapNetworks) {
+  const merged = { ...baseNetworks };
+  for (const [networkId, uniswap] of Object.entries(uniswapNetworks)) {
+    const base = merged[networkId];
+    if (!base) { merged[networkId] = uniswap; continue; }
+    merged[networkId] = {
+      ...base,
+      routeCount: Number(base.routeCount || 0) + Number(uniswap.routeCount || 0),
+      batchCallCount: Number(base.batchCallCount || 0) + Number(uniswap.batchCallCount || 0),
+      httpBatchRequestCount: Number(base.httpBatchRequestCount || 0) + Number(uniswap.httpBatchRequestCount || 0),
+      rpcFailoverAttempts: Number(base.rpcFailoverAttempts || 0) + Number(uniswap.rpcFailoverAttempts || 0),
+      protocolReadPhases: Math.max(Number(base.protocolReadPhases || 1), Number(uniswap.protocolReadPhases || 1)),
+      uniswapV3TwapRouteCount: uniswap.uniswapV3TwapRouteCount,
+      uniswapV3DiscoveryBatchCallCount: uniswap.uniswapV3DiscoveryBatchCallCount,
+      uniswapV3TwapBatchCallCount: uniswap.uniswapV3TwapBatchCallCount,
+      uniswapV3DiscoveryEndpointId: uniswap.uniswapV3DiscoveryEndpointId,
+      uniswapV3TwapEndpointId: uniswap.uniswapV3TwapEndpointId,
+      uniswapV3BlockTag: uniswap.uniswapV3BlockTag
+    };
+  }
+  return merged;
+}
+
 export async function resolveOnchainPrices({ registry, marketData = null, fetchImpl = fetch, nowMs = Date.now() }) {
   if (!registry?.assets || !registry?.networks) throw new Error('Onchain source registry missing or invalid');
-  const coreAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => asset?.route?.type !== PYTH_ROUTE_TYPE));
+  const coreAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => ![PYTH_ROUTE_TYPE, UNISWAP_V3_TWAP_ROUTE_TYPE].includes(asset?.route?.type)));
   const coreRegistry = { ...registry, assets: coreAssets };
   const core = await resolveCorePrices({ registry: coreRegistry, marketData, fetchImpl, nowMs });
   const pyth = await resolvePythPrices({ registry, marketData, fetchImpl, nowMs });
+  const uniswap = await resolveUniswapV3TwapPrices({ registry, marketData, coreObservations: core.observations, fetchImpl, nowMs });
 
   const coverage = {
-    assetCount: core.coverage.assetCount + pyth.coverage.assetCount,
-    okCount: core.coverage.okCount + pyth.coverage.okCount,
-    warningCount: core.coverage.warningCount + pyth.coverage.warningCount,
-    unavailableCount: core.coverage.unavailableCount + pyth.coverage.unavailableCount
+    assetCount: core.coverage.assetCount + pyth.coverage.assetCount + uniswap.coverage.assetCount,
+    okCount: core.coverage.okCount + pyth.coverage.okCount + uniswap.coverage.okCount,
+    warningCount: core.coverage.warningCount + pyth.coverage.warningCount + uniswap.coverage.warningCount,
+    unavailableCount: core.coverage.unavailableCount + pyth.coverage.unavailableCount + uniswap.coverage.unavailableCount
   };
-  const networks = mergeNetworkTelemetry(core.networks, pyth.networks);
+  const corePlusPythNetworks = mergeNetworkTelemetry(core.networks, pyth.networks);
+  const networks = mergeUniswapTelemetry(corePlusPythNetworks, uniswap.networks);
   const rpcEfficiency = {
-    networkCount: new Set([...Object.keys(core.networks), ...Object.keys(pyth.networks)]).size,
-    routeCount: core.rpcEfficiency.routeCount + pyth.rpcEfficiency.routeCount,
-    httpBatchRequestCount: core.rpcEfficiency.httpBatchRequestCount + pyth.rpcEfficiency.httpBatchRequestCount
+    networkCount: new Set([...Object.keys(core.networks), ...Object.keys(pyth.networks), ...Object.keys(uniswap.networks)]).size,
+    routeCount: core.rpcEfficiency.routeCount + pyth.rpcEfficiency.routeCount + uniswap.rpcEfficiency.routeCount,
+    httpBatchRequestCount: core.rpcEfficiency.httpBatchRequestCount + pyth.rpcEfficiency.httpBatchRequestCount + uniswap.rpcEfficiency.httpBatchRequestCount
   };
 
   return {
     ...core,
-    version: '0.6-onchain-price-shadow-pyth-core-readonly',
-    engineVersion: '0.6-composite-core-plus-pyth-readonly-resolver',
+    version: '0.7-onchain-price-shadow-uniswap-v3-twap',
+    engineVersion: '0.7-composite-core-plus-pyth-plus-uniswap-v3-twap-resolver',
     generatedAt: iso(nowMs),
     status: coverage.unavailableCount > 0 ? 'partial' : coverage.warningCount > 0 ? 'warning' : 'ok',
     semantics: {
@@ -317,12 +354,17 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       pythPriceUpdatesSubmitted: false,
       pythPublishTimeFreshnessChecked: true,
       pythConfidenceIntervalChecked: true,
-      pythUsesPublicRpcOnly: true
+      pythUsesPublicRpcOnly: true,
+      uniswapV3TwapRoutes: true,
+      uniswapV3FactoryDiscovery: true,
+      uniswapV3TwapReadsPinnedToDiscoveryBlock: true,
+      uniswapV3UsesObserveNotSpot: true,
+      dexSpotPriceAuthority: false
     },
     rpcEfficiency,
     coverage,
     networks,
-    observations: { ...core.observations, ...pyth.observations },
+    observations: { ...core.observations, ...pyth.observations, ...uniswap.observations },
     authority: { readOnly: true, executionAuthority: 'none', capitalExecution: false, policyMutationAuthority: false }
   };
 }
