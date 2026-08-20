@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-20T05:54:37.398Z",
+  "generatedAt": "2026-08-20T07:28:18.570Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 39,
+    "medium": 38,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 489,
-    "bytesScanned": 10479651,
+    "filesScanned": 490,
+    "bytesScanned": 10567204,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 13 Aug 2026 17:19:55 GMT",
+        "lastModified": "Wed, 19 Aug 2026 19:51:07 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "403fc6d980cc7d1366cf0a48f14939ad5190a7b11eeffe1ab1af27e684494651",
         "severity": "medium",
@@ -68,22 +69,6 @@
         "evidence": {
           "previousSha256": "08ddd79137f414056b32e92c2602fd92e3791cf828ce22be5e6d125b86994399",
           "currentSha256": "db88c2d9b78baff13583fe509882b086fa5b1253ff0e333b7a1c99b63fba5ff3"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "443e151cb39bb124e9105547c85974f7938c75539f9cad010208a6132877de49",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/validate-onchain-market-data.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "4d17ac75a999423ace932094dd20600d7ed2f88e45039cebe7161629c1e9efb8",
-          "currentSha256": "08ddd79137f414056b32e92c2602fd92e3791cf828ce22be5e6d125b86994399"
         }
       }
     ]
@@ -154,20 +139,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "403fc6d980cc7d1366cf0a48f14939ad5190a7b11eeffe1ab1af27e684494651",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/validate-onchain-market-data.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "08ddd79137f414056b32e92c2602fd92e3791cf828ce22be5e6d125b86994399",
-        "currentSha256": "db88c2d9b78baff13583fe509882b086fa5b1253ff0e333b7a1c99b63fba5ff3"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -780,12 +751,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "3b3a2d2e69c09a0242b72ab5f4dcf2790ea7fafdcef2199f374e440d3e882d62",
+    "snapshotHash": "e8f639bf3c717178e56d19db613b633d7f28b9bdfc020a708603479f08b2b403",
     "securityVault": {
-      "runCount": 343,
+      "runCount": 344,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-20T05-54-37-398Z-3b3a2d2e69.json",
-      "latestRecordHash": "06f6f8e60ec6b3818084167933ed50b11de15a5439f5f6fcaf7588cd1883f0e7",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-20T07-28-18-570Z-e8f639bf3c.json",
+      "latestRecordHash": "5dc557d22f54dfa8632683bcc24b062654d33c7dda3eef10cc59aa71e814ec80",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
