@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores the deep current state; the Memory Routing Index selects only the durable blocks relevant to the current task. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-20T05:54:37.398Z**
+Canonical source state represented here: **2026-08-20T07:28:18.570Z**
 
 ## Resume order
 
@@ -39,16 +39,16 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Memory architecture
 
-- **System Memory** — current normalized state; generatedAt: 2026-08-19T07:13:55.796Z.
-- **Permanent Memory Vault** — 9 Observer record(s), 90 material event(s), retention: indefinite; hard lifetime cap: none.
-- **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-19T07-13-55-796Z-41f701d600.json.
+- **System Memory** — current normalized state; generatedAt: 2026-08-20T07:22:02.090Z.
+- **Permanent Memory Vault** — 10 Observer record(s), 115 material event(s), retention: indefinite; hard lifetime cap: none.
+- **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-20T07-22-02-090Z-ebfe5728ab.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
 - **Project continuity** — this bootstrap + latest master continuity + task-aware routing + owner collaboration canon + specialized canons + Git history.
 
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: a90c3a3d2883ddd19f7a70f0ab06b8d8a115d9acf704ced5cf410d74fefbcf1f.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 39; generatedAt 2026-08-20T05:54:37.398Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 6 / Medium 38; generatedAt 2026-08-20T07:28:18.570Z.
 - Cognitive Stack Security snapshot is older (2026-08-19T07:58:29.422Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 25; evidence 27; noExecution true.
