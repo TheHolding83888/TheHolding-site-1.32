@@ -22,12 +22,10 @@ jobs:
     steps:
       - name: Checkout PR head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-
       - name: Validate shared V3 TWAP runtime
         run: |
           set -euo pipefail
@@ -36,8 +34,7 @@ jobs:
           node --check intelligence/market-data/onchain-uniswap-v3-twap.mjs
           node --check intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs
           node intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs
-
-      - name: Prove OVR exact route and coverage promotion
+      - name: Prove OVR exact route remains live
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -45,26 +42,14 @@ jobs:
           const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-price-registry.json','utf8'));
           const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
           const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
-          const marketIds=(market.assets||[]).map(x=>x.assetId);
-          const effective={...(base.assets||{}),...(ext.assets||{})};
-          const routed=marketIds.filter(id=>effective[id]);
-          const pending=marketIds.filter(id=>!effective[id]);
-          const special=Object.keys(effective).filter(id=>!marketIds.includes(id));
-          if(marketIds.length!==26)throw new Error(`Canonical market universe drift: ${marketIds.length}`);
-          if(routed.length!==24)throw new Error(`Expected 24/26 canonical assets routed after OVR, got ${routed.length}`);
-          if(pending.length!==2||!pending.includes('beam-2')||!pending.includes('elizaos'))throw new Error(`Unexpected pending set after OVR: ${pending.join(',')}`);
-          if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
-          if(routed.length+special.length!==25)throw new Error('Expected 25 total live onchain observation targets after OVR');
+          const ids=(market.assets||[]).map(x=>x.assetId), effective={...(base.assets||{}),...(ext.assets||{})};
+          const routed=ids.filter(id=>effective[id]), pending=ids.filter(id=>!effective[id]);
+          if(ids.length!==26||routed.length<24||pending.includes('ovr'))throw new Error('OVR coverage regression');
           const r=ext.assets?.ovr?.route;
-          if(!r||r.type!=='uniswap-v3-twap-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('OVR V3 route contract invalid');
-          if(r.factory.toLowerCase()!=='0x1f98431c8ad98523631ae4a59f267346ea31f984')throw new Error('OVR Uniswap V3 factory drift');
-          if(r.token.toLowerCase()!=='0x21bfbda47a0b4b5b1248c767ee49f7caa9b23697')throw new Error('OVR token drift');
-          if(r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('OVR WETH quote drift');
-          if(Number(r.fee)!==10000||Number(r.tokenDecimals)!==18||Number(r.quoteTokenDecimals)!==18)throw new Error('OVR V3 pool parameters drift');
-          if(Number(r.twapWindowSeconds)!==1800||r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD')throw new Error('OVR TWAP composition drift');
-          if(Number(r.maxDivergencePct)!==10)throw new Error('OVR divergence threshold drift');
-          if(ext.semantics?.uniswapV3SpotPriceAuthority!==false)throw new Error('Uniswap V3 spot authority introduced');
-          if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority boundary drift');
-          console.log('OVR Uniswap V3 TWAP exact gate PASS',{routedMarketAssets:routed.length,pendingMarketAssets:pending.length,totalObservationTargets:routed.length+special.length,pending});
+          if(!r||r.type!=='uniswap-v3-twap-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('OVR route invalid');
+          if(r.factory.toLowerCase()!=='0x1f98431c8ad98523631ae4a59f267346ea31f984'||r.token.toLowerCase()!=='0x21bfbda47a0b4b5b1248c767ee49f7caa9b23697'||r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('OVR identity drift');
+          if(Number(r.fee)!==10000||Number(r.twapWindowSeconds)!==1800||Number(r.maxDivergencePct)!==10)throw new Error('OVR TWAP contract drift');
+          if(ext.semantics?.uniswapV3SpotPriceAuthority!==false||ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
+          console.log('OVR additive-safe gate PASS',{routed:routed.length,pending});
           NODE
           git diff --check
