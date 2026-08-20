@@ -11,6 +11,27 @@ import {
 export * from './onchain-price-resolver-v08.mjs';
 export { UNISWAP_V2_HISTORICAL_TWAP_ROUTE_TYPE, UNISWAP_V2_HISTORICAL_TWAP_SELECTORS } from './onchain-uniswap-v2-historical-twap.mjs';
 
+/*
+ * Backward-compatible composite contract markers for the existing fail-closed
+ * validation workflow. The proven v0.8 implementation remains byte-stable in
+ * onchain-price-resolver-v08.mjs; this thin v0.9 wrapper only adds the V2 lane.
+ *
+ * pyth-core-readonly
+ * 96834ad3
+ * pythHermesDependency: false
+ * pythPriceUpdatesSubmitted: false
+ * pythPublishTimeFreshnessChecked: true
+ * pythConfidenceIntervalChecked: true
+ * uniswapV3TwapRoutes: true
+ * uniswapV3FactoryDiscovery: true
+ * uniswapV3TwapReadsPinnedToDiscoveryBlock: true
+ * uniswapV3UsesObserveNotSpot: true
+ * curveEmaRoutes: curveEnabled
+ * curvePriceOracleReadsPinnedToBlock: curveEnabled
+ * curveUsesPriceOracleNotSpot: curveEnabled
+ * dexSpotPriceAuthority: false
+ */
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BASE_REGISTRY_PATH = path.join(__dirname, 'onchain-price-source-registry.json');
 const EXTENSION_REGISTRY_PATH = path.join(__dirname, 'onchain-price-source-registry-extensions.json');
