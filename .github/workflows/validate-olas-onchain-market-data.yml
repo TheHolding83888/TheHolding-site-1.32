@@ -36,7 +36,7 @@ jobs:
           node --check intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
           node intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
 
-      - name: Prove OLAS exact route and coverage promotion
+      - name: Prove OLAS exact route and additive-safe coverage
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -50,11 +50,9 @@ jobs:
           const pending=marketIds.filter(id=>!effective[id]);
           const special=Object.keys(effective).filter(id=>!marketIds.includes(id));
           if(marketIds.length!==26)throw new Error(`Canonical market universe drift: ${marketIds.length}`);
-          if(routed.length!==23)throw new Error(`Expected 23/26 canonical assets routed with OLAS, got ${routed.length}`);
-          if(pending.length!==3)throw new Error(`Expected 3 pending assets after OLAS, got ${pending.length}: ${pending.join(',')}`);
-          if(!pending.includes('ovr')||!pending.includes('beam-2')||!pending.includes('elizaos'))throw new Error(`Unexpected pending set: ${pending.join(',')}`);
+          if(routed.length<23)throw new Error(`OLAS regression: expected at least 23/26 canonical assets routed, got ${routed.length}`);
+          if(pending.includes('autonolas'))throw new Error('OLAS returned to pending set');
           if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
-          if(routed.length+special.length!==24)throw new Error('Expected 24 total onchain observation targets after OLAS');
           const r=ext.assets?.autonolas?.route;
           if(!r||r.type!=='uniswap-v2-historical-twap-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('OLAS V2 route contract invalid');
           if(r.pair.toLowerCase()!=='0x09d1d767edf8fa23a64c51fa559e0688e526812f')throw new Error('OLAS/WETH pair drift');
@@ -65,6 +63,6 @@ jobs:
           if(ext.semantics?.uniswapV2ExternalUpdaterDependencyRequired!==false)throw new Error('External updater dependency introduced');
           if(ext.semantics?.uniswapV2SpotPriceAuthority!==false)throw new Error('Uniswap V2 spot authority introduced');
           if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority boundary drift');
-          console.log('OLAS V2 historical TWAP route gate PASS',{routedMarketAssets:routed.length,pendingMarketAssets:pending.length,totalObservationTargets:routed.length+special.length,pending});
+          console.log('OLAS V2 historical TWAP additive-safe gate PASS',{routedMarketAssets:routed.length,pendingMarketAssets:pending.length,totalObservationTargets:routed.length+special.length,pending});
           NODE
           git diff --check
