@@ -6,6 +6,8 @@ on:
       - 'intelligence/market-data/market-data-authority-policy.json'
       - 'intelligence/market-data/market-data-authority-selector.mjs'
       - 'intelligence/market-data/market-data-authority-selector-validation.mjs'
+      - 'intelligence/market-data/market-data-authority-materializer.mjs'
+      - '.github/workflows/market-data-refresh.yml'
       - '.github/workflows/validate-market-data-authority-promotion-framework.yml'
   workflow_dispatch:
 
@@ -23,26 +25,29 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Validate dry-run authority framework
+      - name: Validate bounded authority pilot
         run: |
           set -euo pipefail
           node --check intelligence/market-data/market-data-authority-selector.mjs
           node --check intelligence/market-data/market-data-authority-selector-validation.mjs
+          node --check intelligence/market-data/market-data-authority-materializer.mjs
           node intelligence/market-data/market-data-authority-selector-validation.mjs
           node --input-type=module - <<'NODE'
           import fs from 'node:fs';
           const p=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
-          if(p.mode!=='framework-dry-run')throw new Error('Framework must remain dry-run');
-          if(p.globalOnchainPromotionEnabled!==false)throw new Error('Global promotion gate must remain disabled');
+          const pilot=['bitcoin','ethereum'];
+          if(p.mode!=='bounded-production-pilot')throw new Error('Pilot mode missing');
+          if(p.globalOnchainPromotionEnabled!==true)throw new Error('Pilot gate disabled');
           if(p.defaultProductionAuthority!=='coingecko-lane')throw new Error('Default production authority changed');
-          if(p.semantics?.productionWriterIntegrationEnabled!==false)throw new Error('Production writer integration unexpectedly enabled');
-          if(p.semantics?.automaticPolicyMutationAllowed!==false||p.semantics?.automaticProductionMergeAllowed!==false)throw new Error('Automatic authority mutation enabled');
+          if(p.semantics?.productionWriterIntegrationEnabled!==true)throw new Error('Writer integration missing');
+          if(p.semantics?.automaticPolicyMutationAllowed!==false||p.semantics?.automaticProductionMergeAllowed!==false||p.semantics?.automaticCohortExpansionAllowed!==false)throw new Error('Automatic authority mutation enabled');
           if(p.semantics?.executionAuthority!=='none')throw new Error('Execution authority drift');
-          if(Object.keys(p.assetOverrides||{}).length!==0)throw new Error('Stage 1 must promote zero assets');
-          console.log('Stage 1 authority boundary PASS');
+          if(JSON.stringify(p.pilot?.assetIds)!==JSON.stringify(pilot)||Number(p.pilot?.maxPromotedAssetCount)!==2)throw new Error('Pilot cohort drift');
+          if(JSON.stringify(Object.keys(p.assetOverrides||{}).sort())!==JSON.stringify([...pilot].sort()))throw new Error('Overrides exceed pilot');
+          console.log('Bounded BTC/ETH authority boundary PASS');
           NODE
           git diff --check
-      - name: Prove PR cannot silently mutate Market Data production data plane
+      - name: Prove pilot scope cannot silently expand
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
@@ -50,9 +55,9 @@ jobs:
           git fetch origin "$base_sha" --depth=1
           changed="$(git diff --name-only "$base_sha" HEAD)"
           printf '%s\n' "$changed"
-          forbidden='^(intelligence/market-data/market-data-engine\.mjs|intelligence/market-data/public-capital-engine\.mjs|intelligence/market-data/onchain-price-resolver\.mjs|intelligence/market-data/market-data\.json|intelligence/market-data/onchain-price-shadow\.json|intelligence/market-data/public-capital-state\.json|\.github/workflows/market-data-refresh\.yml)$'
+          forbidden='^(intelligence/market-data/onchain-price-source-registry\.json|intelligence/market-data/onchain-price-source-registry-extensions\.json|intelligence/market-data/onchain-price-resolver\.mjs|intelligence/market-data/public-capital-engine\.mjs|intelligence/market-data/market-price-registry\.json)$'
           if printf '%s\n' "$changed" | grep -Eq "$forbidden"; then
-            echo 'Stage 1 PR touched a forbidden production data-plane file.' >&2
+            echo 'Pilot PR touched routing or valuation surfaces outside authority integration.' >&2
             exit 1
           fi
-          echo 'Production data plane untouched PASS'
+          echo 'Pilot scope containment PASS'
