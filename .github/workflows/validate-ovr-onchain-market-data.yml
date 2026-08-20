@@ -56,7 +56,7 @@ jobs:
           if(Number(r.fee)!==10000||Number(r.twapWindowSeconds)!==1800||Number(r.maxDivergencePct)!==10)throw new Error('OVR TWAP contract drift');
           console.log('OVR additive-safe gate PASS',{routed:routed.length,pending});
           NODE
-      - name: Prove BEAM exact route and 25 of 26 coverage
+      - name: Prove BEAM remains exact and additive-safe
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -67,13 +67,13 @@ jobs:
           const ids=(market.assets||[]).map(x=>x.assetId), effective={...(base.assets||{}),...(ext.assets||{})};
           const routed=ids.filter(id=>effective[id]), pending=ids.filter(id=>!effective[id]);
           const special=Object.keys(effective).filter(id=>!ids.includes(id));
-          if(routed.length!==25||pending.length!==1||pending[0]!=='elizaos')throw new Error(`BEAM coverage contract failed: routed=${routed.length}, pending=${pending.join(',')}`);
+          if(routed.length<25||pending.includes('beam-2'))throw new Error(`BEAM coverage regression: routed=${routed.length}, pending=${pending.join(',')}`);
           if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special routes: ${special.join(',')}`);
           const r=ext.assets?.['beam-2']?.route;
           if(!r||r.type!=='uniswap-v2-historical-twap-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('BEAM route invalid');
           if(r.pair.toLowerCase()!=='0x180efc1349a69390ade25667487a826164c9c6e4'||r.token.toLowerCase()!=='0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce'||r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('BEAM identity drift');
           if(Number(r.lookbackBlocks)!==150||Number(r.minTwapWindowSeconds)!==1200||Number(r.maxTwapWindowSeconds)!==2700||Number(r.maxDivergencePct)!==10)throw new Error('BEAM TWAP contract drift');
           if(ext.semantics?.uniswapV2SpotPriceAuthority!==false||ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
-          console.log('BEAM exact stacked gate PASS',{routed:routed.length,pending,totalObservationTargets:routed.length+special.length});
+          console.log('BEAM additive-safe stacked gate PASS',{routed:routed.length,pending,totalObservationTargets:routed.length+special.length});
           NODE
           git diff --check

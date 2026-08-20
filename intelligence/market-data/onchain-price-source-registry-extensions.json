@@ -1,6 +1,6 @@
 {
-  "version": "0.3-olas-ovr-beam-onchain-route-extensions",
-  "effectiveRegistryVersion": "0.18-onchain-price-source-registry-olas-ovr-beam",
+  "version": "0.4-olas-ovr-beam-eliza-onchain-route-extensions",
+  "effectiveRegistryVersion": "0.19-onchain-price-source-registry-full-26-route-shadow",
   "purpose": "Bounded extension routes for the canonical onchain Market Data registry. Keeps the proven v0.15 base registry byte-stable while newly proven route mechanisms and assets are promoted through exact shadow-only gates.",
   "semantics": {
     "uniswapV2HistoricalTwapRoutesAllowed": true,
@@ -8,7 +8,10 @@
     "uniswapV2ExternalUpdaterDependencyRequired": false,
     "uniswapV2SpotPriceAuthority": false,
     "uniswapV3TwapRoutesAllowed": true,
+    "uniswapV3ChainlinkQuoteRoutesAllowed": true,
     "uniswapV3SpotPriceAuthority": false,
+    "stablecoinPegHardcoded": false,
+    "quoteFeedFreshnessRequired": true,
     "productionPriceAuthority": false,
     "executionAuthority": "none"
   },
@@ -76,6 +79,31 @@
         "maxDivergencePct": 10,
         "authority": "shadow",
         "provenance": "Beam official Ethereum BEAM token and established BEAM/WETH Uniswap V2 pair. Read-only cumulative-price historical TWAP from two block-pinned pair states, composed with same-cycle ETH/USD. No reserve spot-price authority, keeper/updater dependency, paid RPC, signing, or execution authority."
+      }
+    },
+    "elizaos": {
+      "assetId": "elizaos",
+      "symbol": "ELIZA",
+      "route": {
+        "type": "uniswap-v3-twap-chainlink-quote",
+        "network": "bsc",
+        "factory": "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865",
+        "token": "0xea17Df5Cf6D172224892B5477A16ACb111182478",
+        "quoteToken": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+        "fee": 2500,
+        "twapWindowSeconds": 1800,
+        "quoteAssetId": "bsc-usdc-usd",
+        "quoteFeed": {
+          "type": "chainlink-v3",
+          "contract": "0x51597f405303C4377E36123cBc172b13269EA163",
+          "maxAgeSeconds": 90000,
+          "quote": "USD"
+        },
+        "feedQuote": "USDC",
+        "outputQuote": "USD",
+        "maxDivergencePct": 10,
+        "authority": "shadow",
+        "provenance": "Canonical multichain elizaOS token on BNB Chain priced from the PancakeSwap V3 elizaOS/USDC 0.25% pool using observe()-based 30-minute TWAP. Token decimals and Binance-Peg USDC decimals are read onchain each cycle. USDC/USD is independently read from the BNB Chain Chainlink Data Feed and freshness/integrity checked; no hardcoded stablecoin peg, slot0 spot authority, paid RPC, signing, or execution authority."
       }
     }
   }
