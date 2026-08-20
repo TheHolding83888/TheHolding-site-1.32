@@ -1,0 +1,70 @@
+name: "Validate OLAS Onchain Market Data"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/market-data/onchain-price-resolver.mjs'
+      - 'intelligence/market-data/onchain-price-resolver-v08.mjs'
+      - 'intelligence/market-data/onchain-uniswap-v2-historical-twap.mjs'
+      - 'intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs'
+      - 'intelligence/market-data/onchain-price-source-registry-extensions.json'
+      - '.github/workflows/validate-olas-onchain-market-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Validate V2 runtime and deterministic historical TWAP
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/onchain-price-resolver.mjs
+          node --check intelligence/market-data/onchain-price-resolver-v08.mjs
+          node --check intelligence/market-data/onchain-uniswap-v2-historical-twap.mjs
+          node --check intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
+          node intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
+
+      - name: Prove OLAS exact route and coverage promotion
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-price-registry.json','utf8'));
+          const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
+          const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
+          const marketIds=(market.assets||[]).map(x=>x.assetId);
+          const effective={...(base.assets||{}),...(ext.assets||{})};
+          const routed=marketIds.filter(id=>effective[id]);
+          const pending=marketIds.filter(id=>!effective[id]);
+          const special=Object.keys(effective).filter(id=>!marketIds.includes(id));
+          if(marketIds.length!==26)throw new Error(`Canonical market universe drift: ${marketIds.length}`);
+          if(routed.length!==23)throw new Error(`Expected 23/26 canonical assets routed with OLAS, got ${routed.length}`);
+          if(pending.length!==3)throw new Error(`Expected 3 pending assets after OLAS, got ${pending.length}: ${pending.join(',')}`);
+          if(!pending.includes('ovr')||!pending.includes('beam-2')||!pending.includes('elizaos'))throw new Error(`Unexpected pending set: ${pending.join(',')}`);
+          if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
+          if(routed.length+special.length!==24)throw new Error('Expected 24 total onchain observation targets after OLAS');
+          const r=ext.assets?.autonolas?.route;
+          if(!r||r.type!=='uniswap-v2-historical-twap-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('OLAS V2 route contract invalid');
+          if(r.pair.toLowerCase()!=='0x09d1d767edf8fa23a64c51fa559e0688e526812f')throw new Error('OLAS/WETH pair drift');
+          if(r.token.toLowerCase()!=='0x0001a500a6b18995b03f44bb040a5ffc28e45cb0')throw new Error('OLAS token drift');
+          if(r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('OLAS WETH quote drift');
+          if(Number(r.lookbackBlocks)!==150||Number(r.minTwapWindowSeconds)!==1200||Number(r.maxTwapWindowSeconds)!==2700)throw new Error('OLAS historical-window contract drift');
+          if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('OLAS relative-price composition drift');
+          if(ext.semantics?.uniswapV2ExternalUpdaterDependencyRequired!==false)throw new Error('External updater dependency introduced');
+          if(ext.semantics?.uniswapV2SpotPriceAuthority!==false)throw new Error('Uniswap V2 spot authority introduced');
+          if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority boundary drift');
+          console.log('OLAS V2 historical TWAP route gate PASS',{routedMarketAssets:routed.length,pendingMarketAssets:pending.length,totalObservationTargets:routed.length+special.length,pending});
+          NODE
+          git diff --check

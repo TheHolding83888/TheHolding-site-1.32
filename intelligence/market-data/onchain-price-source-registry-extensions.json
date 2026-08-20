@@ -1,0 +1,37 @@
+{
+  "version": "0.1-olas-uniswap-v2-historical-twap-extension",
+  "effectiveRegistryVersion": "0.16-onchain-price-source-registry-olas-v2-historical-twap",
+  "purpose": "Bounded extension routes for the canonical onchain Market Data registry. Kept separate so the proven v0.15 registry remains byte-stable while the new reusable Uniswap V2 historical TWAP mechanism is production-proven.",
+  "semantics": {
+    "uniswapV2HistoricalTwapRoutesAllowed": true,
+    "uniswapV2HistoricalStateReadsRequired": true,
+    "uniswapV2ExternalUpdaterDependencyRequired": false,
+    "uniswapV2SpotPriceAuthority": false,
+    "productionPriceAuthority": false,
+    "executionAuthority": "none"
+  },
+  "assets": {
+    "autonolas": {
+      "assetId": "autonolas",
+      "symbol": "OLAS",
+      "route": {
+        "type": "uniswap-v2-historical-twap-relative",
+        "network": "ethereum",
+        "pair": "0x09D1d767eDF8Fa23A64C51fa559E0688E526812F",
+        "token": "0x0001A500A6B18995B03f44bb040A5fFc28E45CB0",
+        "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "tokenDecimals": 18,
+        "quoteTokenDecimals": 18,
+        "lookbackBlocks": 150,
+        "minTwapWindowSeconds": 1200,
+        "maxTwapWindowSeconds": 2700,
+        "quoteAssetId": "ethereum",
+        "feedQuote": "ETH",
+        "outputQuote": "USD",
+        "maxDivergencePct": 10,
+        "authority": "shadow",
+        "provenance": "Official Olas OLAS token and protocol-owned OLAS/WETH Uniswap V2 pair. Read-only cumulative-price historical TWAP from two block-pinned pair states, composed with same-cycle ETH/USD. No updatePrice transaction, keeper dependency, get_dy, reserve spot price, or execution authority."
+      }
+    }
+  }
+}
