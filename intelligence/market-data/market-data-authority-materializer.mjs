@@ -30,28 +30,55 @@ if (policy.semantics?.productionWriterIntegrationEnabled !== true) throw new Err
 if (policy.semantics?.automaticPolicyMutationAllowed !== false || policy.semantics?.automaticCohortExpansionAllowed !== false) throw new Error('Automatic authority expansion is forbidden');
 if (policy.semantics?.executionAuthority !== 'none') throw new Error('Execution authority drift');
 
-const pilotIds = [...(policy.pilot?.assetIds || [])];
+const directIds = [...(policy.pilot?.assetIds || [])];
+const relativeIds = [...(policy.relativePilot?.assetIds || [])];
+const promotedIds = [...directIds, ...relativeIds];
 const overrideIds = Object.keys(policy.assetOverrides || {});
-const exactPilot = ['bitcoin', 'ethereum', 'aerodrome-finance', 'pendle', 'curve-dao-token', 'frax-share', 'venice-token', 'internet-computer', 'decentraland', 'the-sandbox'];
-if (JSON.stringify(pilotIds) !== JSON.stringify(exactPilot)) throw new Error('Pilot cohort must be exactly BTC + ETH + AERO + PENDLE + CRV + FXS + VVV + ICP + MANA + SAND');
-if (overrideIds.length !== pilotIds.length || overrideIds.some(id => !pilotIds.includes(id))) throw new Error('Asset overrides exceed bounded pilot cohort');
-if (Number(policy.pilot?.maxPromotedAssetCount) !== 10) throw new Error('Pilot promotion cap drift');
-if (policy.pilot?.requiredRouteType !== 'chainlink-v3' || policy.pilot?.requiredQuote !== 'USD') throw new Error('Pilot must remain direct Chainlink/USD only');
+const exactDirect = ['bitcoin', 'ethereum', 'aerodrome-finance', 'pendle', 'curve-dao-token', 'frax-share', 'venice-token', 'internet-computer', 'decentraland', 'the-sandbox'];
+const exactRelative = ['convex-finance'];
+if (JSON.stringify(directIds) !== JSON.stringify(exactDirect)) throw new Error('Direct cohort must remain exactly BTC + ETH + AERO + PENDLE + CRV + FXS + VVV + ICP + MANA + SAND');
+if (JSON.stringify(relativeIds) !== JSON.stringify(exactRelative)) throw new Error('Relative cohort must be exactly CVX');
+if (new Set(promotedIds).size !== promotedIds.length) throw new Error('Promoted cohorts overlap');
+if (overrideIds.length !== promotedIds.length || overrideIds.some(id => !promotedIds.includes(id))) throw new Error('Asset overrides exceed bounded promoted cohorts');
+if (Number(policy.pilot?.maxPromotedAssetCount) !== 10) throw new Error('Direct cohort promotion cap drift');
+if (Number(policy.relativePilot?.maxPromotedAssetCount) !== 1) throw new Error('Relative cohort promotion cap drift');
+if (policy.pilot?.requiredRouteType !== 'chainlink-v3' || policy.pilot?.requiredQuote !== 'USD') throw new Error('Direct cohort must remain direct Chainlink/USD only');
+if (policy.relativePilot?.requiredRouteType !== 'chainlink-v3-relative' || policy.relativePilot?.requiredFeedQuote !== 'ETH' || policy.relativePilot?.requiredQuoteAssetId !== 'ethereum' || policy.relativePilot?.requiredOutputQuote !== 'USD' || policy.relativePilot?.requiredDependencyStatus !== 'shadow-ok') throw new Error('Relative CVX route contract drift');
 
-for (const assetId of pilotIds) {
+for (const assetId of directIds) {
   const observation = shadow?.observations?.[assetId];
   const req = policy.pilot?.routeRequirements?.[assetId];
-  if (!req) throw new Error(`${assetId}: exact route requirement missing`);
-  if (observation?.source !== policy.pilot.requiredRouteType) throw new Error(`${assetId}: pilot route type drift`);
-  if (observation?.network !== req.network) throw new Error(`${assetId}: pilot network drift`);
-  if (String(observation?.contract || '').toLowerCase() !== String(req.contract || '').toLowerCase()) throw new Error(`${assetId}: pilot feed contract drift`);
-  if (observation?.quote !== policy.pilot.requiredQuote) throw new Error(`${assetId}: pilot quote drift`);
-  if (forceCoinGeckoFailback) shadow.observations[assetId] = { ...observation, status: 'cycle-forced-failback', usd: null };
+  if (!req) throw new Error(`${assetId}: exact direct route requirement missing`);
+  if (observation?.source !== policy.pilot.requiredRouteType) throw new Error(`${assetId}: direct route type drift`);
+  if (observation?.network !== req.network) throw new Error(`${assetId}: direct network drift`);
+  if (String(observation?.contract || '').toLowerCase() !== String(req.contract || '').toLowerCase()) throw new Error(`${assetId}: direct feed contract drift`);
+  if (observation?.quote !== policy.pilot.requiredQuote) throw new Error(`${assetId}: direct quote drift`);
+}
+
+for (const assetId of relativeIds) {
+  const observation = shadow?.observations?.[assetId];
+  const req = policy.relativePilot?.routeRequirements?.[assetId];
+  if (!req) throw new Error(`${assetId}: exact relative route requirement missing`);
+  if (observation?.source !== policy.relativePilot.requiredRouteType) throw new Error(`${assetId}: relative route type drift`);
+  if (observation?.network !== req.network) throw new Error(`${assetId}: relative network drift`);
+  if (String(observation?.contract || '').toLowerCase() !== String(req.contract || '').toLowerCase()) throw new Error(`${assetId}: relative feed contract drift`);
+  if (observation?.feedQuote !== policy.relativePilot.requiredFeedQuote) throw new Error(`${assetId}: relative feed quote drift`);
+  if (observation?.quoteAssetId !== policy.relativePilot.requiredQuoteAssetId) throw new Error(`${assetId}: relative dependency asset drift`);
+  if (observation?.outputQuote !== policy.relativePilot.requiredOutputQuote) throw new Error(`${assetId}: relative output quote drift`);
+}
+
+if (forceCoinGeckoFailback) {
+  for (const assetId of promotedIds) {
+    const observation = shadow?.observations?.[assetId];
+    shadow.observations[assetId] = { ...observation, status: 'cycle-forced-failback', usd: null };
+  }
 }
 
 const evaluation = evaluateMarketDataAuthority({ policy, marketData: source, shadow, nowMs });
 const prices = {};
 let onchainSelectedAssetCount = 0;
+let directOnchainSelectedAssetCount = 0;
+let relativeOnchainSelectedAssetCount = 0;
 let coingeckoSelectedAssetCount = 0;
 let fallbackCount = 0;
 let unknownCount = 0;
@@ -71,6 +98,8 @@ for (const [assetId, sourceRow] of Object.entries(source.prices || {})) {
       authority: { requestedPrimary: selection.requestedPrimary, selectedLane: 'onchain', fallbackUsed: false, sourceSnapshotGeneratedAt: rawShadow.generatedAt || null }
     };
     onchainSelectedAssetCount += 1;
+    if (directIds.includes(assetId)) directOnchainSelectedAssetCount += 1;
+    if (relativeIds.includes(assetId)) relativeOnchainSelectedAssetCount += 1;
   } else if (selection.selectedLane === 'coingecko-lane') {
     prices[assetId] = {
       ...sourceRow,
@@ -92,16 +121,18 @@ for (const [assetId, sourceRow] of Object.entries(source.prices || {})) {
   }
 }
 
-if (onchainSelectedAssetCount > Number(policy.pilot.maxPromotedAssetCount)) throw new Error('Onchain selected asset count exceeds pilot cap');
+if (directOnchainSelectedAssetCount > Number(policy.pilot.maxPromotedAssetCount)) throw new Error('Direct selected asset count exceeds direct cap');
+if (relativeOnchainSelectedAssetCount > Number(policy.relativePilot.maxPromotedAssetCount)) throw new Error('Relative selected asset count exceeds relative cap');
+if (onchainSelectedAssetCount > Number(policy.pilot.maxPromotedAssetCount) + Number(policy.relativePilot.maxPromotedAssetCount)) throw new Error('Total onchain selected asset count exceeds combined cap');
 for (const assetId of Object.keys(prices)) {
-  if (!pilotIds.includes(assetId) && prices[assetId]?.authority?.selectedLane !== 'coingecko-lane') throw new Error(`${assetId}: non-pilot asset left CoinGecko lane`);
+  if (!promotedIds.includes(assetId) && prices[assetId]?.authority?.selectedLane !== 'coingecko-lane') throw new Error(`${assetId}: non-promoted asset left CoinGecko lane`);
 }
 if (forceCoinGeckoFailback && onchainSelectedAssetCount !== 0) throw new Error('Cycle failback did not remove onchain selections');
 
 const output = {
   ...source,
-  version: '0.8-market-data-bounded-direct-oracle-cohort',
-  engineVersion: '0.8-per-asset-authority-materializer-btc-eth-aero-pendle-crv-fxs-vvv-icp-mana-sand',
+  version: '0.9-market-data-bounded-direct-plus-relative-chainlink',
+  engineVersion: '0.9-per-asset-authority-materializer-direct10-plus-cvx-relative',
   generatedAt: new Date(nowMs).toISOString(),
   status: unknownCount > 0 ? 'partial' : fallbackCount > 0 ? 'fallback-active' : 'ok',
   semantics: {
@@ -109,7 +140,9 @@ const output = {
     canonicalMirrorEqualsCoinGeckoSourceLane: false,
     perAssetAuthoritySelectionApplied: true,
     boundedOnchainPrimaryPilot: true,
-    directChainlinkUsdCohortOnly: true,
+    directChainlinkUsdCohortRetained: true,
+    relativeChainlinkPilotEnabled: true,
+    dependencyAwareEligibility: true,
     coinGeckoRemainsFallbackAndSanityCheck: true,
     automaticCohortExpansionAllowed: false,
     cycleForcedCoinGeckoFailback: forceCoinGeckoFailback,
@@ -120,8 +153,12 @@ const output = {
     productionPriceLane: 'per-asset',
     defaultProductionAuthority: 'coingecko-lane',
     pilotCohortId: policy.pilot.cohortId,
-    pilotAssetIds: pilotIds,
+    pilotAssetIds: directIds,
+    relativePilotCohortId: policy.relativePilot.cohortId,
+    relativePilotAssetIds: relativeIds,
     onchainSelectedAssetCount,
+    directOnchainSelectedAssetCount,
+    relativeOnchainSelectedAssetCount,
     coingeckoSelectedAssetCount,
     fallbackCount,
     unknownCount,
@@ -139,4 +176,15 @@ const output = {
 };
 
 fs.writeFileSync(PATHS.output, JSON.stringify(output, null, 2) + '\n');
-console.log('Market Data authority materialized', { pilotAssetIds: pilotIds, onchainSelectedAssetCount, coingeckoSelectedAssetCount, fallbackCount, unknownCount, forceCoinGeckoFailback, executionAuthority: 'none' });
+console.log('Market Data authority materialized', {
+  directPilotAssetIds: directIds,
+  relativePilotAssetIds: relativeIds,
+  onchainSelectedAssetCount,
+  directOnchainSelectedAssetCount,
+  relativeOnchainSelectedAssetCount,
+  coingeckoSelectedAssetCount,
+  fallbackCount,
+  unknownCount,
+  forceCoinGeckoFailback,
+  executionAuthority: 'none'
+});
