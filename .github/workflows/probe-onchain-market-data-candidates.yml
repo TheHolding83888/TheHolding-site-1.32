@@ -5,6 +5,7 @@ on:
     paths:
       - 'intelligence/market-data/onchain-live-candidate-probe.mjs'
       - 'intelligence/market-data/olas-sync-log-endpoint-probe.mjs'
+      - 'intelligence/market-data/olas-v2-short-history-probe.mjs'
       - '.github/workflows/probe-onchain-market-data-candidates.yml'
   workflow_dispatch:
 
@@ -22,8 +23,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Probe OLAS Sync-log public RPC candidates
+      - name: Probe OLAS short-window historical V2 TWAP
         run: |
           set -euo pipefail
-          node --check intelligence/market-data/olas-sync-log-endpoint-probe.mjs
-          node intelligence/market-data/olas-sync-log-endpoint-probe.mjs
+          node --check intelligence/market-data/olas-v2-short-history-probe.mjs
+          node intelligence/market-data/olas-v2-short-history-probe.mjs
