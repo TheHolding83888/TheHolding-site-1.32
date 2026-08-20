@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-20T11:48:14.733Z",
+  "generatedAt": "2026-08-20T12:10:07.853Z",
   "status": "watch",
-  "snapshotHash": "06b53a6d30e4f4b8cfd54d65afdef0a3a9994d7e1f3dcf41a9c9437d2ed11bff",
+  "snapshotHash": "cc5c064bd8e03c402cc7857d364601a34a0d1d84de36007b2cf570984460eb7e",
   "repository": {
-    "filesScanned": 509,
-    "bytesScanned": 10808892,
+    "filesScanned": 512,
+    "bytesScanned": 10828750,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -71,6 +71,7 @@
       ".github/workflows/update-runtime-owner-activation.yml": "aa8b4173da2462c1b0285d80e00afbed8b248d1d6b2d264ae066ac1eadea42db",
       ".github/workflows/update-stable-capital.yml": "2cab5cc5b960b633f7131e84d83a751036a73cdd6a60decc37910beb30d33954",
       ".github/workflows/validate-beam-onchain-market-data.yml": "d342791883c8f1f0de758930572614ff255b31d183f819d204bef18b676447b3",
+      ".github/workflows/validate-eliza-adaptive-twap.yml": "c24744cf69d34776bf6148b7ccba75c293249ddb8492cc71dd7173e1abf50272",
       ".github/workflows/validate-embedded-yield-interval-history.yml": "cd34c8a29f25c5e5f2db3dd8052013e95cea3f3b8aa60cbbcb2547bb7feecb4a",
       ".github/workflows/validate-market-data-authority-promotion-framework.yml": "ed6452eb6a7b522ca84da1befc2f8c4e8ea19d972785512b5257198002dd3f9f",
       ".github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml": "ef82f9571d2f740975f250941c6a0b5bb12ca221d059266027abf932e862c6f5",
@@ -335,7 +336,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Wed, 19 Aug 2026 16:07:18 GMT",
+        "lastModified": "Thu, 20 Aug 2026 05:27:20 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -415,48 +416,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "4c56241866c2ebe4e56cb2006334a089ee07238e1eb4de439942b477b80e1062",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/market-data-refresh.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/market-data-refresh.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "caea951d4badf43741216c887d10de98a8d0a8c7008b45d8c832b36a74f68cbb",
-        "currentSha256": "ccd67413e6a162fe6757305d675421da0cc8be9272385ce026807350afd0ae10"
-      }
-    },
-    {
-      "id": "0c621a309f2831578bb826fc8d125a03cc04cd12c31539802bda879acab1a59d",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/validate-market-data-authority-promotion-framework.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-authority-promotion-framework.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "595915068bcdebd88b152ff8e23d3baa1d0173b19d6dc79a865b7b2e91336e61",
-        "currentSha256": "ed6452eb6a7b522ca84da1befc2f8c4e8ea19d972785512b5257198002dd3f9f"
-      }
-    },
-    {
-      "id": "9a9cd00032ba104dd6748d3af4d7a4f2e28dfe865da1cb86d9e0dbf434ee389f",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "54a7d46c2a8c11d1a4f1acc4669538d469d2355fce71666ce9c68329b0c882a7",
-        "currentSha256": "ef82f9571d2f740975f250941c6a0b5bb12ca221d059266027abf932e862c6f5"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1059,10 +1018,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 359,
+    "runCount": 360,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-20T11-48-14-733Z-06b53a6d30.json",
-    "latestRecordHash": "b6e928ca1be5ffe46f0c730a06eb5b109193339ea3ef4f1aa8b7429487f40d72",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-20T12-10-07-853Z-cc5c064bd8.json",
+    "latestRecordHash": "55cd6613375606527e9fffbee173119daf053681b9556259b599ccd65161af6c",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
