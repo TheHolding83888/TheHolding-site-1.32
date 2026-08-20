@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'intelligence/market-data/onchain-eliza-v2-wbnb-candidate-validation.mjs'
+      - 'intelligence/market-data/onchain-bsc-archive-capability-validation.mjs'
       - '.github/workflows/discover-eliza-v2-wbnb-route.yml'
   workflow_dispatch:
 
@@ -25,7 +26,12 @@ jobs:
         run: |
           set -euo pipefail
           node --check intelligence/market-data/onchain-eliza-v2-wbnb-candidate-validation.mjs
+          node --check intelligence/market-data/onchain-bsc-archive-capability-validation.mjs
           git diff --check
+      - name: Probe configured BSC public RPC historical state
+        run: |
+          set -euo pipefail
+          node intelligence/market-data/onchain-bsc-archive-capability-validation.mjs
       - name: Discover ELIZA V2 WBNB historical TWAP live
         run: |
           set -euo pipefail
