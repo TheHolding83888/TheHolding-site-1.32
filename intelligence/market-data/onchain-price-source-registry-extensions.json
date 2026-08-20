@@ -1,7 +1,7 @@
 {
-  "version": "0.4-olas-ovr-beam-eliza-onchain-route-extensions",
-  "effectiveRegistryVersion": "0.19-onchain-price-source-registry-full-26-route-shadow",
-  "purpose": "Bounded extension routes for the canonical onchain Market Data registry. Keeps the proven v0.15 base registry byte-stable while newly proven route mechanisms and assets are promoted through exact shadow-only gates.",
+  "version": "0.5-full-coverage-plus-mode-velodrome-route-override",
+  "effectiveRegistryVersion": "0.20-onchain-price-source-registry-full-26-route-no-stale-mode",
+  "purpose": "Bounded extension routes plus explicit reviewed replacements for canonical onchain Market Data routes. Base v0.15 remains byte-stable; route overrides are fail-closed and may only target existing canonical asset ids.",
   "semantics": {
     "uniswapV2HistoricalTwapRoutesAllowed": true,
     "uniswapV2HistoricalStateReadsRequired": true,
@@ -12,6 +12,7 @@
     "uniswapV3SpotPriceAuthority": false,
     "stablecoinPegHardcoded": false,
     "quoteFeedFreshnessRequired": true,
+    "boundedRouteOverridesAllowed": true,
     "productionPriceAuthority": false,
     "executionAuthority": "none"
   },
@@ -104,6 +105,31 @@
         "maxDivergencePct": 10,
         "authority": "shadow",
         "provenance": "Canonical multichain elizaOS token on BNB Chain priced from the PancakeSwap V3 elizaOS/USDC 0.25% pool using observe()-based 30-minute TWAP. Token decimals and Binance-Peg USDC decimals are read onchain each cycle. USDC/USD is independently read from the BNB Chain Chainlink Data Feed and freshness/integrity checked; no hardcoded stablecoin peg, slot0 spot authority, paid RPC, signing, or execution authority."
+      }
+    }
+  },
+  "overrides": {
+    "mode": {
+      "assetId": "mode",
+      "symbol": "MODE",
+      "route": {
+        "type": "velodrome-v2-twap-relative",
+        "network": "mode",
+        "factory": "0x31832f2a97Fd20664D76Cc421207669b55CE4BC0",
+        "token": "0xDfc7C877a950e49D2610114102175A06C2e3167a",
+        "quoteToken": "0x4200000000000000000000000000000000000006",
+        "stable": false,
+        "tokenDecimals": 18,
+        "quoteTokenDecimals": 18,
+        "amountIn": "1000000000000000000",
+        "granularity": 4,
+        "observationPeriodSeconds": 1800,
+        "quoteAssetId": "ethereum",
+        "feedQuote": "ETH",
+        "outputQuote": "USD",
+        "maxDivergencePct": 10,
+        "authority": "shadow",
+        "provenance": "Official MODE token on Mode Mainnet and official Velodrome Superchain V2 PoolFactory on chain 34443. Factory-discovered MODE/WETH volatile pool uses Velodrome observation TWAP pinned to the discovery block and composes with same-cycle ETH/USD. Replaces stale Pyth stored-state dependency; no updater, spot-price authority, paid RPC, signing, or execution authority."
       }
     }
   }
