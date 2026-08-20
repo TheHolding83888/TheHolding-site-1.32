@@ -35,22 +35,22 @@ jobs:
           node --input-type=module - <<'NODE'
           import fs from 'node:fs';
           const p=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
-          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share','venice-token','internet-computer'];
-          const networks={bitcoin:'ethereum',ethereum:'ethereum','aerodrome-finance':'base',pendle:'optimism','curve-dao-token':'ethereum','frax-share':'ethereum','venice-token':'base','internet-computer':'bsc'};
+          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share','venice-token','internet-computer','decentraland','the-sandbox'];
+          const networks={bitcoin:'ethereum',ethereum:'ethereum','aerodrome-finance':'base',pendle:'optimism','curve-dao-token':'ethereum','frax-share':'ethereum','venice-token':'base','internet-computer':'bsc','decentraland':'polygon','the-sandbox':'polygon'};
           if(p.mode!=='bounded-production-pilot')throw new Error('Pilot mode missing');
           if(p.globalOnchainPromotionEnabled!==true)throw new Error('Pilot gate disabled');
           if(p.defaultProductionAuthority!=='coingecko-lane')throw new Error('Default production authority changed');
           if(p.semantics?.productionWriterIntegrationEnabled!==true)throw new Error('Writer integration missing');
           if(p.semantics?.automaticPolicyMutationAllowed!==false||p.semantics?.automaticProductionMergeAllowed!==false||p.semantics?.automaticCohortExpansionAllowed!==false)throw new Error('Automatic authority mutation enabled');
           if(p.semantics?.executionAuthority!=='none')throw new Error('Execution authority drift');
-          if(JSON.stringify(p.pilot?.assetIds)!==JSON.stringify(pilot)||Number(p.pilot?.maxPromotedAssetCount)!==8)throw new Error('Pilot cohort drift');
+          if(JSON.stringify(p.pilot?.assetIds)!==JSON.stringify(pilot)||Number(p.pilot?.maxPromotedAssetCount)!==10)throw new Error('Pilot cohort drift');
           if(p.pilot?.requiredRouteType!=='chainlink-v3'||p.pilot?.requiredQuote!=='USD')throw new Error('Direct Chainlink/USD boundary drift');
           if(JSON.stringify(Object.keys(p.assetOverrides||{}).sort())!==JSON.stringify([...pilot].sort()))throw new Error('Overrides exceed pilot');
           for(const id of pilot){
             const req=p.pilot?.routeRequirements?.[id];
             if(!req||req.network!==networks[id]||!/^0x[0-9a-fA-F]{40}$/.test(req.contract||''))throw new Error(`${id}: exact route requirement drift`);
           }
-          console.log('Bounded eight-asset direct-oracle authority boundary PASS');
+          console.log('Bounded ten-asset direct-oracle authority boundary PASS');
           NODE
           git diff --check
       - name: Prove cohort scope cannot silently expand
