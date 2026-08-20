@@ -5,12 +5,41 @@ export const UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE = 'uniswap-v3-twap-chainlink-
 const RPC_TIMEOUT_MS = 10_000;
 const DECIMALS_SELECTOR = '0x313ce567';
 const LATEST_ROUND_DATA_SELECTOR = '0xfeaf968c';
+const MIN_ADAPTIVE_TWAP_WINDOW_SECONDS = 60;
 
 function finite(value) { const n = Number(value); return Number.isFinite(n) ? n : null; }
 function statusRank(status) {
   if (status === 'shadow-ok') return 'ok';
   if (['stale-quote-feed', 'invalid-quote-feed', 'divergent', 'dependency-warning'].includes(status)) return 'warning';
   return 'unavailable';
+}
+function isOldObservation(observation) {
+  return observation?.status === 'rpc-call-or-decode-error' && /\bOLD\b/i.test(String(observation?.error || ''));
+}
+function usableTwapObservation(observation) {
+  return finite(observation?.usd) > 0 && ['shadow-ok', 'divergent', 'dependency-warning'].includes(observation?.status);
+}
+function adaptiveFallbackWindows(route) {
+  const configured = route?.twapFallbackWindowsSeconds;
+  if (configured === undefined) return [];
+  if (!Array.isArray(configured)) throw new Error('twapFallbackWindowsSeconds must be an array');
+  if (!configured.length) return [];
+  if (route?.twapFallbackOnError !== 'OLD') throw new Error('Adaptive TWAP fallback may only be enabled with twapFallbackOnError=OLD');
+  const preferred = Number(route?.twapWindowSeconds);
+  if (!Number.isInteger(preferred) || preferred <= MIN_ADAPTIVE_TWAP_WINDOW_SECONDS) throw new Error('Preferred TWAP window invalid for adaptive fallback');
+  const windows = [];
+  let previous = preferred;
+  const seen = new Set([preferred]);
+  for (const raw of configured) {
+    const value = Number(raw);
+    if (!Number.isInteger(value) || value < MIN_ADAPTIVE_TWAP_WINDOW_SECONDS || value >= previous || seen.has(value)) {
+      throw new Error(`Invalid adaptive TWAP fallback window: ${raw}`);
+    }
+    windows.push(value);
+    seen.add(value);
+    previous = value;
+  }
+  return windows;
 }
 
 async function postBatch(endpoint, payload, fetchImpl) {
@@ -109,6 +138,7 @@ export async function resolveUniswapV3ChainlinkQuotePrices({ registry, marketDat
     .map(([assetId, asset]) => ({ assetId, asset, route: asset.route }));
   const grouped = new Map();
   for (const entry of entries) {
+    adaptiveFallbackWindows(entry.route);
     if (!grouped.has(entry.route.network)) grouped.set(entry.route.network, []);
     grouped.get(entry.route.network).push(entry);
   }
@@ -226,10 +256,99 @@ export async function resolveUniswapV3ChainlinkQuotePrices({ registry, marketDat
     });
   }
 
+  let adaptiveFallbackHttpRequests = 0;
+  const adaptiveNetworkTelemetry = {};
+  for (const [assetId, eligibleAsset] of Object.entries(eligibleAssets)) {
+    const original = registry.assets?.[assetId]?.route;
+    const fallbackWindows = adaptiveFallbackWindows(original);
+    const preferredObservation = v3.observations?.[assetId];
+    if (!fallbackWindows.length || !isOldObservation(preferredObservation)) continue;
+
+    const attempted = [];
+    let finalObservation = preferredObservation;
+    for (const windowSeconds of fallbackWindows) {
+      attempted.push(windowSeconds);
+      const retry = await resolveUniswapV3TwapPrices({
+        registry: {
+          ...registry,
+          assets: {
+            [assetId]: {
+              ...eligibleAsset,
+              route: { ...eligibleAsset.route, twapWindowSeconds: windowSeconds }
+            }
+          }
+        },
+        marketData,
+        coreObservations: dependencyObservations,
+        fetchImpl
+      });
+      adaptiveFallbackHttpRequests += Number(retry.rpcEfficiency?.httpBatchRequestCount || 0);
+      const networkId = original.network;
+      const retryNetwork = retry.networks?.[networkId] || {};
+      const telemetry = adaptiveNetworkTelemetry[networkId] || { attemptCount: 0, httpBatchRequestCount: 0, rpcFailoverAttempts: 0 };
+      telemetry.attemptCount += 1;
+      telemetry.httpBatchRequestCount += Number(retryNetwork.httpBatchRequestCount || 0);
+      telemetry.rpcFailoverAttempts += Number(retryNetwork.rpcFailoverAttempts || 0);
+      adaptiveNetworkTelemetry[networkId] = telemetry;
+
+      const candidate = retry.observations?.[assetId] || null;
+      finalObservation = candidate || finalObservation;
+      if (usableTwapObservation(candidate)) {
+        finalObservation = {
+          ...candidate,
+          preferredTwapWindowSeconds: Number(original.twapWindowSeconds),
+          twapFallbackWindowsSeconds: fallbackWindows,
+          twapFallbackUsed: true,
+          twapFallbackOnError: 'OLD',
+          twapFallbackAttemptedSeconds: [...attempted]
+        };
+        break;
+      }
+      if (!isOldObservation(candidate)) {
+        finalObservation = {
+          ...(candidate || finalObservation),
+          preferredTwapWindowSeconds: Number(original.twapWindowSeconds),
+          twapFallbackWindowsSeconds: fallbackWindows,
+          twapFallbackUsed: false,
+          twapFallbackOnError: 'OLD',
+          twapFallbackAttemptedSeconds: [...attempted],
+          twapFallbackStoppedOnNonOldError: true
+        };
+        break;
+      }
+      finalObservation = {
+        ...candidate,
+        preferredTwapWindowSeconds: Number(original.twapWindowSeconds),
+        twapFallbackWindowsSeconds: fallbackWindows,
+        twapFallbackUsed: false,
+        twapFallbackOnError: 'OLD',
+        twapFallbackAttemptedSeconds: [...attempted],
+        twapFallbackExhausted: attempted.length === fallbackWindows.length
+      };
+    }
+    v3.observations[assetId] = finalObservation;
+  }
+
+  for (const [networkId, telemetry] of Object.entries(adaptiveNetworkTelemetry)) {
+    const base = v3.networks?.[networkId] || {};
+    v3.networks[networkId] = {
+      ...base,
+      httpBatchRequestCount: Number(base.httpBatchRequestCount || 0) + telemetry.httpBatchRequestCount,
+      rpcFailoverAttempts: Number(base.rpcFailoverAttempts || 0) + telemetry.rpcFailoverAttempts,
+      adaptiveTwapFallbackAttemptCount: telemetry.attemptCount,
+      adaptiveTwapFallbackHttpBatchRequestCount: telemetry.httpBatchRequestCount,
+      adaptiveTwapFallbackOnlyOnOld: true,
+      minimumAdaptiveTwapWindowSeconds: MIN_ADAPTIVE_TWAP_WINDOW_SECONDS
+    };
+  }
+  v3.rpcEfficiency.httpBatchRequestCount = Number(v3.rpcEfficiency?.httpBatchRequestCount || 0) + adaptiveFallbackHttpRequests;
+
   const observations = { ...preflightFailures };
   for (const [assetId, observation] of Object.entries(v3.observations || {})) {
     const original = registry.assets?.[assetId]?.route;
     const dependency = dependencyObservations[original?.quoteAssetId];
+    const fallbackWindows = adaptiveFallbackWindows(original);
+    const effectiveWindowSeconds = Number(observation?.twapWindowSeconds || original?.twapWindowSeconds || 0);
     observations[assetId] = {
       ...observation,
       source: UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE,
@@ -237,7 +356,11 @@ export async function resolveUniswapV3ChainlinkQuotePrices({ registry, marketDat
       quoteFeedUsd: finite(dependency?.usd),
       quoteFeedAgeSeconds: dependency?.feedAgeSeconds ?? null,
       quoteDependencySource: dependency?.source || null,
-      composition: `Uniswap V3 ${original?.twapWindowSeconds}s geometric TWAP × same-cycle Chainlink ${original?.feedQuote || 'quote'}/USD`,
+      preferredTwapWindowSeconds: Number(original?.twapWindowSeconds || 0),
+      twapFallbackWindowsSeconds: fallbackWindows,
+      twapFallbackOnError: fallbackWindows.length ? 'OLD' : null,
+      twapFallbackUsed: observation?.twapFallbackUsed === true,
+      composition: `Uniswap V3 ${effectiveWindowSeconds}s geometric TWAP × same-cycle Chainlink ${original?.feedQuote || 'quote'}/USD`,
       productionPriceAuthority: false
     };
   }
