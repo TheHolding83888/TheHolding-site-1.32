@@ -1,12 +1,14 @@
 {
-  "version": "0.1-olas-uniswap-v2-historical-twap-extension",
-  "effectiveRegistryVersion": "0.16-onchain-price-source-registry-olas-v2-historical-twap",
-  "purpose": "Bounded extension routes for the canonical onchain Market Data registry. Kept separate so the proven v0.15 registry remains byte-stable while the new reusable Uniswap V2 historical TWAP mechanism is production-proven.",
+  "version": "0.2-olas-plus-ovr-onchain-route-extensions",
+  "effectiveRegistryVersion": "0.17-onchain-price-source-registry-olas-plus-ovr",
+  "purpose": "Bounded extension routes for the canonical onchain Market Data registry. Keeps the proven v0.15 base registry byte-stable while newly proven route mechanisms and assets are promoted through exact shadow-only gates.",
   "semantics": {
     "uniswapV2HistoricalTwapRoutesAllowed": true,
     "uniswapV2HistoricalStateReadsRequired": true,
     "uniswapV2ExternalUpdaterDependencyRequired": false,
     "uniswapV2SpotPriceAuthority": false,
+    "uniswapV3TwapRoutesAllowed": true,
+    "uniswapV3SpotPriceAuthority": false,
     "productionPriceAuthority": false,
     "executionAuthority": "none"
   },
@@ -31,6 +33,27 @@
         "maxDivergencePct": 10,
         "authority": "shadow",
         "provenance": "Official Olas OLAS token and protocol-owned OLAS/WETH Uniswap V2 pair. Read-only cumulative-price historical TWAP from two block-pinned pair states, composed with same-cycle ETH/USD. No updatePrice transaction, keeper dependency, get_dy, reserve spot price, or execution authority."
+      }
+    },
+    "ovr": {
+      "assetId": "ovr",
+      "symbol": "OVR",
+      "route": {
+        "type": "uniswap-v3-twap-relative",
+        "network": "ethereum",
+        "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+        "token": "0x21BfBDa47A0B4B5b1248c767Ee49F7caA9B23697",
+        "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "tokenDecimals": 18,
+        "quoteTokenDecimals": 18,
+        "fee": 10000,
+        "twapWindowSeconds": 1800,
+        "quoteAssetId": "ethereum",
+        "feedQuote": "ETH",
+        "outputQuote": "USD",
+        "maxDivergencePct": 10,
+        "authority": "shadow",
+        "provenance": "OVER official Ethereum OVR token. Read-only Uniswap V3 OVR/WETH 1% pool discovered through the canonical Ethereum Uniswap V3 factory, priced by observe()-based 30-minute TWAP and composed with same-cycle ETH/USD. No slot0 spot-price authority, paid RPC, signing, or execution authority."
       }
     }
   }
