@@ -9,6 +9,10 @@ import {
   UNISWAP_V3_TWAP_ROUTE_TYPE,
   resolveUniswapV3TwapPrices
 } from './onchain-uniswap-v3-twap.mjs';
+import {
+  CURVE_EMA_ROUTE_TYPE,
+  resolveCurveEmaPrices
+} from './onchain-curve-ema.mjs';
 
 export {
   decodeChainlinkRoundData,
@@ -26,6 +30,11 @@ export {
   arithmeticMeanTick,
   quoteRatioAtTick
 } from './onchain-uniswap-v3-twap.mjs';
+export {
+  CURVE_EMA_ROUTE_TYPE,
+  encodeCurveCoins,
+  encodeCurvePriceOracle
+} from './onchain-curve-ema.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REGISTRY_PATH = path.join(__dirname, 'onchain-price-source-registry.json');
@@ -319,32 +328,58 @@ function mergeUniswapTelemetry(baseNetworks, uniswapNetworks) {
   return merged;
 }
 
+function mergeCurveTelemetry(baseNetworks, curveNetworks) {
+  const merged = { ...baseNetworks };
+  for (const [networkId, curve] of Object.entries(curveNetworks)) {
+    const base = merged[networkId];
+    if (!base) { merged[networkId] = curve; continue; }
+    merged[networkId] = {
+      ...base,
+      routeCount: Number(base.routeCount || 0) + Number(curve.routeCount || 0),
+      batchCallCount: Number(base.batchCallCount || 0) + Number(curve.batchCallCount || 0),
+      httpBatchRequestCount: Number(base.httpBatchRequestCount || 0) + Number(curve.httpBatchRequestCount || 0),
+      rpcFailoverAttempts: Number(base.rpcFailoverAttempts || 0) + Number(curve.rpcFailoverAttempts || 0),
+      protocolReadPhases: Math.max(Number(base.protocolReadPhases || 1), Number(curve.protocolReadPhases || 1)),
+      curveEmaRouteCount: curve.curveEmaRouteCount,
+      curveEmaOracleBatchCallCount: curve.curveEmaOracleBatchCallCount,
+      curveEmaBlockEndpointId: curve.curveEmaBlockEndpointId,
+      curveEmaOracleEndpointId: curve.curveEmaOracleEndpointId,
+      curveEmaBlockTag: curve.curveEmaBlockTag
+    };
+  }
+  return merged;
+}
+
 export async function resolveOnchainPrices({ registry, marketData = null, fetchImpl = fetch, nowMs = Date.now() }) {
   if (!registry?.assets || !registry?.networks) throw new Error('Onchain source registry missing or invalid');
-  const coreAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => ![PYTH_ROUTE_TYPE, UNISWAP_V3_TWAP_ROUTE_TYPE].includes(asset?.route?.type)));
+  const specializedRouteTypes = [PYTH_ROUTE_TYPE, UNISWAP_V3_TWAP_ROUTE_TYPE, CURVE_EMA_ROUTE_TYPE];
+  const coreAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => !specializedRouteTypes.includes(asset?.route?.type)));
   const coreRegistry = { ...registry, assets: coreAssets };
   const core = await resolveCorePrices({ registry: coreRegistry, marketData, fetchImpl, nowMs });
   const pyth = await resolvePythPrices({ registry, marketData, fetchImpl, nowMs });
   const uniswap = await resolveUniswapV3TwapPrices({ registry, marketData, coreObservations: core.observations, fetchImpl, nowMs });
+  const curve = await resolveCurveEmaPrices({ registry, marketData, coreObservations: core.observations, fetchImpl, nowMs });
 
   const coverage = {
-    assetCount: core.coverage.assetCount + pyth.coverage.assetCount + uniswap.coverage.assetCount,
-    okCount: core.coverage.okCount + pyth.coverage.okCount + uniswap.coverage.okCount,
-    warningCount: core.coverage.warningCount + pyth.coverage.warningCount + uniswap.coverage.warningCount,
-    unavailableCount: core.coverage.unavailableCount + pyth.coverage.unavailableCount + uniswap.coverage.unavailableCount
+    assetCount: core.coverage.assetCount + pyth.coverage.assetCount + uniswap.coverage.assetCount + curve.coverage.assetCount,
+    okCount: core.coverage.okCount + pyth.coverage.okCount + uniswap.coverage.okCount + curve.coverage.okCount,
+    warningCount: core.coverage.warningCount + pyth.coverage.warningCount + uniswap.coverage.warningCount + curve.coverage.warningCount,
+    unavailableCount: core.coverage.unavailableCount + pyth.coverage.unavailableCount + uniswap.coverage.unavailableCount + curve.coverage.unavailableCount
   };
   const corePlusPythNetworks = mergeNetworkTelemetry(core.networks, pyth.networks);
-  const networks = mergeUniswapTelemetry(corePlusPythNetworks, uniswap.networks);
+  const corePythUniswapNetworks = mergeUniswapTelemetry(corePlusPythNetworks, uniswap.networks);
+  const networks = mergeCurveTelemetry(corePythUniswapNetworks, curve.networks);
   const rpcEfficiency = {
-    networkCount: new Set([...Object.keys(core.networks), ...Object.keys(pyth.networks), ...Object.keys(uniswap.networks)]).size,
-    routeCount: core.rpcEfficiency.routeCount + pyth.rpcEfficiency.routeCount + uniswap.rpcEfficiency.routeCount,
-    httpBatchRequestCount: core.rpcEfficiency.httpBatchRequestCount + pyth.rpcEfficiency.httpBatchRequestCount + uniswap.rpcEfficiency.httpBatchRequestCount
+    networkCount: new Set([...Object.keys(core.networks), ...Object.keys(pyth.networks), ...Object.keys(uniswap.networks), ...Object.keys(curve.networks)]).size,
+    routeCount: core.rpcEfficiency.routeCount + pyth.rpcEfficiency.routeCount + uniswap.rpcEfficiency.routeCount + curve.rpcEfficiency.routeCount,
+    httpBatchRequestCount: core.rpcEfficiency.httpBatchRequestCount + pyth.rpcEfficiency.httpBatchRequestCount + uniswap.rpcEfficiency.httpBatchRequestCount + curve.rpcEfficiency.httpBatchRequestCount
   };
+  const curveEnabled = curve.coverage.assetCount > 0;
 
   return {
     ...core,
-    version: '0.7-onchain-price-shadow-uniswap-v3-twap',
-    engineVersion: '0.7-composite-core-plus-pyth-plus-uniswap-v3-twap-resolver',
+    version: curveEnabled ? '0.8-onchain-price-shadow-curve-ema' : '0.7-onchain-price-shadow-uniswap-v3-twap',
+    engineVersion: curveEnabled ? '0.8-composite-core-plus-pyth-plus-uniswap-plus-curve-ema-resolver' : '0.7-composite-core-plus-pyth-plus-uniswap-v3-twap-resolver',
     generatedAt: iso(nowMs),
     status: coverage.unavailableCount > 0 ? 'partial' : coverage.warningCount > 0 ? 'warning' : 'ok',
     semantics: {
@@ -359,12 +394,15 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       uniswapV3FactoryDiscovery: true,
       uniswapV3TwapReadsPinnedToDiscoveryBlock: true,
       uniswapV3UsesObserveNotSpot: true,
+      curveEmaRoutes: curveEnabled,
+      curvePriceOracleReadsPinnedToBlock: curveEnabled,
+      curveUsesPriceOracleNotSpot: curveEnabled,
       dexSpotPriceAuthority: false
     },
     rpcEfficiency,
     coverage,
     networks,
-    observations: { ...core.observations, ...pyth.observations, ...uniswap.observations },
+    observations: { ...core.observations, ...pyth.observations, ...uniswap.observations, ...curve.observations },
     authority: { readOnly: true, executionAuthority: 'none', capitalExecution: false, policyMutationAuthority: false }
   };
 }

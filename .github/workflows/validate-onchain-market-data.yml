@@ -12,6 +12,8 @@ on:
       - 'intelligence/market-data/onchain-price-resolver-validation.mjs'
       - 'intelligence/market-data/onchain-uniswap-v3-twap.mjs'
       - 'intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs'
+      - 'intelligence/market-data/onchain-curve-ema.mjs'
+      - 'intelligence/market-data/onchain-curve-ema-validation.mjs'
       - 'intelligence/market-data/onchain-price-coverage-audit.mjs'
       - '.github/workflows/market-data-refresh.yml'
       - '.github/workflows/validate-onchain-market-data.yml'
@@ -39,9 +41,12 @@ jobs:
           node --check intelligence/market-data/onchain-price-resolver-validation.mjs
           node --check intelligence/market-data/onchain-uniswap-v3-twap.mjs
           node --check intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs
+          node --check intelligence/market-data/onchain-curve-ema.mjs
+          node --check intelligence/market-data/onchain-curve-ema-validation.mjs
           node --check intelligence/market-data/onchain-price-coverage-audit.mjs
           node intelligence/market-data/onchain-price-resolver-validation.mjs
           node intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs
+          node intelligence/market-data/onchain-curve-ema-validation.mjs
       - name: Audit canonical market universe coverage
         run: |
           set -euo pipefail
@@ -56,11 +61,11 @@ jobs:
           const pending=marketIds.filter(id=>!routes.includes(id));
           const special=routes.filter(id=>!marketIds.includes(id));
           if(marketIds.length!==26)throw new Error(`Expected current canonical 26-asset market universe, got ${marketIds.length}`);
-          if(routed.length!==17)throw new Error(`Expected 17 routed market assets after LQTY Uniswap V3 TWAP cohort, got ${routed.length}`);
-          if(pending.length!==9)throw new Error(`Expected 9 pending market assets after LQTY Uniswap V3 TWAP cohort, got ${pending.length}`);
+          if(routed.length!==18)throw new Error(`Expected 18 routed market assets after RSUP Curve EMA cohort, got ${routed.length}`);
+          if(pending.length!==8)throw new Error(`Expected 8 pending market assets after RSUP Curve EMA cohort, got ${pending.length}`);
           if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
-          if(routed.length+special.length!==18)throw new Error('Expected 18 total live onchain observation targets');
-          console.log('Onchain coverage LQTY Uniswap V3 TWAP cohort PASS',{marketAssets:26,routedMarketAssets:17,pendingMarketAssets:9,specialOnchainReferences:1,totalObservationTargets:18});
+          if(routed.length+special.length!==19)throw new Error('Expected 19 total live onchain observation targets');
+          console.log('Onchain coverage RSUP Curve EMA cohort PASS',{marketAssets:26,routedMarketAssets:18,pendingMarketAssets:8,specialOnchainReferences:1,totalObservationTargets:19});
           NODE
       - name: Prove shadow authority boundary and cohort routes
         run: |
@@ -79,6 +84,8 @@ jobs:
           if(reg.semantics?.pythPriceUpdatesSubmitted!==false)throw new Error('Pyth write/update authority introduced');
           if(reg.semantics?.uniswapV3TwapRoutesAllowed!==true)throw new Error('Uniswap V3 TWAP route contract missing');
           if(reg.semantics?.uniswapV3SpotPriceAuthority!==false)throw new Error('Uniswap V3 spot price authority enabled');
+          if(reg.semantics?.curveEmaRoutesAllowed!==true)throw new Error('Curve EMA route contract missing');
+          if(reg.semantics?.curveSpotPriceAuthority!==false)throw new Error('Curve spot price authority enabled');
           if(reg.semantics?.executionAuthority!=='none')throw new Error('Execution authority drift');
           const exact={
             'aerodrome-finance':['base','0x4ec5970fc728c5f65ba413992cd5ff6fd70fcff0'],
@@ -120,6 +127,13 @@ jobs:
             if(Number(route.twapWindowSeconds)!==1800||route.quoteAssetId!=='ethereum'||route.feedQuote!=='ETH'||route.outputQuote!=='USD')throw new Error(`${expected.symbol} TWAP composition drift`);
             if(Number(route.maxDivergencePct)!==10)throw new Error(`${expected.symbol} divergence threshold drift`);
           }
+          const rsup=reg.assets?.resupply?.route;
+          if(!rsup||rsup.type!=='curve-ema-relative'||rsup.network!=='ethereum'||rsup.authority!=='shadow')throw new Error('RSUP Curve EMA route invalid');
+          if(rsup.pool.toLowerCase()!=='0xee351f12eae8c2b8b9d1b9bfd3c5dd565234578d')throw new Error('RSUP official Curve pool drift');
+          if(rsup.token.toLowerCase()!=='0x419905009e4656fdc02418c7df35b1e61ed5f726')throw new Error('RSUP GOV_TOKEN drift');
+          if(rsup.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('RSUP WETH quote token drift');
+          if(rsup.oracleDirection!=='coin0-per-coin1'||String(rsup.oracleScale)!=='1000000000000000000')throw new Error('RSUP Curve oracle direction/scale drift');
+          if(rsup.quoteAssetId!=='ethereum'||rsup.feedQuote!=='ETH'||rsup.outputQuote!=='USD'||Number(rsup.maxDivergencePct)!==10)throw new Error('RSUP Curve composition drift');
           const networkContracts={ethereum:1,optimism:10,base:8453,bsc:56,polygon:137,mode:34443};
           for(const [id,chainId] of Object.entries(networkContracts)){
             if(reg.networks?.[id]?.chainId!==chainId||(reg.networks[id].rpcFailover||[]).length<2)throw new Error(`${id} public RPC contract invalid`);
@@ -131,7 +145,7 @@ jobs:
           if(!cvx||cvx.type!=='chainlink-v3-relative'||cvx.quoteAssetId!=='ethereum')throw new Error('Existing CVX composition drift');
           const silver=reg.assets?.['physical-silver']?.route;
           if(silver?.feedBase!=='XAG'||silver?.emergencyFallback?.type!=='gold-ratio'||Number(silver?.emergencyFallback?.divideGoldUsdBy)!==68)throw new Error('Silver direct/fallback contract drift');
-          console.log('Onchain Market Data YB + FXN + LQTY Uniswap V3 TWAP route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,uniswapV3TwapAssets:Object.keys(v3Routes),spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
+          console.log('Onchain Market Data RSUP Curve EMA route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,curveEmaAssets:['RSUP'],spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
           NODE
       - name: Prove shared heartbeat remains shadow-only and fail-open
         run: |
@@ -142,6 +156,7 @@ jobs:
           const resolver=fs.readFileSync('intelligence/market-data/onchain-price-resolver.mjs','utf8');
           const core=fs.readFileSync('intelligence/market-data/onchain-price-resolver-core.mjs','utf8');
           const uniswap=fs.readFileSync('intelligence/market-data/onchain-uniswap-v3-twap.mjs','utf8');
+          const curve=fs.readFileSync('intelligence/market-data/onchain-curve-ema.mjs','utf8');
           const required=['Observe onchain prices in fail-open shadow mode','onchain-price-resolver.mjs','onchain-price-shadow.json','canonical Market Data continues unchanged',"shadow.semantics?.productionPriceAuthority!==false","shadow.semantics?.paidRpcRequired!==false"];
           for(const token of required){if(!workflow.includes(token))throw new Error(`Heartbeat shadow contract missing: ${token}`);}
           const coreRequired=['velodrome-v2-twap-relative','protocolTwapReadsPinnedToDiscoveryBlock','maxOneHttpBatchPerNetworkPhasePerAttempt','0x79bc57d5','0xebeb31db','0x9e8cc04b'];
@@ -150,15 +165,20 @@ jobs:
           for(const token of pythRequired){if(!resolver.includes(token))throw new Error(`Pyth readonly resolver contract missing: ${token}`);}
           const uniswapRequired=['uniswap-v3-twap-relative','1698ee82','0dfe1681','d21220a7','1a686502','883bdbfd','arithmeticMeanTick','quoteRatioAtTick'];
           for(const token of uniswapRequired){if(!uniswap.toLowerCase().includes(token.toLowerCase()))throw new Error(`Uniswap V3 TWAP adapter contract missing: ${token}`);}
+          const curveRequired=['curve-ema-relative','c6610657','86fc88d3','encodeCurveCoins','encodeCurvePriceOracle','price_oracle() EMA'];
+          for(const token of curveRequired){if(!curve.toLowerCase().includes(token.toLowerCase()))throw new Error(`Curve EMA adapter contract missing: ${token}`);}
           const resolverUniswapRequired=['uniswapV3TwapRoutes: true','uniswapV3FactoryDiscovery: true','uniswapV3TwapReadsPinnedToDiscoveryBlock: true','uniswapV3UsesObserveNotSpot: true','dexSpotPriceAuthority: false'];
           for(const token of resolverUniswapRequired){if(!resolver.includes(token))throw new Error(`Uniswap V3 composite contract missing: ${token}`);}
+          const resolverCurveRequired=['curveEmaRoutes: curveEnabled','curvePriceOracleReadsPinnedToBlock: curveEnabled','curveUsesPriceOracleNotSpot: curveEnabled'];
+          for(const token of resolverCurveRequired){if(!resolver.includes(token))throw new Error(`Curve EMA composite contract missing: ${token}`);}
           const forbidden=['updatePriceFeeds(','updatePriceFeedsIfNecessary(','hermes.pyth.network'];
           for(const token of forbidden){if(resolver.includes(token))throw new Error(`Forbidden Pyth runtime dependency/write surface present: ${token}`);}
           if(uniswap.toLowerCase().includes('3850c7bd'))throw new Error('Uniswap V3 slot0/spot selector must not be used as price authority');
+          if(curve.toLowerCase().includes('get_dy('))throw new Error('Curve get_dy spot quote must not be used as price authority');
           const marketIndex=workflow.indexOf('Refresh one shared external market-price snapshot');
           const shadowIndex=workflow.indexOf('Observe onchain prices in fail-open shadow mode');
           const publicIndex=workflow.indexOf('Rebuild public fund + company capital view');
           if(!(marketIndex>=0&&shadowIndex>marketIndex&&publicIndex>shadowIndex))throw new Error('Heartbeat order drift');
-          console.log('Onchain shadow heartbeat + reusable Uniswap V3 TWAP integration PASS',{failOpen:true,blockPinnedTwap:true,observeNotSpot:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
+          console.log('Onchain shadow heartbeat + Curve EMA integration PASS',{failOpen:true,blockPinnedCurveOracle:true,curveSpotAuthority:false,uniswapObserveNotSpot:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
           NODE
           git diff --check
