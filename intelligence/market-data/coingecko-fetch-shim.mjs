@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SNAPSHOT = path.join(__dirname, 'market-data.json');
+const SNAPSHOT = path.join(__dirname, 'market-data-coingecko.json');
 const originalFetch = globalThis.fetch.bind(globalThis);
 
 function readSnapshot() {
@@ -32,7 +32,7 @@ function localCoinGeckoResponse(input) {
   const url = new URL(raw);
   const requested = String(url.searchParams.get('ids') || '').split(',').map(x => x.trim()).filter(Boolean);
   const snapshot = readSnapshot();
-  if (!snapshot?.prices) throw new Error('Market Data snapshot unavailable for CoinGecko compatibility shim');
+  if (!snapshot?.prices) throw new Error('CoinGecko source-lane snapshot unavailable for compatibility shim');
 
   const byProviderId = providerIndex(snapshot);
   const body = {};
@@ -46,7 +46,7 @@ function localCoinGeckoResponse(input) {
     status: 200,
     headers: {
       'content-type': 'application/json; charset=utf-8',
-      'x-the-holding-market-data': 'shared-snapshot',
+      'x-the-holding-market-data': 'coingecko-source-lane',
       'x-the-holding-external-request': '0'
     }
   });
