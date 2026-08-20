@@ -61,11 +61,11 @@ jobs:
           const pending=marketIds.filter(id=>!routes.includes(id));
           const special=routes.filter(id=>!marketIds.includes(id));
           if(marketIds.length!==26)throw new Error(`Expected current canonical 26-asset market universe, got ${marketIds.length}`);
-          if(routed.length!==19)throw new Error(`Expected 19 routed market assets after cvxCRV cohort + FXN TWAP resilience, got ${routed.length}`);
-          if(pending.length!==7)throw new Error(`Expected 7 pending market assets after cvxCRV cohort + FXN TWAP resilience, got ${pending.length}`);
+          if(routed.length!==22)throw new Error(`Expected 22 routed market assets after VIRTUAL/ONDO/ZK cohort, got ${routed.length}`);
+          if(pending.length!==4)throw new Error(`Expected 4 pending market assets after VIRTUAL/ONDO/ZK cohort, got ${pending.length}`);
           if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
-          if(routed.length+special.length!==20)throw new Error('Expected 20 total live onchain observation targets');
-          console.log('Onchain coverage FXN 5m TWAP resilience PASS',{marketAssets:26,routedMarketAssets:19,pendingMarketAssets:7,specialOnchainReferences:1,totalObservationTargets:20});
+          if(routed.length+special.length!==23)throw new Error('Expected 23 total live onchain observation targets');
+          console.log('Onchain coverage VIRTUAL ONDO ZK cohort PASS',{marketAssets:26,routedMarketAssets:22,pendingMarketAssets:4,specialOnchainReferences:1,totalObservationTargets:23});
           NODE
       - name: Prove shadow authority boundary and cohort routes
         run: |
@@ -113,16 +113,19 @@ jobs:
           if(mode.token.toLowerCase()!=='0xdfc7c877a950e49d2610114102175a06c2e3167a')throw new Error('MODE token drift');
           if(Number(mode.maxAgeSeconds)!==3600||Number(mode.maxConfidencePct)!==5||Number(mode.maxDivergencePct)!==8)throw new Error('MODE Pyth safety thresholds drift');
           const v3Routes={
-            'yield-basis': {token:'0x01791f726b4103694969820be083196cc7c045ff',symbol:'YB',fee:10000,twapSeconds:1800},
-            'fxn-token': {token:'0x365accfca291e7d3914637abf1f7635db165bb09',symbol:'FXN',fee:10000,twapSeconds:300},
-            'liquity': {token:'0x6dea81c8171d0ba574754ef6f8b412f2ed88c54d',symbol:'LQTY',fee:3000,twapSeconds:1800}
+            'yield-basis': {network:'ethereum',factory:'0x1f98431c8ad98523631ae4a59f267346ea31f984',token:'0x01791f726b4103694969820be083196cc7c045ff',quoteToken:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',symbol:'YB',fee:10000,twapSeconds:1800},
+            'fxn-token': {network:'ethereum',factory:'0x1f98431c8ad98523631ae4a59f267346ea31f984',token:'0x365accfca291e7d3914637abf1f7635db165bb09',quoteToken:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',symbol:'FXN',fee:10000,twapSeconds:300},
+            'liquity': {network:'ethereum',factory:'0x1f98431c8ad98523631ae4a59f267346ea31f984',token:'0x6dea81c8171d0ba574754ef6f8b412f2ed88c54d',quoteToken:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',symbol:'LQTY',fee:3000,twapSeconds:1800},
+            'virtual-protocol': {network:'base',factory:'0x33128a8fc17869897dce68ed026d694621f6fdfd',token:'0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b',quoteToken:'0x4200000000000000000000000000000000000006',symbol:'VIRTUAL',fee:500,twapSeconds:1800},
+            'ondo-finance': {network:'ethereum',factory:'0x1f98431c8ad98523631ae4a59f267346ea31f984',token:'0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3',quoteToken:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',symbol:'ONDO',fee:3000,twapSeconds:1800},
+            zksync: {network:'zksync',factory:'0x8fda5a7a8dca67bbcdd10f02fa0649a937215422',token:'0x5a7d6b2f92c77fad6ccabd7ee0624e64907eaf3e',quoteToken:'0x5aea5775959fbc2557cc8789bc1bf90a239d9a91',symbol:'ZK',fee:3000,twapSeconds:1800}
           };
           for(const [assetId,expected] of Object.entries(v3Routes)){
             const route=reg.assets?.[assetId]?.route;
-            if(!route||route.type!=='uniswap-v3-twap-relative'||route.network!=='ethereum'||route.authority!=='shadow')throw new Error(`${expected.symbol} Uniswap V3 TWAP route invalid`);
-            if(route.factory.toLowerCase()!=='0x1f98431c8ad98523631ae4a59f267346ea31f984')throw new Error(`${expected.symbol} Uniswap V3 Factory drift`);
+            if(!route||route.type!=='uniswap-v3-twap-relative'||route.network!==expected.network||route.authority!=='shadow')throw new Error(`${expected.symbol} Uniswap V3 TWAP route invalid`);
+            if(route.factory.toLowerCase()!==expected.factory)throw new Error(`${expected.symbol} Uniswap V3 Factory drift`);
             if(route.token.toLowerCase()!==expected.token)throw new Error(`${expected.symbol} token drift`);
-            if(route.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error(`${expected.symbol} WETH quote-token drift`);
+            if(route.quoteToken.toLowerCase()!==expected.quoteToken)throw new Error(`${expected.symbol} WETH quote-token drift`);
             if(Number(route.fee)!==expected.fee||Number(route.tokenDecimals)!==18||Number(route.quoteTokenDecimals)!==18)throw new Error(`${expected.symbol} Uniswap V3 pool contract drift`);
             if(Number(route.twapWindowSeconds)!==expected.twapSeconds||route.quoteAssetId!=='ethereum'||route.feedQuote!=='ETH'||route.outputQuote!=='USD')throw new Error(`${expected.symbol} TWAP composition drift`);
             if(Number(route.maxDivergencePct)!==10)throw new Error(`${expected.symbol} divergence threshold drift`);
@@ -140,18 +143,20 @@ jobs:
             if(route.oracleDirection!=='coin0-per-coin1'||String(route.oracleScale)!=='1000000000000000000')throw new Error(`${expected.symbol} Curve oracle direction/scale drift`);
             if(route.quoteAssetId!==expected.quoteAssetId||route.feedQuote!==expected.feedQuote||route.outputQuote!=='USD'||Number(route.maxDivergencePct)!==10)throw new Error(`${expected.symbol} Curve composition drift`);
           }
-          const networkContracts={ethereum:1,optimism:10,base:8453,bsc:56,polygon:137,mode:34443};
+          const networkContracts={ethereum:1,optimism:10,base:8453,bsc:56,polygon:137,mode:34443,zksync:324};
           for(const [id,chainId] of Object.entries(networkContracts)){
             if(reg.networks?.[id]?.chainId!==chainId||(reg.networks[id].rpcFailover||[]).length<2)throw new Error(`${id} public RPC contract invalid`);
           }
           const modeUrls=(reg.networks?.mode?.rpcFailover||[]).map(x=>x.url);
           if(!modeUrls.includes('https://mainnet.mode.network'))throw new Error('Official Mode public RPC missing');
+          const zkUrls=(reg.networks?.zksync?.rpcFailover||[]).map(x=>x.url);
+          if(!zkUrls.includes('https://mainnet.era.zksync.io')||!zkUrls.includes('https://zksync.drpc.org'))throw new Error('ZKsync official/dRPC public RPC failover missing');
           if(JSON.stringify(reg).toLowerCase().includes('hermes.pyth.network'))throw new Error('Hermes must not be a runtime dependency');
           const cvx=reg.assets?.['convex-finance']?.route;
           if(!cvx||cvx.type!=='chainlink-v3-relative'||cvx.quoteAssetId!=='ethereum')throw new Error('Existing CVX composition drift');
           const silver=reg.assets?.['physical-silver']?.route;
           if(silver?.feedBase!=='XAG'||silver?.emergencyFallback?.type!=='gold-ratio'||Number(silver?.emergencyFallback?.divideGoldUsdBy)!==68)throw new Error('Silver direct/fallback contract drift');
-          console.log('Onchain Market Data FXN bounded 5m TWAP route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,fxnTwapSeconds:v3Routes['fxn-token'].twapSeconds,spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
+          console.log('Onchain Market Data VIRTUAL ONDO ZK V3 reuse contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,v3Assets:Object.keys(v3Routes),spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
           NODE
       - name: Prove shared heartbeat remains shadow-only and fail-open
         run: |
@@ -185,6 +190,6 @@ jobs:
           const shadowIndex=workflow.indexOf('Observe onchain prices in fail-open shadow mode');
           const publicIndex=workflow.indexOf('Rebuild public fund + company capital view');
           if(!(marketIndex>=0&&shadowIndex>marketIndex&&publicIndex>shadowIndex))throw new Error('Heartbeat order drift');
-          console.log('Onchain shadow heartbeat + bounded FXN 5m TWAP PASS',{failOpen:true,fxnStillTwap:true,spotAuthority:false,blockPinnedCurveOracle:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
+          console.log('Onchain shadow heartbeat + cross-network Uniswap V3 reuse PASS',{failOpen:true,v3Networks:['ethereum','base','zksync'],spotAuthority:false,blockPinnedCurveOracle:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
           NODE
           git diff --check
