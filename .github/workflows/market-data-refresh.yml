@@ -98,10 +98,10 @@ jobs:
           const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const reg=JSON.parse(fs.readFileSync('intelligence/market-data/fund-capital-registry.json','utf8'));
-          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share'];
+          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share','venice-token','internet-computer'];
           if(market.authority?.productionPriceLane!=='per-asset')throw new Error('Per-asset production authority missing');
           if(JSON.stringify(market.authority?.pilotAssetIds)!==JSON.stringify(pilot))throw new Error('Pilot cohort drift');
-          if(Number(market.authority?.onchainSelectedAssetCount)>6)throw new Error('Pilot cap exceeded');
+          if(Number(market.authority?.onchainSelectedAssetCount)>8)throw new Error('Pilot cap exceeded');
           for(const id of Object.keys(source.prices||{})){
             const row=market.prices?.[id];
             if(!row)throw new Error(`${id}: canonical row missing`);

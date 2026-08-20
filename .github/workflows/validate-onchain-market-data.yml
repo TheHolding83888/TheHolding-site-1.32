@@ -171,12 +171,12 @@ jobs:
           const materializer=fs.readFileSync('intelligence/market-data/market-data-authority-materializer.mjs','utf8');
           const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
           const registry=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
-          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share'];
+          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share','venice-token','internet-computer'];
           const required=['Refresh isolated CoinGecko source lane','Observe onchain prices','Materialize bounded production authority','market-data-authority-materializer.mjs','MARKET_DATA_FORCE_COINGECKO_FAILBACK','onchain-price-resolver.mjs','onchain-price-shadow.json'];
           for(const token of required){if(!workflow.includes(token))throw new Error(`Bounded heartbeat contract missing: ${token}`);}
           if(registry.mode!=='shadow'||registry.semantics?.productionPriceAuthority!==false)throw new Error('Shadow registry authority drift');
           if(registry.semantics?.paidRpcRequired!==false||registry.semantics?.executionAuthority!=='none')throw new Error('Shadow RPC/execution authority drift');
-          if(policy.defaultProductionAuthority!=='coingecko-lane'||JSON.stringify(policy.pilot?.assetIds)!==JSON.stringify(pilot)||Number(policy.pilot?.maxPromotedAssetCount)!==6)throw new Error('Bounded pilot policy drift');
+          if(policy.defaultProductionAuthority!=='coingecko-lane'||JSON.stringify(policy.pilot?.assetIds)!==JSON.stringify(pilot)||Number(policy.pilot?.maxPromotedAssetCount)!==8)throw new Error('Bounded pilot policy drift');
           if(policy.pilot?.requiredRouteType!=='chainlink-v3'||policy.pilot?.requiredQuote!=='USD')throw new Error('Direct-oracle cohort drift');
           if(policy.semantics?.automaticCohortExpansionAllowed!==false||policy.semantics?.executionAuthority!=='none')throw new Error('Pilot authority expansion/execution drift');
           for(const id of pilot){if(!materializer.includes(`'${id}'`)&&!materializer.includes(`"${id}"`))throw new Error(`${id}: materializer containment missing`);}
@@ -201,6 +201,6 @@ jobs:
           const materializerIndex=workflow.indexOf('Materialize bounded production authority');
           const publicIndex=workflow.indexOf('Rebuild public fund + company capital view');
           if(!(sourceIndex>=0&&shadowIndex>sourceIndex&&materializerIndex>shadowIndex&&publicIndex>materializerIndex))throw new Error('Heartbeat order drift');
-          console.log('Onchain shadow + bounded six-asset direct-oracle cohort materialization PASS',{shadowObservationOnly:true,pilot,coinGeckoFailback:true,spotAuthority:false,pythReadonly:true,executionAuthority:'none'});
+          console.log('Onchain shadow + bounded eight-asset direct-oracle cohort materialization PASS',{shadowObservationOnly:true,pilot,coinGeckoFailback:true,spotAuthority:false,pythReadonly:true,executionAuthority:'none'});
           NODE
           git diff --check
