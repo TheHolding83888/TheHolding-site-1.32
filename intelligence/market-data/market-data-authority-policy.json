@@ -1,5 +1,5 @@
 {
-  "version": "0.6-market-data-authority-direct-oracle-cohort-mana-sand",
+  "version": "0.7-market-data-authority-direct-plus-relative-chainlink-cvx",
   "mode": "bounded-production-pilot",
   "defaultProductionAuthority": "coingecko-lane",
   "globalOnchainPromotionEnabled": true,
@@ -34,6 +34,19 @@
       "the-sandbox": {"network": "polygon", "contract": "0x3D49406EDd4D52Fb7FFd25485f32E073b529C924"}
     }
   },
+  "relativePilot": {
+    "cohortId": "relative-chainlink-cvx-eth-usd-v0.1",
+    "assetIds": ["convex-finance"],
+    "maxPromotedAssetCount": 1,
+    "requiredRouteType": "chainlink-v3-relative",
+    "requiredFeedQuote": "ETH",
+    "requiredQuoteAssetId": "ethereum",
+    "requiredOutputQuote": "USD",
+    "requiredDependencyStatus": "shadow-ok",
+    "routeRequirements": {
+      "convex-finance": {"network": "ethereum", "contract": "0xC9CbF687f43176B302F03f5e58470b77D07c61c6"}
+    }
+  },
   "onchainEligibility": {
     "requiredSnapshotMode": "shadow",
     "requiredObservationStatus": "shadow-ok",
@@ -57,6 +70,14 @@
     "venice-token": {"requestedPrimary": "onchain"},
     "internet-computer": {"requestedPrimary": "onchain"},
     "decentraland": {"requestedPrimary": "onchain"},
-    "the-sandbox": {"requestedPrimary": "onchain"}
+    "the-sandbox": {"requestedPrimary": "onchain"},
+    "convex-finance": {
+      "requestedPrimary": "onchain",
+      "requiredObservationSource": "chainlink-v3-relative",
+      "requiredDependencyStatus": "shadow-ok",
+      "requiredQuoteAssetId": "ethereum",
+      "requiredFeedQuote": "ETH",
+      "requiredOutputQuote": "USD"
+    }
   }
 }
