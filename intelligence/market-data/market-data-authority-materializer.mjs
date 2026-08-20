@@ -32,10 +32,10 @@ if (policy.semantics?.executionAuthority !== 'none') throw new Error('Execution 
 
 const pilotIds = [...(policy.pilot?.assetIds || [])];
 const overrideIds = Object.keys(policy.assetOverrides || {});
-const exactPilot = ['bitcoin', 'ethereum', 'aerodrome-finance', 'pendle'];
-if (JSON.stringify(pilotIds) !== JSON.stringify(exactPilot)) throw new Error('Pilot cohort must be exactly BTC + ETH + AERO + PENDLE');
+const exactPilot = ['bitcoin', 'ethereum', 'aerodrome-finance', 'pendle', 'curve-dao-token', 'frax-share'];
+if (JSON.stringify(pilotIds) !== JSON.stringify(exactPilot)) throw new Error('Pilot cohort must be exactly BTC + ETH + AERO + PENDLE + CRV + FXS');
 if (overrideIds.length !== pilotIds.length || overrideIds.some(id => !pilotIds.includes(id))) throw new Error('Asset overrides exceed bounded pilot cohort');
-if (Number(policy.pilot?.maxPromotedAssetCount) !== 4) throw new Error('Pilot promotion cap drift');
+if (Number(policy.pilot?.maxPromotedAssetCount) !== 6) throw new Error('Pilot promotion cap drift');
 if (policy.pilot?.requiredRouteType !== 'chainlink-v3' || policy.pilot?.requiredQuote !== 'USD') throw new Error('Pilot must remain direct Chainlink/USD only');
 
 for (const assetId of pilotIds) {
@@ -100,8 +100,8 @@ if (forceCoinGeckoFailback && onchainSelectedAssetCount !== 0) throw new Error('
 
 const output = {
   ...source,
-  version: '0.5-market-data-bounded-direct-oracle-cohort',
-  engineVersion: '0.5-per-asset-authority-materializer-btc-eth-aero-pendle',
+  version: '0.6-market-data-bounded-direct-oracle-cohort',
+  engineVersion: '0.6-per-asset-authority-materializer-btc-eth-aero-pendle-crv-fxs',
   generatedAt: new Date(nowMs).toISOString(),
   status: unknownCount > 0 ? 'partial' : fallbackCount > 0 ? 'fallback-active' : 'ok',
   semantics: {

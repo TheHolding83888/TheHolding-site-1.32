@@ -5,15 +5,15 @@ const policy = JSON.parse(fs.readFileSync(new URL('./market-data-authority-polic
 const source = JSON.parse(fs.readFileSync(new URL('./market-data-coingecko.json', import.meta.url), 'utf8'));
 const shadow = JSON.parse(fs.readFileSync(new URL('./onchain-price-shadow.json', import.meta.url), 'utf8'));
 const nowMs = Date.parse(shadow.generatedAt || source.generatedAt || new Date().toISOString());
-const pilot = ['bitcoin', 'ethereum', 'aerodrome-finance', 'pendle'];
+const pilot = ['bitcoin', 'ethereum', 'aerodrome-finance', 'pendle', 'curve-dao-token', 'frax-share'];
 
 if (policy.mode !== 'bounded-production-pilot') throw new Error('Policy must be bounded production pilot');
 if (policy.globalOnchainPromotionEnabled !== true) throw new Error('Pilot promotion gate must be enabled');
 if (policy.semantics?.productionWriterIntegrationEnabled !== true) throw new Error('Pilot writer integration missing');
 if (policy.defaultProductionAuthority !== 'coingecko-lane') throw new Error('CoinGecko must remain default authority');
 if (policy.semantics?.automaticPolicyMutationAllowed !== false || policy.semantics?.automaticCohortExpansionAllowed !== false) throw new Error('Automatic cohort expansion enabled');
-if (JSON.stringify(policy.pilot?.assetIds) !== JSON.stringify(pilot)) throw new Error('Pilot cohort must be exactly BTC + ETH + AERO + PENDLE');
-if (Number(policy.pilot?.maxPromotedAssetCount) !== 4) throw new Error('Pilot cap must be 4');
+if (JSON.stringify(policy.pilot?.assetIds) !== JSON.stringify(pilot)) throw new Error('Pilot cohort must be exactly BTC + ETH + AERO + PENDLE + CRV + FXS');
+if (Number(policy.pilot?.maxPromotedAssetCount) !== 6) throw new Error('Pilot cap must be 6');
 if (policy.pilot?.requiredRouteType !== 'chainlink-v3' || policy.pilot?.requiredQuote !== 'USD') throw new Error('Pilot route contract must remain direct Chainlink/USD');
 if (JSON.stringify(Object.keys(policy.assetOverrides || {}).sort()) !== JSON.stringify([...pilot].sort())) throw new Error('Asset overrides exceed pilot cohort');
 
@@ -27,8 +27,8 @@ for (const id of pilot) {
 
 const healthy = evaluateMarketDataAuthority({ policy, marketData: source, shadow, nowMs });
 if (healthy.coverage.assetCount !== Object.keys(source.prices || {}).length) throw new Error('Authority evaluator coverage drift');
-if (healthy.coverage.onchainSelectedCount !== 4) throw new Error('Healthy pilot must select exactly 4 direct-oracle assets onchain');
-if (healthy.coverage.coingeckoSelectedCount !== healthy.coverage.assetCount - 4) throw new Error('Non-pilot assets must remain CoinGecko');
+if (healthy.coverage.onchainSelectedCount !== 6) throw new Error('Healthy pilot must select exactly 6 direct-oracle assets onchain');
+if (healthy.coverage.coingeckoSelectedCount !== healthy.coverage.assetCount - 6) throw new Error('Non-pilot assets must remain CoinGecko');
 if (healthy.coverage.unknownCount !== 0) throw new Error('Healthy pilot introduced unknown prices');
 for (const id of pilot) {
   const row = healthy.selections[id];

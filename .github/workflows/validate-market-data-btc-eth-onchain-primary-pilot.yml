@@ -39,7 +39,9 @@ jobs:
             bitcoin:{usd:70000,network:'ethereum',contract:'0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c'},
             ethereum:{usd:2200,network:'ethereum',contract:'0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'},
             'aerodrome-finance':{usd:0.47,network:'base',contract:'0x4EC5970fC728C5f65ba413992CD5fF6FD70fcfF0'},
-            pendle:{usd:1.45,network:'optimism',contract:'0x58F23F80bF389DB1af9e3aA8c59679806749A8a4'}
+            pendle:{usd:1.45,network:'optimism',contract:'0x58F23F80bF389DB1af9e3aA8c59679806749A8a4'},
+            'curve-dao-token':{usd:0.27,network:'ethereum',contract:'0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f'},
+            'frax-share':{usd:0.30,network:'ethereum',contract:'0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f'}
           };
           shadow.generatedAt=now;
           shadow.mode='shadow';
@@ -52,7 +54,7 @@ jobs:
           }
           fs.writeFileSync(p,JSON.stringify(shadow,null,2)+'\n');
           NODE
-      - name: Prove healthy cohort selects exactly four direct oracles
+      - name: Prove healthy cohort selects exactly six direct oracles
         run: |
           set -euo pipefail
           MARKET_DATA_FORCE_COINGECKO_FAILBACK=false node intelligence/market-data/market-data-authority-materializer.mjs
@@ -60,18 +62,18 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const s=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
-          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle'];
-          const expected={bitcoin:70000,ethereum:2200,'aerodrome-finance':0.47,pendle:1.45};
-          if(m.authority?.onchainSelectedAssetCount!==4)throw new Error('Healthy cohort did not select exactly 4 onchain assets');
+          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share'];
+          const expected={bitcoin:70000,ethereum:2200,'aerodrome-finance':0.47,pendle:1.45,'curve-dao-token':0.27,'frax-share':0.30};
+          if(m.authority?.onchainSelectedAssetCount!==6)throw new Error('Healthy cohort did not select exactly 6 onchain assets');
           for(const id of pilot){
             if(m.prices[id]?.authority?.selectedLane!=='onchain')throw new Error(`${id}: not onchain primary`);
             if(Number(m.prices[id].usd)!==expected[id])throw new Error(`${id}: onchain price mismatch`);
           }
           for(const id of Object.keys(s.prices||{}))if(!pilot.includes(id)&&m.prices[id]?.authority?.selectedLane!=='coingecko-lane')throw new Error(`${id}: non-pilot asset left CoinGecko`);
           if(m.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
-          console.log('Healthy direct-oracle cohort PASS');
+          console.log('Healthy six-asset direct-oracle cohort PASS');
           NODE
-      - name: Prove cycle failure forces four-asset CoinGecko failback
+      - name: Prove cycle failure forces six-asset CoinGecko failback
         run: |
           set -euo pipefail
           MARKET_DATA_FORCE_COINGECKO_FAILBACK=true node intelligence/market-data/market-data-authority-materializer.mjs
@@ -79,14 +81,14 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const s=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
-          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle'];
+          const pilot=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share'];
           if(m.authority?.onchainSelectedAssetCount!==0)throw new Error('Forced failback left onchain selections');
-          if(m.authority?.fallbackCount!==4)throw new Error('Forced failback must record exactly 4 pilot fallbacks');
+          if(m.authority?.fallbackCount!==6)throw new Error('Forced failback must record exactly 6 pilot fallbacks');
           for(const id of pilot){
             if(m.prices[id]?.authority?.selectedLane!=='coingecko-lane'||m.prices[id]?.authority?.fallbackUsed!==true)throw new Error(`${id}: failback provenance missing`);
             if(Number(m.prices[id].usd)!==Number(s.prices[id].usd))throw new Error(`${id}: failback did not use CoinGecko source lane`);
           }
           if(m.semantics?.cycleForcedCoinGeckoFailback!==true)throw new Error('Cycle failback semantic missing');
-          console.log('Four-asset cycle failback PASS');
+          console.log('Six-asset cycle failback PASS');
           NODE
           git diff --check
