@@ -43,40 +43,49 @@ jobs:
           node intelligence/market-data/onchain-route-override-validation.mjs
           node intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
           node intelligence/market-data/onchain-uniswap-v3-chainlink-quote-validation.mjs
-      - name: Prove BEAM remains exact and additive-safe
+      - name: Prove BEAM historical RPC resilience
         run: |
           set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { mergeOnchainRegistryExtensions } from './intelligence/market-data/onchain-price-resolver.mjs';
+          const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
           const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
-          const r=ext.assets?.['beam-2']?.route;
-          if(!r||r.type!=='uniswap-v2-historical-twap-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('BEAM V2 route invalid');
+          const effective=mergeOnchainRegistryExtensions(base,ext);
+          const r=effective.assets?.['beam-2']?.route;
+          if(!r||r.type!=='uniswap-v2-historical-twap-relative'||r.network!=='ethereum-historical'||r.authority!=='shadow')throw new Error('BEAM V2 route invalid');
           if(r.pair.toLowerCase()!=='0x180efc1349a69390ade25667487a826164c9c6e4')throw new Error('BEAM/WETH pair drift');
           if(r.token.toLowerCase()!=='0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce')throw new Error('BEAM token drift');
           if(r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('BEAM WETH quote drift');
           if(Number(r.lookbackBlocks)!==150||Number(r.minTwapWindowSeconds)!==1200||Number(r.maxTwapWindowSeconds)!==2700)throw new Error('BEAM historical window drift');
           if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('BEAM composition drift');
-          console.log('BEAM additive-safe route gate PASS');
+          const n=effective.networks?.['ethereum-historical'];
+          const rpcIds=(n?.rpcFailover||[]).map(x=>x.id);
+          if(Number(n?.chainId)!==1||rpcIds.join(',')!=='1rpc,llamarpc,publicnode')throw new Error(`Historical RPC fabric drift: ${rpcIds.join(',')}`);
+          if(ext.semantics?.routeScopedExtensionNetworksAllowed!==true||ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Historical route authority drift');
+          console.log('BEAM historical RPC resilience PASS',{rpcIds});
           NODE
-      - name: Prove ELIZA exact route and full canonical coverage
+      - name: Prove ELIZA 5m route and full canonical coverage
         run: |
           set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { mergeOnchainRegistryExtensions } from './intelligence/market-data/onchain-price-resolver.mjs';
           const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-price-registry.json','utf8'));
           const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
           const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
-          const ids=(market.assets||[]).map(x=>x.assetId), effective={...(base.assets||{}),...(ext.assets||{})};
-          const routed=ids.filter(id=>effective[id]), pending=ids.filter(id=>!effective[id]);
-          const special=Object.keys(effective).filter(id=>!ids.includes(id));
+          const effective=mergeOnchainRegistryExtensions(base,ext);
+          const ids=(market.assets||[]).map(x=>x.assetId), routed=ids.filter(id=>effective.assets?.[id]), pending=ids.filter(id=>!effective.assets?.[id]);
+          const special=Object.keys(effective.assets||{}).filter(id=>!ids.includes(id));
           if(ids.length!==26||routed.length!==26||pending.length!==0)throw new Error(`Full coverage drift: ${routed.length}/26 pending=${pending.join(',')}`);
           if(special.length!==1||special[0]!=='physical-silver'||routed.length+special.length!==27)throw new Error('Live target count drift');
-          const r=ext.assets?.elizaos?.route;
+          const r=effective.assets?.elizaos?.route;
           if(!r||r.type!=='uniswap-v3-twap-chainlink-quote'||r.network!=='bsc'||r.authority!=='shadow')throw new Error('ELIZA route invalid');
           if(r.factory.toLowerCase()!=='0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865'||r.token.toLowerCase()!=='0xea17df5cf6d172224892b5477a16acb111182478'||r.quoteToken.toLowerCase()!=='0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d')throw new Error('ELIZA identity drift');
-          if(Number(r.fee)!==2500||Number(r.twapWindowSeconds)!==1800||Number(r.maxDivergencePct)!==10)throw new Error('ELIZA TWAP drift');
+          if(Number(r.fee)!==2500||Number(r.twapWindowSeconds)!==300||Number(r.maxDivergencePct)!==10)throw new Error('ELIZA 5m TWAP drift');
           if(r.quoteFeed?.type!=='chainlink-v3'||r.quoteFeed.contract.toLowerCase()!=='0x51597f405303c4377e36123cbc172b13269ea163')throw new Error('ELIZA quote dependency drift');
-          console.log('ELIZA full 26/26 route gate PASS',{routed:routed.length,totalObservationTargets:routed.length+special.length});
+          if(ext.semantics?.stablecoinPegHardcoded!==false||ext.semantics?.uniswapV3SpotPriceAuthority!==false)throw new Error('ELIZA authority drift');
+          console.log('ELIZA 5m full 26/26 route gate PASS',{routed:routed.length,totalObservationTargets:routed.length+special.length});
           NODE
       - name: Prove MODE stale Pyth route is replaced by Velodrome observation TWAP
         run: |
@@ -98,7 +107,7 @@ jobs:
           if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('MODE relative-price composition drift');
           if(ext.semantics?.boundedRouteOverridesAllowed!==true||effective.semantics?.boundedRouteOverridesApplied!==true)throw new Error('Bounded route override contract missing');
           if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
-          console.log('MODE Velodrome replacement gate PASS',{baseRoute:base.assets.mode.route.type,effectiveRoute:r.type,factory:r.factory,staleUpdaterDependency:false,productionPriceAuthority:false});
+          console.log('MODE Velodrome replacement gate PASS',{baseRoute:base.assets.mode.route.type,effectiveRoute:r.type,staleUpdaterDependency:false});
           NODE
       - name: Prove FXN OLD-prone V3 route is replaced by Curve EMA
         run: |
@@ -113,13 +122,12 @@ jobs:
           const r=effective.assets?.['fxn-token']?.route;
           if(!r||r.type!=='curve-ema-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('Effective FXN Curve EMA route invalid');
           if(r.pool.toLowerCase()!=='0xc15f285679a1ef2d25f53d4cbd0265e1d02f2a92')throw new Error('FXN Curve pool drift');
-          if(r.token.toLowerCase()!=='0x365accfca291e7d3914637abf1f7635db165bb09')throw new Error('FXN token drift');
-          if(r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('FXN WETH quote drift');
+          if(r.token.toLowerCase()!=='0x365accfca291e7d3914637abf1f7635db165bb09'||r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('FXN identity drift');
           if(r.oracleDirection!=='coin0-per-coin1'||String(r.oracleScale)!=='1000000000000000000')throw new Error('FXN Curve oracle contract drift');
           if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('FXN relative-price composition drift');
           if(effective.assets?.mode?.route?.type!=='velodrome-v2-twap-relative')throw new Error('MODE resilience override lost while adding FXN');
           if(ext.semantics?.curveEmaRoutesAllowed!==true||ext.semantics?.curveSpotPriceAuthority!==false)throw new Error('Curve EMA authority semantics drift');
           if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
-          console.log('FXN Curve EMA resilience gate PASS',{baseRoute:base.assets['fxn-token'].route.type,effectiveRoute:r.type,pool:r.pool,oldObservationDependency:false,spotAuthority:false,productionPriceAuthority:false});
+          console.log('FXN Curve EMA resilience gate PASS',{effectiveRoute:r.type,oldObservationDependency:false,spotAuthority:false});
           NODE
           git diff --check
