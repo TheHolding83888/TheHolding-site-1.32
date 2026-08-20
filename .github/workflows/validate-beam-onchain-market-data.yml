@@ -6,6 +6,7 @@ on:
       - 'intelligence/market-data/onchain-price-source-registry-extensions.json'
       - 'intelligence/market-data/onchain-price-resolver.mjs'
       - 'intelligence/market-data/onchain-price-resolver-v09.mjs'
+      - 'intelligence/market-data/onchain-route-override-validation.mjs'
       - 'intelligence/market-data/onchain-uniswap-v2-historical-twap.mjs'
       - 'intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs'
       - 'intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs'
@@ -27,15 +28,17 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Validate inherited V2 plus ELIZA composable V3 runtime
+      - name: Validate inherited runtimes plus bounded route replacement
         run: |
           set -euo pipefail
           node --check intelligence/market-data/onchain-price-resolver.mjs
           node --check intelligence/market-data/onchain-price-resolver-v09.mjs
+          node --check intelligence/market-data/onchain-route-override-validation.mjs
           node --check intelligence/market-data/onchain-uniswap-v2-historical-twap.mjs
           node --check intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
           node --check intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs
           node --check intelligence/market-data/onchain-uniswap-v3-chainlink-quote-validation.mjs
+          node intelligence/market-data/onchain-route-override-validation.mjs
           node intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
           node intelligence/market-data/onchain-uniswap-v3-chainlink-quote-validation.mjs
       - name: Prove BEAM remains exact and additive-safe
@@ -64,20 +67,35 @@ jobs:
           const ids=(market.assets||[]).map(x=>x.assetId), effective={...(base.assets||{}),...(ext.assets||{})};
           const routed=ids.filter(id=>effective[id]), pending=ids.filter(id=>!effective[id]);
           const special=Object.keys(effective).filter(id=>!ids.includes(id));
-          if(ids.length!==26)throw new Error(`Canonical market universe drift: ${ids.length}`);
-          if(routed.length!==26||pending.length!==0)throw new Error(`Expected full 26/26 routing, got ${routed.length}; pending=${pending.join(',')}`);
-          if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
-          if(routed.length+special.length!==27)throw new Error('Expected 27 total live shadow observation targets');
+          if(ids.length!==26||routed.length!==26||pending.length!==0)throw new Error(`Full coverage drift: ${routed.length}/26 pending=${pending.join(',')}`);
+          if(special.length!==1||special[0]!=='physical-silver'||routed.length+special.length!==27)throw new Error('Live target count drift');
           const r=ext.assets?.elizaos?.route;
           if(!r||r.type!=='uniswap-v3-twap-chainlink-quote'||r.network!=='bsc'||r.authority!=='shadow')throw new Error('ELIZA route invalid');
-          if(r.factory.toLowerCase()!=='0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865')throw new Error('Pancake V3 factory drift');
-          if(r.token.toLowerCase()!=='0xea17df5cf6d172224892b5477a16acb111182478')throw new Error('elizaOS token drift');
-          if(r.quoteToken.toLowerCase()!=='0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d')throw new Error('BSC USDC token drift');
-          if(Number(r.fee)!==2500||Number(r.twapWindowSeconds)!==1800||Number(r.maxDivergencePct)!==10)throw new Error('ELIZA TWAP contract drift');
-          if(r.quoteAssetId!=='bsc-usdc-usd'||r.feedQuote!=='USDC'||r.outputQuote!=='USD')throw new Error('ELIZA quote composition drift');
-          if(r.quoteFeed?.type!=='chainlink-v3'||r.quoteFeed.contract.toLowerCase()!=='0x51597f405303c4377e36123cbc172b13269ea163'||Number(r.quoteFeed.maxAgeSeconds)!==90000)throw new Error('ELIZA Chainlink USDC/USD dependency drift');
-          if(ext.semantics?.stablecoinPegHardcoded!==false||ext.semantics?.quoteFeedFreshnessRequired!==true)throw new Error('Stable-quote safety contract drift');
-          if(ext.semantics?.uniswapV3SpotPriceAuthority!==false||ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
-          console.log('ELIZA full 26/26 shadow route gate PASS',{routed:routed.length,pending,totalObservationTargets:routed.length+special.length});
+          if(r.factory.toLowerCase()!=='0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865'||r.token.toLowerCase()!=='0xea17df5cf6d172224892b5477a16acb111182478'||r.quoteToken.toLowerCase()!=='0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d')throw new Error('ELIZA identity drift');
+          if(Number(r.fee)!==2500||Number(r.twapWindowSeconds)!==1800||Number(r.maxDivergencePct)!==10)throw new Error('ELIZA TWAP drift');
+          if(r.quoteFeed?.type!=='chainlink-v3'||r.quoteFeed.contract.toLowerCase()!=='0x51597f405303c4377e36123cbc172b13269ea163')throw new Error('ELIZA quote dependency drift');
+          console.log('ELIZA full 26/26 route gate PASS',{routed:routed.length,totalObservationTargets:routed.length+special.length});
+          NODE
+      - name: Prove MODE stale Pyth route is replaced by Velodrome observation TWAP
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const {mergeOnchainRegistryExtensions}=await import('./intelligence/market-data/onchain-price-resolver.mjs');
+          const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
+          const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
+          if(base.assets?.mode?.route?.type!=='pyth-core-readonly')throw new Error('Expected byte-stable base MODE route to remain Pyth before effective override');
+          const effective=mergeOnchainRegistryExtensions(base,ext);
+          const r=effective.assets?.mode?.route;
+          if(!r||r.type!=='velodrome-v2-twap-relative'||r.network!=='mode'||r.authority!=='shadow')throw new Error('Effective MODE Velodrome route invalid');
+          if(r.factory.toLowerCase()!=='0x31832f2a97fd20664d76cc421207669b55ce4bc0')throw new Error('Mode Velodrome PoolFactory drift');
+          if(r.token.toLowerCase()!=='0xdfc7c877a950e49d2610114102175a06c2e3167a')throw new Error('MODE token drift');
+          if(r.quoteToken.toLowerCase()!=='0x4200000000000000000000000000000000000006'||r.stable!==false)throw new Error('MODE/WETH pool contract drift');
+          if(String(r.amountIn)!=='1000000000000000000'||Number(r.tokenDecimals)!==18||Number(r.quoteTokenDecimals)!==18)throw new Error('MODE amount/decimals drift');
+          if(Number(r.granularity)!==4||Number(r.observationPeriodSeconds)!==1800)throw new Error('MODE observation TWAP sampling drift');
+          if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('MODE relative-price composition drift');
+          if(ext.semantics?.boundedRouteOverridesAllowed!==true||effective.semantics?.boundedRouteOverridesApplied!==true)throw new Error('Bounded route override contract missing');
+          if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
+          console.log('MODE Velodrome replacement gate PASS',{baseRoute:base.assets.mode.route.type,effectiveRoute:r.type,factory:r.factory,staleUpdaterDependency:false,productionPriceAuthority:false});
           NODE
           git diff --check
