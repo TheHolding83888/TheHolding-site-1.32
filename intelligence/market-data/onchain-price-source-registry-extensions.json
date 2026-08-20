@@ -1,6 +1,6 @@
 {
-  "version": "0.2-olas-plus-ovr-onchain-route-extensions",
-  "effectiveRegistryVersion": "0.17-onchain-price-source-registry-olas-plus-ovr",
+  "version": "0.3-olas-ovr-beam-onchain-route-extensions",
+  "effectiveRegistryVersion": "0.18-onchain-price-source-registry-olas-ovr-beam",
   "purpose": "Bounded extension routes for the canonical onchain Market Data registry. Keeps the proven v0.15 base registry byte-stable while newly proven route mechanisms and assets are promoted through exact shadow-only gates.",
   "semantics": {
     "uniswapV2HistoricalTwapRoutesAllowed": true,
@@ -54,6 +54,28 @@
         "maxDivergencePct": 10,
         "authority": "shadow",
         "provenance": "OVER official Ethereum OVR token. Read-only Uniswap V3 OVR/WETH 1% pool discovered through the canonical Ethereum Uniswap V3 factory, priced by observe()-based 30-minute TWAP and composed with same-cycle ETH/USD. No slot0 spot-price authority, paid RPC, signing, or execution authority."
+      }
+    },
+    "beam-2": {
+      "assetId": "beam-2",
+      "symbol": "BEAM",
+      "route": {
+        "type": "uniswap-v2-historical-twap-relative",
+        "network": "ethereum",
+        "pair": "0x180EFC1349A69390aDE25667487a826164C9c6E4",
+        "token": "0x62D0A8458eD7719FDAF978fe5929C6D342B0bFcE",
+        "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "tokenDecimals": 18,
+        "quoteTokenDecimals": 18,
+        "lookbackBlocks": 150,
+        "minTwapWindowSeconds": 1200,
+        "maxTwapWindowSeconds": 2700,
+        "quoteAssetId": "ethereum",
+        "feedQuote": "ETH",
+        "outputQuote": "USD",
+        "maxDivergencePct": 10,
+        "authority": "shadow",
+        "provenance": "Beam official Ethereum BEAM token and established BEAM/WETH Uniswap V2 pair. Read-only cumulative-price historical TWAP from two block-pinned pair states, composed with same-cycle ETH/USD. No reserve spot-price authority, keeper/updater dependency, paid RPC, signing, or execution authority."
       }
     }
   }
