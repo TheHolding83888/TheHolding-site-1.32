@@ -3,7 +3,9 @@ import {
   resolveOnchainPrices,
   isRetryableRpcError,
   encodeVelodromeGetPool,
-  encodeVelodromeQuote
+  encodeVelodromeQuote,
+  encodePythGetPriceUnsafe,
+  decodePythPrice
 } from './onchain-price-resolver.mjs';
 
 const nowMs = Date.UTC(2026, 7, 19, 20, 30, 0);
@@ -17,6 +19,9 @@ function word(value) {
 function chainlinkRound({ roundId, answer, startedAt, updatedAt, answeredInRound }) {
   return `0x${word(roundId)}${word(answer)}${word(startedAt)}${word(updatedAt)}${word(answeredInRound)}`;
 }
+function pythPrice({ price, conf, expo, publishTime }) {
+  return `0x${word(price)}${word(conf)}${word(expo)}${word(publishTime)}`;
+}
 function addressResult(address) {
   return `0x${address.toLowerCase().replace(/^0x/, '').padStart(64, '0')}`;
 }
@@ -29,6 +34,8 @@ const VELO_FACTORY = '0x0000000000000000000000000000000000000100';
 const VELO = '0x0000000000000000000000000000000000000101';
 const WETH = '0x0000000000000000000000000000000000000102';
 const VELO_POOL = '0x0000000000000000000000000000000000000103';
+const PYTH = '0x0000000000000000000000000000000000000200';
+const MODE_PRICE_ID = '0x0386e113cc716a7c6a55decd97b19c90ce080d9f2f5255ac78a0e26889446d1e';
 
 const registry = {
   version: 'validation',
@@ -43,6 +50,10 @@ const registry = {
     optimism: {
       chainId: 10,
       rpcFailover: [{ id: 'op-works', url: 'https://op.invalid' }]
+    },
+    mode: {
+      chainId: 34443,
+      rpcFailover: [{ id: 'mode-works', url: 'https://mode.invalid' }]
     }
   },
   assets: {
@@ -65,22 +76,17 @@ const registry = {
     'velodrome-finance': {
       assetId: 'velodrome-finance', symbol: 'VELO',
       route: {
-        type: 'velodrome-v2-twap-relative',
-        network: 'optimism',
-        factory: VELO_FACTORY,
-        token: VELO,
-        quoteToken: WETH,
-        stable: false,
-        tokenDecimals: 18,
-        quoteTokenDecimals: 18,
-        amountIn: '1000000000000000000',
-        granularity: 4,
-        observationPeriodSeconds: 1800,
-        quoteAssetId: 'ethereum',
-        feedQuote: 'ETH',
-        outputQuote: 'USD',
-        maxDivergencePct: 8,
-        authority: 'shadow'
+        type: 'velodrome-v2-twap-relative', network: 'optimism', factory: VELO_FACTORY,
+        token: VELO, quoteToken: WETH, stable: false, tokenDecimals: 18, quoteTokenDecimals: 18,
+        amountIn: '1000000000000000000', granularity: 4, observationPeriodSeconds: 1800,
+        quoteAssetId: 'ethereum', feedQuote: 'ETH', outputQuote: 'USD', maxDivergencePct: 8, authority: 'shadow'
+      }
+    },
+    mode: {
+      assetId: 'mode', symbol: 'MODE',
+      route: {
+        type: 'pyth-core-readonly', network: 'mode', contract: PYTH, priceId: MODE_PRICE_ID,
+        quote: 'USD', maxAgeSeconds: 3600, maxConfidencePct: 5, maxDivergencePct: 8, authority: 'shadow'
       }
     }
   }
@@ -92,12 +98,14 @@ const marketData = {
     'frax-share': { usd: 0.30 },
     'convex-finance': { usd: 2 },
     pendle: { usd: 1.40 },
-    'velodrome-finance': { usd: 0.10 }
+    'velodrome-finance': { usd: 0.10 },
+    mode: { usd: 0.002 }
   }
 };
 
 let calls = 0;
 let sawPinnedVelodromePhase = false;
+let sawPythReadonlyCall = false;
 const fetchImpl = async (url, options) => {
   calls += 1;
   const payload = JSON.parse(options.body);
@@ -165,12 +173,31 @@ const fetchImpl = async (url, options) => {
     assert.equal(quote.params[0].data, encodeVelodromeQuote(registry.assets['velodrome-finance'].route));
     sawPinnedVelodromePhase = true;
     return {
-      ok: true,
-      status: 200,
+      ok: true, status: 200,
       async json() {
         return [
           { jsonrpc: '2.0', id: obs.id, result: `0x${word(20)}` },
           { jsonrpc: '2.0', id: quote.id, result: `0x${word(50_000_000_000_000n)}` }
+        ];
+      }
+    };
+  }
+
+  if (url.includes('mode.invalid')) {
+    assert.equal(hasBlockRequest, true, 'Pyth network read must share one block request with its price calls');
+    assert.equal(payload.length, 2, 'MODE Pyth route must be one block call + one read-only price call');
+    const call = payload.find(x => x.method === 'eth_call');
+    assert.ok(call, 'MODE Pyth eth_call missing');
+    assert.equal(call.params?.[0]?.to, PYTH);
+    assert.equal(call.params?.[0]?.data, encodePythGetPriceUnsafe(MODE_PRICE_ID));
+    assert.equal(call.params?.[0]?.data.slice(0, 10), '0x96834ad3');
+    sawPythReadonlyCall = true;
+    return {
+      ok: true, status: 200,
+      async json() {
+        return [
+          { jsonrpc: '2.0', id: 1, result: '0x3000' },
+          { jsonrpc: '2.0', id: call.id, result: pythPrice({ price: 200000n, conf: 2000n, expo: -8n, publishTime: nowSeconds - 30 }) }
         ];
       }
     };
@@ -182,6 +209,10 @@ const fetchImpl = async (url, options) => {
 assert.equal(isRetryableRpcError({ message: 'over rate limit' }), true);
 assert.equal(isRetryableRpcError({ message: 'Too Many Requests' }), true);
 assert.equal(isRetryableRpcError({ message: 'execution reverted' }), false);
+assert.equal(encodePythGetPriceUnsafe(MODE_PRICE_ID), `0x96834ad3${MODE_PRICE_ID.slice(2)}`);
+const decodedPyth = decodePythPrice(pythPrice({ price: 200000n, conf: 2000n, expo: -8n, publishTime: nowSeconds - 30 }));
+assert.equal(decodedPyth.usd, 0.002);
+assert.equal(decodedPyth.confidencePct, 1);
 
 const output = await resolveOnchainPrices({ registry, marketData, fetchImpl, nowMs });
 const eth = output.observations.ethereum;
@@ -189,11 +220,14 @@ const fxs = output.observations['frax-share'];
 const cvx = output.observations['convex-finance'];
 const pendle = output.observations.pendle;
 const velo = output.observations['velodrome-finance'];
+const mode = output.observations.mode;
 
-assert.equal(calls, 4, 'Ethereum retry + Optimism discovery batch + pinned TWAP batch');
+assert.equal(calls, 5, 'Ethereum retry + Optimism discovery/TWAP + one MODE Pyth batch');
 assert.equal(sawPinnedVelodromePhase, true);
+assert.equal(sawPythReadonlyCall, true);
 assert.equal(output.status, 'ok');
 assert.equal(output.mode, 'shadow');
+assert.equal(output.version, '0.6-onchain-price-shadow-pyth-core-readonly');
 assert.equal(output.semantics.productionPriceAuthority, false);
 assert.equal(output.semantics.paidRpcRequired, false);
 assert.equal(output.semantics.networkBatching, true);
@@ -201,19 +235,28 @@ assert.equal(output.semantics.maxOneHttpBatchPerNetworkPhasePerAttempt, true);
 assert.equal(output.semantics.multiPhaseProtocolReadsAllowed, true);
 assert.equal(output.semantics.protocolTwapReadsPinnedToDiscoveryBlock, true);
 assert.equal(output.semantics.retryableJsonRpcErrorsTriggerEndpointFailover, true);
+assert.equal(output.semantics.pythCoreReadonlyRoutes, true);
+assert.equal(output.semantics.pythHermesDependency, false);
+assert.equal(output.semantics.pythPriceUpdatesSubmitted, false);
+assert.equal(output.semantics.pythPublishTimeFreshnessChecked, true);
+assert.equal(output.semantics.pythConfidenceIntervalChecked, true);
 assert.equal(output.authority.executionAuthority, 'none');
-assert.equal(output.coverage.assetCount, 5);
-assert.equal(output.coverage.okCount, 5);
+assert.equal(output.coverage.assetCount, 6);
+assert.equal(output.coverage.okCount, 6);
+assert.equal(output.coverage.warningCount, 0);
 assert.equal(output.coverage.unavailableCount, 0);
-assert.equal(output.rpcEfficiency.networkCount, 2);
-assert.equal(output.rpcEfficiency.routeCount, 5);
-assert.equal(output.rpcEfficiency.httpBatchRequestCount, 4);
+assert.equal(output.rpcEfficiency.networkCount, 3);
+assert.equal(output.rpcEfficiency.routeCount, 6);
+assert.equal(output.rpcEfficiency.httpBatchRequestCount, 5);
 assert.equal(output.networks.ethereum.routeCount, 3);
 assert.equal(output.networks.ethereum.rpcFailoverAttempts, 1);
 assert.equal(output.networks.optimism.routeCount, 2);
 assert.equal(output.networks.optimism.protocolReadPhases, 2);
 assert.equal(output.networks.optimism.httpBatchRequestCount, 2);
 assert.equal(output.networks.optimism.protocolTwapBatchCallCount, 2);
+assert.equal(output.networks.mode.routeCount, 1);
+assert.equal(output.networks.mode.batchCallCount, 2);
+assert.equal(output.networks.mode.pythReadonlyBatch, true);
 assert.equal(eth.status, 'shadow-ok');
 assert.equal(eth.usd, 2000);
 assert.equal(fxs.status, 'shadow-ok');
@@ -235,15 +278,25 @@ assert.equal(velo.usd, 0.1);
 assert.equal(velo.divergencePct, 0);
 assert.equal(velo.dependencyStatus, 'shadow-ok');
 assert.match(velo.composition, /observation TWAP/);
+assert.equal(mode.status, 'shadow-ok');
+assert.equal(mode.source, 'pyth-core-readonly');
+assert.equal(mode.usd, 0.002);
+assert.equal(mode.exponent, -8);
+assert.equal(mode.feedAgeSeconds, 30);
+assert.equal(mode.confidencePct, 1);
+assert.equal(mode.divergencePct, 0);
+assert.equal(mode.priceId, MODE_PRICE_ID);
+assert.equal(mode.productionPriceAuthority, false);
 
-console.log('Onchain Price Resolver protocol TWAP validation PASS', {
+console.log('Onchain Price Resolver Pyth Core readonly validation PASS', {
   routes: output.rpcEfficiency.routeCount,
   networks: output.rpcEfficiency.networkCount,
   httpBatchRequestCount: output.rpcEfficiency.httpBatchRequestCount,
   ethereumFailoverAttempts: output.networks.ethereum.rpcFailoverAttempts,
   optimismProtocolReadPhases: output.networks.optimism.protocolReadPhases,
-  veloPool: velo.pool,
-  veloGranularity: velo.granularity,
   veloUsd: velo.usd,
+  modeUsd: mode.usd,
+  modeConfidencePct: mode.confidencePct,
+  pythHermesDependency: output.semantics.pythHermesDependency,
   productionPriceAuthority: false
 });
