@@ -1,0 +1,80 @@
+name: "Validate BTC ETH Onchain Primary Pilot"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/market-data/market-data-authority-policy.json'
+      - 'intelligence/market-data/market-data-authority-selector.mjs'
+      - 'intelligence/market-data/market-data-authority-materializer.mjs'
+      - 'intelligence/market-data/market-data-validation-fixture.mjs'
+      - 'intelligence/market-data/coingecko-fetch-shim.mjs'
+      - '.github/workflows/market-data-refresh.yml'
+      - '.github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Build deterministic source and shadow fixture
+        run: |
+          set -euo pipefail
+          node intelligence/market-data/market-data-validation-fixture.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='intelligence/market-data/onchain-price-shadow.json';
+          const shadow=JSON.parse(fs.readFileSync(p,'utf8'));
+          const now=new Date().toISOString();
+          shadow.generatedAt=now;
+          shadow.mode='shadow';
+          shadow.status='ok';
+          shadow.semantics={...(shadow.semantics||{}),productionPriceAuthority:false};
+          shadow.authority={...(shadow.authority||{}),executionAuthority:'none'};
+          for(const [id,usd] of [['bitcoin',70000],['ethereum',2200]]){
+            shadow.observations[id]={...(shadow.observations?.[id]||{}),assetId:id,source:'chainlink-v3',network:'ethereum',quote:'USD',status:'shadow-ok',usd,productionPriceAuthority:false};
+          }
+          fs.writeFileSync(p,JSON.stringify(shadow,null,2)+'\n');
+          NODE
+      - name: Prove healthy pilot selects only BTC and ETH
+        run: |
+          set -euo pipefail
+          MARKET_DATA_FORCE_COINGECKO_FAILBACK=false node intelligence/market-data/market-data-authority-materializer.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          const s=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
+          if(m.authority?.onchainSelectedAssetCount!==2)throw new Error('Healthy pilot did not select exactly 2 onchain assets');
+          if(m.prices.bitcoin?.authority?.selectedLane!=='onchain'||m.prices.ethereum?.authority?.selectedLane!=='onchain')throw new Error('BTC/ETH not onchain primary');
+          for(const id of Object.keys(s.prices||{}))if(!['bitcoin','ethereum'].includes(id)&&m.prices[id]?.authority?.selectedLane!=='coingecko-lane')throw new Error(`${id}: non-pilot asset left CoinGecko`);
+          if(Number(m.prices.bitcoin.usd)!==70000||Number(m.prices.ethereum.usd)!==2200)throw new Error('Pilot onchain price materialization mismatch');
+          if(m.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
+          console.log('Healthy BTC/ETH onchain-primary pilot PASS');
+          NODE
+      - name: Prove cycle failure forces CoinGecko failback
+        run: |
+          set -euo pipefail
+          MARKET_DATA_FORCE_COINGECKO_FAILBACK=true node intelligence/market-data/market-data-authority-materializer.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          const s=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
+          if(m.authority?.onchainSelectedAssetCount!==0)throw new Error('Forced failback left onchain selections');
+          if(m.authority?.fallbackCount!==2)throw new Error('Forced failback must record exactly 2 pilot fallbacks');
+          for(const id of ['bitcoin','ethereum']){
+            if(m.prices[id]?.authority?.selectedLane!=='coingecko-lane'||m.prices[id]?.authority?.fallbackUsed!==true)throw new Error(`${id}: failback provenance missing`);
+            if(Number(m.prices[id].usd)!==Number(s.prices[id].usd))throw new Error(`${id}: failback did not use CoinGecko source lane`);
+          }
+          if(m.semantics?.cycleForcedCoinGeckoFailback!==true)throw new Error('Cycle failback semantic missing');
+          console.log('BTC/ETH cycle failback PASS');
+          NODE
+          git diff --check

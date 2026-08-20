@@ -1,18 +1,27 @@
 {
-  "version": "0.1-market-data-authority-promotion-framework",
-  "mode": "framework-dry-run",
+  "version": "0.2-market-data-authority-btc-eth-pilot",
+  "mode": "bounded-production-pilot",
   "defaultProductionAuthority": "coingecko-lane",
-  "globalOnchainPromotionEnabled": false,
+  "globalOnchainPromotionEnabled": true,
   "semantics": {
     "perAssetAuthorityRequired": true,
     "globalAllAssetSwitchForbidden": true,
     "coinGeckoRemainsFallbackAndSanityCheck": true,
     "canonicalCoinGeckoLaneRetainsItsExistingPreviousSnapshotFallback": true,
     "unknownIsNotZero": true,
-    "productionWriterIntegrationEnabled": false,
+    "productionWriterIntegrationEnabled": true,
     "automaticPolicyMutationAllowed": false,
     "automaticProductionMergeAllowed": false,
+    "automaticCohortExpansionAllowed": false,
     "executionAuthority": "none"
+  },
+  "pilot": {
+    "cohortId": "direct-chainlink-usd-ethereum-v0.1",
+    "assetIds": ["bitcoin", "ethereum"],
+    "maxPromotedAssetCount": 2,
+    "requiredRouteType": "chainlink-v3",
+    "requiredNetwork": "ethereum",
+    "requiredQuote": "USD"
   },
   "onchainEligibility": {
     "requiredSnapshotMode": "shadow",
@@ -24,15 +33,11 @@
     "requireExecutionAuthorityNone": true
   },
   "fallbackOrderByRequestedPrimary": {
-    "coingecko-lane": [
-      "coingecko-lane",
-      "unknown"
-    ],
-    "onchain": [
-      "onchain-shadow",
-      "coingecko-lane",
-      "unknown"
-    ]
+    "coingecko-lane": ["coingecko-lane", "unknown"],
+    "onchain": ["onchain-shadow", "coingecko-lane", "unknown"]
   },
-  "assetOverrides": {}
+  "assetOverrides": {
+    "bitcoin": {"requestedPrimary": "onchain"},
+    "ethereum": {"requestedPrimary": "onchain"}
+  }
 }
