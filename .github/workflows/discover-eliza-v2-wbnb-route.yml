@@ -1,0 +1,32 @@
+name: "Discover ELIZA V2 WBNB Route"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/market-data/onchain-eliza-v2-wbnb-candidate-validation.mjs'
+      - '.github/workflows/discover-eliza-v2-wbnb-route.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate diagnostic syntax
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/onchain-eliza-v2-wbnb-candidate-validation.mjs
+          git diff --check
+      - name: Discover ELIZA V2 WBNB historical TWAP live
+        run: |
+          set -euo pipefail
+          node intelligence/market-data/onchain-eliza-v2-wbnb-candidate-validation.mjs
