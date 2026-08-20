@@ -84,7 +84,7 @@ async function probeOlasSyncLogTwapOn(endpoint){
   const token0=decodeAddress(tokenRows.get(1).result),token1=decodeAddress(tokenRows.get(2).result);
   if(token0!==OLAS.toLowerCase()||token1!==ETH.toLowerCase())throw new Error(`Pair identity mismatch ${token0}/${token1}`);
   const nowTs=Number(BigInt(tokenRows.get(3).result.timestamp));
-  const lookbackBlocks=12000,chunk=1200;
+  const lookbackBlocks=2400,chunk=50;
   const first=Math.max(0,latest-lookbackBlocks);
   const logs=[];
   let id=100;
@@ -123,7 +123,8 @@ async function probeOlasSyncLogTwapOn(endpoint){
 }
 async function probeOlasSyncLogTwap(){
   const attempts=[];
-  for(const endpoint of base.networks.ethereum.rpcFailover){try{return await probeOlasSyncLogTwapOn(endpoint);}catch(error){attempts.push(`${endpoint.id}:${error.message}`);}}
+  const preferred=[...(base.networks.ethereum.rpcFailover||[])].sort((a,b)=>a.id==='1rpc'?-1:b.id==='1rpc'?1:0);
+  for(const endpoint of preferred){try{return await probeOlasSyncLogTwapOn(endpoint);}catch(error){attempts.push(`${endpoint.id}:${error.message}`);}}
   return{status:'rpc-unavailable',error:attempts.join(' | ')};
 }
 const olasLog=await probeOlasSyncLogTwap();
