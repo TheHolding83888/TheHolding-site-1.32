@@ -374,11 +374,12 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
     routeCount: core.rpcEfficiency.routeCount + pyth.rpcEfficiency.routeCount + uniswap.rpcEfficiency.routeCount + curve.rpcEfficiency.routeCount,
     httpBatchRequestCount: core.rpcEfficiency.httpBatchRequestCount + pyth.rpcEfficiency.httpBatchRequestCount + uniswap.rpcEfficiency.httpBatchRequestCount + curve.rpcEfficiency.httpBatchRequestCount
   };
+  const curveEnabled = curve.coverage.assetCount > 0;
 
   return {
     ...core,
-    version: '0.8-onchain-price-shadow-curve-ema',
-    engineVersion: '0.8-composite-core-plus-pyth-plus-uniswap-plus-curve-ema-resolver',
+    version: curveEnabled ? '0.8-onchain-price-shadow-curve-ema' : '0.7-onchain-price-shadow-uniswap-v3-twap',
+    engineVersion: curveEnabled ? '0.8-composite-core-plus-pyth-plus-uniswap-plus-curve-ema-resolver' : '0.7-composite-core-plus-pyth-plus-uniswap-v3-twap-resolver',
     generatedAt: iso(nowMs),
     status: coverage.unavailableCount > 0 ? 'partial' : coverage.warningCount > 0 ? 'warning' : 'ok',
     semantics: {
@@ -393,9 +394,9 @@ export async function resolveOnchainPrices({ registry, marketData = null, fetchI
       uniswapV3FactoryDiscovery: true,
       uniswapV3TwapReadsPinnedToDiscoveryBlock: true,
       uniswapV3UsesObserveNotSpot: true,
-      curveEmaRoutes: true,
-      curvePriceOracleReadsPinnedToBlock: true,
-      curveUsesPriceOracleNotSpot: true,
+      curveEmaRoutes: curveEnabled,
+      curvePriceOracleReadsPinnedToBlock: curveEnabled,
+      curveUsesPriceOracleNotSpot: curveEnabled,
       dexSpotPriceAuthority: false
     },
     rpcEfficiency,
