@@ -61,11 +61,11 @@ jobs:
           const pending=marketIds.filter(id=>!routes.includes(id));
           const special=routes.filter(id=>!marketIds.includes(id));
           if(marketIds.length!==26)throw new Error(`Expected current canonical 26-asset market universe, got ${marketIds.length}`);
-          if(routed.length!==19)throw new Error(`Expected 19 routed market assets after cvxCRV Curve EMA cohort, got ${routed.length}`);
-          if(pending.length!==7)throw new Error(`Expected 7 pending market assets after cvxCRV Curve EMA cohort, got ${pending.length}`);
+          if(routed.length!==19)throw new Error(`Expected 19 routed market assets after cvxCRV cohort + FXN TWAP resilience, got ${routed.length}`);
+          if(pending.length!==7)throw new Error(`Expected 7 pending market assets after cvxCRV cohort + FXN TWAP resilience, got ${pending.length}`);
           if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
           if(routed.length+special.length!==20)throw new Error('Expected 20 total live onchain observation targets');
-          console.log('Onchain coverage cvxCRV Curve EMA cohort PASS',{marketAssets:26,routedMarketAssets:19,pendingMarketAssets:7,specialOnchainReferences:1,totalObservationTargets:20});
+          console.log('Onchain coverage FXN 5m TWAP resilience PASS',{marketAssets:26,routedMarketAssets:19,pendingMarketAssets:7,specialOnchainReferences:1,totalObservationTargets:20});
           NODE
       - name: Prove shadow authority boundary and cohort routes
         run: |
@@ -113,18 +113,18 @@ jobs:
           if(mode.token.toLowerCase()!=='0xdfc7c877a950e49d2610114102175a06c2e3167a')throw new Error('MODE token drift');
           if(Number(mode.maxAgeSeconds)!==3600||Number(mode.maxConfidencePct)!==5||Number(mode.maxDivergencePct)!==8)throw new Error('MODE Pyth safety thresholds drift');
           const v3Routes={
-            'yield-basis': {token:'0x01791f726b4103694969820be083196cc7c045ff',symbol:'YB',fee:10000},
-            'fxn-token': {token:'0x365accfca291e7d3914637abf1f7635db165bb09',symbol:'FXN',fee:10000},
-            'liquity': {token:'0x6dea81c8171d0ba574754ef6f8b412f2ed88c54d',symbol:'LQTY',fee:3000}
+            'yield-basis': {token:'0x01791f726b4103694969820be083196cc7c045ff',symbol:'YB',fee:10000,twapSeconds:1800},
+            'fxn-token': {token:'0x365accfca291e7d3914637abf1f7635db165bb09',symbol:'FXN',fee:10000,twapSeconds:300},
+            'liquity': {token:'0x6dea81c8171d0ba574754ef6f8b412f2ed88c54d',symbol:'LQTY',fee:3000,twapSeconds:1800}
           };
           for(const [assetId,expected] of Object.entries(v3Routes)){
             const route=reg.assets?.[assetId]?.route;
             if(!route||route.type!=='uniswap-v3-twap-relative'||route.network!=='ethereum'||route.authority!=='shadow')throw new Error(`${expected.symbol} Uniswap V3 TWAP route invalid`);
             if(route.factory.toLowerCase()!=='0x1f98431c8ad98523631ae4a59f267346ea31f984')throw new Error(`${expected.symbol} Uniswap V3 Factory drift`);
             if(route.token.toLowerCase()!==expected.token)throw new Error(`${expected.symbol} token drift`);
-            if(route.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27eAD9083C756Cc2'.toLowerCase())throw new Error(`${expected.symbol} WETH quote-token drift`);
+            if(route.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error(`${expected.symbol} WETH quote-token drift`);
             if(Number(route.fee)!==expected.fee||Number(route.tokenDecimals)!==18||Number(route.quoteTokenDecimals)!==18)throw new Error(`${expected.symbol} Uniswap V3 pool contract drift`);
-            if(Number(route.twapWindowSeconds)!==1800||route.quoteAssetId!=='ethereum'||route.feedQuote!=='ETH'||route.outputQuote!=='USD')throw new Error(`${expected.symbol} TWAP composition drift`);
+            if(Number(route.twapWindowSeconds)!==expected.twapSeconds||route.quoteAssetId!=='ethereum'||route.feedQuote!=='ETH'||route.outputQuote!=='USD')throw new Error(`${expected.symbol} TWAP composition drift`);
             if(Number(route.maxDivergencePct)!==10)throw new Error(`${expected.symbol} divergence threshold drift`);
           }
           const curveRoutes={
@@ -151,7 +151,7 @@ jobs:
           if(!cvx||cvx.type!=='chainlink-v3-relative'||cvx.quoteAssetId!=='ethereum')throw new Error('Existing CVX composition drift');
           const silver=reg.assets?.['physical-silver']?.route;
           if(silver?.feedBase!=='XAG'||silver?.emergencyFallback?.type!=='gold-ratio'||Number(silver?.emergencyFallback?.divideGoldUsdBy)!==68)throw new Error('Silver direct/fallback contract drift');
-          console.log('Onchain Market Data reusable Curve EMA route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,curveEmaAssets:['RSUP','cvxCRV'],spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
+          console.log('Onchain Market Data FXN bounded 5m TWAP route contract PASS',{routes:Object.keys(reg.assets||{}).length,networks:Object.keys(reg.networks||{}).length,fxnTwapSeconds:v3Routes['fxn-token'].twapSeconds,spotAuthority:false,productionPriceAuthority:false,paidRpcRequired:false});
           NODE
       - name: Prove shared heartbeat remains shadow-only and fail-open
         run: |
@@ -185,6 +185,6 @@ jobs:
           const shadowIndex=workflow.indexOf('Observe onchain prices in fail-open shadow mode');
           const publicIndex=workflow.indexOf('Rebuild public fund + company capital view');
           if(!(marketIndex>=0&&shadowIndex>marketIndex&&publicIndex>shadowIndex))throw new Error('Heartbeat order drift');
-          console.log('Onchain shadow heartbeat + reusable Curve EMA integration PASS',{failOpen:true,blockPinnedCurveOracle:true,curveSpotAuthority:false,uniswapObserveNotSpot:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
+          console.log('Onchain shadow heartbeat + bounded FXN 5m TWAP PASS',{failOpen:true,fxnStillTwap:true,spotAuthority:false,blockPinnedCurveOracle:true,pythReadonly:true,hermes:false,productionPriceAuthority:false});
           NODE
           git diff --check
