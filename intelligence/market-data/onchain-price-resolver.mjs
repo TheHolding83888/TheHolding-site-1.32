@@ -9,14 +9,19 @@ import {
   UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE,
   resolveUniswapV3ChainlinkQuotePrices
 } from './onchain-uniswap-v3-chainlink-quote.mjs';
+import {
+  CURVE_EMA_CHAINLINK_QUOTE_ROUTE_TYPE,
+  resolveCurveEmaChainlinkQuotePrices
+} from './onchain-curve-ema-chainlink-quote.mjs';
 
 export * from './onchain-price-resolver-v09.mjs';
 export { UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE } from './onchain-uniswap-v3-chainlink-quote.mjs';
+export { CURVE_EMA_CHAINLINK_QUOTE_ROUTE_TYPE } from './onchain-curve-ema-chainlink-quote.mjs';
 
 /*
  * Backward-compatible validation markers. The complete proven v0.9 resolver
  * is preserved byte-for-byte in onchain-price-resolver-v09.mjs; this wrapper
- * adds the Chainlink-quoted V3 lane and explicit bounded route replacement.
+ * adds explicit Chainlink-quoted V3 and Curve EMA lanes plus bounded route replacement.
  *
  * pyth-core-readonly
  * 96834ad3
@@ -91,49 +96,80 @@ function mergeNetworkTelemetry(baseNetworks, quoteNetworks) {
   return merged;
 }
 
+function mergeCurveQuoteNetworkTelemetry(baseNetworks, curveNetworks) {
+  const merged = { ...(baseNetworks || {}) };
+  for (const [networkId, curve] of Object.entries(curveNetworks || {})) {
+    const base = merged[networkId];
+    if (!base) { merged[networkId] = curve; continue; }
+    merged[networkId] = {
+      ...base,
+      routeCount: Number(base.routeCount || 0) + Number(curve.routeCount || 0),
+      batchCallCount: Number(base.batchCallCount || 0) + Number(curve.batchCallCount || 0),
+      httpBatchRequestCount: Number(base.httpBatchRequestCount || 0) + Number(curve.httpBatchRequestCount || 0),
+      rpcFailoverAttempts: Number(base.rpcFailoverAttempts || 0) + Number(curve.rpcFailoverAttempts || 0),
+      protocolReadPhases: Math.max(Number(base.protocolReadPhases || 1), Number(curve.protocolReadPhases || 1)),
+      chainlinkQuotedCurveEmaRouteCount: curve.chainlinkCurveQuoteDependencyRouteCount || curve.routeCount,
+      chainlinkCurveQuoteDependencyRouteCount: curve.chainlinkCurveQuoteDependencyRouteCount,
+      chainlinkCurveQuoteDependencyEndpointId: curve.chainlinkCurveQuoteDependencyEndpointId
+    };
+  }
+  return merged;
+}
+
 export async function resolveOnchainPrices({ registry, marketData = null, fetchImpl = fetch, nowMs = Date.now() }) {
   if (!registry?.assets || !registry?.networks) throw new Error('Onchain source registry missing or invalid');
-  const quoteAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => asset?.route?.type === UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE));
-  const legacyAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => asset?.route?.type !== UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE));
+  const v3QuoteAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => asset?.route?.type === UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE));
+  const curveQuoteAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => asset?.route?.type === CURVE_EMA_CHAINLINK_QUOTE_ROUTE_TYPE));
+  const specializedQuoteTypes = new Set([UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE, CURVE_EMA_CHAINLINK_QUOTE_ROUTE_TYPE]);
+  const legacyAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => !specializedQuoteTypes.has(asset?.route?.type)));
   const legacy = await resolveLegacyOnchainPrices({ registry: { ...registry, assets: legacyAssets }, marketData, fetchImpl, nowMs });
-  if (Object.keys(quoteAssets).length === 0) return legacy;
 
-  const quote = await resolveUniswapV3ChainlinkQuotePrices({ registry: { ...registry, assets: quoteAssets }, marketData, fetchImpl, nowMs });
+  const v3Quote = Object.keys(v3QuoteAssets).length
+    ? await resolveUniswapV3ChainlinkQuotePrices({ registry: { ...registry, assets: v3QuoteAssets }, marketData, fetchImpl, nowMs })
+    : { observations: {}, networks: {}, coverage: { assetCount: 0, okCount: 0, warningCount: 0, unavailableCount: 0 }, rpcEfficiency: { networkCount: 0, routeCount: 0, httpBatchRequestCount: 0 } };
+  const curveQuote = Object.keys(curveQuoteAssets).length
+    ? await resolveCurveEmaChainlinkQuotePrices({ registry: { ...registry, assets: curveQuoteAssets }, marketData, fetchImpl, nowMs })
+    : { observations: {}, networks: {}, coverage: { assetCount: 0, okCount: 0, warningCount: 0, unavailableCount: 0 }, rpcEfficiency: { networkCount: 0, routeCount: 0, httpBatchRequestCount: 0 } };
+
+  if (v3Quote.coverage.assetCount === 0 && curveQuote.coverage.assetCount === 0) return legacy;
+
   const coverage = {
-    assetCount: Number(legacy.coverage?.assetCount || 0) + Number(quote.coverage?.assetCount || 0),
-    okCount: Number(legacy.coverage?.okCount || 0) + Number(quote.coverage?.okCount || 0),
-    warningCount: Number(legacy.coverage?.warningCount || 0) + Number(quote.coverage?.warningCount || 0),
-    unavailableCount: Number(legacy.coverage?.unavailableCount || 0) + Number(quote.coverage?.unavailableCount || 0)
+    assetCount: Number(legacy.coverage?.assetCount || 0) + Number(v3Quote.coverage?.assetCount || 0) + Number(curveQuote.coverage?.assetCount || 0),
+    okCount: Number(legacy.coverage?.okCount || 0) + Number(v3Quote.coverage?.okCount || 0) + Number(curveQuote.coverage?.okCount || 0),
+    warningCount: Number(legacy.coverage?.warningCount || 0) + Number(v3Quote.coverage?.warningCount || 0) + Number(curveQuote.coverage?.warningCount || 0),
+    unavailableCount: Number(legacy.coverage?.unavailableCount || 0) + Number(v3Quote.coverage?.unavailableCount || 0) + Number(curveQuote.coverage?.unavailableCount || 0)
   };
-  const networks = mergeNetworkTelemetry(legacy.networks, quote.networks);
+  const networks = mergeCurveQuoteNetworkTelemetry(mergeNetworkTelemetry(legacy.networks, v3Quote.networks), curveQuote.networks);
   const rpcEfficiency = {
-    networkCount: new Set([...Object.keys(legacy.networks || {}), ...Object.keys(quote.networks || {})]).size,
-    routeCount: Number(legacy.rpcEfficiency?.routeCount || 0) + Number(quote.rpcEfficiency?.routeCount || 0),
-    httpBatchRequestCount: Number(legacy.rpcEfficiency?.httpBatchRequestCount || 0) + Number(quote.rpcEfficiency?.httpBatchRequestCount || 0)
+    networkCount: new Set([...Object.keys(legacy.networks || {}), ...Object.keys(v3Quote.networks || {}), ...Object.keys(curveQuote.networks || {})]).size,
+    routeCount: Number(legacy.rpcEfficiency?.routeCount || 0) + Number(v3Quote.rpcEfficiency?.routeCount || 0) + Number(curveQuote.rpcEfficiency?.routeCount || 0),
+    httpBatchRequestCount: Number(legacy.rpcEfficiency?.httpBatchRequestCount || 0) + Number(v3Quote.rpcEfficiency?.httpBatchRequestCount || 0) + Number(curveQuote.rpcEfficiency?.httpBatchRequestCount || 0)
   };
 
   return {
     ...legacy,
-    version: '0.10-onchain-price-shadow-v3-chainlink-quote',
-    engineVersion: '0.10-composite-v09-plus-v3-chainlink-quote-resolver',
+    version: '0.11-onchain-price-shadow-chainlink-quoted-curve-ema',
+    engineVersion: '0.11-composite-v10-plus-curve-ema-chainlink-quote-resolver',
     generatedAt: new Date(nowMs).toISOString(),
     status: coverage.unavailableCount > 0 ? 'partial' : coverage.warningCount > 0 ? 'warning' : 'ok',
     semantics: {
       ...(legacy.semantics || {}),
-      uniswapV3ChainlinkQuoteRoutes: true,
+      uniswapV3ChainlinkQuoteRoutes: v3Quote.coverage.assetCount > 0,
+      curveEmaChainlinkQuoteRoutes: curveQuote.coverage.assetCount > 0,
       chainlinkQuoteFreshnessChecked: true,
       chainlinkQuoteRoundIntegrityChecked: true,
-      tokenDecimalsReadOnchain: true,
+      tokenDecimalsReadOnchain: v3Quote.coverage.assetCount > 0,
       stablecoinPegHardcoded: false,
       boundedRouteOverridesApplied: registry.semantics?.boundedRouteOverridesApplied === true,
       routeScopedExtensionNetworksApplied: true,
       uniswapV3SpotPriceAuthority: false,
+      curveSpotPriceAuthority: false,
       dexSpotPriceAuthority: false
     },
     rpcEfficiency,
     coverage,
     networks,
-    observations: { ...(legacy.observations || {}), ...(quote.observations || {}) },
+    observations: { ...(legacy.observations || {}), ...(v3Quote.observations || {}), ...(curveQuote.observations || {}) },
     authority: { readOnly: true, executionAuthority: 'none', capitalExecution: false, policyMutationAuthority: false }
   };
 }
