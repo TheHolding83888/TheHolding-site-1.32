@@ -67,6 +67,7 @@ jobs:
           shadow.observations['convex-finance']={...(shadow.observations['convex-finance']||{}),assetId:'convex-finance',source:'chainlink-v3-relative',network:'ethereum',contract:'0xC9CbF687f43176B302F03f5e58470b77D07c61c6',status:'shadow-ok',usd:1.65,productionPriceAuthority:false,feedQuote:'ETH',quoteAssetId:'ethereum',quoteAssetUsd:2200,outputQuote:'USD',dependencyStatus:'shadow-ok'};
           for(const [id,x] of Object.entries(v3)){
             shadow.observations[id]={...(shadow.observations[id]||{}),assetId:id,source:'uniswap-v3-twap-relative',network:x.network,factory:x.factory,token:x.token,quoteToken:x.quoteToken,fee:x.fee,twapWindowSeconds:x.twapWindowSeconds,status:'shadow-ok',usd:x.usd,productionPriceAuthority:false,feedQuote:'ETH',quoteAssetId:'ethereum',quoteAssetUsd:2200,outputQuote:'USD',dependencyStatus:'shadow-ok'};
+          }
           fs.writeFileSync(p,JSON.stringify(shadow,null,2)+'\n');
           NODE
       - name: Prove healthy bounded cohorts select seventeen onchain assets
