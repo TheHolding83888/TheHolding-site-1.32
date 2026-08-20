@@ -1,6 +1,6 @@
 {
-  "version": "0.5-full-coverage-plus-mode-velodrome-route-override",
-  "effectiveRegistryVersion": "0.20-onchain-price-source-registry-full-26-route-no-stale-mode",
+  "version": "0.6-full-coverage-mode-and-fxn-resilience-overrides",
+  "effectiveRegistryVersion": "0.21-onchain-price-source-registry-full-26-no-mode-stale-no-fxn-old",
   "purpose": "Bounded extension routes plus explicit reviewed replacements for canonical onchain Market Data routes. Base v0.15 remains byte-stable; route overrides are fail-closed and may only target existing canonical asset ids.",
   "semantics": {
     "uniswapV2HistoricalTwapRoutesAllowed": true,
@@ -10,6 +10,8 @@
     "uniswapV3TwapRoutesAllowed": true,
     "uniswapV3ChainlinkQuoteRoutesAllowed": true,
     "uniswapV3SpotPriceAuthority": false,
+    "curveEmaRoutesAllowed": true,
+    "curveSpotPriceAuthority": false,
     "stablecoinPegHardcoded": false,
     "quoteFeedFreshnessRequired": true,
     "boundedRouteOverridesAllowed": true,
@@ -130,6 +132,25 @@
         "maxDivergencePct": 10,
         "authority": "shadow",
         "provenance": "Official MODE token on Mode Mainnet and official Velodrome Superchain V2 PoolFactory on chain 34443. Factory-discovered MODE/WETH volatile pool uses Velodrome observation TWAP pinned to the discovery block and composes with same-cycle ETH/USD. Replaces stale Pyth stored-state dependency; no updater, spot-price authority, paid RPC, signing, or execution authority."
+      }
+    },
+    "fxn-token": {
+      "assetId": "fxn-token",
+      "symbol": "FXN",
+      "route": {
+        "type": "curve-ema-relative",
+        "network": "ethereum",
+        "pool": "0xC15F285679a1Ef2d25F53D4CbD0265E1D02F2A92",
+        "token": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+        "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "oracleDirection": "coin0-per-coin1",
+        "oracleScale": "1000000000000000000",
+        "quoteAssetId": "ethereum",
+        "feedQuote": "ETH",
+        "outputQuote": "USD",
+        "maxDivergencePct": 10,
+        "authority": "shadow",
+        "provenance": "Verified Curve Twocrypto FXN/ETH pool. Transaction evidence establishes sold_id=1 as FXN and bought_id=0 as ETH/WETH, matching coin0=WETH and coin1=FXN for the existing Curve EMA adapter. Uses block-pinned price_oracle() EMA composed with same-cycle ETH/USD. Replaces the intermittent Uniswap V3 OLD observation-history failure; no spot-price authority, updater dependency, paid RPC, signing, or execution authority."
       }
     }
   }

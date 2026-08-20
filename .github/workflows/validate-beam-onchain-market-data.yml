@@ -7,6 +7,7 @@ on:
       - 'intelligence/market-data/onchain-price-resolver.mjs'
       - 'intelligence/market-data/onchain-price-resolver-v09.mjs'
       - 'intelligence/market-data/onchain-route-override-validation.mjs'
+      - 'intelligence/market-data/onchain-curve-ema.mjs'
       - 'intelligence/market-data/onchain-uniswap-v2-historical-twap.mjs'
       - 'intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs'
       - 'intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs'
@@ -34,6 +35,7 @@ jobs:
           node --check intelligence/market-data/onchain-price-resolver.mjs
           node --check intelligence/market-data/onchain-price-resolver-v09.mjs
           node --check intelligence/market-data/onchain-route-override-validation.mjs
+          node --check intelligence/market-data/onchain-curve-ema.mjs
           node --check intelligence/market-data/onchain-uniswap-v2-historical-twap.mjs
           node --check intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
           node --check intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs
@@ -97,5 +99,27 @@ jobs:
           if(ext.semantics?.boundedRouteOverridesAllowed!==true||effective.semantics?.boundedRouteOverridesApplied!==true)throw new Error('Bounded route override contract missing');
           if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
           console.log('MODE Velodrome replacement gate PASS',{baseRoute:base.assets.mode.route.type,effectiveRoute:r.type,factory:r.factory,staleUpdaterDependency:false,productionPriceAuthority:false});
+          NODE
+      - name: Prove FXN OLD-prone V3 route is replaced by Curve EMA
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { mergeOnchainRegistryExtensions } from './intelligence/market-data/onchain-price-resolver.mjs';
+          const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
+          const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
+          if(base.assets?.['fxn-token']?.route?.type!=='uniswap-v3-twap-relative')throw new Error('Expected byte-stable base FXN route to remain Uniswap V3 before effective override');
+          const effective=mergeOnchainRegistryExtensions(base,ext);
+          const r=effective.assets?.['fxn-token']?.route;
+          if(!r||r.type!=='curve-ema-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('Effective FXN Curve EMA route invalid');
+          if(r.pool.toLowerCase()!=='0xc15f285679a1ef2d25f53d4cbd0265e1d02f2a92')throw new Error('FXN Curve pool drift');
+          if(r.token.toLowerCase()!=='0x365accfca291e7d3914637abf1f7635db165bb09')throw new Error('FXN token drift');
+          if(r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('FXN WETH quote drift');
+          if(r.oracleDirection!=='coin0-per-coin1'||String(r.oracleScale)!=='1000000000000000000')throw new Error('FXN Curve oracle contract drift');
+          if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('FXN relative-price composition drift');
+          if(effective.assets?.mode?.route?.type!=='velodrome-v2-twap-relative')throw new Error('MODE resilience override lost while adding FXN');
+          if(ext.semantics?.curveEmaRoutesAllowed!==true||ext.semantics?.curveSpotPriceAuthority!==false)throw new Error('Curve EMA authority semantics drift');
+          if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
+          console.log('FXN Curve EMA resilience gate PASS',{baseRoute:base.assets['fxn-token'].route.type,effectiveRoute:r.type,pool:r.pool,oldObservationDependency:false,spotAuthority:false,productionPriceAuthority:false});
           NODE
           git diff --check
