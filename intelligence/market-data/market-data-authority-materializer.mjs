@@ -32,14 +32,19 @@ if (policy.semantics?.executionAuthority !== 'none') throw new Error('Execution 
 
 const pilotIds = [...(policy.pilot?.assetIds || [])];
 const overrideIds = Object.keys(policy.assetOverrides || {});
-if (pilotIds.length !== 2 || !pilotIds.includes('bitcoin') || !pilotIds.includes('ethereum')) throw new Error('Pilot cohort must be exactly BTC + ETH');
+const exactPilot = ['bitcoin', 'ethereum', 'aerodrome-finance', 'pendle'];
+if (JSON.stringify(pilotIds) !== JSON.stringify(exactPilot)) throw new Error('Pilot cohort must be exactly BTC + ETH + AERO + PENDLE');
 if (overrideIds.length !== pilotIds.length || overrideIds.some(id => !pilotIds.includes(id))) throw new Error('Asset overrides exceed bounded pilot cohort');
-if (Number(policy.pilot?.maxPromotedAssetCount) !== 2) throw new Error('Pilot promotion cap drift');
+if (Number(policy.pilot?.maxPromotedAssetCount) !== 4) throw new Error('Pilot promotion cap drift');
+if (policy.pilot?.requiredRouteType !== 'chainlink-v3' || policy.pilot?.requiredQuote !== 'USD') throw new Error('Pilot must remain direct Chainlink/USD only');
 
 for (const assetId of pilotIds) {
   const observation = shadow?.observations?.[assetId];
+  const req = policy.pilot?.routeRequirements?.[assetId];
+  if (!req) throw new Error(`${assetId}: exact route requirement missing`);
   if (observation?.source !== policy.pilot.requiredRouteType) throw new Error(`${assetId}: pilot route type drift`);
-  if (observation?.network !== policy.pilot.requiredNetwork) throw new Error(`${assetId}: pilot network drift`);
+  if (observation?.network !== req.network) throw new Error(`${assetId}: pilot network drift`);
+  if (String(observation?.contract || '').toLowerCase() !== String(req.contract || '').toLowerCase()) throw new Error(`${assetId}: pilot feed contract drift`);
   if (observation?.quote !== policy.pilot.requiredQuote) throw new Error(`${assetId}: pilot quote drift`);
   if (forceCoinGeckoFailback) shadow.observations[assetId] = { ...observation, status: 'cycle-forced-failback', usd: null };
 }
@@ -95,8 +100,8 @@ if (forceCoinGeckoFailback && onchainSelectedAssetCount !== 0) throw new Error('
 
 const output = {
   ...source,
-  version: '0.4-market-data-bounded-onchain-primary-pilot',
-  engineVersion: '0.4-per-asset-authority-materializer-btc-eth',
+  version: '0.5-market-data-bounded-direct-oracle-cohort',
+  engineVersion: '0.5-per-asset-authority-materializer-btc-eth-aero-pendle',
   generatedAt: new Date(nowMs).toISOString(),
   status: unknownCount > 0 ? 'partial' : fallbackCount > 0 ? 'fallback-active' : 'ok',
   semantics: {
@@ -104,6 +109,7 @@ const output = {
     canonicalMirrorEqualsCoinGeckoSourceLane: false,
     perAssetAuthoritySelectionApplied: true,
     boundedOnchainPrimaryPilot: true,
+    directChainlinkUsdCohortOnly: true,
     coinGeckoRemainsFallbackAndSanityCheck: true,
     automaticCohortExpansionAllowed: false,
     cycleForcedCoinGeckoFailback: forceCoinGeckoFailback,
