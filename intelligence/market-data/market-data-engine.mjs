@@ -37,6 +37,10 @@ function previousPrice(previous, assetId) {
 const registry = readJson(REGISTRY_PATH);
 if (!registry?.assets?.length) throw new Error('Market price registry missing or empty');
 
+// CoinGecko fallback history is isolated from the canonical selected lane.
+// Normal scheduled Market Data heartbeats are onchain-only and MUST NOT
+// consume CoinGecko requests. The daily workflow explicitly opts in with
+// MARKET_DATA_DAILY_REFRESH=true.
 const previous = readJson(SOURCE_OUTPUT_PATH, readJson(CANONICAL_OUTPUT_PATH, null));
 const forceRefresh = String(process.env.MARKET_DATA_FORCE_REFRESH || '').toLowerCase() === 'true';
 const githubEventName = String(process.env.GITHUB_EVENT_NAME || '').toLowerCase();
@@ -108,16 +112,41 @@ let unknownCount = 0;
 for (const asset of registry.assets) {
   const fresh = finite(payload?.[asset.providerId]?.usd);
   if (fresh !== null && fresh >= 0) {
-    prices[asset.assetId] = { assetId: asset.assetId, symbol: asset.symbol || null, providerId: asset.providerId, usd: fresh, status: 'fresh', observedAt, source: 'coingecko-single-batch' };
+    prices[asset.assetId] = {
+      assetId: asset.assetId,
+      symbol: asset.symbol || null,
+      providerId: asset.providerId,
+      usd: fresh,
+      status: 'fresh',
+      observedAt,
+      source: 'coingecko-single-batch'
+    };
     freshCount += 1;
     continue;
   }
+
   const prior = previousPrice(previous, asset.assetId);
   if (prior) {
-    prices[asset.assetId] = { assetId: asset.assetId, symbol: asset.symbol || null, providerId: asset.providerId, usd: prior.usd, status: 'stale-fallback', observedAt: prior.observedAt, source: 'previous-coingecko-source-snapshot' };
+    prices[asset.assetId] = {
+      assetId: asset.assetId,
+      symbol: asset.symbol || null,
+      providerId: asset.providerId,
+      usd: prior.usd,
+      status: 'stale-fallback',
+      observedAt: prior.observedAt,
+      source: 'previous-coingecko-source-snapshot'
+    };
     fallbackCount += 1;
   } else {
-    prices[asset.assetId] = { assetId: asset.assetId, symbol: asset.symbol || null, providerId: asset.providerId, usd: null, status: 'unknown', observedAt: null, source: null };
+    prices[asset.assetId] = {
+      assetId: asset.assetId,
+      symbol: asset.symbol || null,
+      providerId: asset.providerId,
+      usd: null,
+      status: 'unknown',
+      observedAt: null,
+      source: null
+    };
     unknownCount += 1;
   }
 }
@@ -146,7 +175,14 @@ const output = {
     canonicalMirrorEqualsCoinGeckoSourceLane: true,
     perAssetAuthoritySelectionApplied: false
   },
-  provider: { id: 'coingecko', endpoint: url.origin + url.pathname, authMode, credentialExposed: false, httpStatus, error: requestError },
+  provider: {
+    id: 'coingecko',
+    endpoint: url.origin + url.pathname,
+    authMode,
+    credentialExposed: false,
+    httpStatus,
+    error: requestError
+  },
   coverage: {
     requestedAssetCount: registry.assets.length,
     freshCount,
@@ -156,12 +192,28 @@ const output = {
     usableCoverage: registry.assets.length ? (freshCount + fallbackCount) / registry.assets.length : 0
   },
   prices,
-  authority: { productionPriceLane: 'coingecko-lane', onchainSelectedAssetCount: 0, readOnly: true, executionAuthority: 'none', capitalExecution: false, policyMutationAuthority: false }
+  authority: {
+    productionPriceLane: 'coingecko-lane',
+    onchainSelectedAssetCount: 0,
+    readOnly: true,
+    executionAuthority: 'none',
+    capitalExecution: false,
+    policyMutationAuthority: false
+  }
 };
 
 writeMirroredSnapshot(output);
 console.log('CoinGecko source lane and canonical Market Data mirror written', {
-  status, authMode, freshCount, fallbackCount, unknownCount, externalRequestCount: 1, dailyScheduledRefresh, onchainSelectedAssetCount: 0
+  status,
+  authMode,
+  freshCount,
+  fallbackCount,
+  unknownCount,
+  externalRequestCount: 1,
+  dailyScheduledRefresh,
+  onchainSelectedAssetCount: 0
 });
 
-if (unknownCount === registry.assets.length) throw new Error('Market Data has zero usable prices; refusing to publish an all-unknown snapshot');
+if (unknownCount === registry.assets.length) {
+  throw new Error('Market Data has zero usable prices; refusing to publish an all-unknown snapshot');
+}
