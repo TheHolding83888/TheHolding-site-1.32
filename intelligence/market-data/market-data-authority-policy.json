@@ -1,5 +1,5 @@
 {
-  "version": "0.4-market-data-authority-direct-oracle-cohort-crv-fxs",
+  "version": "0.5-market-data-authority-direct-oracle-cohort-vvv-icp",
   "mode": "bounded-production-pilot",
   "defaultProductionAuthority": "coingecko-lane",
   "globalOnchainPromotionEnabled": true,
@@ -16,9 +16,9 @@
     "executionAuthority": "none"
   },
   "pilot": {
-    "cohortId": "direct-chainlink-usd-btc-eth-aero-pendle-crv-fxs-v0.3",
-    "assetIds": ["bitcoin", "ethereum", "aerodrome-finance", "pendle", "curve-dao-token", "frax-share"],
-    "maxPromotedAssetCount": 6,
+    "cohortId": "direct-chainlink-usd-btc-eth-aero-pendle-crv-fxs-vvv-icp-v0.4",
+    "assetIds": ["bitcoin", "ethereum", "aerodrome-finance", "pendle", "curve-dao-token", "frax-share", "venice-token", "internet-computer"],
+    "maxPromotedAssetCount": 8,
     "requiredRouteType": "chainlink-v3",
     "requiredQuote": "USD",
     "routeRequirements": {
@@ -27,7 +27,9 @@
       "aerodrome-finance": {"network": "base", "contract": "0x4EC5970fC728C5f65ba413992CD5fF6FD70fcfF0"},
       "pendle": {"network": "optimism", "contract": "0x58F23F80bF389DB1af9e3aA8c59679806749A8a4"},
       "curve-dao-token": {"network": "ethereum", "contract": "0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f"},
-      "frax-share": {"network": "ethereum", "contract": "0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f"}
+      "frax-share": {"network": "ethereum", "contract": "0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f"},
+      "venice-token": {"network": "base", "contract": "0xaabc55ca55d70b034e4daa2551a224239890282f"},
+      "internet-computer": {"network": "bsc", "contract": "0x84210d9013a30c6ab169e28840a6cc54b60fa042"}
     }
   },
   "onchainEligibility": {
@@ -49,6 +51,8 @@
     "aerodrome-finance": {"requestedPrimary": "onchain"},
     "pendle": {"requestedPrimary": "onchain"},
     "curve-dao-token": {"requestedPrimary": "onchain"},
-    "frax-share": {"requestedPrimary": "onchain"}
+    "frax-share": {"requestedPrimary": "onchain"},
+    "venice-token": {"requestedPrimary": "onchain"},
+    "internet-computer": {"requestedPrimary": "onchain"}
   }
 }
