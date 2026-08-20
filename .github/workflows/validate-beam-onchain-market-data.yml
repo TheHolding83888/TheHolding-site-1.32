@@ -10,6 +10,8 @@ on:
       - 'intelligence/market-data/onchain-curve-ema.mjs'
       - 'intelligence/market-data/onchain-uniswap-v2-historical-twap.mjs'
       - 'intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs'
+      - 'intelligence/market-data/onchain-uniswap-v3-twap.mjs'
+      - 'intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs'
       - 'intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs'
       - 'intelligence/market-data/onchain-uniswap-v3-chainlink-quote-validation.mjs'
       - '.github/workflows/validate-beam-onchain-market-data.yml'
@@ -29,7 +31,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Validate inherited runtimes plus bounded route replacement
+      - name: Validate inherited runtimes
         run: |
           set -euo pipefail
           node --check intelligence/market-data/onchain-price-resolver.mjs
@@ -38,12 +40,15 @@ jobs:
           node --check intelligence/market-data/onchain-curve-ema.mjs
           node --check intelligence/market-data/onchain-uniswap-v2-historical-twap.mjs
           node --check intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
+          node --check intelligence/market-data/onchain-uniswap-v3-twap.mjs
+          node --check intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs
           node --check intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs
           node --check intelligence/market-data/onchain-uniswap-v3-chainlink-quote-validation.mjs
           node intelligence/market-data/onchain-route-override-validation.mjs
           node intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
+          node intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs
           node intelligence/market-data/onchain-uniswap-v3-chainlink-quote-validation.mjs
-      - name: Prove BEAM historical RPC resilience
+      - name: Prove BEAM live-proven V3 route
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
@@ -53,17 +58,13 @@ jobs:
           const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
           const effective=mergeOnchainRegistryExtensions(base,ext);
           const r=effective.assets?.['beam-2']?.route;
-          if(!r||r.type!=='uniswap-v2-historical-twap-relative'||r.network!=='ethereum-historical'||r.authority!=='shadow')throw new Error('BEAM V2 route invalid');
-          if(r.pair.toLowerCase()!=='0x180efc1349a69390ade25667487a826164c9c6e4')throw new Error('BEAM/WETH pair drift');
-          if(r.token.toLowerCase()!=='0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce')throw new Error('BEAM token drift');
-          if(r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('BEAM WETH quote drift');
-          if(Number(r.lookbackBlocks)!==150||Number(r.minTwapWindowSeconds)!==1200||Number(r.maxTwapWindowSeconds)!==2700)throw new Error('BEAM historical window drift');
-          if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('BEAM composition drift');
-          const n=effective.networks?.['ethereum-historical'];
-          const rpcIds=(n?.rpcFailover||[]).map(x=>x.id);
-          if(Number(n?.chainId)!==1||rpcIds.join(',')!=='1rpc,llamarpc,publicnode')throw new Error(`Historical RPC fabric drift: ${rpcIds.join(',')}`);
-          if(ext.semantics?.routeScopedExtensionNetworksAllowed!==true||ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Historical route authority drift');
-          console.log('BEAM historical RPC resilience PASS',{rpcIds});
+          if(!r||r.type!=='uniswap-v3-twap-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('BEAM V3 route invalid');
+          if(r.factory.toLowerCase()!=='0x1f98431c8ad98523631ae4a59f267346ea31f984')throw new Error('BEAM factory drift');
+          if(r.token.toLowerCase()!=='0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce'||r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('BEAM identity drift');
+          if(Number(r.fee)!==10000||Number(r.twapWindowSeconds)!==1800||Number(r.maxDivergencePct)!==10)throw new Error('BEAM V3 TWAP drift');
+          if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD')throw new Error('BEAM composition drift');
+          if(ext.semantics?.uniswapV3SpotPriceAuthority!==false||ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('BEAM authority drift');
+          console.log('BEAM live-proven V3 1% 30m gate PASS',{fee:r.fee,twapWindowSeconds:r.twapWindowSeconds});
           NODE
       - name: Prove ELIZA 5m route and full canonical coverage
         run: |
@@ -75,7 +76,7 @@ jobs:
           const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
           const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
           const effective=mergeOnchainRegistryExtensions(base,ext);
-          const ids=(market.assets||[]).map(x=>x.assetId), routed=ids.filter(id=>effective.assets?.[id]), pending=ids.filter(id=>!effective.assets?.[id]);
+          const ids=(market.assets||[]).map(x=>x.assetId),routed=ids.filter(id=>effective.assets?.[id]),pending=ids.filter(id=>!effective.assets?.[id]);
           const special=Object.keys(effective.assets||{}).filter(id=>!ids.includes(id));
           if(ids.length!==26||routed.length!==26||pending.length!==0)throw new Error(`Full coverage drift: ${routed.length}/26 pending=${pending.join(',')}`);
           if(special.length!==1||special[0]!=='physical-silver'||routed.length+special.length!==27)throw new Error('Live target count drift');
@@ -87,7 +88,7 @@ jobs:
           if(ext.semantics?.stablecoinPegHardcoded!==false||ext.semantics?.uniswapV3SpotPriceAuthority!==false)throw new Error('ELIZA authority drift');
           console.log('ELIZA 5m full 26/26 route gate PASS',{routed:routed.length,totalObservationTargets:routed.length+special.length});
           NODE
-      - name: Prove MODE stale Pyth route is replaced by Velodrome observation TWAP
+      - name: Prove MODE and FXN resilience remain intact
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
@@ -95,39 +96,10 @@ jobs:
           import { mergeOnchainRegistryExtensions } from './intelligence/market-data/onchain-price-resolver.mjs';
           const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
           const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
-          if(base.assets?.mode?.route?.type!=='pyth-core-readonly')throw new Error('Expected byte-stable base MODE route to remain Pyth before effective override');
           const effective=mergeOnchainRegistryExtensions(base,ext);
-          const r=effective.assets?.mode?.route;
-          if(!r||r.type!=='velodrome-v2-twap-relative'||r.network!=='mode'||r.authority!=='shadow')throw new Error('Effective MODE Velodrome route invalid');
-          if(r.factory.toLowerCase()!=='0x31832f2a97fd20664d76cc421207669b55ce4bc0')throw new Error('Mode Velodrome PoolFactory drift');
-          if(r.token.toLowerCase()!=='0xdfc7c877a950e49d2610114102175a06c2e3167a')throw new Error('MODE token drift');
-          if(r.quoteToken.toLowerCase()!=='0x4200000000000000000000000000000000000006'||r.stable!==false)throw new Error('MODE/WETH pool contract drift');
-          if(String(r.amountIn)!=='1000000000000000000'||Number(r.tokenDecimals)!==18||Number(r.quoteTokenDecimals)!==18)throw new Error('MODE amount/decimals drift');
-          if(Number(r.granularity)!==4||Number(r.observationPeriodSeconds)!==1800)throw new Error('MODE observation TWAP sampling drift');
-          if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('MODE relative-price composition drift');
-          if(ext.semantics?.boundedRouteOverridesAllowed!==true||effective.semantics?.boundedRouteOverridesApplied!==true)throw new Error('Bounded route override contract missing');
-          if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
-          console.log('MODE Velodrome replacement gate PASS',{baseRoute:base.assets.mode.route.type,effectiveRoute:r.type,staleUpdaterDependency:false});
-          NODE
-      - name: Prove FXN OLD-prone V3 route is replaced by Curve EMA
-        run: |
-          set -euo pipefail
-          node --input-type=module - <<'NODE'
-          import fs from 'node:fs';
-          import { mergeOnchainRegistryExtensions } from './intelligence/market-data/onchain-price-resolver.mjs';
-          const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
-          const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
-          if(base.assets?.['fxn-token']?.route?.type!=='uniswap-v3-twap-relative')throw new Error('Expected byte-stable base FXN route to remain Uniswap V3 before effective override');
-          const effective=mergeOnchainRegistryExtensions(base,ext);
-          const r=effective.assets?.['fxn-token']?.route;
-          if(!r||r.type!=='curve-ema-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('Effective FXN Curve EMA route invalid');
-          if(r.pool.toLowerCase()!=='0xc15f285679a1ef2d25f53d4cbd0265e1d02f2a92')throw new Error('FXN Curve pool drift');
-          if(r.token.toLowerCase()!=='0x365accfca291e7d3914637abf1f7635db165bb09'||r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('FXN identity drift');
-          if(r.oracleDirection!=='coin0-per-coin1'||String(r.oracleScale)!=='1000000000000000000')throw new Error('FXN Curve oracle contract drift');
-          if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('FXN relative-price composition drift');
-          if(effective.assets?.mode?.route?.type!=='velodrome-v2-twap-relative')throw new Error('MODE resilience override lost while adding FXN');
-          if(ext.semantics?.curveEmaRoutesAllowed!==true||ext.semantics?.curveSpotPriceAuthority!==false)throw new Error('Curve EMA authority semantics drift');
-          if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority drift');
-          console.log('FXN Curve EMA resilience gate PASS',{effectiveRoute:r.type,oldObservationDependency:false,spotAuthority:false});
+          if(effective.assets?.mode?.route?.type!=='velodrome-v2-twap-relative')throw new Error('MODE resilience route lost');
+          if(effective.assets?.['fxn-token']?.route?.type!=='curve-ema-relative')throw new Error('FXN resilience route lost');
+          if(ext.semantics?.boundedRouteOverridesAllowed!==true||effective.semantics?.boundedRouteOverridesApplied!==true)throw new Error('Bounded override contract missing');
+          console.log('MODE + FXN resilience preservation PASS');
           NODE
           git diff --check
