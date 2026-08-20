@@ -1,7 +1,7 @@
 {
-  "version": "0.4-market-data-bounded-onchain-primary-pilot",
-  "engineVersion": "0.4-per-asset-authority-materializer-btc-eth",
-  "generatedAt": "2026-08-20T10:03:17.534Z",
+  "version": "0.5-market-data-bounded-direct-oracle-cohort",
+  "engineVersion": "0.5-per-asset-authority-materializer-btc-eth-aero-pendle",
+  "generatedAt": "2026-08-20T10:17:53.761Z",
   "requestedAt": "2026-08-20T09:47:10.237Z",
   "observedAt": "2026-08-20T09:47:10.540Z",
   "status": "ok",
@@ -18,6 +18,7 @@
     "canonicalMirrorEqualsCoinGeckoSourceLane": false,
     "perAssetAuthoritySelectionApplied": true,
     "boundedOnchainPrimaryPilot": true,
+    "directChainlinkUsdCohortOnly": true,
     "coinGeckoRemainsFallbackAndSanityCheck": true,
     "automaticCohortExpansionAllowed": false,
     "cycleForcedCoinGeckoFailback": false
@@ -43,30 +44,30 @@
       "assetId": "bitcoin",
       "symbol": "BTC",
       "providerId": "bitcoin",
-      "usd": 71886.2,
+      "usd": 71954.332,
       "status": "fresh",
-      "observedAt": "2026-08-20T10:03:16.477Z",
+      "observedAt": "2026-08-20T10:17:51.131Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-20T10:03:16.477Z"
+        "sourceSnapshotGeneratedAt": "2026-08-20T10:17:51.131Z"
       }
     },
     "ethereum": {
       "assetId": "ethereum",
       "symbol": "ETH",
       "providerId": "ethereum",
-      "usd": 2277.01241373,
+      "usd": 2291.39,
       "status": "fresh",
-      "observedAt": "2026-08-20T10:03:16.477Z",
+      "observedAt": "2026-08-20T10:17:51.131Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-20T10:03:16.477Z"
+        "sourceSnapshotGeneratedAt": "2026-08-20T10:17:51.131Z"
       }
     },
     "tether-gold": {
@@ -88,15 +89,15 @@
       "assetId": "aerodrome-finance",
       "symbol": "AERO",
       "providerId": "aerodrome-finance",
-      "usd": 0.471389,
+      "usd": 0.46965014,
       "status": "fresh",
-      "observedAt": "2026-08-20T09:47:10.540Z",
-      "source": "coingecko-single-batch",
+      "observedAt": "2026-08-20T10:17:51.131Z",
+      "source": "onchain-chainlink-v3",
       "authority": {
-        "requestedPrimary": "coingecko-lane",
-        "selectedLane": "coingecko-lane",
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-20T09:47:10.541Z"
+        "sourceSnapshotGeneratedAt": "2026-08-20T10:17:51.131Z"
       }
     },
     "convex-finance": {
@@ -133,15 +134,15 @@
       "assetId": "pendle",
       "symbol": "PENDLE",
       "providerId": "pendle",
-      "usd": 1.47,
+      "usd": 1.451207,
       "status": "fresh",
-      "observedAt": "2026-08-20T09:47:10.540Z",
-      "source": "coingecko-single-batch",
+      "observedAt": "2026-08-20T10:17:51.131Z",
+      "source": "onchain-chainlink-v3",
       "authority": {
-        "requestedPrimary": "coingecko-lane",
-        "selectedLane": "coingecko-lane",
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-20T09:47:10.541Z"
+        "sourceSnapshotGeneratedAt": "2026-08-20T10:17:51.131Z"
       }
     },
     "fxn-token": {
@@ -433,13 +434,15 @@
   "authority": {
     "productionPriceLane": "per-asset",
     "defaultProductionAuthority": "coingecko-lane",
-    "pilotCohortId": "direct-chainlink-usd-ethereum-v0.1",
+    "pilotCohortId": "direct-chainlink-usd-btc-eth-aero-pendle-v0.2",
     "pilotAssetIds": [
       "bitcoin",
-      "ethereum"
+      "ethereum",
+      "aerodrome-finance",
+      "pendle"
     ],
-    "onchainSelectedAssetCount": 2,
-    "coingeckoSelectedAssetCount": 24,
+    "onchainSelectedAssetCount": 4,
+    "coingeckoSelectedAssetCount": 22,
     "fallbackCount": 0,
     "unknownCount": 0,
     "readOnly": true,
@@ -449,7 +452,7 @@
   },
   "sourceState": {
     "coinGeckoGeneratedAt": "2026-08-20T09:47:10.541Z",
-    "onchainShadowGeneratedAt": "2026-08-20T10:03:16.477Z",
+    "onchainShadowGeneratedAt": "2026-08-20T10:17:51.131Z",
     "onchainShadowStatus": "partial",
     "forceCoinGeckoFailback": false
   }
