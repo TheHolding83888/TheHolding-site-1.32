@@ -1,20 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolveOnchainPrices as resolveLegacyOnchainPrices } from './onchain-price-resolver-v08.mjs';
+import { resolveOnchainPrices as resolveLegacyOnchainPrices, mergeOnchainRegistryExtensions } from './onchain-price-resolver-v09.mjs';
 import {
-  UNISWAP_V2_HISTORICAL_TWAP_ROUTE_TYPE,
-  resolveUniswapV2HistoricalTwapPrices,
-  UNISWAP_V2_HISTORICAL_TWAP_SELECTORS
-} from './onchain-uniswap-v2-historical-twap.mjs';
+  UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE,
+  resolveUniswapV3ChainlinkQuotePrices
+} from './onchain-uniswap-v3-chainlink-quote.mjs';
 
-export * from './onchain-price-resolver-v08.mjs';
-export { UNISWAP_V2_HISTORICAL_TWAP_ROUTE_TYPE, UNISWAP_V2_HISTORICAL_TWAP_SELECTORS } from './onchain-uniswap-v2-historical-twap.mjs';
+export * from './onchain-price-resolver-v09.mjs';
+export { UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE } from './onchain-uniswap-v3-chainlink-quote.mjs';
 
 /*
- * Backward-compatible composite contract markers for the existing fail-closed
- * validation workflow. The proven v0.8 implementation remains byte-stable in
- * onchain-price-resolver-v08.mjs; this thin v0.9 wrapper only adds the V2 lane.
+ * Backward-compatible validation markers. The complete proven v0.9 resolver
+ * is preserved byte-for-byte in onchain-price-resolver-v09.mjs; this v0.10
+ * wrapper adds only a Chainlink-quoted Uniswap V3 lane.
  *
  * pyth-core-readonly
  * 96834ad3
@@ -43,37 +42,23 @@ function readJson(file, fallback = null) {
   catch { return fallback; }
 }
 
-export function mergeOnchainRegistryExtensions(baseRegistry, extensionRegistry) {
-  if (!extensionRegistry) return baseRegistry;
-  const extensionAssets = extensionRegistry.assets || {};
-  const duplicateIds = Object.keys(extensionAssets).filter(id => baseRegistry?.assets?.[id]);
-  if (duplicateIds.length) throw new Error(`Onchain extension duplicates canonical route ids: ${duplicateIds.join(', ')}`);
-  return {
-    ...baseRegistry,
-    version: extensionRegistry.effectiveRegistryVersion || baseRegistry.version,
-    semantics: { ...(baseRegistry.semantics || {}), ...(extensionRegistry.semantics || {}) },
-    assets: { ...(baseRegistry.assets || {}), ...extensionAssets }
-  };
-}
-
-function mergeV2NetworkTelemetry(baseNetworks, v2Networks) {
-  const merged = { ...baseNetworks };
-  for (const [networkId, v2] of Object.entries(v2Networks || {})) {
+function mergeNetworkTelemetry(baseNetworks, quoteNetworks) {
+  const merged = { ...(baseNetworks || {}) };
+  for (const [networkId, quote] of Object.entries(quoteNetworks || {})) {
     const base = merged[networkId];
-    if (!base) { merged[networkId] = v2; continue; }
+    if (!base) { merged[networkId] = quote; continue; }
     merged[networkId] = {
       ...base,
-      routeCount: Number(base.routeCount || 0) + Number(v2.routeCount || 0),
-      batchCallCount: Number(base.batchCallCount || 0) + Number(v2.batchCallCount || 0),
-      httpBatchRequestCount: Number(base.httpBatchRequestCount || 0) + Number(v2.httpBatchRequestCount || 0),
-      rpcFailoverAttempts: Number(base.rpcFailoverAttempts || 0) + Number(v2.rpcFailoverAttempts || 0),
-      protocolReadPhases: Math.max(Number(base.protocolReadPhases || 1), Number(v2.protocolReadPhases || 1)),
-      uniswapV2HistoricalTwapRouteCount: v2.uniswapV2HistoricalTwapRouteCount,
-      uniswapV2HistoricalTwapBatchCallCount: v2.uniswapV2HistoricalTwapBatchCallCount,
-      uniswapV2BlockEndpointId: v2.uniswapV2BlockEndpointId,
-      uniswapV2HistoricalTwapEndpointId: v2.uniswapV2HistoricalTwapEndpointId,
-      uniswapV2CurrentBlockTag: v2.uniswapV2CurrentBlockTag,
-      historicalStateReads: v2.historicalStateReads === true
+      routeCount: Number(base.routeCount || 0) + Number(quote.routeCount || 0),
+      batchCallCount: Number(base.batchCallCount || 0) + Number(quote.batchCallCount || 0),
+      httpBatchRequestCount: Number(base.httpBatchRequestCount || 0) + Number(quote.httpBatchRequestCount || 0),
+      rpcFailoverAttempts: Number(base.rpcFailoverAttempts || 0) + Number(quote.rpcFailoverAttempts || 0),
+      protocolReadPhases: Math.max(Number(base.protocolReadPhases || 1), Number(quote.protocolReadPhases || 1)),
+      chainlinkQuotedUniswapV3RouteCount: quote.routeCount,
+      chainlinkQuoteDependencyRouteCount: quote.chainlinkQuoteDependencyRouteCount,
+      chainlinkQuoteDependencyEndpointId: quote.chainlinkQuoteDependencyEndpointId,
+      chainlinkQuoteDependencyBlockTag: quote.chainlinkQuoteDependencyBlockTag,
+      onchainTokenDecimalsRead: quote.onchainTokenDecimalsRead === true
     };
   }
   return merged;
@@ -81,53 +66,45 @@ function mergeV2NetworkTelemetry(baseNetworks, v2Networks) {
 
 export async function resolveOnchainPrices({ registry, marketData = null, fetchImpl = fetch, nowMs = Date.now() }) {
   if (!registry?.assets || !registry?.networks) throw new Error('Onchain source registry missing or invalid');
-  const v2Assets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => asset?.route?.type === UNISWAP_V2_HISTORICAL_TWAP_ROUTE_TYPE));
-  const legacyAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => asset?.route?.type !== UNISWAP_V2_HISTORICAL_TWAP_ROUTE_TYPE));
-  const legacyRegistry = { ...registry, assets: legacyAssets };
-  const legacy = await resolveLegacyOnchainPrices({ registry: legacyRegistry, marketData, fetchImpl, nowMs });
+  const quoteAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => asset?.route?.type === UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE));
+  const legacyAssets = Object.fromEntries(Object.entries(registry.assets).filter(([, asset]) => asset?.route?.type !== UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE));
+  const legacy = await resolveLegacyOnchainPrices({ registry: { ...registry, assets: legacyAssets }, marketData, fetchImpl, nowMs });
+  if (Object.keys(quoteAssets).length === 0) return legacy;
 
-  if (Object.keys(v2Assets).length === 0) return legacy;
-
-  const v2Registry = { ...registry, assets: v2Assets };
-  const v2 = await resolveUniswapV2HistoricalTwapPrices({
-    registry: v2Registry,
-    marketData,
-    coreObservations: legacy.observations,
-    fetchImpl,
-    nowMs
-  });
-
+  const quote = await resolveUniswapV3ChainlinkQuotePrices({ registry: { ...registry, assets: quoteAssets }, marketData, fetchImpl, nowMs });
   const coverage = {
-    assetCount: Number(legacy.coverage?.assetCount || 0) + Number(v2.coverage?.assetCount || 0),
-    okCount: Number(legacy.coverage?.okCount || 0) + Number(v2.coverage?.okCount || 0),
-    warningCount: Number(legacy.coverage?.warningCount || 0) + Number(v2.coverage?.warningCount || 0),
-    unavailableCount: Number(legacy.coverage?.unavailableCount || 0) + Number(v2.coverage?.unavailableCount || 0)
+    assetCount: Number(legacy.coverage?.assetCount || 0) + Number(quote.coverage?.assetCount || 0),
+    okCount: Number(legacy.coverage?.okCount || 0) + Number(quote.coverage?.okCount || 0),
+    warningCount: Number(legacy.coverage?.warningCount || 0) + Number(quote.coverage?.warningCount || 0),
+    unavailableCount: Number(legacy.coverage?.unavailableCount || 0) + Number(quote.coverage?.unavailableCount || 0)
   };
-  const networks = mergeV2NetworkTelemetry(legacy.networks, v2.networks);
+  const networks = mergeNetworkTelemetry(legacy.networks, quote.networks);
   const rpcEfficiency = {
-    networkCount: new Set([...Object.keys(legacy.networks || {}), ...Object.keys(v2.networks || {})]).size,
-    routeCount: Number(legacy.rpcEfficiency?.routeCount || 0) + Number(v2.rpcEfficiency?.routeCount || 0),
-    httpBatchRequestCount: Number(legacy.rpcEfficiency?.httpBatchRequestCount || 0) + Number(v2.rpcEfficiency?.httpBatchRequestCount || 0)
+    networkCount: new Set([...Object.keys(legacy.networks || {}), ...Object.keys(quote.networks || {})]).size,
+    routeCount: Number(legacy.rpcEfficiency?.routeCount || 0) + Number(quote.rpcEfficiency?.routeCount || 0),
+    httpBatchRequestCount: Number(legacy.rpcEfficiency?.httpBatchRequestCount || 0) + Number(quote.rpcEfficiency?.httpBatchRequestCount || 0)
   };
 
   return {
     ...legacy,
-    version: '0.9-onchain-price-shadow-uniswap-v2-historical-twap',
-    engineVersion: '0.9-composite-v08-plus-uniswap-v2-historical-twap-resolver',
+    version: '0.10-onchain-price-shadow-v3-chainlink-quote',
+    engineVersion: '0.10-composite-v09-plus-v3-chainlink-quote-resolver',
     generatedAt: new Date(nowMs).toISOString(),
     status: coverage.unavailableCount > 0 ? 'partial' : coverage.warningCount > 0 ? 'warning' : 'ok',
     semantics: {
       ...(legacy.semantics || {}),
-      uniswapV2HistoricalTwapRoutes: true,
-      uniswapV2HistoricalStateReads: true,
-      uniswapV2ExternalUpdaterDependency: false,
-      uniswapV2SpotPriceAuthority: false,
+      uniswapV3ChainlinkQuoteRoutes: true,
+      chainlinkQuoteFreshnessChecked: true,
+      chainlinkQuoteRoundIntegrityChecked: true,
+      tokenDecimalsReadOnchain: true,
+      stablecoinPegHardcoded: false,
+      uniswapV3SpotPriceAuthority: false,
       dexSpotPriceAuthority: false
     },
     rpcEfficiency,
     coverage,
     networks,
-    observations: { ...(legacy.observations || {}), ...(v2.observations || {}) },
+    observations: { ...(legacy.observations || {}), ...(quote.observations || {}) },
     authority: { readOnly: true, executionAuthority: 'none', capitalExecution: false, policyMutationAuthority: false }
   };
 }
