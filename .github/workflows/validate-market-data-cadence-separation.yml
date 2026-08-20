@@ -1,0 +1,79 @@
+name: "Validate Market Data Cadence Separation"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/market-data/market-data-engine.mjs'
+      - '.github/workflows/market-data-refresh.yml'
+      - '.github/workflows/market-data-coingecko-daily.yml'
+      - '.github/workflows/validate-market-data-cadence-separation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Validate engine syntax and workflow contracts
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/market-data-engine.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const heartbeat=fs.readFileSync('.github/workflows/market-data-refresh.yml','utf8');
+          const daily=fs.readFileSync('.github/workflows/market-data-coingecko-daily.yml','utf8');
+          if(!heartbeat.includes("cron: '7,37 * * * *'"))throw new Error('Onchain heartbeat must remain every 30 minutes');
+          if(!daily.includes("cron: '12 3 * * *'"))throw new Error('CoinGecko baseline must remain once daily');
+          if(!heartbeat.includes('group: shared-market-data-refresh')||!daily.includes('group: shared-market-data-refresh'))throw new Error('Market Data writers must share concurrency group');
+          if(!daily.includes("MARKET_DATA_DAILY_REFRESH: 'true'"))throw new Error('Daily CoinGecko explicit override missing');
+          if(daily.includes('node intelligence/market-data/onchain-price-resolver.mjs'))throw new Error('Daily CoinGecko workflow must not perform onchain RPC observation');
+          if(!daily.includes('ELIZA daily CoinGecko authority unavailable'))throw new Error('ELIZA daily authority validation missing');
+          console.log('Static cadence contract PASS');
+          NODE
+
+      - name: Prove scheduled onchain heartbeat performs zero CoinGecko requests
+        run: |
+          set -euo pipefail
+          before=$(sha256sum intelligence/market-data/market-data-coingecko.json | awk '{print $1}')
+          GITHUB_EVENT_NAME='schedule' MARKET_DATA_FORCE_REFRESH='true' MARKET_DATA_DAILY_REFRESH='false' node intelligence/market-data/market-data-engine.mjs
+          after=$(sha256sum intelligence/market-data/market-data-coingecko.json | awk '{print $1}')
+          test "$before" = "$after"
+          git checkout -- intelligence/market-data/market-data.json intelligence/market-data/market-data-coingecko.json
+          echo 'Scheduled onchain heartbeat zero-request reuse PASS'
+
+      - name: Prove daily override performs exactly one batch request
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          const registry=JSON.parse(fs.readFileSync('intelligence/market-data/market-price-registry.json','utf8'));
+          let fetchCount=0;
+          globalThis.fetch=async()=>{
+            fetchCount+=1;
+            const payload={};
+            for(const asset of registry.assets){payload[asset.providerId]={usd:1};}
+            return {ok:true,status:200,json:async()=>payload};
+          };
+          process.env.GITHUB_EVENT_NAME='schedule';
+          process.env.MARKET_DATA_DAILY_REFRESH='true';
+          process.env.MARKET_DATA_FORCE_REFRESH='true';
+          await import(`./intelligence/market-data/market-data-engine.mjs?cadence=${Date.now()}`);
+          if(fetchCount!==1)throw new Error(`Daily override expected exactly one batch request, got ${fetchCount}`);
+          const source=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
+          if(source.version!=='0.4-market-data-daily-coingecko-cadence')throw new Error('Daily cadence version not materialized');
+          if(source.semantics?.scheduledExternalFetchSuppressedByDefault!==true)throw new Error('Scheduled suppression semantics missing');
+          if(source.coverage?.freshCount!==registry.assets.length)throw new Error('Stub daily refresh did not cover full registry');
+          console.log('Daily one-batch override PASS',{fetchCount,assetCount:registry.assets.length});
+          NODE
+          git checkout -- intelligence/market-data/market-data.json intelligence/market-data/market-data-coingecko.json
+          git diff --check
