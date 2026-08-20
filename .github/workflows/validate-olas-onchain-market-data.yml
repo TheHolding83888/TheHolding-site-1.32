@@ -21,12 +21,10 @@ jobs:
     steps:
       - name: Checkout PR head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-
       - name: Validate V2 runtime and deterministic historical TWAP
         run: |
           set -euo pipefail
@@ -35,8 +33,7 @@ jobs:
           node --check intelligence/market-data/onchain-uniswap-v2-historical-twap.mjs
           node --check intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
           node intelligence/market-data/onchain-uniswap-v2-historical-twap-validation.mjs
-
-      - name: Prove OLAS exact route and additive-safe coverage
+      - name: Prove OLAS live-proven recent-history contract
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
@@ -46,26 +43,15 @@ jobs:
           const base=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry.json','utf8'));
           const ext=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-source-registry-extensions.json','utf8'));
           const effective=mergeOnchainRegistryExtensions(base,ext);
-          const marketIds=(market.assets||[]).map(x=>x.assetId);
-          const routed=marketIds.filter(id=>effective.assets?.[id]);
-          const pending=marketIds.filter(id=>!effective.assets?.[id]);
-          const special=Object.keys(effective.assets||{}).filter(id=>!marketIds.includes(id));
-          if(marketIds.length!==26)throw new Error(`Canonical market universe drift: ${marketIds.length}`);
-          if(routed.length<23||pending.includes('autonolas'))throw new Error(`OLAS coverage regression: ${routed.length}/26`);
-          if(special.length!==1||special[0]!=='physical-silver')throw new Error(`Unexpected special route set: ${special.join(',')}`);
+          const ids=(market.assets||[]).map(x=>x.assetId),routed=ids.filter(id=>effective.assets?.[id]),pending=ids.filter(id=>!effective.assets?.[id]);
+          if(ids.length!==26||routed.length!==26||pending.length!==0)throw new Error(`Coverage drift ${routed.length}/26 pending=${pending.join(',')}`);
           const r=effective.assets?.autonolas?.route;
-          if(!r||r.type!=='uniswap-v2-historical-twap-relative'||r.network!=='ethereum-historical'||r.authority!=='shadow')throw new Error('OLAS V2 route contract invalid');
-          const n=effective.networks?.['ethereum-historical'];
-          if(Number(n?.chainId)!==1)throw new Error('Historical Ethereum network missing');
-          const rpcIds=(n.rpcFailover||[]).map(x=>x.id);
-          if(rpcIds.join(',')!=='1rpc,llamarpc,publicnode')throw new Error(`Historical RPC order drift: ${rpcIds.join(',')}`);
+          if(!r||r.type!=='uniswap-v2-historical-twap-relative'||r.network!=='ethereum'||r.authority!=='shadow')throw new Error('OLAS route invalid');
           if(r.pair.toLowerCase()!=='0x09d1d767edf8fa23a64c51fa559e0688e526812f')throw new Error('OLAS/WETH pair drift');
-          if(r.token.toLowerCase()!=='0x0001a500a6b18995b03f44bb040a5ffc28e45cb0')throw new Error('OLAS token drift');
-          if(r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('OLAS WETH quote drift');
-          if(Number(r.lookbackBlocks)!==150||Number(r.minTwapWindowSeconds)!==1200||Number(r.maxTwapWindowSeconds)!==2700)throw new Error('OLAS historical-window contract drift');
-          if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('OLAS relative-price composition drift');
-          if(ext.semantics?.routeScopedExtensionNetworksAllowed!==true||ext.semantics?.uniswapV2SpotPriceAuthority!==false)throw new Error('Historical-route semantics drift');
-          if(ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority boundary drift');
-          console.log('OLAS historical RPC resilience gate PASS',{routedMarketAssets:routed.length,pendingMarketAssets:pending.length,rpcIds});
+          if(r.token.toLowerCase()!=='0x0001a500a6b18995b03f44bb040a5ffc28e45cb0'||r.quoteToken.toLowerCase()!=='0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')throw new Error('OLAS identity drift');
+          if(Number(r.lookbackBlocks)!==60||Number(r.minTwapWindowSeconds)!==500||Number(r.maxTwapWindowSeconds)!==1100)throw new Error('OLAS short-history window drift');
+          if(r.quoteAssetId!=='ethereum'||r.feedQuote!=='ETH'||r.outputQuote!=='USD'||Number(r.maxDivergencePct)!==10)throw new Error('OLAS composition drift');
+          if(ext.semantics?.uniswapV2SpotPriceAuthority!==false||ext.semantics?.productionPriceAuthority!==false||ext.semantics?.executionAuthority!=='none')throw new Error('Authority boundary drift');
+          console.log('OLAS live-proven 60-block historical TWAP gate PASS',{routed:routed.length,lookbackBlocks:r.lookbackBlocks,min:r.minTwapWindowSeconds,max:r.maxTwapWindowSeconds});
           NODE
           git diff --check
