@@ -70,6 +70,9 @@
     ?'Компания The Holding Standard с резервным капиталом и продуктивными позициями в Aave, Stake DAO, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X и Concentrator.'
     :'A The Holding Standard company combining reserve capital with productive positions across Aave, Stake DAO, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X and Concentrator.';}
 
+  /* Capital State still exposes measuredCapitalFloorUsd as a valid state-semantic field.
+     It is intentionally NOT presentation authority for Combined TVL or General Index Network Value;
+     fast public summary values stay on the shared Public Capital / INDEX_STATE plane. */
   function canonicalNetworkTvl(){
     const net=window.__TH_CAPITAL_STATE__?.network;
     if(!net)return null;
