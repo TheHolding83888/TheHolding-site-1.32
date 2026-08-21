@@ -82,9 +82,11 @@ jobs:
           const workflow=fs.readFileSync('.github/workflows/market-data-refresh.yml','utf8');
           const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
           const materializer=fs.readFileSync('intelligence/market-data/market-data-authority-materializer.mjs','utf8');
+          const sourceStep='Reuse daily CoinGecko source lane without external request';
           const required=[
             "cron: '7,37 * * * *'",
-            'Reuse isolated CoinGecko source lane on scheduled heartbeat',
+            sourceStep,
+            "MARKET_DATA_DAILY_REFRESH: 'false'",
             'Observe all onchain prices',
             'Materialize per-asset production authority',
             "MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'",
@@ -97,12 +99,12 @@ jobs:
           for(const [id,row] of Object.entries(policy.assetOverrides||{}))if(row.requestedPrimary!=='onchain')throw new Error(`${id}: not onchain-primary`);
           if(policy.semantics?.automaticPolicyMutationAllowed!==false||policy.semantics?.automaticCohortExpansionAllowed!==false||policy.semantics?.executionAuthority!=='none')throw new Error('Authority mutation/execution boundary drift');
           if(!materializer.includes('reviewedOnchainSelectedAssetCount')||!materializer.includes('coingeckoSelectedAssetCount'))throw new Error('26-asset per-lane materializer accounting missing');
-          const sourceIndex=workflow.indexOf('Reuse isolated CoinGecko source lane on scheduled heartbeat');
+          const sourceIndex=workflow.indexOf(sourceStep);
           const shadowIndex=workflow.indexOf('Observe all onchain prices');
           const materializerIndex=workflow.indexOf('Materialize per-asset production authority');
           const publicIndex=workflow.indexOf('Rebuild public fund + company capital view');
           if(!(sourceIndex>=0&&shadowIndex>sourceIndex&&materializerIndex>shadowIndex&&publicIndex>materializerIndex))throw new Error('Heartbeat order drift');
-          console.log('30-minute onchain heartbeat + per-asset failback contract PASS',{canonicalOnchainPrimary:26,cycleWideFailback:false,executionAuthority:'none'});
+          console.log('30-minute onchain heartbeat + strict daily CoinGecko reuse + per-asset failback contract PASS',{canonicalOnchainPrimary:26,cycleWideFailback:false,nonDailyCoinGeckoFetch:false,executionAuthority:'none'});
           NODE
 
       - name: Live-prove 27 observation routes remain healthy

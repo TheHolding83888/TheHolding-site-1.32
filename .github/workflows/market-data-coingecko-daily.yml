@@ -39,7 +39,6 @@ jobs:
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           MARKET_DATA_DAILY_REFRESH: 'true'
-          MARKET_DATA_FORCE_REFRESH: 'true'
         run: node intelligence/market-data/market-data-engine.mjs
 
       - name: Materialize production authority from latest Shadow
@@ -59,9 +58,11 @@ jobs:
           const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const registry=JSON.parse(fs.readFileSync('intelligence/market-data/market-price-registry.json','utf8'));
-          if(source.version!=='0.4-market-data-daily-coingecko-cadence')throw new Error('Daily CoinGecko cadence version missing');
-          if(source.semantics?.scheduledExternalFetchSuppressedByDefault!==true)throw new Error('Scheduled external suppression contract missing');
+          if(source.version!=='0.5-market-data-strict-daily-coingecko-cadence')throw new Error('Strict daily CoinGecko cadence version missing');
+          if(source.semantics?.externalFetchAllowedOnlyWhenDailyRefreshTrue!==true)throw new Error('Daily-only external fetch contract missing');
+          if(source.semantics?.nonDailyExternalFetchForbidden!==true)throw new Error('Non-daily CoinGecko prohibition missing');
           if(source.semantics?.dailyScheduledExternalRefreshRequiresExplicitOverride!==true)throw new Error('Daily explicit override contract missing');
+          if(Number(source.semantics?.staleFallbackMaxAgeHours)!==30)throw new Error('Daily fallback retention must be 30 hours');
           if(Number(source.coverage?.unknownCount)!==0)throw new Error('Daily CoinGecko baseline contains unknown assets');
           if((registry.assets||[]).length!==26)throw new Error('Canonical daily CoinGecko registry must contain 26 assets');
           for(const asset of registry.assets||[]){
@@ -75,7 +76,7 @@ jobs:
           if(market.sourceState?.coinGeckoGeneratedAt!==source.generatedAt)throw new Error('Canonical state not bound to fresh daily CoinGecko baseline');
           if(market.authority?.executionAuthority!=='none'||pub.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
           if(market.authority?.capitalExecution!==false||market.authority?.policyMutationAuthority!==false)throw new Error('Authority boundary drift');
-          console.log('Daily CoinGecko sanity/fallback baseline PASS',{
+          console.log('Strict daily CoinGecko sanity/fallback baseline PASS',{
             generatedAt:source.generatedAt,
             canonicalAssetCount:registry.assets.length,
             onchainSelectedAssetCount:market.authority.onchainSelectedAssetCount,
