@@ -1,0 +1,88 @@
+{
+  "version": "0.1-icp-nns-shared-neuron-pool",
+  "asset": "ICP",
+  "network": "Internet Computer",
+  "positionType": "NNS Governance Neurons",
+  "trackingMethod": "public-neuron-ids-with-bounded-reward-estimate-fallback",
+  "controllerPrincipal": "e4hsg-rur7f-jh4mo-x2obk-axb7u-7ep53-hm6a2-qysjy-fbthr-7sbeu-bqe",
+  "liquidIcpAccountId": "c222d5dd723e0a555df495fc036cf1ea1585a042db71c6c275f1234e288c0839",
+  "allocation": {
+    "policy": "owner-declared-equal-economic-allocation",
+    "companies": {
+      "0x5860...83CA8.eth": 0.5,
+      "aerocvxyb.eth": 0.5
+    },
+    "capitalBoundary": "The NNS pool is already contained inside each company's canonical ICP balance. Never add this principal to Company TVL again."
+  },
+  "baseline": {
+    "snapshotDate": "2026-07-04",
+    "visibleNeuronCount": 41,
+    "activeStakedNeuronCount": 38,
+    "activeStakedIcp": 2332.7346939,
+    "manualUnstakedMaturityIcp": 21.48,
+    "firstUnlock": {
+      "dateUtc": "2026-08-03T03:10:54Z",
+      "amountIcp": 61.3877551,
+      "neuronId": "7305384784698965212"
+    }
+  },
+  "neuronIds": [
+    "10248259362740943718",
+    "10467849208014563318",
+    "11640715270476501687",
+    "12044476623558276241",
+    "13150847303204813782",
+    "13290058863190258180",
+    "13720962571627466012",
+    "13791939855282216079",
+    "14345758883138781272",
+    "147835002109692673",
+    "14869180739046851875",
+    "15372329710779311737",
+    "15853810816336572059",
+    "16673063376945140813",
+    "1674558566712364976",
+    "17385749764284996988",
+    "17656187421420951259",
+    "17775310199182278016",
+    "2136234960666729681",
+    "2174237087588941860",
+    "2197145171642012711",
+    "4302891061627543574",
+    "4414661911580115843",
+    "5410437019942911023",
+    "6073381567093984928",
+    "6079192649171836215",
+    "6111980491465219607",
+    "6617266926677044358",
+    "687405138566321417",
+    "7305384784698965212",
+    "7454573313248713870",
+    "7478471794993325891",
+    "7761420960000981621",
+    "7900682776960404755",
+    "8674359641332180667",
+    "8710925170502872538",
+    "8785205470814818118",
+    "8845785398744180835",
+    "9278539034171705442",
+    "9312462835669707953",
+    "9571697732744610063"
+  ],
+  "rewardPolicy": {
+    "referenceAprEngine": "icp_nns",
+    "exactUnstakedMaturityPreference": "Use public exact maturity only when coverage is complete enough to prove the aggregate.",
+    "fallback": "Owner-confirmed 2026-07-04 maturity snapshot plus simple accrual at the canonical NNS Reference APR over a bounded productive principal.",
+    "fallbackPrincipalRule": "If every neuron detail is live, use the lesser of the owner baseline active stake and current non-dissolved live stake; otherwise retain the owner baseline and mark the estimate partial.",
+    "classification": "unclaimed",
+    "claimAuthority": "none",
+    "executionAuthority": "none",
+    "unknownIsNotZero": true
+  },
+  "security": {
+    "readOnly": true,
+    "seedPhraseRequired": false,
+    "identityPemRequired": false,
+    "privateKeyRequired": false
+  }
+}
