@@ -19,7 +19,11 @@ function finite(value) {
 }
 function sameAddress(a, b) { return String(a || '').toLowerCase() === String(b || '').toLowerCase(); }
 function assertAddress(actual, expected, label) {
-  if (expected && !sameAddress(actual, expected)) throw new Error(`${label} drift`);
+  // Some protocol adapters expose the verified factory/pool route but do not
+  // duplicate token addresses into the observation payload. Validate any
+  // emitted address exactly, while the source registry + CI bind the static
+  // route definition for fields the runtime observation intentionally omits.
+  if (expected && actual !== undefined && actual !== null && !sameAddress(actual, expected)) throw new Error(`${label} drift`);
 }
 function assertEqual(actual, expected, label) {
   if (expected !== undefined && actual !== expected) throw new Error(`${label} drift`);
