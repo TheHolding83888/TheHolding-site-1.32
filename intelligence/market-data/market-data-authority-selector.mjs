@@ -25,27 +25,58 @@ function coingeckoLane(marketData, assetId) {
   };
 }
 
+function divergenceTelemetryOnly(policy) {
+  // CoinGecko is a daily fallback/sanity lane. A fresh, structurally valid
+  // onchain observation must not lose authority solely because the market has
+  // moved away from that older daily reference. Divergence stays visible in
+  // Shadow telemetry; stale/invalid/RPC/dependency failures still fail back.
+  return policy?.semantics?.coinGeckoRemainsFallbackAndSanityCheck === true;
+}
+
+function observationStatusEligible(policy, observation, override) {
+  const required = policy.onchainEligibility.requiredObservationStatus;
+  const status = observation?.status;
+  if (status === required) return true;
+  if (!divergenceTelemetryOnly(policy)) return false;
+  if (status === 'divergent') return true;
+  return status === 'dependency-warning'
+    && override?.requiredDependencyStatus === required
+    && observation?.dependencyStatus === 'divergent';
+}
+
+function dependencyStatusEligible(policy, observation, override) {
+  const required = override?.requiredDependencyStatus;
+  if (!required) return true;
+  if (observation?.dependencyStatus === required) return true;
+  return divergenceTelemetryOnly(policy)
+    && required === policy.onchainEligibility.requiredObservationStatus
+    && observation?.dependencyStatus === 'divergent';
+}
+
 function onchainLane(policy, shadow, assetId, nowMs) {
   const observation = shadow?.observations?.[assetId] || null;
   const usd = finite(observation?.usd);
   const snapshotAgeSeconds = isoAgeSeconds(shadow?.generatedAt, nowMs);
   const override = policy.assetOverrides?.[assetId] || {};
   // Runtime source/dependency health is eligibility, not structural route identity: failed checks fall back through policy order.
+  // Cross-source divergence against the daily CoinGecko cache is telemetry only; it is not evidence that a fresh onchain route failed.
   const checks = {
     snapshotMode: shadow?.mode === policy.onchainEligibility.requiredSnapshotMode,
-    observationStatus: observation?.status === policy.onchainEligibility.requiredObservationStatus,
+    observationStatus: observationStatusEligible(policy, observation, override),
     snapshotFresh: snapshotAgeSeconds <= Number(policy.onchainEligibility.maxShadowSnapshotAgeSeconds),
     finitePositiveUsd: policy.onchainEligibility.requireFinitePositiveUsd !== true || (usd !== null && usd > 0),
     snapshotNotProductionAuthority: policy.onchainEligibility.requireSnapshotProductionPriceAuthorityFalse !== true || shadow?.semantics?.productionPriceAuthority === false,
     observationNotProductionAuthority: policy.onchainEligibility.requireObservationProductionPriceAuthorityFalse !== true || observation?.productionPriceAuthority === false,
     noExecutionAuthority: policy.onchainEligibility.requireExecutionAuthorityNone !== true || shadow?.authority?.executionAuthority === 'none',
     requiredObservationSource: !override.requiredObservationSource || observation?.source === override.requiredObservationSource,
-    requiredDependencyStatus: !override.requiredDependencyStatus || observation?.dependencyStatus === override.requiredDependencyStatus,
+    requiredDependencyStatus: dependencyStatusEligible(policy, observation, override),
     requiredQuoteAssetId: !override.requiredQuoteAssetId || observation?.quoteAssetId === override.requiredQuoteAssetId,
     requiredFeedQuote: !override.requiredFeedQuote || observation?.feedQuote === override.requiredFeedQuote,
     requiredOutputQuote: !override.requiredOutputQuote || observation?.outputQuote === override.requiredOutputQuote
   };
   const eligible = Object.values(checks).every(Boolean);
+  const crossSourceDivergenceTelemetry = observation?.status === 'divergent'
+    || (observation?.status === 'dependency-warning' && observation?.dependencyStatus === 'divergent');
   return {
     lane: 'onchain-shadow',
     eligible,
@@ -55,7 +86,10 @@ function onchainLane(policy, shadow, assetId, nowMs) {
     source: observation?.source || null,
     snapshotAgeSeconds,
     checks,
-    reason: eligible ? 'onchain-shadow-eligible' : 'onchain-shadow-ineligible'
+    crossSourceDivergenceTelemetry,
+    reason: eligible
+      ? (crossSourceDivergenceTelemetry ? 'onchain-shadow-eligible-divergence-telemetry-only' : 'onchain-shadow-eligible')
+      : 'onchain-shadow-ineligible'
   };
 }
 
@@ -94,6 +128,7 @@ export function evaluateMarketDataAuthority({ policy, marketData, shadow, nowMs 
   let coingeckoSelectedCount = 0;
   let unknownCount = 0;
   let fallbackCount = 0;
+  let divergenceTelemetryCount = 0;
 
   for (const assetId of assetIds) {
     const row = selectMarketDataAuthority({ policy, marketData, shadow, assetId, nowMs });
@@ -102,16 +137,18 @@ export function evaluateMarketDataAuthority({ policy, marketData, shadow, nowMs 
     else if (row.selectedLane === 'coingecko-lane') coingeckoSelectedCount += 1;
     else unknownCount += 1;
     if (row.fallbackUsed) fallbackCount += 1;
+    if (row.selectedLane === 'onchain-shadow' && row.onchainCandidate?.crossSourceDivergenceTelemetry) divergenceTelemetryCount += 1;
   }
 
   return {
-    version: '0.2-market-data-authority-evaluation-dependency-aware',
+    version: '0.3-market-data-authority-evaluation-divergence-telemetry-aware',
     mode: policy.mode,
     generatedAt: new Date(nowMs).toISOString(),
     semantics: {
       dryRunOnly: policy.semantics?.productionWriterIntegrationEnabled === false,
       perAssetAuthority: true,
       dependencyAwareEligibility: true,
+      coinGeckoDivergenceTelemetryOnlyForHealthyOnchainPrimary: divergenceTelemetryOnly(policy),
       productionMutationPerformed: false,
       executionAuthority: 'none'
     },
@@ -120,7 +157,8 @@ export function evaluateMarketDataAuthority({ policy, marketData, shadow, nowMs 
       onchainSelectedCount,
       coingeckoSelectedCount,
       unknownCount,
-      fallbackCount
+      fallbackCount,
+      divergenceTelemetryCount
     },
     selections
   };
