@@ -37,15 +37,21 @@ jobs:
         working-directory: productivity
         run: npx playwright install chromium
 
-      - name: Ensure one reusable shared market-price snapshot
-        env:
-          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
-          MARKET_DATA_FORCE_REFRESH: 'false'
+      - name: Require canonical shared Market Data
         run: |
           set -euo pipefail
-          node --check intelligence/market-data/market-data-engine.mjs
           node --check intelligence/market-data/coingecko-fetch-shim.mjs
-          node intelligence/market-data/market-data-engine.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          const prices=m.prices||{};
+          if(m.semantics?.perAssetAuthoritySelectionApplied!==true)throw new Error('Productivity recovery refuses non-materialized Market Data');
+          if(Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Productivity recovery requires 26/26 onchain-selected Market Data');
+          for(const [id,row] of Object.entries(prices)){
+            if(row?.authority?.selectedLane!=='onchain'||row?.authority?.fallbackUsed!==false||!String(row?.source||'').startsWith('onchain-'))throw new Error(`${id}: canonical onchain authority unavailable`);
+          }
+          console.log('Productivity recovery canonical Market Data PASS',{generatedAt:m.generatedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount});
+          NODE
 
       - name: Update protocol APRs and established company Productivity
         working-directory: productivity
@@ -104,7 +110,6 @@ jobs:
           git add \
             companies/productivity-data.json \
             companies/productivity-source-report.json \
-            intelligence/market-data/market-data.json \
             intelligence/market-data/public-capital-state.json
           if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
           git commit -m "data: update weekly productivity snapshot"
@@ -115,8 +120,13 @@ jobs:
               echo "Safe writer guard: rebase conflict; refusing to guess."
               exit 1
             fi
-            COINGECKO_API_KEY='${{ secrets.COINGECKO_API_KEY }}' MARKET_DATA_FORCE_REFRESH='false' \
-              node intelligence/market-data/market-data-engine.mjs
+            node - <<'NODE'
+            const fs=require('fs');
+            const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+            const prices=m.prices||{};
+            if(m.semantics?.perAssetAuthoritySelectionApplied!==true||Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Canonical Market Data lost during Productivity recovery rebase');
+            for(const [id,row] of Object.entries(prices))if(row?.authority?.selectedLane!=='onchain'||row?.authority?.fallbackUsed!==false)throw new Error(`${id}: onchain authority lost during Productivity recovery rebase`);
+            NODE
             NODE_OPTIONS='--import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs' \
             ETH_RPC_URL='${{ secrets.ETH_RPC_URL }}' \
             BASE_RPC_URL='${{ secrets.BASE_RPC_URL }}' \
@@ -128,7 +138,6 @@ jobs:
             git add \
               companies/productivity-data.json \
               companies/productivity-source-report.json \
-              intelligence/market-data/market-data.json \
               intelligence/market-data/public-capital-state.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then exit 0; fi
