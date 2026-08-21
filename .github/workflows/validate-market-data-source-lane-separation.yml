@@ -9,8 +9,11 @@ on:
       - 'intelligence/market-data/market-data-validation-fixture.mjs'
       - 'intelligence/market-data/coingecko-fetch-shim.mjs'
       - 'intelligence/market-data/market-data-authority-policy.json'
+      - 'intelligence/market-data/market-data-authority-selector.mjs'
+      - 'intelligence/market-data/market-data-authority-selector-validation.mjs'
       - 'intelligence/market-data/market-data-authority-materializer.mjs'
       - '.github/workflows/market-data-refresh.yml'
+      - '.github/workflows/market-data-coingecko-daily.yml'
       - '.github/workflows/validate-market-data-source-lane-separation.yml'
   workflow_dispatch:
 
@@ -34,6 +37,9 @@ jobs:
           node --check intelligence/market-data/market-data-engine.mjs
           node --check intelligence/market-data/market-data-validation-fixture.mjs
           node --check intelligence/market-data/coingecko-fetch-shim.mjs
+          node --check intelligence/market-data/market-data-authority-selector.mjs
+          node --check intelligence/market-data/market-data-authority-selector-validation.mjs
+          node intelligence/market-data/market-data-authority-selector-validation.mjs
           node intelligence/market-data/market-data-validation-fixture.mjs
           node - <<'NODE'
           const fs=require('fs');
@@ -41,6 +47,9 @@ jobs:
           const canonical=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
           const shim=fs.readFileSync('intelligence/market-data/coingecko-fetch-shim.mjs','utf8');
+          const engine=fs.readFileSync('intelligence/market-data/market-data-engine.mjs','utf8');
+          const selector=fs.readFileSync('intelligence/market-data/market-data-authority-selector.mjs','utf8');
+          const dailyWorkflow=fs.readFileSync('.github/workflows/market-data-coingecko-daily.yml','utf8');
 
           // CoinGecko remains an isolated source/fallback lane. It must never
           // contain materialized onchain authority metadata.
@@ -56,6 +65,14 @@ jobs:
           if(shim.includes("const SNAPSHOT = path.join(__dirname, 'market-data-coingecko.json')"))throw new Error('Compatibility shim must not read isolated CoinGecko source lane');
           if(!shim.includes("'x-the-holding-external-request': '0'"))throw new Error('Compatibility shim zero-external-request proof missing');
 
+          // The daily source cache and production selector must share the same
+          // bounded 30h retention contract. A stale daily cache can never become
+          // indefinite production authority when an onchain route fails.
+          if(!engine.includes('const MAX_PREVIOUS_AGE_MS = 30 * 60 * 60 * 1000'))throw new Error('CoinGecko source retention is not locked to 30h');
+          if(!selector.includes('const MAX_COINGECKO_FALLBACK_AGE_SECONDS = 30 * 60 * 60'))throw new Error('Authority selector failback freshness is not locked to 30h');
+          if(!selector.includes('staleCoinGeckoFailbackForbidden: true'))throw new Error('Selector stale-failback prohibition marker missing');
+          if(!dailyWorkflow.includes("Number(source.semantics?.staleFallbackMaxAgeHours)!==30"))throw new Error('Daily workflow does not enforce 30h fallback retention');
+
           // The validation fixture is intentionally deterministic rather than
           // onchain-selected; its purpose here is to prove source separation.
           if(canonical.validationFixture!==true)throw new Error('Deterministic canonical validation fixture missing');
@@ -64,6 +81,6 @@ jobs:
           if(policy.defaultProductionAuthority!=='coingecko-lane')throw new Error('Unpromoted-asset fallback default drift');
           if(policy.semantics?.coinGeckoRemainsFallbackAndSanityCheck!==true)throw new Error('CoinGecko fallback/sanity contract missing');
           if(policy.globalOnchainPromotionEnabled!==true)throw new Error('Per-asset onchain promotion disabled');
-          console.log('CoinGecko fallback-lane isolation + canonical consumer authority PASS',{assetCount:26,pilot:policy.pilot?.assetIds});
+          console.log('CoinGecko fallback-lane isolation + canonical consumer authority PASS',{assetCount:26,failbackMaxAgeHours:30,pilot:policy.pilot?.assetIds});
           NODE
           git diff --check
