@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-21T18:19:59.816Z",
+  "generatedAt": "2026-08-21T18:47:46.017Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 40,
+    "medium": 38,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 527,
-    "bytesScanned": 11151853,
+    "bytesScanned": 11157701,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 20 Aug 2026 10:16:30 GMT",
+        "lastModified": "Thu, 20 Aug 2026 05:27:20 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "d524b1a31580ebf200f0c7a321b5f584f18a4cb3cf920d7d448354900d5952db",
         "severity": "medium",
@@ -84,8 +85,7 @@
           "currentSha256": "208ca75cfa060e3e93c5377c73b4497cc88fdbf7816590f2ecd8f7d5828ffb33"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -153,34 +153,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "d524b1a31580ebf200f0c7a321b5f584f18a4cb3cf920d7d448354900d5952db",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": "index.html",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: index.html.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "d48da625f250a05e1b77e5cd06d5d4be36892f5e9f89e0e800160074fe80f26a",
-        "currentSha256": "de97c5b6eee9421087ee3bd308b980eff6746a13372b0a80707070ed600222c5"
-      }
-    },
-    {
-      "id": "74e55391cec8bf2b4ce736928e08a19e1e8c1dce6f5d6e9ad940255897c6ffc1",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": "monetra/index.html",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: monetra/index.html.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "5432128763712b373cf7d7a8c69eb963caa0d49b25112905fb93a6af1d8e4a1b",
-        "currentSha256": "208ca75cfa060e3e93c5377c73b4497cc88fdbf7816590f2ecd8f7d5828ffb33"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -793,12 +765,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "fff56b94b4c623c8aa434f9b34db787a263b1ce93345a9f033ff9d16387739bc",
+    "snapshotHash": "7843812e7e24fd33f05e3456c29d358a0a74a19bc5eebeb9d7ee3a8120229817",
     "securityVault": {
-      "runCount": 386,
+      "runCount": 387,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-21T18-19-59-816Z-fff56b94b4.json",
-      "latestRecordHash": "49584019d8730a3c4b16b6b85a3075d42591938410f3c4f2f4057a53cb713fe9",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-21T18-47-46-017Z-7843812e7e.json",
+      "latestRecordHash": "965b5c2cf5689bfc5e2bef7143e596b259a61c632673e3e49eba0b570a11e3ce",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
