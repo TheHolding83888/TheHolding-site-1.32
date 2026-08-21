@@ -59,7 +59,7 @@ jobs:
           if(!xaut||xaut.type!=='uniswap-v3-twap-chainlink-quote'||xaut.network!=='ethereum'||Number(xaut.fee)!==500)throw new Error('XAUT token-market route missing');
           if(String(xaut.token||'').toLowerCase()!=='0x68749665ff8d2d112fa859aa293f07a622782f38'||String(xaut.quoteToken||'').toLowerCase()!=='0xdac17f958d2ee523a2206206994597c13d831ec7')throw new Error('XAUT/USDT token identity drift');
           if(String(xaut.quoteFeed?.contract||'').toLowerCase()!=='0x3e7d1eab13ad0104d2750b8863b489d65364e32d'||xaut.feedQuote!=='USDT'||xaut.outputQuote!=='USD')throw new Error('XAUT USDT/USD quote dependency drift');
-          if(/backing-reference proxy/i.test(xaut.provenance||''))throw new Error('XAUT provenance must explicitly replace, not reuse, the backing-reference proxy');
+          if(!/replaces the previous XAU\/USD backing-reference proxy/i.test(xaut.provenance||''))throw new Error('XAUT provenance must explicitly state token-market replacement of the backing-reference proxy');
           console.log('26-asset reviewed per-asset authority boundary PASS',{canonicalAssetCount:canonical.length,reviewedAssetCount:reviewed.length});
           NODE
           git diff --check
