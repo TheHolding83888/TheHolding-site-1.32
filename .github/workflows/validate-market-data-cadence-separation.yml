@@ -53,16 +53,7 @@ jobs:
           before=$(sha256sum intelligence/market-data/market-data-coingecko.json | awk '{print $1}')
           for event in schedule push workflow_dispatch; do
             rm -f /tmp/coingecko-fetch-called
-            EVENT="$event" node --input-type=module - <<'NODE'
-            import fs from 'node:fs';
-            globalThis.fetch=async()=>{
-              fs.writeFileSync('/tmp/coingecko-fetch-called','1');
-              throw new Error('CoinGecko fetch forbidden on non-daily path');
-            };
-            process.env.GITHUB_EVENT_NAME=process.env.EVENT;
-            process.env.MARKET_DATA_DAILY_REFRESH='false';
-            await import(`./intelligence/market-data/market-data-engine.mjs?nonDaily=${process.env.EVENT}-${Date.now()}`);
-            NODE
+            EVENT="$event" node --input-type=module -e "import fs from 'node:fs'; globalThis.fetch=async()=>{fs.writeFileSync('/tmp/coingecko-fetch-called','1'); throw new Error('CoinGecko fetch forbidden on non-daily path');}; process.env.GITHUB_EVENT_NAME=process.env.EVENT; process.env.MARKET_DATA_DAILY_REFRESH='false'; await import('./intelligence/market-data/market-data-engine.mjs?nonDaily='+process.env.EVENT+'-'+Date.now());"
             test ! -e /tmp/coingecko-fetch-called
             after=$(sha256sum intelligence/market-data/market-data-coingecko.json | awk '{print $1}')
             test "$before" = "$after"
