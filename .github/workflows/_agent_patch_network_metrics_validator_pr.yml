@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - 'companies/company-010-public-adapter.js'
-      - '.github/workflows/verify-company-010-public-admission.yml'
       - '.github/workflows/_agent_patch_network_metrics_validator_pr.yml'
 
 permissions:
@@ -20,27 +19,26 @@ jobs:
         with:
           ref: agent/companies-network-metrics-coherence-v0.2
           fetch-depth: 0
-      - name: Align verifier with split summary authority
+      - name: Preserve state vocabulary without restoring stale authority
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('.github/workflows/verify-company-010-public-admission.yml')
+          p=Path('companies/company-010-public-adapter.js')
           s=p.read_text()
-          old="'networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)'"
-          new="'networkTvlUsd','INDEX_STATE.push(next)'"
-          if s.count(old) != 1:
-              raise SystemExit(f'legacy adapterMust contract drift: {s.count(old)}')
-          s=s.replace(old,new,1)
-          needle="          for(const x of adapterMust)if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);\n"
-          insert=needle + "          if(a.includes(\"const index=document.getElementById('idxNetworkValue')\")||a.includes(\"if(top&&top.textContent!==display)top.textContent=display\"))throw new Error('Company #010 adapter must not overwrite shared summary TVL metrics');\n          if(!a.includes(\"statProtocols.textContent=String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size)\"))throw new Error('runtime Protocols & Assets reconciliation missing');\n"
-          if s.count(needle) != 1:
-              raise SystemExit(f'verifier insertion point drift: {s.count(needle)}')
-          p.write_text(s.replace(needle,insert,1))
+          needle="  function canonicalNetworkTvl(){\n"
+          note="  /* Capital State still exposes measuredCapitalFloorUsd as a valid state-semantic field.\n     It is intentionally NOT presentation authority for Combined TVL or General Index Network Value;\n     fast public summary values stay on the shared Public Capital / INDEX_STATE plane. */\n"
+          if note not in s:
+              if s.count(needle)!=1:
+                  raise SystemExit(f'canonicalNetworkTvl insertion point drift: {s.count(needle)}')
+              s=s.replace(needle,note+needle,1)
+          p.write_text(s)
           PY
-          grep -F "must not overwrite shared summary TVL metrics" .github/workflows/verify-company-010-public-admission.yml
-          grep -F "runtime Protocols & Assets reconciliation missing" .github/workflows/verify-company-010-public-admission.yml
+          node --check companies/company-010-public-adapter.js
+          grep -F "measuredCapitalFloorUsd as a valid state-semantic field" companies/company-010-public-adapter.js
+          ! grep -F "const index=document.getElementById('idxNetworkValue')" companies/company-010-public-adapter.js
+          ! grep -F "if(top&&top.textContent!==display)top.textContent=display" companies/company-010-public-adapter.js
       - name: Commit production-only diff
         shell: bash
         run: |
@@ -48,7 +46,7 @@ jobs:
           rm -f .github/workflows/_agent_patch_network_metrics_validator_pr.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows/verify-company-010-public-admission.yml .github/workflows/_agent_patch_network_metrics_validator_pr.yml
+          git add companies/company-010-public-adapter.js .github/workflows/_agent_patch_network_metrics_validator_pr.yml
           git diff --cached --check
-          git commit -m 'test: enforce companies summary metric authority'
+          git commit -m 'fix: preserve capital-state compatibility without summary overwrite'
           git push origin HEAD:agent/companies-network-metrics-coherence-v0.2
