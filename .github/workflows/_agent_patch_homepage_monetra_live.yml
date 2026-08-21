@@ -1,0 +1,201 @@
+name: Agent Patch Homepage Monetra Live Capital
+
+on:
+  push:
+    branches:
+      - agent/homepage-monetra-live-capital-v0.1
+    paths:
+      - '.github/workflows/_agent_patch_homepage_monetra_live.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-homepage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: agent/homepage-monetra-live-capital-v0.1
+          fetch-depth: 0
+
+      - name: Patch homepage to canonical Monetra capital
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          text = path.read_text()
+
+          replacements = {
+              '<div class="fund-metric-value" data-tvl="monetra">$800</div>': '<div class="fund-metric-value" data-tvl="monetra">Live</div>',
+              '<span class="pyramid-tvl" data-tvl-viz="monetra">$800</span>': '<span class="pyramid-tvl" data-tvl-viz="monetra">Live</span>',
+              '<span class="mfc-tvl" data-tvl-viz="monetra">$800</span>': '<span class="mfc-tvl" data-tvl-viz="monetra">Live</span>',
+          }
+          for old, new in replacements.items():
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'Expected exactly one homepage Monetra placeholder {old!r}, found {count}')
+              text = text.replace(old, new, 1)
+
+          old_constant = "        const MONETRA_TVL_CONTRIBUTION = 100;  // Added to total TVL; card displays static $800\n"
+          new_contract = r'''        // Monetra uses the same canonical Stable Companies snapshot as its Company Passport.
+          // No independent homepage balance or synthetic fallback is allowed here.
+          const MONETRA_STABLE_INDEX_URL = './companies/stable-index-data.json';
+          const MONETRA_CAPITAL_CACHE_KEY = 'theholding:monetra-current-capital:v1';
+          const MONETRA_CAPITAL_CACHE_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+
+          function parseMonetraCapitalSnapshot(data) {
+              if (!data || data.universe?.id !== 'stable-companies' || data.universe?.separateFromGeneralComposite !== true) {
+                  throw new Error('Monetra stable-index contract mismatch');
+              }
+              const companies = Array.isArray(data.companies) ? data.companies : [];
+              const company = companies.find(x => x?.registry === '008' && x?.name === 'Monetra.eth')
+                  || companies.find(x => x?.registry === '008');
+              const currentCapitalUsd = Number(company?.currentCapitalUsd ?? company?.performance?.currentCapitalUsd);
+              if (!Number.isFinite(currentCapitalUsd) || currentCapitalUsd < 0) {
+                  throw new Error('Monetra currentCapitalUsd unavailable');
+              }
+              return {
+                  currentCapitalUsd,
+                  generatedAt: data.generatedAt || company?.performance?.asOf || null,
+                  cachedAt: new Date().toISOString()
+              };
+          }
+
+          function readCachedMonetraCapital() {
+              try {
+                  const cached = JSON.parse(localStorage.getItem(MONETRA_CAPITAL_CACHE_KEY) || 'null');
+                  const currentCapitalUsd = Number(cached?.currentCapitalUsd);
+                  const cachedAtMs = Date.parse(cached?.cachedAt || '');
+                  if (!Number.isFinite(currentCapitalUsd) || currentCapitalUsd < 0 || !Number.isFinite(cachedAtMs)) return null;
+                  if (Date.now() - cachedAtMs > MONETRA_CAPITAL_CACHE_MAX_AGE_MS) return null;
+                  return cached;
+              } catch (_) {
+                  return null;
+              }
+          }
+
+          function writeCachedMonetraCapital(snapshot) {
+              try {
+                  localStorage.setItem(MONETRA_CAPITAL_CACHE_KEY, JSON.stringify(snapshot));
+              } catch (_) {}
+          }
+
+          async function loadMonetraCapitalSnapshot() {
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), 4000);
+              try {
+                  const res = await fetch(MONETRA_STABLE_INDEX_URL + '?t=' + Date.now(), {
+                      cache: 'no-store',
+                      signal: controller.signal
+                  });
+                  if (!res.ok) throw new Error('Monetra stable-index HTTP ' + res.status);
+                  const snapshot = parseMonetraCapitalSnapshot(await res.json());
+                  writeCachedMonetraCapital(snapshot);
+                  return snapshot;
+              } catch (error) {
+                  const cached = readCachedMonetraCapital();
+                  if (cached) {
+                      console.warn('Monetra canonical snapshot unavailable; using bounded cached snapshot', error);
+                      return cached;
+                  }
+                  console.warn('Monetra canonical capital unavailable', error);
+                  return null;
+              } finally {
+                  clearTimeout(timer);
+              }
+          }
+
+          function renderMonetraCapital(currentCapitalUsd) {
+              const label = Number.isFinite(currentCapitalUsd)
+                  ? `$${Math.round(currentCapitalUsd).toLocaleString()}`
+                  : 'Live';
+              document.querySelectorAll('[data-tvl="monetra"], [data-tvl-viz="monetra"]').forEach(el => {
+                  el.textContent = label;
+              });
+          }
+'''
+          if text.count(old_constant) != 1:
+              raise SystemExit(f'Expected one MONETRA_TVL_CONTRIBUTION constant, found {text.count(old_constant)}')
+          text = text.replace(old_constant, new_contract + '\n', 1)
+
+          old_prices = "                const prices = await cgPrices(ids.split(','));\n                if (!prices || Object.keys(prices).length === 0) {\n                    console.log('CoinGecko prices unavailable');\n                    return;\n                }\n"
+          new_prices = "                const [prices, monetraSnapshot] = await Promise.all([\n                    cgPrices(ids.split(',')),\n                    loadMonetraCapitalSnapshot()\n                ]);\n                const monetraCapitalUsd = Number(monetraSnapshot?.currentCapitalUsd);\n                const monetraCapitalKnown = Number.isFinite(monetraCapitalUsd) && monetraCapitalUsd >= 0;\n                renderMonetraCapital(monetraCapitalKnown ? monetraCapitalUsd : null);\n\n                if (!prices || Object.keys(prices).length === 0) {\n                    console.log('Market prices unavailable');\n                    return;\n                }\n"
+          if text.count(old_prices) != 1:
+              raise SystemExit(f'Expected one price loader block, found {text.count(old_prices)}')
+          text = text.replace(old_prices, new_prices, 1)
+
+          old_total = "                // Total TVL\n                const totalTVL = substantiaTVL + defiteaTVL + singulTVL + fructusTVL + MONETRA_TVL_CONTRIBUTION;\n"
+          new_total = "                // Total Capital includes Monetra only when canonical current capital is known.\n                // unknown != zero: if Monetra cannot be resolved, the aggregate is not published as complete.\n                const totalTVL = monetraCapitalKnown\n                    ? substantiaTVL + defiteaTVL + singulTVL + fructusTVL + monetraCapitalUsd\n                    : null;\n"
+          if text.count(old_total) != 1:
+              raise SystemExit(f'Expected one total TVL block, found {text.count(old_total)}')
+          text = text.replace(old_total, new_total, 1)
+
+          old_render = "                document.querySelector('[data-metric=\"total-capital\"]').textContent = \n                    `$${Math.round(totalTVL).toLocaleString()}`;\n                \n                console.log('TVL updated:', {\n                    substantia: Math.round(substantiaTVL),\n                    defitea: Math.round(defiteaTVL),\n                    singul: Math.round(singulTVL),\n                    fructus: Math.round(fructusTVL),\n                    monetra: MONETRA_TVL_CONTRIBUTION,\n                    total: Math.round(totalTVL)\n                });\n"
+          new_render = "                document.querySelector('[data-metric=\"total-capital\"]').textContent = \n                    Number.isFinite(totalTVL) ? `$${Math.round(totalTVL).toLocaleString()}` : 'Live';\n                \n                console.log('TVL updated:', {\n                    substantia: Math.round(substantiaTVL),\n                    defitea: Math.round(defiteaTVL),\n                    singul: Math.round(singulTVL),\n                    fructus: Math.round(fructusTVL),\n                    monetra: monetraCapitalKnown ? Math.round(monetraCapitalUsd) : null,\n                    total: Number.isFinite(totalTVL) ? Math.round(totalTVL) : null\n                });\n"
+          if text.count(old_render) != 1:
+              raise SystemExit(f'Expected one total render/log block, found {text.count(old_render)}')
+          text = text.replace(old_render, new_render, 1)
+
+          # Deterministic anti-regression checks for the generated homepage.
+          assert 'MONETRA_TVL_CONTRIBUTION' not in text
+          assert '$800</div>' not in text
+          assert 'data-tvl-viz="monetra">$800' not in text
+          assert "const MONETRA_STABLE_INDEX_URL = './companies/stable-index-data.json';" in text
+          assert "company?.currentCapitalUsd ?? company?.performance?.currentCapitalUsd" in text
+          assert "document.querySelectorAll('[data-tvl=\"monetra\"], [data-tvl-viz=\"monetra\"]')" in text
+          assert 'substantiaTVL + defiteaTVL + singulTVL + fructusTVL + monetraCapitalUsd' in text
+          assert text.count('data-tvl="monetra"') == 1
+          assert text.count('data-tvl-viz="monetra"') == 2
+
+          path.write_text(text)
+          print('Homepage Monetra canonical capital patch applied')
+          PY
+
+      - name: Validate stable-index contract and inline JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+
+          stable = json.loads(Path('companies/stable-index-data.json').read_text())
+          assert stable.get('universe', {}).get('id') == 'stable-companies'
+          assert stable.get('universe', {}).get('separateFromGeneralComposite') is True
+          company = next((x for x in stable.get('companies', []) if x.get('registry') == '008'), None)
+          assert company and company.get('name') == 'Monetra.eth'
+          capital = company.get('currentCapitalUsd')
+          assert isinstance(capital, (int, float)) and capital >= 0
+          print('Canonical Monetra currentCapitalUsd:', capital)
+
+          html = Path('index.html').read_text()
+          scripts = re.findall(r'<script(?![^>]*\bsrc=)([^>]*)>(.*?)</script>', html, flags=re.S|re.I)
+          out = Path('/tmp/homepage-inline-js')
+          out.mkdir(exist_ok=True)
+          count = 0
+          for attrs, body in scripts:
+              if 'application/ld+json' in attrs.lower():
+                  continue
+              count += 1
+              (out / f'{count}.js').write_text(body)
+          print('Inline scripts extracted:', count)
+          PY
+          for file in /tmp/homepage-inline-js/*.js; do node --check "$file"; done
+
+      - name: Commit clean production diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/_agent_patch_homepage_monetra_live.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/_agent_patch_homepage_monetra_live.yml
+          git diff --cached --check
+          git commit -m "fix: bind homepage Monetra capital to canonical stable state"
+          git push origin HEAD:agent/homepage-monetra-live-capital-v0.1
