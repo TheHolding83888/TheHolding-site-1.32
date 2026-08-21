@@ -1,5 +1,5 @@
 # THE HOLDING — PROJECT MEMORY ROUTING INDEX
-## 2026-08-18 · task-aware retrieval map
+## 2026-08-18 · task-aware retrieval map · updated 2026-08-21
 
 > Purpose: give every new chat/model a deterministic answer to **“what project memory should I read for this exact kind of work?”** without forcing it to load every historical file.
 >
@@ -9,33 +9,31 @@
 
 # 1. THE MEMORY MODEL
 
-The Holding does not rely on one giant memory document. The canonical continuity system is layered:
+The Holding continuity system is layered:
 
 1. **`CURRENT.md`** — compact bootstrap and fresh subsystem summary.
 2. **Latest `THE_HOLDING_MASTER_CONTINUITY_*.md`** — deep current-state checkpoint and exact resume point.
 3. **Task-specific canons / context blocks** — durable knowledge loaded only when relevant.
-4. **Machine-readable subsystem state** — current economic/security/cognitive truth for the actual task.
-5. **Permanent Memory Vault + Git history** — append-only factual/history evidence when archaeology is necessary.
+4. **Machine-readable subsystem state** — current economic/security/cognitive truth.
+5. **Permanent Memory Vault + Git history** — factual/history evidence for archaeology.
 
-This routing index sits between steps 2 and 3. It tells a future model which durable blocks to load for a task.
+Canonical flow:
 
-The intended flow is:
+`CURRENT → latest continuity → ROUTING INDEX → relevant memory blocks → relevant live artifacts → exact evidence → work`
 
-`CURRENT → latest continuity → ROUTING INDEX → relevant memory blocks → relevant live artifacts → work`
-
-Do not replace this with “read everything”. Selective retrieval is a feature: it keeps context high-signal while preserving deep memory when needed.
+Selective retrieval is a feature. Do not replace it with “read everything”.
 
 ---
 
 # 2. ALWAYS-READ CORE
 
-For every substantive The Holding task, read in this order:
+For every substantive The Holding task, read:
 
 1. `intelligence/project-memory/CURRENT.md`
-2. latest `intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_*.md` referenced by `CURRENT.md`
-3. `intelligence/project-memory/THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md`
-4. `intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`
-5. this routing index
+2. latest `THE_HOLDING_MASTER_CONTINUITY_*.md` referenced by CURRENT
+3. `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md`
+4. `THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md`
+5. this Routing Index
 
 Then choose only the blocks below that match the work.
 
@@ -46,19 +44,18 @@ Then choose only the blocks below that match the work.
 Trigger examples:
 - “добавляем компанию #011”
 - discovery / resolve / closure / reconciliation
-- new wallet or ENS added to an existing company
-- mechanism inventory for a company
+- new wallet or ENS
+- mechanism inventory
 
 Read:
 - `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
 - `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
 - `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`
-- latest company-specific continuity if one exists
-- onboarding playbook(s) present in repository
-- live canonical company artifacts and current Productivity/Rewards adapters
+- latest company-specific continuity if present
+- onboarding playbooks
+- live company/Productivity/Rewards state
 
-Hard rule:
-**fingerprint known mechanisms before writing new protocol code.** Reuse the strongest proven end-to-end capability and resolve only the true delta.
+Hard rule: **fingerprint known mechanisms before writing new protocol code.** Reuse the strongest proven end-to-end capability and resolve only the true delta.
 
 ---
 
@@ -66,20 +63,20 @@ Hard rule:
 
 Trigger examples:
 - Cypher Passport
-- Company #010 TVL / capital / Performance
-- Project X, HyperLend, GMX, Stake DAO, Concentrator, Convex, veAERO, veVELO, Votium for Cypher
+- Company #010 TVL/capital/Performance
+- Project X, HyperLend, GMX, Stake DAO, Concentrator, Convex, veAERO, veVELO, vlCVX
 
 Read:
-- latest master continuity first — it contains the current Company #010 map
-- `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
-- `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md` for reward/income presentation
-- `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md` for Passport geometry
+- latest master continuity
+- Known Mechanism Reuse canon
+- Rewards Drawer canon
+- Passport Responsive canon
 - live `companies/company-010-production-state.json`
 - live `companies/rewards-data.json`
-- live `intelligence/productivity-data.json` when rate behavior matters
-- `companies/company-010-projectx-rate-history.json` for Project X APR lifecycle
+- live Productivity state
+- `companies/company-010-projectx-rate-history.json`
 
-Current important Company #010 laws are also summarized in the latest master continuity; do not substitute old #010 checkpoints for fresh state.
+Do not substitute old Company #010 checkpoints for fresh state.
 
 ---
 
@@ -87,337 +84,291 @@ Current important Company #010 laws are also summarized in the latest master con
 
 Trigger examples:
 - Project X · WHYPE-USDC
-- concentrated-liquidity NFT positions
-- one resolver finds multiple token legs
-- active vs empty/dust NFT filtering
-- collectible LP fees
+- concentrated-liquidity NFTs
+- dynamic active NFT set
+- collectible fees
 - Project X Reference APR
 
 Read:
-- latest master continuity, Project X sections
-- `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
-- `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md`
-- live `companies/company-010-production-state.json`
-- live `companies/company-010-projectx-rate-history.json`
-- source files:
-  - `onboarding/company-010-deep-resolve.mjs`
-  - `onboarding/company-010-projectx-strategy-overlay.mjs`
-  - `onboarding/company-010-projectx-reference-apr.mjs`
+- latest continuity, Project X sections
+- Known Mechanism Reuse canon
+- Rewards Drawer canon
+- live Company #010 state
+- Project X rate history
+- current Project X resolver/overlay/rate sources
 
 Permanent lessons:
 - enumerable NFT inventory != economic strategy inventory;
-- zero-liquidity / dust / other-pair NFTs may remain diagnostics but do not belong in strategy TVL/Rewards;
-- nonzero-liquidity position with unresolved principal must fail closed;
-- every in-scope economic principal/reward leg must be promoted or explicitly preserved as unknown — silent leg loss is a regression;
+- zero-liquidity/dust/other-pair NFTs may stay diagnostic but are not strategy TVL/Rewards;
+- nonzero-liquidity unresolved principal fails closed;
+- all in-scope economic legs must be promoted or explicitly unknown;
 - fee tier is not yield;
-- `collect.staticCall` collectible fees are rewards, not strategy principal;
-- observed-fee APR needs a stable time window and fingerprint continuity.
+- collectible fees are rewards, not principal;
+- observed-fee APR requires stable fingerprint continuity;
+- active-set membership/liquidity/tick change resets the observed-fee window.
 
 ---
 
-# 6. HYPERLEND / AAVE-LIKE LENDING / hTOKEN OR aTOKEN INCOME
-
-Trigger examples:
-- HyperLend · kHYPE
-- lending supply APY/APR
-- whether lending rewards are Claimable or Compounded
-- Aave-compatible scaled-balance receipt tokens
-- incentives controllers
+# 6. HYPERLEND / AAVE-LIKE LENDING
 
 Read:
-- latest master continuity, HyperLend sections
-- `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
-- `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md`
-- live Company state + Rewards state
+- latest continuity, HyperLend section
+- Known Mechanism Reuse canon
+- Rewards Drawer canon
+- live Company/Rewards state
 - `onboarding/company-010-hyperlend-income-overlay.mjs`
 
 Canonical distinction:
-- **base lending interest** from scaled balance + reserve liquidity index = **Embedded / Compounded**, already inside receipt-token balance/NAV, never separately claimable and never additive capital;
-- **external incentives** are a separate lane through RewardsController; only configured, measured user rewards become `Unclaimed`;
-- a controller existing does not prove an active incentive; `rewardAssetCount = 0` means no separate incentive row, not a fabricated zero-value reward;
+- **base lending interest** from scaled balance + reserve liquidity index = **Embedded / Compounded**;
+- **external incentives** are separate RewardsController state;
+- controller existence does not prove active rewards;
+- `rewardAssetCount = 0` means no separate incentive row, not fake zero;
 - Reference APR is a rate, not realised earned USD.
 
 ---
 
-# 7. REWARDS / ACCRUED REWARDS DRAWER / UNCLAIMED / COMPOUNDED
+# 7. REWARDS / VLCVX / ACCRUED REWARDS DRAWER
 
-Trigger examples:
-- “что показывать в Rewards?”
-- Claimable / Unclaimed
-- Compounded / Embedded
-- Pending / Warming
-- measured earned total
-- adding a new reward route
-
-Read:
-- `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md`
-- `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
-- `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
-- latest master continuity
+For generic Rewards read:
+- Rewards Drawer canon
+- Passport Inheritance canon
+- Known Mechanism Reuse canon
+- latest continuity
 - live `companies/rewards-data.json`
 
-Hard semantic lanes:
-- **Unclaimed** = currently accrued and separately claimable from protocol;
-- **Compounded / Embedded** = already remains inside strategy/locked/wrapper economics; may be measured/valued for earned presentation but does not enter claimable settlement total;
-- **Pending / Warming** = known mechanism with incomplete current measurement; never convert to zero;
-- claimable reward != principal;
-- embedded earned USD != claimable USD;
-- Reference APR/APY != realised income.
+For vlCVX routing additionally read:
+- `THE_HOLDING_VLCVX_ROUTE_GRAPH_CANON_2026-08-18.md`
+- fresh delegation/forwarding/settlement evidence when current route identity matters.
 
-Use one unified Rewards Drawer. Do not create protocol-specific secondary mini-ledgers when the canonical row model can express the state.
+Hard lanes:
+- Unclaimed = separately claimable current accrual;
+- Compounded/Embedded = remains inside strategy economics and is not claimable total;
+- Pending/Warming = known mechanism not currently closed;
+- legacy-residual route != current delegation route;
+- Merkle entitlement != proof of current delegation identity.
 
 ---
 
 # 8. PRODUCTIVITY / APR / APY / REFERENCE RATE
 
-Trigger examples:
-- APR/APY badge
-- Pending rate
-- “почему APR такой высокий?”
-- Reference APR source
-- rate collector / history
-
 Read:
-- latest master continuity
-- live `intelligence/productivity-data.json`
-- source-specific state / history
-- `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md` for presentation
-- mechanism reuse canon for source/field parity
+- latest continuity
+- live Productivity state
+- source-specific history
+- Passport Responsive canon
+- Known Mechanism Reuse canon
 
-Core laws:
-- Reference APR/APY is not realised income;
-- missing/unsupported rate = `Pending`, not `0`;
-- protocol fee tier / nominal parameter is not automatically yield;
-- rate must have explicit metric semantics and reproducible source;
-- observed realised-fee annualisation must declare window, reset rules, pricing method and exclusions.
+Laws:
+- Reference APR/APY != realised income;
+- unsupported/missing rate = Pending, not 0;
+- fee tier/nominal parameter != yield;
+- rate must have reproducible source and explicit metric semantics.
 
 ---
 
 # 9. PERFORMANCE / COST BASIS / INVESTED / RETURNS
 
-Trigger examples:
-- Performance percentage
-- cost basis
-- invested capital
-- contribution/distribution history
-
 Read:
-- latest continuity for the company
-- owner operating context only when owner-declared cost-basis/strategy intent matters
-- live performance ledger/artifacts for that company
-- historical contribution ledgers where present
+- latest company continuity
+- live company performance ledger
+- contribution/distribution histories
+- owner context only where owner-declared basis/intent is relevant.
 
 Hard rules:
 - partial cost basis != complete performance;
-- unknown entry price != zero cost;
-- realised income != claimable rewards;
-- wrapper conversion/internal movement is not a contribution/distribution unless evidence says boundary flow.
+- unknown entry != zero cost;
+- internal wrapper/LP movement is not automatically contribution/distribution.
 
 ---
 
 # 10. PASSPORT UI / MOBILE / DESKTOP
 
-Trigger examples:
-- Company Passport layout
-- Balance Sheet · Strategies
-- APR/APY capsule placement
-- desktop vs mobile
-- strategy row/card rendering
-
 Read:
-- `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md`
-- `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
-- latest master continuity
-- Rewards Drawer canon if drawer is touched
+- Passport Responsive canon
+- Company Passport Inheritance canon
+- latest continuity
+- Rewards Drawer canon if touched
 - current public adapter / `companies/index.html`
 
-Hard product rules:
-- accepted desktop/laptop geometry is preserved during mobile-only fixes unless owner requests otherwise;
-- mobile productive rows use the reusable two-row composition;
-- no per-label pixel hacks when a reusable structural layout solves the class;
-- economic state belongs in canonical data; public adapter should project it, not invent a second truth.
+Hard rules:
+- preserve accepted desktop during mobile-only fixes unless asked otherwise;
+- productive identity uses the strongest canonical `Protocol · productive asset/strategy` language;
+- public adapter projects canonical economic state, not a second truth.
 
 ---
 
 # 11. STABLE CAPITAL / MONETRA / STABLE INDEX
 
-Trigger examples:
-- Monetra
-- Stable Companies Index
-- stable strategy book
-- stable APY / performance
-
 Read:
-- latest master continuity
-- historical operating knowledge if mechanism reuse is needed
-- Stable/Monetra artifacts and current Stable Intelligence outputs
-- owner operating context if discussing strategy philosophy rather than measurement
+- latest continuity
+- live Stable/Monetra artifacts
+- Historical Operating Knowledge when mechanism reuse matters
+- owner context only for strategy philosophy.
 
-Preserve Monetra tracking provenance and do not backfill earlier income without explicit evidence/methodology.
+Preserve Monetra tracking provenance. Do not backfill earlier income without explicit evidence/methodology.
 
 ---
 
-# 12. COGNITIVE STACK / BRAIN / OBSERVER / MEMORY / LEARNING
+# 12. MARKET DATA / ONCHAIN PRICING / PUBLIC CAPITAL / COINGECKO FALLBACK
 
 Trigger examples:
-- “насколько мощные мозги?”
-- Observer / System Memory
-- Memory Vault
-- Grounded Brain
-- ChatGPT Bridge
-- Decision & Outcome Learning
-- Proposal / Builder / Guardian
-- autonomous cognitive cycle
+- “все активы onchain?”
+- BTC / ICP / VVV / XAUT current price source
+- CoinGecko fallback / why CoinGecko appears
+- 30-minute price refresh
+- Market Data heartbeat RED/GREEN
+- Public Capital / company TVL price propagation
+- second writer / stale snapshot / provenance
+- `market-data.json`, `onchain-price-shadow.json`, `public-capital-state.json`
 
 Read:
-- `CURRENT.md`
-- latest master continuity
+1. latest master continuity, especially the Aug 19–21 Market Data sections;
+2. **`THE_HOLDING_MARKET_DATA_ONCHAIN_AUTHORITY_CANON_2026-08-21.md`**;
+3. live:
+   - `intelligence/market-data/market-data.json`
+   - `intelligence/market-data/onchain-price-shadow.json`
+   - `intelligence/market-data/market-data-coingecko.json`
+   - `intelligence/market-data/public-capital-state.json`;
+4. current authority policy/source registries when route identity matters;
+5. current Shared Refresh / daily CoinGecko / Unified Capital / recovery workflows when writer or cadence matters;
+6. fresh heartbeat commits and exact workflow logs for production acceptance.
+
+Canonical production laws:
+- exactly 26 canonical market assets are explicitly reviewed onchain-primary;
+- physical silver is reference-only, outside the canonical 26;
+- one canonical Market Data writer plane;
+- downstream Capital/Productivity/recovery paths are consumers, not alternate writers;
+- onchain heartbeat = `7,37 * * * *`;
+- automatic CoinGecko baseline = `12 3 * * *`;
+- normal Shared Refresh performs zero external CoinGecko discovery and reuses the daily source lane;
+- CoinGecko is fallback/sanity, not normal authority;
+- cross-source divergence against the daily CoinGecko snapshot is telemetry only when the onchain route is otherwise healthy;
+- real RPC/stale/invalid/source/quote/dependency failures remain failback conditions;
+- CoinGecko failback is eligible only while age **<= 30 hours**; older means unknown/fail-closed;
+- canonical top-level provenance must describe `per-asset-authority`, while CoinGecko provenance belongs under source state;
+- browser external price authority is disabled;
+- `unknown != zero`;
+- `GREEN workflow != physically materialized production artifact`.
+
+For ICP specifically, verify Company #005 (1363 ICP) and #006 (1296 ICP) use the exact same current canonical onchain price.
+
+Do not answer a current price from prose memory. Fetch the live artifact.
+
+---
+
+# 13. COGNITIVE STACK / BRAIN / OBSERVER / MEMORY / LEARNING
+
+Read:
+- CURRENT
+- latest continuity
 - Build Discipline canon
-- live subsystem machine-readable states
+- live subsystem states
 - Historical Operating Knowledge when architecture history matters
-- Founder Decision DNA canon when founder-model alignment is part of the question
+- Founder DNA only when founder-model alignment matters.
 
-Critical distinction:
-- standalone fresh subsystem state may be newer than the exact snapshot bound into a coherent Cognitive Stack packet;
-- do not overwrite coherent-chain provenance with a newer unrelated snapshot;
-- current authority remains `none` unless a future explicit governance upgrade changes it.
+Distinction:
+standalone fresh subsystem state may be newer than the exact state bound into a coherent Cognitive Stack packet. Preserve coherent-chain provenance.
 
 ---
 
-# 13. OWNER STRATEGY / CAPITAL PHILOSOPHY / COMPANY CURATOR
-
-Trigger examples:
-- what owner would choose
-- capital allocation philosophy
-- stable reserves
-- diversification / leverage / Health Factor
-- future Company Curator
+# 14. OWNER STRATEGY / CAPITAL PHILOSOPHY
 
 Read:
-- `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md`
-- latest `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*`
-- `intelligence/owner-context/owner-operating-profile.json`
-- latest additive owner profile tranches
-- `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md` if modelling durable decision patterns
+- Owner Operating Context
+- latest owner context tranche
+- structured owner profile
+- Founder Decision DNA when durable decision patterns are relevant.
 
-Boundary:
-owner context is context, not market fact and not execution authority.
+Owner context is context, not market fact or execution authority.
 
 ---
 
-# 14. OWNER COLLABORATION / HOW TO WORK IN CHAT
-
-Trigger examples:
-- new session warm-up
-- ambiguous voice dictation
-- merge authorization
-- sequence of work
-- whether to ask owner to repeat details
+# 15. OWNER COLLABORATION / HOW TO WORK IN CHAT
 
 Read:
-- `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md`
+`THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md`
 
-Key rules:
+Rules:
 - Russian default;
-- infer obvious dictation intent from project context;
+- infer obvious voice-dictation intent from live project context;
 - one primary objective at a time;
-- active expert orchestration, not passive paraphrase;
-- do not ask for already-known wallets/prices/accepted decisions;
-- generic “делай/ок” is implementation authorization, not merge authorization;
-- every PR merge requires fresh explicit command such as `мерджи 144`.
+- do not ask owner to repeat already-known data;
+- systemic reusable fix > one-off patch;
+- `делай/ок` = implementation authorization, not merge authorization;
+- each PR merge needs fresh explicit owner command.
 
 ---
 
-# 15. SECURITY / PRODUCTION DEPLOYMENT
-
-Trigger examples:
-- Security Sentinel
-- Cloudflare / Worker / Wrangler
-- production routing / homepage ownership
-- DOM/XSS/security headers
-- privileged workflows
+# 16. SECURITY / PRODUCTION DEPLOYMENT
 
 Read:
 - fresh `security/security-intelligence.json`
-- `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md`
-- latest master continuity
-- security policy/state artifacts
+- Production Incident Postmortem
+- latest continuity
+- relevant security policy/state.
 
-Do not infer current Security counts from an older Cognitive Stack snapshot when a newer standalone Security artifact exists.
+Do not use an older Cognitive Stack Security snapshot as current Security if a newer standalone Sentinel artifact exists.
+
+For high-frequency Market Data, remember that pure generated snapshot pushes are intentionally excluded from Security push-trigger noise; code/workflow/policy/registry changes remain checked.
 
 ---
 
-# 16. PUBLIC CONVERSATION / LEARNING FROM USERS
-
-Trigger examples:
-- public AI console
-- learning from visitors
-- owner teaching via public surface
-- prompt injection / trust boundaries
+# 17. PUBLIC CONVERSATION / LEARNING FROM USERS
 
 Read:
-- `THE_HOLDING_CONVERSATION_LEARNING_CANON_2026-08-14.md`
+- Conversation Learning canon
 - Security artifacts
-- owner collaboration canon if owner-authenticated control is discussed
+- Owner Collaboration canon when authenticated owner control matters.
 
-Untrusted public dialogue cannot directly mutate facts, methodology, code, security policy, project memory or capital authority.
+Untrusted public dialogue cannot directly mutate facts, code, methodology, project memory, security policy or capital authority.
 
 ---
 
-# 17. HISTORICAL ARCHAEOLOGY / “HOW DID WE GET HERE?”
-
-Trigger examples:
-- old failure root cause
-- why a current law exists
-- past company mechanism precedent
-- reconstruct prior production state
+# 18. HISTORICAL ARCHAEOLOGY
 
 Read only as needed:
-- `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`
-- older `THE_HOLDING_MASTER_CONTINUITY_*`
-- Git history / merged PR bodies / exact workflow logs
-- Memory Vault records
+- Historical Operating Knowledge
+- older master continuities
+- Git history / merged PR bodies / exact logs
+- Memory Vault.
 
-Do not use historical prose to override fresh state.
+Historical prose never overrides fresh state.
 
 ---
 
-# 18. ROUTING PRECEDENCE
+# 19. ROUTING PRECEDENCE
 
-When multiple blocks apply, read the smallest useful union.
+Use the smallest useful union.
 
-Example: “Add the same HyperLend kHYPE mechanism to Company #011 and show it in Rewards on mobile.”
+Example: “Company #011 has ICP and I want its live TVL + Passport.”
 
-Correct retrieval set:
-1. core bootstrap files;
+Read:
+1. core bootstrap;
 2. latest continuity;
-3. Known Mechanism Reuse canon;
-4. this HyperLend section / live Company #010 implementation as precedent;
-5. Rewards Drawer canon;
-6. Passport Responsive canon;
-7. live Company #011 artifacts.
+3. Known Mechanism Reuse + Passport Inheritance;
+4. Market Data/onchain authority canon because ICP current pricing/propagation matters;
+5. live Company #011 + Market Data/Public Capital artifacts.
 
-Do **not** start protocol research from zero and do **not** load unrelated Founder DNA or Stable Capital context.
+Do not start Chainlink/ICP research from zero if the canonical route is already production-proven.
 
 ---
 
-# 19. MEMORY WRITE-BACK RULE
+# 20. MEMORY WRITE-BACK RULE
 
-After material work, decide where the new knowledge belongs:
-
-- changing numeric/state fact → machine-readable canonical subsystem artifact;
-- durable architectural/engineering lesson → relevant canon;
-- major milestone/resume state → new master continuity checkpoint;
-- task discovery/routing improvement → this routing index / README;
-- owner decision → Decision Memory when a real decision is captured under its contract;
-- observational event → Observer / Memory Vault;
+After material work:
+- changing numeric/state fact → canonical machine-readable artifact;
+- durable architecture/engineering lesson → relevant canon;
+- major milestone/resume state → new master continuity;
+- retrieval improvement → Routing Index/README;
+- owner decision → Decision Memory under its contract;
+- observational event → Observer/Memory Vault;
 - trivial run noise → logs only.
 
-Do not stuff everything into `CURRENT.md`. `CURRENT` is a bootstrap, not the archive.
+Do not stuff everything into CURRENT. CURRENT is a bootstrap, not the archive.
 
 ---
 
-# 20. COMPACT ROUTING LAW
+# 21. COMPACT ROUTING LAW
 
 **Load the core, route to the relevant block, then verify against live state.**
 
