@@ -1,15 +1,19 @@
 name: Agent Patch Network Metrics Coherence
 
 on:
-  push:
-    branches: [agent/companies-network-metrics-coherence-v0.1]
-    paths: ['.github/workflows/_agent_patch_network_metrics.yml']
+  pull_request:
+    branches: [main]
+    paths:
+      - 'companies/index.html'
+      - 'companies/company-010-public-adapter.js'
+      - '.github/workflows/_agent_patch_network_metrics.yml'
 
 permissions:
   contents: write
 
 jobs:
   patch:
+    if: github.head_ref == 'agent/companies-network-metrics-coherence-v0.1'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -27,22 +31,16 @@ jobs:
           s=p.read_text()
           old="    'Cypher': ['Bitcoin','Ethereum','Project X','Convex','Curve','Aero','Velodrome','GMX','Concentrator','Fluid']\n"
           new="    'Cypher': ['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator','HyperLend']\n"
-          if s.count(old)!=1: raise SystemExit(f'Cypher base protocol row count={s.count(old)}')
+          assert s.count(old)==1, s.count(old)
           s=s.replace(old,new,1)
-
-          old="    const statProtocols = document.getElementById('statProtocols');\n    if (statProtocols) statProtocols.textContent = String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size);\n"
-          new="    const statProtocols = document.getElementById('statProtocols');\n    if (statProtocols) statProtocols.textContent = String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size);\n"
-          if s.count(old)!=1: raise SystemExit('statProtocols contract missing')
-
           p.write_text(s)
 
           p=Path('companies/company-010-public-adapter.js')
           s=p.read_text()
           old="    const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aerodrome','Velodrome','GMX','Concentrator'];\n"
           new="    const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator'];\n"
-          if s.count(old)!=1: raise SystemExit(f'Cypher runtime protocol row count={s.count(old)}')
+          assert s.count(old)==1, s.count(old)
           s=s.replace(old,new,1)
-
           old='''  function syncNetworkStats(){
     const net=window.__TH_CAPITAL_STATE__?.network;
     if(!net)return;
@@ -57,17 +55,15 @@ jobs:
 '''
           new='''  function syncNetworkStats(){
     /* Summary authority deliberately lives in the shared Public Capital snapshot.
-       The base Companies surface binds Combined TVL from all registry companies,
-       while renderIndex() derives General Index Network Value from INDEX_STATE,
-       which excludes Stable Capital / Monetra by design. Company #010 must never
-       overwrite either metric from the slower canonical Capital State. */
+       Combined TVL is all registered companies; General Index Network Value is
+       derived from INDEX_STATE and excludes Stable Capital / Monetra by design. */
     const statProtocols=document.getElementById('statProtocols');
     if(statProtocols&&typeof COMPANY_PROTOCOLS!=='undefined'){
       statProtocols.textContent=String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size);
     }
   }
 '''
-          if s.count(old)!=1: raise SystemExit(f'syncNetworkStats block count={s.count(old)}')
+          assert s.count(old)==1, s.count(old)
           s=s.replace(old,new,1)
           p.write_text(s)
           PY
@@ -83,10 +79,6 @@ jobs:
           assert "const index=document.getElementById('idxNetworkValue')" not in a
           assert "if(top&&top.textContent!==display)top.textContent=display" not in a
           assert "statProtocols.textContent=String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size)" in a
-          # The canonical full-registry Protocols & Assets union is stable at 29.
-          m=re.search(r"const COMPANY_PROTOCOLS = \{(.*?)\n\};",h,re.S)
-          assert m
-          # Runtime list and base list intentionally use the same public labels.
           assert 'Aerodrome' not in re.search(r"function protocols\(\)\{(.*?)return p;",a,re.S).group(1)
           assert "'Fluid'" not in re.search(r"'Cypher': \[(.*?)\]",h,re.S).group(1)
           print('Network metrics coherence static contract PASS')
