@@ -1,0 +1,25 @@
+name: TEMP Medium PR Kick
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  kick:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Kick branch push workflow
+        shell: bash
+        run: |
+          date -u +%FT%TZ > .github/temp-medium-second-trigger.txt
+          git config user.name "The Holding Medium Cleanup"
+          git config user.email "medium-cleanup@theholding.ai"
+          git add .github/temp-medium-second-trigger.txt
+          git commit -m "temp: kick medium patch workflow"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
