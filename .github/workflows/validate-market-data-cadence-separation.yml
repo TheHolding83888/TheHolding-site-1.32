@@ -6,6 +6,8 @@ on:
       - 'intelligence/market-data/market-data-engine.mjs'
       - '.github/workflows/market-data-refresh.yml'
       - '.github/workflows/market-data-coingecko-daily.yml'
+      - '.github/workflows/update-project-memory-bootstrap.yml'
+      - '.github/workflows/security-sentinel.yml'
       - '.github/workflows/validate-market-data-cadence-separation.yml'
   workflow_dispatch:
 
@@ -33,6 +35,8 @@ jobs:
           const heartbeat=fs.readFileSync('.github/workflows/market-data-refresh.yml','utf8');
           const daily=fs.readFileSync('.github/workflows/market-data-coingecko-daily.yml','utf8');
           const engine=fs.readFileSync('intelligence/market-data/market-data-engine.mjs','utf8');
+          const memory=fs.readFileSync('.github/workflows/update-project-memory-bootstrap.yml','utf8');
+          const security=fs.readFileSync('.github/workflows/security-sentinel.yml','utf8');
           if(!heartbeat.includes("cron: '7,37 * * * *'"))throw new Error('Onchain heartbeat must remain every 30 minutes');
           if(!daily.includes("cron: '12 3 * * *'"))throw new Error('CoinGecko baseline must remain once daily');
           if(!heartbeat.includes('group: shared-market-data-refresh')||!daily.includes('group: shared-market-data-refresh'))throw new Error('Market Data writers must share concurrency group');
@@ -44,7 +48,30 @@ jobs:
           if(!engine.includes('if (!dailyRefresh)'))throw new Error('Engine daily-only hard gate missing');
           if(!engine.includes('nonDailyExternalFetchForbidden: true'))throw new Error('Engine strict non-daily semantics missing');
           if(!engine.includes('30 * 60 * 60 * 1000'))throw new Error('30-hour prior daily snapshot retention missing');
-          console.log('Static strict-daily cadence + authority contract PASS');
+
+          const generated=[
+            'intelligence/market-data/market-data-coingecko.json',
+            'intelligence/market-data/market-data.json',
+            'intelligence/market-data/onchain-price-shadow.json',
+            'intelligence/market-data/public-capital-state.json'
+          ];
+          for(const file of generated){
+            const token=`- '${file}'`;
+            if(!memory.includes(token))throw new Error(`Project Memory must ignore generated heartbeat file: ${file}`);
+            if(!security.includes(token))throw new Error(`Security Sentinel must ignore generated heartbeat file: ${file}`);
+          }
+          const protectedSourceTokens=[
+            'intelligence/market-data/market-data-engine.mjs',
+            'intelligence/market-data/market-data-authority-policy.json',
+            'intelligence/market-data/onchain-price-source-registry.json',
+            '.github/workflows/market-data-refresh.yml'
+          ];
+          for(const token of protectedSourceTokens){
+            if(memory.includes(`- '${token}'`)||security.includes(`- '${token}'`))throw new Error(`Source/policy surface must not be ignored by push-triggered controls: ${token}`);
+          }
+          if(!memory.includes("cron: '17 * * * *'"))throw new Error('Project Memory hourly backstop missing');
+          if(!security.includes("cron: '47 6 * * *'"))throw new Error('Security daily backstop missing');
+          console.log('Static strict-daily cadence + generated-noise hygiene contract PASS');
           NODE
 
       - name: Prove scheduled push and manual paths perform zero CoinGecko requests
