@@ -1,6 +1,6 @@
 {
   "version": "0.2-company-010-capital-reconciliation-stakedao-base",
-  "generatedAt": "2026-08-20T05:17:36.152Z",
+  "generatedAt": "2026-08-21T06:53:40.440Z",
   "company": {
     "registry": "010",
     "name": "Cypher"
@@ -10,22 +10,22 @@
     "result": {
       "protocol": "Aave",
       "chain": "Arbitrum",
-      "wstEthPerEth": 1.242032879881,
+      "wstEthPerEth": 1.242113888675,
       "oraclePricesUsd": {
-        "wstETH": 2792.54556105,
-        "WETH": 2248.36685589
+        "wstETH": 2944.22572654,
+        "WETH": 2370.33476027
       },
       "wallets": [
         {
           "wallet": "0xd90d1e395DE36e1e59C42F5dF537801C26BbC03f",
           "walletAlias": "Wallet 1",
           "wstETH": {
-            "supplied": 0.981456272799,
-            "ethEquivalent": 1.219000960981,
+            "supplied": 0.981456273519,
+            "ethEquivalent": 1.219080468464,
             "usageAsCollateralEnabled": true
           },
           "WBTC": {
-            "supplied": 0.00844429,
+            "supplied": 0.00844431,
             "usageAsCollateralEnabled": true
           }
         },
@@ -43,9 +43,9 @@
           }
         }
       ],
-      "totalWstETH": 0.981456272799,
-      "totalEthEquivalent": 1.219000960981,
-      "totalWBTC": 0.00861478,
+      "totalWstETH": 0.981456273519,
+      "totalEthEquivalent": 1.219080468464,
+      "totalWBTC": 0.0086148,
       "source": "Aave V3 official ProtocolDataProvider + Aave Oracle wstETH/WETH price ratio",
       "treatment": "supplied collateral is gross company capital; liabilities remain diagnostic-only under current Holding public-gross policy"
     },
@@ -63,10 +63,10 @@
           "walletAlias": "Wallet 2",
           "asset": "0x5555555555555555555555555555555555555555",
           "symbol": "WHYPE",
-          "supplied": 1.5118e-7,
-          "priceUsd": 70.890402,
+          "supplied": 1.51183e-7,
+          "priceUsd": 72.646386,
           "valueUsd": 0,
-          "referenceAprPct": 61.581146,
+          "referenceAprPct": 61.189712,
           "referenceAprStatus": "measured",
           "usageAsCollateralEnabled": true
         },
@@ -75,10 +75,10 @@
           "walletAlias": "Wallet 2",
           "asset": "0xfD739d4e423301CE9385c1fb8850539D657C296D",
           "symbol": "kHYPE",
-          "supplied": 6.115119918184,
-          "priceUsd": 72.54124739,
-          "valueUsd": 443.6,
-          "referenceAprPct": 61.581146,
+          "supplied": 6.115119918256,
+          "priceUsd": 74.62355385,
+          "valueUsd": 456.33,
+          "referenceAprPct": 61.189712,
           "referenceAprStatus": "measured",
           "usageAsCollateralEnabled": true
         }
@@ -89,13 +89,13 @@
           "walletAlias": "Wallet 2",
           "asset": "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
           "symbol": "USD₮0",
-          "variableDebt": 164.60242,
+          "variableDebt": 164.648529,
           "stableDebt": 0,
           "treatment": "diagnostic-only; not subtracted from public gross capital under current Holding policy"
         }
       ],
       "positionCount": 2,
-      "totalSuppliedValueUsd": 443.6,
+      "totalSuppliedValueUsd": 456.33,
       "source": "HyperLend official ProtocolDataProvider + Oracle + /data/markets/rates",
       "ratesStatus": "available",
       "ratesError": null
@@ -141,11 +141,11 @@
       "strategy": "Curve 4pool · USDC/USDbC/axlUSDC/crvUSD",
       "vault": "0x6f6533b7e0730d150E617001e331ff2FAA41fDe4",
       "pool": "0xf6C5F01C7F3148891ad0e19DF78743D31E390D1f",
-      "poolUsdTotal": 166239.07,
-      "baseApyPct": 0.13,
+      "poolUsdTotal": 234516.03,
+      "baseApyPct": 0.21,
       "baseApyStatus": "measured",
       "vaultTotalAssets": 51973.359242851155,
-      "vaultTotalUsd": 53026.35,
+      "vaultTotalUsd": 53021.78,
       "wallets": [
         {
           "wallet": "0xd90d1e395DE36e1e59C42F5dF537801C26BbC03f",
@@ -181,54 +181,54 @@
           "walletAlias": "Wallet 2",
           "shares": 577.469943269753,
           "lpAssets": 577.469943269753,
-          "valueUsd": 589.17,
+          "valueUsd": 589.12,
           "underlying": [
             {
               "symbol": "USDC",
               "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-              "quantity": 163.40929683
+              "quantity": 161.88490686
             },
             {
               "symbol": "USDbC",
               "address": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
-              "quantity": 123.24857608
+              "quantity": 136.71007557
             },
             {
               "symbol": "axlUSDC",
               "address": "0xEB466342C4d449BC9f53A865D5Cb90586f405215",
-              "quantity": 158.28901812
+              "quantity": 153.33160559
             },
             {
               "symbol": "crvUSD",
               "address": "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93",
-              "quantity": 144.04649874
+              "quantity": 137.06532938
             }
           ]
         }
       ],
       "totalShares": 577.469943269753,
       "totalLpAssets": 577.469943269753,
-      "totalPositionUsd": 589.17,
+      "totalPositionUsd": 589.12,
       "underlying": [
         {
           "symbol": "USDC",
           "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-          "quantity": 163.40929683
+          "quantity": 161.88490686
         },
         {
           "symbol": "USDbC",
           "address": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
-          "quantity": 123.24857608
+          "quantity": 136.71007557
         },
         {
           "symbol": "axlUSDC",
           "address": "0xEB466342C4d449BC9f53A865D5Cb90586f405215",
-          "quantity": 158.28901812
+          "quantity": 153.33160559
         },
         {
           "symbol": "crvUSD",
           "address": "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93",
-          "quantity": 144.04649874
+          "quantity": 137.06532938
         }
       ],
       "rewards": [
@@ -253,7 +253,7 @@
           "periodFinish": 0
         }
       ],
-      "crvClaimable": 9.279377694333,
+      "crvClaimable": 9.869138206632,
       "source": "Stake DAO RewardVault + Stake DAO verified Accountant + Curve official Base APY + Curve pool onchain balances",
       "apiErrors": [],
       "capitalRule": "count the Stake DAO vault position once in company capital; underlying stablecoins are decomposition only and must never be added again",
@@ -263,8 +263,8 @@
         "gauge": "0x79edc58C471Acf2244B8f93d6f425fD06A439407",
         "rewardToken": "0x8Ee73c484A26e0A5df2Ee2a4960B789967dd0415",
         "scalingFactor": "1000000000000000000000000000",
-        "vaultIntegral": "277572030372146133294725123",
-        "claimableCrv": 9.279377694333,
+        "vaultIntegral": "278593313850485089491495411",
+        "claimableCrv": 9.869138206632,
         "byWallet": [
           {
             "wallet": "0xd90d1e395DE36e1e59C42F5dF537801C26BbC03f",
@@ -279,25 +279,25 @@
             "walletAlias": "Wallet 2",
             "balance": "577.469943269752861673",
             "storedPendingCrv": "0.0",
-            "integralDeltaCrv": "9.279377694333015271",
-            "claimableCrv": "9.279377694333015271"
+            "integralDeltaCrv": "9.869138206631748182",
+            "claimableCrv": "9.869138206631748182"
           }
         ],
         "source": "Stake DAO verified Accountant integral state on Base",
         "formula": "pendingRewards + max(vaultIntegral-accountIntegral,0) * balance / 1e27"
       },
-      "referenceAprPct": 0.13,
+      "referenceAprPct": 0.21,
       "referenceAprStatus": "measured-base-yield",
       "referenceAprSource": "Curve official /v1/getBaseApys/base",
       "referenceAprScope": "Curve trading/base APY only; Stake DAO boosted CRV reward APR is intentionally separate until exact annualisation is proven",
       "curveYield": {
         "pool": "0xf6C5F01C7F3148891ad0e19DF78743D31E390D1f",
         "gauge": "0x79edc58C471Acf2244B8f93d6f425fD06A439407",
-        "baseApyPct": 0.13,
+        "baseApyPct": 0.21,
         "baseApyPath": "latestDailyApyPcent",
         "unboostedCrvAprPct": null,
         "unboostedCrvAprPath": null,
-        "referenceAprPct": 0.13,
+        "referenceAprPct": 0.21,
         "referenceAprScope": "Curve trading/base APY only; Stake DAO boosted CRV reward APR is intentionally separate until exact annualisation is proven",
         "source": "Curve official /v1/getBaseApys/base",
         "crvAprSource": null
