@@ -1,5 +1,5 @@
 /*
- * The Holding · Public Capital Client v0.3.1
+ * The Holding · Public Capital Client v0.3.2
  * ------------------------------------------
  * Read-only browser client for generated local Market Data / Public Capital.
  * Legacy simple-price calls are intercepted locally; browsers never need to
@@ -9,11 +9,13 @@
  * v0.3.0 extended canonical-source discipline across critical public surfaces.
  * v0.3.1 keeps the homepage Network narrative aligned with the evolved product:
  * Network · Index · Intelligence · Passports.
+ * v0.3.2 aligns the homepage Defitea productive-engine constellation with the
+ * canonical 11-engine inventory and productive-mechanism naming.
  */
 (function (global) {
   'use strict';
 
-  const VERSION = '0.3.1';
+  const VERSION = '0.3.2';
   const DEFAULT_URL = '/intelligence/market-data/public-capital-state.json';
   const MARKET_URL = '/intelligence/market-data/market-data.json';
   const PRODUCTIVITY_URL = '/companies/productivity-data.json';
@@ -22,6 +24,19 @@
   const CURRENT_NETWORK_PROTOCOL_ASSET_COUNT = 29;
   const HOMEPAGE_NETWORK_SUB = 'A live network of sovereign onchain companies — independently owned and measured through capital, productivity, rewards and operating history.';
   const HOMEPAGE_NETWORK_CAPS = 'The Holding Network · Index · Intelligence · Passports';
+  const DEFITEA_PRODUCTIVE_ENGINES = Object.freeze([
+    { id: 'aerodrome-veaero', protocol: 'Aerodrome', mechanism: 'veAERO · Voting' },
+    { id: 'convex-vlcvx', protocol: 'Convex', mechanism: 'vlCVX · Delegation' },
+    { id: 'curve-vecrv', protocol: 'Curve', mechanism: 'veCRV · Fees' },
+    { id: 'pendle-spendle', protocol: 'Pendle', mechanism: 'sPENDLE · Buybacks' },
+    { id: 'fx-vefxn', protocol: 'f(x) Protocol', mechanism: 'veFXN · Voting' },
+    { id: 'yield-basis-veyb', protocol: 'Yield Basis', mechanism: 'veYB · Fees & Emissions' },
+    { id: 'frax-vefrax', protocol: 'Frax', mechanism: 'veFRAX · Voting' },
+    { id: 'velodrome-vevelo', protocol: 'Velodrome', mechanism: 'veVELO · Voting' },
+    { id: 'venice-svvv', protocol: 'Venice', mechanism: 'sVVV · Staking' },
+    { id: 'liquity-staked-lqty', protocol: 'Liquity', mechanism: 'staked LQTY · Staking' },
+    { id: 'resupply-staked-rsup', protocol: 'Resupply', mechanism: 'staked RSUP · Staking' }
+  ]);
   const originalFetch = global.fetch.bind(global);
   let cached = null;
   let pending = null;
@@ -202,6 +217,75 @@
       el.setAttribute('data-th-current-tvl-authority', 'public-capital-state');
       el.title = 'Current capital · canonical Public Capital State';
     });
+    return updated;
+  }
+
+  function ensureDefiteaEngineStyle() {
+    if (document.getElementById('th-defitea-engine-style')) return;
+    const style = document.createElement('style');
+    style.id = 'th-defitea-engine-style';
+    style.textContent = [
+      '.fund-card[data-fund="defitea"] .protocols-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:.75rem}',
+      '.fund-card[data-fund="defitea"] .protocol-card{grid-column:span 2;min-width:0;min-height:76px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:1rem 1.05rem 1rem 1.15rem}',
+      '.fund-card[data-fund="defitea"] .protocol-card::before{content:"";position:absolute;left:0;top:15px;bottom:15px;width:2px;border-radius:999px;background:linear-gradient(180deg,rgba(16,185,129,.2),rgba(16,185,129,.72),rgba(16,185,129,.2));opacity:.78;transition:opacity .25s ease}',
+      '.fund-card[data-fund="defitea"] .protocol-card:hover::before{opacity:1}',
+      '.fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1){grid-column:2/span 2}',
+      '.fund-card[data-fund="defitea"] .protocol-meta{line-height:1.35}',
+      '@media(max-width:768px){.fund-card[data-fund="defitea"] .protocols-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fund-card[data-fund="defitea"] .protocol-card,.fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1){grid-column:auto;min-height:72px}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){grid-column:1/-1;width:calc(50% - .375rem);justify-self:center}}',
+      '@media(max-width:480px){.fund-card[data-fund="defitea"] .protocols-grid{grid-template-columns:1fr}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){grid-column:auto;width:100%}}'
+    ].join('');
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function applyDefiteaProductiveEngineGrid(root) {
+    const path = String(global.location && global.location.pathname || '').replace(/\/+$/, '') || '/';
+    if (path !== '/') return 0;
+    const scope = root || document;
+    if (!scope.querySelector) return 0;
+    const card = scope.querySelector('.fund-card[data-fund="defitea"]');
+    if (!card) return 0;
+    const section = card.querySelector('.assets-section');
+    const grid = section && section.querySelector('.protocols-grid');
+    if (!section || !grid) return 0;
+    ensureDefiteaEngineStyle();
+    let updated = 0;
+    const title = section.querySelector('.assets-title');
+    const count = section.querySelector('.assets-count');
+    if (title && title.textContent !== 'Productive Engines') { title.textContent = 'Productive Engines'; updated += 1; }
+    const countText = DEFITEA_PRODUCTIVE_ENGINES.length + ' Active';
+    if (count && count.textContent !== countText) { count.textContent = countText; updated += 1; }
+    if (count) {
+      count.setAttribute('data-th-defitea-engine-count', String(DEFITEA_PRODUCTIVE_ENGINES.length));
+      count.title = 'Current canonical productive engine inventory';
+    }
+    const current = Array.from(grid.querySelectorAll('.protocol-card')).map(function (el) {
+      const name = el.querySelector('.protocol-name');
+      const meta = el.querySelector('.protocol-meta');
+      return [String(name && name.textContent || '').trim(), String(meta && meta.textContent || '').trim()].join('|');
+    }).join('||');
+    const expected = DEFITEA_PRODUCTIVE_ENGINES.map(function (row) { return row.protocol + '|' + row.mechanism; }).join('||');
+    if (current !== expected) {
+      grid.textContent = '';
+      DEFITEA_PRODUCTIVE_ENGINES.forEach(function (row) {
+        const item = document.createElement('div');
+        item.className = 'protocol-card';
+        item.setAttribute('data-th-defitea-engine', row.id);
+        const name = document.createElement('div');
+        name.className = 'protocol-name';
+        name.textContent = row.protocol;
+        const meta = document.createElement('div');
+        meta.className = 'protocol-meta';
+        meta.textContent = row.mechanism;
+        item.appendChild(name);
+        item.appendChild(meta);
+        grid.appendChild(item);
+      });
+      grid.setAttribute('data-th-defitea-engine-grid', 'canonical-11');
+      updated += 1;
+    }
+    const philosophy = card.querySelector('.fund-philosophy p');
+    const philosophyText = '"No trading, no charts, no emotions. Eleven productive engines — one mandate: durable onchain cash flow."';
+    if (philosophy && philosophy.textContent !== philosophyText) { philosophy.textContent = philosophyText; updated += 1; }
     return updated;
   }
 
@@ -387,6 +471,7 @@
     if (!data) return 0;
     let updated = 0;
     updated += applyDefiteaCurrentTvl(root, data);
+    updated += applyDefiteaProductiveEngineGrid(root);
     updated += applySubstantiaMarketDataProvenance(root, data);
     updated += applyHomepageNetwork(root, data);
     updated += applyHomepageMonetra(root, data);
@@ -483,6 +568,7 @@
     getCompany: company,
     bind: bind,
     syncDefiteaHeadlineApr: syncDefiteaHeadlineApr,
+    applyDefiteaProductiveEngineGrid: applyDefiteaProductiveEngineGrid,
     applyPublicSurfaceCoherence: applyPublicSurfaceCoherence,
     money: money,
     percent: percent
