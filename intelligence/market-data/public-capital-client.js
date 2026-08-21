@@ -1,30 +1,27 @@
 /*
- * The Holding · Public Capital Client v0.3.0
+ * The Holding · Public Capital Client v0.3.1
  * ------------------------------------------
  * Read-only browser client for generated local Market Data / Public Capital.
  * Legacy simple-price calls are intercepted locally; browsers never need to
  * contact CoinGecko directly and never need a CoinGecko credential.
  *
  * v0.2.2 introduced Defitea headline APR coherence.
- * v0.3.0 extends the same canonical-source discipline across four critical
- * public surfaces without changing any collector, methodology or execution
- * authority:
- *   - Homepage Network value/counts follow canonical Public Capital.
- *   - Defitea current TVL cannot be overwritten by historical Reporting data.
- *   - Monetra exposes live Current Capital + canonical Stable Reference APY.
- *   - Singul Current Holdings only renders positions in the canonical fund book;
- *     broader themes remain research/focus areas elsewhere on the page.
+ * v0.3.0 extended canonical-source discipline across critical public surfaces.
+ * v0.3.1 keeps the homepage Network narrative aligned with the evolved product:
+ * Network · Index · Intelligence · Passports.
  */
 (function (global) {
   'use strict';
 
-  const VERSION = '0.3.0';
+  const VERSION = '0.3.1';
   const DEFAULT_URL = '/intelligence/market-data/public-capital-state.json';
   const MARKET_URL = '/intelligence/market-data/market-data.json';
   const PRODUCTIVITY_URL = '/companies/productivity-data.json';
   const LEGACY_SIMPLE_PRICE_PATH = '/intelligence/market-data/simple-price';
   const DEFAULT_TIMEOUT_MS = 4500;
   const CURRENT_NETWORK_PROTOCOL_ASSET_COUNT = 29;
+  const HOMEPAGE_NETWORK_SUB = 'A live network of sovereign onchain companies — independently owned and measured through capital, productivity, rewards and operating history.';
+  const HOMEPAGE_NETWORK_CAPS = 'The Holding Network · Index · Intelligence · Passports';
   const originalFetch = global.fetch.bind(global);
   let cached = null;
   let pending = null;
@@ -234,6 +231,19 @@
           const next = String(CURRENT_NETWORK_PROTOCOL_ASSET_COUNT);
           if (bold.textContent !== next) { bold.textContent = next; updated += 1; }
           stat.title = 'Current unique protocol / asset map across the 10-company registry';
+        }
+      });
+    }
+    const sub = scope.querySelector('.network-section .ns-sub, .ns-section .ns-sub, .ns-sub');
+    if (sub && sub.textContent !== HOMEPAGE_NETWORK_SUB) {
+      sub.textContent = HOMEPAGE_NETWORK_SUB;
+      updated += 1;
+    }
+    if (scope.querySelectorAll) {
+      scope.querySelectorAll('.ns-caps-full, .ns-caps-short').forEach(function (el) {
+        if (el.textContent !== HOMEPAGE_NETWORK_CAPS) {
+          el.textContent = HOMEPAGE_NETWORK_CAPS;
+          updated += 1;
         }
       });
     }
