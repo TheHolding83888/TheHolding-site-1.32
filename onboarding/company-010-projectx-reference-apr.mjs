@@ -6,7 +6,7 @@ import crypto from 'node:crypto';
 const ROOT=process.cwd();
 const STATE=process.env.COMPANY_010_STATE||path.join(ROOT,'companies/company-010-production-state.json');
 const HISTORY=process.env.COMPANY_010_PROJECTX_RATE_HISTORY||path.join(ROOT,'companies/company-010-projectx-rate-history.json');
-const VERSION='0.1-projectx-observed-fee-reference-apr';
+const VERSION='0.2-projectx-dynamic-active-set-observed-fee-reference-apr';
 const HISTORY_VERSION='0.1-projectx-rate-history';
 const MIN_WINDOW_HOURS=24;
 const MAX_WINDOW_HOURS=24*7;
@@ -20,16 +20,19 @@ const round=(x,d=8)=>finite(x)?Number(Number(x).toFixed(d)):null;
 const sha=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex');
 
 function compatibleState(s){
-  return s?.version==='0.3-company-010-production-state-stakedao-complete'&&s?.company?.registry==='010'&&s?.company?.name==='Cypher'&&s?.authority?.executionAuthority==='none';
+  return ['0.3-company-010-production-state-stakedao-complete','0.4-company-010-production-state-crv-strategies'].includes(String(s?.version))&&s?.company?.registry==='010'&&s?.company?.name==='Cypher'&&s?.authority?.executionAuthority==='none';
 }
 function strategyFingerprint(px){
   const rows=(px?.positions||[]).map(x=>({tokenId:String(x.tokenId),liquidity:String(x.liquidity),tickLower:Number(x.tickLower),tickUpper:Number(x.tickUpper)})).sort((a,b)=>a.tokenId.localeCompare(b.tokenId));
-  if(rows.length!==2||rows.some(x=>!x.tokenId||!x.liquidity||!Number.isFinite(x.tickLower)||!Number.isFinite(x.tickUpper)))throw new Error('Project X exact-two strategy fingerprint unavailable');
+  if(rows.length<1||rows.some(x=>!x.tokenId||!x.liquidity||!Number.isFinite(x.tickLower)||!Number.isFinite(x.tickUpper)))throw new Error('Project X dynamic active-set fingerprint unavailable');
+  if(new Set(rows.map(x=>x.tokenId)).size!==rows.length)throw new Error('Project X active-set fingerprint contains duplicate token IDs');
+  if(Number(px?.nftCount)!==rows.length)throw new Error('Project X active-set count mismatch');
+  if(px?.admission?.actualActiveNftCount!==undefined&&Number(px.admission.actualActiveNftCount)!==rows.length)throw new Error('Project X admission active-set count mismatch');
   return {manager:px.manager,pair:px.pair,rows,hash:sha({manager:px.manager,pair:px.pair,rows})};
 }
 function observation(state){
   const px=state.strategies?.projectX;
-  if(px?.version!=='0.1-company-010-projectx-full-parity'||px?.nftCount!==2||px?.positions?.length!==2)throw new Error('Project X full-parity state required');
+  if(px?.version!=='0.1-company-010-projectx-full-parity'||!(Number(px?.nftCount)>=1)||px?.positions?.length!==Number(px.nftCount))throw new Error('Project X dynamic full-parity state required');
   const bySymbol=new Map((px.rewards?.tokens||[]).map(x=>[x.symbol,x]));
   const whype=bySymbol.get('WHYPE'),usdc=bySymbol.get('USDC');
   if(!whype||!usdc||![whype,usdc].every(x=>finite(x.amount)&&Number(x.amount)>=0&&finite(x.priceUsd)&&Number(x.priceUsd)>0))throw new Error('Project X measured WHYPE/USDC fees required');
@@ -37,9 +40,9 @@ function observation(state){
   const at=state.generatedAt||new Date().toISOString();
   if(!Number.isFinite(Date.parse(at)))throw new Error('Project X observation timestamp invalid');
   const fp=strategyFingerprint(px);
-  return {observedAt:at,stateGeneratedAt:at,fingerprint:fp.hash,strategy:{manager:px.manager,pair:px.pair,positions:fp.rows},navUsd:round(px.principal.navUsd,8),fees:{WHYPE:round(whype.amount,12),USDC:round(usdc.amount,12)},prices:{WHYPE:round(whype.priceUsd,8),USDC:round(usdc.priceUsd,8)},source:'Company #010 Project X full-parity state · collect.staticCall max uint128'};
+  return {observedAt:at,stateGeneratedAt:at,fingerprint:fp.hash,strategy:{manager:px.manager,pair:px.pair,activeNftCount:fp.rows.length,positions:fp.rows},navUsd:round(px.principal.navUsd,8),fees:{WHYPE:round(whype.amount,12),USDC:round(usdc.amount,12)},prices:{WHYPE:round(whype.priceUsd,8),USDC:round(usdc.priceUsd,8)},source:'Company #010 Project X dynamic active-set full-parity state · collect.staticCall max uint128'};
 }
-function freshHistory(){return {version:HISTORY_VERSION,engineVersion:VERSION,company:{registry:'010',name:'Cypher'},methodology:{metric:'Project X observed collectible fee APR · trailing stable-window',minimumWindowHours:MIN_WINDOW_HOURS,maximumWindowHours:MAX_WINDOW_HOURS,annualizationDays:365.25,feeTierIsNotYield:true,priceMethod:'average endpoint token prices',navMethod:'average endpoint strategy NAV',resetRules:['strategy fingerprint changed','claimable token amount decreased materially (claim/reward reset)','insufficient stable window'],interpretation:'Annualized observed collectible fee growth only. Excludes token-price PnL, impermanent loss and unproven incentives.'},observations:[],current:{status:'warming',referenceAprPct:null,windowHours:0,reason:'Need at least 24 hours of stable Project X observations.'},authority:{readOnly:true,walletSigning:false,transactions:false,executionAuthority:'none'}}}
+function freshHistory(){return {version:HISTORY_VERSION,engineVersion:VERSION,company:{registry:'010',name:'Cypher'},methodology:{metric:'Project X observed collectible fee APR · trailing stable-window',minimumWindowHours:MIN_WINDOW_HOURS,maximumWindowHours:MAX_WINDOW_HOURS,annualizationDays:365.25,feeTierIsNotYield:true,priceMethod:'average endpoint token prices',navMethod:'average endpoint strategy NAV',resetRules:['strategy fingerprint changed, including active NFT membership/count','claimable token amount decreased materially (claim/reward reset)','insufficient stable window'],interpretation:'Annualized observed collectible fee growth only. Excludes token-price PnL, impermanent loss and unproven incentives.'},observations:[],current:{status:'warming',referenceAprPct:null,windowHours:0,reason:'Need at least 24 hours of stable Project X observations.'},authority:{readOnly:true,walletSigning:false,transactions:false,executionAuthority:'none'}}}
 function chooseBaseline(obs,current){
   const now=Date.parse(current.observedAt);
   const compatible=obs.filter(x=>x.fingerprint===current.fingerprint&&Date.parse(x.observedAt)<now).sort((a,b)=>Date.parse(a.observedAt)-Date.parse(b.observedAt));
@@ -105,7 +108,7 @@ if(!prod)throw new Error('Project X productivity row missing');
 
 if(measured){
   const metric='Project X observed collectible fee APR · trailing stable-window';
-  px.yield={status:'measured',referenceAprPct:measured.referenceAprPct,publicStatus:`APR ${measured.referenceAprPct.toFixed(2)}%`,referenceMetric:metric,source:'Project X canonical onchain collect.staticCall observation history',periodStart:measured.periodStart,periodEnd:measured.periodEnd,windowHours:measured.windowHours,feeDeltaUsd:measured.feeDeltaUsd,averageNavUsd:measured.averageNavUsd,methodology:'Annualized growth of collectible WHYPE+USDC fees over an unchanged two-NFT strategy fingerprint; endpoint-average token prices and strategy NAV; fee tier is never used as yield.',claimableApplicable:true,incomeMode:'separate-claimable-fees'};
+  px.yield={status:'measured',referenceAprPct:measured.referenceAprPct,publicStatus:`APR ${measured.referenceAprPct.toFixed(2)}%`,referenceMetric:metric,source:'Project X canonical onchain collect.staticCall observation history',periodStart:measured.periodStart,periodEnd:measured.periodEnd,windowHours:measured.windowHours,feeDeltaUsd:measured.feeDeltaUsd,averageNavUsd:measured.averageNavUsd,methodology:'Annualized growth of collectible WHYPE+USDC fees over an unchanged dynamic active-NFT strategy fingerprint; endpoint-average token prices and strategy NAV; fee tier is never used as yield.',claimableApplicable:true,incomeMode:'separate-claimable-fees'};
   Object.assign(prod,{referenceAprPct:measured.referenceAprPct,status:'measured',source:'Project X canonical onchain collect.staticCall observation history',referenceMetric:metric,incomeMode:'separate-claimable-fees',claimableApplicable:true,methodology:px.yield.methodology});
   state.gaps=(state.gaps||[]).filter(x=>x.id!=='project-x-reference-apr');
   history.current={status:'measured',...measured,metric};
@@ -114,7 +117,7 @@ if(measured){
   const oldest=priorCompatible[0];
   const hours=oldest?Math.max(0,(Date.parse(currentObs.observedAt)-Date.parse(oldest.observedAt))/36e5):0;
   const reason=resetReason||`Need at least ${MIN_WINDOW_HOURS} hours of stable Project X observations; current stable window ${round(hours,2)}h.`;
-  px.yield={status:'warming',referenceAprPct:null,publicStatus:'APR Pending',referenceMetric:'Project X observed collectible fee APR · trailing stable-window',source:'Project X canonical onchain collect.staticCall observation history',windowHours:round(hours,4),reason,methodology:'Fee tier is not yield. APR promotes automatically after a stable >=24h two-NFT observation window with non-decreasing collectible fees.',claimableApplicable:true,incomeMode:'separate-claimable-fees'};
+  px.yield={status:'warming',referenceAprPct:null,publicStatus:'APR Pending',referenceMetric:'Project X observed collectible fee APR · trailing stable-window',source:'Project X canonical onchain collect.staticCall observation history',windowHours:round(hours,4),reason,methodology:'Fee tier is not yield. APR promotes automatically after a stable >=24h dynamic active-NFT observation window with non-decreasing collectible fees.',claimableApplicable:true,incomeMode:'separate-claimable-fees'};
   Object.assign(prod,{referenceAprPct:null,status:'warming',source:'Project X canonical onchain collect.staticCall observation history',referenceMetric:px.yield.referenceMetric,incomeMode:'separate-claimable-fees',claimableApplicable:true,methodology:px.yield.methodology});
   state.gaps=(state.gaps||[]).filter(x=>x.id!=='project-x-reference-apr');
   state.gaps.push({id:'project-x-reference-apr',severity:'productivity',status:'warming',meaning:reason});
@@ -123,13 +126,13 @@ if(measured){
 
 recalcProductivity(state);
 state.epistemicBoundary=state.epistemicBoundary||{};
-Object.assign(state.epistemicBoundary,{projectXFeeTierIsNotApr:true,projectXReferenceAprUsesObservedFeeGrowth:true,projectXAprResetsOnStrategyChangeOrClaim:true,projectXAprMinimumStableWindowHours:MIN_WINDOW_HOURS});
+Object.assign(state.epistemicBoundary,{projectXFeeTierIsNotApr:true,projectXReferenceAprUsesObservedFeeGrowth:true,projectXAprResetsOnStrategyChangeOrClaim:true,projectXAprTracksDynamicActiveNftSet:true,projectXAprMinimumStableWindowHours:MIN_WINDOW_HOURS});
 state.provenance=state.provenance||{};
-state.provenance.projectXReferenceApr={version:VERSION,historyFile:'companies/company-010-projectx-rate-history.json',metric:'Project X observed collectible fee APR · trailing stable-window',minimumWindowHours:MIN_WINDOW_HOURS,maximumWindowHours:MAX_WINDOW_HOURS,generatedAt:new Date().toISOString()};
+state.provenance.projectXReferenceApr={version:VERSION,historyFile:'companies/company-010-projectx-rate-history.json',metric:'Project X observed collectible fee APR · trailing stable-window',minimumWindowHours:MIN_WINDOW_HOURS,maximumWindowHours:MAX_WINDOW_HOURS,activeNftCount:currentObs.strategy.activeNftCount,generatedAt:new Date().toISOString()};
 history.generatedAt=new Date().toISOString();
 history.engineVersion=VERSION;
 history.observations=history.observations.slice(-MAX_OBSERVATIONS);
 fs.writeFileSync(STATE,JSON.stringify(state,null,2)+'\n');
 fs.mkdirSync(path.dirname(HISTORY),{recursive:true});
 fs.writeFileSync(HISTORY,JSON.stringify(history,null,2)+'\n');
-console.log(JSON.stringify({status:'PASS',version:VERSION,projectXReferenceAprPct:px.yield.referenceAprPct,projectXRateStatus:px.yield.status,windowHours:px.yield.windowHours||0,historyObservations:history.observations.length,resetReason,productivityCoverage:state.productivity.coverage,executionAuthority:'none'},null,2));
+console.log(JSON.stringify({status:'PASS',version:VERSION,activeNftCount:currentObs.strategy.activeNftCount,projectXReferenceAprPct:px.yield.referenceAprPct,projectXRateStatus:px.yield.status,windowHours:px.yield.windowHours||0,historyObservations:history.observations.length,resetReason,productivityCoverage:state.productivity.coverage,executionAuthority:'none'},null,2));
