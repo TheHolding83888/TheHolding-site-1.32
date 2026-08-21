@@ -1,3 +1,5 @@
+const MAX_COINGECKO_FALLBACK_AGE_SECONDS = 30 * 60 * 60;
+
 function finite(value) {
   if (value === null || value === undefined || value === '') return null;
   const n = Number(value);
@@ -11,17 +13,32 @@ function isoAgeSeconds(value, nowMs) {
   return Math.max(0, (nowMs - t) / 1000);
 }
 
-function coingeckoLane(marketData, assetId) {
+function coingeckoLane(marketData, assetId, nowMs) {
   const row = marketData?.prices?.[assetId] || null;
   const usd = finite(row?.usd);
+  const observedAt = row?.observedAt || marketData?.observedAt || marketData?.generatedAt || null;
+  const sourceAgeSeconds = isoAgeSeconds(observedAt, nowMs);
+  const finitePositiveUsd = usd !== null && usd > 0;
+  const sourceFresh = sourceAgeSeconds <= MAX_COINGECKO_FALLBACK_AGE_SECONDS;
+  const eligible = finitePositiveUsd && sourceFresh;
   return {
     lane: 'coingecko-lane',
-    eligible: usd !== null && usd >= 0,
+    eligible,
     usd,
     status: row?.status || 'unknown',
-    observedAt: row?.observedAt || marketData?.observedAt || null,
+    observedAt,
     source: row?.source || null,
-    reason: usd !== null && usd >= 0 ? 'canonical-market-data-usable' : 'canonical-market-data-unusable'
+    sourceAgeSeconds,
+    maxSourceAgeSeconds: MAX_COINGECKO_FALLBACK_AGE_SECONDS,
+    checks: {
+      finitePositiveUsd,
+      sourceFresh
+    },
+    reason: eligible
+      ? 'daily-coingecko-failback-usable'
+      : !finitePositiveUsd
+        ? 'daily-coingecko-failback-invalid-price'
+        : 'daily-coingecko-failback-too-old'
   };
 }
 
@@ -102,7 +119,7 @@ export function selectMarketDataAuthority({ policy, marketData, shadow, assetId,
     throw new Error(`Onchain promotion requested for ${assetId} while global promotion gate is disabled`);
   }
 
-  const cg = coingeckoLane(marketData, assetId);
+  const cg = coingeckoLane(marketData, assetId, nowMs);
   const onchain = onchainLane(policy, shadow, assetId, nowMs);
   const order = policy.fallbackOrderByRequestedPrimary?.[requestedPrimary];
   if (!Array.isArray(order) || !order.length) throw new Error(`Fallback order missing for ${requestedPrimary}`);
@@ -141,7 +158,7 @@ export function evaluateMarketDataAuthority({ policy, marketData, shadow, nowMs 
   }
 
   return {
-    version: '0.3-market-data-authority-evaluation-divergence-telemetry-aware',
+    version: '0.4-market-data-authority-evaluation-bounded-daily-failback',
     mode: policy.mode,
     generatedAt: new Date(nowMs).toISOString(),
     semantics: {
@@ -149,6 +166,8 @@ export function evaluateMarketDataAuthority({ policy, marketData, shadow, nowMs 
       perAssetAuthority: true,
       dependencyAwareEligibility: true,
       coinGeckoDivergenceTelemetryOnlyForHealthyOnchainPrimary: divergenceTelemetryOnly(policy),
+      coinGeckoFailbackMaxAgeSeconds: MAX_COINGECKO_FALLBACK_AGE_SECONDS,
+      staleCoinGeckoFailbackForbidden: true,
       productionMutationPerformed: false,
       executionAuthority: 'none'
     },
