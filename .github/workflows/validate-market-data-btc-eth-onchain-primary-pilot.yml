@@ -1,4 +1,4 @@
-name: "Validate Direct Oracle Onchain Primary Cohort"
+name: "Validate Canonical Onchain Primary Cohorts"
 
 on:
   pull_request:
@@ -6,8 +6,8 @@ on:
       - 'intelligence/market-data/market-data-authority-policy.json'
       - 'intelligence/market-data/market-data-authority-selector.mjs'
       - 'intelligence/market-data/market-data-authority-materializer.mjs'
-      - 'intelligence/market-data/market-data-validation-fixture.mjs'
-      - 'intelligence/market-data/coingecko-fetch-shim.mjs'
+      - 'intelligence/market-data/market-data-authority-selector-validation.mjs'
+      - 'intelligence/market-data/onchain-price-source-registry-extensions.json'
       - '.github/workflows/market-data-refresh.yml'
       - '.github/workflows/validate-market-data-btc-eth-onchain-primary-pilot.yml'
   workflow_dispatch:
@@ -26,51 +26,42 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Build deterministic source and shadow fixture
+
+      - name: Build deterministic healthy reviewed-route fixture
         run: |
           set -euo pipefail
-          node intelligence/market-data/market-data-validation-fixture.mjs
           node - <<'NODE'
           const fs=require('fs');
+          const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
+          const source=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
           const p='intelligence/market-data/onchain-price-shadow.json';
           const shadow=JSON.parse(fs.readFileSync(p,'utf8'));
-          const now=new Date().toISOString();
-          const direct={
-            bitcoin:{usd:70000,network:'ethereum',contract:'0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c'},
-            ethereum:{usd:2200,network:'ethereum',contract:'0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'},
-            'aerodrome-finance':{usd:0.47,network:'base',contract:'0x4EC5970fC728C5f65ba413992CD5fF6FD70fcfF0'},
-            pendle:{usd:1.45,network:'optimism',contract:'0x58F23F80bF389DB1af9e3aA8c59679806749A8a4'},
-            'curve-dao-token':{usd:0.27,network:'ethereum',contract:'0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f'},
-            'frax-share':{usd:0.30,network:'ethereum',contract:'0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f'},
-            'venice-token':{usd:14.1,network:'base',contract:'0xaabc55ca55d70b034e4daa2551a224239890282f'},
-            'internet-computer':{usd:2.35,network:'bsc',contract:'0x84210d9013a30c6ab169e28840a6cc54b60fa042'},
-            decentraland:{usd:0.068,network:'polygon',contract:'0xA1CbF3Fe43BC3501e3Fc4b573e822c70e76A7512'},
-            'the-sandbox':{usd:0.042,network:'polygon',contract:'0x3D49406EDd4D52Fb7FFd25485f32E073b529C924'}
-          };
-          const v3={
-            ovr:{usd:0.03,network:'ethereum',factory:'0x1F98431c8aD98523631AE4a59f267346ea31F984',token:'0x21BfBDa47A0B4B5b1248c767Ee49F7caA9B23697',quoteToken:'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',fee:10000,twapWindowSeconds:1800},
-            'beam-2':{usd:0.0014,network:'ethereum',factory:'0x1F98431c8aD98523631AE4a59f267346ea31F984',token:'0x62D0A8458eD7719FDAF978fe5929C6D342B0bFcE',quoteToken:'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',fee:10000,twapWindowSeconds:1800},
-            liquity:{usd:0.20,network:'ethereum',factory:'0x1F98431c8aD98523631AE4a59f267346ea31F984',token:'0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D',quoteToken:'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',fee:3000,twapWindowSeconds:1800},
-            'virtual-protocol':{usd:0.63,network:'base',factory:'0x33128a8fC17869897dcE68Ed026d694621f6FDfD',token:'0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b',quoteToken:'0x4200000000000000000000000000000000000006',fee:500,twapWindowSeconds:1800},
-            'ondo-finance':{usd:0.35,network:'ethereum',factory:'0x1F98431c8aD98523631AE4a59f267346ea31F984',token:'0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3',quoteToken:'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',fee:3000,twapWindowSeconds:1800},
-            zksync:{usd:0.0084,network:'zksync',factory:'0x8FdA5a7a8dCA67BBcDd10F02Fa0649A937215422',token:'0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E',quoteToken:'0x5aea5775959fbc2557cc8789bc1bf90a239d9a91',fee:3000,twapWindowSeconds:1800}
-          };
-          shadow.generatedAt=now;
+          shadow.generatedAt=new Date().toISOString();
           shadow.mode='shadow';
           shadow.status='ok';
           shadow.semantics={...(shadow.semantics||{}),productionPriceAuthority:false};
           shadow.authority={...(shadow.authority||{}),executionAuthority:'none'};
-          shadow.observations=shadow.observations||{};
-          for(const [id,x] of Object.entries(direct)){
-            shadow.observations[id]={...(shadow.observations[id]||{}),assetId:id,source:'chainlink-v3',network:x.network,contract:x.contract,quote:'USD',status:'shadow-ok',usd:x.usd,productionPriceAuthority:false};
-          }
-          shadow.observations['convex-finance']={...(shadow.observations['convex-finance']||{}),assetId:'convex-finance',source:'chainlink-v3-relative',network:'ethereum',contract:'0xC9CbF687f43176B302F03f5e58470b77D07c61c6',status:'shadow-ok',usd:1.65,productionPriceAuthority:false,feedQuote:'ETH',quoteAssetId:'ethereum',quoteAssetUsd:2200,outputQuote:'USD',dependencyStatus:'shadow-ok'};
-          for(const [id,x] of Object.entries(v3)){
-            shadow.observations[id]={...(shadow.observations[id]||{}),assetId:id,source:'uniswap-v3-twap-relative',network:x.network,factory:x.factory,token:x.token,quoteToken:x.quoteToken,fee:x.fee,twapWindowSeconds:x.twapWindowSeconds,status:'shadow-ok',usd:x.usd,productionPriceAuthority:false,feedQuote:'ETH',quoteAssetId:'ethereum',quoteAssetUsd:2200,outputQuote:'USD',dependencyStatus:'shadow-ok'};
+          for(const id of policy.reviewedPilot.assetIds){
+            const req=policy.reviewedPilot.routeRequirements[id];
+            const o=policy.assetOverrides[id];
+            shadow.observations[id]={
+              ...(shadow.observations[id]||{}),
+              ...req,
+              assetId:id,
+              source:req.source,
+              status:'shadow-ok',
+              usd:Number(source.prices[id].usd),
+              productionPriceAuthority:false,
+              ...(o.requiredDependencyStatus?{dependencyStatus:o.requiredDependencyStatus}:{}),
+              ...(o.requiredQuoteAssetId?{quoteAssetId:o.requiredQuoteAssetId}:{}),
+              ...(o.requiredFeedQuote?{feedQuote:o.requiredFeedQuote}:{}),
+              ...(o.requiredOutputQuote?{outputQuote:o.requiredOutputQuote}:{})
+            };
           }
           fs.writeFileSync(p,JSON.stringify(shadow,null,2)+'\n');
           NODE
-      - name: Prove healthy bounded cohorts select seventeen onchain assets
+
+      - name: Prove healthy canonical universe selects 26 onchain assets
         run: |
           set -euo pipefail
           MARKET_DATA_FORCE_COINGECKO_FAILBACK=false node intelligence/market-data/market-data-authority-materializer.mjs
@@ -78,54 +69,28 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const s=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
-          const direct=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share','venice-token','internet-computer','decentraland','the-sandbox'];
-          const relative=['convex-finance'];
-          const v3=['ovr','beam-2','liquity','virtual-protocol','ondo-finance','zksync'];
-          const promoted=[...direct,...relative,...v3];
-          const expected={bitcoin:70000,ethereum:2200,'aerodrome-finance':0.47,pendle:1.45,'curve-dao-token':0.27,'frax-share':0.30,'venice-token':14.1,'internet-computer':2.35,decentraland:0.068,'the-sandbox':0.042,'convex-finance':1.65,ovr:0.03,'beam-2':0.0014,liquity:0.20,'virtual-protocol':0.63,'ondo-finance':0.35,zksync:0.0084};
-          if(m.authority?.onchainSelectedAssetCount!==17)throw new Error('Healthy cohorts did not select exactly 17 onchain assets');
-          if(m.authority?.directOnchainSelectedAssetCount!==10||m.authority?.relativeOnchainSelectedAssetCount!==1||m.authority?.v3RelativeOnchainSelectedAssetCount!==6)throw new Error('Cohort selection counts drift');
-          for(const id of promoted){
-            if(m.prices[id]?.authority?.selectedLane!=='onchain')throw new Error(`${id}: not onchain primary`);
-            if(Number(m.prices[id].usd)!==expected[id])throw new Error(`${id}: onchain price mismatch`);
+          if(Object.keys(s.prices||{}).length!==26)throw new Error('Expected 26 canonical source assets');
+          if(m.authority?.onchainSelectedAssetCount!==26||m.authority?.coingeckoSelectedAssetCount!==0)throw new Error('Healthy canonical universe did not select 26/26 onchain');
+          if(m.authority?.directOnchainSelectedAssetCount!==10||m.authority?.relativeOnchainSelectedAssetCount!==1||m.authority?.v3RelativeOnchainSelectedAssetCount!==6||m.authority?.reviewedOnchainSelectedAssetCount!==9)throw new Error('Cohort selection counts drift');
+          if(m.authority?.fallbackCount!==0||m.authority?.unknownCount!==0)throw new Error('Healthy canonical universe contains fallback/unknown');
+          for(const [id,row] of Object.entries(m.prices||{})){
+            if(row.authority?.requestedPrimary!=='onchain'||row.authority?.selectedLane!=='onchain'||row.authority?.fallbackUsed!==false)throw new Error(`${id}: healthy canonical authority drift`);
+            if(!String(row.source||'').startsWith('onchain-'))throw new Error(`${id}: onchain provenance missing`);
           }
-          if(m.prices['convex-finance']?.source!=='onchain-chainlink-v3-relative')throw new Error('CVX relative provenance drift');
-          for(const id of v3)if(m.prices[id]?.source!=='onchain-uniswap-v3-twap-relative')throw new Error(`${id}: V3 relative provenance drift`);
-          for(const id of Object.keys(s.prices||{}))if(!promoted.includes(id)&&m.prices[id]?.authority?.selectedLane!=='coingecko-lane')throw new Error(`${id}: non-promoted asset left CoinGecko`);
-          if(m.prices.elizaos?.authority?.selectedLane!=='coingecko-lane')throw new Error('ELIZA must remain CoinGecko');
-          if(m.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
-          console.log('Healthy 17-asset bounded authority cohorts PASS');
+          if(m.prices['tether-gold']?.source!=='onchain-uniswap-v3-twap-chainlink-quote')throw new Error('XAUT token-market provenance drift');
+          if(m.prices.elizaos?.source!=='onchain-uniswap-v3-twap-chainlink-quote')throw new Error('ELIZA onchain provenance drift');
+          if(m.authority?.executionAuthority!=='none'||m.authority?.capitalExecution!==false||m.authority?.policyMutationAuthority!==false)throw new Error('Authority boundary drift');
+          console.log('Healthy 26/26 canonical onchain-primary authority PASS');
           NODE
-      - name: Prove CVX dependency failure isolates to CoinGecko fallback
-        run: |
-          set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');
-          const p='intelligence/market-data/onchain-price-shadow.json';
-          const shadow=JSON.parse(fs.readFileSync(p,'utf8'));
-          shadow.observations['convex-finance']={...shadow.observations['convex-finance'],dependencyStatus:'rpc-unavailable'};
-          fs.writeFileSync(p,JSON.stringify(shadow,null,2)+'\n');
-          NODE
-          MARKET_DATA_FORCE_COINGECKO_FAILBACK=false node intelligence/market-data/market-data-authority-materializer.mjs
-          node - <<'NODE'
-          const fs=require('fs');
-          const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
-          const s=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
-          if(m.authority?.directOnchainSelectedAssetCount!==10||m.authority?.v3RelativeOnchainSelectedAssetCount!==6)throw new Error('CVX dependency failure disturbed other cohorts');
-          if(m.authority?.relativeOnchainSelectedAssetCount!==0)throw new Error('CVX dependency failure left relative onchain selection');
-          if(m.prices['convex-finance']?.authority?.selectedLane!=='coingecko-lane'||m.prices['convex-finance']?.authority?.fallbackUsed!==true)throw new Error('CVX dependency failure did not fall back to CoinGecko');
-          if(Number(m.prices['convex-finance'].usd)!==Number(s.prices['convex-finance'].usd))throw new Error('CVX dependency failback changed CoinGecko price');
-          console.log('CVX dependency-isolated failback PASS');
-          NODE
-      - name: Prove one V3 route failure isolates to CoinGecko fallback
+
+      - name: Prove one reviewed route failure affects only that asset
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const p='intelligence/market-data/onchain-price-shadow.json';
           const shadow=JSON.parse(fs.readFileSync(p,'utf8'));
-          shadow.observations['convex-finance']={...shadow.observations['convex-finance'],dependencyStatus:'shadow-ok'};
-          shadow.observations['ovr']={...shadow.observations['ovr'],status:'rpc-unavailable',usd:null};
+          shadow.observations.elizaos={...shadow.observations.elizaos,status:'rpc-unavailable',usd:null};
           fs.writeFileSync(p,JSON.stringify(shadow,null,2)+'\n');
           NODE
           MARKET_DATA_FORCE_COINGECKO_FAILBACK=false node intelligence/market-data/market-data-authority-materializer.mjs
@@ -133,29 +98,23 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const s=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
-          if(m.authority?.directOnchainSelectedAssetCount!==10||m.authority?.relativeOnchainSelectedAssetCount!==1||m.authority?.v3RelativeOnchainSelectedAssetCount!==5)throw new Error('OVR failure disturbed unrelated cohorts');
-          if(m.prices.ovr?.authority?.selectedLane!=='coingecko-lane'||m.prices.ovr?.authority?.fallbackUsed!==true)throw new Error('OVR route failure did not fall back to CoinGecko');
-          if(Number(m.prices.ovr.usd)!==Number(s.prices.ovr.usd))throw new Error('OVR failback changed CoinGecko price');
-          if(m.prices['beam-2']?.authority?.selectedLane!=='onchain')throw new Error('OVR failure disturbed BEAM');
-          console.log('V3 per-asset isolated failback PASS');
+          if(m.authority?.onchainSelectedAssetCount!==25||m.authority?.coingeckoSelectedAssetCount!==1||m.authority?.fallbackCount!==1)throw new Error('Single-route failure was not isolated');
+          if(m.prices.elizaos?.authority?.selectedLane!=='coingecko-lane'||m.prices.elizaos?.authority?.fallbackUsed!==true)throw new Error('ELIZA incident did not use daily CoinGecko failback');
+          if(Number(m.prices.elizaos.usd)!==Number(s.prices.elizaos.usd))throw new Error('ELIZA failback price drift');
+          if(m.prices['tether-gold']?.authority?.selectedLane!=='onchain')throw new Error('ELIZA incident disturbed XAUT');
+          console.log('Per-asset incident isolation PASS');
           NODE
-      - name: Prove cycle failure forces all seventeen promoted assets to CoinGecko
+
+      - name: Prove emergency cycle failback remains bounded and never zero
         run: |
           set -euo pipefail
           MARKET_DATA_FORCE_COINGECKO_FAILBACK=true node intelligence/market-data/market-data-authority-materializer.mjs
           node - <<'NODE'
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
-          const s=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
-          const promoted=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share','venice-token','internet-computer','decentraland','the-sandbox','convex-finance','ovr','beam-2','liquity','virtual-protocol','ondo-finance','zksync'];
-          if(m.authority?.onchainSelectedAssetCount!==0)throw new Error('Forced failback left onchain selections');
-          if(m.authority?.fallbackCount!==17)throw new Error('Forced failback must record exactly 17 promoted fallbacks');
-          for(const id of promoted){
-            if(m.prices[id]?.authority?.selectedLane!=='coingecko-lane'||m.prices[id]?.authority?.fallbackUsed!==true)throw new Error(`${id}: failback provenance missing`);
-            if(Number(m.prices[id].usd)!==Number(s.prices[id].usd))throw new Error(`${id}: failback did not use CoinGecko source lane`);
-          }
-          if(m.prices.elizaos?.authority?.selectedLane!=='coingecko-lane'||m.prices.elizaos?.authority?.fallbackUsed===true)throw new Error('ELIZA exception semantics drift');
-          if(m.semantics?.cycleForcedCoinGeckoFailback!==true)throw new Error('Cycle failback semantic missing');
-          console.log('Seventeen-asset cycle failback PASS');
+          if(m.authority?.onchainSelectedAssetCount!==0||m.authority?.coingeckoSelectedAssetCount!==26||m.authority?.fallbackCount!==26||m.authority?.unknownCount!==0)throw new Error('Emergency 26-asset failback contract drift');
+          for(const [id,row] of Object.entries(m.prices||{}))if(row.authority?.selectedLane!=='coingecko-lane'||row.authority?.fallbackUsed!==true||!(Number(row.usd)>0))throw new Error(`${id}: emergency failback invalid`);
+          if(m.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
+          console.log('Emergency 26-asset cached-daily failback PASS');
           NODE
           git diff --check
