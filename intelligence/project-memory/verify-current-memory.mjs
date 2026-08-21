@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 
-const current = fs.readFileSync('intelligence/project-memory/CURRENT.md','utf8');
-const security = JSON.parse(fs.readFileSync('security/security-intelligence.json','utf8'));
+const root = 'intelligence/project-memory';
+const current = fs.readFileSync(`${root}/CURRENT.md`, 'utf8');
+const security = JSON.parse(fs.readFileSync('security/security-intelligence.json', 'utf8'));
 const c = security?.severityCounts ?? {};
 const expected = `Security Sentinel (latest standalone state): **${String(security?.status || 'unknown').toUpperCase()}**; Critical ${c.critical ?? 0} / High ${c.high ?? 0} / Medium ${c.medium ?? 0}; generatedAt ${security?.generatedAt || 'n/a'}.`;
 if (!current.includes(expected)) {
@@ -18,18 +19,41 @@ if (!current.includes(`Canonical source state represented here: **${security.gen
 
 const collaborationFile = 'THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md';
 const routingFile = 'THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md';
-for (const f of [collaborationFile,routingFile]) {
-  if (!fs.existsSync(`intelligence/project-memory/${f}`)) throw new Error(`Required project-memory contract missing: ${f}`);
+const marketDataCanon = 'THE_HOLDING_MARKET_DATA_ONCHAIN_AUTHORITY_CANON_2026-08-21.md';
+for (const f of [collaborationFile, routingFile, marketDataCanon]) {
+  if (!fs.existsSync(`${root}/${f}`)) throw new Error(`Required project-memory contract missing: ${f}`);
 }
-const router = fs.readFileSync(`intelligence/project-memory/${routingFile}`,'utf8');
+
+const router = fs.readFileSync(`${root}/${routingFile}`, 'utf8');
 for (const phrase of [
   'CURRENT → continuity → router → task canon → live artifact → exact evidence',
   'enumerable NFT inventory != economic strategy inventory',
   'base lending interest',
   'external incentives',
   'Memory write-back rule',
+  'MARKET DATA / ONCHAIN PRICING / PUBLIC CAPITAL / COINGECKO FALLBACK',
+  '7,37 * * * *',
+  '12 3 * * *',
+  '<= 30 hours',
+  'GREEN workflow != physically materialized production artifact',
 ]) {
   if (!router.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Memory Routing Index missing durable route phrase: ${phrase}`);
+}
+
+const marketCanon = fs.readFileSync(`${root}/${marketDataCanon}`, 'utf8');
+for (const phrase of [
+  'ONE CANONICAL PRICE PLANE',
+  '26 explicitly reviewed assets',
+  'physical silver',
+  'DIVERGENCE IS TELEMETRY, NOT AUTOMATIC FAILURE',
+  '30 hours',
+  'per-asset-authority',
+  'ONE WRITER — RECOVERY PATHS INCLUDED',
+  'GREEN workflow != physically materialized production artifact',
+  'Market Data / onchain authority = PRODUCTION GREEN',
+  'executionAuthority = none',
+]) {
+  if (!marketCanon.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Market Data canon missing durable contract phrase: ${phrase}`);
 }
 
 const resumeMatch = current.match(/## Resume order\n\n([\s\S]*?)\n\n## Task-aware retrieval/);
@@ -49,17 +73,25 @@ for (const pattern of expectedResumeLines) {
 
 const continuityMatch = current.match(/^1\. \[(THE_HOLDING_MASTER_CONTINUITY_.*\.md)\]/m);
 if (!continuityMatch) throw new Error('Latest continuity link missing from CURRENT');
-const continuityPath = `intelligence/project-memory/${continuityMatch[1]}`;
+const continuityPath = `${root}/${continuityMatch[1]}`;
 if (!fs.existsSync(continuityPath)) throw new Error(`CURRENT latest continuity file missing: ${continuityMatch[1]}`);
-const continuity = fs.readFileSync(continuityPath,'utf8');
+const continuity = fs.readFileSync(continuityPath, 'utf8');
 for (const phrase of [
   'PROJECT X + HYPERLEND CLOSED',
   'resolver completeness != promotion completeness',
   'HyperLend base lending interest = Compounded / Embedded',
   'rewardAssetCount = 0',
   'generic implementation permission != merge permission',
+  'GREEN workflow != physically materialized production artifact',
+  '26/26',
+  'per-asset-authority',
+  'CoinGecko',
+  'divergence',
+  'PR #227',
+  'PR #233',
+  'Market Data / onchain tracking: fat check',
 ]) {
-  if (!continuity.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Latest continuity missing material 2026-08-18 checkpoint phrase: ${phrase}`);
+  if (!continuity.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Latest continuity missing durable/current checkpoint phrase: ${phrase}`);
 }
 
 for (const phrase of [
@@ -74,12 +106,13 @@ for (const phrase of [
   if (!current.includes(phrase)) throw new Error(`CURRENT bootstrap missing phrase: ${phrase}`);
 }
 
-console.log('CURRENT Security + collaboration + task-routing bootstrap consistency PASS', {
+console.log('CURRENT Security + collaboration + routing + Market Data continuity consistency PASS', {
   generatedAt: security.generatedAt,
-  critical:c.critical,
-  high:c.high,
-  medium:c.medium,
+  critical: c.critical,
+  high: c.high,
+  medium: c.medium,
   collaborationFile,
   routingFile,
-  latestContinuity:continuityMatch[1],
+  marketDataCanon,
+  latestContinuity: continuityMatch[1],
 });
