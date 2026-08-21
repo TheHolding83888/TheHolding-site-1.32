@@ -45,7 +45,7 @@
   const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 
   function protocols(){
-    const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aerodrome','Velodrome','GMX','Concentrator'];
+    const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator'];
     if((state?.capital?.positions||[]).some(x=>x.protocol==='HyperLend'||String(x.assetId||'').startsWith('hyperlend-')))p.splice(5,0,'HyperLend');
     return p;
   }
@@ -70,6 +70,9 @@
     ?'Компания The Holding Standard с резервным капиталом и продуктивными позициями в Aave, Stake DAO, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X и Concentrator.'
     :'A The Holding Standard company combining reserve capital with productive positions across Aave, Stake DAO, HyperLend, Convex, Aerodrome, Velodrome, GMX, Project X and Concentrator.';}
 
+  /* Capital State still exposes measuredCapitalFloorUsd as a valid state-semantic field.
+     It is intentionally NOT presentation authority for Combined TVL or General Index Network Value;
+     fast public summary values stay on the shared Public Capital / INDEX_STATE plane. */
   function canonicalNetworkTvl(){
     const net=window.__TH_CAPITAL_STATE__?.network;
     if(!net)return null;
@@ -78,15 +81,11 @@
   }
 
   function syncNetworkStats(){
-    const net=window.__TH_CAPITAL_STATE__?.network;
-    if(!net)return;
-    const exact=canonicalNetworkTvl();
-    const top=document.getElementById('statTVL');
-    const index=document.getElementById('idxNetworkValue');
-    const display=exact!==null?money(exact):(Number.isFinite(Number(net.measuredCapitalFloorUsd))&&Number(net.measuredCapitalFloorUsd)>0?'≥ '+money(net.measuredCapitalFloorUsd):null);
-    if(!display)return;
-    if(top&&top.textContent!==display)top.textContent=display;
-    if(index&&index.textContent!==display)index.textContent=display;
+    /* Fast summary authority stays on the shared Public Capital plane. Combined TVL covers all registry companies; General Index Network Value is derived from INDEX_STATE and excludes Stable Capital / Monetra. */
+    const statProtocols=document.getElementById('statProtocols');
+    if(statProtocols&&typeof COMPANY_PROTOCOLS!=='undefined'){
+      statProtocols.textContent=String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size);
+    }
   }
 
   function ensureCollectionCard(){
