@@ -8,6 +8,15 @@ on:
     branches: [main]
     paths-ignore:
       - 'security/**'
+      # High-frequency Market Data snapshots are generated data-plane state.
+      # Ignoring snapshot-only pushes prevents the 30-minute price heartbeat
+      # from waking Security Sentinel up to 48 times/day. Market Data engines,
+      # workflows, policies and registries are intentionally NOT ignored and
+      # still receive normal push-triggered security review.
+      - 'intelligence/market-data/market-data-coingecko.json'
+      - 'intelligence/market-data/market-data.json'
+      - 'intelligence/market-data/onchain-price-shadow.json'
+      - 'intelligence/market-data/public-capital-state.json'
       # Deterministic generated cognitive outputs are already validated by their
       # own fail-closed writers. Re-scanning these generated artifacts on push
       # would create a self-invalidating Sentinel -> Brain -> Sentinel loop.
