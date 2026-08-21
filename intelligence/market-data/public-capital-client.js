@@ -205,6 +205,24 @@
     return updated;
   }
 
+  function applySubstantiaMarketDataProvenance(root, data) {
+    const scope = root || document;
+    if (!scope.querySelectorAll) return 0;
+    const source = data && data.sourceState ? data.sourceState : {};
+    const observedAt = source.marketDataObservedAt || source.marketDataGeneratedAt || null;
+    const observed = observedAt ? new Date(observedAt) : null;
+    const valid = observed && !Number.isNaN(observed.getTime());
+    const stamp = valid ? observed.toLocaleTimeString('en-GB', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' }) + ' UTC' : null;
+    const text = stamp ? 'Observed ' + stamp + ' · Market Data' : 'Canonical Market Data';
+    let updated = 0;
+    scope.querySelectorAll('[data-tvl-updated="substantia"]').forEach(function (el) {
+      if (el.textContent !== text) { el.textContent = text; updated += 1; }
+      el.setAttribute('data-th-market-data-provenance', 'canonical');
+      el.title = 'Canonical Market Data observation; asset-level provenance is preserved upstream';
+    });
+    return updated;
+  }
+
   function applyHomepageNetwork(root, data) {
     const scope = root || document;
     if (!scope.querySelector) return 0;
@@ -369,6 +387,7 @@
     if (!data) return 0;
     let updated = 0;
     updated += applyDefiteaCurrentTvl(root, data);
+    updated += applySubstantiaMarketDataProvenance(root, data);
     updated += applyHomepageNetwork(root, data);
     updated += applyHomepageMonetra(root, data);
     updated += applyMonetraStandalone(root, data);
