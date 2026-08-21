@@ -1,21 +1,21 @@
 name: TEMP Medium Finish
 
 on:
-  push:
-    branches:
-      - fix/medium-public-surface-truth-20260821
+  pull_request:
+    types: [synchronize]
 
 permissions:
   contents: write
 
 jobs:
   finish:
+    if: github.event.pull_request.head.ref == 'fix/medium-public-surface-truth-20260821'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: fix/medium-public-surface-truth-20260821
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Reuse validated patch body and finish cleanly
         shell: bash
@@ -32,12 +32,10 @@ jobs:
           source = '\n'.join(line[10:] if line.startswith('          ') else line for line in raw.splitlines())
           exec(compile(source, '<medium-public-truth-patch>', 'exec'), {})
 
-          # Remove trailing horizontal whitespace introduced by legacy Monetra copy.
           p = Path('monetra/index.html')
           lines = p.read_text(encoding='utf-8').splitlines()
           p.write_text('\n'.join(line.rstrip(' \t') for line in lines) + '\n', encoding='utf-8')
 
-          # Final PR tree must contain zero temporary execution artifacts.
           temps = [
               '.github/workflows/temp-medium-public-truth-patch.yml',
               '.github/workflows/temp-medium-public-truth-patch-v2.yml',
@@ -47,11 +45,12 @@ jobs:
               '.github/temp-medium-second-trigger.txt',
               '.github/temp-medium-manual-trigger.txt',
               '.github/temp-medium-v2-trigger.txt',
+              '.github/temp-medium-finish-trigger.txt',
+              '.github/temp-medium-finish-trigger-2.txt',
           ]
           for name in temps:
               q = Path(name)
-              if q.exists():
-                  q.unlink()
+              if q.exists(): q.unlink()
           PY
 
       - name: Verify final patch
@@ -81,4 +80,4 @@ jobs:
           git diff --cached --check
           git diff --cached --stat
           git commit -m "UI: align medium public truth surfaces"
-          git push origin HEAD:fix/medium-public-surface-truth-20260821
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
