@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'intelligence/market-data/market-data-engine.mjs'
+      - 'intelligence/market-data/market-data.json'
       - 'intelligence/market-data/market-data-coingecko.json'
       - 'intelligence/market-data/market-data-validation-fixture.mjs'
       - 'intelligence/market-data/coingecko-fetch-shim.mjs'
@@ -27,7 +28,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Validate isolated CoinGecko source lane
+      - name: Validate isolated CoinGecko fallback lane and canonical consumer authority
         run: |
           set -euo pipefail
           node --check intelligence/market-data/market-data-engine.mjs
@@ -37,16 +38,32 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const source=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
+          const canonical=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
           const shim=fs.readFileSync('intelligence/market-data/coingecko-fetch-shim.mjs','utf8');
+
+          // CoinGecko remains an isolated source/fallback lane. It must never
+          // contain materialized onchain authority metadata.
           if(source.semantics?.dedicatedCoinGeckoSourceLane!==true)throw new Error('Dedicated CoinGecko source lane missing');
           if(Object.keys(source.prices||{}).length!==26)throw new Error('Source lane coverage drift');
-          if(!shim.includes("market-data-coingecko.json"))throw new Error('CoinGecko compatibility shim no longer reads isolated source lane');
-          if(policy.defaultProductionAuthority!=='coingecko-lane')throw new Error('CoinGecko default authority drift');
-          if(policy.semantics?.coinGeckoRemainsFallbackAndSanityCheck!==true)throw new Error('CoinGecko fallback/sanity contract missing');
           for(const row of Object.values(source.prices||{})){
             if(row.authority?.selectedLane==='onchain'||String(row.source||'').startsWith('onchain-'))throw new Error('Onchain authority leaked into CoinGecko source lane');
           }
-          console.log('CoinGecko source-lane isolation PASS',{assetCount:26,pilot:policy.pilot?.assetIds});
+
+          // Downstream compatibility must consume canonical Market Data, not
+          // bypass the authority selector by reading the daily source lane.
+          if(!shim.includes("const SNAPSHOT = path.join(__dirname, 'market-data.json')"))throw new Error('Compatibility shim must read canonical Market Data');
+          if(shim.includes("const SNAPSHOT = path.join(__dirname, 'market-data-coingecko.json')"))throw new Error('Compatibility shim must not read isolated CoinGecko source lane');
+          if(!shim.includes("'x-the-holding-external-request': '0'"))throw new Error('Compatibility shim zero-external-request proof missing');
+
+          // The validation fixture is intentionally deterministic rather than
+          // onchain-selected; its purpose here is to prove source separation.
+          if(canonical.validationFixture!==true)throw new Error('Deterministic canonical validation fixture missing');
+          if(canonical.semantics?.externalRequestCount!==0)throw new Error('Canonical validation fixture made an external request');
+
+          if(policy.defaultProductionAuthority!=='coingecko-lane')throw new Error('Unpromoted-asset fallback default drift');
+          if(policy.semantics?.coinGeckoRemainsFallbackAndSanityCheck!==true)throw new Error('CoinGecko fallback/sanity contract missing');
+          if(policy.globalOnchainPromotionEnabled!==true)throw new Error('Per-asset onchain promotion disabled');
+          console.log('CoinGecko fallback-lane isolation + canonical consumer authority PASS',{assetCount:26,pilot:policy.pilot?.assetIds});
           NODE
           git diff --check
