@@ -1,0 +1,109 @@
+name: Update ICP NNS Rewards
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
+      - 'rewards/icp-nns-rewards-overlay.mjs'
+      - '.github/workflows/update-icp-nns-rewards.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
+      - 'rewards/icp-nns-rewards-overlay.mjs'
+      - '.github/workflows/update-icp-nns-rewards.yml'
+  workflow_run:
+    workflows:
+      - "Update Company Rewards"
+    types: [completed]
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: icp-nns-rewards-daily
+  cancel-in-progress: false
+
+jobs:
+  update-icp-nns-rewards:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Collect public ICP NNS state and overlay rewards
+        run: |
+          set -euo pipefail
+          node --check rewards/icp-nns-rewards-overlay.mjs
+          node rewards/icp-nns-rewards-overlay.mjs
+
+      - name: Verify ICP NNS accounting boundary
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const s=JSON.parse(fs.readFileSync('companies/icp-nns-rewards-state.json','utf8'));
+          const five=r.companies?.['0x5860...83CA8.eth'];
+          const six=r.companies?.['aerocvxyb.eth'];
+          const row=c=>(c?.rewards||[]).filter(x=>x.route==='icp-nns-governance');
+          const a=row(five),b=row(six);
+          if(a.length!==1||b.length!==1)throw new Error('Exactly one ICP NNS reward row required per company');
+          if(a[0].classification!=='unclaimed'||b[0].classification!=='unclaimed')throw new Error('ICP rewards must be Unclaimed');
+          if(Math.abs(Number(a[0].amount)-Number(b[0].amount))>1e-8)throw new Error('50/50 ICP allocation drift');
+          if(!(Number(a[0].usdValue)>=0)||!(Number(b[0].usdValue)>=0))throw new Error('ICP reward USD valuation missing');
+          if(a[0].details?.principalIncludedInTvlAgain!==false||b[0].details?.principalIncludedInTvlAgain!==false)throw new Error('ICP principal TVL double count risk');
+          if(s.capitalAccounting?.principalAddedToTvl!==false)throw new Error('ICP state TVL boundary missing');
+          if(s.authority?.executionAuthority!=='none'||s.authority?.claimTransactionAuthority!=='none')throw new Error('ICP authority expansion');
+          if(s.unknownIsNotZero!==true)throw new Error('ICP unknown != zero guard missing');
+          if(s.publicNeuronObservation?.requestedNeuronCount!==41)throw new Error('ICP neuron universe drift');
+          console.log('ICP NNS accounting boundary PASS',{
+            status:s.status,
+            mode:s.rewards?.mode,
+            coverage:s.publicNeuronObservation?.detailOkCount+'/41',
+            unclaimedPerCompany:a[0].amount,
+            apr:s.rewards?.referenceAprPct,
+            dissolving:s.publicNeuronObservation?.dissolvingNeuronCount,
+            voting:s.publicNeuronObservation?.voting
+          });
+          NODE
+
+      - name: Publish generated ICP NNS rewards state
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+
+            node rewards/icp-nns-rewards-overlay.mjs
+            git add companies/rewards-data.json companies/icp-nns-rewards-state.json companies/icp-nns-rewards-history.json
+            if git diff --cached --quiet; then
+              echo "No ICP NNS rewards changes to publish."
+              exit 0
+            fi
+            git commit -m "data: update ICP NNS accrued rewards"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Safe writer guard: main moved during push; rebuilding from fresh main ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
