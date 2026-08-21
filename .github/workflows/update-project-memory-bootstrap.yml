@@ -11,6 +11,15 @@ on:
       # resulting canonical subsystem state is still captured by the hourly
       # backstop and by ordinary material pushes.
       - 'intelligence/operator/command.json'
+      # High-frequency Market Data snapshots are generated state, not project
+      # memory. Ignoring snapshot-only pushes prevents the 30-minute price
+      # heartbeat from waking Project Memory up to 48 times/day. Any change to
+      # Market Data code, workflows, policies or registries still triggers this
+      # workflow normally; the hourly backstop remains enabled as well.
+      - 'intelligence/market-data/market-data-coingecko.json'
+      - 'intelligence/market-data/market-data.json'
+      - 'intelligence/market-data/onchain-price-shadow.json'
+      - 'intelligence/market-data/public-capital-state.json'
   workflow_run:
     workflows: ["The Holding Security Sentinel"]
     types: [completed]
