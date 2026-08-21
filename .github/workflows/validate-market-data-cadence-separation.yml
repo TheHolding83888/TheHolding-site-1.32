@@ -4,8 +4,11 @@ on:
   pull_request:
     paths:
       - 'intelligence/market-data/market-data-engine.mjs'
+      - 'intelligence/market-data/coingecko-fetch-shim.mjs'
       - '.github/workflows/market-data-refresh.yml'
       - '.github/workflows/market-data-coingecko-daily.yml'
+      - '.github/workflows/update-productivity.yml'
+      - '.github/workflows/update-capital-state.yml'
       - '.github/workflows/update-project-memory-bootstrap.yml'
       - '.github/workflows/security-sentinel.yml'
       - '.github/workflows/validate-market-data-cadence-separation.yml'
@@ -30,10 +33,14 @@ jobs:
         run: |
           set -euo pipefail
           node --check intelligence/market-data/market-data-engine.mjs
+          node --check intelligence/market-data/coingecko-fetch-shim.mjs
           node - <<'NODE'
           const fs=require('fs');
           const heartbeat=fs.readFileSync('.github/workflows/market-data-refresh.yml','utf8');
           const daily=fs.readFileSync('.github/workflows/market-data-coingecko-daily.yml','utf8');
+          const productivity=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
+          const capital=fs.readFileSync('.github/workflows/update-capital-state.yml','utf8');
+          const shim=fs.readFileSync('intelligence/market-data/coingecko-fetch-shim.mjs','utf8');
           const engine=fs.readFileSync('intelligence/market-data/market-data-engine.mjs','utf8');
           const memory=fs.readFileSync('.github/workflows/update-project-memory-bootstrap.yml','utf8');
           const security=fs.readFileSync('.github/workflows/security-sentinel.yml','utf8');
@@ -48,6 +55,20 @@ jobs:
           if(!engine.includes('if (!dailyRefresh)'))throw new Error('Engine daily-only hard gate missing');
           if(!engine.includes('nonDailyExternalFetchForbidden: true'))throw new Error('Engine strict non-daily semantics missing');
           if(!engine.includes('30 * 60 * 60 * 1000'))throw new Error('30-hour prior daily snapshot retention missing');
+
+          // Manual recovery paths are consumers only. They may reuse the legacy
+          // simple-price call shape through the local shim, but may neither run
+          // the Market Data writer nor stage canonical market-data.json.
+          for(const [name,wf] of [['Productivity recovery',productivity],['Capital recovery',capital]]){
+            if(wf.includes('node intelligence/market-data/market-data-engine.mjs'))throw new Error(`${name} must not execute Market Data writer`);
+            if(/git add[\s\\\n\r\t\w./-]*intelligence\/market-data\/market-data\.json/.test(wf))throw new Error(`${name} must not stage canonical market-data.json`);
+            if(!wf.includes('perAssetAuthoritySelectionApplied')||!wf.includes('onchainSelectedAssetCount'))throw new Error(`${name} canonical Market Data admission guard missing`);
+          }
+          if(productivity.includes('COINGECKO_API_KEY:')||capital.includes('COINGECKO_API_KEY:'))throw new Error('Recovery workflows must not receive CoinGecko credentials');
+          if(!productivity.includes('coingecko-fetch-shim.mjs')||!capital.includes('coingecko-fetch-shim.mjs'))throw new Error('Recovery workflows must bind legacy price calls through local canonical shim');
+          if(!shim.includes("const SNAPSHOT = path.join(__dirname, 'market-data.json')"))throw new Error('Compatibility shim must consume canonical market-data.json');
+          if(shim.includes("const SNAPSHOT = path.join(__dirname, 'market-data-coingecko.json')"))throw new Error('Compatibility shim must not consume daily CoinGecko source lane');
+          if(!shim.includes("'x-the-holding-external-request': '0'"))throw new Error('Compatibility shim zero-external-request proof missing');
 
           const generated=[
             'intelligence/market-data/market-data-coingecko.json',
@@ -71,7 +92,7 @@ jobs:
           }
           if(!memory.includes("cron: '17 * * * *'"))throw new Error('Project Memory hourly backstop missing');
           if(!security.includes("cron: '47 6 * * *'"))throw new Error('Security daily backstop missing');
-          console.log('Static strict-daily cadence + generated-noise hygiene contract PASS');
+          console.log('Static cadence + writer ownership + generated-noise hygiene contract PASS');
           NODE
 
       - name: Prove scheduled push and manual paths perform zero CoinGecko requests
@@ -86,7 +107,22 @@ jobs:
             test "$before" = "$after"
           done
           git checkout -- intelligence/market-data/market-data.json intelligence/market-data/market-data-coingecko.json
-          echo 'All non-daily paths zero-request reuse PASS'
+          echo 'All non-daily Market Data engine paths zero-request reuse PASS'
+
+      - name: Prove compatibility shim uses local canonical snapshot only
+        run: |
+          set -euo pipefail
+          node intelligence/market-data/market-data-validation-fixture.mjs
+          node --import=./intelligence/market-data/coingecko-fetch-shim.mjs --input-type=module - <<'NODE'
+          const before=globalThis.fetch;
+          const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,internet-computer&vs_currencies=usd');
+          if(!r.ok)throw new Error('canonical compatibility response unavailable');
+          if(r.headers.get('x-the-holding-external-request')!=='0')throw new Error('compatibility shim external request marker drift');
+          const j=await r.json();
+          if(!(Number(j.bitcoin?.usd)>0)||!(Number(j['internet-computer']?.usd)>0))throw new Error('compatibility shim canonical values missing');
+          console.log('Local canonical compatibility shim PASS',j);
+          NODE
+          git checkout -- intelligence/market-data/market-data.json intelligence/market-data/market-data-coingecko.json
 
       - name: Prove daily gate performs exactly one batch request for all canonical assets
         run: |

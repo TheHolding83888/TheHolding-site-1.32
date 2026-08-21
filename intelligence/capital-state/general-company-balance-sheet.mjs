@@ -5,6 +5,7 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const OUT = path.join(ROOT, 'intelligence/capital-state/general-company-balance-sheet.json');
 const PRODUCTIVITY = 'companies/productivity-data.json';
+const MARKET_DATA = 'intelligence/market-data/market-data.json';
 const UI_BOOK_SOURCE = 'companies/index.html';
 
 const EXPECTED_UI_BLOB_SHA = 'def951f9432bfe600f29bdbbf1c26dbd58655b0d';
@@ -24,7 +25,7 @@ const BOOK = {
     { id:'resupply', qty:3682, layer:'productive-dividend' }
   ],
   'YieldRing.eth': [
-    { id:'bitcoin', qty:0.0334, layer:'foundation', priceSource:'coingecko' },
+    { id:'bitcoin', qty:0.0334, layer:'foundation', priceSource:'shared-market-data' },
     { id:'aerodrome-finance', qty:678, layer:'productive-dividend' },
     { id:'convex-finance', qty:240, layer:'productive-dividend' },
     { id:'frax-share', qty:800, layer:'productive-dividend' }
@@ -38,7 +39,7 @@ const BOOK = {
     { id:'yield-basis', qty:12029, layer:'productive-dividend' }
   ],
   '0x5860...83CA8.eth': [
-    { id:'bitcoin', qty:0.1241, layer:'foundation', priceSource:'coingecko' },
+    { id:'bitcoin', qty:0.1241, layer:'foundation', priceSource:'shared-market-data' },
     { id:'internet-computer', qty:1363, layer:'productive-dividend' },
     { id:'aerodrome-finance', qty:5000, layer:'productive-dividend' },
     { id:'velodrome-finance', qty:28326, layer:'productive-dividend' }
@@ -50,18 +51,18 @@ const BOOK = {
     { id:'internet-computer', qty:1296, layer:'productive-dividend' }
   ],
   "Rook's portfolio": [
-    { id:'bitcoin', qty:0.09949873, layer:'foundation', priceSource:'coingecko' },
-    { id:'ethereum', qty:1.083229073375, layer:'foundation', priceSource:'coingecko' },
+    { id:'bitcoin', qty:0.09949873, layer:'foundation', priceSource:'shared-market-data' },
+    { id:'ethereum', qty:1.083229073375, layer:'foundation', priceSource:'shared-market-data' },
     { id:'aerodrome-finance', qty:4330.755126048871, layer:'productive-dividend' },
     { id:'convex-finance', qty:336.240148815125, layer:'productive-dividend' },
     { id:'curve-dao-token', qty:1368.677426931635, layer:'productive-dividend' },
-    { id:'zksync', qty:8573.908961603593, layer:'unclassified', priceSource:'coingecko' },
+    { id:'zksync', qty:8573.908961603593, layer:'unclassified', priceSource:'shared-market-data' },
     { id:'bitcoin', qty:0.00335757, layer:'productive-dividend', productivityOnly:true, engineId:'yieldbasis_yblp_wbtc' },
     { id:'ethereum', qty:0.29309327939659907, layer:'productive-dividend', productivityOnly:true, engineId:'yieldbasis_yblp_weth' }
   ],
   '1milliondollar.eth': [
-    { id:'bitcoin', qty:0.07264572, layer:'foundation', priceSource:'coingecko' },
-    { id:'ethereum', qty:0.167026130614, layer:'foundation', priceSource:'coingecko', evidenceStatus:'mixed-verified-native-plus-owner-observed', note:'0.006426130614 ETH verified native + 0.1606 owner-observed WETH; owner-observed component is not independently reproduced onchain.' },
+    { id:'bitcoin', qty:0.07264572, layer:'foundation', priceSource:'shared-market-data' },
+    { id:'ethereum', qty:0.167026130614, layer:'foundation', priceSource:'shared-market-data', evidenceStatus:'mixed-verified-native-plus-owner-observed', note:'0.006426130614 ETH verified native + 0.1606 owner-observed WETH; owner-observed component is not independently reproduced onchain.' },
     { id:'aerodrome-finance', qty:214.798088305326, layer:'productive-dividend' },
     { id:'convex-crv', qty:468.390991181449, layer:'productive-dividend' },
     { id:'yield-basis', qty:3737.585758274693, layer:'productive-dividend' }
@@ -73,7 +74,7 @@ const REGISTRY = [
   ['005','0x5860...83CA8.eth'],['006','aerocvxyb.eth'],['007',"Rook's portfolio"],['009','1milliondollar.eth']
 ];
 
-const COINGECKO_IDS = ['bitcoin','ethereum','zksync'];
+const SHARED_MARKET_IDS = ['bitcoin','ethereum','zksync'];
 const round = (n,d=6) => { const p=10**d; return Number.isFinite(Number(n)) ? Math.round(Number(n)*p)/p : null; };
 const readJson = rel => JSON.parse(fs.readFileSync(path.join(ROOT, rel),'utf8'));
 const sha256File = rel => crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT,rel))).digest('hex');
@@ -82,18 +83,32 @@ const gitBlobSha = rel => {
   return crypto.createHash('sha1').update(Buffer.from(`blob ${buf.length}\0`)).update(buf).digest('hex');
 };
 
-async function livePrices() {
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${COINGECKO_IDS.join(',')}&vs_currencies=usd`;
-  const r = await fetch(url, { headers:{accept:'application/json','user-agent':'The-Holding-Capital-State/0.2'} });
-  if (!r.ok) throw new Error(`CoinGecko price request failed: ${r.status}`);
-  const j = await r.json();
+function canonicalMarketPrices() {
+  const market=readJson(MARKET_DATA);
+  const prices=market?.prices||{};
+  const deterministicFixture=market?.validationFixture===true;
+  const productionCanonical=market?.semantics?.perAssetAuthoritySelectionApplied===true;
+  if(Object.keys(prices).length!==26)throw new Error('general balance sheet requires complete 26-asset Market Data');
+  if(!productionCanonical&&!deterministicFixture)throw new Error('general balance sheet requires canonical Market Data or explicit deterministic CI fixture');
+  if(deterministicFixture&&Number(market?.semantics?.externalRequestCount)!==0)throw new Error('deterministic Market Data fixture must be zero-request');
+  if(productionCanonical&&Number(market?.authority?.onchainSelectedAssetCount)!==26)throw new Error('general balance sheet requires 26/26 onchain-selected production Market Data');
   const out={};
-  for (const id of COINGECKO_IDS) {
-    const v=Number(j?.[id]?.usd);
-    if (!Number.isFinite(v) || v<=0) throw new Error(`missing live USD price for ${id}`);
+  for(const id of SHARED_MARKET_IDS){
+    const row=prices[id];
+    const v=Number(row?.usd);
+    if(!Number.isFinite(v)||v<=0)throw new Error(`missing canonical USD price for ${id}`);
+    if(productionCanonical&&(row?.authority?.selectedLane!=='onchain'||row?.authority?.fallbackUsed!==false||!String(row?.source||'').startsWith('onchain-')))throw new Error(`${id}: canonical onchain authority unavailable`);
     out[id]=v;
   }
-  return { prices:out, sourceUrl:url, fetchedAt:new Date().toISOString() };
+  return {
+    prices:out,
+    generatedAt:market.generatedAt||null,
+    observedAt:market.observedAt||null,
+    sha256:sha256File(MARKET_DATA),
+    sourceFile:MARKET_DATA,
+    deterministicFixture,
+    productionCanonical
+  };
 }
 
 const productivity=readJson(PRODUCTIVITY);
@@ -102,7 +117,7 @@ if (gitBlobSha(UI_BOOK_SOURCE) !== EXPECTED_UI_BLOB_SHA) {
   throw new Error('companies/index.html changed since Company Book normalization; review browser Company Book before publishing balance sheet');
 }
 
-const cg=await livePrices();
+const market=canonicalMarketPrices();
 const companies=[];
 let networkTotal=0;
 let networkProductiveExposure=0;
@@ -141,9 +156,9 @@ for (const [registry,name] of REGISTRY) {
     let priceProvenance=null;
     let productiveAttribute=false;
     const pp=productiveById.get(row.id);
-    if (row.priceSource==='coingecko') {
-      price=Number(cg.prices[row.id]);
-      priceProvenance='coingecko-live-simple-price';
+    if (row.priceSource==='shared-market-data') {
+      price=Number(market.prices[row.id]);
+      priceProvenance=market.deterministicFixture?'deterministic-validation-fixture':'canonical-shared-market-data-onchain-selected';
     } else {
       if (!pp) throw new Error(`${name}: productive Company Book row ${row.id} missing from canonical Productivity breakdown`);
       if (Math.abs(Number(pp.units)-Number(row.qty)) > Math.max(1e-9,Math.abs(Number(row.qty))*1e-9)) throw new Error(`${name}: quantity drift for ${row.id}`);
@@ -190,12 +205,14 @@ for (const [registry,name] of REGISTRY) {
 for (const k of Object.keys(layerTotals)) layerTotals[k]=round(layerTotals[k]);
 const output={
   version:'0.1-general-company-balance-sheet',
-  engineVersion:'0.1-browser-book-bound-balance-sheet-normalizer',
+  engineVersion:'0.2-canonical-market-data-bound-balance-sheet-normalizer',
   generatedAt:new Date().toISOString(),status:'ok',
   purpose:'Machine-readable total-capital binding for the eight general Registry companies, normalized from the existing browser Company Book and reconciled against canonical Productivity without conflating productive exposure with primary capital layer.',
   authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,allocationAuthority:false,policyMutationAuthority:false,methodologyMutationAuthority:false},
   semantics:{
     unknownPolicy:'unknown != zero',
+    marketPriceAuthority:market.deterministicFixture?'deterministic zero-request CI fixture':'canonical per-asset onchain-selected Market Data; no direct external price request',
+    deterministicValidationFixture:market.deterministicFixture,
     doubleCountPolicy:'productivityOnly rows never add a second copy of parent BTC/ETH economic exposure',
     productiveExposure:'A capital position can be economically productive while its primary capital layer remains Foundation or another layer; Productivity is an earning attribute, not automatically a Productive Dividend capital classification.',
     layerTaxonomy:['foundation','productive-dividend','stable-reserve','rwa','venture','unclassified']
@@ -203,7 +220,7 @@ const output={
   sourceState:{
     browserCompanyBook:{file:UI_BOOK_SOURCE,gitBlobSha:EXPECTED_UI_BLOB_SHA,sha256:sha256File(UI_BOOK_SOURCE),role:'existing UI Company Book quantities and inclusion semantics'},
     productivity:{file:PRODUCTIVITY,version:productivity.version,generatedAt:productivity.generatedAt||null,sha256:sha256File(PRODUCTIVITY),role:'productive quantity/exposure reconciliation and productive-asset current prices'},
-    livePrices:{provider:'CoinGecko',ids:COINGECKO_IDS,sourceUrl:cg.sourceUrl,fetchedAt:cg.fetchedAt,role:'current BTC/ETH/ZK prices already used by the public browser TVL surface'}
+    marketData:{file:market.sourceFile,generatedAt:market.generatedAt,observedAt:market.observedAt,sha256:market.sha256,assetIds:SHARED_MARKET_IDS,role:market.deterministicFixture?'deterministic zero-request validation prices; never production authority':'canonical onchain-selected BTC/ETH/ZK prices; no direct CoinGecko request'}
   },
   network:{
     generalCompanyCount:REGISTRY.length,
@@ -227,5 +244,6 @@ console.log('General company balance sheet built',{
   generalCompanyTvlUsd:output.network.generalCompanyTvlUsd,
   productiveMeasuredExposureUsd:output.network.productiveMeasuredExposureUsd,
   primaryProductiveDividendCapitalUsd:output.network.primaryProductiveDividendCapitalUsd,
+  marketDataMode:market.deterministicFixture?'deterministic-validation-fixture':'canonical-onchain-selected',
   executionAuthority:output.authority.executionAuthority
 });
