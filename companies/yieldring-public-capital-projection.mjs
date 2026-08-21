@@ -53,7 +53,7 @@ fs.writeFileSync(PAGE,page);
 let balance=fs.readFileSync(BALANCE,'utf8');
 balance=replaceOnce(balance,
 `    { id:'bitcoin', qty:0.03, layer:'foundation', priceSource:'coingecko' },\n    { id:'aerodrome-finance', qty:480, layer:'productive-dividend' },`,
-`    { id:'bitcoin', qty:0.0334, layer:'foundation', priceSource:'coingecko' },\n    { id:'aerodrome-finance', qty:678, layer:'productive-dividend' },`,
+`    { id:'bitcoin', qty:0.0334, layer:'foundation', priceSource:'shared-market-data' },\n    { id:'aerodrome-finance', qty:678, layer:'productive-dividend' },`,
 'General Balance YieldRing quantities');
 balance=balance.replace(/const EXPECTED_UI_BLOB_SHA = '[0-9a-f]{40}';/,`const EXPECTED_UI_BLOB_SHA = '${indexBlob}';`);
 balance=replaceOnce(balance,
