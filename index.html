@@ -3542,7 +3542,7 @@
                     </div>
                     <div class="fund-metric">
                         <div class="fund-metric-label">Fund Value</div>
-                        <div class="fund-metric-value" data-tvl="monetra">$800</div>
+                        <div class="fund-metric-value" data-tvl="monetra">Live</div>
                     </div>
                     <div class="fund-metric">
                         <div class="fund-metric-label">Status</div>
@@ -3878,7 +3878,7 @@
                                         <span class="pyramid-percentage">15%</span>
                                     </div>
                                     <div class="pyramid-meta">
-                                        <span class="pyramid-tvl" data-tvl-viz="monetra">$800</span>
+                                        <span class="pyramid-tvl" data-tvl-viz="monetra">Live</span>
                                         <span class="pyramid-label">Stable</span>
                                     </div>
                                 </div>
@@ -4030,7 +4030,7 @@
                     <div class="mfc-body">
                         <div class="mfc-top"><span class="mfc-name">Monetra</span><div class="mfc-right"><span class="mfc-pct">15%</span><span class="mfc-label">Stable</span></div></div>
                         <div class="mfc-desc">A stablecoin and liquidity layer that preserves flexibility and supports the wider system.</div>
-                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="monetra">$800</span><span class="mfc-meta-label">Stable</span></div>
+                        <div class="mfc-meta"><span class="mfc-tvl" data-tvl-viz="monetra">Live</span><span class="mfc-meta-label">Stable</span></div>
                     </div>
                 </div>
                 <div class="mobile-fund-card">
@@ -4918,7 +4918,32 @@
         const FIXED_DIEM_VALUE = 94;      // Fixed $94 total value for DIEM (0.07 tokens)
         const FIXED_MODE_VALUE = 41;      // Fixed $41 total value for MODE (1,000,000 tokens)
 
-        const MONETRA_TVL_CONTRIBUTION = 100;  // Added to total TVL; card displays static $800
+        // One canonical Monetra capital source: the same Stable Companies snapshot used by the Passport.
+        const MONETRA_STABLE_INDEX_URL = './companies/stable-index-data.json';
+
+        async function loadMonetraCurrentCapital() {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 4000);
+            try {
+                const res = await fetch(MONETRA_STABLE_INDEX_URL + '?t=' + Date.now(), { cache: 'no-store', signal: controller.signal });
+                if (!res.ok) throw new Error('Monetra stable-index HTTP ' + res.status);
+                const data = await res.json();
+                if (data?.universe?.id !== 'stable-companies' || data?.universe?.separateFromGeneralComposite !== true) throw new Error('Monetra stable-index contract mismatch');
+                const companies = Array.isArray(data.companies) ? data.companies : [];
+                const company = companies.find(x => x?.registry === '008' && x?.name === 'Monetra.eth') || companies.find(x => x?.registry === '008');
+                const value = Number(company?.currentCapitalUsd ?? company?.performance?.currentCapitalUsd);
+                if (!Number.isFinite(value) || value < 0) throw new Error('Monetra currentCapitalUsd unavailable');
+                return value;
+            } catch (error) {
+                console.warn('Monetra canonical capital unavailable', error);
+                return null;
+            } finally { clearTimeout(timer); }
+        }
+
+        function renderMonetraCapital(value) {
+            const label = Number.isFinite(value) ? `$${Math.round(value).toLocaleString()}` : 'Live';
+            document.querySelectorAll('[data-tvl="monetra"], [data-tvl-viz="monetra"]').forEach(el => { el.textContent = label; });
+        }
 
         const API_KEY = 'LOCAL-SNAPSHOT';
 
@@ -5088,9 +5113,10 @@
                     'ondo-finance'
                 ].join(',');
 
-                const prices = await cgPrices(ids.split(','));
+                const [prices, monetraCapitalUsd] = await Promise.all([cgPrices(ids.split(',')), loadMonetraCurrentCapital()]);
+                renderMonetraCapital(monetraCapitalUsd);
                 if (!prices || Object.keys(prices).length === 0) {
-                    console.log('CoinGecko prices unavailable');
+                    console.log('Market prices unavailable');
                     return;
                 }
                 
@@ -5181,8 +5207,10 @@
                     el.textContent = `$${Math.round(fructusTVL).toLocaleString()}`;
                 });
 
-                // Total TVL
-                const totalTVL = substantiaTVL + defiteaTVL + singulTVL + fructusTVL + MONETRA_TVL_CONTRIBUTION;
+                // Unknown Monetra capital is never coerced to zero.
+                const totalTVL = Number.isFinite(monetraCapitalUsd)
+                    ? substantiaTVL + defiteaTVL + singulTVL + fructusTVL + monetraCapitalUsd
+                    : null;
 
                 /* ── The Holding Network strip ──────────────────────────────
                    Live value of the companies in the registry — the same
@@ -5211,15 +5239,15 @@
                 })();
                 
                 document.querySelector('[data-metric="total-capital"]').textContent = 
-                    `$${Math.round(totalTVL).toLocaleString()}`;
+                    Number.isFinite(totalTVL) ? `$${Math.round(totalTVL).toLocaleString()}` : 'Live';
                 
                 console.log('TVL updated:', {
                     substantia: Math.round(substantiaTVL),
                     defitea: Math.round(defiteaTVL),
                     singul: Math.round(singulTVL),
                     fructus: Math.round(fructusTVL),
-                    monetra: MONETRA_TVL_CONTRIBUTION,
-                    total: Math.round(totalTVL)
+                    monetra: Number.isFinite(monetraCapitalUsd) ? Math.round(monetraCapitalUsd) : null,
+                    total: Number.isFinite(totalTVL) ? Math.round(totalTVL) : null
                 });
                 
             } catch (error) {
