@@ -41,8 +41,10 @@ jobs:
           for(const x of htmlMust)if(!h.includes(x))throw new Error('missing native surface: '+x);
           if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
           for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
-          const adapterMust=['v0.10-unified-rewards-gmx-apy-capsule','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC'];
+          const adapterMust=['v0.10-unified-rewards-gmx-apy-capsule','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC'];
           for(const x of adapterMust)if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
+          if(a.includes("const index=document.getElementById('idxNetworkValue')")||a.includes("if(top&&top.textContent!==display)top.textContent=display"))throw new Error('Company #010 adapter must not overwrite shared summary TVL metrics');
+          if(!a.includes("statProtocols.textContent=String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size)"))throw new Error('runtime Protocols & Assets reconciliation missing');
           if(/\['Bitcoin'.*'Fluid'/.test(a)||a.includes("'Concentrator','Fluid'"))throw new Error('Fluid remains in Cypher protocol list');
           if(!a.includes("${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}"))throw new Error('exact-vs-floor Company TVL contract missing');
           console.log('Company #010 native base UI contract PASS');
