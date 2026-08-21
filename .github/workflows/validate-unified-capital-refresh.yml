@@ -35,6 +35,20 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Prove Unified Capital is a Market Data consumer only
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const wf=fs.readFileSync('.github/workflows/unified-capital-refresh.yml','utf8');
+          if(/run:\s*node intelligence\/market-data\/market-data-engine\.mjs/.test(wf))throw new Error('Unified Capital must not execute legacy Market Data writer');
+          if(/git add[\s\\\n\r\t\w./-]*intelligence\/market-data\/market-data\.json/.test(wf))throw new Error('Unified Capital must not stage canonical market-data.json');
+          if(!wf.includes('Require canonical onchain-selected Market Data'))throw new Error('canonical Market Data admission guard missing');
+          if(!wf.includes("prices['internet-computer']")||!wf.includes("selectedLane!=='onchain'"))throw new Error('ICP onchain consumer proof missing');
+          if(!wf.includes("registry==='005'")||!wf.includes("registry==='006'"))throw new Error('Company #005/#006 ICP parity proof missing');
+          console.log('Market Data writer ownership boundary PASS');
+          NODE
+
       - name: Install Productivity dependencies
         working-directory: productivity
         run: npm install --no-audit --no-fund
@@ -49,6 +63,7 @@ jobs:
           node --check intelligence/market-data/market-data-validation-fixture.mjs
           node --check intelligence/market-data/coingecko-fetch-shim.mjs
           node intelligence/market-data/market-data-validation-fixture.mjs
+          sha256sum intelligence/market-data/market-data.json | awk '{print $1}' > /tmp/market-data-before.sha256
 
       - name: Execute complete unified refresh with local Market Data only
         env:
@@ -57,6 +72,14 @@ jobs:
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           GITHUB_TOKEN: ${{ github.token }}
         run: node intelligence/capital-state/unified-capital-refresh.mjs
+
+      - name: Prove canonical Market Data bytes were not mutated
+        run: |
+          set -euo pipefail
+          before="$(cat /tmp/market-data-before.sha256)"
+          after="$(sha256sum intelligence/market-data/market-data.json | awk '{print $1}')"
+          test "$before" = "$after" || { echo "Unified Capital mutated canonical Market Data"; exit 1; }
+          echo "Canonical Market Data preserved byte-for-byte: $after"
 
       - name: Rebuild Public Capital from coherent validation state
         run: node intelligence/market-data/public-capital-engine.mjs
