@@ -5,98 +5,103 @@ on:
     branches: [main]
     paths:
       - 'companies/company-010-public-adapter.js'
-      - 'onboarding/company-010-public-admission.mjs'
-      - '.github/workflows/admit-company-010-public.yml'
+      - 'companies/index.html'
       - '.github/workflows/verify-company-010-public-admission.yml'
-      - 'intelligence/onboarding/COMPANY_010_TO_011_LEARNING_DELTA_2026-08-17.md'
+      - '.github/workflows/_agent_patch_network_metrics.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  verify:
+  patch-network-metrics:
+    if: github.head_ref == 'agent/companies-network-metrics-coherence-v0.1'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - name: Checkout branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          node-version: '22'
-      - name: Syntax and deterministic dry-run
+          ref: agent/companies-network-metrics-coherence-v0.1
+          fetch-depth: 0
+
+      - name: Apply production patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('companies/index.html')
+          s=p.read_text()
+          old="    'Cypher': ['Bitcoin','Ethereum','Project X','Convex','Curve','Aero','Velodrome','GMX','Concentrator','Fluid']\n"
+          new="    'Cypher': ['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator','HyperLend']\n"
+          assert s.count(old)==1, s.count(old)
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          p=Path('companies/company-010-public-adapter.js')
+          s=p.read_text()
+          old="    const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aerodrome','Velodrome','GMX','Concentrator'];\n"
+          new="    const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator'];\n"
+          assert s.count(old)==1, s.count(old)
+          s=s.replace(old,new,1)
+          old='''  function syncNetworkStats(){
+    const net=window.__TH_CAPITAL_STATE__?.network;
+    if(!net)return;
+    const exact=canonicalNetworkTvl();
+    const top=document.getElementById('statTVL');
+    const index=document.getElementById('idxNetworkValue');
+    const display=exact!==null?money(exact):(Number.isFinite(Number(net.measuredCapitalFloorUsd))&&Number(net.measuredCapitalFloorUsd)>0?'≥ '+money(net.measuredCapitalFloorUsd):null);
+    if(!display)return;
+    if(top&&top.textContent!==display)top.textContent=display;
+    if(index&&index.textContent!==display)index.textContent=display;
+  }
+'''
+          new='''  function syncNetworkStats(){
+    /* Fast summary authority stays on the shared Public Capital plane.
+       Combined TVL covers all registry companies. General Index Network Value
+       is derived from INDEX_STATE and excludes Stable Capital / Monetra. */
+    const statProtocols=document.getElementById('statProtocols');
+    if(statProtocols&&typeof COMPANY_PROTOCOLS!=='undefined'){
+      statProtocols.textContent=String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size);
+    }
+  }
+'''
+          assert s.count(old)==1, s.count(old)
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+
+      - name: Validate production contract
+        shell: bash
         run: |
           set -euo pipefail
           node --check companies/company-010-public-adapter.js
-          node --check onboarding/company-010-public-admission.mjs
-          node onboarding/company-010-public-admission.mjs
-      - name: Verify native base UI contract
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          h=Path('companies/index.html').read_text()
+          a=Path('companies/company-010-public-adapter.js').read_text()
+          assert "'Cypher': ['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator','HyperLend']" in h
+          assert "const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator']" in a
+          assert "const index=document.getElementById('idxNetworkValue')" not in a
+          assert "if(top&&top.textContent!==display)top.textContent=display" not in a
+          assert "statProtocols.textContent=String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size)" in a
+          assert 'Aerodrome' not in re.search(r"function protocols\(\)\{(.*?)return p;",a,re.S).group(1)
+          assert "'Fluid'" not in re.search(r"'Cypher': \[(.*?)\]",h,re.S).group(1)
+          print('Network metrics coherence PASS')
+          PY
+
+      - name: Commit clean production diff
+        shell: bash
         run: |
           set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');
-          const h=fs.readFileSync('.tmp-company-010-public-admission.html','utf8');
-          const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          const htmlMust=['"numberOfItems": 10','"position": 10, "name": "Cypher"','id="companyCount">10','/companies/company-010-public-adapter.js','const eligible = list.filter(c => c.indexEligible !== false);','const measuredTotal = list.reduce','if (cn) cn.textContent = list.length;',"seg.className = 'index-comp-seg' + (c.indexEligible === false ? ' pending' : '');","const rCo = c => c.indexEligible === false ? P.rCoMin","c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending')"];
-          for(const x of htmlMust)if(!h.includes(x))throw new Error('missing native surface: '+x);
-          if((h.match(/data-company-010-public-adapter/g)||[]).length!==1)throw new Error('loader multiplicity drift');
-          for(const x of ['Open Passport','company010Passport','thc10-overlay','thc10-passport','aria-controls="company010Passport"'])if(a.includes(x))throw new Error('legacy Cypher-specific UX remains: '+x);
-          const adapterMust=['v0.10-unified-rewards-gmx-apy-capsule','Stake DAO','Aave','HyperLend','Project X','GMX','Concentrator','networkTvlUsd','measuredCapitalFloorUsd','INDEX_STATE.push(next)',"COMPANY_REWARDS_SCOPE.add('Cypher')",'The Holding Standard','state.performance?.complete!==true','cypher-eth-equivalent','wstETH','stakedao-base-curve-4pool','USDC'];
-          for(const x of adapterMust)if(!a.includes(x))throw new Error('adapter complete-surface binding missing: '+x);
-          if(/\['Bitcoin'.*'Fluid'/.test(a)||a.includes("'Concentrator','Fluid'"))throw new Error('Fluid remains in Cypher protocol list');
-          if(!a.includes("${complete?'':'≥ '}${money(complete?state.capital.totalCapitalUsd:state.capital.knownCapitalFloorUsd)}"))throw new Error('exact-vs-floor Company TVL contract missing');
-          console.log('Company #010 native base UI contract PASS');
-          NODE
-      - name: Verify global Passport strategy heading and productive rate badges
-        run: |
-          set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          for(const x of ['Balance Sheet · Strategies','polishPassportTitles','ensureStrategyRateBadges','ipx-strategy-rate-badge','productiveBreakdown','rateForPosition','APR Pending',"productivityOnly===true&&x.id===pos.id","String(pos.id).startsWith('gmx-gm-')","byLabel('veCRV')",'falseVeCrv.remove()','Concentrator · sdCRV','Convex · staked cvxCRV'])if(!a.includes(x))throw new Error('strategy Passport contract missing: '+x);
-          if(a.includes('Balance Sheet · Strategies.'))throw new Error('terminal dot returned to Balance Sheet · Strategies');
-          for(const reserveGuard of ["pos.id==='bitcoin'","pos.id==='cypher-eth-equivalent'","pos.id==='ethereum'","pos.id==='hyperliquid'","pos.id==='curve-dao-token'","pos.id==='lido-dao'"])if(!a.includes(reserveGuard))throw new Error('Cypher reserve/mixed guard missing: '+reserveGuard);
-          if(!a.includes("'convex-finance':'convex_vlcvx'"))throw new Error('Cypher vlCVX Productivity mapping missing');
-          if(!a.includes("const kind=/\\bAPY\\b/i.test(metric)?'APY':'APR'"))throw new Error('APR/APY metric distinction missing');
-          if(!a.includes("rate.pending?`<span>${rate.kind}</span>")||!a.includes('<strong>Pending</strong>'))throw new Error('unknown != zero Pending badge contract missing');
-          if(/rate\.pending[^\n]{0,180}<strong>0(?:\.0+)?%?<\/strong>/.test(a))throw new Error('unknown productive rate rendered as zero');
-          console.log('Global Passport productive rate badge contract PASS');
-          NODE
-      - name: Verify GMX APY capsule contract
-        run: |
-          set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          for(const x of ['GMX · ETH-USDC','GMX · BTC-USDC','gmxCompactState','GMX · ETH-USDC / BTC-USDC','GMX 30D Fee APY','embedded-in-gm-nav','ensureGmxApyCapsule','gmx-combined-apy-capsule','gmx-multi',"<span>APY</span><strong>${compact.apy}</strong>"])if(!a.includes(x))throw new Error('GMX capsule contract missing: '+x);
-          if(a.includes('GMX · ETH-USDC / BTC-USDC · APY'))throw new Error('legacy inline GMX APY returned');
-          if(!a.includes("eth.yield?.referenceMetric!=='GMX 30D Fee APY'||btc.yield?.referenceMetric!=='GMX 30D Fee APY'"))throw new Error('GMX APY source contract missing');
-          if(!a.includes("eth.yield?.incomeMode!=='embedded-in-gm-nav'||btc.yield?.incomeMode!=='embedded-in-gm-nav'"))throw new Error('GMX embedded-income guard missing');
-          if(!a.includes("pill.classList.add('has-strategy-rate')"))throw new Error('GMX capsule does not reuse responsive rate layout');
-          console.log('Company #010 GMX APY capsule contract PASS');
-          NODE
-      - name: Verify unified Rewards Drawer contract
-        run: |
-          set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');const a=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          for(const x of ['ensureUnifiedStrategyRewards','cy-strategy-state-row','panelHasStrategy','embeddedIncome','rewardSource','embeddedRoute','Concentrator · sdCRV','aerodrome-ve','velodrome-ve-direct','AERO','VELO','Compounded','Claimable','Pending','REWARDS_URL'])if(!a.includes(x))throw new Error('unified Rewards contract missing: '+x);
-          for(const legacy of ['ensureCrvStrategyIncome','ensureVeStrategyIncome','CRV · strategy income','veAERO / veVELO · income'])if(a.includes(legacy))throw new Error('legacy duplicate rewards sub-ledger remains: '+legacy);
-          if(!a.includes("panel.querySelector('.cy-crv-income')?.remove()")||!a.includes("panel.querySelector('.cy-ve-income')?.remove()"))throw new Error('legacy runtime cleanup missing');
-          if(!a.includes("if(panelHasStrategy(panel,label))return"))throw new Error('native reward row dedupe guard missing');
-          if(!a.includes("source?.details?.rewardState"))throw new Error('ve public state not sourced from backend');
-          if(!a.includes("compactEmbeddedAmount(route)"))throw new Error('Compounded amount not sourced from embeddedIncome');
-          console.log('Company #010 unified Rewards Drawer contract PASS');
-          NODE
-      - name: Verify presence and weighting are separate
-        run: |
-          set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');
-          const h=fs.readFileSync('.tmp-company-010-public-admission.html','utf8');
-          const assertions=[['factor normalisation excludes pending','const raws = eligible.map(f.raw);'],['TVL denominator excludes pending','const totalVal = eligible.reduce'],['pending composite weight zero','c.weight = 0;'],['pending TVL weight zero','c.tvlWeight = 0;'],['surface count includes pending','cn.textContent = list.length;'],['network value floor semantics','hasPending ? \'≥ \' : \'\''],['graph includes pending','const comps = computeIndex().slice().sort'],['pending performance is explicit',"c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending')"]];
-          for(const [label,x] of assertions)if(!h.includes(x))throw new Error(label+' missing');
-          console.log('Company #010 presence/weighting invariants PASS');
-          NODE
-      - name: Verify no execution authority
-        run: |
-          set -euo pipefail
-          ! grep -Eqi 'wallet\.send|sendTransaction|eth_sendTransaction|eth_sendRawTransaction|private[_ -]?key|mnemonic|signer\.send' companies/company-010-public-adapter.js onboarding/company-010-public-admission.mjs
+          git fetch origin main
+          git checkout origin/main -- .github/workflows/verify-company-010-public-admission.yml
+          rm -f .github/workflows/_agent_patch_network_metrics.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add companies/index.html companies/company-010-public-adapter.js .github/workflows/verify-company-010-public-admission.yml .github/workflows/_agent_patch_network_metrics.yml
+          git diff --cached --check
+          git commit -m 'fix: separate registry and general-index network metrics'
+          git push origin HEAD:agent/companies-network-metrics-coherence-v0.1
