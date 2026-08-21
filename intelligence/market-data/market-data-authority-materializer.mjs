@@ -118,7 +118,9 @@ for (const assetId of reviewedIds) {
   assertEqual(observation.quoteAssetId, req.quoteAssetId, `${assetId}: reviewed quote asset`);
   assertEqual(observation.feedQuote, req.feedQuote, `${assetId}: reviewed feed quote`);
   assertEqual(observation.outputQuote, req.outputQuote, `${assetId}: reviewed output quote`);
-  if (req.dependencyStatus !== undefined) assertEqual(observation.dependencyStatus, req.dependencyStatus, `${assetId}: reviewed dependency`);
+  // dependencyStatus is runtime health, not immutable route identity. The
+  // authority selector owns this decision so divergence can remain telemetry
+  // while genuine dependency failure performs bounded per-asset failback.
 }
 
 if (forceCoinGeckoFailback) {

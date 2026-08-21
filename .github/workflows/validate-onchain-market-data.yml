@@ -16,6 +16,7 @@ on:
       - 'intelligence/market-data/onchain-price-coverage-audit.mjs'
       - 'intelligence/market-data/market-data-authority-policy.json'
       - 'intelligence/market-data/market-data-authority-materializer.mjs'
+      - 'intelligence/market-data/market-data-materializer-health-boundary-validation.mjs'
       - '.github/workflows/market-data-refresh.yml'
       - '.github/workflows/validate-onchain-market-data.yml'
   workflow_dispatch:
@@ -46,9 +47,11 @@ jobs:
           node --check intelligence/market-data/onchain-curve-ema.mjs
           node --check intelligence/market-data/onchain-curve-ema-validation.mjs
           node --check intelligence/market-data/onchain-price-coverage-audit.mjs
+          node --check intelligence/market-data/market-data-materializer-health-boundary-validation.mjs
           node intelligence/market-data/onchain-price-resolver-validation.mjs
           node intelligence/market-data/onchain-uniswap-v3-twap-validation.mjs
           node intelligence/market-data/onchain-curve-ema-validation.mjs
+          node intelligence/market-data/market-data-materializer-health-boundary-validation.mjs
 
       - name: Audit effective canonical onchain coverage
         run: |
@@ -107,7 +110,7 @@ jobs:
           console.log('30-minute onchain heartbeat + strict daily CoinGecko reuse + per-asset failback contract PASS',{canonicalOnchainPrimary:26,cycleWideFailback:false,nonDailyCoinGeckoFetch:false,executionAuthority:'none'});
           NODE
 
-      - name: Live-prove 27 observation routes remain healthy
+      - name: Live-prove 27 observation routes remain usable
         run: |
           set -euo pipefail
           node intelligence/market-data/onchain-price-resolver.mjs
@@ -116,8 +119,21 @@ jobs:
           const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
           if(shadow.mode!=='shadow'||shadow.semantics?.productionPriceAuthority!==false)throw new Error('Live Shadow authority drift');
           if(shadow.coverage?.assetCount!==27)throw new Error(`Expected 27 observation routes, got ${shadow.coverage?.assetCount}`);
-          if(shadow.coverage?.okCount!==27||shadow.coverage?.warningCount!==0||shadow.coverage?.unavailableCount!==0)throw new Error(`Live Shadow not 27/27 healthy: ${JSON.stringify(shadow.coverage)}`);
+          if(Number(shadow.coverage?.unavailableCount)!==0)throw new Error(`Live Shadow contains unavailable routes: ${JSON.stringify(shadow.coverage)}`);
+          if(Number(shadow.coverage?.okCount)+Number(shadow.coverage?.warningCount)!==27)throw new Error(`Live Shadow coverage accounting drift: ${JSON.stringify(shadow.coverage)}`);
+          const observations=Object.values(shadow.observations||{});
+          if(observations.length!==27)throw new Error(`Expected 27 live observations, got ${observations.length}`);
+          const warnings=[];
+          for(const row of observations){
+            if(!(Number(row?.usd)>0))throw new Error(`${row?.assetId||'unknown'}: live onchain price invalid`);
+            const allowed=row?.status==='shadow-ok'
+              || row?.status==='divergent'
+              || (row?.status==='dependency-warning'&&row?.dependencyStatus==='divergent');
+            if(!allowed)throw new Error(`${row?.assetId||'unknown'}: unexpected live onchain health ${row?.status||'missing'}/${row?.dependencyStatus||'none'}`);
+            if(row.status!=='shadow-ok')warnings.push(row.assetId);
+          }
+          if(warnings.length!==Number(shadow.coverage?.warningCount))throw new Error(`Live warning accounting drift: ${warnings.length} observations vs ${shadow.coverage?.warningCount} coverage warnings`);
           if(shadow.authority?.executionAuthority!=='none')throw new Error('Live Shadow execution authority drift');
-          console.log('Live onchain observation proof PASS',{generatedAt:shadow.generatedAt,coverage:shadow.coverage});
+          console.log('Live onchain observation proof PASS',{generatedAt:shadow.generatedAt,coverage:shadow.coverage,divergenceTelemetryAssets:warnings});
           NODE
           git diff --check
