@@ -1,6 +1,6 @@
 {
   "version": "0.1-projectx-rate-history",
-  "engineVersion": "0.1-projectx-observed-fee-reference-apr",
+  "engineVersion": "0.2-projectx-dynamic-active-set-observed-fee-reference-apr",
   "company": {
     "registry": "010",
     "name": "Cypher"
@@ -185,17 +185,41 @@
         "USDC": 0.999616
       },
       "source": "Company #010 Project X full-parity state · collect.staticCall max uint128"
+    },
+    {
+      "observedAt": "2026-08-21T06:53:45.158Z",
+      "stateGeneratedAt": "2026-08-21T06:53:45.158Z",
+      "fingerprint": "67e7cd27268acd468b6a64b7c181c33522807b9b00560013f80fd5c67e4767ad",
+      "strategy": {
+        "manager": "0xeaD19AE861c29bBb2101E834922B2FEee69B9091",
+        "pair": "WHYPE-USDC",
+        "activeNftCount": 1,
+        "positions": [
+          {
+            "tokenId": "496029",
+            "liquidity": "170440922693621",
+            "tickLower": -236250,
+            "tickUpper": -232500
+          }
+        ]
+      },
+      "navUsd": 257.34,
+      "fees": {
+        "WHYPE": 0.026696167783,
+        "USDC": 1.773211
+      },
+      "prices": {
+        "WHYPE": 72.79,
+        "USDC": 0.9997
+      },
+      "source": "Company #010 Project X dynamic active-set full-parity state · collect.staticCall max uint128"
     }
   ],
   "current": {
-    "status": "measured",
-    "referenceAprPct": 70.350033,
-    "feeDeltaUsd": 1.14308941,
-    "averageNavUsd": 344.165,
-    "windowHours": 41.3857,
-    "periodStart": "2026-08-18T11:54:34.085Z",
-    "periodEnd": "2026-08-20T05:17:42.726Z",
-    "metric": "Project X observed collectible fee APR · trailing stable-window"
+    "status": "warming",
+    "referenceAprPct": null,
+    "windowHours": 0,
+    "reason": "strategy fingerprint changed"
   },
   "authority": {
     "readOnly": true,
@@ -203,5 +227,5 @@
     "transactions": false,
     "executionAuthority": "none"
   },
-  "generatedAt": "2026-08-21T05:40:33.270Z"
+  "generatedAt": "2026-08-21T08:21:21.030Z"
 }
