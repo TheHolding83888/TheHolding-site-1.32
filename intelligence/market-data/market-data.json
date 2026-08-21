@@ -1,10 +1,10 @@
 {
-  "version": "0.4-market-data-daily-coingecko-cadence",
-  "engineVersion": "0.4-daily-coingecko-source-lane-plus-onchain-heartbeat-reuse",
-  "generatedAt": "2026-08-21T04:17:15.646Z",
+  "version": "1.1-market-data-all-canonical-reviewed-onchain-primary",
+  "engineVersion": "1.1-per-asset-authority-materializer-26-reviewed-canonical-assets",
+  "generatedAt": "2026-08-21T08:21:00.679Z",
   "requestedAt": "2026-08-21T04:17:15.444Z",
   "observedAt": "2026-08-21T04:17:15.646Z",
-  "status": "ok",
+  "status": "fallback-active",
   "semantics": {
     "oneExternalRequestPerRefresh": true,
     "externalRequestCount": 1,
@@ -18,8 +18,13 @@
     "staleFallbackMaxAgeHours": 6,
     "wrapperNavAndProtocolValuationStayUpstream": true,
     "dedicatedCoinGeckoSourceLane": true,
-    "canonicalMirrorEqualsCoinGeckoSourceLane": true,
-    "perAssetAuthoritySelectionApplied": false
+    "canonicalMirrorEqualsCoinGeckoSourceLane": false,
+    "perAssetAuthoritySelectionApplied": true,
+    "boundedOnchainPrimaryPilot": true,
+    "allCanonicalAssetsExplicitlyReviewedForOnchainPrimary": true,
+    "coinGeckoRemainsDailyFallbackAndSanityCheck": true,
+    "automaticCohortExpansionAllowed": false,
+    "cycleForcedCoinGeckoFailback": false
   },
   "provider": {
     "id": "coingecko",
@@ -45,106 +50,178 @@
       "usd": 74825,
       "status": "fresh",
       "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "source": "coingecko-single-batch",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "coingecko-lane",
+        "fallbackUsed": true,
+        "sourceSnapshotGeneratedAt": "2026-08-21T04:17:15.646Z"
+      }
     },
     "ethereum": {
       "assetId": "ethereum",
       "symbol": "ETH",
       "providerId": "ethereum",
-      "usd": 2344.76,
+      "usd": 2383.3707,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-chainlink-v3",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "tether-gold": {
       "assetId": "tether-gold",
       "symbol": "XAUT",
       "providerId": "tether-gold",
-      "usd": 4518.01,
+      "usd": 4544.231436631099,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-uniswap-v3-twap-chainlink-quote",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "aerodrome-finance": {
       "assetId": "aerodrome-finance",
       "symbol": "AERO",
       "providerId": "aerodrome-finance",
-      "usd": 0.48166,
+      "usd": 0.49150132,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-chainlink-v3",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "convex-finance": {
       "assetId": "convex-finance",
       "symbol": "CVX",
       "providerId": "convex-finance",
-      "usd": 1.8,
+      "usd": 1.8213152252845501,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-chainlink-v3-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "curve-dao-token": {
       "assetId": "curve-dao-token",
       "symbol": "CRV",
       "providerId": "curve-dao-token",
-      "usd": 0.317601,
+      "usd": 0.32107099,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-chainlink-v3",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "pendle": {
       "assetId": "pendle",
       "symbol": "PENDLE",
       "providerId": "pendle",
-      "usd": 1.55,
+      "usd": 1.5861384,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-chainlink-v3",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "fxn-token": {
       "assetId": "fxn-token",
       "symbol": "FXN",
       "providerId": "fxn-token",
-      "usd": 19.25,
+      "usd": 19.391133639855525,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-curve-ema-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "internet-computer": {
       "assetId": "internet-computer",
       "symbol": "ICP",
       "providerId": "internet-computer",
-      "usd": 2.41,
+      "usd": 2.46563669,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-chainlink-v3",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "yield-basis": {
       "assetId": "yield-basis",
       "symbol": "YB",
       "providerId": "yield-basis",
-      "usd": 0.093572,
+      "usd": 0.08974441316793734,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-curve-ema-chainlink-quote",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "frax-share": {
       "assetId": "frax-share",
       "symbol": "FXS",
       "providerId": "frax-share",
-      "usd": 0.301951,
+      "usd": 0.30532097,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-chainlink-v3",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "velodrome-finance": {
       "assetId": "velodrome-finance",
       "symbol": "VELO",
       "providerId": "velodrome-finance",
-      "usd": 0.01990188,
+      "usd": 0.020217378499290038,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-velodrome-v2-twap-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "venice-token": {
       "assetId": "venice-token",
@@ -153,132 +230,268 @@
       "usd": 14.61,
       "status": "fresh",
       "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "source": "coingecko-single-batch",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "coingecko-lane",
+        "fallbackUsed": true,
+        "sourceSnapshotGeneratedAt": "2026-08-21T04:17:15.646Z"
+      }
     },
     "liquity": {
       "assetId": "liquity",
       "symbol": "LQTY",
       "providerId": "liquity",
-      "usd": 0.204721,
+      "usd": 0.2077205544193586,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-uniswap-v3-twap-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "resupply": {
       "assetId": "resupply",
       "symbol": "RSUP",
       "providerId": "resupply",
-      "usd": 0.113767,
+      "usd": 0.11564454191997738,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-curve-ema-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "decentraland": {
       "assetId": "decentraland",
       "symbol": "MANA",
       "providerId": "decentraland",
-      "usd": 0.070946,
+      "usd": 0.07335917,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-chainlink-v3",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "the-sandbox": {
       "assetId": "the-sandbox",
       "symbol": "SAND",
       "providerId": "the-sandbox",
-      "usd": 0.04429797,
+      "usd": 0.0460901,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-chainlink-v3",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "ovr": {
       "assetId": "ovr",
       "symbol": "OVR",
       "providerId": "ovr",
-      "usd": 0.03033127,
+      "usd": 0.030700817462160256,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-uniswap-v3-twap-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "autonolas": {
       "assetId": "autonolas",
       "symbol": "OLAS",
       "providerId": "autonolas",
-      "usd": 0.02185754,
+      "usd": 0.02225477307438566,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-uniswap-v2-historical-twap-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "virtual-protocol": {
       "assetId": "virtual-protocol",
       "symbol": "VIRTUAL",
       "providerId": "virtual-protocol",
-      "usd": 0.646295,
+      "usd": 0.6693688021125052,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-uniswap-v3-twap-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "beam-2": {
       "assetId": "beam-2",
       "symbol": "BEAM",
       "providerId": "beam-2",
-      "usd": 0.00145066,
+      "usd": 0.0014624914976349075,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-uniswap-v3-twap-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "mode": {
       "assetId": "mode",
       "symbol": "MODE",
       "providerId": "mode",
-      "usd": 0.00004476,
+      "usd": 0.00004590451569921335,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-velodrome-v2-twap-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "elizaos": {
       "assetId": "elizaos",
       "symbol": "ELIZA",
       "providerId": "elizaos",
-      "usd": 0.00019247,
+      "usd": 0.00019011026216078942,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-uniswap-v3-twap-chainlink-quote",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "ondo-finance": {
       "assetId": "ondo-finance",
       "symbol": "ONDO",
       "providerId": "ondo-finance",
-      "usd": 0.36296,
+      "usd": 0.37546456153635144,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-uniswap-v3-twap-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "zksync": {
       "assetId": "zksync",
       "symbol": "ZK",
       "providerId": "zksync",
-      "usd": 0.00881372,
+      "usd": 0.009128943063016006,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-uniswap-v3-twap-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     },
     "convex-crv": {
       "assetId": "convex-crv",
       "symbol": "cvxCRV",
       "providerId": "convex-crv",
-      "usd": 0.150359,
+      "usd": 0.14451752112606367,
       "status": "fresh",
-      "observedAt": "2026-08-21T04:17:15.646Z",
-      "source": "coingecko-single-batch"
+      "observedAt": "2026-08-21T08:20:58.548Z",
+      "source": "onchain-curve-ema-relative",
+      "authority": {
+        "requestedPrimary": "onchain",
+        "selectedLane": "onchain",
+        "fallbackUsed": false,
+        "sourceSnapshotGeneratedAt": "2026-08-21T08:20:58.548Z"
+      }
     }
   },
   "authority": {
-    "productionPriceLane": "coingecko-lane",
-    "onchainSelectedAssetCount": 0,
+    "productionPriceLane": "per-asset",
+    "defaultProductionAuthority": "coingecko-lane",
+    "pilotCohortId": "direct-chainlink-usd-btc-eth-aero-pendle-crv-fxs-vvv-icp-mana-sand-v0.5",
+    "pilotAssetIds": [
+      "bitcoin",
+      "ethereum",
+      "aerodrome-finance",
+      "pendle",
+      "curve-dao-token",
+      "frax-share",
+      "venice-token",
+      "internet-computer",
+      "decentraland",
+      "the-sandbox"
+    ],
+    "relativePilotCohortId": "relative-chainlink-cvx-eth-usd-v0.1",
+    "relativePilotAssetIds": [
+      "convex-finance"
+    ],
+    "v3RelativePilotCohortId": "uniswap-v3-relative-ovr-beam-lqty-virtual-ondo-zk-v0.1",
+    "v3RelativePilotAssetIds": [
+      "ovr",
+      "beam-2",
+      "liquity",
+      "virtual-protocol",
+      "ondo-finance",
+      "zksync"
+    ],
+    "reviewedPilotCohortId": "reviewed-heterogeneous-xaut-fxn-yb-velo-rsup-olas-mode-eliza-cvxcrv-v0.1",
+    "reviewedPilotAssetIds": [
+      "tether-gold",
+      "fxn-token",
+      "yield-basis",
+      "velodrome-finance",
+      "resupply",
+      "autonolas",
+      "mode",
+      "elizaos",
+      "convex-crv"
+    ],
+    "onchainSelectedAssetCount": 24,
+    "directOnchainSelectedAssetCount": 8,
+    "relativeOnchainSelectedAssetCount": 1,
+    "v3RelativeOnchainSelectedAssetCount": 6,
+    "reviewedOnchainSelectedAssetCount": 9,
+    "coingeckoSelectedAssetCount": 2,
+    "fallbackCount": 2,
+    "unknownCount": 0,
     "readOnly": true,
     "executionAuthority": "none",
     "capitalExecution": false,
     "policyMutationAuthority": false
+  },
+  "sourceState": {
+    "coinGeckoGeneratedAt": "2026-08-21T04:17:15.646Z",
+    "onchainShadowGeneratedAt": "2026-08-21T08:20:58.548Z",
+    "onchainShadowStatus": "warning",
+    "forceCoinGeckoFailback": false
   }
 }
