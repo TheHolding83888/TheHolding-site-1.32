@@ -127,12 +127,12 @@ Canonical distinction:
 
 ---
 
-# 7. REWARDS / VLCVX / ACCRUED REWARDS DRAWER
+# 7. REWARDS / ACCRUED REWARDS DRAWER / UNCLAIMED / COMPOUNDED / VLCVX
 
 For generic Rewards read:
-- Rewards Drawer canon
-- Passport Inheritance canon
-- Known Mechanism Reuse canon
+- `THE_HOLDING_REWARDS_DRAWER_UI_CANON_2026-08-18.md`
+- `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
+- `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
 - latest continuity
 - live `companies/rewards-data.json`
 
@@ -184,8 +184,8 @@ Hard rules:
 # 10. PASSPORT UI / MOBILE / DESKTOP
 
 Read:
-- Passport Responsive canon
-- Company Passport Inheritance canon
+- `THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md`
+- `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
 - latest continuity
 - Rewards Drawer canon if touched
 - current public adapter / `companies/index.html`
@@ -345,7 +345,7 @@ Example: “Company #011 has ICP and I want its live TVL + Passport.”
 Read:
 1. core bootstrap;
 2. latest continuity;
-3. Known Mechanism Reuse + Passport Inheritance;
+3. Known Mechanism Reuse + `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`;
 4. Market Data/onchain authority canon because ICP current pricing/propagation matters;
 5. live Company #011 + Market Data/Public Capital artifacts.
 
