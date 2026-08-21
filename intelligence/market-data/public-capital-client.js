@@ -1,24 +1,30 @@
 /*
- * The Holding · Public Capital Client v0.2.2
+ * The Holding · Public Capital Client v0.3.0
  * ------------------------------------------
  * Read-only browser client for generated local Market Data / Public Capital.
  * Legacy simple-price calls are intercepted locally; browsers never need to
  * contact CoinGecko directly and never need a CoinGecko credential.
  *
- * v0.2.2 also carries a narrow public-surface coherence guard for Defitea's
- * headline Reference APR. The canonical source remains Productivity
- * Intelligence; this client only keeps already-existing headline surfaces in
- * sync at one decimal place. Historical/average APR surfaces are untouched.
+ * v0.2.2 introduced Defitea headline APR coherence.
+ * v0.3.0 extends the same canonical-source discipline across four critical
+ * public surfaces without changing any collector, methodology or execution
+ * authority:
+ *   - Homepage Network value/counts follow canonical Public Capital.
+ *   - Defitea current TVL cannot be overwritten by historical Reporting data.
+ *   - Monetra exposes live Current Capital + canonical Stable Reference APY.
+ *   - Singul Current Holdings only renders positions in the canonical fund book;
+ *     broader themes remain research/focus areas elsewhere on the page.
  */
 (function (global) {
   'use strict';
 
-  const VERSION = '0.2.2';
+  const VERSION = '0.3.0';
   const DEFAULT_URL = '/intelligence/market-data/public-capital-state.json';
   const MARKET_URL = '/intelligence/market-data/market-data.json';
   const PRODUCTIVITY_URL = '/companies/productivity-data.json';
   const LEGACY_SIMPLE_PRICE_PATH = '/intelligence/market-data/simple-price';
   const DEFAULT_TIMEOUT_MS = 4500;
+  const CURRENT_NETWORK_PROTOCOL_ASSET_COUNT = 29;
   const originalFetch = global.fetch.bind(global);
   let cached = null;
   let pending = null;
@@ -26,7 +32,7 @@
   let pendingMarket = null;
   let cachedProductivity = null;
   let pendingProductivity = null;
-  let defiteaObserver = null;
+  let publicSurfaceObserver = null;
   let defiteaAprText = null;
 
   function finite(value) {
@@ -170,6 +176,196 @@
     return data.companies.find(function (row) { return row && (row.registry === key || row.name === key); }) || null;
   }
 
+  function applyDefiteaHeadlineApr(root, text) {
+    if (!text) return 0;
+    const scope = root || document;
+    const targets = [];
+    const card = scope.querySelector && scope.querySelector('#apr-defitea');
+    if (card) targets.push(card);
+    if (scope.querySelectorAll) {
+      scope.querySelectorAll('[data-th-company="defitea.eth"][data-th-company-apr="latest"]').forEach(function (el) { targets.push(el); });
+    }
+    let updated = 0;
+    targets.forEach(function (el) {
+      if (el.textContent !== text) { el.textContent = text; updated += 1; }
+      el.setAttribute('data-th-defitea-apr-parity', 'latest');
+      el.title = 'Current Reference APR · canonical Productivity Intelligence';
+    });
+    return updated;
+  }
+
+  function applyDefiteaCurrentTvl(root, data) {
+    const scope = root || document;
+    const row = fund('defitea', data);
+    const text = row ? money(row.tvlUsd, 0) : null;
+    if (!text || !scope.querySelectorAll) return 0;
+    let updated = 0;
+    scope.querySelectorAll('[data-tvl="defitea"], [data-tvl-perf="defitea"]').forEach(function (el) {
+      if (el.textContent !== text) { el.textContent = text; updated += 1; }
+      el.setAttribute('data-th-current-tvl-authority', 'public-capital-state');
+      el.title = 'Current capital · canonical Public Capital State';
+    });
+    return updated;
+  }
+
+  function applyHomepageNetwork(root, data) {
+    const scope = root || document;
+    if (!scope.querySelector) return 0;
+    let updated = 0;
+    const networkValue = data && data.totals ? money(data.totals.companyNetworkTvlUsd, 0) : null;
+    const valueEl = scope.querySelector('#nsNetworkValue');
+    if (valueEl && networkValue && valueEl.textContent !== networkValue) {
+      valueEl.textContent = networkValue;
+      valueEl.setAttribute('data-th-company-network-tvl', '');
+      valueEl.title = 'All registered companies · canonical Public Capital State';
+      updated += 1;
+    }
+    const companyCount = Array.isArray(data && data.companies) ? data.companies.length : null;
+    if (scope.querySelectorAll) {
+      scope.querySelectorAll('.ns-stats .ns-stat').forEach(function (stat) {
+        const bold = stat.querySelector('b');
+        const text = String(stat.textContent || '');
+        if (bold && Number.isFinite(companyCount) && /Companies/i.test(text)) {
+          const next = String(companyCount);
+          if (bold.textContent !== next) { bold.textContent = next; updated += 1; }
+          stat.title = 'Canonical registry company count';
+        }
+        if (bold && /Protocols\s*&\s*Assets/i.test(text)) {
+          const next = String(CURRENT_NETWORK_PROTOCOL_ASSET_COUNT);
+          if (bold.textContent !== next) { bold.textContent = next; updated += 1; }
+          stat.title = 'Current unique protocol / asset map across the 10-company registry';
+        }
+      });
+    }
+    return updated;
+  }
+
+  function nearestFundCard(el) {
+    if (!el) return null;
+    if (el.closest) {
+      const direct = el.closest('.fund-card, .fund-item, article');
+      if (direct) return direct;
+    }
+    let node = el.parentElement;
+    for (let i = 0; node && i < 6; i += 1, node = node.parentElement) {
+      if (node.querySelectorAll && node.querySelectorAll('.fund-metric').length >= 2) return node;
+    }
+    return null;
+  }
+
+  function applyHomepageMonetra(root, data) {
+    const scope = root || document;
+    const row = fund('monetra', data);
+    if (!row || !scope.querySelectorAll) return 0;
+    const apy = percent(row.referenceAprPct, 2);
+    if (!apy) return 0;
+    let updated = 0;
+    const cards = [];
+    scope.querySelectorAll('[data-tvl="monetra"]').forEach(function (el) {
+      const card = nearestFundCard(el);
+      if (card && cards.indexOf(card) === -1) cards.push(card);
+    });
+    cards.forEach(function (card) {
+      card.querySelectorAll('.fund-metric').forEach(function (metric) {
+        const label = metric.querySelector('.fund-metric-label');
+        const value = metric.querySelector('.fund-metric-value');
+        if (!label || !value) return;
+        if (/^Status$/i.test(String(label.textContent || '').trim()) || /Reference APY/i.test(String(label.textContent || ''))) {
+          if (label.textContent !== 'Reference APY') { label.textContent = 'Reference APY'; updated += 1; }
+          if (value.textContent !== apy) { value.textContent = apy; updated += 1; }
+          value.setAttribute('data-th-fund', 'monetra');
+          value.setAttribute('data-th-fund-metric', 'reference-apr');
+          value.setAttribute('data-th-digits', '2');
+          value.title = 'Canonical Stable Capital Reference APY';
+        }
+      });
+      card.querySelectorAll('p').forEach(function (p) {
+        const text = String(p.textContent || '').trim();
+        if (text === 'Monetra is a building layer of The Holding.') {
+          p.textContent = 'Monetra is the live stable-capital layer of The Holding.';
+          updated += 1;
+        }
+      });
+    });
+    return updated;
+  }
+
+  function applyMonetraStandalone(root, data) {
+    const path = String(global.location && global.location.pathname || '').replace(/\/+$/, '') || '/';
+    if (path !== '/monetra') return 0;
+    const scope = root || document;
+    const row = fund('monetra', data);
+    if (!row || !scope.querySelectorAll) return 0;
+    const capital = money(row.tvlUsd, 2);
+    const apy = percent(row.referenceAprPct, 2);
+    if (!capital || !apy) return 0;
+    const stats = Array.from(scope.querySelectorAll('.hero-stats .hero-stat'));
+    if (stats.length < 2) return 0;
+    let updated = 0;
+    function setStat(stat, valueText, labelText) {
+      if (!stat) return;
+      const value = stat.querySelector('.hero-stat-value');
+      const label = stat.querySelector('.hero-stat-label');
+      if (value && value.textContent !== valueText) { value.textContent = valueText; updated += 1; }
+      if (label && label.textContent !== labelText) { label.textContent = labelText; updated += 1; }
+    }
+    setStat(stats[0], capital, 'Current Capital');
+    setStat(stats[1], apy, 'Reference APY');
+    if (stats[2]) setStat(stats[2], 'Live', 'Stable Strategy Tracking');
+    stats[0].setAttribute('data-th-monetra-live', 'capital');
+    stats[1].setAttribute('data-th-monetra-live', 'reference-apy');
+    return updated;
+  }
+
+  function applySingulCanonicalHoldings(root, data) {
+    const path = String(global.location && global.location.pathname || '').replace(/\/+$/, '') || '/';
+    if (path !== '/singul') return 0;
+    const scope = root || document;
+    const row = fund('singul', data);
+    if (!row || !Array.isArray(row.positions) || !scope.querySelectorAll) return 0;
+    const liveSymbols = new Set(row.positions.map(function (p) { return String(p && p.symbol || '').toUpperCase(); }).filter(Boolean));
+    const aliases = {
+      'VIRTUALS PROTOCOL': 'VIRTUAL',
+      'ELIZAOS': 'ELIZA',
+      'MODE NETWORK': 'MODE',
+      'OVER THE REALITY': 'OVR'
+    };
+    let updated = 0;
+    const heading = scope.querySelector('.assets-title');
+    if (heading && /Current Holdings/i.test(String(heading.textContent || '')) && heading.textContent !== 'Current Onchain Holdings') {
+      heading.textContent = 'Current Onchain Holdings';
+      updated += 1;
+    }
+    scope.querySelectorAll('.assets-list .asset-item').forEach(function (item) {
+      const nameEl = item.querySelector('.asset-name');
+      if (!nameEl) return;
+      const raw = String(nameEl.textContent || '').trim();
+      const upper = raw.toUpperCase();
+      const symbol = aliases[upper] || upper;
+      const isCanonical = liveSymbols.has(symbol);
+      if (!isCanonical) {
+        if (!item.hidden) { item.hidden = true; updated += 1; }
+        item.setAttribute('data-th-current-holding', 'research-only');
+        item.title = 'Research / focus area · not in current canonical Singul balance';
+      } else {
+        if (item.hidden) { item.hidden = false; updated += 1; }
+        item.setAttribute('data-th-current-holding', 'canonical');
+      }
+    });
+    return updated;
+  }
+
+  function applyPublicSurfaceCoherence(root, data) {
+    if (!data) return 0;
+    let updated = 0;
+    updated += applyDefiteaCurrentTvl(root, data);
+    updated += applyHomepageNetwork(root, data);
+    updated += applyHomepageMonetra(root, data);
+    updated += applyMonetraStandalone(root, data);
+    updated += applySingulCanonicalHoldings(root, data);
+    return updated;
+  }
+
   async function bind(root, options) {
     const scope = root || document;
     const data = await load(options);
@@ -206,25 +402,8 @@
       const text = money(data.totals && data.totals.companyNetworkTvlUsd, Number.isInteger(digits) ? digits : 0);
       if (text) { el.textContent = text; el.setAttribute('data-th-public-capital', 'automatic'); updated += 1; }
     });
+    updated += applyPublicSurfaceCoherence(scope, data);
     return { updated: updated, snapshot: data };
-  }
-
-  function applyDefiteaHeadlineApr(root, text) {
-    if (!text) return 0;
-    const scope = root || document;
-    const targets = [];
-    const card = scope.querySelector && scope.querySelector('#apr-defitea');
-    if (card) targets.push(card);
-    if (scope.querySelectorAll) {
-      scope.querySelectorAll('[data-th-company="defitea.eth"][data-th-company-apr="latest"]').forEach(function (el) { targets.push(el); });
-    }
-    let updated = 0;
-    targets.forEach(function (el) {
-      if (el.textContent !== text) { el.textContent = text; updated += 1; }
-      el.setAttribute('data-th-defitea-apr-parity', 'latest');
-      el.title = 'Current Reference APR · canonical Productivity Intelligence';
-    });
-    return updated;
   }
 
   async function syncDefiteaHeadlineApr(options) {
@@ -242,19 +421,20 @@
     }
   }
 
-  function observeDefiteaHeadlineApr() {
-    if (!global.MutationObserver || defiteaObserver) return;
-    defiteaObserver = new MutationObserver(function () {
+  function observePublicSurfaceCoherence() {
+    if (!global.MutationObserver || publicSurfaceObserver) return;
+    publicSurfaceObserver = new MutationObserver(function () {
       if (defiteaAprText) applyDefiteaHeadlineApr(document, defiteaAprText);
+      if (cached) applyPublicSurfaceCoherence(document, cached);
     });
     const root = document.documentElement || document.body;
-    if (root) defiteaObserver.observe(root, { childList: true, subtree: true, characterData: true });
+    if (root) publicSurfaceObserver.observe(root, { childList: true, subtree: true, characterData: true });
   }
 
   function autoBind() {
     bind(document).catch(function (err) { console.warn('[TH Public Capital] bind failed:', err && err.message ? err.message : err); });
     syncDefiteaHeadlineApr().catch(function () {});
-    observeDefiteaHeadlineApr();
+    observePublicSurfaceCoherence();
     setTimeout(function () { bind(document).catch(function () {}); }, 250);
     setTimeout(function () { syncDefiteaHeadlineApr().catch(function () {}); }, 350);
     setTimeout(function () { bind(document).catch(function () {}); }, 1200);
@@ -274,6 +454,7 @@
     getCompany: company,
     bind: bind,
     syncDefiteaHeadlineApr: syncDefiteaHeadlineApr,
+    applyPublicSurfaceCoherence: applyPublicSurfaceCoherence,
     money: money,
     percent: percent
   });
