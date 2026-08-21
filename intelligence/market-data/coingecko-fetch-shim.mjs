@@ -36,8 +36,10 @@ function localCoinGeckoResponse(input) {
   const requested = String(url.searchParams.get('ids') || '').split(',').map(x => x.trim()).filter(Boolean);
   const snapshot = readSnapshot();
   if (!snapshot?.prices) throw new Error('Canonical Market Data snapshot unavailable for compatibility shim');
-  if (snapshot?.semantics?.perAssetAuthoritySelectionApplied !== true) {
-    throw new Error('Compatibility shim refuses non-materialized Market Data');
+  const canonical = snapshot?.semantics?.perAssetAuthoritySelectionApplied === true;
+  const deterministicFixture = snapshot?.validationFixture === true;
+  if (!canonical && !deterministicFixture) {
+    throw new Error('Compatibility shim refuses non-canonical Market Data');
   }
 
   const byProviderId = providerIndex(snapshot);
@@ -52,7 +54,7 @@ function localCoinGeckoResponse(input) {
     status: 200,
     headers: {
       'content-type': 'application/json; charset=utf-8',
-      'x-the-holding-market-data': 'canonical-per-asset-snapshot',
+      'x-the-holding-market-data': deterministicFixture ? 'deterministic-validation-fixture' : 'canonical-per-asset-snapshot',
       'x-the-holding-external-request': '0'
     }
   });
