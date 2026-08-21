@@ -718,7 +718,7 @@
                 <div class="hero-stat">
                     <div class="hero-stat-label">Total Value</div>
                     <div class="hero-stat-value" data-tvl="substantia">Live</div>
-                    <div class="hero-stat-sub" data-tvl-updated="substantia">Live · CoinGecko</div>
+                    <div class="hero-stat-sub" data-tvl-updated="substantia">Canonical Market Data</div>
                 </div>
                 <div class="hero-stat">
                     <div class="hero-stat-label">Target Allocation</div>
@@ -1022,11 +1022,9 @@
                     document.querySelectorAll('[data-tvl="substantia"]').forEach(el => {
                         el.textContent = `$${Math.round(tvl).toLocaleString()}`;
                     });
-                    const now = new Date();
-                    const stamp = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                    document.querySelectorAll('[data-tvl-updated="substantia"]').forEach(el => {
-                        el.textContent = `Updated ${stamp} · CoinGecko`;
-                    });
+                document.querySelectorAll('[data-tvl-updated="substantia"]').forEach(el => {
+                    if (!el.hasAttribute('data-th-market-data-provenance')) el.textContent = 'Canonical Market Data';
+                });
                 }
             } catch(e) { console.error(e); }
         }
