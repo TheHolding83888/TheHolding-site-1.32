@@ -60,13 +60,13 @@ jobs:
           node --check intelligence/market-data/public-capital-client.js
           node --check intelligence/market-data/onchain-price-resolver.mjs
 
-      - name: Refresh isolated CoinGecko source lane
+      - name: Reuse isolated CoinGecko source lane on scheduled heartbeat
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           MARKET_DATA_FORCE_REFRESH: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
         run: node intelligence/market-data/market-data-engine.mjs
 
-      - name: Observe onchain prices
+      - name: Observe all onchain prices
         id: shadow
         run: |
           set +e
@@ -78,17 +78,19 @@ jobs:
             exit 1
           fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
-          if [ "$code" -ne 0 ]; then echo '::warning::Shadow cycle unhealthy; all bounded promoted cohorts will fail back to CoinGecko.'; fi
+          if [ "$code" -ne 0 ]; then
+            echo '::warning::Shadow cycle is partial; authority will fail back only unhealthy assets to the cached daily CoinGecko lane.'
+          fi
 
-      - name: Materialize bounded production authority
+      - name: Materialize per-asset production authority
         env:
-          MARKET_DATA_FORCE_COINGECKO_FAILBACK: ${{ steps.shadow.outputs.code != '0' && 'true' || 'false' }}
+          MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'
         run: node intelligence/market-data/market-data-authority-materializer.mjs
 
       - name: Rebuild public fund + company capital view
         run: node intelligence/market-data/public-capital-engine.mjs
 
-      - name: Validate canonical quantities and authority
+      - name: Validate canonical quantities and 26-asset authority
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -98,45 +100,21 @@ jobs:
           const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const reg=JSON.parse(fs.readFileSync('intelligence/market-data/fund-capital-registry.json','utf8'));
-          const direct=['bitcoin','ethereum','aerodrome-finance','pendle','curve-dao-token','frax-share','venice-token','internet-computer','decentraland','the-sandbox'];
-          const relative=['convex-finance'];
-          const v3=['ovr','beam-2','liquity','virtual-protocol','ondo-finance','zksync'];
-          const promoted=[...direct,...relative,...v3];
+          const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
+          const ids=Object.keys(source.prices||{});
+          if(ids.length!==26)throw new Error(`Expected 26 canonical market assets, got ${ids.length}`);
+          if(Object.keys(policy.assetOverrides||{}).length!==26)throw new Error('Not every canonical asset has explicit onchain-primary policy');
           if(market.authority?.productionPriceLane!=='per-asset')throw new Error('Per-asset production authority missing');
-          if(JSON.stringify(market.authority?.pilotAssetIds)!==JSON.stringify(direct))throw new Error('Direct pilot cohort drift');
-          if(JSON.stringify(market.authority?.relativePilotAssetIds)!==JSON.stringify(relative))throw new Error('Relative pilot cohort drift');
-          if(JSON.stringify(market.authority?.v3RelativePilotAssetIds)!==JSON.stringify(v3))throw new Error('V3 relative pilot cohort drift');
-          if(Number(market.authority?.directOnchainSelectedAssetCount)>10)throw new Error('Direct pilot cap exceeded');
-          if(Number(market.authority?.relativeOnchainSelectedAssetCount)>1)throw new Error('Relative pilot cap exceeded');
-          if(Number(market.authority?.v3RelativeOnchainSelectedAssetCount)>6)throw new Error('V3 relative pilot cap exceeded');
-          if(Number(market.authority?.onchainSelectedAssetCount)>17)throw new Error('Combined promoted cap exceeded');
-          for(const id of Object.keys(source.prices||{})){
+          if(Number(market.authority?.onchainSelectedAssetCount)+Number(market.authority?.coingeckoSelectedAssetCount)!==26)throw new Error('Canonical authority coverage does not sum to 26');
+          if(Number(market.authority?.unknownCount)!==0)throw new Error('Canonical Market Data contains unknown assets');
+          for(const id of ids){
             const row=market.prices?.[id];
-            if(!row)throw new Error(`${id}: canonical row missing`);
-            if(!promoted.includes(id)&&row.authority?.selectedLane!=='coingecko-lane')throw new Error(`${id}: non-promoted authority drift`);
+            if(!row||row.authority?.requestedPrimary!=='onchain')throw new Error(`${id}: not configured onchain-primary`);
+            if(!['onchain','coingecko-lane'].includes(row.authority?.selectedLane))throw new Error(`${id}: invalid selected lane`);
+            if(row.authority.selectedLane==='onchain'&&!String(row.source||'').startsWith('onchain-'))throw new Error(`${id}: onchain provenance missing`);
+            if(row.authority.selectedLane==='coingecko-lane'&&row.authority.fallbackUsed!==true)throw new Error(`${id}: CoinGecko may only be a failback for canonical production authority`);
+            if(!Number.isFinite(Number(row.usd))||Number(row.usd)<=0)throw new Error(`${id}: finite positive price unavailable`);
           }
-          if(market.prices?.elizaos?.authority?.selectedLane!=='coingecko-lane')throw new Error('ELIZA must remain CoinGecko authority');
-          for(const id of direct){
-            const row=market.prices?.[id];
-            if(!['onchain','coingecko-lane'].includes(row?.authority?.selectedLane))throw new Error(`${id}: invalid direct pilot lane`);
-            if(row.authority.selectedLane==='onchain'&&!String(row.source||'').startsWith('onchain-chainlink-v3'))throw new Error(`${id}: unexpected direct onchain provenance`);
-          }
-          for(const id of relative){
-            const row=market.prices?.[id];
-            if(!['onchain','coingecko-lane'].includes(row?.authority?.selectedLane))throw new Error(`${id}: invalid relative pilot lane`);
-            if(row.authority.selectedLane==='onchain'&&row.source!=='onchain-chainlink-v3-relative')throw new Error(`${id}: unexpected relative onchain provenance`);
-          }
-          for(const id of v3){
-            const row=market.prices?.[id];
-            if(!['onchain','coingecko-lane'].includes(row?.authority?.selectedLane))throw new Error(`${id}: invalid V3 relative pilot lane`);
-            if(row.authority.selectedLane==='onchain'&&row.source!=='onchain-uniswap-v3-twap-relative')throw new Error(`${id}: unexpected V3 relative onchain provenance`);
-            const obs=shadow.observations?.[id];
-            if(obs?.source!=='uniswap-v3-twap-relative'||obs?.quoteAssetId!=='ethereum'||obs?.feedQuote!=='ETH'||obs?.outputQuote!=='USD')throw new Error(`${id}: V3 relative route contract drift`);
-            if(obs?.status==='shadow-ok'&&obs?.dependencyStatus!=='shadow-ok')throw new Error(`${id}: healthy V3 observation lacks healthy dependency`);
-          }
-          const cvxShadow=shadow.observations?.['convex-finance'];
-          if(cvxShadow?.source!=='chainlink-v3-relative'||cvxShadow?.quoteAssetId!=='ethereum'||cvxShadow?.feedQuote!=='ETH'||cvxShadow?.outputQuote!=='USD')throw new Error('CVX relative route contract drift');
-          if(cvxShadow?.status==='shadow-ok'&&cvxShadow?.dependencyStatus!=='shadow-ok')throw new Error('CVX healthy observation lacks healthy dependency');
           const f=reg.funds?.fructus,s=reg.funds?.singul,d=pub.funds?.defitea;
           if(Number(f?.positions?.find(x=>x.assetId==='ondo-finance')?.quantity)!==542)throw new Error('Fructus ONDO quantity drift');
           if(Number(s?.positions?.find(x=>x.assetId==='elizaos')?.quantity)!==80808)throw new Error('Singul ELIZA quantity drift');
@@ -144,9 +122,15 @@ jobs:
           if(!excluded.includes('dbcon')||!excluded.includes('copxon'))throw new Error('Fructus exclusions missing');
           if(!d||!Number.isFinite(Number(d.tvlUsd))||!Number.isFinite(Number(d.referenceAprPct)))throw new Error('Defitea public state incomplete');
           if(pub.authority?.executionAuthority!=='none'||market.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
+          if(market.authority?.capitalExecution!==false||market.authority?.policyMutationAuthority!==false)throw new Error('Authority boundary drift');
           if(shadow.mode!=='shadow'||shadow.semantics?.productionPriceAuthority!==false)throw new Error('Shadow contract drift');
           if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
-          console.log('Bounded Market Data authority PASS',{direct,relative,v3,onchainSelectedAssetCount:market.authority.onchainSelectedAssetCount,fallbackCount:market.authority.fallbackCount});
+          console.log('26-asset Market Data authority PASS',{
+            onchainSelectedAssetCount:market.authority.onchainSelectedAssetCount,
+            coingeckoFailbackAssetCount:market.authority.coingeckoSelectedAssetCount,
+            fallbackCount:market.authority.fallbackCount,
+            shadowStatus:shadow.status
+          });
           NODE
           git diff --check
 
@@ -167,11 +151,8 @@ jobs:
             shadow_code=$?
             set -e
             if [ ! -f intelligence/market-data/onchain-price-shadow.json ]; then echo 'Onchain resolver produced no state during retry.' >&2; exit 1; fi
-            if [ "$shadow_code" -ne 0 ]; then
-              MARKET_DATA_FORCE_COINGECKO_FAILBACK='true' node intelligence/market-data/market-data-authority-materializer.mjs
-            else
-              MARKET_DATA_FORCE_COINGECKO_FAILBACK='false' node intelligence/market-data/market-data-authority-materializer.mjs
-            fi
+            if [ "$shadow_code" -ne 0 ]; then echo '::warning::Retry Shadow remains partial; preserving per-asset failback.'; fi
+            MARKET_DATA_FORCE_COINGECKO_FAILBACK='false' node intelligence/market-data/market-data-authority-materializer.mjs
             node intelligence/market-data/public-capital-engine.mjs
             git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json intelligence/market-data/public-capital-state.json
             git commit --amend --no-edit

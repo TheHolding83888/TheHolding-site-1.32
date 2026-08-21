@@ -37,8 +37,9 @@ jobs:
           if(!heartbeat.includes('group: shared-market-data-refresh')||!daily.includes('group: shared-market-data-refresh'))throw new Error('Market Data writers must share concurrency group');
           if(!daily.includes("MARKET_DATA_DAILY_REFRESH: 'true'"))throw new Error('Daily CoinGecko explicit override missing');
           if(daily.includes('node intelligence/market-data/onchain-price-resolver.mjs'))throw new Error('Daily CoinGecko workflow must not perform onchain RPC observation');
-          if(!daily.includes('ELIZA daily CoinGecko authority unavailable'))throw new Error('ELIZA daily authority validation missing');
-          console.log('Static cadence contract PASS');
+          if(!daily.includes('production authority is not onchain-primary'))throw new Error('Daily workflow must prove all canonical assets remain onchain-primary');
+          if(!heartbeat.includes("MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'"))throw new Error('Heartbeat must preserve per-asset rather than cycle-wide failback');
+          console.log('Static cadence + authority contract PASS');
           NODE
 
       - name: Prove scheduled onchain heartbeat performs zero CoinGecko requests
@@ -51,12 +52,13 @@ jobs:
           git checkout -- intelligence/market-data/market-data.json intelligence/market-data/market-data-coingecko.json
           echo 'Scheduled onchain heartbeat zero-request reuse PASS'
 
-      - name: Prove daily override performs exactly one batch request
+      - name: Prove daily override performs exactly one batch request for all canonical assets
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
           import fs from 'node:fs';
           const registry=JSON.parse(fs.readFileSync('intelligence/market-data/market-price-registry.json','utf8'));
+          if(registry.assets.length!==26)throw new Error(`Expected 26 canonical assets, got ${registry.assets.length}`);
           let fetchCount=0;
           globalThis.fetch=async()=>{
             fetchCount+=1;
@@ -73,7 +75,7 @@ jobs:
           if(source.version!=='0.4-market-data-daily-coingecko-cadence')throw new Error('Daily cadence version not materialized');
           if(source.semantics?.scheduledExternalFetchSuppressedByDefault!==true)throw new Error('Scheduled suppression semantics missing');
           if(source.coverage?.freshCount!==registry.assets.length)throw new Error('Stub daily refresh did not cover full registry');
-          console.log('Daily one-batch override PASS',{fetchCount,assetCount:registry.assets.length});
+          console.log('Daily one-batch 26-asset sanity baseline PASS',{fetchCount,assetCount:registry.assets.length});
           NODE
           git checkout -- intelligence/market-data/market-data.json intelligence/market-data/market-data-coingecko.json
           git diff --check

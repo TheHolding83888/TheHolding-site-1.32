@@ -1,5 +1,5 @@
 {
-  "version": "0.8-market-data-authority-direct-plus-relative-plus-v3-relative",
+  "version": "0.9-market-data-authority-all-canonical-reviewed-onchain-primary",
   "mode": "bounded-production-pilot",
   "defaultProductionAuthority": "coingecko-lane",
   "globalOnchainPromotionEnabled": true,
@@ -59,10 +59,26 @@
     "routeRequirements": {
       "ovr": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0x21BfBDa47A0B4B5b1248c767Ee49F7caA9B23697", "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2", "fee": 10000, "twapWindowSeconds": 1800},
       "beam-2": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0x62D0A8458eD7719FDAF978fe5929C6D342B0bFcE", "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2", "fee": 10000, "twapWindowSeconds": 1800},
-      "liquity": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D", "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "fee": 3000, "twapWindowSeconds": 1800},
+      "liquity": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D", "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2", "fee": 3000, "twapWindowSeconds": 1800},
       "virtual-protocol": {"network": "base", "factory": "0x33128a8fC17869897dcE68Ed026d694621f6FDfD", "token": "0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b", "quoteToken": "0x4200000000000000000000000000000000000006", "fee": 500, "twapWindowSeconds": 1800},
-      "ondo-finance": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3", "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "fee": 3000, "twapWindowSeconds": 1800},
+      "ondo-finance": {"network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3", "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2", "fee": 3000, "twapWindowSeconds": 1800},
       "zksync": {"network": "zksync", "factory": "0x8FdA5a7a8dCA67BBcDd10F02Fa0649A937215422", "token": "0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E", "quoteToken": "0x5aea5775959fbc2557cc8789bc1bf90a239d9a91", "fee": 3000, "twapWindowSeconds": 1800}
+    }
+  },
+  "reviewedPilot": {
+    "cohortId": "reviewed-heterogeneous-xaut-fxn-yb-velo-rsup-olas-mode-eliza-cvxcrv-v0.1",
+    "assetIds": ["tether-gold", "fxn-token", "yield-basis", "velodrome-finance", "resupply", "autonolas", "mode", "elizaos", "convex-crv"],
+    "maxPromotedAssetCount": 9,
+    "routeRequirements": {
+      "tether-gold": {"source": "uniswap-v3-twap-chainlink-quote", "network": "ethereum", "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "token": "0x68749665FF8D2d112Fa859AA293F07A622782F38", "quoteToken": "0xdAC17F958D2ee523a2206206994597C13D831ec7", "fee": 500, "quoteAssetId": "ethereum-usdt-usd", "feedQuote": "USDT", "outputQuote": "USD", "dependencyStatus": "shadow-ok"},
+      "fxn-token": {"source": "curve-ema-relative", "network": "ethereum", "pool": "0xC15F285679a1Ef2d25F53D4CbD0265E1D02F2A92", "quoteAssetId": "ethereum", "feedQuote": "ETH", "outputQuote": "USD", "dependencyStatus": "shadow-ok"},
+      "yield-basis": {"source": "curve-ema-chainlink-quote", "network": "ethereum", "pool": "0xec977f46467a3021785cff88894886e617abd65b", "quoteAssetId": "ethereum-crvusd-usd", "feedQuote": "crvUSD", "outputQuote": "USD", "dependencyStatus": "shadow-ok"},
+      "velodrome-finance": {"source": "velodrome-v2-twap-relative", "network": "optimism", "factory": "0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a", "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db", "quoteAssetId": "ethereum", "feedQuote": "ETH", "outputQuote": "USD", "dependencyStatus": "shadow-ok"},
+      "resupply": {"source": "curve-ema-relative", "network": "ethereum", "pool": "0xEe351f12EAE8C2B8B9d1B9BFd3c5dd565234578d", "quoteAssetId": "ethereum", "feedQuote": "ETH", "outputQuote": "USD", "dependencyStatus": "shadow-ok"},
+      "autonolas": {"source": "uniswap-v2-historical-twap-relative", "network": "ethereum", "pair": "0x09D1d767eDF8Fa23A64C51fa559E0688E526812F", "quoteAssetId": "ethereum", "feedQuote": "ETH", "outputQuote": "USD", "dependencyStatus": "shadow-ok"},
+      "mode": {"source": "velodrome-v2-twap-relative", "network": "mode", "factory": "0x31832f2a97Fd20664D76Cc421207669b55CE4BC0", "token": "0xDfc7C877a950e49D2610114102175A06C2e3167a", "quoteAssetId": "ethereum", "feedQuote": "ETH", "outputQuote": "USD", "dependencyStatus": "shadow-ok"},
+      "elizaos": {"source": "uniswap-v3-twap-chainlink-quote", "network": "bsc", "factory": "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865", "token": "0xea17Df5Cf6D172224892B5477A16ACb111182478", "quoteToken": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", "fee": 2500, "quoteAssetId": "bsc-usdc-usd", "feedQuote": "USDC", "outputQuote": "USD", "dependencyStatus": "shadow-ok"},
+      "convex-crv": {"source": "curve-ema-relative", "network": "ethereum", "pool": "0x971add32Ea87f10bD192671630be3BE8A11b8623", "quoteAssetId": "curve-dao-token", "feedQuote": "CRV", "outputQuote": "USD", "dependencyStatus": "shadow-ok"}
     }
   },
   "onchainEligibility": {
@@ -89,19 +105,21 @@
     "internet-computer": {"requestedPrimary": "onchain"},
     "decentraland": {"requestedPrimary": "onchain"},
     "the-sandbox": {"requestedPrimary": "onchain"},
-    "convex-finance": {
-      "requestedPrimary": "onchain",
-      "requiredObservationSource": "chainlink-v3-relative",
-      "requiredDependencyStatus": "shadow-ok",
-      "requiredQuoteAssetId": "ethereum",
-      "requiredFeedQuote": "ETH",
-      "requiredOutputQuote": "USD"
-    },
+    "convex-finance": {"requestedPrimary": "onchain", "requiredObservationSource": "chainlink-v3-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
     "ovr": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
     "beam-2": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
     "liquity": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
     "virtual-protocol": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
     "ondo-finance": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
-    "zksync": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"}
+    "zksync": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "tether-gold": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-chainlink-quote", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum-usdt-usd", "requiredFeedQuote": "USDT", "requiredOutputQuote": "USD"},
+    "fxn-token": {"requestedPrimary": "onchain", "requiredObservationSource": "curve-ema-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "yield-basis": {"requestedPrimary": "onchain", "requiredObservationSource": "curve-ema-chainlink-quote", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum-crvusd-usd", "requiredFeedQuote": "crvUSD", "requiredOutputQuote": "USD"},
+    "velodrome-finance": {"requestedPrimary": "onchain", "requiredObservationSource": "velodrome-v2-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "resupply": {"requestedPrimary": "onchain", "requiredObservationSource": "curve-ema-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "autonolas": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v2-historical-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "mode": {"requestedPrimary": "onchain", "requiredObservationSource": "velodrome-v2-twap-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "ethereum", "requiredFeedQuote": "ETH", "requiredOutputQuote": "USD"},
+    "elizaos": {"requestedPrimary": "onchain", "requiredObservationSource": "uniswap-v3-twap-chainlink-quote", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "bsc-usdc-usd", "requiredFeedQuote": "USDC", "requiredOutputQuote": "USD"},
+    "convex-crv": {"requestedPrimary": "onchain", "requiredObservationSource": "curve-ema-relative", "requiredDependencyStatus": "shadow-ok", "requiredQuoteAssetId": "curve-dao-token", "requiredFeedQuote": "CRV", "requiredOutputQuote": "USD"}
   }
 }

@@ -63,16 +63,24 @@ jobs:
           if(source.semantics?.scheduledExternalFetchSuppressedByDefault!==true)throw new Error('Scheduled external suppression contract missing');
           if(source.semantics?.dailyScheduledExternalRefreshRequiresExplicitOverride!==true)throw new Error('Daily explicit override contract missing');
           if(Number(source.coverage?.unknownCount)!==0)throw new Error('Daily CoinGecko baseline contains unknown assets');
+          if((registry.assets||[]).length!==26)throw new Error('Canonical daily CoinGecko registry must contain 26 assets');
           for(const asset of registry.assets||[]){
-            const row=source.prices?.[asset.assetId];
-            if(!row||!Number.isFinite(Number(row.usd)))throw new Error(`${asset.assetId}: daily CoinGecko price unavailable`);
+            const sourceRow=source.prices?.[asset.assetId];
+            const row=market.prices?.[asset.assetId];
+            if(!sourceRow||!Number.isFinite(Number(sourceRow.usd)))throw new Error(`${asset.assetId}: daily CoinGecko sanity price unavailable`);
+            if(!row||row.authority?.requestedPrimary!=='onchain')throw new Error(`${asset.assetId}: production authority is not onchain-primary`);
+            if(!['onchain','coingecko-lane'].includes(row.authority?.selectedLane))throw new Error(`${asset.assetId}: invalid production lane`);
+            if(row.authority.selectedLane==='coingecko-lane'&&row.authority.fallbackUsed!==true)throw new Error(`${asset.assetId}: CoinGecko may only be fallback in production authority`);
           }
           if(market.sourceState?.coinGeckoGeneratedAt!==source.generatedAt)throw new Error('Canonical state not bound to fresh daily CoinGecko baseline');
-          const eliza=market.prices?.elizaos;
-          if(eliza?.authority?.selectedLane!=='coingecko-lane'||!Number.isFinite(Number(eliza?.usd)))throw new Error('ELIZA daily CoinGecko authority unavailable');
           if(market.authority?.executionAuthority!=='none'||pub.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
           if(market.authority?.capitalExecution!==false||market.authority?.policyMutationAuthority!==false)throw new Error('Authority boundary drift');
-          console.log('Daily CoinGecko baseline PASS',{generatedAt:source.generatedAt,onchainSelectedAssetCount:market.authority.onchainSelectedAssetCount,coingeckoSelectedAssetCount:market.authority.coingeckoSelectedAssetCount});
+          console.log('Daily CoinGecko sanity/fallback baseline PASS',{
+            generatedAt:source.generatedAt,
+            canonicalAssetCount:registry.assets.length,
+            onchainSelectedAssetCount:market.authority.onchainSelectedAssetCount,
+            coingeckoFailbackAssetCount:market.authority.coingeckoSelectedAssetCount
+          });
           NODE
           git diff --check
 

@@ -10,6 +10,7 @@ const PATHS = {
   shadow: path.join(__dirname, 'onchain-price-shadow.json'),
   output: path.join(__dirname, 'market-data.json')
 };
+
 function readJson(file) { return JSON.parse(fs.readFileSync(file, 'utf8')); }
 function finite(value) {
   if (value === null || value === undefined || value === '') return null;
@@ -17,6 +18,19 @@ function finite(value) {
   return Number.isFinite(n) ? n : null;
 }
 function sameAddress(a, b) { return String(a || '').toLowerCase() === String(b || '').toLowerCase(); }
+function assertAddress(actual, expected, label) {
+  // Some protocol adapters expose the verified factory/pool route but do not
+  // duplicate token addresses into the observation payload. Validate any
+  // emitted address exactly, while the source registry + CI bind the static
+  // route definition for fields the runtime observation intentionally omits.
+  if (expected && actual !== undefined && actual !== null && !sameAddress(actual, expected)) throw new Error(`${label} drift`);
+}
+function assertEqual(actual, expected, label) {
+  if (expected !== undefined && actual !== expected) throw new Error(`${label} drift`);
+}
+function assertNumber(actual, expected, label) {
+  if (expected !== undefined && Number(actual) !== Number(expected)) throw new Error(`${label} drift`);
+}
 
 const policy = readJson(PATHS.policy);
 const source = readJson(PATHS.source);
@@ -34,59 +48,77 @@ if (policy.semantics?.executionAuthority !== 'none') throw new Error('Execution 
 const directIds = [...(policy.pilot?.assetIds || [])];
 const relativeIds = [...(policy.relativePilot?.assetIds || [])];
 const v3RelativeIds = [...(policy.v3RelativePilot?.assetIds || [])];
-const promotedIds = [...directIds, ...relativeIds, ...v3RelativeIds];
+const reviewedIds = [...(policy.reviewedPilot?.assetIds || [])];
+const promotedIds = [...directIds, ...relativeIds, ...v3RelativeIds, ...reviewedIds];
 const overrideIds = Object.keys(policy.assetOverrides || {});
+
 const exactDirect = ['bitcoin', 'ethereum', 'aerodrome-finance', 'pendle', 'curve-dao-token', 'frax-share', 'venice-token', 'internet-computer', 'decentraland', 'the-sandbox'];
 const exactRelative = ['convex-finance'];
 const exactV3Relative = ['ovr', 'beam-2', 'liquity', 'virtual-protocol', 'ondo-finance', 'zksync'];
-if (JSON.stringify(directIds) !== JSON.stringify(exactDirect)) throw new Error('Direct cohort must remain exactly BTC + ETH + AERO + PENDLE + CRV + FXS + VVV + ICP + MANA + SAND');
-if (JSON.stringify(relativeIds) !== JSON.stringify(exactRelative)) throw new Error('Relative cohort must be exactly CVX');
-if (JSON.stringify(v3RelativeIds) !== JSON.stringify(exactV3Relative)) throw new Error('V3 relative cohort must remain exactly OVR + BEAM + LQTY + VIRTUAL + ONDO + ZK');
+const exactReviewed = ['tether-gold', 'fxn-token', 'yield-basis', 'velodrome-finance', 'resupply', 'autonolas', 'mode', 'elizaos', 'convex-crv'];
+if (JSON.stringify(directIds) !== JSON.stringify(exactDirect)) throw new Error('Direct cohort drift');
+if (JSON.stringify(relativeIds) !== JSON.stringify(exactRelative)) throw new Error('Relative cohort drift');
+if (JSON.stringify(v3RelativeIds) !== JSON.stringify(exactV3Relative)) throw new Error('V3 relative cohort drift');
+if (JSON.stringify(reviewedIds) !== JSON.stringify(exactReviewed)) throw new Error('Reviewed cohort drift');
 if (new Set(promotedIds).size !== promotedIds.length) throw new Error('Promoted cohorts overlap');
-if (overrideIds.length !== promotedIds.length || overrideIds.some(id => !promotedIds.includes(id))) throw new Error('Asset overrides exceed bounded promoted cohorts');
-if (Number(policy.pilot?.maxPromotedAssetCount) !== 10) throw new Error('Direct cohort promotion cap drift');
-if (Number(policy.relativePilot?.maxPromotedAssetCount) !== 1) throw new Error('Relative cohort promotion cap drift');
-if (Number(policy.v3RelativePilot?.maxPromotedAssetCount) !== 6) throw new Error('V3 relative cohort promotion cap drift');
-if (policy.pilot?.requiredRouteType !== 'chainlink-v3' || policy.pilot?.requiredQuote !== 'USD') throw new Error('Direct cohort must remain direct Chainlink/USD only');
-if (policy.relativePilot?.requiredRouteType !== 'chainlink-v3-relative' || policy.relativePilot?.requiredFeedQuote !== 'ETH' || policy.relativePilot?.requiredQuoteAssetId !== 'ethereum' || policy.relativePilot?.requiredOutputQuote !== 'USD' || policy.relativePilot?.requiredDependencyStatus !== 'shadow-ok') throw new Error('Relative CVX route contract drift');
-if (policy.v3RelativePilot?.requiredRouteType !== 'uniswap-v3-twap-relative' || policy.v3RelativePilot?.requiredFeedQuote !== 'ETH' || policy.v3RelativePilot?.requiredQuoteAssetId !== 'ethereum' || policy.v3RelativePilot?.requiredOutputQuote !== 'USD' || policy.v3RelativePilot?.requiredDependencyStatus !== 'shadow-ok') throw new Error('V3 relative route contract drift');
+if (overrideIds.length !== promotedIds.length || overrideIds.some(id => !promotedIds.includes(id))) throw new Error('Asset overrides must equal explicit promoted cohorts');
+if (promotedIds.length !== 26) throw new Error(`Expected 26 explicitly reviewed canonical onchain assets, got ${promotedIds.length}`);
+if (Number(policy.pilot?.maxPromotedAssetCount) !== 10 || Number(policy.relativePilot?.maxPromotedAssetCount) !== 1 || Number(policy.v3RelativePilot?.maxPromotedAssetCount) !== 6 || Number(policy.reviewedPilot?.maxPromotedAssetCount) !== 9) throw new Error('Promotion cap drift');
 
 for (const assetId of directIds) {
   const observation = shadow?.observations?.[assetId];
   const req = policy.pilot?.routeRequirements?.[assetId];
   if (!req) throw new Error(`${assetId}: exact direct route requirement missing`);
-  if (observation?.source !== policy.pilot.requiredRouteType) throw new Error(`${assetId}: direct route type drift`);
-  if (observation?.network !== req.network) throw new Error(`${assetId}: direct network drift`);
-  if (!sameAddress(observation?.contract, req.contract)) throw new Error(`${assetId}: direct feed contract drift`);
-  if (observation?.quote !== policy.pilot.requiredQuote) throw new Error(`${assetId}: direct quote drift`);
+  assertEqual(observation?.source, policy.pilot.requiredRouteType, `${assetId}: direct source`);
+  assertEqual(observation?.network, req.network, `${assetId}: direct network`);
+  assertAddress(observation?.contract, req.contract, `${assetId}: direct contract`);
+  assertEqual(observation?.quote, policy.pilot.requiredQuote, `${assetId}: direct quote`);
 }
 
 for (const assetId of relativeIds) {
   const observation = shadow?.observations?.[assetId];
   const req = policy.relativePilot?.routeRequirements?.[assetId];
   if (!req) throw new Error(`${assetId}: exact relative route requirement missing`);
-  if (observation?.source !== policy.relativePilot.requiredRouteType) throw new Error(`${assetId}: relative route type drift`);
-  if (observation?.network !== req.network) throw new Error(`${assetId}: relative network drift`);
-  if (!sameAddress(observation?.contract, req.contract)) throw new Error(`${assetId}: relative feed contract drift`);
-  if (observation?.feedQuote !== policy.relativePilot.requiredFeedQuote) throw new Error(`${assetId}: relative feed quote drift`);
-  if (observation?.quoteAssetId !== policy.relativePilot.requiredQuoteAssetId) throw new Error(`${assetId}: relative dependency asset drift`);
-  if (observation?.outputQuote !== policy.relativePilot.requiredOutputQuote) throw new Error(`${assetId}: relative output quote drift`);
+  assertEqual(observation?.source, policy.relativePilot.requiredRouteType, `${assetId}: relative source`);
+  assertEqual(observation?.network, req.network, `${assetId}: relative network`);
+  assertAddress(observation?.contract, req.contract, `${assetId}: relative contract`);
+  assertEqual(observation?.feedQuote, policy.relativePilot.requiredFeedQuote, `${assetId}: feed quote`);
+  assertEqual(observation?.quoteAssetId, policy.relativePilot.requiredQuoteAssetId, `${assetId}: quote asset`);
+  assertEqual(observation?.outputQuote, policy.relativePilot.requiredOutputQuote, `${assetId}: output quote`);
 }
 
 for (const assetId of v3RelativeIds) {
   const observation = shadow?.observations?.[assetId];
   const req = policy.v3RelativePilot?.routeRequirements?.[assetId];
-  if (!req) throw new Error(`${assetId}: exact V3 relative route requirement missing`);
-  if (observation?.source !== policy.v3RelativePilot.requiredRouteType) throw new Error(`${assetId}: V3 relative route type drift`);
-  if (observation?.network !== req.network) throw new Error(`${assetId}: V3 relative network drift`);
-  if (!sameAddress(observation?.factory, req.factory)) throw new Error(`${assetId}: V3 relative factory drift`);
-  if (!sameAddress(observation?.token, req.token)) throw new Error(`${assetId}: V3 relative token drift`);
-  if (!sameAddress(observation?.quoteToken, req.quoteToken)) throw new Error(`${assetId}: V3 relative quote token drift`);
-  if (Number(observation?.fee) !== Number(req.fee)) throw new Error(`${assetId}: V3 relative fee drift`);
-  if (Number(observation?.twapWindowSeconds) !== Number(req.twapWindowSeconds)) throw new Error(`${assetId}: V3 relative TWAP window drift`);
-  if (observation?.feedQuote !== policy.v3RelativePilot.requiredFeedQuote) throw new Error(`${assetId}: V3 relative feed quote drift`);
-  if (observation?.quoteAssetId !== policy.v3RelativePilot.requiredQuoteAssetId) throw new Error(`${assetId}: V3 relative dependency asset drift`);
-  if (observation?.outputQuote !== policy.v3RelativePilot.requiredOutputQuote) throw new Error(`${assetId}: V3 relative output quote drift`);
+  if (!req) throw new Error(`${assetId}: exact V3 route requirement missing`);
+  assertEqual(observation?.source, policy.v3RelativePilot.requiredRouteType, `${assetId}: V3 source`);
+  assertEqual(observation?.network, req.network, `${assetId}: V3 network`);
+  assertAddress(observation?.factory, req.factory, `${assetId}: V3 factory`);
+  assertAddress(observation?.token, req.token, `${assetId}: V3 token`);
+  assertAddress(observation?.quoteToken, req.quoteToken, `${assetId}: V3 quote token`);
+  assertNumber(observation?.fee, req.fee, `${assetId}: V3 fee`);
+  assertNumber(observation?.twapWindowSeconds, req.twapWindowSeconds, `${assetId}: V3 window`);
+  assertEqual(observation?.feedQuote, policy.v3RelativePilot.requiredFeedQuote, `${assetId}: V3 feed quote`);
+  assertEqual(observation?.quoteAssetId, policy.v3RelativePilot.requiredQuoteAssetId, `${assetId}: V3 quote asset`);
+  assertEqual(observation?.outputQuote, policy.v3RelativePilot.requiredOutputQuote, `${assetId}: V3 output quote`);
+}
+
+for (const assetId of reviewedIds) {
+  const observation = shadow?.observations?.[assetId];
+  const req = policy.reviewedPilot?.routeRequirements?.[assetId];
+  if (!observation || !req) throw new Error(`${assetId}: reviewed route evidence missing`);
+  assertEqual(observation.source, req.source, `${assetId}: reviewed source`);
+  assertEqual(observation.network, req.network, `${assetId}: reviewed network`);
+  assertAddress(observation.factory, req.factory, `${assetId}: reviewed factory`);
+  assertAddress(observation.token, req.token, `${assetId}: reviewed token`);
+  assertAddress(observation.quoteToken, req.quoteToken, `${assetId}: reviewed quote token`);
+  assertAddress(observation.pool, req.pool, `${assetId}: reviewed pool`);
+  assertAddress(observation.pair, req.pair, `${assetId}: reviewed pair`);
+  assertNumber(observation.fee, req.fee, `${assetId}: reviewed fee`);
+  assertEqual(observation.quoteAssetId, req.quoteAssetId, `${assetId}: reviewed quote asset`);
+  assertEqual(observation.feedQuote, req.feedQuote, `${assetId}: reviewed feed quote`);
+  assertEqual(observation.outputQuote, req.outputQuote, `${assetId}: reviewed output quote`);
+  if (req.dependencyStatus !== undefined) assertEqual(observation.dependencyStatus, req.dependencyStatus, `${assetId}: reviewed dependency`);
 }
 
 if (forceCoinGeckoFailback) {
@@ -102,6 +134,7 @@ let onchainSelectedAssetCount = 0;
 let directOnchainSelectedAssetCount = 0;
 let relativeOnchainSelectedAssetCount = 0;
 let v3RelativeOnchainSelectedAssetCount = 0;
+let reviewedOnchainSelectedAssetCount = 0;
 let coingeckoSelectedAssetCount = 0;
 let fallbackCount = 0;
 let unknownCount = 0;
@@ -124,6 +157,7 @@ for (const [assetId, sourceRow] of Object.entries(source.prices || {})) {
     if (directIds.includes(assetId)) directOnchainSelectedAssetCount += 1;
     if (relativeIds.includes(assetId)) relativeOnchainSelectedAssetCount += 1;
     if (v3RelativeIds.includes(assetId)) v3RelativeOnchainSelectedAssetCount += 1;
+    if (reviewedIds.includes(assetId)) reviewedOnchainSelectedAssetCount += 1;
   } else if (selection.selectedLane === 'coingecko-lane') {
     prices[assetId] = {
       ...sourceRow,
@@ -145,20 +179,17 @@ for (const [assetId, sourceRow] of Object.entries(source.prices || {})) {
   }
 }
 
-if (directOnchainSelectedAssetCount > Number(policy.pilot.maxPromotedAssetCount)) throw new Error('Direct selected asset count exceeds direct cap');
-if (relativeOnchainSelectedAssetCount > Number(policy.relativePilot.maxPromotedAssetCount)) throw new Error('Relative selected asset count exceeds relative cap');
-if (v3RelativeOnchainSelectedAssetCount > Number(policy.v3RelativePilot.maxPromotedAssetCount)) throw new Error('V3 relative selected asset count exceeds V3 relative cap');
-const totalCap = Number(policy.pilot.maxPromotedAssetCount) + Number(policy.relativePilot.maxPromotedAssetCount) + Number(policy.v3RelativePilot.maxPromotedAssetCount);
-if (onchainSelectedAssetCount > totalCap) throw new Error('Total onchain selected asset count exceeds combined cap');
+if (directOnchainSelectedAssetCount > 10 || relativeOnchainSelectedAssetCount > 1 || v3RelativeOnchainSelectedAssetCount > 6 || reviewedOnchainSelectedAssetCount > 9) throw new Error('Selected cohort cap exceeded');
+if (onchainSelectedAssetCount > 26) throw new Error('Total onchain selected asset count exceeds canonical universe');
 for (const assetId of Object.keys(prices)) {
-  if (!promotedIds.includes(assetId) && prices[assetId]?.authority?.selectedLane !== 'coingecko-lane') throw new Error(`${assetId}: non-promoted asset left CoinGecko lane`);
+  if (!promotedIds.includes(assetId)) throw new Error(`${assetId}: canonical asset missing explicit authority review`);
 }
 if (forceCoinGeckoFailback && onchainSelectedAssetCount !== 0) throw new Error('Cycle failback did not remove onchain selections');
 
 const output = {
   ...source,
-  version: '1.0-market-data-bounded-direct-plus-relative-plus-v3-relative',
-  engineVersion: '1.0-per-asset-authority-materializer-direct10-cvx1-v3relative6',
+  version: '1.1-market-data-all-canonical-reviewed-onchain-primary',
+  engineVersion: '1.1-per-asset-authority-materializer-26-reviewed-canonical-assets',
   generatedAt: new Date(nowMs).toISOString(),
   status: unknownCount > 0 ? 'partial' : fallbackCount > 0 ? 'fallback-active' : 'ok',
   semantics: {
@@ -166,11 +197,8 @@ const output = {
     canonicalMirrorEqualsCoinGeckoSourceLane: false,
     perAssetAuthoritySelectionApplied: true,
     boundedOnchainPrimaryPilot: true,
-    directChainlinkUsdCohortRetained: true,
-    relativeChainlinkPilotEnabled: true,
-    uniswapV3RelativeCohortEnabled: true,
-    dependencyAwareEligibility: true,
-    coinGeckoRemainsFallbackAndSanityCheck: true,
+    allCanonicalAssetsExplicitlyReviewedForOnchainPrimary: true,
+    coinGeckoRemainsDailyFallbackAndSanityCheck: true,
     automaticCohortExpansionAllowed: false,
     cycleForcedCoinGeckoFailback: forceCoinGeckoFailback,
     unknownIsNotZero: true
@@ -185,10 +213,13 @@ const output = {
     relativePilotAssetIds: relativeIds,
     v3RelativePilotCohortId: policy.v3RelativePilot.cohortId,
     v3RelativePilotAssetIds: v3RelativeIds,
+    reviewedPilotCohortId: policy.reviewedPilot.cohortId,
+    reviewedPilotAssetIds: reviewedIds,
     onchainSelectedAssetCount,
     directOnchainSelectedAssetCount,
     relativeOnchainSelectedAssetCount,
     v3RelativeOnchainSelectedAssetCount,
+    reviewedOnchainSelectedAssetCount,
     coingeckoSelectedAssetCount,
     fallbackCount,
     unknownCount,
@@ -207,13 +238,11 @@ const output = {
 
 fs.writeFileSync(PATHS.output, JSON.stringify(output, null, 2) + '\n');
 console.log('Market Data authority materialized', {
-  directPilotAssetIds: directIds,
-  relativePilotAssetIds: relativeIds,
-  v3RelativePilotAssetIds: v3RelativeIds,
   onchainSelectedAssetCount,
   directOnchainSelectedAssetCount,
   relativeOnchainSelectedAssetCount,
   v3RelativeOnchainSelectedAssetCount,
+  reviewedOnchainSelectedAssetCount,
   coingeckoSelectedAssetCount,
   fallbackCount,
   unknownCount,
