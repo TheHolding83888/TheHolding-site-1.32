@@ -1,0 +1,291 @@
+name: TEMP Defitea Homepage Engine Card Polish
+
+on:
+  push:
+    branches:
+      - ui/defitea-homepage-productive-engines-20260821
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          ref: ui/defitea-homepage-productive-engines-20260821
+
+      - name: Apply fail-closed Defitea card polish
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          s = path.read_text(encoding='utf-8')
+
+          old_version = '<!-- TheHolding.ai Website v2.4.1 - homepage OS vision bridge: concise Funds → Companies → OS\n'
+          new_version = '<!-- TheHolding.ai Website v2.4.2 - Defitea homepage productive engine grid: 11 active mechanisms\n     v2.4.1 - homepage OS vision bridge: concise Funds → Companies → OS\n'
+          if s.count(old_version) != 1:
+              raise SystemExit(f'version marker count={s.count(old_version)}')
+          s = s.replace(old_version, new_version, 1)
+
+          old_grid = '''                            <div class="section-header">
+                                <h4 class="assets-title">Protocol Allocation</h4>
+                                <span class="assets-count">11 Engines</span>
+                            </div>
+                            
+                            <div class="protocols-grid">
+                                <div class="protocol-card">
+                                    <div class="protocol-name">Aerodrome</div>
+                                    <div class="protocol-meta">Base L2 · DEX</div>
+                                </div>
+
+                                <div class="protocol-card">
+                                    <div class="protocol-name">Curve</div>
+                                    <div class="protocol-meta">Ethereum · Stableswaps</div>
+                                </div>
+
+                                <div class="protocol-card">
+                                    <div class="protocol-name">Frax</div>
+                                    <div class="protocol-meta">Multi-chain · Stablecoin</div>
+                                </div>
+
+                                <div class="protocol-card">
+                                    <div class="protocol-name">Convex</div>
+                                    <div class="protocol-meta">Ethereum · Meta-protocol</div>
+                                </div>
+
+                                <div class="protocol-card">
+                                    <div class="protocol-name">Pendle</div>
+                                    <div class="protocol-meta">Multi-chain · Yield Trading</div>
+                                </div>
+
+                                <div class="protocol-card">
+                                    <div class="protocol-name">F(x) Protocol</div>
+                                    <div class="protocol-meta">Ethereum · Leverage</div>
+                                </div>
+
+                                <div class="protocol-card">
+                                    <div class="protocol-name">Yield Basis</div>
+                                    <div class="protocol-meta">Ethereum · Optimization</div>
+                                </div>
+
+                                <div class="protocol-card">
+                                    <div class="protocol-name">Velodrome</div>
+                                    <div class="protocol-meta">Optimism L2 · DEX</div>
+                                </div>
+                            </div>'''
+
+          new_grid = '''                            <div class="section-header">
+                                <h4 class="assets-title">Productive Engines</h4>
+                                <span class="assets-count" data-defitea-engine-count>11 Active</span>
+                            </div>
+
+                            <div class="protocols-grid" data-defitea-engine-grid>
+                                <div class="protocol-card" data-defitea-engine="aerodrome-veaero">
+                                    <div class="protocol-name">Aerodrome</div>
+                                    <div class="protocol-meta">veAERO · Voting</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="convex-vlcvx">
+                                    <div class="protocol-name">Convex</div>
+                                    <div class="protocol-meta">vlCVX · Delegation</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="curve-vecrv">
+                                    <div class="protocol-name">Curve</div>
+                                    <div class="protocol-meta">veCRV · Fees</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="pendle-spendle">
+                                    <div class="protocol-name">Pendle</div>
+                                    <div class="protocol-meta">sPENDLE · Buybacks</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="fx-vefxn">
+                                    <div class="protocol-name">f(x) Protocol</div>
+                                    <div class="protocol-meta">veFXN · Voting</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="yield-basis-veyb">
+                                    <div class="protocol-name">Yield Basis</div>
+                                    <div class="protocol-meta">veYB · Fees &amp; Emissions</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="frax-vefrax">
+                                    <div class="protocol-name">Frax</div>
+                                    <div class="protocol-meta">veFRAX · Voting</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="velodrome-vevelo">
+                                    <div class="protocol-name">Velodrome</div>
+                                    <div class="protocol-meta">veVELO · Voting</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="venice-svvv">
+                                    <div class="protocol-name">Venice</div>
+                                    <div class="protocol-meta">sVVV · Staking</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="liquity-staked-lqty">
+                                    <div class="protocol-name">Liquity</div>
+                                    <div class="protocol-meta">staked LQTY · Staking</div>
+                                </div>
+
+                                <div class="protocol-card" data-defitea-engine="resupply-staked-rsup">
+                                    <div class="protocol-name">Resupply</div>
+                                    <div class="protocol-meta">staked RSUP · Staking</div>
+                                </div>
+                            </div>'''
+
+          if s.count(old_grid) != 1:
+              raise SystemExit(f'Defitea old grid count={s.count(old_grid)}')
+          s = s.replace(old_grid, new_grid, 1)
+
+          old_quote = '<p>"No trading, no charts, no emotions. Eleven DeFi engines working in harmony, generating sustainable cash flow."</p>'
+          new_quote = '<p>"No trading, no charts, no emotions. Eleven productive engines — one mandate: durable onchain cash flow."</p>'
+          if s.count(old_quote) != 1:
+              raise SystemExit(f'Defitea quote count={s.count(old_quote)}')
+          s = s.replace(old_quote, new_quote, 1)
+
+          style_marker = '''        .protocol-meta {
+            color: var(--text-tertiary);
+            font-size: clamp(0.75rem, 2vw, 0.8rem);
+            letter-spacing: 0.02em;
+        }
+'''
+          if s.count(style_marker) != 1:
+              raise SystemExit(f'protocol meta style marker count={s.count(style_marker)}')
+
+          style_upgrade = style_marker + '''
+        /* Defitea · productive engine constellation
+           Three balanced columns on desktop; the final two cards are centered.
+           Compact two-column mobile keeps the existing card density without overflow. */
+        .fund-card[data-fund="defitea"] .protocols-grid {
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+
+        .fund-card[data-fund="defitea"] .protocol-card {
+            grid-column: span 2;
+            min-width: 0;
+            min-height: 76px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 1rem 1.05rem 1rem 1.15rem;
+        }
+
+        .fund-card[data-fund="defitea"] .protocol-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15px;
+            bottom: 15px;
+            width: 2px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(16,185,129,0.20), rgba(16,185,129,0.72), rgba(16,185,129,0.20));
+            opacity: 0.78;
+        }
+
+        .fund-card[data-fund="defitea"] .protocol-card:hover::before {
+            opacity: 1;
+        }
+
+        .fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1) {
+            grid-column: 2 / span 2;
+        }
+
+        .fund-card[data-fund="defitea"] .protocol-meta {
+            line-height: 1.35;
+        }
+
+        @media (max-width: 768px) {
+            .fund-card[data-fund="defitea"] .protocols-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .fund-card[data-fund="defitea"] .protocol-card,
+            .fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1) {
+                grid-column: auto;
+                min-height: 72px;
+            }
+            .fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd) {
+                grid-column: 1 / -1;
+                width: calc(50% - 0.375rem);
+                justify-self: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .fund-card[data-fund="defitea"] .protocols-grid {
+                grid-template-columns: 1fr;
+            }
+            .fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd) {
+                grid-column: auto;
+                width: 100%;
+            }
+        }
+'''
+          s = s.replace(style_marker, style_upgrade, 1)
+
+          # Runtime count derives from rendered cards, so count text cannot drift
+          # from the grid if the list is edited later. Static HTML remains truthful
+          # for crawlers/no-JS at the current canonical 11-engine state.
+          script_anchor = '''        // Navigation toggle
+'''
+          count_script = '''        // Defitea productive engine count · presentation coherence only
+        const defiteaEngineGrid = document.querySelector('[data-defitea-engine-grid]');
+        const defiteaEngineCount = document.querySelector('[data-defitea-engine-count]');
+        if (defiteaEngineGrid && defiteaEngineCount) {
+            const activeEngineCount = defiteaEngineGrid.querySelectorAll('[data-defitea-engine]').length;
+            defiteaEngineCount.textContent = `${activeEngineCount} Active`;
+        }
+
+'''
+          if s.count(script_anchor) != 1:
+              raise SystemExit(f'navigation script anchor count={s.count(script_anchor)}')
+          s = s.replace(script_anchor, count_script + script_anchor, 1)
+
+          # Fail closed on cardinality and canonical productive identities.
+          expected = [
+              'Aerodrome','Convex','Curve','Pendle','f(x) Protocol','Yield Basis',
+              'Frax','Velodrome','Venice','Liquity','Resupply'
+          ]
+          if s.count('data-defitea-engine="') != 11:
+              raise SystemExit('Defitea engine cardinality is not 11')
+          for name in expected:
+              if f'<div class="protocol-name">{name}</div>' not in s:
+                  raise SystemExit(f'missing Defitea engine: {name}')
+          if 'Protocol Allocation</h4>' in s:
+              raise SystemExit('stale Defitea Protocol Allocation title remains')
+          if 'Eleven DeFi engines working in harmony' in s:
+              raise SystemExit('stale Defitea philosophy copy remains')
+
+          path.write_text(s, encoding='utf-8')
+
+          # Self-remove: no temporary workflow enters the PR tree.
+          Path('.github/workflows/temp-defitea-engine-card-polish.yml').unlink()
+          PY
+
+      - name: Verify and publish clean branch
+        shell: bash
+        run: |
+          test ! -e .github/workflows/temp-defitea-engine-card-polish.yml
+          test "$(grep -o 'data-defitea-engine="' index.html | wc -l)" -eq 11
+          grep -q 'Productive Engines' index.html
+          grep -q '11 Active' index.html
+          grep -q 'Venice' index.html
+          grep -q 'Liquity' index.html
+          grep -q 'Resupply' index.html
+          git config user.name "The Holding UI"
+          git config user.email "ui@theholding.ai"
+          git add -A
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m "UI: polish Defitea productive engine grid"
+          git push origin HEAD:ui/defitea-homepage-productive-engines-20260821
