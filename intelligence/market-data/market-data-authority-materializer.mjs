@@ -19,10 +19,6 @@ function finite(value) {
 }
 function sameAddress(a, b) { return String(a || '').toLowerCase() === String(b || '').toLowerCase(); }
 function assertAddress(actual, expected, label) {
-  // Some protocol adapters expose the verified factory/pool route but do not
-  // duplicate token addresses into the observation payload. Validate any
-  // emitted address exactly, while the source registry + CI bind the static
-  // route definition for fields the runtime observation intentionally omits.
   if (expected && actual !== undefined && actual !== null && !sameAddress(actual, expected)) throw new Error(`${label} drift`);
 }
 function assertEqual(actual, expected, label) {
@@ -118,9 +114,6 @@ for (const assetId of reviewedIds) {
   assertEqual(observation.quoteAssetId, req.quoteAssetId, `${assetId}: reviewed quote asset`);
   assertEqual(observation.feedQuote, req.feedQuote, `${assetId}: reviewed feed quote`);
   assertEqual(observation.outputQuote, req.outputQuote, `${assetId}: reviewed output quote`);
-  // dependencyStatus is runtime health, not immutable route identity. The
-  // authority selector owns this decision so divergence can remain telemetry
-  // while genuine dependency failure performs bounded per-asset failback.
 }
 
 if (forceCoinGeckoFailback) {
@@ -188,14 +181,21 @@ for (const assetId of Object.keys(prices)) {
 }
 if (forceCoinGeckoFailback && onchainSelectedAssetCount !== 0) throw new Error('Cycle failback did not remove onchain selections');
 
+const canonicalObservedAt = rawShadow.generatedAt || null;
 const output = {
-  ...source,
-  version: '1.1-market-data-all-canonical-reviewed-onchain-primary',
-  engineVersion: '1.1-per-asset-authority-materializer-26-reviewed-canonical-assets',
+  version: '1.2-market-data-truthful-canonical-provenance',
+  engineVersion: '1.2-per-asset-authority-materializer-truthful-provenance',
   generatedAt: new Date(nowMs).toISOString(),
+  requestedAt: canonicalObservedAt,
+  observedAt: canonicalObservedAt,
   status: unknownCount > 0 ? 'partial' : fallbackCount > 0 ? 'fallback-active' : 'ok',
   semantics: {
-    ...source.semantics,
+    canonicalPriceAuthority: 'per-asset',
+    canonicalObservationTimestampSource: 'onchain-shadow-generatedAt',
+    coinGeckoExternalRequestCountThisMaterialization: 0,
+    coinGeckoSourceLaneReusedWithoutExternalRequest: true,
+    browserExternalPriceRequestsAllowed: false,
+    dedicatedCoinGeckoSourceLane: true,
     canonicalMirrorEqualsCoinGeckoSourceLane: false,
     perAssetAuthoritySelectionApplied: true,
     boundedOnchainPrimaryPilot: true,
@@ -204,6 +204,22 @@ const output = {
     automaticCohortExpansionAllowed: false,
     cycleForcedCoinGeckoFailback: forceCoinGeckoFailback,
     unknownIsNotZero: true
+  },
+  provider: {
+    id: 'per-asset-authority',
+    endpoint: null,
+    authMode: 'read-only-multi-source',
+    credentialExposed: false,
+    httpStatus: null,
+    error: null
+  },
+  coverage: {
+    requestedAssetCount: Object.keys(prices).length,
+    freshCount: Object.values(prices).filter(row => row.status === 'fresh').length,
+    staleFallbackCount: coingeckoSelectedAssetCount,
+    unknownCount,
+    freshCoverage: Object.keys(prices).length ? Object.values(prices).filter(row => row.status === 'fresh').length / Object.keys(prices).length : 0,
+    usableCoverage: Object.keys(prices).length ? (Object.keys(prices).length - unknownCount) / Object.keys(prices).length : 0
   },
   prices,
   authority: {
@@ -232,6 +248,10 @@ const output = {
   },
   sourceState: {
     coinGeckoGeneratedAt: source.generatedAt || null,
+    coinGeckoRequestedAt: source.requestedAt || null,
+    coinGeckoObservedAt: source.observedAt || null,
+    coinGeckoProvider: source.provider || null,
+    coinGeckoSemantics: source.semantics || null,
     onchainShadowGeneratedAt: rawShadow.generatedAt || null,
     onchainShadowStatus: rawShadow.status || null,
     forceCoinGeckoFailback
@@ -248,6 +268,9 @@ console.log('Market Data authority materialized', {
   coingeckoSelectedAssetCount,
   fallbackCount,
   unknownCount,
+  canonicalObservedAt,
+  topLevelProvider: output.provider.id,
+  coinGeckoExternalRequestCountThisMaterialization: 0,
   forceCoinGeckoFailback,
   executionAuthority: 'none'
 });

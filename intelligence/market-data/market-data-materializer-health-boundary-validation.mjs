@@ -9,8 +9,11 @@ const shadow = JSON.parse(fs.readFileSync(new URL('./onchain-price-shadow.json',
 if (materializer.includes('assertEqual(observation.dependencyStatus, req.dependencyStatus')) {
   throw new Error('Materializer must not enforce runtime dependencyStatus as static route identity');
 }
-if (!materializer.includes('dependencyStatus is runtime health, not immutable route identity')) {
-  throw new Error('Materializer health-boundary contract marker missing');
+if (!materializer.includes('const evaluation = evaluateMarketDataAuthority({ policy, marketData: source, shadow, nowMs })')) {
+  throw new Error('Materializer must delegate runtime authority health to evaluateMarketDataAuthority');
+}
+if (!materializer.includes("selection.selectedLane === 'onchain-shadow'") || !materializer.includes("selection.selectedLane === 'coingecko-lane'")) {
+  throw new Error('Materializer must preserve selector-driven per-asset authority lanes');
 }
 
 const nowMs = Date.parse(shadow.generatedAt);
@@ -55,6 +58,6 @@ if (failedSelection.selectedLane !== 'coingecko-lane' || failedSelection.fallbac
 console.log('Market Data materializer health-boundary validation PASS', {
   divergenceTelemetryKeepsOnchain: true,
   realDependencyFailureFailsBackPerAsset: true,
-  materializerDoesNotPreemptSelectorHealthDecision: true,
+  materializerDelegatesRuntimeHealthToSelector: true,
   executionAuthority: 'none'
 });
