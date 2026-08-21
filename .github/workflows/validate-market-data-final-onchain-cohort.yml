@@ -1,0 +1,79 @@
+name: "Validate Final Canonical Onchain Cohort"
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/market-data/onchain-price-source-registry-extensions.json'
+      - 'intelligence/market-data/market-data-authority-policy.json'
+      - 'intelligence/market-data/market-data-authority-materializer.mjs'
+      - 'intelligence/market-data/market-data-authority-selector-validation.mjs'
+      - '.github/workflows/market-data-refresh.yml'
+      - '.github/workflows/market-data-coingecko-daily.yml'
+      - '.github/workflows/validate-market-data-final-onchain-cohort.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Validate deterministic authority contracts
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/onchain-price-resolver.mjs
+          node --check intelligence/market-data/market-data-authority-selector.mjs
+          node --check intelligence/market-data/market-data-authority-materializer.mjs
+          node intelligence/market-data/market-data-authority-selector-validation.mjs
+
+      - name: Live-prove all nine final routes on public RPC
+        run: |
+          set -euo pipefail
+          node intelligence/market-data/onchain-price-resolver.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
+          const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
+          const ids=policy.reviewedPilot?.assetIds||[];
+          if(ids.length!==9)throw new Error(`Expected 9 final reviewed assets, got ${ids.length}`);
+          if(shadow.coverage?.assetCount!==27)throw new Error(`Expected 27 total Shadow routes, got ${shadow.coverage?.assetCount}`);
+          for(const id of ids){
+            const row=shadow.observations?.[id];
+            const req=policy.reviewedPilot.routeRequirements[id];
+            if(!row)throw new Error(`${id}: live Shadow observation missing`);
+            if(row.status!=='shadow-ok'||!(Number(row.usd)>0))throw new Error(`${id}: live route not healthy (${row.status})`);
+            if(row.source!==req.source||row.network!==req.network)throw new Error(`${id}: live route identity drift`);
+            if(req.dependencyStatus&&row.dependencyStatus!==req.dependencyStatus)throw new Error(`${id}: live dependency unhealthy`);
+            if(req.quoteAssetId&&row.quoteAssetId!==req.quoteAssetId)throw new Error(`${id}: live quote dependency drift`);
+            if(req.feedQuote&&row.feedQuote!==req.feedQuote)throw new Error(`${id}: live feed quote drift`);
+            if(req.outputQuote&&row.outputQuote!==req.outputQuote)throw new Error(`${id}: live output quote drift`);
+            if(Number.isFinite(Number(row.divergencePct))&&Number.isFinite(Number(row.maxDivergencePct))&&Number(row.divergencePct)>Number(row.maxDivergencePct))throw new Error(`${id}: live divergence exceeds bound`);
+          }
+          const xaut=shadow.observations['tether-gold'];
+          if(xaut.source!=='uniswap-v3-twap-chainlink-quote'||String(xaut.pool||'').toLowerCase()!=='0x6546055f46e866a4b9a4a13e81273e3152bae5da')throw new Error('XAUT token-market pool was not physically resolved');
+          if(xaut.feedQuote!=='USDT'||xaut.quoteAssetId!=='ethereum-usdt-usd')throw new Error('XAUT token-market quote semantics drift');
+          console.log('Final nine live onchain routes PASS',{generatedAt:shadow.generatedAt,reviewedAssets:ids,xautPool:xaut.pool});
+          NODE
+
+      - name: Prove live Shadow can materialize 26 canonical onchain prices
+        run: |
+          set -euo pipefail
+          MARKET_DATA_FORCE_COINGECKO_FAILBACK=false node intelligence/market-data/market-data-authority-materializer.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          if(m.authority?.onchainSelectedAssetCount!==26||m.authority?.coingeckoSelectedAssetCount!==0||m.authority?.fallbackCount!==0||m.authority?.unknownCount!==0)throw new Error(`Live 26/26 production selection proof failed: ${JSON.stringify(m.authority)}`);
+          for(const [id,row] of Object.entries(m.prices||{}))if(row.authority?.selectedLane!=='onchain'||!String(row.source||'').startsWith('onchain-'))throw new Error(`${id}: not physically onchain-selected`);
+          if(m.authority?.executionAuthority!=='none'||m.authority?.capitalExecution!==false||m.authority?.policyMutationAuthority!==false)throw new Error('Authority boundary drift');
+          console.log('Live 26/26 canonical onchain materialization PASS');
+          NODE
+          git diff --check
