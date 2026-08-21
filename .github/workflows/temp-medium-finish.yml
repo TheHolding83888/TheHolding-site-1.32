@@ -29,12 +29,18 @@ jobs:
           start = workflow.index(opener) + len(opener)
           end = workflow.index(closer, start)
           raw = workflow[start:end]
-          source = '\n'.join(line[10:] if line.startswith('          ') else line for line in raw.splitlines())
+          lines = []
+          for line in raw.splitlines():
+              line = line[10:] if line.startswith('          ') else line
+              if 'client comment version' in line or 'client runtime version' in line:
+                  continue
+              lines.append(line)
+          source = '\n'.join(lines)
           exec(compile(source, '<medium-public-truth-patch>', 'exec'), {})
 
           p = Path('monetra/index.html')
-          lines = p.read_text(encoding='utf-8').splitlines()
-          p.write_text('\n'.join(line.rstrip(' \t') for line in lines) + '\n', encoding='utf-8')
+          clean = p.read_text(encoding='utf-8').splitlines()
+          p.write_text('\n'.join(line.rstrip(' \t') for line in clean) + '\n', encoding='utf-8')
 
           temps = [
               '.github/workflows/temp-medium-public-truth-patch.yml',
@@ -47,6 +53,7 @@ jobs:
               '.github/temp-medium-v2-trigger.txt',
               '.github/temp-medium-finish-trigger.txt',
               '.github/temp-medium-finish-trigger-2.txt',
+              '.github/temp-medium-finish-trigger-3.txt',
           ]
           for name in temps:
               q = Path(name)
@@ -66,6 +73,7 @@ jobs:
           grep -q 'Eleven DeFi engines working in harmony' index.html
           grep -q 'Reference APY' monetra/index.html
           grep -q 'Stable Strategy Tracking' monetra/index.html
+          grep -q 'function applySubstantiaMarketDataProvenance' intelligence/market-data/public-capital-client.js
           test ! -e .github/workflows/temp-medium-public-truth-patch.yml
           test ! -e .github/workflows/temp-medium-public-truth-patch-v2.yml
           test ! -e .github/workflows/temp-medium-pr-kick.yml
