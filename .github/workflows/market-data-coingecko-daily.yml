@@ -1,0 +1,97 @@
+name: "The Holding Market Data · Daily CoinGecko Baseline"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '12 3 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shared-market-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Validate Market Data engines
+        run: |
+          set -euo pipefail
+          node --check intelligence/market-data/market-data-engine.mjs
+          node --check intelligence/market-data/market-data-authority-materializer.mjs
+          node --check intelligence/market-data/public-capital-engine.mjs
+
+      - name: Refresh CoinGecko baseline exactly once
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          MARKET_DATA_DAILY_REFRESH: 'true'
+          MARKET_DATA_FORCE_REFRESH: 'true'
+        run: node intelligence/market-data/market-data-engine.mjs
+
+      - name: Materialize production authority from latest Shadow
+        env:
+          MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'
+        run: node intelligence/market-data/market-data-authority-materializer.mjs
+
+      - name: Rebuild public fund + company capital view
+        run: node intelligence/market-data/public-capital-engine.mjs
+
+      - name: Validate daily baseline safety
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const source=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
+          const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
+          const registry=JSON.parse(fs.readFileSync('intelligence/market-data/market-price-registry.json','utf8'));
+          if(source.version!=='0.4-market-data-daily-coingecko-cadence')throw new Error('Daily CoinGecko cadence version missing');
+          if(source.semantics?.scheduledExternalFetchSuppressedByDefault!==true)throw new Error('Scheduled external suppression contract missing');
+          if(source.semantics?.dailyScheduledExternalRefreshRequiresExplicitOverride!==true)throw new Error('Daily explicit override contract missing');
+          if(Number(source.coverage?.unknownCount)!==0)throw new Error('Daily CoinGecko baseline contains unknown assets');
+          for(const asset of registry.assets||[]){
+            const row=source.prices?.[asset.assetId];
+            if(!row||!Number.isFinite(Number(row.usd)))throw new Error(`${asset.assetId}: daily CoinGecko price unavailable`);
+          }
+          if(market.sourceState?.coinGeckoGeneratedAt!==source.generatedAt)throw new Error('Canonical state not bound to fresh daily CoinGecko baseline');
+          const eliza=market.prices?.elizaos;
+          if(eliza?.authority?.selectedLane!=='coingecko-lane'||!Number.isFinite(Number(eliza?.usd)))throw new Error('ELIZA daily CoinGecko authority unavailable');
+          if(market.authority?.executionAuthority!=='none'||pub.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
+          if(market.authority?.capitalExecution!==false||market.authority?.policyMutationAuthority!==false)throw new Error('Authority boundary drift');
+          console.log('Daily CoinGecko baseline PASS',{generatedAt:source.generatedAt,onchainSelectedAssetCount:market.authority.onchainSelectedAssetCount,coingeckoSelectedAssetCount:market.authority.coingeckoSelectedAssetCount});
+          NODE
+          git diff --check
+
+      - name: Publish daily CoinGecko baseline safely
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Market Data Orchestrator"
+          git config user.email "market-data-orchestrator@theholding.ai"
+          git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/public-capital-state.json
+          if git diff --cached --quiet; then echo 'Daily CoinGecko baseline already current.'; exit 0; fi
+          git commit -m "market data: refresh daily CoinGecko baseline"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then git rebase --abort || true; echo 'Daily CoinGecko writer conflict; refusing to guess.'; exit 1; fi
+            MARKET_DATA_FORCE_COINGECKO_FAILBACK='false' node intelligence/market-data/market-data-authority-materializer.mjs
+            node intelligence/market-data/public-capital-engine.mjs
+            git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/public-capital-state.json
+            git commit --amend --no-edit
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1
