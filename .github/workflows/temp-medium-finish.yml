@@ -1,0 +1,84 @@
+name: TEMP Medium Finish
+
+on:
+  push:
+    branches:
+      - fix/medium-public-surface-truth-20260821
+
+permissions:
+  contents: write
+
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: fix/medium-public-surface-truth-20260821
+
+      - name: Reuse validated patch body and finish cleanly
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/temp-medium-public-truth-patch-v2.yml').read_text(encoding='utf-8')
+          opener = "          python3 - <<'PY'\n"
+          closer = "\n          PY"
+          start = workflow.index(opener) + len(opener)
+          end = workflow.index(closer, start)
+          raw = workflow[start:end]
+          source = '\n'.join(line[10:] if line.startswith('          ') else line for line in raw.splitlines())
+          exec(compile(source, '<medium-public-truth-patch>', 'exec'), {})
+
+          # Remove trailing horizontal whitespace introduced by legacy Monetra copy.
+          p = Path('monetra/index.html')
+          lines = p.read_text(encoding='utf-8').splitlines()
+          p.write_text('\n'.join(line.rstrip(' \t') for line in lines) + '\n', encoding='utf-8')
+
+          # Final PR tree must contain zero temporary execution artifacts.
+          temps = [
+              '.github/workflows/temp-medium-public-truth-patch.yml',
+              '.github/workflows/temp-medium-public-truth-patch-v2.yml',
+              '.github/workflows/temp-medium-pr-kick.yml',
+              '.github/workflows/temp-medium-finish.yml',
+              '.github/temp-medium-trigger.txt',
+              '.github/temp-medium-second-trigger.txt',
+              '.github/temp-medium-manual-trigger.txt',
+              '.github/temp-medium-v2-trigger.txt',
+          ]
+          for name in temps:
+              q = Path(name)
+              if q.exists():
+                  q.unlink()
+          PY
+
+      - name: Verify final patch
+        shell: bash
+        run: |
+          node --check intelligence/market-data/public-capital-client.js
+          ! grep -q 'Updated ${stamp} · CoinGecko' substantia/index.html
+          ! grep -q 'Live · CoinGecko' substantia/index.html
+          ! grep -q 'Eight DeFi protocols working in harmony' index.html
+          ! grep -q 'No directional market risk' monetra/index.html
+          ! grep -q 'across all market conditions' monetra/index.html
+          grep -q 'Canonical Market Data' substantia/index.html
+          grep -q 'Eleven DeFi engines working in harmony' index.html
+          grep -q 'Reference APY' monetra/index.html
+          grep -q 'Stable Strategy Tracking' monetra/index.html
+          test ! -e .github/workflows/temp-medium-public-truth-patch.yml
+          test ! -e .github/workflows/temp-medium-public-truth-patch-v2.yml
+          test ! -e .github/workflows/temp-medium-pr-kick.yml
+          test ! -e .github/workflows/temp-medium-finish.yml
+
+      - name: Publish final clean branch
+        shell: bash
+        run: |
+          git config user.name "The Holding Medium Cleanup"
+          git config user.email "medium-cleanup@theholding.ai"
+          git add -A
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m "UI: align medium public truth surfaces"
+          git push origin HEAD:fix/medium-public-surface-truth-20260821
