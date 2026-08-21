@@ -1,0 +1,105 @@
+name: Agent Patch Network Metrics Coherence PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'companies/index.html'
+      - 'companies/company-010-public-adapter.js'
+      - '.github/workflows/_agent_patch_network_metrics_pr.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.head_ref == 'agent/companies-network-metrics-coherence-v0.1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: agent/companies-network-metrics-coherence-v0.1
+          fetch-depth: 0
+
+      - name: Apply production patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('companies/index.html')
+          s=p.read_text()
+          old="    'Cypher': ['Bitcoin','Ethereum','Project X','Convex','Curve','Aero','Velodrome','GMX','Concentrator','Fluid']\n"
+          new="    'Cypher': ['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator','HyperLend']\n"
+          if s.count(old) != 1: raise SystemExit(f'Cypher base protocol contract drift: {s.count(old)}')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          p=Path('companies/company-010-public-adapter.js')
+          s=p.read_text()
+          old="    const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aerodrome','Velodrome','GMX','Concentrator'];\n"
+          new="    const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator'];\n"
+          if s.count(old) != 1: raise SystemExit(f'Cypher runtime protocol contract drift: {s.count(old)}')
+          s=s.replace(old,new,1)
+
+          old='''  function syncNetworkStats(){
+    const net=window.__TH_CAPITAL_STATE__?.network;
+    if(!net)return;
+    const exact=canonicalNetworkTvl();
+    const top=document.getElementById('statTVL');
+    const index=document.getElementById('idxNetworkValue');
+    const display=exact!==null?money(exact):(Number.isFinite(Number(net.measuredCapitalFloorUsd))&&Number(net.measuredCapitalFloorUsd)>0?'≥ '+money(net.measuredCapitalFloorUsd):null);
+    if(!display)return;
+    if(top&&top.textContent!==display)top.textContent=display;
+    if(index&&index.textContent!==display)index.textContent=display;
+  }
+'''
+          new='''  function syncNetworkStats(){
+    /* Fast summary authority stays on the shared Public Capital plane.
+       Combined TVL covers all registry companies. General Index Network Value
+       is derived from INDEX_STATE and excludes Stable Capital / Monetra. */
+    const statProtocols=document.getElementById('statProtocols');
+    if(statProtocols&&typeof COMPANY_PROTOCOLS!=='undefined'){
+      statProtocols.textContent=String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size);
+    }
+  }
+'''
+          if s.count(old) != 1: raise SystemExit(f'summary override contract drift: {s.count(old)}')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+
+      - name: Validate production contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check companies/company-010-public-adapter.js
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          h=Path('companies/index.html').read_text()
+          a=Path('companies/company-010-public-adapter.js').read_text()
+          assert "'Cypher': ['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator','HyperLend']" in h
+          assert "const p=['Bitcoin','Ethereum','Aave','Hyperliquid','Project X','Convex','Curve','Stake DAO','Aero','Velodrome','GMX','Concentrator']" in a
+          assert "const index=document.getElementById('idxNetworkValue')" not in a
+          assert "if(top&&top.textContent!==display)top.textContent=display" not in a
+          assert "statProtocols.textContent=String(new Set(Object.values(COMPANY_PROTOCOLS).flat()).size)" in a
+          assert 'Aerodrome' not in re.search(r"function protocols\(\)\{(.*?)return p;",a,re.S).group(1)
+          assert "'Fluid'" not in re.search(r"'Cypher': \[(.*?)\]",h,re.S).group(1)
+          print('Network metrics coherence PASS')
+          PY
+
+      - name: Commit production-only diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/_agent_patch_network_metrics_pr.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add companies/index.html companies/company-010-public-adapter.js .github/workflows/_agent_patch_network_metrics_pr.yml
+          git diff --cached --check
+          git commit -m 'fix: separate registry and general-index network metrics'
+          git push origin HEAD:agent/companies-network-metrics-coherence-v0.1
