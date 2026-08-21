@@ -32,27 +32,45 @@ jobs:
           const fs=require('fs');
           const heartbeat=fs.readFileSync('.github/workflows/market-data-refresh.yml','utf8');
           const daily=fs.readFileSync('.github/workflows/market-data-coingecko-daily.yml','utf8');
+          const engine=fs.readFileSync('intelligence/market-data/market-data-engine.mjs','utf8');
           if(!heartbeat.includes("cron: '7,37 * * * *'"))throw new Error('Onchain heartbeat must remain every 30 minutes');
           if(!daily.includes("cron: '12 3 * * *'"))throw new Error('CoinGecko baseline must remain once daily');
           if(!heartbeat.includes('group: shared-market-data-refresh')||!daily.includes('group: shared-market-data-refresh'))throw new Error('Market Data writers must share concurrency group');
-          if(!daily.includes("MARKET_DATA_DAILY_REFRESH: 'true'"))throw new Error('Daily CoinGecko explicit override missing');
+          if(!daily.includes("MARKET_DATA_DAILY_REFRESH: 'true'"))throw new Error('Daily CoinGecko explicit gate missing');
+          if(!heartbeat.includes("MARKET_DATA_DAILY_REFRESH: 'false'"))throw new Error('Heartbeat must explicitly disable CoinGecko external refresh');
           if(daily.includes('node intelligence/market-data/onchain-price-resolver.mjs'))throw new Error('Daily CoinGecko workflow must not perform onchain RPC observation');
           if(!daily.includes('production authority is not onchain-primary'))throw new Error('Daily workflow must prove all canonical assets remain onchain-primary');
           if(!heartbeat.includes("MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'"))throw new Error('Heartbeat must preserve per-asset rather than cycle-wide failback');
-          console.log('Static cadence + authority contract PASS');
+          if(!engine.includes('if (!dailyRefresh)'))throw new Error('Engine daily-only hard gate missing');
+          if(!engine.includes('nonDailyExternalFetchForbidden: true'))throw new Error('Engine strict non-daily semantics missing');
+          if(!engine.includes('30 * 60 * 60 * 1000'))throw new Error('30-hour prior daily snapshot retention missing');
+          console.log('Static strict-daily cadence + authority contract PASS');
           NODE
 
-      - name: Prove scheduled onchain heartbeat performs zero CoinGecko requests
+      - name: Prove scheduled push and manual paths perform zero CoinGecko requests
         run: |
           set -euo pipefail
           before=$(sha256sum intelligence/market-data/market-data-coingecko.json | awk '{print $1}')
-          GITHUB_EVENT_NAME='schedule' MARKET_DATA_FORCE_REFRESH='true' MARKET_DATA_DAILY_REFRESH='false' node intelligence/market-data/market-data-engine.mjs
-          after=$(sha256sum intelligence/market-data/market-data-coingecko.json | awk '{print $1}')
-          test "$before" = "$after"
+          for event in schedule push workflow_dispatch; do
+            rm -f /tmp/coingecko-fetch-called
+            EVENT="$event" node --input-type=module - <<'NODE'
+            import fs from 'node:fs';
+            globalThis.fetch=async()=>{
+              fs.writeFileSync('/tmp/coingecko-fetch-called','1');
+              throw new Error('CoinGecko fetch forbidden on non-daily path');
+            };
+            process.env.GITHUB_EVENT_NAME=process.env.EVENT;
+            process.env.MARKET_DATA_DAILY_REFRESH='false';
+            await import(`./intelligence/market-data/market-data-engine.mjs?nonDaily=${process.env.EVENT}-${Date.now()}`);
+            NODE
+            test ! -e /tmp/coingecko-fetch-called
+            after=$(sha256sum intelligence/market-data/market-data-coingecko.json | awk '{print $1}')
+            test "$before" = "$after"
+          done
           git checkout -- intelligence/market-data/market-data.json intelligence/market-data/market-data-coingecko.json
-          echo 'Scheduled onchain heartbeat zero-request reuse PASS'
+          echo 'All non-daily paths zero-request reuse PASS'
 
-      - name: Prove daily override performs exactly one batch request for all canonical assets
+      - name: Prove daily gate performs exactly one batch request for all canonical assets
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
@@ -68,12 +86,13 @@ jobs:
           };
           process.env.GITHUB_EVENT_NAME='schedule';
           process.env.MARKET_DATA_DAILY_REFRESH='true';
-          process.env.MARKET_DATA_FORCE_REFRESH='true';
-          await import(`./intelligence/market-data/market-data-engine.mjs?cadence=${Date.now()}`);
-          if(fetchCount!==1)throw new Error(`Daily override expected exactly one batch request, got ${fetchCount}`);
+          await import(`./intelligence/market-data/market-data-engine.mjs?daily=${Date.now()}`);
+          if(fetchCount!==1)throw new Error(`Daily gate expected exactly one batch request, got ${fetchCount}`);
           const source=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
-          if(source.version!=='0.4-market-data-daily-coingecko-cadence')throw new Error('Daily cadence version not materialized');
-          if(source.semantics?.scheduledExternalFetchSuppressedByDefault!==true)throw new Error('Scheduled suppression semantics missing');
+          if(source.version!=='0.5-market-data-strict-daily-coingecko-cadence')throw new Error('Strict daily cadence version not materialized');
+          if(source.semantics?.externalFetchAllowedOnlyWhenDailyRefreshTrue!==true)throw new Error('Daily-only external gate semantics missing');
+          if(source.semantics?.nonDailyExternalFetchForbidden!==true)throw new Error('Non-daily prohibition semantics missing');
+          if(Number(source.semantics?.staleFallbackMaxAgeHours)!==30)throw new Error('30-hour daily fallback retention missing');
           if(source.coverage?.freshCount!==registry.assets.length)throw new Error('Stub daily refresh did not cover full registry');
           console.log('Daily one-batch 26-asset sanity baseline PASS',{fetchCount,assetCount:registry.assets.length});
           NODE
