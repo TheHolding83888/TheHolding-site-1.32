@@ -1,6 +1,6 @@
 {
-  "version": "0.10-yb-curve-crvusd-shadow-route",
-  "effectiveRegistryVersion": "0.25-onchain-price-source-registry-yb-curve-crvusd",
+  "version": "0.11-xaut-token-market-shadow-route",
+  "effectiveRegistryVersion": "0.26-onchain-price-source-registry-xaut-token-market",
   "purpose": "Bounded extension routes plus explicit reviewed replacements for canonical onchain Market Data routes. Base v0.15 remains byte-stable; route overrides are fail-closed and may only target existing canonical asset ids.",
   "semantics": {
     "uniswapV2HistoricalTwapRoutesAllowed": true,
@@ -32,7 +32,7 @@
         "network": "ethereum",
         "pair": "0x09D1d767eDF8Fa23A64C51fa559E0688E526812F",
         "token": "0x0001A500A6B18995B03f44bb040A5fFc28E45CB0",
-        "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2",
         "tokenDecimals": 18,
         "quoteTokenDecimals": 18,
         "lookbackBlocks": 60,
@@ -173,7 +173,7 @@
         "network": "ethereum",
         "pool": "0xC15F285679a1Ef2d25F53D4CbD0265E1D02F2A92",
         "token": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
-        "quoteToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "quoteToken": "0xC02aaA39b223FE8d0A0e5C4F27eAD9083C756Cc2",
         "oracleDirection": "coin0-per-coin1",
         "oracleScale": "1000000000000000000",
         "quoteAssetId": "ethereum",
@@ -182,6 +182,33 @@
         "maxDivergencePct": 10,
         "authority": "shadow",
         "provenance": "Verified Curve Twocrypto FXN/ETH pool. Transaction evidence establishes sold_id=1 as FXN and bought_id=0 as ETH/WETH, matching coin0=WETH and coin1=FXN for the existing Curve EMA adapter. Uses block-pinned price_oracle() EMA composed with same-cycle ETH/USD. Replaces the intermittent Uniswap V3 OLD observation-history failure; no spot-price authority, updater dependency, paid RPC, signing, or execution authority."
+      }
+    },
+    "tether-gold": {
+      "assetId": "tether-gold",
+      "symbol": "XAUT",
+      "route": {
+        "type": "uniswap-v3-twap-chainlink-quote",
+        "network": "ethereum",
+        "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+        "token": "0x68749665FF8D2d112Fa859AA293F07A622782F38",
+        "quoteToken": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "fee": 500,
+        "twapWindowSeconds": 1800,
+        "twapFallbackOnError": "OLD",
+        "twapFallbackWindowsSeconds": [900, 600, 300],
+        "quoteAssetId": "ethereum-usdt-usd",
+        "quoteFeed": {
+          "type": "chainlink-v3",
+          "contract": "0x3E7d1eAB13ad0104d2750B8863b489D65364e32D",
+          "maxAgeSeconds": 90000,
+          "quote": "USD"
+        },
+        "feedQuote": "USDT",
+        "outputQuote": "USD",
+        "maxDivergencePct": 10,
+        "authority": "shadow",
+        "provenance": "Tether Gold XAUT token-market price from the long-lived high-liquidity Ethereum Uniswap V3 XAUT/USDT 0.05% pool (factory-discovered pool 0x6546055f46e866a4b9a4a13e81273e3152bae5da). Uses observe()-based 30-minute geometric TWAP with bounded OLD-only fallback to 15m/10m/5m. USDT/USD is independently read from the Ethereum Chainlink Data Feed with freshness/integrity checks. This deliberately replaces the previous XAU/USD backing-reference proxy so canonical XAUT pricing reflects the traded token market rather than underlying-gold reference semantics. No spot-price authority, hardcoded stablecoin peg, paid RPC, signing, or execution authority."
       }
     }
   }
