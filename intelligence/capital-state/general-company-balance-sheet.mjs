@@ -7,7 +7,7 @@ const OUT = path.join(ROOT, 'intelligence/capital-state/general-company-balance-
 const PRODUCTIVITY = 'companies/productivity-data.json';
 const UI_BOOK_SOURCE = 'companies/index.html';
 
-const EXPECTED_UI_BLOB_SHA = '014e3a6fb8886e129df34fa0753db15d54eda694';
+const EXPECTED_UI_BLOB_SHA = 'def951f9432bfe600f29bdbbf1c26dbd58655b0d';
 
 const BOOK = {
   'defitea.eth': [
