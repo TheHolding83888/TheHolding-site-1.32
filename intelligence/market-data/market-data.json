@@ -1,22 +1,16 @@
 {
-  "version": "1.1-market-data-all-canonical-reviewed-onchain-primary",
-  "engineVersion": "1.1-per-asset-authority-materializer-26-reviewed-canonical-assets",
-  "generatedAt": "2026-08-21T14:17:02.093Z",
-  "requestedAt": "2026-08-21T04:17:15.444Z",
-  "observedAt": "2026-08-21T04:17:15.646Z",
+  "version": "1.2-market-data-truthful-canonical-provenance",
+  "engineVersion": "1.2-per-asset-authority-materializer-truthful-provenance",
+  "generatedAt": "2026-08-21T14:44:47.387Z",
+  "requestedAt": "2026-08-21T14:44:44.200Z",
+  "observedAt": "2026-08-21T14:44:44.200Z",
   "status": "ok",
   "semantics": {
-    "oneExternalRequestPerRefresh": true,
-    "externalRequestCount": 1,
-    "minimumOffCycleReuseMinutes": 40,
-    "scheduledExternalFetchSuppressedByDefault": true,
-    "dailyScheduledExternalRefreshRequiresExplicitOverride": true,
-    "dailyScheduledExternalRefreshEnv": "MARKET_DATA_DAILY_REFRESH",
+    "canonicalPriceAuthority": "per-asset",
+    "canonicalObservationTimestampSource": "onchain-shadow-generatedAt",
+    "coinGeckoExternalRequestCountThisMaterialization": 0,
+    "coinGeckoSourceLaneReusedWithoutExternalRequest": true,
     "browserExternalPriceRequestsAllowed": false,
-    "serverSideKeylessFallbackAllowed": true,
-    "unknownIsNotZero": true,
-    "staleFallbackMaxAgeHours": 6,
-    "wrapperNavAndProtocolValuationStayUpstream": true,
     "dedicatedCoinGeckoSourceLane": true,
     "canonicalMirrorEqualsCoinGeckoSourceLane": false,
     "perAssetAuthoritySelectionApplied": true,
@@ -24,14 +18,15 @@
     "allCanonicalAssetsExplicitlyReviewedForOnchainPrimary": true,
     "coinGeckoRemainsDailyFallbackAndSanityCheck": true,
     "automaticCohortExpansionAllowed": false,
-    "cycleForcedCoinGeckoFailback": false
+    "cycleForcedCoinGeckoFailback": false,
+    "unknownIsNotZero": true
   },
   "provider": {
-    "id": "coingecko",
-    "endpoint": "https://api.coingecko.com/api/v3/simple/price",
-    "authMode": "server-side-keyless-fallback",
+    "id": "per-asset-authority",
+    "endpoint": null,
+    "authMode": "read-only-multi-source",
     "credentialExposed": false,
-    "httpStatus": 200,
+    "httpStatus": null,
     "error": null
   },
   "coverage": {
@@ -49,148 +44,148 @@
       "providerId": "bitcoin",
       "usd": 76862.332,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "ethereum": {
       "assetId": "ethereum",
       "symbol": "ETH",
       "providerId": "ethereum",
-      "usd": 2386.86,
+      "usd": 2389.12,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "tether-gold": {
       "assetId": "tether-gold",
       "symbol": "XAUT",
       "providerId": "tether-gold",
-      "usd": 4561.987653556041,
+      "usd": 4568.378589340804,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-uniswap-v3-twap-chainlink-quote",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "aerodrome-finance": {
       "assetId": "aerodrome-finance",
       "symbol": "AERO",
       "providerId": "aerodrome-finance",
-      "usd": 0.4782276,
+      "usd": 0.48123151,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "convex-finance": {
       "assetId": "convex-finance",
       "symbol": "CVX",
       "providerId": "convex-finance",
-      "usd": 1.8239816653878818,
+      "usd": 1.8257087036573136,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "curve-dao-token": {
       "assetId": "curve-dao-token",
       "symbol": "CRV",
       "providerId": "curve-dao-token",
-      "usd": 0.31899963,
+      "usd": 0.32219486,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "pendle": {
       "assetId": "pendle",
       "symbol": "PENDLE",
       "providerId": "pendle",
-      "usd": 1.58818,
+      "usd": 1.5963303,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "fxn-token": {
       "assetId": "fxn-token",
       "symbol": "FXN",
       "providerId": "fxn-token",
-      "usd": 19.258380261671327,
+      "usd": 19.27165018323096,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-curve-ema-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "internet-computer": {
       "assetId": "internet-computer",
       "symbol": "ICP",
       "providerId": "internet-computer",
-      "usd": 2.46809202,
+      "usd": 2.4678622,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "yield-basis": {
       "assetId": "yield-basis",
       "symbol": "YB",
       "providerId": "yield-basis",
-      "usd": 0.08978440027574673,
+      "usd": 0.08977983937399858,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-curve-ema-chainlink-quote",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "frax-share": {
@@ -199,238 +194,238 @@
       "providerId": "frax-share",
       "usd": 0.31792,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "velodrome-finance": {
       "assetId": "velodrome-finance",
       "symbol": "VELO",
       "providerId": "velodrome-finance",
-      "usd": 0.020178142412331044,
+      "usd": 0.020206288026775977,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-velodrome-v2-twap-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "venice-token": {
       "assetId": "venice-token",
       "symbol": "VVV",
       "providerId": "venice-token",
-      "usd": 15.6268009501022,
+      "usd": 15.531706,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "liquity": {
       "assetId": "liquity",
       "symbol": "LQTY",
       "providerId": "liquity",
-      "usd": 0.21269421555001283,
+      "usd": 0.21261903456278222,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-uniswap-v3-twap-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "resupply": {
       "assetId": "resupply",
       "symbol": "RSUP",
       "providerId": "resupply",
-      "usd": 0.11541626237248123,
+      "usd": 0.11552017296789525,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-curve-ema-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "decentraland": {
       "assetId": "decentraland",
       "symbol": "MANA",
       "providerId": "decentraland",
-      "usd": 0.07578834,
+      "usd": 0.075625,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "the-sandbox": {
       "assetId": "the-sandbox",
       "symbol": "SAND",
       "providerId": "the-sandbox",
-      "usd": 0.04767804,
+      "usd": 0.0475779,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-chainlink-v3",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "ovr": {
       "assetId": "ovr",
       "symbol": "OVR",
       "providerId": "ovr",
-      "usd": 0.030742689773406766,
+      "usd": 0.030771798509942588,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-uniswap-v3-twap-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "autonolas": {
       "assetId": "autonolas",
       "symbol": "OLAS",
       "providerId": "autonolas",
-      "usd": 0.022401682479523306,
+      "usd": 0.022459485860417062,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-uniswap-v2-historical-twap-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "virtual-protocol": {
       "assetId": "virtual-protocol",
       "symbol": "VIRTUAL",
       "providerId": "virtual-protocol",
-      "usd": 0.7062685308521299,
+      "usd": 0.7126864187072932,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-uniswap-v3-twap-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "beam-2": {
       "assetId": "beam-2",
       "symbol": "BEAM",
       "providerId": "beam-2",
-      "usd": 0.0015260800364839192,
+      "usd": 0.0015625946047008947,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-uniswap-v3-twap-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "mode": {
       "assetId": "mode",
       "symbol": "MODE",
       "providerId": "mode",
-      "usd": 0.0000458758440821184,
+      "usd": 0.000045919281656012795,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-velodrome-v2-twap-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "elizaos": {
       "assetId": "elizaos",
       "symbol": "ELIZA",
       "providerId": "elizaos",
-      "usd": 0.00018379962178081364,
+      "usd": 0.00018376688479756364,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-uniswap-v3-twap-chainlink-quote",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "ondo-finance": {
       "assetId": "ondo-finance",
       "symbol": "ONDO",
       "providerId": "ondo-finance",
-      "usd": 0.37907217921107617,
+      "usd": 0.38224916720287644,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-uniswap-v3-twap-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "zksync": {
       "assetId": "zksync",
       "symbol": "ZK",
       "providerId": "zksync",
-      "usd": 0.009333516404388946,
+      "usd": 0.009329284359539333,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-uniswap-v3-twap-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     },
     "convex-crv": {
       "assetId": "convex-crv",
       "symbol": "cvxCRV",
       "providerId": "convex-crv",
-      "usd": 0.13860395082860297,
+      "usd": 0.13991646089978546,
       "status": "fresh",
-      "observedAt": "2026-08-21T14:17:00.000Z",
+      "observedAt": "2026-08-21T14:44:44.200Z",
       "source": "onchain-curve-ema-relative",
       "authority": {
         "requestedPrimary": "onchain",
         "selectedLane": "onchain",
         "fallbackUsed": false,
-        "sourceSnapshotGeneratedAt": "2026-08-21T14:17:00.000Z"
+        "sourceSnapshotGeneratedAt": "2026-08-21T14:44:44.200Z"
       }
     }
   },
@@ -490,7 +485,33 @@
   },
   "sourceState": {
     "coinGeckoGeneratedAt": "2026-08-21T04:17:15.646Z",
-    "onchainShadowGeneratedAt": "2026-08-21T14:17:00.000Z",
+    "coinGeckoRequestedAt": "2026-08-21T04:17:15.444Z",
+    "coinGeckoObservedAt": "2026-08-21T04:17:15.646Z",
+    "coinGeckoProvider": {
+      "id": "coingecko",
+      "endpoint": "https://api.coingecko.com/api/v3/simple/price",
+      "authMode": "server-side-keyless-fallback",
+      "credentialExposed": false,
+      "httpStatus": 200,
+      "error": null
+    },
+    "coinGeckoSemantics": {
+      "oneExternalRequestPerRefresh": true,
+      "externalRequestCount": 1,
+      "minimumOffCycleReuseMinutes": 40,
+      "scheduledExternalFetchSuppressedByDefault": true,
+      "dailyScheduledExternalRefreshRequiresExplicitOverride": true,
+      "dailyScheduledExternalRefreshEnv": "MARKET_DATA_DAILY_REFRESH",
+      "browserExternalPriceRequestsAllowed": false,
+      "serverSideKeylessFallbackAllowed": true,
+      "unknownIsNotZero": true,
+      "staleFallbackMaxAgeHours": 6,
+      "wrapperNavAndProtocolValuationStayUpstream": true,
+      "dedicatedCoinGeckoSourceLane": true,
+      "canonicalMirrorEqualsCoinGeckoSourceLane": true,
+      "perAssetAuthoritySelectionApplied": false
+    },
+    "onchainShadowGeneratedAt": "2026-08-21T14:44:44.200Z",
     "onchainShadowStatus": "warning",
     "forceCoinGeckoFailback": false
   }
