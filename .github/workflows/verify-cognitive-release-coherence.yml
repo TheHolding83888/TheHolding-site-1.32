@@ -1,0 +1,68 @@
+name: Verify Cognitive Release Coherence
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/brain-upstream-guard.mjs'
+      - 'intelligence/brain-chatgpt-bridge.mjs'
+      - 'intelligence/brain-chatgpt-bridge-policy.json'
+      - 'intelligence/brain-chatgpt-bridge-schema.json'
+      - 'intelligence/cognitive-stack-verifier.mjs'
+      - 'intelligence/cognitive-release-guard.mjs'
+      - 'intelligence/cognitive-stack-release.json'
+      - '.github/workflows/update-brain-intelligence.yml'
+      - '.github/workflows/update-brain-chatgpt-bridge.yml'
+      - '.github/workflows/refresh-cognitive-stack.yml'
+      - '.github/workflows/security-sentinel.yml'
+      - '.github/workflows/verify-cognitive-release-coherence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout reviewed repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Verify exact-byte cognitive release contract
+        run: |
+          set -euo pipefail
+          node --check intelligence/cognitive-release-guard.mjs
+          node intelligence/cognitive-release-guard.mjs
+
+      - name: Verify manifest covers canonical release-critical surfaces
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('intelligence/cognitive-stack-release.json', 'utf8'));
+          const files = new Set((manifest.files || []).map(row => row.file));
+          const required = [
+            'intelligence/brain-upstream-guard.mjs',
+            'intelligence/brain-chatgpt-bridge.mjs',
+            'intelligence/brain-chatgpt-bridge-policy.json',
+            'intelligence/brain-chatgpt-bridge-schema.json',
+            'intelligence/cognitive-stack-verifier.mjs',
+            'intelligence/cognitive-release-guard.mjs',
+            '.github/workflows/update-brain-intelligence.yml',
+            '.github/workflows/update-brain-chatgpt-bridge.yml',
+            '.github/workflows/refresh-cognitive-stack.yml',
+            '.github/workflows/security-sentinel.yml'
+          ];
+          const missing = required.filter(file => !files.has(file));
+          if (missing.length) throw new Error(`Cognitive release manifest missing: ${missing.join(', ')}`);
+          if (manifest.files.length !== required.length) {
+            throw new Error(`Unexpected cognitive release manifest file count: ${manifest.files.length}; expected ${required.length}`);
+          }
+          console.log('Cognitive release coverage PASS', { fileCount: manifest.files.length });
+          NODE
