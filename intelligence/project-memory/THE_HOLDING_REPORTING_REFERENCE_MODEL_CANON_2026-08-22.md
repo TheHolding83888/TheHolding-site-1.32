@@ -177,6 +177,25 @@ Monthly yield remains:
 
 Thus associated companies can increase the Defitea cash-flow numerator without inflating or contaminating the Defitea TVL denominator.
 
+### Live-month and year annualisation
+
+Each month's `annualizedAprPct` is a comparable non-compounded annualised rate:
+- closed month: `monthlyYieldPct × 12`;
+- live provisional month: `observed monthlyYieldPct × 365 / sampleDays`.
+
+The live provisional month is annualised only from days actually observed. Reporting must not fabricate unobserved future days and must not compound the result.
+
+The year-level `annualizedCashFlowAprPct` is the arithmetic mean of all finite monthly `annualizedAprPct` values available for that year, **including the live provisional month when present**.
+
+Therefore the displayed year APR moves daily with the current live month. When no provisional month exists, the same formula naturally reduces to the mean of closed-month annualised rates.
+
+Audit fields:
+- `annualizedCashFlowAprIncludesLiveMonth`;
+- `annualizedCashFlowAprMonths`;
+- `currentMonthAnnualizedAprPct`.
+
+`bestMonth` remains based on closed months only. Existing closed-only YTD summary fields remain closed-only internally so public live-YTD composition does not double-count the provisional month.
+
 ## 10. Persistent income ledger
 
 The composition layer owns:
@@ -204,4 +223,4 @@ Reporting owns only its reporting/history artifacts. It is never a Market Data w
 
 ## Compact law
 
-**Defitea-only 11-position TVL + canonical base Reference APR → base income; YieldRing + 05081966 add income but never TVL; VoteMarket veCRV/veFXN enters once per proven entitlement event; Union settlement never double-counts; one unified monthly cash-flow numerator remains auditable by component.**
+**Defitea-only 11-position TVL + canonical base Reference APR → base income; YieldRing + 05081966 add income but never TVL; VoteMarket veCRV/veFXN enters once per proven entitlement event; Union settlement never double-counts; live-month APR uses observed days only; year APR includes the live month; one unified monthly cash-flow numerator remains auditable by component.**

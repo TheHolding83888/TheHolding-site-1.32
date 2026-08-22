@@ -195,7 +195,9 @@ function rebuildYearSummary(months,year){
   const cash=closed.reduce((s,m)=>s+(finite(m.cashFlowUsd)||0),0);
   const yields=closed.map(m=>finite(m.monthlyYieldPct)).filter(Number.isFinite);
   const ytdYield=yields.reduce((s,x)=>s+x,0);
-  const annualized=yields.length?(yields.reduce((s,x)=>s+x,0)/yields.length)*12:NaN;
+  const annualizedRates=rows.map(m=>finite(m.annualizedAprPct)).filter(Number.isFinite);
+  const annualized=annualizedRates.length?annualizedRates.reduce((s,x)=>s+x,0)/annualizedRates.length:NaN;
+  const liveAnnualized=finite(provisional?.annualizedAprPct);
   const best=closed.filter(m=>Number.isFinite(finite(m.monthlyYieldPct))).sort((a,b)=>finite(b.monthlyYieldPct)-finite(a.monthlyYieldPct))[0]||null;
   return {
     year:Number(year),
@@ -204,6 +206,9 @@ function rebuildYearSummary(months,year){
     ytdCashFlowEstimated:closed.some(m=>m.mode!=='reported-realised'),
     ytdCashFlowYieldPct:round(ytdYield,4),
     annualizedCashFlowAprPct:Number.isFinite(annualized)?round(annualized,4):null,
+    annualizedCashFlowAprIncludesLiveMonth:Boolean(provisional&&Number.isFinite(liveAnnualized)),
+    annualizedCashFlowAprMonths:annualizedRates.length,
+    currentMonthAnnualizedAprPct:Number.isFinite(liveAnnualized)?round(liveAnnualized,4):null,
     bestMonth:best?.month||null,
     bestMonthLabel:best?.label||null,
     bestMonthYieldPct:best?round(finite(best.monthlyYieldPct),4):null,
