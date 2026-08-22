@@ -45,6 +45,23 @@ jobs:
             const dispatchIndex = text.indexOf('gh workflow run refresh-cognitive-stack.yml --ref main');
             if (!(waitIndex >= 0 && dispatchIndex > waitIndex)) throw new Error(`${file}: Cognitive dispatch occurs before Security freshness gate`);
           }
-          console.log('Cognitive recovery Security-order contract PASS');
+
+          const resumeFile = '.github/workflows/resume-cognitive-stack-after-release.yml';
+          const resume = fs.readFileSync(resumeFile, 'utf8');
+          const handoffRequired = [
+            "- '.github/workflows/resume-cognitive-stack-after-release.yml'",
+            'gh run watch "$cognitive_run_id" --exit-status',
+            'gh workflow run update-learning-loop.yml --ref main'
+          ];
+          for (const token of handoffRequired) {
+            if (!resume.includes(token)) throw new Error(`${resumeFile}: missing Cognitive → Learning recovery token ${token}`);
+          }
+          const cognitiveDispatch = resume.indexOf('gh workflow run refresh-cognitive-stack.yml --ref main');
+          const cognitiveSuccess = resume.indexOf('gh run watch "$cognitive_run_id" --exit-status');
+          const learningDispatch = resume.indexOf('gh workflow run update-learning-loop.yml --ref main');
+          if (!(cognitiveDispatch >= 0 && cognitiveSuccess > cognitiveDispatch && learningDispatch > cognitiveSuccess)) {
+            throw new Error(`${resumeFile}: Learning dispatch must occur only after the recovery-dispatched Cognitive run succeeds`);
+          }
+          console.log('Cognitive recovery Security-order and Learning-handoff contracts PASS');
           NODE
           git diff --check
