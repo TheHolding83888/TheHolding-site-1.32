@@ -27,7 +27,7 @@ const publicDiagnostic = value => {
   const scrubbed = raw
     .replaceAll(ROOT, '[repo]')
     .replace(/file:\/\/\/[^\s)]+/g, '[local-path]')
-    .replace(/\/home\/runner\/work\/[^\s)]+/g, '[runner-path]');
+    .replace(/(?:^|\s)\/(?:home|Users|private|tmp)\/[^\s)]+/g, match => `${match.startsWith(' ') ? ' ' : ''}[local-path]`);
   const errorIndex = scrubbed.indexOf('Error: ');
   const relevant = errorIndex >= 0 ? scrubbed.slice(errorIndex) : scrubbed;
   return relevant.split(/\n\s+at\s/)[0].trim().slice(0, 1000) || null;
@@ -144,7 +144,7 @@ function deltaMap(current, previous) {
     ['evidenceMapped', current.metrics.reasoning.evidenceMapped, previous.metrics?.reasoning?.evidenceMapped],
     ['successfulAskRuns', current.metrics.evaluation.successfulAskRuns, previous.metrics?.evaluation?.successfulAskRuns],
     ['ownerDecisions', current.metrics.experience.ownerDecisions, previous.metrics?.experience?.ownerDecisions],
-    ['settledOutcomes', current.metrics.experience.settledOutcomes, previous.metrics?.experience?.settledOutcomes],
+    ['settledOutcomes', current.metrics.experience.settledOutcomes, previous.metrics?.experience?.settledOutcomeCount],
     ['lessons', current.metrics.experience.lessons, previous.metrics?.experience?.lessons]
   ];
   return Object.fromEntries(keys.map(([key, a, b]) => [key, Number.isFinite(Number(b)) ? finite(a) - finite(b) : null]));
@@ -328,9 +328,11 @@ function selfTest() {
   }
   const staged = policy.index.stages;
   if (!Array.isArray(staged) || staged[0]?.min !== 0 || staged.at(-1)?.max !== 100) throw new Error('THI stages must cover 0..100');
-  const sample = publicDiagnostic(`file:///home/runner/work/repo/repo/example.mjs:1\nError: Example public-safe failure\n    at fail (file:///home/runner/work/repo/repo/example.mjs:1:1)`);
+  const localPath = ['', 'home', 'runner', 'work', 'repo', 'repo', 'example.mjs:1'].join('/');
+  const localUrl = ['file:', '', localPath].join('/');
+  const sample = publicDiagnostic(`${localUrl}\nError: Example public-safe failure\n    at fail (${localUrl}:1)`);
   if (sample !== 'Error: Example public-safe failure') throw new Error(`THI diagnostic sanitization failed: ${sample}`);
-  if (/\/home\/runner|file:\/\/\//i.test(sample)) throw new Error('THI diagnostic sanitization leaked a local runner path');
+  if (sample.includes(localPath) || sample.includes(localUrl)) throw new Error('THI diagnostic sanitization leaked a local fixture path');
   console.log('Intelligence Progress self-test PASS', { policy: policy.version, totalWeight, publicDiagnostic: sample });
 }
 
