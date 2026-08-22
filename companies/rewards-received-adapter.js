@@ -74,6 +74,7 @@
     const el = node('div', 'ipx-reward-row');
     const left = node('div');
     const protocol = node('div', 'ipx-reward-protocol', row.protocol || '40 Acres · veVELO');
+    protocol.appendChild(document.createTextNode(' '));
     protocol.appendChild(node('span', 'ipx-reward-state received', lang() === 'ru' ? 'Получено' : 'Received'));
     left.appendChild(protocol);
 
