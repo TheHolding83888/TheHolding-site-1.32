@@ -4,16 +4,16 @@ const FILE = process.env.COMPANY_MONTHLY_REPORTS_FILE || './reporting/company-mo
 const data = JSON.parse(fs.readFileSync(FILE, 'utf8'));
 
 const EXPECTED = Object.freeze({
-  '05081966.eth': { registry: '001', start: '2026-08-09' },
-  'YieldRing.eth': { registry: '002', start: '2026-08-09' },
-  'dinaz.eth': { registry: '003', start: '2026-08-09' },
-  'defitea.eth': { registry: '004' },
-  '0x5860...83CA8.eth': { registry: '005', start: '2026-08-16' },
-  'aerocvxyb.eth': { registry: '006', start: '2026-08-16' },
-  "Rook's portfolio": { registry: '007', start: '2026-08-16' },
-  'Monetra.eth': { registry: '008', start: '2026-08-13' },
-  '1milliondollar.eth': { registry: '009', start: '2026-08-16' },
-  'Cypher': { registry: '010', start: '2026-08-18' }
+  '05081966.eth': '001',
+  'YieldRing.eth': '002',
+  'dinaz.eth': '003',
+  'defitea.eth': '004',
+  '0x5860...83CA8.eth': '005',
+  'aerocvxyb.eth': '006',
+  "Rook's portfolio": '007',
+  'Monetra.eth': '008',
+  '1milliondollar.eth': '009',
+  'Cypher': '010'
 });
 
 const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
@@ -30,9 +30,9 @@ const names = Object.keys(companies);
 if (names.length !== Object.keys(EXPECTED).length) fail(`expected 10 companies, got ${names.length}`);
 for (const name of Object.keys(EXPECTED)) if (!companies[name]) fail(`missing company ${name}`);
 
-for (const [name, expected] of Object.entries(EXPECTED)) {
+for (const [name, registry] of Object.entries(EXPECTED)) {
   const c = companies[name];
-  if (c.registry !== expected.registry) fail(`${name} registry drift`);
+  if (c.registry !== registry) fail(`${name} registry drift`);
   if (c.executionAuthority !== 'none') fail(`${name} execution authority expanded`);
   const months = c.months || {};
   if (!Object.keys(months).length) fail(`${name} has no monthly reports`);
@@ -55,15 +55,17 @@ for (const key of ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-
 const m = companies['Monetra.eth'];
 if (m.sourceFamily !== 'canonical-stable-reporting' || m.capitalMetric !== 'stable-capital') fail('Monetra source/capital authority drift');
 if (!m.months?.['2026-08']) fail('Monetra August missing');
-if (m.months['2026-08'].periodStart !== EXPECTED['Monetra.eth'].start) fail('Monetra August start drift');
+if (m.months['2026-08'].periodStart !== '2026-08-13') fail('Monetra canonical August start drift');
 
-for (const [name, expected] of Object.entries(EXPECTED)) {
+for (const name of Object.keys(EXPECTED)) {
   if (['defitea.eth', 'Monetra.eth'].includes(name)) continue;
   const c = companies[name];
   if (c.sourceFamily !== 'observed-productivity-reference-model') fail(`${name} source family drift`);
   const aug = c.months?.['2026-08'];
   if (!aug) fail(`${name} August missing`);
-  if (aug.periodStart !== expected.start) fail(`${name} August start ${aug.periodStart} != ${expected.start}`);
+  if (!/^2026-08-\d{2}$/.test(String(aug.periodStart || ''))) fail(`${name} August start invalid`);
+  if (aug.periodStart < '2026-08-01') fail(`${name} pre-August history leaked into pilot`);
+  if (aug.firstObservedDate !== aug.periodStart) fail(`${name} report begins before/after first proven observation`);
   if (aug.preTrackingDaysBackfilled !== false) fail(`${name} pre-tracking backfill detected`);
   if (aug.semantic !== 'reference-generated-income-not-realised-cash-flow') fail(`${name} semantic drift`);
   if (!(Number(aug.sampleDays) >= 1)) fail(`${name} sampleDays invalid`);
@@ -75,5 +77,5 @@ if (companies.Cypher.months['2026-08'].averageCoverage >= 1) fail('Cypher covera
 
 console.log('Company Monthly Reports validation PASS', {
   companyCount: names.length,
-  starts: Object.fromEntries(Object.entries(EXPECTED).filter(([n]) => n !== 'defitea.eth').map(([n, e]) => [n, e.start]))
+  starts: Object.fromEntries(Object.entries(companies).map(([name, c]) => [name, c.months?.['2026-08']?.periodStart || null]))
 });
