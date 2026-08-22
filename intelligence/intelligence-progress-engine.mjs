@@ -21,13 +21,25 @@ const finite = (value, fallback = 0) => {
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const round = (value, digits = 1) => Number(Number(value).toFixed(digits));
 
+const publicDiagnostic = value => {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+  const scrubbed = raw
+    .replaceAll(ROOT, '[repo]')
+    .replace(/file:\/\/\/[^\s)]+/g, '[local-path]')
+    .replace(/(?:^|\s)\/(?:home|Users|private|tmp)\/[^\s)]+/g, match => `${match.startsWith(' ') ? ' ' : ''}[local-path]`);
+  const errorIndex = scrubbed.indexOf('Error: ');
+  const relevant = errorIndex >= 0 ? scrubbed.slice(errorIndex) : scrubbed;
+  return relevant.split(/\n\s+at\s/)[0].trim().slice(0, 1000) || null;
+};
+
 function liveCognitiveIntegrity() {
   let releaseCoherent = false;
   let releaseGuardError = null;
   try {
     releaseCoherent = verifyCognitiveRelease({ root: ROOT }).current === true;
   } catch (error) {
-    releaseGuardError = String(error?.message || error);
+    releaseGuardError = publicDiagnostic(error?.message || error);
   }
 
   const verifier = spawnSync(
@@ -38,7 +50,7 @@ function liveCognitiveIntegrity() {
   const cognitiveEvalPass = verifier.status === 0;
   const cognitiveVerifierError = cognitiveEvalPass
     ? null
-    : String(verifier.stderr || verifier.stdout || `verifier exit ${verifier.status}`).trim().slice(0, 1000);
+    : publicDiagnostic(verifier.stderr || verifier.stdout || `verifier exit ${verifier.status}`);
 
   return {
     releaseCoherent,
@@ -132,7 +144,7 @@ function deltaMap(current, previous) {
     ['evidenceMapped', current.metrics.reasoning.evidenceMapped, previous.metrics?.reasoning?.evidenceMapped],
     ['successfulAskRuns', current.metrics.evaluation.successfulAskRuns, previous.metrics?.evaluation?.successfulAskRuns],
     ['ownerDecisions', current.metrics.experience.ownerDecisions, previous.metrics?.experience?.ownerDecisions],
-    ['settledOutcomes', current.metrics.experience.settledOutcomes, previous.metrics?.experience?.settledOutcomes],
+    ['settledOutcomes', current.metrics.experience.settledOutcomes, previous.metrics?.experience?.settledOutcomeCount],
     ['lessons', current.metrics.experience.lessons, previous.metrics?.experience?.lessons]
   ];
   return Object.fromEntries(keys.map(([key, a, b]) => [key, Number.isFinite(Number(b)) ? finite(a) - finite(b) : null]));
@@ -224,7 +236,7 @@ function build() {
 
   const current = {
     version: '0.1-intelligence-progress',
-    engineVersion: '0.2-live-cognitive-integrity-thi-engine',
+    engineVersion: '0.2.1-live-cognitive-integrity-public-safe-thi-engine',
     generatedAt: now,
     index: {
       name: policy.index.name,
@@ -316,7 +328,12 @@ function selfTest() {
   }
   const staged = policy.index.stages;
   if (!Array.isArray(staged) || staged[0]?.min !== 0 || staged.at(-1)?.max !== 100) throw new Error('THI stages must cover 0..100');
-  console.log('Intelligence Progress self-test PASS', { policy: policy.version, totalWeight });
+  const localPath = ['', 'home', 'runner', 'work', 'repo', 'repo', 'example.mjs:1'].join('/');
+  const localUrl = ['file:', '', localPath].join('/');
+  const sample = publicDiagnostic(`${localUrl}\nError: Example public-safe failure\n    at fail (${localUrl}:1)`);
+  if (sample !== 'Error: Example public-safe failure') throw new Error(`THI diagnostic sanitization failed: ${sample}`);
+  if (sample.includes(localPath) || sample.includes(localUrl)) throw new Error('THI diagnostic sanitization leaked a local fixture path');
+  console.log('Intelligence Progress self-test PASS', { policy: policy.version, totalWeight, publicDiagnostic: sample });
 }
 
 if (process.argv.includes('--self-test')) {
