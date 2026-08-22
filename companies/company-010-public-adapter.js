@@ -529,3 +529,13 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
 
+/* The Holding · Rewards Received lifecycle loader · v0.1 */
+(() => {
+  'use strict';
+  if(document.querySelector('script[data-th-rewards-received]'))return;
+  const s=document.createElement('script');
+  s.src='/companies/rewards-received-adapter.js';
+  s.defer=true;
+  s.dataset.thRewardsReceived='true';
+  document.head.appendChild(s);
+})();
