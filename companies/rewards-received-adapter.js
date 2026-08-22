@@ -1,6 +1,7 @@
-/* The Holding · Rewards Received lifecycle adapter · v0.3.0
- * Presentation only. Reads canonical /companies/rewards-data.json and places proven
- * 40 Acres Received income directly beside the corresponding Velodrome accrual row.
+/* The Holding · Rewards lifecycle presentation adapter · v0.4.0
+ * Presentation only. Reads canonical /companies/rewards-data.json.
+ * - 40 Acres Received is placed directly beside the corresponding Velodrome accrual row.
+ * - A proven Liquity staking route remains visible when current ETH/LUSD pending gains are zero.
  * Received remains separate from Claimable/Unclaimed, while the Passport headline
  * is the broader Tracked Rewards total (current accrued + proven Received).
  */
@@ -39,7 +40,8 @@
     s.textContent = `
       .ipx-reward-row.ipx-received-inline{background:rgba(10,124,78,.018)}
       .ipx-reward-state.received{color:#0a7c4e;background:rgba(10,124,78,.055);border-color:rgba(10,124,78,.13)}
-      .ipx-received-proof{opacity:.72}
+      .ipx-reward-state.no-current{color:rgba(22,21,15,.48);background:rgba(22,21,15,.025);border-color:rgba(22,21,15,.08)}
+      .ipx-received-proof,.ipx-route-proof{opacity:.72}
     `;
     document.head.appendChild(s);
   }
@@ -122,6 +124,27 @@
     return el;
   }
 
+  function liquityZeroRow(source) {
+    const el = node('div', 'ipx-reward-row ipx-liquity-zero');
+    el.dataset.rewardRoute = 'liquity-staking';
+    el.dataset.zeroState = 'current-pending-zero';
+    const left = node('div');
+    const protocol = node('div', 'ipx-reward-protocol', 'Liquity · LQTY Staking');
+    protocol.appendChild(document.createTextNode(' '));
+    protocol.appendChild(node('span', 'ipx-reward-state no-current', lang() === 'ru' ? 'Сейчас 0' : 'No current rewards'));
+    left.appendChild(protocol);
+    left.appendChild(node('div', 'ipx-reward-meta', `${source?.chain || 'Ethereum'} · ETH + LUSD`));
+    left.appendChild(node('div', 'ipx-reward-meta ipx-route-proof', lang() === 'ru'
+      ? 'Pending gains проверены onchain'
+      : 'Pending gains checked onchain'));
+    el.appendChild(left);
+    const right = node('div', 'ipx-reward-right');
+    right.appendChild(node('div', 'ipx-reward-amount', '0'));
+    right.appendChild(node('div', 'ipx-reward-usd', '$0.00'));
+    el.appendChild(right);
+    return el;
+  }
+
   function velodromeAnchor(panel) {
     const rows = [...panel.querySelectorAll('.ipx-reward-row:not(.ipx-received-inline)')];
     return rows.find(row => /velodrome/i.test(row.textContent || '') && /40\s*acres/i.test(row.textContent || ''))
@@ -129,14 +152,11 @@
       || null;
   }
 
-  function renderItem(item) {
-    const name = item?.dataset?.nm;
-    const c = companyState(name);
+  function renderReceived(panel, item, c) {
     const received = Array.isArray(c?.receivedIncome) ? c.receivedIncome.filter(x => x && x.state === 'Received') : [];
-    const panel = item?.querySelector('.ipx-rewards-panel');
-    if (!panel) return false;
-    const existing = [...panel.querySelectorAll('.ipx-received-inline')];
     const rows = received.filter(x => Number(x.transferCount || 0) > 0 || Number(x.amount || 0) > 0);
+    const existing = [...panel.querySelectorAll('.ipx-received-inline')];
+    panel.querySelectorAll('.ipx-received-section').forEach(x => x.remove());
     if (!rows.length) {
       existing.forEach(x => x.remove());
       return false;
@@ -147,8 +167,6 @@
     const fingerprint = fingerprintFor(c, rows);
     if (existing.length === rows.length && existing.every(x => x.dataset.receivedFingerprint === fingerprint)) return true;
     existing.forEach(x => x.remove());
-    panel.querySelectorAll('.ipx-received-section').forEach(x => x.remove());
-    ensureStyle();
 
     let anchor = velodromeAnchor(panel);
     rows.forEach(row => {
@@ -163,6 +181,40 @@
       }
     });
     return true;
+  }
+
+  function renderLiquityZero(panel, c) {
+    const existing = panel.querySelector('.ipx-liquity-zero');
+    const source = Array.isArray(c?.sources) ? c.sources.find(x => x?.route === 'liquity-staking') : null;
+    const hasPositive = Array.isArray(c?.rewards) && c.rewards.some(x => x?.route === 'liquity-staking' && Number(x?.amount || 0) > 0);
+    if (!source || source.status !== 'ok' || hasPositive) {
+      existing?.remove();
+      return false;
+    }
+    if (existing) return true;
+
+    const rendered = liquityZeroRow(source);
+    const normalRows = [...panel.querySelectorAll('.ipx-reward-row:not(.ipx-liquity-zero)')];
+    const venice = normalRows.find(row => /venice/i.test(row.querySelector('.ipx-reward-protocol')?.textContent || ''));
+    const resupply = normalRows.find(row => /resupply/i.test(row.querySelector('.ipx-reward-protocol')?.textContent || ''));
+    if (venice?.parentNode) venice.parentNode.insertBefore(rendered, venice.nextSibling);
+    else if (resupply?.parentNode) resupply.parentNode.insertBefore(rendered, resupply);
+    else {
+      const note = panel.querySelector('.ipx-reward-panel-note');
+      if (note) panel.insertBefore(rendered, note); else panel.appendChild(rendered);
+    }
+    return true;
+  }
+
+  function renderItem(item) {
+    const name = item?.dataset?.nm;
+    const c = companyState(name);
+    const panel = item?.querySelector('.ipx-rewards-panel');
+    if (!panel || !c) return false;
+    ensureStyle();
+    const received = renderReceived(panel, item, c);
+    const liquity = renderLiquityZero(panel, c);
+    return received || liquity;
   }
 
   function renderAll() {
@@ -185,9 +237,9 @@
       renderAll();
       const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.3.0-inline-velodrome-received', renderAll };
+      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.4.0-inline-received-plus-liquity-zero', renderAll };
     } catch (err) {
-      console.warn('[Rewards Received]', err && err.message ? err.message : err);
+      console.warn('[Rewards Lifecycle]', err && err.message ? err.message : err);
     }
   }
 
