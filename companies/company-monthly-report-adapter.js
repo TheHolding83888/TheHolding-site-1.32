@@ -1,6 +1,7 @@
-/* The Holding · Company Monthly Report adapter · v0.1.0
+/* The Holding · Company Monthly Reports adapter · v0.2.0
  * Presentation only. Reads canonical /reporting/reporting-data.json.
- * Initial scope: defitea.eth. No accounting, TVL, Rewards or execution authority changes.
+ * Initial scope: defitea.eth. Historical months are rendered from the existing
+ * Reporting archive; no accounting, TVL, Rewards methodology or execution authority changes.
  */
 (() => {
   'use strict';
@@ -11,12 +12,16 @@
   let snapshot = null;
   let loading = null;
   let renderQueued = false;
+  let selectedMonthKey = null;
 
   const lang = () => (document.documentElement.lang || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
   const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
-  const money = (v, digits = 2) => '$' + Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
-  const money0 = v => '$' + Math.round(Number(v || 0)).toLocaleString('en-US');
+  const money = (v, digits = 2) => finite(v)
+    ? '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+    : '—';
+  const money0 = v => finite(v) ? '$' + Math.round(Number(v)).toLocaleString('en-US') : '—';
   const pct = v => finite(v) ? Number(v).toFixed(2) + '%' : '—';
+  const generatedUsd = month => finite(month?.cashFlowUsd) ? month.cashFlowUsd : month?.generatedIncomeUsd;
   const node = (tag, className, text) => {
     const el = document.createElement(tag);
     if (className) el.className = className;
@@ -24,36 +29,52 @@
     return el;
   };
 
-  const copy = () => lang() === 'ru' ? {
-    trigger: 'Ежемесячный отчёт', generated: 'сгенерировано', live: 'Live',
-    report: 'Отчёт фонда · Месяц', monthYield: 'Доходность месяца', annualised: 'Годовой темп',
-    avgTvl: 'Средний TVL', observed: 'Наблюдение', days: 'дней',
-    closedYtd: 'Закрытые месяцы YTD', yearAnnualised: '2026 годовой темп',
-    includesLive: '8 месяцев · включая live август', model: 'Live reference model · не claim accounting',
-    full: 'Полный отчёт', provisional: 'Предварительно', final: 'Финально',
-    close: 'Закрыть ежемесячный отчёт'
+  const C = () => lang() === 'ru' ? {
+    trigger: 'Ежемесячные отчёты', generated: 'Доход', monthYield: 'Доходность месяца',
+    avgTvl: 'Средний TVL', reports: 'Отчёты фонда', live: 'Live', full: 'Полный отчёт',
+    close: 'Закрыть отчёты фонда'
   } : {
-    trigger: 'Monthly Report', generated: 'generated', live: 'Live',
-    report: 'Fund Report · Monthly', monthYield: 'Month Yield', annualised: 'Annualised',
-    avgTvl: 'Average TVL', observed: 'Observed', days: 'days',
-    closedYtd: 'Closed-month YTD', yearAnnualised: '2026 Annualised',
-    includesLive: '8 months · incl. live August', model: 'Live reference model · not claim accounting',
-    full: 'Full report', provisional: 'Provisional', final: 'Final',
-    close: 'Close monthly report'
+    trigger: 'Monthly Reports', generated: 'Generated', monthYield: 'Month Yield',
+    avgTvl: 'Average TVL', reports: 'Fund Reports', live: 'Live', full: 'Full Report',
+    close: 'Close fund reports'
   };
 
-  function monthLabel(key) {
-    const [y, m] = String(key || '').split('-').map(Number);
-    if (!y || !m) return key || '—';
-    return new Intl.DateTimeFormat(lang() === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' })
-      .format(new Date(Date.UTC(y, m - 1, 1)));
+  function svgIcon(kind, className) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    if (className) svg.setAttribute('class', className);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', 'currentColor');
+    path.setAttribute('stroke-width', '1.35');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('d', kind === 'external' ? 'M6 4h6v6M12 4 4 12' : 'm4.25 6 3.75 3.75L11.75 6');
+    svg.appendChild(path);
+    return svg;
   }
 
-  function monthShort(key) {
-    const [y, m] = String(key || '').split('-').map(Number);
-    if (!y || !m) return key || '—';
-    return new Intl.DateTimeFormat(lang() === 'ru' ? 'ru-RU' : 'en-US', { month: 'long' })
-      .format(new Date(Date.UTC(y, m - 1, 1)));
+  function monthParts(key) {
+    const [year, month] = String(key || '').split('-').map(Number);
+    return { year, month };
+  }
+
+  function monthLabel(key) {
+    const { year, month } = monthParts(key);
+    if (!year || !month) return key || '—';
+    return new Intl.DateTimeFormat(lang() === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' })
+      .format(new Date(Date.UTC(year, month - 1, 1)));
+  }
+
+  function monthShort(key, includeYear = false) {
+    const { year, month } = monthParts(key);
+    if (!year || !month) return key || '—';
+    const base = new Intl.DateTimeFormat(lang() === 'ru' ? 'ru-RU' : 'en-US', { month: 'short' })
+      .format(new Date(Date.UTC(year, month - 1, 1)))
+      .replace('.', '');
+    return includeYear ? `${base} ’${String(year).slice(-2)}` : base;
   }
 
   async function load() {
@@ -68,12 +89,12 @@
 
   function currentState() {
     const fund = snapshot?.funds?.[COMPANY];
-    if (!fund) return null;
-    const summary = fund.summaries?.['2026'] || null;
-    const monthKey = summary?.currentMonth || Object.keys(fund.months || {}).sort().at(-1) || null;
-    const month = monthKey ? fund.months?.[monthKey] : null;
-    if (!month) return null;
-    return { fund, summary, monthKey, month };
+    if (!fund?.months) return null;
+    const keys = Object.keys(fund.months).filter(key => fund.months[key]).sort();
+    if (!keys.length) return null;
+    const currentKey = keys[keys.length - 1];
+    if (!selectedMonthKey || !fund.months[selectedMonthKey]) selectedMonthKey = currentKey;
+    return { fund, keys, currentKey };
   }
 
   function ensureStyle() {
@@ -89,39 +110,43 @@
       .th-mr-value-wrap{grid-area:value;min-width:0;display:flex;align-items:baseline;gap:.38rem}
       .th-mr-value{font-family:'Cormorant Garamond',serif;font-size:1.34rem;line-height:1;font-weight:600;letter-spacing:-.02em;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
       .th-mr-value-label{color:var(--text-3);font-size:.5rem;white-space:nowrap}
-      .th-mr-meta{grid-area:meta;justify-self:end;display:inline-flex;align-items:center;gap:.36rem;color:var(--text-2);font-size:.53rem;font-weight:600;white-space:nowrap}
-      .th-mr-arrow{color:var(--gold);font-size:.72rem;line-height:1;transition:transform .22s ease}
-      .th-monthly-report-disclosure.open .th-mr-arrow{transform:rotate(180deg)}
+      .th-mr-meta{grid-area:meta;justify-self:end;display:inline-flex;align-items:center;gap:.36rem;color:var(--text-2);font-size:.53rem;font-weight:650;white-space:nowrap}
+      .th-mr-chevron{width:.82rem;height:.82rem;color:var(--gold);transition:transform .22s ease;flex:0 0 auto}
+      .th-monthly-report-disclosure.open .th-mr-chevron{transform:rotate(180deg)}
       .th-mr-trigger:hover,.th-mr-trigger:focus-visible{background:rgba(168,132,44,.025)}
       .th-mr-trigger:focus-visible{outline:1px solid rgba(168,132,44,.34);outline-offset:2px}
 
-      .th-monthly-report-panel{position:absolute;right:0;top:calc(100% + 9px);width:min(438px,calc(100vw - 30px));max-height:min(68vh,520px);overflow:auto;overscroll-behavior:contain;z-index:48;padding:.88rem;border:1px solid rgba(15,23,42,.085);border-radius:20px;background:radial-gradient(circle at 92% 0,rgba(255,255,255,1),rgba(255,255,255,0) 36%),rgba(252,252,249,.995);box-shadow:0 34px 74px -28px rgba(15,23,42,.34),0 10px 24px -18px rgba(15,23,42,.18);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-5px) scale(.985);transition:opacity .24s ease,visibility .24s ease,transform .26s cubic-bezier(.16,1,.3,1)}
+      .th-monthly-report-panel{position:absolute;right:0;top:calc(100% + 9px);width:min(438px,calc(100vw - 30px));max-height:min(72vh,540px);overflow:auto;overscroll-behavior:contain;z-index:48;padding:.86rem;border:1px solid rgba(15,23,42,.085);border-radius:20px;background:radial-gradient(circle at 92% 0,rgba(255,255,255,1),rgba(255,255,255,0) 36%),rgba(252,252,249,.995);box-shadow:0 34px 74px -28px rgba(15,23,42,.34),0 10px 24px -18px rgba(15,23,42,.18);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-5px) scale(.985);transition:opacity .24s ease,visibility .24s ease,transform .26s cubic-bezier(.16,1,.3,1)}
       .th-monthly-report-disclosure.open>.th-monthly-report-panel{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1)}
-      .th-mr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.18rem .18rem .72rem;border-bottom:1px solid var(--line)}
+      .th-mr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.16rem .14rem .68rem}
       .th-mr-head-copy{min-width:0}
-      .th-mr-panel-kicker{color:var(--text-3);font-size:.5rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
-      .th-mr-title{margin-top:.22rem;font-family:'Cormorant Garamond',serif;font-size:1.42rem;font-weight:600;line-height:1;letter-spacing:-.02em;color:var(--text);text-transform:capitalize}
+      .th-mr-panel-kicker{color:var(--text-3);font-size:.49rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+      .th-mr-title{margin-top:.22rem;font-family:'Cormorant Garamond',serif;font-size:1.48rem;font-weight:600;line-height:1;letter-spacing:-.02em;color:var(--text);text-transform:capitalize}
       .th-mr-close{flex:0 0 auto;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(15,23,42,.07);border-radius:50%;background:rgba(255,255,255,.8);color:var(--text-3);font:400 1rem/1 'Space Grotesk',sans-serif;cursor:pointer}
       .th-mr-close:hover,.th-mr-close:focus-visible{color:var(--text);background:#fff}
       .th-mr-close:focus-visible{outline:1px solid rgba(168,132,44,.28);outline-offset:2px}
-      .th-mr-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;padding:1rem .18rem .88rem}
-      .th-mr-hero-label{color:var(--text-3);font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;font-weight:650}
-      .th-mr-hero-value{margin-top:.28rem;font-family:'Cormorant Garamond',serif;font-size:2.3rem;line-height:.92;font-weight:600;letter-spacing:-.035em;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
-      .th-mr-status{flex:0 0 auto;display:inline-flex;align-items:center;padding:.28rem .5rem;border:1px solid rgba(10,124,78,.12);border-radius:999px;background:rgba(10,124,78,.045);color:var(--green);font-size:.48rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
-      .th-mr-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.48rem}
-      .th-mr-metric{min-width:0;padding:.72rem .72rem .68rem;border:1px solid rgba(15,23,42,.065);border-radius:13px;background:rgba(255,255,255,.68)}
-      .th-mr-metric-label{color:var(--text-3);font-size:.49rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.25}
-      .th-mr-metric-value{margin-top:.3rem;color:var(--text);font-family:'Cormorant Garamond',serif;font-size:1.32rem;font-weight:600;line-height:1;letter-spacing:-.018em;font-variant-numeric:tabular-nums;white-space:nowrap}
-      .th-mr-year{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin-top:.62rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-      .th-mr-year-cell{min-width:0;padding:.72rem .5rem .68rem}
-      .th-mr-year-cell+.th-mr-year-cell{border-left:1px solid var(--line)}
-      .th-mr-year-label{color:var(--text-3);font-size:.48rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
-      .th-mr-year-value{margin-top:.26rem;color:var(--text);font-size:.78rem;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
-      .th-mr-year-note{margin-top:.15rem;color:var(--text-3);font-size:.5rem;line-height:1.35}
-      .th-mr-foot{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.72rem .18rem .08rem}
-      .th-mr-method{min-width:0;color:var(--text-3);font-size:.5rem;line-height:1.35}
-      .th-mr-link{flex:0 0 auto;color:var(--green);font-size:.56rem;font-weight:700;text-decoration:none;white-space:nowrap}
+
+      .th-mr-months{display:flex;gap:.34rem;min-width:0;padding:.08rem .02rem .68rem;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--line)}
+      .th-mr-months::-webkit-scrollbar{display:none}
+      .th-mr-month{appearance:none;-webkit-appearance:none;flex:0 0 auto;min-width:40px;border:1px solid rgba(15,23,42,.065);border-radius:999px;background:rgba(255,255,255,.66);padding:.28rem .48rem;color:var(--text-3);font:650 .51rem/1 'Space Grotesk',sans-serif;letter-spacing:.02em;text-align:center;cursor:pointer;transition:border-color .18s ease,background .18s ease,color .18s ease,box-shadow .18s ease}
+      .th-mr-month:hover,.th-mr-month:focus-visible{color:var(--text);border-color:rgba(168,132,44,.22)}
+      .th-mr-month:focus-visible{outline:1px solid rgba(168,132,44,.28);outline-offset:2px}
+      .th-mr-month.active{color:var(--gold);border-color:rgba(168,132,44,.22);background:rgba(168,132,44,.055);box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+
+      .th-mr-core{display:grid;grid-template-columns:1.12fr .88fr;gap:.5rem;padding:.82rem 0 .5rem}
+      .th-mr-core-card{min-width:0;padding:.78rem .74rem .72rem;border:1px solid rgba(15,23,42,.06);border-radius:14px;background:rgba(255,255,255,.69)}
+      .th-mr-core-label{color:var(--text-3);font-size:.48rem;font-weight:700;letter-spacing:.095em;text-transform:uppercase;line-height:1.2}
+      .th-mr-core-value{margin-top:.34rem;font-family:'Cormorant Garamond',serif;font-size:clamp(1.54rem,4.2vw,2.08rem);font-weight:600;line-height:.94;letter-spacing:-.028em;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .th-mr-core-card:first-child .th-mr-core-value{color:var(--gold)}
+      .th-mr-context{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-width:0;padding:.63rem .18rem .7rem;border-bottom:1px solid var(--line)}
+      .th-mr-context-label{min-width:0;color:var(--text-3);font-size:.51rem;font-weight:650;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .th-mr-context-value{flex:0 0 auto;color:var(--text-2);font-size:.69rem;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+      .th-mr-status{display:inline-flex;align-items:center;margin-left:.42rem;padding:.13rem .34rem;border:1px solid rgba(10,124,78,.11);border-radius:999px;background:rgba(10,124,78,.045);color:var(--green);font-family:'Space Grotesk',sans-serif;font-size:.43rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;vertical-align:middle;white-space:nowrap}
+      .th-mr-foot{display:flex;align-items:center;justify-content:flex-end;padding:.68rem .12rem .04rem}
+      .th-mr-link{display:inline-flex;align-items:center;gap:.28rem;color:var(--green);font-size:.55rem;font-weight:700;text-decoration:none;white-space:nowrap}
+      .th-mr-link svg{width:.76rem;height:.76rem;transition:transform .18s ease}
       .th-mr-link:hover,.th-mr-link:focus-visible{text-decoration:underline;text-underline-offset:3px}
+      .th-mr-link:hover svg,.th-mr-link:focus-visible svg{transform:translate(1px,-1px)}
 
       .th-mr-backdrop{position:fixed;inset:0;z-index:2230;background:rgba(15,23,42,.14);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease}
       .th-mr-backdrop.open{opacity:1;visibility:visible;pointer-events:auto}
@@ -131,38 +156,34 @@
         .th-mr-kicker{font-size:.49rem;letter-spacing:.12em}
         .th-mr-value{font-size:1.22rem}
         .th-mr-value-label,.th-mr-meta{font-size:.49rem}
-        .th-monthly-report-panel{position:fixed;left:14px;right:14px;top:50%;bottom:auto;width:auto;max-height:min(72vh,540px);z-index:2240;transform:translateY(-50%) scale(.975);padding:.76rem;border-radius:20px;opacity:0;visibility:hidden;pointer-events:none}
+        .th-monthly-report-panel{position:fixed;left:14px;right:14px;top:50%;bottom:auto;width:auto;max-height:min(76vh,560px);z-index:2240;transform:translateY(-50%) scale(.975);padding:.74rem;border-radius:20px;opacity:0;visibility:hidden;pointer-events:none}
         .th-monthly-report-disclosure.open>.th-monthly-report-panel{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-50%) scale(.975)}
         .th-monthly-report-panel.th-mr-portal-open{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(-50%) scale(1)}
-        .th-mr-hero{padding:.88rem .12rem .78rem}
-        .th-mr-hero-value{font-size:2rem}
-        .th-mr-grid{gap:.42rem}
-        .th-mr-metric{padding:.64rem .62rem .6rem}
-        .th-mr-metric-label{font-size:.45rem}
-        .th-mr-metric-value{font-size:1.18rem}
-        .th-mr-year-cell{padding:.64rem .42rem .6rem}
-        .th-mr-year-label{font-size:.44rem}
-        .th-mr-year-value{font-size:.7rem}
-        .th-mr-year-note,.th-mr-method{font-size:.47rem}
-        .th-mr-foot{align-items:flex-end}
+        .th-mr-head{padding:.12rem .08rem .62rem}
+        .th-mr-title{font-size:1.38rem}
+        .th-mr-months{margin:0 -.08rem;padding-left:.08rem;padding-right:.08rem}
+        .th-mr-core{gap:.42rem;padding-top:.72rem}
+        .th-mr-core-card{padding:.68rem .62rem .64rem}
+        .th-mr-core-label{font-size:.45rem}
+        .th-mr-core-value{font-size:clamp(1.42rem,7vw,1.92rem)}
+        .th-mr-context{padding:.58rem .12rem .64rem}
+        .th-mr-context-label{font-size:.47rem}
+        .th-mr-context-value{font-size:.64rem}
+        .th-mr-link{font-size:.52rem}
         body.th-mr-overlay-open{overflow:hidden}
       }
-      @media(max-width:390px){
-        .th-mr-trigger{grid-template-columns:minmax(0,1fr) auto;column-gap:.36rem}
-        .th-mr-kicker{font-size:.46rem}
-        .th-mr-badge{font-size:.44rem;padding:.12rem .32rem}
+      @media(max-width:360px){
+        .th-mr-trigger{grid-template-columns:minmax(0,1fr) auto;column-gap:.34rem}
+        .th-mr-kicker{font-size:.45rem}
+        .th-mr-badge{font-size:.42rem;padding:.11rem .29rem}
         .th-mr-value{font-size:1.14rem}
-        .th-mr-value-label{display:none}
         .th-mr-meta{font-size:.46rem}
-        .th-monthly-report-panel{left:10px;right:10px;padding:.68rem}
-        .th-mr-title{font-size:1.28rem}
-        .th-mr-hero-value{font-size:1.82rem}
-        .th-mr-metric{padding:.58rem .54rem .56rem}
-        .th-mr-metric-value{font-size:1.08rem}
-        .th-mr-year-value{font-size:.66rem;white-space:normal}
-        .th-mr-link{font-size:.52rem}
+        .th-monthly-report-panel{left:10px;right:10px;padding:.66rem}
+        .th-mr-core{grid-template-columns:1fr 1fr;gap:.34rem}
+        .th-mr-core-card{padding:.62rem .54rem .58rem}
+        .th-mr-core-value{font-size:1.42rem}
       }
-      @media(prefers-reduced-motion:reduce){.th-monthly-report-panel,.th-mr-backdrop,.th-mr-arrow{transition-duration:.01ms!important}}
+      @media(prefers-reduced-motion:reduce){.th-monthly-report-panel,.th-mr-chevron,.th-mr-backdrop,.th-mr-link svg{transition:none!important}}
     `;
     document.head.appendChild(s);
   }
@@ -177,89 +198,122 @@
     return bg;
   }
 
-  function metric(label, value) {
-    const card = node('div', 'th-mr-metric');
-    card.appendChild(node('div', 'th-mr-metric-label', label));
-    card.appendChild(node('div', 'th-mr-metric-value', value));
+  function coreMetric(label, value) {
+    const card = node('div', 'th-mr-core-card');
+    card.appendChild(node('div', 'th-mr-core-label', label));
+    card.appendChild(node('div', 'th-mr-core-value', value));
     return card;
   }
 
-  function yearCell(label, value, note) {
-    const cell = node('div', 'th-mr-year-cell');
-    cell.appendChild(node('div', 'th-mr-year-label', label));
-    cell.appendChild(node('div', 'th-mr-year-value', value));
-    if (note) cell.appendChild(node('div', 'th-mr-year-note', note));
-    return cell;
+  function applyMonth(disclosure, fund, key, focusMonth = false) {
+    const month = fund?.months?.[key];
+    if (!month) return;
+    selectedMonthKey = key;
+    const copy = C();
+    const panel = disclosure.querySelector('.th-monthly-report-panel') || document.querySelector('.th-monthly-report-panel.th-mr-portal-open');
+    if (!panel) return;
+
+    const title = panel.querySelector('.th-mr-title');
+    if (title) {
+      title.textContent = monthLabel(key);
+      if (month.status === 'provisional') title.appendChild(node('span', 'th-mr-status', copy.live));
+    }
+    const generated = panel.querySelector('[data-th-mr-generated]');
+    const yieldEl = panel.querySelector('[data-th-mr-yield]');
+    const tvl = panel.querySelector('[data-th-mr-tvl]');
+    if (generated) generated.textContent = money(generatedUsd(month));
+    if (yieldEl) yieldEl.textContent = pct(month.monthlyYieldPct);
+    if (tvl) tvl.textContent = money0(month.averageTvlUsd);
+
+    panel.querySelectorAll('.th-mr-month').forEach(btn => {
+      const active = btn.dataset.month === key;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      if (active) btn.setAttribute('aria-current', 'date'); else btn.removeAttribute('aria-current');
+    });
+    panel.setAttribute('aria-label', `${copy.reports} · ${monthLabel(key)}`);
+
+    const active = panel.querySelector(`.th-mr-month[data-month="${CSS.escape(key)}"]`);
+    if (active) active.scrollIntoView({ behavior: focusMonth ? 'smooth' : 'auto', block: 'nearest', inline: 'nearest' });
   }
 
   function buildDisclosure(state) {
-    const C = copy();
-    const { month, monthKey, summary } = state;
+    const copy = C();
+    const { fund, keys, currentKey } = state;
+    const current = fund.months[currentKey];
     const disclosure = node('div', 'th-monthly-report-disclosure');
     disclosure.dataset.monthlyReport = COMPANY;
 
     const trigger = node('button', 'th-mr-trigger');
     trigger.type = 'button';
     trigger.setAttribute('aria-expanded', 'false');
-    trigger.appendChild(node('div', 'th-mr-kicker', C.trigger));
-    trigger.appendChild(node('span', 'th-mr-badge', `${monthShort(monthKey)} · ${C.live}`));
+    trigger.appendChild(node('div', 'th-mr-kicker', copy.trigger));
+    trigger.appendChild(node('span', 'th-mr-badge', `${monthShort(currentKey)} · ${copy.live}`));
     const valueWrap = node('div', 'th-mr-value-wrap');
-    valueWrap.appendChild(node('span', 'th-mr-value', money(month.cashFlowUsd)));
-    valueWrap.appendChild(node('span', 'th-mr-value-label', C.generated));
+    valueWrap.appendChild(node('span', 'th-mr-value', money(generatedUsd(current))));
+    valueWrap.appendChild(node('span', 'th-mr-value-label', lang() === 'ru' ? 'за месяц' : 'this month'));
     trigger.appendChild(valueWrap);
     const meta = node('div', 'th-mr-meta');
-    meta.appendChild(node('span', '', `${pct(month.monthlyYieldPct)} · ${pct(month.annualizedAprPct)}`));
-    meta.appendChild(node('span', 'th-mr-arrow', '⌄'));
+    meta.appendChild(node('span', '', pct(current.monthlyYieldPct)));
+    meta.appendChild(svgIcon('chevron', 'th-mr-chevron'));
     trigger.appendChild(meta);
     disclosure.appendChild(trigger);
 
     const panel = node('div', 'th-monthly-report-panel');
     panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-label', `${C.report} · ${monthLabel(monthKey)}`);
     panel.__thOwner = disclosure;
 
     const head = node('div', 'th-mr-head');
     const headCopy = node('div', 'th-mr-head-copy');
-    headCopy.appendChild(node('div', 'th-mr-panel-kicker', C.report));
-    headCopy.appendChild(node('div', 'th-mr-title', monthLabel(monthKey)));
+    headCopy.appendChild(node('div', 'th-mr-panel-kicker', copy.reports));
+    headCopy.appendChild(node('div', 'th-mr-title'));
     head.appendChild(headCopy);
     const close = node('button', 'th-mr-close', '×');
     close.type = 'button';
-    close.setAttribute('aria-label', C.close);
+    close.setAttribute('aria-label', copy.close);
     head.appendChild(close);
     panel.appendChild(head);
 
-    const hero = node('div', 'th-mr-hero');
-    const heroCopy = node('div');
-    heroCopy.appendChild(node('div', 'th-mr-hero-label', C.generated));
-    heroCopy.appendChild(node('div', 'th-mr-hero-value', money(month.cashFlowUsd)));
-    hero.appendChild(heroCopy);
-    hero.appendChild(node('span', 'th-mr-status', month.status === 'provisional' ? C.provisional : C.final));
-    panel.appendChild(hero);
+    const years = new Set(keys.map(key => monthParts(key).year));
+    const months = node('div', 'th-mr-months');
+    months.setAttribute('role', 'group');
+    months.setAttribute('aria-label', copy.trigger);
+    keys.forEach(key => {
+      const btn = node('button', 'th-mr-month', monthShort(key, years.size > 1));
+      btn.type = 'button';
+      btn.dataset.month = key;
+      btn.setAttribute('aria-label', monthLabel(key));
+      btn.setAttribute('aria-pressed', 'false');
+      months.appendChild(btn);
+    });
+    panel.appendChild(months);
 
-    const grid = node('div', 'th-mr-grid');
-    grid.appendChild(metric(C.monthYield, pct(month.monthlyYieldPct)));
-    grid.appendChild(metric(C.annualised, pct(month.annualizedAprPct)));
-    grid.appendChild(metric(C.avgTvl, money0(month.averageTvlUsd)));
-    const observed = finite(month.sampleDays) && finite(month.expectedDays)
-      ? `${Number(month.sampleDays)} / ${Number(month.expectedDays)} ${C.days}`
-      : '—';
-    grid.appendChild(metric(C.observed, observed));
-    panel.appendChild(grid);
+    const core = node('div', 'th-mr-core');
+    const generatedCard = coreMetric(copy.generated, '—');
+    generatedCard.querySelector('.th-mr-core-value').dataset.thMrGenerated = 'true';
+    const yieldCard = coreMetric(copy.monthYield, '—');
+    yieldCard.querySelector('.th-mr-core-value').dataset.thMrYield = 'true';
+    core.appendChild(generatedCard);
+    core.appendChild(yieldCard);
+    panel.appendChild(core);
 
-    const year = node('div', 'th-mr-year');
-    year.appendChild(yearCell(C.closedYtd, finite(summary?.ytdCashFlowUsd) ? money(summary.ytdCashFlowUsd) : '—', finite(summary?.closedMonths) ? `${Number(summary.closedMonths)} ${lang() === 'ru' ? 'закрытых месяцев' : 'closed months'}` : null));
-    year.appendChild(yearCell(C.yearAnnualised, pct(summary?.annualizedCashFlowAprPct), finite(summary?.annualizedCashFlowAprMonths) ? `${Number(summary.annualizedCashFlowAprMonths)} ${lang() === 'ru' ? 'месяцев · включая live август' : 'months · incl. live August'}` : C.includesLive));
-    panel.appendChild(year);
+    const context = node('div', 'th-mr-context');
+    context.appendChild(node('div', 'th-mr-context-label', copy.avgTvl));
+    const contextValue = node('div', 'th-mr-context-value', '—');
+    contextValue.dataset.thMrTvl = 'true';
+    context.appendChild(contextValue);
+    panel.appendChild(context);
 
     const foot = node('div', 'th-mr-foot');
-    foot.appendChild(node('div', 'th-mr-method', C.model));
-    const link = node('a', 'th-mr-link', C.full + ' ↗');
+    const link = node('a', 'th-mr-link');
     link.href = '/yield-reports/';
+    link.appendChild(node('span', '', copy.full));
+    link.appendChild(svgIcon('external'));
     foot.appendChild(link);
     panel.appendChild(foot);
 
     disclosure.appendChild(panel);
+    applyMonth(disclosure, fund, selectedMonthKey || currentKey, false);
     return disclosure;
   }
 
@@ -310,7 +364,7 @@
     }));
   }
 
-  function bind(disclosure) {
+  function bind(disclosure, fund) {
     if (disclosure.dataset.bound === 'true') return;
     disclosure.dataset.bound = 'true';
     const trigger = disclosure.querySelector('.th-mr-trigger');
@@ -326,11 +380,24 @@
       ev.stopPropagation();
       closeDisclosure(disclosure, false);
     });
+    disclosure.querySelectorAll('.th-mr-month').forEach(btn => {
+      btn.addEventListener('click', ev => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        applyMonth(disclosure, fund, btn.dataset.month, true);
+      });
+    });
   }
 
   function fingerprint(state) {
-    const { month, monthKey, summary } = state;
-    return JSON.stringify([lang(), monthKey, month.cashFlowUsd, month.monthlyYieldPct, month.annualizedAprPct, month.averageTvlUsd, month.sampleDays, month.expectedDays, month.status, summary?.ytdCashFlowUsd, summary?.annualizedCashFlowAprPct, summary?.closedMonths, summary?.annualizedCashFlowAprMonths]);
+    const { fund, keys, currentKey } = state;
+    return JSON.stringify([
+      lang(), currentKey,
+      ...keys.map(key => {
+        const m = fund.months[key];
+        return [key, generatedUsd(m), m.monthlyYieldPct, m.averageTvlUsd, m.status];
+      })
+    ]);
   }
 
   function render() {
@@ -363,14 +430,14 @@
     const fp = fingerprint(state);
     let disclosure = stack.querySelector(':scope > .th-monthly-report-disclosure');
     if (disclosure?.dataset.fingerprint === fp) {
-      bind(disclosure);
+      bind(disclosure, state.fund);
       return true;
     }
     if (disclosure) closeDisclosure(disclosure, true);
     const next = buildDisclosure(state);
     next.dataset.fingerprint = fp;
     if (disclosure?.parentNode) disclosure.replaceWith(next); else stack.appendChild(next);
-    bind(next);
+    bind(next, state.fund);
     return true;
   }
 
@@ -406,9 +473,9 @@
       bindGlobalClose();
       const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.1.0-defitea-monthly-report', render };
+      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.2.0-defitea-monthly-archive', render };
     } catch (err) {
-      console.warn('[Monthly Report]', err && err.message ? err.message : err);
+      console.warn('[Monthly Reports]', err && err.message ? err.message : err);
     }
   }
 
