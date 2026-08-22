@@ -7,6 +7,8 @@ on:
       - 'reporting/reporting-engine-validation.mjs'
       - 'reporting/defitea-income-composition.mjs'
       - 'reporting/defitea-income-composition-validation.mjs'
+      - 'reporting/defitea-forty-acres-settlement.mjs'
+      - 'reporting/defitea-forty-acres-settlement-validation.mjs'
       - '.github/workflows/update-reporting.yml'
       - '.github/workflows/verify-reporting-layer.yml'
       - 'yield-reports/index.html'
@@ -36,8 +38,11 @@ jobs:
           node --check reporting/reporting-engine-validation.mjs
           node --check reporting/defitea-income-composition.mjs
           node --check reporting/defitea-income-composition-validation.mjs
+          node --check reporting/defitea-forty-acres-settlement.mjs
+          node --check reporting/defitea-forty-acres-settlement-validation.mjs
           node reporting/reporting-engine-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
+          node reporting/defitea-forty-acres-settlement-validation.mjs
           git diff --check
 
       - name: Exercise full writer and income composition
@@ -59,6 +64,10 @@ jobs:
           REPORTING_DATA_FILE=/tmp/reporting-data.json \
           DEFITEA_INCOME_LEDGER_FILE=/tmp/defitea-income-ledger.json \
           node reporting/defitea-income-composition.mjs
+          REWARDS_DATA_FILE=./companies/rewards-data.json \
+          REPORTING_DATA_FILE=/tmp/reporting-data.json \
+          DEFITEA_INCOME_LEDGER_FILE=/tmp/defitea-income-ledger.json \
+          node reporting/defitea-forty-acres-settlement.mjs
           node - <<'NODE'
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('/tmp/reporting-data.json','utf8'));
@@ -76,15 +85,25 @@ jobs:
           const vm=l?.voteMarketEvents||[];
           if(new Set(vm.map(x=>x.eventKey)).size!==vm.length) throw new Error('VoteMarket event dedupe runtime proof failed');
           if(vm.some(x=>x.eventDate<d.trackingStartedAt||!(Number(x.usdValue)>0))) throw new Error('VoteMarket event admission runtime proof failed');
+          const fa=l?.fortyAcresReceivedEvents||[];
+          if(fa.length<1) throw new Error('40 Acres Received events not materialized');
+          if(new Set(fa.map(x=>x.eventKey)).size!==fa.length) throw new Error('40 Acres Received event dedupe runtime proof failed');
+          if(fa.some(x=>x.eventDate<'2026-08-01'||!(Number(x.usdValue)>0)||x.executionAuthority!=='none')) throw new Error('40 Acres Received event admission runtime proof failed');
+          if(d?.fortyAcresSettlement?.accounting!=='actual-net-received-replaces-velodrome-reference-model'||d?.fortyAcresSettlement?.referenceDoubleCountPrevented!==true) throw new Error('40 Acres replacement runtime proof failed');
+          if(d?.fortyAcresSettlement?.claimableAffected!==false||d?.fortyAcresSettlement?.tvlAffected!==false) throw new Error('40 Acres accounting boundary failed');
           const current=d.months?.[d.latestSnapshot.date.slice(0,7)];
           if(current?.mode==='reference-model'){
-            const expected=Number(current.baseDefiteaReferenceCashFlowUsd||0)+Number(current.associatedCompanyReferenceCashFlowUsd||0)+Number(current.voteMarketObservedIncomeUsd||0);
-            if(Math.abs(Number(current.cashFlowUsd)-expected)>0.011) throw new Error('unified cash-flow arithmetic runtime proof failed');
+            const expected=Number(current.baseDefiteaReferenceCashFlowUsd||0)-Number(current.fortyAcresReplacedReferenceCashFlowUsd||0)+Number(current.associatedCompanyReferenceCashFlowUsd||0)+Number(current.voteMarketObservedIncomeUsd||0)+Number(current.fortyAcresReceivedIncomeUsd||0);
+            if(Math.abs(Number(current.cashFlowUsd)-expected)>0.011) throw new Error('unified 40 Acres replacement arithmetic runtime proof failed');
+            if(!(Number(current.fortyAcresReceivedIncomeUsd)>0)||!(Number(current.fortyAcresReplacedReferenceCashFlowUsd)>0)) throw new Error('40 Acres Received/replacement values missing');
           }
-          console.log('Reporting + Defitea income composition candidate runtime PASS',{
+          console.log('Reporting + Defitea 40 Acres candidate runtime PASS',{
             defiteaTvlUsd:d.latestSnapshot.totalValueUsd,
             contributorEntries:(l.contributorDaily||[]).length,
             voteMarketEvents:vm.length,
+            fortyAcresEvents:fa.length,
+            fortyAcresReceivedUsd:current?.fortyAcresReceivedIncomeUsd,
+            fortyAcresReplacedReferenceUsd:current?.fortyAcresReplacedReferenceCashFlowUsd,
             currentMonthCashFlowUsd:current?.cashFlowUsd
           });
           NODE
@@ -97,12 +116,13 @@ jobs:
           const fs=require('fs');
           const engine=fs.readFileSync('reporting/reporting-engine.mjs','utf8');
           const composition=fs.readFileSync('reporting/defitea-income-composition.mjs','utf8');
+          const settlement=fs.readFileSync('reporting/defitea-forty-acres-settlement.mjs','utf8');
           const workflow=fs.readFileSync('.github/workflows/update-reporting.yml','utf8');
           for(const bad of ['api.coingecko.com/api/v3/simple/price','COINGECKO_API_KEY','getCoinGeckoPrices(','COMPANY_PAGE_FILE','parseCompanyBook(']){
-            if(engine.includes(bad)||composition.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
+            if(engine.includes(bad)||composition.includes(bad)||settlement.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
           }
           for(const bad of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']){
-            if(engine.includes(bad)||composition.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
+            if(engine.includes(bad)||composition.includes(bad)||settlement.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
           }
           console.log('Reporting authority boundary PASS');
           NODE
