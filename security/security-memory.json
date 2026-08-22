@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-22T12:14:49.116Z",
+  "generatedAt": "2026-08-22T12:23:20.552Z",
   "status": "watch",
-  "snapshotHash": "40a12479c43b44e476db01019eff9a3ef453de3f9a3717e20f81b53a1971f392",
+  "snapshotHash": "622f822d4545c6eaf7bacc3d8013d4c6644002971c754f6302e81724fbc79cae",
   "repository": {
     "filesScanned": 544,
-    "bytesScanned": 11383288,
+    "bytesScanned": 11412488,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -42,7 +42,7 @@
       ".github/workflows/resolve-monetra-contribution-ledger.yml": "2e3b64ff1da00e9b4a8d08343c1fe15b0694556f315a6afbb08f229d68786172",
       ".github/workflows/resolve-monetra-lido-close.yml": "5bd816a1447075fe58b41c104f807434ec3a473bdb50a9d7f15ba1078c1f78c5",
       ".github/workflows/resolve-monetra-strategy-entry-ledger.yml": "d130e2957d8f0b6f837ca54ad1581427a08116238e22fc3bef4692f2ddcfc517",
-      ".github/workflows/resume-cognitive-stack-after-release.yml": "4601322aeb0b03381bd12c857629982098009e2532f3726ebc7f177f764bbb28",
+      ".github/workflows/resume-cognitive-stack-after-release.yml": "2d98e2786634e6c2704cba2d46257bd3c04d83b48cbd04d9adb72b2ef3644902",
       ".github/workflows/resume-unified-capital-after-fxn-guard.yml": "5470e1c68ea0a9f340f68635076f6dcb1f9a9f4e421b2530ec1587865b99365b",
       ".github/workflows/security-hardening-actions.yml": "0353e44050c35c920c7d5e86dda4aeef15b4cb50ef432225ff7884d26ecc3704",
       ".github/workflows/security-sentinel.yml": "c9d7f5f61c2b17e0a2f303eedc187751065a9dc917761ca74c7b3a19b4266078",
@@ -92,7 +92,7 @@
       ".github/workflows/validate-yieldring-capital-state.yml": "c28e0cc1c1c5ef565af1d6e11e3d116ffbf28d605e9f554fc8515c3c250a0611",
       ".github/workflows/validate-yieldring-production-cascade.yml": "30f957d11497e44eac291b927f7c8c6572fce5fa5cd73ac924ed0cf9d9acd8f0",
       ".github/workflows/value-company-010-gmx-reader.yml": "a96d7751ece9b73d49c463331585b1377e45068910d18535d7937dcfbfa08457",
-      ".github/workflows/verify-cognitive-recovery-order.yml": "bd9d1ecb117279f09734e9d82e5dd8b71a82c1142529915162a5eb1628651ff4",
+      ".github/workflows/verify-cognitive-recovery-order.yml": "7164520328cad8c249479023a364a26bd92fee2e4d7ebc5a4d8a257d10076ecd",
       ".github/workflows/verify-cognitive-release-coherence.yml": "52adf6b844140a58ee3ee825ac0dee78b3358a67222d200f57357a9808a39f95",
       ".github/workflows/verify-company-010-hyperlend-income.yml": "7acc3de54e354c0c16059829ede777def990d099f19aa88051c54b752fb23104",
       ".github/workflows/verify-company-010-production-integration.yml": "ed1f04408fea7be12f1c4b3532ace22ca6e96bb63efa9227e281435dad25df40",
@@ -386,6 +386,34 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "c16dd30579846726553aba05f6f0aa2ecbbea83ca11a6c3900a35432618831cb",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/resume-cognitive-stack-after-release.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/resume-cognitive-stack-after-release.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "4601322aeb0b03381bd12c857629982098009e2532f3726ebc7f177f764bbb28",
+        "currentSha256": "2d98e2786634e6c2704cba2d46257bd3c04d83b48cbd04d9adb72b2ef3644902"
+      }
+    },
+    {
+      "id": "c45262b9bc3dfbaaee2cfc9c30f550b6ae010dd14f1639e6559e603511908547",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-cognitive-recovery-order.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-cognitive-recovery-order.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "bd9d1ecb117279f09734e9d82e5dd8b71a82c1142529915162a5eb1628651ff4",
+        "currentSha256": "7164520328cad8c249479023a364a26bd92fee2e4d7ebc5a4d8a257d10076ecd"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -988,10 +1016,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 409,
+    "runCount": 410,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-22T12-14-49-116Z-40a12479c4.json",
-    "latestRecordHash": "4da4d768a2c191460baacdb59eef42a7acca15f7f3662eba853ec733280523ce",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-22T12-23-20-552Z-622f822d45.json",
+    "latestRecordHash": "34a167057a188744d1cf8f160462a65dd478887b56b83007650d8bf11fde84d6",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
