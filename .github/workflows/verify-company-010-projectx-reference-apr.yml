@@ -75,15 +75,24 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const p='/tmp/px-history.json';
-          const h=JSON.parse(fs.readFileSync(p,'utf8'));
+          const hp='/tmp/px-history.json';
+          const sp='/tmp/px-state.json';
+          const h=JSON.parse(fs.readFileSync(hp,'utf8'));
+          const s=JSON.parse(fs.readFileSync(sp,'utf8'));
           const o=h.observations[0];
           o.observedAt=new Date(Date.parse(o.observedAt)-25*3600*1000).toISOString();
           o.stateGeneratedAt=o.observedAt;
-          o.fees.WHYPE=Math.max(0,Number(o.fees.WHYPE)-0.0001);
-          o.fees.USDC=Math.max(0,Number(o.fees.USDC)-0.01);
-          h.current={status:'warming',referenceAprPct:null,windowHours:0,reason:'deterministic fixture'};
-          fs.writeFileSync(p,JSON.stringify(h,null,2)+'\n');
+          const tokens=s.strategies?.projectX?.rewards?.tokens||[];
+          const whype=tokens.find(x=>x.symbol==='WHYPE');
+          const usdc=tokens.find(x=>x.symbol==='USDC');
+          if(!whype||!usdc)throw new Error('Project X deterministic fee tokens missing');
+          whype.amount=Number(o.fees.WHYPE)+0.0001;
+          usdc.amount=Number(o.fees.USDC)+0.01;
+          whype.usdValue=whype.amount*Number(whype.priceUsd);
+          usdc.usdValue=usdc.amount*Number(usdc.priceUsd);
+          h.current={status:'warming',referenceAprPct:null,windowHours:0,reason:'deterministic positive fee-growth fixture'};
+          fs.writeFileSync(hp,JSON.stringify(h,null,2)+'\n');
+          fs.writeFileSync(sp,JSON.stringify(s,null,2)+'\n');
           NODE
           COMPANY_010_STATE=/tmp/px-state.json COMPANY_010_PROJECTX_RATE_HISTORY=/tmp/px-history.json node onboarding/company-010-projectx-reference-apr.mjs
           node - <<'NODE'
