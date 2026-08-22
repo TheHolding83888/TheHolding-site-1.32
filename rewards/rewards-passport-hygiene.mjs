@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const OUTPUT=process.env.REWARDS_OUTPUT||path.resolve('companies/rewards-data.json');
+const liquityOverlay=spawnSync(process.execPath,[path.resolve('rewards/liquity-v2-userproxy-overlay.mjs')],{stdio:'inherit',env:process.env});
+if(liquityOverlay.status!==0)throw new Error(`Liquity V2 UserProxy overlay failed with exit ${liquityOverlay.status}`);
 const data=JSON.parse(fs.readFileSync(OUTPUT,'utf8'));
 const y=data.companies?.['YieldRing.eth'];
 const cy=data.companies?.Cypher;
