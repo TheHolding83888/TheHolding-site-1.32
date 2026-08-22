@@ -1,7 +1,8 @@
-/* The Holding · Rewards Received lifecycle adapter · v0.1.2
+/* The Holding · Rewards Received lifecycle adapter · v0.2.0
  * Presentation only. Reads canonical /companies/rewards-data.json and appends a
  * separate Received history section to Company Passports when onchain evidence exists.
- * Received never changes current Claimable/Unclaimed headline totals.
+ * Received remains separate from Claimable/Unclaimed, while the Passport headline
+ * becomes a broader Tracked Rewards total (current accrued + proven Received).
  */
 (() => {
   'use strict';
@@ -61,11 +62,29 @@
     return snapshot?.companies?.[name] || null;
   }
 
+  function applyTrackedHeadline(item, c) {
+    if (!finite(c?.receivedIncomeUsd) || !(Number(c.receivedIncomeUsd) > 0)) return;
+    const accrued = finite(c?.totalUsd) ? Number(c.totalUsd) : 0;
+    const received = Number(c.receivedIncomeUsd);
+    const combined = accrued + received;
+    const incomplete = c?.totalUsdIsComplete === false;
+    const value = item.querySelector('.ipx-rewards-value');
+    const kicker = item.querySelector('.ipx-rewards-trigger .ipx-ledger-kicker');
+    const caption = item.querySelector('.ipx-rewards-caption span');
+    if (value) {
+      value.textContent = money2(combined) + (incomplete ? '+' : '');
+      value.classList.toggle('measuring', false);
+      value.dataset.trackedRewards = 'accrued-plus-received';
+      value.dataset.accruedUsd = String(accrued);
+      value.dataset.receivedUsd = String(received);
+    }
+    if (kicker) kicker.textContent = lang() === 'ru' ? 'Отслеживаемые rewards' : 'Tracked Rewards';
+    if (caption) caption.textContent = lang() === 'ru' ? 'Накоплено + получено ончейн' : 'Accrued + Received onchain';
+  }
+
   function fingerprintFor(c, rows) {
     return JSON.stringify([
-      lang(),
-      c?.receivedIncomeUsd,
-      c?.receivedIncomeTransferCount,
+      lang(),c?.totalUsd,c?.totalUsdIsComplete,c?.receivedIncomeUsd,c?.receivedIncomeTransferCount,
       ...rows.map(row => [row.portfolio, row.recipient, row.symbol, row.amount, row.usdValue, row.transferCount, row.throughBlock])
     ]);
   }
@@ -107,6 +126,7 @@
       return false;
     }
 
+    applyTrackedHeadline(item, c);
     const fingerprint = fingerprintFor(c, rows);
     if (existing?.dataset?.receivedFingerprint === fingerprint) return true;
     existing?.remove();
@@ -147,7 +167,7 @@
       renderAll();
       const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.1.2-40acres-received-history', renderAll };
+      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.2.0-tracked-rewards-plus-received', renderAll };
     } catch (err) {
       console.warn('[Rewards Received]', err && err.message ? err.message : err);
     }
