@@ -1,4 +1,4 @@
-/* The Holding · Rewards Received lifecycle adapter · v0.1
+/* The Holding · Rewards Received lifecycle adapter · v0.1.1
  * Presentation only. Reads canonical /companies/rewards-data.json and appends a
  * separate Received history section to Company Passports when onchain evidence exists.
  * Received never changes current Claimable/Unclaimed headline totals.
@@ -10,6 +10,7 @@
   const URL = '/companies/rewards-data.json';
   let snapshot = null;
   let loading = null;
+  let renderQueued = false;
 
   const lang = () => (document.documentElement.lang || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
   const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
@@ -54,22 +55,37 @@
     return snapshot?.companies?.[name] || null;
   }
 
+  function fingerprintFor(c, rows) {
+    return JSON.stringify([
+      lang(),
+      c?.receivedIncomeUsd,
+      c?.receivedIncomeTransferCount,
+      ...rows.map(row => [row.portfolio, row.recipient, row.symbol, row.amount, row.usdValue, row.transferCount, row.throughBlock])
+    ]);
+  }
+
   function renderItem(item) {
     const name = item?.dataset?.nm;
     const c = companyState(name);
     const received = Array.isArray(c?.receivedIncome) ? c.receivedIncome.filter(x => x && x.state === 'Received') : [];
     const panel = item?.querySelector('.ipx-rewards-panel');
     if (!panel) return false;
-    panel.querySelector('.ipx-received-section')?.remove();
-    if (!received.length) return false;
-
+    const existing = panel.querySelector('.ipx-received-section');
     const rows = received.filter(x => Number(x.transferCount || 0) > 0 || Number(x.amount || 0) > 0);
-    if (!rows.length) return false;
+    if (!rows.length) {
+      existing?.remove();
+      return false;
+    }
+
+    const fingerprint = fingerprintFor(c, rows);
+    if (existing?.dataset?.receivedFingerprint === fingerprint) return true;
+    existing?.remove();
     ensureStyle();
 
     const section = document.createElement('div');
     section.className = 'ipx-received-section';
     section.dataset.receivedLifecycle = 'onchain-proven';
+    section.dataset.receivedFingerprint = fingerprint;
     const totalUsd = finite(c.receivedIncomeUsd) ? Number(c.receivedIncomeUsd) : null;
     section.innerHTML = `<div class="ipx-received-head"><div class="ipx-received-title">${lang() === 'ru' ? 'Получено · история' : 'Received · History'}</div><div class="ipx-received-total">${totalUsd === null ? '' : money2(totalUsd)}</div></div>`;
 
@@ -96,13 +112,22 @@
     document.querySelectorAll('.ib-item[data-nm]').forEach(renderItem);
   }
 
+  function queueRender() {
+    if (renderQueued) return;
+    renderQueued = true;
+    requestAnimationFrame(() => {
+      renderQueued = false;
+      renderAll();
+    });
+  }
+
   async function start() {
     try {
       await load();
       renderAll();
-      const observer = new MutationObserver(() => renderAll());
+      const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.1-40acres-received-history', renderAll };
+      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.1.1-40acres-received-history', renderAll };
     } catch (err) {
       console.warn('[Rewards Received]', err && err.message ? err.message : err);
     }
