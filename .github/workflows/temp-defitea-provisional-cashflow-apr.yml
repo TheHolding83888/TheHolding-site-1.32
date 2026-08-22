@@ -1,0 +1,61 @@
+name: TEMP Defitea Provisional Cash-Flow APR
+
+on:
+  push:
+    branches:
+      - reporting/defitea-provisional-cashflow-apr-20260822
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          ref: reporting/defitea-provisional-cashflow-apr-20260822
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Patch provisional Defitea APR semantics
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          engine = Path('reporting/reporting-engine.mjs')
+          s = engine.read_text(encoding='utf-8')
+          old = """    const monthlyYield=averageTvl>0?cash/averageTvl*100:NaN;\n    out[key]={\n      month:key,label:monthLabel(key),status:isCurrent?'provisional':(partial?'final-reference-partial':'final-reference'),mode:'reference-model',\n      cashFlowUsd:round(cash,2),referenceCashFlowUsd:round(cash,2),observedReferenceCashFlowUsd:round(observed,2),normalizationFactor:round(normalization,6),\n      monthlyYieldPct:Number.isFinite(monthlyYield)?round(monthlyYield,4):null,\n      annualizedAprPct:Number.isFinite(isCurrent?weightedApr:monthlyYield*12)?round(isCurrent?weightedApr:monthlyYield*12,4):null,\n      averageReferenceAprPct:round(weightedApr,4),averageTvlUsd:round(averageTvl,2),sampleDays:uniqueDays,expectedDays,sampleCoveragePct:round(coverage,2),partialPeriod:partial,\n"""
+          new = """    const monthlyYield=averageTvl>0?cash/averageTvl*100:NaN;\n    const observedYield=averageTvl>0?observed/averageTvl*100:NaN;\n    // Keep the APR column semantically consistent across closed and provisional months.\n    // Closed months annualise the full-month cash-flow yield; the live month annualises\n    // only the actually observed cash-flow period and does not substitute Reference APR.\n    const cashFlowAnnualizedApr=isCurrent\n      ? (uniqueDays>0?observedYield*365/uniqueDays:NaN)\n      : monthlyYield*12;\n    out[key]={\n      month:key,label:monthLabel(key),status:isCurrent?'provisional':(partial?'final-reference-partial':'final-reference'),mode:'reference-model',\n      cashFlowUsd:round(cash,2),referenceCashFlowUsd:round(cash,2),observedReferenceCashFlowUsd:round(observed,2),normalizationFactor:round(normalization,6),\n      monthlyYieldPct:Number.isFinite(monthlyYield)?round(monthlyYield,4):null,\n      annualizedAprPct:Number.isFinite(cashFlowAnnualizedApr)?round(cashFlowAnnualizedApr,4):null,\n      averageReferenceAprPct:round(weightedApr,4),averageTvlUsd:round(averageTvl,2),sampleDays:uniqueDays,expectedDays,sampleCoveragePct:round(coverage,2),partialPeriod:partial,\n"""
+          if s.count(old) != 1:
+              raise SystemExit(f'engine target count={s.count(old)}')
+          s = s.replace(old, new, 1)
+          engine.write_text(s, encoding='utf-8')
+
+          val = Path('reporting/reporting-engine-validation.mjs')
+          v = val.read_text(encoding='utf-8')
+          marker = """assert.match(firstAgg.note,/no income is fabricated/i);\n\n// A later closed month may normalize an isolated missed daily run, preserving\n"""
+          addition = """assert.match(firstAgg.note,/no income is fabricated/i);\n\n// A live partial month must annualise observed cash-flow yield, not substitute\n// the weighted Reference APR shown separately as averageReferenceAprPct.\nconst livePartial=[\n  {date:'2026-08-09',totalValueUsd:100,referenceApr:20,modeledDailyCashFlowUsd:1},\n  {date:'2026-08-10',totalValueUsd:100,referenceApr:20,modeledDailyCashFlowUsd:1}\n];\nconst liveAgg=aggregateDefiteaMonths(livePartial,new Date('2026-08-10T06:07:00Z'))['2026-08'];\nassert.equal(liveAgg.status,'provisional');\nassert.equal(liveAgg.averageReferenceAprPct,20);\nassert.equal(liveAgg.monthlyYieldPct,2);\nassert.equal(liveAgg.annualizedAprPct,365);\nassert.notEqual(liveAgg.annualizedAprPct,liveAgg.averageReferenceAprPct);\n\n// A later closed month may normalize an isolated missed daily run, preserving\n"""
+          if v.count(marker) != 1:
+              raise SystemExit(f'validation target count={v.count(marker)}')
+          v = v.replace(marker, addition, 1)
+          val.write_text(v, encoding='utf-8')
+
+          wf = Path('.github/workflows/temp-defitea-provisional-cashflow-apr.yml')
+          wf.unlink()
+          PY
+      - name: Validate and publish branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/reporting-engine.mjs
+          node reporting/reporting-engine-validation.mjs
+          git diff --check
+          test ! -e .github/workflows/temp-defitea-provisional-cashflow-apr.yml
+          git config user.name "The Holding Reporting"
+          git config user.email "reporting@theholding.ai"
+          git add -A
+          git commit -m "reporting: align live Defitea cash-flow APR semantics"
+          git push origin HEAD:reporting/defitea-provisional-cashflow-apr-20260822
