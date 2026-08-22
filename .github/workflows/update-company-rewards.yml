@@ -245,6 +245,7 @@ jobs:
           const defReceived=(def?.receivedIncome||[]).filter(x=>x.route==='forty-acres-velodrome-received'&&x.state==='Received');
           if(!received||received.executionAuthority!=='none'||received.claimableIsolation!==true||received.unknownIsNotZero!==true)throw new Error('40 Acres Received authority/isolation guard missing');
           if(!received.discoveredCompanies?.includes('defitea.eth')||defReceived.length<1)throw new Error('Defitea 40 Acres Received route missing');
+          if(!(Number(def?.receivedIncomeTransferCount)>0)||!(Number(def?.receivedIncomeUsd)>0))throw new Error('Defitea August Received proof is empty');
           if(defReceived.some(x=>x.claimableApplicable!==false||x.includedInClaimableTotal!==false||x.includedInMeasuredEarnedTotal!==false))throw new Error('Received leaked across accounting boundary');
           if((def?.rewards||[]).some(x=>x.classification==='received'||x.state==='Received'))throw new Error('Received leaked into current Claimable rewards array');
           if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none'||d.diagnostics?.rewardsPassportHygiene?.executionAuthority!=='none'||d.diagnostics?.company009BeefyCvxCrv?.executionAuthority!=='none')throw new Error('Rewards authority drift');
