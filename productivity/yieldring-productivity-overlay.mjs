@@ -1,12 +1,19 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { verifyFxnLockerApr } from './fxn-locker-apr-guard.mjs';
 
 const ROOT=process.cwd();
 const DATA=path.join(ROOT,'companies/productivity-data.json');
 const STATE=path.join(ROOT,'companies/yieldring-canonical-state.json');
 const round=(n,d=6)=>{const p=10**d;return Math.round(Number(n)*p)/p;};
 const fail=m=>{throw new Error(m);};
+
+// Canonical post-collection publication guard. Both Unified Capital and the
+// manual/recovery Productivity writer execute this overlay after the base
+// collector, so an ambiguous/mismatched f(x) Locker APR fails closed before
+// either path can publish the refreshed Productivity snapshot.
+await verifyFxnLockerApr();
 
 const data=JSON.parse(fs.readFileSync(DATA,'utf8'));
 const state=JSON.parse(fs.readFileSync(STATE,'utf8'));
