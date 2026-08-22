@@ -1,0 +1,40 @@
+name: Diagnose Unified Capital Production Runs
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/diagnose-unified-capital-runs.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Inspect canonical Unified Capital run history
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== Recent Unified Capital runs ==='
+          gh run list \
+            --workflow unified-capital-refresh.yml \
+            --limit 12 \
+            --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle
+
+          latest="$(gh run list --workflow unified-capital-refresh.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
+          if [ -z "$latest" ]; then
+            echo 'No Unified Capital runs found.'
+            exit 1
+          fi
+
+          echo "=== Latest run metadata: $latest ==="
+          gh run view "$latest" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
+
+          echo "=== Latest failed logs (empty if not failed) ==="
+          gh run view "$latest" --log-failed || true
