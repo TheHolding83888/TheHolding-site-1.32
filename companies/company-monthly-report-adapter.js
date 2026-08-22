@@ -1,4 +1,4 @@
-/* The Holding · Company Monthly Reports adapter · v0.2.0
+/* The Holding · Company Monthly Reports adapter · v0.2.1
  * Presentation only. Reads canonical /reporting/reporting-data.json.
  * Initial scope: defitea.eth. Historical months are rendered from the existing
  * Reporting archive; no accounting, TVL, Rewards methodology or execution authority changes.
@@ -77,6 +77,14 @@
     return includeYear ? `${base} ’${String(year).slice(-2)}` : base;
   }
 
+  function fitCoreValue(el) {
+    if (!el) return;
+    const length = String(el.textContent || '').replace(/\s/g, '').length;
+    el.classList.toggle('is-compact', length >= 9 && length < 12);
+    el.classList.toggle('is-dense', length >= 12 && length < 15);
+    el.classList.toggle('is-ultra', length >= 15);
+  }
+
   async function load() {
     if (snapshot) return snapshot;
     if (loading) return loading;
@@ -108,7 +116,7 @@
       .th-mr-kicker{grid-area:kicker;color:var(--text-3);font-size:.52rem;font-weight:700;letter-spacing:.145em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .th-mr-badge{grid-area:badge;justify-self:end;display:inline-flex;align-items:center;min-height:19px;padding:.14rem .38rem;border:1px solid rgba(10,124,78,.12);border-radius:999px;background:rgba(10,124,78,.05);color:var(--green);font-size:.49rem;font-weight:700;letter-spacing:.055em;text-transform:uppercase;white-space:nowrap}
       .th-mr-value-wrap{grid-area:value;min-width:0;display:flex;align-items:baseline;gap:.38rem}
-      .th-mr-value{font-family:'Cormorant Garamond',serif;font-size:1.34rem;line-height:1;font-weight:600;letter-spacing:-.02em;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
+      .th-mr-value{font-family:'Cormorant Garamond',serif;font-size:1.34rem;line-height:1.08;padding-bottom:.025em;font-weight:600;letter-spacing:-.02em;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
       .th-mr-value-label{color:var(--text-3);font-size:.5rem;white-space:nowrap}
       .th-mr-meta{grid-area:meta;justify-self:end;display:inline-flex;align-items:center;gap:.36rem;color:var(--text-2);font-size:.53rem;font-weight:650;white-space:nowrap}
       .th-mr-chevron{width:.82rem;height:.82rem;color:var(--gold);transition:transform .22s ease;flex:0 0 auto}
@@ -134,9 +142,12 @@
       .th-mr-month.active{color:var(--gold);border-color:rgba(168,132,44,.22);background:rgba(168,132,44,.055);box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
 
       .th-mr-core{display:grid;grid-template-columns:1.12fr .88fr;gap:.5rem;padding:.82rem 0 .5rem}
-      .th-mr-core-card{min-width:0;padding:.78rem .74rem .72rem;border:1px solid rgba(15,23,42,.06);border-radius:14px;background:rgba(255,255,255,.69)}
+      .th-mr-core-card{min-width:0;padding:.78rem .74rem .78rem;border:1px solid rgba(15,23,42,.06);border-radius:14px;background:rgba(255,255,255,.69);overflow:hidden}
       .th-mr-core-label{color:var(--text-3);font-size:.48rem;font-weight:700;letter-spacing:.095em;text-transform:uppercase;line-height:1.2}
-      .th-mr-core-value{margin-top:.34rem;font-family:'Cormorant Garamond',serif;font-size:clamp(1.54rem,4.2vw,2.08rem);font-weight:600;line-height:.94;letter-spacing:-.028em;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .th-mr-core-value{margin-top:.3rem;min-height:1.14em;padding:.01em 0 .08em;font-family:'Cormorant Garamond',serif;font-size:clamp(1.54rem,4.2vw,2.08rem);font-weight:600;line-height:1.08;letter-spacing:-.028em;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:visible;text-overflow:clip}
+      .th-mr-core-value.is-compact{font-size:clamp(1.36rem,3.65vw,1.78rem)}
+      .th-mr-core-value.is-dense{font-size:clamp(1.18rem,3.15vw,1.52rem);letter-spacing:-.034em}
+      .th-mr-core-value.is-ultra{font-size:clamp(1.04rem,2.75vw,1.3rem);letter-spacing:-.038em}
       .th-mr-core-card:first-child .th-mr-core-value{color:var(--gold)}
       .th-mr-context{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-width:0;padding:.63rem .18rem .7rem;border-bottom:1px solid var(--line)}
       .th-mr-context-label{min-width:0;color:var(--text-3);font-size:.51rem;font-weight:650;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -163,9 +174,12 @@
         .th-mr-title{font-size:1.38rem}
         .th-mr-months{margin:0 -.08rem;padding-left:.08rem;padding-right:.08rem}
         .th-mr-core{gap:.42rem;padding-top:.72rem}
-        .th-mr-core-card{padding:.68rem .62rem .64rem}
+        .th-mr-core-card{padding:.68rem .62rem .7rem}
         .th-mr-core-label{font-size:.45rem}
         .th-mr-core-value{font-size:clamp(1.42rem,7vw,1.92rem)}
+        .th-mr-core-value.is-compact{font-size:clamp(1.28rem,6.1vw,1.66rem)}
+        .th-mr-core-value.is-dense{font-size:clamp(1.12rem,5.35vw,1.45rem)}
+        .th-mr-core-value.is-ultra{font-size:clamp(1rem,4.75vw,1.24rem)}
         .th-mr-context{padding:.58rem .12rem .64rem}
         .th-mr-context-label{font-size:.47rem}
         .th-mr-context-value{font-size:.64rem}
@@ -180,8 +194,11 @@
         .th-mr-meta{font-size:.46rem}
         .th-monthly-report-panel{left:10px;right:10px;padding:.66rem}
         .th-mr-core{grid-template-columns:1fr 1fr;gap:.34rem}
-        .th-mr-core-card{padding:.62rem .54rem .58rem}
+        .th-mr-core-card{padding:.62rem .54rem .64rem}
         .th-mr-core-value{font-size:1.42rem}
+        .th-mr-core-value.is-compact{font-size:1.24rem}
+        .th-mr-core-value.is-dense{font-size:1.1rem}
+        .th-mr-core-value.is-ultra{font-size:.98rem}
       }
       @media(prefers-reduced-motion:reduce){.th-monthly-report-panel,.th-mr-chevron,.th-mr-backdrop,.th-mr-link svg{transition:none!important}}
     `;
@@ -201,7 +218,9 @@
   function coreMetric(label, value) {
     const card = node('div', 'th-mr-core-card');
     card.appendChild(node('div', 'th-mr-core-label', label));
-    card.appendChild(node('div', 'th-mr-core-value', value));
+    const valueEl = node('div', 'th-mr-core-value', value);
+    fitCoreValue(valueEl);
+    card.appendChild(valueEl);
     return card;
   }
 
@@ -221,8 +240,14 @@
     const generated = panel.querySelector('[data-th-mr-generated]');
     const yieldEl = panel.querySelector('[data-th-mr-yield]');
     const tvl = panel.querySelector('[data-th-mr-tvl]');
-    if (generated) generated.textContent = money(generatedUsd(month));
-    if (yieldEl) yieldEl.textContent = pct(month.monthlyYieldPct);
+    if (generated) {
+      generated.textContent = money(generatedUsd(month));
+      fitCoreValue(generated);
+    }
+    if (yieldEl) {
+      yieldEl.textContent = pct(month.monthlyYieldPct);
+      fitCoreValue(yieldEl);
+    }
     if (tvl) tvl.textContent = money0(month.averageTvlUsd);
 
     panel.querySelectorAll('.th-mr-month').forEach(btn => {
@@ -233,7 +258,7 @@
     });
     panel.setAttribute('aria-label', `${copy.reports} · ${monthLabel(key)}`);
 
-    const active = panel.querySelector(`.th-mr-month[data-month="${CSS.escape(key)}"]`);
+    const active = Array.from(panel.querySelectorAll('.th-mr-month')).find(btn => btn.dataset.month === key);
     if (active) active.scrollIntoView({ behavior: focusMonth ? 'smooth' : 'auto', block: 'nearest', inline: 'nearest' });
   }
 
@@ -473,7 +498,7 @@
       bindGlobalClose();
       const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.2.0-defitea-monthly-archive', render };
+      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.2.1-defitea-monthly-archive-numeric-rhythm', render };
     } catch (err) {
       console.warn('[Monthly Reports]', err && err.message ? err.message : err);
     }
