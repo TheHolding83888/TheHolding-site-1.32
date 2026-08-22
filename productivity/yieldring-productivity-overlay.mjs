@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { verifyFxnLockerApr } from './fxn-locker-apr-guard.mjs';
+import { synchronizeFxnLockerApr, verifyFxnLockerApr } from './fxn-locker-apr-guard.mjs';
 
 const ROOT=process.cwd();
 const DATA=path.join(ROOT,'companies/productivity-data.json');
@@ -9,15 +9,19 @@ const STATE=path.join(ROOT,'companies/yieldring-canonical-state.json');
 const round=(n,d=6)=>{const p=10**d;return Math.round(Number(n)*p)/p;};
 const fail=m=>{throw new Error(m);};
 
-// Canonical post-collection publication guard. Both Unified Capital and the
+// Canonical post-collection publication authority. Both Unified Capital and the
 // manual/recovery Productivity writer execute this overlay after the base
-// collector, so an ambiguous/mismatched f(x) Locker APR fails closed before
-// either path can publish the refreshed Productivity snapshot.
-// The one explicit bypass is reserved for deterministic projection validation,
-// which does not install browser dependencies or publish data. CI separately
-// proves that no production writer sets this marker.
+// collector. The exact official FXN Locker APR repairs only the current
+// materialized snapshot, then an independent byte-level verification runs
+// before either path can publish. Historical snapshots remain immutable.
+// The explicit bypass is reserved for deterministic non-publishing validators;
+// CI proves that no production writer sets this marker.
 const deterministicValidation=process.env.FXN_LOCKER_APR_GUARD_MODE==='deterministic-validation';
-if(!deterministicValidation) await verifyFxnLockerApr();
+let fxnAuthority=null;
+if(!deterministicValidation){
+  fxnAuthority=await synchronizeFxnLockerApr();
+  await verifyFxnLockerApr({exactApr:fxnAuthority.exactApr});
+}
 
 const data=JSON.parse(fs.readFileSync(DATA,'utf8'));
 const state=JSON.parse(fs.readFileSync(STATE,'utf8'));
@@ -64,4 +68,4 @@ if(Array.isArray(history)&&history.length){
 data.diagnostics=data.diagnostics||{};
 data.diagnostics.yieldRing={version:'0.1-canonical-capital-and-relay-overlay',source:'companies/yieldring-canonical-state.json',bitcoinQuantity:Number(state.capital.bitcoin.quantity),bitcoinCostBasisUsd:Number(state.capital.bitcoin.costBasisUsd),aeroQuantity:target,aeroCostBasisUsd:Number(state.capital.aerodrome.costBasisUsd),relayMode:state.aerodromeRelay.mode,managerId:state.aerodromeRelay.managerId,managerAddress:state.aerodromeRelay.managerAddress,expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,rewardsPresentation:state.aerodromeRelay.rewardsPresentation,evidenceStatus:state.aerodromeRelay.evidenceStatus,executionAuthority:'none'};
 fs.writeFileSync(DATA,JSON.stringify(data,null,2)+'\n');
-console.log('YieldRing Productivity overlay PASS',{aprLatest:company.aprLatest,productiveValue:company.productiveValue,coverage:company.coverage,aeroUnits:aero.units,relayMode:state.aerodromeRelay.mode,executionAuthority:'none',fxnGuard:deterministicValidation?'deterministic-validation-bypass':'verified-live'});
+console.log('YieldRing Productivity overlay PASS',{aprLatest:company.aprLatest,productiveValue:company.productiveValue,coverage:company.coverage,aeroUnits:aero.units,relayMode:state.aerodromeRelay.mode,executionAuthority:'none',fxnAuthority:deterministicValidation?'deterministic-validation-bypass':fxnAuthority});
