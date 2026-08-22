@@ -41,6 +41,8 @@ jobs:
           NODE
 
       - name: Simulate collector v1.15 to final v1.16 chain
+        env:
+          FXN_LOCKER_APR_GUARD_MODE: deterministic-validation
         run: |
           set -euo pipefail
           cp companies/productivity-data.json /tmp/productivity-data.original.json
