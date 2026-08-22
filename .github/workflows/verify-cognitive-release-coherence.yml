@@ -4,11 +4,14 @@ on:
   pull_request:
     paths:
       - 'intelligence/brain-upstream-guard.mjs'
+      - 'intelligence/brain-reasoning-engine.mjs'
+      - 'intelligence/brain-policy.json'
       - 'intelligence/brain-chatgpt-bridge.mjs'
       - 'intelligence/brain-chatgpt-bridge-policy.json'
       - 'intelligence/brain-chatgpt-bridge-schema.json'
       - 'intelligence/cognitive-stack-verifier.mjs'
       - 'intelligence/cognitive-release-guard.mjs'
+      - 'security/security-sentinel.mjs'
       - 'intelligence/cognitive-stack-release.json'
       - '.github/workflows/update-brain-intelligence.yml'
       - '.github/workflows/update-brain-chatgpt-bridge.yml'
@@ -49,11 +52,14 @@ jobs:
           const files = new Set((manifest.files || []).map(row => row.file));
           const required = [
             'intelligence/brain-upstream-guard.mjs',
+            'intelligence/brain-reasoning-engine.mjs',
+            'intelligence/brain-policy.json',
             'intelligence/brain-chatgpt-bridge.mjs',
             'intelligence/brain-chatgpt-bridge-policy.json',
             'intelligence/brain-chatgpt-bridge-schema.json',
             'intelligence/cognitive-stack-verifier.mjs',
             'intelligence/cognitive-release-guard.mjs',
+            'security/security-sentinel.mjs',
             '.github/workflows/update-brain-intelligence.yml',
             '.github/workflows/update-brain-chatgpt-bridge.yml',
             '.github/workflows/refresh-cognitive-stack.yml',
