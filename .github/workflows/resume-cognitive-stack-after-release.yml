@@ -18,7 +18,7 @@ concurrency:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     env:
       RECOVERY_PUSH_AT: ${{ github.event.head_commit.timestamp }}
     steps:
@@ -175,3 +175,36 @@ jobs:
           echo "memory_run_id=$memory_run_id" >> "$GITHUB_OUTPUT"
           echo "Awaiting recovery-dispatched Project Memory run $memory_run_id"
           gh run watch "$memory_run_id" --exit-status --interval 5
+
+      - name: Dispatch and await Intelligence Progress after Project Memory success
+        id: progress
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          before_id="$(gh run list --workflow update-intelligence-progress.yml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Project Memory run ${{ steps.memory.outputs.memory_run_id }} succeeded; dispatching Intelligence Progress on canonical main."
+          gh workflow run update-intelligence-progress.yml --ref main
+
+          progress_run_id=""
+          for attempt in $(seq 1 40); do
+            progress_run_id="$(
+              gh run list \
+                --workflow update-intelligence-progress.yml \
+                --event workflow_dispatch \
+                --limit 10 \
+                --json databaseId,createdAt \
+                --jq "[.[] | select((.databaseId | tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty"
+            )"
+            if [ -n "$progress_run_id" ]; then break; fi
+            sleep 5
+          done
+          if [ -z "$progress_run_id" ]; then
+            echo 'Could not identify the recovery-dispatched Intelligence Progress run.'
+            exit 1
+          fi
+
+          echo "progress_run_id=$progress_run_id" >> "$GITHUB_OUTPUT"
+          echo "Awaiting recovery-dispatched Intelligence Progress run $progress_run_id"
+          gh run watch "$progress_run_id" --exit-status --interval 5
