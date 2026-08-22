@@ -305,3 +305,14 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
 })();
+
+/* The Holding · Company Monthly Report loader · v0.1.0 */
+(() => {
+  'use strict';
+  if (document.querySelector('script[data-th-monthly-report]')) return;
+  const s = document.createElement('script');
+  s.src = '/companies/company-monthly-report-adapter.js';
+  s.defer = true;
+  s.dataset.thMonthlyReport = 'true';
+  document.head.appendChild(s);
+})();
