@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
+import { Contract, JsonRpcProvider, formatUnits, getAddress } from 'ethers';
 
 const OUTPUT = process.env.REWARDS_OUTPUT || path.resolve('companies/rewards-data.json');
 const GOVERNANCE = getAddress('0x807DEf5E7d057DF05C796F4bc75C3Fe82Bd6EeE1');
@@ -52,7 +52,7 @@ async function fetchJson(url, timeoutMs = 12000) {
 }
 
 async function fetchPrices() {
-  const keys = [`coingecko:ethereum`, `ethereum:${LUSD.toLowerCase()}`];
+  const keys = ['coingecko:ethereum', `ethereum:${LUSD.toLowerCase()}`];
   try {
     const json = await fetchJson(`https://coins.llama.fi/prices/current/${keys.join(',')}`);
     const eth = Number(json?.coins?.[keys[0]]?.price);
@@ -90,7 +90,11 @@ function recomputeCompany(c) {
   const completeSources = sources.filter(s => s.status === 'ok').length;
   const measuredSources = sources.filter(s => s.status === 'ok' || s.status === 'partial').length;
   const unpriced = rewards.filter(r => !finite(r.usdValue)).length;
-  c.totalUsd = round(rewards.reduce((sum, r) => sum + (finite(r.usdValue) ? Number(r.usdValue) : 0), 0), 6);
+  const claimable = round(rewards.reduce((sum, r) => sum + (finite(r.usdValue) ? Number(r.usdValue) : 0), 0), 6);
+
+  c.totalUsd = claimable;
+  if ('knownAccruedUsd' in c) c.knownAccruedUsd = claimable;
+  if ('claimableUsd' in c) c.claimableUsd = claimable;
   c.totalUsdIsComplete = routeCount > 0 && completeSources === routeCount && unpriced === 0;
   c.routeCoverage = routeCount ? round(measuredSources / routeCount, 6) : 0;
   c.completeRouteCoverage = routeCount ? round(completeSources / routeCount, 6) : 0;
@@ -100,6 +104,22 @@ function recomputeCompany(c) {
   c.unpricedRewards = unpriced;
   c.rewardTokens = tokenSummary(rewards);
   c.status = c.totalUsdIsComplete ? 'ok' : measuredSources > 0 ? 'partial' : 'warming';
+
+  if ('measuredEmbeddedUsd' in c || Array.isArray(c.embeddedIncome)) {
+    const embedded = (c.embeddedIncome || []).reduce((sum, row) => sum + (finite(row.usdValue) ? Number(row.usdValue) : 0), 0);
+    c.measuredEmbeddedUsd = round(embedded, 6);
+    c.measuredEarnedUsd = round(claimable + embedded, 6);
+    const symbols = new Set(rewards.map(r => r.symbol).filter(Boolean));
+    for (const row of c.embeddedIncome || []) if (row.symbol) symbols.add(row.symbol);
+    c.measuredEarnedTokens = [...symbols];
+    if (c.measuredEarnedUsdIsComplete !== true) c.measuredEarnedUsdIsComplete = false;
+  }
+
+  if (c.settlement && typeof c.settlement === 'object') {
+    if ('claimableUsd' in c.settlement) c.settlement.claimableUsd = claimable;
+    if ('knownAccruedUsd' in c.settlement) c.settlement.knownAccruedUsd = claimable;
+    if ('totalUsd' in c.settlement) c.settlement.totalUsd = claimable;
+  }
 }
 
 const data = JSON.parse(fs.readFileSync(OUTPUT, 'utf8'));
@@ -117,8 +137,7 @@ try {
 
   for (const wallet of wallets) {
     const owner = getAddress(wallet.address);
-    const direct = { wallet: owner, walletAlias: wallet.alias || null, account: owner, accountKind: 'direct-v1', stakedLqty: null };
-    accountReads.push(direct);
+    accountReads.push({ wallet: owner, walletAlias: wallet.alias || null, account: owner, accountKind: 'direct-v1', stakedLqty: null });
 
     try {
       const proxy = getAddress(await governance.deriveUserProxyAddress(owner));
