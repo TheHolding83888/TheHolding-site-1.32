@@ -47,6 +47,8 @@ jobs:
           console.log('YieldRing canonical contract PASS');
           NODE
       - name: Validate deterministic projections
+        env:
+          FXN_LOCKER_APR_GUARD_MODE: deterministic-validation
         run: |
           set -euo pipefail
           node --check companies/yieldring-public-capital-projection.mjs
