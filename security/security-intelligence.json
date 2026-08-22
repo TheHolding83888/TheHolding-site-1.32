@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-22T12:10:54.971Z",
+  "generatedAt": "2026-08-22T12:14:22.973Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 39,
+    "medium": 40,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 544,
-    "bytesScanned": 11379873,
+    "bytesScanned": 11383288,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 20 Aug 2026 05:29:19 GMT",
+        "lastModified": "Sat, 22 Aug 2026 06:15:45 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,36 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "a7aa5ecdd43a21cf3d61a5e59755e3f60396e4afb3c760d5ce4860ffe3326600",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/resume-cognitive-stack-after-release.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/resume-cognitive-stack-after-release.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "9e1e2ab3198e199f37881adb3c6405060c2c02f51444a9d8b5a51abfebd39cc1",
+          "currentSha256": "4601322aeb0b03381bd12c857629982098009e2532f3726ebc7f177f764bbb28"
+        }
+      },
+      {
+        "id": "9e2d3b721a46d14a96235a943ef2778b13ef3563a0f2db52631a8b7ecc30381d",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-cognitive-recovery-order.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-cognitive-recovery-order.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "aff3814837d53e13c5a007758dfb461771257da529c0184368a3f9688d6e0f75",
+          "currentSha256": "bd9d1ecb117279f09734e9d82e5dd8b71a82c1142529915162a5eb1628651ff4"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "cf5239c2f83e9debfb7ae129055603adcf9baa608f751538306040798bcaf644",
         "severity": "medium",
@@ -70,8 +100,7 @@
           "currentSha256": "76ebcd5b0caf2d12901507f2f5d8b0fcfe6ddf9225bbe880373b28d2bf6c4996"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -97,17 +126,31 @@
       "evidence": null
     },
     {
-      "id": "cf5239c2f83e9debfb7ae129055603adcf9baa608f751538306040798bcaf644",
+      "id": "a7aa5ecdd43a21cf3d61a5e59755e3f60396e4afb3c760d5ce4860ffe3326600",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/verify-intelligence-progress-live-integrity.yml",
+      "file": ".github/workflows/resume-cognitive-stack-after-release.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-intelligence-progress-live-integrity.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/resume-cognitive-stack-after-release.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "088e86c19c046031a52c1394dbbaf6181ed878f5f4f74682bc5c0b92da987fde",
-        "currentSha256": "76ebcd5b0caf2d12901507f2f5d8b0fcfe6ddf9225bbe880373b28d2bf6c4996"
+        "previousSha256": "9e1e2ab3198e199f37881adb3c6405060c2c02f51444a9d8b5a51abfebd39cc1",
+        "currentSha256": "4601322aeb0b03381bd12c857629982098009e2532f3726ebc7f177f764bbb28"
+      }
+    },
+    {
+      "id": "9e2d3b721a46d14a96235a943ef2778b13ef3563a0f2db52631a8b7ecc30381d",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-cognitive-recovery-order.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-cognitive-recovery-order.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "aff3814837d53e13c5a007758dfb461771257da529c0184368a3f9688d6e0f75",
+        "currentSha256": "bd9d1ecb117279f09734e9d82e5dd8b71a82c1142529915162a5eb1628651ff4"
       }
     },
     {
@@ -721,12 +764,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "377882dbfaa9d9e8fd76611696af1e321945ab6ed5d254bc59b254703eed244d",
+    "snapshotHash": "21049bd45a4efddeb5d59f69e77ef6899e51140fb7e16b3e58edb4530a29e74e",
     "securityVault": {
-      "runCount": 407,
+      "runCount": 408,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-22T12-10-54-971Z-377882dbfa.json",
-      "latestRecordHash": "4ad27fbc2b10d895ab447e25981f4200eb7052b39c7c0fd5746db0c62276a6b2",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-22T12-14-22-973Z-21049bd45a.json",
+      "latestRecordHash": "46144e49e008bf1d34e60ec73ef2a3be9a03b5c87bfbd19e2cca34663e4a8a96",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
