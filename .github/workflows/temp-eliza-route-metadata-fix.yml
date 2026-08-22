@@ -1,15 +1,15 @@
 name: TEMP ELIZA Route Metadata Fix
 
 on:
-  pull_request:
-    branches: [main]
+  push:
+    branches:
+      - fix/market-data-eliza-route-metadata-failback-20260822
 
 permissions:
   contents: write
 
 jobs:
   patch:
-    if: github.head_ref == 'fix/market-data-eliza-route-metadata-failback-20260822'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -42,6 +42,7 @@ jobs:
           old = '''      source: UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE,
       quoteFeedContract: original?.quoteFeed?.contract || null,'''
           new = '''      source: UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE,
+      fee: observation?.fee ?? original?.fee ?? null,
       quoteAssetId: original?.quoteAssetId || null,
       feedQuote: original?.feedQuote || null,
       outputQuote: original?.outputQuote || null,
@@ -59,9 +60,8 @@ console.log('ELIZA V3 + Chainlink quote validation PASS', {'''
           insert = '''assert.equal(output.networks.bsc.onchainTokenDecimalsRead, true);
 
 // Failback contract: route identity must survive an unhealthy quote dependency.
-// The authority materializer validates route identity before it selects the
-// healthy onchain lane or the cached CoinGecko fallback. An RPC/feed failure
-// must therefore remain structurally reviewable instead of looking like route drift.
+// The authority materializer validates static route identity before selecting
+// the onchain lane or the bounded CoinGecko fallback.
 const failingFetch = async (url, options) => {
   const payload = JSON.parse(options.body);
   if (payload.some(x => x.method === 'eth_blockNumber')) {
@@ -89,7 +89,13 @@ console.log('ELIZA V3 + Chainlink quote validation PASS', {'''
           t = t.replace(marker, insert, 1)
           v.write_text(t, encoding='utf-8')
 
-          Path('.github/workflows/temp-eliza-route-metadata-fix.yml').unlink()
+          for name in [
+              '.github/workflows/temp-eliza-route-metadata-fix.yml',
+              '.github/temp-eliza-route-trigger.txt'
+          ]:
+              q = Path(name)
+              if q.exists():
+                  q.unlink()
           PY
       - name: Validate quoted-route failback contract
         shell: bash
