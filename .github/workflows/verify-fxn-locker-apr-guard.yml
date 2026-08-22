@@ -1,0 +1,48 @@
+name: Verify f(x) Locker APR Guard
+
+on:
+  pull_request:
+    paths:
+      - 'productivity/fxn-locker-apr-guard.mjs'
+      - 'productivity/fxn-locker-apr-guard-validation.mjs'
+      - 'productivity/run-productivity-with-fxn-guard.mjs'
+      - 'productivity/package.json'
+      - 'intelligence/capital-state/unified-capital-refresh.mjs'
+      - '.github/workflows/verify-fxn-locker-apr-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Validate syntax and exact-source parser
+        run: |
+          set -euo pipefail
+          node --check productivity/fxn-locker-apr-guard.mjs
+          node --check productivity/run-productivity-with-fxn-guard.mjs
+          node --check intelligence/capital-state/unified-capital-refresh.mjs
+          node productivity/fxn-locker-apr-guard-validation.mjs
+
+      - name: Verify both writer paths enforce the guard
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const pkg=JSON.parse(fs.readFileSync('productivity/package.json','utf8'));
+          const unified=fs.readFileSync('intelligence/capital-state/unified-capital-refresh.mjs','utf8');
+          if(pkg.scripts?.update!=='node run-productivity-with-fxn-guard.mjs')throw new Error('manual/recovery Productivity path bypasses f(x) guard');
+          if(!unified.includes("'run-productivity-with-fxn-guard.mjs'"))throw new Error('Unified Capital path bypasses f(x) guard');
+          console.log('f(x) guard writer-path enforcement PASS');
+          NODE
