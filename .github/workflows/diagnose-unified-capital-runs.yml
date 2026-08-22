@@ -1,4 +1,4 @@
-name: Diagnose Learning Production Runs
+name: Diagnose Cognitive Learning Handoff
 
 on:
   pull_request:
@@ -14,27 +14,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Inspect canonical Learning run history
+      - name: Inspect Cognitive and Learning run history
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          echo '=== Recent Learning runs ==='
-          gh run list \
-            --workflow update-learning-loop.yml \
-            --limit 12 \
-            --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle
-
-          latest="$(gh run list --workflow update-learning-loop.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
-          if [ -z "$latest" ]; then
-            echo 'No Learning runs found.'
-            exit 1
-          fi
-
-          echo "=== Latest Learning metadata: $latest ==="
-          gh run view "$latest" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
-
-          echo '=== Latest failed logs (empty if not failed) ==='
-          gh run view "$latest" --log-failed || true
+          for workflow in refresh-cognitive-stack.yml update-learning-loop.yml; do
+            echo "=== $workflow recent runs ==="
+            gh run list --workflow "$workflow" --limit 8 --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle
+            latest="$(gh run list --workflow "$workflow" --limit 1 --json databaseId --jq '.[0].databaseId')"
+            test -n "$latest"
+            echo "=== $workflow latest: $latest ==="
+            gh run view "$latest" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
+          done
