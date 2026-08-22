@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 /**
- * The Holding · Reporting Layer v1.1.0 · Defitea + Monetra
+ * The Holding · Reporting Layer v1.2 · Defitea + Monetra
  * -------------------------------------------------------
- * One lightweight daily reporting writer for two different income families.
+ * Daily reporting writer for two distinct reference-income families.
  *
  * Defitea:
- *   COMPANY_BOOK + one batched CoinGecko request + latest validated Reference APR
- *   -> daily productive TVL -> monthly reference cash-flow model.
+ *   canonical Defitea productive inventory + canonical selected Market Data
+ *   + exact Productivity coverage -> daily productive TVL
+ *   -> monthly reference cash-flow model.
  *
  * Monetra:
  *   fresh Stable Companies Index + Embedded Yield Ledger
@@ -16,31 +17,36 @@
  * IMPORTANT:
  * - Defitea Jan–Jul 2026 reported/realised history is immutable.
  * - Automated Defitea months are reference models, not claim accounting.
- * - Monetra monthly Generated Income is a reference model across the full stable
- *   strategy book. It is deliberately not presented as realised cash flow.
- * - Stable Price Effect / depeg movement is excluded from Monetra income.
- * - The Embedded Yield Ledger is retained as an audit/observed-income companion;
- *   it is not promoted to full-fund monthly income until comparability is complete.
+ * - Reporting never performs independent external market-price discovery.
+ * - Defitea daily publication fails closed unless all 11 canonical productive
+ *   positions have a selected canonical market price and an OK Reference APR.
+ * - vlCVX Union settlement is reconciliation metadata only. It is never added
+ *   on top of the convex_vlcvx Reference APR model.
+ * - The first autonomous tracking month is never backfilled or normalized
+ *   across unobserved days before tracking began.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import vm from 'node:vm';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
-const COMPANY_PAGE_FILE = process.env.COMPANY_PAGE_FILE || path.join(ROOT, 'companies', 'index.html');
+
+const DEFITEA_STATE_FILE = process.env.DEFITEA_STATE_FILE || path.join(ROOT, 'companies', 'defitea-canonical-state.json');
 const PRODUCTIVITY_DATA_FILE = process.env.PRODUCTIVITY_DATA_FILE || path.join(ROOT, 'companies', 'productivity-data.json');
+const MARKET_DATA_FILE = process.env.MARKET_DATA_FILE || path.join(ROOT, 'intelligence', 'market-data', 'market-data.json');
+const REWARDS_DATA_FILE = process.env.REWARDS_DATA_FILE || path.join(ROOT, 'companies', 'rewards-data.json');
 const STABLE_INDEX_DATA_FILE = process.env.STABLE_INDEX_DATA_FILE || path.join(ROOT, 'companies', 'stable-index-data.json');
 const EMBEDDED_LEDGER_FILE = process.env.EMBEDDED_LEDGER_FILE || path.join(ROOT, 'companies', 'embedded-yield-ledger.json');
 const REPORTING_DATA_FILE = process.env.REPORTING_DATA_FILE || path.join(ROOT, 'reporting', 'reporting-data.json');
 
 const DEFITEA = 'defitea.eth';
 const MONETRA = 'Monetra.eth';
-const REPORTING_VERSION = '1.1.0-dual-fund-monetra';
-const METHODOLOGY_VERSION = '1.1-dual-fund-daily-reference-model';
-const API_TIMEOUT_MS = 12000;
+const DEFITEA_CANONICAL_POSITION_COUNT = 11;
+const REPORTING_VERSION = '1.2.0-defitea-canonical-market-data';
+const METHODOLOGY_VERSION = '1.2-dual-fund-canonical-market-data-reference-model';
 const MAX_DAILY_SNAPSHOTS = 550;
 
 const LEGACY_DEFITEA_MONTHS = {
@@ -81,39 +87,87 @@ async function writeJson(file,data) {
   await fs.mkdir(path.dirname(file),{recursive:true});
   await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');
 }
-async function parseCompanyBook() {
-  const html = await fs.readFile(COMPANY_PAGE_FILE,'utf8');
-  const m = html.match(/const COMPANY_BOOK\s*=\s*(\{[\s\S]*?\n\};)/);
-  if (!m) throw new Error(`COMPANY_BOOK not found in ${COMPANY_PAGE_FILE}`);
-  return vm.runInNewContext('('+m[1].replace(/;\s*$/,'')+')',Object.create(null),{timeout:1000});
+function sameStringSet(a,b) {
+  if (a.length !== b.length) return false;
+  const aa=[...a].sort(), bb=[...b].sort();
+  return aa.every((x,i)=>x===bb[i]);
 }
-async function fetchJson(url, attempts=2) {
-  let last;
-  for (let i=0;i<attempts;i++) {
-    const c = new AbortController();
-    const timer = setTimeout(()=>c.abort(),API_TIMEOUT_MS);
-    try {
-      const r = await fetch(url,{signal:c.signal,headers:{accept:'application/json','user-agent':'TheHolding-ReportingLayer/1.1'}});
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return await r.json();
-    } catch(e) {
-      last=e;
-      await new Promise(r=>setTimeout(r,650*(i+1)));
-    } finally { clearTimeout(timer); }
+function canonicalDefiteaPositions(defiteaState) {
+  if (defiteaState?.company?.name !== DEFITEA) throw new Error('Defitea canonical state identity mismatch');
+  const rows=defiteaState?.productivePositions;
+  if (!Array.isArray(rows) || rows.length !== DEFITEA_CANONICAL_POSITION_COUNT) {
+    throw new Error(`Defitea canonical productive inventory must contain exactly ${DEFITEA_CANONICAL_POSITION_COUNT} positions`);
   }
-  throw last;
+  const ids=rows.map(r=>r?.assetId).filter(Boolean);
+  if (new Set(ids).size !== DEFITEA_CANONICAL_POSITION_COUNT) throw new Error('Defitea canonical productive asset IDs must be unique');
+  for (const row of rows) {
+    if (!row?.assetId) throw new Error('Defitea canonical productive position missing assetId');
+    if (!(finite(row.quantity)>0)) throw new Error(`${row.assetId}: canonical quantity must be positive`);
+  }
+  return rows.map(r=>({id:r.assetId,qty:finite(r.quantity),display:r.display||null}));
 }
-async function getCoinGeckoPrices(ids) {
-  const unique=[...new Set(ids)].filter(Boolean);
-  if (!unique.length) return {};
-  const key=process.env.COINGECKO_API_KEY||'';
-  const qs=new URLSearchParams({ids:unique.join(','),vs_currencies:'usd'});
-  if (key) qs.set('x_cg_demo_api_key',key);
-  const json=await fetchJson('https://api.coingecko.com/api/v3/simple/price?'+qs.toString());
-  return Object.fromEntries(unique.flatMap(id=>{
-    const v=finite(json?.[id]?.usd);
-    return Number.isFinite(v)&&v>0 ? [[id,v]] : [];
-  }));
+function assertDefiteaProductivityParity(positions, productivity) {
+  const company=productivity?.companies?.[DEFITEA];
+  const rows=company?.breakdown;
+  if (!company || !Array.isArray(rows)) throw new Error(`${DEFITEA} missing from productivity-data.json`);
+  const positionIds=positions.map(p=>p.id);
+  const productivityIds=rows.map(r=>r?.principalId).filter(Boolean);
+  if (!sameStringSet(positionIds,productivityIds)) {
+    throw new Error(`Defitea Productivity inventory drift: canonical=${positionIds.join(',')} productivity=${productivityIds.join(',')}`);
+  }
+  const byId=new Map(rows.map(r=>[r.principalId,r]));
+  for (const p of positions) {
+    const r=byId.get(p.id);
+    const apr=finite(r?.apr);
+    if (!r?.engineId) throw new Error(`${p.id}: Productivity engineId missing`);
+    if (r?.engineStatus !== 'ok' || !Number.isFinite(apr) || apr < 0) {
+      throw new Error(`${p.id}: exact 11/11 Defitea Reference APR coverage not satisfied`);
+    }
+  }
+  return {company,byId};
+}
+function selectedMarketPrices(positions, marketData) {
+  if (!marketData || typeof marketData !== 'object') throw new Error('Canonical Market Data unavailable');
+  if (!marketData.generatedAt) throw new Error('Canonical Market Data generatedAt missing');
+  if (marketData?.semantics?.perAssetAuthoritySelectionApplied !== true) throw new Error('Canonical Market Data per-asset authority selection missing');
+  const byId=new Map();
+  for (const p of positions) {
+    const row=marketData?.prices?.[p.id];
+    const usd=finite(row?.usd);
+    if (!(usd>0)) throw new Error(`${p.id}: selected canonical market price missing`);
+    if (row?.status !== 'fresh') throw new Error(`${p.id}: canonical market price is not fresh`);
+    if (!row?.authority?.selectedLane) throw new Error(`${p.id}: canonical selected-lane provenance missing`);
+    byId.set(p.id,{usd,row});
+  }
+  return byId;
+}
+function buildVlCvxReconciliation(rewards) {
+  const diag=rewards?.diagnostics?.defiteaUnion||null;
+  const company=rewards?.companies?.[DEFITEA]||null;
+  const unionRow=(company?.rewards||[]).find(r=>r?.route==='votium-union-scrvusd')||null;
+  const routeSource=(company?.sources||[]).find(r=>r?.route==='votium-union')||null;
+  const graph=routeSource?.details?.vlCvxRouteGraph||diag?.routeGraph||null;
+  const entitlement=routeSource?.details?.union?.airdrop?.entitlement||null;
+  const currentRoute=graph?.currentRoute||graph?.current||null;
+  const settlementAsset=graph?.currentSettlementAsset||'scrvUSD';
+  return {
+    status:diag||routeSource||unionRow?'observed':'unknown',
+    principalAsset:'vlCVX',
+    referenceIncomeEngine:'convex_vlcvx',
+    referenceAprIncludesVotiumIncentives:true,
+    currentRoute,
+    settlementAsset,
+    claimableSettlement:{
+      classification:unionRow?.classification||entitlement?.status||null,
+      amount:Number.isFinite(finite(unionRow?.amount))?round(finite(unionRow.amount),10):null,
+      usdValue:Number.isFinite(finite(unionRow?.usdValue))?round(finite(unionRow.usdValue),6):null
+    },
+    legacyResidualPreserved:graph?.preserveLegacyResidualUntilClaimed??null,
+    claimableSettlementAddedToReferenceCashFlow:false,
+    realisedCashFlowAuthority:false,
+    reason:'Votium incentives are already represented inside the convex_vlcvx Reference APR. Union settlement is a separate claimable/reconciliation lane and is never added on top of the reference cash-flow model.',
+    unknownIsNotZero:true
+  };
 }
 function upsertDaily(previousRows, snapshot) {
   const byDate=new Map((Array.isArray(previousRows)?previousRows:[]).filter(r=>r?.date).map(r=>[r.date,r]));
@@ -124,58 +178,67 @@ function upsertDaily(previousRows, snapshot) {
 // ─────────────────────────────────────────────────────────────────────────────
 // DEFITEA
 // ─────────────────────────────────────────────────────────────────────────────
-function buildDefiteaSnapshot({generatedAt,positions,prices,productivity,previous}) {
-  const rowsProd=productivity?.companies?.[DEFITEA]?.breakdown||[];
-  const breakdown=new Map(rowsProd.map(r=>[r.principalId,r]));
-  const previousLatest=previous?.funds?.[DEFITEA]?.latestSnapshot||null;
-  const prodFallback=new Map(rowsProd.map(r=>[r.principalId,finite(r.price)]));
-  const priorFallback=new Map((previousLatest?.positions||[]).map(r=>[r.principalId,finite(r.price)]));
-  const company=productivity?.companies?.[DEFITEA]||{};
-  const fallbackPrices=[]; const missingPrices=[]; const rows=[];
-  let totalValue=0, coveredValue=0, weightedApr=0;
+function buildDefiteaSnapshot({generatedAt,positions,productivity,marketData,rewards}) {
+  const {company,byId:breakdown}=assertDefiteaProductivityParity(positions,productivity);
+  const market=selectedMarketPrices(positions,marketData);
+  const rows=[];
+  let totalValue=0, weightedApr=0;
 
   for (const p of positions) {
-    const prod=breakdown.get(p.id)||null;
-    let price=NaN, priceSource='missing';
-    if (p.fixed!==undefined) { price=finite(p.fixed); priceSource='company-book-fixed'; }
-    else if (finite(prices[p.id])>0) { price=finite(prices[p.id]); priceSource='coingecko'; }
-    else if (prodFallback.get(p.id)>0) { price=prodFallback.get(p.id); priceSource='weekly-productivity-fallback'; fallbackPrices.push(p.id); }
-    else if (priorFallback.get(p.id)>0) { price=priorFallback.get(p.id); priceSource='previous-daily-fallback'; fallbackPrices.push(p.id); }
-    else missingPrices.push(p.id);
-
-    const value=Number.isFinite(price)?finite(p.qty)*price:NaN;
-    const apr=finite(prod?.apr);
-    const aprOk=prod?.engineStatus==='ok'&&Number.isFinite(apr)&&apr>=0;
-    if (Number.isFinite(value)&&value>=0) {
-      totalValue+=value;
-      if (aprOk) { coveredValue+=value; weightedApr+=value*apr; }
-    }
+    const prod=breakdown.get(p.id);
+    const priceState=market.get(p.id);
+    const value=p.qty*priceState.usd;
+    const apr=finite(prod.apr);
+    totalValue+=value;
+    weightedApr+=value*apr;
     rows.push({
-      principalId:p.id,units:finite(p.qty),price:Number.isFinite(price)?round(price,8):null,
-      valueUsd:Number.isFinite(value)?round(value,2):null,priceSource,
-      engineId:prod?.engineId||null,referenceApr:aprOk?round(apr,4):null,engineStatus:prod?.engineStatus||null
+      principalId:p.id,
+      display:p.display,
+      units:p.qty,
+      price:round(priceState.usd,8),
+      valueUsd:round(value,2),
+      priceSource:'canonical-market-data',
+      marketSource:priceState.row.source||null,
+      selectedLane:priceState.row.authority.selectedLane,
+      marketObservedAt:priceState.row.observedAt||marketData.generatedAt,
+      engineId:prod.engineId,
+      referenceApr:round(apr,4),
+      engineStatus:prod.engineStatus
     });
   }
-  const publicApr=finite(company.aprLatest);
-  const internalApr=coveredValue>0?weightedApr/coveredValue:NaN;
-  const referenceApr=Number.isFinite(publicApr)&&publicApr>=0?publicApr:internalApr;
-  const modeledDailyCashFlow=coveredValue>0&&Number.isFinite(weightedApr)?(weightedApr/100)/365:NaN;
+  const referenceApr=totalValue>0?weightedApr/totalValue:NaN;
+  const modeledDailyCashFlow=(weightedApr/100)/365;
+  const publishedApr=finite(company.aprLatest);
   return {
-    date:dayKey(new Date(generatedAt)),capturedAt:generatedAt,
-    totalValueUsd:totalValue>0?round(totalValue,2):null,
-    coveredValueUsd:coveredValue>0?round(coveredValue,2):0,
-    coverage:totalValue>0?round(coveredValue/totalValue,6):0,
-    referenceApr:Number.isFinite(referenceApr)?round(referenceApr,4):null,
-    modeledDailyCashFlowUsd:Number.isFinite(modeledDailyCashFlow)?round(modeledDailyCashFlow,6):null,
+    date:dayKey(new Date(generatedAt)),
+    capturedAt:generatedAt,
+    totalValueUsd:round(totalValue,2),
+    coveredValueUsd:round(totalValue,2),
+    coverage:1,
+    positionCount:rows.length,
+    rateCoveredPositionCount:rows.length,
+    fullProductiveCoverage:true,
+    referenceApr:round(referenceApr,4),
+    productivityPublishedApr:Number.isFinite(publishedApr)?round(publishedApr,4):null,
+    modeledDailyCashFlowUsd:round(modeledDailyCashFlow,6),
     productivitySnapshotAt:productivity?.generatedAt||null,
-    priceStatus:missingPrices.length?'partial':(fallbackPrices.length?'fallback':'fresh'),
-    fallbackPrices,missingPrices,positions:rows
+    marketDataGeneratedAt:marketData.generatedAt,
+    marketDataVersion:marketData.version||null,
+    marketDataStatus:marketData.status||null,
+    priceAuthority:'canonical-selected-market-data',
+    priceStatus:'canonical',
+    fallbackPrices:[],
+    missingPrices:[],
+    vlCvxReconciliation:buildVlCvxReconciliation(rewards),
+    positions:rows
   };
 }
 function aggregateDefiteaMonths(daily, now=new Date()) {
+  const ordered=(Array.isArray(daily)?daily:[]).filter(r=>r?.date).slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const firstTracked=ordered[0]?.date||null;
+  const firstTrackedMonth=firstTracked?firstTracked.slice(0,7):null;
   const groups=new Map();
-  for (const row of daily) {
-    if (!row?.date) continue;
+  for (const row of ordered) {
     const key=row.date.slice(0,7);
     if (!groups.has(key)) groups.set(key,[]);
     groups.get(key).push(row);
@@ -183,21 +246,24 @@ function aggregateDefiteaMonths(daily, now=new Date()) {
   const currentKey=monthKeyFromDate(now); const out={};
   for (const [key,raw] of groups) {
     const rows=raw.slice().sort((a,b)=>a.date.localeCompare(b.date));
-    const good=rows.filter(r=>finite(r.totalValueUsd)>0&&finite(r.referenceApr)>=0);
+    const good=rows.filter(r=>finite(r.totalValueUsd)>0&&finite(r.referenceApr)>=0&&finite(r.modeledDailyCashFlowUsd)>=0);
     if (!good.length) continue;
     const [year,month]=key.split('-').map(Number);
     const totalTvl=good.reduce((s,r)=>s+finite(r.totalValueUsd),0);
     const averageTvl=totalTvl/good.length;
     const weightedApr=good.reduce((s,r)=>s+finite(r.totalValueUsd)*finite(r.referenceApr),0)/totalTvl;
-    const observed=good.reduce((s,r)=>s+(Number.isFinite(finite(r.modeledDailyCashFlowUsd))?finite(r.modeledDailyCashFlowUsd):finite(r.totalValueUsd)*(finite(r.referenceApr)/100)/365),0);
+    const observed=good.reduce((s,r)=>s+finite(r.modeledDailyCashFlowUsd),0);
     const isCurrent=key===currentKey;
+    const isFirstTrackedMonth=key===firstTrackedMonth;
     const fullDays=daysInMonthUTC(year,month);
     const expectedDays=isCurrent?now.getUTCDate():fullDays;
     const uniqueDays=new Set(good.map(r=>r.date)).size;
     const coverage=expectedDays>0?uniqueDays/expectedDays*100:0;
     const firstDay=Number(good[0].date.slice(8,10));
     const partial=firstDay>1||coverage<80;
-    const normalization=!isCurrent&&uniqueDays>0&&uniqueDays<fullDays?fullDays/uniqueDays:1;
+    // Never fabricate the unobserved beginning of Defitea's first tracking month.
+    // Later closed months may normalize isolated missed daily runs only.
+    const normalization=!isCurrent&&!isFirstTrackedMonth&&uniqueDays>0&&uniqueDays<fullDays?fullDays/uniqueDays:1;
     const cash=observed*normalization;
     const monthlyYield=averageTvl>0?cash/averageTvl*100:NaN;
     out[key]={
@@ -207,7 +273,13 @@ function aggregateDefiteaMonths(daily, now=new Date()) {
       annualizedAprPct:Number.isFinite(isCurrent?weightedApr:monthlyYield*12)?round(isCurrent?weightedApr:monthlyYield*12,4):null,
       averageReferenceAprPct:round(weightedApr,4),averageTvlUsd:round(averageTvl,2),sampleDays:uniqueDays,expectedDays,sampleCoveragePct:round(coverage,2),partialPeriod:partial,
       periodStart:good[0].date,periodEnd:good[good.length-1].date,source:'the-holding-reporting-layer',
-      note:isCurrent?'Live reference model. Current month remains provisional until the first daily run of the next month.':(partial?'Final full-month reference estimate normalized from observed daily samples.':'Final reference model from daily productive TVL and validated Reference APR.')
+      firstTrackingMonth:isFirstTrackedMonth,
+      unobservedPreTrackingDaysBackfilled:false,
+      note:isCurrent
+        ?'Live reference model. Current month remains provisional until the first daily run of the next month.'
+        :(isFirstTrackedMonth&&partial
+          ?'First Defitea tracking month: only observed reporting days are counted; no income is fabricated before autonomous tracking began.'
+          :(partial?'Reference estimate normalized only for isolated missed daily snapshots.':'Final reference model from canonical daily productive TVL and validated Reference APR.'))
     };
   }
   return out;
@@ -276,8 +348,6 @@ function aggregateMonetraMonths(daily, now=new Date()) {
     const uniqueDays=new Set(good.map(r=>r.date)).size;
     const coverage=expectedDays>0?uniqueDays/expectedDays*100:0;
     const partial=Number(good[0].date.slice(8,10))>1||coverage<80;
-    // Never fabricate the unobserved beginning of the very first tracking month.
-    // Later closed months may normalize isolated missed daily runs only.
     const normalization=!isCurrent&&!isFirstTrackedMonth&&uniqueDays>0&&uniqueDays<fullDays?fullDays/uniqueDays:1;
     const generated=observed*normalization;
     const monthlyYield=avgCapital>0?generated/avgCapital*100:NaN;
@@ -330,19 +400,18 @@ function buildMonetraSummary(months, year, latestSnapshot) {
 
 async function main() {
   const generatedAt=nowIso();
-  const [companyBook,productivity,stableIndex,ledger,previous]=await Promise.all([
-    parseCompanyBook(),readJson(PRODUCTIVITY_DATA_FILE,{}),readJson(STABLE_INDEX_DATA_FILE,{}),readJson(EMBEDDED_LEDGER_FILE,{}),readJson(REPORTING_DATA_FILE,{})
+  const [defiteaState,productivity,marketData,rewards,stableIndex,ledger,previous]=await Promise.all([
+    readJson(DEFITEA_STATE_FILE,{}),
+    readJson(PRODUCTIVITY_DATA_FILE,{}),
+    readJson(MARKET_DATA_FILE,{}),
+    readJson(REWARDS_DATA_FILE,{}),
+    readJson(STABLE_INDEX_DATA_FILE,{}),
+    readJson(EMBEDDED_LEDGER_FILE,{}),
+    readJson(REPORTING_DATA_FILE,{})
   ]);
 
-  const defPositions=companyBook?.[DEFITEA];
-  if (!Array.isArray(defPositions)||!defPositions.length) throw new Error(`${DEFITEA} not found in COMPANY_BOOK`);
-  if (!productivity?.companies?.[DEFITEA]) throw new Error(`${DEFITEA} not found in productivity-data.json`);
-
-  let prices={};
-  try { prices=await getCoinGeckoPrices(defPositions.filter(p=>p.fixed===undefined).map(p=>p.id)); }
-  catch(e) { console.warn('[CoinGecko] daily Defitea price request failed; using central/previous fallbacks:',e?.message||e); }
-
-  const defSnapshot=buildDefiteaSnapshot({generatedAt,positions:defPositions,prices,productivity,previous});
+  const defPositions=canonicalDefiteaPositions(defiteaState);
+  const defSnapshot=buildDefiteaSnapshot({generatedAt,positions:defPositions,productivity,marketData,rewards});
   const defDaily=upsertDaily(previous?.funds?.[DEFITEA]?.daily,defSnapshot);
   const defAuto=aggregateDefiteaMonths(defDaily,new Date(generatedAt));
   const defMonths={...(previous?.funds?.[DEFITEA]?.months||{}),...LEGACY_DEFITEA_MONTHS,...defAuto};
@@ -359,18 +428,47 @@ async function main() {
 
   const output={
     version:REPORTING_VERSION,methodologyVersion:METHODOLOGY_VERSION,generatedAt,
-    note:'Daily Reporting Layer for Defitea and Monetra. Defitea Jan–Jul 2026 reported/realised history is preserved; automated Defitea months remain reference cash-flow models. Monetra months report reference-generated income from daily Stable Capital and validated Reference APY, including income whether economically distributed or compounded, while Stable Price Effect remains separate. Neither automated family is claim accounting.',
-    schedule:{dailySnapshot:'06:07 UTC',defiteaProductivityReference:'latest available Productivity Intelligence snapshot',monetraStableReference:'latest Stable Capital Intelligence snapshot after 05:37 UTC daily run'},
+    note:'Daily Reporting Layer for Defitea and Monetra. Defitea Jan–Jul 2026 reported/realised history is preserved; automated Defitea months are reference cash-flow models built from the exact 11-position canonical productive inventory, canonical selected Market Data and validated Reference APRs. Current vlCVX Votium + Union settlement remains a separate reconciliation/claimable lane and is not added on top of the Reference APR model. Monetra months report reference-generated income from daily Stable Capital and validated Reference APY. Neither automated family is claim accounting.',
+    schedule:{
+      dailySnapshot:'06:07 UTC',
+      defiteaInventoryReference:'companies/defitea-canonical-state.json',
+      defiteaMarketDataReference:'intelligence/market-data/market-data.json',
+      defiteaProductivityReference:'latest available Productivity Intelligence snapshot',
+      defiteaExternalPriceDiscovery:false,
+      monetraStableReference:'latest Stable Capital Intelligence snapshot after 05:37 UTC daily run'
+    },
     funds:{
-      [DEFITEA]:{trackingStartedAt:defDaily[0]?.date||null,latestSnapshot:defSnapshot,daily:defDaily,months:defMonths,summaries:defSummaries},
+      [DEFITEA]:{
+        trackingStartedAt:defDaily[0]?.date||null,
+        latestSnapshot:defSnapshot,
+        daily:defDaily,months:defMonths,summaries:defSummaries,
+        semantic:'reference-cash-flow-model-not-claim-accounting',
+        exactCanonicalProductivePositionCount:DEFITEA_CANONICAL_POSITION_COUNT,
+        vlCvxReconciliation:defSnapshot.vlCvxReconciliation
+      },
       [MONETRA]:{trackingStartedAt:monDaily[0]?.date||null,latestSnapshot:monSnapshot,daily:monDaily,months:monMonths,summaries:monSummaries,semantic:'reference-generated-income-not-realised-cash-flow'}
     }
   };
   await writeJson(REPORTING_DATA_FILE,output);
-  console.log(`✓ ${DEFITEA} daily TVL: $${defSnapshot.totalValueUsd??'—'} · Reference APR ${defSnapshot.referenceApr??'—'}%`);
+  console.log(`✓ ${DEFITEA} canonical positions: ${defSnapshot.positionCount}/${DEFITEA_CANONICAL_POSITION_COUNT}`);
+  console.log(`✓ ${DEFITEA} daily TVL: $${defSnapshot.totalValueUsd??'—'} · internally coherent Reference APR ${defSnapshot.referenceApr??'—'}%`);
+  console.log(`✓ ${DEFITEA} canonical Market Data: ${defSnapshot.marketDataGeneratedAt} · external price discovery: false`);
   console.log(`✓ ${MONETRA} Stable Capital: $${monSnapshot.stableCapitalUsd??'—'} · Reference APY ${monSnapshot.referenceApyPct??'—'}%`);
-  console.log(`✓ ${MONETRA} modeled daily generated income: $${monSnapshot.modeledDailyGeneratedIncomeUsd??'—'}`);
   console.log(`Wrote ${REPORTING_DATA_FILE}`);
 }
 
-main().catch(err=>{console.error(err);process.exitCode=1;});
+export {
+  DEFITEA_CANONICAL_POSITION_COUNT,
+  REPORTING_VERSION,
+  METHODOLOGY_VERSION,
+  canonicalDefiteaPositions,
+  assertDefiteaProductivityParity,
+  selectedMarketPrices,
+  buildVlCvxReconciliation,
+  buildDefiteaSnapshot,
+  aggregateDefiteaMonths
+};
+
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  main().catch(err=>{console.error(err);process.exitCode=1;});
+}

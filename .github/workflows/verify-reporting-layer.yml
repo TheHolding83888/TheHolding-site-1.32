@@ -1,0 +1,77 @@
+name: Verify Reporting Layer
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/reporting-engine.mjs'
+      - 'reporting/reporting-engine-validation.mjs'
+      - '.github/workflows/update-reporting.yml'
+      - '.github/workflows/verify-reporting-layer.yml'
+      - 'yield-reports/index.html'
+      - 'intelligence/project-memory/THE_HOLDING_REPORTING_REFERENCE_MODEL_CANON_2026-08-22.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Static and semantic validation
+        run: |
+          set -euo pipefail
+          node --check reporting/reporting-engine.mjs
+          node --check reporting/reporting-engine-validation.mjs
+          node reporting/reporting-engine-validation.mjs
+          git diff --check
+
+      - name: Exercise full writer without network price discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp reporting/reporting-data.json /tmp/reporting-data.json
+          DEFITEA_STATE_FILE=./companies/defitea-canonical-state.json \
+          PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+          MARKET_DATA_FILE=./intelligence/market-data/market-data.json \
+          REWARDS_DATA_FILE=./companies/rewards-data.json \
+          STABLE_INDEX_DATA_FILE=./companies/stable-index-data.json \
+          EMBEDDED_LEDGER_FILE=./companies/embedded-yield-ledger.json \
+          REPORTING_DATA_FILE=/tmp/reporting-data.json \
+          node reporting/reporting-engine.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/reporting-data.json','utf8'));
+          const d=r.funds?.['defitea.eth'];
+          if(r.version!=='1.2.0-defitea-canonical-market-data') throw new Error('version drift');
+          if(d?.latestSnapshot?.positionCount!==11||d?.latestSnapshot?.rateCoveredPositionCount!==11||d?.latestSnapshot?.coverage!==1) throw new Error('Defitea 11/11 runtime proof failed');
+          if(d?.latestSnapshot?.priceAuthority!=='canonical-selected-market-data') throw new Error('canonical Market Data runtime binding failed');
+          if(d?.vlCvxReconciliation?.claimableSettlementAddedToReferenceCashFlow!==false) throw new Error('vlCVX additive-double-count guard failed');
+          console.log('Reporting candidate runtime PASS');
+          NODE
+
+      - name: Guard independent price discovery and authority expansion
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const engine=fs.readFileSync('reporting/reporting-engine.mjs','utf8');
+          const workflow=fs.readFileSync('.github/workflows/update-reporting.yml','utf8');
+          for(const bad of ['api.coingecko.com/api/v3/simple/price','COINGECKO_API_KEY','getCoinGeckoPrices(','COMPANY_PAGE_FILE','parseCompanyBook(']){
+            if(engine.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
+          }
+          for(const bad of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']){
+            if(engine.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
+          }
+          console.log('Reporting authority boundary PASS');
+          NODE
