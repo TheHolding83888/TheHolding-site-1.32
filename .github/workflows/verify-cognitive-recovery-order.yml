@@ -1,0 +1,50 @@
+name: "Verify Cognitive Recovery · Security Ordering"
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/resume-cognitive-stack-after-release.yml'
+      - '.github/workflows/recover-cognitive-stack-after-release.yml'
+      - '.github/workflows/verify-cognitive-recovery-order.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Require Security-before-Cognitive recovery contract
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const files = [
+            '.github/workflows/resume-cognitive-stack-after-release.yml',
+            '.github/workflows/recover-cognitive-stack-after-release.yml'
+          ];
+          for (const file of files) {
+            const text = fs.readFileSync(file, 'utf8');
+            const required = [
+              'RECOVERY_PUSH_AT:',
+              'securityMs < pushMs',
+              'git fetch origin main',
+              'git reset --hard origin/main',
+              'cognitive-release-guard.mjs',
+              'gh workflow run refresh-cognitive-stack.yml --ref main'
+            ];
+            for (const token of required) {
+              if (!text.includes(token)) throw new Error(`${file}: missing recovery-order contract token ${token}`);
+            }
+            if (!text.includes('severityCounts?.critical')) throw new Error(`${file}: Critical Security gate missing`);
+            const waitIndex = text.indexOf('securityMs < pushMs');
+            const dispatchIndex = text.indexOf('gh workflow run refresh-cognitive-stack.yml --ref main');
+            if (!(waitIndex >= 0 && dispatchIndex > waitIndex)) throw new Error(`${file}: Cognitive dispatch occurs before Security freshness gate`);
+          }
+          console.log('Cognitive recovery Security-order contract PASS');
+          NODE
+          git diff --check
