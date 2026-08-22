@@ -1,6 +1,7 @@
-/* The Holding · Rewards lifecycle presentation adapter · v0.4.0
+/* The Holding · Rewards lifecycle presentation adapter · v0.5.0
  * Presentation only. Reads canonical /companies/rewards-data.json.
  * - 40 Acres Received is placed directly beside the corresponding Velodrome accrual row.
+ * - Liquity ETH + LUSD claimables are presented as one compact strategy row while remaining separate canonical reward legs.
  * - A proven Liquity staking route remains visible when current ETH/LUSD pending gains are zero.
  * Received remains separate from Claimable/Unclaimed, while the Passport headline
  * is the broader Tracked Rewards total (current accrued + proven Received).
@@ -41,6 +42,7 @@
       .ipx-reward-row.ipx-received-inline{background:rgba(10,124,78,.018)}
       .ipx-reward-state.received{color:#0a7c4e;background:rgba(10,124,78,.055);border-color:rgba(10,124,78,.13)}
       .ipx-reward-state.no-current{color:rgba(22,21,15,.48);background:rgba(22,21,15,.025);border-color:rgba(22,21,15,.08)}
+      .ipx-reward-row.ipx-liquity-combined .ipx-reward-amount{max-width:14rem}
       .ipx-received-proof,.ipx-route-proof{opacity:.72}
     `;
     document.head.appendChild(s);
@@ -145,6 +147,34 @@
     return el;
   }
 
+  function liquityFingerprint(rows) {
+    return JSON.stringify([lang(), ...rows.map(row => [row.symbol, row.amount, row.usdValue, row.chain, row.details?.userProxy])]);
+  }
+
+  function liquityCombinedRow(rows, fingerprint) {
+    const el = node('div', 'ipx-reward-row ipx-liquity-combined');
+    el.dataset.rewardRoute = 'liquity-staking';
+    el.dataset.liquityFingerprint = fingerprint;
+    const left = node('div');
+    const protocol = node('div', 'ipx-reward-protocol', 'Liquity · LQTY Staking');
+    protocol.appendChild(document.createTextNode(' '));
+    protocol.appendChild(node('span', 'ipx-reward-state', lang() === 'ru' ? 'Доступно' : 'Claimable'));
+    left.appendChild(protocol);
+    const chain = rows.find(x => x?.chain)?.chain || 'Ethereum';
+    const userProxy = rows.find(x => x?.details?.userProxy)?.details?.userProxy;
+    left.appendChild(node('div', 'ipx-reward-meta', [chain, userProxy ? 'V2 UserProxy' : null].filter(Boolean).join(' · ')));
+    el.appendChild(left);
+
+    const parts = rows.map(amountText);
+    const totalUsd = rows.reduce((sum, row) => sum + (finite(row?.usdValue) ? Number(row.usdValue) : 0), 0);
+    const usdComplete = rows.every(row => finite(row?.usdValue));
+    const right = node('div', 'ipx-reward-right');
+    right.appendChild(node('div', 'ipx-reward-amount', parts.join(' + ')));
+    if (usdComplete) right.appendChild(node('div', 'ipx-reward-usd', money2(totalUsd)));
+    el.appendChild(right);
+    return el;
+  }
+
   function velodromeAnchor(panel) {
     const rows = [...panel.querySelectorAll('.ipx-reward-row:not(.ipx-received-inline)')];
     return rows.find(row => /velodrome/i.test(row.textContent || '') && /40\s*acres/i.test(row.textContent || ''))
@@ -183,15 +213,44 @@
     return true;
   }
 
-  function renderLiquityZero(panel, c) {
-    const existing = panel.querySelector('.ipx-liquity-zero');
+  function nativeLiquityRows(panel) {
+    return [...panel.querySelectorAll('.ipx-reward-row:not(.ipx-liquity-combined):not(.ipx-liquity-zero)')]
+      .filter(row => /liquity/i.test(row.querySelector('.ipx-reward-protocol')?.textContent || ''));
+  }
+
+  function renderLiquity(panel, c) {
     const source = Array.isArray(c?.sources) ? c.sources.find(x => x?.route === 'liquity-staking') : null;
-    const hasPositive = Array.isArray(c?.rewards) && c.rewards.some(x => x?.route === 'liquity-staking' && Number(x?.amount || 0) > 0);
-    if (!source || source.status !== 'ok' || hasPositive) {
-      existing?.remove();
+    const rows = Array.isArray(c?.rewards)
+      ? c.rewards.filter(x => x?.route === 'liquity-staking' && Number(x?.amount || 0) > 0)
+      : [];
+    const existingZero = panel.querySelector('.ipx-liquity-zero');
+    const existingCombined = panel.querySelector('.ipx-liquity-combined');
+
+    if (rows.length) {
+      existingZero?.remove();
+      const native = nativeLiquityRows(panel);
+      const fingerprint = liquityFingerprint(rows);
+      if (existingCombined?.dataset.liquityFingerprint === fingerprint) {
+        native.forEach(x => x.remove());
+        return true;
+      }
+      const rendered = liquityCombinedRow(rows, fingerprint);
+      if (existingCombined?.parentNode) existingCombined.replaceWith(rendered);
+      else if (native[0]?.parentNode) native[0].parentNode.insertBefore(rendered, native[0]);
+      else {
+        const note = panel.querySelector('.ipx-reward-panel-note');
+        if (note) panel.insertBefore(rendered, note); else panel.appendChild(rendered);
+      }
+      native.forEach(x => x.remove());
+      return true;
+    }
+
+    existingCombined?.remove();
+    if (!source || source.status !== 'ok') {
+      existingZero?.remove();
       return false;
     }
-    if (existing) return true;
+    if (existingZero) return true;
 
     const rendered = liquityZeroRow(source);
     const normalRows = [...panel.querySelectorAll('.ipx-reward-row:not(.ipx-liquity-zero)')];
@@ -213,7 +272,7 @@
     if (!panel || !c) return false;
     ensureStyle();
     const received = renderReceived(panel, item, c);
-    const liquity = renderLiquityZero(panel, c);
+    const liquity = renderLiquity(panel, c);
     return received || liquity;
   }
 
@@ -237,7 +296,7 @@
       renderAll();
       const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.4.0-inline-received-plus-liquity-zero', renderAll };
+      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.5.0-inline-received-plus-liquity-compact', renderAll };
     } catch (err) {
       console.warn('[Rewards Lifecycle]', err && err.message ? err.message : err);
     }
