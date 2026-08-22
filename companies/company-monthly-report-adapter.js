@@ -1,4 +1,4 @@
-/* The Holding · Company Monthly Reports adapter · v0.2.1
+/* The Holding · Company Monthly Reports adapter · v0.2.2
  * Presentation only. Reads canonical /reporting/reporting-data.json.
  * Initial scope: defitea.eth. Historical months are rendered from the existing
  * Reporting archive; no accounting, TVL, Rewards methodology or execution authority changes.
@@ -498,7 +498,7 @@
       bindGlobalClose();
       const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.2.1-defitea-monthly-archive-numeric-rhythm', render };
+      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.2.2-defitea-monthly-archive-numeric-rhythm-plus-passport-priority-loader', render };
     } catch (err) {
       console.warn('[Monthly Reports]', err && err.message ? err.message : err);
     }
@@ -506,4 +506,15 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
+})();
+
+/* The Holding · Company Passport priority loader · v0.1.0 */
+(() => {
+  'use strict';
+  if (document.querySelector('script[data-th-passport-priority]')) return;
+  const s = document.createElement('script');
+  s.src = '/companies/company-passport-priority-adapter.js';
+  s.defer = true;
+  s.dataset.thPassportPriority = 'true';
+  document.head.appendChild(s);
 })();
