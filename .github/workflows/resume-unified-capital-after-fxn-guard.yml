@@ -1,0 +1,37 @@
+name: Resume Unified Capital After f(x) Guard Change
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'productivity/fxn-locker-apr-guard.mjs'
+      - '.github/workflows/resume-unified-capital-after-fxn-guard.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: unified-capital-fxn-guard-resume
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+
+      - name: Verify exact f(x) guard is present
+        run: |
+          set -euo pipefail
+          test -s productivity/fxn-locker-apr-guard.mjs
+          node --check productivity/fxn-locker-apr-guard.mjs
+
+      - name: Dispatch canonical Unified Capital writer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run unified-capital-refresh.yml --ref main
