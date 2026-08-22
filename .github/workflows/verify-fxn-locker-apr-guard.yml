@@ -7,6 +7,7 @@ on:
       - 'productivity/fxn-locker-apr-guard-validation.mjs'
       - 'productivity/yieldring-productivity-overlay.mjs'
       - '.github/workflows/validate-yieldring-capital-state.yml'
+      - '.github/workflows/validate-productivity-overlay-order.yml'
       - '.github/workflows/verify-fxn-locker-apr-guard.yml'
   workflow_dispatch:
 
@@ -39,14 +40,16 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const marker='FXN_LOCKER_APR_GUARD_MODE';
+          const expected=`${marker}: deterministic-validation`;
           const overlay=fs.readFileSync('productivity/yieldring-productivity-overlay.mjs','utf8');
           const recovery=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
           const unified=fs.readFileSync('intelligence/capital-state/unified-capital-refresh.mjs','utf8');
           const yieldringValidation=fs.readFileSync('.github/workflows/validate-yieldring-capital-state.yml','utf8');
+          const overlayValidation=fs.readFileSync('.github/workflows/validate-productivity-overlay-order.yml','utf8');
           if(!overlay.includes("from './fxn-locker-apr-guard.mjs'")||!overlay.includes('if(!deterministicValidation) await verifyFxnLockerApr()'))throw new Error('YieldRing post-collection stage does not enforce f(x) guard by default');
           if(!recovery.includes('node productivity/yieldring-productivity-overlay.mjs'))throw new Error('manual/recovery Productivity path bypasses guarded post-collection stage');
           if(!unified.includes("'productivity/yieldring-productivity-overlay.mjs'"))throw new Error('Unified Capital path bypasses guarded post-collection stage');
           if(recovery.includes(marker)||unified.includes(marker))throw new Error('deterministic f(x) guard bypass leaked into a production writer');
-          if(!yieldringValidation.includes(`${marker}: deterministic-validation`))throw new Error('deterministic bypass is not explicitly bounded to YieldRing validation');
+          if(!yieldringValidation.includes(expected)||!overlayValidation.includes(expected))throw new Error('deterministic bypass is not explicitly bounded to known validators');
           console.log('f(x) guard production enforcement PASS');
           NODE
