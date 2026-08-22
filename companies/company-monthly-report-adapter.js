@@ -1,18 +1,17 @@
-/* The Holding · Company Monthly Reports adapter · v0.2.2
- * Presentation only. Reads canonical /reporting/reporting-data.json.
- * Initial scope: defitea.eth. Historical months are rendered from the existing
- * Reporting archive; no accounting, TVL, Rewards methodology or execution authority changes.
+/* The Holding · Universal Company Monthly Reports adapter · v0.3.0
+ * Presentation only. Reads canonical /reporting/company-monthly-reports.json.
+ * One reusable Monthly Reports surface for every Company Passport.
+ * Accounting and tracking semantics are owned by the generated Reporting artifact.
  */
 (() => {
   'use strict';
   if (window.__TH_MONTHLY_REPORT_ADAPTER__) return;
 
-  const URL = '/reporting/reporting-data.json';
-  const COMPANY = 'defitea.eth';
+  const URL = '/reporting/company-monthly-reports.json';
+  const selectedMonth = new Map();
   let snapshot = null;
   let loading = null;
   let renderQueued = false;
-  let selectedMonthKey = null;
 
   const lang = () => (document.documentElement.lang || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
   const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
@@ -21,7 +20,6 @@
     : '—';
   const money0 = v => finite(v) ? '$' + Math.round(Number(v)).toLocaleString('en-US') : '—';
   const pct = v => finite(v) ? Number(v).toFixed(2) + '%' : '—';
-  const generatedUsd = month => finite(month?.cashFlowUsd) ? month.cashFlowUsd : month?.generatedIncomeUsd;
   const node = (tag, className, text) => {
     const el = document.createElement(tag);
     if (className) el.className = className;
@@ -31,13 +29,23 @@
 
   const C = () => lang() === 'ru' ? {
     trigger: 'Ежемесячные отчёты', generated: 'Доход', monthYield: 'Доходность месяца',
-    avgTvl: 'Средний TVL', reports: 'Отчёты фонда', live: 'Live', full: 'Полный отчёт',
-    close: 'Закрыть отчёты фонда'
+    avgTvl: 'Средний TVL', avgStable: 'Средний Stable Capital', avgProductive: 'Средний продуктивный капитал',
+    avgCovered: 'Средний покрытый капитал', reports: 'Ежемесячные отчёты', live: 'Live',
+    thisMonth: 'за месяц', full: 'Полный отчёт', close: 'Закрыть месячный отчёт'
   } : {
     trigger: 'Monthly Reports', generated: 'Generated', monthYield: 'Month Yield',
-    avgTvl: 'Average TVL', reports: 'Fund Reports', live: 'Live', full: 'Full Report',
-    close: 'Close fund reports'
+    avgTvl: 'Average TVL', avgStable: 'Average Stable Capital', avgProductive: 'Average Productive Capital',
+    avgCovered: 'Average Covered Capital', reports: 'Monthly Reports', live: 'Live',
+    thisMonth: 'this month', full: 'Full Report', close: 'Close monthly report'
   };
+
+  function capitalLabel(company) {
+    const copy = C();
+    if (company?.capitalMetric === 'tvl') return copy.avgTvl;
+    if (company?.capitalMetric === 'stable-capital') return copy.avgStable;
+    if (company?.capitalMetric === 'covered-productive-capital') return copy.avgCovered;
+    return copy.avgProductive;
+  }
 
   function svgIcon(kind, className) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -72,8 +80,7 @@
     const { year, month } = monthParts(key);
     if (!year || !month) return key || '—';
     const base = new Intl.DateTimeFormat(lang() === 'ru' ? 'ru-RU' : 'en-US', { month: 'short' })
-      .format(new Date(Date.UTC(year, month - 1, 1)))
-      .replace('.', '');
+      .format(new Date(Date.UTC(year, month - 1, 1))).replace('.', '');
     return includeYear ? `${base} ’${String(year).slice(-2)}` : base;
   }
 
@@ -89,20 +96,24 @@
     if (snapshot) return snapshot;
     if (loading) return loading;
     loading = fetch(URL + '?t=' + Date.now(), { cache: 'no-store' })
-      .then(r => { if (!r.ok) throw new Error('Reporting HTTP ' + r.status); return r.json(); })
+      .then(r => { if (!r.ok) throw new Error('Company Monthly Reports HTTP ' + r.status); return r.json(); })
       .then(d => { snapshot = d; return d; })
       .finally(() => { loading = null; });
     return loading;
   }
 
-  function currentState() {
-    const fund = snapshot?.funds?.[COMPANY];
-    if (!fund?.months) return null;
-    const keys = Object.keys(fund.months).filter(key => fund.months[key]).sort();
+  function reportState(name) {
+    const company = snapshot?.companies?.[name];
+    if (!company?.months) return null;
+    const keys = Object.keys(company.months).filter(key => company.months[key]).sort();
     if (!keys.length) return null;
     const currentKey = keys[keys.length - 1];
-    if (!selectedMonthKey || !fund.months[selectedMonthKey]) selectedMonthKey = currentKey;
-    return { fund, keys, currentKey };
+    let key = selectedMonth.get(name);
+    if (!key || !company.months[key]) {
+      key = currentKey;
+      selectedMonth.set(name, key);
+    }
+    return { company, keys, currentKey, selectedKey: key };
   }
 
   function ensureStyle() {
@@ -110,16 +121,17 @@
     const s = document.createElement('style');
     s.id = 'th-monthly-report-style';
     s.textContent = `
-      .th-defitea-financial-stack{min-width:0;display:grid;grid-template-rows:auto auto;gap:.52rem;align-content:start;align-self:stretch}
+      .th-company-financial-stack{min-width:0;display:grid;grid-template-rows:auto auto;gap:.52rem;align-content:start;align-self:stretch}
+      .th-stable-monthly-report-slot{position:relative;z-index:7;margin:.08rem .92rem .72rem;min-width:0}
       .th-monthly-report-disclosure{position:relative;min-width:0;border:1px solid rgba(168,132,44,.14);border-radius:14px;background:radial-gradient(circle at 96% 0,rgba(255,255,255,.98),rgba(255,255,255,0) 36%),linear-gradient(180deg,rgba(255,253,247,.98),rgba(249,248,242,.93));box-shadow:0 14px 34px -30px rgba(22,21,15,.34),inset 0 1px 0 rgba(255,255,255,.94);overflow:visible}
       .th-mr-trigger{appearance:none;-webkit-appearance:none;width:100%;min-width:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;padding:.62rem .72rem .6rem;border-radius:inherit;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:'kicker badge' 'value meta';column-gap:.7rem;row-gap:.22rem;align-items:end}
-      .th-mr-kicker{grid-area:kicker;color:var(--text-3);font-size:.52rem;font-weight:700;letter-spacing:.145em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .th-mr-kicker{grid-area:kicker;color:var(--text-3);font-size:.57rem;font-weight:700;letter-spacing:.175em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .th-mr-badge{grid-area:badge;justify-self:end;display:inline-flex;align-items:center;min-height:19px;padding:.14rem .38rem;border:1px solid rgba(10,124,78,.12);border-radius:999px;background:rgba(10,124,78,.05);color:var(--green);font-size:.49rem;font-weight:700;letter-spacing:.055em;text-transform:uppercase;white-space:nowrap}
       .th-mr-value-wrap{grid-area:value;min-width:0;display:flex;align-items:baseline;gap:.38rem}
       .th-mr-value{font-family:'Cormorant Garamond',serif;font-size:1.34rem;line-height:1.08;padding-bottom:.025em;font-weight:600;letter-spacing:-.02em;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
       .th-mr-value-label{color:var(--text-3);font-size:.5rem;white-space:nowrap}
-      .th-mr-meta{grid-area:meta;justify-self:end;display:inline-flex;align-items:center;gap:.36rem;color:var(--text-2);font-size:.53rem;font-weight:650;white-space:nowrap}
-      .th-mr-chevron{width:.82rem;height:.82rem;color:var(--gold);transition:transform .22s ease;flex:0 0 auto}
+      .th-mr-meta{grid-area:meta;justify-self:end;display:inline-flex;align-items:center;gap:.36rem;color:var(--text-2);font-size:.62rem;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+      .th-mr-chevron{width:.84rem;height:.84rem;color:var(--gold);transition:transform .22s ease;flex:0 0 auto}
       .th-monthly-report-disclosure.open .th-mr-chevron{transform:rotate(180deg)}
       .th-mr-trigger:hover,.th-mr-trigger:focus-visible{background:rgba(168,132,44,.025)}
       .th-mr-trigger:focus-visible{outline:1px solid rgba(168,132,44,.34);outline-offset:2px}
@@ -128,7 +140,7 @@
       .th-monthly-report-disclosure.open>.th-monthly-report-panel{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1)}
       .th-mr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.16rem .14rem .68rem}
       .th-mr-head-copy{min-width:0}
-      .th-mr-panel-kicker{color:var(--text-3);font-size:.49rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+      .th-mr-panel-kicker{color:var(--text-3);font-size:.51rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
       .th-mr-title{margin-top:.22rem;font-family:'Cormorant Garamond',serif;font-size:1.48rem;font-weight:600;line-height:1;letter-spacing:-.02em;color:var(--text);text-transform:capitalize}
       .th-mr-close{flex:0 0 auto;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(15,23,42,.07);border-radius:50%;background:rgba(255,255,255,.8);color:var(--text-3);font:400 1rem/1 'Space Grotesk',sans-serif;cursor:pointer}
       .th-mr-close:hover,.th-mr-close:focus-visible{color:var(--text);background:#fff}
@@ -162,15 +174,18 @@
       .th-mr-backdrop{position:fixed;inset:0;z-index:2230;background:rgba(15,23,42,.14);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease}
       .th-mr-backdrop.open{opacity:1;visibility:visible;pointer-events:auto}
       @media(max-width:760.98px){
-        .th-defitea-financial-stack{gap:.42rem}
-        .th-mr-trigger{padding:.58rem .64rem .56rem;column-gap:.5rem}
-        .th-mr-kicker{font-size:.49rem;letter-spacing:.12em}
-        .th-mr-value{font-size:1.22rem}
-        .th-mr-value-label,.th-mr-meta{font-size:.49rem}
+        .th-company-financial-stack{gap:.42rem}
+        .th-stable-monthly-report-slot{margin:.04rem .64rem .7rem}
+        .th-mr-trigger{padding:.62rem .66rem .58rem;column-gap:.5rem;row-gap:.24rem}
+        .th-mr-kicker{font-size:.57rem;letter-spacing:.175em}
+        .th-mr-value{font-size:1.26rem}
+        .th-mr-value-label{font-size:.5rem}
+        .th-mr-meta{font-size:.61rem;font-weight:700}
         .th-monthly-report-panel{position:fixed;left:14px;right:14px;top:50%;bottom:auto;width:auto;max-height:min(76vh,560px);z-index:2240;transform:translateY(-50%) scale(.975);padding:.74rem;border-radius:20px;opacity:0;visibility:hidden;pointer-events:none}
         .th-monthly-report-disclosure.open>.th-monthly-report-panel{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-50%) scale(.975)}
         .th-monthly-report-panel.th-mr-portal-open{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(-50%) scale(1)}
         .th-mr-head{padding:.12rem .08rem .62rem}
+        .th-mr-panel-kicker{font-size:.5rem}
         .th-mr-title{font-size:1.38rem}
         .th-mr-months{margin:0 -.08rem;padding-left:.08rem;padding-right:.08rem}
         .th-mr-core{gap:.42rem;padding-top:.72rem}
@@ -187,11 +202,11 @@
         body.th-mr-overlay-open{overflow:hidden}
       }
       @media(max-width:360px){
-        .th-mr-trigger{grid-template-columns:minmax(0,1fr) auto;column-gap:.34rem}
-        .th-mr-kicker{font-size:.45rem}
+        .th-mr-trigger{column-gap:.34rem}
+        .th-mr-kicker{font-size:.54rem;letter-spacing:.145em}
         .th-mr-badge{font-size:.42rem;padding:.11rem .29rem}
-        .th-mr-value{font-size:1.14rem}
-        .th-mr-meta{font-size:.46rem}
+        .th-mr-value{font-size:1.17rem}
+        .th-mr-meta{font-size:.58rem}
         .th-monthly-report-panel{left:10px;right:10px;padding:.66rem}
         .th-mr-core{grid-template-columns:1fr 1fr;gap:.34rem}
         .th-mr-core-card{padding:.62rem .54rem .64rem}
@@ -224,12 +239,13 @@
     return card;
   }
 
-  function applyMonth(disclosure, fund, key, focusMonth = false) {
-    const month = fund?.months?.[key];
+  function applyMonth(disclosure, company, key, focusMonth = false) {
+    const month = company?.months?.[key];
     if (!month) return;
-    selectedMonthKey = key;
+    const name = disclosure.dataset.company;
+    selectedMonth.set(name, key);
     const copy = C();
-    const panel = disclosure.querySelector('.th-monthly-report-panel') || document.querySelector('.th-monthly-report-panel.th-mr-portal-open');
+    const panel = disclosure.querySelector('.th-monthly-report-panel') || document.querySelector(`.th-monthly-report-panel.th-mr-portal-open[data-company="${name}"]`);
     if (!panel) return;
 
     const title = panel.querySelector('.th-mr-title');
@@ -239,16 +255,10 @@
     }
     const generated = panel.querySelector('[data-th-mr-generated]');
     const yieldEl = panel.querySelector('[data-th-mr-yield]');
-    const tvl = panel.querySelector('[data-th-mr-tvl]');
-    if (generated) {
-      generated.textContent = money(generatedUsd(month));
-      fitCoreValue(generated);
-    }
-    if (yieldEl) {
-      yieldEl.textContent = pct(month.monthlyYieldPct);
-      fitCoreValue(yieldEl);
-    }
-    if (tvl) tvl.textContent = money0(month.averageTvlUsd);
+    const capital = panel.querySelector('[data-th-mr-capital]');
+    if (generated) { generated.textContent = money(month.generatedIncomeUsd); fitCoreValue(generated); }
+    if (yieldEl) { yieldEl.textContent = pct(month.monthlyYieldPct); fitCoreValue(yieldEl); }
+    if (capital) capital.textContent = money0(month.averageCapitalUsd);
 
     panel.querySelectorAll('.th-mr-month').forEach(btn => {
       const active = btn.dataset.month === key;
@@ -256,18 +266,17 @@
       btn.setAttribute('aria-pressed', active ? 'true' : 'false');
       if (active) btn.setAttribute('aria-current', 'date'); else btn.removeAttribute('aria-current');
     });
-    panel.setAttribute('aria-label', `${copy.reports} · ${monthLabel(key)}`);
-
+    panel.setAttribute('aria-label', `${copy.reports} · ${name} · ${monthLabel(key)}`);
     const active = Array.from(panel.querySelectorAll('.th-mr-month')).find(btn => btn.dataset.month === key);
     if (active) active.scrollIntoView({ behavior: focusMonth ? 'smooth' : 'auto', block: 'nearest', inline: 'nearest' });
   }
 
-  function buildDisclosure(state) {
+  function buildDisclosure(name, state) {
     const copy = C();
-    const { fund, keys, currentKey } = state;
-    const current = fund.months[currentKey];
+    const { company, keys, currentKey, selectedKey } = state;
+    const current = company.months[currentKey];
     const disclosure = node('div', 'th-monthly-report-disclosure');
-    disclosure.dataset.monthlyReport = COMPANY;
+    disclosure.dataset.company = name;
 
     const trigger = node('button', 'th-mr-trigger');
     trigger.type = 'button';
@@ -275,8 +284,8 @@
     trigger.appendChild(node('div', 'th-mr-kicker', copy.trigger));
     trigger.appendChild(node('span', 'th-mr-badge', `${monthShort(currentKey)} · ${copy.live}`));
     const valueWrap = node('div', 'th-mr-value-wrap');
-    valueWrap.appendChild(node('span', 'th-mr-value', money(generatedUsd(current))));
-    valueWrap.appendChild(node('span', 'th-mr-value-label', lang() === 'ru' ? 'за месяц' : 'this month'));
+    valueWrap.appendChild(node('span', 'th-mr-value', money(current.generatedIncomeUsd)));
+    valueWrap.appendChild(node('span', 'th-mr-value-label', copy.thisMonth));
     trigger.appendChild(valueWrap);
     const meta = node('div', 'th-mr-meta');
     meta.appendChild(node('span', '', pct(current.monthlyYieldPct)));
@@ -285,6 +294,7 @@
     disclosure.appendChild(trigger);
 
     const panel = node('div', 'th-monthly-report-panel');
+    panel.dataset.company = name;
     panel.setAttribute('role', 'dialog');
     panel.__thOwner = disclosure;
 
@@ -323,22 +333,24 @@
     panel.appendChild(core);
 
     const context = node('div', 'th-mr-context');
-    context.appendChild(node('div', 'th-mr-context-label', copy.avgTvl));
+    context.appendChild(node('div', 'th-mr-context-label', capitalLabel(company)));
     const contextValue = node('div', 'th-mr-context-value', '—');
-    contextValue.dataset.thMrTvl = 'true';
+    contextValue.dataset.thMrCapital = 'true';
     context.appendChild(contextValue);
     panel.appendChild(context);
 
-    const foot = node('div', 'th-mr-foot');
-    const link = node('a', 'th-mr-link');
-    link.href = '/yield-reports/';
-    link.appendChild(node('span', '', copy.full));
-    link.appendChild(svgIcon('external'));
-    foot.appendChild(link);
-    panel.appendChild(foot);
+    if (company.fullReportHref) {
+      const foot = node('div', 'th-mr-foot');
+      const link = node('a', 'th-mr-link');
+      link.href = company.fullReportHref;
+      link.appendChild(node('span', '', copy.full));
+      link.appendChild(svgIcon('external'));
+      foot.appendChild(link);
+      panel.appendChild(foot);
+    }
 
     disclosure.appendChild(panel);
-    applyMonth(disclosure, fund, selectedMonthKey || currentKey, false);
+    applyMonth(disclosure, company, selectedKey, false);
     return disclosure;
   }
 
@@ -351,7 +363,8 @@
   function closeDisclosure(owner, instant = false) {
     if (!owner) return;
     const trigger = owner.querySelector('.th-mr-trigger');
-    const panel = owner.querySelector('.th-monthly-report-panel') || document.querySelector('.th-monthly-report-panel.th-mr-portal-open');
+    const company = owner.dataset.company;
+    const panel = owner.querySelector('.th-monthly-report-panel') || document.querySelector(`.th-monthly-report-panel.th-mr-portal-open[data-company="${company}"]`);
     owner.classList.remove('open');
     trigger?.setAttribute('aria-expanded', 'false');
     const bg = document.querySelector('.th-mr-backdrop');
@@ -365,21 +378,26 @@
     }
   }
 
+  function closeOtherMonthly(owner) {
+    document.querySelectorAll('.th-monthly-report-disclosure.open').forEach(x => { if (x !== owner) closeDisclosure(x, true); });
+    const portal = document.querySelector('.th-monthly-report-panel.th-mr-portal-open');
+    if (portal?.__thOwner && portal.__thOwner !== owner) closeDisclosure(portal.__thOwner, true);
+  }
+
   function openDisclosure(owner) {
     const trigger = owner.querySelector('.th-mr-trigger');
     const panel = owner.querySelector('.th-monthly-report-panel');
     if (!trigger || !panel) return;
-    const rewards = owner.closest('.th-defitea-financial-stack')?.querySelector('.ipx-defitea-rewards');
+    closeOtherMonthly(owner);
+    const rewards = owner.closest('.th-company-financial-stack')?.querySelector('.ipx-rewards-disclosure');
     if (typeof rewards?.__ipxCloseRewardPanel === 'function') rewards.__ipxCloseRewardPanel(false);
 
     owner.classList.add('open');
     trigger.setAttribute('aria-expanded', 'true');
-    const mobile = window.matchMedia('(max-width: 760.98px)').matches;
-    if (!mobile) return;
+    if (!window.matchMedia('(max-width: 760.98px)').matches) return;
 
     panel.__thOwner = owner;
     const bg = ensureBackdrop();
-    panel.classList.remove('th-mr-portal-open');
     document.body.appendChild(panel);
     document.body.classList.add('th-mr-overlay-open');
     bg.onclick = ev => { ev.preventDefault(); closeDisclosure(owner, false); };
@@ -389,47 +407,82 @@
     }));
   }
 
-  function bind(disclosure, fund) {
+  function bind(disclosure, company) {
     if (disclosure.dataset.bound === 'true') return;
     disclosure.dataset.bound = 'true';
     const trigger = disclosure.querySelector('.th-mr-trigger');
     const close = disclosure.querySelector('.th-mr-close');
     trigger?.addEventListener('click', ev => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (disclosure.classList.contains('open')) closeDisclosure(disclosure, false);
-      else openDisclosure(disclosure);
+      ev.preventDefault(); ev.stopPropagation();
+      if (disclosure.classList.contains('open')) closeDisclosure(disclosure, false); else openDisclosure(disclosure);
     });
-    close?.addEventListener('click', ev => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      closeDisclosure(disclosure, false);
-    });
+    close?.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); closeDisclosure(disclosure, false); });
     disclosure.querySelectorAll('.th-mr-month').forEach(btn => {
       btn.addEventListener('click', ev => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        applyMonth(disclosure, fund, btn.dataset.month, true);
+        ev.preventDefault(); ev.stopPropagation();
+        applyMonth(disclosure, company, btn.dataset.month, true);
       });
     });
   }
 
-  function fingerprint(state) {
-    const { fund, keys, currentKey } = state;
-    return JSON.stringify([
-      lang(), currentKey,
+  function fingerprint(name, state) {
+    const { company, keys, currentKey } = state;
+    return JSON.stringify([lang(), name, currentKey, company.capitalMetric, company.fullReportHref,
       ...keys.map(key => {
-        const m = fund.months[key];
-        return [key, generatedUsd(m), m.monthlyYieldPct, m.averageTvlUsd, m.status];
-      })
-    ]);
+        const m = company.months[key];
+        return [key, m.generatedIncomeUsd, m.monthlyYieldPct, m.averageCapitalUsd, m.status];
+      })]);
   }
 
-  function render() {
-    const state = currentState();
-    if (!state) return false;
-    ensureStyle();
+  function renderStandard(name, state) {
+    const item = Array.from(document.querySelectorAll('.ib-item[data-nm]')).find(el => el.dataset.nm === name);
+    const ledger = item?.querySelector('.ipx-live-ledger');
+    const rewards = ledger?.querySelector('.ipx-rewards-disclosure');
+    if (!item || !ledger || !rewards) return false;
 
+    let stack = ledger.querySelector(':scope > .th-company-financial-stack');
+    if (!stack) {
+      stack = node('div', 'th-company-financial-stack');
+      rewards.parentNode.insertBefore(stack, rewards);
+      stack.appendChild(rewards);
+    } else if (rewards.parentNode !== stack) {
+      stack.insertBefore(rewards, stack.firstChild);
+    }
+
+    const fp = fingerprint(name, state);
+    let disclosure = stack.querySelector(':scope > .th-monthly-report-disclosure');
+    if (disclosure?.dataset.fingerprint === fp) { bind(disclosure, state.company); return true; }
+    if (disclosure) closeDisclosure(disclosure, true);
+    const next = buildDisclosure(name, state);
+    next.dataset.fingerprint = fp;
+    if (disclosure?.parentNode) disclosure.replaceWith(next); else stack.appendChild(next);
+    bind(next, state.company);
+    return true;
+  }
+
+  function renderMonetra(state) {
+    const passport = document.getElementById('stablePassportMonetra');
+    const anchor = passport?.querySelector('.scp-essential-actions-paired');
+    if (!passport || !anchor) return false;
+    let slot = passport.querySelector(':scope > .th-stable-monthly-report-slot');
+    if (!slot) {
+      slot = node('div', 'th-stable-monthly-report-slot');
+      anchor.parentNode.insertBefore(slot, anchor);
+    }
+    const fp = fingerprint('Monetra.eth', state);
+    let disclosure = slot.querySelector(':scope > .th-monthly-report-disclosure');
+    if (disclosure?.dataset.fingerprint === fp) { bind(disclosure, state.company); return true; }
+    if (disclosure) closeDisclosure(disclosure, true);
+    const next = buildDisclosure('Monetra.eth', state);
+    next.dataset.fingerprint = fp;
+    if (disclosure?.parentNode) disclosure.replaceWith(next); else slot.appendChild(next);
+    bind(next, state.company);
+    return true;
+  }
+
+  function renderAll() {
+    if (!snapshot?.companies) return false;
+    ensureStyle();
     const orphan = document.querySelector('.th-monthly-report-panel.th-mr-portal-open');
     if (orphan?.__thOwner && !orphan.__thOwner.isConnected) {
       orphan.classList.remove('th-mr-portal-open');
@@ -438,41 +491,20 @@
       orphan.remove();
     }
 
-    const item = document.querySelector('.ib-item[data-nm="defitea.eth"]');
-    const ledger = item?.querySelector('.ipx-defitea-live-ledger');
-    const rewards = ledger?.querySelector('.ipx-defitea-rewards');
-    if (!item || !ledger || !rewards) return false;
-
-    let stack = ledger.querySelector(':scope > .th-defitea-financial-stack');
-    if (!stack) {
-      stack = node('div', 'th-defitea-financial-stack');
-      rewards.parentNode.insertBefore(stack, rewards);
-      stack.appendChild(rewards);
-    } else if (rewards.parentNode !== stack) {
-      stack.insertBefore(rewards, stack.firstChild);
+    let rendered = 0;
+    for (const name of Object.keys(snapshot.companies)) {
+      const state = reportState(name);
+      if (!state) continue;
+      if (name === 'Monetra.eth') rendered += renderMonetra(state) ? 1 : 0;
+      else rendered += renderStandard(name, state) ? 1 : 0;
     }
-
-    const fp = fingerprint(state);
-    let disclosure = stack.querySelector(':scope > .th-monthly-report-disclosure');
-    if (disclosure?.dataset.fingerprint === fp) {
-      bind(disclosure, state.fund);
-      return true;
-    }
-    if (disclosure) closeDisclosure(disclosure, true);
-    const next = buildDisclosure(state);
-    next.dataset.fingerprint = fp;
-    if (disclosure?.parentNode) disclosure.replaceWith(next); else stack.appendChild(next);
-    bind(next, state.fund);
-    return true;
+    return rendered > 0;
   }
 
   function queueRender() {
     if (renderQueued) return;
     renderQueued = true;
-    requestAnimationFrame(() => {
-      renderQueued = false;
-      render();
-    });
+    requestAnimationFrame(() => { renderQueued = false; renderAll(); });
   }
 
   function bindGlobalClose() {
@@ -480,13 +512,14 @@
     window.__TH_MONTHLY_REPORT_GLOBAL_CLOSE__ = true;
     document.addEventListener('pointerdown', ev => {
       if (window.matchMedia('(max-width: 760.98px)').matches) return;
-      const owner = document.querySelector('.th-monthly-report-disclosure.open');
-      if (owner && !owner.contains(ev.target)) closeDisclosure(owner, false);
+      document.querySelectorAll('.th-monthly-report-disclosure.open').forEach(owner => {
+        if (!owner.contains(ev.target)) closeDisclosure(owner, false);
+      });
     });
     document.addEventListener('keydown', ev => {
       if (ev.key !== 'Escape') return;
-      const owner = document.querySelector('.th-monthly-report-disclosure.open')
-        || document.querySelector('.th-monthly-report-panel.th-mr-portal-open')?.__thOwner;
+      const portalOwner = document.querySelector('.th-monthly-report-panel.th-mr-portal-open')?.__thOwner;
+      const owner = portalOwner || document.querySelector('.th-monthly-report-disclosure.open');
       if (owner) closeDisclosure(owner, false);
     });
   }
@@ -494,11 +527,11 @@
   async function start() {
     try {
       await load();
-      render();
+      renderAll();
       bindGlobalClose();
       const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.2.2-defitea-monthly-archive-numeric-rhythm-plus-passport-priority-loader', render };
+      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.3.0-universal-company-monthly-reports', renderAll };
     } catch (err) {
       console.warn('[Monthly Reports]', err && err.message ? err.message : err);
     }
