@@ -173,13 +173,7 @@ jobs:
               echo "Unified capital writer conflict; refusing to guess."
               exit 1
             fi
-            node - <<'NODE'
-            const fs=require('fs');
-            const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
-            if(m.semantics?.perAssetAuthoritySelectionApplied!==true||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Canonical Market Data lost during rebase');
-            const icp=m.prices?.['internet-computer'];
-            if(icp?.authority?.selectedLane!=='onchain'||!(Number(icp?.usd)>0))throw new Error('Canonical ICP onchain price lost during rebase');
-            NODE
+            node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));if(m.semantics?.perAssetAuthoritySelectionApplied!==true||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Canonical Market Data lost during rebase');const icp=m.prices?.['internet-computer'];if(icp?.authority?.selectedLane!=='onchain'||!(Number(icp?.usd)>0))throw new Error('Canonical ICP onchain price lost during rebase');"
             NODE_OPTIONS='--import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs' \
             ETH_RPC_URL='${{ secrets.ETH_RPC_URL }}' \
             BASE_RPC_URL='${{ secrets.BASE_RPC_URL }}' \
