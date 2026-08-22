@@ -1,4 +1,4 @@
-/* The Holding · Rewards Received lifecycle adapter · v0.1.1
+/* The Holding · Rewards Received lifecycle adapter · v0.1.2
  * Presentation only. Reads canonical /companies/rewards-data.json and appends a
  * separate Received history section to Company Passports when onchain evidence exists.
  * Received never changes current Claimable/Unclaimed headline totals.
@@ -23,6 +23,12 @@
     const t = Date.parse(iso || '');
     if (!Number.isFinite(t)) return null;
     return new Intl.DateTimeFormat(lang() === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(t));
+  };
+  const node = (tag, className, text) => {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text !== undefined && text !== null) el.textContent = String(text);
+    return el;
   };
 
   function ensureStyle() {
@@ -64,6 +70,29 @@
     ]);
   }
 
+  function receivedRow(row) {
+    const el = node('div', 'ipx-reward-row');
+    const left = node('div');
+    const protocol = node('div', 'ipx-reward-protocol', row.protocol || '40 Acres · veVELO');
+    protocol.appendChild(node('span', 'ipx-reward-state received', lang() === 'ru' ? 'Получено' : 'Received'));
+    left.appendChild(protocol);
+
+    const count = Number(row.transferCount || 0);
+    const first = row.transfers?.[0]?.timestamp || row.trackingSince;
+    const last = row.transfers?.[row.transfers.length - 1]?.timestamp || null;
+    const dates = first && last && first !== last ? `${dateText(first)} – ${dateText(last)}` : dateText(first);
+    const meta = [row.symbol, row.chain, dates, count ? `${count} ${lang() === 'ru' ? 'выплат' : (count === 1 ? 'payment' : 'payments')}` : null].filter(Boolean).join(' · ');
+    left.appendChild(node('div', 'ipx-reward-meta', meta));
+    left.appendChild(node('div', 'ipx-reward-meta ipx-received-proof', lang() === 'ru' ? '40 Acres · подтверждено onchain' : '40 Acres · onchain proven'));
+    el.appendChild(left);
+
+    const right = node('div', 'ipx-reward-right');
+    right.appendChild(node('div', 'ipx-reward-amount', amountText(row)));
+    if (finite(row.usdValue)) right.appendChild(node('div', 'ipx-reward-usd', money2(row.usdValue)));
+    el.appendChild(right);
+    return el;
+  }
+
   function renderItem(item) {
     const name = item?.dataset?.nm;
     const c = companyState(name);
@@ -82,25 +111,15 @@
     existing?.remove();
     ensureStyle();
 
-    const section = document.createElement('div');
-    section.className = 'ipx-received-section';
+    const section = node('div', 'ipx-received-section');
     section.dataset.receivedLifecycle = 'onchain-proven';
     section.dataset.receivedFingerprint = fingerprint;
+    const head = node('div', 'ipx-received-head');
+    head.appendChild(node('div', 'ipx-received-title', lang() === 'ru' ? 'Получено · история' : 'Received · History'));
     const totalUsd = finite(c.receivedIncomeUsd) ? Number(c.receivedIncomeUsd) : null;
-    section.innerHTML = `<div class="ipx-received-head"><div class="ipx-received-title">${lang() === 'ru' ? 'Получено · история' : 'Received · History'}</div><div class="ipx-received-total">${totalUsd === null ? '' : money2(totalUsd)}</div></div>`;
-
-    for (const row of rows) {
-      const el = document.createElement('div');
-      el.className = 'ipx-reward-row';
-      const count = Number(row.transferCount || 0);
-      const first = row.transfers?.[0]?.timestamp || row.trackingSince;
-      const last = row.transfers?.[row.transfers.length - 1]?.timestamp || null;
-      const dates = first && last && first !== last ? `${dateText(first)} – ${dateText(last)}` : dateText(first);
-      const meta = [row.symbol, row.chain, dates, count ? `${count} ${lang() === 'ru' ? 'выплат' : (count === 1 ? 'payment' : 'payments')}` : null].filter(Boolean).join(' · ');
-      const proof = lang() === 'ru' ? '40 Acres · подтверждено onchain' : '40 Acres · onchain proven';
-      el.innerHTML = `<div><div class="ipx-reward-protocol">${row.protocol || '40 Acres · veVELO'}<span class="ipx-reward-state received">${lang() === 'ru' ? 'Получено' : 'Received'}</span></div><div class="ipx-reward-meta">${meta}</div><div class="ipx-reward-meta ipx-received-proof">${proof}</div></div><div class="ipx-reward-right"><div class="ipx-reward-amount">${amountText(row)}</div>${finite(row.usdValue) ? `<div class="ipx-reward-usd">${money2(row.usdValue)}</div>` : ''}</div>`;
-      section.appendChild(el);
-    }
+    head.appendChild(node('div', 'ipx-received-total', totalUsd === null ? '' : money2(totalUsd)));
+    section.appendChild(head);
+    rows.forEach(row => section.appendChild(receivedRow(row)));
 
     const note = panel.querySelector('.ipx-reward-panel-note');
     if (note) panel.insertBefore(section, note); else panel.appendChild(section);
@@ -127,7 +146,7 @@
       renderAll();
       const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.1.1-40acres-received-history', renderAll };
+      window.__TH_REWARDS_RECEIVED_ADAPTER__ = { version: '0.1.2-40acres-received-history', renderAll };
     } catch (err) {
       console.warn('[Rewards Received]', err && err.message ? err.message : err);
     }
