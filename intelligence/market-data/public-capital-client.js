@@ -1,5 +1,5 @@
 /*
- * The Holding · Public Capital Client v0.3.3
+ * The Holding · Public Capital Client v0.3.4
  * ------------------------------------------
  * Read-only browser client for generated local Market Data / Public Capital.
  * Legacy simple-price calls are intercepted locally; browsers never need to
@@ -13,11 +13,13 @@
  * canonical 11-engine inventory and productive-mechanism naming.
  * v0.3.3 turns the homepage Monetra target list into a live canonical strategy
  * ledger sourced from the same Stable Index state as the Company Passport.
+ * v0.3.4 preserves two strategies per row on mobile for Defitea and Monetra,
+ * with compact premium typography and no one-column collapse on narrow phones.
  */
 (function (global) {
   'use strict';
 
-  const VERSION = '0.3.3';
+  const VERSION = '0.3.4';
   const DEFAULT_URL = '/intelligence/market-data/public-capital-state.json';
   const MARKET_URL = '/intelligence/market-data/market-data.json';
   const PRODUCTIVITY_URL = '/companies/productivity-data.json';
@@ -257,8 +259,8 @@
       '.fund-card[data-fund="defitea"] .protocol-card:hover::before{opacity:1}',
       '.fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1){grid-column:2/span 2}',
       '.fund-card[data-fund="defitea"] .protocol-meta{line-height:1.35}',
-      '@media(max-width:768px){.fund-card[data-fund="defitea"] .protocols-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fund-card[data-fund="defitea"] .protocol-card,.fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1){grid-column:auto;min-height:72px}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){grid-column:1/-1;width:calc(50% - .375rem);justify-self:center}}',
-      '@media(max-width:480px){.fund-card[data-fund="defitea"] .protocols-grid{grid-template-columns:1fr}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){grid-column:auto;width:100%}}'
+      '@media(max-width:768px){.fund-card[data-fund="defitea"] .protocols-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}.fund-card[data-fund="defitea"] .protocol-card,.fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1){grid-column:auto;min-width:0;min-height:86px;padding:.9rem .72rem;align-items:center;text-align:center}.fund-card[data-fund="defitea"] .protocol-name{font-size:.92rem;line-height:1.2;white-space:normal;overflow-wrap:anywhere}.fund-card[data-fund="defitea"] .protocol-meta{font-size:.7rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){grid-column:1/-1;width:calc(50% - .275rem);justify-self:center}}',
+      '@media(max-width:390px){.fund-card[data-fund="defitea"] .protocol-card,.fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1){min-height:88px;padding:.82rem .58rem}.fund-card[data-fund="defitea"] .protocol-name{font-size:.9rem}.fund-card[data-fund="defitea"] .protocol-meta{font-size:.68rem}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){width:calc(50% - .275rem)}}'
     ].join('');
     (document.head || document.documentElement).appendChild(style);
   }
@@ -446,7 +448,8 @@
       '.fund-card[data-fund="monetra"] .th-ms-rate-value{font-size:1.02rem;font-weight:500;color:var(--text-primary);letter-spacing:-.02em;line-height:1.15}',
       '.fund-card[data-fund="monetra"] .th-ms-rate-label{font-size:.59rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-tertiary);margin-top:.22rem}',
       '.fund-card[data-fund="monetra"] .th-monetra-strategy-foot{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.78rem .15rem 0;font-size:.65rem;color:var(--text-tertiary);line-height:1.45}',
-      '@media(max-width:768px){.fund-card[data-fund="monetra"] .th-monetra-strategy-grid{grid-template-columns:1fr}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-child(odd){border-right:0}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-last-child(2){border-bottom:1px solid var(--border-color)}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:last-child{border-bottom:0}.fund-card[data-fund="monetra"] .th-monetra-strategy-foot{align-items:flex-start;flex-direction:column;gap:.25rem}}'
+      '@media(max-width:768px){.fund-card[data-fund="monetra"] .th-monetra-strategy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fund-card[data-fund="monetra"] .th-monetra-strategy-row{grid-template-columns:minmax(0,1fr);gap:.52rem;min-width:0;min-height:124px;padding:.9rem .72rem;align-content:center;text-align:center}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-child(odd){border-right:1px solid var(--border-color)}.fund-card[data-fund="monetra"] .th-ms-protocol{font-size:.64rem;line-height:1.2;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;margin-bottom:.22rem}.fund-card[data-fund="monetra"] .th-ms-asset{font-size:.95rem;line-height:1.22;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.fund-card[data-fund="monetra"] .th-ms-detail{font-size:.64rem;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;margin-top:.22rem}.fund-card[data-fund="monetra"] .th-ms-rate{min-width:0;text-align:center;display:flex;justify-content:center;align-items:baseline;gap:.38rem}.fund-card[data-fund="monetra"] .th-ms-rate-value{font-size:.96rem}.fund-card[data-fund="monetra"] .th-ms-rate-label{font-size:.54rem;margin-top:0}.fund-card[data-fund="monetra"] .th-monetra-strategy-foot{align-items:flex-start;flex-direction:column;gap:.25rem}}',
+      '@media(max-width:390px){.fund-card[data-fund="monetra"] .th-monetra-strategy-row{min-height:126px;padding:.82rem .56rem;gap:.46rem}.fund-card[data-fund="monetra"] .th-ms-protocol{font-size:.62rem}.fund-card[data-fund="monetra"] .th-ms-asset{font-size:.91rem}.fund-card[data-fund="monetra"] .th-ms-detail{font-size:.61rem}.fund-card[data-fund="monetra"] .th-ms-rate-value{font-size:.92rem}.fund-card[data-fund="monetra"] .th-ms-rate-label{font-size:.52rem}}'
     ].join('');
     (document.head || document.documentElement).appendChild(style);
   }
