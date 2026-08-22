@@ -1,4 +1,4 @@
-name: Diagnose Recovery Chain
+name: Diagnose Reporting Production Refresh
 
 on:
   pull_request:
@@ -7,26 +7,38 @@ on:
 
 permissions:
   contents: read
-  actions: read
+  actions: write
 
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 8
     steps:
-      - name: Inspect recovery chain run history
+      - name: Dispatch and await canonical Reporting refresh
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          echo '=== post-261 recovery verification ==='
-          for workflow in resume-cognitive-stack-after-release.yml refresh-cognitive-stack.yml update-learning-loop.yml update-project-memory-bootstrap.yml; do
-            echo "=== $workflow recent runs ==="
-            gh run list --workflow "$workflow" --limit 8 --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle
-            latest="$(gh run list --workflow "$workflow" --limit 1 --json databaseId --jq '.[0].databaseId')"
-            test -n "$latest"
-            echo "=== $workflow latest: $latest ==="
-            gh run view "$latest" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
+          before_id="$(gh run list --workflow update-reporting.yml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run update-reporting.yml --ref main
+
+          run_id=""
+          for attempt in $(seq 1 40); do
+            run_id="$(
+              gh run list \
+                --workflow update-reporting.yml \
+                --event workflow_dispatch \
+                --limit 10 \
+                --json databaseId,createdAt \
+                --jq "[.[] | select((.databaseId | tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty"
+            )"
+            if [ -n "$run_id" ]; then break; fi
+            sleep 5
           done
+          test -n "$run_id"
+          echo "Awaiting canonical Reporting run $run_id"
+          gh run watch "$run_id" --exit-status --interval 5
+          gh run view "$run_id" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
