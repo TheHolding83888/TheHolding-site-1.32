@@ -51,17 +51,24 @@ jobs:
           const handoffRequired = [
             "- '.github/workflows/resume-cognitive-stack-after-release.yml'",
             'gh run watch "$cognitive_run_id" --exit-status',
-            'gh workflow run update-learning-loop.yml --ref main'
+            'gh workflow run update-learning-loop.yml --ref main',
+            'gh run watch "$learning_run_id" --exit-status',
+            'gh workflow run update-project-memory-bootstrap.yml --ref main',
+            'gh run watch "$memory_run_id" --exit-status'
           ];
           for (const token of handoffRequired) {
-            if (!resume.includes(token)) throw new Error(`${resumeFile}: missing Cognitive → Learning recovery token ${token}`);
+            if (!resume.includes(token)) throw new Error(`${resumeFile}: missing recovery-chain token ${token}`);
           }
+
           const cognitiveDispatch = resume.indexOf('gh workflow run refresh-cognitive-stack.yml --ref main');
           const cognitiveSuccess = resume.indexOf('gh run watch "$cognitive_run_id" --exit-status');
           const learningDispatch = resume.indexOf('gh workflow run update-learning-loop.yml --ref main');
-          if (!(cognitiveDispatch >= 0 && cognitiveSuccess > cognitiveDispatch && learningDispatch > cognitiveSuccess)) {
-            throw new Error(`${resumeFile}: Learning dispatch must occur only after the recovery-dispatched Cognitive run succeeds`);
+          const learningSuccess = resume.indexOf('gh run watch "$learning_run_id" --exit-status');
+          const memoryDispatch = resume.indexOf('gh workflow run update-project-memory-bootstrap.yml --ref main');
+          const memorySuccess = resume.indexOf('gh run watch "$memory_run_id" --exit-status');
+          if (!(cognitiveDispatch >= 0 && cognitiveSuccess > cognitiveDispatch && learningDispatch > cognitiveSuccess && learningSuccess > learningDispatch && memoryDispatch > learningSuccess && memorySuccess > memoryDispatch)) {
+            throw new Error(`${resumeFile}: recovery must enforce Cognitive SUCCESS → Learning SUCCESS → Project Memory SUCCESS`);
           }
-          console.log('Cognitive recovery Security-order and Learning-handoff contracts PASS');
+          console.log('Cognitive recovery Security → Cognitive → Learning → Project Memory ordering PASS');
           NODE
           git diff --check

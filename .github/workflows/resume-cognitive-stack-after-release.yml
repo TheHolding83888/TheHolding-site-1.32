@@ -18,7 +18,7 @@ concurrency:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       RECOVERY_PUSH_AT: ${{ github.event.head_commit.timestamp }}
     steps:
@@ -110,10 +110,68 @@ jobs:
           echo "Awaiting recovery-dispatched Cognitive Stack run $cognitive_run_id"
           gh run watch "$cognitive_run_id" --exit-status --interval 5
 
-      - name: Dispatch canonical Learning after Cognitive success
+      - name: Dispatch and await canonical Learning after Cognitive success
+        id: learning
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          before_id="$(gh run list --workflow update-learning-loop.yml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           echo "Cognitive Stack run ${{ steps.cognitive.outputs.cognitive_run_id }} succeeded; dispatching Learning on canonical main."
           gh workflow run update-learning-loop.yml --ref main
+
+          learning_run_id=""
+          for attempt in $(seq 1 40); do
+            learning_run_id="$(
+              gh run list \
+                --workflow update-learning-loop.yml \
+                --event workflow_dispatch \
+                --limit 10 \
+                --json databaseId,createdAt \
+                --jq "[.[] | select((.databaseId | tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty"
+            )"
+            if [ -n "$learning_run_id" ]; then break; fi
+            sleep 5
+          done
+          if [ -z "$learning_run_id" ]; then
+            echo 'Could not identify the recovery-dispatched Learning run.'
+            exit 1
+          fi
+
+          echo "learning_run_id=$learning_run_id" >> "$GITHUB_OUTPUT"
+          echo "Awaiting recovery-dispatched Learning run $learning_run_id"
+          gh run watch "$learning_run_id" --exit-status --interval 5
+
+      - name: Dispatch and await Project Memory after Learning success
+        id: memory
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          before_id="$(gh run list --workflow update-project-memory-bootstrap.yml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Learning run ${{ steps.learning.outputs.learning_run_id }} succeeded; dispatching Project Memory Bootstrap on canonical main."
+          gh workflow run update-project-memory-bootstrap.yml --ref main
+
+          memory_run_id=""
+          for attempt in $(seq 1 40); do
+            memory_run_id="$(
+              gh run list \
+                --workflow update-project-memory-bootstrap.yml \
+                --event workflow_dispatch \
+                --limit 10 \
+                --json databaseId,createdAt \
+                --jq "[.[] | select((.databaseId | tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty"
+            )"
+            if [ -n "$memory_run_id" ]; then break; fi
+            sleep 5
+          done
+          if [ -z "$memory_run_id" ]; then
+            echo 'Could not identify the recovery-dispatched Project Memory run.'
+            exit 1
+          fi
+
+          echo "memory_run_id=$memory_run_id" >> "$GITHUB_OUTPUT"
+          echo "Awaiting recovery-dispatched Project Memory run $memory_run_id"
+          gh run watch "$memory_run_id" --exit-status --interval 5
