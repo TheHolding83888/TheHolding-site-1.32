@@ -5,6 +5,8 @@ on:
     paths:
       - 'reporting/reporting-engine.mjs'
       - 'reporting/reporting-engine-validation.mjs'
+      - 'reporting/defitea-income-composition.mjs'
+      - 'reporting/defitea-income-composition-validation.mjs'
       - '.github/workflows/update-reporting.yml'
       - '.github/workflows/verify-reporting-layer.yml'
       - 'yield-reports/index.html'
@@ -32,14 +34,18 @@ jobs:
           set -euo pipefail
           node --check reporting/reporting-engine.mjs
           node --check reporting/reporting-engine-validation.mjs
+          node --check reporting/defitea-income-composition.mjs
+          node --check reporting/defitea-income-composition-validation.mjs
           node reporting/reporting-engine-validation.mjs
+          node reporting/defitea-income-composition-validation.mjs
           git diff --check
 
-      - name: Exercise full writer without network price discovery
+      - name: Exercise full writer and income composition
         shell: bash
         run: |
           set -euo pipefail
           cp reporting/reporting-data.json /tmp/reporting-data.json
+          rm -f /tmp/defitea-income-ledger.json
           DEFITEA_STATE_FILE=./companies/defitea-canonical-state.json \
           PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
           MARKET_DATA_FILE=./intelligence/market-data/market-data.json \
@@ -48,15 +54,39 @@ jobs:
           EMBEDDED_LEDGER_FILE=./companies/embedded-yield-ledger.json \
           REPORTING_DATA_FILE=/tmp/reporting-data.json \
           node reporting/reporting-engine.mjs
+          PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+          REWARDS_DATA_FILE=./companies/rewards-data.json \
+          REPORTING_DATA_FILE=/tmp/reporting-data.json \
+          DEFITEA_INCOME_LEDGER_FILE=/tmp/defitea-income-ledger.json \
+          node reporting/defitea-income-composition.mjs
           node - <<'NODE'
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('/tmp/reporting-data.json','utf8'));
+          const l=JSON.parse(fs.readFileSync('/tmp/defitea-income-ledger.json','utf8'));
           const d=r.funds?.['defitea.eth'];
           if(r.version!=='1.2.0-defitea-canonical-market-data') throw new Error('version drift');
           if(d?.latestSnapshot?.positionCount!==11||d?.latestSnapshot?.rateCoveredPositionCount!==11||d?.latestSnapshot?.coverage!==1) throw new Error('Defitea 11/11 runtime proof failed');
           if(d?.latestSnapshot?.priceAuthority!=='canonical-selected-market-data') throw new Error('canonical Market Data runtime binding failed');
           if(d?.vlCvxReconciliation?.claimableSettlementAddedToReferenceCashFlow!==false) throw new Error('vlCVX additive-double-count guard failed');
-          console.log('Reporting candidate runtime PASS');
+          if(d?.incomeComposition?.version!=='0.1-defitea-associated-income-plus-votemarket-events') throw new Error('income composition runtime proof failed');
+          if(d?.incomeComposition?.associatedCompanyTvlIncluded!==false||d?.incomeComposition?.tvlSemantic!=='defitea-only') throw new Error('associated-company TVL boundary failed');
+          if(l?.version!=='0.1-defitea-income-composition'||l?.accounting?.currentClaimableBalanceSummedDaily!==false) throw new Error('income ledger runtime contract failed');
+          if((l?.contributorDaily||[]).filter(x=>x.date===d.latestSnapshot.date).length!==2) throw new Error('both associated-company daily contributors not materialized');
+          if((l?.contributors||[]).some(x=>x.includedInDefiteaTvl!==false)) throw new Error('contributor TVL exclusion runtime proof failed');
+          const vm=l?.voteMarketEvents||[];
+          if(new Set(vm.map(x=>x.eventKey)).size!==vm.length) throw new Error('VoteMarket event dedupe runtime proof failed');
+          if(vm.some(x=>x.eventDate<d.trackingStartedAt||!(Number(x.usdValue)>0))) throw new Error('VoteMarket event admission runtime proof failed');
+          const current=d.months?.[d.latestSnapshot.date.slice(0,7)];
+          if(current?.mode==='reference-model'){
+            const expected=Number(current.baseDefiteaReferenceCashFlowUsd||0)+Number(current.associatedCompanyReferenceCashFlowUsd||0)+Number(current.voteMarketObservedIncomeUsd||0);
+            if(Math.abs(Number(current.cashFlowUsd)-expected)>0.011) throw new Error('unified cash-flow arithmetic runtime proof failed');
+          }
+          console.log('Reporting + Defitea income composition candidate runtime PASS',{
+            defiteaTvlUsd:d.latestSnapshot.totalValueUsd,
+            contributorEntries:(l.contributorDaily||[]).length,
+            voteMarketEvents:vm.length,
+            currentMonthCashFlowUsd:current?.cashFlowUsd
+          });
           NODE
 
       - name: Guard independent price discovery and authority expansion
@@ -66,12 +96,13 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const engine=fs.readFileSync('reporting/reporting-engine.mjs','utf8');
+          const composition=fs.readFileSync('reporting/defitea-income-composition.mjs','utf8');
           const workflow=fs.readFileSync('.github/workflows/update-reporting.yml','utf8');
           for(const bad of ['api.coingecko.com/api/v3/simple/price','COINGECKO_API_KEY','getCoinGeckoPrices(','COMPANY_PAGE_FILE','parseCompanyBook(']){
-            if(engine.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
+            if(engine.includes(bad)||composition.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
           }
           for(const bad of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']){
-            if(engine.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
+            if(engine.includes(bad)||composition.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
           }
           console.log('Reporting authority boundary PASS');
           NODE

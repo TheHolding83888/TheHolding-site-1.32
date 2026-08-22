@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   schedule:
     # One daily reporting snapshot for Defitea + Monetra.
-    # Runs after the 05:37 UTC Stable Capital workflow and after the 06:07 UTC
-    # shared Market Data heartbeat, avoiding the old same-minute price-writer race.
+    # Runs after the 04:57 UTC Rewards workflow, the 05:37 UTC Stable Capital
+    # workflow and the 06:07 UTC shared Market Data heartbeat.
     - cron: '22 6 * * *'
 
 permissions:
@@ -36,12 +36,16 @@ jobs:
           set -euo pipefail
           node --check reporting/reporting-engine.mjs
           node --check reporting/reporting-engine-validation.mjs
+          node --check reporting/defitea-income-composition.mjs
+          node --check reporting/defitea-income-composition-validation.mjs
           test -s companies/defitea-canonical-state.json
           test -s companies/productivity-data.json
+          test -s companies/rewards-data.json
           test -s intelligence/market-data/market-data.json
           test -s companies/stable-index-data.json
           test -s companies/embedded-yield-ledger.json
           node reporting/reporting-engine-validation.mjs
+          node reporting/defitea-income-composition-validation.mjs
           node - <<'NODE'
           const fs=require('fs');
           const i=JSON.parse(fs.readFileSync('companies/stable-index-data.json','utf8'));
@@ -65,6 +69,14 @@ jobs:
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
         run: node reporting/reporting-engine.mjs
 
+      - name: Compose Defitea associated income + VoteMarket events
+        env:
+          PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          REPORTING_DATA_FILE: ./reporting/reporting-data.json
+          DEFITEA_INCOME_LEDGER_FILE: ./reporting/defitea-income-ledger.json
+        run: node reporting/defitea-income-composition.mjs
+
       - name: Validate generated reporting data
         shell: bash
         run: |
@@ -86,11 +98,30 @@ jobs:
           if(s.missingPrices?.length||s.fallbackPrices?.length) throw new Error('legacy Reporting fallback arrays must remain empty under canonical Market Data authority');
           if(d.vlCvxReconciliation?.referenceIncomeEngine!=='convex_vlcvx'||d.vlCvxReconciliation?.referenceAprIncludesVotiumIncentives!==true||d.vlCvxReconciliation?.claimableSettlementAddedToReferenceCashFlow!==false) throw new Error('Defitea vlCVX reconciliation boundary invalid');
 
+          const composition=d.incomeComposition;
+          if(!composition||composition.version!=='0.1-defitea-associated-income-plus-votemarket-events') throw new Error('Defitea income composition missing');
+          if(composition.associatedCompanyTvlIncluded!==false||composition.tvlSemantic!=='defitea-only') throw new Error('Associated-company TVL leaked into Defitea TVL semantics');
+          if(JSON.stringify(composition.contributors)!==JSON.stringify(['YieldRing.eth','05081966.eth'])) throw new Error('Defitea income contributor contract drift');
+          if(JSON.stringify(composition.voteMarketRoutes)!==JSON.stringify(['votemarket-vecrv','votemarket-vefxn'])) throw new Error('Defitea VoteMarket route contract drift');
+
+          const ledger=JSON.parse(fs.readFileSync('reporting/defitea-income-ledger.json','utf8'));
+          if(ledger.version!=='0.1-defitea-income-composition') throw new Error('Defitea income ledger version drift');
+          if(ledger.accounting?.associatedCompanyTvlIncluded!==false||ledger.accounting?.currentClaimableBalanceSummedDaily!==false) throw new Error('Defitea income ledger accounting boundary invalid');
+          if((ledger.contributors||[]).some(x=>x.includedInDefiteaTvl!==false||x.incomeIncludedInDefiteaCashFlow!==true)) throw new Error('Defitea contributor capital boundary invalid');
+          const keys=(ledger.voteMarketEvents||[]).map(x=>x.eventKey);
+          if(new Set(keys).size!==keys.length) throw new Error('VoteMarket income ledger duplicate event identity');
+          if((ledger.voteMarketEvents||[]).some(x=>x.eventDate<d.trackingStartedAt||!(Number(x.usdValue)>0)||x.usdValueFrozenAtFirstAdmission!==true)) throw new Error('VoteMarket event admission boundary invalid');
+
           const auto=Object.values(d.months||{}).filter(x=>x?.mode==='reference-model').sort((a,b)=>String(a.month).localeCompare(String(b.month)));
           if(auto.length){
             const first=auto[0];
             if(first.firstTrackingMonth!==true||first.unobservedPreTrackingDaysBackfilled!==false) throw new Error('Defitea first tracking month provenance missing');
             if(first.partialPeriod===true&&Number(first.normalizationFactor)!==1) throw new Error('Defitea first tracking month must never fabricate pre-tracking days');
+            for(const m of auto){
+              if(m.associatedCompanyTvlIncluded!==false||m.tvlSemantic!=='defitea-only') throw new Error('Defitea monthly TVL semantic drift '+m.month);
+              const expected=Number(m.baseDefiteaReferenceCashFlowUsd||0)+Number(m.associatedCompanyReferenceCashFlowUsd||0)+Number(m.voteMarketObservedIncomeUsd||0);
+              if(Math.abs(Number(m.cashFlowUsd)-expected)>0.011) throw new Error('Defitea monthly income composition arithmetic drift '+m.month);
+            }
           }
 
           const m=r.funds?.['Monetra.eth'];
@@ -98,7 +129,7 @@ jobs:
           if(!(Number(m.latestSnapshot?.stableCapitalUsd)>90)) throw new Error('Monetra Stable Capital missing');
           if(!Number.isFinite(Number(m.latestSnapshot?.referenceApyPct))) throw new Error('Monetra APY missing');
           if(!Number.isFinite(Number(m.latestSnapshot?.modeledDailyGeneratedIncomeUsd))) throw new Error('Monetra daily generated income missing');
-          console.log('Dual-fund reporting validation OK.');
+          console.log('Dual-fund reporting + Defitea income composition validation OK.');
           NODE
 
       - name: Commit reporting snapshot
@@ -106,7 +137,7 @@ jobs:
           set -euo pipefail
           git config user.name "The Holding Data Engine"
           git config user.email "data-engine@theholding.ai"
-          git add reporting/reporting-data.json
+          git add reporting/reporting-data.json reporting/defitea-income-ledger.json
           if git diff --cached --quiet; then
             echo "No reporting data changes."
           else
