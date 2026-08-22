@@ -1,5 +1,11 @@
 #!/usr/bin/env node
-await import('./forty-acres-received-ledger.mjs');
+try {
+  await import('./forty-acres-received-ledger.mjs');
+} catch (err) {
+  const missingEthers = err?.code === 'ERR_MODULE_NOT_FOUND' && String(err?.message || '').includes("package 'ethers'");
+  if (!missingEthers) throw err;
+  console.log('40 Acres Received collector skipped: ethers runtime unavailable in verifier-only environment');
+}
 import fs from 'node:fs';
 import path from 'node:path';
 
