@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { extractFxnLockerApr } from './fxn-locker-apr-guard.mjs';
+import { applyExactFxnLockerApr, extractFxnLockerApr } from './fxn-locker-apr-guard.mjs';
 
 // Canonical layout: exact Locker block.
 assert.equal(
@@ -41,4 +41,33 @@ assert.throws(
   /expected one unambiguous FXN Locker APR/
 );
 
-console.log('f(x) exact-source APR parser validation PASS');
+// The exact-source authority repairs only the materialized current snapshot.
+const report={engines:{fx_vefxn:{apr:21.1,status:'ok',source:'https://fx.aladdin.club/v2/lock',sourceMetric:'veFXN Locker APR'}}};
+const data={
+  snapshotKey:'2026-W34',
+  companies:{
+    'defitea.eth':{
+      breakdown:[
+        {engineId:'fx_vefxn',principalId:'fxn-token',value:100,apr:21.1,engineStatus:'ok'},
+        {engineId:'other',principalId:'other',value:100,apr:10,engineStatus:'ok'}
+      ],
+      productiveValue:200,coveredProductiveValue:200,coverage:1,aprLatest:15.55,aprHistoricalAverage:12,observationCount:2
+    }
+  },
+  history:{companies:{'defitea.eth':[
+    {snapshotKey:'2026-W33',apr:12},
+    {snapshotKey:'2026-W34',apr:15.55}
+  ]}}
+};
+const corrected=applyExactFxnLockerApr(report,data,77.08);
+assert.deepEqual(corrected,{previousApr:21.1,exactApr:77.08,adjustedCompanies:1});
+assert.equal(report.engines.fx_vefxn.apr,77.08);
+assert.equal(report.engines.fx_vefxn.sourceType,'official-frontend-exact-block');
+assert.equal(data.companies['defitea.eth'].breakdown[0].apr,77.08);
+assert.equal(data.companies['defitea.eth'].aprLatest,43.54);
+assert.equal(data.history.companies['defitea.eth'][0].apr,12); // immutable prior snapshot
+assert.equal(data.history.companies['defitea.eth'][1].apr,43.54); // current snapshot only
+assert.equal(data.companies['defitea.eth'].aprHistoricalAverage,27.77);
+assert.equal(data.diagnostics.fxnLockerAprAuthority.historicalSnapshotsRewritten,false);
+
+console.log('f(x) exact-source APR parser + current-snapshot authority validation PASS');
