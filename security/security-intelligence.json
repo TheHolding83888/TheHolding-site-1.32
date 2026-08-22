@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-22T12:48:21.485Z",
+  "generatedAt": "2026-08-22T12:48:45.797Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 41,
+    "medium": 38,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 544,
-    "bytesScanned": 11424362,
+    "bytesScanned": 11424865,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Fri, 21 Aug 2026 18:40:36 GMT",
+        "lastModified": "Thu, 20 Aug 2026 05:31:34 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "74dccccc2493490e385a92835df71cf2ee65b51f606b8903233c94ed6c6990d4",
         "severity": "medium",
@@ -98,8 +99,7 @@
           "currentSha256": "d956f58187c3f997725ddd367141f0747d98abbae39e6ff85998c0b3c9a0d056"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -123,48 +123,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "74dccccc2493490e385a92835df71cf2ee65b51f606b8903233c94ed6c6990d4",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/resume-cognitive-stack-after-release.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/resume-cognitive-stack-after-release.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "2d98e2786634e6c2704cba2d46257bd3c04d83b48cbd04d9adb72b2ef3644902",
-        "currentSha256": "1c22b761cf6fc9390f4b0c03cfa212bddf07f1bddab661f5861957783d884bd3"
-      }
-    },
-    {
-      "id": "63e8d1cf29fbe6d2a992eb1840d74136fac9d91fa98976283590f23fd1223808",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-intelligence-progress.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-intelligence-progress.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "5333fb61d5561aae8a981b413762995f9972815da491a0902509face9d49ca14",
-        "currentSha256": "24ece66ff535ebc41ed364d9c7dcf065a41205859ab5edcd7823ab6f4a1cec9c"
-      }
-    },
-    {
-      "id": "0fb867e6ec13e86aefd2d23b342fbcafb95fdc07e292174cb780c720f0966491",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-cognitive-recovery-order.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-cognitive-recovery-order.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "7164520328cad8c249479023a364a26bd92fee2e4d7ebc5a4d8a257d10076ecd",
-        "currentSha256": "d956f58187c3f997725ddd367141f0747d98abbae39e6ff85998c0b3c9a0d056"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -777,12 +735,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "d5a1c69ab42e1296223d16d762aeec52e431bfa0cb93d39891c993e6451e89da",
+    "snapshotHash": "9ee7779635986ef1809e96f28ca882e7e6d4cff752c4af5dfbbd4ba643790674",
     "securityVault": {
-      "runCount": 413,
+      "runCount": 414,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-22T12-48-21-485Z-d5a1c69ab4.json",
-      "latestRecordHash": "c95689f06bce05766333f6954be87e0e897ebdfb9bd49156a4d284b7209e0abd",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-22T12-48-45-797Z-9ee7779635.json",
+      "latestRecordHash": "efad66be9c1d524eba50e2a2148b4a0e2eb16cbf9d1f06f24c97e4897e0b6a62",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }

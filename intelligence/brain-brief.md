@@ -1,13 +1,13 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-22T12:23:48.018Z
+Generated: 2026-08-22T12:48:46.772Z
 Mode: delta
 Status: watch
 
 ## 22 evidence-bound reasoning case(s) are active across economic and security memory.
 
 ### What changed
-Current canonical inputs contain 14 material Observer change(s), 0 new security finding event(s), and 2 resolved security finding event(s).
+Current canonical inputs contain 14 material Observer change(s), 0 new security finding event(s), and 3 resolved security finding event(s).
 
 ### Why it matters / What follows / What should be done
 
