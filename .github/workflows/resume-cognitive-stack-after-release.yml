@@ -17,12 +17,41 @@ concurrency:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 12
+    env:
+      RECOVERY_PUSH_AT: ${{ github.event.head_commit.timestamp }}
     steps:
       - name: Checkout canonical main
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: main
+          fetch-depth: 0
+
+      - name: Wait for post-release Security publish
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 40); do
+            git fetch origin main
+            if git show origin/main:security/security-intelligence.json > /tmp/security-intelligence.json 2>/dev/null; then
+              if node - <<'NODE'
+          const fs = require('fs');
+          const security = JSON.parse(fs.readFileSync('/tmp/security-intelligence.json', 'utf8'));
+          const pushMs = Date.parse(process.env.RECOVERY_PUSH_AT || '');
+          const securityMs = Date.parse(security.generatedAt || '');
+          if (!Number.isFinite(pushMs) || !Number.isFinite(securityMs)) process.exit(1);
+          if (securityMs < pushMs) process.exit(1);
+          if (Number(security?.severityCounts?.critical || 0) > 0) throw new Error('Release recovery refuses Critical Security state');
+          console.log('Post-release Security publish observed', { pushAt: process.env.RECOVERY_PUSH_AT, securityGeneratedAt: security.generatedAt });
+          NODE
+              then
+                git reset --hard origin/main
+                exit 0
+              fi
+            fi
+            sleep 15
+          done
+          echo 'Timed out waiting for post-release Security publish.'
+          exit 1
 
       - name: Require fresh Observer before recovery dispatch
         run: |
@@ -44,6 +73,9 @@ jobs:
             allFresh: true
           });
           NODE
+
+      - name: Verify release coherence before dispatch
+        run: node intelligence/cognitive-release-guard.mjs
 
       - name: Dispatch canonical integrated Cognitive Stack
         env:
