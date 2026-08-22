@@ -11,6 +11,8 @@ const RPC_URLS = [...new Set([
   'https://mainnet.optimism.io'
 ].filter(Boolean))];
 const CHUNK = 250_000;
+const OPTIMISM_BLOCK_SECONDS = 2;
+const RECENT_SCAN_MARGIN_BLOCKS = 50_000;
 const TRANSFER_TOPIC = id('Transfer(address,address,uint256)');
 const REWARDS_IFACE = new Interface([
   'event RewardsProcessed(uint256 epoch,uint256 indexed tokenId,uint256 rewardsAmount,address user,address asset)'
@@ -94,25 +96,35 @@ async function providerWithFallback() {
   throw lastError || new Error('No working Optimism RPC');
 }
 
-async function blockAtOrAfter(provider, timestampMs, latestBlock) {
-  let lo = 0;
-  let hi = latestBlock;
-  while (lo < hi) {
-    const mid = Math.floor((lo + hi) / 2);
-    const block = await provider.getBlock(mid);
-    if (!block) throw new Error(`Block ${mid} unavailable`);
-    if (Number(block.timestamp) * 1000 < timestampMs) lo = mid + 1;
-    else hi = mid;
+async function recentScanStart(provider, timestampMs, latestBlock) {
+  const latest = await provider.getBlock(latestBlock);
+  if (!latest) throw new Error(`Latest Optimism block ${latestBlock} unavailable`);
+  const targetSeconds = Math.floor(timestampMs / 1000);
+  const elapsedSeconds = Math.max(0, Number(latest.timestamp) - targetSeconds);
+  const expectedBlocks = Math.ceil(elapsedSeconds / OPTIMISM_BLOCK_SECONDS);
+  // Optimism Bedrock has a stable two-second cadence. Start with a generous
+  // recent-history margin, then enforce the exact timestamp boundary per payout.
+  // This avoids querying archive-era block headers just to locate an August window.
+  return Math.max(0, latestBlock - expectedBlocks - RECENT_SCAN_MARGIN_BLOCKS);
+}
+
+async function getLogsAdaptive(provider, filter, fromBlock, toBlock) {
+  try {
+    return await provider.getLogs({ ...filter, fromBlock, toBlock });
+  } catch (err) {
+    if (fromBlock >= toBlock) throw err;
+    const mid = Math.floor((fromBlock + toBlock) / 2);
+    const left = await getLogsAdaptive(provider, filter, fromBlock, mid);
+    const right = await getLogsAdaptive(provider, filter, mid + 1, toBlock);
+    return [...left, ...right];
   }
-  return lo;
 }
 
 async function getLogsChunked(provider, filter, fromBlock, toBlock) {
   const out = [];
   for (let start = fromBlock; start <= toBlock; start += CHUNK) {
     const end = Math.min(toBlock, start + CHUNK - 1);
-    const rows = await provider.getLogs({ ...filter, fromBlock: start, toBlock: end });
-    out.push(...rows);
+    out.push(...await getLogsAdaptive(provider, filter, start, end));
   }
   return out;
 }
@@ -177,11 +189,14 @@ async function collectRoute(provider, route, fromBlock, toBlock) {
     const amount = Number(formatUnits(raw, resolved.decimals));
     if (!(amount > 0)) continue;
     const block = await provider.getBlock(log.blockNumber);
+    if (!block) throw new Error(`Payout block ${log.blockNumber} unavailable`);
+    const timestampMs = Number(block.timestamp) * 1000;
+    if (timestampMs < trackingTs) continue;
     transfers.push({
       txHash: log.transactionHash,
       blockNumber: log.blockNumber,
       logIndex: log.index,
-      timestamp: block ? new Date(Number(block.timestamp) * 1000).toISOString() : null,
+      timestamp: new Date(timestampMs).toISOString(),
       recipient: getAddress(log.recipient),
       amount,
       symbol: resolved.symbol,
@@ -238,7 +253,7 @@ for (const [companyName, company] of Object.entries(data.companies)) {
 const { provider, endpointClass } = await providerWithFallback();
 try {
   const latestBlock = await provider.getBlockNumber();
-  const fromBlock = await blockAtOrAfter(provider, trackingTs, latestBlock);
+  const fromBlock = await recentScanStart(provider, trackingTs, latestBlock);
   let companiesWithReceived = 0;
   let receivedTransferCount = 0;
   let receivedUsd = 0;
