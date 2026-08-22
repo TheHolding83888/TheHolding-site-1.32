@@ -5,9 +5,7 @@ on:
     paths:
       - 'productivity/fxn-locker-apr-guard.mjs'
       - 'productivity/fxn-locker-apr-guard-validation.mjs'
-      - 'productivity/run-productivity-with-fxn-guard.mjs'
-      - 'productivity/package.json'
-      - 'intelligence/capital-state/unified-capital-refresh.mjs'
+      - 'productivity/yieldring-productivity-overlay.mjs'
       - '.github/workflows/verify-fxn-locker-apr-guard.yml'
   workflow_dispatch:
 
@@ -31,18 +29,19 @@ jobs:
         run: |
           set -euo pipefail
           node --check productivity/fxn-locker-apr-guard.mjs
-          node --check productivity/run-productivity-with-fxn-guard.mjs
-          node --check intelligence/capital-state/unified-capital-refresh.mjs
+          node --check productivity/yieldring-productivity-overlay.mjs
           node productivity/fxn-locker-apr-guard-validation.mjs
 
-      - name: Verify both writer paths enforce the guard
+      - name: Verify both writer paths pass through guarded post-collection overlay
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const pkg=JSON.parse(fs.readFileSync('productivity/package.json','utf8'));
+          const overlay=fs.readFileSync('productivity/yieldring-productivity-overlay.mjs','utf8');
+          const recovery=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
           const unified=fs.readFileSync('intelligence/capital-state/unified-capital-refresh.mjs','utf8');
-          if(pkg.scripts?.update!=='node run-productivity-with-fxn-guard.mjs')throw new Error('manual/recovery Productivity path bypasses f(x) guard');
-          if(!unified.includes("'run-productivity-with-fxn-guard.mjs'"))throw new Error('Unified Capital path bypasses f(x) guard');
+          if(!overlay.includes("from './fxn-locker-apr-guard.mjs'")||!overlay.includes('await verifyFxnLockerApr()'))throw new Error('YieldRing post-collection stage does not enforce f(x) guard');
+          if(!recovery.includes('node productivity/yieldring-productivity-overlay.mjs'))throw new Error('manual/recovery Productivity path bypasses guarded post-collection stage');
+          if(!unified.includes("'productivity/yieldring-productivity-overlay.mjs'"))throw new Error('Unified Capital path bypasses guarded post-collection stage');
           console.log('f(x) guard writer-path enforcement PASS');
           NODE
