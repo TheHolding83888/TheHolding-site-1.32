@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-22T09:31:14.468Z",
+  "generatedAt": "2026-08-22T09:35:38.548Z",
   "status": "watch",
   "headline": "6 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 6,
-    "medium": 38,
+    "medium": 40,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 542,
-    "bytesScanned": 11383868,
+    "bytesScanned": 11384092,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 20 Aug 2026 05:27:57 GMT",
+        "lastModified": "Thu, 20 Aug 2026 05:29:19 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,37 +55,37 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "92a934e9f6775d089e9a69ddcfd02fa08dc92000827108ee35eeaef9ffcbb9c5",
+        "id": "023a2289dcd64688bd2f1b4d8d7b16c520cd165bf70f69b603437ff5545acd49",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": ".github/workflows/recover-cognitive-stack-after-release.yml",
+        "file": ".github/workflows/unified-capital-refresh.yml",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/recover-cognitive-stack-after-release.yml.",
+        "summary": "Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "b263cc37192879dd0dde9c38026b929ba0e6393bcfe4e20d7954c942d7f426e8",
-          "currentSha256": "6a40e1d24125d7469ae229560e5aa6dc78e8075e95ab8ef589bb7ff3a460ff2f"
+          "previousSha256": "710bd98148ccfc09a8a44354360ec29636da0de5dad6538305bb41e17fb6822a",
+          "currentSha256": "99a4e019f7c0ab1e9591de8e74041f36087f34426549a8032cfe2ae8d55adc94"
         }
       },
       {
-        "id": "c491215486a83034e2437d163db14b40acf31b8de0b6edc5fe008863761c8563",
+        "id": "f2728a64bfec9e2d718794513e08fe0f34bca2e979150ad66793ea3de31afb9c",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": ".github/workflows/resume-cognitive-stack-after-release.yml",
+        "file": ".github/workflows/verify-company-010-projectx-reference-apr.yml",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/resume-cognitive-stack-after-release.yml.",
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-projectx-reference-apr.yml.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "c77a32ee50cd2933da4a04240225de18ae4a68d26d8c8b6d1046b5682dc53b86",
-          "currentSha256": "9e1e2ab3198e199f37881adb3c6405060c2c02f51444a9d8b5a51abfebd39cc1"
+          "previousSha256": "fb77a7ab1731c1a495dc13593387926ddf766a221e7c699530d92f1aed04c154",
+          "currentSha256": "d5d318a9a5999f3fc5f54e3a59ccc89276446cc57d85f7506834503d63671827"
         }
       }
-    ]
+    ],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -153,6 +153,34 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "023a2289dcd64688bd2f1b4d8d7b16c520cd165bf70f69b603437ff5545acd49",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/unified-capital-refresh.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "710bd98148ccfc09a8a44354360ec29636da0de5dad6538305bb41e17fb6822a",
+        "currentSha256": "99a4e019f7c0ab1e9591de8e74041f36087f34426549a8032cfe2ae8d55adc94"
+      }
+    },
+    {
+      "id": "f2728a64bfec9e2d718794513e08fe0f34bca2e979150ad66793ea3de31afb9c",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-company-010-projectx-reference-apr.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-projectx-reference-apr.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "fb77a7ab1731c1a495dc13593387926ddf766a221e7c699530d92f1aed04c154",
+        "currentSha256": "d5d318a9a5999f3fc5f54e3a59ccc89276446cc57d85f7506834503d63671827"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -765,12 +793,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "cc6a6a6c3b2f1ce9572fae2316a37f1e91ea5817df1e175448530bcf8b1423ad",
+    "snapshotHash": "f33ab5a89047e4b7bdd86ce481588391e53565921275cb16d1f9d57b2f15cdde",
     "securityVault": {
-      "runCount": 399,
+      "runCount": 400,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-22T09-31-14-468Z-cc6a6a6c3b.json",
-      "latestRecordHash": "81346dc7a1faa5db37f6d19154c80785ad4d88a051bb76de81922e8da0d5ac64",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-22T09-35-38-548Z-f33ab5a890.json",
+      "latestRecordHash": "c8e245a9dc68abaf515a6c42a1c67e42df2e6fba6d0afa4564c6d2dbae29ab6f",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
