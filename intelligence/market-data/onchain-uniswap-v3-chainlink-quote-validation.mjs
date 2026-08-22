@@ -138,12 +138,34 @@ assert.equal(eliza.productionPriceAuthority, false);
 assert.match(eliza.composition, /Chainlink USDC\/USD/);
 assert.equal(output.networks.bsc.onchainTokenDecimalsRead, true);
 
+// Failback contract: reviewed route identity must survive an unhealthy quote dependency.
+const failingFetch = async (url, options) => {
+  assert.equal(url, 'https://bsc-test.invalid');
+  const payload = JSON.parse(options.body);
+  assert.ok(payload.some(x => x.method === 'eth_blockNumber'));
+  return { ok: false, status: 503, async json() { return {}; } };
+};
+const failedOutput = await resolveUniswapV3ChainlinkQuotePrices({ registry, marketData, fetchImpl: failingFetch, nowMs: NOW_MS });
+const failedEliza = failedOutput.observations.elizaos;
+assert.equal(failedEliza.status, 'quote-dependency-rpc-unavailable');
+assert.equal(failedEliza.source, 'uniswap-v3-twap-chainlink-quote');
+assert.equal(failedEliza.network, 'bsc');
+assert.equal(failedEliza.factory.toLowerCase(), FACTORY.toLowerCase());
+assert.equal(failedEliza.token.toLowerCase(), TOKEN.toLowerCase());
+assert.equal(failedEliza.quoteToken.toLowerCase(), USDC.toLowerCase());
+assert.equal(failedEliza.fee, 2500);
+assert.equal(failedEliza.quoteAssetId, 'bsc-usdc-usd');
+assert.equal(failedEliza.feedQuote, 'USDC');
+assert.equal(failedEliza.outputQuote, 'USD');
+assert.equal(failedEliza.productionPriceAuthority, false);
+
 console.log('ELIZA V3 + Chainlink quote validation PASS', {
   tokenDecimalsReadOnchain: TOKEN_DECIMALS,
   quoteTokenDecimalsReadOnchain: USDC_DECIMALS,
   usdcUsd: eliza.quoteFeedUsd,
   twapWindowSeconds: eliza.twapWindowSeconds,
   observeNotSpot: true,
+  failbackIdentityPreserved: true,
   stablecoinPegHardcoded: false,
   productionPriceAuthority: false
 });
