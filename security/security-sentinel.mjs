@@ -118,7 +118,7 @@ function scanWorkflow(file,text) {
   if (/^\s*permissions:\s*write-all\s*$/m.test(text)) addFinding({severity:'critical',category:'workflow-permission',file:rp,summary:'Workflow grants write-all permissions.',whyItMatters:'A compromised workflow step would receive unnecessarily broad repository authority.'});
   if (/^\s*pull_request_target\s*:/m.test(text)) addFinding({severity:'high',category:'privileged-trigger',file:rp,summary:'Workflow uses pull_request_target.',whyItMatters:'This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.'});
   if (/\b(?:curl|wget)\b[^\n|]*\|\s*(?:bash|sh)\b/g.test(text)) addFinding({severity:'high',category:'remote-code-pipe',file:rp,summary:'Workflow pipes downloaded network content directly into a shell.',whyItMatters:'Remote content can change outside repository review and execute with workflow permissions.'});
-  if (/\beval\s+["'$\w]/g.test(text)) addFinding({severity:'high',category:'shell-eval',file:rp,summary:'Workflow contains shell eval.',whyItMatters:'Eval can turn untrusted data into executable shell code.'});
+  if (/^\s*(?:run:\s*)?eval\s+\S+/gm.test(text)) addFinding({severity:'high',category:'shell-eval',file:rp,summary:'Workflow contains shell eval.',whyItMatters:'Eval can turn untrusted data into executable shell code.'});
   const lines=text.split('\n');
   lines.forEach((ln,i)=>{
     const m=ln.match(/^\s*-?\s*uses:\s*([^\s#]+)/);
