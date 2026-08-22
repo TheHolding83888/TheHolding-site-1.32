@@ -14,6 +14,7 @@ on:
       - 'rewards/vlcvx-route-rewards-finalize.mjs'
       - 'rewards/vlcvx-route-rewards-guard.mjs'
       - 'rewards/company-009-beefy-cvxcrv-income.mjs'
+      - 'rewards/forty-acres-received-ledger.mjs'
       - 'rewards/rewards-passport-hygiene.mjs'
       - '.github/workflows/update-company-rewards.yml'
   schedule:
@@ -193,6 +194,14 @@ jobs:
           node --check rewards/company-009-beefy-cvxcrv-income.mjs
           node rewards/company-009-beefy-cvxcrv-income.mjs
 
+      - name: Measure 40 Acres received payouts
+        env:
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node --check rewards/forty-acres-received-ledger.mjs
+          node rewards/forty-acres-received-ledger.mjs
+
       - name: Apply current Rewards Passport route hygiene
         run: |
           set -euo pipefail
@@ -231,8 +240,16 @@ jobs:
           const rook=d.companies?.["Rook's portfolio"];
           const rookCurrent=(rook?.sources||[]).find(x=>x.route==='vlcvx-current-route');
           if(rookCurrent?.protocol!=='Convex Finance · vlCVX'||rookCurrent?.details?.currentRewardSettlement!=='unresolved'||rookCurrent?.details?.unknownIsNotZero!==true)throw new Error('Rook current Convex route epistemics missing');
+          const received=d.diagnostics?.fortyAcresReceived;
+          const def=d.companies?.['defitea.eth'];
+          const defReceived=(def?.receivedIncome||[]).filter(x=>x.route==='forty-acres-velodrome-received'&&x.state==='Received');
+          if(!received||received.executionAuthority!=='none'||received.claimableIsolation!==true||received.unknownIsNotZero!==true)throw new Error('40 Acres Received authority/isolation guard missing');
+          if(!received.discoveredCompanies?.includes('defitea.eth')||defReceived.length<1)throw new Error('Defitea 40 Acres Received route missing');
+          if(!(Number(def?.receivedIncomeTransferCount)>0)||!(Number(def?.receivedIncomeUsd)>0))throw new Error('Defitea August Received proof is empty');
+          if(defReceived.some(x=>x.claimableApplicable!==false||x.includedInClaimableTotal!==false||x.includedInMeasuredEarnedTotal!==false))throw new Error('Received leaked across accounting boundary');
+          if((def?.rewards||[]).some(x=>x.classification==='received'||x.state==='Received'))throw new Error('Received leaked into current Claimable rewards array');
           if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none'||d.diagnostics?.rewardsPassportHygiene?.executionAuthority!=='none'||d.diagnostics?.company009BeefyCvxCrv?.executionAuthority!=='none')throw new Error('Rewards authority drift');
-          console.log('Final Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length,cypherCvxCrvRows:cyCvx.length,company009Embedded:nine.embeddedIncomeStatus});
+          console.log('Final Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length,cypherCvxCrvRows:cyCvx.length,company009Embedded:nine.embeddedIncomeStatus,defiteaReceivedTransfers:def.receivedIncomeTransferCount,defiteaReceivedUsd:def.receivedIncomeUsd});
           NODE
 
       - name: Commit updated rewards snapshot
@@ -273,6 +290,7 @@ jobs:
             node rewards/vlcvx-route-rewards-finalize.mjs
             node rewards/vlcvx-route-rewards-guard.mjs
             node rewards/company-009-beefy-cvxcrv-income.mjs
+            node rewards/forty-acres-received-ledger.mjs
             node rewards/rewards-passport-hygiene.mjs
 
             git add companies/rewards-data.json companies/company-009-beefy-cvxcrv-income.json
