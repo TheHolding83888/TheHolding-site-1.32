@@ -7,7 +7,13 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - 'security/**'
+      # Generated Security data must not wake the Sentinel into a self-loop.
+      # Static Security engines, policy and documentation remain normal push inputs.
+      - 'security/security-memory.json'
+      - 'security/security-history.json'
+      - 'security/security-intelligence.json'
+      - 'security/security-brief.md'
+      - 'security/security-vault/**'
       # High-frequency Market Data snapshots are generated data-plane state.
       # Ignoring snapshot-only pushes prevents the 30-minute price heartbeat
       # from waking Security Sentinel up to 48 times/day. Market Data engines,
