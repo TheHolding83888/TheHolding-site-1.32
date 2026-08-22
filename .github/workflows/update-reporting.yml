@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     # One daily reporting snapshot for Defitea + Monetra.
-    # Runs after the 05:37 UTC Stable Capital workflow so Monetra always uses
-    # the newest Stable Capital / Reference APY snapshot from the same day.
-    - cron: '7 6 * * *'
+    # Runs after the 05:37 UTC Stable Capital workflow and after the 06:07 UTC
+    # shared Market Data heartbeat, avoiding the old same-minute price-writer race.
+    - cron: '22 6 * * *'
 
 permissions:
   contents: write
@@ -30,15 +30,18 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Preflight
+      - name: Preflight canonical reporting inputs
         shell: bash
         run: |
           set -euo pipefail
           node --check reporting/reporting-engine.mjs
-          test -s companies/index.html
+          node --check reporting/reporting-engine-validation.mjs
+          test -s companies/defitea-canonical-state.json
           test -s companies/productivity-data.json
+          test -s intelligence/market-data/market-data.json
           test -s companies/stable-index-data.json
           test -s companies/embedded-yield-ledger.json
+          node reporting/reporting-engine-validation.mjs
           node - <<'NODE'
           const fs=require('fs');
           const i=JSON.parse(fs.readFileSync('companies/stable-index-data.json','utf8'));
@@ -48,14 +51,15 @@ jobs:
           if(!Number.isFinite(Number(c.displayReferenceApyPct))) throw new Error('Monetra display Reference APY missing');
           const l=JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
           if(l.company?.registry!=='008') throw new Error('Monetra Embedded Yield Ledger identity mismatch');
-          console.log('Dual-fund reporting preflight OK.');
+          console.log('Dual-fund reporting canonical preflight OK.');
           NODE
 
       - name: Update Defitea + Monetra daily reporting state
         env:
-          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
-          COMPANY_PAGE_FILE: ./companies/index.html
+          DEFITEA_STATE_FILE: ./companies/defitea-canonical-state.json
           PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          MARKET_DATA_FILE: ./intelligence/market-data/market-data.json
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
           STABLE_INDEX_DATA_FILE: ./companies/stable-index-data.json
           EMBEDDED_LEDGER_FILE: ./companies/embedded-yield-ledger.json
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
@@ -68,8 +72,27 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('reporting/reporting-data.json','utf8'));
-          if(r.version!=='1.1.0-dual-fund-monetra') throw new Error('unexpected reporting version '+r.version);
-          if(!r.funds?.['defitea.eth']) throw new Error('Defitea reporting regression');
+          if(r.version!=='1.2.0-defitea-canonical-market-data') throw new Error('unexpected reporting version '+r.version);
+          if(r.schedule?.defiteaExternalPriceDiscovery!==false) throw new Error('Reporting external price discovery boundary missing');
+
+          const d=r.funds?.['defitea.eth'];
+          if(!d) throw new Error('Defitea reporting missing');
+          const s=d.latestSnapshot||{};
+          if(d.exactCanonicalProductivePositionCount!==11) throw new Error('Defitea canonical position contract drift');
+          if(s.positionCount!==11||s.rateCoveredPositionCount!==11||s.fullProductiveCoverage!==true||s.coverage!==1) throw new Error('Defitea exact 11/11 productive coverage missing');
+          if(!s.marketDataGeneratedAt||s.priceAuthority!=='canonical-selected-market-data') throw new Error('Defitea canonical Market Data binding missing');
+          if((s.positions||[]).length!==11) throw new Error('Defitea reporting positions != 11');
+          if((s.positions||[]).some(x=>x.priceSource!=='canonical-market-data'||!x.selectedLane||!(Number(x.price)>0)||x.engineStatus!=='ok'||!(Number(x.referenceApr)>=0))) throw new Error('Defitea canonical price/APR row coverage invalid');
+          if(s.missingPrices?.length||s.fallbackPrices?.length) throw new Error('legacy Reporting fallback arrays must remain empty under canonical Market Data authority');
+          if(d.vlCvxReconciliation?.referenceIncomeEngine!=='convex_vlcvx'||d.vlCvxReconciliation?.referenceAprIncludesVotiumIncentives!==true||d.vlCvxReconciliation?.claimableSettlementAddedToReferenceCashFlow!==false) throw new Error('Defitea vlCVX reconciliation boundary invalid');
+
+          const auto=Object.values(d.months||{}).filter(x=>x?.mode==='reference-model').sort((a,b)=>String(a.month).localeCompare(String(b.month)));
+          if(auto.length){
+            const first=auto[0];
+            if(first.firstTrackingMonth!==true||first.unobservedPreTrackingDaysBackfilled!==false) throw new Error('Defitea first tracking month provenance missing');
+            if(first.partialPeriod===true&&Number(first.normalizationFactor)!==1) throw new Error('Defitea first tracking month must never fabricate pre-tracking days');
+          }
+
           const m=r.funds?.['Monetra.eth'];
           if(!m) throw new Error('Monetra reporting missing');
           if(!(Number(m.latestSnapshot?.stableCapitalUsd)>90)) throw new Error('Monetra Stable Capital missing');
