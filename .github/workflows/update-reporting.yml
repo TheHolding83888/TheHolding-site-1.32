@@ -2,6 +2,14 @@ name: Update The Holding Reporting Data
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'reporting/defitea-forty-acres-settlement.mjs'
+      - 'reporting/defitea-forty-acres-settlement-validation.mjs'
+      - 'reporting/defitea-income-composition.mjs'
+      - 'reporting/defitea-income-composition-validation.mjs'
+      - '.github/workflows/update-reporting.yml'
   schedule:
     # One daily reporting snapshot for Defitea + Monetra.
     # Runs after the 04:57 UTC Rewards workflow, the 05:37 UTC Stable Capital
@@ -38,6 +46,8 @@ jobs:
           node --check reporting/reporting-engine-validation.mjs
           node --check reporting/defitea-income-composition.mjs
           node --check reporting/defitea-income-composition-validation.mjs
+          node --check reporting/defitea-forty-acres-settlement.mjs
+          node --check reporting/defitea-forty-acres-settlement-validation.mjs
           test -s companies/defitea-canonical-state.json
           test -s companies/productivity-data.json
           test -s companies/rewards-data.json
@@ -46,6 +56,7 @@ jobs:
           test -s companies/embedded-yield-ledger.json
           node reporting/reporting-engine-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
+          node reporting/defitea-forty-acres-settlement-validation.mjs
           node - <<'NODE'
           const fs=require('fs');
           const i=JSON.parse(fs.readFileSync('companies/stable-index-data.json','utf8'));
@@ -77,6 +88,13 @@ jobs:
           DEFITEA_INCOME_LEDGER_FILE: ./reporting/defitea-income-ledger.json
         run: node reporting/defitea-income-composition.mjs
 
+      - name: Settle Defitea 40 Acres Received cash flow
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          REPORTING_DATA_FILE: ./reporting/reporting-data.json
+          DEFITEA_INCOME_LEDGER_FILE: ./reporting/defitea-income-ledger.json
+        run: node reporting/defitea-forty-acres-settlement.mjs
+
       - name: Validate generated reporting data
         shell: bash
         run: |
@@ -104,6 +122,10 @@ jobs:
           if(JSON.stringify(composition.contributors)!==JSON.stringify(['YieldRing.eth','05081966.eth'])) throw new Error('Defitea income contributor contract drift');
           if(JSON.stringify(composition.voteMarketRoutes)!==JSON.stringify(['votemarket-vecrv','votemarket-vefxn'])) throw new Error('Defitea VoteMarket route contract drift');
 
+          const settlement=d.fortyAcresSettlement;
+          if(!settlement||settlement.accounting!=='actual-net-received-replaces-velodrome-reference-model'||settlement.referenceDoubleCountPrevented!==true) throw new Error('40 Acres settlement replacement contract missing');
+          if(settlement.claimableAffected!==false||settlement.tvlAffected!==false||settlement.executionAuthority!=='none') throw new Error('40 Acres settlement authority boundary drift');
+
           const ledger=JSON.parse(fs.readFileSync('reporting/defitea-income-ledger.json','utf8'));
           if(ledger.version!=='0.1-defitea-income-composition') throw new Error('Defitea income ledger version drift');
           if(ledger.accounting?.associatedCompanyTvlIncluded!==false||ledger.accounting?.currentClaimableBalanceSummedDaily!==false) throw new Error('Defitea income ledger accounting boundary invalid');
@@ -111,6 +133,9 @@ jobs:
           const keys=(ledger.voteMarketEvents||[]).map(x=>x.eventKey);
           if(new Set(keys).size!==keys.length) throw new Error('VoteMarket income ledger duplicate event identity');
           if((ledger.voteMarketEvents||[]).some(x=>x.eventDate<d.trackingStartedAt||!(Number(x.usdValue)>0)||x.usdValueFrozenAtFirstAdmission!==true)) throw new Error('VoteMarket event admission boundary invalid');
+          const fa=ledger.fortyAcresReceivedEvents||[];
+          if(new Set(fa.map(x=>x.eventKey)).size!==fa.length) throw new Error('40 Acres Received ledger duplicate event identity');
+          if(fa.some(x=>x.eventDate<'2026-08-01'||!(Number(x.usdValue)>0)||x.accounting!=='actual-net-received'||x.executionAuthority!=='none')) throw new Error('40 Acres Received event admission boundary invalid');
 
           const auto=Object.values(d.months||{}).filter(x=>x?.mode==='reference-model').sort((a,b)=>String(a.month).localeCompare(String(b.month)));
           if(auto.length){
@@ -119,8 +144,9 @@ jobs:
             if(first.partialPeriod===true&&Number(first.normalizationFactor)!==1) throw new Error('Defitea first tracking month must never fabricate pre-tracking days');
             for(const m of auto){
               if(m.associatedCompanyTvlIncluded!==false||m.tvlSemantic!=='defitea-only') throw new Error('Defitea monthly TVL semantic drift '+m.month);
-              const expected=Number(m.baseDefiteaReferenceCashFlowUsd||0)+Number(m.associatedCompanyReferenceCashFlowUsd||0)+Number(m.voteMarketObservedIncomeUsd||0);
+              const expected=Number(m.baseDefiteaReferenceCashFlowUsd||0)-Number(m.fortyAcresReplacedReferenceCashFlowUsd||0)+Number(m.associatedCompanyReferenceCashFlowUsd||0)+Number(m.voteMarketObservedIncomeUsd||0)+Number(m.fortyAcresReceivedIncomeUsd||0);
               if(Math.abs(Number(m.cashFlowUsd)-expected)>0.011) throw new Error('Defitea monthly income composition arithmetic drift '+m.month);
+              if(m.fortyAcresReferenceDoubleCountPrevented!==true) throw new Error('40 Acres double-count guard missing '+m.month);
             }
           }
 
@@ -129,7 +155,7 @@ jobs:
           if(!(Number(m.latestSnapshot?.stableCapitalUsd)>90)) throw new Error('Monetra Stable Capital missing');
           if(!Number.isFinite(Number(m.latestSnapshot?.referenceApyPct))) throw new Error('Monetra APY missing');
           if(!Number.isFinite(Number(m.latestSnapshot?.modeledDailyGeneratedIncomeUsd))) throw new Error('Monetra daily generated income missing');
-          console.log('Dual-fund reporting + Defitea income composition validation OK.');
+          console.log('Dual-fund reporting + Defitea 40 Acres settlement validation OK.');
           NODE
 
       - name: Commit reporting snapshot
