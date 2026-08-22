@@ -21,13 +21,25 @@ const finite = (value, fallback = 0) => {
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const round = (value, digits = 1) => Number(Number(value).toFixed(digits));
 
+const publicDiagnostic = value => {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+  const scrubbed = raw
+    .replaceAll(ROOT, '[repo]')
+    .replace(/file:\/\/\/[^\s)]+/g, '[local-path]')
+    .replace(/\/home\/runner\/work\/[^\s)]+/g, '[runner-path]');
+  const errorIndex = scrubbed.indexOf('Error: ');
+  const relevant = errorIndex >= 0 ? scrubbed.slice(errorIndex) : scrubbed;
+  return relevant.split(/\n\s+at\s/)[0].trim().slice(0, 1000) || null;
+};
+
 function liveCognitiveIntegrity() {
   let releaseCoherent = false;
   let releaseGuardError = null;
   try {
     releaseCoherent = verifyCognitiveRelease({ root: ROOT }).current === true;
   } catch (error) {
-    releaseGuardError = String(error?.message || error);
+    releaseGuardError = publicDiagnostic(error?.message || error);
   }
 
   const verifier = spawnSync(
@@ -38,7 +50,7 @@ function liveCognitiveIntegrity() {
   const cognitiveEvalPass = verifier.status === 0;
   const cognitiveVerifierError = cognitiveEvalPass
     ? null
-    : String(verifier.stderr || verifier.stdout || `verifier exit ${verifier.status}`).trim().slice(0, 1000);
+    : publicDiagnostic(verifier.stderr || verifier.stdout || `verifier exit ${verifier.status}`);
 
   return {
     releaseCoherent,
@@ -224,7 +236,7 @@ function build() {
 
   const current = {
     version: '0.1-intelligence-progress',
-    engineVersion: '0.2-live-cognitive-integrity-thi-engine',
+    engineVersion: '0.2.1-live-cognitive-integrity-public-safe-thi-engine',
     generatedAt: now,
     index: {
       name: policy.index.name,
@@ -316,7 +328,10 @@ function selfTest() {
   }
   const staged = policy.index.stages;
   if (!Array.isArray(staged) || staged[0]?.min !== 0 || staged.at(-1)?.max !== 100) throw new Error('THI stages must cover 0..100');
-  console.log('Intelligence Progress self-test PASS', { policy: policy.version, totalWeight });
+  const sample = publicDiagnostic(`file:///home/runner/work/repo/repo/example.mjs:1\nError: Example public-safe failure\n    at fail (file:///home/runner/work/repo/repo/example.mjs:1:1)`);
+  if (sample !== 'Error: Example public-safe failure') throw new Error(`THI diagnostic sanitization failed: ${sample}`);
+  if (/\/home\/runner|file:\/\/\//i.test(sample)) throw new Error('THI diagnostic sanitization leaked a local runner path');
+  console.log('Intelligence Progress self-test PASS', { policy: policy.version, totalWeight, publicDiagnostic: sample });
 }
 
 if (process.argv.includes('--self-test')) {
