@@ -1,0 +1,45 @@
+name: Verify Security Eval Detector Precision
+
+on:
+  pull_request:
+    paths:
+      - 'security/security-sentinel.mjs'
+      - 'verification/ask-experience/runner-v0.1.mjs'
+      - '.github/workflows/verify-security-eval-detector.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Prove bare eval is detected and Puppeteer helpers are excluded
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check security/security-sentinel.mjs
+          cat > verification/security-eval-regression-fixture.mjs <<'JS'
+          const page = { $eval() {}, $$eval() {} };
+          page.$eval();
+          page.$$eval();
+          eval('1');
+          JS
+          SECURITY_SKIP_NETWORK=1 node security/security-sentinel.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('security/security-intelligence.json','utf8'));
+          const evals=(s.currentFindings||[]).filter(x=>x.category==='javascript-eval');
+          const fixture=evals.filter(x=>x.file==='verification/security-eval-regression-fixture.mjs');
+          const runner=evals.filter(x=>x.file==='verification/ask-experience/runner-v0.1.mjs');
+          if(fixture.length!==1) throw new Error(`expected exactly one real eval finding in fixture; got ${fixture.length}`);
+          if(runner.length!==0) throw new Error(`Puppeteer $eval/$$eval false positives remain: ${runner.length}`);
+          if(fixture[0].severity!=='high') throw new Error('real JavaScript eval is no longer High');
+          console.log('Security eval detector precision PASS',{realEvalFindings:fixture.length,puppeteerFalsePositives:runner.length});
+          NODE
+          rm -f verification/security-eval-regression-fixture.mjs
+          git diff --check
