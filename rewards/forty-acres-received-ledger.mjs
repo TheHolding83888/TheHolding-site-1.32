@@ -287,6 +287,13 @@ try {
     }
   }
 
+  const defitea = data.companies?.['defitea.eth'];
+  if (discoveredByCompany['defitea.eth']) {
+    if (!(Number(defitea?.receivedIncomeTransferCount) > 0) || !(Number(defitea?.receivedIncomeUsd) > 0)) {
+      throw new Error('Defitea 40 Acres custody is proven but no August Received payout was proven; refusing silent zero');
+    }
+  }
+
   data.methodology = data.methodology || {};
   data.methodology.fortyAcresReceivedIncome = 'Received is a separate historical lifecycle from Unclaimed. A receipt is admitted only when an ERC20 payout transfer from a proven 40 Acres Portfolio to the company owner/configured recipient occurs in the same transaction as that Portfolio emitting RewardsProcessed. Tracking begins 2026-08-01. Received never changes current claimable totals, TVL, principal or execution authority.';
   data.diagnostics = data.diagnostics || {};
