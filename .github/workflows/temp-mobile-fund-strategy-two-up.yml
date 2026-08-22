@@ -1,0 +1,77 @@
+name: TEMP Mobile Fund Strategy Two-Up
+
+on:
+  push:
+    branches:
+      - ui/mobile-fund-strategy-two-up-20260822
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          ref: ui/mobile-fund-strategy-two-up-20260822
+
+      - name: Apply premium two-up mobile strategy layout
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('intelligence/market-data/public-capital-client.js')
+          s = p.read_text(encoding='utf-8')
+
+          def once(old, new, label):
+              global s
+              n = s.count(old)
+              if n != 1:
+                  raise SystemExit(f'{label}: expected 1 occurrence, got {n}')
+              s = s.replace(old, new, 1)
+
+          once(' * The Holding · Public Capital Client v0.3.3', ' * The Holding · Public Capital Client v0.3.4', 'client version')
+          once(' * ledger sourced from the same Stable Index state as the Company Passport.\n */',
+               ' * ledger sourced from the same Stable Index state as the Company Passport.\n * v0.3.4 preserves two strategies per row on mobile for Defitea and Monetra,\n * with compact premium typography and no one-column collapse on narrow phones.\n */', 'version note')
+          once("  const VERSION = '0.3.3';", "  const VERSION = '0.3.4';", 'runtime version')
+
+          old_def = '''      '@media(max-width:768px){.fund-card[data-fund="defitea"] .protocols-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fund-card[data-fund="defitea"] .protocol-card,.fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1){grid-column:auto;min-height:72px}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){grid-column:1/-1;width:calc(50% - .375rem);justify-self:center}}',
+      '@media(max-width:480px){.fund-card[data-fund="defitea"] .protocols-grid{grid-template-columns:1fr}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){grid-column:auto;width:100%}}' '''
+          new_def = '''      '@media(max-width:768px){.fund-card[data-fund="defitea"] .protocols-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}.fund-card[data-fund="defitea"] .protocol-card,.fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1){grid-column:auto;min-width:0;min-height:86px;padding:.9rem .72rem;align-items:center;text-align:center}.fund-card[data-fund="defitea"] .protocol-name{font-size:.92rem;line-height:1.2;white-space:normal;overflow-wrap:anywhere}.fund-card[data-fund="defitea"] .protocol-meta{font-size:.7rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){grid-column:1/-1;width:calc(50% - .275rem);justify-self:center}}',
+      '@media(max-width:390px){.fund-card[data-fund="defitea"] .protocol-card,.fund-card[data-fund="defitea"] .protocol-card:nth-last-child(2):nth-child(3n + 1){min-height:88px;padding:.82rem .58rem}.fund-card[data-fund="defitea"] .protocol-name{font-size:.9rem}.fund-card[data-fund="defitea"] .protocol-meta{font-size:.68rem}.fund-card[data-fund="defitea"] .protocol-card:last-child:nth-child(odd){width:calc(50% - .275rem)}}' '''
+          once(old_def, new_def, 'Defitea mobile layout')
+
+          old_mon = '''      '@media(max-width:768px){.fund-card[data-fund="monetra"] .th-monetra-strategy-grid{grid-template-columns:1fr}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-child(odd){border-right:0}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-last-child(2){border-bottom:1px solid var(--border-color)}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:last-child{border-bottom:0}.fund-card[data-fund="monetra"] .th-monetra-strategy-foot{align-items:flex-start;flex-direction:column;gap:.25rem}}' '''
+          new_mon = '''      '@media(max-width:768px){.fund-card[data-fund="monetra"] .th-monetra-strategy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fund-card[data-fund="monetra"] .th-monetra-strategy-row{grid-template-columns:minmax(0,1fr);gap:.52rem;min-width:0;min-height:124px;padding:.9rem .72rem;align-content:center;text-align:center}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-child(odd){border-right:1px solid var(--border-color)}.fund-card[data-fund="monetra"] .th-ms-protocol{font-size:.64rem;line-height:1.2;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;margin-bottom:.22rem}.fund-card[data-fund="monetra"] .th-ms-asset{font-size:.95rem;line-height:1.22;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.fund-card[data-fund="monetra"] .th-ms-detail{font-size:.64rem;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;margin-top:.22rem}.fund-card[data-fund="monetra"] .th-ms-rate{min-width:0;text-align:center;display:flex;justify-content:center;align-items:baseline;gap:.38rem}.fund-card[data-fund="monetra"] .th-ms-rate-value{font-size:.96rem}.fund-card[data-fund="monetra"] .th-ms-rate-label{font-size:.54rem;margin-top:0}.fund-card[data-fund="monetra"] .th-monetra-strategy-foot{align-items:flex-start;flex-direction:column;gap:.25rem}}',
+      '@media(max-width:390px){.fund-card[data-fund="monetra"] .th-monetra-strategy-row{min-height:126px;padding:.82rem .56rem;gap:.46rem}.fund-card[data-fund="monetra"] .th-ms-protocol{font-size:.62rem}.fund-card[data-fund="monetra"] .th-ms-asset{font-size:.91rem}.fund-card[data-fund="monetra"] .th-ms-detail{font-size:.61rem}.fund-card[data-fund="monetra"] .th-ms-rate-value{font-size:.92rem}.fund-card[data-fund="monetra"] .th-ms-rate-label{font-size:.52rem}}' '''
+          once(old_mon, new_mon, 'Monetra mobile layout')
+
+          if 'grid-template-columns:1fr}.fund-card[data-fund="defitea"] .protocol-card:last-child' in s:
+              raise SystemExit('Defitea one-column mobile collapse remains')
+          if '@media(max-width:768px){.fund-card[data-fund="monetra"] .th-monetra-strategy-grid{grid-template-columns:1fr}' in s:
+              raise SystemExit('Monetra one-column mobile collapse remains')
+          if "const VERSION = '0.3.4';" not in s:
+              raise SystemExit('version not updated')
+
+          p.write_text(s, encoding='utf-8')
+          Path('.github/workflows/temp-mobile-fund-strategy-two-up.yml').unlink()
+          PY
+
+      - name: Validate and publish clean branch
+        shell: bash
+        run: |
+          node --check intelligence/market-data/public-capital-client.js
+          grep -q "const VERSION = '0.3.4'" intelligence/market-data/public-capital-client.js
+          grep -q 'min-height:124px' intelligence/market-data/public-capital-client.js
+          grep -q 'min-height:86px' intelligence/market-data/public-capital-client.js
+          test ! -e .github/workflows/temp-mobile-fund-strategy-two-up.yml
+          git config user.name "The Holding UI"
+          git config user.email "ui@theholding.ai"
+          git add -A
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m "UI: keep fund strategies two-up on mobile"
+          git push origin HEAD:ui/mobile-fund-strategy-two-up-20260822
