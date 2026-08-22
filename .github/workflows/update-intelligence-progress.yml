@@ -133,15 +133,15 @@ jobs:
         shell: bash
         run: |
           if [ -f intelligence/intelligence-progress.json ]; then
-            node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
-            const x=require('./intelligence/intelligence-progress.json');
-            console.log('# The Holding Intelligence Progress');
-            console.log('');
-            console.log(`THI: **${x.index.value} / 100 · ${x.index.stage}**`);
-            console.log(`Ask runs: **${x.metrics.evaluation.successfulAskRuns}/${x.metrics.evaluation.totalAskRuns}** successful`);
-            console.log(`Question bank: **${x.metrics.evaluation.staticQuestionBank}** canonical cases`);
-            console.log(`Owner decisions: **${x.metrics.experience.ownerDecisions}** · Settled outcomes: **${x.metrics.experience.settledOutcomes}** · Lessons: **${x.metrics.experience.lessons}**`);
-            console.log('');
-            console.log('Read-only telemetry. Execution authority: `none`.');
-            NODE
+            node -e '
+              const x=require("./intelligence/intelligence-progress.json");
+              console.log("# The Holding Intelligence Progress");
+              console.log("");
+              console.log(`THI: **${x.index.value} / 100 · ${x.index.stage}**`);
+              console.log(`Ask runs: **${x.metrics.evaluation.successfulAskRuns}/${x.metrics.evaluation.totalAskRuns}** successful`);
+              console.log(`Question bank: **${x.metrics.evaluation.staticQuestionBank}** canonical cases`);
+              console.log(`Owner decisions: **${x.metrics.experience.ownerDecisions}** · Settled outcomes: **${x.metrics.experience.settledOutcomes}** · Lessons: **${x.metrics.experience.lessons}**`);
+              console.log("");
+              console.log("Read-only telemetry. Execution authority: `none`.");
+            ' >> "$GITHUB_STEP_SUMMARY"
           fi

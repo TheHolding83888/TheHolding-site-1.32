@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/resume-cognitive-stack-after-release.yml'
       - '.github/workflows/recover-cognitive-stack-after-release.yml'
+      - '.github/workflows/update-intelligence-progress.yml'
       - '.github/workflows/verify-cognitive-recovery-order.yml'
 
 permissions:
@@ -54,7 +55,9 @@ jobs:
             'gh workflow run update-learning-loop.yml --ref main',
             'gh run watch "$learning_run_id" --exit-status',
             'gh workflow run update-project-memory-bootstrap.yml --ref main',
-            'gh run watch "$memory_run_id" --exit-status'
+            'gh run watch "$memory_run_id" --exit-status',
+            'gh workflow run update-intelligence-progress.yml --ref main',
+            'gh run watch "$progress_run_id" --exit-status'
           ];
           for (const token of handoffRequired) {
             if (!resume.includes(token)) throw new Error(`${resumeFile}: missing recovery-chain token ${token}`);
@@ -66,9 +69,17 @@ jobs:
           const learningSuccess = resume.indexOf('gh run watch "$learning_run_id" --exit-status');
           const memoryDispatch = resume.indexOf('gh workflow run update-project-memory-bootstrap.yml --ref main');
           const memorySuccess = resume.indexOf('gh run watch "$memory_run_id" --exit-status');
-          if (!(cognitiveDispatch >= 0 && cognitiveSuccess > cognitiveDispatch && learningDispatch > cognitiveSuccess && learningSuccess > learningDispatch && memoryDispatch > learningSuccess && memorySuccess > memoryDispatch)) {
-            throw new Error(`${resumeFile}: recovery must enforce Cognitive SUCCESS → Learning SUCCESS → Project Memory SUCCESS`);
+          const progressDispatch = resume.indexOf('gh workflow run update-intelligence-progress.yml --ref main');
+          const progressSuccess = resume.indexOf('gh run watch "$progress_run_id" --exit-status');
+          if (!(cognitiveDispatch >= 0 && cognitiveSuccess > cognitiveDispatch && learningDispatch > cognitiveSuccess && learningSuccess > learningDispatch && memoryDispatch > learningSuccess && memorySuccess > memoryDispatch && progressDispatch > memorySuccess && progressSuccess > progressDispatch)) {
+            throw new Error(`${resumeFile}: recovery must enforce Cognitive SUCCESS → Learning SUCCESS → Project Memory SUCCESS → Intelligence Progress SUCCESS`);
           }
-          console.log('Cognitive recovery Security → Cognitive → Learning → Project Memory ordering PASS');
+
+          const progressFile = '.github/workflows/update-intelligence-progress.yml';
+          const progress = fs.readFileSync(progressFile, 'utf8');
+          if (!progress.includes('workflow_dispatch:')) throw new Error(`${progressFile}: workflow_dispatch recovery surface missing`);
+          if (progress.includes(`node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"`)) throw new Error(`${progressFile}: fragile summary heredoc regression detected`);
+          if (!progress.includes("node -e '")) throw new Error(`${progressFile}: fail-safe summary renderer missing`);
+          console.log('Cognitive recovery Security → Cognitive → Learning → Project Memory → Intelligence Progress ordering PASS');
           NODE
           git diff --check
