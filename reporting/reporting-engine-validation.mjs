@@ -71,6 +71,19 @@ assert.equal(firstAgg.observedReferenceCashFlowUsd,23);
 assert.equal(firstAgg.unobservedPreTrackingDaysBackfilled,false);
 assert.match(firstAgg.note,/no income is fabricated/i);
 
+// A live partial month must annualise observed cash-flow yield, not substitute
+// the weighted Reference APR shown separately as averageReferenceAprPct.
+const livePartial=[
+  {date:'2026-08-09',totalValueUsd:100,referenceApr:20,modeledDailyCashFlowUsd:1},
+  {date:'2026-08-10',totalValueUsd:100,referenceApr:20,modeledDailyCashFlowUsd:1}
+];
+const liveAgg=aggregateDefiteaMonths(livePartial,new Date('2026-08-10T06:07:00Z'))['2026-08'];
+assert.equal(liveAgg.status,'provisional');
+assert.equal(liveAgg.averageReferenceAprPct,20);
+assert.equal(liveAgg.monthlyYieldPct,2);
+assert.equal(liveAgg.annualizedAprPct,365);
+assert.notEqual(liveAgg.annualizedAprPct,liveAgg.averageReferenceAprPct);
+
 // A later closed month may normalize an isolated missed daily run, preserving
 // the existing bounded continuity policy.
 const later=[

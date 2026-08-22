@@ -266,11 +266,18 @@ function aggregateDefiteaMonths(daily, now=new Date()) {
     const normalization=!isCurrent&&!isFirstTrackedMonth&&uniqueDays>0&&uniqueDays<fullDays?fullDays/uniqueDays:1;
     const cash=observed*normalization;
     const monthlyYield=averageTvl>0?cash/averageTvl*100:NaN;
+    const observedYield=averageTvl>0?observed/averageTvl*100:NaN;
+    // Keep the APR column semantically consistent across closed and provisional months.
+    // Closed months annualise the full-month cash-flow yield; the live month annualises
+    // only the actually observed cash-flow period and does not substitute Reference APR.
+    const cashFlowAnnualizedApr=isCurrent
+      ? (uniqueDays>0?observedYield*365/uniqueDays:NaN)
+      : monthlyYield*12;
     out[key]={
       month:key,label:monthLabel(key),status:isCurrent?'provisional':(partial?'final-reference-partial':'final-reference'),mode:'reference-model',
       cashFlowUsd:round(cash,2),referenceCashFlowUsd:round(cash,2),observedReferenceCashFlowUsd:round(observed,2),normalizationFactor:round(normalization,6),
       monthlyYieldPct:Number.isFinite(monthlyYield)?round(monthlyYield,4):null,
-      annualizedAprPct:Number.isFinite(isCurrent?weightedApr:monthlyYield*12)?round(isCurrent?weightedApr:monthlyYield*12,4):null,
+      annualizedAprPct:Number.isFinite(cashFlowAnnualizedApr)?round(cashFlowAnnualizedApr,4):null,
       averageReferenceAprPct:round(weightedApr,4),averageTvlUsd:round(averageTvl,2),sampleDays:uniqueDays,expectedDays,sampleCoveragePct:round(coverage,2),partialPeriod:partial,
       periodStart:good[0].date,periodEnd:good[good.length-1].date,source:'the-holding-reporting-layer',
       firstTrackingMonth:isFirstTrackedMonth,
