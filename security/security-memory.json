@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-22T03:30:53.949Z",
+  "generatedAt": "2026-08-22T04:21:24.901Z",
   "status": "watch",
-  "snapshotHash": "893cee29ecc6ad027f9b5f661ff8ab18f789e86f7298905e52f782c56657439b",
+  "snapshotHash": "e69d59728af8b5fe2cd12584ad23ed8ac572424628eae21edc5d7f15c75c08aa",
   "repository": {
-    "filesScanned": 527,
-    "bytesScanned": 11171234,
+    "filesScanned": 530,
+    "bytesScanned": 11191604,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -69,7 +69,7 @@
       ".github/workflows/update-project-memory-bootstrap.yml": "31b45f666ce234f6f461a71599661db607d0d0ba0731b09fd509460835db414f",
       ".github/workflows/update-proposal-work-queue.yml": "1e4930fe6fd4011c37220e8dfdad83779d971eaf68d04a9dfd26d282ee111691",
       ".github/workflows/update-realised-cash-flow.yml": "9cc60e783e44a73b33a0a1fa9983d7c8b11d42a306dd1c8a8b0718d6d1ce6292",
-      ".github/workflows/update-reporting.yml": "53bfa8be818c1e58b13f4660c5d9482dc0a6ad974db62e43901161a2ae2a66d2",
+      ".github/workflows/update-reporting.yml": "aa739335427661abc66f069f815a81875bae1f0496da3196cb03c53488533545",
       ".github/workflows/update-runtime-owner-activation.yml": "aa8b4173da2462c1b0285d80e00afbed8b248d1d6b2d264ae066ac1eadea42db",
       ".github/workflows/update-stable-capital.yml": "2cab5cc5b960b633f7131e84d83a751036a73cdd6a60decc37910beb30d33954",
       ".github/workflows/validate-beam-onchain-market-data.yml": "d342791883c8f1f0de758930572614ff255b31d183f819d204bef18b676447b3",
@@ -103,6 +103,7 @@
       ".github/workflows/verify-passport-rate-badge-layout.yml": "3e733390e90e5800aeab3d05a070c56352283c69fa5eb9896d63efc49d24957a",
       ".github/workflows/verify-project-memory-bootstrap.yml": "20e773fce2c6eaef588dc87f58eb39c28be8d32f1c51c69c9ea7368fa2c2bcd5",
       ".github/workflows/verify-project-memory-continuity-routing.yml": "783487754984c06762580e3856256cfa4fc06fdc8f4c7ad51de5dfcf70dac74d",
+      ".github/workflows/verify-reporting-layer.yml": "4bd71b2814f4cb3cb6b5258385b46381c5ebf46ef98896bb3223925a0b22773a",
       ".github/workflows/verify-rewards-drawer-row-coverage-parity.yml": "f4656e6cfa6d4f24d103cc698c862e86e9619e7590fbb22d48b93f422337c2b3",
       ".github/workflows/verify-rewards-protocol-asset-label-parity.yml": "3d07655054df28402dbd71d3279317407e0acf5f8afc05a36b78b1d5000aa2af",
       ".github/workflows/verify-vlcvx-full-registry-audit.yml": "e84787fb2a4a92b0e66cf75e77c1261b6cf8504cd859e8f513c7893c773bf59c",
@@ -421,6 +422,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "4533c32c3459398b5ea905b5730834efd0767817ed404699a7e185a50b0e3c20",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-reporting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-reporting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "53bfa8be818c1e58b13f4660c5d9482dc0a6ad974db62e43901161a2ae2a66d2",
+        "currentSha256": "aa739335427661abc66f069f815a81875bae1f0496da3196cb03c53488533545"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1023,10 +1038,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 390,
+    "runCount": 391,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-22T03-30-53-949Z-893cee29ec.json",
-    "latestRecordHash": "19a9c2a35529cf098e3ca0fcfd38dae9809569997340bdc59e779fdbc4486706",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-22T04-21-24-901Z-e69d59728a.json",
+    "latestRecordHash": "df2ced7eb7988a3d894e9a98a57881ccdbe2d5460f2aa1a3f40d34d6ab9b0e52",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
