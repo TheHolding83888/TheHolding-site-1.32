@@ -13,7 +13,11 @@ const fail=m=>{throw new Error(m);};
 // manual/recovery Productivity writer execute this overlay after the base
 // collector, so an ambiguous/mismatched f(x) Locker APR fails closed before
 // either path can publish the refreshed Productivity snapshot.
-await verifyFxnLockerApr();
+// The one explicit bypass is reserved for deterministic projection validation,
+// which does not install browser dependencies or publish data. CI separately
+// proves that no production writer sets this marker.
+const deterministicValidation=process.env.FXN_LOCKER_APR_GUARD_MODE==='deterministic-validation';
+if(!deterministicValidation) await verifyFxnLockerApr();
 
 const data=JSON.parse(fs.readFileSync(DATA,'utf8'));
 const state=JSON.parse(fs.readFileSync(STATE,'utf8'));
@@ -60,4 +64,4 @@ if(Array.isArray(history)&&history.length){
 data.diagnostics=data.diagnostics||{};
 data.diagnostics.yieldRing={version:'0.1-canonical-capital-and-relay-overlay',source:'companies/yieldring-canonical-state.json',bitcoinQuantity:Number(state.capital.bitcoin.quantity),bitcoinCostBasisUsd:Number(state.capital.bitcoin.costBasisUsd),aeroQuantity:target,aeroCostBasisUsd:Number(state.capital.aerodrome.costBasisUsd),relayMode:state.aerodromeRelay.mode,managerId:state.aerodromeRelay.managerId,managerAddress:state.aerodromeRelay.managerAddress,expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,rewardsPresentation:state.aerodromeRelay.rewardsPresentation,evidenceStatus:state.aerodromeRelay.evidenceStatus,executionAuthority:'none'};
 fs.writeFileSync(DATA,JSON.stringify(data,null,2)+'\n');
-console.log('YieldRing Productivity overlay PASS',{aprLatest:company.aprLatest,productiveValue:company.productiveValue,coverage:company.coverage,aeroUnits:aero.units,relayMode:state.aerodromeRelay.mode,executionAuthority:'none'});
+console.log('YieldRing Productivity overlay PASS',{aprLatest:company.aprLatest,productiveValue:company.productiveValue,coverage:company.coverage,aeroUnits:aero.units,relayMode:state.aerodromeRelay.mode,executionAuthority:'none',fxnGuard:deterministicValidation?'deterministic-validation-bypass':'verified-live'});
