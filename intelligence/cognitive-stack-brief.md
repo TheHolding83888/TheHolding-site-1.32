@@ -1,6 +1,6 @@
 # The Holding — Cognitive Stack State
 
-Generated: 2026-08-22T09:31:15.751Z
+Generated: 2026-08-22T10:23:18.329Z
 Status: watch
 Ready for manual interpretation: YES
 Immediate human review: YES
@@ -8,7 +8,7 @@ Immediate human review: YES
 ## Release coherence
 
 Release: 0.2.1-release-coherence · exact true
-Manifest: 8735d1d4dc7fee6e1d6cb279c1816c2b764209332270aa598684b07a17e44414
+Manifest: ec34083a28b79047b8275f66b65e7255c53fbe06c8a2ccf89c93753acc651e1d
 
 ## Operating topology
 
@@ -20,9 +20,9 @@ Execution authority: none
 
 ## Chain
 
-Security Sentinel: watch · critical 0 · high 6 · medium 38
+Security Sentinel: watch · critical 0 · high 2 · medium 38
 Grounded Brain: watch · upstream exact true
-ChatGPT Bridge: watch · cases 25 · evidence 27
+ChatGPT Bridge: watch · cases 22 · evidence 24
 
 ## Zero-extra-cost cognitive boundary
 
@@ -32,8 +32,8 @@ Execution enabled: NO
 
 ## Integrity
 
-Chain hash: 662cf44d294a121c689f19ac69472c3a04f5d0709edfdd062f57b10fcc4e1f83
+Chain hash: 6e770125e000d35fab79c510dfd3da76bbeca42dc8c9523681d69e181156e950
 
-Warnings: 6 high security finding(s) require explicit human review
+Warnings: 2 high security finding(s) require explicit human review
 
 If Ready for manual interpretation is YES, the owner may ask ChatGPT: `чекай brain`.

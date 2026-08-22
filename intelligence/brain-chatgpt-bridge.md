@@ -1,12 +1,12 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-22T09:31:15.595Z
+Generated: 2026-08-22T10:23:18.177Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-22T09:31:15.398Z
-Brain snapshot: 385b02df41bb645fdb72787373422fa39c1458293e97cbf9175cf5aba32dc6ab
-Cases: 25
-Evidence objects: 27
+Brain generated: 2026-08-22T10:23:17.978Z
+Brain snapshot: 66a57147d433ec838675ec381e2394ad6ed1c838b828e704ba42b7fecb15e669
+Cases: 22
+Evidence objects: 24
 
 ## What changed
 
@@ -14,67 +14,7 @@ Current canonical inputs contain 14 material Observer change(s), 0 new security 
 
 ## Active deterministic cases
 
-### 1. verification/ask-experience/runner-v0.1.mjs
-
-Case: `security-fedb97ff102b9723a0095f5e`
-Domain: security · Severity: high · Risk: high
-
-Signal: JavaScript eval usage detected.
-
-Why it matters: Eval can execute attacker-controlled strings if data boundaries are ever breached.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-604da61eb30b9d5b
-
-### 2. verification/ask-experience/runner-v0.1.mjs
-
-Case: `security-6bbec36a254ab76d5d36da2b`
-Domain: security · Severity: high · Risk: high
-
-Signal: JavaScript eval usage detected.
-
-Why it matters: Eval can execute attacker-controlled strings if data boundaries are ever breached.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-0f0248ee0b8032a1
-
-### 3. verification/ask-experience/runner-v0.1.mjs
-
-Case: `security-8eb0b9a226edd58548515914`
-Domain: security · Severity: high · Risk: high
-
-Signal: JavaScript eval usage detected.
-
-Why it matters: Eval can execute attacker-controlled strings if data boundaries are ever breached.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-abbe50001db74c9f
-
-### 4. verification/ask-experience/runner-v0.1.mjs
-
-Case: `security-8d367c1d4d50a76bbf153d43`
-Domain: security · Severity: high · Risk: high
-
-Signal: JavaScript eval usage detected.
-
-Why it matters: Eval can execute attacker-controlled strings if data boundaries are ever breached.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-6d2434f7d629d6bd
-
-### 5. .github/workflows/production-boundary-guard.yml
+### 1. .github/workflows/production-boundary-guard.yml
 
 Case: `security-119c887e98b579ae9b0ac6bb`
 Domain: security · Severity: high · Risk: high
@@ -87,9 +27,9 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-2067a243a0689f96
+Evidence: EV-7666fd21e55bb661
 
-### 6. .github/workflows/production-deployment-smoke.yml
+### 2. .github/workflows/production-deployment-smoke.yml
 
 Case: `security-796045f38b2faae4de28f58e`
 Domain: security · Severity: high · Risk: high
@@ -102,9 +42,9 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-11d49b371c20739d
+Evidence: EV-e4dcb9bb1cd3672f
 
-### 7. 38 current findings
+### 3. 38 current findings
 
 Case: `39d572265e75c385c1437b6f`
 Domain: security · Severity: medium · Risk: medium
@@ -117,9 +57,9 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-54d579c99b1c7491
+Evidence: EV-58d0ef4fae05af25
 
-### 8. projectx-whype-usdc
+### 4. projectx-whype-usdc
 
 Case: `3425dcc264fe1ba562b10add`
 Domain: economic · Severity: watch · Risk: low
@@ -134,7 +74,7 @@ Deterministic action: Keep the adapter explicitly warming/unknown and use the no
 
 Evidence: EV-3c3e81a87747e01e
 
-### 9. Cypher
+### 5. Cypher
 
 Case: `21620b762c1772482fe1266d`
 Domain: economic · Severity: watch · Risk: low
@@ -149,7 +89,7 @@ Deterministic action: Prioritize the unresolved adapter(s) contributing to the c
 
 Evidence: EV-a9ee91659d1791a0
 
-### 10. 0x5860...83CA8.eth
+### 6. 0x5860...83CA8.eth
 
 Case: `752ad1fa5d5c4b4db1804346`
 Domain: economic · Severity: watch · Risk: low
@@ -164,7 +104,7 @@ Deterministic action: Resolve only the pending reward route(s) with bounded curr
 
 Evidence: EV-a4707e258f2fc363
 
-### 11. aerocvxyb.eth
+### 7. aerocvxyb.eth
 
 Case: `9407adbb1115d285937ffb3d`
 Domain: economic · Severity: watch · Risk: low
@@ -179,7 +119,7 @@ Deterministic action: Resolve only the pending reward route(s) with bounded curr
 
 Evidence: EV-650f5d24699388e5
 
-### 12. defitea.eth
+### 8. defitea.eth
 
 Case: `53e29881b92b086b48f3fb08`
 Domain: economic · Severity: watch · Risk: low
@@ -194,7 +134,7 @@ Deterministic action: Resolve only the pending reward route(s) with bounded curr
 
 Evidence: EV-c7dbd3904d0509a6
 
-### 13. defitea.eth
+### 9. defitea.eth
 
 Case: `10a97e7e7280fe8aa41567c2`
 Domain: system-change · Severity: info · Risk: low
@@ -209,7 +149,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-89eff731ae034c95
 
-### 14. defitea.eth
+### 10. defitea.eth
 
 Case: `adc7c29f379cae1e518509d5`
 Domain: system-change · Severity: info · Risk: low
@@ -224,7 +164,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-75a94486b94ce46a
 
-### 15. Monetra.eth
+### 11. Monetra.eth
 
 Case: `de9e1f697a744b298511c3ce`
 Domain: system-change · Severity: info · Risk: low
@@ -239,7 +179,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-a6aef07f24f54864
 
-### 16. Monetra.eth
+### 12. Monetra.eth
 
 Case: `e808010b7cb6f501a4fdd47f`
 Domain: system-change · Severity: info · Risk: low
@@ -254,7 +194,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-91f2078e7f3407f6
 
-### 17. Monetra.eth
+### 13. Monetra.eth
 
 Case: `c8432c7f91acb508f05c1fe4`
 Domain: system-change · Severity: info · Risk: low
@@ -269,7 +209,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-c274b6149d06aba9
 
-### 18. 0x5860...83CA8.eth
+### 14. 0x5860...83CA8.eth
 
 Case: `90d6c1ba7826cc83b1da6c93`
 Domain: system-change · Severity: info · Risk: low
@@ -284,7 +224,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-a442cc689662fd21
 
-### 19. aerocvxyb.eth
+### 15. aerocvxyb.eth
 
 Case: `ba0469d573d7a8f3c2842984`
 Domain: system-change · Severity: info · Risk: low
@@ -299,7 +239,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-2cbd2d77a9f6639c
 
-### 20. Cypher
+### 16. Cypher
 
 Case: `ddccbe8a70c84e37453391bf`
 Domain: system-change · Severity: info · Risk: low
@@ -314,7 +254,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-e8ce926a35d3d222
 
-### 21. defitea.eth
+### 17. defitea.eth
 
 Case: `1c9287e9f0c2f23fbd5c3bf3`
 Domain: system-change · Severity: info · Risk: low
@@ -329,7 +269,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-56ebfc5ec88183f7
 
-### 22. Rook's portfolio
+### 18. Rook's portfolio
 
 Case: `7ca9b168364a368b64115127`
 Domain: system-change · Severity: info · Risk: low
@@ -344,7 +284,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-b5edc98b43f6af8d
 
-### 23. Stable Companies Index
+### 19. Stable Companies Index
 
 Case: `499ff506dbf7dc0a0d45a6da`
 Domain: system-change · Severity: info · Risk: low
@@ -359,7 +299,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-f826081414135e8f
 
-### 24. Stable Companies Index
+### 20. Stable Companies Index
 
 Case: `72538729b8dc78c113ab992a`
 Domain: system-change · Severity: info · Risk: low
@@ -374,7 +314,7 @@ Deterministic action: Inspect the cited evidence before proposing any change. Do
 
 Evidence: EV-70dc5f06f4ab3905
 
-### 25. Stable Companies Index
+### 21. Stable Companies Index
 
 Case: `2b36ea2d98528021ce9c0fc4`
 Domain: system-change · Severity: info · Risk: low
@@ -388,6 +328,21 @@ What follows: The signal is real, but the current deterministic policy has no ca
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
 Evidence: EV-a0d864098e410822
+
+### 22. reporting
+
+Case: `2982e7267b4f09b2024fd6ba`
+Domain: system-change · Severity: important · Risk: low
+
+Signal: reporting source version changed 1.1.0-dual-fund-monetra → 1.2.0-defitea-canonical-market-data.
+
+Why it matters: A source/schema version change can unlock new capabilities or alter downstream assumptions and should be observed explicitly.
+
+What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+
+Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+
+Evidence: EV-d3157e1ae744d748
 
 ## Manual ChatGPT handoff
 
