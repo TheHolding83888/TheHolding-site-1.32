@@ -1,5 +1,5 @@
 # THE HOLDING — PROJECT MEMORY ROUTING INDEX
-## 2026-08-18 · task-aware retrieval map · updated 2026-08-21
+## 2026-08-18 · task-aware retrieval map · updated 2026-08-22
 
 > Purpose: give every new chat/model a deterministic answer to **“what project memory should I read for this exact kind of work?”** without forcing it to load every historical file.
 >
@@ -158,11 +158,26 @@ Read:
 - Passport Responsive canon
 - Known Mechanism Reuse canon
 
+For f(x) / veFXN / FXN Locker specifically also inspect:
+- `productivity/fxn-locker-apr-guard.mjs`;
+- live `companies/productivity-source-report.json`;
+- live `companies/productivity-data.json`;
+- Aug 22 final stabilization continuity.
+
 Laws:
 - Reference APR/APY != realised income;
 - unsupported/missing rate = Pending, not 0;
 - fee tier/nominal parameter != yield;
-- rate must have reproducible source and explicit metric semantics.
+- rate must have reproducible source and explicit metric semantics;
+- **official domain identity alone may be insufficient when one page contains several rates; exact semantic block/metric authority may be required.**
+
+Current f(x) durable source contract from Aug 22:
+- exact official page: `https://fx.aladdin.club/v2/lock`;
+- exact source authority: `FXN Locker block`;
+- source metric: `veFXN Locker APR`;
+- historical snapshots are not retroactively rewritten by the exact-source guard.
+
+Do not answer the current APR from prose memory. Fetch live Productivity state.
 
 ---
 
@@ -206,6 +221,44 @@ Read:
 - owner context only for strategy philosophy.
 
 Preserve Monetra tracking provenance. Do not backfill earlier income without explicit evidence/methodology.
+
+---
+
+# 11A. REPORTING / DEFITEA CASH FLOW / YIELD REPORTS / VOTEMARKET
+
+Trigger examples:
+- Defitea daily/monthly cash flow
+- annualized cash-flow APR
+- current live-month APR
+- year APR
+- YieldRing/05081966 income contribution
+- VoteMarket veCRV / veFXN income
+- Union scrvUSD reconciliation
+- `reporting-data.json`
+- `defitea-income-ledger.json`
+
+Read:
+1. latest master continuity;
+2. **`THE_HOLDING_REPORTING_REFERENCE_MODEL_CANON_2026-08-22.md`**;
+3. live `intelligence/reporting-data.json`;
+4. live `reporting/defitea-income-ledger.json`;
+5. live canonical Defitea state, Productivity and Market Data when recalculation/provenance matters;
+6. current Reporting workflow/validator for writer or materialization questions.
+
+Hard laws:
+- Defitea automated Reporting uses the canonical 11-position inventory;
+- Reporting consumes canonical selected Market Data and does not independently discover spot prices;
+- base Reference APR model != realised wallet income;
+- associated-company income from YieldRing.eth and 05081966.eth may enter the **cash-flow numerator**, never Defitea TVL;
+- VoteMarket veCRV/veFXN income enters through append-only deduplicated entitlement events, not by repeatedly adding current claimable balances;
+- Union/vlCVX settlement is reconciliation/disclosure and must not double-count Votium economics already represented in `convex_vlcvx` Reference APR;
+- first tracking month must not fabricate pre-tracking days;
+- live-month annualized APR uses only observed sample days;
+- year `annualizedCashFlowAprPct` includes the live provisional month when present;
+- `bestMonth` remains closed-month only;
+- Reporting code merge is not physical production proof; verify canonical writer output.
+
+Do not answer current annualized values from prose continuity. Fetch live Reporting JSON.
 
 ---
 
@@ -262,12 +315,20 @@ Read:
 - CURRENT
 - latest continuity
 - Build Discipline canon
+- **`THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md` when release/recovery/handoff/freshness is involved**
 - live subsystem states
 - Historical Operating Knowledge when architecture history matters
 - Founder DNA only when founder-model alignment matters.
 
 Distinction:
 standalone fresh subsystem state may be newer than the exact state bound into a coherent Cognitive Stack packet. Preserve coherent-chain provenance.
+
+Aug 22 release-recovery law:
+`post-change Security freshness → release guard → Cognitive SUCCESS → Learning SUCCESS → Project Memory SUCCESS → THI SUCCESS`.
+
+This is a recovery control-plane chain using existing canonical writers, not a second reasoning truth plane.
+
+Do not assume a workflow dispatched with repository `GITHUB_TOKEN` will recursively trigger every downstream `workflow_run` event. Critical recovery handoffs explicitly identify and await the exact dispatched run before moving to the next stage.
 
 ---
 
@@ -295,7 +356,10 @@ Rules:
 - do not ask owner to repeat already-known data;
 - systemic reusable fix > one-off patch;
 - `делай/ок` = implementation authorization, not merge authorization;
-- each PR merge needs fresh explicit owner command.
+- each PR merge needs fresh explicit owner command **unless the owner explicitly grants a new bounded standing merge authorization**.
+
+Historical note:
+on Aug 22 the owner granted temporary standing merge authorization only for the defined final-stabilization sequence until the fat green check. That bounded exception is **closed** and must not be carried into a future chat.
 
 ---
 
@@ -305,11 +369,61 @@ Read:
 - fresh `security/security-intelligence.json`
 - Production Incident Postmortem
 - latest continuity
+- **`THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md` for trigger/recovery/release incidents**
 - relevant security policy/state.
 
 Do not use an older Cognitive Stack Security snapshot as current Security if a newer standalone Sentinel artifact exists.
 
 For high-frequency Market Data, remember that pure generated snapshot pushes are intentionally excluded from Security push-trigger noise; code/workflow/policy/registry changes remain checked.
+
+Aug 22 detector lessons:
+- Puppeteer `$eval/$$eval` is not JavaScript `eval`;
+- shell prose containing `eval` is not automatically an executed shell `eval` command;
+- false-positive fixes must include positive fixtures proving real dangerous syntax is still detected;
+- generated Security outputs may be ignored to prevent self-loop noise, but Security engine/policy files must still wake Sentinel;
+- public telemetry diagnostics must not leak local runner paths.
+
+Current High/Medium counts are changing facts; always fetch live Security.
+
+---
+
+# 16A. PRODUCTION RECOVERY / WORKFLOW HANDOFF / STALE-GREEN / THI
+
+Trigger examples:
+- writer did not publish after merge
+- PR GREEN but generated artifact old
+- workflow dispatched but no downstream run
+- Cognitive release guard failure
+- stale Cognitive / fresh Security mismatch
+- Learning did not wake
+- Project Memory did not wake
+- THI stale or false GREEN/RED
+- shell/heredoc publication failure
+- exact-byte manifest coverage
+
+Read:
+1. latest master continuity;
+2. **`THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md`**;
+3. current canonical workflow(s);
+4. live generated state for every linked subsystem;
+5. exact workflow run/job/step logs when failure location matters;
+6. release manifests/guards when release coherence matters.
+
+Diagnostic order:
+`run exists? → exact failed step? → collection? → validation? → local commit? → rebase/publish? → downstream handoff? → artifact actually changed?`
+
+Hard laws:
+- one canonical writer per truth plane;
+- recovery dispatches canonical writers rather than writing duplicate truth;
+- wakeup != publication;
+- PR CI GREEN != production writer GREEN;
+- fail-closed release drift is repaired by rebinding intended bytes, not weakening guards;
+- freshness ordering matters: post-change Security must precede Cognitive recovery;
+- queued workflow checkout may become stale while waiting; refetch/reset before exact-byte gates;
+- `GITHUB_TOKEN` dispatched workflows may not recursively create expected downstream events;
+- public observability output is itself a privacy surface;
+- THI current integrity comes from live canonical guards, not persisted old booleans;
+- shell summary/post-step RED must be separated from actual writer publication failure.
 
 ---
 
@@ -351,6 +465,17 @@ Read:
 
 Do not start Chainlink/ICP research from zero if the canonical route is already production-proven.
 
+Example: “Cognitive is stale after a workflow change.”
+
+Read:
+1. core bootstrap;
+2. latest continuity;
+3. Production Recovery & Fail-Closed Handoff canon;
+4. live Security/Cognitive/Learning/Project Memory/THI artifacts;
+5. current release manifests and exact run logs.
+
+Do not create another writer merely because the existing writer failed to materialize.
+
 ---
 
 # 20. MEMORY WRITE-BACK RULE
@@ -365,6 +490,8 @@ After material work:
 - trivial run noise → logs only.
 
 Do not stuff everything into CURRENT. CURRENT is a bootstrap, not the archive.
+
+The Aug 22 stabilization checklist is a **closed milestone**, not a standing backlog. Reopen a closed item only when fresh live evidence demonstrates regression.
 
 ---
 
