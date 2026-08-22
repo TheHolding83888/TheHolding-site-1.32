@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'intelligence/cognitive-stack-release.json'
+      - '.github/workflows/resume-cognitive-stack-after-release.yml'
 
 permissions:
   contents: read
@@ -17,7 +18,7 @@ concurrency:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 25
     env:
       RECOVERY_PUSH_AT: ${{ github.event.head_commit.timestamp }}
     steps:
@@ -77,7 +78,42 @@ jobs:
       - name: Verify release coherence before dispatch
         run: node intelligence/cognitive-release-guard.mjs
 
-      - name: Dispatch canonical integrated Cognitive Stack
+      - name: Dispatch and await canonical integrated Cognitive Stack
+        id: cognitive
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run refresh-cognitive-stack.yml --ref main
+        run: |
+          set -euo pipefail
+          before_id="$(gh run list --workflow refresh-cognitive-stack.yml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run refresh-cognitive-stack.yml --ref main
+
+          cognitive_run_id=""
+          for attempt in $(seq 1 40); do
+            cognitive_run_id="$(
+              gh run list \
+                --workflow refresh-cognitive-stack.yml \
+                --event workflow_dispatch \
+                --limit 10 \
+                --json databaseId,createdAt \
+                --jq "[.[] | select((.databaseId | tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty"
+            )"
+            if [ -n "$cognitive_run_id" ]; then break; fi
+            sleep 5
+          done
+          if [ -z "$cognitive_run_id" ]; then
+            echo 'Could not identify the recovery-dispatched Cognitive Stack run.'
+            exit 1
+          fi
+
+          echo "cognitive_run_id=$cognitive_run_id" >> "$GITHUB_OUTPUT"
+          echo "Awaiting recovery-dispatched Cognitive Stack run $cognitive_run_id"
+          gh run watch "$cognitive_run_id" --exit-status --interval 5
+
+      - name: Dispatch canonical Learning after Cognitive success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          echo "Cognitive Stack run ${{ steps.cognitive.outputs.cognitive_run_id }} succeeded; dispatching Learning on canonical main."
+          gh workflow run update-learning-loop.yml --ref main
