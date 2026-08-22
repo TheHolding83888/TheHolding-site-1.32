@@ -1,0 +1,110 @@
+name: TEMP ELIZA Route Metadata Fix
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.head_ref == 'fix/market-data-eliza-route-metadata-failback-20260822'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          ref: fix/market-data-eliza-route-metadata-failback-20260822
+      - name: Preserve canonical quoted-route identity on unhealthy observations
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs')
+          s = p.read_text(encoding='utf-8')
+
+          old = '''    quoteToken: entry.route.quoteToken,
+    quoteFeedContract: entry.route.quoteFeed?.contract || null,
+    error,'''
+          new = '''    quoteToken: entry.route.quoteToken,
+    fee: entry.route.fee,
+    quoteAssetId: entry.route.quoteAssetId,
+    feedQuote: entry.route.feedQuote,
+    outputQuote: entry.route.outputQuote,
+    quoteFeedContract: entry.route.quoteFeed?.contract || null,
+    error,'''
+          if s.count(old) != 1:
+              raise SystemExit(f'dependencyError identity marker count={s.count(old)}')
+          s = s.replace(old, new, 1)
+
+          old = '''      source: UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE,
+      quoteFeedContract: original?.quoteFeed?.contract || null,'''
+          new = '''      source: UNISWAP_V3_CHAINLINK_QUOTE_ROUTE_TYPE,
+      quoteAssetId: original?.quoteAssetId || null,
+      feedQuote: original?.feedQuote || null,
+      outputQuote: original?.outputQuote || null,
+      quoteFeedContract: original?.quoteFeed?.contract || null,'''
+          if s.count(old) != 1:
+              raise SystemExit(f'final observation identity marker count={s.count(old)}')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+
+          v = Path('intelligence/market-data/onchain-uniswap-v3-chainlink-quote-validation.mjs')
+          t = v.read_text(encoding='utf-8')
+          marker = '''assert.equal(output.networks.bsc.onchainTokenDecimalsRead, true);
+
+console.log('ELIZA V3 + Chainlink quote validation PASS', {'''
+          insert = '''assert.equal(output.networks.bsc.onchainTokenDecimalsRead, true);
+
+// Failback contract: route identity must survive an unhealthy quote dependency.
+// The authority materializer validates route identity before it selects the
+// healthy onchain lane or the cached CoinGecko fallback. An RPC/feed failure
+// must therefore remain structurally reviewable instead of looking like route drift.
+const failingFetch = async (url, options) => {
+  const payload = JSON.parse(options.body);
+  if (payload.some(x => x.method === 'eth_blockNumber')) {
+    return { ok: false, status: 503, async json() { return {}; } };
+  }
+  throw new Error('Unexpected phase after dependency failure');
+};
+const failedOutput = await resolveUniswapV3ChainlinkQuotePrices({ registry, marketData, fetchImpl: failingFetch, nowMs: NOW_MS });
+const failedEliza = failedOutput.observations.elizaos;
+assert.equal(failedEliza.status, 'quote-dependency-rpc-unavailable');
+assert.equal(failedEliza.source, 'uniswap-v3-twap-chainlink-quote');
+assert.equal(failedEliza.network, 'bsc');
+assert.equal(failedEliza.factory.toLowerCase(), FACTORY.toLowerCase());
+assert.equal(failedEliza.token.toLowerCase(), TOKEN.toLowerCase());
+assert.equal(failedEliza.quoteToken.toLowerCase(), USDC.toLowerCase());
+assert.equal(failedEliza.fee, 2500);
+assert.equal(failedEliza.quoteAssetId, 'bsc-usdc-usd');
+assert.equal(failedEliza.feedQuote, 'USDC');
+assert.equal(failedEliza.outputQuote, 'USD');
+assert.equal(failedEliza.productionPriceAuthority, false);
+
+console.log('ELIZA V3 + Chainlink quote validation PASS', {'''
+          if t.count(marker) != 1:
+              raise SystemExit(f'validation marker count={t.count(marker)}')
+          t = t.replace(marker, insert, 1)
+          v.write_text(t, encoding='utf-8')
+
+          Path('.github/workflows/temp-eliza-route-metadata-fix.yml').unlink()
+          PY
+      - name: Validate quoted-route failback contract
+        shell: bash
+        run: |
+          node --check intelligence/market-data/onchain-uniswap-v3-chainlink-quote.mjs
+          node --check intelligence/market-data/onchain-uniswap-v3-chainlink-quote-validation.mjs
+          node intelligence/market-data/onchain-uniswap-v3-chainlink-quote-validation.mjs
+          node intelligence/market-data/onchain-route-override-validation.mjs
+          node intelligence/market-data/market-data-authority-selector-validation.mjs
+          git diff --check
+      - name: Publish clean patch content
+        shell: bash
+        run: |
+          git config user.name "The Holding Market Data"
+          git config user.email "market-data@theholding.ai"
+          git add -A
+          git commit -m "Fix: preserve reviewed quote route identity on failback"
+          git push origin HEAD:fix/market-data-eliza-route-metadata-failback-20260822
