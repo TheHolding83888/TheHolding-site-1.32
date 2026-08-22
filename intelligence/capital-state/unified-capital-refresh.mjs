@@ -33,7 +33,7 @@ function assert(ok, message) { if (!ok) throw new Error(message); }
 
 run('1/7 Project canonical Defitea state', ROOT, 'companies/defitea-public-capital-projection.mjs');
 run('2/7 Project canonical YieldRing state', ROOT, 'companies/yieldring-public-capital-projection.mjs');
-run('3/7 Refresh protocol APRs and established Productivity', path.join(ROOT, 'productivity'), 'productivity-engine.mjs', {
+run('3/7 Refresh protocol APRs and established Productivity', path.join(ROOT, 'productivity'), 'run-productivity-with-fxn-guard.mjs', {
   PAGE_FILE: '../companies/index.html',
   DATA_FILE: '../companies/productivity-data.json',
   REPORT_FILE: '../companies/productivity-source-report.json'
