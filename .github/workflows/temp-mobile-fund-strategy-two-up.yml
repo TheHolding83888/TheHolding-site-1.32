@@ -4,12 +4,15 @@ on:
   push:
     branches:
       - ui/mobile-fund-strategy-two-up-20260822
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   patch:
+    if: github.event_name == 'push' || github.head_ref == 'ui/mobile-fund-strategy-two-up-20260822'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
