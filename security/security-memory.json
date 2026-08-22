@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-22T09:45:30.354Z",
+  "generatedAt": "2026-08-22T09:51:33.754Z",
   "status": "watch",
-  "snapshotHash": "4d8c32cd890aedcc96ac9d93337a43fca82a2e53620500f1907ec5d1659fc883",
+  "snapshotHash": "52ee27bf7898aec0ff66f7ebab4cebf7c223fa740ffb27b2ae1d96e737aa37af",
   "repository": {
     "filesScanned": 543,
-    "bytesScanned": 11386036,
+    "bytesScanned": 11387520,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -112,7 +112,7 @@
       ".github/workflows/verify-reporting-layer.yml": "9a1232b7f6d982fec53fc5e454421c5e720e01d4bdf1bfa6ebadae778358c2f2",
       ".github/workflows/verify-rewards-drawer-row-coverage-parity.yml": "f4656e6cfa6d4f24d103cc698c862e86e9619e7590fbb22d48b93f422337c2b3",
       ".github/workflows/verify-rewards-protocol-asset-label-parity.yml": "3d07655054df28402dbd71d3279317407e0acf5f8afc05a36b78b1d5000aa2af",
-      ".github/workflows/verify-security-eval-detector.yml": "1978707b53db9bdb842d89b89cb2f24953506e6d31156fc23450d4d0926a7638",
+      ".github/workflows/verify-security-eval-detector.yml": "a40eac7a66c388e955c8445a94d5751a06c9ddfb801e2f59ab852f6ebc903f8a",
       ".github/workflows/verify-vlcvx-full-registry-audit.yml": "e84787fb2a4a92b0e66cf75e77c1261b6cf8504cd859e8f513c7893c773bf59c",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "02b5437a85c8beaf86c68df213cf89cfcb5accd383c848e6b008dfe02098f6c4",
@@ -349,7 +349,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 20 Aug 2026 05:27:57 GMT",
+        "lastModified": "Sat, 22 Aug 2026 07:47:25 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -387,15 +387,18 @@
       "evidence": null
     },
     {
-      "id": "123a134ffec4728787d004589ff1d027bc0460bd6c95c16dd9816f29ecae1dca",
-      "severity": "high",
-      "category": "shell-eval",
+      "id": "829b61b03cf70ffa5de3794487a59c56621d879924716b7091017d4ba8721f31",
+      "severity": "medium",
+      "category": "critical-surface-change",
       "file": ".github/workflows/verify-security-eval-detector.yml",
       "line": null,
       "entity": null,
-      "summary": "Workflow contains shell eval.",
-      "whyItMatters": "Eval can turn untrusted data into executable shell code.",
-      "evidence": null
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-security-eval-detector.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "1978707b53db9bdb842d89b89cb2f24953506e6d31156fc23450d4d0926a7638",
+        "currentSha256": "a40eac7a66c388e955c8445a94d5751a06c9ddfb801e2f59ab852f6ebc903f8a"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -998,10 +1001,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 401,
+    "runCount": 402,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-22T09-45-30-354Z-4d8c32cd89.json",
-    "latestRecordHash": "9765202ccf2b9ee78642826826c95f669cbba36fd6b33adfbb14fda2c0b0417c",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-22T09-51-33-754Z-52ee27bf78.json",
+    "latestRecordHash": "d3702a173bae2e0da9a9864e3937e1e7f08a1d282a5f0be75bc1bb48212ec8db",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }

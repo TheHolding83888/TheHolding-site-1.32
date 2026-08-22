@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-22T09:45:30.354Z",
+  "lastUpdatedAt": "2026-08-22T09:51:33.754Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 401,
-    "vaultRunCount": 401,
+    "runCount": 402,
+    "vaultRunCount": 402,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -4825,6 +4825,18 @@
       "highCount": 3,
       "newFindingCount": 1,
       "resolvedFindingCount": 6
+    },
+    {
+      "generatedAt": "2026-08-22T09:51:33.754Z",
+      "status": "watch",
+      "snapshotHash": "52ee27bf7898aec0ff66f7ebab4cebf7c223fa740ffb27b2ae1d96e737aa37af",
+      "recordPath": "security/security-vault/2026/08/2026-08-22T09-51-33-754Z-52ee27bf78.json",
+      "recordHash": "d3702a173bae2e0da9a9864e3937e1e7f08a1d282a5f0be75bc1bb48212ec8db",
+      "findingCount": 41,
+      "criticalCount": 0,
+      "highCount": 2,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -21172,6 +21184,28 @@
       "category": "critical-surface-change",
       "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-company-010-projectx-reference-apr.yml.",
       "file": ".github/workflows/verify-company-010-projectx-reference-apr.yml",
+      "entity": null
+    },
+    {
+      "id": "28d4d0900fe6f050c61b484911f24bedbbbba1665bae68b6ded5f4d45f32ab42",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-22T09:51:33.754Z",
+      "findingId": "829b61b03cf70ffa5de3794487a59c56621d879924716b7091017d4ba8721f31",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-security-eval-detector.yml.",
+      "file": ".github/workflows/verify-security-eval-detector.yml",
+      "entity": null
+    },
+    {
+      "id": "82414d7f363e1662a999e282aaba8a85fd62529ec5a9e92d21c1fdc1d9824b48",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-22T09:51:33.754Z",
+      "findingId": "123a134ffec4728787d004589ff1d027bc0460bd6c95c16dd9816f29ecae1dca",
+      "severity": "high",
+      "category": "shell-eval",
+      "summary": "Resolved: Workflow contains shell eval.",
+      "file": ".github/workflows/verify-security-eval-detector.yml",
       "entity": null
     }
   ]
