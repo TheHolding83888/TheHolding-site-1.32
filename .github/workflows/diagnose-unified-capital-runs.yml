@@ -1,4 +1,4 @@
-name: Diagnose Reporting Production Refresh
+name: Diagnose Intelligence Progress Handoff
 
 on:
   pull_request:
@@ -7,38 +7,23 @@ on:
 
 permissions:
   contents: read
-  actions: write
+  actions: read
 
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 3
     steps:
-      - name: Dispatch and await canonical Reporting refresh
+      - name: Inspect Intelligence Progress run history
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          before_id="$(gh run list --workflow update-reporting.yml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
-          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          gh workflow run update-reporting.yml --ref main
-
-          run_id=""
-          for attempt in $(seq 1 40); do
-            run_id="$(
-              gh run list \
-                --workflow update-reporting.yml \
-                --event workflow_dispatch \
-                --limit 10 \
-                --json databaseId,createdAt \
-                --jq "[.[] | select((.databaseId | tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty"
-            )"
-            if [ -n "$run_id" ]; then break; fi
-            sleep 5
+          echo '=== Intelligence Progress recent runs ==='
+          gh run list --workflow update-intelligence-progress.yml --limit 15 --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle
+          for id in $(gh run list --workflow update-intelligence-progress.yml --limit 8 --json databaseId --jq '.[].databaseId'); do
+            echo "=== THI run $id ==="
+            gh run view "$id" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
           done
-          test -n "$run_id"
-          echo "Awaiting canonical Reporting run $run_id"
-          gh run watch "$run_id" --exit-status --interval 5
-          gh run view "$run_id" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
