@@ -7,6 +7,7 @@ on:
       - 'intelligence/cognitive-release-guard.mjs'
       - 'intelligence/cognitive-stack-verifier.mjs'
       - 'intelligence/cognitive-stack-release.json'
+      - 'intelligence/intelligence-progress.json'
       - '.github/workflows/verify-intelligence-progress-live-integrity.yml'
 
 permissions:
@@ -33,7 +34,7 @@ jobs:
           node intelligence/intelligence-progress-engine.mjs --self-test
           node intelligence/intelligence-progress-engine.mjs
 
-      - name: Require live guard parity
+      - name: Require live guard parity and public-safe diagnostics
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
@@ -48,11 +49,29 @@ jobs:
           const current = spawnSync(process.execPath, [path.join(process.cwd(), 'intelligence/cognitive-stack-verifier.mjs'), '--verify-current'], { encoding: 'utf8' });
           const expectedEval = current.status === 0;
 
-          if (x.engineVersion !== '0.2-live-cognitive-integrity-thi-engine') throw new Error('unexpected THI engine version');
+          if (x.engineVersion !== '0.2.1-live-cognitive-integrity-public-safe-thi-engine') throw new Error('unexpected THI engine version');
           if (x.metrics?.integrity?.cognitiveIntegritySource !== 'live-canonical-guards') throw new Error('THI cognitive integrity is not live-guard sourced');
           if (x.metrics?.reasoning?.releaseCoherent !== expectedRelease) throw new Error(`release coherence parity mismatch: THI=${x.metrics?.reasoning?.releaseCoherent} live=${expectedRelease}`);
           if (x.metrics?.integrity?.cognitiveEvalPass !== expectedEval) throw new Error(`cognitive eval parity mismatch: THI=${x.metrics?.integrity?.cognitiveEvalPass} live=${expectedEval}`);
           if (x.authority?.executionAuthority !== 'none' || x.authority?.executable !== false) throw new Error('THI authority drift');
-          console.log('THI live cognitive integrity PASS', { releaseCoherent: expectedRelease, cognitiveEvalPass: expectedEval });
+
+          const diagnosticText = [
+            x.metrics?.integrity?.releaseGuardError,
+            x.metrics?.integrity?.cognitiveVerifierError
+          ].filter(Boolean).join('\n');
+          const forbidden = [
+            /\/home\/runner\//i,
+            /file:\/\/\//i,
+            /[A-Za-z]:\\Users\\/i
+          ];
+          for (const pattern of forbidden) {
+            if (pattern.test(diagnosticText)) throw new Error(`THI public diagnostic leaked local path class: ${pattern}`);
+          }
+
+          console.log('THI live cognitive integrity + public diagnostic safety PASS', {
+            releaseCoherent: expectedRelease,
+            cognitiveEvalPass: expectedEval,
+            hasDiagnostic: diagnosticText.length > 0
+          });
           NODE
           git diff --check
