@@ -45,8 +45,11 @@ Examples:
 - Rewards / vlCVX → Rewards Drawer + vlCVX route canon + live current routing evidence;
 - Passport mobile/desktop → Passport Responsive UI canon;
 - **Market Data / current prices / CoinGecko / Public Capital / TVL propagation → latest continuity + `THE_HOLDING_MARKET_DATA_ONCHAIN_AUTHORITY_CANON_2026-08-21.md` + live Market Data/Shadow/CoinGecko/Public Capital artifacts + fresh heartbeat/workflow evidence;**
+- **Defitea Reporting / cash-flow APR / YieldRing+050 income / VoteMarket events → latest continuity + `THE_HOLDING_REPORTING_REFERENCE_MODEL_CANON_2026-08-22.md` + live Reporting ledger/data + fresh writer evidence;**
+- **Cognitive release drift / writer failed to materialize / Learning or Project Memory handoff / THI stale or false RED/GREEN → latest continuity + `THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md` + live subsystem state + exact workflow logs;**
+- f(x) / veFXN APR source → latest continuity + live Productivity source report/data + exact FXN Locker guard;
 - founder/company strategy → Owner Operating Context + Founder Decision DNA only when relevant;
-- Security/deployment → fresh Security state + Production Incident postmortem.
+- Security/deployment → fresh Security state + Production Incident postmortem + Recovery canon when trigger/release/handoff behavior matters.
 
 The router is not a replacement for fresh state. It tells the model **where to look**, not **what the current number is**.
 
@@ -72,8 +75,9 @@ Append-only, SHA-256 hash-chained Observer history with indefinite canonical ret
 - `intelligence/learning/decision-ledger.json`
 - `intelligence/learning-state/**`
 - Proposal / Builder / Guardian generated states
+- `intelligence/intelligence-progress.json`
 
-This preserves cases, owner decisions, outcomes, lessons, and capability-gate history.
+This preserves cases, owner decisions, outcomes, lessons, capability-gate history and current deterministic intelligence-progress telemetry.
 
 ### 4. Human continuity / project canon
 - `intelligence/project-memory/CURRENT.md`
@@ -84,6 +88,8 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 - `THE_HOLDING_HISTORICAL_OPERATING_KNOWLEDGE_v1_2026-08-14.md`
 - `THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md`
 - `THE_HOLDING_MARKET_DATA_ONCHAIN_AUTHORITY_CANON_2026-08-21.md`
+- `THE_HOLDING_REPORTING_REFERENCE_MODEL_CANON_2026-08-22.md`
+- `THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md`
 - `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`
 - `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md`
 - `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*`
@@ -96,7 +102,7 @@ This preserves cases, owner decisions, outcomes, lessons, and capability-gate hi
 - `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
 - `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md`
 
-This layer lets a future model/session recover project architecture, operating rules, current stage, exact resume point, durable failure lessons, owner collaboration contract, mechanism reuse requirements, owner capital philosophy, responsive UI rules, Rewards semantics, routing semantics, Market Data authority and deployment lessons already paid for in live operation.
+This layer lets a future model/session recover project architecture, operating rules, current stage, exact resume point, durable failure lessons, owner collaboration contract, mechanism reuse requirements, owner capital philosophy, responsive UI rules, Rewards semantics, routing semantics, Market Data authority, Reporting semantics, production-recovery laws and deployment lessons already paid for in live operation.
 
 ### 5. Task-aware routing layer
 
@@ -144,8 +150,48 @@ It preserves:
 
 Current prices and route health must still be fetched from live artifacts.
 
+### Reporting Reference Model Canon
+`THE_HOLDING_REPORTING_REFERENCE_MODEL_CANON_2026-08-22.md`
+
+This preserves the current Defitea automated Reporting laws:
+- exact canonical 11-position inventory;
+- one canonical Market Data consumer path;
+- internally coherent position-value/Reference-APR weighting;
+- reference model != realised cash flow;
+- no fabricated pre-tracking backfill;
+- YieldRing.eth + 05081966.eth contribute income, never Defitea TVL;
+- VoteMarket veCRV/veFXN uses append-only deduplicated event accounting;
+- Union settlement is reconciliation, not additive income on top of the vlCVX Reference APR model;
+- live provisional month annualises only observed days;
+- year APR includes the live provisional month;
+- one persistent income ledger and one canonical Reporting writer.
+
+### Production Recovery & Fail-Closed Handoff Canon
+`THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md`
+
+This is the reusable recovery contract learned during Aug 22 final stabilization.
+
+It preserves:
+- one canonical writer per truth plane;
+- `PR GREEN != production GREEN`;
+- `wakeup != publication`;
+- exact failure-localization order from workflow existence through publish/downstream handoff;
+- fail-closed release repair by exact-byte rebind rather than guard weakening;
+- post-change Security freshness before Cognitive recovery;
+- explicit run identification/await semantics;
+- the GitHub `GITHUB_TOKEN` non-recursive downstream-event lesson;
+- explicit recovery handoff `Security → Cognitive → Learning → Project Memory → THI`;
+- shell/heredoc publication lessons;
+- Security detector precision + positive/negative regression requirements;
+- public diagnostic path sanitization;
+- THI live-guard/fail-honest integrity;
+- narrow generated-output trigger ignores rather than broad code-directory suppression;
+- closure criteria for ending an incident instead of infinite speculative cleanup.
+
 ### Owner Collaboration Operating Style
 Preserves directly observed working preferences and merge governance. It is an operating contract, not a psychological profile.
+
+Normal rule remains explicit per-PR merge authorization. The temporary owner standing merge permission granted during the Aug 22 final-stabilization campaign **expired when that fat-green cycle was closed** and must not be assumed in a future chat.
 
 ### Founder Decision DNA
 Strategic/evidence rule, not current runtime policy. Formal founder modelling should grow from genuine decision→outcome cycles.
@@ -173,7 +219,7 @@ Encodes deployment-plane lessons such as canonical homepage ownership, Worker sc
 
 ## 2026-08-21 continuity milestone
 
-The latest deep continuity after this memory upgrade is intended to cover the complete delta from the 2026-08-18 Project X + HyperLend checkpoint through:
+The Aug 21 deep continuity closed the complete delta from the 2026-08-18 Project X + HyperLend checkpoint through:
 - Defitea Votium + Union scrvUSD proof;
 - full-registry vlCVX routing;
 - productive Passport identity/inheritance work;
@@ -191,11 +237,44 @@ The latest deep continuity after this memory upgrade is intended to cover the co
 
 A target-specific statement “Market Data/onchain = production green” is scoped to that subsystem. It must never be used as proof that every unrelated repository subsystem is perfect.
 
+## 2026-08-22 final stabilization milestone
+
+The latest deep continuity after this upgrade is:
+
+`THE_HOLDING_MASTER_CONTINUITY_2026-08-22_1557_FINAL_STABILIZATION_GREEN.md`
+
+It closes the complete material delta after the Aug 21 checkpoint, including:
+- ICP NNS Rewards reuse for Companies #005/#006;
+- Defitea/public truth and homepage coherence work;
+- Monetra live strategy book;
+- ELIZA route metadata correction;
+- Defitea Reporting systemic hardening;
+- live/provisional APR semantics;
+- YieldRing + 05081966 associated-income contribution;
+- VoteMarket veCRV/veFXN event ledger;
+- year APR including live provisional month;
+- exact official f(x) FXN Locker APR authority;
+- direct Unified Capital wakeup for f(x) guard changes;
+- Unified Capital publish-shell repair;
+- Cognitive release rebind and 13-surface exact-byte coverage;
+- Security `$eval/$$eval` and shell-eval precision fixes;
+- Security engine/policy wakeup correction;
+- Learning release rebind;
+- THI live canonical integrity/fail-honest behavior;
+- THI public diagnostic sanitization;
+- explicit recovery handoffs through Learning, Project Memory and THI;
+- THI summary false-RED repair;
+- final physical end-to-end production proof.
+
+The Aug 22 stabilization checklist is **closed**. A future chat must not reopen it merely because the continuity contains incident history. Reopen only if fresh live evidence demonstrates regression.
+
+At the final checkpoint the only intentionally open PR was canary #37, which must never merge.
+
 ## Memory write-back discipline
 
 After material work, classify new knowledge:
 - current numeric/state fact → canonical machine-readable subsystem artifact;
-- durable architecture/mechanism/UI lesson → relevant canon;
+- durable architecture/mechanism/UI/recovery lesson → relevant canon;
 - major milestone/resume point → new master continuity checkpoint;
 - task discovery/routing improvement → Routing Index / README;
 - formal owner decision → Decision Memory under its capture contract;
@@ -215,6 +294,8 @@ Do not stuff everything into `CURRENT.md`. CURRENT is a bootstrap, not the archi
 Pure high-frequency Market Data generated-state pushes are intentionally ignored by the push trigger to avoid up to ~48 redundant memory wakeups/day. The hourly backstop remains, and Market Data code/workflow/policy/registry changes remain observable.
 
 The updater writes only `CURRENT.md`, contains no model/API call, and emits no commit when canonical source state has not changed.
+
+For **release recovery**, the Aug 22 recovery dispatcher explicitly awaits successful Cognitive and Learning runs and then explicitly dispatches Project Memory and THI. This explicit chain exists because programmatically dispatched workflows using the repository `GITHUB_TOKEN` must not be assumed to recursively create every normal downstream event.
 
 `CURRENT.md` deliberately remains compact. The latest lexicographically named `THE_HOLDING_MASTER_CONTINUITY_*.md` is linked as the first deep resume checkpoint. The Routing Index is separately linked so the model chooses only relevant memory blocks.
 
