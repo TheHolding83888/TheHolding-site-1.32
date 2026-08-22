@@ -69,8 +69,8 @@ for(const company of Object.values(data.companies||{})){
     if(r.route==='curve-fees'&&(r.symbol!=='crvUSD'||r.chain!=='Ethereum'))throw new Error('Curve veCRV reward provenance drift');
     if(['aerodrome-relay','aerodrome-ve'].includes(r.route)&&r.chain!=='Base')throw new Error('Aerodrome veAERO chain provenance drift');
     if(['velodrome-ve','velodrome-ve-direct'].includes(r.route)&&r.chain!=='Optimism')throw new Error('Velodrome veVELO chain provenance drift');
-    if(r.route==='fx-fees'&&r.chain!=='Ethereum')throw new Error('f(x) veFXN reward provenance drift');
-    if(r.route==='liquity-staking'&&r.chain!=='Ethereum')throw new Error('Liquity staked LQTY reward provenance drift');
+    if(r.route==='fx-fees'&&r.chain!=='Ethereum')throw new Error('f(x) veFXN chain provenance drift');
+    if(r.route==='liquity-staking'&&r.chain!=='Ethereum')throw new Error('Liquity staked LQTY chain provenance drift');
   }
 }
 
