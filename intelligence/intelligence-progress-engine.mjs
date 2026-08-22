@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { verifyCognitiveRelease } from './cognitive-release-guard.mjs';
 
 const ROOT = process.cwd();
 const OUT = path.join(ROOT, 'intelligence/intelligence-progress.json');
@@ -18,6 +20,34 @@ const finite = (value, fallback = 0) => {
 };
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const round = (value, digits = 1) => Number(Number(value).toFixed(digits));
+
+function liveCognitiveIntegrity() {
+  let releaseCoherent = false;
+  let releaseGuardError = null;
+  try {
+    releaseCoherent = verifyCognitiveRelease({ root: ROOT }).current === true;
+  } catch (error) {
+    releaseGuardError = String(error?.message || error);
+  }
+
+  const verifier = spawnSync(
+    process.execPath,
+    [path.join(ROOT, 'intelligence/cognitive-stack-verifier.mjs'), '--verify-current'],
+    { cwd: ROOT, encoding: 'utf8' }
+  );
+  const cognitiveEvalPass = verifier.status === 0;
+  const cognitiveVerifierError = cognitiveEvalPass
+    ? null
+    : String(verifier.stderr || verifier.stdout || `verifier exit ${verifier.status}`).trim().slice(0, 1000);
+
+  return {
+    releaseCoherent,
+    cognitiveEvalPass,
+    releaseGuardError,
+    cognitiveVerifierError,
+    source: 'live-canonical-guards'
+  };
+}
 
 function curveScore(value, spec) {
   const weight = finite(spec?.weight);
@@ -115,12 +145,12 @@ function build() {
   const vault = readJson('intelligence/memory-vault/manifest.json', {});
   const brainHistory = readJson('intelligence/brain-history.json', {});
   const stack = readJson('intelligence/cognitive-stack-state.json', {});
-  const evaluation = readJson('intelligence/cognitive-stack-eval.json', {});
   const security = readJson('security/security-intelligence.json', {});
   const change = readJson('intelligence/change-intelligence.json', {});
   const previous = fs.existsSync(OUT) ? readJson('intelligence/intelligence-progress.json', {}) : null;
   const bank = staticQuestionBank();
   const ask = askRunStats(previous);
+  const liveCognitive = liveCognitiveIntegrity();
 
   const learningSummary = learning?.summary || {};
   const bridge = stack?.chain?.chatgptBridge || {};
@@ -138,7 +168,7 @@ function build() {
       evidenceMapped: finite(bridge?.evidenceCount),
       activeCases: finite(bridge?.caseCount, finite(learningSummary?.activeCaseCount)),
       exactUpstreamBinding: brain?.exactCanonicalUpstreamBinding === true && bridge?.exactCanonicalUpstreamBinding === true,
-      releaseCoherent: stack?.release?.exactByteMatch === true
+      releaseCoherent: liveCognitive.releaseCoherent
     },
     evaluation: {
       totalAskRuns: ask.totalRuns,
@@ -158,7 +188,10 @@ function build() {
       confidenceCalibrationStatus: String(learningSummary?.confidenceCalibrationStatus || 'unknown')
     },
     integrity: {
-      cognitiveEvalPass: evaluation?.status === 'pass',
+      cognitiveEvalPass: liveCognitive.cognitiveEvalPass,
+      cognitiveIntegritySource: liveCognitive.source,
+      releaseGuardError: liveCognitive.releaseGuardError,
+      cognitiveVerifierError: liveCognitive.cognitiveVerifierError,
       noExecutionAuthority: stack?.operatingContract?.executionAuthority === 'none' && bridge?.noExecution === true,
       noCriticalSecurity: finite(severity?.critical) === 0,
       observerFresh: change?.sourceHealth?.allFresh === true,
@@ -191,7 +224,7 @@ function build() {
 
   const current = {
     version: '0.1-intelligence-progress',
-    engineVersion: '0.1-deterministic-thi-engine',
+    engineVersion: '0.2-live-cognitive-integrity-thi-engine',
     generatedAt: now,
     index: {
       name: policy.index.name,
@@ -302,5 +335,7 @@ console.log('Intelligence Progress generated', {
   questionBank: output.metrics.evaluation.staticQuestionBank,
   ownerDecisions: output.metrics.experience.ownerDecisions,
   outcomes: output.metrics.experience.settledOutcomes,
-  lessons: output.metrics.experience.lessons
+  lessons: output.metrics.experience.lessons,
+  releaseCoherent: output.metrics.reasoning.releaseCoherent,
+  cognitiveEvalPass: output.metrics.integrity.cognitiveEvalPass
 });
