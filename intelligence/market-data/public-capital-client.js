@@ -1,5 +1,5 @@
 /*
- * The Holding · Public Capital Client v0.3.2
+ * The Holding · Public Capital Client v0.3.3
  * ------------------------------------------
  * Read-only browser client for generated local Market Data / Public Capital.
  * Legacy simple-price calls are intercepted locally; browsers never need to
@@ -11,14 +11,17 @@
  * Network · Index · Intelligence · Passports.
  * v0.3.2 aligns the homepage Defitea productive-engine constellation with the
  * canonical 11-engine inventory and productive-mechanism naming.
+ * v0.3.3 turns the homepage Monetra target list into a live canonical strategy
+ * ledger sourced from the same Stable Index state as the Company Passport.
  */
 (function (global) {
   'use strict';
 
-  const VERSION = '0.3.2';
+  const VERSION = '0.3.3';
   const DEFAULT_URL = '/intelligence/market-data/public-capital-state.json';
   const MARKET_URL = '/intelligence/market-data/market-data.json';
   const PRODUCTIVITY_URL = '/companies/productivity-data.json';
+  const STABLE_INDEX_URL = '/companies/stable-index-data.json';
   const LEGACY_SIMPLE_PRICE_PATH = '/intelligence/market-data/simple-price';
   const DEFAULT_TIMEOUT_MS = 4500;
   const CURRENT_NETWORK_PROTOCOL_ASSET_COUNT = 29;
@@ -44,6 +47,8 @@
   let pendingMarket = null;
   let cachedProductivity = null;
   let pendingProductivity = null;
+  let cachedStableIndex = null;
+  let pendingStableIndex = null;
   let publicSurfaceObserver = null;
   let defiteaAprText = null;
 
@@ -100,6 +105,27 @@
       }
     })().finally(function () { pendingProductivity = null; });
     return pendingProductivity;
+  }
+
+  async function loadStableIndex(options) {
+    const opts = options || {};
+    if (!opts.force && cachedStableIndex) return cachedStableIndex;
+    if (!opts.force && pendingStableIndex) return pendingStableIndex;
+    pendingStableIndex = (async function () {
+      const controller = new AbortController();
+      const timer = setTimeout(function () { controller.abort(); }, DEFAULT_TIMEOUT_MS);
+      try {
+        const res = await originalFetch(STABLE_INDEX_URL + '?t=' + Date.now(), { cache: 'no-store', signal: controller.signal });
+        if (!res.ok) throw new Error('Stable Index HTTP ' + res.status);
+        const data = await res.json();
+        if (!data || !Array.isArray(data.companies)) throw new Error('Invalid Stable Index snapshot');
+        cachedStableIndex = data;
+        return data;
+      } finally {
+        clearTimeout(timer);
+      }
+    })().finally(function () { pendingStableIndex = null; });
+    return pendingStableIndex;
   }
 
   function isLegacySimplePrice(input) {
@@ -402,6 +428,106 @@
     return updated;
   }
 
+  function ensureMonetraStrategyStyle() {
+    if (document.getElementById('th-monetra-strategy-style')) return;
+    const style = document.createElement('style');
+    style.id = 'th-monetra-strategy-style';
+    style.textContent = [
+      '.fund-card[data-fund="monetra"] .th-monetra-strategy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color);margin-top:.55rem}',
+      '.fund-card[data-fund="monetra"] .th-monetra-strategy-row{position:relative;min-width:0;padding:1rem 1.05rem 1rem 1.1rem;border-bottom:1px solid var(--border-color);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.8rem;align-items:center;transition:background .24s ease}',
+      '.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-child(odd){border-right:1px solid var(--border-color)}',
+      '.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-last-child(-n+2){border-bottom:0}',
+      '.fund-card[data-fund="monetra"] .th-monetra-strategy-row::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:2px;background:linear-gradient(180deg,rgba(17,24,39,.12),rgba(17,24,39,.62),rgba(17,24,39,.12));border-radius:99px}',
+      '.fund-card[data-fund="monetra"] .th-monetra-strategy-row:hover{background:rgba(17,24,39,.018)}',
+      '.fund-card[data-fund="monetra"] .th-ms-protocol{font-size:.68rem;color:var(--text-tertiary);letter-spacing:.04em;margin-bottom:.18rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.fund-card[data-fund="monetra"] .th-ms-asset{font-size:1.02rem;color:var(--text-primary);font-weight:500;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.fund-card[data-fund="monetra"] .th-ms-detail{font-size:.69rem;color:var(--text-tertiary);margin-top:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.fund-card[data-fund="monetra"] .th-ms-rate{text-align:right;min-width:62px}',
+      '.fund-card[data-fund="monetra"] .th-ms-rate-value{font-size:1.02rem;font-weight:500;color:var(--text-primary);letter-spacing:-.02em;line-height:1.15}',
+      '.fund-card[data-fund="monetra"] .th-ms-rate-label{font-size:.59rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-tertiary);margin-top:.22rem}',
+      '.fund-card[data-fund="monetra"] .th-monetra-strategy-foot{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.78rem .15rem 0;font-size:.65rem;color:var(--text-tertiary);line-height:1.45}',
+      '@media(max-width:768px){.fund-card[data-fund="monetra"] .th-monetra-strategy-grid{grid-template-columns:1fr}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-child(odd){border-right:0}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:nth-last-child(2){border-bottom:1px solid var(--border-color)}.fund-card[data-fund="monetra"] .th-monetra-strategy-row:last-child{border-bottom:0}.fund-card[data-fund="monetra"] .th-monetra-strategy-foot{align-items:flex-start;flex-direction:column;gap:.25rem}}'
+    ].join('');
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function stableCompanyFromIndex(data) {
+    if (!data || !Array.isArray(data.companies)) return null;
+    return data.companies.find(function (row) { return row && (row.name === 'Monetra.eth' || row.registry === '008'); }) || null;
+  }
+
+  function applyHomepageMonetraStrategyBook(root, stableData) {
+    const path = String(global.location && global.location.pathname || '').replace(/\/+$/, '') || '/';
+    if (path !== '/') return 0;
+    const scope = root || document;
+    if (!scope.querySelector) return 0;
+    const company = stableCompanyFromIndex(stableData);
+    if (!company || !Array.isArray(company.positions) || !company.positions.length) return 0;
+    const card = scope.querySelector('.fund-card[data-fund="monetra"]');
+    if (!card) return 0;
+    const section = Array.from(card.querySelectorAll('.assets-section')).find(function (node) {
+      const title = node.querySelector('.assets-title');
+      return title && /Target Strategies|Live Strategy Book/i.test(String(title.textContent || ''));
+    });
+    if (!section) return 0;
+    ensureMonetraStrategyStyle();
+    let updated = 0;
+    const header = section.querySelector('.section-header');
+    const title = header && header.querySelector('.assets-title');
+    if (title && title.textContent !== 'Live Strategy Book') { title.textContent = 'Live Strategy Book'; updated += 1; }
+    let count = header && header.querySelector('.assets-count');
+    if (header && !count) { count = document.createElement('span'); count.className = 'assets-count'; header.appendChild(count); updated += 1; }
+    const countText = company.strategyCount + ' Positions · ' + company.protocolCount + ' Protocols';
+    if (count && count.textContent !== countText) { count.textContent = countText; updated += 1; }
+
+    const signature = company.positions.map(function (row) {
+      return [row.id, row.asset, row.protocol, row.chain, row.positionType, row.referenceApyPct, row.referenceRateType].join('|');
+    }).join('||');
+    const existing = section.querySelector('[data-th-monetra-strategy-book]');
+    if (existing && existing.getAttribute('data-th-signature') === signature) return updated;
+    Array.from(section.children).forEach(function (child) { if (child !== header) child.remove(); });
+
+    const book = document.createElement('div');
+    book.className = 'th-monetra-strategy-book';
+    book.setAttribute('data-th-monetra-strategy-book', 'canonical-stable-index');
+    book.setAttribute('data-th-signature', signature);
+    const grid = document.createElement('div');
+    grid.className = 'th-monetra-strategy-grid';
+
+    company.positions.forEach(function (row) {
+      const item = document.createElement('div');
+      item.className = 'th-monetra-strategy-row';
+      item.setAttribute('data-th-monetra-position', row.id || 'position');
+      const main = document.createElement('div');
+      const protocol = document.createElement('div'); protocol.className = 'th-ms-protocol'; protocol.textContent = row.protocol || row.protocolFamily || 'Protocol';
+      const asset = document.createElement('div'); asset.className = 'th-ms-asset'; asset.textContent = row.asset || row.wrapperSymbol || row.underlyingSymbol || 'Stable Asset';
+      const detail = document.createElement('div'); detail.className = 'th-ms-detail'; detail.textContent = [row.chain, row.positionType].filter(Boolean).join(' · ');
+      main.appendChild(protocol); main.appendChild(asset); main.appendChild(detail);
+      const rate = document.createElement('div'); rate.className = 'th-ms-rate';
+      const value = document.createElement('div'); value.className = 'th-ms-rate-value'; value.textContent = percent(row.referenceApyPct, 2) || '—';
+      const label = document.createElement('div'); label.className = 'th-ms-rate-label'; label.textContent = row.referenceRateType === 'APR' ? 'Ref APR' : 'Ref APY';
+      rate.appendChild(value); rate.appendChild(label); item.appendChild(main); item.appendChild(rate); grid.appendChild(item);
+    });
+
+    const foot = document.createElement('div'); foot.className = 'th-monetra-strategy-foot';
+    const left = document.createElement('span'); left.textContent = company.chainCount + ' chains · live canonical strategy inventory';
+    const right = document.createElement('span'); right.textContent = 'Rates are current reference yields, not realised returns.';
+    foot.appendChild(left); foot.appendChild(right); book.appendChild(grid); book.appendChild(foot); section.appendChild(book);
+    updated += 1;
+    return updated;
+  }
+
+  async function syncHomepageMonetraStrategyBook(options) {
+    try {
+      const data = await loadStableIndex(options);
+      const changes = applyHomepageMonetraStrategyBook(document, data);
+      return { updated: changes > 0, changes: changes, snapshot: data };
+    } catch (err) {
+      console.warn('[TH Monetra strategy book] Stable Index unavailable:', err && err.message ? err.message : err);
+      return { updated: false, changes: 0, snapshot: cachedStableIndex };
+    }
+  }
+
   function applyMonetraStandalone(root, data) {
     const path = String(global.location && global.location.pathname || '').replace(/\/+$/, '') || '/';
     if (path !== '/monetra') return 0;
@@ -548,11 +674,14 @@
   function autoBind() {
     bind(document).catch(function (err) { console.warn('[TH Public Capital] bind failed:', err && err.message ? err.message : err); });
     syncDefiteaHeadlineApr().catch(function () {});
+    syncHomepageMonetraStrategyBook().catch(function () {});
     observePublicSurfaceCoherence();
     setTimeout(function () { bind(document).catch(function () {}); }, 250);
     setTimeout(function () { syncDefiteaHeadlineApr().catch(function () {}); }, 350);
+    setTimeout(function () { syncHomepageMonetraStrategyBook().catch(function () {}); }, 500);
     setTimeout(function () { bind(document).catch(function () {}); }, 1200);
     setTimeout(function () { syncDefiteaHeadlineApr({ force: true }).catch(function () {}); }, 1400);
+    setTimeout(function () { syncHomepageMonetraStrategyBook({ force: true }).catch(function () {}); }, 1550);
   }
 
   global.THPublicCapital = Object.freeze({
@@ -560,14 +689,18 @@
     dataUrl: DEFAULT_URL,
     marketDataUrl: MARKET_URL,
     productivityDataUrl: PRODUCTIVITY_URL,
+    stableIndexDataUrl: STABLE_INDEX_URL,
     load: load,
     loadMarket: loadMarket,
     loadProductivity: loadProductivity,
+    loadStableIndex: loadStableIndex,
     getSnapshot: function () { return cached; },
     getFund: fund,
     getCompany: company,
     bind: bind,
     syncDefiteaHeadlineApr: syncDefiteaHeadlineApr,
+    syncHomepageMonetraStrategyBook: syncHomepageMonetraStrategyBook,
+    applyHomepageMonetraStrategyBook: applyHomepageMonetraStrategyBook,
     applyDefiteaProductiveEngineGrid: applyDefiteaProductiveEngineGrid,
     applyPublicSurfaceCoherence: applyPublicSurfaceCoherence,
     money: money,
