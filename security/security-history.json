@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-22T09:51:33.754Z",
+  "lastUpdatedAt": "2026-08-22T10:22:45.193Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 402,
-    "vaultRunCount": 402,
+    "runCount": 403,
+    "vaultRunCount": 403,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -4836,6 +4836,18 @@
       "criticalCount": 0,
       "highCount": 2,
       "newFindingCount": 1,
+      "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-08-22T10:22:45.193Z",
+      "status": "watch",
+      "snapshotHash": "755377a4f9fc0e774a096bdbd6807254ed01b65f886ce95632ba8926987945ec",
+      "recordPath": "security/security-vault/2026/08/2026-08-22T10-22-45-193Z-755377a4f9.json",
+      "recordHash": "790886b69ef134d2cfe04191874d0410817e828f20cf4e06f8c356d56b3dab75",
+      "findingCount": 42,
+      "criticalCount": 0,
+      "highCount": 2,
+      "newFindingCount": 2,
       "resolvedFindingCount": 1
     }
   ],
@@ -21205,6 +21217,39 @@
       "severity": "high",
       "category": "shell-eval",
       "summary": "Resolved: Workflow contains shell eval.",
+      "file": ".github/workflows/verify-security-eval-detector.yml",
+      "entity": null
+    },
+    {
+      "id": "995011346907f2d3d510ab73c7fbe33850cebf4e48216f5e9075fb6667384e34",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-22T10:22:45.193Z",
+      "findingId": "77357fe7f490830c46160872a88b8eb02bf1045f649a7f019234d0b01831959f",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/security-sentinel.yml.",
+      "file": ".github/workflows/security-sentinel.yml",
+      "entity": null
+    },
+    {
+      "id": "5464e4a4de6337c32eaf8ccf1204438acae6bf4e6231e89dd11d94eddf6df70d",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-22T10:22:45.193Z",
+      "findingId": "c056fc4a54054334b0756a9a988bf99b1b338e3043f3f63aec331258b731beba",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-cognitive-release-coherence.yml.",
+      "file": ".github/workflows/verify-cognitive-release-coherence.yml",
+      "entity": null
+    },
+    {
+      "id": "c28613d5c7336b633626d9cb8376ea12c04330767c49d797e2d4edb5907ff8e0",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-22T10:22:45.193Z",
+      "findingId": "829b61b03cf70ffa5de3794487a59c56621d879924716b7091017d4ba8721f31",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-security-eval-detector.yml.",
       "file": ".github/workflows/verify-security-eval-detector.yml",
       "entity": null
     }
