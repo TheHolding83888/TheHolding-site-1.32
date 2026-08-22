@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-22T09:35:38.548Z",
+  "generatedAt": "2026-08-22T09:45:30.354Z",
   "status": "watch",
-  "snapshotHash": "f33ab5a89047e4b7bdd86ce481588391e53565921275cb16d1f9d57b2f15cdde",
+  "snapshotHash": "4d8c32cd890aedcc96ac9d93337a43fca82a2e53620500f1907ec5d1659fc883",
   "repository": {
-    "filesScanned": 542,
-    "bytesScanned": 11384092,
+    "filesScanned": 543,
+    "bytesScanned": 11386036,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -112,6 +112,7 @@
       ".github/workflows/verify-reporting-layer.yml": "9a1232b7f6d982fec53fc5e454421c5e720e01d4bdf1bfa6ebadae778358c2f2",
       ".github/workflows/verify-rewards-drawer-row-coverage-parity.yml": "f4656e6cfa6d4f24d103cc698c862e86e9619e7590fbb22d48b93f422337c2b3",
       ".github/workflows/verify-rewards-protocol-asset-label-parity.yml": "3d07655054df28402dbd71d3279317407e0acf5f8afc05a36b78b1d5000aa2af",
+      ".github/workflows/verify-security-eval-detector.yml": "1978707b53db9bdb842d89b89cb2f24953506e6d31156fc23450d4d0926a7638",
       ".github/workflows/verify-vlcvx-full-registry-audit.yml": "e84787fb2a4a92b0e66cf75e77c1261b6cf8504cd859e8f513c7893c773bf59c",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "02b5437a85c8beaf86c68df213cf89cfcb5accd383c848e6b008dfe02098f6c4",
@@ -348,7 +349,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 20 Aug 2026 05:29:19 GMT",
+        "lastModified": "Thu, 20 Aug 2026 05:27:57 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -363,50 +364,6 @@
     }
   },
   "findings": [
-    {
-      "id": "fedb97ff102b9723a0095f5e809315937dde66e499d846523007147edb1494cd",
-      "severity": "high",
-      "category": "javascript-eval",
-      "file": "verification/ask-experience/runner-v0.1.mjs",
-      "line": 33,
-      "entity": null,
-      "summary": "JavaScript eval usage detected.",
-      "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
-      "evidence": null
-    },
-    {
-      "id": "6bbec36a254ab76d5d36da2b0b988aa38f441e0ae73f41ae99f6c9f3adc063af",
-      "severity": "high",
-      "category": "javascript-eval",
-      "file": "verification/ask-experience/runner-v0.1.mjs",
-      "line": 34,
-      "entity": null,
-      "summary": "JavaScript eval usage detected.",
-      "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
-      "evidence": null
-    },
-    {
-      "id": "8eb0b9a226edd5854851591485724e00513227280ab0f6434a836ac225991738",
-      "severity": "high",
-      "category": "javascript-eval",
-      "file": "verification/ask-experience/runner-v0.1.mjs",
-      "line": 38,
-      "entity": null,
-      "summary": "JavaScript eval usage detected.",
-      "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
-      "evidence": null
-    },
-    {
-      "id": "8d367c1d4d50a76bbf153d433e05d4a4ed872a97eaeaa0ec8e644cab99315c8e",
-      "severity": "high",
-      "category": "javascript-eval",
-      "file": "verification/ask-experience/runner-v0.1.mjs",
-      "line": 41,
-      "entity": null,
-      "summary": "JavaScript eval usage detected.",
-      "whyItMatters": "Eval can execute attacker-controlled strings if data boundaries are ever breached.",
-      "evidence": null
-    },
     {
       "id": "119c887e98b579ae9b0ac6bbead75c30b398a9d45d207b24f62f24bc71907fae",
       "severity": "high",
@@ -430,32 +387,15 @@
       "evidence": null
     },
     {
-      "id": "023a2289dcd64688bd2f1b4d8d7b16c520cd165bf70f69b603437ff5545acd49",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/unified-capital-refresh.yml",
+      "id": "123a134ffec4728787d004589ff1d027bc0460bd6c95c16dd9816f29ecae1dca",
+      "severity": "high",
+      "category": "shell-eval",
+      "file": ".github/workflows/verify-security-eval-detector.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "710bd98148ccfc09a8a44354360ec29636da0de5dad6538305bb41e17fb6822a",
-        "currentSha256": "99a4e019f7c0ab1e9591de8e74041f36087f34426549a8032cfe2ae8d55adc94"
-      }
-    },
-    {
-      "id": "f2728a64bfec9e2d718794513e08fe0f34bca2e979150ad66793ea3de31afb9c",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-company-010-projectx-reference-apr.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-projectx-reference-apr.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "fb77a7ab1731c1a495dc13593387926ddf766a221e7c699530d92f1aed04c154",
-        "currentSha256": "d5d318a9a5999f3fc5f54e3a59ccc89276446cc57d85f7506834503d63671827"
-      }
+      "summary": "Workflow contains shell eval.",
+      "whyItMatters": "Eval can turn untrusted data into executable shell code.",
+      "evidence": null
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1058,10 +998,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 400,
+    "runCount": 401,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-22T09-35-38-548Z-f33ab5a890.json",
-    "latestRecordHash": "c8e245a9dc68abaf515a6c42a1c67e42df2e6fba6d0afa4564c6d2dbae29ab6f",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-22T09-45-30-354Z-4d8c32cd89.json",
+    "latestRecordHash": "9765202ccf2b9ee78642826826c95f669cbba36fd6b33adfbb14fda2c0b0417c",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }

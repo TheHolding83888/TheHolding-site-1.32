@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-22T09:35:38.548Z",
+  "lastUpdatedAt": "2026-08-22T09:45:30.354Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 400,
-    "vaultRunCount": 400,
+    "runCount": 401,
+    "vaultRunCount": 401,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -4813,6 +4813,18 @@
       "highCount": 6,
       "newFindingCount": 2,
       "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-08-22T09:45:30.354Z",
+      "status": "watch",
+      "snapshotHash": "4d8c32cd890aedcc96ac9d93337a43fca82a2e53620500f1907ec5d1659fc883",
+      "recordPath": "security/security-vault/2026/08/2026-08-22T09-45-30-354Z-4d8c32cd89.json",
+      "recordHash": "9765202ccf2b9ee78642826826c95f669cbba36fd6b33adfbb14fda2c0b0417c",
+      "findingCount": 41,
+      "criticalCount": 0,
+      "highCount": 3,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 6
     }
   ],
   "events": [
@@ -21082,6 +21094,83 @@
       "severity": "medium",
       "category": "critical-surface-change",
       "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-projectx-reference-apr.yml.",
+      "file": ".github/workflows/verify-company-010-projectx-reference-apr.yml",
+      "entity": null
+    },
+    {
+      "id": "e1dd66181724461ffa3bea4362ffe9a13937c6800de7467db2c524f2829b9673",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-22T09:45:30.354Z",
+      "findingId": "123a134ffec4728787d004589ff1d027bc0460bd6c95c16dd9816f29ecae1dca",
+      "severity": "high",
+      "category": "shell-eval",
+      "summary": "Workflow contains shell eval.",
+      "file": ".github/workflows/verify-security-eval-detector.yml",
+      "entity": null
+    },
+    {
+      "id": "c1e1042acbbc514fa1af6a32112cb0e14972fb6baf83aa7f41223008da79870a",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-22T09:45:30.354Z",
+      "findingId": "fedb97ff102b9723a0095f5e809315937dde66e499d846523007147edb1494cd",
+      "severity": "high",
+      "category": "javascript-eval",
+      "summary": "Resolved: JavaScript eval usage detected.",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "entity": null
+    },
+    {
+      "id": "a1b94f9d411c1c8ba357f10f3eb6ed098fd630c1efd1e2d6b3b7eca4947b995a",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-22T09:45:30.354Z",
+      "findingId": "6bbec36a254ab76d5d36da2b0b988aa38f441e0ae73f41ae99f6c9f3adc063af",
+      "severity": "high",
+      "category": "javascript-eval",
+      "summary": "Resolved: JavaScript eval usage detected.",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "entity": null
+    },
+    {
+      "id": "048fd8452cd0ebabad94ddb5f089c1b3b03d11811bedc7158dc228bf79719293",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-22T09:45:30.354Z",
+      "findingId": "8eb0b9a226edd5854851591485724e00513227280ab0f6434a836ac225991738",
+      "severity": "high",
+      "category": "javascript-eval",
+      "summary": "Resolved: JavaScript eval usage detected.",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "entity": null
+    },
+    {
+      "id": "9c02932a8ac562cdd6bd918a6f5b22f96cb272b29b5c9885078be78b78e50240",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-22T09:45:30.354Z",
+      "findingId": "8d367c1d4d50a76bbf153d433e05d4a4ed872a97eaeaa0ec8e644cab99315c8e",
+      "severity": "high",
+      "category": "javascript-eval",
+      "summary": "Resolved: JavaScript eval usage detected.",
+      "file": "verification/ask-experience/runner-v0.1.mjs",
+      "entity": null
+    },
+    {
+      "id": "bc49cfe439e621342e960e55348e94b983914fe8731827ab4111c808a9e3c90f",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-22T09:45:30.354Z",
+      "findingId": "023a2289dcd64688bd2f1b4d8d7b16c520cd165bf70f69b603437ff5545acd49",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
+      "file": ".github/workflows/unified-capital-refresh.yml",
+      "entity": null
+    },
+    {
+      "id": "04b6cc5ac216ff3274449df90428ff23dbe4f63f7e6aaecb430cac6cd222a92a",
+      "type": "finding-resolved",
+      "detectedAt": "2026-08-22T09:45:30.354Z",
+      "findingId": "f2728a64bfec9e2d718794513e08fe0f34bca2e979150ad66793ea3de31afb9c",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-company-010-projectx-reference-apr.yml.",
       "file": ".github/workflows/verify-company-010-projectx-reference-apr.yml",
       "entity": null
     }
