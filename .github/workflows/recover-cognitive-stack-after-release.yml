@@ -1,0 +1,54 @@
+name: Recover Cognitive Stack After Release Repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/recover-cognitive-stack-after-release.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: cognitive-release-recovery-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+
+      - name: Require fresh Observer before recovery dispatch
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const change = JSON.parse(fs.readFileSync('intelligence/change-intelligence.json', 'utf8'));
+          if (change.sourceHealth?.allFresh !== true) {
+            throw new Error('Cognitive recovery refuses stale Observer sources');
+          }
+          const generatedMs = Date.parse(change.generatedAt);
+          const ageHours = (Date.now() - generatedMs) / 3600000;
+          if (!Number.isFinite(generatedMs) || !Number.isFinite(ageHours) || ageHours < -0.25 || ageHours > 6) {
+            throw new Error(`Cognitive recovery requires Observer age <= 6h; current age=${ageHours}`);
+          }
+          console.log('Cognitive recovery Observer gate PASS', {
+            generatedAt: change.generatedAt,
+            ageHours: Number(ageHours.toFixed(3)),
+            allFresh: true
+          });
+          NODE
+
+      - name: Verify release coherence before dispatch
+        run: node intelligence/cognitive-release-guard.mjs
+
+      - name: Dispatch canonical integrated Cognitive Stack
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run refresh-cognitive-stack.yml --ref main
