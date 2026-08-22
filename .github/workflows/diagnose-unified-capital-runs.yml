@@ -1,4 +1,4 @@
-name: Diagnose Unified Capital Production Runs
+name: Diagnose Learning Production Runs
 
 on:
   pull_request:
@@ -14,27 +14,27 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Inspect canonical Unified Capital run history
+      - name: Inspect canonical Learning run history
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          echo '=== Recent Unified Capital runs ==='
+          echo '=== Recent Learning runs ==='
           gh run list \
-            --workflow unified-capital-refresh.yml \
+            --workflow update-learning-loop.yml \
             --limit 12 \
             --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle
 
-          latest="$(gh run list --workflow unified-capital-refresh.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
+          latest="$(gh run list --workflow update-learning-loop.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
           if [ -z "$latest" ]; then
-            echo 'No Unified Capital runs found.'
+            echo 'No Learning runs found.'
             exit 1
           fi
 
-          echo "=== Latest run metadata: $latest ==="
+          echo "=== Latest Learning metadata: $latest ==="
           gh run view "$latest" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
 
-          echo "=== Latest failed logs (empty if not failed) ==="
+          echo '=== Latest failed logs (empty if not failed) ==='
           gh run view "$latest" --log-failed || true
