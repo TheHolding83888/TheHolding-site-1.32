@@ -1,4 +1,4 @@
-name: Diagnose Intelligence Progress Handoff
+name: Diagnose Post-262 THI Recovery
 
 on:
   pull_request:
@@ -14,16 +14,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Inspect Intelligence Progress run history
+      - name: Inspect post-262 THI and recovery runs
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          echo '=== Intelligence Progress recent runs ==='
-          gh run list --workflow update-intelligence-progress.yml --limit 15 --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle
-          for id in $(gh run list --workflow update-intelligence-progress.yml --limit 8 --json databaseId --jq '.[].databaseId'); do
+          echo '=== THI recent runs ==='
+          gh run list --workflow update-intelligence-progress.yml --limit 10 --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle
+          echo '=== Release recovery recent runs ==='
+          gh run list --workflow resume-cognitive-stack-after-release.yml --limit 10 --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle
+          for id in $(gh run list --workflow update-intelligence-progress.yml --limit 4 --json databaseId --jq '.[].databaseId'); do
             echo "=== THI run $id ==="
+            gh run view "$id" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
+          done
+          for id in $(gh run list --workflow resume-cognitive-stack-after-release.yml --limit 3 --json databaseId --jq '.[].databaseId'); do
+            echo "=== Recovery run $id ==="
             gh run view "$id" --json databaseId,event,status,conclusion,headSha,createdAt,updatedAt,url,displayTitle,jobs
           done
