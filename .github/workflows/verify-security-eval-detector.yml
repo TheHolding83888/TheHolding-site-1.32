@@ -29,17 +29,22 @@ jobs:
           page.$$eval();
           eval('1');
           JS
-          cat > .github/workflows/security-shell-eval-regression.yml <<'YAML'
-          name: Security shell eval regression fixture
-          on: workflow_dispatch
-          jobs:
-            fixture:
-              runs-on: ubuntu-latest
-              steps:
-                - run: |
-                    value='echo fixture'
-                    eval "$value"
-          YAML
+          node - <<'NODE'
+          const fs=require('fs');
+          const lines=[
+            'name: Security shell eval regression fixture',
+            'on: workflow_dispatch',
+            'jobs:',
+            '  fixture:',
+            '    runs-on: ubuntu-latest',
+            '    steps:',
+            '      - run: |',
+            "          value='echo fixture'",
+            '          eval "$value"',
+            ''
+          ];
+          fs.writeFileSync('.github/workflows/security-shell-eval-regression.yml',lines.join('\n'));
+          NODE
           SECURITY_SKIP_NETWORK=1 node security/security-sentinel.mjs
           node - <<'NODE'
           const fs=require('fs');
