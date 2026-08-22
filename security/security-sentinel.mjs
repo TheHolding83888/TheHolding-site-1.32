@@ -168,7 +168,7 @@ function scanWebCode(file,text) {
   const checks=[
     ['dom-insert-html','medium',/\.insertAdjacentHTML\s*\(/g,'insertAdjacentHTML usage detected.','HTML-string sinks require strict control or sanitization when data is not fully trusted.'],
     ['document-write','high',/\bdocument\.write\s*\(/g,'document.write usage detected.','This is a dangerous HTML execution sink and should be avoided in production surfaces.'],
-    ['javascript-eval','high',/\beval\s*\(/g,'JavaScript eval usage detected.','Eval can execute attacker-controlled strings if data boundaries are ever breached.'],
+    ['javascript-eval','high',/(?<![$\w])eval\s*\(/g,'JavaScript eval usage detected.','Eval can execute attacker-controlled strings if data boundaries are ever breached.'],
     ['new-function','high',/\bnew\s+Function\s*\(/g,'Dynamic Function constructor detected.','Dynamic code construction expands injection risk.'],
     ['insecure-fetch','high',/\bfetch\s*\(\s*[`'\"]http:\/\//g,'Insecure HTTP fetch detected.','Plain HTTP can be modified in transit.'],
   ];
