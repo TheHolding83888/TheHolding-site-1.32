@@ -7,7 +7,9 @@ on:
       - 'intelligence/brain-reasoning-engine.mjs'
       - 'intelligence/brain-policy.json'
       - 'security/security-sentinel.mjs'
+      - '.github/workflows/security-sentinel.yml'
       - 'intelligence/cognitive-stack-release.json'
+      - 'intelligence/learning/learning-release.json'
       - '.github/workflows/verify-cognitive-release-coherence.yml'
 
 permissions:
@@ -28,5 +30,7 @@ jobs:
           sha256sum \
             intelligence/brain-reasoning-engine.mjs \
             intelligence/brain-policy.json \
-            security/security-sentinel.mjs
+            security/security-sentinel.mjs \
+            .github/workflows/security-sentinel.yml \
+            intelligence/cognitive-stack-release.json
           git diff --check
