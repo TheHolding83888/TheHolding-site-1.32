@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-23T11:02:53.712Z",
+  "generatedAt": "2026-08-23T11:26:20.683Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 38,
+    "medium": 40,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 580,
-    "bytesScanned": 12649957,
+    "bytesScanned": 12653069,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Sat, 22 Aug 2026 07:47:25 GMT",
+        "lastModified": "Sat, 22 Aug 2026 07:24:51 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,36 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "738c01b2097a97e9b1fdaedcea786e264644a9fc16550401a90221de1c7be744",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-proposal-work-queue.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-proposal-work-queue.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "1e4930fe6fd4011c37220e8dfdad83779d971eaf68d04a9dfd26d282ee111691",
+          "currentSha256": "ba38597f6dcef2bd0d338f7344505f35d1eab364b96b3903eb98420d95c1729c"
+        }
+      },
+      {
+        "id": "8a3a3c9f35224122ea264864383777831ccd02b5a418ed93caa42e6bc2861fdc",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-proposal-lifecycle.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-proposal-lifecycle.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "1513c8ca3e6566d5c14a2e4a468e32e7cf4120c6a8d6685b0bde01fe413f4152",
+          "currentSha256": "a8cf3551f9cf56450e65ec91dcdd74143ce9638b9b2e32654570b3d6ca0525e0"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -80,6 +109,34 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "738c01b2097a97e9b1fdaedcea786e264644a9fc16550401a90221de1c7be744",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-proposal-work-queue.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-proposal-work-queue.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "1e4930fe6fd4011c37220e8dfdad83779d971eaf68d04a9dfd26d282ee111691",
+        "currentSha256": "ba38597f6dcef2bd0d338f7344505f35d1eab364b96b3903eb98420d95c1729c"
+      }
+    },
+    {
+      "id": "8a3a3c9f35224122ea264864383777831ccd02b5a418ed93caa42e6bc2861fdc",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-proposal-lifecycle.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-proposal-lifecycle.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "1513c8ca3e6566d5c14a2e4a468e32e7cf4120c6a8d6685b0bde01fe413f4152",
+        "currentSha256": "a8cf3551f9cf56450e65ec91dcdd74143ce9638b9b2e32654570b3d6ca0525e0"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -692,12 +749,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "69f120bac3c30aa3f968924f7df7682b4f1f5b740a62c79c1dbeadd18049c388",
+    "snapshotHash": "e60763d147d911a9a7fef0420206e27d4e12834835878f5317cfae442dad4b22",
     "securityVault": {
-      "runCount": 447,
+      "runCount": 448,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-23T11-02-53-712Z-69f120bac3.json",
-      "latestRecordHash": "bfdb98fac0e11b1d313371615e20c3333cfdc0e8eb158565aed4b4db8c8befd1",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-23T11-26-20-683Z-e60763d147.json",
+      "latestRecordHash": "31a2a868d90be5a3e2711205c65dc31b7095d4ee8649306ab1e801a8f224c6dc",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
