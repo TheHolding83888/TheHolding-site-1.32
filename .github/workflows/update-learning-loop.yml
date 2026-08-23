@@ -150,6 +150,36 @@ jobs:
         if: steps.build.outputs.skip != 'true'
         run: node intelligence/learning/independent-owner-outcome-experience-reviewer.mjs
 
+      - name: Suppress generatedAt-only owner outcome churn
+        if: steps.build.outputs.skip != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const { execFileSync } = require('child_process');
+          const file = 'intelligence/learning-state/owner-outcome-experience.json';
+          let previousText;
+          try { previousText = execFileSync('git', ['show', `HEAD:${file}`], { encoding: 'utf8' }); }
+          catch { console.log('No prior owner outcome state exists; first materialization will publish.'); process.exit(0); }
+          const currentText = fs.readFileSync(file, 'utf8');
+          const current = JSON.parse(currentText);
+          const previous = JSON.parse(previousText);
+          const stable = (v) => Array.isArray(v) ? v.map(stable) : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, stable(v[k])])) : v);
+          const semantic = (x) => {
+            const y = structuredClone(x);
+            delete y.generatedAt;
+            delete y.integrity;
+            return JSON.stringify(stable(y));
+          };
+          if (semantic(current) === semantic(previous)) {
+            fs.writeFileSync(file, previousText, 'utf8');
+            console.log('Owner outcome semantics/source bindings unchanged; preserved prior bytes to avoid generatedAt-only commit noise.');
+          } else {
+            console.log('Owner outcome semantics or source bindings changed; publication remains eligible.');
+          }
+          NODE
+
       - name: Publish learning memory safely
         if: steps.build.outputs.skip != 'true'
         shell: bash
@@ -190,14 +220,13 @@ jobs:
               exit 1
             fi
 
+            # Rebase may have moved Brain/Stack/Decision/Review inputs. Verify the
+            # exact committed outputs against the rebased canonical state; never
+            # regenerate uncommitted bytes and then push a stale committed artifact.
             node intelligence/cognitive-release-guard.mjs
             node intelligence/learning/learning-release-guard.mjs
-            node intelligence/learning/owner-outcome-experience-engine.mjs
+            node intelligence/learning/independent-learning-reviewer.mjs --verify-current
             node intelligence/learning/independent-owner-outcome-experience-reviewer.mjs
-
-            if [ "${{ steps.build.outputs.unchanged }}" != "true" ]; then
-              node intelligence/learning/independent-learning-reviewer.mjs --verify-current
-            fi
 
             if git push origin HEAD:main; then
               exit 0
