@@ -2,6 +2,19 @@ name: "The Holding Brain · Proposal Work Queue"
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-proposal-work-queue.yml'
+      - 'intelligence/proposals/proposal-policy.json'
+      - 'intelligence/proposals/proposal-schema.json'
+      - 'intelligence/proposals/proposal-engine.mjs'
+      - 'intelligence/proposals/independent-proposal-reviewer.mjs'
+      - 'intelligence/proposals/proposal-decision-policy.json'
+      - 'intelligence/proposals/proposal-decision-bridge.mjs'
+      - 'intelligence/proposals/independent-proposal-decision-reviewer.mjs'
+      - 'intelligence/proposals/proposal-release-guard.mjs'
+      - 'intelligence/proposals/proposal-release.json'
   workflow_run:
     workflows: ["The Holding Brain · Decision Outcome Learning Loop"]
     types: [completed]
@@ -18,6 +31,7 @@ jobs:
     if: >-
       ${{
         (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
         (github.event_name == 'workflow_run' &&
          github.event.workflow_run.conclusion == 'success' &&
          github.event.workflow_run.head_branch == 'main')
