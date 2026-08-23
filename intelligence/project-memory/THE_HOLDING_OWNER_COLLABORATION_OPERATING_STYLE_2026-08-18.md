@@ -1,5 +1,5 @@
 # THE HOLDING — OWNER COLLABORATION OPERATING STYLE
-## 2026-08-18 · durable working contract for AI/project sessions
+## 2026-08-18 · durable working contract for AI/project sessions · updated 2026-08-23
 
 ## Purpose
 
@@ -63,26 +63,35 @@ Do not jump to a neighboring subsystem simply because it is interesting or relat
 
 For a multi-step owner instruction, preserve the stated order. If a later issue is discovered while closing the current step, record it as a bounded follow-up rather than silently switching focus unless it blocks correctness/safety.
 
-## 5. Implementation authorization vs merge authorization
+## 5. Bounded routine merge flow
 
-The owner commonly uses short commands such as `делай`, `продолжай`, `ок делай` to authorize implementation work.
+As of 2026-08-23, the owner explicitly prefers the project to work **in flow** rather than stopping for a separate merge confirmation on every routine PR.
 
 Canonical interpretation:
-- these commands authorize analysis, implementation, branch creation, validation and PR preparation;
-- they **do not automatically authorize production merge** of a newly created PR.
+- short commands such as `делай`, `продолжай`, `ок делай` authorize bounded implementation work;
+- routine, low-risk repository changes may proceed through branch → PR → exact-head verification → merge → production proof without a separate per-PR merge prompt;
+- the assistant must still apply the full pre-merge proof discipline and must not merge a moving or unverified head;
+- this standing permission is **bounded**, not universal authority.
 
-Every PR requires a fresh explicit merge instruction naming or unambiguously referring to that PR, e.g. `мерджи 133`.
+The assistant must stop and ask for explicit owner confirmation before materially consequential changes, including:
+- capital movement, wallet signing or transaction execution;
+- expansion of execution/approval authority;
+- methodology, accounting-policy or security-policy mutation with material consequences;
+- destructive or difficult-to-reverse migration/deletion;
+- material security weakening or trust-boundary change;
+- major public product/release commitments where owner intent is genuinely consequential;
+- any other action whose risk/irreversibility is materially higher than routine engineering maintenance.
 
-Before every merge:
+Before every routine merge that proceeds under this bounded standing permission:
 1. fresh-read `main`;
 2. fresh-read PR state/head/base/mergeability;
 3. verify exact-head checks;
-4. verify expected changed files;
+4. verify expected changed files/scope;
 5. immediately re-check moving `main`/PR state;
-6. merge with `expected_head_sha`;
+6. merge with `expected_head_sha` whenever supported;
 7. verify physical production state appropriate to the change.
 
-This protects against the repository's frequent autonomous/generated `main` commits.
+This preserves autonomous working flow without turning repository access into blanket authority.
 
 ## 6. Live-site visual review is part of the workflow
 
@@ -91,7 +100,7 @@ The owner actively reviews the public site on real devices and frequently sends 
 Treat screenshots as high-value **visual acceptance evidence**, not as canonical economic data.
 
 Typical loop:
-`implement → PR checks → explicit merge → owner opens live site → screenshot/visual feedback → systemic polish if needed`.
+`implement → PR checks → merge under the current bounded authorization contract → owner opens live site → screenshot/visual feedback → systemic polish if needed`.
 
 When the owner says a laptop/desktop surface is already good, preserve it while fixing mobile. Do not rebuild or restyle the accepted desktop geometry unless the owner explicitly asks.
 
@@ -201,4 +210,4 @@ Leave ephemeral run IDs, temporary values and routine workflow noise in machine 
 
 For owner-driven project work, a new AI session should behave as follows:
 
-**Read live state first. Understand the existing canon. Work one objective at a time. Prefer systemic reusable fixes. Protect accepted surfaces. Prove production reality. Never merge without fresh explicit PR authorization. Preserve material learning so the owner does not have to teach the same thing twice.**
+**Read live state first. Understand the existing canon. Work one objective at a time. Prefer systemic reusable fixes. Protect accepted surfaces. Prove production reality. Keep routine low-risk work moving through verified merge/production proof without repeatedly interrupting the owner; stop for explicit confirmation at material authority, capital, security, methodology, destructive or other high-consequence boundaries. Preserve material learning so the owner does not have to teach the same thing twice.**

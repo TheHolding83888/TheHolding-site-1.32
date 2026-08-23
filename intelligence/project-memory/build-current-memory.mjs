@@ -93,7 +93,7 @@ const lines = [
   '',
   '- Default working language with the owner is **Russian**; voice-dictated messages may contain transcription noise, so resolve obvious intent from live project context instead of repeatedly asking the owner to restate known information.',
   '- Work **one primary objective at a time**, preserve the owner\'s requested sequence, and prefer systemic reusable fixes over one-off patches.',
-  '- `делай / продолжай / ок делай` authorizes implementation/branch/PR preparation, **not a new production merge**. Every PR still requires fresh explicit merge authorization and exact-head pre-merge proof.',
+  '- Routine low-risk repository work may proceed through verified PR merge and production proof without a separate per-PR confirmation under the owner\'s bounded standing authorization. Stop for explicit confirmation at material capital, authority, security, methodology, destructive/irreversible, or other high-consequence boundaries.',
   '- Live-site screenshots are visual acceptance evidence. Preserve already accepted desktop/laptop surfaces while fixing mobile unless the owner explicitly asks to redesign both.',
   '- A newer explicit owner instruction always overrides an older collaboration preference. The collaboration canon is an operating contract, not a psychological profile.',
   '',
