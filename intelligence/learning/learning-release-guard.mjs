@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING — LEARNING LOOP RELEASE GUARD v0.1
+ * THE HOLDING — LEARNING LOOP RELEASE GUARD v0.2
  *
  * Fail-closed exact-byte deployment coherence guard for the static Decision &
- * Outcome Learning components. Prevents partial manual uploads from mixing an
- * old recorder/reviewer/policy/workflow with a newer learning engine.
+ * Outcome Learning components, including the owner-economic outcome review lane.
+ *
+ * Mutable append-only ledgers and generated learning state are intentionally not
+ * release-manifest members; the static code/policy/workflow plane is exact-bound
+ * while evidence memory remains append-only and independently integrity-checked.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,7 +15,7 @@ import crypto from 'node:crypto';
 
 const ROOT = process.cwd();
 const MANIFEST = 'intelligence/learning/learning-release.json';
-const GUARD_VERSION = '0.1-learning-static-release-coherence';
+const GUARD_VERSION = '0.2-owner-outcome-static-release-coherence';
 
 function fail(message) { throw new Error(message); }
 function sha256(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
@@ -30,23 +33,31 @@ try { manifest = JSON.parse(manifestText); }
 catch (error) { fail(`Invalid Learning release manifest: ${error.message}`); }
 if (manifest?.version !== '0.1-learning-release') fail(`Unexpected Learning release version: ${manifest?.version}`);
 if (manifest?.releaseId !== '0.1-decision-outcome-learning-production') fail(`Unexpected Learning releaseId: ${manifest?.releaseId}`);
+
 const REQUIRED_FILES = [
   'intelligence/learning/decision-recorder.mjs',
   'intelligence/learning/owner-initiated-decision-recorder.mjs',
   'intelligence/learning/decision-learning-engine.mjs',
   'intelligence/learning/independent-learning-reviewer.mjs',
   'intelligence/learning/decision-policy.json',
+  'intelligence/learning/owner-outcome-review-policy.json',
+  'intelligence/learning/owner-outcome-review-recorder.mjs',
+  'intelligence/learning/owner-outcome-experience-engine.mjs',
+  'intelligence/learning/independent-owner-outcome-experience-reviewer.mjs',
   'intelligence/learning/learning-release-guard.mjs',
   '.github/workflows/update-learning-loop.yml',
   '.github/workflows/record-brain-decision.yml',
   '.github/workflows/record-owner-economic-decision.yml',
+  '.github/workflows/record-owner-economic-outcome-review.yml',
   '.github/workflows/security-sentinel.yml',
   'intelligence/cognitive-stack-release.json',
 ];
+
 if (!Array.isArray(manifest?.files) || manifest.files.length !== REQUIRED_FILES.length) fail('Learning release manifest file set is incomplete');
 const manifestFiles = manifest.files.map((x) => x?.file).sort();
 const requiredFiles = [...REQUIRED_FILES].sort();
 if (JSON.stringify(manifestFiles) !== JSON.stringify(requiredFiles)) fail('Learning release manifest does not contain the exact required static file set');
+
 const seen = new Set();
 const vector = [];
 for (const item of manifest.files) {
@@ -61,6 +72,7 @@ for (const item of manifest.files) {
   }
   vector.push({ file: item.file, sha256: actual, exactByteMatch: true });
 }
+
 console.log(JSON.stringify({
   status: 'pass',
   guardVersion: GUARD_VERSION,
@@ -68,5 +80,10 @@ console.log(JSON.stringify({
   manifestSha256: sha256(manifestText),
   fileCount: vector.length,
   exactByteMatch: true,
+  mutableEvidenceExcludedFromRelease: [
+    'intelligence/learning/decision-ledger.json',
+    'intelligence/learning/owner-outcome-review-ledger.json',
+    'intelligence/learning-state/**',
+  ],
   files: vector,
 }, null, 2));
