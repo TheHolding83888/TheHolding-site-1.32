@@ -19,6 +19,13 @@ const stable = (v) => {
   return `{${Object.keys(v).sort().map(k => `${JSON.stringify(k)}:${stable(v[k])}`).join(',')}}`;
 };
 const stableHash = (v) => shaBytes(stable(v));
+const proposalKeyForCase = c => shaBytes([
+  c?.caseKey,
+  c?.recommendationClass,
+  c?.entity,
+  c?.domain,
+  c?.category,
+].map(x => String(x ?? '')).join('|')).slice(0, 24);
 
 for (const p of Object.values(F).filter(x => x !== F.output)) {
   if (!fs.existsSync(p)) throw new Error(`Reviewer missing required file: ${p}`);
@@ -59,7 +66,8 @@ for (const key of ['noTransactions','noSigning','noWalletAccess','noProductionEx
 
 const observedLearningCases = learning.activeCases ?? [];
 const eligibleLearningCases = observedLearningCases.filter(x => x.experienceEligibility === 'decision-worthy');
-const activeCaseKeys = new Set(eligibleLearningCases.map(x => x.caseKey));
+const currentKeyByCase = new Map(eligibleLearningCases.map(x => [x.caseKey, proposalKeyForCase(x)]));
+const activeProposalKeys = new Set(currentKeyByCase.values());
 if (q.summary?.activeCaseCount !== eligibleLearningCases.length) errors.push('Proposal activeCaseCount is not decision-worthy Learning count');
 if (q.summary?.observedActiveCaseCount !== observedLearningCases.length) errors.push('Proposal observedActiveCaseCount mismatch');
 if (q.summary?.dataHygieneCaseCount !== observedLearningCases.length - eligibleLearningCases.length) errors.push('Proposal dataHygieneCaseCount mismatch');
@@ -75,28 +83,32 @@ for (const x of q.proposals ?? []) {
   if (!x.source?.caseKey) errors.push(`${x.proposalId}: no source caseKey`);
   if (!x.source?.cognitiveChainHash) errors.push(`${x.proposalId}: no cognitiveChainHash`);
 
-  const sourceIsActive = activeCaseKeys.has(x.source?.caseKey);
-  // Current Proposal states must bind to the current Cognitive chain. A
-  // SUPERSEDED proposal is deliberately retained as immutable historical memory,
-  // so its source chain is expected to remain the chain on which it was created.
+  const expectedCurrentKey = currentKeyByCase.get(x.source?.caseKey) ?? null;
+  const sourceIsActive = !!expectedCurrentKey && activeProposalKeys.has(x.proposalKey) && x.proposalKey === expectedCurrentKey;
+  // Only the exact current semantic Proposal variant may be current. Historical
+  // variants of the same stable caseKey deliberately retain their original
+  // Cognitive chain and must remain SUPERSEDED.
   if (x.state !== 'SUPERSEDED' && x.source?.cognitiveChainHash !== q.source?.cognitiveChainHash) {
     errors.push(`${x.proposalId}: current proposal chain mismatch`);
   }
+  if (x.state !== 'SUPERSEDED' && !sourceIsActive) {
+    errors.push(`${x.proposalId}: non-current semantic variant is active`);
+  }
   if (x.state === 'SUPERSEDED') {
-    if (sourceIsActive) errors.push(`${x.proposalId}: SUPERSEDED proposal still has an active source case`);
+    if (sourceIsActive) errors.push(`${x.proposalId}: SUPERSEDED proposal is still the current semantic variant`);
     if (!x.supersededReason) errors.push(`${x.proposalId}: SUPERSEDED proposal missing reason`);
   }
 
   if (x.boundaries?.automaticExecution !== false) errors.push(`${x.proposalId}: executable proposal`);
   if (x.boundaries?.automaticApproval !== false) errors.push(`${x.proposalId}: auto-approvable proposal`);
   if (x.boundaries?.humanApprovalRequired !== true) errors.push(`${x.proposalId}: human approval not required`);
-  if (x.state === 'PROPOSED' && !sourceIsActive) errors.push(`${x.proposalId}: PROPOSED item has no active source case`);
+  if (x.state === 'PROPOSED' && !sourceIsActive) errors.push(`${x.proposalId}: PROPOSED item is not the current semantic variant`);
   if (!Array.isArray(x.verificationRequired) || x.verificationRequired.length < 3) warnings.push(`${x.proposalId}: weak verification plan`);
 }
 
 const report = {
   version: '0.1.1-proposal-eval',
-  reviewerVersion: '0.1.2-historical-state-aware-proposal-reviewer',
+  reviewerVersion: '0.1.3-current-variant-aware-proposal-reviewer',
   generatedAt: new Date().toISOString(),
   status: errors.length ? 'fail' : 'pass',
   queueSha256: shaFile(F.queue),

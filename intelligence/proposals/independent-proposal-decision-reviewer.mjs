@@ -18,6 +18,13 @@ const stable = v => {
   return `{${Object.keys(v).sort().map(k => `${JSON.stringify(k)}:${stable(v[k])}`).join(',')}}`;
 };
 const stableHash = v => shaBytes(stable(v));
+const proposalKeyForCase = c => shaBytes([
+  c?.caseKey,
+  c?.recommendationClass,
+  c?.entity,
+  c?.domain,
+  c?.category,
+].map(x => String(x ?? '')).join('|')).slice(0, 24);
 
 for (const p of Object.values(F).filter(x => x !== F.output)) {
   if (!fs.existsSync(p)) throw new Error(`Decision Bridge reviewer missing required file: ${p}`);
@@ -42,7 +49,7 @@ if (q.source?.learningContextSha256 !== shaFile(F.learning)) errors.push('Queue/
 if (q.source?.decisionLedgerSha256 !== shaFile(F.ledger)) errors.push('Queue/Decision Ledger byte binding mismatch');
 if (q.source?.decisionLedgerHash !== ledger.integrity?.ledgerHash) errors.push('Queue/Decision Ledger semantic hash mismatch');
 if (q.decisionBridge?.policySha256 !== shaFile(F.policy)) errors.push('Queue/Decision Bridge policy byte binding mismatch');
-if (q.decisionBridge?.version !== '0.2.1-inactive-case-retirement') errors.push('Decision Bridge version mismatch');
+if (q.decisionBridge?.version !== '0.2.2-current-variant-authority') errors.push('Decision Bridge version mismatch');
 if (q.decisionBridge?.productionMutationAuthorized !== false || q.decisionBridge?.executionAuthority !== 'none') errors.push('Decision Bridge escaped no-execution boundary');
 
 const supersededDecisionIds = new Set((ledger.decisions ?? []).map(d => d.supersedesDecisionId).filter(Boolean));
@@ -52,14 +59,21 @@ for (const d of ledger.decisions ?? []) {
   if (effective.has(d.caseKey)) errors.push(`multiple effective decisions for ${d.caseKey}`);
   effective.set(d.caseKey, d);
 }
-const activeLearning = new Map((learning.activeCases ?? []).filter(c => c.experienceEligibility === 'decision-worthy').map(c => [c.caseKey, c]));
+const activeLearning = new Map((learning.activeCases ?? [])
+  .filter(c => c.experienceEligibility === 'decision-worthy')
+  .map(c => [c.caseKey, c]));
+const currentProposalKeyByCase = new Map([...activeLearning.entries()]
+  .map(([caseKey, c]) => [caseKey, proposalKeyForCase(c)]));
 const mapping = policy.dispositionToProposalState ?? {};
 let bound = 0, approved = 0, rejected = 0, deferred = 0, historical = 0;
 
 for (const p of q.proposals ?? []) {
-  const d = effective.get(p.source?.caseKey) ?? null;
-  const learningCase = activeLearning.get(p.source?.caseKey) ?? null;
-  const sourceCaseActive = !!learningCase;
+  const caseKey = p.source?.caseKey ?? null;
+  const d = effective.get(caseKey) ?? null;
+  const currentLearningCase = activeLearning.get(caseKey) ?? null;
+  const currentProposalKey = currentProposalKeyByCase.get(caseKey) ?? null;
+  const sourceCaseActive = !!currentLearningCase && p.proposalKey === currentProposalKey;
+  const learningCase = sourceCaseActive ? currentLearningCase : null;
 
   if (!d) {
     const expected = sourceCaseActive ? 'PROPOSED' : 'SUPERSEDED';
@@ -82,29 +96,31 @@ for (const p of q.proposals ?? []) {
     if (p.supersededReason) errors.push(`${p.proposalId}: active proposal retained a superseded reason`);
   } else {
     historical += 1;
-    if (p.state !== 'SUPERSEDED') errors.push(`${p.proposalId}: inactive decision-bound case was not retired`);
-    if (!p.supersededReason) errors.push(`${p.proposalId}: inactive decision-bound proposal missing retirement reason`);
+    if (p.state !== 'SUPERSEDED') errors.push(`${p.proposalId}: historical semantic/resolved variant was not retired`);
+    if (!p.supersededReason) errors.push(`${p.proposalId}: historical decision-bound proposal missing retirement reason`);
   }
 
   if (p.decisionBinding?.decisionId !== d.decisionId) errors.push(`${p.proposalId}: decisionId mismatch`);
   if (p.decisionBinding?.decisionHash !== d.integrity?.decisionHash) errors.push(`${p.proposalId}: decisionHash mismatch`);
   if (p.decisionBinding?.decisionLedgerHash !== ledger.integrity?.ledgerHash) errors.push(`${p.proposalId}: ledgerHash mismatch`);
   if (p.decisionBinding?.sourceCaseActive !== sourceCaseActive) errors.push(`${p.proposalId}: sourceCaseActive mismatch`);
+  if ((p.decisionBinding?.currentProposalKey ?? null) !== (currentProposalKey ?? null)) errors.push(`${p.proposalId}: currentProposalKey mismatch`);
+  if (p.decisionBinding?.proposalVariantCurrent !== sourceCaseActive) errors.push(`${p.proposalId}: proposalVariantCurrent mismatch`);
   if (p.decisionBinding?.exactDecisionMemory !== true || p.decisionBinding?.authority !== 'human-owner') errors.push(`${p.proposalId}: decision authority binding missing`);
   if (p.decisionBinding?.productionMutationAuthorized !== false || p.decisionBinding?.executionAuthority !== 'none') errors.push(`${p.proposalId}: decision binding escaped authority`);
   if (p.boundaries?.automaticApproval !== false || p.boundaries?.automaticExecution !== false || p.boundaries?.productionMutationAuthorized !== false) errors.push(`${p.proposalId}: proposal boundary changed`);
 
-  if (p.state === 'APPROVED') {
+  if (sourceCaseActive && p.state === 'APPROVED') {
     approved += 1;
     if (!['accept','modify'].includes(d.disposition)) errors.push(`${p.proposalId}: APPROVED state lacks accept/modify decision`);
   }
-  if (p.state === 'REJECTED') rejected += 1;
+  if (sourceCaseActive && p.state === 'REJECTED') rejected += 1;
   if (sourceCaseActive && d.disposition === 'defer') deferred += 1;
 
-  if (['accept','modify'].includes(d.disposition)) {
+  if (sourceCaseActive && ['accept','modify'].includes(d.disposition)) {
     if (p.human?.approvedBy !== 'owner' || p.human?.approvedAt !== d.recordedAt) errors.push(`${p.proposalId}: owner approval metadata mismatch`);
   } else if (p.human?.approvedBy !== null) {
-    errors.push(`${p.proposalId}: non-approved disposition marked approved`);
+    errors.push(`${p.proposalId}: historical/non-approved variant marked currently approved`);
   }
 
   const expectedAction = d.disposition === 'modify' ? d.modifiedAction : p.proposedAction;
@@ -115,6 +131,12 @@ const finalActive = (q.proposals ?? []).filter(p => !['REJECTED','SUPERSEDED','R
 const p0 = finalActive.filter(p => p.rankClass === 'P0').length;
 const p1 = finalActive.filter(p => p.rankClass === 'P1').length;
 const approvalsRequired = finalActive.filter(p => p.boundaries?.humanApprovalRequired === true).length;
+const activeByCase = new Map();
+for (const p of finalActive) {
+  const caseKey = p.source?.caseKey ?? null;
+  if (activeByCase.has(caseKey)) errors.push(`multiple active Proposal variants for ${caseKey}`);
+  activeByCase.set(caseKey, p.proposalKey);
+}
 
 if (q.decisionBridge?.boundDecisionCount !== bound) errors.push('bound decision count mismatch');
 if (q.decisionBridge?.approvedCount !== approved) errors.push('approved count mismatch');
@@ -123,6 +145,7 @@ if (q.decisionBridge?.deferredCount !== deferred) errors.push('deferred count mi
 if (q.decisionBridge?.historicalDecisionBoundCount !== historical) errors.push('historical decision-bound count mismatch');
 if (q.summary?.ownerDecisionBoundCount !== bound || q.summary?.ownerApprovedCount !== approved || q.summary?.ownerRejectedCount !== rejected || q.summary?.ownerDeferredCount !== deferred || q.summary?.historicalDecisionBoundCount !== historical) errors.push('summary decision counts mismatch');
 if (q.summary?.activeProposalCount !== finalActive.length) errors.push('active proposal count mismatch after retirement');
+if (q.summary?.activeProposalCount !== activeLearning.size) errors.push('active Proposal count does not equal current decision-worthy Learning variants');
 if (q.summary?.p0Count !== p0 || q.summary?.p1Count !== p1) errors.push('priority counts include inactive proposals');
 if (q.summary?.requiresHumanApprovalCount !== approvalsRequired) errors.push('approval-required count includes inactive proposals');
 
@@ -131,8 +154,8 @@ delete core.integrity;
 if (q.integrity?.queueHash !== stableHash(core)) errors.push('Queue integrity hash mismatch after Decision Bridge');
 
 const report = {
-  version: '0.2.1-proposal-decision-eval',
-  reviewerVersion: '0.2.1-inactive-case-retirement-reviewer',
+  version: '0.2.2-proposal-decision-eval',
+  reviewerVersion: '0.2.2-current-variant-authority-reviewer',
   generatedAt: new Date().toISOString(),
   status: errors.length ? 'fail' : 'pass',
   source: {
@@ -151,6 +174,7 @@ const report = {
     rejected,
     deferred,
     historicalDecisionBound: historical,
+    activeProposalVariants: finalActive.length,
     errors: errors.length,
     warnings: warnings.length
   },
