@@ -16,8 +16,8 @@ const EXPECTED_FILES = [
 ].sort();
 
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
-if (manifest.version !== '0.2.1-proposal-release') throw new Error(`Unexpected Proposal release version: ${manifest.version}`);
-if (manifest.releaseId !== '0.2.1-resolved-decision-case-retirement') throw new Error(`Unexpected Proposal releaseId: ${manifest.releaseId}`);
+if (manifest.version !== '0.2.2-proposal-release') throw new Error(`Unexpected Proposal release version: ${manifest.version}`);
+if (manifest.releaseId !== '0.2.2-current-variant-identity') throw new Error(`Unexpected Proposal releaseId: ${manifest.releaseId}`);
 const actual = (manifest.staticFiles ?? []).map(x => x.file).sort();
 if (JSON.stringify(actual) !== JSON.stringify(EXPECTED_FILES)) {
   throw new Error(`Proposal static file contract mismatch: ${JSON.stringify(actual)}`);

@@ -19,6 +19,13 @@ const stable = v => {
   return `{${Object.keys(v).sort().map(k => `${JSON.stringify(k)}:${stable(v[k])}`).join(',')}}`;
 };
 const stableHash = v => shaBytes(stable(v));
+const proposalKeyForCase = c => shaBytes([
+  c?.caseKey,
+  c?.recommendationClass,
+  c?.entity,
+  c?.domain,
+  c?.category,
+].map(x => String(x ?? '')).join('|')).slice(0, 24);
 const fail = m => { throw new Error(m); };
 
 for (const p of [F.queue, F.policy, F.learning, F.ledger]) {
@@ -68,7 +75,11 @@ for (const d of ledger.decisions) {
   effectiveByCase.set(d.caseKey, d);
 }
 
-const learningByCase = new Map((learning.activeCases ?? []).filter(c => c.experienceEligibility === 'decision-worthy').map(c => [c.caseKey, c]));
+const learningByCase = new Map((learning.activeCases ?? [])
+  .filter(c => c.experienceEligibility === 'decision-worthy')
+  .map(c => [c.caseKey, c]));
+const currentProposalKeyByCase = new Map([...learningByCase.entries()]
+  .map(([caseKey, c]) => [caseKey, proposalKeyForCase(c)]));
 const mapping = policy.dispositionToProposalState ?? {};
 const states = ['PROPOSED','APPROVED','IN_PROGRESS','VERIFYING','RELEASE_READY','RELEASED','REJECTED','SUPERSEDED'];
 let boundDecisionCount = 0;
@@ -78,14 +89,17 @@ let deferredCount = 0;
 let historicalDecisionBoundCount = 0;
 
 q.proposals = (q.proposals ?? []).map(p => {
-  const d = effectiveByCase.get(p.source?.caseKey) ?? null;
-  const learningCase = learningByCase.get(p.source?.caseKey) ?? null;
-  const sourceCaseActive = !!learningCase;
+  const caseKey = p.source?.caseKey ?? null;
+  const d = effectiveByCase.get(caseKey) ?? null;
+  const currentLearningCase = learningByCase.get(caseKey) ?? null;
+  const currentProposalKey = currentProposalKeyByCase.get(caseKey) ?? null;
+  const sourceCaseActive = !!currentLearningCase && p.proposalKey === currentProposalKey;
+  const learningCase = sourceCaseActive ? currentLearningCase : null;
 
   if (!d) {
     if (!sourceCaseActive) {
       p.state = 'SUPERSEDED';
-      p.supersededReason = p.supersededReason ?? 'Source case is no longer active in current Learning context.';
+      p.supersededReason = p.supersededReason ?? 'Source proposal variant is no longer current in the Learning context.';
     } else {
       p.state = 'PROPOSED';
       delete p.supersededReason;
@@ -99,7 +113,7 @@ q.proposals = (q.proposals ?? []).map(p => {
   if (sourceCaseActive) {
     const latest = learningCase?.decisionMemory?.latestDecision;
     if (!latest || latest.decisionId !== d.decisionId || latest.disposition !== d.disposition) {
-      fail(`Active Learning case does not expose the effective decision for ${p.source?.caseKey}`);
+      fail(`Active Learning case does not expose the effective decision for ${caseKey}`);
     }
   }
 
@@ -112,7 +126,9 @@ q.proposals = (q.proposals ?? []).map(p => {
   if (sourceCaseActive) {
     delete p.supersededReason;
   } else {
-    p.supersededReason = 'Source case is no longer active in current Learning context; exact owner Decision Memory is preserved. SUPERSEDED does not imply rejection, release, or execution.';
+    p.supersededReason = currentLearningCase
+      ? 'Historical semantic variant of an active source case; the current variant is authoritative. Exact owner Decision Memory is preserved, but this variant stays SUPERSEDED.'
+      : 'Source case is no longer active in current Learning context; exact owner Decision Memory is preserved. SUPERSEDED does not imply rejection, release, or execution.';
   }
 
   p.decisionBinding = {
@@ -122,6 +138,8 @@ q.proposals = (q.proposals ?? []).map(p => {
     caseKey: d.caseKey,
     sourceCaseId: d.caseId,
     sourceCaseActive,
+    currentProposalKey,
+    proposalVariantCurrent: sourceCaseActive,
     recordedAt: d.recordedAt,
     disposition: d.disposition,
     exactDecisionMemory: true,
@@ -130,8 +148,8 @@ q.proposals = (q.proposals ?? []).map(p => {
     executionAuthority: 'none'
   };
   p.human = {
-    approvedBy: ['accept','modify'].includes(d.disposition) ? 'owner' : null,
-    approvedAt: ['accept','modify'].includes(d.disposition) ? d.recordedAt : null,
+    approvedBy: sourceCaseActive && ['accept','modify'].includes(d.disposition) ? 'owner' : null,
+    approvedAt: sourceCaseActive && ['accept','modify'].includes(d.disposition) ? d.recordedAt : null,
     notes: d.rationale ?? null,
     disposition: d.disposition,
     decisionId: d.decisionId,
@@ -150,8 +168,8 @@ q.proposals = (q.proposals ?? []).map(p => {
 
   boundDecisionCount += 1;
   if (!sourceCaseActive) historicalDecisionBoundCount += 1;
-  if (targetState === 'APPROVED') approvedCount += 1;
-  if (targetState === 'REJECTED') rejectedCount += 1;
+  if (sourceCaseActive && targetState === 'APPROVED') approvedCount += 1;
+  if (sourceCaseActive && targetState === 'REJECTED') rejectedCount += 1;
   if (sourceCaseActive && d.disposition === 'defer') deferredCount += 1;
   return p;
 });
@@ -180,7 +198,7 @@ q.source = {
   decisionCount: ledger.decisionCount
 };
 q.decisionBridge = {
-  version: '0.2.1-inactive-case-retirement',
+  version: '0.2.2-current-variant-authority',
   policyFile: F.policy,
   policySha256: shaFile(F.policy),
   boundDecisionCount,
@@ -188,7 +206,7 @@ q.decisionBridge = {
   rejectedCount,
   deferredCount,
   historicalDecisionBoundCount,
-  stateAuthority: 'append-only-owner-decision-memory-plus-current-learning-lifecycle',
+  stateAuthority: 'append-only-owner-decision-memory-plus-current-learning-proposal-variant',
   approvedMeaning: policy.semantics?.approvedMeans ?? null,
   inactiveCaseState: policy.inactiveCaseState,
   inactiveCaseMeaning: policy.semantics?.inactiveCaseRetirement ?? null,
@@ -209,7 +227,7 @@ const lines = [
   '',
   `Status: **${String(q.status ?? 'watch').toUpperCase()}**`,
   '',
-  `${q.summary.activeProposalCount} active proposal(s) from ${q.summary.activeCaseCount} active Learning case(s); ${boundDecisionCount} owner decision(s) reflected; ${historicalDecisionBoundCount} decision-bound item(s) retained as historical resolved-case memory; execution remains disabled.`,
+  `${q.summary.activeProposalCount} active proposal(s) from ${q.summary.activeCaseCount} active Learning case(s); ${boundDecisionCount} owner decision binding(s) reflected; ${historicalDecisionBoundCount} historical semantic/resolved variant(s) preserved as SUPERSEDED memory; execution remains disabled.`,
   '',
   '## Priority queue',
   '',
@@ -217,13 +235,13 @@ const lines = [
   '',
   '## Decision boundary',
   '',
-  `Currently owner-approved active proposals: ${approvedCount}. Rejected: ${rejectedCount}. Deferred active cases: ${deferredCount}. Historical decision-bound resolved cases: ${historicalDecisionBoundCount}.`,
+  `Currently owner-approved active proposals: ${approvedCount}. Rejected: ${rejectedCount}. Deferred active cases: ${deferredCount}. Historical decision-bound variants: ${historicalDecisionBoundCount}.`,
   '',
-  'APPROVED means owner-approved for bounded next-stage research/build-candidate work only. SUPERSEDED means the source case is no longer active; it does not mean rejected, released, executed, or forgotten.',
+  'APPROVED means owner-approved for the current semantic Proposal variant only. A historical variant of the same stable Learning case stays SUPERSEDED and cannot reactivate. SUPERSEDED does not mean rejected, released, executed, or forgotten.',
   '',
   '## Safety boundary',
   '',
-  'This queue can observe, synthesize, reflect explicit owner decisions, and retire resolved source cases. Automatic approval and execution remain disabled.',
+  'This queue can observe, synthesize, reflect explicit owner decisions, and preserve historical variants. Automatic approval and execution remain disabled.',
   ''
 ];
 fs.writeFileSync(F.brief, lines.join('\n'));
