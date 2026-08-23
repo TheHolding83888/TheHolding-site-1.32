@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores the deep current state; the Memory Routing Index selects only the durable blocks relevant to the current task. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-23T11:02:53.712Z**
+Canonical source state represented here: **2026-08-23T11:26:24.956Z**
 
 ## Resume order
 
@@ -48,7 +48,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: cdd2a8ba88ae71a60bea22df7d9781c4889d358afeee1e259552fb15d01564a0.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 38; generatedAt 2026-08-23T11:02:53.712Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 40; generatedAt 2026-08-23T11:26:20.683Z.
 - Cognitive Stack Security snapshot is older (2026-08-23T08:50:02.250Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 25; evidence 27; noExecution true.
@@ -56,7 +56,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 ## Learning / Proposal / Builder / Guardian
 
 - Learning: **READY**; active cases 25; remembered cases 137; Brain observations 23; owner decisions 2; settled outcomes 0; lessons 0.
-- Proposal: **WATCH**; active 7; APPROVED 0; PROPOSED 7; SUPERSEDED 21; production execution disabled.
+- Proposal: **WATCH**; active 3; APPROVED 1; PROPOSED 2; SUPERSEDED 26; production execution disabled.
 - Builder: **READY**; candidates 0; CANDIDATE 0; productionMutationAuthorizedCount 0.
 - Guardian: **READY**; research-only 0; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
 
