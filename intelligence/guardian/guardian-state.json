@@ -1,32 +1,84 @@
 {
   "version": "0.1-guardian-state",
   "engineVersion": "0.1-deterministic-guardian-capability-gate",
-  "generatedAt": "2026-08-16T03:54:32.902Z",
-  "status": "ready",
-  "headline": "0 candidate(s) permitted for research-only work; 0 blocked; execution and production mutation remain disabled.",
+  "generatedAt": "2026-08-23T11:26:42.902Z",
+  "status": "watch",
+  "headline": "1 candidate(s) permitted for research-only work; 0 blocked; execution and production mutation remain disabled.",
   "source": {
     "candidateQueueFile": "intelligence/builder/candidate-queue.json",
-    "candidateQueueSha256": "52d7365d7fe36a60542e439207bea2f7b4747b02ac64ec9abb2a47cc17405682",
-    "candidateQueueHash": "eab790663a1ef282935e54888a29434ce9b0ae0a082db9a990c73db6382fe252",
+    "candidateQueueSha256": "f8fcb252c44e8dfa507489dd55ce94984cdf4b1edd335344a37fb5aa8d6934c9",
+    "candidateQueueHash": "b617d62fc47fab98788def8f7cc5012d9d5b516e09c12f6b342b9a12aec4915f",
     "candidateEvalFile": "intelligence/builder/candidate-eval.json",
-    "candidateEvalSha256": "7fc36ae7126c47b6be06e3cfe136b1a2f4864b55f8023433543f974de4f8ff94",
+    "candidateEvalSha256": "76c3886ddc44081f7ea03d20e292d9f7ccef16e06f363c520a635a0cc0b7a616",
     "proposalQueueFile": "intelligence/proposals/proposal-queue.json",
-    "proposalQueueSha256": "18216bc0c88ec3a629049a5792250b10cea91f86d4be599afdc79f03f42fa9d7",
-    "proposalQueueHash": "482697cba3b7d8afe31cb835df3cd05fdc76dce89fd2f71886415db2fcd66bb8",
+    "proposalQueueSha256": "442166f0c0dfbb897e90f806cff8f414b93d5553b98b34132e5cf333a790db2c",
+    "proposalQueueHash": "ef7ce2e81faa7b05d6245603c561a518f6407ee94ad4d3cb7f012cea60fc34f5",
     "decisionLedgerFile": "intelligence/learning/decision-ledger.json",
     "decisionLedgerSha256": "b36eaf0a745c06f54db2ec5e221f39b66766fc95465cd68fe2f62a3b088460fa",
     "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d",
-    "cognitiveChainHash": "85e27cba83bcceb33f654f6ed2b1ab4848623e48369c151458c1d033b0b3f366",
+    "cognitiveChainHash": "cdd2a8ba88ae71a60bea22df7d9781c4889d358afeee1e259552fb15d01564a0",
     "guardianPolicySha256": "6d672214f355e562f9cb88728b8212b3e7bf6f90b8be53cc25fa8dfae86ce034"
   },
   "summary": {
-    "candidateCount": 0,
-    "researchOnlyCount": 0,
+    "candidateCount": 1,
+    "researchOnlyCount": 1,
     "blockedCount": 0,
     "sandboxBuildAuthorizedCount": 0,
     "productionMutationAuthorizedCount": 0
   },
-  "decisions": [],
+  "decisions": [
+    {
+      "guardianDecisionId": "GRD-c8c6a114416401785c531444",
+      "candidateId": "BLD-998964ea8618d73602469053",
+      "candidateClass": "dom-provenance-triage",
+      "proposalId": "PRP-9b1dad42e2062af2bf742d14",
+      "decisionId": "DEC-9e7fdbf2f8431a42194b",
+      "riskTier": "medium",
+      "gateDecision": "RESEARCH_ONLY",
+      "rationale": [
+        "candidate is exactly owner-approved and independently reviewed",
+        "candidate declares no affected files or mutation authority",
+        "v0.1 Guardian therefore permits research/specification capabilities only"
+      ],
+      "allowedCapabilities": [
+        "evidence_collection",
+        "provenance_classification",
+        "security_or_economic_analysis",
+        "candidate_specification",
+        "verification_planning"
+      ],
+      "forbiddenCapabilities": [
+        "repository_code_mutation",
+        "branch_creation",
+        "pull_request_creation",
+        "merge",
+        "release",
+        "policy_or_methodology_mutation",
+        "wallet_access",
+        "signing",
+        "transaction",
+        "capital_execution"
+      ],
+      "nextGate": "future Guardian sandbox-build capability + explicit human release gate",
+      "bindings": {
+        "candidateQueueSha256": "f8fcb252c44e8dfa507489dd55ce94984cdf4b1edd335344a37fb5aa8d6934c9",
+        "candidateQueueHash": "b617d62fc47fab98788def8f7cc5012d9d5b516e09c12f6b342b9a12aec4915f",
+        "candidateId": "BLD-998964ea8618d73602469053",
+        "proposalQueueSha256": "442166f0c0dfbb897e90f806cff8f414b93d5553b98b34132e5cf333a790db2c",
+        "proposalQueueHash": "ef7ce2e81faa7b05d6245603c561a518f6407ee94ad4d3cb7f012cea60fc34f5",
+        "proposalId": "PRP-9b1dad42e2062af2bf742d14",
+        "decisionLedgerHash": "0432e5b1409b425431328afe2a63bc8af5b825fe8a44afccbd6799740f5a652d",
+        "decisionId": "DEC-9e7fdbf2f8431a42194b",
+        "decisionHash": "2d84ed8dcf46da1853b0560b62b66d9345cc399d5a54c5dac353ff524241989d"
+      },
+      "authority": {
+        "executable": false,
+        "productionMutationAuthorized": false,
+        "sandboxBuildAuthority": false,
+        "executionAuthority": "none"
+      }
+    }
+  ],
   "constraints": {
     "noRepositoryCodeMutation": true,
     "noBranchCreation": true,
@@ -43,6 +95,6 @@
     "executionAuthority": "none"
   },
   "integrity": {
-    "stateHash": "744207abe03fe0a410d5f14c71e5041f11e04146decfa3d0c498a271d81fd5fb"
+    "stateHash": "4ab2b00507c3e50fd07e4af35899b309ef91d0234987bf0178e18caf56ff8f88"
   }
 }

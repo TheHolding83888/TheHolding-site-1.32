@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores the deep current state; the Memory Routing Index selects only the durable blocks relevant to the current task. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-23T11:26:24.956Z**
+Canonical source state represented here: **2026-08-23T11:26:42.902Z**
 
 ## Resume order
 
@@ -57,8 +57,8 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 - Learning: **READY**; active cases 25; remembered cases 137; Brain observations 23; owner decisions 2; settled outcomes 0; lessons 0.
 - Proposal: **WATCH**; active 3; APPROVED 1; PROPOSED 2; SUPERSEDED 26; production execution disabled.
-- Builder: **READY**; candidates 0; CANDIDATE 0; productionMutationAuthorizedCount 0.
-- Guardian: **READY**; research-only 0; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
+- Builder: **WATCH**; candidates 1; CANDIDATE 1; productionMutationAuthorizedCount 0.
+- Guardian: **WATCH**; research-only 1; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
 
 ## Build discipline
 
