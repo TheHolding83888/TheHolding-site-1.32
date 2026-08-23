@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import crypto from 'node:crypto';
+import { evaluateProspectiveBaseline } from './observational-prospective-evaluator.mjs';
 
 const POLICY_FILE = 'intelligence/observational-learning/observational-learning-policy.json';
 const HISTORY_FILE = 'intelligence/change-history.json';
+const BASELINE_FILE = 'intelligence/observational-learning/observational-pattern-prospective-baseline.json';
 const OUTPUT_FILE = 'intelligence/observational-learning/observational-experience.json';
 const VERSION = '0.1-autonomous-observational-experience';
-const ENGINE_VERSION = '0.1-change-history-episode-pattern-compiler';
+const ENGINE_VERSION = '0.1.1-prospective-pattern-evaluation';
 const SELF_TEST = process.argv.includes('--self-test');
 
 const arr = value => Array.isArray(value) ? value : [];
@@ -66,7 +68,7 @@ function selectPrimaryRun(runs, observedAt) {
   })[0] ?? null;
 }
 
-function compile(policy, history, historyText) {
+function compile(policy, history, historyText, prospectiveBaseline = null) {
   if (history?.version !== policy?.sourceContract?.requiredHistoryVersion) {
     throw new Error(`Unexpected Change History version: ${history?.version}`);
   }
@@ -75,6 +77,12 @@ function compile(policy, history, historyText) {
   }
   if (policy?.patternPolicy?.status !== 'candidate-only' || policy?.patternPolicy?.causalClaim !== false) {
     throw new Error('Observational pattern policy must remain candidate-only and non-causal');
+  }
+  if (prospectiveBaseline) {
+    const contract = obj(policy?.prospectiveBaselineContract);
+    if (prospectiveBaseline?.version !== contract.requiredVersion) throw new Error(`Unexpected prospective baseline version: ${prospectiveBaseline?.version}`);
+    if (prospectiveBaseline?.status !== contract.requiredStatus) throw new Error(`Unexpected prospective baseline status: ${prospectiveBaseline?.status}`);
+    if (contract.baselineMayBeRewrittenFromLaterEvidence !== false) throw new Error('Prospective baseline must be immutable relative to later evidence');
   }
 
   const classByKey = new Map();
@@ -219,8 +227,8 @@ function compile(policy, history, historyText) {
       lastObservedAt: signalRows[signalRows.length - 1].episode.observedAt,
       supportEpisodeIds,
       statement: exemplar.patternSignalType === 'increment-velocity'
-        ? `${exemplar.entity} ${exemplar.metric} increment velocity repeatedly moved ${dominantSignal}; this is a candidate temporal pattern, not a causal explanation.`
-        : `${exemplar.entity} ${exemplar.metric} repeatedly moved ${dominantSignal}; this is a candidate temporal pattern, not a causal explanation.`
+        ? `${exemplar.entity} ${exemplar.metric} increment velocity repeatedly moved ${dominantSignal}; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction.`
+        : `${exemplar.entity} ${exemplar.metric} repeatedly moved ${dominantSignal}; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction.`
     });
   }
 
@@ -228,6 +236,10 @@ function compile(policy, history, historyText) {
   const maxPatterns = Number(policy?.limits?.maximumPatternCandidates ?? 500);
   if (rawEpisodes.length > maxEpisodes) throw new Error(`Observational episode cap exceeded: ${rawEpisodes.length}`);
   if (patternCandidates.length > maxPatterns) throw new Error(`Observational pattern cap exceeded: ${patternCandidates.length}`);
+
+  const prospectiveEvaluation = prospectiveBaseline
+    ? evaluateProspectiveBaseline(rawEpisodes, prospectiveBaseline, policy)
+    : null;
 
   const episodeClassCounts = {};
   for (const episode of rawEpisodes) episodeClassCounts[episode.episodeClass] = (episodeClassCounts[episode.episodeClass] || 0) + 1;
@@ -242,7 +254,7 @@ function compile(policy, history, historyText) {
     engineVersion: ENGINE_VERSION,
     generatedAt: iso(history?.lastUpdatedAt) ?? iso(history?.runs?.at?.(-1)?.generatedAt) ?? null,
     status: rawEpisodes.length ? 'ready' : 'warming-no-eligible-observations',
-    purpose: 'Deterministic source-bound world episodes and candidate temporal patterns derived from canonical Change Intelligence history.',
+    purpose: 'Deterministic source-bound observational memory, descriptive retrospective pattern candidates, and prospective evaluation of an immutable frozen candidate cohort.',
     authority: {
       readOnly: true,
       executionAuthority: 'none',
@@ -261,12 +273,16 @@ function compile(policy, history, historyText) {
       eventCount: arr(history?.events).length
     },
     semantics: {
+      capabilityName: policy?.namingBoundary?.preferredCapabilityName ?? 'Observational Memory + Prospective Pattern Evaluation',
+      learningClaim: policy?.namingBoundary?.learningClaim ?? 'not-yet-earned',
       exactObservation: 'Each episode points to one canonical Change History event and preserves its previous/current values, entity, metric, time and sourceKeys.',
       runMembership: 'A canonical Change History event may be referenced by more than one history run. This creates one episode with all run memberships preserved; it never creates duplicate economic observations.',
       primaryRunSelection: 'When multiple run memberships exist, sourceRun is selected deterministically by exact/nearest generatedAt for convenience while sourceRuns preserves every membership.',
       derivedChange: 'Numeric deltas, temporal ordering and increment velocity are deterministic transforms of source observations.',
       counterReset: 'A negative delta in a period-cumulative counter is treated as possible reset/correction and never as economic loss by default.',
-      patternCandidate: 'Repeated direction or increment-velocity is candidate association only; it is not a lesson, prediction, policy or causal claim.',
+      patternCandidate: 'Repeated direction or increment-velocity is a retrospective candidate association only; it is not a lesson, prediction, policy, learning claim or causal claim.',
+      prospectiveEvaluation: 'Only events strictly later than the immutable frozen baseline may support or contradict a frozen candidate. Support and counterevidence are symmetric and neither automatically promotes the candidate.',
+      eventSamplingBoundary: 'Change History is event-triggered rather than uniformly sampled. Candidate frequency and prospective support counts describe recorded eligible change-events only, not market probability or trend strength.',
       causalBoundary: 'Correlation and temporal order are not causation. This layer has no causal edge authority.',
       realYieldBoundary: 'A Reference APR increase alone never proves why yield rose; owner real-yield interpretation requires source/mechanism attribution before strong economic explanation.'
     },
@@ -275,6 +291,10 @@ function compile(policy, history, historyText) {
       seriesCount: uniqueSeries.length,
       entityCount: uniqueEntities.length,
       patternCandidateCount: patternCandidates.length,
+      frozenProspectivePatternCount: prospectiveEvaluation?.totals?.frozenPatternCount ?? 0,
+      patternsWithPostFreezeScoredEvidence: prospectiveEvaluation?.totals?.patternsWithPostFreezeScoredEvidence ?? 0,
+      prospectiveSupportCount: prospectiveEvaluation?.totals?.prospectiveSupportCount ?? 0,
+      prospectiveCounterevidenceCount: prospectiveEvaluation?.totals?.prospectiveCounterevidenceCount ?? 0,
       possibleCounterResetOrCorrectionCount: resetCount,
       multiRunMembershipEpisodeCount,
       episodeClassCounts
@@ -283,11 +303,14 @@ function compile(policy, history, historyText) {
     series: uniqueSeries,
     episodes: rawEpisodes,
     patternCandidates,
+    prospectiveEvaluation,
     integrity: {
       policySha256: sha256(stableStringify(policy)),
       sourceSha256,
+      prospectiveBaselineSha256: prospectiveBaseline ? sha256(stableStringify(prospectiveBaseline)) : null,
       episodeCompositeHash: sha256(rawEpisodes.map(x => [x.episodeId, x.sourceEventId, x.delta, x.direction, x.incrementVelocityDirection, x.sourceRunMembershipCount, x.sourceRuns])),
-      patternCompositeHash: sha256(patternCandidates.map(x => [x.patternId, x.supportCount, x.dominantSignal, x.supportEpisodeIds]))
+      patternCompositeHash: sha256(patternCandidates.map(x => [x.patternId, x.supportCount, x.dominantSignal, x.supportEpisodeIds])),
+      prospectiveEvaluationCompositeHash: prospectiveEvaluation?.integrity?.evaluationCompositeHash ?? null
     }
   };
   output.integrity.stateHash = sha256({ ...output, integrity: output.integrity });
@@ -297,7 +320,13 @@ function compile(policy, history, historyText) {
 function selfTest() {
   const policy = {
     authority: { executionAuthority: 'none', causalClaimAuthority: 'none' },
+    namingBoundary: { preferredCapabilityName: 'Observational Memory + Prospective Pattern Evaluation', learningClaim: 'not-yet-earned' },
     sourceContract: { requiredHistoryVersion: '0.2.1-change-history' },
+    prospectiveBaselineContract: {
+      requiredVersion: '0.1-observational-pattern-prospective-baseline',
+      requiredStatus: 'frozen-prospective-baseline',
+      baselineMayBeRewrittenFromLaterEvidence: false
+    },
     episodeClasses: [
       { id: 'productive-rate-change', category: 'productivity', metrics: ['aprLatestPct'], valueType: 'numeric', counterSemantics: 'point-in-time-rate', patternSignal: 'direction', semanticDomain: 'protocol-economics' },
       { id: 'reported-income-progression', category: 'reporting', metrics: ['currentMonthCashFlowUsd'], valueType: 'numeric', counterSemantics: 'period-cumulative-counter', patternSignal: 'increment-velocity', semanticDomain: 'cash-flow-semantics' }
@@ -322,18 +351,44 @@ function selfTest() {
     runs,
     events
   };
-  const result = compile(policy, history, `${JSON.stringify(history)}\n`);
-  if (result.authority.executionAuthority !== 'none' || result.authority.causalClaimAuthority !== 'none') throw new Error('self-test authority escaped');
-  if (result.episodes.length !== 7) throw new Error(`self-test episode count mismatch: ${result.episodes.length}`);
-  const duplicateMembership = result.episodes.find(x => x.sourceEventId === 'c2');
+  const first = compile(policy, history, `${JSON.stringify(history)}\n`, null);
+  if (first.authority.executionAuthority !== 'none' || first.authority.causalClaimAuthority !== 'none') throw new Error('self-test authority escaped');
+  if (first.episodes.length !== 7) throw new Error(`self-test episode count mismatch: ${first.episodes.length}`);
+  const duplicateMembership = first.episodes.find(x => x.sourceEventId === 'c2');
   if (duplicateMembership?.sourceRunMembershipCount !== 2 || duplicateMembership?.sourceRuns?.length !== 2) throw new Error('self-test multi-run provenance preservation failed');
   if (duplicateMembership?.sourceRun?.generatedAt !== '2026-01-02T00:00:00.000Z') throw new Error('self-test primary run selection failed');
-  const reset = result.episodes.find(x => x.sourceEventId === 'c4');
+  const reset = first.episodes.find(x => x.sourceEventId === 'c4');
   if (!reset?.possiblePeriodResetOrCorrection || reset?.economicLossInferred !== false || reset?.direction !== null) throw new Error('self-test cumulative reset semantics failed');
-  if (!result.patternCandidates.some(x => x.metric === 'aprLatestPct' && x.dominantSignal === 'increase')) throw new Error('self-test APR pattern missing');
-  if (!result.patternCandidates.some(x => x.metric === 'currentMonthCashFlowUsd' && x.dominantSignal === 'increase')) throw new Error('self-test cash-flow velocity pattern missing');
-  if (result.patternCandidates.some(x => x.causalClaim !== false || x.status !== 'candidate')) throw new Error('self-test candidate boundary failed');
-  console.log(JSON.stringify({ status: 'pass', version: result.version, totals: result.totals, resetSemantics: reset.resetInterpretation, multiRunMemberships: duplicateMembership.sourceRunMembershipCount, executionAuthority: result.authority.executionAuthority }, null, 2));
+  const aprPattern = first.patternCandidates.find(x => x.metric === 'aprLatestPct' && x.dominantSignal === 'increase');
+  if (!aprPattern) throw new Error('self-test APR pattern missing');
+  if (!first.patternCandidates.some(x => x.metric === 'currentMonthCashFlowUsd' && x.dominantSignal === 'increase')) throw new Error('self-test cash-flow velocity pattern missing');
+  if (first.patternCandidates.some(x => x.causalClaim !== false || x.status !== 'candidate')) throw new Error('self-test candidate boundary failed');
+
+  const baseline = {
+    version: '0.1-observational-pattern-prospective-baseline',
+    status: 'frozen-prospective-baseline',
+    frozenAt: '2026-01-02T00:00:00.000Z',
+    patternCount: 1,
+    patternIds: [aprPattern.patternId],
+    authority: { executionAuthority: 'none', causalClaimAuthority: 'none' }
+  };
+  const result = compile(policy, history, `${JSON.stringify(history)}\n`, baseline);
+  const prospective = result.prospectiveEvaluation;
+  if (prospective?.totals?.prospectiveCounterevidenceCount !== 1) throw new Error('self-test prospective counterevidence failed');
+  if (prospective?.totals?.prospectiveSupportCount !== 0) throw new Error('self-test prospective support mismatch');
+  if (prospective?.semantics?.predictionClaimAllowed !== false || prospective?.semantics?.causalClaimAllowed !== false) throw new Error('self-test prospective authority escaped');
+
+  console.log(JSON.stringify({
+    status: 'pass',
+    version: result.version,
+    engineVersion: result.engineVersion,
+    totals: result.totals,
+    resetSemantics: reset.resetInterpretation,
+    multiRunMemberships: duplicateMembership.sourceRunMembershipCount,
+    prospective: prospective.totals,
+    learningClaim: result.semantics.learningClaim,
+    executionAuthority: result.authority.executionAuthority
+  }, null, 2));
 }
 
 if (SELF_TEST) {
@@ -343,7 +398,20 @@ if (SELF_TEST) {
 
 const policyLoaded = readJson(POLICY_FILE);
 const historyLoaded = readJson(HISTORY_FILE);
-const output = compile(policyLoaded.data, historyLoaded.data, historyLoaded.text);
+const baselineRequired = policyLoaded.data?.prospectiveBaselineContract?.requiredInProduction === true;
+if (baselineRequired && !fs.existsSync(BASELINE_FILE)) throw new Error(`Required prospective baseline missing: ${BASELINE_FILE}`);
+const baselineLoaded = fs.existsSync(BASELINE_FILE) ? readJson(BASELINE_FILE) : null;
+const output = compile(policyLoaded.data, historyLoaded.data, historyLoaded.text, baselineLoaded?.data ?? null);
 fs.mkdirSync('intelligence/observational-learning', { recursive: true });
 fs.writeFileSync(OUTPUT_FILE, `${JSON.stringify(output, null, 2)}\n`, 'utf8');
-console.log(JSON.stringify({ version: output.version, engineVersion: output.engineVersion, status: output.status, totals: output.totals, source: output.source, executionAuthority: output.authority.executionAuthority }, null, 2));
+console.log(JSON.stringify({
+  version: output.version,
+  engineVersion: output.engineVersion,
+  status: output.status,
+  totals: output.totals,
+  prospectiveStatus: output.prospectiveEvaluation?.status ?? null,
+  prospectiveTotals: output.prospectiveEvaluation?.totals ?? null,
+  source: output.source,
+  learningClaim: output.semantics.learningClaim,
+  executionAuthority: output.authority.executionAuthority
+}, null, 2));
