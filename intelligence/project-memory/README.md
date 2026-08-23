@@ -41,23 +41,21 @@ Selective retrieval is a feature. Do not replace it with “read every historica
 
 ---
 
-## Current deep continuity structure — Aug 22 final stabilization
+## Current deep continuity structure — Aug 23 Real Use pivot
 
 Latest verified resume entrypoint:
 
-`THE_HOLDING_MASTER_CONTINUITY_2026-08-22_1558_FINAL_STABILIZATION_VERIFIED_RESUME.md`
+`THE_HOLDING_MASTER_CONTINUITY_2026-08-23_1545_CLAUDE_REVIEW_REAL_USE_PIVOT_PRODUCTION_GREEN.md`
 
-Mandatory detailed companion:
+It closes the Claude-review / real-use repair cycle through #284–#289 and establishes the current development mode:
 
-`THE_HOLDING_MASTER_CONTINUITY_2026-08-22_1557_FINAL_STABILIZATION_GREEN.md`
+`BUILD THE BRAIN → USE THE BRAIN → FIND WHERE IT FAILS → THEN BUILD`.
 
-Why two files:
-- the 15:57 companion is the detailed historical/current-state checkpoint with the full Aug 22 PR chain, exact production evidence, failure analysis, final baseline and resume semantics;
-- the 15:58 latest file is a verifier-safe inherited-law bridge that preserves literal Project X / HyperLend / Market Data / merge / production-proof laws required of the newest continuity and deterministically routes the next model into the detailed 15:57 checkpoint.
+The Aug 22 final-stabilization continuities remain durable inherited precedent, but they are no longer the latest resume entrypoint. The Aug 22 checklist and the Aug 23 Claude-review repair cycle are both closed milestones; reopen either only when fresh live evidence proves regression.
 
-The Aug 22 stabilization checklist is **closed / production-green**. A future session must not reopen it merely because incident details exist in memory. Reopen an old item only when fresh live evidence proves a regression.
+The next intelligence bottleneck is genuine experience rather than architecture count. The first Experience Activation milestone is:
 
-The temporary owner standing merge authorization used only to finish that bounded stabilization sequence ended with the final fat-green close after PR #262. Normal per-PR merge authorization is again the default unless the owner explicitly grants a new bounded exception.
+`FIRST GENUINE OWNER ECONOMIC DECISION → SETTLED OUTCOME → REVIEWED LESSON`.
 
 Canary PR #37 remains a permanent `never merge` proof artifact.
 
@@ -72,7 +70,8 @@ Canary PR #37 remains a permanent `never merge` proof artifact.
 - Passport mobile/desktop → Passport Responsive UI canon;
 - **Market Data / current prices / CoinGecko / Public Capital / TVL propagation → latest continuity + `THE_HOLDING_MARKET_DATA_ONCHAIN_AUTHORITY_CANON_2026-08-21.md` + live Market Data/Shadow/CoinGecko/Public Capital artifacts + fresh heartbeat/workflow evidence;**
 - **Defitea Reporting / cash-flow APR / YieldRing+050 income / VoteMarket events → latest continuity + `THE_HOLDING_REPORTING_REFERENCE_MODEL_CANON_2026-08-22.md` + live Reporting ledger/data + fresh writer evidence;**
-- **Cognitive release drift / writer failed to materialize / Learning or Project Memory handoff / THI stale or false RED/GREEN → latest continuity + `THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md` + live subsystem state + exact workflow logs;**
+- **Cognitive release drift / writer failed to materialize / Learning, Proposal, Builder, Guardian, Project Memory handoff / THI stale or false RED/GREEN → latest continuity + `THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md` + live subsystem state + exact workflow logs;**
+- **Real Use / Experience Activation / prospective pattern / Ask epistemic drift → latest continuity + Routing Index Real Use block + live observational/owner-experience/Ask evidence;**
 - f(x) / veFXN APR source → latest continuity + live Productivity source report/data + exact FXN Locker guard;
 - founder/company strategy → Owner Operating Context + Founder Decision DNA only when relevant;
 - Security/deployment → fresh Security state + Production Incident postmortem + Recovery canon when trigger/release/handoff behavior matters.
@@ -119,6 +118,7 @@ Core files include:
 - `THE_HOLDING_MARKET_DATA_ONCHAIN_AUTHORITY_CANON_2026-08-21.md`
 - `THE_HOLDING_REPORTING_REFERENCE_MODEL_CANON_2026-08-22.md`
 - `THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md`
+- `THE_HOLDING_AUTONOMOUS_OBSERVATIONAL_WORLD_LEARNING_v0.1_PRODUCTION_CANON_2026-08-23.md`
 - `THE_HOLDING_FOUNDER_DECISION_DNA_CANON_2026-08-14.md`
 - `THE_HOLDING_OWNER_OPERATING_CONTEXT_2026-08-16.md`
 - `THE_HOLDING_OWNER_OPERATING_CONTEXT_TRANCHE_*`
@@ -130,7 +130,7 @@ Core files include:
 - `THE_HOLDING_COMPANY_PASSPORT_INHERITANCE_CANON_2026-08-19.md`
 - `THE_HOLDING_PRODUCTION_INCIDENT_POSTMORTEM_2026-08-14.md`
 
-This layer preserves architecture, operating rules, current stage, expensive failure lessons, owner collaboration, mechanism reuse, economic semantics, UI contracts, Market Data authority, Reporting boundaries and production-recovery laws.
+This layer preserves architecture, operating rules, current stage, expensive failure lessons, owner collaboration, mechanism reuse, economic semantics, UI contracts, Market Data authority, Reporting boundaries, production-recovery laws and real-use epistemic boundaries.
 
 ### 5. Task-aware routing layer
 
@@ -190,7 +190,7 @@ Preserves:
 ### Production Recovery & Fail-Closed Handoff Canon
 `THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md`
 
-Preserves the reusable Aug 22 recovery contract:
+Preserves the reusable recovery contract:
 - one canonical writer per truth plane;
 - `PR GREEN != production GREEN`;
 - `wakeup != publication`;
@@ -199,7 +199,8 @@ Preserves the reusable Aug 22 recovery contract:
 - post-change Security freshness before Cognitive recovery;
 - exact dispatched-run identification/await semantics;
 - GitHub `GITHUB_TOKEN` non-recursive downstream-event behavior;
-- explicit recovery handoff `Security → Cognitive → Learning → Project Memory → THI`;
+- current explicit recovery handoff `Security → Cognitive → Learning → Proposal → Downstream Continuity (Builder → Guardian → CURRENT) → Project Memory → THI`;
+- Proposal source-change materialization through the existing Proposal → Builder → Guardian → CURRENT writer chain;
 - shell/heredoc publication lessons;
 - Security detector positive+negative regression requirements;
 - public diagnostic path sanitization;
@@ -207,10 +208,24 @@ Preserves the reusable Aug 22 recovery contract:
 - narrow generated-output ignores rather than broad engine-directory suppression;
 - closure criteria that prevent infinite speculative cleanup.
 
+### Real Use / Experience Activation
+The current global development mode is real-use driven rather than architecture-count driven.
+
+Preserves:
+- frozen retrospective observational patterns + prospective support/counterevidence evaluation;
+- candidate pattern != truth/prediction/causal claim/policy;
+- machine observation should generate questions/hypotheses rather than self-promote into lessons;
+- owner economic experience must begin prospectively from a genuine decision, not retroactive backfill;
+- Ask regressions discovered in real use are earned engineering signals;
+- THI is telemetry, not a roadmap target;
+- first target loop is genuine decision → settled outcome → reviewed lesson.
+
 ### Owner Collaboration Operating Style
 Russian by default, voice-dictation aware, one primary objective at a time, systemic reusable fixes preferred, production proof over speed theatre.
 
-Normal merge rule remains explicit per-PR authorization unless a new bounded standing permission is explicitly granted. The Aug 22 temporary standing permission is historical and closed.
+As of 2026-08-23, routine low-risk repository work may proceed through verified merge and production proof without a separate per-PR confirmation under the owner's bounded standing authorization. Explicit owner confirmation remains required at material capital, execution-authority, security, methodology, destructive/irreversible or other high-consequence boundaries. Every routine merge still requires fresh-main/exact-head/scope/checks/moving-main/post-merge proof discipline.
+
+The Aug 22 temporary stabilization authorization is historical and closed; the current bounded routine-flow contract supersedes it for routine low-risk repository work only.
 
 ### Founder Decision DNA / Owner Operating Context
 Strategic/evidence context, not automatic runtime policy, market fact or execution authority. Formal founder modelling should grow from genuine decision→outcome cycles.
@@ -267,11 +282,21 @@ The 15:57 detailed continuity closes the material delta after Aug 21, including:
 - THI summary false-RED repair;
 - final physical end-to-end production proof.
 
-The 15:58 verified resume preserves inherited literal laws and guarantees deterministic routing to that detailed checkpoint.
-
 The Aug 22 stabilization checklist is **closed**. Do not treat its incident history as a standing backlog.
 
-At final close the only intentional open PR was canary #37, which must never merge.
+---
+
+## 2026-08-23 Claude review → Real Use pivot milestone
+
+The latest deep continuity closes:
+- prospective validation for frozen observational patterns;
+- explicit Proposal/downstream recovery tail;
+- Proposal current-variant identity repair;
+- Proposal source materialization;
+- Ask epistemic drift repair;
+- transition from architecture growth to Experience Activation / Real Use.
+
+This milestone is also closed as an engineering repair cycle. The next feature is not preselected; it must be earned by actual use or genuine owner decision/outcome experience.
 
 ---
 
@@ -282,8 +307,10 @@ After material work, classify new knowledge:
 - durable architecture/mechanism/UI/recovery lesson → relevant canon;
 - major milestone/resume state → new master continuity;
 - retrieval improvement → Routing Index / README;
-- formal owner decision → Decision Memory under its capture contract;
+- formal owner decision/precommitment → Decision Memory / Owner Economic Experience under its capture contract;
+- owner outcome/review → append-only outcome review path under its contract;
 - observational event → Observer / Memory Vault;
+- prospective pattern evidence → existing observational prospective-evaluation state;
 - trivial run output → workflow/Git logs only.
 
 Do not stuff everything into `CURRENT.md`. CURRENT is a bootstrap, not the archive.
@@ -302,9 +329,9 @@ Pure high-frequency Market Data generated-state pushes are intentionally ignored
 
 The updater writes only `CURRENT.md`, contains no model/API call, and emits no commit when canonical source state has not changed.
 
-For release recovery, the Aug 22 dispatcher explicitly awaits successful Cognitive and Learning runs and then explicitly dispatches/awaits Project Memory and THI. This is required because programmatically dispatched workflows using repository `GITHUB_TOKEN` must not be assumed to recursively create every normal downstream event.
+For release recovery, the current dispatcher explicitly awaits successful Cognitive, Learning and Proposal runs, then the existing Downstream Continuity writer materializes Builder → Guardian → CURRENT, and recovery proceeds through Project Memory and THI. Programmatically dispatched workflows using repository `GITHUB_TOKEN` must not be assumed to recursively create every normal downstream event, so exact dispatched-run identification/await remains required.
 
-`CURRENT.md` deliberately stays compact. The lexicographically latest `THE_HOLDING_MASTER_CONTINUITY_*.md` is linked first; that latest resume may require an immediate detailed companion, as the Aug 22 15:58 → 15:57 pair does.
+`CURRENT.md` deliberately stays compact. The lexicographically latest `THE_HOLDING_MASTER_CONTINUITY_*.md` is linked first; older continuities remain durable historical precedent but do not outrank fresh state.
 
 The complete memory model is:
 
