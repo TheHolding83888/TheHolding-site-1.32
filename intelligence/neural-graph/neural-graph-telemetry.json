@@ -1,7 +1,7 @@
 {
   "version": "0.1-neural-graph-telemetry",
   "engineVersion": "0.1-canonical-neuron-and-connection-counter",
-  "generatedAt": "2026-08-23T08:33:42.510Z",
+  "generatedAt": "2026-08-23T08:49:38.554Z",
   "status": "ok",
   "purpose": "Compact instrument telemetry for how The Holding knowledge graph grows and changes.",
   "semantics": {
@@ -21,7 +21,7 @@
     "marketFactAuthorityForOwnerContext": false
   },
   "totals": {
-    "neurons": 413,
+    "neurons": 415,
     "candidateNeurons": 80,
     "neuralConnections": 310,
     "candidateConnections": 9,
@@ -39,7 +39,7 @@
       "metric-definition": 9,
       "owner-context": 38,
       "protocol": 28,
-      "security-finding": 40,
+      "security-finding": 42,
       "strategy": 32
     },
     "candidateNodeTypes": {
@@ -65,13 +65,16 @@
     }
   },
   "deltaSincePreviousSnapshot": {
-    "previousGeneratedAt": "2026-08-23T08:33:40.953Z",
+    "previousGeneratedAt": "2026-08-23T08:49:37.201Z",
     "neurons": {
       "mode": "delta",
-      "added": 0,
+      "added": 2,
       "removed": 0,
       "updated": 0,
-      "addedIds": [],
+      "addedIds": [
+        "security-finding:1e02d226a9eaccc7ba342494e576525e88b5f5bcb640346b55ca836d11a6ad67",
+        "security-finding:4f28d328fd9a997e7e9e5afe1f88b6414668ee36c89ee892cff13b2e6b35334c"
+      ],
       "removedIds": [],
       "updatedIds": []
     },
@@ -89,13 +92,13 @@
     "mode": "activity",
     "snapshotCount": 8,
     "neurons": {
-      "added": 173,
-      "removed": 157,
-      "updated": 69
+      "added": 145,
+      "removed": 132,
+      "updated": 59
     },
     "connections": {
-      "added": 135,
-      "removed": 126,
+      "added": 106,
+      "removed": 98,
       "updated": 43
     }
   },
@@ -132,8 +135,8 @@
     },
     "security": {
       "file": "security/security-intelligence.json",
-      "sha256": "32a5e45da8d872e56871f3887e5e95057ea3a1cf691f93a5e0227b22d4c87e93",
-      "generatedAt": "2026-08-23T08:33:38.516Z"
+      "sha256": "d04891a79d0b34940781a3ab2b8e5db10cd4b3c7b4eac634414f705da4e26127",
+      "generatedAt": "2026-08-23T08:49:30.046Z"
     },
     "owner": {
       "file": "intelligence/owner-context/owner-decision-context.json",
@@ -5868,6 +5871,21 @@
         },
         "fingerprint": "4c6e9ea1225afd476fff9a06d98e5776c9f95ddac62d0e65d595bf54ff966098"
       },
+      "security-finding:1e02d226a9eaccc7ba342494e576525e88b5f5bcb640346b55ca836d11a6ad67": {
+        "id": "security-finding:1e02d226a9eaccc7ba342494e576525e88b5f5bcb640346b55ca836d11a6ad67",
+        "type": "security-finding",
+        "label": "Security-sensitive surface changed: .github/workflows/verify-cognitive-recovery-order.yml.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "critical-surface-change",
+          "file": ".github/workflows/verify-cognitive-recovery-order.yml"
+        },
+        "fingerprint": "1254a8329f88f30919e1250f2f30d7d996f4a7241ea5ae37c0309d99692c1083"
+      },
       "security-finding:2753fa6d2b0f3ecd6c58bed10b14e3aa06ed58607488c7d09d1ec2bf15151534": {
         "id": "security-finding:2753fa6d2b0f3ecd6c58bed10b14e3aa06ed58607488c7d09d1ec2bf15151534",
         "type": "security-finding",
@@ -6062,6 +6080,21 @@
           "file": "yield-reports/index.html"
         },
         "fingerprint": "8ce1ae632887b852b9544abbd318ef9625e0df73a3053b1f62c7243ef9e154c8"
+      },
+      "security-finding:4f28d328fd9a997e7e9e5afe1f88b6414668ee36c89ee892cff13b2e6b35334c": {
+        "id": "security-finding:4f28d328fd9a997e7e9e5afe1f88b6414668ee36c89ee892cff13b2e6b35334c",
+        "type": "security-finding",
+        "label": "Security-sensitive surface changed: .github/workflows/resume-cognitive-stack-after-release.yml.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "critical-surface-change",
+          "file": ".github/workflows/resume-cognitive-stack-after-release.yml"
+        },
+        "fingerprint": "9b239ebba0e41b62be6e54706ce2a8840090b34d7da1354667ce287152ad548d"
       },
       "security-finding:796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5": {
         "id": "security-finding:796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5",
@@ -10199,9 +10232,9 @@
     }
   },
   "integrity": {
-    "nodeCompositeHash": "c22ba6a00fbe00bb4db34d2d392788721d9634a73412a96936a8e65e4774c107",
+    "nodeCompositeHash": "3d649b5afe57c5d7bd408e513e5e21da4936212b72ec4cb1673b8dd67c88aaaf",
     "connectionCompositeHash": "ec08ef95be6cfafb4316eb25e4dbbff5601cecc81fd837fe7090ea3576041ef2",
-    "sourceCompositeHash": "83e7cfefba06c8d6f973b2dde2a2bb6e119b7394d9e77cfa97fcba5d01d915f6",
-    "telemetryHash": "ab47e0c977d30d2c4b0166ae0a00f6559629650a43c6488fcfb3cc0d455acb59"
+    "sourceCompositeHash": "f68107bd7788df00187868c41a6c2c93bdf1ccfa360262e4c25f00c9d07becce",
+    "telemetryHash": "9d77f90d796553dbcddaae5efb5d3a0a35b21b976296e62a2d148134b83c4fdd"
   }
 }
