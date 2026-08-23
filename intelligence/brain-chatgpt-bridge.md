@@ -1,16 +1,16 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-23T07:52:37.663Z
+Generated: 2026-08-23T08:50:03.495Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-23T07:52:37.467Z
-Brain snapshot: 0bf7c6c859683d3f3b66c58593594a694db551d452403cdae7e5f231e73f95a7
+Brain generated: 2026-08-23T08:50:03.364Z
+Brain snapshot: 1b206814842c9945ee5180271a7b92e86511886edfb0782f496983aa19f6b50f
 Cases: 25
 Evidence objects: 27
 
 ## What changed
 
-Current canonical inputs contain 20 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s).
+Current canonical inputs contain 20 material Observer change(s), 0 new security finding event(s), and 2 resolved security finding event(s).
 
 ## Active deterministic cases
 
@@ -27,7 +27,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-64e5b0dd7f49fee8
+Evidence: EV-2f049b53665ff25e
 
 ### 2. .github/workflows/production-deployment-smoke.yml
 
@@ -42,7 +42,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-222895164238783e
+Evidence: EV-3ad7fee1756d64e0
 
 ### 3. 38 current findings
 
@@ -57,7 +57,7 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-fe3ea6705aa3432d
+Evidence: EV-94f58ea08e3de61b
 
 ### 4. defitea.eth
 

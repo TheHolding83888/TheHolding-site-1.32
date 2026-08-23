@@ -1,7 +1,7 @@
 {
   "version": "0.1-grounded-reasoning-gateway",
   "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-  "generatedAt": "2026-08-23T07:52:37.467Z",
+  "generatedAt": "2026-08-23T08:50:03.364Z",
   "mode": "delta",
   "status": "watch",
   "headline": "25 evidence-bound reasoning case(s) are active across economic and security memory.",
@@ -25,12 +25,12 @@
       "high": 2,
       "medium": 38,
       "newFindingEvents": 0,
-      "resolvedFindingEvents": 0
+      "resolvedFindingEvents": 2
     }
   },
   "questions": {
     "whatChanged": {
-      "answer": "Current canonical inputs contain 20 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s).",
+      "answer": "Current canonical inputs contain 20 material Observer change(s), 0 new security finding event(s), and 2 resolved security finding event(s).",
       "confidence": "high",
       "evidence": [
         {
@@ -373,10 +373,39 @@
           "pointer": "/whatChanged",
           "value": {
             "newFindings": [],
-            "resolvedFindings": []
+            "resolvedFindings": [
+              {
+                "id": "4f28d328fd9a997e7e9e5afe1f88b6414668ee36c89ee892cff13b2e6b35334c",
+                "severity": "medium",
+                "category": "critical-surface-change",
+                "file": ".github/workflows/resume-cognitive-stack-after-release.yml",
+                "line": null,
+                "entity": null,
+                "summary": "Security-sensitive surface changed: .github/workflows/resume-cognitive-stack-after-release.yml.",
+                "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+                "evidence": {
+                  "previousSha256": "1c22b761cf6fc9390f4b0c03cfa212bddf07f1bddab661f5861957783d884bd3",
+                  "currentSha256": "8dac46ad3c6ddf77cefb24ec26b719813d8f4dbea46f4cf59b351c93998e0230"
+                }
+              },
+              {
+                "id": "1e02d226a9eaccc7ba342494e576525e88b5f5bcb640346b55ca836d11a6ad67",
+                "severity": "medium",
+                "category": "critical-surface-change",
+                "file": ".github/workflows/verify-cognitive-recovery-order.yml",
+                "line": null,
+                "entity": null,
+                "summary": "Security-sensitive surface changed: .github/workflows/verify-cognitive-recovery-order.yml.",
+                "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+                "evidence": {
+                  "previousSha256": "d956f58187c3f997725ddd367141f0747d98abbae39e6ff85998c0b3c9a0d056",
+                  "currentSha256": "bd9120b94369ec11b1135d58dd13363494b98e0f8d94431c5c7fdf1a38b41e87"
+                }
+              }
+            ]
           },
-          "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-          "observedAt": "2026-08-23T07:52:36.497Z",
+          "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+          "observedAt": "2026-08-23T08:50:02.250Z",
           "interpretation": "direct"
         }
       ]
@@ -391,7 +420,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/0",
             "selector": null,
-            "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32"
+            "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765"
           }
         ]
       },
@@ -404,7 +433,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/1",
             "selector": null,
-            "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32"
+            "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765"
           }
         ]
       },
@@ -417,7 +446,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings",
             "selector": "severity=medium&category=dom-innerhtml",
-            "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32"
+            "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765"
           }
         ]
       },
@@ -1093,8 +1122,8 @@
             "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
             "evidence": null
           },
-          "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-          "observedAt": "2026-08-23T07:52:36.497Z",
+          "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+          "observedAt": "2026-08-23T08:50:02.250Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -1129,8 +1158,8 @@
             "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
             "evidence": null
           },
-          "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-          "observedAt": "2026-08-23T07:52:36.497Z",
+          "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+          "observedAt": "2026-08-23T08:50:02.250Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -1177,8 +1206,8 @@
               }
             ]
           },
-          "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-          "observedAt": "2026-08-23T07:52:36.497Z",
+          "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+          "observedAt": "2026-08-23T08:50:02.250Z",
           "interpretation": "derived-from-direct-findings",
           "selector": "severity=medium&category=dom-innerhtml",
           "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -2082,8 +2111,8 @@
         "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
         "evidence": null
       },
-      "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-      "observedAt": "2026-08-23T07:52:36.497Z",
+      "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+      "observedAt": "2026-08-23T08:50:02.250Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -2101,8 +2130,8 @@
         "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
         "evidence": null
       },
-      "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-      "observedAt": "2026-08-23T07:52:36.497Z",
+      "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+      "observedAt": "2026-08-23T08:50:02.250Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -2132,8 +2161,8 @@
           }
         ]
       },
-      "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-      "observedAt": "2026-08-23T07:52:36.497Z",
+      "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+      "observedAt": "2026-08-23T08:50:02.250Z",
       "interpretation": "derived-from-direct-findings",
       "selector": "severity=medium&category=dom-innerhtml",
       "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -2653,7 +2682,7 @@
         "file": "intelligence/change-intelligence.json",
         "sha256": "b95c73ffd2529498dba60a91a1f272c590c5358d86c31567ac06029f38a5d48b",
         "generatedAt": "2026-08-23T07:09:51.151Z",
-        "ageHours": 0.713,
+        "ageHours": 1.67,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
@@ -2661,22 +2690,22 @@
         "file": "intelligence/system-memory.json",
         "sha256": "e930a38d751861bcacf8f6df090f54bdd8bc2ffaf11524b763d00689617c0c52",
         "generatedAt": "2026-08-23T07:09:51.151Z",
-        "ageHours": 0.713,
+        "ageHours": 1.67,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "security": {
         "file": "security/security-intelligence.json",
-        "sha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-        "generatedAt": "2026-08-23T07:52:36.497Z",
+        "sha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+        "generatedAt": "2026-08-23T08:50:02.250Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "securityMemory": {
         "file": "security/security-memory.json",
-        "sha256": "d31f471ceb31402d2fca752fa126e0f3898845de3070731ba0b52bfaf25fbc10",
-        "generatedAt": "2026-08-23T07:52:36.497Z",
+        "sha256": "52c59a34f5930a69b211d92c19fa905340617e65b3f28df8dabb74f9be6d6e90",
+        "generatedAt": "2026-08-23T08:50:02.250Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
@@ -2707,8 +2736,8 @@
   },
   "bridge": {
     "purpose": "Canonical evidence-bound reasoning packet for future human/AI interpretation. Read this before opening large memory artifacts.",
-    "inputCompositeHash": "be60942489670bd18d35c25079afb4b13231687299bb2bd3fe652b4daf71ff08",
-    "snapshotHash": "0bf7c6c859683d3f3b66c58593594a694db551d452403cdae7e5f231e73f95a7",
-    "previousInputCompositeHash": "c6b541838306737b6ce7590c86a82256b6a25739dda1fe2ed197442ab31b9c90"
+    "inputCompositeHash": "45b533a742038c0f4af74b49036b41d836da8d6732cd4f99fd36c01fd3a38293",
+    "snapshotHash": "1b206814842c9945ee5180271a7b92e86511886edfb0782f496983aa19f6b50f",
+    "previousInputCompositeHash": "be60942489670bd18d35c25079afb4b13231687299bb2bd3fe652b4daf71ff08"
   }
 }

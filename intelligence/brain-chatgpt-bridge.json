@@ -2,20 +2,20 @@
   "version": "0.1-chatgpt-bridge",
   "bridgeVersion": "0.1-deterministic-public-cognitive-handoff",
   "engineVersion": "0.2-chatgpt-bridge-engine-upstream-bound",
-  "generatedAt": "2026-08-23T07:52:37.663Z",
+  "generatedAt": "2026-08-23T08:50:03.495Z",
   "status": "watch",
   "sourceBrain": {
     "file": "intelligence/brain-intelligence.json",
     "version": "0.1-grounded-reasoning-gateway",
     "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-    "generatedAt": "2026-08-23T07:52:37.467Z",
+    "generatedAt": "2026-08-23T08:50:03.364Z",
     "ageHours": 0,
     "mode": "delta",
     "status": "watch",
     "headline": "25 evidence-bound reasoning case(s) are active across economic and security memory.",
-    "sha256": "708ad4164eff770b59d3e48abfc5f929f0d978cea9461c0447defaeafa22e0fb",
-    "snapshotHash": "0bf7c6c859683d3f3b66c58593594a694db551d452403cdae7e5f231e73f95a7",
-    "inputCompositeHash": "be60942489670bd18d35c25079afb4b13231687299bb2bd3fe652b4daf71ff08"
+    "sha256": "75f6305d6af7b1d45e85284a4a1c7372ed77d4cf11c18835b8a50c2c9bc9b0f9",
+    "snapshotHash": "1b206814842c9945ee5180271a7b92e86511886edfb0782f496983aa19f6b50f",
+    "inputCompositeHash": "45b533a742038c0f4af74b49036b41d836da8d6732cd4f99fd36c01fd3a38293"
   },
   "currentPosture": {
     "observer": {
@@ -37,15 +37,15 @@
       "high": 2,
       "medium": 38,
       "newFindingEvents": 0,
-      "resolvedFindingEvents": 0
+      "resolvedFindingEvents": 2
     }
   },
   "whatChanged": {
-    "answer": "Current canonical inputs contain 20 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s).",
+    "answer": "Current canonical inputs contain 20 material Observer change(s), 0 new security finding event(s), and 2 resolved security finding event(s).",
     "confidence": "high",
     "evidenceIds": [
       "EV-e05ab54bbc0d0be2",
-      "EV-967c7fd4827682ac"
+      "EV-a8cff749fbd47359"
     ]
   },
   "cases": [
@@ -64,7 +64,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-64e5b0dd7f49fee8"
+        "EV-2f049b53665ff25e"
       ]
     },
     {
@@ -82,7 +82,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-222895164238783e"
+        "EV-3ad7fee1756d64e0"
       ]
     },
     {
@@ -100,7 +100,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-fe3ea6705aa3432d"
+        "EV-94f58ea08e3de61b"
       ]
     },
     {
@@ -545,18 +545,18 @@
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-222895164238783e",
+      "evidenceId": "EV-2f049b53665ff25e",
       "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings/1",
+      "pointer": "/currentFindings/0",
       "selector": null,
-      "observedAt": "2026-08-23T07:52:36.497Z",
+      "observedAt": "2026-08-23T08:50:02.250Z",
       "interpretation": "direct",
-      "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
+      "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
       "value": {
-        "id": "796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5",
+        "id": "119c887e98b579ae9b0ac6bbead75c30b398a9d45d207b24f62f24bc71907fae",
         "severity": "high",
         "category": "privileged-trigger",
-        "file": ".github/workflows/production-deployment-smoke.yml",
+        "file": ".github/workflows/production-boundary-guard.yml",
         "line": null,
         "entity": null,
         "summary": "Workflow uses pull_request_target.",
@@ -616,6 +616,27 @@
         ]
       },
       "note": "Direct material-change event emitted by The Holding Observer."
+    },
+    {
+      "evidenceId": "EV-3ad7fee1756d64e0",
+      "source": "security/security-intelligence.json",
+      "pointer": "/currentFindings/1",
+      "selector": null,
+      "observedAt": "2026-08-23T08:50:02.250Z",
+      "interpretation": "direct",
+      "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+      "value": {
+        "id": "796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5",
+        "severity": "high",
+        "category": "privileged-trigger",
+        "file": ".github/workflows/production-deployment-smoke.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Workflow uses pull_request_target.",
+        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
+        "evidence": null
+      },
+      "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
     {
       "evidenceId": "EV-476f88e66a380a5c",
@@ -722,27 +743,6 @@
       "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-64e5b0dd7f49fee8",
-      "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings/0",
-      "selector": null,
-      "observedAt": "2026-08-23T07:52:36.497Z",
-      "interpretation": "direct",
-      "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-      "value": {
-        "id": "119c887e98b579ae9b0ac6bbead75c30b398a9d45d207b24f62f24bc71907fae",
-        "severity": "high",
-        "category": "privileged-trigger",
-        "file": ".github/workflows/production-boundary-guard.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Workflow uses pull_request_target.",
-        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
-        "evidence": null
-      },
-      "note": "Direct current finding emitted by The Holding Security Sentinel."
-    },
-    {
       "evidenceId": "EV-76d86516cd278415",
       "source": "intelligence/change-intelligence.json",
       "pointer": "/whatChanged/16",
@@ -795,16 +795,78 @@
       "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-967c7fd4827682ac",
+      "evidenceId": "EV-94f58ea08e3de61b",
+      "source": "security/security-intelligence.json",
+      "pointer": "/currentFindings",
+      "selector": "severity=medium&category=dom-innerhtml",
+      "observedAt": "2026-08-23T08:50:02.250Z",
+      "interpretation": "derived-from-direct-findings",
+      "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+      "value": {
+        "derivedCount": 38,
+        "representative": [
+          {
+            "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
+            "file": "agents/console/learning-notice.html",
+            "line": 25,
+            "summary": "Dynamic innerHTML assignment detected."
+          },
+          {
+            "id": "e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
+            "file": "agents/console/owner-intelligence.js",
+            "line": 113,
+            "summary": "Dynamic innerHTML assignment detected."
+          },
+          {
+            "id": "fa4963c3ca96ad9b844920953a4c78a8ab0bf2a8289b6f1311715f20a3ac8356",
+            "file": "companies/company-010-public-adapter.js",
+            "line": 97,
+            "summary": "Dynamic innerHTML assignment detected."
+          }
+        ]
+      },
+      "note": "Count is derived deterministically from current Security Sentinel findings."
+    },
+    {
+      "evidenceId": "EV-a8cff749fbd47359",
       "source": "security/security-intelligence.json",
       "pointer": "/whatChanged",
       "selector": null,
-      "observedAt": "2026-08-23T07:52:36.497Z",
+      "observedAt": "2026-08-23T08:50:02.250Z",
       "interpretation": "direct",
-      "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
+      "sourceSha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
       "value": {
         "newFindings": [],
-        "resolvedFindings": []
+        "resolvedFindings": [
+          {
+            "id": "4f28d328fd9a997e7e9e5afe1f88b6414668ee36c89ee892cff13b2e6b35334c",
+            "severity": "medium",
+            "category": "critical-surface-change",
+            "file": ".github/workflows/resume-cognitive-stack-after-release.yml",
+            "line": null,
+            "entity": null,
+            "summary": "Security-sensitive surface changed: .github/workflows/resume-cognitive-stack-after-release.yml.",
+            "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+            "evidence": {
+              "previousSha256": "1c22b761cf6fc9390f4b0c03cfa212bddf07f1bddab661f5861957783d884bd3",
+              "currentSha256": "8dac46ad3c6ddf77cefb24ec26b719813d8f4dbea46f4cf59b351c93998e0230"
+            }
+          },
+          {
+            "id": "1e02d226a9eaccc7ba342494e576525e88b5f5bcb640346b55ca836d11a6ad67",
+            "severity": "medium",
+            "category": "critical-surface-change",
+            "file": ".github/workflows/verify-cognitive-recovery-order.yml",
+            "line": null,
+            "entity": null,
+            "summary": "Security-sensitive surface changed: .github/workflows/verify-cognitive-recovery-order.yml.",
+            "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+            "evidence": {
+              "previousSha256": "d956f58187c3f997725ddd367141f0747d98abbae39e6ff85998c0b3c9a0d056",
+              "currentSha256": "bd9120b94369ec11b1135d58dd13363494b98e0f8d94431c5c7fdf1a38b41e87"
+            }
+          }
+        ]
       }
     },
     {
@@ -1428,39 +1490,6 @@
       "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-fe3ea6705aa3432d",
-      "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings",
-      "selector": "severity=medium&category=dom-innerhtml",
-      "observedAt": "2026-08-23T07:52:36.497Z",
-      "interpretation": "derived-from-direct-findings",
-      "sourceSha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-      "value": {
-        "derivedCount": 38,
-        "representative": [
-          {
-            "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
-            "file": "agents/console/learning-notice.html",
-            "line": 25,
-            "summary": "Dynamic innerHTML assignment detected."
-          },
-          {
-            "id": "e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
-            "file": "agents/console/owner-intelligence.js",
-            "line": 113,
-            "summary": "Dynamic innerHTML assignment detected."
-          },
-          {
-            "id": "fa4963c3ca96ad9b844920953a4c78a8ab0bf2a8289b6f1311715f20a3ac8356",
-            "file": "companies/company-010-public-adapter.js",
-            "line": 97,
-            "summary": "Dynamic innerHTML assignment detected."
-          }
-        ]
-      },
-      "note": "Count is derived deterministically from current Security Sentinel findings."
-    },
-    {
       "evidenceId": "EV-fe9f94b40a17f061",
       "source": "intelligence/change-intelligence.json",
       "pointer": "/watchNext/0",
@@ -1540,16 +1569,16 @@
         {
           "key": "security",
           "file": "security/security-intelligence.json",
-          "sha256": "69946a3fba88e7bc7e31300159e0f38c849e68caa07b398ca9de98755c7c7b32",
-          "generatedAt": "2026-08-23T07:52:36.497Z",
+          "sha256": "fbc7befa71e2b28acba3991ba13068efa762d8403cb30524d6bf51712713b765",
+          "generatedAt": "2026-08-23T08:50:02.250Z",
           "exactByteMatch": true,
           "packagedRawContent": false
         },
         {
           "key": "securityMemory",
           "file": "security/security-memory.json",
-          "sha256": "d31f471ceb31402d2fca752fa126e0f3898845de3070731ba0b52bfaf25fbc10",
-          "generatedAt": "2026-08-23T07:52:36.497Z",
+          "sha256": "52c59a34f5930a69b211d92c19fa905340617e65b3f28df8dabb74f9be6d6e90",
+          "generatedAt": "2026-08-23T08:50:02.250Z",
           "exactByteMatch": true,
           "packagedRawContent": false
         }
@@ -1603,9 +1632,9 @@
     "secretsIncludedByDesign": false
   },
   "bridge": {
-    "semanticKey": "b3f84a60169e89225a252e532b148782c0aabf82f21003e5b5e8fc10a2938875",
-    "instanceKey": "b62c24795686f6ab4b86c722c3f82f40e08c1a6ad47e08f04fb0715e050c652e",
-    "outputSnapshotHash": "9f261618f1d00ad68a848dce894692728d14faa2bbeabf95bd75cb749ab92813",
+    "semanticKey": "0a9cd9f81ce950c4345b565a2678843b785783cff3e609c92a27c0f191607841",
+    "instanceKey": "3aaaf488664c32a972f765ae3bc2c81327a9ae0bb8f5e0898545e3ec71a75ad3",
+    "outputSnapshotHash": "86278038c982dc335d0ade125d8ed92034b428140415504f7ee56de61edfb797",
     "manualTrigger": "When the owner asks ChatGPT to check/interpret the Brain, read this live Bridge first and keep conclusions inside its evidence/action boundaries."
   }
 }
