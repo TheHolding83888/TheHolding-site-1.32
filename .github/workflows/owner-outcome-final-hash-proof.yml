@@ -1,0 +1,22 @@
+name: "TEMP · Owner Outcome Final Hash Proof"
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  hashes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Exact changed workflow hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum \
+            .github/workflows/update-learning-loop.yml \
+            .github/workflows/record-owner-economic-outcome-review.yml
