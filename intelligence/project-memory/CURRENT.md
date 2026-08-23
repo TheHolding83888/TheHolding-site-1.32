@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores the deep current state; the Memory Routing Index selects only the durable blocks relevant to the current task. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-23T08:33:38.516Z**
+Canonical source state represented here: **2026-08-23T08:49:30.046Z**
 
 ## Resume order
 
@@ -48,7 +48,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: afe492f93bed8d84f9f61513dad579c107d28b50b5c4359d810193bb7f8080a2.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 38; generatedAt 2026-08-23T08:33:38.516Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 40; generatedAt 2026-08-23T08:49:30.046Z.
 - Cognitive Stack Security snapshot is older (2026-08-23T07:52:36.497Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 25; evidence 27; noExecution true.
