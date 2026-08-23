@@ -1,5 +1,5 @@
 # THE HOLDING — PROJECT MEMORY ROUTING INDEX
-## 2026-08-18 · task-aware retrieval map · updated 2026-08-22
+## 2026-08-18 · task-aware retrieval map · updated 2026-08-23
 
 > Purpose: give every new chat/model a deterministic answer to **“what project memory should I read for this exact kind of work?”** without forcing it to load every historical file.
 >
@@ -323,12 +323,16 @@ Read:
 Distinction:
 standalone fresh subsystem state may be newer than the exact state bound into a coherent Cognitive Stack packet. Preserve coherent-chain provenance.
 
-Aug 22 release-recovery law:
-`post-change Security freshness → release guard → Cognitive SUCCESS → Learning SUCCESS → Project Memory SUCCESS → THI SUCCESS`.
+Current recovery law after the Aug 23 real-use governance repair:
+`post-change Security freshness → release guard → Cognitive SUCCESS → Learning SUCCESS → Proposal SUCCESS → Downstream Continuity (Builder → Guardian → CURRENT) SUCCESS → Project Memory SUCCESS → Intelligence Progress SUCCESS`.
 
 This is a recovery control-plane chain using existing canonical writers, not a second reasoning truth plane.
 
 Do not assume a workflow dispatched with repository `GITHUB_TOKEN` will recursively trigger every downstream `workflow_run` event. Critical recovery handoffs explicitly identify and await the exact dispatched run before moving to the next stage.
+
+Proposal source/release changes have their own bounded production materialization contract:
+`Proposal source change → Proposal Work Queue → Builder → Guardian → CURRENT`.
+Generated Proposal outputs are excluded from the source-change trigger to prevent recursion.
 
 ---
 
@@ -395,7 +399,8 @@ Trigger examples:
 - workflow dispatched but no downstream run
 - Cognitive release guard failure
 - stale Cognitive / fresh Security mismatch
-- Learning did not wake
+- Learning / Proposal did not wake
+- Builder / Guardian / CURRENT did not materialize
 - Project Memory did not wake
 - THI stale or false GREEN/RED
 - shell/heredoc publication failure
@@ -417,6 +422,7 @@ Hard laws:
 - recovery dispatches canonical writers rather than writing duplicate truth;
 - wakeup != publication;
 - PR CI GREEN != production writer GREEN;
+- merged source != materialized production state;
 - fail-closed release drift is repaired by rebinding intended bytes, not weakening guards;
 - freshness ordering matters: post-change Security must precede Cognitive recovery;
 - queued workflow checkout may become stale while waiting; refetch/reset before exact-byte gates;
@@ -424,6 +430,49 @@ Hard laws:
 - public observability output is itself a privacy surface;
 - THI current integrity comes from live canonical guards, not persisted old booleans;
 - shell summary/post-step RED must be separated from actual writer publication failure.
+
+---
+
+# 16B. REAL USE / EXPERIENCE ACTIVATION / PROSPECTIVE PATTERNS / ASK EPISTEMIC DRIFT
+
+Trigger examples:
+- first genuine owner economic decision / pre-commitment / outcome review
+- “what should we build next globally?”
+- prospective pattern support / counterevidence / no-signal
+- Ask gives the wrong intent, false UNKNOWN, false MEASURED or stale evidence
+- Ask cannot answer a real owner question despite canonical evidence existing
+- Graph/owner context/world experience usefulness in a real question
+
+Read:
+1. latest master continuity;
+2. `THE_HOLDING_AUTONOMOUS_OBSERVATIONAL_WORLD_LEARNING_v0.1_PRODUCTION_CANON_2026-08-23.md`;
+3. `THE_HOLDING_OWNER_INITIATED_ECONOMIC_DECISION_EXPERIENCE_v0.1_2026-08-15.md` when a genuine owner decision/outcome is involved;
+4. `THE_HOLDING_ASK_ANSWER_CONTRACT_CANON_2026-08-14.md` when Ask semantics/confidence/source binding is involved;
+5. live `intelligence/observational-learning/observational-experience.json`;
+6. live `intelligence/learning-state/owner-outcome-experience.json`;
+7. current Ask Experience artifacts/workflow evidence for Ask regressions;
+8. live THI only as telemetry, never as a roadmap target.
+
+Current development mode:
+`BUILD THE BRAIN → USE THE BRAIN → FIND WHERE IT FAILS → THEN BUILD`.
+
+Hard laws:
+- candidate observational pattern != learned truth, prediction, causal claim, policy or allocation instruction;
+- retrospective candidates must remain frozen while later evidence is scored prospectively;
+- support and counterevidence are symmetric evidence classes;
+- machine observational experience != owner decision experience;
+- machine episode volume cannot compensate for 0 settled owner outcomes;
+- no retroactive pre-decision backfill merely to populate Experience;
+- a new global intelligence layer requires measured real-use friction;
+- Graph growth is utility-gated by a concrete query/reasoning improvement, not connectivity aesthetics;
+- THI is telemetry, not “brain readiness %” and not an optimization target;
+- Ask must control both false-MEASURED and false-UNKNOWN;
+- entity/intent matching must use semantic boundaries rather than incidental substring overlap (`ONDO` inside `1milliondollar` is the canonical regression lesson);
+- frozen regression expectations may be updated only when fresh production evidence proves the underlying semantics changed;
+- current execution authority remains none.
+
+First Experience Activation milestone:
+`FIRST GENUINE OWNER ECONOMIC DECISION → SETTLED OUTCOME → REVIEWED LESSON`.
 
 ---
 
@@ -471,10 +520,21 @@ Read:
 1. core bootstrap;
 2. latest continuity;
 3. Production Recovery & Fail-Closed Handoff canon;
-4. live Security/Cognitive/Learning/Project Memory/THI artifacts;
+4. live Security/Cognitive/Learning/Proposal/Builder/Guardian/Project Memory/THI artifacts;
 5. current release manifests and exact run logs.
 
 Do not create another writer merely because the existing writer failed to materialize.
+
+Example: “What should The Holding build next?”
+
+Read:
+1. core bootstrap;
+2. latest continuity;
+3. Real Use / Experience Activation block above;
+4. live Ask/Experience/observational evidence;
+5. only then choose an engineering objective from demonstrated friction.
+
+Do not preselect a new Brain/Learning/Graph layer merely because the previous architecture phase is closed.
 
 ---
 
@@ -485,13 +545,15 @@ After material work:
 - durable architecture/engineering lesson → relevant canon;
 - major milestone/resume state → new master continuity;
 - retrieval improvement → Routing Index/README;
-- owner decision → Decision Memory under its contract;
+- owner decision/pre-commitment → Owner Economic Experience / Decision Memory under the applicable contract;
+- owner outcome/review → append-only outcome review path under its contract;
 - observational event → Observer/Memory Vault;
+- prospective pattern evidence → existing observational prospective-evaluation state;
 - trivial run noise → logs only.
 
 Do not stuff everything into CURRENT. CURRENT is a bootstrap, not the archive.
 
-The Aug 22 stabilization checklist is a **closed milestone**, not a standing backlog. Reopen a closed item only when fresh live evidence demonstrates regression.
+The Aug 22 stabilization checklist and the Aug 23 Claude-review repair cycle are **closed milestones**, not standing backlogs. Reopen a closed item only when fresh live evidence demonstrates regression.
 
 ---
 
