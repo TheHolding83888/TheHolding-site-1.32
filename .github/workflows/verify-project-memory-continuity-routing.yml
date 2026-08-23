@@ -110,10 +110,15 @@ jobs:
           done
           echo 'CURRENT -> Routing Index -> Company Passport Inheritance Canon PASS'
 
-      - name: Verify no authority expansion
+      - name: Verify bounded merge flow without authority expansion
         shell: bash
         run: |
           set -euo pipefail
+          current='intelligence/project-memory/CURRENT.md'
+          collaboration='intelligence/project-memory/THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md'
           grep -Fq 'executionAuthority = none' intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_2026-08-18_1616_PROJECT_X_HYPERLEND_MEMORY_ROUTING_UPGRADE.md
-          grep -Fq 'not a new production merge' intelligence/project-memory/CURRENT.md
-          echo 'Project Memory continuity routing PASS — read-only, no production mutation authority.'
+          grep -Fq 'Routine low-risk repository work may proceed through verified PR merge and production proof without a separate per-PR confirmation' "$current"
+          grep -Fq 'Stop for explicit confirmation at material capital, authority, security, methodology, destructive/irreversible, or other high-consequence boundaries.' "$current"
+          grep -Fq 'This standing permission is **bounded**, not universal authority.' "$collaboration"
+          grep -Fq 'capital movement, wallet signing or transaction execution' "$collaboration"
+          echo 'Project Memory continuity routing PASS — bounded routine merge flow; execution authority remains none.'
