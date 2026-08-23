@@ -1,22 +1,23 @@
 # The Holding Proposal Work Queue
 
-Generated: 2026-08-16T03:54:11.277Z
+Generated: 2026-08-23T11:26:24.956Z
 
 Status: **WATCH**
 
-7 active proposal(s) from 7 active Learning case(s); 2 owner decision(s) reflected; 2 decision-bound item(s) retained as historical resolved-case memory; execution remains disabled.
+3 active proposal(s) from 3 active Learning case(s); 3 owner decision binding(s) reflected; 2 historical semantic/resolved variant(s) preserved as SUPERSEDED memory; execution remains disabled.
 
 ## Priority queue
 
 - **P0 · security · .github/workflows/production-boundary-guard.yml** – Perform bounded human-reviewed work for .github/workflows/production-boundary-guard.yml under recommendation class evidence-review. [PROPOSED]
 - **P0 · security · .github/workflows/production-deployment-smoke.yml** – Perform bounded human-reviewed work for .github/workflows/production-deployment-smoke.yml under recommendation class evidence-review. [PROPOSED]
-- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [PROPOSED]
-- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [PROPOSED]
-- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [PROPOSED]
-- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [PROPOSED]
+- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [SUPERSEDED]
+- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [SUPERSEDED]
+- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [SUPERSEDED]
+- **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [SUPERSEDED]
+- **P0 · security · 38 current findings** – Review actual data provenance for 38 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [APPROVED] · owner accept · DEC-9e7fdbf2f8431a42194b
 - **P0 · security · 7 current findings** – Review third-party script trust and integrity posture for 7 current findings; propose bounded hardening only where compatibility is proven. [SUPERSEDED] · owner accept · DEC-062ad9c0ce2e0ebbc95e
 - **P0 · security · 31 current findings** – Review actual data provenance for 31 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [SUPERSEDED] · owner accept · DEC-9e7fdbf2f8431a42194b
-- **P0 · security · agents/console/learning-notice.html** – Review actual data provenance for agents/console/learning-notice.html; classify sinks as trusted, sanitized, or unsafe before any code change. [PROPOSED]
+- **P0 · security · agents/console/learning-notice.html** – Review actual data provenance for agents/console/learning-notice.html; classify sinks as trusted, sanitized, or unsafe before any code change. [SUPERSEDED]
 - **P2 · economic · defitea.eth** – Resolve the bounded coverage gap for defitea.eth using existing adapters before introducing new methodology. [SUPERSEDED]
 - **P2 · economic · 0x5860...83CA8.eth** – Resolve incomplete reward routes for 0x5860...83CA8.eth with current-state, wallet-scoped accounting and explicit provenance. [SUPERSEDED]
 - **P2 · economic · pendle_spendle** – Run bounded resolver/research for pendle_spendle; preserve unknown/warming rather than inventing a value. [SUPERSEDED]
@@ -39,10 +40,10 @@ Status: **WATCH**
 
 ## Decision boundary
 
-Currently owner-approved active proposals: 0. Rejected: 0. Deferred active cases: 0. Historical decision-bound resolved cases: 2.
+Currently owner-approved active proposals: 1. Rejected: 0. Deferred active cases: 0. Historical decision-bound variants: 2.
 
-APPROVED means owner-approved for bounded next-stage research/build-candidate work only. SUPERSEDED means the source case is no longer active; it does not mean rejected, released, executed, or forgotten.
+APPROVED means owner-approved for the current semantic Proposal variant only. A historical variant of the same stable Learning case stays SUPERSEDED and cannot reactivate. SUPERSEDED does not mean rejected, released, executed, or forgotten.
 
 ## Safety boundary
 
-This queue can observe, synthesize, reflect explicit owner decisions, and retire resolved source cases. Automatic approval and execution remain disabled.
+This queue can observe, synthesize, reflect explicit owner decisions, and preserve historical variants. Automatic approval and execution remain disabled.
