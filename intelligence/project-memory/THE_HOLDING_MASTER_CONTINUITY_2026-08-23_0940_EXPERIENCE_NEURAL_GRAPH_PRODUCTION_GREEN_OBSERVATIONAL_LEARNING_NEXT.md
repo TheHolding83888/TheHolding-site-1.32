@@ -232,7 +232,37 @@ Do **not** reopen the parked Capital/Risk State Plane unless the owner explicitl
 
 ---
 
-# 6. MEMORY / RESUME CHECKPOINT MECHANICS
+# 6. INHERITED DURABLE PRODUCTION CLOSURES
+
+The latest master continuity must remain self-contained enough to preserve already-earned closure laws. These are inherited contracts, not the new objective.
+
+## PROJECT X + HYPERLEND CLOSED
+
+- `resolver completeness != promotion completeness` — discovery/resolution alone is not production-economic promotion.
+- `HyperLend base lending interest = Compounded / Embedded`; separate external incentives remain a different Rewards lane.
+- `rewardAssetCount = 0` means no separate active incentive reward row; it is not a fabricated zero-yield statement.
+- Project X economic strategy inventory remains distinct from raw enumerable NFT inventory; in-scope unresolved nonzero-liquidity principal fails closed.
+
+## Market Data / onchain closure inherited
+
+- canonical reviewed onchain-primary asset coverage at the Aug 22 closure was `26/26`;
+- authority model is `per-asset-authority`;
+- `CoinGecko` remains fallback/sanity rather than normal primary authority for the reviewed onchain-primary cohort;
+- cross-source `divergence` is telemetry when the authoritative onchain route is otherwise healthy, not automatic authority inversion;
+- historical production-close anchors include `PR #227` and `PR #233`;
+- durable checkpoint phrase: `Market Data / onchain tracking: fat check`.
+
+Always re-read live Market Data artifacts/policy before answering current prices, routes or freshness. Historical closure does not freeze changing market values.
+
+## Cross-system closure laws
+
+- `GREEN workflow != physically materialized production artifact`.
+- `generic implementation permission != merge permission`.
+- merge/code presence alone never proves generated writer state is physically live.
+
+---
+
+# 7. MEMORY / RESUME CHECKPOINT MECHANICS
 
 At the time this continuity was prepared, live `main` was:
 `8c8871596e84cea221815aa5b280fe8bae15b1b2`
@@ -254,7 +284,7 @@ Only then place the **fat green checkbox** before moving to Autonomous Observati
 
 ---
 
-# 7. CURRENT OWNER COLLABORATION / MERGE RULE
+# 8. CURRENT OWNER COLLABORATION / MERGE RULE
 
 Normal collaboration law remains:
 - `делай / ок делай` authorizes bounded implementation/PR preparation;
@@ -265,7 +295,7 @@ Therefore the memory PR created from this checkpoint should be prepared and prov
 
 ---
 
-# 8. RESUME SENTENCE
+# 9. RESUME SENTENCE
 
 If a new chat starts from this checkpoint, the correct short orientation is:
 
