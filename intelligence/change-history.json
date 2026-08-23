@@ -2,18 +2,18 @@
   "version": "0.2.1-change-history",
   "observerVersion": "0.2.1-deterministic-memory-vault-corrections",
   "startedAt": "2026-08-13T15:19:01.108Z",
-  "lastUpdatedAt": "2026-08-22T07:08:54.007Z",
+  "lastUpdatedAt": "2026-08-23T07:09:51.151Z",
   "retention": {
     "operationalRuns": 730,
     "operationalUniqueEvents": 5000,
     "longTermCanonicalMemory": "intelligence/memory-vault/"
   },
   "lifetime": {
-    "runCount": 12,
-    "eventCount": 153,
-    "uniqueEventCount": 152,
-    "vaultRunCount": 12,
-    "vaultEventCount": 153,
+    "runCount": 13,
+    "eventCount": 179,
+    "uniqueEventCount": 176,
+    "vaultRunCount": 13,
+    "vaultEventCount": 179,
     "vaultStartedAt": "2026-08-13T15:19:01.108Z",
     "memoryCorrectionCount": 1
   },
@@ -321,6 +321,45 @@
       "watchCount": 5,
       "vaultRecordPath": "intelligence/memory-vault/2026/08/2026-08-22T07-08-54-007Z-84ed230ab9.json",
       "vaultRecordHash": "66510fbd43a151a3968349bdec8ded2e197a7917611a054e5944c4d1191b98cc"
+    },
+    {
+      "date": "2026-08-23",
+      "generatedAt": "2026-08-23T07:09:51.151Z",
+      "mode": "delta",
+      "snapshotHash": "06b8f2cb6604c4097a487e2f79840b43218893b6f483341e46a427f5f8a9652b",
+      "sourceCompositeHash": "8f5abfe607ebf2aaa22d9e118cb5ef1a821077b83dfa249b44d405f3f0d64301",
+      "eventCount": 26,
+      "eventIds": [
+        "6c1acc7ca0e010672d70",
+        "5b72c47b88240bd8f3d6",
+        "7f3a72efb8952b61b8a0",
+        "04736c0cb336c8f608df",
+        "811b672a950f587b7103",
+        "4bd719dbfad380ce5ac4",
+        "1133f52e017dbc12c175",
+        "4fcac5aff65522f78386",
+        "a185fd212793d7a98ff0",
+        "4b39f51bfbec8eead09d",
+        "3614d34d936616b6ed14",
+        "3d1079dd1137688f7d2b",
+        "869c6c0c729f333de484",
+        "9e891cc2dc0f95914d3a",
+        "4e1bdc4c44f1b35a9dc5",
+        "8db1400bfa1213e51584",
+        "7e815d16e6a17c473bb0",
+        "742c33649dd5cee949ba",
+        "a30e6aef36040d45d037",
+        "9522e7ea4457e34722fc",
+        "b08f877591783d6aadc0",
+        "cf83b70851687ad2fed8",
+        "c8076be4c42c92a19066",
+        "ff1f4a5a94b5df6f522a",
+        "ffdec741a242fee916bc",
+        "c551f6b2178bf8735199"
+      ],
+      "watchCount": 3,
+      "vaultRecordPath": "intelligence/memory-vault/2026/08/2026-08-23T07-09-51-151Z-06b8f2cb66.json",
+      "vaultRecordHash": "ecf3fa9c171efb30b296be9f0fe423a55c2ba10cada6409e6cf7fb6489ba105d"
     }
   ],
   "events": [
@@ -2781,6 +2820,396 @@
       "unit": "USD",
       "severity": "info",
       "summary": "Verified Stable strategy performance moved $0.3920 → $0.4574.",
+      "whyItMatters": "Strategy Performance connects verified entry principal to current nominal strategy value without mixing in stable-price effects.",
+      "sourceKeys": [
+        "stableIndex"
+      ]
+    },
+    {
+      "id": "7f3a72efb8952b61b8a0",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "productivity",
+      "entity": "Cypher",
+      "metric": "coverage",
+      "previousValue": 0.9053,
+      "currentValue": 1,
+      "unit": "ratio",
+      "severity": "important",
+      "summary": "Cypher Productivity coverage moved 90.5% → 100.0%.",
+      "whyItMatters": "Coverage tells us how much productive capital is currently understood rather than guessed or treated as zero.",
+      "sourceKeys": [
+        "productivity"
+      ]
+    },
+    {
+      "id": "04736c0cb336c8f608df",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "rewards",
+      "entity": "defitea.eth",
+      "metric": "completeness",
+      "previousValue": {
+        "pendingRoutes": 1,
+        "unpricedRewards": 0
+      },
+      "currentValue": {
+        "pendingRoutes": 2,
+        "unpricedRewards": 0
+      },
+      "unit": null,
+      "severity": "watch",
+      "summary": "defitea.eth Rewards completeness changed: pending routes 1 → 2, unpriced 0 → 0.",
+      "whyItMatters": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "811b672a950f587b7103",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "productivity",
+      "entity": "05081966.eth",
+      "metric": "aprLatestPct",
+      "previousValue": 9.5827,
+      "currentValue": 9.2407,
+      "unit": "percentage-points",
+      "severity": "info",
+      "summary": "05081966.eth Reference APR moved 9.58% → 9.24% (-0.34 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "sourceKeys": [
+        "productivity"
+      ]
+    },
+    {
+      "id": "4bd719dbfad380ce5ac4",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "productivity",
+      "entity": "1milliondollar.eth",
+      "metric": "aprLatestPct",
+      "previousValue": 10.359,
+      "currentValue": 10.5989,
+      "unit": "percentage-points",
+      "severity": "info",
+      "summary": "1milliondollar.eth Reference APR moved 10.36% → 10.60% (+0.24 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "sourceKeys": [
+        "productivity"
+      ]
+    },
+    {
+      "id": "1133f52e017dbc12c175",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "productivity",
+      "entity": "aerocvxyb.eth",
+      "metric": "aprLatestPct",
+      "previousValue": 16.9378,
+      "currentValue": 16.6425,
+      "unit": "percentage-points",
+      "severity": "info",
+      "summary": "aerocvxyb.eth Reference APR moved 16.94% → 16.64% (-0.30 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "sourceKeys": [
+        "productivity"
+      ]
+    },
+    {
+      "id": "4fcac5aff65522f78386",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "productivity",
+      "entity": "Cypher",
+      "metric": "aprLatestPct",
+      "previousValue": 20.4547,
+      "currentValue": 35.1037,
+      "unit": "percentage-points",
+      "severity": "info",
+      "summary": "Cypher Reference APR moved 20.45% → 35.10% (+14.65 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "sourceKeys": [
+        "productivity"
+      ]
+    },
+    {
+      "id": "a185fd212793d7a98ff0",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "productivity",
+      "entity": "defitea.eth",
+      "metric": "aprLatestPct",
+      "previousValue": 18.3375,
+      "currentValue": 11.308,
+      "unit": "percentage-points",
+      "severity": "info",
+      "summary": "defitea.eth Reference APR moved 18.34% → 11.31% (-7.03 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "sourceKeys": [
+        "productivity"
+      ]
+    },
+    {
+      "id": "4b39f51bfbec8eead09d",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "productivity",
+      "entity": "dinaz.eth",
+      "metric": "aprLatestPct",
+      "previousValue": 5.38,
+      "currentValue": 4.98,
+      "unit": "percentage-points",
+      "severity": "info",
+      "summary": "dinaz.eth Reference APR moved 5.38% → 4.98% (-0.40 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "sourceKeys": [
+        "productivity"
+      ]
+    },
+    {
+      "id": "3614d34d936616b6ed14",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "productivity",
+      "entity": "Rook's portfolio",
+      "metric": "aprLatestPct",
+      "previousValue": 15.7487,
+      "currentValue": 14.894,
+      "unit": "percentage-points",
+      "severity": "info",
+      "summary": "Rook's portfolio Reference APR moved 15.75% → 14.89% (-0.85 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "sourceKeys": [
+        "productivity"
+      ]
+    },
+    {
+      "id": "3d1079dd1137688f7d2b",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "productivity",
+      "entity": "YieldRing.eth",
+      "metric": "aprLatestPct",
+      "previousValue": 15.9722,
+      "currentValue": 14.6562,
+      "unit": "percentage-points",
+      "severity": "info",
+      "summary": "YieldRing.eth Reference APR moved 15.97% → 14.66% (-1.32 pp).",
+      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "sourceKeys": [
+        "productivity"
+      ]
+    },
+    {
+      "id": "869c6c0c729f333de484",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "reporting",
+      "entity": "defitea.eth",
+      "metric": "new-daily-snapshot",
+      "previousValue": "2026-08-22",
+      "currentValue": "2026-08-23",
+      "unit": null,
+      "severity": "info",
+      "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-23.",
+      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "9e891cc2dc0f95914d3a",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "reporting",
+      "entity": "defitea.eth",
+      "metric": "currentMonthCashFlowUsd",
+      "previousValue": 58.81,
+      "currentValue": 60.67,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "defitea.eth current-month cash-flow/reference-income counter moved $58.81 → $60.67.",
+      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "4e1bdc4c44f1b35a9dc5",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "new-daily-snapshot",
+      "previousValue": "2026-08-22",
+      "currentValue": "2026-08-23",
+      "unit": null,
+      "severity": "info",
+      "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-23.",
+      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "8db1400bfa1213e51584",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "currentMonthCashFlowUsd",
+      "previousValue": 0.1203,
+      "currentValue": 0.1323,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.12 → $0.13.",
+      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "7e815d16e6a17c473bb0",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "currentMonthGeneratedIncomeUsd",
+      "previousValue": 0.1203,
+      "currentValue": 0.1323,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Monetra.eth current-month generated income moved $0.1203 → $0.1323.",
+      "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "742c33649dd5cee949ba",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "rewards",
+      "entity": "05081966.eth",
+      "metric": "totalUsd",
+      "previousValue": 2.484632,
+      "currentValue": 2.35333,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "05081966.eth accrued rewards moved $2.48 → $2.35 ($-0.13).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "a30e6aef36040d45d037",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "rewards",
+      "entity": "0x5860...83CA8.eth",
+      "metric": "totalUsd",
+      "previousValue": 122.858062,
+      "currentValue": 116.206578,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "0x5860...83CA8.eth accrued rewards moved $122.86 → $116.21 ($-6.65).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "9522e7ea4457e34722fc",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "rewards",
+      "entity": "1milliondollar.eth",
+      "metric": "totalUsd",
+      "previousValue": 30.20498,
+      "currentValue": 28.148689,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "1milliondollar.eth accrued rewards moved $30.20 → $28.15 ($-2.06).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "b08f877591783d6aadc0",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "rewards",
+      "entity": "aerocvxyb.eth",
+      "metric": "totalUsd",
+      "previousValue": 168.770875,
+      "currentValue": 163.247695,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "aerocvxyb.eth accrued rewards moved $168.77 → $163.25 ($-5.52).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "cf83b70851687ad2fed8",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "rewards",
+      "entity": "Cypher",
+      "metric": "totalUsd",
+      "previousValue": 9.648064,
+      "currentValue": 10.599472,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Cypher accrued rewards moved $9.65 → $10.60 (+$0.95).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "c8076be4c42c92a19066",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "rewards",
+      "entity": "defitea.eth",
+      "metric": "totalUsd",
+      "previousValue": 137.193317,
+      "currentValue": 133.458109,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "defitea.eth accrued rewards moved $137.19 → $133.46 ($-3.74).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "ff1f4a5a94b5df6f522a",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "rewards",
+      "entity": "Rook's portfolio",
+      "metric": "totalUsd",
+      "previousValue": 190.24178,
+      "currentValue": 177.609568,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Rook's portfolio accrued rewards moved $190.24 → $177.61 ($-12.63).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "ffdec741a242fee916bc",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "stable-capital",
+      "entity": "Stable Companies Index",
+      "metric": "currentCapitalUsd",
+      "previousValue": 100.35859942,
+      "currentValue": 100.301953,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Stable Companies current capital moved $100.3586 → $100.3020 ($-0.0566).",
+      "whyItMatters": "Current Capital is the market-value state of Stable Capital plus separately earned claimable value.",
+      "sourceKeys": [
+        "stableIndex"
+      ]
+    },
+    {
+      "id": "c551f6b2178bf8735199",
+      "detectedAt": "2026-08-23T07:09:51.151Z",
+      "category": "stable-capital",
+      "entity": "Stable Companies Index",
+      "metric": "strategyPerformanceUsd",
+      "previousValue": 0.45741369,
+      "currentValue": 0.41893198,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Verified Stable strategy performance moved $0.4574 → $0.4189.",
       "whyItMatters": "Strategy Performance connects verified entry principal to current nominal strategy value without mixing in stable-price effects.",
       "sourceKeys": [
         "stableIndex"

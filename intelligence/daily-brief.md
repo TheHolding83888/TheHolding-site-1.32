@@ -1,42 +1,40 @@
 # The Holding — Autonomous Change Intelligence
 
-**Generated:** 2026-08-22T07:08:54.007Z
+**Generated:** 2026-08-23T07:09:51.151Z
 **Observer:** 0.2.1-deterministic-memory-vault-corrections
 
-## 14 material changes detected across The Holding, including 1 high-signal event.
+## 26 material changes detected across The Holding, including 3 high-signal events.
 
-- **reporting** — reporting source version changed 1.1.0-dual-fund-monetra → 1.2.0-defitea-canonical-market-data.
-- **defitea.eth** — defitea.eth recorded a new daily reporting observation for 2026-08-22.
-- **defitea.eth** — defitea.eth current-month cash-flow/reference-income counter moved $45.62 → $58.81.
-- **Monetra.eth** — Monetra.eth recorded a new daily reporting observation for 2026-08-22.
-- **Monetra.eth** — Monetra.eth current-month cash-flow/reference-income counter moved $0.11 → $0.12.
-- **Monetra.eth** — Monetra.eth current-month generated income moved $0.1083 → $0.1203.
-- **0x5860...83CA8.eth** — 0x5860...83CA8.eth accrued rewards moved $72.06 → $122.86 (+$50.80).
-- **aerocvxyb.eth** — aerocvxyb.eth accrued rewards moved $116.87 → $168.77 (+$51.90).
-- **Cypher** — Cypher accrued rewards moved $13.04 → $9.65 ($-3.39).
-- **defitea.eth** — defitea.eth accrued rewards moved $136.07 → $137.19 (+$1.12).
-- **Rook's portfolio** — Rook's portfolio accrued rewards moved $190.50 → $190.24 ($-0.26).
-- **Stable Companies Index** — Stable Companies current capital moved $100.2757 → $100.3586 (+$0.0829).
+- **projectx-whype-usdc** — Project X adapter projectx-whype-usdc changed warming → ok.
+- **Cypher** — Cypher Productivity status changed partial → ok.
+- **Cypher** — Cypher Productivity coverage moved 90.5% → 100.0%.
+- **defitea.eth** — defitea.eth Rewards completeness changed: pending routes 1 → 2, unpriced 0 → 0.
+- **05081966.eth** — 05081966.eth Reference APR moved 9.58% → 9.24% (-0.34 pp).
+- **1milliondollar.eth** — 1milliondollar.eth Reference APR moved 10.36% → 10.60% (+0.24 pp).
+- **aerocvxyb.eth** — aerocvxyb.eth Reference APR moved 16.94% → 16.64% (-0.30 pp).
+- **Cypher** — Cypher Reference APR moved 20.45% → 35.10% (+14.65 pp).
+- **defitea.eth** — defitea.eth Reference APR moved 18.34% → 11.31% (-7.03 pp).
+- **dinaz.eth** — dinaz.eth Reference APR moved 5.38% → 4.98% (-0.40 pp).
+- **Rook's portfolio** — Rook's portfolio Reference APR moved 15.75% → 14.89% (-0.85 pp).
+- **YieldRing.eth** — YieldRing.eth Reference APR moved 15.97% → 14.66% (-1.32 pp).
 
 ## Watch next
 
-- **projectx-whype-usdc** — Project X / projectx-whype-usdc remains warming.
-- **Cypher** — Cypher Productivity coverage is 90.5%.
 - **0x5860...83CA8.eth** — 0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.
 - **aerocvxyb.eth** — aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.
-- **defitea.eth** — defitea.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.
+- **defitea.eth** — defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.
 
 ## Current memory anchors
 
-- Defitea Reference APR: 18.3375% · coverage 100.0%.
-- Defitea current-month cash-flow/reference counter: $58.81.
-- Monetra Current Capital: $100.3586 · display Reference APY 4.469808% · claimable $0.0533.
-- Monetra current-month Generated Income: $0.1203.
+- Defitea Reference APR: 11.308% · coverage 100.0%.
+- Defitea current-month cash-flow/reference counter: $60.67.
+- Monetra Current Capital: $100.3020 · display Reference APY 4.45902% · claimable $0.0546.
+- Monetra current-month Generated Income: $0.1323.
 
 ## Long-term memory
 
-- Memory Vault: 12 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
-- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-22T07-08-54-007Z-84ed230ab9.json`.
+- Memory Vault: 13 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
+- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-23T07-09-51-151Z-06b8f2cb66.json`.
 - Operational history remains compact; the Memory Vault has no configured lifetime cap.
 - Memory correction ledger: 1 append-only annotation; original Vault records remain immutable.
 
