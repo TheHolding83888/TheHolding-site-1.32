@@ -30,6 +30,48 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
+      - name: Verify source-change materialization trigger boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const workflow = fs.readFileSync('.github/workflows/update-proposal-work-queue.yml', 'utf8');
+          const onStart = workflow.indexOf('on:\n');
+          const permissionsStart = workflow.indexOf('\npermissions:');
+          if (onStart < 0 || permissionsStart < 0) throw new Error('Unable to isolate Proposal trigger block');
+          const trigger = workflow.slice(onStart, permissionsStart);
+          const required = [
+            'push:',
+            'branches: [main]',
+            '.github/workflows/update-proposal-work-queue.yml',
+            'intelligence/proposals/proposal-policy.json',
+            'intelligence/proposals/proposal-schema.json',
+            'intelligence/proposals/proposal-engine.mjs',
+            'intelligence/proposals/independent-proposal-reviewer.mjs',
+            'intelligence/proposals/proposal-decision-policy.json',
+            'intelligence/proposals/proposal-decision-bridge.mjs',
+            'intelligence/proposals/independent-proposal-decision-reviewer.mjs',
+            'intelligence/proposals/proposal-release-guard.mjs',
+            'intelligence/proposals/proposal-release.json',
+          ];
+          for (const token of required) {
+            if (!trigger.includes(token)) throw new Error(`Missing Proposal source-change trigger token: ${token}`);
+          }
+          for (const generated of [
+            'proposal-queue.json',
+            'proposal-brief.md',
+            'proposal-eval.json',
+            'proposal-decision-eval.json',
+          ]) {
+            if (trigger.includes(generated)) throw new Error(`Generated Proposal output would recursively wake writer: ${generated}`);
+          }
+          if (!workflow.includes("github.event_name == 'push' && github.ref == 'refs/heads/main'")) {
+            throw new Error('Proposal job does not authorize bounded main push wakeup');
+          }
+          console.log('Proposal source-change materialization trigger PASS');
+          NODE
+
       - name: Report Proposal static release bytes
         shell: bash
         run: |
