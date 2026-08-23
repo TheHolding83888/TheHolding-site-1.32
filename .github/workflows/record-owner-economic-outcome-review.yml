@@ -1,0 +1,286 @@
+name: "The Holding Brain · Record Owner Economic Outcome Review"
+
+on:
+  workflow_dispatch:
+    inputs:
+      decision_id:
+        description: "Owner-initiated economic decision ID"
+        required: true
+        type: string
+      trigger:
+        description: "Why the review is occurring"
+        required: true
+        default: "horizon"
+        type: choice
+        options:
+          - horizon
+          - material-change
+      outcome_status:
+        description: "Evidence-bound outcome"
+        required: true
+        type: choice
+        options:
+          - supported
+          - contradicted
+          - mixed
+          - inconclusive
+          - invalidated
+      confidence:
+        description: "Evidence confidence"
+        required: true
+        default: "unknown"
+        type: choice
+        options:
+          - high
+          - medium
+          - low
+          - unknown
+      summary:
+        description: "What actually happened"
+        required: true
+        type: string
+      criterion_assessment:
+        description: "How the pre-recorded evaluation criterion resolved"
+        required: true
+        type: string
+      counterevidence_assessment:
+        description: "What happened to the pre-recorded counterevidence"
+        required: true
+        type: string
+      invalidation_assessment:
+        description: "Whether the pre-recorded invalidation condition occurred"
+        required: true
+        type: string
+      evidence_json:
+        description: 'JSON array, e.g. [{"file":"reporting/company-monthly-reports.json","role":"primary"}]'
+        required: true
+        type: string
+      material_change:
+        description: "Required for material-change trigger; explain the early review trigger"
+        required: false
+        default: ""
+        type: string
+      supersedes_review_id:
+        description: "Optional prior review ID for the same decision"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: owner-outcome-review-main
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout canonical repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Preflight exact release coherence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/learning/learning-release-guard.mjs
+          node --check intelligence/learning/owner-outcome-review-recorder.mjs
+          node --check intelligence/learning/owner-outcome-experience-engine.mjs
+          node --check intelligence/learning/independent-owner-outcome-experience-reviewer.mjs
+          node intelligence/learning/owner-outcome-review-recorder.mjs --self-test
+          node intelligence/learning/owner-outcome-experience-engine.mjs --self-test
+          node intelligence/learning/independent-owner-outcome-experience-reviewer.mjs --self-test
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/learning/owner-outcome-review-policy.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/owner-outcome-review-ledger.json','utf8'));"
+
+      - name: Append owner outcome review
+        id: record
+        env:
+          OUTCOME_DECISION_ID: ${{ inputs.decision_id }}
+          OUTCOME_TRIGGER: ${{ inputs.trigger }}
+          OUTCOME_STATUS: ${{ inputs.outcome_status }}
+          OUTCOME_CONFIDENCE: ${{ inputs.confidence }}
+          OUTCOME_SUMMARY: ${{ inputs.summary }}
+          OUTCOME_CRITERION_ASSESSMENT: ${{ inputs.criterion_assessment }}
+          OUTCOME_COUNTEREVIDENCE_ASSESSMENT: ${{ inputs.counterevidence_assessment }}
+          OUTCOME_INVALIDATION_ASSESSMENT: ${{ inputs.invalidation_assessment }}
+          OUTCOME_EVIDENCE_JSON: ${{ inputs.evidence_json }}
+          OUTCOME_MATERIAL_CHANGE: ${{ inputs.material_change }}
+          OUTCOME_SUPERSEDES_REVIEW_ID: ${{ inputs.supersedes_review_id }}
+        run: node intelligence/learning/owner-outcome-review-recorder.mjs
+
+      - name: Build and independently verify owner experience
+        env:
+          OUTCOME_VERIFY_REVIEW_ID: ${{ steps.record.outputs.review_id }}
+          OUTCOME_DECISION_ID: ${{ inputs.decision_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/learning/owner-outcome-review-recorder.mjs --verify-review
+          node intelligence/learning/owner-outcome-experience-engine.mjs
+          node intelligence/learning/independent-owner-outcome-experience-reviewer.mjs
+          node - <<'NODE'
+          const fs = require('fs');
+          const state = JSON.parse(fs.readFileSync('intelligence/learning-state/owner-outcome-experience.json','utf8'));
+          const latest = state.decisions.find((x) => x.decisionId === process.env.OUTCOME_DECISION_ID);
+          if (!latest || latest.lifecycleState !== 'reviewed') throw new Error('Owner outcome review did not materialize as reviewed');
+          if (state.operatingContract?.executionAuthority !== 'none') throw new Error('Owner outcome experience execution authority changed');
+          if (state.operatingContract?.causalClaimAuthority !== 'none') throw new Error('Owner outcome experience causal authority changed');
+          console.log('Owner Outcome Experience PASS', {
+            decisionId: latest.decisionId,
+            reviewId: latest.latestReview?.reviewId,
+            outcomeStatus: latest.latestReview?.outcomeStatus,
+            learnedLessons: state.summary?.learnedLessonCount,
+          });
+          NODE
+          git diff --check
+
+      - name: Publish append-only outcome review safely
+        id: publish
+        env:
+          OUTCOME_VERIFY_REVIEW_ID: ${{ steps.record.outputs.review_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Outcome Memory"
+          git config user.email "outcome-memory@theholding.ai"
+          git add intelligence/learning/owner-outcome-review-ledger.json
+          if git diff --cached --quiet; then
+            echo "No owner outcome review change to publish."
+            echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mapfile -t staged < <(git diff --cached --name-only)
+          if [ "${#staged[@]}" -ne 1 ] || [ "${staged[0]}" != "intelligence/learning/owner-outcome-review-ledger.json" ]; then
+            echo "Unexpected staged owner-outcome files: ${staged[*]}"
+            exit 1
+          fi
+          git commit -m "intelligence: record owner economic outcome review $OUTCOME_VERIFY_REVIEW_ID"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Owner Outcome publish conflict; fail closed."
+              exit 1
+            fi
+
+            node intelligence/learning/learning-release-guard.mjs
+            node intelligence/learning/owner-outcome-review-recorder.mjs --verify-review
+
+            if git push origin HEAD:main; then
+              echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; retrying after fetch/rebase."
+            sleep $((attempt * 2))
+          done
+          echo "Owner Outcome Memory could not publish after 3 attempts."
+          exit 1
+
+      - name: Explicitly refresh canonical Learning and verify materialization
+        id: learning
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVIEW_ID: ${{ steps.record.outputs.review_id }}
+          DECISION_ID: ${{ inputs.decision_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          API="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}"
+          api_get() {
+            curl -fsSL \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "$1"
+          }
+          main_sha() { api_get "${API}/git/ref/heads/main" | jq -r '.object.sha'; }
+          wait_run_success() {
+            local run_id="$1" elapsed=0 status conclusion
+            while [ "$elapsed" -lt 480 ]; do
+              status="$(api_get "${API}/actions/runs/${run_id}" | jq -r '.status // empty')"
+              conclusion="$(api_get "${API}/actions/runs/${run_id}" | jq -r '.conclusion // empty')"
+              echo "Learning run $run_id: status=$status conclusion=${conclusion:-pending}"
+              if [ "$status" = "completed" ]; then
+                [ "$conclusion" = "success" ] || { echo "Learning failed: $conclusion"; exit 1; }
+                return 0
+              fi
+              sleep 4
+              elapsed=$((elapsed+4))
+            done
+            echo "Timed out waiting for Learning run $run_id"
+            exit 1
+          }
+
+          before="$(mktemp)"
+          api_get "${API}/actions/workflows/update-learning-loop.yml/runs?per_page=30" | jq -r '.workflow_runs[].id' > "$before"
+          expected_sha="$(main_sha)"
+          code="$(curl -sS -o /tmp/learning-dispatch-response.txt -w '%{http_code}' -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${API}/actions/workflows/update-learning-loop.yml/dispatches" \
+            --data-binary '{"ref":"main"}')"
+          [ "$code" = "204" ] || {
+            echo "Learning dispatch failed with HTTP $code"
+            cat /tmp/learning-dispatch-response.txt || true
+            exit 1
+          }
+
+          run_id=""
+          elapsed=0
+          while [ "$elapsed" -lt 90 ]; do
+            run_id="$(api_get "${API}/actions/workflows/update-learning-loop.yml/runs?event=workflow_dispatch&branch=main&per_page=30" |
+              jq -r --arg sha "$expected_sha" '.workflow_runs[] | select(.head_sha==$sha) | .id' |
+              while read -r id; do
+                if ! grep -qx "$id" "$before"; then echo "$id"; break; fi
+              done)"
+            [ -n "$run_id" ] && break
+            sleep 3
+            elapsed=$((elapsed+3))
+          done
+          rm -f "$before"
+          [ -n "$run_id" ] || { echo "Could not resolve explicit Learning run"; exit 1; }
+          echo "Resolved Learning run: $run_id"
+          wait_run_success "$run_id"
+          echo "learning_run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+          state_json="$(api_get "${API}/contents/intelligence/learning-state/owner-outcome-experience.json?ref=main")"
+          state="$(printf '%s' "$state_json" | jq -r '.content' | tr -d '\n' | base64 -d)"
+          actual_review="$(printf '%s' "$state" | jq -r --arg d "$DECISION_ID" '.decisions[] | select(.decisionId==$d) | .latestReview.reviewId // empty')"
+          lifecycle="$(printf '%s' "$state" | jq -r --arg d "$DECISION_ID" '.decisions[] | select(.decisionId==$d) | .lifecycleState // empty')"
+          authority="$(printf '%s' "$state" | jq -r '.operatingContract.executionAuthority // empty')"
+          causal="$(printf '%s' "$state" | jq -r '.operatingContract.causalClaimAuthority // empty')"
+          [ "$actual_review" = "$REVIEW_ID" ] || { echo "Published owner outcome state does not contain review $REVIEW_ID"; exit 1; }
+          [ "$lifecycle" = "reviewed" ] || { echo "Published owner outcome lifecycle is not reviewed"; exit 1; }
+          [ "$authority" = "none" ] && [ "$causal" = "none" ] || { echo "Published owner outcome authority drift"; exit 1; }
+          echo "Owner outcome state materialized on main with review $REVIEW_ID"
+
+      - name: Owner outcome review summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "# The Holding Brain · Owner Economic Outcome Review"
+            echo
+            echo "Decision ID: \`${{ inputs.decision_id }}\`"
+            echo "Review ID: \`${{ steps.record.outputs.review_id }}\`"
+            echo "Trigger: \`${{ inputs.trigger }}\`"
+            echo "Outcome: \`${{ inputs.outcome_status }}\`"
+            echo "Confidence: \`${{ inputs.confidence }}\`"
+            echo "Learning run: \`${{ steps.learning.outputs.learning_run_id }}\`"
+            echo "Execution authority: \`none\`"
+            echo
+            echo "The review is not closed until the canonical Learning writer succeeds and the reviewed state physically materializes on main."
+          } >> "$GITHUB_STEP_SUMMARY"
