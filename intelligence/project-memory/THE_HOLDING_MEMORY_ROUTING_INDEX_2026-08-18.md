@@ -359,11 +359,12 @@ Rules:
 - one primary objective at a time;
 - do not ask owner to repeat already-known data;
 - systemic reusable fix > one-off patch;
-- `делай/ок` = implementation authorization, not merge authorization;
-- each PR merge needs fresh explicit owner command **unless the owner explicitly grants a new bounded standing merge authorization**.
+- routine low-risk repository changes may proceed through verified PR merge and physical production proof without a separate per-PR confirmation under the owner's bounded standing authorization;
+- stop for explicit owner confirmation at material capital, authority, security, methodology, destructive/irreversible or other high-consequence boundaries;
+- every routine merge still requires fresh `main`, exact PR head/base/mergeability, exact-head GREEN checks, expected scope, moving-main recheck, expected-head merge and post-merge proof.
 
 Historical note:
-on Aug 22 the owner granted temporary standing merge authorization only for the defined final-stabilization sequence until the fat green check. That bounded exception is **closed** and must not be carried into a future chat.
+on Aug 22 the owner granted a temporary standing merge authorization only for the defined final-stabilization sequence until the fat green check. That historical exception is closed. It has now been superseded for routine low-risk repository work by the owner's broader but still bounded 2026-08-23 working-flow authorization; it does **not** expand capital, execution, methodology or security authority.
 
 ---
 
