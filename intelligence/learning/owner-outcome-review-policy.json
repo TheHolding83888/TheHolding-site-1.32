@@ -1,0 +1,95 @@
+{
+  "version": "0.1-owner-economic-outcome-review-policy",
+  "mode": "evidence-bound-human-reviewed-economic-outcomes",
+  "purpose": "Extend the canonical Decision & Outcome Learning organ with a bounded owner-economic outcome review lane without creating execution authority or silently converting correlation into causation.",
+  "lifecycle": {
+    "states": [
+      "open",
+      "observing",
+      "review-due",
+      "reviewed",
+      "superseded"
+    ],
+    "reviewTriggers": [
+      "horizon",
+      "material-change"
+    ],
+    "allowedOutcomeStatuses": [
+      "supported",
+      "contradicted",
+      "mixed",
+      "inconclusive",
+      "invalidated"
+    ],
+    "allowedConfidence": [
+      "high",
+      "medium",
+      "low",
+      "unknown"
+    ]
+  },
+  "evidence": {
+    "minimumFiles": 1,
+    "maximumFiles": 12,
+    "allowedRoles": [
+      "primary",
+      "supporting",
+      "counterevidence",
+      "context"
+    ],
+    "allowedPrefixes": [
+      "companies/",
+      "intelligence/",
+      "reporting/",
+      "security/"
+    ],
+    "allowedExtensions": [
+      ".json",
+      ".md"
+    ],
+    "deniedPrefixes": [
+      "intelligence/project-memory/"
+    ],
+    "deniedFiles": [
+      "intelligence/learning/decision-ledger.json",
+      "intelligence/learning/owner-outcome-review-ledger.json"
+    ],
+    "snapshotRule": "Every review stores the exact SHA-256 of each canonical evidence file as observed at review time. Rebase/publish verification fails closed if those exact evidence bytes move before the review is published."
+  },
+  "review": {
+    "appendOnly": true,
+    "correctionsBySupersedingEntryOnly": true,
+    "minimumSummaryCharacters": 20,
+    "maximumTextCharacters": 2400,
+    "earlyMaterialChangeRequiresExplanation": true,
+    "horizonRule": "A horizon review may not be recorded before the decision reviewOnOrAfter boundary.",
+    "materialChangeRule": "A material-change review may occur before the horizon only when the owner explicitly records the material-change trigger and exact evidence snapshot."
+  },
+  "lessonPromotion": {
+    "candidateStatuses": [
+      "supported",
+      "contradicted"
+    ],
+    "minCorroboratingReviewedOutcomes": 2,
+    "minDistinctDecisionIds": 2,
+    "requireConsistentDirection": true,
+    "mixedInconclusiveInvalidatedNeverAutoPromote": true,
+    "causalClaimAllowed": false,
+    "rule": "One reviewed outcome may create a lesson candidate but cannot become a learned lesson. Learned lessons require repeated, directionally consistent reviewed outcomes across distinct decisions in the same experience class. Even then the lesson remains an observed association, not proof of causation."
+  },
+  "safety": {
+    "publicDataOnly": true,
+    "noSecrets": true,
+    "apiRequired": false,
+    "modelCallAllowed": false,
+    "capitalExecutionAllowed": false,
+    "walletActionAllowed": false,
+    "repositoryCodeMutationAllowedFromOutcome": false,
+    "methodologyMutationAllowedFromOutcome": false,
+    "policyMutationAllowedFromOutcome": false,
+    "workflowMutationAllowedFromOutcome": false,
+    "reviewsExecutable": false,
+    "lessonsExecutable": false,
+    "executionAuthority": "none"
+  }
+}
