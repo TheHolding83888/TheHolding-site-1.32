@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-23T13:01:29.081Z",
+  "generatedAt": "2026-08-23T13:08:05.663Z",
   "status": "watch",
-  "snapshotHash": "49908025017e46f219d8f3ddcbd7f54829be1ab704b26169bea515e685f6f0e9",
+  "snapshotHash": "f22541bb10f75beec0ccc08b18b7fb424bc9474d4aa56560f4b79a75ba69fe56",
   "repository": {
     "filesScanned": 581,
-    "bytesScanned": 12690118,
+    "bytesScanned": 12692697,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -112,7 +112,7 @@
       ".github/workflows/verify-passport-productive-label-parity.yml": "5bf3922303d5d58748cc55b78be3b7a98eaaeec6ef9a456c31fd834f2413b505",
       ".github/workflows/verify-passport-rate-badge-layout.yml": "3e733390e90e5800aeab3d05a070c56352283c69fa5eb9896d63efc49d24957a",
       ".github/workflows/verify-project-memory-bootstrap.yml": "20e773fce2c6eaef588dc87f58eb39c28be8d32f1c51c69c9ea7368fa2c2bcd5",
-      ".github/workflows/verify-project-memory-continuity-routing.yml": "783487754984c06762580e3856256cfa4fc06fdc8f4c7ad51de5dfcf70dac74d",
+      ".github/workflows/verify-project-memory-continuity-routing.yml": "69f486507c3d33744dd5db7ecabefc696250caeb0155f8fff776d6b571f8ed86",
       ".github/workflows/verify-proposal-lifecycle.yml": "a8cf3551f9cf56450e65ec91dcdd74143ce9638b9b2e32654570b3d6ca0525e0",
       ".github/workflows/verify-reporting-layer.yml": "0060a077f2df49b7cc75776aad3cb579a1ccee3fa1ed542a7ef47027a2af8ce7",
       ".github/workflows/verify-rewards-drawer-row-coverage-parity.yml": "f4656e6cfa6d4f24d103cc698c862e86e9619e7590fbb22d48b93f422337c2b3",
@@ -354,7 +354,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Sun, 23 Aug 2026 08:02:19 GMT",
+        "lastModified": "Sat, 22 Aug 2026 01:21:42 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -390,6 +390,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "4fef4fd85989a2e24df5eaf2556019c6d8cc5e56679fe382637989f38c7b6938",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-project-memory-continuity-routing.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-project-memory-continuity-routing.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "783487754984c06762580e3856256cfa4fc06fdc8f4c7ad51de5dfcf70dac74d",
+        "currentSha256": "69f486507c3d33744dd5db7ecabefc696250caeb0155f8fff776d6b571f8ed86"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -992,10 +1006,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 450,
+    "runCount": 451,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-23T13-01-29-081Z-4990802501.json",
-    "latestRecordHash": "6de8d0e75dbfc7066ed17f2f3f4bdd65d98812709c00eb32740c94d5ce80b434",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-23T13-08-05-663Z-f22541bb10.json",
+    "latestRecordHash": "1e2798873b79edd157ed614eb5a167a5695384212dfef842e115ccbd355017eb",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
