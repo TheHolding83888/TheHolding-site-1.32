@@ -1,9 +1,9 @@
 {
   "version": "0.1-autonomous-observational-experience",
-  "engineVersion": "0.1-change-history-episode-pattern-compiler",
+  "engineVersion": "0.1.1-prospective-pattern-evaluation",
   "generatedAt": "2026-08-23T07:09:51.151Z",
   "status": "ready",
-  "purpose": "Deterministic source-bound world episodes and candidate temporal patterns derived from canonical Change Intelligence history.",
+  "purpose": "Deterministic source-bound observational memory, descriptive retrospective pattern candidates, and prospective evaluation of an immutable frozen candidate cohort.",
   "authority": {
     "readOnly": true,
     "executionAuthority": "none",
@@ -22,12 +22,16 @@
     "eventCount": 176
   },
   "semantics": {
+    "capabilityName": "Observational Memory + Prospective Pattern Evaluation",
+    "learningClaim": "not-yet-earned",
     "exactObservation": "Each episode points to one canonical Change History event and preserves its previous/current values, entity, metric, time and sourceKeys.",
     "runMembership": "A canonical Change History event may be referenced by more than one history run. This creates one episode with all run memberships preserved; it never creates duplicate economic observations.",
     "primaryRunSelection": "When multiple run memberships exist, sourceRun is selected deterministically by exact/nearest generatedAt for convenience while sourceRuns preserves every membership.",
     "derivedChange": "Numeric deltas, temporal ordering and increment velocity are deterministic transforms of source observations.",
     "counterReset": "A negative delta in a period-cumulative counter is treated as possible reset/correction and never as economic loss by default.",
-    "patternCandidate": "Repeated direction or increment-velocity is candidate association only; it is not a lesson, prediction, policy or causal claim.",
+    "patternCandidate": "Repeated direction or increment-velocity is a retrospective candidate association only; it is not a lesson, prediction, policy, learning claim or causal claim.",
+    "prospectiveEvaluation": "Only events strictly later than the immutable frozen baseline may support or contradict a frozen candidate. Support and counterevidence are symmetric and neither automatically promotes the candidate.",
+    "eventSamplingBoundary": "Change History is event-triggered rather than uniformly sampled. Candidate frequency and prospective support counts describe recorded eligible change-events only, not market probability or trend strength.",
     "causalBoundary": "Correlation and temporal order are not causation. This layer has no causal edge authority.",
     "realYieldBoundary": "A Reference APR increase alone never proves why yield rose; owner real-yield interpretation requires source/mechanism attribution before strong economic explanation."
   },
@@ -36,6 +40,10 @@
     "seriesCount": 14,
     "entityCount": 10,
     "patternCandidateCount": 7,
+    "frozenProspectivePatternCount": 7,
+    "patternsWithPostFreezeScoredEvidence": 0,
+    "prospectiveSupportCount": 0,
+    "prospectiveCounterevidenceCount": 0,
     "possibleCounterResetOrCorrectionCount": 0,
     "multiRunMembershipEpisodeCount": 0,
     "episodeClassCounts": {
@@ -3647,7 +3655,7 @@
         "obs-044a14881e072bf9bbee",
         "obs-811b672a950f587b7103"
       ],
-      "statement": "05081966.eth aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation."
+      "statement": "05081966.eth aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction."
     },
     {
       "patternId": "pattern-c93df6e591fa8d0834c1",
@@ -3671,7 +3679,7 @@
         "obs-87900cb9d334b78acaaf",
         "obs-1133f52e017dbc12c175"
       ],
-      "statement": "aerocvxyb.eth aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation."
+      "statement": "aerocvxyb.eth aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction."
     },
     {
       "patternId": "pattern-a1a62f8746dffb07b6a8",
@@ -3695,7 +3703,7 @@
         "obs-226f73ccb329a928d732",
         "obs-7f3a72efb8952b61b8a0"
       ],
-      "statement": "Cypher coverage repeatedly moved increase; this is a candidate temporal pattern, not a causal explanation."
+      "statement": "Cypher coverage repeatedly moved increase; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction."
     },
     {
       "patternId": "pattern-172977e256951a89d709",
@@ -3720,7 +3728,7 @@
         "obs-cc4c8d4368d6665c346e",
         "obs-a185fd212793d7a98ff0"
       ],
-      "statement": "defitea.eth aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation."
+      "statement": "defitea.eth aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction."
     },
     {
       "patternId": "pattern-8778908d519e83cbc993",
@@ -3743,7 +3751,7 @@
         "obs-3cf21a23d9c05ddbd43a",
         "obs-4b39f51bfbec8eead09d"
       ],
-      "statement": "dinaz.eth aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation."
+      "statement": "dinaz.eth aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction."
     },
     {
       "patternId": "pattern-961b59aaa0076f0dd96a",
@@ -3766,7 +3774,7 @@
         "obs-ffffeff1082b3a02017a",
         "obs-3614d34d936616b6ed14"
       ],
-      "statement": "Rook's portfolio aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation."
+      "statement": "Rook's portfolio aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction."
     },
     {
       "patternId": "pattern-9022c6dbab4c7cedb1d1",
@@ -3789,14 +3797,252 @@
         "obs-a7cf8f5199eb97163839",
         "obs-cffffed16ac99a073b12"
       ],
-      "statement": "YieldRing.eth aprLatestPct repeatedly moved increase; this is a candidate temporal pattern, not a causal explanation."
+      "statement": "YieldRing.eth aprLatestPct repeatedly moved increase; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction."
     }
   ],
+  "prospectiveEvaluation": {
+    "version": "0.1-prospective-pattern-evaluation",
+    "status": "warming-no-post-freeze-scored-evidence",
+    "frozenAt": "2026-08-23T07:09:51.151Z",
+    "semantics": {
+      "purpose": "Evaluate a frozen retrospective candidate only on later canonical eligible change-events.",
+      "supportAndCounterevidenceSymmetric": true,
+      "eventTriggeredSampling": true,
+      "marketFrequencyClaimAllowed": false,
+      "trendStrengthClaimAllowed": false,
+      "predictionClaimAllowed": false,
+      "causalClaimAllowed": false,
+      "lessonPromotionAllowed": false,
+      "automaticPolicyMutation": false,
+      "executionAuthority": "none"
+    },
+    "totals": {
+      "frozenPatternCount": 7,
+      "reconstructedFrozenPatternCount": 7,
+      "patternsWithPostFreezeScoredEvidence": 0,
+      "postFreezeEpisodeCount": 0,
+      "postFreezeScoredSignalCount": 0,
+      "prospectiveSupportCount": 0,
+      "prospectiveCounterevidenceCount": 0,
+      "prospectiveNoSignalCount": 0
+    },
+    "evaluations": [
+      {
+        "patternId": "pattern-d56593f271f8a1c1ac81",
+        "seriesKey": "productivity|05081966.eth|aprLatestPct",
+        "episodeClass": "productive-rate-change",
+        "semanticDomain": "protocol-economics",
+        "entity": "05081966.eth",
+        "metric": "aprLatestPct",
+        "signalType": "direction",
+        "frozenDominantSignal": "decrease",
+        "frozenAt": "2026-08-23T07:09:51.151Z",
+        "frozenSupportCount": 2,
+        "frozenObservedSignalCount": 3,
+        "frozenDirectionalConsistencyPct": 66.67,
+        "postFreezeEpisodeCount": 0,
+        "postFreezeScoredSignalCount": 0,
+        "prospectiveSupportCount": 0,
+        "prospectiveCounterevidenceCount": 0,
+        "prospectiveNoSignalCount": 0,
+        "prospectiveSupportEpisodeIds": [],
+        "prospectiveCounterevidenceEpisodeIds": [],
+        "prospectiveNoSignalEpisodeIds": [],
+        "status": "waiting-no-post-freeze-scored-evidence",
+        "epistemicStatus": "prospective-evaluation-of-retrospective-candidate",
+        "predictionClaim": false,
+        "causalClaim": false,
+        "lessonClaim": false,
+        "policyAuthority": false,
+        "executionAuthority": "none"
+      },
+      {
+        "patternId": "pattern-c93df6e591fa8d0834c1",
+        "seriesKey": "productivity|aerocvxyb.eth|aprLatestPct",
+        "episodeClass": "productive-rate-change",
+        "semanticDomain": "protocol-economics",
+        "entity": "aerocvxyb.eth",
+        "metric": "aprLatestPct",
+        "signalType": "direction",
+        "frozenDominantSignal": "decrease",
+        "frozenAt": "2026-08-23T07:09:51.151Z",
+        "frozenSupportCount": 3,
+        "frozenObservedSignalCount": 4,
+        "frozenDirectionalConsistencyPct": 75,
+        "postFreezeEpisodeCount": 0,
+        "postFreezeScoredSignalCount": 0,
+        "prospectiveSupportCount": 0,
+        "prospectiveCounterevidenceCount": 0,
+        "prospectiveNoSignalCount": 0,
+        "prospectiveSupportEpisodeIds": [],
+        "prospectiveCounterevidenceEpisodeIds": [],
+        "prospectiveNoSignalEpisodeIds": [],
+        "status": "waiting-no-post-freeze-scored-evidence",
+        "epistemicStatus": "prospective-evaluation-of-retrospective-candidate",
+        "predictionClaim": false,
+        "causalClaim": false,
+        "lessonClaim": false,
+        "policyAuthority": false,
+        "executionAuthority": "none"
+      },
+      {
+        "patternId": "pattern-a1a62f8746dffb07b6a8",
+        "seriesKey": "productivity|Cypher|coverage",
+        "episodeClass": "measurement-coverage-change",
+        "semanticDomain": "measurement-quality",
+        "entity": "Cypher",
+        "metric": "coverage",
+        "signalType": "direction",
+        "frozenDominantSignal": "increase",
+        "frozenAt": "2026-08-23T07:09:51.151Z",
+        "frozenSupportCount": 3,
+        "frozenObservedSignalCount": 4,
+        "frozenDirectionalConsistencyPct": 75,
+        "postFreezeEpisodeCount": 0,
+        "postFreezeScoredSignalCount": 0,
+        "prospectiveSupportCount": 0,
+        "prospectiveCounterevidenceCount": 0,
+        "prospectiveNoSignalCount": 0,
+        "prospectiveSupportEpisodeIds": [],
+        "prospectiveCounterevidenceEpisodeIds": [],
+        "prospectiveNoSignalEpisodeIds": [],
+        "status": "waiting-no-post-freeze-scored-evidence",
+        "epistemicStatus": "prospective-evaluation-of-retrospective-candidate",
+        "predictionClaim": false,
+        "causalClaim": false,
+        "lessonClaim": false,
+        "policyAuthority": false,
+        "executionAuthority": "none"
+      },
+      {
+        "patternId": "pattern-172977e256951a89d709",
+        "seriesKey": "productivity|defitea.eth|aprLatestPct",
+        "episodeClass": "productive-rate-change",
+        "semanticDomain": "protocol-economics",
+        "entity": "defitea.eth",
+        "metric": "aprLatestPct",
+        "signalType": "direction",
+        "frozenDominantSignal": "decrease",
+        "frozenAt": "2026-08-23T07:09:51.151Z",
+        "frozenSupportCount": 4,
+        "frozenObservedSignalCount": 6,
+        "frozenDirectionalConsistencyPct": 66.67,
+        "postFreezeEpisodeCount": 0,
+        "postFreezeScoredSignalCount": 0,
+        "prospectiveSupportCount": 0,
+        "prospectiveCounterevidenceCount": 0,
+        "prospectiveNoSignalCount": 0,
+        "prospectiveSupportEpisodeIds": [],
+        "prospectiveCounterevidenceEpisodeIds": [],
+        "prospectiveNoSignalEpisodeIds": [],
+        "status": "waiting-no-post-freeze-scored-evidence",
+        "epistemicStatus": "prospective-evaluation-of-retrospective-candidate",
+        "predictionClaim": false,
+        "causalClaim": false,
+        "lessonClaim": false,
+        "policyAuthority": false,
+        "executionAuthority": "none"
+      },
+      {
+        "patternId": "pattern-8778908d519e83cbc993",
+        "seriesKey": "productivity|dinaz.eth|aprLatestPct",
+        "episodeClass": "productive-rate-change",
+        "semanticDomain": "protocol-economics",
+        "entity": "dinaz.eth",
+        "metric": "aprLatestPct",
+        "signalType": "direction",
+        "frozenDominantSignal": "decrease",
+        "frozenAt": "2026-08-23T07:09:51.151Z",
+        "frozenSupportCount": 2,
+        "frozenObservedSignalCount": 3,
+        "frozenDirectionalConsistencyPct": 66.67,
+        "postFreezeEpisodeCount": 0,
+        "postFreezeScoredSignalCount": 0,
+        "prospectiveSupportCount": 0,
+        "prospectiveCounterevidenceCount": 0,
+        "prospectiveNoSignalCount": 0,
+        "prospectiveSupportEpisodeIds": [],
+        "prospectiveCounterevidenceEpisodeIds": [],
+        "prospectiveNoSignalEpisodeIds": [],
+        "status": "waiting-no-post-freeze-scored-evidence",
+        "epistemicStatus": "prospective-evaluation-of-retrospective-candidate",
+        "predictionClaim": false,
+        "causalClaim": false,
+        "lessonClaim": false,
+        "policyAuthority": false,
+        "executionAuthority": "none"
+      },
+      {
+        "patternId": "pattern-961b59aaa0076f0dd96a",
+        "seriesKey": "productivity|Rook's portfolio|aprLatestPct",
+        "episodeClass": "productive-rate-change",
+        "semanticDomain": "protocol-economics",
+        "entity": "Rook's portfolio",
+        "metric": "aprLatestPct",
+        "signalType": "direction",
+        "frozenDominantSignal": "decrease",
+        "frozenAt": "2026-08-23T07:09:51.151Z",
+        "frozenSupportCount": 2,
+        "frozenObservedSignalCount": 2,
+        "frozenDirectionalConsistencyPct": 100,
+        "postFreezeEpisodeCount": 0,
+        "postFreezeScoredSignalCount": 0,
+        "prospectiveSupportCount": 0,
+        "prospectiveCounterevidenceCount": 0,
+        "prospectiveNoSignalCount": 0,
+        "prospectiveSupportEpisodeIds": [],
+        "prospectiveCounterevidenceEpisodeIds": [],
+        "prospectiveNoSignalEpisodeIds": [],
+        "status": "waiting-no-post-freeze-scored-evidence",
+        "epistemicStatus": "prospective-evaluation-of-retrospective-candidate",
+        "predictionClaim": false,
+        "causalClaim": false,
+        "lessonClaim": false,
+        "policyAuthority": false,
+        "executionAuthority": "none"
+      },
+      {
+        "patternId": "pattern-9022c6dbab4c7cedb1d1",
+        "seriesKey": "productivity|YieldRing.eth|aprLatestPct",
+        "episodeClass": "productive-rate-change",
+        "semanticDomain": "protocol-economics",
+        "entity": "YieldRing.eth",
+        "metric": "aprLatestPct",
+        "signalType": "direction",
+        "frozenDominantSignal": "increase",
+        "frozenAt": "2026-08-23T07:09:51.151Z",
+        "frozenSupportCount": 2,
+        "frozenObservedSignalCount": 3,
+        "frozenDirectionalConsistencyPct": 66.67,
+        "postFreezeEpisodeCount": 0,
+        "postFreezeScoredSignalCount": 0,
+        "prospectiveSupportCount": 0,
+        "prospectiveCounterevidenceCount": 0,
+        "prospectiveNoSignalCount": 0,
+        "prospectiveSupportEpisodeIds": [],
+        "prospectiveCounterevidenceEpisodeIds": [],
+        "prospectiveNoSignalEpisodeIds": [],
+        "status": "waiting-no-post-freeze-scored-evidence",
+        "epistemicStatus": "prospective-evaluation-of-retrospective-candidate",
+        "predictionClaim": false,
+        "causalClaim": false,
+        "lessonClaim": false,
+        "policyAuthority": false,
+        "executionAuthority": "none"
+      }
+    ],
+    "integrity": {
+      "baselinePatternIdsHash": "334cb8cb49882980f13b47c9adb1fb02fb7d5522bcc8ec9b683a3ec852f97f87",
+      "evaluationCompositeHash": "839d122b420fefbef783ea3c87ca88f443cb66ac383d105faa3287e19ab91924"
+    }
+  },
   "integrity": {
-    "policySha256": "fdbe14ee7f7cda70e42bfa55a106bd55d85b0f0f16a22221850ca7afa758bee8",
+    "policySha256": "7a70f541be0ddf6a7ffb3636351fa0edcea625b076532623657714dcdfbb15eb",
     "sourceSha256": "de88dbf62c0d6bb166dce64cb5dc6e5e62e0b2aee67c9685ec512bb0509c3eff",
+    "prospectiveBaselineSha256": "19535e4c089b643fd263c86461e24d00cf25c58856216a3f99409ef585dbf484",
     "episodeCompositeHash": "deb10f3f7391f25776bd9ac666f7565c2994c7b36120a58a388a2e557d5a3ea6",
     "patternCompositeHash": "697d885cce05f7d7fc13f50f98b5f965fdb04c5c13940b0ab177836cf0adf0dd",
-    "stateHash": "3075ca5815826b53c94fda76e06df5cdcfcb150863a888341703a3f81e57d281"
+    "prospectiveEvaluationCompositeHash": "839d122b420fefbef783ea3c87ca88f443cb66ac383d105faa3287e19ab91924",
+    "stateHash": "87176cc26c16cab84d9459753334dda0f4adb17fc85222d2244b5d3681dce2cd"
   }
 }
