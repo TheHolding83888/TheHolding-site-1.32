@@ -1,7 +1,7 @@
 {
-  "version": "0.1-autonomous-observational-learning-policy",
+  "version": "0.2-observational-memory-prospective-evaluation-policy",
   "status": "production-candidate-read-only",
-  "purpose": "Compile exact longitudinal Change Intelligence events into bounded observational episodes and non-causal repeated-pattern candidates for the existing Neural Graph.",
+  "purpose": "Compile exact longitudinal Change Intelligence events into bounded observational memory, descriptive retrospective pattern candidates, and prospective support/counterevidence for an explicitly frozen baseline.",
   "authority": {
     "readOnly": true,
     "executionAuthority": "none",
@@ -11,6 +11,12 @@
     "methodologyMutationAuthority": false,
     "repositoryMutationAuthorityFromLearning": false,
     "causalClaimAuthority": "none"
+  },
+  "namingBoundary": {
+    "preferredCapabilityName": "Observational Memory + Prospective Pattern Evaluation",
+    "legacyProjectName": "Autonomous Observational / World Learning v0.1",
+    "learningClaim": "not-yet-earned",
+    "reason": "Current episodes are exact structured observations and retrospective candidate associations. Learning is not claimed until frozen candidates are evaluated on later evidence under an explicit prospective contract."
   },
   "sourceContract": {
     "canonicalHistoryFile": "intelligence/change-history.json",
@@ -31,6 +37,19 @@
     "absenceOfEventMeansNoChange": false,
     "patternFrequencyMayBeInterpretedAsMarketProbability": false,
     "patternScope": "recorded-change-events-only"
+  },
+  "prospectiveBaselineContract": {
+    "file": "intelligence/observational-learning/observational-pattern-prospective-baseline.json",
+    "requiredVersion": "0.1-observational-pattern-prospective-baseline",
+    "requiredStatus": "frozen-prospective-baseline",
+    "requiredInProduction": true,
+    "baselineMayBeRewrittenFromLaterEvidence": false,
+    "postFreezeEvidenceMustBeStrictlyLaterThanFrozenAt": true,
+    "supportAndCounterevidenceMustBeSymmetric": true,
+    "unscoredSignalsMayNotBecomeSupport": true,
+    "prospectiveSupportMayBecomeLessonAutomatically": false,
+    "prospectiveSupportMayBecomePredictionAutomatically": false,
+    "prospectiveSupportMayBecomeCausalClaimAutomatically": false
   },
   "episodeClasses": [
     {
@@ -71,7 +90,25 @@
     "candidateIsLesson": false,
     "candidateIsPolicy": false,
     "candidateIsPrediction": false,
-    "candidateRepresentsRecordedChangeFrequencyOnly": true
+    "candidateRepresentsRecordedChangeFrequencyOnly": true,
+    "retrospectiveCandidateHasDecisionUseAuthority": false,
+    "retrospectiveCandidateHasLearningStatus": false,
+    "newRetrospectiveCandidatesAutomaticallyJoinFrozenBaseline": false
+  },
+  "prospectiveEvaluationPolicy": {
+    "baselinePatternCount": 7,
+    "baselineRole": "weak-first-cohort-for-falsifiable-prospective-evaluation",
+    "supportDefinition": "later scored signal matches the frozen dominant signal",
+    "counterevidenceDefinition": "later scored signal opposes the frozen dominant signal",
+    "noSignalDefinition": "later eligible episode has null/unchanged/non-scored signal",
+    "statusBeforeEvidence": "warming-no-post-freeze-scored-evidence",
+    "statusAfterEvidence": "observing-prospectively",
+    "marketProbabilityInference": false,
+    "trendStrengthInference": false,
+    "statisticalSignificanceClaim": false,
+    "automaticExpiry": false,
+    "automaticPromotion": false,
+    "futurePromotionRequiresSeparateEarnedMethodology": true
   },
   "counterRules": {
     "negativeCumulativeDelta": "possible-period-reset-or-correction",
@@ -83,7 +120,9 @@
     "exactSourceEvent": "exact-observation",
     "numericDelta": "deterministic-derived-change",
     "sequenceOrder": "changed-after",
-    "repeatedDirectionalPattern": "candidate-association",
+    "repeatedDirectionalPattern": "retrospective-candidate-association",
+    "prospectiveSupport": "post-freeze-supporting-observation",
+    "prospectiveCounterevidence": "post-freeze-counterevidence-observation",
     "correlationIsCausation": false,
     "temporalOrderIsCausation": false,
     "causalEdgeAllowed": false,
