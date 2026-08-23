@@ -18,7 +18,7 @@ concurrency:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 65
     env:
       RECOVERY_PUSH_AT: ${{ github.event.head_commit.timestamp }}
     steps:
@@ -143,7 +143,73 @@ jobs:
           echo "Awaiting recovery-dispatched Learning run $learning_run_id"
           gh run watch "$learning_run_id" --exit-status --interval 5
 
-      - name: Dispatch and await Project Memory after Learning success
+      - name: Dispatch and await Proposal after Learning success
+        id: proposal
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          before_id="$(gh run list --workflow update-proposal-work-queue.yml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Learning run ${{ steps.learning.outputs.learning_run_id }} succeeded; dispatching Proposal Work Queue on canonical main."
+          gh workflow run update-proposal-work-queue.yml --ref main
+
+          proposal_run_id=""
+          for attempt in $(seq 1 40); do
+            proposal_run_id="$(
+              gh run list \
+                --workflow update-proposal-work-queue.yml \
+                --event workflow_dispatch \
+                --limit 10 \
+                --json databaseId,createdAt \
+                --jq "[.[] | select((.databaseId | tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty"
+            )"
+            if [ -n "$proposal_run_id" ]; then break; fi
+            sleep 5
+          done
+          if [ -z "$proposal_run_id" ]; then
+            echo 'Could not identify the recovery-dispatched Proposal run.'
+            exit 1
+          fi
+
+          echo "proposal_run_id=$proposal_run_id" >> "$GITHUB_OUTPUT"
+          echo "Awaiting recovery-dispatched Proposal run $proposal_run_id"
+          gh run watch "$proposal_run_id" --exit-status --interval 5
+
+      - name: Dispatch and await Downstream Continuity after Proposal success
+        id: downstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          before_id="$(gh run list --workflow refresh-downstream-continuity.yml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Proposal run ${{ steps.proposal.outputs.proposal_run_id }} succeeded; dispatching Downstream Continuity on canonical main."
+          gh workflow run refresh-downstream-continuity.yml --ref main
+
+          downstream_run_id=""
+          for attempt in $(seq 1 40); do
+            downstream_run_id="$(
+              gh run list \
+                --workflow refresh-downstream-continuity.yml \
+                --event workflow_dispatch \
+                --limit 10 \
+                --json databaseId,createdAt \
+                --jq "[.[] | select((.databaseId | tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty"
+            )"
+            if [ -n "$downstream_run_id" ]; then break; fi
+            sleep 5
+          done
+          if [ -z "$downstream_run_id" ]; then
+            echo 'Could not identify the recovery-dispatched Downstream Continuity run.'
+            exit 1
+          fi
+
+          echo "downstream_run_id=$downstream_run_id" >> "$GITHUB_OUTPUT"
+          echo "Awaiting recovery-dispatched Downstream Continuity run $downstream_run_id"
+          gh run watch "$downstream_run_id" --exit-status --interval 5
+
+      - name: Dispatch and await Project Memory after downstream success
         id: memory
         env:
           GH_TOKEN: ${{ github.token }}
@@ -151,7 +217,7 @@ jobs:
           set -euo pipefail
           before_id="$(gh run list --workflow update-project-memory-bootstrap.yml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
           dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          echo "Learning run ${{ steps.learning.outputs.learning_run_id }} succeeded; dispatching Project Memory Bootstrap on canonical main."
+          echo "Downstream run ${{ steps.downstream.outputs.downstream_run_id }} succeeded; dispatching Project Memory Bootstrap on canonical main."
           gh workflow run update-project-memory-bootstrap.yml --ref main
 
           memory_run_id=""

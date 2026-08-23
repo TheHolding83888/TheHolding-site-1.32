@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/resume-cognitive-stack-after-release.yml'
       - '.github/workflows/recover-cognitive-stack-after-release.yml'
+      - '.github/workflows/update-proposal-work-queue.yml'
+      - '.github/workflows/refresh-downstream-continuity.yml'
       - '.github/workflows/update-intelligence-progress.yml'
       - '.github/workflows/verify-cognitive-recovery-order.yml'
 
@@ -54,6 +56,10 @@ jobs:
             'gh run watch "$cognitive_run_id" --exit-status',
             'gh workflow run update-learning-loop.yml --ref main',
             'gh run watch "$learning_run_id" --exit-status',
+            'gh workflow run update-proposal-work-queue.yml --ref main',
+            'gh run watch "$proposal_run_id" --exit-status',
+            'gh workflow run refresh-downstream-continuity.yml --ref main',
+            'gh run watch "$downstream_run_id" --exit-status',
             'gh workflow run update-project-memory-bootstrap.yml --ref main',
             'gh run watch "$memory_run_id" --exit-status',
             'gh workflow run update-intelligence-progress.yml --ref main',
@@ -67,19 +73,43 @@ jobs:
           const cognitiveSuccess = resume.indexOf('gh run watch "$cognitive_run_id" --exit-status');
           const learningDispatch = resume.indexOf('gh workflow run update-learning-loop.yml --ref main');
           const learningSuccess = resume.indexOf('gh run watch "$learning_run_id" --exit-status');
+          const proposalDispatch = resume.indexOf('gh workflow run update-proposal-work-queue.yml --ref main');
+          const proposalSuccess = resume.indexOf('gh run watch "$proposal_run_id" --exit-status');
+          const downstreamDispatch = resume.indexOf('gh workflow run refresh-downstream-continuity.yml --ref main');
+          const downstreamSuccess = resume.indexOf('gh run watch "$downstream_run_id" --exit-status');
           const memoryDispatch = resume.indexOf('gh workflow run update-project-memory-bootstrap.yml --ref main');
           const memorySuccess = resume.indexOf('gh run watch "$memory_run_id" --exit-status');
           const progressDispatch = resume.indexOf('gh workflow run update-intelligence-progress.yml --ref main');
           const progressSuccess = resume.indexOf('gh run watch "$progress_run_id" --exit-status');
-          if (!(cognitiveDispatch >= 0 && cognitiveSuccess > cognitiveDispatch && learningDispatch > cognitiveSuccess && learningSuccess > learningDispatch && memoryDispatch > learningSuccess && memorySuccess > memoryDispatch && progressDispatch > memorySuccess && progressSuccess > progressDispatch)) {
-            throw new Error(`${resumeFile}: recovery must enforce Cognitive SUCCESS → Learning SUCCESS → Project Memory SUCCESS → Intelligence Progress SUCCESS`);
+          if (!(cognitiveDispatch >= 0
+            && cognitiveSuccess > cognitiveDispatch
+            && learningDispatch > cognitiveSuccess
+            && learningSuccess > learningDispatch
+            && proposalDispatch > learningSuccess
+            && proposalSuccess > proposalDispatch
+            && downstreamDispatch > proposalSuccess
+            && downstreamSuccess > downstreamDispatch
+            && memoryDispatch > downstreamSuccess
+            && memorySuccess > memoryDispatch
+            && progressDispatch > memorySuccess
+            && progressSuccess > progressDispatch)) {
+            throw new Error(`${resumeFile}: recovery must enforce Cognitive SUCCESS → Learning SUCCESS → Proposal SUCCESS → Downstream SUCCESS → Project Memory SUCCESS → Intelligence Progress SUCCESS`);
           }
+
+          const proposalFile = '.github/workflows/update-proposal-work-queue.yml';
+          const proposal = fs.readFileSync(proposalFile, 'utf8');
+          if (!proposal.includes('workflow_dispatch:')) throw new Error(`${proposalFile}: workflow_dispatch recovery surface missing`);
+
+          const downstreamFile = '.github/workflows/refresh-downstream-continuity.yml';
+          const downstream = fs.readFileSync(downstreamFile, 'utf8');
+          if (!downstream.includes('workflow_dispatch:')) throw new Error(`${downstreamFile}: workflow_dispatch recovery surface missing`);
+          if (!downstream.includes('Proposal → Builder → Guardian → CURRENT')) throw new Error(`${downstreamFile}: canonical governance tail declaration missing`);
 
           const progressFile = '.github/workflows/update-intelligence-progress.yml';
           const progress = fs.readFileSync(progressFile, 'utf8');
           if (!progress.includes('workflow_dispatch:')) throw new Error(`${progressFile}: workflow_dispatch recovery surface missing`);
           if (progress.includes(`node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"`)) throw new Error(`${progressFile}: fragile summary heredoc regression detected`);
           if (!progress.includes("node -e '")) throw new Error(`${progressFile}: fail-safe summary renderer missing`);
-          console.log('Cognitive recovery Security → Cognitive → Learning → Project Memory → Intelligence Progress ordering PASS');
+          console.log('Cognitive recovery Security → Cognitive → Learning → Proposal → Downstream → Project Memory → Intelligence Progress ordering PASS');
           NODE
           git diff --check
