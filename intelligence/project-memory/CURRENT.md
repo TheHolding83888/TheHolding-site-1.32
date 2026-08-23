@@ -4,7 +4,7 @@
 >
 > Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores the deep current state; the Memory Routing Index selects only the durable blocks relevant to the current task. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
 
-Canonical source state represented here: **2026-08-23T08:49:30.046Z**
+Canonical source state represented here: **2026-08-23T08:50:27.076Z**
 
 ## Resume order
 
@@ -47,15 +47,14 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Current cognitive stack
 
-- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: afe492f93bed8d84f9f61513dad579c107d28b50b5c4359d810193bb7f8080a2.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 40; generatedAt 2026-08-23T08:49:30.046Z.
-- Cognitive Stack Security snapshot is older (2026-08-23T07:52:36.497Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
+- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: cdd2a8ba88ae71a60bea22df7d9781c4889d358afeee1e259552fb15d01564a0.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 38; generatedAt 2026-08-23T08:50:02.250Z.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 25; evidence 27; noExecution true.
 
 ## Learning / Proposal / Builder / Guardian
 
-- Learning: **READY**; active cases 25; remembered cases 137; Brain observations 22; owner decisions 2; settled outcomes 0; lessons 0.
+- Learning: **READY**; active cases 25; remembered cases 137; Brain observations 23; owner decisions 2; settled outcomes 0; lessons 0.
 - Proposal: **WATCH**; active 7; APPROVED 0; PROPOSED 7; SUPERSEDED 21; production execution disabled.
 - Builder: **READY**; candidates 0; CANDIDATE 0; productionMutationAuthorizedCount 0.
 - Guardian: **READY**; research-only 0; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
