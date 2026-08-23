@@ -60,7 +60,14 @@ jobs:
         run: node intelligence/proposals/proposal-decision-bridge.mjs
 
       - name: Independent Proposal reviewer
-        run: node intelligence/proposals/independent-proposal-reviewer.mjs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! node intelligence/proposals/independent-proposal-reviewer.mjs; then
+            echo '--- proposal-eval.json ---'
+            cat intelligence/proposals/proposal-eval.json
+            exit 1
+          fi
 
       - name: Independent Decision reviewer
         run: node intelligence/proposals/independent-proposal-decision-reviewer.mjs
