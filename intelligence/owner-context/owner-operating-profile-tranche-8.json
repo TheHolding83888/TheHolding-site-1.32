@@ -1,5 +1,5 @@
 {
-  "version": "0.1-owner-operating-profile-tranche-8",
+  "version": "0.2-owner-operating-profile-tranche-8-real-yield-fee-economics",
   "asOf": "2026-08-23",
   "status": "canonical-owner-context-read-only",
   "source": {
@@ -7,7 +7,7 @@
     "channel": "owner-chat-explicit-teaching",
     "tranche": 8,
     "questionsCovered": [],
-    "teachingContext": "spontaneous clarification after Experience Loop v0.1 discussion",
+    "teachingContext": "spontaneous clarification after Experience Loop v0.1 discussion, extended with real-yield selection, fee-economics and voting-incentive interpretation",
     "speechNormalization": {
       "normalizeWhenContextIsClear": true,
       "silentGuessingAllowed": false
@@ -31,15 +31,48 @@
     "realYieldUpsideInterpretation": {
       "classification": "explicit-owner-investment-heuristic-not-market-fact",
       "principle": "within already-vetted-quality-real-yield-mechanisms-used-by-The-Holding-a-rise-in-yield-is-positive-economic-upside-not-an-intrinsic-risk-signal",
+      "selectionContext": {
+        "primaryBias": "prefer-real-yield-and-fee-economics-mechanisms-over-opaque-or-purely-promotional-yield",
+        "preferredEconomicSources": [
+          "trading-fees",
+          "protocol-fee-economics",
+          "real-usage-and-utilization",
+          "voting-incentives-and-bribes",
+          "vote-market-demand",
+          "other-source-transparent-cash-flow-mechanisms"
+        ],
+        "onchainTransparencyPreference": true,
+        "ownerInterpretation": "when-yield-is-derived-from-transparent-onchain-economic-flows-it-should-be-read-through-the-underlying-mechanism-rather-than-treated-as-an-arbitrary-reported-apr"
+      },
       "ownerRationale": [
         "when-higher-yield-reflects-higher-trading-volume-fees-usage-or-other-real-business-activity-the-company-earns-more",
         "a-temporary-period-of-higher-real-yield-is-still-positive-during-the-period-it-exists",
         "the-same-positive-interpretation-applies-to-vetted-stable-strategies-when-the-yield-source-remains-real-and-understood",
-        "generic-pyramid-or-hype-heuristics-where-sharply-higher-yield-is-treated-as-inherently-suspicious-should-not-be-imported-into-vetted-real-yield-mechanisms"
+        "generic-pyramid-or-hype-heuristics-where-sharply-higher-yield-is-treated-as-inherently-suspicious-should-not-be-imported-into-vetted-real-yield-mechanisms",
+        "for-fee-driven-mechanisms-a-large-yield-increase-can-reflect-higher-trading-volume-or-fee-generation-and-therefore-more-economic-throughput",
+        "for-voting-markets-and-bribe-style-incentive-systems-higher-incentive-income-can-reflect-more-capital-being-spent-to-attract-votes",
+        "when-market-participants-pay-more-for-the-same-voting-power-the-owner-interprets-that-as-higher-economic-value-of-the-companys-votes",
+        "transparent-onchain-yield-components-are-preferred-because-the-economic-path-can-be-inspected-rather-than-relied-on-as-an-opaque-offchain-claim"
       ],
+      "mechanismSpecificPositiveDrivers": {
+        "feeEconomy": [
+          "trading-volume-up",
+          "fees-generated-up",
+          "protocol-usage-up",
+          "utilization-up-when-economically-relevant"
+        ],
+        "votingEconomy": [
+          "vote-market-incentive-budget-up",
+          "bribe-or-voting-incentive-demand-up",
+          "willingness-to-pay-for-votes-up",
+          "economic-value-of-voting-power-up"
+        ]
+      },
       "appliesTo": [
         "vetted-locked-productive-assets",
         "vetted-dex-and-ve-style-real-yield-mechanisms",
+        "vetted-aerodrome-style-voting-and-fee-economies",
+        "vetted-vote-market-and-bribe-style-incentive-mechanisms",
         "vetted-stable-yield-strategies",
         "other-vetted-real-yield-or-cash-flow-generating-mechanisms"
       ],
@@ -73,6 +106,9 @@
       "trading-volume-change-when-mechanism-relevant",
       "fee-change-when-mechanism-relevant",
       "utilization-change-when-mechanism-relevant",
+      "vote-market-incentive-budget-change-when-relevant",
+      "bribe-or-voting-incentive-change-when-relevant",
+      "value-per-vote-or-voting-power-change-when-relevant",
       "reward-quantity-change",
       "reward-token-price-effect",
       "other-protocol-economics-evidence",
@@ -80,7 +116,8 @@
       "company-exposure",
       "lock-state"
     ],
-    "interpretationRule": "prefer-mechanism-specific-attribution-of-yield-change-and-treat-verified-real-business-driven-upside-as-positive-owner-context-while-leaving-unexplained-source-as-unknown"
+    "interpretationRule": "prefer-mechanism-specific-attribution-of-yield-change-and-treat-verified-real-business-driven-or-voting-demand-driven-upside-as-positive-owner-context-while-leaving-unexplained-source-as-unknown",
+    "votingEconomyRule": "when-a-vetted-voting-mechanism-receives-more-transparent-incentive-capital-for-the-same-voting-rights-interpret-that-as-stronger-market-demand-for-voting-power-subject-to-exact-mechanism-evidence"
   },
   "trackingHooks": [
     {
@@ -94,6 +131,9 @@
         "underlying-volume-change-where-relevant",
         "underlying-fee-change-where-relevant",
         "utilization-change-where-relevant",
+        "vote-market-incentive-budget-change-where-relevant",
+        "bribe-or-voting-incentive-change-where-relevant",
+        "value-per-vote-or-voting-power-change-where-relevant",
         "reward-quantity-effect",
         "reward-price-effect",
         "source-evidence",
@@ -101,7 +141,7 @@
         "duration",
         "estimated-or-observed-income-impact"
       ],
-      "causalInferenceRule": "mechanism-specific-evidence-required-do-not-assume-volume-causes-owner-income-without-proven-economic-path",
+      "causalInferenceRule": "mechanism-specific-evidence-required-do-not-assume-volume-fees-or-voting-incentives-cause-company-income-without-the-proven-economic-path",
       "coverageClaim": "candidate-or-partial-until-source-specific-collector-audit"
     }
   ],
@@ -111,8 +151,11 @@
     "allYieldIncreasesArePositiveWithoutSourceReview": false,
     "unexplainedYieldIncreaseIsAutomaticallyNegative": false,
     "verifiedRealYieldIncreaseIsPositiveOwnerSignal": true,
+    "verifiedFeeEconomyExpansionIsPositiveOwnerSignal": true,
+    "verifiedVotingIncentiveDemandExpansionIsPositiveOwnerSignal": true,
     "genericHighAprDangerHeuristicAppliesAutomaticallyToVettedRealYield": false,
     "yieldChangeAloneAuthorizesCapitalAction": false,
+    "onchainObservabilityAloneProvesSustainability": false,
     "correlationEstablishesCausation": false,
     "mechanismSpecificEvidenceRequiredForCausalAttribution": true
   }
