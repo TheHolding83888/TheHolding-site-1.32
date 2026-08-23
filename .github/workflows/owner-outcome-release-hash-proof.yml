@@ -68,8 +68,6 @@ jobs:
           const s = (v) => JSON.stringify(stable(v));
           const h = (v) => crypto.createHash('sha256').update(v).digest('hex');
           const core = (x) => { const y={...x}; delete y.integrity; return y; };
-          const dcore = (x) => { const y={...x}; delete y.integrity; return y; };
-          const rcore = (x) => { const y={...x}; delete y.integrity; return y; };
           const mkDecision = (id, seq, recordedAt, reviewOnOrAfter, prev) => {
             const x={
               decisionId:id, sequence:seq, recordedAt, authorRole:'owner', caseId:`OWNER-${seq}`, caseKey:`CK-${seq}`,
@@ -94,15 +92,6 @@ jobs:
           fs.writeFileSync(path.join(root,'intelligence/learning/decision-ledger.json'),JSON.stringify(ledger,null,2)+'\n');
           fs.writeFileSync(path.join(root,'intelligence/learning/owner-outcome-review-ledger.json'),JSON.stringify(reviews,null,2)+'\n');
           NODE
-          (
-            cd "$tmp"
-            OWNER_OUTCOME_NOW='2026-08-23T00:00:00Z' node intelligence/learning/owner-outcome-experience-engine.mjs
-            node - <<'NODE'
-            const fs=require('fs'); const x=JSON.parse(fs.readFileSync('intelligence/learning-state/owner-outcome-experience.json','utf8'));
-            if (x.summary.reviewedCount !== 2) throw new Error('synthetic reviewed count mismatch');
-            if (x.summary.lessonCandidateCount !== 2) throw new Error('synthetic candidate count mismatch');
-            if (x.summary.learnedLessonCount !== 1) throw new Error('repeated evidence did not promote exactly one learned association');
-            if (x.learnedLessons[0]?.causalClaim !== false) throw new Error('synthetic learned association claimed causality');
-            console.log('Synthetic repeated-evidence promotion PASS', x.summary);
-            NODE
-          )
+          cd "$tmp"
+          OWNER_OUTCOME_NOW='2026-08-23T00:00:00Z' node intelligence/learning/owner-outcome-experience-engine.mjs
+          node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('intelligence/learning-state/owner-outcome-experience.json','utf8')); if(x.summary.reviewedCount!==2) throw new Error('synthetic reviewed count mismatch'); if(x.summary.lessonCandidateCount!==2) throw new Error('synthetic candidate count mismatch'); if(x.summary.learnedLessonCount!==1) throw new Error('repeated evidence did not promote exactly one learned association'); if(x.learnedLessons[0]?.causalClaim!==false) throw new Error('synthetic learned association claimed causality'); console.log('Synthetic repeated-evidence promotion PASS',x.summary);"
