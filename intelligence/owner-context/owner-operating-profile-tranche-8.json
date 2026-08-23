@@ -1,5 +1,5 @@
 {
-  "version": "0.2-owner-operating-profile-tranche-8-real-yield-fee-economics",
+  "version": "0.3-owner-operating-profile-tranche-8-real-yield-capital-flywheel",
   "asOf": "2026-08-23",
   "status": "canonical-owner-context-read-only",
   "source": {
@@ -7,7 +7,7 @@
     "channel": "owner-chat-explicit-teaching",
     "tranche": 8,
     "questionsCovered": [],
-    "teachingContext": "spontaneous clarification after Experience Loop v0.1 discussion, extended with real-yield selection, fee-economics and voting-incentive interpretation",
+    "teachingContext": "spontaneous clarification after Experience Loop v0.1 discussion, extended with real-yield selection, fee-economics, voting-incentive interpretation and generated-cash-flow capital flywheel",
     "speechNormalization": {
       "normalizeWhenContextIsClear": true,
       "silentGuessingAllowed": false
@@ -94,6 +94,42 @@
         "classification": "conservative-system-interpretation-around-owner-principle",
         "rule": "an-unexplained-yield-increase-is-unknown-not-automatically-negative-and-its-source-should-be-investigated-before-strong-interpretation"
       }
+    },
+    "cashFlowReinforcementFlywheel": {
+      "classification": "explicit-owner-capital-allocation-mental-model-not-automatic-policy",
+      "principle": "for-the-same-productive-capital-base-and-the-same-verified-real-yield-mechanism-a-higher-real-yield-rate-means-a-higher-rate-of-generated-economic-income-which-expands-the-pool-of-capital-available-for-reinvestment-reinforcement-or-owner-distribution",
+      "semanticBoundary": {
+        "referenceAprIsNotAutomaticallyRealisedCash": true,
+        "actualCashFlowDependsOn": [
+          "productive-capital-base",
+          "time",
+          "mechanism-specific-yield-semantics",
+          "claimable-versus-compounded-versus-realised-state",
+          "verified-source-economics"
+        ],
+        "rule": "do-not-conflate-reference-rate-embedded-yield-claimable-rewards-and-realised-cash-flow-even-when-the-owner-uses-generated-cash-flow-as-the-simple-umbrella-mental-model"
+      },
+      "positiveFlywheel": [
+        "verified-real-yield-up",
+        "generated-income-rate-up-for-the-same-capital-base",
+        "more-capital-available-for-contextual-allocation",
+        "potential-reinforcement-of-productive-or-foundation-capital",
+        "potentially-larger-future-productive-capital-base",
+        "potentially-more-future-generated-income"
+      ],
+      "possibleAllocationDestinations": [
+        "new-productive-assets",
+        "reinforce-existing-productive-assets",
+        "foundation-assets",
+        "collateral-or-reserve-assets",
+        "productive-stable-strategies",
+        "other-company-capital-layers",
+        "owner-life-or-distributions"
+      ],
+      "allocationIsContextual": true,
+      "automaticReinvestmentRule": false,
+      "automaticOwnerDistributionRule": false,
+      "ownerInterpretation": "generated-income-is-a-resource-that-can-strengthen-multiple-capital-layers-or-be-distributed-and-the-choice-depends-on-the-whole-company-context"
     }
   },
   "runtimeReasoningHooks": {
@@ -117,7 +153,38 @@
       "lock-state"
     ],
     "interpretationRule": "prefer-mechanism-specific-attribution-of-yield-change-and-treat-verified-real-business-driven-or-voting-demand-driven-upside-as-positive-owner-context-while-leaving-unexplained-source-as-unknown",
-    "votingEconomyRule": "when-a-vetted-voting-mechanism-receives-more-transparent-incentive-capital-for-the-same-voting-rights-interpret-that-as-stronger-market-demand-for-voting-power-subject-to-exact-mechanism-evidence"
+    "votingEconomyRule": "when-a-vetted-voting-mechanism-receives-more-transparent-incentive-capital-for-the-same-voting-rights-interpret-that-as-stronger-market-demand-for-voting-power-subject-to-exact-mechanism-evidence",
+    "cashFlowFlywheelRule": "for-the-same-capital-base-and-verified-real-yield-mechanism-higher-earned-yield-increases-generated-income-rate-and-therefore-expands-contextual-reinvestment-or-distribution-capacity-without-authorizing-any-automatic-allocation",
+    "relationshipCandidates": [
+      {
+        "kind": "economic-rate-to-income-rate",
+        "from": "verified-real-yield-rate",
+        "to": "generated-cash-flow-rate",
+        "status": "candidate-derived",
+        "rule": "valid-only-for-the-same-capital-base-time-basis-and-mechanism-specific-earned-yield-semantics"
+      },
+      {
+        "kind": "cash-flow-to-capital-capacity",
+        "from": "generated-cash-flow",
+        "to": "capital-reinforcement-capacity",
+        "status": "candidate-owner-context",
+        "rule": "generated-income-expands-the-pool-that-can-be-reinvested-but-does-not-determine-the-destination"
+      },
+      {
+        "kind": "cash-flow-to-owner-distribution-capacity",
+        "from": "generated-cash-flow",
+        "to": "owner-distribution-capacity",
+        "status": "candidate-owner-context",
+        "rule": "part-of-generated-income-may-be-used-for-owner-life-or-distributions-subject-to-human-choice"
+      },
+      {
+        "kind": "reinforcement-to-future-capital-base",
+        "from": "capital-reinforcement-capacity",
+        "to": "future-productive-capital-base",
+        "status": "candidate-hypothesized",
+        "rule": "requires-observed-allocation-and-subsequent-capital-state-before-promotion"
+      }
+    ]
   },
   "trackingHooks": [
     {
@@ -131,9 +198,9 @@
         "underlying-volume-change-where-relevant",
         "underlying-fee-change-where-relevant",
         "utilization-change-where-relevant",
-        "vote-market-incentive-budget-change-where-relevant",
-        "bribe-or-voting-incentive-change-where-relevant",
-        "value-per-vote-or-voting-power-change-where-relevant",
+        "vote-market-incentive-budget-change-when-relevant",
+        "bribe-or-voting-incentive-change-when-relevant",
+        "value-per-vote-or-voting-power-change-when-relevant",
         "reward-quantity-effect",
         "reward-price-effect",
         "source-evidence",
@@ -143,6 +210,26 @@
       ],
       "causalInferenceRule": "mechanism-specific-evidence-required-do-not-assume-volume-fees-or-voting-incentives-cause-company-income-without-the-proven-economic-path",
       "coverageClaim": "candidate-or-partial-until-source-specific-collector-audit"
+    },
+    {
+      "id": "generated-cash-flow-allocation-flywheel",
+      "desiredFields": [
+        "company",
+        "source-mechanism",
+        "generated-income-state",
+        "generated-income-usd",
+        "generated-income-units",
+        "time-window",
+        "allocation-decision",
+        "allocation-destination",
+        "destination-capital-layer",
+        "reinvested-usd",
+        "distributed-usd",
+        "post-allocation-capital-base",
+        "future-income-impact-when-observed"
+      ],
+      "economicSemanticRule": "keep-reference-rate-embedded-yield-claimable-rewards-realised-cash-flow-and-capital-allocation-separate-in-machine-state",
+      "coverageClaim": "candidate-until-source-specific-income-and-allocation-evidence-exists"
     }
   ],
   "epistemicGuardrails": {
@@ -156,6 +243,8 @@
     "genericHighAprDangerHeuristicAppliesAutomaticallyToVettedRealYield": false,
     "yieldChangeAloneAuthorizesCapitalAction": false,
     "onchainObservabilityAloneProvesSustainability": false,
+    "higherReferenceAprAloneProvesRealisedCashFlow": false,
+    "cashFlowFlywheelIsAutomaticPolicy": false,
     "correlationEstablishesCausation": false,
     "mechanismSpecificEvidenceRequiredForCausalAttribution": true
   }
