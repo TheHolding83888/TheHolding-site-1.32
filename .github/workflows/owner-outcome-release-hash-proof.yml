@@ -1,4 +1,4 @@
-name: "TEMP · Owner Outcome Release Hash Proof"
+name: "TEMP · Owner Outcome Release Full Proof"
 
 on:
   pull_request:
@@ -8,19 +8,101 @@ permissions:
   contents: read
 
 jobs:
-  hashes:
+  proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - name: Exact static SHA-256 vector
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Exact release + static validation
         shell: bash
         run: |
           set -euo pipefail
-          sha256sum \
-            intelligence/learning/owner-outcome-review-policy.json \
-            intelligence/learning/owner-outcome-review-recorder.mjs \
-            intelligence/learning/owner-outcome-experience-engine.mjs \
-            intelligence/learning/independent-owner-outcome-experience-reviewer.mjs \
-            .github/workflows/update-learning-loop.yml \
-            .github/workflows/record-owner-economic-outcome-review.yml
+          node intelligence/learning/learning-release-guard.mjs
+          node --check intelligence/learning/owner-outcome-review-recorder.mjs
+          node --check intelligence/learning/owner-outcome-experience-engine.mjs
+          node --check intelligence/learning/independent-owner-outcome-experience-reviewer.mjs
+          node intelligence/learning/owner-outcome-review-recorder.mjs --self-test
+          node intelligence/learning/owner-outcome-experience-engine.mjs --self-test
+          node intelligence/learning/independent-owner-outcome-experience-reviewer.mjs --self-test
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/learning/owner-outcome-review-policy.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/owner-outcome-review-ledger.json','utf8'));"
+
+      - name: Build current owner experience state
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/learning/owner-outcome-experience-engine.mjs
+          node intelligence/learning/independent-owner-outcome-experience-reviewer.mjs
+          node - <<'NODE'
+          const fs = require('fs');
+          const x = JSON.parse(fs.readFileSync('intelligence/learning-state/owner-outcome-experience.json','utf8'));
+          if (x.status !== 'ready') throw new Error('owner outcome state not ready');
+          if (x.operatingContract?.executionAuthority !== 'none') throw new Error('execution authority drift');
+          if (x.operatingContract?.causalClaimAuthority !== 'none') throw new Error('causal authority drift');
+          if (x.summary?.learnedLessonCount !== 0) throw new Error('unexpected learned lesson in current production fixture');
+          console.log('Current owner outcome fixture PASS', x.summary);
+          NODE
+          git diff --check
+
+      - name: Synthetic lifecycle + lesson-promotion proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          mkdir -p "$tmp/intelligence/learning" "$tmp/intelligence/learning-state"
+          cp intelligence/learning/owner-outcome-review-policy.json "$tmp/intelligence/learning/"
+          cp intelligence/learning/owner-outcome-experience-engine.mjs "$tmp/intelligence/learning/"
+          node - "$tmp" <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const crypto = require('crypto');
+          const root = process.argv[2];
+          const stable = (v) => Array.isArray(v) ? v.map(stable) : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, stable(v[k])])) : v);
+          const s = (v) => JSON.stringify(stable(v));
+          const h = (v) => crypto.createHash('sha256').update(v).digest('hex');
+          const core = (x) => { const y={...x}; delete y.integrity; return y; };
+          const dcore = (x) => { const y={...x}; delete y.integrity; return y; };
+          const rcore = (x) => { const y={...x}; delete y.integrity; return y; };
+          const mkDecision = (id, seq, recordedAt, reviewOnOrAfter, prev) => {
+            const x={
+              decisionId:id, sequence:seq, recordedAt, authorRole:'owner', caseId:`OWNER-${seq}`, caseKey:`CK-${seq}`,
+              disposition:'defer', rationale:'Synthetic rationale for deterministic lifecycle proof.', expectedOutcome:'Expected path remains observable at review.', modifiedAction:null, supersedesDecisionId:null,
+              prediction:{event:'none',probabilityBps:null,reviewDays:null,reviewAt:null},
+              experience:{version:'0.1-pre-outcome-owner-economic-decision',status:'open',preOutcomeCaptured:true,evaluationCriterion:'Later evidence resolves the expected path.',reviewCondition:{reviewOnOrAfter,amountThreshold:null,materialChangeTrigger:true},counterevidence:'Counterevidence exists.',invalidationCondition:'Invalidation may occur.',deferredAlternative:'Alternative exists.',intendedUse:null,confidence:null,evidenceNote:null,calibrationEligibility:'not-scored-until-explicit-future-outcome-review'},
+              sourceCase:{payloadHash:h(id),domain:'economic',severity:'owner-review',category:'reward-harvest-timing',entity:'synthetic.eth',recommendationClass:'owner-capital-allocation',riskTier:'owner-defined',confidence:null,deterministicAction:null,evidenceCount:1,actionMode:'proposal-only'},
+              source:{provenance:{sourceMode:'owner-initiated',authorRole:'owner',peerOwnerStatement:false,directBrainCase:false}},
+              authority:{recordType:'human-decision-memory',sourceMode:'owner-initiated',executable:false,executionAuthority:'none'},
+              chain:{previousDecisionHash:prev}
+            };
+            x.integrity={decisionHash:h(s(x))}; return x;
+          };
+          const d1=mkDecision('DEC-SYN-1',1,'2026-08-01T00:00:00.000Z','2026-08-20',null);
+          const d2=mkDecision('DEC-SYN-2',2,'2026-08-02T00:00:00.000Z','2026-08-21',d1.integrity.decisionHash);
+          const ledger={version:'0.1-decision-ledger',lastUpdatedAt:d2.recordedAt,decisionCount:2,policy:{appendOnly:true,correctionsBySupersedingEntryOnly:true,publicDecisionMemory:true,executionAuthority:'none'},decisions:[d1,d2]};
+          ledger.integrity={chainRootHash:d1.integrity.decisionHash,latestDecisionHash:d2.integrity.decisionHash,ledgerHash:h(s(core(ledger)))};
+          const mkReview=(id,seq,d,prev)=>{ const x={reviewId:id,sequence:seq,reviewedAt:'2026-08-22T00:00:00.000Z',authorRole:'owner',decisionId:d.decisionId,caseId:d.caseId,caseKey:d.caseKey,trigger:'horizon',materialChange:null,outcomeStatus:'supported',confidence:'high',summary:'Synthetic later evidence supports the pre-recorded expected path.',criterionAssessment:'Criterion supported.',counterevidenceAssessment:'Counterevidence did not invalidate.',invalidationAssessment:'Invalidation did not occur.',supersedesReviewId:null,evidence:{sourceCommitSha:'0000000000000000000000000000000000000000',files:[{file:'intelligence/system-memory.json',role:'primary',sha256:'0'.repeat(64),generatedAt:null,observedAt:null,asOf:null,version:null}],evidenceCompositeHash:h(s([{file:'intelligence/system-memory.json',role:'primary',sha256:'0'.repeat(64)}]))},authority:{recordType:'human-outcome-review-memory',executable:false,executionAuthority:'none'},chain:{previousReviewHash:prev}}; x.integrity={reviewHash:h(s(x))}; return x; };
+          const r1=mkReview('ORV-SYN-1',1,d1,null); const r2=mkReview('ORV-SYN-2',2,d2,r1.integrity.reviewHash);
+          const reviews={version:'0.1-owner-outcome-review-ledger',lastUpdatedAt:r2.reviewedAt,reviewCount:2,policy:{appendOnly:true,correctionsBySupersedingEntryOnly:true,publicOutcomeMemory:true,executionAuthority:'none'},reviews:[r1,r2]};
+          reviews.integrity={chainRootHash:r1.integrity.reviewHash,latestReviewHash:r2.integrity.reviewHash,ledgerHash:h(s(core(reviews)))};
+          fs.writeFileSync(path.join(root,'intelligence/learning/decision-ledger.json'),JSON.stringify(ledger,null,2)+'\n');
+          fs.writeFileSync(path.join(root,'intelligence/learning/owner-outcome-review-ledger.json'),JSON.stringify(reviews,null,2)+'\n');
+          NODE
+          (
+            cd "$tmp"
+            OWNER_OUTCOME_NOW='2026-08-23T00:00:00Z' node intelligence/learning/owner-outcome-experience-engine.mjs
+            node - <<'NODE'
+            const fs=require('fs'); const x=JSON.parse(fs.readFileSync('intelligence/learning-state/owner-outcome-experience.json','utf8'));
+            if (x.summary.reviewedCount !== 2) throw new Error('synthetic reviewed count mismatch');
+            if (x.summary.lessonCandidateCount !== 2) throw new Error('synthetic candidate count mismatch');
+            if (x.summary.learnedLessonCount !== 1) throw new Error('repeated evidence did not promote exactly one learned association');
+            if (x.learnedLessons[0]?.causalClaim !== false) throw new Error('synthetic learned association claimed causality');
+            console.log('Synthetic repeated-evidence promotion PASS', x.summary);
+            NODE
+          )
