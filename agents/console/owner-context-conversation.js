@@ -112,7 +112,7 @@
     if (overlay?.version !== '0.1-brain-owner-context-overlay') throw new Error('Unexpected Brain owner-context overlay version');
     if (overlay?.constraints?.executionAllowed !== false || overlay?.constraints?.proposalOnly !== true) throw new Error('Overlay execution boundary failed');
     if (overlay?.ownerDecisionContext?.contextHash !== context?.contextHash) throw new Error('Owner context / Brain overlay binding mismatch');
-    if (graph?.version !== '0.1-intelligence-graph-growth-directive') throw new Error('Unexpected Intelligence Graph directive version');
+    if (graph?.version !== '0.2-intelligence-graph-growth-directive-autonomous-experience') throw new Error('Unexpected Intelligence Graph directive version');
     if (graph?.authority?.executionAuthority !== 'none' || graph?.authority?.marketFactAuthority !== false) throw new Error('Graph authority boundary failed');
     if (ecosystem?.version !== '0.1-owner-ecosystem-investment-thesis') throw new Error('Unexpected ecosystem thesis version');
     if (ecosystem?.authority?.executionAuthority !== 'none') throw new Error('Ecosystem thesis authority boundary failed');
@@ -147,9 +147,9 @@
 
     const authority = includesAny(q, [
       'rebalance capital from owner context', 'execute the sale automatically', 'change thi policy',
-      'promote a candidate relationship', 'sign a transaction', 'ребалансировку по owner context',
+      'promote a candidate relationship', 'ребалансировку по owner context',
       'выполни продажу автоматически', 'измени thi policy', 'запиши candidate relationship как proven',
-      'подпиши транзакцию', 'без моего подтверждения'
+      'без моего подтверждения'
     ]);
     if (authority) return 'authority';
 
@@ -171,7 +171,7 @@
 
     if (includesAny(q, ['health factor', ' hf ', 'hf 1.8', 'collateral risk', 'stable buffer', 'ликвидац'])) return 'health-factor';
     if (includesAny(q, ['locked', 'liquid productive', 'lock state', 'voting power', 'unlock', 'залоч', 'лок', 'ликвидн asset', 'voting'])) return 'lock-aware';
-    if (includesAny(q, ['rwa', 'fructus', 'ondo', 'tokenized real estate', 'tokenized real'])) return 'rwa';
+    if (includesAny(q, ['rwa', 'fructus', 'tokenized real estate', 'tokenized real']) || q.split(' ').includes('ondo')) return 'rwa';
     if (includesAny(q, ['ideal company', '5 10 years', '5–10', 'foundation should', 'dependence on one protocol', 'diversification dimensions', 'offchain', 'идеальн company', 'идеальная company', 'через 5', 'foundation должен', 'одного protocol', 'диверсификац'])) return 'ideal-company';
     if (includesAny(q, ['knowledge graph growth', '35 teaching', 'teaching units not', 'increase thi', 'experience factor', 'more questions', 'maturity', 'не должны автоматически повышать thi', 'knowledge graph', 'больше вопросов'])) return 'thi-vs-knowledge';
     if (includesAny(q, ['decision quality', 'outcome quality', 'hindsight bias', 'settled outcomes', 'learning case', 'future outcomes', 'качество решения', 'качество результата', 'ретроспектив', 'будущими outcomes'])) return 'decision-outcome';
