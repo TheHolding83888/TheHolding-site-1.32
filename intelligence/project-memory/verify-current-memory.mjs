@@ -24,6 +24,18 @@ for (const f of [collaborationFile, routingFile, marketDataCanon]) {
   if (!fs.existsSync(`${root}/${f}`)) throw new Error(`Required project-memory contract missing: ${f}`);
 }
 
+const collaboration = fs.readFileSync(`${root}/${collaborationFile}`, 'utf8');
+for (const phrase of [
+  'Bounded routine merge flow',
+  'routine, low-risk repository changes may proceed',
+  'bounded',
+  'capital movement',
+  'security-policy mutation',
+  'expected_head_sha',
+]) {
+  if (!collaboration.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Owner Collaboration canon missing bounded merge-flow phrase: ${phrase}`);
+}
+
 const router = fs.readFileSync(`${root}/${routingFile}`, 'utf8');
 for (const phrase of [
   'CURRENT → continuity → router → task canon → live artifact → exact evidence',
@@ -99,7 +111,7 @@ for (const phrase of [
   'Do not load every historical checkpoint by default',
   'Default working language with the owner is **Russian**',
   'Work **one primary objective at a time**',
-  'not a new production merge',
+  'Routine low-risk repository work may proceed through verified PR merge and production proof without a separate per-PR confirmation',
   'Live-site screenshots are visual acceptance evidence',
   'not a psychological profile',
 ]) {
