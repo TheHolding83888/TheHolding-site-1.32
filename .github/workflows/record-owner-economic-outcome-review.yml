@@ -68,6 +68,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: owner-outcome-review-main
@@ -76,7 +77,7 @@ concurrency:
 jobs:
   record:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 12
     steps:
       - name: Checkout canonical repository state
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -145,6 +146,7 @@ jobs:
           git diff --check
 
       - name: Publish append-only outcome review safely
+        id: publish
         env:
           OUTCOME_VERIFY_REVIEW_ID: ${{ steps.record.outputs.review_id }}
         shell: bash
@@ -155,6 +157,7 @@ jobs:
           git add intelligence/learning/owner-outcome-review-ledger.json
           if git diff --cached --quiet; then
             echo "No owner outcome review change to publish."
+            echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           mapfile -t staged < <(git diff --cached --name-only)
@@ -176,6 +179,7 @@ jobs:
             node intelligence/learning/owner-outcome-review-recorder.mjs --verify-review
 
             if git push origin HEAD:main; then
+              echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             echo "Push attempt ${attempt} failed; retrying after fetch/rebase."
@@ -183,6 +187,85 @@ jobs:
           done
           echo "Owner Outcome Memory could not publish after 3 attempts."
           exit 1
+
+      - name: Explicitly refresh canonical Learning and verify materialization
+        id: learning
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVIEW_ID: ${{ steps.record.outputs.review_id }}
+          DECISION_ID: ${{ inputs.decision_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          API="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}"
+          api_get() {
+            curl -fsSL \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "$1"
+          }
+          main_sha() { api_get "${API}/git/ref/heads/main" | jq -r '.object.sha'; }
+          wait_run_success() {
+            local run_id="$1" elapsed=0 status conclusion
+            while [ "$elapsed" -lt 480 ]; do
+              status="$(api_get "${API}/actions/runs/${run_id}" | jq -r '.status // empty')"
+              conclusion="$(api_get "${API}/actions/runs/${run_id}" | jq -r '.conclusion // empty')"
+              echo "Learning run $run_id: status=$status conclusion=${conclusion:-pending}"
+              if [ "$status" = "completed" ]; then
+                [ "$conclusion" = "success" ] || { echo "Learning failed: $conclusion"; exit 1; }
+                return 0
+              fi
+              sleep 4
+              elapsed=$((elapsed+4))
+            done
+            echo "Timed out waiting for Learning run $run_id"
+            exit 1
+          }
+
+          before="$(mktemp)"
+          api_get "${API}/actions/workflows/update-learning-loop.yml/runs?per_page=30" | jq -r '.workflow_runs[].id' > "$before"
+          expected_sha="$(main_sha)"
+          code="$(curl -sS -o /tmp/learning-dispatch-response.txt -w '%{http_code}' -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${API}/actions/workflows/update-learning-loop.yml/dispatches" \
+            --data-binary '{"ref":"main"}')"
+          [ "$code" = "204" ] || {
+            echo "Learning dispatch failed with HTTP $code"
+            cat /tmp/learning-dispatch-response.txt || true
+            exit 1
+          }
+
+          run_id=""
+          elapsed=0
+          while [ "$elapsed" -lt 90 ]; do
+            run_id="$(api_get "${API}/actions/workflows/update-learning-loop.yml/runs?event=workflow_dispatch&branch=main&per_page=30" |
+              jq -r --arg sha "$expected_sha" '.workflow_runs[] | select(.head_sha==$sha) | .id' |
+              while read -r id; do
+                if ! grep -qx "$id" "$before"; then echo "$id"; break; fi
+              done)"
+            [ -n "$run_id" ] && break
+            sleep 3
+            elapsed=$((elapsed+3))
+          done
+          rm -f "$before"
+          [ -n "$run_id" ] || { echo "Could not resolve explicit Learning run"; exit 1; }
+          echo "Resolved Learning run: $run_id"
+          wait_run_success "$run_id"
+          echo "learning_run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+          state_json="$(api_get "${API}/contents/intelligence/learning-state/owner-outcome-experience.json?ref=main")"
+          state="$(printf '%s' "$state_json" | jq -r '.content' | tr -d '\n' | base64 -d)"
+          actual_review="$(printf '%s' "$state" | jq -r --arg d "$DECISION_ID" '.decisions[] | select(.decisionId==$d) | .latestReview.reviewId // empty')"
+          lifecycle="$(printf '%s' "$state" | jq -r --arg d "$DECISION_ID" '.decisions[] | select(.decisionId==$d) | .lifecycleState // empty')"
+          authority="$(printf '%s' "$state" | jq -r '.operatingContract.executionAuthority // empty')"
+          causal="$(printf '%s' "$state" | jq -r '.operatingContract.causalClaimAuthority // empty')"
+          [ "$actual_review" = "$REVIEW_ID" ] || { echo "Published owner outcome state does not contain review $REVIEW_ID"; exit 1; }
+          [ "$lifecycle" = "reviewed" ] || { echo "Published owner outcome lifecycle is not reviewed"; exit 1; }
+          [ "$authority" = "none" ] && [ "$causal" = "none" ] || { echo "Published owner outcome authority drift"; exit 1; }
+          echo "Owner outcome state materialized on main with review $REVIEW_ID"
 
       - name: Owner outcome review summary
         if: always()
@@ -196,7 +279,8 @@ jobs:
             echo "Trigger: \`${{ inputs.trigger }}\`"
             echo "Outcome: \`${{ inputs.outcome_status }}\`"
             echo "Confidence: \`${{ inputs.confidence }}\`"
+            echo "Learning run: \`${{ steps.learning.outputs.learning_run_id }}\`"
             echo "Execution authority: \`none\`"
             echo
-            echo "A reviewed outcome may create a lesson candidate. One review alone can never become a learned lesson."
+            echo "The review is not closed until the canonical Learning writer succeeds and the reviewed state physically materializes on main."
           } >> "$GITHUB_STEP_SUMMARY"
