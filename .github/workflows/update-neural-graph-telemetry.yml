@@ -7,6 +7,8 @@ on:
   pull_request:
     paths:
       - "intelligence/neural-graph/**"
+      - "intelligence/observational-learning/**"
+      - "intelligence/change-history.json"
       - "intelligence/owner-context/owner-operating-profile*.json"
       - "intelligence/owner-context/owner-operating-context-text-tranches-1-3.json"
       - "intelligence/owner-context/owner-context-runtime.mjs"
@@ -29,6 +31,7 @@ on:
       - "companies/productivity-data.json"
       - "companies/stable-capital-data.json"
       - "intelligence/event-intelligence.json"
+      - "intelligence/change-history.json"
       - "intelligence/brain-chatgpt-bridge.json"
       - "intelligence/learning/decision-ledger.json"
       - "intelligence/learning/owner-outcome-review-ledger.json"
@@ -39,9 +42,12 @@ on:
       - "intelligence/owner-context/owner-decision-context.json"
       - "intelligence/owner-context/intelligence-graph-growth-directive.json"
       - "intelligence/owner-context/owner-teaching-activation.json"
+      - "intelligence/observational-learning/observational-learning-policy.json"
+      - "intelligence/observational-learning/observational-learning-engine.mjs"
       - "intelligence/neural-graph/neural-graph-telemetry.mjs"
       - "intelligence/neural-graph/neural-graph-quality.mjs"
       - "intelligence/neural-graph/neural-graph-experience-vnext.mjs"
+      - "intelligence/neural-graph/neural-graph-observational-vnext.mjs"
       - "agents/console/neural-graph-dashboard.js"
       - "agents/console/neural-graph-quality.js"
       - "agents/console/neural-graph-daily-delta.js"
@@ -82,6 +88,10 @@ jobs:
           test -s intelligence/neural-graph/neural-graph-telemetry.mjs
           test -s intelligence/neural-graph/neural-graph-quality.mjs
           test -s intelligence/neural-graph/neural-graph-experience-vnext.mjs
+          test -s intelligence/neural-graph/neural-graph-observational-vnext.mjs
+          test -s intelligence/observational-learning/observational-learning-policy.json
+          test -s intelligence/observational-learning/observational-learning-engine.mjs
+          test -s intelligence/change-history.json
           test -s intelligence/owner-context/owner-context-runtime.mjs
           test -s intelligence/owner-context/owner-teaching-activation.json
           test -s intelligence/learning/decision-ledger.json
@@ -98,6 +108,8 @@ jobs:
           node --check intelligence/neural-graph/neural-graph-telemetry.mjs
           node --check intelligence/neural-graph/neural-graph-quality.mjs
           node --check intelligence/neural-graph/neural-graph-experience-vnext.mjs
+          node --check intelligence/neural-graph/neural-graph-observational-vnext.mjs
+          node --check intelligence/observational-learning/observational-learning-engine.mjs
           node --check agents/console/neural-graph-dashboard.js
           node --check agents/console/neural-graph-quality.js
           node --check agents/console/neural-graph-daily-delta.js
@@ -113,6 +125,10 @@ jobs:
           grep -q "Unsupported causal Neural Graph edges" intelligence/neural-graph/neural-graph-experience-vnext.mjs
           grep -q "owner-heuristic-contextualizes" intelligence/neural-graph/neural-graph-experience-vnext.mjs
           grep -q "connectedComponentChange" intelligence/neural-graph/neural-graph-experience-vnext.mjs
+          grep -q "possible-period-reset-or-correction" intelligence/observational-learning/observational-learning-engine.mjs
+          grep -q "candidate temporal pattern, not a causal explanation" intelligence/observational-learning/observational-learning-engine.mjs
+          grep -q "Observational learner has no causal edge authority" intelligence/neural-graph/neural-graph-observational-vnext.mjs
+          grep -q "changed-after" intelligence/neural-graph/neural-graph-observational-vnext.mjs
           grep -q '"activated"' intelligence/owner-context/owner-teaching-activation.json
           grep -q '"blocked"' intelligence/owner-context/owner-teaching-activation.json
           grep -q '"contextual"' intelligence/owner-context/owner-teaching-activation.json
@@ -124,6 +140,12 @@ jobs:
 
       - name: Prove future non-empty experience relation safety
         run: node intelligence/neural-graph/neural-graph-experience-vnext.mjs --self-test
+
+      - name: Prove observational episode and counter-reset safety
+        run: node intelligence/observational-learning/observational-learning-engine.mjs --self-test
+
+      - name: Prove observational graph anti-causality and traceability
+        run: node intelligence/neural-graph/neural-graph-observational-vnext.mjs --self-test
 
       - name: Compile exact owner context for graph source binding
         run: node intelligence/owner-context/owner-context-runtime.mjs
@@ -137,12 +159,19 @@ jobs:
       - name: Enrich graph with Decision Outcome Lesson relations
         run: node intelligence/neural-graph/neural-graph-experience-vnext.mjs
 
-      - name: Validate graph semantics, connectivity, activation and experience traceability
+      - name: Compile autonomous observational experience
+        run: node intelligence/observational-learning/observational-learning-engine.mjs
+
+      - name: Enrich canonical graph with observational episodes and patterns
+        run: node intelligence/neural-graph/neural-graph-observational-vnext.mjs
+
+      - name: Validate graph semantics, connectivity, experience and observational learning
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
+          const crypto = require('crypto');
           const x = JSON.parse(fs.readFileSync('intelligence/neural-graph/neural-graph-telemetry.json', 'utf8'));
           const h = JSON.parse(fs.readFileSync('intelligence/neural-graph/neural-graph-history.json', 'utf8'));
           const q = JSON.parse(fs.readFileSync('intelligence/neural-graph/neural-graph-quality.json', 'utf8'));
@@ -150,6 +179,10 @@ jobs:
           const om = JSON.parse(fs.readFileSync('intelligence/learning-state/outcome-memory.json', 'utf8'));
           const ox = JSON.parse(fs.readFileSync('intelligence/learning-state/owner-outcome-experience.json', 'utf8'));
           const or = JSON.parse(fs.readFileSync('intelligence/learning/owner-outcome-review-ledger.json', 'utf8'));
+          const obsText = fs.readFileSync('intelligence/observational-learning/observational-experience.json', 'utf8');
+          const obs = JSON.parse(obsText);
+          const changeText = fs.readFileSync('intelligence/change-history.json', 'utf8');
+          const sha256 = text => crypto.createHash('sha256').update(text).digest('hex');
 
           if (x.version !== '0.1-neural-graph-telemetry') throw new Error('unexpected base telemetry version');
           if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('graph gained execution authority');
@@ -161,8 +194,8 @@ jobs:
           if (h.version !== '0.1-neural-graph-history' || !Array.isArray(h.snapshots) || h.snapshots.length < 1) throw new Error('history unavailable');
           if (!x.integrity?.nodeCompositeHash || !x.integrity?.connectionCompositeHash || !x.integrity?.sourceCompositeHash) throw new Error('graph integrity missing');
 
-          if (q.version !== '0.3-neural-graph-relation-quality-experience') throw new Error(`unexpected graph-quality version: ${q.version}`);
-          if (q.engineVersion !== '0.3.1-experience-traceability-semantic-bridge-evaluator') throw new Error(`unexpected graph-quality engine: ${q.engineVersion}`);
+          if (q.version !== '0.4-neural-graph-observational-experience') throw new Error(`unexpected graph-quality version: ${q.version}`);
+          if (q.engineVersion !== '0.4.0-observational-experience-bridge') throw new Error(`unexpected graph-quality engine: ${q.engineVersion}`);
           if (q.authority?.executionAuthority !== 'none' || q.authority?.readOnly !== true) throw new Error('graph quality gained execution authority');
           if (q.authority?.causalClaimAuthority !== 'none-by-default') throw new Error('graph gained implicit causal authority');
 
@@ -184,8 +217,10 @@ jobs:
           for (const domain of ['protocol-economics', 'cash-flow-semantics', 'capital-allocation']) {
             if (!bridges.includes(domain)) throw new Error(`owner heuristic missing semantic bridge: ${domain}`);
           }
-          if (Number(q.connectivity?.vNextDelta?.connectedComponentChange) > 0) throw new Error('vNext created a new established graph island instead of joining existing semantic fabric');
-          if (Number(q.connectivity?.vNextDelta?.addedEstablishedNodes) < 1 || Number(q.connectivity?.vNextDelta?.addedEstablishedConnections) < 1) throw new Error('vNext enrichment did not add established relational value');
+          if (Number(q.connectivity?.vNextDelta?.connectedComponentChange) > 0) throw new Error('Experience vNext created a new established graph island');
+          if (Number(q.connectivity?.vNextDelta?.addedEstablishedNodes) < 1 || Number(q.connectivity?.vNextDelta?.addedEstablishedConnections) < 1) throw new Error('Experience vNext enrichment did not add established relational value');
+          if (Number(q.connectivity?.observationalDelta?.connectedComponentChange) > 0) throw new Error('Observational vNext created a new established graph island');
+          if (Number(q.connectivity?.observationalDelta?.addedEstablishedNodes) < 1 || Number(q.connectivity?.observationalDelta?.addedEstablishedConnections) < 1) throw new Error('Observational vNext did not add established relational value');
 
           if (q.candidateCapacity?.activeReviewCount > q.candidateCapacity?.activeReviewCap) throw new Error('candidate active review exceeds cap');
           if (q.utility?.questionsMadeAnswerableByGraph !== null || q.utility?.measurementStatus !== 'warming') throw new Error('graph-only utility must remain warming until causally evaluated');
@@ -200,7 +235,6 @@ jobs:
             ['learnedLessonCount', ox.learnedLessons?.length ?? 0],
           ];
           for (const [key, expected] of exact) if (Number(t[key]) !== Number(expected)) throw new Error(`${key} source mismatch: ${t[key]} != ${expected}`);
-
           const requireTraceability = (countKey, pctKey) => {
             const count = Number(t[countKey]);
             const value = t[pctKey];
@@ -214,9 +248,25 @@ jobs:
           requireTraceability('lessonCandidateCount', 'lessonCandidateTraceabilityPct');
           requireTraceability('learnedLessonCount', 'learnedLessonTraceabilityPct');
 
+          if (obs.version !== '0.1-autonomous-observational-experience') throw new Error(`unexpected observational version: ${obs.version}`);
+          if (obs.authority?.executionAuthority !== 'none' || obs.authority?.causalClaimAuthority !== 'none') throw new Error('observational state gained authority');
+          if (obs.source?.sha256 !== sha256(changeText)) throw new Error('observational state is not exact-byte bound to change history');
+          if (!Array.isArray(obs.episodes) || obs.episodes.length < 1) throw new Error('no real observational episodes compiled');
+          if (obs.episodes.some(e => e?.epistemic?.causalClaim !== false || e?.economicLossInferred !== false)) throw new Error('observational episode escaped causal/reset boundary');
+          if (obs.episodes.some(e => e?.possiblePeriodResetOrCorrection === true && e?.direction !== null)) throw new Error('counter reset/correction was misread as economic direction');
+          if (!Array.isArray(obs.patternCandidates) || obs.patternCandidates.length < 1) throw new Error('no repeated real pattern candidate compiled');
+          if (obs.patternCandidates.some(p => p?.status !== 'candidate' || p?.causalClaim !== false || Number(p?.supportCount) < 2)) throw new Error('observational candidate boundary failed');
+
+          const ol = q.observationalLearning;
+          if (!ol) throw new Error('observational learning graph summary missing');
+          if (Number(ol.episodeCount) !== obs.episodes.length || Number(ol.patternCandidateCount) !== obs.patternCandidates.length) throw new Error('observational graph/source count mismatch');
+          if (ol.episodeTraceabilityPct !== 100 || ol.patternCandidateTraceabilityPct !== 100) throw new Error('observational graph traceability is incomplete');
+          if (Number(ol.causalConnectionCount) !== 0 || ol.causalClaimAuthority !== 'none' || ol.executionAuthority !== 'none') throw new Error('observational graph gained causal/execution authority');
+          for (const kind of ['observed-in','changed-after','pattern-observed-across','hypothesis-about']) if (!ol.relationKinds?.includes(kind)) throw new Error(`observational relation kind missing: ${kind}`);
+
           if (Number(q.relationQuality?.unsupportedCausalConnectionCount) !== 0) throw new Error('unsupported causal connections exist');
           if (Number(q.relationQuality?.causalConnectionCount) !== 0) throw new Error('current experience graph unexpectedly contains causal connections');
-          if (!q.integrity?.qualityHash || !q.integrity?.activationContractHash || !q.integrity?.experienceSourceHash) throw new Error('graph quality integrity missing');
+          if (!q.integrity?.qualityHash || !q.integrity?.activationContractHash || !q.integrity?.experienceSourceHash || !q.integrity?.observationalExperienceHash || !q.integrity?.observationalPolicyHash) throw new Error('graph quality integrity missing');
 
           const hf = (q.blockedArchitectureDemand || []).find(x => x.blockerId === 'health-factor-monitoring');
           const debt = (q.blockedArchitectureDemand || []).find(x => x.blockerId === 'debt-purpose-and-buffer');
@@ -224,14 +274,14 @@ jobs:
           const rehab = (q.blockedArchitectureDemand || []).find(x => x.blockerId === 'protocol-rehabilitation-evidence');
           if (!hf || !debt || !allocation || !rehab) throw new Error('Q7/Q11/Q12/Q13 architecture demand is incomplete');
 
-          console.log('Neural Graph vNext PASS', {
+          console.log('Neural Graph + Autonomous Observational Learning PASS', {
             base: q.connectivity.base,
             enriched: q.connectivity.enriched,
-            vNextDelta: q.connectivity.vNextDelta,
+            experienceDelta: q.connectivity.vNextDelta,
+            observationalDelta: q.connectivity.observationalDelta,
             ownerActivation: q.ownerActivation,
-            ownerHeuristics: q.ownerHeuristicIntegration,
-            relationQuality: q.relationQuality,
             experienceTraceability: q.experienceTraceability,
+            observationalLearning: q.observationalLearning,
             executionAuthority: q.authority.executionAuthority
           });
           NODE
@@ -246,6 +296,7 @@ jobs:
             "intelligence/neural-graph/neural-graph-telemetry.json"
             "intelligence/neural-graph/neural-graph-history.json"
             "intelligence/neural-graph/neural-graph-quality.json"
+            "intelligence/observational-learning/observational-experience.json"
           )
           for f in "${GENERATED[@]}"; do test -s "$f"; done
 
@@ -253,7 +304,7 @@ jobs:
           git config user.email "neural-graph@theholding.ai"
           git add "${GENERATED[@]}"
 
-          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/neural-graph/(neural-graph-telemetry\.json|neural-graph-history\.json|neural-graph-quality\.json)$' || true)"
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/(neural-graph/(neural-graph-telemetry\.json|neural-graph-history\.json|neural-graph-quality\.json)|observational-learning/observational-experience\.json)$' || true)"
           if [ -n "$staged_bad" ]; then
             echo "ERROR: Neural Graph attempted to stage outside generated boundary:"
             echo "$staged_bad"
@@ -261,11 +312,11 @@ jobs:
           fi
 
           if git diff --cached --quiet; then
-            echo "Neural Graph telemetry already current."
+            echo "Neural Graph + observational experience already current."
             exit 0
           fi
 
-          git commit -m "intelligence: refresh neural graph telemetry"
+          git commit -m "intelligence: refresh neural graph and observational experience"
 
           for attempt in 1 2 3; do
             git fetch origin main
@@ -279,18 +330,20 @@ jobs:
             node intelligence/neural-graph/neural-graph-telemetry.mjs
             node intelligence/neural-graph/neural-graph-quality.mjs
             node intelligence/neural-graph/neural-graph-experience-vnext.mjs
+            node intelligence/observational-learning/observational-learning-engine.mjs
+            node intelligence/neural-graph/neural-graph-observational-vnext.mjs
             git add "${GENERATED[@]}"
             if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
 
             if git push origin HEAD:main; then
               git fetch origin main
               test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
-              echo "Verified Neural Graph vNext telemetry on remote main."
+              echo "Verified Neural Graph + observational experience on remote main."
               exit 0
             fi
             echo "Main moved during push; retrying ($attempt/3)..."
             sleep $((attempt * 2))
           done
 
-          echo "ERROR: unable to publish Neural Graph vNext after 3 attempts."
+          echo "ERROR: unable to publish Neural Graph + observational experience after 3 attempts."
           exit 1

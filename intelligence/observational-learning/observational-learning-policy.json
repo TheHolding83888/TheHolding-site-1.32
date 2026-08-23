@@ -1,0 +1,104 @@
+{
+  "version": "0.1-autonomous-observational-learning-policy",
+  "status": "production-candidate-read-only",
+  "purpose": "Compile exact longitudinal Change Intelligence events into bounded observational episodes and non-causal repeated-pattern candidates for the existing Neural Graph.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "policyMutationAuthority": false,
+    "methodologyMutationAuthority": false,
+    "repositoryMutationAuthorityFromLearning": false,
+    "causalClaimAuthority": "none"
+  },
+  "sourceContract": {
+    "canonicalHistoryFile": "intelligence/change-history.json",
+    "requiredHistoryVersion": "0.2.1-change-history",
+    "requiredFieldsPerEvent": [
+      "id",
+      "detectedAt",
+      "category",
+      "entity",
+      "metric",
+      "previousValue",
+      "currentValue",
+      "sourceKeys"
+    ],
+    "exactByteBindingRequired": true,
+    "appendOnlySourcePreferred": true,
+    "samplingSemantics": "event-triggered-change-history-not-uniform-time-sampling",
+    "absenceOfEventMeansNoChange": false,
+    "patternFrequencyMayBeInterpretedAsMarketProbability": false,
+    "patternScope": "recorded-change-events-only"
+  },
+  "episodeClasses": [
+    {
+      "id": "productive-rate-change",
+      "category": "productivity",
+      "metrics": ["aprLatestPct"],
+      "valueType": "numeric",
+      "counterSemantics": "point-in-time-rate",
+      "patternSignal": "direction",
+      "semanticDomain": "protocol-economics"
+    },
+    {
+      "id": "reported-income-progression",
+      "category": "reporting",
+      "metrics": ["currentMonthCashFlowUsd", "currentMonthGeneratedIncomeUsd"],
+      "valueType": "numeric",
+      "counterSemantics": "period-cumulative-counter",
+      "patternSignal": "increment-velocity",
+      "semanticDomain": "cash-flow-semantics"
+    },
+    {
+      "id": "measurement-coverage-change",
+      "category": "productivity",
+      "metrics": ["coverage"],
+      "valueType": "numeric",
+      "counterSemantics": "point-in-time-ratio",
+      "patternSignal": "direction",
+      "semanticDomain": "measurement-quality"
+    }
+  ],
+  "patternPolicy": {
+    "minimumSupportEpisodes": 2,
+    "minimumDirectionalConsistencyPct": 66.67,
+    "status": "candidate-only",
+    "causalClaim": false,
+    "promotionAuthority": "none",
+    "singleObservationCanBecomePattern": false,
+    "candidateIsLesson": false,
+    "candidateIsPolicy": false,
+    "candidateIsPrediction": false,
+    "candidateRepresentsRecordedChangeFrequencyOnly": true
+  },
+  "counterRules": {
+    "negativeCumulativeDelta": "possible-period-reset-or-correction",
+    "negativeCumulativeDeltaIsEconomicLoss": false,
+    "monthlyCounterResetMayBeInferredAsCause": false,
+    "incrementVelocityRequiresPriorNonResetIncrement": true
+  },
+  "epistemicRules": {
+    "exactSourceEvent": "exact-observation",
+    "numericDelta": "deterministic-derived-change",
+    "sequenceOrder": "changed-after",
+    "repeatedDirectionalPattern": "candidate-association",
+    "correlationIsCausation": false,
+    "temporalOrderIsCausation": false,
+    "causalEdgeAllowed": false,
+    "eventHistorySelectionBiasMustRemainExplicit": true
+  },
+  "realYieldOwnerContextBoundary": {
+    "principle": "verified real-yield source + yield increase = positive owner economic signal",
+    "marketFactAuthority": false,
+    "yieldIncreaseAloneIsRiskFlag": false,
+    "unknownYieldSourceHandling": "unknown-investigate-source",
+    "observationalLearnerMayInferYieldCauseFromRateChangeAlone": false
+  },
+  "limits": {
+    "maximumEpisodes": 5000,
+    "maximumPatternCandidates": 500,
+    "maximumPatternEvidenceIds": 50
+  }
+}
