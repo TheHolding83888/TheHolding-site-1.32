@@ -1,4 +1,4 @@
-# THE HOLDING · ECONOMIC GRAPH v0.1.2
+# THE HOLDING · ECONOMIC GRAPH v0.2
 name: "The Holding · Economic Graph"
 
 on:
@@ -65,22 +65,61 @@ jobs:
           node - "$TMP" <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
-          const o=x.latest?.observation;
-          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.1.1-defitea-fxn-semantic-parity')throw new Error('Economic Graph version mismatch');
-          if(x.status!=='partial-first-cohort')throw new Error('Economic Graph must remain first-cohort partial');
+          const fx=x.latest?.observation;
+          const curve=x.cohorts?.['defitea-curve-vecrv']?.latest?.observation;
+          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.2-defitea-fxn-curve-multi-cohort')throw new Error('Economic Graph version mismatch');
+          if(x.status!=='partial-first-cohort'||x.statusCompatibility?.deprecated!==true)throw new Error('Legacy first-cohort compatibility contract missing');
+          if(x.coverage?.status!=='partial-two-cohort'||Number(x.coverage?.cohortCount)!==2)throw new Error('Two-cohort coverage missing');
           if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none')throw new Error('Economic Graph authority regression');
           if(x.authority?.capitalExecution!==false||x.authority?.allocationAuthority!==false||x.authority?.recommendationAuthority!==false||x.authority?.causalClaimAuthority!=='none')throw new Error('Economic Graph authority leakage');
           if(x.semantics?.aprParityRequired!==true||Number(x.semantics?.aprParityTolerancePctPoints)!==0.01)throw new Error('APR parity boundary missing');
-          if(x.attribution?.primaryDriver!==null||x.attribution?.status!=='warming-unresolved-causality')throw new Error('Unproven primary driver leaked');
-          if(o?.protocol!=='f(x)'||o?.mechanism!=='veFXN Locker')throw new Error('First cohort mismatch');
-          if(o?.epistemic?.causalAttribution!=='unresolved')throw new Error('Causal attribution leaked');
-          if(!Number.isFinite(Number(o?.drivers?.fxnCirculatingSupplyLockedPct)))throw new Error('Locked circulating-supply driver missing');
-          if(Math.abs(Number(o?.aprParityDeltaPctPoints))>0.01)throw new Error('Deterministic APR parity failed');
-          if(!x.expansionQueue.some(v=>String(v).includes('Votium / VoteMarket'))||!x.expansionQueue.some(v=>String(v).includes('Aerodrome veAERO'))||!x.expansionQueue.some(v=>String(v).includes('sAERO Predictive Allocation')))throw new Error('Incentive-market expansion canon missing');
-          console.log('ECONOMIC GRAPH deterministic semantics PASS',{observations:x.observations.length,primaryDriver:x.attribution.primaryDriver,executionAuthority:x.authority.executionAuthority});
+          if(x.attribution?.primaryDriver!==null||x.attribution?.status!=='warming-unresolved-causality')throw new Error('Legacy veFXN causal boundary drift');
+          if(fx?.protocol!=='f(x)'||fx?.mechanism!=='veFXN Locker'||fx?.cohortId!=='defitea-fxn-vefxn')throw new Error('Legacy veFXN cohort mismatch');
+          if(fx?.epistemic?.causalAttribution!=='unresolved')throw new Error('veFXN causal attribution leaked');
+          if(!Number.isFinite(Number(fx?.drivers?.fxnCirculatingSupplyLockedPct)))throw new Error('veFXN locked circulating-supply driver missing');
+          if(Math.abs(Number(fx?.aprParityDeltaPctPoints))>0.01)throw new Error('Deterministic veFXN APR parity failed');
+          if(curve?.protocol!=='Curve'||curve?.mechanism!=='veCRV Fee Distributor'||curve?.cohortId!=='defitea-curve-vecrv')throw new Error('Curve veCRV cohort missing');
+          if(curve?.source?.sourceType!=='onchain')throw new Error('Curve cohort lost onchain source authority');
+          if(curve?.formula?.status!=='proven-canonical-collector-identity')throw new Error('Curve canonical formula proof missing');
+          if(Math.abs(Number(curve?.formulaParityDeltaPctPoints))>0.01)throw new Error('Curve rolling APR formula parity failed');
+          if(!Array.isArray(curve?.drivers?.completedWeeks)||curve.drivers.completedWeeks.length<1)throw new Error('Curve completed-week drivers missing');
+          if(curve?.epistemic?.mechanicalAttribution!=='proven-within-apr-formula')throw new Error('Curve mechanical attribution class missing');
+          if(curve?.epistemic?.causalAttribution!=='unresolved-beyond-formula'||curve?.epistemic?.primaryDriver!==null)throw new Error('Curve upstream causal uncertainty was over-promoted');
+          if(x.cohorts?.['defitea-curve-vecrv']?.attribution?.formulaProven!==true)throw new Error('Curve formula attribution surface missing');
+          if(!x.expansionQueue.some(v=>String(v).includes('Convex vlCVX'))||!x.expansionQueue.some(v=>String(v).includes('Aerodrome veAERO'))||!x.expansionQueue.some(v=>String(v).includes('sAERO Predictive Allocation')))throw new Error('Expansion canon missing');
+          console.log('ECONOMIC GRAPH deterministic semantics PASS',{
+            observations:x.observations.length,
+            cohorts:x.coverage.cohortCount,
+            fxnPrimaryDriver:x.attribution.primaryDriver,
+            curveApr:curve.canonicalProductivityAprPct,
+            curveFormulaParity:curve.formulaParityDeltaPctPoints,
+            executionAuthority:x.authority.executionAuthority
+          });
           NODE
           rm -f "$TMP"
           git diff --check
+
+      - name: Verify canonical Curve source state on PR
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const e=p.engines?.curve_vecrv;
+          if(!e||e.status!=='ok'||e.sourceType!=='onchain')throw new Error('Canonical curve_vecrv engine is not current onchain state');
+          if(e.details?.contract!=='0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914')throw new Error('Curve Fee Distributor contract drift');
+          if(!Array.isArray(e.details?.weekly)||e.details.weekly.length<1)throw new Error('Curve completed-week state missing');
+          if(!Number.isFinite(Number(e.aprLatest))||!Number.isFinite(Number(e.details?.crvPrice)))throw new Error('Curve canonical APR/price missing');
+          console.log('CURVE veCRV canonical source PASS',{
+            apr:e.aprLatest,
+            weeks:e.details.weekly.length,
+            latestWeek:e.details.weekly[0]?.week,
+            latestWeekFeesCrvUSD:e.details.weekly[0]?.tokensCrvUSD,
+            latestWeekVeSupply:e.details.weekly[0]?.veSupply
+          });
+          NODE
 
       - name: Install live probe dependencies
         working-directory: productivity
@@ -89,7 +128,7 @@ jobs:
           npm install --no-audit --no-fund
           npx playwright install chromium
 
-      - name: Prove live economic-vitals source on PR
+      - name: Prove live f(x) economic-vitals source on PR
         if: github.event_name == 'pull_request'
         run: node productivity/fxn-locker-apr-guard.mjs --probe-economic-vitals
 
@@ -105,14 +144,34 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('intelligence/economic-graph/economic-graph.json','utf8'));
-          const o=x.latest?.observation;
-          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.1.1-defitea-fxn-semantic-parity'||!o)throw new Error('live Economic Graph missing');
-          if(o.source?.url!=='https://fx.aladdin.club/v2/lock')throw new Error('live source authority drift');
-          if(o.source?.sourceType!=='official-frontend-exact-locker-block')throw new Error('live exact Locker block not proven');
-          if(!Number.isFinite(Number(o.liveObservedAprPct))||!Number.isFinite(Number(o.drivers?.fxnLocked))||!Number.isFinite(Number(o.drivers?.fxnCirculatingSupplyLockedPct))||!Number.isFinite(Number(o.drivers?.totalVeFxn))||!Number.isFinite(Number(o.drivers?.cumulativeThisWeekWsteth))||!Number.isFinite(Number(o.drivers?.previousWeekWsteth)))throw new Error('live economic vitals incomplete');
-          if(Math.abs(Number(o.aprParityDeltaPctPoints))>0.01)throw new Error('live APR parity failed');
-          if(x.attribution?.primaryDriver!==null||o.epistemic?.causalAttribution!=='unresolved')throw new Error('unearned causal attribution');
-          console.log('ECONOMIC GRAPH live source PASS',{observedAt:o.observedAt,apr:o.liveObservedAprPct,fxnLocked:o.drivers.fxnLocked,lockedSupplyPct:o.drivers.fxnCirculatingSupplyLockedPct,totalVeFxn:o.drivers.totalVeFxn,currentWeekWsteth:o.drivers.cumulativeThisWeekWsteth,previousWeekWsteth:o.drivers.previousWeekWsteth});
+          const fx=x.latest?.observation;
+          const curve=x.cohorts?.['defitea-curve-vecrv']?.latest?.observation;
+          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.2-defitea-fxn-curve-multi-cohort'||!fx||!curve)throw new Error('live Economic Graph multi-cohort state missing');
+          if(x.coverage?.status!=='partial-two-cohort'||Number(x.coverage?.cohortCount)!==2)throw new Error('live two-cohort coverage missing');
+          if(fx.source?.url!=='https://fx.aladdin.club/v2/lock')throw new Error('live f(x) source authority drift');
+          if(fx.source?.sourceType!=='official-frontend-exact-locker-block')throw new Error('live exact Locker block not proven');
+          if(!Number.isFinite(Number(fx.liveObservedAprPct))||!Number.isFinite(Number(fx.drivers?.fxnLocked))||!Number.isFinite(Number(fx.drivers?.fxnCirculatingSupplyLockedPct))||!Number.isFinite(Number(fx.drivers?.totalVeFxn))||!Number.isFinite(Number(fx.drivers?.cumulativeThisWeekWsteth))||!Number.isFinite(Number(fx.drivers?.previousWeekWsteth)))throw new Error('live f(x) economic vitals incomplete');
+          if(Math.abs(Number(fx.aprParityDeltaPctPoints))>0.01)throw new Error('live f(x) APR parity failed');
+          if(x.attribution?.primaryDriver!==null||fx.epistemic?.causalAttribution!=='unresolved')throw new Error('unearned f(x) causal attribution');
+
+          if(curve.source?.sourceType!=='onchain')throw new Error('live Curve source authority drift');
+          if(curve.source?.contract!=='0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914')throw new Error('live Curve Fee Distributor contract drift');
+          if(!Number.isFinite(Number(curve.canonicalProductivityAprPct))||!Number.isFinite(Number(curve.drivers?.crvPriceUsd))||!Number.isFinite(Number(curve.drivers?.rollingFourWeekFeesCrvUSD))||!Number.isFinite(Number(curve.drivers?.rollingAverageVeSupply)))throw new Error('live Curve economic drivers incomplete');
+          if(Math.abs(Number(curve.formulaParityDeltaPctPoints))>0.01)throw new Error('live Curve formula parity failed');
+          if(curve.formula?.status!=='proven-canonical-collector-identity')throw new Error('live Curve formula identity missing');
+          if(curve.epistemic?.mechanicalAttribution!=='proven-within-apr-formula'||curve.epistemic?.causalAttribution!=='unresolved-beyond-formula'||curve.epistemic?.primaryDriver!==null)throw new Error('live Curve epistemic boundary regression');
+          console.log('ECONOMIC GRAPH live source PASS',{
+            cohorts:x.coverage.cohortCount,
+            fxn:{observedAt:fx.observedAt,apr:fx.liveObservedAprPct,currentWeekWsteth:fx.drivers.cumulativeThisWeekWsteth},
+            curve:{
+              observedAt:curve.observedAt,
+              apr:curve.canonicalProductivityAprPct,
+              formulaApr:curve.formulaReproducedAprPct,
+              rollingFeesCrvUSD:curve.drivers.rollingFourWeekFeesCrvUSD,
+              rollingAverageVeSupply:curve.drivers.rollingAverageVeSupply,
+              latestWeekFeesCrvUSD:curve.drivers.latestCompletedWeek?.tokensCrvUSD
+            }
+          });
           NODE
 
       - name: Publish generated Economic Graph safely
@@ -148,8 +207,10 @@ jobs:
               git fetch origin main
               git cat-file -e "origin/main:$GENERATED"
               REMOTE_ENGINE="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).engineVersion))")"
-              test "$REMOTE_ENGINE" = "0.1.1-defitea-fxn-semantic-parity"
-              echo "Verified Economic Graph v0.1.1 on remote main."
+              test "$REMOTE_ENGINE" = "0.2-defitea-fxn-curve-multi-cohort"
+              REMOTE_COHORTS="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).coverage?.cohortCount))")"
+              test "$REMOTE_COHORTS" = "2"
+              echo "Verified Economic Graph v0.2 dual-cohort state on remote main."
               exit 0
             fi
             echo "Main moved during push; retrying ($attempt/3)..."
