@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · f(x) veFXN exact-source APR authority guard v0.3.1
+ * The Holding · f(x) veFXN exact-source APR authority guard v0.3.2
  *
  * The legacy collector can observe the dynamic f(x) page but historically
  * selected the first generic APR before falling back to the FXN Locker scope.
@@ -9,11 +9,12 @@
  * then verifies the materialized output before either canonical writer can
  * publish it.
  *
- * v0.3.1 also exposes a read-only economic-vitals probe for Defitea Economic
+ * v0.3.2 also exposes a read-only economic-vitals probe for Defitea Economic
  * Graph. It reads APR, FXN Locked, locked share of circulating FXN, Total veFXN,
  * current-week wstETH revenue and previous-week wstETH revenue from the same
- * exact official Locker block. The economic probe does not mutate Productivity
- * and does not infer causation.
+ * exact official Locker block. APR authority and Economic Graph now share the
+ * same exact Locker-block selection path so a narrower ancestor cannot drift.
+ * The economic probe does not mutate Productivity and does not infer causation.
  *
  * Fail closed on ambiguity or missing source data.
  * No execution authority. No economic-methodology mutation.
@@ -217,13 +218,14 @@ export function applyExactFxnLockerApr(report, data, exactApr) {
 
   data.diagnostics=data.diagnostics||{};
   data.diagnostics.fxnLockerAprAuthority={
-    version:'0.3.1-exact-official-apr-label-authority',
+    version:'0.3.2-exact-official-locker-block-authority',
     source:FXN_LOCK_URL,
     sourceMetric:'veFXN Locker APR',
     previousCollectorApr:Number.isFinite(previousApr)?previousApr:null,
     exactApr:round(exactApr),
     adjustedCompanies,
     nearbyCirculatingSupplyPctCannotBecomeApr:true,
+    aprAndEconomicVitalsShareExactBlockSelection:true,
     historicalSnapshotsRewritten:false,
     executionAuthority:'none'
   };
@@ -272,7 +274,10 @@ async function collectLockerBlocks({requireEconomicVitals=false}={}) {
 }
 
 async function collectExactFxnLockerApr() {
-  return extractFxnLockerApr(await collectLockerBlocks());
+  // Use the same exact full Locker block as the Economic Graph probe. This
+  // prevents a smaller ancestor that merely contains another percentage from
+  // becoming a separate APR authority path.
+  return extractFxnLockerApr(await collectLockerBlocks({requireEconomicVitals:true}));
 }
 
 export async function collectFxnLockerEconomicSnapshot() {
