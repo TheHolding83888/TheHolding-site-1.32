@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * The Holding · Economic Graph canonical runner v0.1
+ * The Holding · Economic Graph canonical runner v0.2
  *
  * Production Graph builds consume the f(x) economic snapshot materialized
  * inside canonical Productivity. They do not re-probe the browser between the
  * Productivity publication and downstream Graph publication.
  *
- * This preserves the strict 0.01 pp APR parity boundary while making it a true
- * same-observation check instead of a comparison between two different times.
+ * The canonical f(x) + Curve surface remains unchanged while bounded protocol
+ * candidates may be attached in shadow mode before downstream promotion.
  * No execution, recommendation, allocation or methodology-mutation authority.
  */
 
@@ -17,10 +17,12 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { buildEconomicGraph } from './economic-graph.mjs';
+import { applyAerodromeCandidate } from './aerodrome-veaero-candidate.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
 const PRODUCTIVITY=process.env.PRODUCTIVITY_DATA_FILE || path.join(ROOT,'companies/productivity-data.json');
+const REWARDS=process.env.REWARDS_DATA_FILE || path.join(ROOT,'companies/rewards-data.json');
 const PRODUCTIVITY_ENGINE=path.join(ROOT,'productivity/productivity-engine.mjs');
 const APR_PARITY_TOLERANCE_PCT_POINTS=0.01;
 
@@ -65,38 +67,55 @@ export function canonicalFxnSnapshotFromProductivity(productivity){
   return snapshot;
 }
 
-export function buildCanonicalEconomicGraph({productivity,previousState,sourceSha256,productivityEngineSha256}){
+export function buildCanonicalEconomicGraph({productivity,rewards,previousState,sourceSha256,rewardsSha256,productivityEngineSha256}){
   const snapshot=canonicalFxnSnapshotFromProductivity(productivity);
-  return buildEconomicGraph({
+  const base=buildEconomicGraph({
     productivity,
     previousState,
     snapshot,
     sourceSha256,
     productivityEngineSha256
   });
+  return applyAerodromeCandidate({
+    state:base,
+    previousState,
+    productivity,
+    rewards,
+    productivitySha256:sourceSha256,
+    rewardsSha256
+  });
 }
 
 async function main(){
   const productivity=readJson(PRODUCTIVITY);
+  const rewards=readJson(REWARDS);
   const previousState=readJson(OUT,false);
   const state=buildCanonicalEconomicGraph({
     productivity,
+    rewards,
     previousState,
     sourceSha256:sha256File(PRODUCTIVITY),
+    rewardsSha256:sha256File(REWARDS),
     productivityEngineSha256:sha256File(PRODUCTIVITY_ENGINE)
   });
   fs.mkdirSync(path.dirname(OUT),{recursive:true});
   fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
   const fxn=state.cohorts?.['defitea-fxn-vefxn']?.latest?.observation;
   const curve=state.cohorts?.['defitea-curve-vecrv']?.latest?.observation;
-  console.log('ECONOMIC GRAPH canonical same-snapshot PASS',{
+  const aero=state.candidateCohorts?.['defitea-aerodrome-veaero']?.latest?.observation;
+  console.log('ECONOMIC GRAPH canonical + shadow candidate PASS',{
     engineVersion:state.engineVersion,
-    cohortCount:state.coverage?.cohortCount,
+    canonicalCohortCount:state.coverage?.cohortCount,
+    candidateCount:state.candidateLayer?.candidateCount,
     fxnObservedAt:fxn?.observedAt,
     fxnAprPct:fxn?.liveObservedAprPct,
     fxnAprParityDeltaPctPoints:fxn?.aprParityDeltaPctPoints,
     curveAprPct:curve?.canonicalProductivityAprPct,
     curveFormulaParityDeltaPctPoints:curve?.formulaParityDeltaPctPoints,
+    aerodromeReferenceAprPct:aero?.referenceProductivity?.canonicalAprPct,
+    aerodromeFormulaParityDeltaPctPoints:aero?.referenceProductivity?.formula?.parityDeltaPctPoints,
+    aerodromeManagedAccruedAero:aero?.actualManagedVeNft?.currentAccruedAero,
+    aerodromePromotionAuthority:aero?.epistemic?.promotionAuthority,
     executionAuthority:state.authority?.executionAuthority
   });
 }
