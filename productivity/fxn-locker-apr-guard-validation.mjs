@@ -92,10 +92,19 @@ assert.throws(
   /expected one unambiguous FXN Locker economic snapshot/
 );
 
-// The exact-source authority repairs only the materialized current snapshot.
+// The exact-source authority repairs all canonical surfaces for only the
+// materialized current snapshot. Prior engine/company history stays immutable.
 const report={engines:{fx_vefxn:{apr:21.1,status:'ok',source:'https://fx.aladdin.club/v2/lock',sourceMetric:'veFXN Locker APR'}}};
 const data={
+  generatedAt:'2026-08-24T10:00:00.000Z',
   snapshotKey:'2026-W34',
+  engines:{
+    fx_vefxn:{
+      engineId:'fx_vefxn',protocol:'f(x)',principalSymbol:'FXN',aprLatest:21.1,status:'ok',
+      sourceUrl:'https://fx.aladdin.club/v2/lock',source:'https://fx.aladdin.club/v2/lock',
+      sourceType:'official-frontend',sourceMetric:'veFXN Locker APR',details:{}
+    }
+  },
   companies:{
     'defitea.eth':{
       breakdown:[
@@ -105,21 +114,49 @@ const data={
       productiveValue:200,coveredProductiveValue:200,coverage:1,aprLatest:15.55,aprHistoricalAverage:12,observationCount:2
     }
   },
-  history:{companies:{'defitea.eth':[
-    {snapshotKey:'2026-W33',apr:12},
-    {snapshotKey:'2026-W34',apr:15.55}
-  ]}}
+  history:{
+    engines:{
+      fx_vefxn:[
+        {snapshotKey:'2026-W33',apr:12,sourceType:'official-frontend'},
+        {snapshotKey:'2026-W34',apr:21.1,sourceType:'official-frontend'}
+      ]
+    },
+    companies:{'defitea.eth':[
+      {snapshotKey:'2026-W33',apr:12},
+      {snapshotKey:'2026-W34',apr:15.55}
+    ]}
+  }
 };
 const corrected=applyExactFxnLockerApr(report,data,77.08);
 assert.deepEqual(corrected,{previousApr:21.1,exactApr:77.08,adjustedCompanies:1});
 assert.equal(report.engines.fx_vefxn.apr,77.08);
 assert.equal(report.engines.fx_vefxn.sourceType,'official-frontend-exact-block');
+assert.equal(data.engines.fx_vefxn.aprLatest,77.08);
+assert.equal(data.engines.fx_vefxn.sourceType,'official-frontend-exact-block');
+assert.equal(data.history.engines.fx_vefxn[0].apr,12); // immutable prior engine snapshot
+assert.equal(data.history.engines.fx_vefxn[0].sourceType,'official-frontend');
+assert.equal(data.history.engines.fx_vefxn[1].apr,77.08); // current engine snapshot only
+assert.equal(data.history.engines.fx_vefxn[1].sourceType,'official-frontend-exact-block');
 assert.equal(data.companies['defitea.eth'].breakdown[0].apr,77.08);
 assert.equal(data.companies['defitea.eth'].aprLatest,43.54);
-assert.equal(data.history.companies['defitea.eth'][0].apr,12); // immutable prior snapshot
-assert.equal(data.history.companies['defitea.eth'][1].apr,43.54); // current snapshot only
+assert.equal(data.history.companies['defitea.eth'][0].apr,12); // immutable prior company snapshot
+assert.equal(data.history.companies['defitea.eth'][1].apr,43.54); // current company snapshot only
 assert.equal(data.companies['defitea.eth'].aprHistoricalAverage,27.77);
+assert.equal(data.diagnostics.fxnLockerAprAuthority.version,'0.3.4-canonical-engine-parity-authority');
+assert.equal(data.diagnostics.fxnLockerAprAuthority.previousCanonicalEngineApr,21.1);
+assert.equal(data.diagnostics.fxnLockerAprAuthority.previousCurrentEngineHistoryApr,21.1);
+assert.equal(data.diagnostics.fxnLockerAprAuthority.canonicalEngineSynchronized,true);
+assert.equal(data.diagnostics.fxnLockerAprAuthority.currentEngineHistorySynchronized,true);
 assert.equal(data.diagnostics.fxnLockerAprAuthority.historicalSnapshotsRewritten,false);
 assert.equal(data.diagnostics.fxnLockerAprAuthority.nearbyCirculatingSupplyPctCannotBecomeApr,true);
 
-console.log('f(x) exact-source APR + economic-vitals parser validation PASS');
+// Missing current engine-history identity is an authority error, not something
+// the guard is allowed to guess around.
+const brokenData=structuredClone(data);
+brokenData.snapshotKey='2026-W35';
+assert.throws(
+  () => applyExactFxnLockerApr(structuredClone(report),brokenData,21.06),
+  /expected one current fx_vefxn engine-history snapshot/
+);
+
+console.log('f(x) exact-source APR + canonical-engine parity + economic-vitals validation PASS');
