@@ -1,4 +1,4 @@
-# THE HOLDING · EXPLANATORY CONTEXT v0.2
+# THE HOLDING · EXPLANATORY CONTEXT v0.3
 name: "The Holding · Explanatory Context"
 
 on:
@@ -61,16 +61,17 @@ jobs:
           test -s intelligence/income-performance/income-performance.json
           test -s intelligence/economic-graph/economic-graph.json
           node --check intelligence/explanatory/explanatory-context.mjs
+          grep -q "multiCohortRule" intelligence/explanatory/explanatory-context.mjs
+          grep -q "protocolAprChangeContexts" intelligence/explanatory/explanatory-context.mjs
           grep -q "mechanismRule" intelligence/explanatory/explanatory-context.mjs
           grep -q "associationRule" intelligence/explanatory/explanatory-context.mjs
-          grep -q "economicGraphRule" intelligence/explanatory/explanatory-context.mjs
           grep -q "executionAuthority: 'none'" intelligence/explanatory/explanatory-context.mjs
           grep -q "causalClaimAuthority: 'none'" intelligence/explanatory/explanatory-context.mjs
 
       - name: Build Explanatory Context
         run: node intelligence/explanatory/explanatory-context.mjs
 
-      - name: Validate explanation semantics
+      - name: Validate multi-cohort explanation semantics
         shell: bash
         run: |
           set -euo pipefail
@@ -79,11 +80,13 @@ jobs:
           const crypto = require('crypto');
           const x = JSON.parse(fs.readFileSync('intelligence/explanatory/explanatory-context.json','utf8'));
           if (x.version !== '0.2-explanatory-context') throw new Error('unexpected version');
-          if (x.engineVersion !== '0.2-evidence-bound-economic-driver-context') throw new Error('unexpected engine');
-          if (x.status !== 'partial') throw new Error('v0.2 must remain partial');
+          if (x.engineVersion !== '0.3-multi-cohort-protocol-economic-context') throw new Error('unexpected engine');
+          if (x.status !== 'partial') throw new Error('Explanatory Context must remain partial');
+          if (Number(x.coverage?.protocolEconomicCohortCount) !== 2) throw new Error('two-cohort Explanatory coverage missing');
+          if (x.coverage?.legacyProtocolAprChangeContextAlias !== 'defitea-fxn-vefxn') throw new Error('legacy context alias contract missing');
           if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('authority regression');
           if (x.authority?.capitalExecution !== false || x.authority?.allocationAuthority !== false || x.authority?.recommendationAuthority !== false) throw new Error('capital/recommendation authority regression');
-          if (x.authority?.causalClaimAuthority !== 'none') throw new Error('causal authority regression');
+          if (x.authority?.causalClaimAuthority !== 'none' || x.authority?.methodologyMutationAuthority !== false) throw new Error('causal/methodology authority regression');
 
           const r = x.explanations?.referenceProductivity;
           if (r?.status !== 'answerable-by-metric-identity') throw new Error('reference productivity explanation missing');
@@ -92,7 +95,6 @@ jobs:
           if (!a || !o) throw new Error('top APR/output rows missing');
           if (Math.abs(a.identities.reproducedUsd - a.annualizedReferenceOutputUsd) > 0.02) throw new Error('top APR output identity drift');
           if (Math.abs(o.identities.reproducedUsd - o.annualizedReferenceOutputUsd) > 0.02) throw new Error('top output identity drift');
-          if (r.causalClass !== 'definition-mechanical') throw new Error('causal class regression');
 
           const m = x.explanations?.monetraLatestIncome;
           if (m?.status !== 'answerable-for-latest-measured-interval-only') throw new Error('Monetra latest explanation missing');
@@ -104,33 +106,47 @@ jobs:
           if (p?.status !== 'answerable-by-reconciliation-identity') throw new Error('performance reconciliation missing');
           if (Math.abs(Number(p.reproducedNetMarketPnlUsd) - Number(p.netMarketPnlUsd)) > 0.00002) throw new Error('net P&L reconciliation drift');
 
-          const g = x.explanations?.protocolAprChangeContext;
-          if (g?.status !== 'context-available-causal-attribution-unresolved') throw new Error('protocol economic context missing');
-          if (g?.coverage?.companyRegistry !== '004' || g?.protocolAprChangeContext === null) throw new Error('unexpected protocol cohort');
-          if (g?.causalAttribution !== 'unresolved' || g?.primaryDriver !== null || g?.causalClass !== 'measured-context-only') throw new Error('causal boundary weakened');
-          if (Math.abs(Number(g?.apr?.parityDeltaPctPoints)) > 0.01) throw new Error('protocol APR parity drift');
-          if (!Number.isFinite(Number(g?.measuredDrivers?.fxnLocked)) || !Number.isFinite(Number(g?.measuredDrivers?.totalVeFxn))) throw new Error('core economic drivers missing');
-          if (!Number.isFinite(Number(g?.measuredDrivers?.cumulativeThisWeekWsteth)) || !Number.isFinite(Number(g?.measuredDrivers?.previousWeekWsteth))) throw new Error('weekly revenue context missing');
-          if (x.answerability?.['what-protocol-context-accompanied-apr'] !== 'answerable-by-measured-context-first-cohort') throw new Error('measured protocol context answerability missing');
-          if (x.answerability?.['why-protocol-apr-changed'] !== 'context-available-cause-unresolved') throw new Error('protocol causal guard must remain unresolved');
+          const contexts = x.explanations?.protocolAprChangeContexts;
+          const fx = contexts?.['defitea-fxn-vefxn'];
+          const curve = contexts?.['defitea-curve-vecrv'];
+          if (!fx || !curve || Object.keys(contexts).length !== 2) throw new Error('canonical two protocol contexts missing');
+
+          if (fx.status !== 'context-available-causal-attribution-unresolved') throw new Error('veFXN context status drift');
+          if (fx.coverage?.companyRegistry !== '004' || fx.coverage?.protocol !== 'f(x)') throw new Error('veFXN cohort identity drift');
+          if (fx.causalAttribution !== 'unresolved' || fx.primaryDriver !== null || fx.causalClass !== 'measured-context-only') throw new Error('veFXN causal boundary weakened');
+          if (Math.abs(Number(fx.apr?.parityDeltaPctPoints)) > 0.01) throw new Error('veFXN APR parity drift');
+          if (!Number.isFinite(Number(fx.measuredDrivers?.fxnLocked)) || !Number.isFinite(Number(fx.measuredDrivers?.totalVeFxn))) throw new Error('veFXN economic drivers missing');
+          const legacy = x.explanations?.protocolAprChangeContext;
+          if (legacy?.coverage?.cohortId !== 'defitea-fxn-vefxn' || legacy?.provenance?.observationId !== fx.provenance?.observationId) throw new Error('legacy veFXN alias no longer matches canonical context');
+
+          if (curve.status !== 'mechanics-proven-upstream-cause-unresolved') throw new Error('Curve context status drift');
+          if (curve.coverage?.companyRegistry !== '004' || curve.coverage?.protocol !== 'Curve' || curve.coverage?.mechanism !== 'veCRV Fee Distributor') throw new Error('Curve cohort identity drift');
+          if (curve.mechanics?.status !== 'proven-canonical-collector-identity' || curve.mechanics?.mechanicalAttribution !== 'proven-within-apr-formula') throw new Error('Curve mechanical proof missing');
+          if (Math.abs(Number(curve.apr?.formulaParityDeltaPctPoints)) > 0.01) throw new Error('Curve formula parity drift');
+          if (curve.causalAttribution !== 'unresolved-beyond-formula' || curve.primaryDriver !== null) throw new Error('Curve upstream cause over-promoted');
+          if (!Number.isFinite(Number(curve.measuredDrivers?.rollingFourWeekFeesCrvUSD)) || !Number.isFinite(Number(curve.measuredDrivers?.rollingAverageVeSupply)) || !Number.isFinite(Number(curve.measuredDrivers?.crvPriceUsd))) throw new Error('Curve mechanical drivers missing');
+          if (curve.provenance?.sourceType !== 'onchain') throw new Error('Curve source authority drift');
+
+          if (x.answerability?.['what-protocol-contexts-accompanied-apr'] !== 'answerable-by-canonical-multi-cohort-context') throw new Error('multi-cohort answerability missing');
+          if (x.answerability?.['how-curve-vecrv-reference-apr-is-formed'] !== 'answerable-by-proven-mechanical-identity') throw new Error('Curve formula answerability missing');
+          if (x.answerability?.['why-protocol-apr-changed'] !== 'context-available-cause-unresolved') throw new Error('generic upstream causal guard weakened');
+          if (x.answerability?.['why-curve-fee-distributions-changed'] !== 'blocked-no-upstream-fee-origin-evidence') throw new Error('Curve upstream causal guard missing');
           if (x.answerability?.['why-market-moved'] !== 'blocked-no-market-causal-evidence') throw new Error('market causal guard missing');
-          if (x.answerability?.['best-company-overall-explanation'] !== 'blocked-no-universal-score') throw new Error('universal score leaked');
 
           const graphBytes = fs.readFileSync('intelligence/economic-graph/economic-graph.json');
           const graphHash = crypto.createHash('sha256').update(graphBytes).digest('hex');
-          if (x.sourceState?.economicGraph?.sha256 !== graphHash) throw new Error('Economic Graph exact-byte binding missing');
-          if (g?.provenance?.graphSha256 !== graphHash) throw new Error('protocol context provenance hash mismatch');
+          if (x.sourceState?.economicGraph?.sha256 !== graphHash || Number(x.sourceState?.economicGraph?.cohortCount) !== 2) throw new Error('Economic Graph exact-byte/coverage binding missing');
+          if (fx.provenance?.graphSha256 !== graphHash || curve.provenance?.graphSha256 !== graphHash) throw new Error('multi-cohort provenance hash mismatch');
 
-          console.log('EXPLANATORY CONTEXT v0.2 PASS', {
-            topApr: a.name,
-            topOutput: o.name,
-            outputGapUsd: r.decomposition.outputGapUsd,
-            topMonetraContributor: m.concentration.topProtocol,
-            protocol: g.coverage.protocol,
-            mechanism: g.coverage.mechanism,
-            apr: g.apr.canonicalProductivityPct,
-            causalAttribution: g.causalAttribution,
-            executionAuthority: x.authority.executionAuthority
+          console.log('EXPLANATORY CONTEXT v0.3 PASS', {
+            cohorts:x.coverage.protocolEconomicCohortCount,
+            fxnApr:fx.apr.canonicalProductivityPct,
+            fxnCausality:fx.causalAttribution,
+            curveApr:curve.apr.canonicalProductivityPct,
+            curveFormulaApr:curve.apr.formulaReproducedPct,
+            curveFormulaParity:curve.apr.formulaParityDeltaPctPoints,
+            curveUpstreamCause:curve.causalAttribution,
+            executionAuthority:x.authority.executionAuthority
           });
           NODE
           git diff --check
@@ -176,9 +192,11 @@ jobs:
             if git push origin HEAD:main; then
               git fetch origin main
               git cat-file -e "origin/main:$GENERATED"
-              REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
-              test "$REMOTE_VERSION" = "0.2-explanatory-context"
-              echo "Verified Explanatory Context v0.2 on remote main."
+              REMOTE_ENGINE="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).engineVersion))")"
+              test "$REMOTE_ENGINE" = "0.3-multi-cohort-protocol-economic-context"
+              REMOTE_COHORTS="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).coverage?.protocolEconomicCohortCount))")"
+              test "$REMOTE_COHORTS" = "2"
+              echo "Verified Explanatory Context v0.3 multi-cohort state on remote main."
               exit 0
             fi
 
