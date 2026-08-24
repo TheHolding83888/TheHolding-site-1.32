@@ -1,8 +1,29 @@
 {
   "version": "0.1-economic-graph",
-  "engineVersion": "0.1.1-defitea-fxn-semantic-parity",
-  "generatedAt": "2026-08-24T11:53:31.987Z",
+  "engineVersion": "0.2-defitea-fxn-curve-multi-cohort",
+  "generatedAt": "2026-08-24T16:04:43.243Z",
   "status": "partial-first-cohort",
+  "statusCompatibility": {
+    "deprecated": true,
+    "meaning": "Legacy Explanatory Context v0.2 compatibility alias. Do not use this field to infer cohort count.",
+    "canonicalCoverageField": "coverage.status"
+  },
+  "coverage": {
+    "status": "partial-two-cohort",
+    "cohortCount": 2,
+    "activeCohortIds": [
+      "defitea-fxn-vefxn",
+      "defitea-curve-vecrv"
+    ],
+    "companyRegistries": [
+      "004"
+    ],
+    "protocols": [
+      "f(x)",
+      "Curve"
+    ],
+    "nextPlannedCohort": "Defitea -> Aerodrome veAERO"
+  },
   "purpose": "Build a longitudinal evidence graph connecting company positions to protocol-economic drivers so existing Explanatory, Brain and Learning layers can reason from measured context instead of narrative guesses.",
   "authority": {
     "readOnly": true,
@@ -21,23 +42,41 @@
     "unknownIsNotZero": true,
     "aprParityRequired": true,
     "aprParityTolerancePctPoints": 0.01,
-    "nativeCadence": "weekly-economic-cycle-with-daily-observation-capability",
+    "nativeCadence": "protocol-native-cadence-with-daily-observation-capability",
     "currentCohort": "Defitea -> f(x) veFXN",
+    "currentCohorts": [
+      "Defitea -> f(x) veFXN",
+      "Defitea -> Curve veCRV Fee Distributor"
+    ],
+    "legacyLatestAlias": "latest remains the veFXN cohort until Explanatory Context migrates to cohorts.*",
     "driverPromotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path.",
+    "mechanicalIdentityRule": "A canonical formula may explain how measured inputs determine a metric without claiming why those upstream inputs changed.",
     "futurePatternRule": "Repeated patterns may become prospective signal candidates only through the existing frozen-baseline support/counterevidence methodology; never automatically become predictions."
   },
   "sourceState": {
     "productivity": {
       "file": "companies/productivity-data.json",
       "version": "1.16",
-      "generatedAt": "2026-08-24T11:52:38.988Z",
-      "sha256": "193c6cdea23ea7976d697dd5c1fd376e758b6a093a87dd8e1be5f2cbd85ffa8b"
+      "generatedAt": "2026-08-24T16:03:46.770Z",
+      "sha256": "7080ab989b60239c55439de305e00a2c2509f9b01b19347b618c0329a22d731c"
+    },
+    "productivityEngine": {
+      "file": "productivity/productivity-engine.mjs",
+      "sha256": "93330bfa02aeb8423e3d9b24776734f4ade1d1c9f3e58b0ee1d519b94795f54b"
     },
     "fxnLocker": {
       "url": "https://fx.aladdin.club/v2/lock",
       "sourceType": "official-frontend-exact-locker-block",
       "nativeCadence": "weekly",
-      "latestObservedAt": "2026-08-24T11:53:29.369Z"
+      "latestObservedAt": "2026-08-24T16:03:46.817Z"
+    },
+    "curveVeCrv": {
+      "url": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+      "sourceType": "onchain",
+      "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
+      "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+      "rpc": "https://ethereum-rpc.publicnode.com",
+      "latestObservedAt": "2026-08-24T16:02:39.279Z"
     }
   },
   "graph": {
@@ -81,6 +120,41 @@
         "id": "driver:weekly-wsteth-revenue",
         "type": "driver",
         "label": "veFXN Revenue · wstETH"
+      },
+      {
+        "id": "protocol:curve",
+        "type": "protocol",
+        "label": "Curve"
+      },
+      {
+        "id": "mechanism:curve-vecrv-fee-distributor",
+        "type": "mechanism",
+        "label": "veCRV Fee Distributor"
+      },
+      {
+        "id": "asset:crv",
+        "type": "asset",
+        "label": "CRV"
+      },
+      {
+        "id": "driver:curve-crvusd-fees",
+        "type": "driver",
+        "label": "Distributed crvUSD Fees"
+      },
+      {
+        "id": "driver:curve-vesupply",
+        "type": "driver",
+        "label": "veCRV Supply"
+      },
+      {
+        "id": "driver:curve-crv-price",
+        "type": "driver",
+        "label": "CRV Price"
+      },
+      {
+        "id": "metric:curve-vecrv-reference-apr",
+        "type": "metric",
+        "label": "veCRV Reference APR"
       }
     ],
     "edges": [
@@ -125,13 +199,295 @@
         "to": "mechanism:fxn-locker",
         "relation": "economic-context-for",
         "epistemicClass": "observed-context-not-yet-causal"
+      },
+      {
+        "from": "company:004",
+        "to": "mechanism:curve-vecrv-fee-distributor",
+        "relation": "holds-position-through",
+        "epistemicClass": "canonical-position-state"
+      },
+      {
+        "from": "mechanism:curve-vecrv-fee-distributor",
+        "to": "protocol:curve",
+        "relation": "belongs-to",
+        "epistemicClass": "protocol-mechanism"
+      },
+      {
+        "from": "mechanism:curve-vecrv-fee-distributor",
+        "to": "asset:crv",
+        "relation": "rewards-lockers-of",
+        "epistemicClass": "protocol-mechanism"
+      },
+      {
+        "from": "driver:curve-crvusd-fees",
+        "to": "metric:curve-vecrv-reference-apr",
+        "relation": "formula-numerator-input",
+        "epistemicClass": "proven-mechanical-identity"
+      },
+      {
+        "from": "driver:curve-vesupply",
+        "to": "metric:curve-vecrv-reference-apr",
+        "relation": "formula-denominator-input",
+        "epistemicClass": "proven-mechanical-identity"
+      },
+      {
+        "from": "driver:curve-crv-price",
+        "to": "metric:curve-vecrv-reference-apr",
+        "relation": "formula-denominator-input",
+        "epistemicClass": "proven-mechanical-identity"
+      },
+      {
+        "from": "metric:curve-vecrv-reference-apr",
+        "to": "mechanism:curve-vecrv-fee-distributor",
+        "relation": "describes-productive-capacity-of",
+        "epistemicClass": "canonical-productivity-metric"
       }
     ]
   },
+  "cohorts": {
+    "defitea-fxn-vefxn": {
+      "cohortId": "defitea-fxn-vefxn",
+      "status": "active-unresolved-causality",
+      "identity": {
+        "companyRegistry": "004",
+        "company": "defitea.eth",
+        "protocol": "f(x)",
+        "mechanism": "veFXN Locker",
+        "asset": "FXN"
+      },
+      "latest": {
+        "observation": {
+          "id": "fxn-locker:2026-08-24:ad4cba79cb91f04fec0e",
+          "cohortId": "defitea-fxn-vefxn",
+          "observedAt": "2026-08-24T16:03:46.817Z",
+          "observationDateUTC": "2026-08-24",
+          "company": {
+            "registry": "004",
+            "name": "defitea.eth"
+          },
+          "protocol": "f(x)",
+          "mechanism": "veFXN Locker",
+          "asset": "FXN",
+          "positionUnits": 64.81,
+          "positionPriceUsd": 19.78479811,
+          "positionValueUsd": 1282.25,
+          "liveObservedAprPct": 31.32,
+          "canonicalProductivityAprPct": 31.32,
+          "canonicalProductivityStatus": "ok",
+          "aprParityDeltaPctPoints": 0,
+          "drivers": {
+            "fxnLocked": 533622.38,
+            "fxnCirculatingSupplyLockedPct": 77.07,
+            "totalVeFxn": 467361.08,
+            "cumulativeThisWeekWsteth": 0.34,
+            "previousWeekWsteth": 7.98,
+            "averageLockRaw": "3.50 Years",
+            "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
+          },
+          "source": {
+            "url": "https://fx.aladdin.club/v2/lock",
+            "sourceType": "official-frontend-exact-locker-block",
+            "sourceMetric": "FXN Locker economic vitals",
+            "rawBlockHash": "d7584ddcdb983cfa0744c6a3b4938a90706e65a5a2e3d0587eb1fd77b011941e",
+            "productivityFile": "companies/productivity-data.json",
+            "productivitySha256": "7080ab989b60239c55439de305e00a2c2509f9b01b19347b618c0329a22d731c"
+          },
+          "epistemic": {
+            "observationClass": "exact-official-protocol-observation",
+            "aprClass": "exact-official-locker-observation",
+            "driverClass": "exact-official-locker-context",
+            "causalAttribution": "unresolved",
+            "primaryDriver": null,
+            "rule": "Do not infer that revenue, lock supply, incentives or any other observed driver caused the APR until a mechanism-specific formula or onchain accounting identity proves the relationship."
+          }
+        },
+        "movement": {
+          "priorObservationId": "fxn-locker:2026-08-24:bbab2d4ef32c13eb805f",
+          "elapsedHours": 4.1715,
+          "aprDeltaPctPoints": 10.41,
+          "fxnLockedDelta": 0,
+          "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
+          "totalVeFxnDelta": -62.27,
+          "currentWeekRevenueDeltaWsteth": 0.01,
+          "revenueDeltaComparable": true,
+          "revenueDeltaNonComparableReason": null
+        }
+      },
+      "observationCount": 3,
+      "attribution": {
+        "status": "warming-unresolved-causality",
+        "primaryDriver": null,
+        "supportedDrivers": [
+          "FXN Locked",
+          "FXN Circulating Supply Locked %",
+          "Total veFXN",
+          "Cumulative This Week wstETH revenue",
+          "Previous Week wstETH revenue"
+        ],
+        "blockedQuestion": "why-protocol-apr-changed",
+        "unlockCondition": "reproducible f(x) Locker APR formula or onchain accounting identity binding APR to measured drivers"
+      }
+    },
+    "defitea-curve-vecrv": {
+      "cohortId": "defitea-curve-vecrv",
+      "status": "active-formula-mechanics-proven",
+      "identity": {
+        "companyRegistry": "004",
+        "company": "defitea.eth",
+        "protocol": "Curve",
+        "mechanism": "veCRV Fee Distributor",
+        "asset": "CRV"
+      },
+      "latest": {
+        "observation": {
+          "id": "curve-vecrv:2026-08-24:1b7283595ac91e38290a",
+          "cohortId": "defitea-curve-vecrv",
+          "observedAt": "2026-08-24T16:02:39.279Z",
+          "observationDateUTC": "2026-08-24",
+          "company": {
+            "registry": "004",
+            "name": "defitea.eth"
+          },
+          "protocol": "Curve",
+          "mechanism": "veCRV Fee Distributor",
+          "asset": "CRV",
+          "positionUnits": 4125,
+          "positionPriceUsd": 0.33250432,
+          "positionValueUsd": 1371.58,
+          "canonicalProductivityAprPct": 1.6526,
+          "canonicalProductivityStatus": "ok",
+          "formulaReproducedAprPct": 1.652546,
+          "formulaParityDeltaPctPoints": 0.000054,
+          "drivers": {
+            "crvPriceUsd": 0.33250432,
+            "crvUSDPriceAssumption": 1,
+            "weeksUsed": 4,
+            "lastTokenTime": 1787476715,
+            "rollingWindowStart": "2026-07-23T00:00:00.000Z",
+            "rollingWindowEnd": "2026-08-20T00:00:00.000Z",
+            "rollingFourWeekFeesCrvUSD": 330900.9914959235,
+            "rollingAverageVeSupply": 783336549.6240488,
+            "rollingAverageAprPct": 1.65255,
+            "latestCompletedWeek": {
+              "week": 1786579200,
+              "periodStart": "2026-08-13T00:00:00.000Z",
+              "periodEnd": "2026-08-20T00:00:00.000Z",
+              "tokensCrvUSD": 148807.3648552352,
+              "veSupply": 781338361.8236687,
+              "aprPct": 2.9785
+            },
+            "completedWeeks": [
+              {
+                "week": 1786579200,
+                "periodStart": "2026-08-13T00:00:00.000Z",
+                "periodEnd": "2026-08-20T00:00:00.000Z",
+                "tokensCrvUSD": 148807.3648552352,
+                "veSupply": 781338361.8236687,
+                "aprPct": 2.9785,
+                "reproducedAprPct": 2.978457,
+                "formulaDeltaPctPoints": 0.000043
+              },
+              {
+                "week": 1785974400,
+                "periodStart": "2026-08-06T00:00:00.000Z",
+                "periodEnd": "2026-08-13T00:00:00.000Z",
+                "tokensCrvUSD": 41652.8667951192,
+                "veSupply": 783183855.8403445,
+                "aprPct": 0.8317,
+                "reproducedAprPct": 0.831739,
+                "formulaDeltaPctPoints": -0.000039
+              },
+              {
+                "week": 1785369600,
+                "periodStart": "2026-07-30T00:00:00.000Z",
+                "periodEnd": "2026-08-06T00:00:00.000Z",
+                "tokensCrvUSD": 71692.38943973786,
+                "veSupply": 784340206.5790856,
+                "aprPct": 1.4295,
+                "reproducedAprPct": 1.429469,
+                "formulaDeltaPctPoints": 0.000031
+              },
+              {
+                "week": 1784764800,
+                "periodStart": "2026-07-23T00:00:00.000Z",
+                "periodEnd": "2026-07-30T00:00:00.000Z",
+                "tokensCrvUSD": 68748.37040583129,
+                "veSupply": 784483774.253096,
+                "aprPct": 1.3705,
+                "reproducedAprPct": 1.370517,
+                "formulaDeltaPctPoints": -0.000017
+              }
+            ]
+          },
+          "formula": {
+            "status": "proven-canonical-collector-identity",
+            "weeklyIdentity": "weeklyAprPct = (tokensCrvUSD / veSupply) / crvPriceUsd * 52 * 100",
+            "rollingIdentity": "canonicalProductivityAprPct = arithmetic mean(completed-week aprPct values used by Productivity)",
+            "reproducedCanonicalAprPct": 1.652546,
+            "parityDeltaPctPoints": 0.000054,
+            "collectorFile": "productivity/productivity-engine.mjs",
+            "collectorSha256": "93330bfa02aeb8423e3d9b24776734f4ade1d1c9f3e58b0ee1d519b94795f54b"
+          },
+          "source": {
+            "url": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+            "sourceType": "onchain",
+            "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
+            "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+            "rpc": "https://ethereum-rpc.publicnode.com",
+            "productivityFile": "companies/productivity-data.json",
+            "productivitySha256": "7080ab989b60239c55439de305e00a2c2509f9b01b19347b618c0329a22d731c",
+            "productivityGeneratedAt": "2026-08-24T16:03:46.770Z"
+          },
+          "epistemic": {
+            "observationClass": "canonical-onchain-derived-protocol-observation",
+            "aprClass": "formula-derived-from-onchain-fee-distributor",
+            "driverClass": "onchain-fee-distributor-context",
+            "mechanicalAttribution": "proven-within-apr-formula",
+            "causalAttribution": "unresolved-beyond-formula",
+            "primaryDriver": null,
+            "provenRelation": "For the canonical veCRV fee APR, distributed crvUSD fees are the numerator, veCRV supply and CRV price are denominator inputs, and the rolling Reference APR is the arithmetic mean of completed-week formula outputs.",
+            "unresolvedQuestion": "What protocol activity caused distributed crvUSD fees themselves to change remains unresolved by this cohort.",
+            "rule": "The formula may explain how measured fee distribution, veSupply and CRV price mechanically determine Reference APR. It must not invent why upstream Curve fee distributions changed."
+          }
+        },
+        "movement": {
+          "priorObservationId": null,
+          "elapsedHours": null,
+          "aprDeltaPctPoints": null,
+          "crvPriceDeltaUsd": null,
+          "rollingAverageVeSupplyDelta": null,
+          "rollingFourWeekFeesDeltaCrvUSD": null,
+          "rollingWindowComparable": false,
+          "rollingWindowNonComparableReason": null,
+          "latestWeekFeesDeltaCrvUSD": null,
+          "latestWeekVeSupplyDelta": null,
+          "latestWeekAprDeltaPctPoints": null,
+          "latestWeekComparable": false,
+          "latestWeekNonComparableReason": null
+        }
+      },
+      "observationCount": 1,
+      "attribution": {
+        "status": "formula-mechanics-proven-upstream-cause-unresolved",
+        "primaryDriver": null,
+        "mechanicalInputs": [
+          "Distributed crvUSD fees",
+          "veCRV supply",
+          "CRV price"
+        ],
+        "formulaProven": true,
+        "formulaParityDeltaPctPoints": 0.000054,
+        "answerableQuestion": "how-current-vecrv-reference-apr-is-mechanically-formed",
+        "blockedQuestion": "why-curve-fee-distributions-changed",
+        "unlockCondition": "canonical protocol revenue / fee-origin evidence tied to the Fee Distributor inflow path"
+      }
+    }
+  },
   "latest": {
     "observation": {
-      "id": "fxn-locker:2026-08-24:bbab2d4ef32c13eb805f",
-      "observedAt": "2026-08-24T11:53:29.369Z",
+      "id": "fxn-locker:2026-08-24:ad4cba79cb91f04fec0e",
+      "cohortId": "defitea-fxn-vefxn",
+      "observedAt": "2026-08-24T16:03:46.817Z",
       "observationDateUTC": "2026-08-24",
       "company": {
         "registry": "004",
@@ -141,17 +497,17 @@
       "mechanism": "veFXN Locker",
       "asset": "FXN",
       "positionUnits": 64.81,
-      "positionPriceUsd": 19.69773188,
-      "positionValueUsd": 1276.61,
-      "liveObservedAprPct": 20.91,
-      "canonicalProductivityAprPct": 20.91,
+      "positionPriceUsd": 19.78479811,
+      "positionValueUsd": 1282.25,
+      "liveObservedAprPct": 31.32,
+      "canonicalProductivityAprPct": 31.32,
       "canonicalProductivityStatus": "ok",
       "aprParityDeltaPctPoints": 0,
       "drivers": {
         "fxnLocked": 533622.38,
         "fxnCirculatingSupplyLockedPct": 77.07,
-        "totalVeFxn": 467423.35,
-        "cumulativeThisWeekWsteth": 0.33,
+        "totalVeFxn": 467361.08,
+        "cumulativeThisWeekWsteth": 0.34,
         "previousWeekWsteth": 7.98,
         "averageLockRaw": "3.50 Years",
         "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
@@ -160,9 +516,9 @@
         "url": "https://fx.aladdin.club/v2/lock",
         "sourceType": "official-frontend-exact-locker-block",
         "sourceMetric": "FXN Locker economic vitals",
-        "rawBlockHash": "3d3ead0a811e68a5a14843ede9215278548ea902830a183637492865945cea6a",
+        "rawBlockHash": "d7584ddcdb983cfa0744c6a3b4938a90706e65a5a2e3d0587eb1fd77b011941e",
         "productivityFile": "companies/productivity-data.json",
-        "productivitySha256": "193c6cdea23ea7976d697dd5c1fd376e758b6a093a87dd8e1be5f2cbd85ffa8b"
+        "productivitySha256": "7080ab989b60239c55439de305e00a2c2509f9b01b19347b618c0329a22d731c"
       },
       "epistemic": {
         "observationClass": "exact-official-protocol-observation",
@@ -174,13 +530,13 @@
       }
     },
     "movement": {
-      "priorObservationId": "fxn-locker:2026-08-24:9941ce0fa7661c123603",
-      "elapsedHours": 0.0052,
-      "aprDeltaPctPoints": 0,
+      "priorObservationId": "fxn-locker:2026-08-24:bbab2d4ef32c13eb805f",
+      "elapsedHours": 4.1715,
+      "aprDeltaPctPoints": 10.41,
       "fxnLockedDelta": 0,
       "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-      "totalVeFxnDelta": -0.05,
-      "currentWeekRevenueDeltaWsteth": 0,
+      "totalVeFxnDelta": -62.27,
+      "currentWeekRevenueDeltaWsteth": 0.01,
       "revenueDeltaComparable": true,
       "revenueDeltaNonComparableReason": null
     }
@@ -228,7 +584,8 @@
         "causalAttribution": "unresolved",
         "primaryDriver": null,
         "rule": "Do not infer that revenue, lock supply, incentives or any other observed driver caused the APR until a mechanism-specific formula or onchain accounting identity proves the relationship."
-      }
+      },
+      "cohortId": "defitea-fxn-vefxn"
     },
     {
       "id": "fxn-locker:2026-08-24:bbab2d4ef32c13eb805f",
@@ -272,6 +629,163 @@
         "causalAttribution": "unresolved",
         "primaryDriver": null,
         "rule": "Do not infer that revenue, lock supply, incentives or any other observed driver caused the APR until a mechanism-specific formula or onchain accounting identity proves the relationship."
+      },
+      "cohortId": "defitea-fxn-vefxn"
+    },
+    {
+      "id": "curve-vecrv:2026-08-24:1b7283595ac91e38290a",
+      "cohortId": "defitea-curve-vecrv",
+      "observedAt": "2026-08-24T16:02:39.279Z",
+      "observationDateUTC": "2026-08-24",
+      "company": {
+        "registry": "004",
+        "name": "defitea.eth"
+      },
+      "protocol": "Curve",
+      "mechanism": "veCRV Fee Distributor",
+      "asset": "CRV",
+      "positionUnits": 4125,
+      "positionPriceUsd": 0.33250432,
+      "positionValueUsd": 1371.58,
+      "canonicalProductivityAprPct": 1.6526,
+      "canonicalProductivityStatus": "ok",
+      "formulaReproducedAprPct": 1.652546,
+      "formulaParityDeltaPctPoints": 0.000054,
+      "drivers": {
+        "crvPriceUsd": 0.33250432,
+        "crvUSDPriceAssumption": 1,
+        "weeksUsed": 4,
+        "lastTokenTime": 1787476715,
+        "rollingWindowStart": "2026-07-23T00:00:00.000Z",
+        "rollingWindowEnd": "2026-08-20T00:00:00.000Z",
+        "rollingFourWeekFeesCrvUSD": 330900.9914959235,
+        "rollingAverageVeSupply": 783336549.6240488,
+        "rollingAverageAprPct": 1.65255,
+        "latestCompletedWeek": {
+          "week": 1786579200,
+          "periodStart": "2026-08-13T00:00:00.000Z",
+          "periodEnd": "2026-08-20T00:00:00.000Z",
+          "tokensCrvUSD": 148807.3648552352,
+          "veSupply": 781338361.8236687,
+          "aprPct": 2.9785
+        },
+        "completedWeeks": [
+          {
+            "week": 1786579200,
+            "periodStart": "2026-08-13T00:00:00.000Z",
+            "periodEnd": "2026-08-20T00:00:00.000Z",
+            "tokensCrvUSD": 148807.3648552352,
+            "veSupply": 781338361.8236687,
+            "aprPct": 2.9785,
+            "reproducedAprPct": 2.978457,
+            "formulaDeltaPctPoints": 0.000043
+          },
+          {
+            "week": 1785974400,
+            "periodStart": "2026-08-06T00:00:00.000Z",
+            "periodEnd": "2026-08-13T00:00:00.000Z",
+            "tokensCrvUSD": 41652.8667951192,
+            "veSupply": 783183855.8403445,
+            "aprPct": 0.8317,
+            "reproducedAprPct": 0.831739,
+            "formulaDeltaPctPoints": -0.000039
+          },
+          {
+            "week": 1785369600,
+            "periodStart": "2026-07-30T00:00:00.000Z",
+            "periodEnd": "2026-08-06T00:00:00.000Z",
+            "tokensCrvUSD": 71692.38943973786,
+            "veSupply": 784340206.5790856,
+            "aprPct": 1.4295,
+            "reproducedAprPct": 1.429469,
+            "formulaDeltaPctPoints": 0.000031
+          },
+          {
+            "week": 1784764800,
+            "periodStart": "2026-07-23T00:00:00.000Z",
+            "periodEnd": "2026-07-30T00:00:00.000Z",
+            "tokensCrvUSD": 68748.37040583129,
+            "veSupply": 784483774.253096,
+            "aprPct": 1.3705,
+            "reproducedAprPct": 1.370517,
+            "formulaDeltaPctPoints": -0.000017
+          }
+        ]
+      },
+      "formula": {
+        "status": "proven-canonical-collector-identity",
+        "weeklyIdentity": "weeklyAprPct = (tokensCrvUSD / veSupply) / crvPriceUsd * 52 * 100",
+        "rollingIdentity": "canonicalProductivityAprPct = arithmetic mean(completed-week aprPct values used by Productivity)",
+        "reproducedCanonicalAprPct": 1.652546,
+        "parityDeltaPctPoints": 0.000054,
+        "collectorFile": "productivity/productivity-engine.mjs",
+        "collectorSha256": "93330bfa02aeb8423e3d9b24776734f4ade1d1c9f3e58b0ee1d519b94795f54b"
+      },
+      "source": {
+        "url": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+        "sourceType": "onchain",
+        "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
+        "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+        "rpc": "https://ethereum-rpc.publicnode.com",
+        "productivityFile": "companies/productivity-data.json",
+        "productivitySha256": "7080ab989b60239c55439de305e00a2c2509f9b01b19347b618c0329a22d731c",
+        "productivityGeneratedAt": "2026-08-24T16:03:46.770Z"
+      },
+      "epistemic": {
+        "observationClass": "canonical-onchain-derived-protocol-observation",
+        "aprClass": "formula-derived-from-onchain-fee-distributor",
+        "driverClass": "onchain-fee-distributor-context",
+        "mechanicalAttribution": "proven-within-apr-formula",
+        "causalAttribution": "unresolved-beyond-formula",
+        "primaryDriver": null,
+        "provenRelation": "For the canonical veCRV fee APR, distributed crvUSD fees are the numerator, veCRV supply and CRV price are denominator inputs, and the rolling Reference APR is the arithmetic mean of completed-week formula outputs.",
+        "unresolvedQuestion": "What protocol activity caused distributed crvUSD fees themselves to change remains unresolved by this cohort.",
+        "rule": "The formula may explain how measured fee distribution, veSupply and CRV price mechanically determine Reference APR. It must not invent why upstream Curve fee distributions changed."
+      }
+    },
+    {
+      "id": "fxn-locker:2026-08-24:ad4cba79cb91f04fec0e",
+      "cohortId": "defitea-fxn-vefxn",
+      "observedAt": "2026-08-24T16:03:46.817Z",
+      "observationDateUTC": "2026-08-24",
+      "company": {
+        "registry": "004",
+        "name": "defitea.eth"
+      },
+      "protocol": "f(x)",
+      "mechanism": "veFXN Locker",
+      "asset": "FXN",
+      "positionUnits": 64.81,
+      "positionPriceUsd": 19.78479811,
+      "positionValueUsd": 1282.25,
+      "liveObservedAprPct": 31.32,
+      "canonicalProductivityAprPct": 31.32,
+      "canonicalProductivityStatus": "ok",
+      "aprParityDeltaPctPoints": 0,
+      "drivers": {
+        "fxnLocked": 533622.38,
+        "fxnCirculatingSupplyLockedPct": 77.07,
+        "totalVeFxn": 467361.08,
+        "cumulativeThisWeekWsteth": 0.34,
+        "previousWeekWsteth": 7.98,
+        "averageLockRaw": "3.50 Years",
+        "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
+      },
+      "source": {
+        "url": "https://fx.aladdin.club/v2/lock",
+        "sourceType": "official-frontend-exact-locker-block",
+        "sourceMetric": "FXN Locker economic vitals",
+        "rawBlockHash": "d7584ddcdb983cfa0744c6a3b4938a90706e65a5a2e3d0587eb1fd77b011941e",
+        "productivityFile": "companies/productivity-data.json",
+        "productivitySha256": "7080ab989b60239c55439de305e00a2c2509f9b01b19347b618c0329a22d731c"
+      },
+      "epistemic": {
+        "observationClass": "exact-official-protocol-observation",
+        "aprClass": "exact-official-locker-observation",
+        "driverClass": "exact-official-locker-context",
+        "causalAttribution": "unresolved",
+        "primaryDriver": null,
+        "rule": "Do not infer that revenue, lock supply, incentives or any other observed driver caused the APR until a mechanism-specific formula or onchain accounting identity proves the relationship."
       }
     }
   ],
@@ -289,9 +803,9 @@
     "unlockCondition": "reproducible f(x) Locker APR formula or onchain accounting identity binding APR to measured drivers"
   },
   "expansionQueue": [
-    "Curve / Convex gauge votes + incentives + fees",
-    "Votium / VoteMarket incentive markets",
     "Aerodrome veAERO votes + voting incentives + fees + emissions",
+    "Convex vlCVX + Votium incentive markets",
+    "Votium / VoteMarket incentive markets",
     "Aero sAERO Predictive Allocation outcomes when live",
     "Pendle incentives / fees / liquidity",
     "Yield Basis fees / emissions / liquidity",
