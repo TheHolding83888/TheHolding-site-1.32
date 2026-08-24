@@ -63,7 +63,9 @@
     lazy: { rewards: null, embedded: null, entries: null },
     pageText: new Map(),
     lastEntity: null,
-    lastTopic: null
+    previousEntity: null,
+    lastTopic: null,
+    previousTopic: null
   };
 
   const ANSWER_CONTRACT_VERSION = '0.1-source-bound-answer-contract';
@@ -104,7 +106,8 @@
     'tracking', 'income', 'protocol', 'changes', 'latest', 'material', 'start', 'friday', 'surface', 'system', 'proposing', 'actually',
     '1milliondollar', 'concentrated', 'know', 'before', 'march', 'began', 'started', 'explain', 'accrued', 'reference', 'higher',
     'which', 'person', 'today', 'exact', 'guaranteed', 'probability', 'hacked', 'founding', 'purpose', 'maturity', 'reputation',
-    'changed', 'matters', 'pre-tracking', 'evidence', 'should'
+    'changed', 'matters', 'pre-tracking', 'evidence', 'should', 'substantia', 'fructus', 'singul', 'fund', 'funds',
+    'second', 'third', 'fourth', 'fifth'
   ]);
 
   function editDistanceValue(a, b) {
@@ -151,10 +154,12 @@
     'компании', 'использует', 'используют', 'продуктивность', 'доходность', 'сравни',
     'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам', 'компани',
     'владелец', 'владельцу', 'владельца', 'бриф', 'точный', 'точно', 'цена', 'неделю', 'неделя', 'результат', 'измеренный',
-    'экспозиция', 'сконцентрированы', 'сконцентрирована', 'понимаешь', 'понимание', 'кошелек', 'компаньон', 'трекинг', 'изменения',
+    'экспозиция', 'сконцентрированы', 'сконцентрирована', 'понимаешь', 'понимание', 'насколько', 'кошелек', 'компаньон', 'трекинг', 'изменения',
     'изменилось', 'система', 'предлагает', 'научилась', 'компаниях', 'доходняк', 'такое', 'знать', 'важно', 'важный',
     'какие', 'наградам', 'прибыль', 'начала', 'март', 'концентрацией', 'знает', 'выучил', 'трекинга', 'доход', 'через',
-    'протокол', 'протоколы', 'протоколам', 'протоколах', 'глубоко', 'текущая'
+    'протокол', 'протоколы', 'протоколам', 'протоколах', 'глубоко', 'текущая',
+    'субстанция', 'субстанции', 'субстанцию', 'субстанцией', 'фруктус', 'сингул',
+    'первый', 'первого', 'второй', 'второго', 'третий', 'третьего', 'четвертый', 'четвертого', 'пятый', 'пятого'
   ]);
 
   function fuzzyKnownRuLexemes(text) {
@@ -530,6 +535,100 @@
     maker: ['maker', 'sky', 'скай'],
     fluid: ['fluid', 'флюид']
   });
+
+  const FUND_DIRECTIONS = Object.freeze({
+    substantia: Object.freeze({
+      name: 'Substantia',
+      url: '/substantia/',
+      aliases: ['substantia', 'субстанция', 'субстанции', 'субстанцию', 'субстанцией'],
+      ru: 'резерв и базовый капитал; фундаментальный hard-asset слой долгосрочного накопления и сохранения капитала',
+      en: 'reserve and foundation capital; the long-horizon hard-asset accumulation and capital-preservation layer'
+    }),
+    defitea: Object.freeze({
+      name: 'Defitea',
+      url: '/defitea/',
+      aliases: ['defitea', 'дефитеа', 'дефити'],
+      ru: 'продуктивный DeFi и cash flow',
+      en: 'productive DeFi and cash flow'
+    }),
+    monetra: Object.freeze({
+      name: 'Monetra',
+      url: '/monetra/',
+      aliases: ['monetra', 'монетра', 'монетру', 'монетре'],
+      ru: 'Stable Capital и доходность стейблкоинов',
+      en: 'Stable Capital and stablecoin yield'
+    }),
+    fructus: Object.freeze({
+      name: 'Fructus',
+      url: '/fructus/',
+      aliases: ['fructus', 'фруктус'],
+      ru: 'RWA-направление капитала',
+      en: 'the RWA capital direction'
+    }),
+    singul: Object.freeze({
+      name: 'Singul',
+      url: '/singul/',
+      aliases: ['singul', 'сингул'],
+      ru: 'venture и асимметричный рост',
+      en: 'venture and asymmetric growth'
+    })
+  });
+
+  const fundIds = () => Object.keys(FUND_DIRECTIONS);
+  const boundedPhrase = (text, phrase) => (` ${String(text || '').trim()} `).includes(` ${String(phrase || '').trim()} `);
+  const fundQueryNorm = text => finalizeNorm(fuzzyKnownLexemes(fuzzyKnownRuLexemes(String(text || ''))));
+
+  function fundGroup(query) {
+    const q = fundQueryNorm(query);
+    for (const [id, fund] of Object.entries(FUND_DIRECTIONS)) {
+      if (fund.aliases.some(alias => boundedPhrase(q, finalizeNorm(alias)))) return id;
+    }
+    return null;
+  }
+
+  function fundPurposeIntent(query) {
+    const q = norm(query);
+    return q.includes('задач') || q.includes('назначен') || q.includes('роль') || q.includes('зачем') || q.includes('для чего')
+      || q.includes('purpose') || q.includes('capital job') || q.includes('what is it for') || q.includes('what does it do')
+      || /\brole\b/.test(q) || /\bjob\b/.test(q);
+  }
+
+  function fundOrdinal(query) {
+    const q = fundQueryNorm(query);
+    const rows = [
+      ['substantia', ['перв', 'first']],
+      ['defitea', ['втор', 'second']],
+      ['monetra', ['трет', 'third']],
+      ['fructus', ['четвер', 'fourth']],
+      ['singul', ['пят', 'fifth']]
+    ];
+    for (const [id, aliases] of rows) if (aliases.some(alias => q.includes(alias))) return id;
+    return null;
+  }
+
+  function fundPurposeAnswer(id, lang) {
+    const fund = FUND_DIRECTIONS[id];
+    if (!fund) return null;
+    state.lastEntity = { kind: 'fund', id };
+    state.lastTopic = `fund:${id}`;
+    return {
+      text: lang === 'ru'
+        ? `${fund.name} — ${fund.ru}.\n\nЕго задача в структуре The Holding именно эта; фондовые направления разделены по разным задачам капитала.`
+        : `${fund.name} — ${fund.en}.\n\nThat is its job inside The Holding; the fund directions stay separate because they serve different capital purposes.`,
+      source: `The Holding project canon · Public site knowledge · ${fund.url}`
+    };
+  }
+
+  function fundFollowupAnswer(query, lang, contextEntity) {
+    const explicit = fundGroup(query);
+    if (explicit && (fundPurposeIntent(query) || contextEntity?.kind === 'fund-set')) return fundPurposeAnswer(explicit, lang);
+    if (contextEntity?.kind === 'fund' && fundPurposeIntent(query)) return fundPurposeAnswer(contextEntity.id, lang);
+    if (contextEntity?.kind === 'fund-set') {
+      const ordinal = fundOrdinal(query);
+      if (ordinal && (fundPurposeIntent(query) || norm(query).split(/\s+/).length <= 6)) return fundPurposeAnswer(ordinal, lang);
+    }
+    return null;
+  }
 
   const CONCEPTS = Object.freeze({
     layers: {
@@ -1078,8 +1177,9 @@
   }
 
   function compareFollowupAnswer(query, lang) {
-    if (state.lastEntity?.kind !== 'company-compare') return null;
-    const names = safeArray(state.lastEntity.names);
+    const contextEntity = state.previousEntity;
+    if (contextEntity?.kind !== 'company-compare') return null;
+    const names = safeArray(contextEntity.names);
     if (names.length !== 2) return null;
     const a={name:names[0],registry:state.registry.find(x=>x.name===names[0])||null};
     const b={name:names[1],registry:state.registry.find(x=>x.name===names[1])||null};
@@ -1153,6 +1253,7 @@ function learningAnswer(lang) {
     }
     if (best && score >= 3) {
       state.lastTopic = best.id;
+      if (best.id === 'funds') state.lastEntity = { kind: 'fund-set', ids: fundIds() };
       return { text: best[lang], source: 'The Holding project canon' };
     }
     return null;
@@ -1160,17 +1261,20 @@ function learningAnswer(lang) {
 
   function followupAnswer(query, lang) {
     const q = norm(query);
+    const contextEntity = state.previousEntity;
+    const fundFollow = fundFollowupAnswer(query, lang, contextEntity);
+    if (fundFollow) return fundFollow;
     const compareFollow = compareFollowupAnswer(query, lang);
     if (compareFollow) return compareFollow;
-    if (state.lastEntity?.kind === 'registry' && includesAny(q, ['list them', 'перечисли', 'список', 'show them'])) return registryAnswer(lang);
-    if (state.lastEntity?.kind === 'protocol') {
-      const key=state.lastEntity.key;
+    if (contextEntity?.kind === 'registry' && includesAny(q, ['list them', 'перечисли', 'список', 'show them'])) return registryAnswer(lang);
+    if (contextEntity?.kind === 'protocol') {
+      const key=contextEntity.key;
       if (includesAny(q,['which companies','какие компании','кто использует','use it','where do we have it','where is it','где он у нас','где это у нас','где у нас есть'])) return protocolCompaniesAnswer(key,lang);
       if (includesAny(q,['reference apr','apr','apy','yield','продуктивност'])) { const rows=findEngines(key); if (rows.length) return engineAnswer(rows,lang); }
     }
-    if (!state.lastEntity || protocolGroup(query) || findCompany(query)) return null;
-    if (['company', 'stable-company'].includes(state.lastEntity.kind)) {
-      const company = { name: state.lastEntity.name, registry: state.registry.find(x => x.name === state.lastEntity.name) || null };
+    if (!contextEntity || protocolGroup(query) || findCompany(query)) return null;
+    if (['company', 'stable-company'].includes(contextEntity.kind)) {
+      const company = { name: contextEntity.name, registry: state.registry.find(x => x.name === contextEntity.name) || null };
       if (includesAny(q, ['истор', 'средн', 'histor', 'average'])) return companyAnswer(company, lang, query);
       if (includesAny(q, ['reward', 'награ', 'claimable', 'accrued'])) return rewardsAnswer(query, lang, company);
       if (includesAny(q, ['embedded', 'встроенн', 'внутри позиции'])) return embeddedAnswer(query, lang, company);
@@ -1180,11 +1284,11 @@ function learningAnswer(lang) {
         return companyAnswer(company, lang, query);
       }
     }
-    if (state.lastEntity.kind === 'engine' && includesAny(q, ['а сейчас', 'current', 'текущ', 'доход', 'apr'])) {
-      const e = safeObject(state.productivity?.engines)[state.lastEntity.id];
+    if (contextEntity.kind === 'engine' && includesAny(q, ['а сейчас', 'current', 'текущ', 'доход', 'apr'])) {
+      const e = safeObject(state.productivity?.engines)[contextEntity.id];
       if (e) return engineAnswer([e], lang);
     }
-    if (state.lastEntity.kind === 'governance') {
+    if (contextEntity.kind === 'governance') {
       if (includesAny(q, ['почему', 'why', 'почему только', 'отфильтр'])) return whyFilteredAnswer(lang);
       if (includesAny(q, ['одобрен', 'approved', 'builder', 'guardian', 'может сделать', 'can execute', 'может сам'])) return governanceStatusAnswer(lang);
     }
@@ -1910,6 +2014,9 @@ async function loadLazy(kind) {
     const follow = followupAnswer(raw, lang);
     if (follow) return follow;
 
+    const explicitFund = fundGroup(raw);
+    if (explicitFund && fundPurposeIntent(raw)) return fundPurposeAnswer(explicitFund, lang);
+
     const navigationIntent = includesAny(q, [
       'where should i start', 'where should a new person start', 'where should a new person begin', 'where do i begin', 'where do i start',
       'i just found this site', 'new here', 'look first', 'bigger vision', 'read the vision',
@@ -1941,8 +2048,8 @@ async function loadLazy(kind) {
     if (compareIntent) {
       const matches = findCompanies(raw);
       if (matches.length >= 2) return compareCompaniesAnswer(matches[0], matches[1], lang);
-      if (matches.length === 1 && ['company','stable-company'].includes(state.lastEntity?.kind) && state.lastEntity.name !== matches[0].name) {
-        const prior={name:state.lastEntity.name,registry:state.registry.find(x=>x.name===state.lastEntity.name)||null};
+      if (matches.length === 1 && ['company','stable-company'].includes(state.previousEntity?.kind) && state.previousEntity.name !== matches[0].name) {
+        const prior={name:state.previousEntity.name,registry:state.registry.find(x=>x.name===state.previousEntity.name)||null};
         return compareCompaniesAnswer(prior,matches[0],lang);
       }
     }
@@ -2016,6 +2123,11 @@ async function loadLazy(kind) {
     input.disabled = true;
     button.disabled = true;
     try {
+      // Conversation context is deliberately one-turn only. The previous answer may resolve a referent,
+      // but factual claims are always rebuilt from the current canonical source path on this turn.
+      state.previousEntity = state.lastEntity;
+      state.previousTopic = state.lastTopic;
+      state.lastEntity = null;
       state.lastTopic = null;
 
       // Critical request boundaries are fail-closed before generic routing as well as after it.

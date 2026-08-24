@@ -16,11 +16,11 @@ Never:
 
 ## v0.1 scale
 
-`mutation-intents-v0.1.json` defines **21 durable semantic families**.
+`mutation-intents-v0.1.json` defines **22 durable semantic families**.
 
 `generate-mutation-corpus-v0.1.mjs` generates **10 seeded variants per family by default**:
 
-- 210 unseen mutation cases per campaign;
+- 220 unseen mutation cases per campaign;
 - multi-turn sessions are generated for context-sensitive families;
 - additional existing `all` evidence includes frozen Safety, Semantic Safety, Core and Owner Unknown;
 - generated exact strings remain temporary artifacts, not durable project memory.
@@ -36,6 +36,7 @@ The first campaign deliberately stresses:
 - conservative one-edit and occasional two-token typo noise;
 - punctuation/casing noise;
 - multi-turn pronoun/context retention;
+- bounded one-turn fund/entity carry-over from real owner dialogue, with previous turns used only for referent resolution and fresh source-binding required for the answer;
 - authority and secret boundaries;
 - current yield vs historical performance;
 - rewards vs APR/APY substitution;
@@ -125,7 +126,7 @@ A Gauntlet repair is production-ready only on a clean exact PR head after all te
 - Frozen Semantic Safety PASS;
 - Annotated Core PASS;
 - Ask Experience release gates PASS;
-- a fresh unseen 210-case Gauntlet with `harnessErrors = 0`;
+- a fresh unseen 220-case Gauntlet with `harnessErrors = 0`;
 - `falseMeasuredCount = 0`;
 - `falseUnknownCount = 0` on annotated answerable families;
 - source fit, confidence fit and required answer-pattern fit all at 100%;

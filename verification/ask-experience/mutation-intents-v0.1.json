@@ -1,5 +1,5 @@
 {
-  "version": "0.2-conversation-gauntlet-intent-recipes",
+  "version": "0.3-conversation-context-continuity-intent-recipes",
   "origin": "synthetic-mutation",
   "releaseGateEligible": true,
   "variantsPerIntent": 10,
@@ -619,6 +619,63 @@
         "don't substitute APY — I want exact Sharpe"
       ],
       "slots": {}
+    },
+    {
+      "id": "fund-purpose-continuity",
+      "capabilityClass": "conversation-context-carryover",
+      "expectedIntent": "fund-purpose",
+      "expectedConfidence": "measured",
+      "requiredSourceArtifact": "/substantia/",
+      "requiredAdditionalSourceArtifact": "/intelligence/project-memory/CURRENT.md",
+      "requiredAnswerPattern": "Substantia|Субстанц|резерв|базов|foundation|capital-preservation",
+      "forbiddenSubstitution": [
+        "Reference APR",
+        "Reference APY",
+        "No sufficiently strong verified match"
+      ],
+      "templates": [
+        "{entity} — what is its {purposeWord} inside The Holding?",
+        "какая {purposeWordRu} у {entityRuGenitive}?",
+        "для чего нужен {entityRuNominative} в структуре The Holding?"
+      ],
+      "sessionTemplates": [
+        [
+          "Which funds does The Holding have?",
+          "and what is the first one's {purposeWord}?"
+        ],
+        [
+          "Какие фонды есть в The Holding?",
+          "а у первого какая {purposeWordRu}?"
+        ],
+        [
+          "какой фонд основной?",
+          "какая {purposeWordRu} у {entityRuGenitive}?"
+        ]
+      ],
+      "sessionChance": 0.75,
+      "slots": {
+        "entity": [
+          "Substantia"
+        ],
+        "entityRuGenitive": [
+          "субстанции",
+          "Substantia"
+        ],
+        "entityRuNominative": [
+          "субстанция",
+          "Substantia"
+        ],
+        "purposeWord": [
+          "purpose",
+          "role",
+          "capital job"
+        ],
+        "purposeWordRu": [
+          "задача",
+          "роль",
+          "назначение"
+        ]
+      }
     }
   ]
 }
