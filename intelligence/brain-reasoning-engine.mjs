@@ -3,7 +3,7 @@
  * THE HOLDING BRAIN — GROUNDED REASONING GATEWAY v0.1
  *
  * Purpose:
- *   Convert canonical Observer + Security intelligence into a compact,
+ *   Convert canonical Observer + Security + Explanatory intelligence into a compact,
  *   evidence-bound reasoning layer answering:
  *     1. What changed?
  *     2. Why does it matter?
@@ -16,8 +16,9 @@
  * other models may read. No reasoning case is allowed without evidence.
  *
  * Safety:
- *   - read-only over canonical economic/security inputs;
+ *   - read-only over canonical economic/security/explanatory inputs;
  *   - proposal-only recommendations;
+ *   - measured context is not causal attribution;
  *   - no wallet actions;
  *   - no methodology mutation;
  *   - no source-data mutation;
@@ -37,6 +38,7 @@ const FILES = {
   systemMemory: 'intelligence/system-memory.json',
   security: 'security/security-intelligence.json',
   securityMemory: 'security/security-memory.json',
+  explanatory: 'intelligence/explanatory/explanatory-context.json',
   policy: 'intelligence/brain-policy.json',
   output: 'intelligence/brain-intelligence.json',
   history: 'intelligence/brain-history.json',
@@ -124,7 +126,7 @@ function evidence(source, pointer, value, sourceSha256, observedAt, extra = {}) 
   };
 }
 
-function recommendationForCategory(category, item = {}) {
+function recommendationForCategory(category) {
   const map = {
     'adapter-state': {
       implication:
@@ -226,7 +228,7 @@ function validatePolicy(policy) {
     fail(`Unexpected brain policy version: ${policy?.version}`);
   }
   if (policy?.mode !== 'read-only-proposal-only') {
-    fail(`Brain policy must remain read-only-proposal-only`);
+    fail('Brain policy must remain read-only-proposal-only');
   }
   if (policy?.grounding?.evidenceRequiredForEveryReasoningCase !== true) {
     fail('Brain policy must require evidence for every reasoning case');
@@ -247,6 +249,7 @@ const loaded = {
   systemMemory: readJson(FILES.systemMemory),
   security: readJson(FILES.security),
   securityMemory: readJson(FILES.securityMemory),
+  explanatory: readJson(FILES.explanatory),
   policy: readJson(FILES.policy),
 };
 
@@ -254,6 +257,7 @@ const change = loaded.change.data;
 const systemMemory = loaded.systemMemory.data;
 const security = loaded.security.data;
 const securityMemory = loaded.securityMemory.data;
+const explanatory = loaded.explanatory.data;
 const policy = loaded.policy.data;
 
 validatePolicy(policy);
@@ -264,9 +268,27 @@ if (!security?.severityCounts || typeof security.severityCounts !== 'object') {
   fail('security-intelligence.severityCounts missing');
 }
 if (!Array.isArray(security?.currentFindings)) fail('security-intelligence.currentFindings must be an array');
+if (explanatory?.version !== '0.2-explanatory-context') fail(`Unexpected Explanatory Context version: ${explanatory?.version}`);
+if (explanatory?.authority?.readOnly !== true || explanatory?.authority?.executionAuthority !== 'none') {
+  fail('Explanatory Context escaped read-only/no-execution authority');
+}
+if (explanatory?.authority?.recommendationAuthority !== false || explanatory?.authority?.causalClaimAuthority !== 'none') {
+  fail('Explanatory Context authority widened unexpectedly');
+}
+
+const protocolAprContext = explanatory?.explanations?.protocolAprChangeContext;
+if (!protocolAprContext || protocolAprContext.status !== 'context-available-causal-attribution-unresolved') {
+  fail('Explanatory protocol APR context unavailable');
+}
+if (protocolAprContext.causalAttribution !== 'unresolved' || protocolAprContext.primaryDriver !== null) {
+  fail('Protocol APR context causal boundary weakened');
+}
+if (explanatory?.answerability?.['why-protocol-apr-changed'] !== 'context-available-cause-unresolved') {
+  fail('Explanatory protocol APR answerability boundary unexpected');
+}
 
 const sourceMeta = {};
-for (const key of ['change', 'systemMemory', 'security', 'securityMemory']) {
+for (const key of ['change', 'systemMemory', 'security', 'securityMemory', 'explanatory']) {
   const rel = FILES[key];
   const obj = loaded[key].data;
   const generatedAt = sourceGeneratedAt(key, obj);
@@ -322,7 +344,7 @@ const cases = [];
 // Economic/system watch cases — already normalized by Observer.
 change.watchNext.forEach((item, index) => {
   const category = String(item?.category ?? 'unknown');
-  const policyResult = recommendationForCategory(category, item);
+  const policyResult = recommendationForCategory(category);
   const ev = evidence(
     FILES.change,
     `/watchNext/${index}`,
@@ -361,7 +383,7 @@ change.watchNext.forEach((item, index) => {
 // Material Observer changes are also reasoning inputs.
 change.whatChanged.forEach((item, index) => {
   const category = String(item?.category ?? 'system-change');
-  const policyResult = recommendationForCategory(category, item);
+  const policyResult = recommendationForCategory(category);
   cases.push({
     id: sha256(stableStringify({
       domain: 'system-change',
@@ -399,7 +421,7 @@ security.currentFindings
   .filter((finding) => ['critical', 'high'].includes(finding?.severity))
   .forEach((finding, index) => {
     const category = String(finding?.category ?? 'security-finding');
-    const policyResult = recommendationForCategory(category, finding);
+    const policyResult = recommendationForCategory(category);
     cases.push({
       id: `security-${String(finding?.id ?? index).slice(0, 24)}`,
       domain: 'security',
@@ -436,7 +458,7 @@ security.currentFindings
     });
   });
 
-// Aggregate medium security debt by category to avoid 42 repetitive reasoning cases.
+// Aggregate medium security debt by category to avoid repetitive reasoning cases.
 const mediumByCategory = new Map();
 security.currentFindings
   .filter((finding) => finding?.severity === 'medium')
@@ -447,7 +469,7 @@ security.currentFindings
   });
 
 for (const [category, findings] of [...mediumByCategory.entries()].sort()) {
-  const policyResult = recommendationForCategory(category, findings[0]);
+  const policyResult = recommendationForCategory(category);
   const representative = findings.slice(0, 3).map((f) => ({
     id: f?.id ?? null,
     file: f?.file ?? null,
@@ -533,11 +555,29 @@ const securityResolvedCount = Array.isArray(security?.whatChanged?.resolvedFindi
   ? security.whatChanged.resolvedFindings.length
   : 0;
 
-const whatChangedAnswer = economicChangeCount === 0 && securityNewCount === 0 && securityResolvedCount === 0
+const baseWhatChangedAnswer = economicChangeCount === 0 && securityNewCount === 0 && securityResolvedCount === 0
   ? 'No new material Observer or Security change events are present in the current canonical inputs. Existing watch items remain active.'
   : `Current canonical inputs contain ${economicChangeCount} material Observer change(s), ${securityNewCount} new security finding event(s), and ${securityResolvedCount} resolved security finding event(s).`;
 
-const evidenceLedger = dedupeEvidence(reasoningCases.flatMap((item) => item.evidence));
+const protocolContextSentence = `Canonical protocol-economic context is available for ${protocolAprContext.coverage?.protocol ?? 'the first protocol cohort'} ${protocolAprContext.coverage?.mechanism ?? ''}; measured driver context may be reported, while causal attribution remains unresolved.`;
+const whatChangedAnswer = `${baseWhatChangedAnswer} ${protocolContextSentence}`;
+
+const protocolContextEvidence = evidence(
+  FILES.explanatory,
+  '/explanations/protocolAprChangeContext',
+  protocolAprContext,
+  sourceMeta.explanatory.sha256,
+  sourceMeta.explanatory.generatedAt,
+  {
+    interpretation: 'normalized-measured-context-not-causal-attribution',
+    note: 'Canonical Explanatory Context derived from Economic Graph. Values are reportable; causal attribution remains explicitly unresolved.',
+  }
+);
+
+const evidenceLedger = dedupeEvidence([
+  ...reasoningCases.flatMap((item) => item.evidence),
+  protocolContextEvidence,
+]);
 
 const correctionMeta =
   change?.bridge?.memoryVault?.corrections
@@ -572,6 +612,19 @@ const output = {
       correctionEntryCount: correctionMeta?.entryCount ?? null,
       correctionPrecedence: correctionMeta?.interpretationPrecedence ?? null,
     },
+    protocolEconomics: {
+      status: protocolAprContext.status,
+      companyRegistry: protocolAprContext.coverage?.companyRegistry ?? null,
+      company: protocolAprContext.coverage?.company ?? null,
+      protocol: protocolAprContext.coverage?.protocol ?? null,
+      mechanism: protocolAprContext.coverage?.mechanism ?? null,
+      asset: protocolAprContext.coverage?.asset ?? null,
+      canonicalAprPct: protocolAprContext.apr?.canonicalProductivityPct ?? null,
+      aprDeltaFromPriorGraphObservationPctPoints: protocolAprContext.apr?.deltaFromPriorGraphObservationPctPoints ?? null,
+      causalAttribution: protocolAprContext.causalAttribution,
+      primaryDriver: protocolAprContext.primaryDriver,
+      sourceObservationId: protocolAprContext.provenance?.observationId ?? null,
+    },
     security: {
       status: security?.status ?? null,
       critical,
@@ -600,7 +653,17 @@ const output = {
           sourceMeta.security.sha256,
           sourceMeta.security.generatedAt
         ),
+        protocolContextEvidence,
       ]),
+    },
+    protocolAprContext: {
+      answer: protocolAprContext.explanation,
+      status: protocolAprContext.status,
+      causalAttribution: protocolAprContext.causalAttribution,
+      primaryDriver: protocolAprContext.primaryDriver,
+      reportableMeasuredContext: protocolAprContext.measuredDrivers,
+      measuredMovement: protocolAprContext.measuredMovement,
+      evidence: [protocolContextEvidence],
     },
     whyItMatters: reasoningCases.map((item) => ({
       id: item.id,
@@ -642,6 +705,7 @@ const output = {
     principles: [
       'No reasoning case without evidence.',
       'Unknown or stale remains unknown or stale.',
+      'Measured protocol-economic context is not causal attribution.',
       'Correction ledger interpretation takes precedence over superseded historical interpretation when applicable.',
       'Recommendations are proposals, not executable actions.',
       'Security-critical workflow-plane changes remain human-gated.',
@@ -683,6 +747,8 @@ const observation = {
   reasoningCaseCount: reasoningCases.length,
   economicMaterialChangeCount: economicChangeCount,
   economicWatchCount,
+  protocolAprContextStatus: protocolAprContext.status,
+  protocolAprCausalAttribution: protocolAprContext.causalAttribution,
   security: { critical, high, medium },
   sourceHashes: Object.fromEntries(
     Object.entries(sourceMeta).map(([k, v]) => [k, v.sha256])
@@ -724,6 +790,13 @@ const briefLines = [
   '### What changed',
   output.questions.whatChanged.answer,
   '',
+  '### Protocol economic context',
+  `- Cohort: ${protocolAprContext.coverage?.company ?? 'unknown'} · ${protocolAprContext.coverage?.protocol ?? 'unknown'} · ${protocolAprContext.coverage?.mechanism ?? 'unknown'}`,
+  `- Canonical APR: ${protocolAprContext.apr?.canonicalProductivityPct ?? 'unknown'}%`,
+  `- Context status: ${protocolAprContext.status}`,
+  `- Causal attribution: ${protocolAprContext.causalAttribution}`,
+  `- Primary driver: ${protocolAprContext.primaryDriver ?? 'unresolved'}`,
+  '',
   '### Why it matters / What follows / What should be done',
 ];
 
@@ -749,6 +822,7 @@ briefLines.push(
   '---',
   '',
   'This layer does not execute capital actions, mutate methodology, rewrite source data, or modify the workflow plane.',
+  'Measured protocol-economic context remains context until a protocol-specific formula or onchain accounting identity proves causation.',
   'Every reasoning case is evidence-bound and proposal-only.',
   ''
 );
@@ -779,6 +853,9 @@ console.log(JSON.stringify({
   reasoningCaseCount: output.reasoningCases.length,
   evidenceCount: output.evidenceLedger.length,
   allRequiredSourcesFresh: output.grounding.allRequiredSourcesFresh,
+  explanatorySourceFreshness: output.grounding.sources.explanatory?.freshness ?? null,
+  protocolAprContextStatus: output.questions.protocolAprContext.status,
+  protocolAprCausalAttribution: output.questions.protocolAprContext.causalAttribution,
   inputCompositeHash: output.bridge.inputCompositeHash,
   snapshotHash: output.bridge.snapshotHash,
 }, null, 2));
