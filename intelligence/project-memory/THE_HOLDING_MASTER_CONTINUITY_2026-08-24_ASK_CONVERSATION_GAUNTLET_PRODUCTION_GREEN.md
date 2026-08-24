@@ -227,7 +227,30 @@ THI remains telemetry, not a roadmap target.
 
 ---
 
-# 9. RESUME ORDER AFTER THIS CHECKPOINT
+# 9. INHERITED DURABLE BASELINE CONTRACT
+
+This checkpoint is a delta over the prior deep continuities, but the current verifier contract requires the latest master continuity to carry forward the expensive durable closure anchors that future sessions must not lose.
+
+Inherited closed-state anchors remain:
+
+- **PROJECT X + HYPERLEND CLOSED** — Company #010's Project X / HyperLend campaign remains a closed inherited production milestone unless fresh live evidence proves regression.
+- **resolver completeness != promotion completeness** — discovering/resolving a mechanism is not sufficient to claim full production promotion.
+- **HyperLend base lending interest = Compounded / Embedded** — base lending interest remains economically distinct from separate external incentives.
+- **rewardAssetCount = 0** means no separate external reward asset row; it does not erase embedded/base yield.
+- **generic implementation permission != merge permission** — implementation scope never silently expands release authority.
+- **GREEN workflow != physically materialized production artifact** — production close requires the bytes/state to exist where production reads them.
+- Market Data inherited close remains **26/26** canonical onchain-primary assets, with physical silver reference-only.
+- Selected Market Data provenance remains **per-asset-authority**.
+- **CoinGecko** remains bounded fallback / sanity authority under the Market Data canon, not the normal high-frequency primary plane.
+- source **divergence** remains telemetry and does not by itself authorize automatic failover.
+- **PR #227** and **PR #233** remain historical Market Data production-close anchors only; always refetch current `main`.
+- **Market Data / onchain tracking: fat check** remains a closed inherited subsystem milestone, not a standing backlog.
+
+These anchors are inherited memory, not permission to bypass task-aware routing or live verification.
+
+---
+
+# 10. RESUME ORDER AFTER THIS CHECKPOINT
 
 For a new substantive chat:
 
@@ -247,7 +270,7 @@ Historical PR/run/SHA anchors in this file are evidence, never current truth.
 
 ---
 
-# 10. CLOSED MILESTONE
+# 11. CLOSED MILESTONE
 
 **Ask The Holding Conversation Gauntlet v0.1 = PRODUCTION GREEN / CLOSED.**
 
