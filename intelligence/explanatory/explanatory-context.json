@@ -1,16 +1,30 @@
 {
   "version": "0.2-explanatory-context",
-  "engineVersion": "0.2-evidence-bound-economic-driver-context",
-  "generatedAt": "2026-08-24T16:05:07.256Z",
+  "engineVersion": "0.3-multi-cohort-protocol-economic-context",
+  "generatedAt": "2026-08-24T16:14:04.414Z",
   "status": "partial",
-  "purpose": "Explain proven metric differences through reproducible identities and expose canonical protocol-economic driver context without turning association into causation.",
+  "coverage": {
+    "protocolEconomicCohortCount": 2,
+    "activeCohortIds": [
+      "defitea-fxn-vefxn",
+      "defitea-curve-vecrv"
+    ],
+    "protocols": [
+      "f(x)",
+      "Curve"
+    ],
+    "legacyProtocolAprChangeContextAlias": "defitea-fxn-vefxn",
+    "nextPlannedCohort": "Defitea -> Aerodrome veAERO"
+  },
+  "purpose": "Explain proven metric differences through reproducible identities and expose canonical multi-cohort protocol-economic driver context without turning association into causation.",
   "semantics": {
     "mechanismRule": "Use causal language only when the relationship follows from an explicit accounting or metric identity, or when a mechanism-specific source proves the causal link.",
     "associationRule": "Observed co-movement, rank order, contextual proximity, or Economic Graph driver movement is association/context only unless a mechanism is proven.",
     "noNarrativeGuessing": "Do not invent market, protocol, governance, volume, fee, incentive, or user-behavior explanations when no canonical source binds them.",
     "aprRule": "Reference APR is productive capacity, not realised return.",
     "rankingRule": "A rank is explained by the metric definition and its measured inputs, not by a universal quality score.",
-    "economicGraphRule": "Economic Graph observations may answer what changed around a protocol mechanism; they do not answer why it changed until causal attribution is promoted by proof."
+    "economicGraphRule": "Economic Graph observations may answer what changed around a protocol mechanism; causal claims stop at the strongest proven mechanical identity and do not leap to unresolved upstream causes.",
+    "multiCohortRule": "Canonical protocol-economic context lives under explanations.protocolAprChangeContexts. explanations.protocolAprChangeContext remains a deprecated veFXN compatibility alias until downstream consumers migrate."
   },
   "authority": {
     "readOnly": true,
@@ -39,7 +53,9 @@
       "version": "0.1-economic-graph",
       "engineVersion": "0.2-defitea-fxn-curve-multi-cohort",
       "generatedAt": "2026-08-24T16:04:43.243Z",
-      "status": "partial-first-cohort",
+      "legacyStatus": "partial-first-cohort",
+      "coverageStatus": "partial-two-cohort",
+      "cohortCount": 2,
       "sha256": "feaf7951ea57f5cc733b70c2067a5085ea29fe435f9921e8ae68de51598c924c"
     }
   },
@@ -209,10 +225,143 @@
       "explanation": "Strategy Performance measures strategy-unit performance against verified entry principal. Net market P&L additionally includes current stable-price effects; the stable-price effect therefore reconciles the difference mechanically.",
       "causalClass": "accounting-identity"
     },
+    "protocolAprChangeContexts": {
+      "defitea-fxn-vefxn": {
+        "question": "What measured protocol-economic context is available around the current veFXN Reference APR, and can it prove why APR changed?",
+        "status": "context-available-causal-attribution-unresolved",
+        "coverage": {
+          "cohortId": "defitea-fxn-vefxn",
+          "cohort": "Defitea -> f(x) veFXN",
+          "companyRegistry": "004",
+          "company": "defitea.eth",
+          "protocol": "f(x)",
+          "mechanism": "veFXN Locker",
+          "asset": "FXN"
+        },
+        "apr": {
+          "liveObservedPct": 31.32,
+          "canonicalProductivityPct": 31.32,
+          "parityDeltaPctPoints": 0,
+          "currentObservationStatus": "ok",
+          "deltaFromPriorGraphObservationPctPoints": 10.41
+        },
+        "measuredDrivers": {
+          "fxnLocked": 533622.38,
+          "fxnCirculatingSupplyLockedPct": 77.07,
+          "totalVeFxn": 467361.08,
+          "cumulativeThisWeekWsteth": 0.34,
+          "previousWeekWsteth": 7.98,
+          "averageLockRaw": "3.50 Years",
+          "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
+        },
+        "measuredMovement": {
+          "priorObservationId": "fxn-locker:2026-08-24:bbab2d4ef32c13eb805f",
+          "elapsedHours": 4.1715,
+          "fxnLockedDelta": 0,
+          "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
+          "totalVeFxnDelta": -62.27,
+          "currentWeekRevenueDeltaWsteth": 0.01,
+          "revenueDeltaComparable": true,
+          "revenueDeltaNonComparableReason": null
+        },
+        "provenance": {
+          "graphFile": "intelligence/economic-graph/economic-graph.json",
+          "graphSha256": "feaf7951ea57f5cc733b70c2067a5085ea29fe435f9921e8ae68de51598c924c",
+          "observationId": "fxn-locker:2026-08-24:ad4cba79cb91f04fec0e",
+          "observedAt": "2026-08-24T16:03:46.817Z",
+          "sourceUrl": "https://fx.aladdin.club/v2/lock",
+          "sourceType": "official-frontend-exact-locker-block",
+          "rawBlockHash": "d7584ddcdb983cfa0744c6a3b4938a90706e65a5a2e3d0587eb1fd77b011941e"
+        },
+        "causalAttribution": "unresolved",
+        "primaryDriver": null,
+        "causalClass": "measured-context-only",
+        "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
+        "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
+      },
+      "defitea-curve-vecrv": {
+        "question": "How is the current Curve veCRV Reference APR mechanically formed, and do we know why its upstream fee inputs changed?",
+        "status": "mechanics-proven-upstream-cause-unresolved",
+        "coverage": {
+          "cohortId": "defitea-curve-vecrv",
+          "cohort": "Defitea -> Curve veCRV Fee Distributor",
+          "companyRegistry": "004",
+          "company": "defitea.eth",
+          "protocol": "Curve",
+          "mechanism": "veCRV Fee Distributor",
+          "asset": "CRV"
+        },
+        "apr": {
+          "canonicalProductivityPct": 1.6526,
+          "formulaReproducedPct": 1.652546,
+          "formulaParityDeltaPctPoints": 0.000054,
+          "currentObservationStatus": "ok",
+          "deltaFromPriorGraphObservationPctPoints": null
+        },
+        "measuredDrivers": {
+          "crvPriceUsd": 0.33250432,
+          "rollingFourWeekFeesCrvUSD": 330900.9914959235,
+          "rollingAverageVeSupply": 783336549.6240488,
+          "rollingAverageAprPct": 1.65255,
+          "weeksUsed": 4,
+          "rollingWindowStart": "2026-07-23T00:00:00.000Z",
+          "rollingWindowEnd": "2026-08-20T00:00:00.000Z",
+          "latestCompletedWeek": {
+            "week": 1786579200,
+            "periodStart": "2026-08-13T00:00:00.000Z",
+            "periodEnd": "2026-08-20T00:00:00.000Z",
+            "tokensCrvUSD": 148807.3648552352,
+            "veSupply": 781338361.8236687,
+            "aprPct": 2.9785
+          }
+        },
+        "measuredMovement": {
+          "priorObservationId": null,
+          "elapsedHours": null,
+          "aprDeltaPctPoints": null,
+          "crvPriceDeltaUsd": null,
+          "rollingAverageVeSupplyDelta": null,
+          "rollingFourWeekFeesDeltaCrvUSD": null,
+          "rollingWindowComparable": false,
+          "rollingWindowNonComparableReason": null,
+          "latestWeekFeesDeltaCrvUSD": null,
+          "latestWeekVeSupplyDelta": null,
+          "latestWeekAprDeltaPctPoints": null,
+          "latestWeekComparable": false,
+          "latestWeekNonComparableReason": null
+        },
+        "mechanics": {
+          "status": "proven-canonical-collector-identity",
+          "weeklyIdentity": "weeklyAprPct = (tokensCrvUSD / veSupply) / crvPriceUsd * 52 * 100",
+          "rollingIdentity": "canonicalProductivityAprPct = arithmetic mean(completed-week aprPct values used by Productivity)",
+          "reproducedCanonicalAprPct": 1.652546,
+          "parityDeltaPctPoints": 0.000054,
+          "mechanicalAttribution": "proven-within-apr-formula",
+          "provenRelation": "For the canonical veCRV fee APR, distributed crvUSD fees are the numerator, veCRV supply and CRV price are denominator inputs, and the rolling Reference APR is the arithmetic mean of completed-week formula outputs."
+        },
+        "provenance": {
+          "graphFile": "intelligence/economic-graph/economic-graph.json",
+          "graphSha256": "feaf7951ea57f5cc733b70c2067a5085ea29fe435f9921e8ae68de51598c924c",
+          "observationId": "curve-vecrv:2026-08-24:1b7283595ac91e38290a",
+          "observedAt": "2026-08-24T16:02:39.279Z",
+          "sourceUrl": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+          "sourceType": "onchain",
+          "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
+          "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+          "productivitySha256": "7080ab989b60239c55439de305e00a2c2509f9b01b19347b618c0329a22d731c"
+        },
+        "causalAttribution": "unresolved-beyond-formula",
+        "primaryDriver": null,
+        "causalClass": "proven-mechanical-identity-upstream-cause-unresolved",
+        "explanation": "Curve veCRV Reference APR is mechanically reproducible from distributed crvUSD fees, veCRV supply and CRV price under the canonical completed-week formula. This proves how those measured inputs form the Reference APR. It does not prove why Curve fee distributions themselves increased or decreased; upstream protocol activity remains unresolved until fee-origin evidence is added.",
+        "promotionRule": "Formula inputs may be described as mechanical APR inputs. Upstream causes of fee changes require separate canonical protocol-activity evidence before causal promotion."
+      }
+    },
     "protocolAprChangeContext": {
       "question": "What measured protocol-economic context is available around the current veFXN Reference APR, and can it prove why APR changed?",
       "status": "context-available-causal-attribution-unresolved",
       "coverage": {
+        "cohortId": "defitea-fxn-vefxn",
         "cohort": "Defitea -> f(x) veFXN",
         "companyRegistry": "004",
         "company": "defitea.eth",
@@ -258,7 +407,7 @@
       "causalAttribution": "unresolved",
       "primaryDriver": null,
       "causalClass": "measured-context-only",
-      "explanation": "Canonical protocol-economic driver context is now available for the Defitea veFXN cohort. The system may report these measured values and their comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
+      "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
       "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
     }
   },
@@ -268,22 +417,41 @@
     "what-drove-monetra-latest-measured-income": "answerable-latest-interval-only",
     "why-monetra-strategy-performance-differs-from-net-pnl": "answerable-by-reconciliation-identity",
     "what-protocol-context-accompanied-apr": "answerable-by-measured-context-first-cohort",
+    "what-protocol-contexts-accompanied-apr": "answerable-by-canonical-multi-cohort-context",
+    "how-curve-vecrv-reference-apr-is-formed": "answerable-by-proven-mechanical-identity",
     "why-protocol-apr-changed": "context-available-cause-unresolved",
+    "why-curve-fee-distributions-changed": "blocked-no-upstream-fee-origin-evidence",
     "why-company-tvl-changed": "blocked-no-time-series-driver-decomposition",
     "why-market-moved": "blocked-no-market-causal-evidence",
     "mtd-monetra-protocol-driver-attribution": "blocked-no-canonical-interval-history",
     "best-company-overall-explanation": "blocked-no-universal-score"
   },
+  "answerabilityByCohort": {
+    "defitea-fxn-vefxn": {
+      "measuredContext": "answerable",
+      "mechanicalAprFormation": "blocked-no-canonical-formula-identity",
+      "upstreamCause": "unresolved"
+    },
+    "defitea-curve-vecrv": {
+      "measuredContext": "answerable",
+      "mechanicalAprFormation": "answerable-by-proven-canonical-formula",
+      "upstreamCause": "unresolved-fee-origin"
+    }
+  },
   "nextEvidenceGaps": [
     {
-      "id": "protocol-driver-causal-attribution",
-      "need": "Protocol-specific APR formula or onchain accounting identity that reproduces the APR change from canonical driver inputs before promoting any observed driver to ATTRIBUTED.",
-      "rule": "Measured driver context may be reported now; causal language remains blocked until the mechanism is proven."
+      "id": "fxn-protocol-driver-causal-attribution",
+      "need": "Protocol-specific veFXN APR formula or onchain accounting identity that reproduces APR from canonical driver inputs before promoting any observed veFXN driver to ATTRIBUTED.",
+      "rule": "Measured f(x) context may be reported now; causal language remains blocked until the mechanism is proven."
+    },
+    {
+      "id": "curve-upstream-fee-origin",
+      "need": "Canonical Curve protocol revenue / fee-origin evidence tied to Fee Distributor inflows before explaining why distributed crvUSD fees changed.",
+      "rule": "The proven APR formula explains mechanics, not the upstream economic origin of fee changes."
     },
     {
       "id": "economic-graph-cohort-expansion",
-      "need": "Equivalent canonical driver observations for additional Defitea productive mechanisms before protocol-economic explanation coverage can expand beyond veFXN.",
-      "rule": "Each protocol/mechanism requires its own authority, cadence, units and attribution rules."
+      "need": "Add the next bounded protocol-economic cohort, currently Defitea -> Aerodrome veAERO, with its own authority, cadence, units and causal boundary."
     },
     {
       "id": "capital-change-decomposition",
