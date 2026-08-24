@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2
+ * The Holding · Unified Capital Refresh v0.2.1
  *
  * Orchestration only. Reuses existing canonical projectors/collectors/builders:
  * Defitea projection -> YieldRing projection -> Productivity collector
  * -> Company #010 compatibility -> YieldRing overlay -> General Balance -> Capital State.
+ *
+ * v0.2.1 also fails closed if the exact veFXN Locker APR diverges between the
+ * source report, canonical Productivity engine, current engine-history row,
+ * and Defitea productive position. Prior history remains immutable.
  *
  * No execution authority. No wallet action. No methodology mutation.
  */
@@ -46,6 +50,7 @@ run('7/7 Build Capital State', ROOT, 'intelligence/capital-state/capital-state.m
 const defitea = readJson('companies/defitea-canonical-state.json');
 const canonical = readJson('companies/yieldring-canonical-state.json');
 const productivity = readJson('companies/productivity-data.json');
+const productivitySource = readJson('companies/productivity-source-report.json');
 const general = readJson('intelligence/capital-state/general-company-balance-sheet.json');
 const capital = readJson('intelligence/capital-state/capital-state.json');
 const companiesHtml = fs.readFileSync(path.join(ROOT, 'companies/index.html'), 'utf8');
@@ -70,6 +75,26 @@ const dpa = (dpProd?.breakdown || []).find(x => x.engineId === 'aerodrome_veaero
 const dpf = (dpProd?.breakdown || []).find(x => x.engineId === 'fx_vefxn' || x.principalId === 'fxn-token');
 assert(dpProd && Number(dpa?.units) === 2632 && Number(dpf?.units) === 64.81, 'Defitea canonical quantities missing from Productivity');
 assert(Number(dpProd?.coverage) > 0 && Number(dpProd?.coverage) <= 1, 'Defitea Productivity coverage invalid');
+
+const fxnSource = productivitySource?.engines?.fx_vefxn;
+const fxnEngine = productivity?.engines?.fx_vefxn;
+const fxnEngineHistory = productivity?.history?.engines?.fx_vefxn || [];
+const fxnCurrentHistory = fxnEngineHistory.at(-1);
+const fxnAuthority = productivity?.diagnostics?.fxnLockerAprAuthority;
+const fxnExactApr = Number(fxnAuthority?.exactApr);
+const fxnAprSurfaces = {
+  sourceReport: Number(fxnSource?.apr),
+  canonicalEngine: Number(fxnEngine?.aprLatest),
+  currentEngineHistory: Number(fxnCurrentHistory?.apr),
+  defiteaPosition: Number(dpf?.apr)
+};
+assert(fxnSource?.status === 'ok' && fxnSource?.sourceType === 'official-frontend-exact-block' && fxnSource?.sourceMetric === 'veFXN Locker APR', 'veFXN exact source-report authority drift');
+assert(fxnEngine?.status === 'ok' && fxnEngine?.sourceType === 'official-frontend-exact-block' && fxnEngine?.sourceMetric === 'veFXN Locker APR', 'veFXN canonical engine authority drift');
+assert(fxnCurrentHistory?.snapshotKey === productivity?.snapshotKey, 'veFXN current engine-history observation missing');
+assert(Number.isFinite(fxnExactApr), 'veFXN exact APR diagnostic missing');
+assert(Object.values(fxnAprSurfaces).every(Number.isFinite), 'veFXN canonical APR surface unavailable');
+assert(Object.values(fxnAprSurfaces).every(v => Math.abs(v - fxnExactApr) <= 0.01), `veFXN canonical APR parity drift: exact=${fxnExactApr} surfaces=${JSON.stringify(fxnAprSurfaces)}`);
+assert(fxnAuthority?.canonicalEngineSynchronized === true && fxnAuthority?.currentEngineHistorySynchronized === true && fxnAuthority?.nearbyCirculatingSupplyPctCannotBecomeApr === true, 'veFXN semantic parity authority contract missing');
 
 const yp = productivity?.companies?.['YieldRing.eth'];
 const ya = (yp?.breakdown || []).find(x => x.engineId === 'aerodrome_veaero' || x.principalId === 'aerodrome-finance');
@@ -112,6 +137,8 @@ assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678
 console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   productivityGeneratedAt: productivity.generatedAt,
   defiteaAprLatest: dpProd.aprLatest,
+  veFxnExactApr: fxnExactApr,
+  veFxnAprSurfaces: fxnAprSurfaces,
   defiteaProductiveValue: dpProd.productiveValue,
   defiteaAero: dca.units,
   defiteaAeroCostBasisUsd: defitea.costBasis.aerodrome.costBasisUsd,
