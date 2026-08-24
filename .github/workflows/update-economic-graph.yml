@@ -1,4 +1,4 @@
-# THE HOLDING · ECONOMIC GRAPH v0.1
+# THE HOLDING · ECONOMIC GRAPH v0.1.1
 name: "The Holding · Economic Graph"
 
 on:
@@ -15,6 +15,7 @@ on:
     branches:
       - main
     paths:
+      - "companies/productivity-data.json"
       - "intelligence/economic-graph/economic-graph.mjs"
       - "productivity/fxn-locker-apr-guard.mjs"
       - ".github/workflows/update-economic-graph.yml"
@@ -55,13 +56,17 @@ jobs:
           node - "$TMP" <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
-          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.1-defitea-fxn-driver-substrate')throw new Error('Economic Graph version mismatch');
+          const o=x.latest?.observation;
+          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.1.1-defitea-fxn-semantic-parity')throw new Error('Economic Graph version mismatch');
           if(x.status!=='partial-first-cohort')throw new Error('Economic Graph must remain first-cohort partial');
           if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none')throw new Error('Economic Graph authority regression');
           if(x.authority?.capitalExecution!==false||x.authority?.allocationAuthority!==false||x.authority?.recommendationAuthority!==false||x.authority?.causalClaimAuthority!=='none')throw new Error('Economic Graph authority leakage');
+          if(x.semantics?.aprParityRequired!==true||Number(x.semantics?.aprParityTolerancePctPoints)!==0.01)throw new Error('APR parity boundary missing');
           if(x.attribution?.primaryDriver!==null||x.attribution?.status!=='warming-unresolved-causality')throw new Error('Unproven primary driver leaked');
-          if(x.latest?.observation?.protocol!=='f(x)'||x.latest?.observation?.mechanism!=='veFXN Locker')throw new Error('First cohort mismatch');
-          if(x.latest?.observation?.epistemic?.causalAttribution!=='unresolved')throw new Error('Causal attribution leaked');
+          if(o?.protocol!=='f(x)'||o?.mechanism!=='veFXN Locker')throw new Error('First cohort mismatch');
+          if(o?.epistemic?.causalAttribution!=='unresolved')throw new Error('Causal attribution leaked');
+          if(!Number.isFinite(Number(o?.drivers?.fxnCirculatingSupplyLockedPct)))throw new Error('Locked circulating-supply driver missing');
+          if(Math.abs(Number(o?.aprParityDeltaPctPoints))>0.01)throw new Error('Deterministic APR parity failed');
           if(!x.expansionQueue.some(v=>String(v).includes('Votium / VoteMarket'))||!x.expansionQueue.some(v=>String(v).includes('Aerodrome veAERO'))||!x.expansionQueue.some(v=>String(v).includes('sAERO Predictive Allocation')))throw new Error('Incentive-market expansion canon missing');
           console.log('ECONOMIC GRAPH deterministic semantics PASS',{observations:x.observations.length,primaryDriver:x.attribution.primaryDriver,executionAuthority:x.authority.executionAuthority});
           NODE
@@ -69,12 +74,15 @@ jobs:
           git diff --check
 
       - name: Install live probe dependencies
-        if: github.event_name != 'pull_request'
         working-directory: productivity
         run: |
           set -euo pipefail
           npm install --no-audit --no-fund
           npx playwright install chromium
+
+      - name: Prove live economic-vitals source on PR
+        if: github.event_name == 'pull_request'
+        run: node productivity/fxn-locker-apr-guard.mjs --probe-economic-vitals
 
       - name: Build live Economic Graph
         if: github.event_name != 'pull_request'
@@ -89,12 +97,13 @@ jobs:
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('intelligence/economic-graph/economic-graph.json','utf8'));
           const o=x.latest?.observation;
-          if(x.version!=='0.1-economic-graph'||!o)throw new Error('live Economic Graph missing');
+          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.1.1-defitea-fxn-semantic-parity'||!o)throw new Error('live Economic Graph missing');
           if(o.source?.url!=='https://fx.aladdin.club/v2/lock')throw new Error('live source authority drift');
           if(o.source?.sourceType!=='official-frontend-exact-locker-block')throw new Error('live exact Locker block not proven');
-          if(!Number.isFinite(Number(o.liveObservedAprPct))||!Number.isFinite(Number(o.drivers?.fxnLocked))||!Number.isFinite(Number(o.drivers?.totalVeFxn))||!Number.isFinite(Number(o.drivers?.cumulativeThisWeekWsteth))||!Number.isFinite(Number(o.drivers?.previousWeekWsteth)))throw new Error('live economic vitals incomplete');
+          if(!Number.isFinite(Number(o.liveObservedAprPct))||!Number.isFinite(Number(o.drivers?.fxnLocked))||!Number.isFinite(Number(o.drivers?.fxnCirculatingSupplyLockedPct))||!Number.isFinite(Number(o.drivers?.totalVeFxn))||!Number.isFinite(Number(o.drivers?.cumulativeThisWeekWsteth))||!Number.isFinite(Number(o.drivers?.previousWeekWsteth)))throw new Error('live economic vitals incomplete');
+          if(Math.abs(Number(o.aprParityDeltaPctPoints))>0.01)throw new Error('live APR parity failed');
           if(x.attribution?.primaryDriver!==null||o.epistemic?.causalAttribution!=='unresolved')throw new Error('unearned causal attribution');
-          console.log('ECONOMIC GRAPH live source PASS',{observedAt:o.observedAt,apr:o.liveObservedAprPct,fxnLocked:o.drivers.fxnLocked,totalVeFxn:o.drivers.totalVeFxn,currentWeekWsteth:o.drivers.cumulativeThisWeekWsteth,previousWeekWsteth:o.drivers.previousWeekWsteth});
+          console.log('ECONOMIC GRAPH live source PASS',{observedAt:o.observedAt,apr:o.liveObservedAprPct,fxnLocked:o.drivers.fxnLocked,lockedSupplyPct:o.drivers.fxnCirculatingSupplyLockedPct,totalVeFxn:o.drivers.totalVeFxn,currentWeekWsteth:o.drivers.cumulativeThisWeekWsteth,previousWeekWsteth:o.drivers.previousWeekWsteth});
           NODE
 
       - name: Publish generated Economic Graph safely
@@ -129,9 +138,9 @@ jobs:
             if git push origin HEAD:main; then
               git fetch origin main
               git cat-file -e "origin/main:$GENERATED"
-              REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
-              test "$REMOTE_VERSION" = "0.1-economic-graph"
-              echo "Verified Economic Graph v0.1 on remote main."
+              REMOTE_ENGINE="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).engineVersion))")"
+              test "$REMOTE_ENGINE" = "0.1.1-defitea-fxn-semantic-parity"
+              echo "Verified Economic Graph v0.1.1 on remote main."
               exit 0
             fi
             echo "Main moved during push; retrying ($attempt/3)..."

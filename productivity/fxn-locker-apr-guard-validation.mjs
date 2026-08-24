@@ -20,6 +20,12 @@ assert.equal(
   33.9
 );
 
+// Regression fixture from the live f(x) Locker: APR must bind to the APR label,
+// while the nearby circulating-supply percentage remains a distinct metric.
+const liveStyleBlock='FXN Locker APR 21.06% FXN Locked 533,612.38 77.07% of FXN Circulating Supply Total veFXN 467,272.21 3.50 Years Average Lock Total veFXN Revenue Cumulative This Week 0.33 wstETH Previous Week 7.98 wstETH Accumulate Till Aug 26, 2026 11:59 PM Lock FXN MAX APR CALC';
+assert.equal(extractFxnLockerApr([liveStyleBlock]),21.06);
+assert.notEqual(extractFxnLockerApr([liveStyleBlock]),77.07);
+
 // Duplicate DOM copies with the same exact value remain unambiguous.
 assert.equal(
   extractFxnLockerApr([
@@ -42,10 +48,11 @@ assert.throws(
 );
 
 // Economic vitals are extracted only from the same exact Locker scope.
-const economicBlock='FXN Locker APR 77.12% FXN Locked 512.40K Total veFXN 291.75K 2.4 years average lock Total veFXN Revenue Cumulative This Week 42.1256 wstETH Previous Week 11.2504 wstETH Accumulate Till Aug 27, 2026 Lock FXN MAX APR CALC';
+const economicBlock='FXN Locker APR 77.12% FXN Locked 512.40K 64.25% of FXN Circulating Supply Total veFXN 291.75K 2.4 years average lock Total veFXN Revenue Cumulative This Week 42.1256 wstETH Previous Week 11.2504 wstETH Accumulate Till Aug 27, 2026 Lock FXN MAX APR CALC';
 const economic=extractFxnLockerEconomicSnapshot([economicBlock],{observedAt:'2026-08-24T10:00:00.000Z'});
 assert.equal(economic.aprPct,77.12);
 assert.equal(economic.fxnLocked,512400);
+assert.equal(economic.fxnCirculatingSupplyLockedPct,64.25);
 assert.equal(economic.totalVeFxn,291750);
 assert.equal(economic.cumulativeThisWeekWsteth,42.1256);
 assert.equal(economic.previousWeekWsteth,11.2504);
@@ -54,6 +61,16 @@ assert.equal(economic.accumulateTillRaw,'Aug 27, 2026');
 assert.equal(economic.nativeCadence,'weekly');
 assert.equal(economic.executionAuthority,'none');
 assert.match(economic.rawBlockHash,/^[a-f0-9]{64}$/);
+
+const liveStyleEconomic=extractFxnLockerEconomicSnapshot([liveStyleBlock],{observedAt:'2026-08-24T10:57:24.694Z'});
+assert.equal(liveStyleEconomic.aprPct,21.06);
+assert.equal(liveStyleEconomic.fxnLocked,533612.38);
+assert.equal(liveStyleEconomic.fxnCirculatingSupplyLockedPct,77.07);
+assert.equal(liveStyleEconomic.totalVeFxn,467272.21);
+assert.equal(liveStyleEconomic.cumulativeThisWeekWsteth,0.33);
+assert.equal(liveStyleEconomic.previousWeekWsteth,7.98);
+assert.equal(liveStyleEconomic.averageLockRaw,'3.50 Years');
+assert.equal(liveStyleEconomic.accumulateTillRaw,'Aug 26, 2026 11:59 PM');
 
 // Equivalent desktop/mobile copies remain admissible.
 const economicDup=extractFxnLockerEconomicSnapshot([economicBlock,`Mobile ${economicBlock}`],{observedAt:'2026-08-24T10:00:00.000Z'});
@@ -103,5 +120,6 @@ assert.equal(data.history.companies['defitea.eth'][0].apr,12); // immutable prio
 assert.equal(data.history.companies['defitea.eth'][1].apr,43.54); // current snapshot only
 assert.equal(data.companies['defitea.eth'].aprHistoricalAverage,27.77);
 assert.equal(data.diagnostics.fxnLockerAprAuthority.historicalSnapshotsRewritten,false);
+assert.equal(data.diagnostics.fxnLockerAprAuthority.nearbyCirculatingSupplyPctCannotBecomeApr,true);
 
 console.log('f(x) exact-source APR + economic-vitals parser validation PASS');

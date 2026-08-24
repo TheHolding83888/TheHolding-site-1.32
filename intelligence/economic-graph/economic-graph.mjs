@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Economic Graph v0.1
+ * The Holding · Economic Graph v0.1.1
  *
  * First production cohort: Defitea -> f(x) veFXN.
  *
@@ -20,6 +20,7 @@ const ROOT=path.resolve(path.dirname(new URL(import.meta.url).pathname),'../..')
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
 const PRODUCTIVITY=process.env.PRODUCTIVITY_DATA_FILE || path.join(ROOT,'companies/productivity-data.json');
 const MAX_OBSERVATIONS=4000;
+const APR_PARITY_TOLERANCE_PCT_POINTS=0.01;
 
 function readJson(file,required=true){
   try{
@@ -39,6 +40,7 @@ function stableObservationCore(snapshot){
     observationDateUTC:utcDate(snapshot.observedAt),
     aprPct:snapshot.aprPct,
     fxnLocked:snapshot.fxnLocked,
+    fxnCirculatingSupplyLockedPct:snapshot.fxnCirculatingSupplyLockedPct,
     totalVeFxn:snapshot.totalVeFxn,
     cumulativeThisWeekWsteth:snapshot.cumulativeThisWeekWsteth,
     previousWeekWsteth:snapshot.previousWeekWsteth,
@@ -54,6 +56,7 @@ function deterministicSnapshot(productivity){
   return {
     aprPct:apr,
     fxnLocked:512400,
+    fxnCirculatingSupplyLockedPct:64.25,
     totalVeFxn:291750,
     cumulativeThisWeekWsteth:42.1256,
     previousWeekWsteth:11.2504,
@@ -74,6 +77,12 @@ export function buildEconomicGraph({productivity,previousState,snapshot,sourceSh
   if(snapshot?.executionAuthority!=='none') throw new Error('Economic Graph refuses source authority drift');
   const engine=productivity?.engines?.fx_vefxn;
   if(!engine) throw new Error('fx_vefxn Productivity engine missing');
+  const canonicalApr=Number(engine.aprLatest);
+  const liveApr=Number(snapshot.aprPct);
+  if(!Number.isFinite(canonicalApr)||!Number.isFinite(liveApr)) throw new Error('Economic Graph requires finite live and canonical veFXN APR');
+  if(Math.abs(liveApr-canonicalApr)>APR_PARITY_TOLERANCE_PCT_POINTS){
+    throw new Error(`Economic Graph refuses APR semantic drift: live ${liveApr}% != canonical Productivity ${canonicalApr}%`);
+  }
   const company=productivity?.companies?.['defitea.eth'];
   const position=(company?.breakdown||[]).find(row=>row?.engineId==='fx_vefxn'||row?.principalId==='fxn-token');
   if(!position) throw new Error('Defitea veFXN Productivity position missing');
@@ -100,6 +109,7 @@ export function buildEconomicGraph({productivity,previousState,snapshot,sourceSh
       aprParityDeltaPctPoints:delta(snapshot.aprPct,engine.aprLatest,6),
       drivers:{
         fxnLocked:round(snapshot.fxnLocked,8),
+        fxnCirculatingSupplyLockedPct:round(snapshot.fxnCirculatingSupplyLockedPct,6),
         totalVeFxn:round(snapshot.totalVeFxn,8),
         cumulativeThisWeekWsteth:round(snapshot.cumulativeThisWeekWsteth,12),
         previousWeekWsteth:round(snapshot.previousWeekWsteth,12),
@@ -134,6 +144,7 @@ export function buildEconomicGraph({productivity,previousState,snapshot,sourceSh
     elapsedHours:prior?round((Date.parse(current.observedAt)-Date.parse(prior.observedAt))/36e5,4):null,
     aprDeltaPctPoints:prior?delta(current.liveObservedAprPct,prior.liveObservedAprPct,6):null,
     fxnLockedDelta:prior?delta(current.drivers.fxnLocked,prior.drivers.fxnLocked,8):null,
+    fxnCirculatingSupplyLockedPctDeltaPoints:prior?delta(current.drivers.fxnCirculatingSupplyLockedPct,prior.drivers.fxnCirculatingSupplyLockedPct,6):null,
     totalVeFxnDelta:prior?delta(current.drivers.totalVeFxn,prior.drivers.totalVeFxn,8):null,
     currentWeekRevenueDeltaWsteth:prior&&sameNativeWindow?delta(current.drivers.cumulativeThisWeekWsteth,prior.drivers.cumulativeThisWeekWsteth,12):null,
     revenueDeltaComparable:sameNativeWindow,
@@ -142,7 +153,7 @@ export function buildEconomicGraph({productivity,previousState,snapshot,sourceSh
 
   return {
     version:'0.1-economic-graph',
-    engineVersion:'0.1-defitea-fxn-driver-substrate',
+    engineVersion:'0.1.1-defitea-fxn-semantic-parity',
     generatedAt:new Date().toISOString(),
     status:'partial-first-cohort',
     purpose:'Build a longitudinal evidence graph connecting company positions to protocol-economic drivers so existing Explanatory, Brain and Learning layers can reason from measured context instead of narrative guesses.',
@@ -161,6 +172,8 @@ export function buildEconomicGraph({productivity,previousState,snapshot,sourceSh
       contextIsNotCause:true,
       correlationIsNotCausation:true,
       unknownIsNotZero:true,
+      aprParityRequired:true,
+      aprParityTolerancePctPoints:APR_PARITY_TOLERANCE_PCT_POINTS,
       nativeCadence:'weekly-economic-cycle-with-daily-observation-capability',
       currentCohort:'Defitea -> f(x) veFXN',
       driverPromotionRule:'A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path.',
@@ -177,6 +190,7 @@ export function buildEconomicGraph({productivity,previousState,snapshot,sourceSh
         {id:'mechanism:fxn-locker',type:'mechanism',label:'veFXN Locker'},
         {id:'asset:fxn',type:'asset',label:'FXN'},
         {id:'driver:fxn-locked',type:'driver',label:'FXN Locked'},
+        {id:'driver:fxn-circulating-locked-share',type:'driver',label:'FXN Circulating Supply Locked %'},
         {id:'driver:total-vefxn',type:'driver',label:'Total veFXN'},
         {id:'driver:weekly-wsteth-revenue',type:'driver',label:'veFXN Revenue · wstETH'}
       ],
@@ -185,6 +199,7 @@ export function buildEconomicGraph({productivity,previousState,snapshot,sourceSh
         {from:'mechanism:fxn-locker',to:'protocol:fx',relation:'belongs-to',epistemicClass:'protocol-mechanism'},
         {from:'mechanism:fxn-locker',to:'asset:fxn',relation:'locks',epistemicClass:'protocol-mechanism'},
         {from:'driver:fxn-locked',to:'mechanism:fxn-locker',relation:'describes',epistemicClass:'observed-context'},
+        {from:'driver:fxn-circulating-locked-share',to:'mechanism:fxn-locker',relation:'describes',epistemicClass:'observed-context'},
         {from:'driver:total-vefxn',to:'mechanism:fxn-locker',relation:'describes',epistemicClass:'observed-context'},
         {from:'driver:weekly-wsteth-revenue',to:'mechanism:fxn-locker',relation:'economic-context-for',epistemicClass:'observed-context-not-yet-causal'}
       ]
@@ -194,7 +209,7 @@ export function buildEconomicGraph({productivity,previousState,snapshot,sourceSh
     attribution:{
       status:'warming-unresolved-causality',
       primaryDriver:null,
-      supportedDrivers:['FXN Locked','Total veFXN','Cumulative This Week wstETH revenue','Previous Week wstETH revenue'],
+      supportedDrivers:['FXN Locked','FXN Circulating Supply Locked %','Total veFXN','Cumulative This Week wstETH revenue','Previous Week wstETH revenue'],
       blockedQuestion:'why-protocol-apr-changed',
       unlockCondition:'reproducible f(x) Locker APR formula or onchain accounting identity binding APR to measured drivers'
     },
