@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - 'intelligence/economic-graph/economic-graph.mjs'
+      - 'intelligence/economic-graph/economic-graph-canonical-runner.mjs'
       - '.github/workflows/update-economic-graph.yml'
       - '.github/workflows/resume-economic-graph-after-code-change.yml'
 
@@ -31,7 +32,9 @@ jobs:
         run: |
           set -euo pipefail
           test -s intelligence/economic-graph/economic-graph.mjs
+          test -s intelligence/economic-graph/economic-graph-canonical-runner.mjs
           node --check intelligence/economic-graph/economic-graph.mjs
+          node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
 
       - name: Dispatch canonical Unified Capital writer first
         env:
