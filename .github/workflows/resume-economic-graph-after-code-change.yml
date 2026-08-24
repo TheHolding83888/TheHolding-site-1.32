@@ -36,9 +36,12 @@ jobs:
           test -s intelligence/economic-graph/economic-graph.mjs
           test -s intelligence/economic-graph/economic-graph-canonical-runner.mjs
           test -s intelligence/economic-graph/aerodrome-veaero-candidate.mjs
+          test -s intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
+          test -s .github/workflows/update-aerodrome-managed-pulse.yml
           node --check intelligence/economic-graph/economic-graph.mjs
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           node --check intelligence/economic-graph/aerodrome-veaero-candidate.mjs
+          node --check intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
 
       - name: Dispatch and await canonical Unified Capital writer
         env:
@@ -159,5 +162,67 @@ jobs:
             currentAccruedAero:o.actualManagedVeNft.currentAccruedAero,
             promotionAuthority:o.epistemic.promotionAuthority,
             executionAuthority:g.authority.executionAuthority
+          });
+          NODE
+
+      - name: Dispatch and await canonical Aerodrome Managed Strategy Pulse
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BEFORE="$(gh run list --workflow update-aerodrome-managed-pulse.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+          gh workflow run update-aerodrome-managed-pulse.yml --ref main
+
+          RUN_ID=""
+          for attempt in $(seq 1 30); do
+            CANDIDATE="$(gh run list --workflow update-aerodrome-managed-pulse.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+            if [ "$CANDIDATE" != "0" ] && [ "$CANDIDATE" != "$BEFORE" ]; then
+              RUN_ID="$CANDIDATE"
+              break
+            fi
+            sleep 2
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "ERROR: could not identify newly dispatched Aerodrome Pulse run"
+            exit 1
+          fi
+          echo "Watching Aerodrome Managed Strategy Pulse run $RUN_ID"
+          gh run watch "$RUN_ID" --exit-status
+
+      - name: Prove physical Aerodrome Managed Strategy Pulse on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git show origin/main:intelligence/economic-graph/aerodrome-managed-pulse.json > /tmp/aerodrome-managed-pulse.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/aerodrome-managed-pulse.json','utf8'));
+          const o=x.latest;
+          if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.engineVersion!=='0.1-defitea-managed-venft-same-block-pulse')throw new Error('Pulse version mismatch');
+          if(x.status!=='shadow-measured-not-promoted')throw new Error('Pulse shadow status missing');
+          if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none'||x.authority?.promotionAuthority!=='none')throw new Error('Pulse authority regression');
+          if(Number(x.sourceBinding?.canonicalCohortCountAtObservation)!==2||x.sourceBinding?.canonicalCohortCountUnchanged!==true)throw new Error('Pulse changed canonical cohort authority');
+          if(!o||o.chain!=='Base'||o.identity?.companyRegistry!=='004'||o.identity?.managedTokenId!=='10298'||o.identity?.depositorTokenId!=='103935')throw new Error('Defitea managed veNFT identity mismatch');
+          if(o.provenance?.sameBlockRead!==true||Number(o.provenance?.blockNumber)!==Number(o.blockNumber)||o.provenance?.blockHash!==o.blockHash)throw new Error('Pulse same-block provenance missing');
+          if(!Array.isArray(o.pools)||o.pools.length!==Number(o.voting?.votedPoolCount))throw new Error('Managed voted pool set incomplete');
+          for(const p of o.pools){
+            if(!p.pool||!p.gauge?.address||!p.feeVotingReward?.address||!p.bribeVotingReward?.address)throw new Error('Pool/gauge/reward graph incomplete');
+            if(p.epistemic?.voteToRewardDeposit!=='proven-onchain-contract-relationship')throw new Error('Pool accounting relationship class missing');
+          }
+          if(!Number.isFinite(Number(o.depositorManagedRewards?.lockedAeroAmount))||Number(o.depositorManagedRewards.lockedAeroAmount)<0)throw new Error('Depositor LockedManagedReward state missing');
+          if(o.epistemic?.referenceAprConnection!=='not-attributed-by-this-pulse'||o.epistemic?.causalAttribution!=='unresolved-beyond-contract-accounting-identities'||o.epistemic?.primaryDriver!==null||o.epistemic?.promotionAuthority!=='none')throw new Error('Pulse causal boundary weakened');
+          console.log('AERODROME PULSE RECOVERY PHYSICAL PASS',{
+            generatedAt:x.generatedAt,
+            block:o.blockNumber,
+            managedTokenId:o.identity.managedTokenId,
+            votedPools:o.voting.votedPoolCount,
+            usedVotingPowerPct:o.voting.usedVotingPowerPct,
+            gaugeWeeklyEmissionAero:o.aggregates.totalGaugeWeeklyEmissionRateAero,
+            lockedManagedAero:o.depositorManagedRewards.lockedAeroAmount,
+            primaryDriver:o.epistemic.primaryDriver,
+            promotionAuthority:o.epistemic.promotionAuthority,
+            executionAuthority:x.authority.executionAuthority
           });
           NODE
