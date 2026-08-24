@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING — GROUNDED BRAIN UPSTREAM GUARD v0.1
+ * THE HOLDING — GROUNDED BRAIN UPSTREAM GUARD v0.2
  *
  * Reusable exact-byte provenance guard.
  *
  * It proves that a Grounded Brain packet is still based on the CURRENT
- * canonical upstream files it claims to represent.
+ * canonical upstream files it claims to represent, including the normalized
+ * Explanatory Context that carries Economic Graph driver context.
  *
  * Validation reads are allowed, but raw upstream content is never packaged
  * into the ChatGPT Bridge.
@@ -15,13 +16,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-export const UPSTREAM_GUARD_VERSION = '0.1-exact-canonical-source-binding';
+export const UPSTREAM_GUARD_VERSION = '0.2-exact-canonical-source-binding-explanatory';
 
 const SOURCE_ALLOWLIST = Object.freeze({
   change: 'intelligence/change-intelligence.json',
   systemMemory: 'intelligence/system-memory.json',
   security: 'security/security-intelligence.json',
   securityMemory: 'security/security-memory.json',
+  explanatory: 'intelligence/explanatory/explanatory-context.json',
 });
 
 const BRAIN_POLICY_FILE = 'intelligence/brain-policy.json';
