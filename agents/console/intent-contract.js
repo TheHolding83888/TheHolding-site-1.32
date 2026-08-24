@@ -248,7 +248,56 @@
 
   function repairQuestionShapeTypos(value) {
     let text = String(value || '');
-    const normalized = text.toLowerCase().replace(/ё/g, 'е');
+    let normalized = text.toLowerCase().replace(/ё/g, 'е');
+
+    // The product name is a narrow semantic anchor, not a generic English word.
+    // Recover only `The <h...>` forms within two edits of `Holding`; this lets an
+    // inventory question survive a human typo without broad fuzzy routing.
+    text = text.replace(/\bthe\s+([A-Za-z]{5,9})\b/gi, (match, token) => {
+      const lower = token.toLowerCase();
+      if (!lower.startsWith('h') || Math.abs(lower.length - 'holding'.length) > 2) return match;
+      return boundedEditDistance(lower, 'holding') <= 2 ? match.replace(token, 'Holding') : match;
+    });
+    normalized = text.toLowerCase().replace(/ё/g, 'е');
+
+    // Fund-inventory recovery is allowed only when the canonical product anchor and
+    // an inventory-shaped question are both present. This keeps `фонд/фонды` typo
+    // repair local to the newly exercised conversation-context surface.
+    if (/(^|\s)(?:the\s+)?holding(?=\s|[?!.,]|$)/i.test(normalized)
+      && /(?:^|\s)(?:какие|есть|список|перечисли|which|have|has|list)(?=\s|[?!.,]|$)/i.test(normalized)) {
+      text = text.replace(/[А-Яа-яЁё]{4,6}/g, token => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        if (!lower.startsWith('ф')) return token;
+        const ranked = ['фонды', 'фонд']
+          .filter(target => Math.abs(target.length - lower.length) <= 2)
+          .map(target => ({ target, distance: boundedEditDistance(lower, target) }))
+          .filter(x => x.distance <= 2)
+          .sort((a, b) => a.distance - b.distance || a.target.localeCompare(b.target));
+        if (!ranked.length) return token;
+        if (ranked.length === 1 || ranked[0].distance < ranked[1].distance) return ranked[0].target;
+        return token;
+      });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
+    }
+
+    // Ordinal carry-over is repaired only in an explicit purpose/role question and
+    // only after Russian genitive markers `у/для`. The previous turn still supplies
+    // the entity set; this layer merely restores the ordinal surface form.
+    if (/(?:роль|задач|назначени|purpose|role|mission)/i.test(normalized)) {
+      const ordinals = ['первого', 'второго', 'третьего', 'четвертого', 'пятого'];
+      text = text.replace(/((?:^|\s)(?:у|для)\s+)([А-Яа-яЁё]{5,12})/gi, (match, prefix, token) => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        const ranked = ordinals
+          .filter(target => target[0] === lower[0] && Math.abs(target.length - lower.length) <= 2)
+          .map(target => ({ target, distance: boundedEditDistance(lower, target) }))
+          .filter(x => x.distance <= 2)
+          .sort((a, b) => a.distance - b.distance || a.target.localeCompare(b.target));
+        if (!ranked.length) return match;
+        if (ranked.length === 1 || ranked[0].distance < ranked[1].distance) return `${prefix}${ranked[0].target}`;
+        return match;
+      });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
+    }
 
     // Economic layer comparisons are a high-value semantic boundary. Repair the
     // relation word only inside a yield/performance-shaped question. Repair the
@@ -266,6 +315,7 @@
         if (!lower.startsWith('р') || Math.abs(lower.length - 'реальная'.length) > 2) return token;
         return boundedEditDistance(lower, 'реальная') <= 2 ? 'реальная' : token;
       });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
     }
 
     // `brief` is a high-value owner-intent shape. For four-letter forms allow
@@ -278,10 +328,10 @@
         const maxEdits = lower.length === 4 ? 2 : 1;
         return boundedEditDistance(lower, 'brief') <= maxEdits ? 'brief' : token;
       });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
     }
 
-    const afterOwner = text.toLowerCase().replace(/ё/g, 'е');
-    if (/(^|\s)(?:the\s+)?holding(?=\s|[?!.,]|$)/i.test(afterOwner)) {
+    if (/(^|\s)(?:the\s+)?holding(?=\s|[?!.,]|$)/i.test(normalized)) {
       text = text.replace(/[А-Яа-яЁё]{4,5}/g, token => {
         const lower = token.toLowerCase().replace(/ё/g, 'е');
         if (!lower.startsWith('ф')) return token;
