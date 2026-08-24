@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { applyExactFxnLockerApr, extractFxnLockerApr } from './fxn-locker-apr-guard.mjs';
+import { applyExactFxnLockerApr, extractFxnLockerApr, extractFxnLockerEconomicSnapshot } from './fxn-locker-apr-guard.mjs';
 
 // Canonical layout: exact Locker block.
 assert.equal(
@@ -41,6 +41,40 @@ assert.throws(
   /expected one unambiguous FXN Locker APR/
 );
 
+// Economic vitals are extracted only from the same exact Locker scope.
+const economicBlock='FXN Locker APR 77.12% FXN Locked 512.40K Total veFXN 291.75K 2.4 years average lock Total veFXN Revenue Cumulative This Week 42.1256 wstETH Previous Week 11.2504 wstETH Accumulate Till Aug 27, 2026 Lock FXN MAX APR CALC';
+const economic=extractFxnLockerEconomicSnapshot([economicBlock],{observedAt:'2026-08-24T10:00:00.000Z'});
+assert.equal(economic.aprPct,77.12);
+assert.equal(economic.fxnLocked,512400);
+assert.equal(economic.totalVeFxn,291750);
+assert.equal(economic.cumulativeThisWeekWsteth,42.1256);
+assert.equal(economic.previousWeekWsteth,11.2504);
+assert.equal(economic.averageLockRaw,'2.4 years');
+assert.equal(economic.accumulateTillRaw,'Aug 27, 2026');
+assert.equal(economic.nativeCadence,'weekly');
+assert.equal(economic.executionAuthority,'none');
+assert.match(economic.rawBlockHash,/^[a-f0-9]{64}$/);
+
+// Equivalent desktop/mobile copies remain admissible.
+const economicDup=extractFxnLockerEconomicSnapshot([economicBlock,`Mobile ${economicBlock}`],{observedAt:'2026-08-24T10:00:00.000Z'});
+assert.equal(economicDup.aprPct,77.12);
+assert.equal(economicDup.totalVeFxn,291750);
+
+// Missing driver context fails closed rather than fabricating an explanation.
+assert.throws(
+  () => extractFxnLockerEconomicSnapshot(['FXN Locker APR 77.12% FXN Locked 512.40K Total veFXN 291.75K']),
+  /expected one unambiguous FXN Locker economic snapshot/
+);
+
+// Divergent vitals across duplicate Locker blocks are ambiguous and fail closed.
+assert.throws(
+  () => extractFxnLockerEconomicSnapshot([
+    economicBlock,
+    economicBlock.replace('42.1256 wstETH','41.0000 wstETH')
+  ]),
+  /expected one unambiguous FXN Locker economic snapshot/
+);
+
 // The exact-source authority repairs only the materialized current snapshot.
 const report={engines:{fx_vefxn:{apr:21.1,status:'ok',source:'https://fx.aladdin.club/v2/lock',sourceMetric:'veFXN Locker APR'}}};
 const data={
@@ -70,4 +104,4 @@ assert.equal(data.history.companies['defitea.eth'][1].apr,43.54); // current sna
 assert.equal(data.companies['defitea.eth'].aprHistoricalAverage,27.77);
 assert.equal(data.diagnostics.fxnLockerAprAuthority.historicalSnapshotsRewritten,false);
 
-console.log('f(x) exact-source APR parser + current-snapshot authority validation PASS');
+console.log('f(x) exact-source APR + economic-vitals parser validation PASS');
