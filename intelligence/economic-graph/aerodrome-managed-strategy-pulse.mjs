@@ -90,11 +90,6 @@ function readJson(file, required = true) {
 }
 function sha256File(file) { return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'); }
 function sha256Text(value) { return crypto.createHash('sha256').update(String(value)).digest('hex'); }
-function finite(value, label) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) throw new Error(`${label} must be finite`);
-  return n;
-}
 function round(value, digits = 10) {
   if (!Number.isFinite(Number(value))) return null;
   return Number(Number(value).toFixed(digits));
@@ -214,10 +209,10 @@ async function collectPool(provider, voter, pool, managedTokenId, usedWeight, to
 
   const poolContract = new Contract(poolAddress, POOL_ABI, provider);
   const gaugeContract = new Contract(gauge, GAUGE_ABI, provider);
-  const [token0Raw, token1Raw, stable, rewardRateRaw, periodFinishRaw, leftRaw, fees0Raw, fees1Raw] = await Promise.all([
+  const [token0Raw, token1Raw, stableRaw, rewardRateRaw, periodFinishRaw, leftRaw, fees0Raw, fees1Raw] = await Promise.all([
     poolContract.token0({ blockTag }),
     poolContract.token1({ blockTag }),
-    poolContract.stable({ blockTag }),
+    poolContract.stable({ blockTag }).catch(error => { issues.push(`stable() unsupported: ${error.shortMessage || error.message}`); return null; }),
     gaugeContract.rewardRate({ blockTag }).catch(() => null),
     gaugeContract.periodFinish({ blockTag }).catch(() => null),
     gaugeContract.left({ blockTag }).catch(() => null),
@@ -238,10 +233,12 @@ async function collectPool(provider, voter, pool, managedTokenId, usedWeight, to
   const gaugeClaimableAero = round(Number(formatUnits(gaugeClaimableRaw, 18)), 12);
   const gaugeRewardRateAeroPerSecond = rewardRateRaw === null ? null : round(Number(formatUnits(rewardRateRaw, 18)), 14);
   const gaugeLeftAero = leftRaw === null ? null : round(Number(formatUnits(leftRaw, 18)), 12);
+  const poolImplementationClass = stableRaw === null ? 'non-legacy-or-unclassified' : (Boolean(stableRaw) ? 'legacy-stable' : 'legacy-volatile');
 
   return {
     pool: poolAddress,
-    stable: Boolean(stable),
+    poolImplementationClass,
+    stable: stableRaw === null ? null : Boolean(stableRaw),
     pair: `${token0.symbol}/${token1.symbol}`,
     tokens: [token0, token1],
     managedVoteWeightRaw: voteWeight.toString(),
@@ -266,6 +263,7 @@ async function collectPool(provider, voter, pool, managedTokenId, usedWeight, to
     bribeVotingReward: bribesState,
     issues,
     epistemic: {
+      poolImplementation: stableRaw === null ? 'measured-core-interface-with-optional-style-unresolved' : 'measured-legacy-style',
       voteToRewardDeposit: 'proven-onchain-contract-relationship',
       gaugeEmissionState: 'measured-current-block',
       feeAndBribeEarned: 'measured-current-block-managed-venft-voter-context',
@@ -519,6 +517,8 @@ async function buildPulse() {
       history,
       semantics: {
         sameBlockOnchainPulse: true,
+        heterogeneousPoolImplementationsAllowed: true,
+        optionalLegacyStableFlagDoesNotDefinePoolIdentity: true,
         referenceAprIsSeparateEvidenceLane: true,
         actualManagedRewardsAreSeparateEvidenceLane: true,
         contextIsNotCause: true,
