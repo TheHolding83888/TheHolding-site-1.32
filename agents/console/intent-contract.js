@@ -250,22 +250,21 @@
     let text = String(value || '');
     const normalized = text.toLowerCase().replace(/ё/g, 'е');
 
-    // Economic layer comparisons are a high-value semantic boundary. Repair only
-    // two known comparison lexemes, only inside a yield/performance-shaped question,
-    // with same-first-letter + <=2 edits. This recovers human typos without turning
-    // the Intent Contract into a broad fuzzy router or an answer-selection plane.
+    // Economic layer comparisons are a high-value semantic boundary. Repair the
+    // relation word only inside a yield/performance-shaped question. Repair the
+    // adjective `реальная` only when it directly qualifies `доходность`; this keeps
+    // phrases such as `кто реально заработал больше` untouched so Realised Cash Flow
+    // continues to fail closed rather than being substituted with current APR.
     if (/(?:apr|apy|yield|доходност|performance|прибыл|результат)/i.test(normalized)) {
-      const targets = ['получается', 'реальная'];
-      text = text.replace(/[А-Яа-яЁё]{6,12}/g, token => {
+      text = text.replace(/[А-Яа-яЁё]{7,12}/g, token => {
         const lower = token.toLowerCase().replace(/ё/g, 'е');
-        const ranked = targets
-          .filter(target => target[0] === lower[0] && Math.abs(target.length - lower.length) <= 2)
-          .map(target => ({ target, distance: boundedEditDistance(lower, target) }))
-          .filter(x => x.distance <= 2)
-          .sort((a, b) => a.distance - b.distance || a.target.localeCompare(b.target));
-        if (!ranked.length) return token;
-        if (ranked.length === 1 || ranked[0].distance < ranked[1].distance) return ranked[0].target;
-        return token;
+        if (!lower.startsWith('п') || Math.abs(lower.length - 'получается'.length) > 2) return token;
+        return boundedEditDistance(lower, 'получается') <= 2 ? 'получается' : token;
+      });
+      text = text.replace(/([А-Яа-яЁё]{6,10})(?=\s+[А-Яа-яЁё]*доходност)/gi, token => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        if (!lower.startsWith('р') || Math.abs(lower.length - 'реальная'.length) > 2) return token;
+        return boundedEditDistance(lower, 'реальная') <= 2 ? 'реальная' : token;
       });
     }
 
