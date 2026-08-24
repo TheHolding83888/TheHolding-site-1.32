@@ -1,0 +1,173 @@
+name: "The Holding · Aerodrome Managed Strategy Pulse"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "47 8 * * *"
+  workflow_run:
+    workflows:
+      - "The Holding · Economic Graph"
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - "intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs"
+      - ".github/workflows/update-aerodrome-managed-pulse.yml"
+  pull_request:
+    paths:
+      - "intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs"
+      - "intelligence/economic-graph/aerodrome-veaero-candidate.mjs"
+      - "intelligence/economic-graph/economic-graph-canonical-runner.mjs"
+      - ".github/workflows/update-aerodrome-managed-pulse.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-aerodrome-managed-strategy-pulse
+  cancel-in-progress: false
+
+jobs:
+  pulse:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout reviewed canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Install existing read-only chain dependencies
+        working-directory: productivity
+        run: npm install --no-audit --no-fund
+
+      - name: Expose existing dependency tree to intelligence modules
+        run: ln -sfn productivity/node_modules node_modules
+
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          node --check intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
+          test -s intelligence/economic-graph/economic-graph.json
+          git diff --check
+
+      - name: Build same-block shadow pulse
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            TMP="$(mktemp)"
+            AERODROME_PULSE_FILE="$TMP" node intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
+            cp "$TMP" /tmp/aerodrome-managed-pulse.json
+            rm -f "$TMP"
+          else
+            node intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
+            cp intelligence/economic-graph/aerodrome-managed-pulse.json /tmp/aerodrome-managed-pulse.json
+          fi
+
+      - name: Validate pulse semantics and authority
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/aerodrome-managed-pulse.json','utf8'));
+          const o=x.latest;
+          if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.engineVersion!=='0.1-defitea-managed-venft-same-block-pulse')throw new Error('Pulse version mismatch');
+          if(x.status!=='shadow-measured-not-promoted')throw new Error('Pulse shadow status missing');
+          if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none'||x.authority?.promotionAuthority!=='none')throw new Error('Pulse authority regression');
+          if(Number(x.sourceBinding?.canonicalCohortCountAtObservation)!==2||x.sourceBinding?.canonicalCohortCountUnchanged!==true)throw new Error('Pulse changed canonical cohort authority');
+          if(!o||o.chain!=='Base'||o.identity?.companyRegistry!=='004'||o.identity?.managedTokenId!=='10298'||o.identity?.depositorTokenId!=='103935')throw new Error('Defitea managed veNFT identity mismatch');
+          if(o.provenance?.sameBlockRead!==true||Number(o.provenance?.blockNumber)!==Number(o.blockNumber)||o.provenance?.blockHash!==o.blockHash)throw new Error('Pulse same-block provenance missing');
+          if(o.contracts?.voter!=='0x16613524e02ad97eDfeF371bC883F2F5d6C480A5'||o.contracts?.votingEscrow!=='0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4')throw new Error('Aerodrome core contract authority drift');
+          if(!Number.isFinite(Number(o.voting?.managedVotingPower))||!Number.isFinite(Number(o.voting?.usedVotingWeight))||!Number.isFinite(Number(o.voting?.systemTotalVoteWeight)))throw new Error('Managed voting state incomplete');
+          if(!Array.isArray(o.pools))throw new Error('Managed voted pools missing');
+          for(const p of o.pools){
+            if(!p.pool||!p.gauge?.address||!p.feeVotingReward?.address||!p.bribeVotingReward?.address)throw new Error('Pool/gauge/reward graph incomplete');
+            if(p.epistemic?.voteToRewardDeposit!=='proven-onchain-contract-relationship')throw new Error('Pool accounting relationship class missing');
+          }
+          if(!Number.isFinite(Number(o.depositorManagedRewards?.lockedAeroAmount))||Number(o.depositorManagedRewards.lockedAeroAmount)<0)throw new Error('Depositor LockedManagedReward state missing');
+          if(o.epistemic?.voteToFeeAndBribeRewardDeposit!=='proven-by-aerodrome-voter-accounting-identity')throw new Error('Voter accounting identity missing');
+          if(o.epistemic?.referenceAprConnection!=='not-attributed-by-this-pulse'||o.epistemic?.causalAttribution!=='unresolved-beyond-contract-accounting-identities'||o.epistemic?.primaryDriver!==null||o.epistemic?.promotionAuthority!=='none')throw new Error('Pulse causal boundary weakened');
+          if(x.semantics?.referenceAprIsSeparateEvidenceLane!==true||x.semantics?.actualManagedRewardsAreSeparateEvidenceLane!==true||x.semantics?.candidateNotCanonical!==true)throw new Error('Pulse evidence-lane separation missing');
+          console.log('AERODROME MANAGED STRATEGY PULSE semantic PASS',{
+            block:o.blockNumber,
+            managedTokenId:o.identity.managedTokenId,
+            votedPools:o.voting.votedPoolCount,
+            usedVotingPowerPct:o.voting.usedVotingPowerPct,
+            gaugeClaimableAero:o.aggregates.totalGaugeClaimableAero,
+            gaugeWeeklyEmissionAero:o.aggregates.totalGaugeWeeklyEmissionRateAero,
+            lockedManagedAero:o.depositorManagedRewards.lockedAeroAmount,
+            primaryDriver:o.epistemic.primaryDriver,
+            promotionAuthority:o.epistemic.promotionAuthority,
+            executionAuthority:x.authority.executionAuthority
+          });
+          NODE
+          git diff --check
+
+      - name: Publish generated pulse safely
+        if: github.event_name != 'pull_request'
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED="intelligence/economic-graph/aerodrome-managed-pulse.json"
+          test -s "$GENERATED"
+          git config user.name "The Holding Aerodrome Pulse"
+          git config user.email "aerodrome-pulse@theholding.ai"
+          git add "$GENERATED"
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/economic-graph/aerodrome-managed-pulse\.json$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Aerodrome Pulse attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+          if git diff --cached --quiet; then
+            echo "Aerodrome managed pulse already current."
+            exit 0
+          fi
+          git commit -m "intelligence: refresh aerodrome managed pulse"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Aerodrome Pulse publish conflict; refusing to guess."
+              exit 1
+            fi
+            node intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
+            git add "$GENERATED"
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+            if git push origin HEAD:main; then
+              git fetch origin main
+              git show origin/main:"$GENERATED" > /tmp/remote-aerodrome-pulse.json
+              node - <<'NODE'
+              const fs=require('fs');
+              const x=JSON.parse(fs.readFileSync('/tmp/remote-aerodrome-pulse.json','utf8'));
+              if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.status!=='shadow-measured-not-promoted')throw new Error('Remote pulse version/status mismatch');
+              if(x.authority?.executionAuthority!=='none'||x.authority?.promotionAuthority!=='none')throw new Error('Remote pulse authority regression');
+              if(x.latest?.epistemic?.primaryDriver!==null)throw new Error('Remote pulse unearned primaryDriver');
+              console.log('Verified Aerodrome Managed Strategy Pulse on remote main.');
+              NODE
+              exit 0
+            fi
+            echo "Main moved during Aerodrome Pulse push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Aerodrome Pulse publish failed after 3 attempts."
+          exit 1
