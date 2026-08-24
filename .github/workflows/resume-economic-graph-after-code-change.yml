@@ -1,0 +1,38 @@
+name: Resume Economic Graph After Code Change
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence/economic-graph/economic-graph.mjs'
+      - '.github/workflows/update-economic-graph.yml'
+      - '.github/workflows/resume-economic-graph-after-code-change.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: economic-graph-code-change-resume
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+
+      - name: Verify Economic Graph engine is present
+        run: |
+          set -euo pipefail
+          test -s intelligence/economic-graph/economic-graph.mjs
+          node --check intelligence/economic-graph/economic-graph.mjs
+
+      - name: Dispatch canonical Unified Capital writer first
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run unified-capital-refresh.yml --ref main
