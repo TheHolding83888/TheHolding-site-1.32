@@ -1,0 +1,141 @@
+# THE HOLDING · ECONOMIC GRAPH v0.1
+name: "The Holding · Economic Graph"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 8 * * *"
+  pull_request:
+    paths:
+      - "intelligence/economic-graph/**"
+      - "productivity/fxn-locker-apr-guard.mjs"
+      - "productivity/fxn-locker-apr-guard-validation.mjs"
+      - ".github/workflows/update-economic-graph.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "intelligence/economic-graph/economic-graph.mjs"
+      - "productivity/fxn-locker-apr-guard.mjs"
+      - ".github/workflows/update-economic-graph.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-economic-graph
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static and deterministic validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check productivity/fxn-locker-apr-guard.mjs
+          node --check intelligence/economic-graph/economic-graph.mjs
+          node productivity/fxn-locker-apr-guard-validation.mjs
+          TMP="$(mktemp)"
+          ECONOMIC_GRAPH_FILE="$TMP" node intelligence/economic-graph/economic-graph.mjs --deterministic-validation
+          node - "$TMP" <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.1-defitea-fxn-driver-substrate')throw new Error('Economic Graph version mismatch');
+          if(x.status!=='partial-first-cohort')throw new Error('Economic Graph must remain first-cohort partial');
+          if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none')throw new Error('Economic Graph authority regression');
+          if(x.authority?.capitalExecution!==false||x.authority?.allocationAuthority!==false||x.authority?.recommendationAuthority!==false||x.authority?.causalClaimAuthority!=='none')throw new Error('Economic Graph authority leakage');
+          if(x.attribution?.primaryDriver!==null||x.attribution?.status!=='warming-unresolved-causality')throw new Error('Unproven primary driver leaked');
+          if(x.latest?.observation?.protocol!=='f(x)'||x.latest?.observation?.mechanism!=='veFXN Locker')throw new Error('First cohort mismatch');
+          if(x.latest?.observation?.epistemic?.causalAttribution!=='unresolved')throw new Error('Causal attribution leaked');
+          if(!x.expansionQueue.some(v=>String(v).includes('Votium / VoteMarket'))||!x.expansionQueue.some(v=>String(v).includes('Aerodrome veAERO'))||!x.expansionQueue.some(v=>String(v).includes('sAERO Predictive Allocation')))throw new Error('Incentive-market expansion canon missing');
+          console.log('ECONOMIC GRAPH deterministic semantics PASS',{observations:x.observations.length,primaryDriver:x.attribution.primaryDriver,executionAuthority:x.authority.executionAuthority});
+          NODE
+          rm -f "$TMP"
+          git diff --check
+
+      - name: Install live probe dependencies
+        if: github.event_name != 'pull_request'
+        working-directory: productivity
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npx playwright install chromium
+
+      - name: Build live Economic Graph
+        if: github.event_name != 'pull_request'
+        run: node intelligence/economic-graph/economic-graph.mjs
+
+      - name: Validate live observation boundary
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('intelligence/economic-graph/economic-graph.json','utf8'));
+          const o=x.latest?.observation;
+          if(x.version!=='0.1-economic-graph'||!o)throw new Error('live Economic Graph missing');
+          if(o.source?.url!=='https://fx.aladdin.club/v2/lock')throw new Error('live source authority drift');
+          if(o.source?.sourceType!=='official-frontend-exact-locker-block')throw new Error('live exact Locker block not proven');
+          if(!Number.isFinite(Number(o.liveObservedAprPct))||!Number.isFinite(Number(o.drivers?.fxnLocked))||!Number.isFinite(Number(o.drivers?.totalVeFxn))||!Number.isFinite(Number(o.drivers?.cumulativeThisWeekWsteth))||!Number.isFinite(Number(o.drivers?.previousWeekWsteth)))throw new Error('live economic vitals incomplete');
+          if(x.attribution?.primaryDriver!==null||o.epistemic?.causalAttribution!=='unresolved')throw new Error('unearned causal attribution');
+          console.log('ECONOMIC GRAPH live source PASS',{observedAt:o.observedAt,apr:o.liveObservedAprPct,fxnLocked:o.drivers.fxnLocked,totalVeFxn:o.drivers.totalVeFxn,currentWeekWsteth:o.drivers.cumulativeThisWeekWsteth,previousWeekWsteth:o.drivers.previousWeekWsteth});
+          NODE
+
+      - name: Publish generated Economic Graph safely
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED="intelligence/economic-graph/economic-graph.json"
+          test -s "$GENERATED"
+          git config user.name "The Holding Economic Graph"
+          git config user.email "economic-graph@theholding.ai"
+          git add "$GENERATED"
+          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/economic-graph/economic-graph\.json$' || true)"
+          if [ -n "$staged_bad" ]; then
+            echo "ERROR: Economic Graph attempted to stage outside generated boundary:"
+            echo "$staged_bad"
+            exit 1
+          fi
+          if git diff --cached --quiet; then echo "Economic Graph already current."; exit 0; fi
+          git commit -m "intelligence: refresh economic graph"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Publish conflict; refusing to guess."
+              exit 1
+            fi
+            node intelligence/economic-graph/economic-graph.mjs
+            git add "$GENERATED"
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+            if git push origin HEAD:main; then
+              git fetch origin main
+              git cat-file -e "origin/main:$GENERATED"
+              REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+              test "$REMOTE_VERSION" = "0.1-economic-graph"
+              echo "Verified Economic Graph v0.1 on remote main."
+              exit 0
+            fi
+            echo "Main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Economic Graph publish failed after 3 attempts."
+          exit 1

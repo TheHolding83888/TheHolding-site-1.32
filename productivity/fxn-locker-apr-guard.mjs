@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · f(x) veFXN exact-source APR authority guard v0.2
+ * The Holding · f(x) veFXN exact-source APR authority guard v0.3
  *
  * The legacy collector can observe the dynamic f(x) page but historically
  * selected the first generic APR before falling back to the FXN Locker scope.
@@ -9,10 +9,16 @@
  * then verifies the materialized output before either canonical writer can
  * publish it.
  *
+ * v0.3 also exposes a read-only economic-vitals probe for Defitea Economic
+ * Graph. It reads APR, FXN Locked, Total veFXN, current-week wstETH revenue and
+ * previous-week wstETH revenue from the same exact official Locker block. The
+ * economic probe does not mutate Productivity and does not infer causation.
+ *
  * Fail closed on ambiguity or missing source data.
  * No execution authority. No economic-methodology mutation.
  */
 
+import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -39,6 +45,26 @@ function round(n, d=4) {
   const p=10**d;
   return Math.round(Number(n)*p)/p;
 }
+function compactNumber(raw) {
+  const text=String(raw||'').replace(/\s+/g,'').trim();
+  const match=text.match(/^([0-9][0-9,]*(?:\.[0-9]+)?)([kKmMbB])?$/);
+  if(!match) return NaN;
+  const base=Number(match[1].replace(/,/g,''));
+  if(!Number.isFinite(base)) return NaN;
+  const mult=match[2] ? ({k:1e3,m:1e6,b:1e9})[match[2].toLowerCase()] : 1;
+  return base*mult;
+}
+function metricNumber(text,label,nextLabel=null) {
+  const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const next=nextLabel ? `(?=\\s+${nextLabel.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b)` : '';
+  const metric=text.match(new RegExp(`${escaped}\\s+([0-9][0-9,]*(?:\\.[0-9]+)?\\s*[kKmMbB]?)${next}`,'i'));
+  return metric ? compactNumber(metric[1]) : NaN;
+}
+function rewardNumber(text,label) {
+  const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const metric=text.match(new RegExp(`${escaped}\\s+([0-9][0-9,]*(?:\\.[0-9]+)?\\s*[kKmMbB]?)\\s*wstETH\\b`,'i'));
+  return metric ? compactNumber(metric[1]) : NaN;
+}
 
 export function extractFxnLockerApr(blocks) {
   const values = [];
@@ -64,6 +90,56 @@ export function extractFxnLockerApr(blocks) {
     throw new Error(`f(x) exact-source guard: expected one unambiguous FXN Locker APR, found ${unique.length}`);
   }
   return unique[0];
+}
+
+export function extractFxnLockerEconomicSnapshot(blocks,{observedAt=new Date().toISOString()}={}) {
+  const candidates=[];
+  for(const raw of Array.isArray(blocks)?blocks:[]){
+    const text=normalizeText(raw);
+    const start=text.toLowerCase().indexOf('fxn locker');
+    if(start<0) continue;
+    const scoped=text.slice(start,start+1800);
+    let apr;
+    try{apr=extractFxnLockerApr([scoped]);}catch{continue;}
+    const fxnLocked=metricNumber(scoped,'FXN Locked','Total veFXN');
+    const totalVeFxn=metricNumber(scoped,'Total veFXN');
+    const cumulativeThisWeekWsteth=rewardNumber(scoped,'Cumulative This Week');
+    const previousWeekWsteth=rewardNumber(scoped,'Previous Week');
+    if(![fxnLocked,totalVeFxn,cumulativeThisWeekWsteth,previousWeekWsteth].every(Number.isFinite)) continue;
+    const averageLockMatch=scoped.match(/([0-9]+(?:\.[0-9]+)?\s*(?:years?|months?|days?))\s+average lock\b/i);
+    const accumulateTillMatch=scoped.match(/Accumulate Till\s+(.{1,80}?)(?=\s+Lock FXN\b|\s+MAX APR CALC\b|$)/i);
+    candidates.push({
+      aprPct:round(apr),
+      fxnLocked:round(fxnLocked,8),
+      totalVeFxn:round(totalVeFxn,8),
+      cumulativeThisWeekWsteth:round(cumulativeThisWeekWsteth,12),
+      previousWeekWsteth:round(previousWeekWsteth,12),
+      averageLockRaw:averageLockMatch?normalizeText(averageLockMatch[1]):null,
+      accumulateTillRaw:accumulateTillMatch?normalizeText(accumulateTillMatch[1]):null,
+      rawBlockHash:crypto.createHash('sha256').update(scoped).digest('hex')
+    });
+  }
+  const normalized=candidates.map(x=>JSON.stringify({
+    aprPct:x.aprPct,fxnLocked:x.fxnLocked,totalVeFxn:x.totalVeFxn,
+    cumulativeThisWeekWsteth:x.cumulativeThisWeekWsteth,previousWeekWsteth:x.previousWeekWsteth,
+    averageLockRaw:x.averageLockRaw,accumulateTillRaw:x.accumulateTillRaw
+  }));
+  const unique=[...new Set(normalized)];
+  if(unique.length!==1) throw new Error(`f(x) economic-vitals probe: expected one unambiguous FXN Locker economic snapshot, found ${unique.length}`);
+  const selected=candidates.find(x=>normalized[0]===JSON.stringify({
+    aprPct:x.aprPct,fxnLocked:x.fxnLocked,totalVeFxn:x.totalVeFxn,
+    cumulativeThisWeekWsteth:x.cumulativeThisWeekWsteth,previousWeekWsteth:x.previousWeekWsteth,
+    averageLockRaw:x.averageLockRaw,accumulateTillRaw:x.accumulateTillRaw
+  }));
+  return {
+    ...selected,
+    observedAt,
+    source:FXN_LOCK_URL,
+    sourceType:'official-frontend-exact-locker-block',
+    sourceMetric:'FXN Locker economic vitals',
+    nativeCadence:'weekly',
+    executionAuthority:'none'
+  };
 }
 
 export function applyExactFxnLockerApr(report, data, exactApr) {
@@ -131,7 +207,7 @@ export function applyExactFxnLockerApr(report, data, exactApr) {
   return { previousApr:Number.isFinite(previousApr)?previousApr:null, exactApr:round(exactApr), adjustedCompanies };
 }
 
-async function collectExactFxnLockerApr() {
+async function collectLockerBlocks({requireEconomicVitals=false}={}) {
   const { chromium } = await import('playwright');
   let lastError;
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -142,23 +218,26 @@ async function collectExactFxnLockerApr() {
       });
       await page.goto(FXN_LOCK_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.waitForTimeout(6000);
-      const blocks = await page.evaluate(() => {
+      const blocks = await page.evaluate(({requireEconomicVitals}) => {
         const norm = value => String(value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
         const nodes = Array.from(document.querySelectorAll('body *')).filter(el => norm(el.textContent) === 'FXN Locker');
         const out = [];
         for (const label of nodes) {
           let node = label;
-          for (let depth = 0; node && depth < 8; depth++, node = node.parentElement) {
+          for (let depth = 0; node && depth < 12; depth++, node = node.parentElement) {
             const text = norm(node.innerText || node.textContent);
-            if (/\bAPR\b/i.test(text) && /[0-9]+(?:[.,][0-9]+)?\s*%/.test(text)) {
+            const hasApr=/\bAPR\b/i.test(text) && /[0-9]+(?:[.,][0-9]+)?\s*%/.test(text);
+            const hasVitals=/\bFXN Locked\b/i.test(text)&&/\bTotal veFXN\b/i.test(text)&&/\bCumulative This Week\b/i.test(text)&&/\bPrevious Week\b/i.test(text);
+            if (hasApr && (!requireEconomicVitals || hasVitals)) {
               out.push(text);
               break;
             }
           }
         }
         return out;
-      });
-      return extractFxnLockerApr(blocks);
+      }, {requireEconomicVitals});
+      if(!Array.isArray(blocks)||!blocks.length) throw new Error(requireEconomicVitals?'f(x) economic-vitals probe: Locker block unavailable':'f(x) exact-source guard: Locker block unavailable');
+      return blocks;
     } catch (error) {
       lastError = error;
       if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1200));
@@ -167,6 +246,16 @@ async function collectExactFxnLockerApr() {
     }
   }
   throw lastError || new Error('f(x) exact-source guard: source probe failed');
+}
+
+async function collectExactFxnLockerApr() {
+  return extractFxnLockerApr(await collectLockerBlocks());
+}
+
+export async function collectFxnLockerEconomicSnapshot() {
+  const observedAt=new Date().toISOString();
+  const blocks=await collectLockerBlocks({requireEconomicVitals:true});
+  return extractFxnLockerEconomicSnapshot(blocks,{observedAt});
 }
 
 async function readMaterializedApr() {
@@ -199,6 +288,11 @@ export async function verifyFxnLockerApr({ exactApr=null }={}) {
 }
 
 async function main() {
+  if (process.argv.includes('--probe-economic-vitals')) {
+    const snapshot=await collectFxnLockerEconomicSnapshot();
+    console.log('f(x) economic-vitals probe PASS',snapshot);
+    return;
+  }
   if (process.argv.includes('--probe-only')) {
     const exactApr=await collectExactFxnLockerApr();
     console.log('f(x) exact-source probe PASS',{exactApr,source:FXN_LOCK_URL,sourceMetric:'veFXN Locker APR'});
