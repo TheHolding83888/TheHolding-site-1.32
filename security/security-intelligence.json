@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-24T09:23:31.180Z",
+  "generatedAt": "2026-08-24T09:51:12.012Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 38,
+    "medium": 39,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 587,
-    "bytesScanned": 13030159,
+    "bytesScanned": 13029342,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,23 +55,23 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "54d6f78bbea7f82b0796d7480074d6023c525a6236b67f4007cfee50046bb7ff",
+        "id": "31fed468c621367cd5a031b9cc7ac9d5a29359e131455411de9d4c1809cdd4b7",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": ".github/workflows/verify-ask-conversation-gauntlet.yml",
+        "file": "index.html",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-ask-conversation-gauntlet.yml.",
+        "summary": "Security-sensitive surface changed: index.html.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "912029a46b2cdbd1e427e4b7ddd00a2005685ad3ec57ec9a3833377ccbe92f8d",
-          "currentSha256": "7ce0ab6f36789a9898dddc455b41cb3fb8ff414f02c6b1ac9f23b3273940dc0a"
+          "previousSha256": "de97c5b6eee9421087ee3bd308b980eff6746a13372b0a80707070ed600222c5",
+          "currentSha256": "935c7a3f058e0a2cb509c81adecdedffcc429dca572506d9b474f5716e34864b"
         }
       }
-    ]
+    ],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -95,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "31fed468c621367cd5a031b9cc7ac9d5a29359e131455411de9d4c1809cdd4b7",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "de97c5b6eee9421087ee3bd308b980eff6746a13372b0a80707070ed600222c5",
+        "currentSha256": "935c7a3f058e0a2cb509c81adecdedffcc429dca572506d9b474f5716e34864b"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -707,12 +721,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "2023712491efed2f55ae6a9f48366906db669309e5dd8a41afd66b512cbcd495",
+    "snapshotHash": "4873cc6cce05c2ad9dee1e87fea8dbc0d52e88ebda5130b7126f3ff1f5c5ff69",
     "securityVault": {
-      "runCount": 460,
+      "runCount": 461,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-24T09-23-31-180Z-2023712491.json",
-      "latestRecordHash": "846b44106af066b257e142cabbc68a1cd39c2cde9549b99a6814984b7797fe29",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-24T09-51-12-012Z-4873cc6cce.json",
+      "latestRecordHash": "ca6186a01db3350b6d24888f7dbdcceb2cf262d2f7db855ec513e1df119d4da2",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }

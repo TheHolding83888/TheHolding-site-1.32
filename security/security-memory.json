@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-24T09:23:31.180Z",
+  "generatedAt": "2026-08-24T09:51:12.012Z",
   "status": "watch",
-  "snapshotHash": "2023712491efed2f55ae6a9f48366906db669309e5dd8a41afd66b512cbcd495",
+  "snapshotHash": "4873cc6cce05c2ad9dee1e87fea8dbc0d52e88ebda5130b7126f3ff1f5c5ff69",
   "repository": {
     "filesScanned": 587,
-    "bytesScanned": 13030159,
+    "bytesScanned": 13029342,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -122,7 +122,7 @@
       ".github/workflows/verify-vlcvx-full-registry-audit.yml": "e84787fb2a4a92b0e66cf75e77c1261b6cf8504cd859e8f513c7893c773bf59c",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "02b5437a85c8beaf86c68df213cf89cfcb5accd383c848e6b008dfe02098f6c4",
-      "index.html": "de97c5b6eee9421087ee3bd308b980eff6746a13372b0a80707070ed600222c5",
+      "index.html": "935c7a3f058e0a2cb509c81adecdedffcc429dca572506d9b474f5716e34864b",
       "intelligence/change-intelligence-engine.mjs": "6b9ef0728e0df7eb217009251e85d5efc6d059b03419f098a1387de46631519d",
       "monetra/index.html": "208ca75cfa060e3e93c5377c73b4497cc88fdbf7816590f2ecd8f7d5828ffb33",
       "yield-reports/index.html": "619f71e7fce2fa8800ad167196213df0eb68ef91c6a1dff07f9bdbfd10bdd73c"
@@ -391,6 +391,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "31fed468c621367cd5a031b9cc7ac9d5a29359e131455411de9d4c1809cdd4b7",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "de97c5b6eee9421087ee3bd308b980eff6746a13372b0a80707070ed600222c5",
+        "currentSha256": "935c7a3f058e0a2cb509c81adecdedffcc429dca572506d9b474f5716e34864b"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -993,10 +1007,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 460,
+    "runCount": 461,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-24T09-23-31-180Z-2023712491.json",
-    "latestRecordHash": "846b44106af066b257e142cabbc68a1cd39c2cde9549b99a6814984b7797fe29",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-24T09-51-12-012Z-4873cc6cce.json",
+    "latestRecordHash": "ca6186a01db3350b6d24888f7dbdcceb2cf262d2f7db855ec513e1df119d4da2",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
