@@ -41,17 +41,19 @@ Selective retrieval is a feature. Do not replace it with “read every historica
 
 ---
 
-## Current deep continuity structure — Aug 24 Ask Conversation Gauntlet production green
+## Current deep continuity structure — Aug 24 Ask Real-Use Conversational Continuity production green
 
 Latest verified resume entrypoint:
 
-`THE_HOLDING_MASTER_CONTINUITY_2026-08-24_ASK_CONVERSATION_GAUNTLET_PRODUCTION_GREEN.md`
+`THE_HOLDING_MASTER_CONTINUITY_2026-08-24_ASK_REAL_USE_CONVERSATIONAL_CONTINUITY_PRODUCTION_GREEN.md`
 
-It closes the high-volume Ask Conversation Gauntlet v0.1 campaign after clean fresh-main proof, merge, exact runtime materialization and post-merge recovery, while preserving the Real Use operating law:
+It closes the first Ask capability upgrade earned directly from a genuine owner-use conversation failure: bounded one-adjacent-turn referent resolution, source-bound current-turn rebuilding, strict typo/semantic boundaries, fresh 220-case unseen proof, PR #295 production merge, exact six-file materialization and post-merge recovery.
+
+The prior Ask Conversation Gauntlet continuity remains the immediate inherited checkpoint, but it is no longer the latest resume entrypoint. Conversation Gauntlet v0.1 remains the reusable verifier; Conversational Continuity v0.2 is now the latest closed real-use capability milestone.
+
+The operating law remains:
 
 `BUILD THE BRAIN → USE THE BRAIN → FIND WHERE IT FAILS → THEN BUILD`.
-
-The Aug 23 Claude-review / Real Use pivot continuity remains the immediate inherited checkpoint, but it is no longer the latest resume entrypoint. Ask Conversation Gauntlet v0.1 is now a closed reusable verification capability, not a standing feature backlog.
 
 The global bottleneck remains genuine settled experience rather than architecture count. The first Experience Activation milestone is:
 
@@ -71,7 +73,7 @@ Canary PR #37 remains a permanent `never merge` proof artifact.
 - **Market Data / current prices / CoinGecko / Public Capital / TVL propagation → latest continuity + `THE_HOLDING_MARKET_DATA_ONCHAIN_AUTHORITY_CANON_2026-08-21.md` + live Market Data/Shadow/CoinGecko/Public Capital artifacts + fresh heartbeat/workflow evidence;**
 - **Defitea Reporting / cash-flow APR / YieldRing+050 income / VoteMarket events → latest continuity + `THE_HOLDING_REPORTING_REFERENCE_MODEL_CANON_2026-08-22.md` + live Reporting ledger/data + fresh writer evidence;**
 - **Cognitive release drift / writer failed to materialize / Learning, Proposal, Builder, Guardian, Project Memory handoff / THI stale or false RED/GREEN → latest continuity + `THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md` + live subsystem state + exact workflow logs;**
-- **Real Use / Experience Activation / prospective pattern / Ask epistemic drift / Conversation Gauntlet → latest continuity + Routing Index Real Use block + Gauntlet contract + live Ask runtime + exact fresh run/artifact evidence;**
+- **Real Use / Experience Activation / prospective pattern / Ask epistemic drift / conversational continuity / Conversation Gauntlet → latest continuity + Routing Index Real Use block + Gauntlet contract + live Ask runtime + exact fresh run/artifact evidence;**
 - f(x) / veFXN APR source → latest continuity + live Productivity source report/data + exact FXN Locker guard;
 - founder/company strategy → Owner Operating Context + Founder Decision DNA only when relevant;
 - Security/deployment → fresh Security state + Production Incident postmortem + Recovery canon when trigger/release/handoff behavior matters.
@@ -217,6 +219,7 @@ Preserves:
 - machine observation should generate questions/hypotheses rather than self-promote into lessons;
 - owner economic experience must begin prospectively from a genuine decision, not retroactive backfill;
 - Ask regressions discovered in real use are earned engineering signals;
+- one-adjacent-turn conversation context may resolve referents but never becomes factual authority;
 - Conversation Gauntlet generated strings remain ephemeral and must never be promoted into durable economic truth;
 - Conversation Gauntlet repairs target semantic/generalization classes and are reproved on fresh unseen seeds;
 - THI is telemetry, not a roadmap target;
@@ -304,7 +307,7 @@ That milestone remains closed precedent. The next Ask campaign was earned by rea
 
 ## 2026-08-24 Ask Conversation Gauntlet production milestone
 
-The latest deep continuity closes:
+The prior deep continuity closed:
 - permanent Conversation Gauntlet v0.1 verification capability;
 - 21 semantic families × 10 unseen variants = 210 default browser cases;
 - RU/EN/code-switch, typo/voice, multi-turn and epistemic-boundary stress;
@@ -317,6 +320,27 @@ The latest deep continuity closes:
 - no authority expansion and no synthetic Q&A → economic-learning promotion.
 
 Ask Conversation Gauntlet v0.1 is **PRODUCTION GREEN / CLOSED**. Reopen only if fresh live evidence proves regression.
+
+---
+
+## 2026-08-24 Ask Real-Use Conversational Continuity production milestone
+
+The latest deep continuity closes:
+- genuine owner-use failure `какой фонд основной?` → `какая задача у субстанции?` as an earned conversation-continuity gap;
+- bounded one-adjacent-turn context rather than sticky indefinite entity memory;
+- prior turns used only for referent resolution while current answers are rebuilt from canonical sources;
+- canonical Substantia / Defitea / Monetra / Fructus / Singul resolution plus explicit purpose and ordinal follow-ups;
+- bounded typo recovery for economic-comparison, Holding/fund inventory, ordinal referents and two-entity compare operators;
+- preserved Realised Cash Flow UNKNOWN boundary and unchanged `executionAuthority = none`;
+- Conversation Gauntlet expansion to 22 × 10 = 220 fresh unseen cases;
+- final run #149 with 220/220 final answers, zero harness errors, zero false-MEASURED, zero false-UNKNOWN, zero strict failures and 100% source/confidence/pattern fit;
+- Ask Experience #369 GREEN including Frozen Semantic Safety;
+- PR #295 production merge `ec01718354f634e187f4a4f2ccd5efadd59140e8`;
+- exact six-file physical materialization in live `main`;
+- automatic Security, CURRENT and Intelligence Progress recovery after merge;
+- no model factual authority, no second Brain/Learning/Graph layer and no synthetic Q&A → economic-learning promotion.
+
+Ask Conversational Continuity v0.2 is **PRODUCTION GREEN / CLOSED**. Reopen only if fresh live evidence proves regression.
 
 ---
 
