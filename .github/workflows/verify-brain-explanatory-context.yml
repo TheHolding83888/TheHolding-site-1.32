@@ -1,0 +1,175 @@
+name: Verify Brain · Explanatory Context
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/explanatory/**'
+      - 'intelligence/brain-reasoning-engine.mjs'
+      - 'intelligence/brain-upstream-guard.mjs'
+      - 'intelligence/brain-policy.json'
+      - 'intelligence/brain-chatgpt-bridge.mjs'
+      - 'intelligence/brain-chatgpt-bridge-policy.json'
+      - 'intelligence/brain-chatgpt-bridge-schema.json'
+      - 'intelligence/cognitive-stack-verifier.mjs'
+      - 'intelligence/cognitive-stack-release.json'
+      - '.github/workflows/update-brain-intelligence.yml'
+      - '.github/workflows/verify-brain-explanatory-context.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout reviewed repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Static preflight
+        run: |
+          set -euo pipefail
+          REQUIRED=(
+            intelligence/explanatory/explanatory-context.json
+            intelligence/brain-reasoning-engine.mjs
+            intelligence/brain-upstream-guard.mjs
+            intelligence/brain-policy.json
+            intelligence/brain-chatgpt-bridge.mjs
+            intelligence/brain-chatgpt-bridge-policy.json
+            intelligence/brain-chatgpt-bridge-schema.json
+            intelligence/cognitive-stack-verifier.mjs
+            intelligence/cognitive-stack-release.json
+            intelligence/change-intelligence.json
+            intelligence/system-memory.json
+            security/security-intelligence.json
+            security/security-memory.json
+          )
+          for f in "${REQUIRED[@]}"; do test -s "$f"; done
+          node --check intelligence/brain-reasoning-engine.mjs
+          node --check intelligence/brain-upstream-guard.mjs
+          node --check intelligence/brain-chatgpt-bridge.mjs
+          node --check intelligence/cognitive-stack-verifier.mjs
+          node intelligence/cognitive-release-guard.mjs
+
+      - name: Build Grounded Brain locally
+        run: node intelligence/brain-reasoning-engine.mjs
+
+      - name: Verify Explanatory grounding and causal boundary
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { verifyGroundedBrainUpstreams, UPSTREAM_GUARD_VERSION } from './intelligence/brain-upstream-guard.mjs';
+
+          const brain = JSON.parse(fs.readFileSync('intelligence/brain-intelligence.json', 'utf8'));
+          const upstream = verifyGroundedBrainUpstreams({ brain, requireFreshFlag: true });
+          if (upstream.version !== '0.2-exact-canonical-source-binding-explanatory') {
+            throw new Error(`Unexpected upstream guard: ${upstream.version}`);
+          }
+          if (upstream.version !== UPSTREAM_GUARD_VERSION || upstream.sourceCount !== 5) {
+            throw new Error('Five-source exact upstream vector missing');
+          }
+          const exp = upstream.sources.find(x => x.key === 'explanatory');
+          if (!exp || exp.file !== 'intelligence/explanatory/explanatory-context.json' || exp.exactByteMatch !== true) {
+            throw new Error('Explanatory exact-byte upstream binding missing');
+          }
+
+          const q = brain.questions?.protocolAprContext;
+          if (q?.status !== 'context-available-causal-attribution-unresolved') {
+            throw new Error('Protocol APR context not available in Brain');
+          }
+          if (q?.causalAttribution !== 'unresolved' || q?.primaryDriver !== null) {
+            throw new Error('Brain promoted unproved causal attribution');
+          }
+          if (!Number.isFinite(Number(q?.reportableMeasuredContext?.fxnLocked)) ||
+              !Number.isFinite(Number(q?.reportableMeasuredContext?.totalVeFxn))) {
+            throw new Error('Measured protocol drivers missing from Brain');
+          }
+          const whatChangedExp = (brain.questions?.whatChanged?.evidence ?? []).filter(ev =>
+            ev.source === 'intelligence/explanatory/explanatory-context.json' &&
+            ev.pointer === '/explanations/protocolAprChangeContext'
+          );
+          if (whatChangedExp.length !== 1 || whatChangedExp[0].sourceSha256 !== exp.sha256) {
+            throw new Error('Explanatory evidence missing from Brain handoff surface');
+          }
+          if ((brain.reasoningCases ?? []).length > 25) throw new Error('Reasoning case capacity expanded unexpectedly');
+          if (brain.constraints?.actionMode !== 'proposal-only' || brain.constraints?.autonomousCapitalActionAllowed !== false) {
+            throw new Error('Brain authority regression');
+          }
+          console.log('BRAIN EXPLANATORY CONTEXT PASS', {
+            sources: upstream.sourceCount,
+            protocolContext: q.status,
+            causalAttribution: q.causalAttribution,
+            primaryDriver: q.primaryDriver,
+            reasoningCases: brain.reasoningCases.length,
+          });
+          NODE
+
+      - name: Build exact-upstream Bridge locally
+        run: |
+          set -euo pipefail
+          node intelligence/brain-chatgpt-bridge.mjs --self-test
+          node intelligence/brain-chatgpt-bridge.mjs
+          node intelligence/brain-chatgpt-bridge.mjs --verify-current
+
+      - name: Verify Explanatory evidence reaches Bridge
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const bridge = JSON.parse(fs.readFileSync('intelligence/brain-chatgpt-bridge.json', 'utf8'));
+          const report = JSON.parse(fs.readFileSync('intelligence/brain-chatgpt-bridge-eval.json', 'utf8'));
+          if (report.status !== 'pass') throw new Error('Bridge evaluation failed');
+          if (bridge.grounding?.upstreamValidation?.sourceCount !== 5) {
+            throw new Error('Bridge does not validate five Brain upstream sources');
+          }
+          const expEvidence = (bridge.evidenceCatalog ?? []).filter(ev =>
+            ev.source === 'intelligence/explanatory/explanatory-context.json' &&
+            ev.pointer === '/explanations/protocolAprChangeContext'
+          );
+          if (expEvidence.length !== 1) throw new Error('Explanatory evidence absent or duplicated in Bridge');
+          if (bridge.constraints?.executionAllowed !== false ||
+              bridge.constraints?.apiRequired !== false ||
+              bridge.constraints?.modelCallPerformed !== false) {
+            throw new Error('Bridge authority/cost boundary regression');
+          }
+          console.log('BRIDGE EXPLANATORY CONTEXT PASS', {
+            upstreamSources: bridge.grounding.upstreamValidation.sourceCount,
+            evidenceId: expEvidence[0].evidenceId,
+            noExecution: bridge.constraints.executionAllowed === false,
+          });
+          NODE
+
+      - name: Verify local Cognitive Stack coherence
+        run: |
+          set -euo pipefail
+          node intelligence/cognitive-stack-verifier.mjs
+          node intelligence/cognitive-stack-verifier.mjs --verify-current
+          node - <<'NODE'
+          const fs = require('fs');
+          const stack = JSON.parse(fs.readFileSync('intelligence/cognitive-stack-state.json', 'utf8'));
+          if (stack.chain?.groundedBrain?.exactCanonicalUpstreamBinding !== true) {
+            throw new Error('Cognitive Stack lost exact Brain upstream binding');
+          }
+          if (stack.chain?.chatgptBridge?.exactCanonicalUpstreamBinding !== true) {
+            throw new Error('Cognitive Stack lost exact Bridge upstream binding');
+          }
+          if (stack.operatingContract?.executionAuthority !== 'none') {
+            throw new Error('Cognitive Stack execution authority regression');
+          }
+          console.log('COGNITIVE STACK EXPLANATORY INTEGRATION PASS', {
+            status: stack.status,
+            ready: stack.readyForManualInterpretation,
+            chainHash: stack.integrity?.chainHash,
+          });
+          NODE
+          git diff --check
