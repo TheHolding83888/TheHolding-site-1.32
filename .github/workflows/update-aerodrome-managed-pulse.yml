@@ -86,12 +86,16 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
+          const crypto=require('crypto');
           const x=JSON.parse(fs.readFileSync('/tmp/aerodrome-managed-pulse.json','utf8'));
           const o=x.latest;
+          const graphBytes=fs.readFileSync('intelligence/economic-graph/economic-graph.json');
+          const graphHash=crypto.createHash('sha256').update(graphBytes).digest('hex');
           if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.engineVersion!=='0.1-defitea-managed-venft-same-block-pulse')throw new Error('Pulse version mismatch');
           if(x.status!=='shadow-measured-not-promoted')throw new Error('Pulse shadow status missing');
           if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none'||x.authority?.promotionAuthority!=='none')throw new Error('Pulse authority regression');
           if(Number(x.sourceBinding?.canonicalCohortCountAtObservation)!==2||x.sourceBinding?.canonicalCohortCountUnchanged!==true)throw new Error('Pulse changed canonical cohort authority');
+          if(x.sourceBinding?.economicGraphSha256!==graphHash||o?.provenance?.economicGraphSha256!==graphHash)throw new Error('Pulse not cryptographically bound to exact Economic Graph bytes');
           if(!o||o.chain!=='Base'||o.identity?.companyRegistry!=='004'||o.identity?.managedTokenId!=='10298'||o.identity?.depositorTokenId!=='103935')throw new Error('Defitea managed veNFT identity mismatch');
           if(o.provenance?.sameBlockRead!==true||Number(o.provenance?.blockNumber)!==Number(o.blockNumber)||o.provenance?.blockHash!==o.blockHash)throw new Error('Pulse same-block provenance missing');
           if(o.contracts?.voter!=='0x16613524e02ad97eDfeF371bC883F2F5d6C480A5'||o.contracts?.votingEscrow!=='0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4')throw new Error('Aerodrome core contract authority drift');
@@ -113,6 +117,7 @@ jobs:
             gaugeClaimableAero:o.aggregates.totalGaugeClaimableAero,
             gaugeWeeklyEmissionAero:o.aggregates.totalGaugeWeeklyEmissionRateAero,
             lockedManagedAero:o.depositorManagedRewards.lockedAeroAmount,
+            graphHash,
             primaryDriver:o.epistemic.primaryDriver,
             promotionAuthority:o.epistemic.promotionAuthority,
             executionAuthority:x.authority.executionAuthority
@@ -129,7 +134,9 @@ jobs:
         run: |
           set -euo pipefail
           GENERATED="intelligence/economic-graph/aerodrome-managed-pulse.json"
+          GRAPH="intelligence/economic-graph/economic-graph.json"
           test -s "$GENERATED"
+          test -s "$GRAPH"
           git config user.name "The Holding Aerodrome Pulse"
           git config user.email "aerodrome-pulse@theholding.ai"
           git add "$GENERATED"
@@ -145,16 +152,55 @@ jobs:
           fi
           git commit -m "intelligence: refresh aerodrome managed pulse"
 
-          for attempt in 1 2 3; do
+          artifact_graph_hash() {
+            node - "$GENERATED" <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          process.stdout.write(String(x.sourceBinding?.economicGraphSha256 || ''));
+          NODE
+          }
+
+          remote_graph_hash() {
+            git show "origin/main:$GRAPH" | sha256sum | awk '{print $1}'
+          }
+
+          # The live pulse can take >1 minute across the current voted-pool set.
+          # Preserve an already measured same-block observation across unrelated
+          # main churn. Re-measure only when the exact Economic Graph bytes that
+          # the artifact is cryptographically bound to have actually changed.
+          for attempt in 1 2 3 4 5 6; do
             git fetch origin main
+            ARTIFACT_GRAPH_HASH="$(artifact_graph_hash)"
+            REMOTE_GRAPH_HASH="$(remote_graph_hash)"
+            if [ -z "$ARTIFACT_GRAPH_HASH" ] || [ -z "$REMOTE_GRAPH_HASH" ]; then
+              echo "ERROR: missing Aerodrome Pulse / Economic Graph binding hash"
+              exit 1
+            fi
+
             if ! git rebase origin/main; then
               git rebase --abort || true
               echo "Aerodrome Pulse publish conflict; refusing to guess."
               exit 1
             fi
-            node intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
-            git add "$GENERATED"
-            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+
+            if [ "$ARTIFACT_GRAPH_HASH" != "$REMOTE_GRAPH_HASH" ]; then
+              echo "Economic Graph changed since Pulse measurement; rebuilding against reviewed latest main."
+              node intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
+              git add "$GENERATED"
+              if git diff --cached --quiet; then
+                echo "ERROR: Graph changed but Pulse rebuild produced no staged update"
+                exit 1
+              fi
+              git commit --amend --no-edit
+              continue
+            fi
+
+            LOCAL_GRAPH_HASH="$(sha256sum "$GRAPH" | awk '{print $1}')"
+            if [ "$LOCAL_GRAPH_HASH" != "$ARTIFACT_GRAPH_HASH" ]; then
+              echo "ERROR: local Graph bytes diverged from Pulse source binding after rebase"
+              exit 1
+            fi
+
             if git push origin HEAD:main; then
               git fetch origin main
               git show origin/main:"$GENERATED" > /tmp/remote-aerodrome-pulse.json
@@ -163,13 +209,14 @@ jobs:
               const x=JSON.parse(fs.readFileSync('/tmp/remote-aerodrome-pulse.json','utf8'));
               if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.status!=='shadow-measured-not-promoted')throw new Error('Remote pulse version/status mismatch');
               if(x.authority?.executionAuthority!=='none'||x.authority?.promotionAuthority!=='none')throw new Error('Remote pulse authority regression');
+              if(x.latest?.provenance?.sameBlockRead!==true||x.latest?.provenance?.economicGraphSha256!==x.sourceBinding?.economicGraphSha256)throw new Error('Remote pulse source/same-block provenance mismatch');
               if(x.latest?.epistemic?.primaryDriver!==null)throw new Error('Remote pulse unearned primaryDriver');
               console.log('Verified Aerodrome Managed Strategy Pulse on remote main.');
               NODE
               exit 0
             fi
-            echo "Main moved during Aerodrome Pulse push; retrying ($attempt/3)..."
-            sleep $((attempt * 2))
+            echo "Main moved during fast Aerodrome Pulse push; retrying without re-measure unless Graph changed ($attempt/6)..."
+            sleep $attempt
           done
-          echo "Aerodrome Pulse publish failed after 3 attempts."
+          echo "Aerodrome Pulse publish failed after 6 bounded attempts."
           exit 1
