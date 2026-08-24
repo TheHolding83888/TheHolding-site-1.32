@@ -1,0 +1,68 @@
+name: "Verify Economic Graph · Live Dual-Cohort Build"
+
+on:
+  pull_request:
+    paths:
+      - "intelligence/economic-graph/**"
+      - "productivity/fxn-locker-apr-guard.mjs"
+      - "companies/productivity-data.json"
+      - ".github/workflows/update-economic-graph.yml"
+      - ".github/workflows/verify-economic-graph-live-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout reviewed repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Install live probe dependencies
+        working-directory: productivity
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npx playwright install chromium
+
+      - name: Build exact production graph against live protocol state
+        shell: bash
+        run: |
+          set -euo pipefail
+          TMP="$(mktemp)"
+          ECONOMIC_GRAPH_FILE="$TMP" node intelligence/economic-graph/economic-graph.mjs
+          node - "$TMP" <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const fx=x.cohorts?.['defitea-fxn-vefxn']?.latest?.observation;
+          const curve=x.cohorts?.['defitea-curve-vecrv']?.latest?.observation;
+          if(x.engineVersion!=='0.2-defitea-fxn-curve-multi-cohort')throw new Error('Economic Graph engine mismatch');
+          if(x.coverage?.status!=='partial-two-cohort'||Number(x.coverage?.cohortCount)!==2)throw new Error('Two-cohort live build missing');
+          if(!fx||!curve)throw new Error('Live cohort missing');
+          if(Math.abs(Number(fx.aprParityDeltaPctPoints))>0.01)throw new Error('Live veFXN APR parity failed');
+          if(Math.abs(Number(curve.formulaParityDeltaPctPoints))>0.01)throw new Error('Live Curve formula parity failed');
+          if(fx.epistemic?.causalAttribution!=='unresolved'||fx.epistemic?.primaryDriver!==null)throw new Error('veFXN causal boundary regression');
+          if(curve.epistemic?.mechanicalAttribution!=='proven-within-apr-formula'||curve.epistemic?.causalAttribution!=='unresolved-beyond-formula'||curve.epistemic?.primaryDriver!==null)throw new Error('Curve epistemic boundary regression');
+          if(x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none')throw new Error('Authority regression');
+          console.log('LIVE DUAL-COHORT BUILD PASS',{
+            fxnApr:fx.liveObservedAprPct,
+            fxnCanonicalApr:fx.canonicalProductivityAprPct,
+            curveApr:curve.canonicalProductivityAprPct,
+            curveFormulaApr:curve.formulaReproducedAprPct,
+            cohortCount:x.coverage.cohortCount,
+            executionAuthority:x.authority.executionAuthority
+          });
+          NODE
+          rm -f "$TMP"
+          git diff --check
