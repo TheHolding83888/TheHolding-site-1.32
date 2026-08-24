@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 
-const ROOT = process.cwd();
 const OUT = 'intelligence/explanatory/explanatory-context.json';
 const COMPARATIVE = 'intelligence/comparative/comparative-intelligence.json';
 const INCOME = 'intelligence/income-performance/income-performance.json';
@@ -91,7 +90,6 @@ function companyExplanation(row) {
 
 const topAprExplained = companyExplanation(topApr);
 const topOutputExplained = companyExplanation(topOutput);
-
 const outputGapUsd = round(topOutput.annualizedReferenceOutputUsd - topApr.annualizedReferenceOutputUsd, 8);
 const productiveCapitalMultiple = round(topOutput.productiveCapitalUsd / topApr.productiveCapitalUsd, 6);
 const aprDifferencePctPoints = round(topOutput.referenceAprPct - topApr.referenceAprPct, 6);
@@ -104,7 +102,6 @@ const monetraContributors = monetraRows.map(r => ({
   shareOfMeasuredIncomePct: pct(r.latestMeasuredIncomeUsd, latestIncomeTotal),
   interpretation: 'share of the latest measured checkpoint-interval Embedded Yield only'
 }));
-
 const topMonetra = monetraContributors[0];
 const top3Income = monetraContributors.slice(0, 3).reduce((a, r) => a + Number(r.latestMeasuredIncomeUsd || 0), 0);
 
@@ -113,7 +110,7 @@ const netPnl = income.performance?.netMarketPnl;
 const stablePriceEffectUsd = Number(netPnl?.stablePriceEffectUsd);
 const reproducedNetPnl = round(Number(strategyPerf?.sinceInceptionUsd) + stablePriceEffectUsd, 8);
 
-const protocolAprContext = {
+const protocolAprChangeContext = {
   question: 'What measured protocol-economic context is available around the current veFXN Reference APR, and can it prove why APR changed?',
   status: 'context-available-causal-attribution-unresolved',
   coverage: {
@@ -190,18 +187,8 @@ const state = {
     methodologyMutationAuthority: false
   },
   sourceState: {
-    comparative: {
-      file: COMPARATIVE,
-      version: comparative.version,
-      generatedAt: comparative.generatedAt,
-      sha256: sha256(COMPARATIVE)
-    },
-    incomePerformance: {
-      file: INCOME,
-      version: income.version,
-      generatedAt: income.generatedAt,
-      sha256: sha256(INCOME)
-    },
+    comparative: { file: COMPARATIVE, version: comparative.version, generatedAt: comparative.generatedAt, sha256: sha256(COMPARATIVE) },
+    incomePerformance: { file: INCOME, version: income.version, generatedAt: income.generatedAt, sha256: sha256(INCOME) },
     economicGraph: {
       file: ECONOMIC_GRAPH,
       version: economicGraph.version,
@@ -220,9 +207,9 @@ const state = {
       decomposition: {
         higherOutputCompany: topOutput.name,
         higherAprCompany: topApr.name,
-        outputGapUsd: outputGapUsd,
+        outputGapUsd,
         productiveCapitalMultipleVsTopAprCompany: productiveCapitalMultiple,
-        aprDifferencePctPoints: aprDifferencePctPoints,
+        aprDifferencePctPoints,
         explanation: `${topOutput.name} has lower Reference APR than ${topApr.name} but more productive capital. Because annualized Reference Output = productive capital × Reference APR, the larger productive-capital base more than offsets the APR gap.`
       },
       causalClass: 'definition-mechanical'
@@ -337,8 +324,8 @@ console.log('Explanatory Context v0.2 built', {
   outputGapUsd,
   topMonetraContributor: topMonetra?.protocol,
   monetraNetPnlReproduced: reproducedNetPnl,
-  protocolAprContext: protocolAprContext.status,
-  economicGraphObservation: protocolAprContext.provenance.observationId,
+  protocolAprContext: protocolAprChangeContext.status,
+  economicGraphObservation: protocolAprChangeContext.provenance.observationId,
   executionAuthority: state.authority.executionAuthority,
   causalClaimAuthority: state.authority.causalClaimAuthority
 });
