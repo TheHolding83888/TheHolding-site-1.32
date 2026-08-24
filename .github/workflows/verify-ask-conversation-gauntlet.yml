@@ -91,7 +91,7 @@ jobs:
           ASK_BASE_URL: http://127.0.0.1:8080/agents/
         run: node verification/ask-experience/output-guard-test-v0.1.mjs
 
-      - name: Generate 21-family unseen corpus
+      - name: Generate 22-family unseen corpus
         shell: bash
         run: |
           set -euo pipefail
@@ -103,10 +103,22 @@ jobs:
             artifacts/ask-experience-gauntlet-corpus.json
           node - <<'NODE'
           const fs=require('fs');
-          const x=JSON.parse(fs.readFileSync('artifacts/ask-experience-gauntlet-corpus.json','utf8'));
-          const expected=(x.variantsPerIntent||0)*21;
+          const corpusPath='artifacts/ask-experience-gauntlet-corpus.json';
+          const x=JSON.parse(fs.readFileSync(corpusPath,'utf8'));
+          const productivity=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const uncovered=Object.values(productivity.companies||{}).reduce((sum, company) => {
+            const value=Number(company?.uncoveredProductiveValue);
+            return sum + (Number.isFinite(value) && value > 0 ? value : 0);
+          }, 0);
+          const concentrationConfidence=uncovered > 0 ? 'partial' : 'measured';
+          for(const c of x.cases) {
+            if(c.baseIntentId==='concentration') c.expectedConfidence=concentrationConfidence;
+          }
+          fs.writeFileSync(corpusPath, JSON.stringify(x,null,2)+'\n');
+          const expected=(x.variantsPerIntent||0)*22;
           if(x.cases.length!==expected) throw new Error(`Gauntlet case count mismatch: ${x.cases.length} != ${expected}`);
           if(x.generatedStringsDurable!==false) throw new Error('Generated strings must remain ephemeral');
+          console.log(`Concentration confidence contract: ${concentrationConfidence}; uncovered productive capital=${uncovered}`);
           console.log(`Gauntlet corpus PASS: ${x.cases.length} cases; multi-turn=${x.cases.filter(c=>Array.isArray(c.session)).length}`);
           NODE
 
@@ -157,10 +169,18 @@ jobs:
           const run=JSON.parse(fs.readFileSync('artifacts/ask-experience-gauntlet.json','utf8'));
           const evaluation=JSON.parse(fs.readFileSync('artifacts/ask-experience-gauntlet-evaluation.json','utf8'));
           const harnessErrors=Number(run.summary?.harnessErrors||0);
-          const releaseGate=String(evaluation.summary?.releaseGate||'missing');
+          const s=evaluation.summary||{};
           if(harnessErrors!==0) throw new Error(`Gauntlet harness errors: ${harnessErrors}`);
-          if(releaseGate!=='PASS') throw new Error(`Gauntlet semantic release gate: ${releaseGate}`);
-          console.log('Conversation Gauntlet PASS: browser=clean semantic=PASS');
+          if(Number(s.falseMeasuredCount)!==0) throw new Error(`Gauntlet false-MEASURED: ${s.falseMeasuredCount}`);
+          if(Number(s.falseUnknownCount)!==0) throw new Error(`Gauntlet false-UNKNOWN: ${s.falseUnknownCount}`);
+          if(Number(s.sourceFitRate)!==1) throw new Error(`Gauntlet source fit: ${s.sourceFitRate}`);
+          if(Number(s.expectedConfidenceFitRate)!==1) throw new Error(`Gauntlet confidence fit: ${s.expectedConfidenceFitRate}`);
+          if(Number(s.requiredAnswerPatternFitRate)!==1) throw new Error(`Gauntlet answer-pattern fit: ${s.requiredAnswerPatternFitRate}`);
+          if(Number(s.strictFailureCount)!==0) throw new Error(`Gauntlet strict failures: ${s.strictFailureCount}`);
+          if(String(s.trustGate)!=='PASS') throw new Error(`Gauntlet trust gate: ${s.trustGate}`);
+          if(String(s.strictInvariantGate)!=='PASS') throw new Error(`Gauntlet strict invariant gate: ${s.strictInvariantGate}`);
+          if(String(s.releaseGate)!=='PASS') throw new Error(`Gauntlet semantic release gate: ${s.releaseGate}`);
+          console.log('Conversation Gauntlet PASS: browser=clean trust=PASS strict=PASS release=PASS');
           NODE
 
       - name: Upload Conversation Gauntlet evidence

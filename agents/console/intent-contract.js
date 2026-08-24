@@ -2,6 +2,7 @@
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root) root.HoldingIntentContract = api;
+  if (root?.document && typeof api.installBrowserAdapter === 'function') api.installBrowserAdapter(root);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
@@ -227,6 +228,200 @@
     return Object.freeze({ ok: true, version: VERSION, reason: null, detail: null, envelope });
   }
 
+  function boundedEditDistance(a, b) {
+    const left = String(a || '');
+    const right = String(b || '');
+    const rows = Array.from({ length: left.length + 1 }, () => Array(right.length + 1).fill(0));
+    for (let i = 0; i <= left.length; i++) rows[i][0] = i;
+    for (let j = 0; j <= right.length; j++) rows[0][j] = j;
+    for (let i = 1; i <= left.length; i++) {
+      for (let j = 1; j <= right.length; j++) {
+        const cost = left[i - 1] === right[j - 1] ? 0 : 1;
+        rows[i][j] = Math.min(rows[i - 1][j] + 1, rows[i][j - 1] + 1, rows[i - 1][j - 1] + cost);
+        if (i > 1 && j > 1 && left[i - 1] === right[j - 2] && left[i - 2] === right[j - 1]) {
+          rows[i][j] = Math.min(rows[i][j], rows[i - 2][j - 2] + 1);
+        }
+      }
+    }
+    return rows[left.length][right.length];
+  }
+
+  function repairQuestionShapeTypos(value) {
+    let text = String(value || '');
+    let normalized = text.toLowerCase().replace(/ё/g, 'е');
+
+    // The product name is a narrow semantic anchor, not a generic English word.
+    // Recover only `The <h...>` forms within two edits of `Holding`; this lets an
+    // inventory question survive a human typo without broad fuzzy routing.
+    text = text.replace(/\bthe\s+([A-Za-z]{5,9})\b/gi, (match, token) => {
+      const lower = token.toLowerCase();
+      if (!lower.startsWith('h') || Math.abs(lower.length - 'holding'.length) > 2) return match;
+      return boundedEditDistance(lower, 'holding') <= 2 ? match.replace(token, 'Holding') : match;
+    });
+    normalized = text.toLowerCase().replace(/ё/g, 'е');
+
+    // Comparison-operator recovery is fail-closed to an already explicit two-entity
+    // shape. It may restore a typo in `сравни`, but it cannot manufacture a second
+    // object or turn an ordinary single-entity question into a comparison.
+    const compareAnchors = normalized.match(/\b(?:monetra(?:\.eth)?|defitea|substantia|fructus|singul)\b|\bcompany\s*#?\s*0*\d+\b|\bкомпан(?:ия|ии|и)\s*#?\s*0*\d+\b/gi) || [];
+    if (compareAnchors.length >= 2) {
+      text = text.replace(/[А-Яа-яЁё]{4,7}/g, token => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        if (!lower.startsWith('с') || Math.abs(lower.length - 'сравни'.length) > 2) return token;
+        return boundedEditDistance(lower, 'сравни') <= 2 ? 'сравни' : token;
+      });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
+    }
+
+    // Fund-inventory recovery is allowed only when the canonical product anchor and
+    // an inventory-shaped question are both present. This keeps `фонд/фонды` typo
+    // repair local to the newly exercised conversation-context surface.
+    if (/(^|\s)(?:the\s+)?holding(?=\s|[?!.,]|$)/i.test(normalized)
+      && /(?:^|\s)(?:какие|есть|список|перечисли|which|have|has|list)(?=\s|[?!.,]|$)/i.test(normalized)) {
+      text = text.replace(/[А-Яа-яЁё]{4,6}/g, token => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        if (!lower.startsWith('ф')) return token;
+        const ranked = ['фонды', 'фонд']
+          .filter(target => Math.abs(target.length - lower.length) <= 2)
+          .map(target => ({ target, distance: boundedEditDistance(lower, target) }))
+          .filter(x => x.distance <= 2)
+          .sort((a, b) => a.distance - b.distance || a.target.localeCompare(b.target));
+        if (!ranked.length) return token;
+        if (ranked.length === 1 || ranked[0].distance < ranked[1].distance) return ranked[0].target;
+        return token;
+      });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
+    }
+
+    // Ordinal carry-over is repaired only in an explicit purpose/role question and
+    // only after Russian genitive markers `у/для`. The previous turn still supplies
+    // the entity set; this layer merely restores the ordinal surface form.
+    if (/(?:роль|задач|назначени|purpose|role|mission)/i.test(normalized)) {
+      const ordinals = ['первого', 'второго', 'третьего', 'четвертого', 'пятого'];
+      text = text.replace(/((?:^|\s)(?:у|для)\s+)([А-Яа-яЁё]{5,12})/gi, (match, prefix, token) => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        const ranked = ordinals
+          .filter(target => target[0] === lower[0] && Math.abs(target.length - lower.length) <= 2)
+          .map(target => ({ target, distance: boundedEditDistance(lower, target) }))
+          .filter(x => x.distance <= 2)
+          .sort((a, b) => a.distance - b.distance || a.target.localeCompare(b.target));
+        if (!ranked.length) return match;
+        if (ranked.length === 1 || ranked[0].distance < ranked[1].distance) return `${prefix}${ranked[0].target}`;
+        return match;
+      });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
+    }
+
+    // Economic layer comparisons are a high-value semantic boundary. Repair the
+    // relation word only inside a yield/performance-shaped question. Repair the
+    // adjective `реальная` only when it directly qualifies `доходность`; this keeps
+    // phrases such as `кто реально заработал больше` untouched so Realised Cash Flow
+    // continues to fail closed rather than being substituted with current APR.
+    if (/(?:apr|apy|yield|доходност|performance|прибыл|результат)/i.test(normalized)) {
+      text = text.replace(/[А-Яа-яЁё]{7,12}/g, token => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        if (!lower.startsWith('п') || Math.abs(lower.length - 'получается'.length) > 2) return token;
+        return boundedEditDistance(lower, 'получается') <= 2 ? 'получается' : token;
+      });
+      text = text.replace(/([А-Яа-яЁё]{6,10})(?=\s+[А-Яа-яЁё]*доходност)/gi, token => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        if (!lower.startsWith('р') || Math.abs(lower.length - 'реальная'.length) > 2) return token;
+        return boundedEditDistance(lower, 'реальная') <= 2 ? 'реальная' : token;
+      });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
+    }
+
+    // `brief` is a high-value owner-intent shape. For four-letter forms allow
+    // two edits (one omission + one transposition); for five-letter forms allow
+    // one. Longer English words are never touched, preventing broad fuzzy search.
+    if (/(^|\s)owner(?=\s|[?!.,]|$)/i.test(normalized)) {
+      text = text.replace(/\b[A-Za-z]{4,5}\b/g, token => {
+        const lower = token.toLowerCase();
+        if (!lower.startsWith('b')) return token;
+        const maxEdits = lower.length === 4 ? 2 : 1;
+        return boundedEditDistance(lower, 'brief') <= maxEdits ? 'brief' : token;
+      });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
+    }
+
+    if (/(^|\s)(?:the\s+)?holding(?=\s|[?!.,]|$)/i.test(normalized)) {
+      text = text.replace(/[А-Яа-яЁё]{4,5}/g, token => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        if (!lower.startsWith('ф')) return token;
+        if (boundedEditDistance(lower, 'фонды') <= 1) return 'фонды';
+        if (boundedEditDistance(lower, 'фонд') <= 1) return 'фонд';
+        return token;
+      });
+    }
+    return text;
+  }
+
+  // Question-shape normalization only. This is deliberately narrower than intent
+  // selection: it may repair a bounded syntactic form, but it cannot choose an
+  // answer, source, confidence class, evidence, methodology or action.
+  function normalizeQuestion(value) {
+    const original = String(value || '');
+    const repaired = repairQuestionShapeTypos(original);
+    const q = repaired
+      .toLowerCase()
+      .replace(/ё/g, 'е')
+      .replace(/[’']/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!q) return original;
+
+    // Named-fund questions are not inventory requests. Preserve their semantic
+    // shape so questions such as “what is Monetra fund?” stay on the entity route.
+    if (/(^|\s)(?:substantia|defitea|monetra|fructus|singul|субстанци[яи]|дефитеа|дефити|монетр[ауе]?|фруктус|сингул)(?=\s|[?!.,]|$)/i.test(q)) return repaired;
+    if (!/(^|\s)(?:the\s+)?holding(?=\s|[?!.,]|$)/i.test(q)) return repaired;
+
+    const enFund = /(^|\s)fund(?=\s|[?!.,]|$)/i.test(q);
+    const enInventory = /\b(?:have|has|list)\b/i.test(q) || /\bexist(?:s|ed|ing)?\b/i.test(q);
+    if (enFund && enInventory) return repaired.replace(/\bfund\b/i, 'funds');
+
+    const ruFund = /(^|\s)фонд(?=\s|[?!.,]|$)/i.test(q);
+    const ruInventory = /(^|\s)(?:есть|список|перечисли)(?=\s|[?!.,]|$)/i.test(q);
+    if (ruFund && ruInventory) return repaired.replace(/\bфонд\b/i, 'фонды');
+
+    return repaired;
+  }
+
+  function installBrowserAdapter(browserRoot) {
+    const install = () => {
+      const doc = browserRoot?.document;
+      const form = doc?.getElementById('askForm');
+      const input = doc?.getElementById('question');
+      if (!form || !input || form.dataset.intentContractNormalizer === VERSION) return;
+      form.dataset.intentContractNormalizer = VERSION;
+
+      // safety.js runs in capture phase before this adapter. The app router is
+      // registered later on the same form, so it receives the canonical semantic
+      // shape. No second answer path is created.
+      form.addEventListener('submit', event => {
+        const original = input.value.trim();
+        if (!original) return;
+        const canonical = normalizeQuestion(original);
+        if (canonical === original) return;
+        event.__holdingIntentNormalization = Object.freeze({ original, canonical });
+        input.value = canonical;
+      });
+
+      // Preserve what the person actually typed in the visible transcript. The
+      // canonicalized form exists only inside the question-understanding path.
+      doc.addEventListener('submit', event => {
+        const meta = event.__holdingIntentNormalization;
+        if (!meta || event.target !== form) return;
+        const userMessages = doc.querySelectorAll('#messages .msg.user');
+        const last = userMessages[userMessages.length - 1];
+        const spans = last?.querySelectorAll('span');
+        if (spans?.[1]?.textContent === meta.canonical) spans[1].textContent = meta.original;
+      });
+    };
+
+    if (browserRoot?.document?.readyState === 'loading') browserRoot.document.addEventListener('DOMContentLoaded', install, { once: true });
+    else install();
+  }
+
   function capability() {
     return Object.freeze({
       version: VERSION,
@@ -250,5 +445,5 @@
     });
   }
 
-  return Object.freeze({ VERSION, validate, capability });
+  return Object.freeze({ VERSION, validate, capability, normalizeQuestion, installBrowserAdapter });
 });

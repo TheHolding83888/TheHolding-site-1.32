@@ -1,5 +1,5 @@
 {
-  "version": "0.1-annotated-core-corpus",
+  "version": "0.2-annotated-core-plus-real-use-continuity",
   "origin": "synthetic-regression",
   "purpose": "Ground-truth evaluation for Ask The Holding. Correct UNKNOWN is success; false confident substitution is failure.",
   "primaryMetric": "falseMeasuredRate",
@@ -263,6 +263,41 @@
         "maturity score",
         "risk score",
         "company quality ranking"
+      ]
+    },
+    {
+      "id": "real-use-fund-purpose-followup-ru",
+      "origin": "owner-real-use-regression",
+      "session": [
+        "какой фонд основной?",
+        "какая задача у субстанции?"
+      ],
+      "expectedIntent": "fund-purpose",
+      "expectedConfidence": "measured",
+      "requiredSourceArtifact": "/substantia/",
+      "requiredAdditionalSourceArtifact": "/intelligence/project-memory/CURRENT.md",
+      "requiredAnswerPattern": "Substantia|Субстанц|резерв|базов|foundation",
+      "forbiddenSubstitution": [
+        "Reference APR",
+        "Reference APY",
+        "No sufficiently strong verified match"
+      ]
+    },
+    {
+      "id": "real-use-context-one-turn-expiry-ru",
+      "origin": "owner-real-use-regression",
+      "session": [
+        "какие фонды есть в The Holding?",
+        "что сейчас происходит?",
+        "а у первого какая задача?"
+      ],
+      "expectedIntent": "unresolved-after-context-expiry",
+      "expectedConfidence": "unknown",
+      "requiredSourceArtifact": null,
+      "requiredAnswerPattern": "не могу ответить|не знаю|достаточно точно",
+      "forbiddenSubstitution": [
+        "Substantia",
+        "резерв и базовый капитал"
       ]
     }
   ]
