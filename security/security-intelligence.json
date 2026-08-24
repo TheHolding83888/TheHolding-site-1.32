@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-24T18:22:25.261Z",
+  "generatedAt": "2026-08-24T18:30:53.704Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 38,
+    "medium": 39,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 601,
-    "bytesScanned": 13328051,
+    "bytesScanned": 13328194,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Sun, 23 Aug 2026 10:37:40 GMT",
+        "lastModified": "Mon, 24 Aug 2026 15:13:09 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,23 +55,23 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "15874b8dbcf2d88526fd28698bd12a03cb137e9fae9ef08f88996f94482d91ac",
+        "id": "c91106c3a048ed8f1c7e04b9c0a5e883dd2dc94051a5b57324235d313d3911f7",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": ".github/workflows/resume-economic-graph-after-code-change.yml",
+        "file": ".github/workflows/update-aerodrome-managed-pulse.yml",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/resume-economic-graph-after-code-change.yml.",
+        "summary": "Security-sensitive surface changed: .github/workflows/update-aerodrome-managed-pulse.yml.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "afbb4df891849e4989b998038c40cedcbb2baba0ba8da9dabd5d61e49b783a90",
-          "currentSha256": "ca40d2a742650352e9d6dcfea61b76687c796559586001256e25e7dc3334f658"
+          "previousSha256": "20d0498d9eb81221afa8028aac78072c57c39d91de3f1e3d50b32f8b2279240e",
+          "currentSha256": "1dd688214f46123936b3208587cba6063c69bd48b18b9a97fe94f1d7a66cfd14"
         }
       }
-    ]
+    ],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -95,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "c91106c3a048ed8f1c7e04b9c0a5e883dd2dc94051a5b57324235d313d3911f7",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-aerodrome-managed-pulse.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-aerodrome-managed-pulse.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "20d0498d9eb81221afa8028aac78072c57c39d91de3f1e3d50b32f8b2279240e",
+        "currentSha256": "1dd688214f46123936b3208587cba6063c69bd48b18b9a97fe94f1d7a66cfd14"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -707,12 +721,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "2191ca3d14f02084d02c017a6c76416d7b4b96c80a22597e9f3cbe5e076f7975",
+    "snapshotHash": "cebf524aecd86a1fde06d710ca5d462ccefbfbb9b0c00c87841bed03c30d5db7",
     "securityVault": {
-      "runCount": 478,
+      "runCount": 479,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-24T18-22-25-261Z-2191ca3d14.json",
-      "latestRecordHash": "cf1cf557e25e17e392cb4dd5383d91af5ed00da415b631608175add48345e9f0",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-24T18-30-53-704Z-cebf524aec.json",
+      "latestRecordHash": "e807c9add5501df0ff0812c74e572f87d31ef58ea44dfecf3047f2ccd86538bb",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
