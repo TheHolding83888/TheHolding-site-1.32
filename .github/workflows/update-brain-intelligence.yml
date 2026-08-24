@@ -39,6 +39,7 @@ jobs:
           test -s intelligence/system-memory.json
           test -s security/security-intelligence.json
           test -s security/security-memory.json
+          test -s intelligence/explanatory/explanatory-context.json
 
           node --check intelligence/brain-reasoning-engine.mjs
 
@@ -99,14 +100,44 @@ jobs:
               }
             }
           }
+
+          const explanatory = brain.grounding?.sources?.explanatory;
+          if (!explanatory || explanatory.file !== 'intelligence/explanatory/explanatory-context.json') {
+            throw new Error('Explanatory Context grounding source missing');
+          }
+          if (explanatory.freshness !== 'fresh' || !explanatory.sha256) {
+            throw new Error('Explanatory Context grounding is not fresh/exact');
+          }
+          const protocol = brain.questions?.protocolAprContext;
+          if (protocol?.status !== 'context-available-causal-attribution-unresolved') {
+            throw new Error('Brain protocol APR context missing');
+          }
+          if (protocol?.causalAttribution !== 'unresolved' || protocol?.primaryDriver !== null) {
+            throw new Error('Brain causal boundary weakened');
+          }
+          if (!Array.isArray(protocol?.evidence) || protocol.evidence.length !== 1) {
+            throw new Error('Brain protocol context evidence missing');
+          }
+          const protocolEvidence = protocol.evidence[0];
+          if (protocolEvidence.source !== 'intelligence/explanatory/explanatory-context.json' ||
+              protocolEvidence.pointer !== '/explanations/protocolAprChangeContext' ||
+              protocolEvidence.sourceSha256 !== explanatory.sha256) {
+            throw new Error('Brain protocol context is not exact-bound to Explanatory Context');
+          }
+          if (!(brain.questions?.whatChanged?.evidence ?? []).some(ev =>
+            ev.source === 'intelligence/explanatory/explanatory-context.json' &&
+            ev.pointer === '/explanations/protocolAprChangeContext' &&
+            ev.sourceSha256 === explanatory.sha256
+          )) {
+            throw new Error('Explanatory evidence is not exposed through Brain whatChanged handoff');
+          }
+
           if (history.version !== '0.1-brain-history') {
             throw new Error(`Unexpected history version: ${history.version}`);
           }
-
           if (!Array.isArray(history.observations)) {
             throw new Error('Brain history observations missing');
           }
-
           if (!brain.bridge?.inputCompositeHash || !brain.bridge?.snapshotHash) {
             throw new Error('Brain bridge hashes missing');
           }
@@ -115,6 +146,9 @@ jobs:
             mode: brain.mode,
             reasoningCases: brain.reasoningCases.length,
             evidence: brain.evidenceLedger.length,
+            protocolContext: protocol.status,
+            protocolCausalAttribution: protocol.causalAttribution,
+            explanatoryFreshness: explanatory.freshness,
             historyObservations: history.observationCount,
           });
           NODE
@@ -163,6 +197,7 @@ jobs:
             systemMemory: 'intelligence/system-memory.json',
             security: 'security/security-intelligence.json',
             securityMemory: 'security/security-memory.json',
+            explanatory: 'intelligence/explanatory/explanatory-context.json',
           };
 
           const sha256 = (text) =>
@@ -198,6 +233,10 @@ jobs:
 
           if (brain.constraints?.actionMode !== 'proposal-only') {
             throw new Error('Brain proposal-only invariant failed');
+          }
+          if (brain.questions?.protocolAprContext?.causalAttribution !== 'unresolved' ||
+              brain.questions?.protocolAprContext?.primaryDriver !== null) {
+            throw new Error('Protocol context causal boundary changed after Brain build');
           }
           for (const item of brain.reasoningCases ?? []) {
             if (!item.evidence?.length) {
