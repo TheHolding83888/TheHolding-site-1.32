@@ -1,16 +1,16 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-24T08:09:06.195Z
+Generated: 2026-08-24T12:38:31.130Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-24T08:09:06.001Z
-Brain snapshot: 8ac133260e1bf79fe7c28919afb9cc4544bfa3f5dde4de9e3fbe341a27889869
+Brain generated: 2026-08-24T12:38:30.990Z
+Brain snapshot: aac76a20961e28d62b49694d3afe8407a5ada5949db274ba96a5b1a576d1ae8b
 Cases: 25
-Evidence objects: 27
+Evidence objects: 28
 
 ## What changed
 
-Current canonical inputs contain 18 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s).
+Current canonical inputs contain 18 material Observer change(s), 0 new security finding event(s), and 1 resolved security finding event(s). Canonical protocol-economic context is available for f(x) veFXN Locker; measured driver context may be reported, while causal attribution remains unresolved.
 
 ## Active deterministic cases
 
@@ -27,7 +27,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-3153f8a7db6036e8
+Evidence: EV-4d1423cbdab63705
 
 ### 2. .github/workflows/production-deployment-smoke.yml
 
@@ -42,7 +42,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-a7021b28f0b84359
+Evidence: EV-317bc177345c8209
 
 ### 3. 38 current findings
 
@@ -57,7 +57,7 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-0222b30a5d967d75
+Evidence: EV-b38a3e0ce49718c3
 
 ### 4. projectx-whype-usdc
 

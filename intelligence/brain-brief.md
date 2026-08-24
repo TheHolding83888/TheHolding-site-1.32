@@ -1,13 +1,20 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-24T08:09:06.001Z
+Generated: 2026-08-24T12:38:30.990Z
 Mode: delta
 Status: watch
 
 ## 25 evidence-bound reasoning case(s) are active across economic and security memory.
 
 ### What changed
-Current canonical inputs contain 18 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s).
+Current canonical inputs contain 18 material Observer change(s), 0 new security finding event(s), and 1 resolved security finding event(s). Canonical protocol-economic context is available for f(x) veFXN Locker; measured driver context may be reported, while causal attribution remains unresolved.
+
+### Protocol economic context
+- Cohort: defitea.eth · f(x) · veFXN Locker
+- Canonical APR: 20.91%
+- Context status: context-available-causal-attribution-unresolved
+- Causal attribution: unresolved
+- Primary driver: unresolved
 
 ### Why it matters / What follows / What should be done
 
@@ -214,4 +221,5 @@ Current canonical inputs contain 18 material Observer change(s), 0 new security 
 ---
 
 This layer does not execute capital actions, mutate methodology, rewrite source data, or modify the workflow plane.
+Measured protocol-economic context remains context until a protocol-specific formula or onchain accounting identity proves causation.
 Every reasoning case is evidence-bound and proposal-only.
