@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - homepage/capital-os-identity-v2-5
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -34,173 +37,47 @@ jobs:
           root = root_path.read_text(encoding="utf-8")
 
           replacements = [
-              (
-                  '<title>TheHolding.ai - Transparent Onchain Investment Ecosystem | Bitcoin, DeFi & Venture</title>',
-                  '<title>TheHolding.ai — Capital Operating System for Onchain Companies</title>',
-                  'page title',
-              ),
-              (
-                  '<meta name="title" content="TheHolding.ai - Transparent Onchain Investment Ecosystem">',
-                  '<meta name="title" content="TheHolding.ai — Capital Operating System for Onchain Companies">',
-                  'meta title',
-              ),
-              (
-                  '<meta name="description" content="A transparent onchain capital system spanning Bitcoin, Ethereum, precious metals, DeFi yield, stable-capital and venture strategies, with live market data, onchain measurement and operating history.">',
-                  '<meta name="description" content="The Holding is a capital operating system for sovereign onchain companies and funds — connecting live onchain measurement, operating history, intelligence, memory and governance.">',
-                  'meta description',
-              ),
-              (
-                  '<meta name="keywords" content="Bitcoin DCA, DeFi yield, onchain funds, cryptocurrency investment, transparent portfolio, vote-escrowed tokens, veCRV, real yield, metaverse, sovereign capital, Ethereum staking, precious metals, institutional crypto">',
-                  '<meta name="keywords" content="capital operating system, onchain companies, onchain funds, sovereign onchain capital, onchain measurement, operating history, DeFi productivity, rewards intelligence, capital intelligence, governance">',
-                  'meta keywords',
-              ),
-              (
-                  '<meta property="og:title" content="TheHolding.ai - Sovereign Onchain Investment Ecosystem">',
-                  '<meta property="og:title" content="TheHolding.ai — Capital Operating System for Onchain Companies">',
-                  'og title',
-              ),
-              (
-                  '<meta property="og:description" content="Five-fund architecture: 50% foundation (BTC/ETH/Gold/Silver), 20% DeFi yield, 10% real-world assets, 15% stable yield, 5% venture. Fully transparent. Real-time TVL tracking.">',
-                  '<meta property="og:description" content="From five funds to a network of sovereign onchain companies — one system connecting capital, measurement, history and intelligence.">',
-                  'og description',
-              ),
-              (
-                  '<meta property="og:image:alt" content="TheHolding.ai — transparent onchain fund ecosystem">',
-                  '<meta property="og:image:alt" content="TheHolding.ai — capital operating system for onchain companies">',
-                  'og image alt',
-              ),
-              (
-                  '<meta name="twitter:title" content="TheHolding.ai - Transparent Onchain Investment Ecosystem">',
-                  '<meta name="twitter:title" content="TheHolding.ai — Capital Operating System for Onchain Companies">',
-                  'twitter title',
-              ),
-              (
-                  '<meta name="twitter:description" content="Onchain funds and companies measured through live capital, productivity, operating history and a shared intelligence layer.">',
-                  '<meta name="twitter:description" content="From five funds to a network of sovereign onchain companies — one system connecting capital, measurement, history and intelligence.">',
-                  'twitter description',
-              ),
-              (
-                  '<meta name="ai:title" content="TheHolding.ai - Transparent Onchain Investment Fund Ecosystem">',
-                  '<meta name="ai:title" content="TheHolding.ai — Capital Operating System for Onchain Companies">',
-                  'ai title',
-              ),
-              (
-                  '<meta name="ai:description" content="Five-fund onchain holding architecture: Substantia 50% (BTC/ETH/Gold/Silver), Defitea 20% (veToken DeFi yield), Fructus 10% (tokenised RWA), Monetra 15% (stablecoin yield), Singul 5% (frontier venture). Fully transparent with centrally refreshed market data and live TVL projection.">',
-                  '<meta name="ai:description" content="The Holding is a persistent intelligence, memory and governance layer for sovereign onchain companies and funds. It observes onchain capital, measures productivity and rewards, preserves operating history, and supports human decision-making without autonomous capital execution.">',
-                  'ai description',
-              ),
-              (
-                  '<meta name="ai:topic" content="Cryptocurrency Investment, DeFi Yield Farming, Bitcoin Dollar-Cost Averaging, Onchain Portfolio Management">',
-                  '<meta name="ai:topic" content="Capital Operating Systems, Onchain Companies, Onchain Funds, Onchain Measurement, Operating History, Intelligence, Memory, Governance">',
-                  'ai topic',
-              ),
-              (
-                  '<meta name="ai:category" content="Finance, Cryptocurrency, Investment Management, Decentralized Finance">',
-                  '<meta name="ai:category" content="Finance, Onchain Capital Infrastructure, Intelligence Systems, Decentralized Finance">',
-                  'ai category',
-              ),
-              (
-                  '<meta name="perplexity:summary" content="TheHolding.ai operates a transparent five-fund onchain holding architecture: Substantia, Defitea, Fructus, Monetra, and Singul — 50/20/15/10/5 allocation. Managed with institutional discipline and complete transparency.">',
-                  '<meta name="perplexity:summary" content="The Holding is a persistent intelligence, memory and governance layer for sovereign onchain companies and funds. It observes onchain capital, measures productivity and rewards, preserves operating history, and supports human decision-making without autonomous capital execution.">',
-                  'perplexity summary',
-              ),
-              (
-                  '<meta name="claude:content_type" content="investment_portfolio_dashboard">',
-                  '<meta name="claude:content_type" content="onchain_capital_operating_system">',
-                  'claude content type',
-              ),
-              (
-                  '<meta name="claude:primary_topics" content="Bitcoin accumulation strategy, DeFi yield optimization, Venture capital allocation">',
-                  '<meta name="claude:primary_topics" content="Onchain capital measurement, company operating history, productivity and rewards intelligence, persistent memory and governance">',
-                  'claude topics',
-              ),
-              (
-                  '<meta name="openai:category" content="Finance & Investment">',
-                  '<meta name="openai:category" content="Finance & Onchain Infrastructure">',
-                  'openai category',
-              ),
-              (
-                  '<meta name="openai:subcategory" content="Cryptocurrency Portfolio Management">',
-                  '<meta name="openai:subcategory" content="Capital Operating Systems">',
-                  'openai subcategory',
-              ),
-              (
-                  '"description": "Transparent onchain holding company with a five-fund architecture, building personal onchain companies.",',
-                  '"description": "Capital operating system for sovereign onchain companies and funds, connecting live onchain measurement, operating history, intelligence, memory and governance.",',
-                  'organization schema description',
-              ),
-              (
-                  '"description": "Transparent onchain investment ecosystem",',
-                  '"description": "Capital operating system for sovereign onchain companies and funds, connecting live onchain measurement, operating history, intelligence, memory and governance",',
-                  'website schema description',
-              ),
-              (
-                  '                    Non-custodial<br>\n                    Full control<br>\n                    Fully secured by your seed phrase',
-                  '                    Non-custodial<br>\n                    Built around verifiable onchain state<br>\n                    Your capital remains under your control',
-                  'build trust lines',
-              ),
-              (
-                  '                    2 clicks. Your company. Your rules.',
-                  '                    Your capital. Your company. Your operating history.',
-                  'build footnote',
-              ),
-              (
-                  '                    <p>The Holding is a cryptocurrency holding company — a public, fully transparent portfolio with roots tracing back to 2016. Capital is deployed across a five-fund architecture spanning fundamental assets, DeFi income, stable yield, real-world assets, and frontier venture.</p>\n                    <p>Every position is visible onchain, with live TVL tracked in real time. More than a portfolio, The Holding is a system — years of research, tested protocols, and refined risk ratios form the architecture behind everything we build.</p>',
-                  '                    <p><strong>The Holding is a capital operating system for sovereign onchain companies and funds.</strong></p>\n                    <p>It began with a five-fund capital architecture spanning fundamental assets, DeFi income, stable capital, real-world assets and frontier venture. That foundation has since evolved into a network of independently owned onchain companies connected by shared measurement, operating history and intelligence.</p>\n                    <p>The system observes capital, tracks productivity and rewards, preserves memory, and helps turn years of onchain activity into structured operating knowledge.</p>\n                    <p><strong>The capital remains sovereign. The intelligence compounds. Human authority remains in control.</strong></p>',
-                  'root what-is modal',
-              ),
+              ('<title>TheHolding.ai - Transparent Onchain Investment Ecosystem | Bitcoin, DeFi & Venture</title>', '<title>TheHolding.ai — Capital Operating System for Onchain Companies</title>', 'page title'),
+              ('<meta name="title" content="TheHolding.ai - Transparent Onchain Investment Ecosystem">', '<meta name="title" content="TheHolding.ai — Capital Operating System for Onchain Companies">', 'meta title'),
+              ('<meta name="description" content="A transparent onchain capital system spanning Bitcoin, Ethereum, precious metals, DeFi yield, stable-capital and venture strategies, with live market data, onchain measurement and operating history.">', '<meta name="description" content="The Holding is a capital operating system for sovereign onchain companies and funds — connecting live onchain measurement, operating history, intelligence, memory and governance.">', 'meta description'),
+              ('<meta name="keywords" content="Bitcoin DCA, DeFi yield, onchain funds, cryptocurrency investment, transparent portfolio, vote-escrowed tokens, veCRV, real yield, metaverse, sovereign capital, Ethereum staking, precious metals, institutional crypto">', '<meta name="keywords" content="capital operating system, onchain companies, onchain funds, sovereign onchain capital, onchain measurement, operating history, DeFi productivity, rewards intelligence, capital intelligence, governance">', 'meta keywords'),
+              ('<meta property="og:title" content="TheHolding.ai - Sovereign Onchain Investment Ecosystem">', '<meta property="og:title" content="TheHolding.ai — Capital Operating System for Onchain Companies">', 'og title'),
+              ('<meta property="og:description" content="Five-fund architecture: 50% foundation (BTC/ETH/Gold/Silver), 20% DeFi yield, 10% real-world assets, 15% stable yield, 5% venture. Fully transparent. Real-time TVL tracking.">', '<meta property="og:description" content="From five funds to a network of sovereign onchain companies — one system connecting capital, measurement, history and intelligence.">', 'og description'),
+              ('<meta property="og:image:alt" content="TheHolding.ai — transparent onchain fund ecosystem">', '<meta property="og:image:alt" content="TheHolding.ai — capital operating system for onchain companies">', 'og image alt'),
+              ('<meta name="twitter:title" content="TheHolding.ai - Transparent Onchain Investment Ecosystem">', '<meta name="twitter:title" content="TheHolding.ai — Capital Operating System for Onchain Companies">', 'twitter title'),
+              ('<meta name="twitter:description" content="Onchain funds and companies measured through live capital, productivity, operating history and a shared intelligence layer.">', '<meta name="twitter:description" content="From five funds to a network of sovereign onchain companies — one system connecting capital, measurement, history and intelligence.">', 'twitter description'),
+              ('<meta name="ai:title" content="TheHolding.ai - Transparent Onchain Investment Fund Ecosystem">', '<meta name="ai:title" content="TheHolding.ai — Capital Operating System for Onchain Companies">', 'ai title'),
+              ('<meta name="ai:description" content="Five-fund onchain holding architecture: Substantia 50% (BTC/ETH/Gold/Silver), Defitea 20% (veToken DeFi yield), Fructus 10% (tokenised RWA), Monetra 15% (stablecoin yield), Singul 5% (frontier venture). Fully transparent with centrally refreshed market data and live TVL projection.">', '<meta name="ai:description" content="The Holding is a persistent intelligence, memory and governance layer for sovereign onchain companies and funds. It observes onchain capital, measures productivity and rewards, preserves operating history, and supports human decision-making without autonomous capital execution.">', 'ai description'),
+              ('<meta name="ai:topic" content="Cryptocurrency Investment, DeFi Yield Farming, Bitcoin Dollar-Cost Averaging, Onchain Portfolio Management">', '<meta name="ai:topic" content="Capital Operating Systems, Onchain Companies, Onchain Funds, Onchain Measurement, Operating History, Intelligence, Memory, Governance">', 'ai topic'),
+              ('<meta name="ai:category" content="Finance, Cryptocurrency, Investment Management, Decentralized Finance">', '<meta name="ai:category" content="Finance, Onchain Capital Infrastructure, Intelligence Systems, Decentralized Finance">', 'ai category'),
+              ('<meta name="perplexity:summary" content="TheHolding.ai operates a transparent five-fund onchain holding architecture: Substantia, Defitea, Fructus, Monetra, and Singul — 50/20/15/10/5 allocation. Managed with institutional discipline and complete transparency.">', '<meta name="perplexity:summary" content="The Holding is a persistent intelligence, memory and governance layer for sovereign onchain companies and funds. It observes onchain capital, measures productivity and rewards, preserves operating history, and supports human decision-making without autonomous capital execution.">', 'perplexity summary'),
+              ('<meta name="claude:content_type" content="investment_portfolio_dashboard">', '<meta name="claude:content_type" content="onchain_capital_operating_system">', 'claude content type'),
+              ('<meta name="claude:primary_topics" content="Bitcoin accumulation strategy, DeFi yield optimization, Venture capital allocation">', '<meta name="claude:primary_topics" content="Onchain capital measurement, company operating history, productivity and rewards intelligence, persistent memory and governance">', 'claude topics'),
+              ('<meta name="openai:category" content="Finance & Investment">', '<meta name="openai:category" content="Finance & Onchain Infrastructure">', 'openai category'),
+              ('<meta name="openai:subcategory" content="Cryptocurrency Portfolio Management">', '<meta name="openai:subcategory" content="Capital Operating Systems">', 'openai subcategory'),
+              ('"description": "Transparent onchain holding company with a five-fund architecture, building personal onchain companies.",', '"description": "Capital operating system for sovereign onchain companies and funds, connecting live onchain measurement, operating history, intelligence, memory and governance.",', 'organization schema description'),
+              ('"description": "Transparent onchain investment ecosystem",', '"description": "Capital operating system for sovereign onchain companies and funds, connecting live onchain measurement, operating history, intelligence, memory and governance",', 'website schema description'),
+              ('                    Non-custodial<br>\n                    Full control<br>\n                    Fully secured by your seed phrase', '                    Non-custodial<br>\n                    Built around verifiable onchain state<br>\n                    Your capital remains under your control', 'build trust lines'),
+              ('                    2 clicks. Your company. Your rules.', '                    Your capital. Your company. Your operating history.', 'build footnote'),
+              ('                    <p>The Holding is a cryptocurrency holding company — a public, fully transparent portfolio with roots tracing back to 2016. Capital is deployed across a five-fund architecture spanning fundamental assets, DeFi income, stable yield, real-world assets, and frontier venture.</p>\n                    <p>Every position is visible onchain, with live TVL tracked in real time. More than a portfolio, The Holding is a system — years of research, tested protocols, and refined risk ratios form the architecture behind everything we build.</p>', '                    <p><strong>The Holding is a capital operating system for sovereign onchain companies and funds.</strong></p>\n                    <p>It began with a five-fund capital architecture spanning fundamental assets, DeFi income, stable capital, real-world assets and frontier venture. That foundation has since evolved into a network of independently owned onchain companies connected by shared measurement, operating history and intelligence.</p>\n                    <p>The system observes capital, tracks productivity and rewards, preserves memory, and helps turn years of onchain activity into structured operating knowledge.</p>\n                    <p><strong>The capital remains sovereign. The intelligence compounds. Human authority remains in control.</strong></p>', 'root what-is modal'),
           ]
 
           for old, new, label in replacements:
               root = replace_once(root, old, new, label)
 
-          financial_product = '''    <!-- Structured Data - Investment Fund -->
-              <script type="application/ld+json">
-              {
-                "@context": "https://schema.org",
-                "@type": "FinancialProduct",
-                "name": "TheHolding Fund Ecosystem",
-                "description": "Five-fund onchain holding architecture: Substantia (50% foundation — Bitcoin, Ethereum, precious metals), Defitea (20% DeFi cash-flow income), Monetra (15% stablecoin yield), Fructus (10% tokenised real-world assets), and Singul (5% frontier venture).",
-                "provider": {
-                  "@type": "Organization",
-                  "name": "TheHolding.ai"
-                },
-                "feesAndCommissionsSpecification": "No management fees, fully transparent onchain operations",
-                "annualPercentageRate": "13.9% realised annualised cash-flow APR (Defitea income layer, Jan\\u2013Jul 2026)",
-                "offers": {
-                  "@type": "Offer",
-                  "priceCurrency": "USD",
-                  "price": "0",
-                  "description": "Open investment framework, no entry fees"
-                }
-              }
-              </script>
-              
-          '''
-          root = replace_once(root, financial_product, '', 'financial product schema block')
+          start = root.index('    <!-- Structured Data - Investment Fund -->')
+          end = root.index('    <!-- Structured Data - WebSite -->', start)
+          product_block = root[start:end]
+          if product_block.count('"@type": "FinancialProduct"') != 1 or '13.9% realised annualised cash-flow APR' not in product_block:
+              raise SystemExit('financial product schema boundary mismatch')
+          root = root[:start] + root[end:]
 
-          financial_service = '''    <!-- Schema.org Structured Data -->
-              <script type="application/ld+json">
-              {
-                "@context": "https://schema.org",
-                "@type": "FinancialService",
-                "name": "TheHolding",
-                "alternateName": "TheHolding.ai",
-                "url": "https://theholding.ai",
-                "description": "Institutional-grade onchain fund ecosystem managing capital across Bitcoin, Ethereum, precious metals, DeFi yield protocols, and venture positions. 100% transparent track record.",
-                "foundingDate": "2016",
-                "sameAs": [
-                  "https://twitter.com/defitea_"
-                ],
-                "brand": {
-                  "@type": "Brand",
-                  "name": "TheHolding"
-                }
-              }
-              </script>
-              
-          '''
-          root = replace_once(root, financial_service, '', 'financial service schema block')
+          start = root.index('    <!-- Schema.org Structured Data -->')
+          end = root.index('    <link rel="preconnect" href="https://fonts.googleapis.com">', start)
+          service_block = root[start:end]
+          if service_block.count('"@type": "FinancialService"') != 1:
+              raise SystemExit('financial service schema boundary mismatch')
+          root = root[:start] + root[end:]
 
           root_path.write_text(root, encoding="utf-8")
 
@@ -216,7 +93,6 @@ jobs:
           investors = replace_once(investors, old_section, new_section, 'for-investors what-is section')
           investors_path.write_text(investors, encoding="utf-8")
 
-          # Fail closed on the legacy identity and stale aggregate product schema.
           combined = root + "\n" + investors
           forbidden = [
               'The Holding is a cryptocurrency holding company',
