@@ -1,0 +1,300 @@
+{
+  "version": "0.1-economic-graph",
+  "engineVersion": "0.1.1-defitea-fxn-semantic-parity",
+  "generatedAt": "2026-08-24T11:53:31.987Z",
+  "status": "partial-first-cohort",
+  "purpose": "Build a longitudinal evidence graph connecting company positions to protocol-economic drivers so existing Explanatory, Brain and Learning layers can reason from measured context instead of narrative guesses.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "allocationAuthority": false,
+    "recommendationAuthority": false,
+    "causalClaimAuthority": "none",
+    "methodologyMutationAuthority": false
+  },
+  "semantics": {
+    "observedNotPredicted": true,
+    "contextIsNotCause": true,
+    "correlationIsNotCausation": true,
+    "unknownIsNotZero": true,
+    "aprParityRequired": true,
+    "aprParityTolerancePctPoints": 0.01,
+    "nativeCadence": "weekly-economic-cycle-with-daily-observation-capability",
+    "currentCohort": "Defitea -> f(x) veFXN",
+    "driverPromotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path.",
+    "futurePatternRule": "Repeated patterns may become prospective signal candidates only through the existing frozen-baseline support/counterevidence methodology; never automatically become predictions."
+  },
+  "sourceState": {
+    "productivity": {
+      "file": "companies/productivity-data.json",
+      "version": "1.16",
+      "generatedAt": "2026-08-24T11:52:38.988Z",
+      "sha256": "193c6cdea23ea7976d697dd5c1fd376e758b6a093a87dd8e1be5f2cbd85ffa8b"
+    },
+    "fxnLocker": {
+      "url": "https://fx.aladdin.club/v2/lock",
+      "sourceType": "official-frontend-exact-locker-block",
+      "nativeCadence": "weekly",
+      "latestObservedAt": "2026-08-24T11:53:29.369Z"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "company:004",
+        "type": "company",
+        "label": "defitea.eth"
+      },
+      {
+        "id": "protocol:fx",
+        "type": "protocol",
+        "label": "f(x)"
+      },
+      {
+        "id": "mechanism:fxn-locker",
+        "type": "mechanism",
+        "label": "veFXN Locker"
+      },
+      {
+        "id": "asset:fxn",
+        "type": "asset",
+        "label": "FXN"
+      },
+      {
+        "id": "driver:fxn-locked",
+        "type": "driver",
+        "label": "FXN Locked"
+      },
+      {
+        "id": "driver:fxn-circulating-locked-share",
+        "type": "driver",
+        "label": "FXN Circulating Supply Locked %"
+      },
+      {
+        "id": "driver:total-vefxn",
+        "type": "driver",
+        "label": "Total veFXN"
+      },
+      {
+        "id": "driver:weekly-wsteth-revenue",
+        "type": "driver",
+        "label": "veFXN Revenue · wstETH"
+      }
+    ],
+    "edges": [
+      {
+        "from": "company:004",
+        "to": "mechanism:fxn-locker",
+        "relation": "holds-position-through",
+        "epistemicClass": "canonical-position-state"
+      },
+      {
+        "from": "mechanism:fxn-locker",
+        "to": "protocol:fx",
+        "relation": "belongs-to",
+        "epistemicClass": "protocol-mechanism"
+      },
+      {
+        "from": "mechanism:fxn-locker",
+        "to": "asset:fxn",
+        "relation": "locks",
+        "epistemicClass": "protocol-mechanism"
+      },
+      {
+        "from": "driver:fxn-locked",
+        "to": "mechanism:fxn-locker",
+        "relation": "describes",
+        "epistemicClass": "observed-context"
+      },
+      {
+        "from": "driver:fxn-circulating-locked-share",
+        "to": "mechanism:fxn-locker",
+        "relation": "describes",
+        "epistemicClass": "observed-context"
+      },
+      {
+        "from": "driver:total-vefxn",
+        "to": "mechanism:fxn-locker",
+        "relation": "describes",
+        "epistemicClass": "observed-context"
+      },
+      {
+        "from": "driver:weekly-wsteth-revenue",
+        "to": "mechanism:fxn-locker",
+        "relation": "economic-context-for",
+        "epistemicClass": "observed-context-not-yet-causal"
+      }
+    ]
+  },
+  "latest": {
+    "observation": {
+      "id": "fxn-locker:2026-08-24:bbab2d4ef32c13eb805f",
+      "observedAt": "2026-08-24T11:53:29.369Z",
+      "observationDateUTC": "2026-08-24",
+      "company": {
+        "registry": "004",
+        "name": "defitea.eth"
+      },
+      "protocol": "f(x)",
+      "mechanism": "veFXN Locker",
+      "asset": "FXN",
+      "positionUnits": 64.81,
+      "positionPriceUsd": 19.69773188,
+      "positionValueUsd": 1276.61,
+      "liveObservedAprPct": 20.91,
+      "canonicalProductivityAprPct": 20.91,
+      "canonicalProductivityStatus": "ok",
+      "aprParityDeltaPctPoints": 0,
+      "drivers": {
+        "fxnLocked": 533622.38,
+        "fxnCirculatingSupplyLockedPct": 77.07,
+        "totalVeFxn": 467423.35,
+        "cumulativeThisWeekWsteth": 0.33,
+        "previousWeekWsteth": 7.98,
+        "averageLockRaw": "3.50 Years",
+        "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
+      },
+      "source": {
+        "url": "https://fx.aladdin.club/v2/lock",
+        "sourceType": "official-frontend-exact-locker-block",
+        "sourceMetric": "FXN Locker economic vitals",
+        "rawBlockHash": "3d3ead0a811e68a5a14843ede9215278548ea902830a183637492865945cea6a",
+        "productivityFile": "companies/productivity-data.json",
+        "productivitySha256": "193c6cdea23ea7976d697dd5c1fd376e758b6a093a87dd8e1be5f2cbd85ffa8b"
+      },
+      "epistemic": {
+        "observationClass": "exact-official-protocol-observation",
+        "aprClass": "exact-official-locker-observation",
+        "driverClass": "exact-official-locker-context",
+        "causalAttribution": "unresolved",
+        "primaryDriver": null,
+        "rule": "Do not infer that revenue, lock supply, incentives or any other observed driver caused the APR until a mechanism-specific formula or onchain accounting identity proves the relationship."
+      }
+    },
+    "movement": {
+      "priorObservationId": "fxn-locker:2026-08-24:9941ce0fa7661c123603",
+      "elapsedHours": 0.0052,
+      "aprDeltaPctPoints": 0,
+      "fxnLockedDelta": 0,
+      "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
+      "totalVeFxnDelta": -0.05,
+      "currentWeekRevenueDeltaWsteth": 0,
+      "revenueDeltaComparable": true,
+      "revenueDeltaNonComparableReason": null
+    }
+  },
+  "observations": [
+    {
+      "id": "fxn-locker:2026-08-24:9941ce0fa7661c123603",
+      "observedAt": "2026-08-24T11:53:10.806Z",
+      "observationDateUTC": "2026-08-24",
+      "company": {
+        "registry": "004",
+        "name": "defitea.eth"
+      },
+      "protocol": "f(x)",
+      "mechanism": "veFXN Locker",
+      "asset": "FXN",
+      "positionUnits": 64.81,
+      "positionPriceUsd": 19.69773188,
+      "positionValueUsd": 1276.61,
+      "liveObservedAprPct": 20.91,
+      "canonicalProductivityAprPct": 20.91,
+      "canonicalProductivityStatus": "ok",
+      "aprParityDeltaPctPoints": 0,
+      "drivers": {
+        "fxnLocked": 533622.38,
+        "fxnCirculatingSupplyLockedPct": 77.07,
+        "totalVeFxn": 467423.4,
+        "cumulativeThisWeekWsteth": 0.33,
+        "previousWeekWsteth": 7.98,
+        "averageLockRaw": "3.50 Years",
+        "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
+      },
+      "source": {
+        "url": "https://fx.aladdin.club/v2/lock",
+        "sourceType": "official-frontend-exact-locker-block",
+        "sourceMetric": "FXN Locker economic vitals",
+        "rawBlockHash": "afb42c445385a10ec8abef014dd166b14667eba17632111654de03ada75e7939",
+        "productivityFile": "companies/productivity-data.json",
+        "productivitySha256": "193c6cdea23ea7976d697dd5c1fd376e758b6a093a87dd8e1be5f2cbd85ffa8b"
+      },
+      "epistemic": {
+        "observationClass": "exact-official-protocol-observation",
+        "aprClass": "exact-official-locker-observation",
+        "driverClass": "exact-official-locker-context",
+        "causalAttribution": "unresolved",
+        "primaryDriver": null,
+        "rule": "Do not infer that revenue, lock supply, incentives or any other observed driver caused the APR until a mechanism-specific formula or onchain accounting identity proves the relationship."
+      }
+    },
+    {
+      "id": "fxn-locker:2026-08-24:bbab2d4ef32c13eb805f",
+      "observedAt": "2026-08-24T11:53:29.369Z",
+      "observationDateUTC": "2026-08-24",
+      "company": {
+        "registry": "004",
+        "name": "defitea.eth"
+      },
+      "protocol": "f(x)",
+      "mechanism": "veFXN Locker",
+      "asset": "FXN",
+      "positionUnits": 64.81,
+      "positionPriceUsd": 19.69773188,
+      "positionValueUsd": 1276.61,
+      "liveObservedAprPct": 20.91,
+      "canonicalProductivityAprPct": 20.91,
+      "canonicalProductivityStatus": "ok",
+      "aprParityDeltaPctPoints": 0,
+      "drivers": {
+        "fxnLocked": 533622.38,
+        "fxnCirculatingSupplyLockedPct": 77.07,
+        "totalVeFxn": 467423.35,
+        "cumulativeThisWeekWsteth": 0.33,
+        "previousWeekWsteth": 7.98,
+        "averageLockRaw": "3.50 Years",
+        "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
+      },
+      "source": {
+        "url": "https://fx.aladdin.club/v2/lock",
+        "sourceType": "official-frontend-exact-locker-block",
+        "sourceMetric": "FXN Locker economic vitals",
+        "rawBlockHash": "3d3ead0a811e68a5a14843ede9215278548ea902830a183637492865945cea6a",
+        "productivityFile": "companies/productivity-data.json",
+        "productivitySha256": "193c6cdea23ea7976d697dd5c1fd376e758b6a093a87dd8e1be5f2cbd85ffa8b"
+      },
+      "epistemic": {
+        "observationClass": "exact-official-protocol-observation",
+        "aprClass": "exact-official-locker-observation",
+        "driverClass": "exact-official-locker-context",
+        "causalAttribution": "unresolved",
+        "primaryDriver": null,
+        "rule": "Do not infer that revenue, lock supply, incentives or any other observed driver caused the APR until a mechanism-specific formula or onchain accounting identity proves the relationship."
+      }
+    }
+  ],
+  "attribution": {
+    "status": "warming-unresolved-causality",
+    "primaryDriver": null,
+    "supportedDrivers": [
+      "FXN Locked",
+      "FXN Circulating Supply Locked %",
+      "Total veFXN",
+      "Cumulative This Week wstETH revenue",
+      "Previous Week wstETH revenue"
+    ],
+    "blockedQuestion": "why-protocol-apr-changed",
+    "unlockCondition": "reproducible f(x) Locker APR formula or onchain accounting identity binding APR to measured drivers"
+  },
+  "expansionQueue": [
+    "Curve / Convex gauge votes + incentives + fees",
+    "Votium / VoteMarket incentive markets",
+    "Aerodrome veAERO votes + voting incentives + fees + emissions",
+    "Aero sAERO Predictive Allocation outcomes when live",
+    "Pendle incentives / fees / liquidity",
+    "Yield Basis fees / emissions / liquidity",
+    "cross-protocol capital-flow edges and prospective pattern evaluation"
+  ]
+}
