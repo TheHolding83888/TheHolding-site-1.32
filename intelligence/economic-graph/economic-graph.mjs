@@ -22,7 +22,11 @@ const PRODUCTIVITY=process.env.PRODUCTIVITY_DATA_FILE || path.join(ROOT,'compani
 const MAX_OBSERVATIONS=4000;
 
 function readJson(file,required=true){
-  try{return JSON.parse(fs.readFileSync(file,'utf8'));}
+  try{
+    const text=fs.readFileSync(file,'utf8');
+    if(!required&&!text.trim())return null;
+    return JSON.parse(text);
+  }
   catch(error){if(!required&&error?.code==='ENOENT')return null;throw error;}
 }
 function sha256File(file){return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');}
