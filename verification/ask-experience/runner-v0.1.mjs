@@ -28,6 +28,19 @@ function promptsFor(test) {
   return [];
 }
 
+async function waitForBootReady(page) {
+  await page.waitForSelector('#askForm', { timeout: 15000 });
+  await page.waitForSelector('#question', { timeout: 15000 });
+  await page.waitForFunction(() => {
+    const status = String(document.querySelector('#statusText')?.textContent || '').trim();
+    const input = document.querySelector('#question');
+    return Boolean(input)
+      && status !== ''
+      && status !== 'CONNECTING'
+      && status !== 'VERIFIED STATE UNAVAILABLE';
+  }, { timeout: 30000 });
+}
+
 async function ask(page, question) {
   await page.waitForSelector('#question', { timeout: 15000 });
   const before = await page.$$eval('#messages [data-answer-contract-version]', els => els.length);
@@ -35,7 +48,12 @@ async function ask(page, question) {
     el.value = value;
     el.dispatchEvent(new Event('input', { bubbles: true }));
   }, question);
-  await page.$eval('#askForm', el => el.requestSubmit());
+  await page.waitForFunction(() => {
+    const input = document.querySelector('#question');
+    const button = document.querySelector('#askButton');
+    return Boolean(input && button && !input.disabled && !button.disabled && String(input.value || '').trim());
+  }, { timeout: 3000 });
+  await page.click('#askButton');
   await page.waitForFunction(count => document.querySelectorAll('#messages [data-answer-contract-version]').length > count, { timeout: 20000 }, before);
   await new Promise(resolve => setTimeout(resolve, 120));
   return page.$eval('#messages [data-answer-contract-version]:last-of-type', el => {
@@ -56,8 +74,20 @@ async function ask(page, question) {
   });
 }
 
+async function pageDiagnostic(page) {
+  return page.evaluate(() => ({
+    health: document.querySelector('#console')?.dataset?.health || null,
+    status: document.querySelector('#statusText')?.textContent || null,
+    summary: document.querySelector('#summaryText')?.textContent || null,
+    inputDisabled: document.querySelector('#question')?.disabled ?? null,
+    buttonDisabled: document.querySelector('#askButton')?.disabled ?? null,
+    inputValue: document.querySelector('#question')?.value || null,
+    answerCount: document.querySelectorAll('#messages [data-answer-contract-version]').length
+  })).catch(() => null);
+}
+
 const report = {
-  version: '0.1-unified-browser-experience-runner',
+  version: '0.4-click-path-browser-experience-runner',
   runId,
   origin,
   corpusVersion: corpus.version || null,
@@ -93,7 +123,7 @@ for (const test of corpus.cases || []) {
     url.searchParams.set('case', test.id || 'unknown');
     url.searchParams.set('origin', result.origin);
     await page.goto(url.toString(), { waitUntil: 'networkidle2', timeout: 30000 });
-    await page.waitForSelector('#askForm', { timeout: 15000 });
+    await waitForBootReady(page);
 
     for (const question of promptsFor(test)) {
       const started = Date.now();
@@ -102,12 +132,13 @@ for (const test of corpus.cases || []) {
         result.prompts.push({ question, ...response, latencyMs: Date.now() - started });
       } catch (error) {
         harnessErrors++;
-        result.prompts.push({ question, answer: '', answerContract: null, latencyMs: Date.now() - started, harnessError: String(error) });
+        result.prompts.push({ question, answer: '', answerContract: null, latencyMs: Date.now() - started, harnessError: String(error), diagnostic: await pageDiagnostic(page) });
       }
     }
   } catch (error) {
     harnessErrors++;
     result.fatal = String(error);
+    result.diagnostic = await pageDiagnostic(page);
   }
 
   report.cases.push(result);

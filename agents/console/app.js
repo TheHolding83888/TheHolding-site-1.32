@@ -94,48 +94,54 @@
   const isRu = text => /[а-яё]/i.test(text);
 
   // Conservative human-language typo recovery. This is intentionally NOT global fuzzy search.
-  // Only known entity/protocol/intent lexemes may be corrected, with edit distance <= 1.
+  // Only known entity/protocol/intent lexemes may be corrected; EN allows up to two edits for 5+ chars, RU remains stricter.
   const FUZZY_QUERY_LEXEMES = Object.freeze([
     'holding', 'monetra', 'defitea', 'yieldring', 'yield', 'basis', 'aerodrome', 'velodrome',
     'rewards', 'reward', 'claimable', 'claimables', 'companies', 'company', 'using', 'compare', 'productivity',
-    'performance', 'profit', 'embedded', 'current', 'first', 'where', 'registry', 'passport', 'learning', 'proposal', 'builder',
-    'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure', 'begin'
+    'performance', 'profit', 'embedded', 'current', 'first', 'where', 'registry', 'passport', 'learning', 'learned', 'proposal', 'builder',
+    'guardian', 'transaction', 'authority', 'allocation', 'concentration', 'exposure', 'begin', 'sharpe', 'future', 'price', 'week',
+    'status', 'owner', 'brief', 'measured', 'actual', 'result', 'percentages', 'decide', 'wallet', 'companion', 'understand',
+    'tracking', 'income', 'protocol', 'changes', 'latest', 'material', 'start', 'friday', 'surface', 'system', 'proposing', 'actually',
+    '1milliondollar', 'concentrated', 'know', 'before', 'march', 'began', 'started', 'explain', 'accrued', 'reference', 'higher',
+    'which', 'person', 'today', 'exact', 'guaranteed', 'probability', 'hacked', 'founding', 'purpose', 'maturity', 'reputation',
+    'changed', 'matters', 'pre-tracking', 'evidence', 'should'
   ]);
 
-  function editDistanceAtMostOne(a, b) {
-    if (a === b) return true;
-    if (Math.abs(a.length - b.length) > 1) return false;
-    if (a.length === b.length) {
-      const mismatch = [];
-      for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) mismatch.push(i);
-      if (mismatch.length <= 1) return true;
-      if (mismatch.length === 2) {
-        const [i, j] = mismatch;
-        return j === i + 1 && a[i] === b[j] && a[j] === b[i];
+  function editDistanceValue(a, b) {
+    if (a === b) return 0;
+    const rows = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+    for (let i = 0; i <= a.length; i++) rows[i][0] = i;
+    for (let j = 0; j <= b.length; j++) rows[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        rows[i][j] = Math.min(
+          rows[i - 1][j] + 1,
+          rows[i][j - 1] + 1,
+          rows[i - 1][j - 1] + cost
+        );
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+          rows[i][j] = Math.min(rows[i][j], rows[i - 2][j - 2] + 1);
+        }
       }
-      return false;
     }
-    const shorter = a.length < b.length ? a : b;
-    const longer = a.length < b.length ? b : a;
-    let i = 0, j = 0, edits = 0;
-    while (i < shorter.length && j < longer.length) {
-      if (shorter[i] === longer[j]) { i++; j++; continue; }
-      if (++edits > 1) return false;
-      j++;
-    }
-    return true;
+    return rows[a.length][b.length];
   }
 
   function fuzzyKnownLexemes(text) {
-    return String(text || '').replace(/[A-Za-z][A-Za-z0-9-]{3,}/g, token => {
+    return String(text || '').replace(/[A-Za-z0-9][A-Za-z0-9-]{3,}/g, token => {
+      if (!/[A-Za-z]/.test(token)) return token;
       const lower = token.toLowerCase();
       if (FUZZY_QUERY_LEXEMES.includes(lower)) return lower;
-      const matches = FUZZY_QUERY_LEXEMES.filter(candidate =>
-        candidate[0] === lower[0]
-        && Math.abs(candidate.length - lower.length) <= 1
-        && editDistanceAtMostOne(lower, candidate)
-      );
-      return matches.length === 1 ? matches[0] : token;
+      const maxEdits = lower.length >= 5 ? 2 : 1;
+      const ranked = FUZZY_QUERY_LEXEMES
+        .filter(candidate => candidate[0] === lower[0] && Math.abs(candidate.length - lower.length) <= maxEdits)
+        .map(candidate => ({ candidate, distance: editDistanceValue(lower, candidate), lengthDelta: Math.abs(candidate.length - lower.length) }))
+        .filter(x => x.distance <= maxEdits)
+        .sort((a, b) => a.distance - b.distance || a.lengthDelta - b.lengthDelta || a.candidate.localeCompare(b.candidate));
+      if (!ranked.length) return token;
+      if (ranked.length === 1 || ranked[0].distance < ranked[1].distance || (ranked[0].distance === ranked[1].distance && ranked[0].lengthDelta < ranked[1].lengthDelta)) return ranked[0].candidate;
+      return token;
     });
   }
 
@@ -143,24 +149,32 @@
     'монетра', 'монетру', 'монетре', 'дефити', 'дефитеа', 'йелд', 'елд', 'бейсис',
     'аэродром', 'велодром', 'ревардс', 'реварды', 'ревардсам', 'награды', 'компания',
     'компании', 'использует', 'используют', 'продуктивность', 'доходность', 'сравни',
-    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам', 'компани'
+    'транзакцию', 'транзу', 'приватник', 'приватника', 'клеймабл', 'клеймаблам', 'клаймабл', 'клаймаблам', 'компани',
+    'владелец', 'владельцу', 'владельца', 'бриф', 'точный', 'точно', 'цена', 'неделю', 'неделя', 'результат', 'измеренный',
+    'экспозиция', 'сконцентрированы', 'сконцентрирована', 'понимаешь', 'понимание', 'кошелек', 'компаньон', 'трекинг', 'изменения',
+    'изменилось', 'система', 'предлагает', 'научилась', 'компаниях', 'доходняк', 'такое', 'знать', 'важно', 'важный',
+    'какие', 'наградам', 'прибыль', 'начала', 'март', 'концентрацией', 'знает', 'выучил', 'трекинга', 'доход', 'через',
+    'протокол', 'протоколы', 'протоколам', 'протоколах', 'глубоко', 'текущая'
   ]);
 
   function fuzzyKnownRuLexemes(text) {
     return String(text || '').replace(/[А-Яа-яЁё]{3,}/g, token => {
       const lower = token.toLowerCase().replace(/ё/g, 'е');
       if (FUZZY_RU_QUERY_LEXEMES.includes(lower)) return lower;
-      const matches = FUZZY_RU_QUERY_LEXEMES.filter(candidate =>
-        candidate[0] === lower[0]
-        && Math.abs(candidate.length - lower.length) <= 1
-        && editDistanceAtMostOne(lower, candidate)
-      );
-      return matches.length === 1 ? matches[0] : token;
+      const maxEdits = lower.length >= 6 ? 2 : 1;
+      const ranked = FUZZY_RU_QUERY_LEXEMES
+        .filter(candidate => candidate[0] === lower[0] && Math.abs(candidate.length - lower.length) <= maxEdits)
+        .map(candidate => ({ candidate, distance: editDistanceValue(lower, candidate), lengthDelta: Math.abs(candidate.length - lower.length) }))
+        .filter(x => x.distance <= maxEdits)
+        .sort((a, b) => a.distance - b.distance || a.lengthDelta - b.lengthDelta || a.candidate.localeCompare(b.candidate));
+      if (!ranked.length) return token;
+      if (ranked.length === 1 || ranked[0].distance < ranked[1].distance || (ranked[0].distance === ranked[1].distance && ranked[0].lengthDelta < ranked[1].lengthDelta)) return ranked[0].candidate;
+      return token;
     });
   }
 
-  function canonicalizeHumanAliases(text) {
-    return fuzzyKnownLexemes(fuzzyKnownRuLexemes(String(text || '')))
+  function canonicalizeStaticAliases(text) {
+    return String(text || '')
       .replace(/монетра|монетру|монетре/gi, 'monetra')
       .replace(/дефити|дефитеа/gi, 'defitea')
       .replace(/(?:йелд|елд)\s+бейсис/gi, 'yield basis')
@@ -169,39 +183,51 @@
       .replace(/ревардс|реварды|ревардсам/gi, 'rewards')
       .replace(/приватник(?:а|у|ом|е|и)?/gi, 'private key')
       .replace(/к(?:лей|лай)мабл[а-я]*/gi, 'claimable')
-      .replace(/\bкомпани\b/gi, 'компании');
+      .replace(/(^|[^А-Яа-яЁё])компани(?=$|[^А-Яа-яЁё])/gi, '$1компании');
   }
 
-  const norm = text => canonicalizeHumanAliases(String(text || ''))
-    .replace(/\bholdng\b/gi, 'holding')
-    .replace(/\brewads\b/gi, 'rewards')
-    .replace(/\bcmpare\b/gi, 'compare')
-    .replace(/\b1milliondolar\b/gi, '1milliondollar')
-    .replace(/\bраскажи\b/gi, 'расскажи')
-    .replace(/апи/gi, 'apy')
-    .replace(/щас/gi, 'сейчас')
+  function canonicalizeHumanAliases(text) {
+    return canonicalizeStaticAliases(fuzzyKnownLexemes(fuzzyKnownRuLexemes(String(text || ''))));
+  }
+
+  const finalizeNorm = text => String(text || '')
     .toLowerCase()
     .replace(/ё/g, 'е')
     .replace(/[’']/g, '')
     .replace(/[^a-zа-я0-9.()$+-]+/gi, ' ')
     .trim();
+
+  const norm = text => finalizeNorm(canonicalizeHumanAliases(String(text || ''))
+    .replace(/\bholdng\b/gi, 'holding')
+    .replace(/\brewads\b/gi, 'rewards')
+    .replace(/\bcmpare\b/gi, 'compare')
+    .replace(/\b(?:fri|frdy)\b/gi, 'friday')
+    .replace(/\b1milliondolar\b/gi, '1milliondollar')
+    .replace(/\bраскажи\b/gi, 'расскажи')
+    .replace(/апи/gi, 'apy')
+    .replace(/щас/gi, 'сейчас'));
+
+  // Canonical protocol/entity/source strings are already trusted spellings.
+  // Never run typo-fuzzy normalization over them: doing so can mutate valid
+  // identifiers (for example Spark -> start) and create false semantic matches.
+  const canonicalNorm = text => finalizeNorm(canonicalizeStaticAliases(String(text || '')));
   const words = text => norm(text)
     .split(/\s+/)
     .filter(w => w.length > 2 && ![
       'что', 'это', 'как', 'про', 'расскажи', 'какая', 'какой', 'какие', 'сейчас', 'пожалуйста',
       'the', 'and', 'about', 'tell', 'what', 'which', 'current', 'please'
     ].includes(w));
-  const includesAny = (q, list) => list.some(x => q.includes(norm(x)));
+  const includesAny = (q, list) => list.some(x => q.includes(canonicalNorm(x)));
   const isConcentrationIntent = q => {
     const n = norm(q);
     return includesAny(n, [
       'concentration risk', 'concentration most visible', 'most concentrated', 'largest concentration',
       'protocol concentration', 'cross company concentration', 'cross-company concentration',
-      'biggest protocol exposure', 'where are we most concentrated',
-      'где система наиболее сконцентрирована', 'где мы наиболее сконцентрированы',
+      'biggest protocol exposure', 'biggest measured exposure', 'measured exposure', 'which protocol has the biggest measured exposure', 'where are we most concentrated',
+      'где система наиболее сконцентрирована', 'где мы наиболее сконцентрированы', 'где самая большая измеренная экспозиция', 'самая большая экспозиция',
       'где у нас самая большая концентрация', 'концентрация по протоколам',
       'что у нас с концентрацией', 'риск концентрации', 'концентрация риска'
-    ]) || ((n.includes('сконцентрир') || n.includes('концентрац')) && includesAny(n, ['где', 'самая', 'наиболее', 'больше', 'риск']));
+    ]) || ((n.includes('сконцентрир') || n.includes('концентрац')) && (includesAny(n, ['где', 'самая', 'наиболее', 'больше', 'риск', 'что у нас']) || n.includes('протокол')));
   };
 
   function answerArtifacts(source) {
@@ -421,7 +447,7 @@
     const secretRequest = /private\s+key|seed\s+phrase|recovery\s+phrase|mnemonic|secret\s+key/i.test(rawText)
       || /приватн.{0,12}ключ|приватник|закрыт.{0,12}ключ|ключ.{0,12}восстанов|сид.{0,8}фраз|мнемонич|фраз.{0,10}восстанов/i.test(rawText);
     const personalizedAdviceRequest = /(?:what|which).{0,24}(?:should|recommend).{0,20}(?:i|me).{0,16}(?:buy|sell|allocate)|exact\s+allocation.{0,20}(?:i|my|me)|what\s+should\s+i\s+buy/i.test(rawText)
-      || /(?:что|куда).{0,16}(?:мне|я).{0,16}(?:купить|продать|вложить|аллоцир)|точн.{0,12}аллокац.{0,20}(?:мне|мой)/i.test(rawText);
+      || /(?:что|куда).{0,16}(?:мне|я).{0,16}(?:купить|продать|вложить|аллоцир)|точн.{0,12}аллокац.{0,20}(?:мне|мой)|(?:скажи|подскажи).{0,24}(?:что|куда).{0,16}(?:купить|вложить).{0,30}(?:дол|процент)/i.test(rawText);
 
     const positiveExecutionClaim = /\b(?:i|we|the holding|this console|guardian|builder)\s+(?:can|may|will|is able to)\s+(?:directly\s+)?(?:sign|execute|move|transfer|trade|approve)\b/i.test(text)
       || /(?:я|мы|the holding|guardian|builder).{0,24}(?:могу|можем|может|умеет).{0,30}(?:подпис|исполн|двиг|перевод|торгов|одобр)/i.test(text);
@@ -708,9 +734,9 @@
   function protocolAliasesFor(key) { return key ? PROTOCOL_ALIASES[key] || [key] : []; }
 
   function engineScore(engine, query, key) {
-    const hay = norm([engine?.engineId, engine?.protocol, engine?.principalSymbol, engine?.sourceMetric].join(' '));
+    const hay = canonicalNorm([engine?.engineId, engine?.protocol, engine?.principalSymbol, engine?.sourceMetric].join(' '));
     let score = 0;
-    for (const alias of protocolAliasesFor(key)) if (hay.includes(norm(alias))) score += 5;
+    for (const alias of protocolAliasesFor(key)) if (hay.includes(canonicalNorm(alias))) score += 5;
     for (const token of words(query)) if (hay.includes(token)) score += 1;
     return score;
   }
@@ -726,9 +752,9 @@
   }
 
   function stableScore(pos, query, key) {
-    const hay = norm([pos?.protocol, pos?.chain, pos?.positionType, pos?.wrapperSymbol, pos?.underlyingSymbol, pos?.incomeMode].join(' '));
+    const hay = canonicalNorm([pos?.protocol, pos?.chain, pos?.positionType, pos?.wrapperSymbol, pos?.underlyingSymbol, pos?.incomeMode].join(' '));
     let score = 0;
-    for (const alias of protocolAliasesFor(key)) if (hay.includes(norm(alias))) score += 5;
+    for (const alias of protocolAliasesFor(key)) if (hay.includes(canonicalNorm(alias))) score += 5;
     for (const token of words(query)) if (hay.includes(token)) score += 1;
     return score;
   }
@@ -767,13 +793,12 @@
       const nn = norm(name);
       if (q.includes(nn)) score += 20;
       for (const alias of aliases[name] || []) if (q.includes(norm(alias))) score += 15;
-      for (const token of words(query)) if (nn.includes(token)) score += 2;
       if (score > bestScore) {
         best = { name, registry: state.registry.find(x => x.name === name) || null };
         bestScore = score;
       }
     }
-    return bestScore > 0 ? best : null;
+    return bestScore >= 15 ? best : null;
   }
 
   function companyAnswer(company, lang, query) {
@@ -862,13 +887,13 @@
   }
 
   function protocolCompaniesAnswer(key, lang) {
-    const aliases=protocolAliasesFor(key).map(norm);
+    const aliases=protocolAliasesFor(key).map(canonicalNorm);
     const names=[];
     for (const [name,c] of Object.entries(safeObject(state.productivity?.companies))) {
-      const hit=safeArray(c?.breakdown).some(x=>aliases.some(a=>norm([x?.engineId,x?.protocol,x?.principalSymbol].join(' ')).includes(a)));
+      const hit=safeArray(c?.breakdown).some(x=>aliases.some(a=>canonicalNorm([x?.engineId,x?.protocol,x?.principalSymbol].join(' ')).includes(a)));
       if (hit) names.push(name);
     }
-    if (state.stable?.company?.name && safeArray(state.stable?.positions).some(x=>aliases.some(a=>norm([x?.protocol,x?.wrapperSymbol,x?.underlyingSymbol].join(' ')).includes(a)))) names.push(state.stable.company.name);
+    if (state.stable?.company?.name && safeArray(state.stable?.positions).some(x=>aliases.some(a=>canonicalNorm([x?.protocol,x?.wrapperSymbol,x?.underlyingSymbol].join(' ')).includes(a)))) names.push(state.stable.company.name);
     const uniq=[...new Set(names)];
     state.lastEntity={kind:'protocol',key}; state.lastTopic='protocol:'+key;
     if (!uniq.length) return {text:lang==='ru'?'В текущих machine-readable данных не нашёл подтверждённых компаний для этого протокола.':'No verified companies for this protocol were found in the current machine-readable data.',source:'Live Productivity',confidenceHint:'unknown'};
@@ -1010,6 +1035,14 @@
         if (full && q.includes(full)) score += 30;
         if (short.length >= 4 && q.includes(short)) score += 20;
         for (const alias of special[name] || []) if (q.includes(norm(alias))) score += 20;
+        const registryIndex = state.registry.findIndex(x => x.name === name);
+        if (registryIndex >= 0) {
+          const ordinal = String(registryIndex + 1);
+          const ordinal3 = ordinal.padStart(3, '0');
+          for (const alias of [`company ${ordinal}`, `company ${ordinal3}`, `компания ${ordinal}`, `компания ${ordinal3}`]) {
+            if (q.includes(norm(alias))) score += 20;
+          }
+        }
         return { name, registry: state.registry.find(x => x.name === name) || null, score };
       })
       .filter(x => x.score > 0)
@@ -1132,7 +1165,7 @@ function learningAnswer(lang) {
     if (state.lastEntity?.kind === 'registry' && includesAny(q, ['list them', 'перечисли', 'список', 'show them'])) return registryAnswer(lang);
     if (state.lastEntity?.kind === 'protocol') {
       const key=state.lastEntity.key;
-      if (includesAny(q,['which companies','какие компании','кто использует','use it'])) return protocolCompaniesAnswer(key,lang);
+      if (includesAny(q,['which companies','какие компании','кто использует','use it','where do we have it','where is it','где он у нас','где это у нас','где у нас есть'])) return protocolCompaniesAnswer(key,lang);
       if (includesAny(q,['reference apr','apr','apy','yield','продуктивност'])) { const rows=findEngines(key); if (rows.length) return engineAnswer(rows,lang); }
     }
     if (!state.lastEntity || protocolGroup(query) || findCompany(query)) return null;
@@ -1142,7 +1175,7 @@ function learningAnswer(lang) {
       if (includesAny(q, ['reward', 'награ', 'claimable', 'accrued'])) return rewardsAnswer(query, lang, company);
       if (includesAny(q, ['embedded', 'встроенн', 'внутри позиции'])) return embeddedAnswer(query, lang, company);
       if (includesAny(q, ['entry', 'точка входа', 'цена входа', 'покупк'])) return entryAnswer(query, lang, company);
-      if (includesAny(q, ['доходност', 'apr', 'apy', 'yield', 'productivity', 'продуктивност'])) {
+      if (includesAny(q, ['доходност', 'доходняк', 'доход сейчас', 'apr', 'apy', 'yield', 'productivity', 'продуктивност', 'earning capacity'])) {
         if (company.name === 'Monetra.eth' && state.stable?.summary) return stableSummary(lang);
         return companyAnswer(company, lang, query);
       }
@@ -1316,14 +1349,18 @@ async function loadLazy(kind) {
       source: 'The Holding project canon'
     };
     if (includesAny(q, ['move my capital', 'move capital', 'двигать капитал', 'sign transaction', 'sign a transaction', 'signing transaction', 'sign tx', 'подписать транзак', 'execute trade', 'who has authority', 'кто имеет полномочия', 'authority right now'])) return authorityAnswer(lang);
-    if (includesAny(q, ['exact allocation', 'what should i buy', 'buy today', 'точн аллокац', 'что купить', 'купить сегодня'])) return {
+    if (includesAny(q, ['exact allocation', 'exact percentages', 'decide the allocation', 'decide allocation', 'allocation for me', 'decide the allocation for me', 'what should i buy', 'buy today', 'точн аллокац', 'точные проценты', 'реши аллокацию', 'реши за меня', 'что купить', 'купить сегодня'])) return {
       text: lang === 'ru' ? 'The Holding показывает структуры, evidence и trade-offs, но не выдаёт персональную точную аллокацию или команду «что купить сегодня». Решение остаётся за владельцем.' : 'The Holding can show structures, evidence and trade-offs, but it does not provide a personalized exact allocation or tell an owner what to buy today. The decision remains with the owner.',
       source: 'The Holding project canon'
     };
+    if ((includesAny(q, ['companion', 'компаньон', 'агент куратор', 'агент-куратор']) && includesAny(q, ['wallet', 'кошелек', 'control', 'управлять', 'move funds', 'move capital', 'двигать капитал', 'автономн', 'autonomous']))) return {
+      text: lang === 'ru' ? 'Company Companion не получает автоматического контроля кошелька, права подписывать транзакции или двигать капитал. Execution authority остаётся none.' : 'A Company Companion does not automatically gain wallet control, transaction-signing authority, or capital-movement authority. Execution authority remains none.',
+      source: 'The Holding project canon'
+    };
     if (includesAny(q, ['sharpe', 'коэффициент шарпа'])) return { text: lang === 'ru' ? 'В текущих подтверждённых данных нет Sharpe ratio под этот период. Я не буду подменять его текущим APY или APR.' : 'The current verified data has no Sharpe ratio for that period. I will not substitute current APY or APR for it.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
-    if (includesAny(q, ['next friday', 'следующ пятниц', 'forecast', 'predict', 'прогноз'])) return { text: lang === 'ru' ? 'У The Holding нет подтверждённого будущего значения цены. Я не буду выдавать прогноз как факт.' : 'The Holding has no verified future price value. I will not present a forecast as a fact.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
-    if (includesAny(q, ['before tracking', 'до начала наблюден', 'march 2026', 'март 2026'])) return { text: lang === 'ru' ? 'Если период предшествует tracking и не был backfilled, точного дохода в текущих данных нет. Я не буду подменять его сегодняшней доходностью.' : 'If the period predates tracking and was not backfilled, the current data has no exact income figure. I will not substitute today’s yield.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
-    if ((includesAny(q, ['reference apr', 'apr', 'current yield', 'текущая доходность']) && (includesAny(q, ['performance', 'прибыл', 'profit', 'actual result', 'result', 'фактический результат', 'equal', 'равно']) || /реал[а-я]{0,5}\s+доходност/.test(q))) || includesAny(q, ['does that mean it performed better'])) return { text: lang === 'ru' ? 'Нет. Reference APR – текущая доходная способность. Performance – фактический результат относительно точки входа. Более высокий APR сейчас не доказывает лучшую историческую performance.' : 'No. Reference APR is current earning capacity. Performance is the actual result versus the entry point. A higher APR now does not prove better historical performance.', source: 'The Holding project canon' };
+    if (includesAny(q, ['next friday', 'in one week', 'one week', 'exact btc price', 'future price', 'следующ пятниц', 'через неделю', 'точная цена btc', 'forecast', 'predict', 'прогноз'])) return { text: lang === 'ru' ? 'У The Holding нет подтверждённого будущего значения цены. Я не буду выдавать прогноз как факт.' : 'The Holding has no verified future price value. I will not present a forecast as a fact.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
+    if (includesAny(q, ['before tracking', 'pre tracking', 'pre-tracking', 'before you began tracking', 'before you started tracking', 'predates tracking', 'до начала наблюден', 'до начала трекинга', 'до трекинга', 'march 2026', 'март 2026'])) return { text: lang === 'ru' ? 'Если период предшествует tracking и не был backfilled, точного дохода в текущих данных нет. Я не буду подменять его сегодняшней доходностью.' : 'If the period predates tracking and was not backfilled, the current data has no exact income figure. I will not substitute today’s yield.', source: 'No sufficiently strong verified match', confidenceHint: 'unknown' };
+    if ((((includesAny(q, ['reference apr', 'apr', 'current yield', 'текущая доходность']) && (includesAny(q, ['performance', 'прибыл', 'profit', 'actual result', 'result', 'фактический результат', 'equal', 'равно']) || /реал[а-я]{0,5}\s+доходност/.test(q))) || includesAny(q, ['does that mean it performed better']))) && !includesAny(q, ['not performance', 'not historical performance', 'а не performance'])) return { text: lang === 'ru' ? 'Нет. Reference APR – текущая доходная способность. Performance – фактический результат относительно точки входа. Более высокий APR сейчас не доказывает лучшую историческую performance.' : 'No. Reference APR is current earning capacity. Performance is the actual result versus the entry point. A higher APR now does not prove better historical performance.', source: 'The Holding project canon' };
     if (includesAny(q, ['каждое наблюдение становится предложением', 'does every observation become a proposal', 'every observation become a proposal'])) return whyFilteredAnswer(lang);
     if (includesAny(q,['где тут доход вообще','что уже заработано но еще не пришло','what is already earned but not received'])) return conceptAnswer('слои капитала productivity rewards embedded yield cash flow',lang);
     if (includesAny(q,['что само внутри позиции растет','what grows inside the position'])) return conceptAnswer('embedded yield',lang);
@@ -1740,14 +1777,15 @@ async function loadLazy(kind) {
     );
 
     const hackProbability = includesAny(q, ['probability each company gets hacked', 'probability of hack', 'hack probability', 'chance of being hacked', 'вероятность хака', 'шанс взлома']) || (q.includes('вероятност') && q.includes('взлом'));
-    if (hackProbability && includesAny(q, ['exact', 'next month', 'следующ месяц', 'точн'])) return unknown(
+    if (hackProbability && (includesAny(q, ['exact', 'next month', 'следующ месяц']) || q.includes('точн'))) return unknown(
       ru
         ? 'The Holding Security может показывать наблюдаемые findings и severity, но не имеет валидированной модели точной вероятности взлома компании в следующем месяце. Я не буду превращать security findings в выдуманную вероятность.'
         : 'The Holding Security can report observed findings and severity, but it has no validated model for the exact probability that a company will be hacked next month. I will not turn security findings into an invented probability.',
       'Security Intelligence + Console capability map'
     );
 
-    const preTracking = includesAny(q, ['before tracking', 'before tracking began', 'before tracking started', 'prior to tracking', 'до начала tracking', 'до начала трекинга', 'до трекинга', 'до начала наблюден']);
+    const preTracking = includesAny(q, ['before tracking', 'before tracking began', 'before tracking started', 'prior to tracking', 'до начала tracking', 'до начала трекинга', 'до трекинга', 'до начала наблюден'])
+      || (((/(^| )before( |$)/.test(q)) || (/(^| )до( |$)/.test(q))) && (q.includes('трекин') || /(^| )tracking( |$)/.test(q)));
     if (preTracking) return unknown(
       ru
         ? 'Этот период предшествует подтверждённому tracking, и без отдельного backfill точного исторического дохода в текущем OS нет. Я не буду подменять неизвестную историю сегодняшним APR/APY, Rewards или текущей стоимостью.'
@@ -1808,7 +1846,7 @@ async function loadLazy(kind) {
       );
     }
 
-    if (includesAny(q, ['deserves the owner attention first', 'owner attention first', 'investigate first', 'attention first', 'внимание владельца', 'исследовать первым', 'owner brief', 'дай owner brief', 'дай бриф владельца'])) return ownerBriefAnswer(lang);
+    if (includesAny(q, ['deserves the owner attention first', 'owner attention first', 'investigate first', 'attention first', 'what matters to me as owner', 'what should i know as owner', 'owner level summary', 'внимание владельца', 'исследовать первым', 'что мне как владельцу важно знать', 'что владельцу важно знать', 'owner brief', 'дай owner brief', 'дай бриф владельца']) || ((q.includes('владел') && q.includes('важно') && q.includes('знат')) || (q.includes('owner') && (q.includes('matter') || q.includes('know') || q.includes('summary'))))) return ownerBriefAnswer(lang);
 
     if (includesAny(q, ['can the os still not learn', 'cannot learn yet', 'later evidence does not exist', 'еще не может научиться', 'не может выучить пока', 'позднего доказательства нет'])) {
       const summary = safeObject(state.learning?.summary);
@@ -1824,7 +1862,7 @@ async function loadLazy(kind) {
       };
     }
 
-    if (includesAny(q, ['company companion existed today', 'companion readiness', 'understand best', 'understand worst', 'куратор понимал лучше', 'companion понимал', 'что os знает о компаниях', 'карта понимания компаний'])) return await companyUnderstandingAnswer(lang);
+    if (includesAny(q, ['company companion existed today', 'companion readiness', 'understand best', 'understand worst', 'what does the os actually know about the companies', 'what does the os know about companies', 'how deeply do you understand companies', 'company evidence surface', 'understanding of companies', 'куратор понимал лучше', 'companion понимал', 'что os знает о компаниях', 'насколько глубоко ты понимаешь компании', 'понимание компаний', 'карта понимания компаний']) || (((q.includes('os') || q.includes('system')) && (q.includes('know') || q.includes('understand')) && q.includes('compan')) || (q.includes('os') && (q.includes('зна') || q.includes('понима')) && q.includes('компан')))) return await companyUnderstandingAnswer(lang);
 
     if (includesAny(q, ['unresolved data gap', 'data gap', 'limits owner understanding', 'пробел в данных', 'нехватк данных'])) {
       const rows = Object.entries(safeObject(state.productivity?.companies))
@@ -1854,6 +1892,9 @@ async function loadLazy(kind) {
     const q = norm(raw);
     if (!q) return helpAnswer(lang);
 
+    const earlyTrust = trustIntentAnswer(q, lang);
+    if (earlyTrust && !/No sufficiently strong verified match/i.test(String(earlyTrust.source || ''))) return earlyTrust;
+
     const semanticBoundary = semanticUnsupportedBoundary(raw, lang);
     if (semanticBoundary) return semanticBoundary;
 
@@ -1869,10 +1910,26 @@ async function loadLazy(kind) {
     const follow = followupAnswer(raw, lang);
     if (follow) return follow;
 
-    if (protocolGroup(raw) && includesAny(q,['which companies','who uses','who is using','which ones use','who runs','which companies run','companies use','companies using','какие компании','кто использует','компании используют','компании сидят','кто сидит'])) return protocolCompaniesAnswer(protocolGroup(raw),lang);
+    const navigationIntent = includesAny(q, [
+      'where should i start', 'where should a new person start', 'where should a new person begin', 'where do i begin', 'where do i start',
+      'i just found this site', 'new here', 'look first', 'bigger vision', 'read the vision',
+      'с чего начать', 'с чего мне начать', 'я впервые тут', 'я первый раз тут', 'куда смотреть сначала',
+      'где почитать видение', 'где почитать манифест'
+    ]);
+    if (navigationIntent && !protocolGroup(raw)) {
+      state.lastTopic = 'product-navigation';
+      return {
+        text: lang === 'ru'
+          ? 'Если ты здесь впервые, начни с Manifesto – там вся идея и дорожная карта. Затем открой Companies / Registry, чтобы увидеть реальные onchain-компании и их историю. После этого возвращайся в Ask The Holding и спрашивай про любую компанию, доходность, rewards, устройство OS или сравнение. Я помогу идти глубже по мере вопросов.'
+          : 'If you are new here, start with the Manifesto for the full idea and roadmap. Then open Companies / Registry to see real onchain companies and their operating history. After that, come back to Ask The Holding and ask about any company, productivity, rewards, the OS, or comparisons. I can guide you deeper as questions emerge.',
+        source: 'Public site knowledge: /manifesto /companies/ /agents/'
+      };
+    }
+
+    if (protocolGroup(raw) && includesAny(q,['which companies','who uses','who is using','which ones use','who runs','which companies run','companies use','companies using','companies with','show me only the companies with','какие компании','кто использует','компании используют','компании сидят','кто сидит'])) return protocolCompaniesAnswer(protocolGroup(raw),lang);
     if (includesAny(q, ['сколько компаний', 'какие компании', 'список компаний', 'how many companies', 'which companies', 'company list'])) return registryAnswer(lang);
 
-    const definitionish = includesAny(q, ['что такое', 'объясни', 'что значит', 'what is', 'explain', 'difference', 'разница']);
+    const definitionish = includesAny(q, ['что такое', 'это что', 'что за', 'объясни', 'что значит', 'what is', 'what does', 'define', 'explain', 'difference', 'разница']);
     if (definitionish && protocolGroup(raw)==='yieldbasis') { state.lastEntity={kind:'protocol',key:'yieldbasis'}; state.lastTopic='protocol:yieldbasis'; return {text:lang==='ru'?'Yield Basis в The Holding разделяется на две экономические механики: unstaked yb-LP накапливает fee yield внутри PPS, а staked YB получает отдельные emissions/rewards. Эти слои не смешиваются.':'Yield Basis is split into two economic mechanics in The Holding: unstaked yb-LP compounds fee yield inside PPS, while staked YB receives separate emissions/rewards. These layers are not mixed.',source:'The Holding project canon'}; }
     if (definitionish) {
       const concept = conceptAnswer(raw, lang);
@@ -1897,13 +1954,13 @@ async function loadLazy(kind) {
     if (asksEntry) return entryAnswer(raw, lang, company);
 
     if (isConcentrationIntent(q)) return productiveConcentrationAnswer(lang);
+    if (includesAny(q, ['что изменилось', 'что изменилось сейчас', 'what changed', 'latest changes', 'recent changes', 'from the latest changes', 'из последних изменений']) || ((q.includes('change') || q.includes('измен')) && (q.includes('latest') || q.includes('recent') || q.includes('material') || q.includes('сейчас') || q.includes('важн')))) return latestChangeSalienceAnswer(lang, 'changes');
     if (includesAny(q, ['что важнее сейчас', 'что реально важно', 'what matters now', 'what actually matters', 'what should i pay attention to', 'на что обратить внимание', 'что мне реально надо знать сейчас', 'what do i actually need to know now'])) return ownerBriefAnswer(lang);
-    if (includesAny(q, ['что изменилось', 'что изменилось сейчас', 'what changed', 'latest changes', 'recent changes'])) return latestChangeSalienceAnswer(lang, 'changes');
     if (includesAny(q, ['что требует внимания', 'требует внимания', 'needs attention', 'attention items', 'проблемы сейчас'])) return latestChangeSalienceAnswer(lang, 'attention');
     if (includesAny(q, ['почему только 3', 'почему три', 'почему так мало proposal', 'why only 3', 'data hygiene', 'decision worthy', 'decision-worthy'])) return whyFilteredAnswer(lang);
     if (includesAny(q, ['что уже одобрено', 'что одобрено', 'approved proposal', 'builder', 'guardian', 'может ли система выполнить', 'может ли это быть выполнено', 'can execute', 'governance status'])) return governanceStatusAnswer(lang);
-    if (includesAny(q, ['что система предлагает', 'что система сейчас предлагает', 'что холдинг предлагает', 'предлагает система', 'что предлагаешь', 'proposal', 'propose', 'proposes', 'what does the holding propose', 'what does the system propose', 'recommendation', 'что делать дальше'])) return proposalAnswer(lang);
-    if (includesAny(q, ['чему система учится', 'чему os научилась', 'чему os уже научилась', 'чему система научилась', 'как система учится', 'learning status', 'learning now', 'what has the os learned', 'what has the os learned recently', 'what has the system learned'])) return learningAnswer(lang);
+    if (includesAny(q, ['что система предлагает', 'что система сейчас предлагает', 'что холдинг предлагает', 'предлагает система', 'что предлагаешь', 'proposal', 'propose', 'proposes', 'what does the holding propose', 'what does the system propose', 'recommendation', 'что делать дальше']) || (((q.includes('system') || q.includes('holding')) && q.includes('propos')) || (q.includes('система') && q.includes('предлага')))) return proposalAnswer(lang);
+    if (includesAny(q, ['чему система учится', 'чему os научилась', 'чему os уже научилась', 'чему система научилась', 'как система учится', 'learning status', 'learning now', 'what has the os learned', 'what has the os learned recently', 'what has the system learned']) || (((q.includes('os') || q.includes('system') || q.includes('brain')) && q.includes('learn')) || ((q.includes('os') || q.includes('система') || q.includes('мозг')) && (q.includes('научил') || q.includes('выуч'))))) return learningAnswer(lang);
     if (includesAny(q, ['что ты можешь сам', 'execution authority', 'полномочия', 'можешь сам', 'что можешь делать'])) return authorityAnswer(lang);
     if (includesAny(q, ['что сейчас происходит', 'состояние системы', 'system status', 'current state', 'как система'])) return currentStateAnswer(lang);
 
@@ -1924,29 +1981,13 @@ async function loadLazy(kind) {
     if (engineMatches.length && protocolGroup(raw)) return engineAnswer(engineMatches, lang);
     if (stableMatches.length && protocolGroup(raw)) return stableAnswer(stableMatches, lang);
 
-    if (includesAny(q, ['company companion', 'companion agent', 'агент куратор', 'агент-куратор'])) return { text: lang === 'ru' ? 'Company Companion Agent – будущий AI-куратор одной onchain-компании. Он наследует общие способности The Holding OS и добавляет память, состояние, решения и риски конкретной компании. Сам по себе Companion не получает права подписывать транзакции или двигать капитал.' : 'A Company Companion Agent is a future AI curator for one onchain company. It inherits shared The Holding OS capabilities and adds that company’s memory, state, decisions and risks. A Companion does not automatically receive transaction-signing or capital authority.', source: 'The Holding project canon' };
+    if (includesAny(q, ['company companion', 'companion agent', 'companion', 'компаньон', 'агент куратор', 'агент-куратор'])) return { text: lang === 'ru' ? 'Company Companion Agent – будущий AI-куратор одной onchain-компании. Он наследует общие способности The Holding OS и добавляет память, состояние, решения и риски конкретной компании. Сам по себе Companion не получает права подписывать транзакции или двигать капитал.' : 'A Company Companion Agent is a future AI curator for one onchain company. It inherits shared The Holding OS capabilities and adds that company’s memory, state, decisions and risks. A Companion does not automatically receive transaction-signing or capital authority.', source: 'The Holding project canon' };
     if (includesAny(q,['ai agents build companies','agents build companies','агенты собирать компании'])) return {text:lang==='ru'?'Да, это часть долгосрочного направления: authorised AI agents смогут читать machine-readable структуру The Holding и со временем собирать или сопровождать компании в пределах явных permissions. Это не означает неограниченную автономию капитала.':'Yes. The long-term direction includes authorised AI agents reading The Holding’s machine-readable structures and eventually building or accompanying companies within explicit permissions. That does not imply unrestricted capital autonomy.',source:'The Holding project canon'};
     if (includesAny(q, ['company marketplace', 'marketplace', 'биржа компаний'])) return { text: lang === 'ru' ? 'Company Marketplace – будущий слой discovery и передачи зрелых onchain-компаний или их структур, когда identity, history, transferability, security и юридическая форма будут достаточно зрелыми.' : 'The Company Marketplace is a future discovery and transfer layer for mature onchain companies or company structures once identity, history, transferability, security and legal design are sufficiently mature.', source: 'The Holding project canon' };
     if (includesAny(q, ['ratings', 'rating', 'рейтин'])) return { text: lang === 'ru' ? 'Рейтинги компаний задуманы как производная от проверяемой истории – прозрачности, возраста, устойчивости, productivity, концентрации риска, полноты reporting и maturity, а не популярности.' : 'Company ratings are intended to emerge from verifiable history – transparency, age, resilience, productivity, risk concentration, reporting completeness and maturity, not popularity.', source: 'The Holding project canon' };
 
     const publicHit = await searchPublicKnowledge(raw, lang);
     if (publicHit) return publicHit;
-
-    const navigationIntent = includesAny(q, [
-      'where should i start', 'where should a new person begin', 'where do i begin', 'where do i start',
-      'i just found this site', 'new here', 'look first', 'bigger vision', 'read the vision',
-      'с чего начать', 'с чего мне начать', 'я впервые тут', 'я первый раз тут', 'куда смотреть сначала',
-      'где почитать видение', 'где почитать манифест'
-    ]);
-    if (navigationIntent) {
-      state.lastTopic = 'product-navigation';
-      return {
-        text: lang === 'ru'
-          ? 'Если ты здесь впервые, начни с Manifesto – там вся идея и дорожная карта. Затем открой Companies / Registry, чтобы увидеть реальные onchain-компании и их историю. После этого возвращайся в Ask The Holding и спрашивай про любую компанию, доходность, rewards, устройство OS или сравнение. Я помогу идти глубже по мере вопросов.'
-          : 'If you are new here, start with the Manifesto for the full idea and roadmap. Then open Companies / Registry to see real onchain companies and their operating history. After that, come back to Ask The Holding and ask about any company, productivity, rewards, the OS, or comparisons. I can guide you deeper as questions emerge.',
-        source: 'Public site knowledge: /manifesto /companies/ /agents/'
-      };
-    }
 
     return {
       text: lang === 'ru'
@@ -1976,6 +2017,27 @@ async function loadLazy(kind) {
     button.disabled = true;
     try {
       state.lastTopic = null;
+
+      // Critical request boundaries are fail-closed before generic routing as well as after it.
+      // This keeps secrets / transaction authority / personalized allocation responsive even when
+      // the broader synthesis path is degraded or under human-review state. The same output guard
+      // remains the final post-route defense, so this does not create a second authority plane.
+      const preflightContract = Object.freeze({
+        version: ANSWER_CONTRACT_VERSION,
+        language: lang,
+        confidenceClass: 'unknown',
+        sourceArtifacts: [],
+        generatedAt: null,
+        topic: coarseTopic(text),
+        grounded: false
+      });
+      const preflight = enforceOutputGuard({ text: '', source: '', answerContract: preflightContract }, text, lang);
+      if (['secret-block', 'authority-block', 'advice-block'].includes(preflight.outputGuard)) {
+        resolvePending(wait, preflight.text, preflight.source || '', preflight.answerContract);
+        await recordAnswerQuality(preflight.answerContract, text);
+        return;
+      }
+
       const result = await routeQuestion(text);
       const contracted = await buildAnswerContract(result, text, lang);
       const guarded = enforceOutputGuard(contracted, text, lang);
@@ -2068,7 +2130,7 @@ async function loadLazy(kind) {
   form.addEventListener('submit', event => {
     event.preventDefault();
     const q = input.value.trim();
-    if (!q || !state.bridge) return;
+    if (!q) return;
     input.value = '';
     button.disabled = true;
     ask(q);

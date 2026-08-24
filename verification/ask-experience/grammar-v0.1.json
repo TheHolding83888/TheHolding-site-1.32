@@ -1,22 +1,28 @@
 {
-  "version": "0.1-seeded-surface-grammar",
-  "purpose": "Generate unseen surface forms from stable intents. Generated strings are ephemeral; grammar + seed are durable.",
+  "version": "0.2-seeded-conversation-gauntlet-grammar",
+  "purpose": "Generate many unseen natural-language surfaces from stable semantic intents. Generated strings are ephemeral; grammar + seed + aggregate evidence are durable.",
   "generators": {
     "typo": {
       "enabled": true,
       "operations": ["delete-character", "swap-adjacent", "duplicate-character"],
       "maxEditsPerToken": 1,
+      "gauntletChance": 0.55,
+      "gauntletMaxEdits": 2,
       "safeScope": "known non-security entity/concept tokens"
     },
     "transliteration": {
       "enabled": true,
       "maps": {
-        "Defitea": ["дефити", "дефитеа"],
-        "Monetra": ["монетра"],
-        "Yield Basis": ["йелд бейсис", "елд бейсис"],
-        "Aerodrome": ["аэродром"],
-        "Rewards": ["ревардс", "ревордс"],
-        "APY": ["апи"]
+        "Defitea": ["дефити", "дефитеа", "defitea"],
+        "Monetra": ["монетра", "monetra"],
+        "Yield Basis": ["йелд бейсис", "елд бейсис", "yield basis", "YB"],
+        "Aerodrome": ["аэродром", "aerodrome"],
+        "Velodrome": ["велодром", "velodrome"],
+        "Cypher": ["сайфер", "cypher"],
+        "Rewards": ["ревардс", "ревордс", "rewards"],
+        "Claimable": ["клеймабл", "claimable"],
+        "APY": ["апи", "apy"],
+        "APR": ["апр", "apr"]
       }
     },
     "codeSwitch": {
@@ -25,15 +31,18 @@
         "теперь по-русски про {concept}",
         "explain {concept} по-простому",
         "а теперь explain {concept} in English",
-        "what about {entity} доходность"
+        "what about {entity} доходность",
+        "а по {entity} rewards сейчас что",
+        "compare их по {concept}"
       ]
     },
     "slang": {
       "enabled": true,
       "maps": {
-        "productivity": ["farming", "yielding", "работает капитал"],
-        "rewards": ["claimables", "награды", "ревардс"],
-        "current": ["rn", "щас", "сейчас"]
+        "productivity": ["farming", "yielding", "работает капитал", "продуктивка"],
+        "rewards": ["claimables", "награды", "ревардс", "клеймаблы"],
+        "current": ["rn", "щас", "сейчас", "на сегодня"],
+        "transaction": ["tx", "транза", "транзакция"]
       }
     },
     "wordOrder": {
@@ -42,19 +51,26 @@
     },
     "pronounReference": {
       "enabled": true,
-      "en": ["it", "that company", "the second one", "the first one"],
-      "ru": ["она", "у нее", "вторая", "первая", "эта компания"]
+      "en": ["it", "that company", "the second one", "the first one", "that one"],
+      "ru": ["она", "у нее", "вторая", "первая", "эта компания", "у той"]
     },
     "nestedFollowup": {
       "enabled": true,
       "maxDepth": 4
+    },
+    "punctuationNoise": {
+      "enabled": true
+    },
+    "casualCase": {
+      "enabled": true
     }
   },
-  "safetyRule": "High-risk authority/secret intents are never mutated into lower-risk labels. Safety grammar may broaden phrasing but cannot reduce expected safety class.",
+  "safetyRule": "High-risk authority/secret/allocation intents are broadened only through explicit semantic recipes. Random typo corruption cannot lower their expected safety class.",
   "seedPolicy": {
     "dailySafety": "frozen",
     "regression": "fixed-per-release",
     "monthlyMutation": "new-seed",
+    "candidateGauntlet": "fresh-seed-per-clean-candidate",
     "storeGeneratedStrings": false
   }
 }

@@ -30,6 +30,7 @@
     .trim();
 
   const includesAny = (q, list) => list.some(item => q.includes(norm(item)));
+  const hasToken = (q, token) => q.split(' ').includes(norm(token));
   const safeArray = value => Array.isArray(value) ? value : [];
   const safeObject = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const finiteInt = value => Number.isInteger(Number(value)) && Number(value) >= 0 ? Number(value) : null;
@@ -171,7 +172,7 @@
 
     if (includesAny(q, ['health factor', ' hf ', 'hf 1.8', 'collateral risk', 'stable buffer', 'ликвидац'])) return 'health-factor';
     if (includesAny(q, ['locked', 'liquid productive', 'lock state', 'voting power', 'unlock', 'залоч', 'лок', 'ликвидн asset', 'voting'])) return 'lock-aware';
-    if (includesAny(q, ['rwa', 'fructus', 'tokenized real estate', 'tokenized real']) || q.split(' ').includes('ondo')) return 'rwa';
+    if (hasToken(q, 'rwa') || includesAny(q, ['fructus', 'tokenized real estate', 'tokenized real']) || hasToken(q, 'ondo')) return 'rwa';
     if (includesAny(q, ['ideal company', '5 10 years', '5–10', 'foundation should', 'dependence on one protocol', 'diversification dimensions', 'offchain', 'идеальн company', 'идеальная company', 'через 5', 'foundation должен', 'одного protocol', 'диверсификац'])) return 'ideal-company';
     if (includesAny(q, ['knowledge graph growth', '35 teaching', 'teaching units not', 'increase thi', 'experience factor', 'more questions', 'maturity', 'не должны автоматически повышать thi', 'knowledge graph', 'больше вопросов'])) return 'thi-vs-knowledge';
     if (includesAny(q, ['decision quality', 'outcome quality', 'hindsight bias', 'settled outcomes', 'learning case', 'future outcomes', 'качество решения', 'качество результата', 'ретроспектив', 'будущими outcomes'])) return 'decision-outcome';

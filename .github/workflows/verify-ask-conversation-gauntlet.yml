@@ -1,0 +1,173 @@
+name: "Verify Ask · Conversation Gauntlet"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - agents/console/app.js
+      - agents/console/safety.js
+      - agents/console/owner-context-conversation.js
+      - agents/console/intent-contract.js
+      - agents/index.html
+      - verification/ask-experience/**
+      - .github/workflows/verify-ask-conversation-gauntlet.yml
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: Optional explicit Gauntlet seed
+        required: false
+        type: string
+      variants_per_intent:
+        description: Variants per semantic family (1-20)
+        required: false
+        default: '10'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ask-conversation-gauntlet-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gauntlet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ASK_EXPERIENCE_VARIANTS_PER_INTENT: ${{ inputs.variants_per_intent || '10' }}
+    steps:
+      - name: Checkout exact tested revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Resolve fresh seed
+        shell: bash
+        env:
+          INPUT_SEED: ${{ inputs.seed }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUT_SEED:-}" ]; then
+            SEED="$INPUT_SEED"
+          else
+            SEED="gauntlet-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}"
+          fi
+          echo "GAUNTLET_SEED=$SEED" >> "$GITHUB_ENV"
+          echo "seed=$SEED variants=$ASK_EXPERIENCE_VARIANTS_PER_INTENT"
+
+      - name: Static harness syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check verification/ask-experience/generate-mutation-corpus-v0.1.mjs
+          node --check verification/ask-experience/runner-v0.1.mjs
+          node --check verification/ask-experience/evaluator-v0.1.mjs
+          node -e "JSON.parse(require('fs').readFileSync('verification/ask-experience/mutation-intents-v0.1.json','utf8')); JSON.parse(require('fs').readFileSync('verification/ask-experience/grammar-v0.1.json','utf8'));"
+
+      - name: Re-prove deterministic safety firewall
+        run: node verification/ask-experience/intent-contract-test-v0.1.mjs
+
+      - name: Locate Chrome and install browser harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+          npm install --no-save --no-package-lock puppeteer-core@24.16.0
+
+      - name: Serve exact tested revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/ask-gauntlet-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/agents/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/ask-gauntlet-http.log
+          exit 1
+
+      - name: Direct final-output safety guard
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+        run: node verification/ask-experience/output-guard-test-v0.1.mjs
+
+      - name: Generate 21-family unseen corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          node verification/ask-experience/generate-mutation-corpus-v0.1.mjs \
+            verification/ask-experience/mutation-intents-v0.1.json \
+            verification/ask-experience/grammar-v0.1.json \
+            "$GAUNTLET_SEED" \
+            artifacts/ask-experience-gauntlet-corpus.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('artifacts/ask-experience-gauntlet-corpus.json','utf8'));
+          const expected=(x.variantsPerIntent||0)*21;
+          if(x.cases.length!==expected) throw new Error(`Gauntlet case count mismatch: ${x.cases.length} != ${expected}`);
+          if(x.generatedStringsDurable!==false) throw new Error('Generated strings must remain ephemeral');
+          console.log(`Gauntlet corpus PASS: ${x.cases.length} cases; multi-turn=${x.cases.filter(c=>Array.isArray(c.session)).length}`);
+          NODE
+
+      - name: Run browser Conversation Gauntlet
+        shell: bash
+        env:
+          ASK_BASE_URL: http://127.0.0.1:8080/agents/
+          ASK_EXPERIENCE_RUN_ID: ${{ github.run_id }}-gauntlet
+          ASK_EXPERIENCE_ORIGIN: synthetic-mutation
+          ASK_EXPERIENCE_SEED: ${{ env.GAUNTLET_SEED }}
+          ASK_EXPERIENCE_GRAMMAR_VERSION: 0.2-seeded-conversation-gauntlet-grammar
+        run: |
+          set +e
+          node verification/ask-experience/runner-v0.1.mjs \
+            artifacts/ask-experience-gauntlet-corpus.json \
+            artifacts/ask-experience-gauntlet.json
+          rc=$?
+          set -e
+          echo "GAUNTLET_RUNNER_RC=$rc" >> "$GITHUB_ENV"
+          echo "Browser runner exit=$rc; semantic evaluation will still run so completed evidence is preserved."
+
+      - name: Evaluate two-sided epistemic fit
+        shell: bash
+        run: |
+          set +e
+          node verification/ask-experience/evaluator-v0.1.mjs \
+            artifacts/ask-experience-gauntlet-corpus.json \
+            artifacts/ask-experience-gauntlet.json \
+            > artifacts/ask-experience-gauntlet-evaluation.json
+          eval_rc=$?
+          set -e
+          node verification/ask-experience/summarize-learning-needs-v0.1.mjs \
+            artifacts/ask-experience-gauntlet-evaluation.json \
+            > artifacts/ask-experience-gauntlet-learning-needs.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('artifacts/ask-experience-gauntlet-evaluation.json','utf8'));
+          console.log(JSON.stringify(x.summary,null,2));
+          NODE
+          echo "GAUNTLET_EVALUATOR_RC=$eval_rc" >> "$GITHUB_ENV"
+
+      - name: Enforce browser and semantic gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const run=JSON.parse(fs.readFileSync('artifacts/ask-experience-gauntlet.json','utf8'));
+          const evaluation=JSON.parse(fs.readFileSync('artifacts/ask-experience-gauntlet-evaluation.json','utf8'));
+          const harnessErrors=Number(run.summary?.harnessErrors||0);
+          const releaseGate=String(evaluation.summary?.releaseGate||'missing');
+          if(harnessErrors!==0) throw new Error(`Gauntlet harness errors: ${harnessErrors}`);
+          if(releaseGate!=='PASS') throw new Error(`Gauntlet semantic release gate: ${releaseGate}`);
+          console.log('Conversation Gauntlet PASS: browser=clean semantic=PASS');
+          NODE
+
+      - name: Upload Conversation Gauntlet evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ask-conversation-gauntlet-${{ github.run_id }}
+          path: |
+            artifacts/ask-experience-gauntlet*.json
+          retention-days: 30
