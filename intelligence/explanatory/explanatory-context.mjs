@@ -1,4 +1,3 @@
-// PR synchronize bootstrap: workflow already exists in head; no economic semantics changed.
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 
@@ -6,6 +5,7 @@ const ROOT = process.cwd();
 const OUT = 'intelligence/explanatory/explanatory-context.json';
 const COMPARATIVE = 'intelligence/comparative/comparative-intelligence.json';
 const INCOME = 'intelligence/income-performance/income-performance.json';
+const ECONOMIC_GRAPH = 'intelligence/economic-graph/economic-graph.json';
 
 function readJson(path) {
   return JSON.parse(fs.readFileSync(path, 'utf8'));
@@ -21,12 +21,21 @@ function pct(part, whole) {
   if (!Number.isFinite(Number(part)) || !Number.isFinite(Number(whole)) || Number(whole) === 0) return null;
   return round(Number(part) / Number(whole) * 100, 6);
 }
+function requireFinite(value, label) {
+  if (!Number.isFinite(Number(value))) throw new Error(`${label} must be finite`);
+  return Number(value);
+}
 
 const comparative = readJson(COMPARATIVE);
 const income = readJson(INCOME);
+const economicGraph = readJson(ECONOMIC_GRAPH);
 
 if (comparative.version !== '0.1-comparative-intelligence') throw new Error('unexpected Comparative Intelligence version');
 if (income.version !== '0.1-income-performance-intelligence') throw new Error('unexpected Income & Performance version');
+if (economicGraph.version !== '0.1-economic-graph') throw new Error('unexpected Economic Graph version');
+if (economicGraph.status !== 'partial-first-cohort') throw new Error('Economic Graph must remain partial-first-cohort');
+if (economicGraph.authority?.readOnly !== true || economicGraph.authority?.executionAuthority !== 'none') throw new Error('Economic Graph authority regression');
+if (economicGraph.authority?.causalClaimAuthority !== 'none') throw new Error('Economic Graph causal authority regression');
 
 const capitalRows = comparative.comparisons?.companyCapitalScale?.rows || [];
 const general = comparative.comparisons?.generalCompanyReferenceProductivity;
@@ -44,6 +53,22 @@ const topOutput = outputRows[0];
 const topProductiveCapital = productiveRows[0];
 const largestCompany = capitalRows[0];
 const monetraLatest = income.embeddedYield?.latestMeasuredInterval;
+
+const economicObservation = economicGraph.latest?.observation;
+const economicMovement = economicGraph.latest?.movement;
+if (!economicObservation || !economicMovement) throw new Error('Economic Graph latest observation/movement unavailable');
+if (economicObservation.company?.registry !== '004' || economicObservation.protocol !== 'f(x)' || economicObservation.mechanism !== 'veFXN Locker') {
+  throw new Error('Unexpected Economic Graph first cohort identity');
+}
+const liveApr = requireFinite(economicObservation.liveObservedAprPct, 'Economic Graph live APR');
+const canonicalApr = requireFinite(economicObservation.canonicalProductivityAprPct, 'Economic Graph canonical APR');
+const aprParityDelta = requireFinite(economicObservation.aprParityDeltaPctPoints, 'Economic Graph APR parity delta');
+if (Math.abs(aprParityDelta) > 0.01 || Math.abs(liveApr - canonicalApr) > 0.01) {
+  throw new Error('Economic Graph APR parity failed');
+}
+if (economicObservation.epistemic?.causalAttribution !== 'unresolved' || economicObservation.epistemic?.primaryDriver !== null) {
+  throw new Error('First-cohort causal boundary must remain unresolved');
+}
 
 function companyExplanation(row) {
   const capital = capitalRows.find(r => r.registry === row.registry);
@@ -88,18 +113,72 @@ const netPnl = income.performance?.netMarketPnl;
 const stablePriceEffectUsd = Number(netPnl?.stablePriceEffectUsd);
 const reproducedNetPnl = round(Number(strategyPerf?.sinceInceptionUsd) + stablePriceEffectUsd, 8);
 
+const protocolAprContext = {
+  question: 'What measured protocol-economic context is available around the current veFXN Reference APR, and can it prove why APR changed?',
+  status: 'context-available-causal-attribution-unresolved',
+  coverage: {
+    cohort: economicGraph.semantics?.currentCohort ?? 'Defitea -> f(x) veFXN',
+    companyRegistry: economicObservation.company.registry,
+    company: economicObservation.company.name,
+    protocol: economicObservation.protocol,
+    mechanism: economicObservation.mechanism,
+    asset: economicObservation.asset
+  },
+  apr: {
+    liveObservedPct: liveApr,
+    canonicalProductivityPct: canonicalApr,
+    parityDeltaPctPoints: aprParityDelta,
+    currentObservationStatus: economicObservation.canonicalProductivityStatus,
+    deltaFromPriorGraphObservationPctPoints: economicMovement.aprDeltaPctPoints ?? null
+  },
+  measuredDrivers: {
+    fxnLocked: economicObservation.drivers?.fxnLocked ?? null,
+    fxnCirculatingSupplyLockedPct: economicObservation.drivers?.fxnCirculatingSupplyLockedPct ?? null,
+    totalVeFxn: economicObservation.drivers?.totalVeFxn ?? null,
+    cumulativeThisWeekWsteth: economicObservation.drivers?.cumulativeThisWeekWsteth ?? null,
+    previousWeekWsteth: economicObservation.drivers?.previousWeekWsteth ?? null,
+    averageLockRaw: economicObservation.drivers?.averageLockRaw ?? null,
+    accumulateTillRaw: economicObservation.drivers?.accumulateTillRaw ?? null
+  },
+  measuredMovement: {
+    priorObservationId: economicMovement.priorObservationId ?? null,
+    elapsedHours: economicMovement.elapsedHours ?? null,
+    fxnLockedDelta: economicMovement.fxnLockedDelta ?? null,
+    fxnCirculatingSupplyLockedPctDeltaPoints: economicMovement.fxnCirculatingSupplyLockedPctDeltaPoints ?? null,
+    totalVeFxnDelta: economicMovement.totalVeFxnDelta ?? null,
+    currentWeekRevenueDeltaWsteth: economicMovement.currentWeekRevenueDeltaWsteth ?? null,
+    revenueDeltaComparable: economicMovement.revenueDeltaComparable ?? null,
+    revenueDeltaNonComparableReason: economicMovement.revenueDeltaNonComparableReason ?? null
+  },
+  provenance: {
+    graphFile: ECONOMIC_GRAPH,
+    graphSha256: sha256(ECONOMIC_GRAPH),
+    observationId: economicObservation.id,
+    observedAt: economicObservation.observedAt,
+    sourceUrl: economicObservation.source?.url ?? null,
+    sourceType: economicObservation.source?.sourceType ?? null,
+    rawBlockHash: economicObservation.source?.rawBlockHash ?? null
+  },
+  causalAttribution: 'unresolved',
+  primaryDriver: null,
+  causalClass: 'measured-context-only',
+  explanation: 'Canonical protocol-economic driver context is now available for the Defitea veFXN cohort. The system may report these measured values and their comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.',
+  promotionRule: economicGraph.semantics?.driverPromotionRule ?? 'Require a protocol-specific formula or onchain accounting identity before causal attribution.'
+};
+
 const state = {
-  version: '0.1-explanatory-context',
-  engineVersion: '0.1-evidence-bound-reason-decomposition',
+  version: '0.2-explanatory-context',
+  engineVersion: '0.2-evidence-bound-economic-driver-context',
   generatedAt: new Date().toISOString(),
   status: 'partial',
-  purpose: 'Explain proven metric differences through reproducible identities and bounded reason decomposition without turning association into causation.',
+  purpose: 'Explain proven metric differences through reproducible identities and expose canonical protocol-economic driver context without turning association into causation.',
   semantics: {
     mechanismRule: 'Use causal language only when the relationship follows from an explicit accounting or metric identity, or when a mechanism-specific source proves the causal link.',
-    associationRule: 'Observed co-movement, rank order, or contextual proximity is association/context only unless a mechanism is proven.',
-    noNarrativeGuessing: 'Do not invent market, protocol, governance, volume, fee, or user-behavior explanations when no canonical source binds them.',
+    associationRule: 'Observed co-movement, rank order, contextual proximity, or Economic Graph driver movement is association/context only unless a mechanism is proven.',
+    noNarrativeGuessing: 'Do not invent market, protocol, governance, volume, fee, incentive, or user-behavior explanations when no canonical source binds them.',
     aprRule: 'Reference APR is productive capacity, not realised return.',
-    rankingRule: 'A rank is explained by the metric definition and its measured inputs, not by a universal quality score.'
+    rankingRule: 'A rank is explained by the metric definition and its measured inputs, not by a universal quality score.',
+    economicGraphRule: 'Economic Graph observations may answer what changed around a protocol mechanism; they do not answer why it changed until causal attribution is promoted by proof.'
   },
   authority: {
     readOnly: true,
@@ -107,6 +186,7 @@ const state = {
     capitalExecution: false,
     allocationAuthority: false,
     recommendationAuthority: false,
+    causalClaimAuthority: 'none',
     methodologyMutationAuthority: false
   },
   sourceState: {
@@ -121,6 +201,14 @@ const state = {
       version: income.version,
       generatedAt: income.generatedAt,
       sha256: sha256(INCOME)
+    },
+    economicGraph: {
+      file: ECONOMIC_GRAPH,
+      version: economicGraph.version,
+      engineVersion: economicGraph.engineVersion,
+      generatedAt: economicGraph.generatedAt,
+      status: economicGraph.status,
+      sha256: sha256(ECONOMIC_GRAPH)
     }
   },
   explanations: {
@@ -203,14 +291,16 @@ const state = {
       reproducedNetMarketPnlUsd: reproducedNetPnl,
       explanation: 'Strategy Performance measures strategy-unit performance against verified entry principal. Net market P&L additionally includes current stable-price effects; the stable-price effect therefore reconciles the difference mechanically.',
       causalClass: 'accounting-identity'
-    }
+    },
+    protocolAprChangeContext
   },
   answerability: {
     'why-top-apr-differs-from-top-output': 'answerable',
     'why-largest-company-is-not-best-apr': 'answerable-by-separate-metric-definitions',
     'what-drove-monetra-latest-measured-income': 'answerable-latest-interval-only',
     'why-monetra-strategy-performance-differs-from-net-pnl': 'answerable-by-reconciliation-identity',
-    'why-protocol-apr-changed': 'blocked-no-canonical-driver-context',
+    'what-protocol-context-accompanied-apr': 'answerable-by-measured-context-first-cohort',
+    'why-protocol-apr-changed': 'context-available-cause-unresolved',
     'why-company-tvl-changed': 'blocked-no-time-series-driver-decomposition',
     'why-market-moved': 'blocked-no-market-causal-evidence',
     'mtd-monetra-protocol-driver-attribution': 'blocked-no-canonical-interval-history',
@@ -218,9 +308,14 @@ const state = {
   },
   nextEvidenceGaps: [
     {
-      id: 'protocol-driver-context',
-      need: 'Canonical protocol-level context such as volume, fees, TVL, reward rate or mechanism-specific state before explaining APR changes.',
-      rule: 'Context may be reported as association unless the protocol mechanism proves causation.'
+      id: 'protocol-driver-causal-attribution',
+      need: 'Protocol-specific APR formula or onchain accounting identity that reproduces the APR change from canonical driver inputs before promoting any observed driver to ATTRIBUTED.',
+      rule: 'Measured driver context may be reported now; causal language remains blocked until the mechanism is proven.'
+    },
+    {
+      id: 'economic-graph-cohort-expansion',
+      need: 'Equivalent canonical driver observations for additional Defitea productive mechanisms before protocol-economic explanation coverage can expand beyond veFXN.',
+      rule: 'Each protocol/mechanism requires its own authority, cadence, units and attribution rules.'
     },
     {
       id: 'capital-change-decomposition',
@@ -236,11 +331,14 @@ const state = {
 fs.mkdirSync('intelligence/explanatory', { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(state, null, 2) + '\n');
 
-console.log('Explanatory Context v0.1 built', {
+console.log('Explanatory Context v0.2 built', {
   topApr: topApr.name,
   topOutput: topOutput.name,
   outputGapUsd,
   topMonetraContributor: topMonetra?.protocol,
   monetraNetPnlReproduced: reproducedNetPnl,
-  executionAuthority: state.authority.executionAuthority
+  protocolAprContext: protocolAprContext.status,
+  economicGraphObservation: protocolAprContext.provenance.observationId,
+  executionAuthority: state.authority.executionAuthority,
+  causalClaimAuthority: state.authority.causalClaimAuthority
 });
