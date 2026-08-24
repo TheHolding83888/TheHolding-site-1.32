@@ -1,11 +1,16 @@
-# THE HOLDING · EXPLANATORY CONTEXT v0.1
+# THE HOLDING · EXPLANATORY CONTEXT v0.2
 name: "The Holding · Explanatory Context"
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "The Holding · Economic Graph"
+    types: [completed]
   pull_request:
     paths:
       - "intelligence/explanatory/**"
+      - "intelligence/economic-graph/**"
       - ".github/workflows/update-explanatory-context.yml"
   push:
     branches:
@@ -13,6 +18,7 @@ on:
     paths:
       - "intelligence/comparative/comparative-intelligence.json"
       - "intelligence/income-performance/income-performance.json"
+      - "intelligence/economic-graph/economic-graph.json"
       - "intelligence/explanatory/explanatory-context.mjs"
       - ".github/workflows/update-explanatory-context.yml"
 
@@ -25,6 +31,11 @@ concurrency:
 
 jobs:
   build:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 6
 
@@ -48,10 +59,13 @@ jobs:
           test -s intelligence/explanatory/explanatory-context.mjs
           test -s intelligence/comparative/comparative-intelligence.json
           test -s intelligence/income-performance/income-performance.json
+          test -s intelligence/economic-graph/economic-graph.json
           node --check intelligence/explanatory/explanatory-context.mjs
           grep -q "mechanismRule" intelligence/explanatory/explanatory-context.mjs
           grep -q "associationRule" intelligence/explanatory/explanatory-context.mjs
+          grep -q "economicGraphRule" intelligence/explanatory/explanatory-context.mjs
           grep -q "executionAuthority: 'none'" intelligence/explanatory/explanatory-context.mjs
+          grep -q "causalClaimAuthority: 'none'" intelligence/explanatory/explanatory-context.mjs
 
       - name: Build Explanatory Context
         run: node intelligence/explanatory/explanatory-context.mjs
@@ -62,12 +76,14 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
+          const crypto = require('crypto');
           const x = JSON.parse(fs.readFileSync('intelligence/explanatory/explanatory-context.json','utf8'));
-          if (x.version !== '0.1-explanatory-context') throw new Error('unexpected version');
-          if (x.engineVersion !== '0.1-evidence-bound-reason-decomposition') throw new Error('unexpected engine');
-          if (x.status !== 'partial') throw new Error('v0.1 must remain partial');
+          if (x.version !== '0.2-explanatory-context') throw new Error('unexpected version');
+          if (x.engineVersion !== '0.2-evidence-bound-economic-driver-context') throw new Error('unexpected engine');
+          if (x.status !== 'partial') throw new Error('v0.2 must remain partial');
           if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('authority regression');
           if (x.authority?.capitalExecution !== false || x.authority?.allocationAuthority !== false || x.authority?.recommendationAuthority !== false) throw new Error('capital/recommendation authority regression');
+          if (x.authority?.causalClaimAuthority !== 'none') throw new Error('causal authority regression');
 
           const r = x.explanations?.referenceProductivity;
           if (r?.status !== 'answerable-by-metric-identity') throw new Error('reference productivity explanation missing');
@@ -88,17 +104,32 @@ jobs:
           if (p?.status !== 'answerable-by-reconciliation-identity') throw new Error('performance reconciliation missing');
           if (Math.abs(Number(p.reproducedNetMarketPnlUsd) - Number(p.netMarketPnlUsd)) > 0.00002) throw new Error('net P&L reconciliation drift');
 
-          if (x.answerability?.['why-protocol-apr-changed'] !== 'blocked-no-canonical-driver-context') throw new Error('protocol causal guard missing');
+          const g = x.explanations?.protocolAprChangeContext;
+          if (g?.status !== 'context-available-causal-attribution-unresolved') throw new Error('protocol economic context missing');
+          if (g?.coverage?.companyRegistry !== '004' || g?.protocolAprChangeContext === null) throw new Error('unexpected protocol cohort');
+          if (g?.causalAttribution !== 'unresolved' || g?.primaryDriver !== null || g?.causalClass !== 'measured-context-only') throw new Error('causal boundary weakened');
+          if (Math.abs(Number(g?.apr?.parityDeltaPctPoints)) > 0.01) throw new Error('protocol APR parity drift');
+          if (!Number.isFinite(Number(g?.measuredDrivers?.fxnLocked)) || !Number.isFinite(Number(g?.measuredDrivers?.totalVeFxn))) throw new Error('core economic drivers missing');
+          if (!Number.isFinite(Number(g?.measuredDrivers?.cumulativeThisWeekWsteth)) || !Number.isFinite(Number(g?.measuredDrivers?.previousWeekWsteth))) throw new Error('weekly revenue context missing');
+          if (x.answerability?.['what-protocol-context-accompanied-apr'] !== 'answerable-by-measured-context-first-cohort') throw new Error('measured protocol context answerability missing');
+          if (x.answerability?.['why-protocol-apr-changed'] !== 'context-available-cause-unresolved') throw new Error('protocol causal guard must remain unresolved');
           if (x.answerability?.['why-market-moved'] !== 'blocked-no-market-causal-evidence') throw new Error('market causal guard missing');
           if (x.answerability?.['best-company-overall-explanation'] !== 'blocked-no-universal-score') throw new Error('universal score leaked');
 
-          console.log('EXPLANATORY CONTEXT v0.1 PASS', {
+          const graphBytes = fs.readFileSync('intelligence/economic-graph/economic-graph.json');
+          const graphHash = crypto.createHash('sha256').update(graphBytes).digest('hex');
+          if (x.sourceState?.economicGraph?.sha256 !== graphHash) throw new Error('Economic Graph exact-byte binding missing');
+          if (g?.provenance?.graphSha256 !== graphHash) throw new Error('protocol context provenance hash mismatch');
+
+          console.log('EXPLANATORY CONTEXT v0.2 PASS', {
             topApr: a.name,
             topOutput: o.name,
             outputGapUsd: r.decomposition.outputGapUsd,
             topMonetraContributor: m.concentration.topProtocol,
-            topMonetraSharePct: m.concentration.topProtocolSharePct,
-            monetraNetPnlUsd: p.netMarketPnlUsd,
+            protocol: g.coverage.protocol,
+            mechanism: g.coverage.mechanism,
+            apr: g.apr.canonicalProductivityPct,
+            causalAttribution: g.causalAttribution,
             executionAuthority: x.authority.executionAuthority
           });
           NODE
@@ -146,8 +177,8 @@ jobs:
               git fetch origin main
               git cat-file -e "origin/main:$GENERATED"
               REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
-              test "$REMOTE_VERSION" = "0.1-explanatory-context"
-              echo "Verified Explanatory Context v0.1 on remote main."
+              test "$REMOTE_VERSION" = "0.2-explanatory-context"
+              echo "Verified Explanatory Context v0.2 on remote main."
               exit 0
             fi
 
