@@ -260,6 +260,19 @@
     });
     normalized = text.toLowerCase().replace(/ё/g, 'е');
 
+    // Comparison-operator recovery is fail-closed to an already explicit two-entity
+    // shape. It may restore a typo in `сравни`, but it cannot manufacture a second
+    // object or turn an ordinary single-entity question into a comparison.
+    const compareAnchors = normalized.match(/\b(?:monetra(?:\.eth)?|defitea|substantia|fructus|singul)\b|\bcompany\s*#?\s*0*\d+\b|\bкомпан(?:ия|ии|и)\s*#?\s*0*\d+\b/gi) || [];
+    if (compareAnchors.length >= 2) {
+      text = text.replace(/[А-Яа-яЁё]{4,7}/g, token => {
+        const lower = token.toLowerCase().replace(/ё/g, 'е');
+        if (!lower.startsWith('с') || Math.abs(lower.length - 'сравни'.length) > 2) return token;
+        return boundedEditDistance(lower, 'сравни') <= 2 ? 'сравни' : token;
+      });
+      normalized = text.toLowerCase().replace(/ё/g, 'е');
+    }
+
     // Fund-inventory recovery is allowed only when the canonical product anchor and
     // an inventory-shaped question are both present. This keeps `фонд/фонды` typo
     // repair local to the newly exercised conversation-context surface.
