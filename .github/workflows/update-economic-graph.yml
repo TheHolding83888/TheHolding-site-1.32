@@ -69,12 +69,15 @@ jobs:
           git diff --check
 
       - name: Install live probe dependencies
-        if: github.event_name != 'pull_request'
         working-directory: productivity
         run: |
           set -euo pipefail
           npm install --no-audit --no-fund
           npx playwright install chromium
+
+      - name: Prove live economic-vitals source on PR
+        if: github.event_name == 'pull_request'
+        run: node productivity/fxn-locker-apr-guard.mjs --probe-economic-vitals
 
       - name: Build live Economic Graph
         if: github.event_name != 'pull_request'
