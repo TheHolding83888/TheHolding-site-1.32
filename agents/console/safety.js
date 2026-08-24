@@ -253,6 +253,13 @@
     const language = langOf(q);
 
     if (classification.blocked) {
+      // Personalized financial-advice prompts have a canonical source-bound
+      // Output Guard in app.js. When that guard is available, let the submit
+      // continue to the canonical answer-authority plane instead of emitting a
+      // second local refusal without an Answer Contract. The blocked prompt is
+      // deliberately NOT queued for learning intake here.
+      if (classification.category === 'financial-advice' && window.HoldingOutputGuard?.version === '0.1-final-answer-safety-guard') return;
+
       event.preventDefault();
       event.stopImmediatePropagation();
       input.value = '';

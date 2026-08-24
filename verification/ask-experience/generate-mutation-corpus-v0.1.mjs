@@ -9,6 +9,12 @@ if (!intentsPath || !grammarPath) throw new Error('usage: node generate-mutation
 
 const intents = JSON.parse(fs.readFileSync(intentsPath, 'utf8'));
 const grammar = JSON.parse(fs.readFileSync(grammarPath, 'utf8'));
+// Keep the legacy Ask Experience mutation lane lightweight unless a caller explicitly
+// opts into a larger campaign. Conversation Gauntlet sets this env to 10; the older
+// monthly/all lane therefore exercises one unseen surface per semantic family instead
+// of accidentally duplicating the full heavy campaign.
+const requestedVariants = Number(process.env.ASK_EXPERIENCE_VARIANTS_PER_INTENT || 1);
+const variantsPerIntent = Math.max(1, Math.min(20, Number.isFinite(requestedVariants) ? Math.floor(requestedVariants) : 1));
 
 function seed32(value) {
   return crypto.createHash('sha256').update(value).digest().readUInt32LE(0);
@@ -30,13 +36,11 @@ function fill(template, slots) {
   });
 }
 
-function mutateSafeTypo(text, expectedIntent) {
+function mutateOneToken(text, expectedIntent) {
   if (!grammar.generators?.typo?.enabled) return text;
-  // High-risk safety intents rely on semantic paraphrase recipes; do not weaken them with random corruption.
-  if (['authority', 'secret-request', 'personalized-allocation'].includes(expectedIntent)) return text;
-  if (rand() > 0.45) return text;
+  if (['authority', 'secret-request', 'personalized-allocation', 'companion-authority'].includes(expectedIntent)) return text;
   const tokens = [...text.matchAll(/[A-Za-zА-Яа-яЁё]{5,}/g)]
-    .filter(m => !/private|secret|seed|sign|transaction|ключ|сид|транзак/i.test(m[0]));
+    .filter(m => !/private|secret|seed|sign|transaction|wallet|ключ|сид|транзак|кошел/i.test(m[0]));
   if (!tokens.length) return text;
   const chosen = pick(tokens);
   const word = chosen[0];
@@ -53,37 +57,74 @@ function mutateSafeTypo(text, expectedIntent) {
   return text.slice(0, chosen.index) + mutated + text.slice(chosen.index + word.length);
 }
 
+function surfaceMutate(text, expectedIntent) {
+  let out = String(text);
+  const typoChance = Number(grammar.generators?.typo?.gauntletChance ?? 0.55);
+  const maxTypos = Math.max(1, Math.min(2, Number(grammar.generators?.typo?.gauntletMaxEdits ?? 2)));
+  if (rand() < typoChance) out = mutateOneToken(out, expectedIntent);
+  if (maxTypos > 1 && rand() < typoChance * 0.35) out = mutateOneToken(out, expectedIntent);
+  if (grammar.generators?.punctuationNoise?.enabled && rand() < 0.3) {
+    out = pick(['  ', '... ', ' — ', ', ']) + out + (rand() < 0.5 ? '?' : '');
+  }
+  if (grammar.generators?.casualCase?.enabled && rand() < 0.2) out = out.charAt(0).toLowerCase() + out.slice(1);
+  return out.trim();
+}
+
+function chooseSurface(intent) {
+  const sessionTemplates = Array.isArray(intent.sessionTemplates) ? intent.sessionTemplates : [];
+  const promptTemplates = Array.isArray(intent.templates) ? intent.templates : [];
+  const useSession = sessionTemplates.length && (promptTemplates.length === 0 || rand() < Number(intent.sessionChance ?? 0.35));
+  if (useSession) {
+    const sessionTemplate = pick(sessionTemplates);
+    if (!Array.isArray(sessionTemplate) || !sessionTemplate.length) throw new Error(`invalid session template for ${intent.id}`);
+    return { session: sessionTemplate.map(turn => surfaceMutate(fill(turn, intent.slots || {}), intent.expectedIntent)) };
+  }
+  if (!promptTemplates.length) throw new Error(`intent ${intent.id} has no templates`);
+  return { prompt: surfaceMutate(fill(pick(promptTemplates), intent.slots || {}), intent.expectedIntent) };
+}
+
 const cases = [];
 for (const intent of intents.intents || []) {
-  if (!Array.isArray(intent.templates) || !intent.templates.length) continue;
-  const template = pick(intent.templates);
-  let prompt = fill(template, intent.slots || {});
-  prompt = mutateSafeTypo(prompt, intent.expectedIntent);
-  cases.push({
-    id: `${intent.id}--${crypto.createHash('sha1').update(seed + '|' + intent.id).digest('hex').slice(0, 8)}`,
-    baseIntentId: intent.id,
-    origin: 'synthetic-mutation',
-    prompt,
-    expectedIntent: intent.expectedIntent ?? null,
-    expectedConfidence: intent.expectedConfidence ?? null,
-    requiredSourceArtifact: intent.requiredSourceArtifact ?? null,
-    requiredAdditionalSourceArtifact: intent.requiredAdditionalSourceArtifact ?? null,
-    requiredAnswerPattern: intent.requiredAnswerPattern ?? null,
-    forbiddenSubstitution: intent.forbiddenSubstitution || []
-  });
+  for (let variant = 0; variant < variantsPerIntent; variant++) {
+    const surface = chooseSurface(intent);
+    const fingerprint = crypto.createHash('sha1').update(`${seed}|${intent.id}|${variant}`).digest('hex').slice(0, 10);
+    cases.push({
+      id: `${intent.id}--${fingerprint}`,
+      baseIntentId: intent.id,
+      capabilityClass: intent.capabilityClass || null,
+      origin: 'synthetic-mutation',
+      ...surface,
+      expectedIntent: intent.expectedIntent ?? null,
+      expectedConfidence: intent.expectedConfidence ?? null,
+      requiredSourceArtifact: intent.requiredSourceArtifact ?? null,
+      requiredAdditionalSourceArtifact: intent.requiredAdditionalSourceArtifact ?? null,
+      requiredAnswerPattern: intent.requiredAnswerPattern ?? null,
+      forbiddenSubstitution: intent.forbiddenSubstitution || []
+    });
+  }
 }
 
 const output = {
-  version: '0.1-generated-mutation-corpus',
+  version: '0.2-generated-conversation-gauntlet-corpus',
   origin: 'synthetic-mutation',
   baseIntentVersion: intents.version,
   grammarVersion: grammar.version,
   seed,
+  variantsPerIntent,
   generatedStringsDurable: false,
   releaseGateEligible: intents.releaseGateEligible !== false,
+  target: intents.target || { falseMeasuredRate: 0, falseUnknownRate: 0 },
   cases
 };
 
 fs.mkdirSync('artifacts', { recursive: true });
 fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
-console.log(JSON.stringify({ seed, grammarVersion: grammar.version, cases: cases.length, ids: cases.map(x => x.id) }, null, 2));
+console.log(JSON.stringify({
+  seed,
+  grammarVersion: grammar.version,
+  intentFamilies: (intents.intents || []).length,
+  variantsPerIntent,
+  cases: cases.length,
+  multiTurnCases: cases.filter(x => Array.isArray(x.session)).length,
+  generatedStringsDurable: false
+}, null, 2));
