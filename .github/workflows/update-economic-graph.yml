@@ -1,10 +1,14 @@
-# THE HOLDING · ECONOMIC GRAPH v0.1.1
+# THE HOLDING · ECONOMIC GRAPH v0.1.2
 name: "The Holding · Economic Graph"
 
 on:
   workflow_dispatch:
   schedule:
     - cron: "17 8 * * *"
+  workflow_run:
+    workflows:
+      - "The Holding Capital · Unified Refresh"
+    types: [completed]
   pull_request:
     paths:
       - "intelligence/economic-graph/**"
@@ -29,6 +33,11 @@ concurrency:
 
 jobs:
   build:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
