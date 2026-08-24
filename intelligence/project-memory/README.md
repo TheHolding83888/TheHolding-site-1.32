@@ -41,19 +41,19 @@ Selective retrieval is a feature. Do not replace it with “read every historica
 
 ---
 
-## Current deep continuity structure — Aug 23 Real Use pivot
+## Current deep continuity structure — Aug 24 Ask Conversation Gauntlet production green
 
 Latest verified resume entrypoint:
 
-`THE_HOLDING_MASTER_CONTINUITY_2026-08-23_1545_CLAUDE_REVIEW_REAL_USE_PIVOT_PRODUCTION_GREEN.md`
+`THE_HOLDING_MASTER_CONTINUITY_2026-08-24_ASK_CONVERSATION_GAUNTLET_PRODUCTION_GREEN.md`
 
-It closes the Claude-review / real-use repair cycle through #284–#289 and establishes the current development mode:
+It closes the high-volume Ask Conversation Gauntlet v0.1 campaign after clean fresh-main proof, merge, exact runtime materialization and post-merge recovery, while preserving the Real Use operating law:
 
 `BUILD THE BRAIN → USE THE BRAIN → FIND WHERE IT FAILS → THEN BUILD`.
 
-The Aug 22 final-stabilization continuities remain durable inherited precedent, but they are no longer the latest resume entrypoint. The Aug 22 checklist and the Aug 23 Claude-review repair cycle are both closed milestones; reopen either only when fresh live evidence proves regression.
+The Aug 23 Claude-review / Real Use pivot continuity remains the immediate inherited checkpoint, but it is no longer the latest resume entrypoint. Ask Conversation Gauntlet v0.1 is now a closed reusable verification capability, not a standing feature backlog.
 
-The next intelligence bottleneck is genuine experience rather than architecture count. The first Experience Activation milestone is:
+The global bottleneck remains genuine settled experience rather than architecture count. The first Experience Activation milestone is:
 
 `FIRST GENUINE OWNER ECONOMIC DECISION → SETTLED OUTCOME → REVIEWED LESSON`.
 
@@ -71,7 +71,7 @@ Canary PR #37 remains a permanent `never merge` proof artifact.
 - **Market Data / current prices / CoinGecko / Public Capital / TVL propagation → latest continuity + `THE_HOLDING_MARKET_DATA_ONCHAIN_AUTHORITY_CANON_2026-08-21.md` + live Market Data/Shadow/CoinGecko/Public Capital artifacts + fresh heartbeat/workflow evidence;**
 - **Defitea Reporting / cash-flow APR / YieldRing+050 income / VoteMarket events → latest continuity + `THE_HOLDING_REPORTING_REFERENCE_MODEL_CANON_2026-08-22.md` + live Reporting ledger/data + fresh writer evidence;**
 - **Cognitive release drift / writer failed to materialize / Learning, Proposal, Builder, Guardian, Project Memory handoff / THI stale or false RED/GREEN → latest continuity + `THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md` + live subsystem state + exact workflow logs;**
-- **Real Use / Experience Activation / prospective pattern / Ask epistemic drift → latest continuity + Routing Index Real Use block + live observational/owner-experience/Ask evidence;**
+- **Real Use / Experience Activation / prospective pattern / Ask epistemic drift / Conversation Gauntlet → latest continuity + Routing Index Real Use block + Gauntlet contract + live Ask runtime + exact fresh run/artifact evidence;**
 - f(x) / veFXN APR source → latest continuity + live Productivity source report/data + exact FXN Locker guard;
 - founder/company strategy → Owner Operating Context + Founder Decision DNA only when relevant;
 - Security/deployment → fresh Security state + Production Incident postmortem + Recovery canon when trigger/release/handoff behavior matters.
@@ -217,6 +217,8 @@ Preserves:
 - machine observation should generate questions/hypotheses rather than self-promote into lessons;
 - owner economic experience must begin prospectively from a genuine decision, not retroactive backfill;
 - Ask regressions discovered in real use are earned engineering signals;
+- Conversation Gauntlet generated strings remain ephemeral and must never be promoted into durable economic truth;
+- Conversation Gauntlet repairs target semantic/generalization classes and are reproved on fresh unseen seeds;
 - THI is telemetry, not a roadmap target;
 - first target loop is genuine decision → settled outcome → reviewed lesson.
 
@@ -288,7 +290,7 @@ The Aug 22 stabilization checklist is **closed**. Do not treat its incident hist
 
 ## 2026-08-23 Claude review → Real Use pivot milestone
 
-The latest deep continuity closes:
+This inherited deep continuity closed:
 - prospective validation for frozen observational patterns;
 - explicit Proposal/downstream recovery tail;
 - Proposal current-variant identity repair;
@@ -296,7 +298,25 @@ The latest deep continuity closes:
 - Ask epistemic drift repair;
 - transition from architecture growth to Experience Activation / Real Use.
 
-This milestone is also closed as an engineering repair cycle. The next feature is not preselected; it must be earned by actual use or genuine owner decision/outcome experience.
+That milestone remains closed precedent. The next Ask campaign was earned by real-use stress rather than preselected architecture growth.
+
+---
+
+## 2026-08-24 Ask Conversation Gauntlet production milestone
+
+The latest deep continuity closes:
+- permanent Conversation Gauntlet v0.1 verification capability;
+- 21 semantic families × 10 unseen variants = 210 default browser cases;
+- RU/EN/code-switch, typo/voice, multi-turn and epistemic-boundary stress;
+- semantic-class repairs for canonical/query normalization separation, token boundaries, protocol membership, navigation, Owner Brief/Company Understanding, concentration, safety/Answer Contract compatibility and pre-tracking historical boundaries;
+- final clean run with 210/210 final answers, zero harness errors, zero false-MEASURED, zero false-UNKNOWN, zero strict failures and 100% source/confidence/pattern fit;
+- clean one-commit ten-file candidate;
+- PR #293 production merge;
+- exact runtime physical materialization in `main`;
+- post-merge Security and Project Memory recovery;
+- no authority expansion and no synthetic Q&A → economic-learning promotion.
+
+Ask Conversation Gauntlet v0.1 is **PRODUCTION GREEN / CLOSED**. Reopen only if fresh live evidence proves regression.
 
 ---
 
