@@ -14,6 +14,7 @@ on:
       - "intelligence/economic-graph/**"
       - "productivity/fxn-locker-apr-guard.mjs"
       - "productivity/fxn-locker-apr-guard-validation.mjs"
+      - "productivity/yieldring-productivity-overlay.mjs"
       - ".github/workflows/update-economic-graph.yml"
       - ".github/workflows/resume-economic-graph-after-code-change.yml"
       - ".github/workflows/verify-economic-graph-live-build.yml"
@@ -57,7 +58,9 @@ jobs:
         run: |
           set -euo pipefail
           node --check productivity/fxn-locker-apr-guard.mjs
+          node --check productivity/yieldring-productivity-overlay.mjs
           node --check intelligence/economic-graph/economic-graph.mjs
+          node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           node productivity/fxn-locker-apr-guard-validation.mjs
           TMP="$(mktemp)"
           ECONOMIC_GRAPH_FILE="$TMP" node intelligence/economic-graph/economic-graph.mjs --deterministic-validation
@@ -120,7 +123,8 @@ jobs:
           });
           NODE
 
-      - name: Install live probe dependencies
+      - name: Install live probe dependencies on PR
+        if: github.event_name == 'pull_request'
         working-directory: productivity
         run: |
           set -euo pipefail
@@ -131,11 +135,11 @@ jobs:
         if: github.event_name == 'pull_request'
         run: node productivity/fxn-locker-apr-guard.mjs --probe-economic-vitals
 
-      - name: Build live Economic Graph
+      - name: Build canonical same-snapshot Economic Graph
         if: github.event_name != 'pull_request'
-        run: node intelligence/economic-graph/economic-graph.mjs
+        run: node intelligence/economic-graph/economic-graph-canonical-runner.mjs
 
-      - name: Validate live observation boundary
+      - name: Validate canonical observation boundary
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
@@ -143,33 +147,27 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('intelligence/economic-graph/economic-graph.json','utf8'));
+          const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
           const fx=x.latest?.observation;
           const curve=x.cohorts?.['defitea-curve-vecrv']?.latest?.observation;
-          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.2-defitea-fxn-curve-multi-cohort'||!fx||!curve)throw new Error('live Economic Graph multi-cohort state missing');
-          if(x.coverage?.status!=='partial-two-cohort'||Number(x.coverage?.cohortCount)!==2)throw new Error('live two-cohort coverage missing');
-          if(fx.source?.url!=='https://fx.aladdin.club/v2/lock')throw new Error('live f(x) source authority drift');
-          if(fx.source?.sourceType!=='official-frontend-exact-locker-block')throw new Error('live exact Locker block not proven');
-          if(!Number.isFinite(Number(fx.liveObservedAprPct))||!Number.isFinite(Number(fx.drivers?.fxnLocked))||!Number.isFinite(Number(fx.drivers?.fxnCirculatingSupplyLockedPct))||!Number.isFinite(Number(fx.drivers?.totalVeFxn))||!Number.isFinite(Number(fx.drivers?.cumulativeThisWeekWsteth))||!Number.isFinite(Number(fx.drivers?.previousWeekWsteth)))throw new Error('live f(x) economic vitals incomplete');
-          if(Math.abs(Number(fx.aprParityDeltaPctPoints))>0.01)throw new Error('live f(x) APR parity failed');
+          const s=p.engines?.fx_vefxn?.details?.economicSnapshot;
+          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.2-defitea-fxn-curve-multi-cohort'||!fx||!curve)throw new Error('canonical Economic Graph multi-cohort state missing');
+          if(x.coverage?.status!=='partial-two-cohort'||Number(x.coverage?.cohortCount)!==2)throw new Error('canonical two-cohort coverage missing');
+          if(!s||s.snapshotKey!==p.snapshotKey||s.productivityGeneratedAt!==p.generatedAt)throw new Error('canonical f(x) same-snapshot evidence missing');
+          if(fx.source?.url!=='https://fx.aladdin.club/v2/lock'||fx.source?.sourceType!=='official-frontend-exact-locker-block')throw new Error('canonical f(x) source authority drift');
+          if(fx.observedAt!==s.observedAt||fx.source?.rawBlockHash!==s.rawBlockHash)throw new Error('Economic Graph f(x) observation not bound to canonical same-block snapshot');
+          if(!Number.isFinite(Number(fx.liveObservedAprPct))||!Number.isFinite(Number(fx.drivers?.fxnLocked))||!Number.isFinite(Number(fx.drivers?.fxnCirculatingSupplyLockedPct))||!Number.isFinite(Number(fx.drivers?.totalVeFxn))||!Number.isFinite(Number(fx.drivers?.cumulativeThisWeekWsteth))||!Number.isFinite(Number(fx.drivers?.previousWeekWsteth)))throw new Error('canonical f(x) economic vitals incomplete');
+          if(Math.abs(Number(fx.aprParityDeltaPctPoints))>0.01)throw new Error('canonical f(x) same-snapshot APR parity failed');
           if(x.attribution?.primaryDriver!==null||fx.epistemic?.causalAttribution!=='unresolved')throw new Error('unearned f(x) causal attribution');
-
-          if(curve.source?.sourceType!=='onchain')throw new Error('live Curve source authority drift');
-          if(curve.source?.contract!=='0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914')throw new Error('live Curve Fee Distributor contract drift');
-          if(!Number.isFinite(Number(curve.canonicalProductivityAprPct))||!Number.isFinite(Number(curve.drivers?.crvPriceUsd))||!Number.isFinite(Number(curve.drivers?.rollingFourWeekFeesCrvUSD))||!Number.isFinite(Number(curve.drivers?.rollingAverageVeSupply)))throw new Error('live Curve economic drivers incomplete');
-          if(Math.abs(Number(curve.formulaParityDeltaPctPoints))>0.01)throw new Error('live Curve formula parity failed');
-          if(curve.formula?.status!=='proven-canonical-collector-identity')throw new Error('live Curve formula identity missing');
-          if(curve.epistemic?.mechanicalAttribution!=='proven-within-apr-formula'||curve.epistemic?.causalAttribution!=='unresolved-beyond-formula'||curve.epistemic?.primaryDriver!==null)throw new Error('live Curve epistemic boundary regression');
-          console.log('ECONOMIC GRAPH live source PASS',{
+          if(curve.source?.sourceType!=='onchain'||curve.source?.contract!=='0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914')throw new Error('canonical Curve source authority drift');
+          if(!Number.isFinite(Number(curve.canonicalProductivityAprPct))||!Number.isFinite(Number(curve.drivers?.crvPriceUsd))||!Number.isFinite(Number(curve.drivers?.rollingFourWeekFeesCrvUSD))||!Number.isFinite(Number(curve.drivers?.rollingAverageVeSupply)))throw new Error('canonical Curve economic drivers incomplete');
+          if(Math.abs(Number(curve.formulaParityDeltaPctPoints))>0.01)throw new Error('canonical Curve formula parity failed');
+          if(curve.formula?.status!=='proven-canonical-collector-identity')throw new Error('canonical Curve formula identity missing');
+          if(curve.epistemic?.mechanicalAttribution!=='proven-within-apr-formula'||curve.epistemic?.causalAttribution!=='unresolved-beyond-formula'||curve.epistemic?.primaryDriver!==null)throw new Error('canonical Curve epistemic boundary regression');
+          console.log('ECONOMIC GRAPH canonical source PASS',{
             cohorts:x.coverage.cohortCount,
-            fxn:{observedAt:fx.observedAt,apr:fx.liveObservedAprPct,currentWeekWsteth:fx.drivers.cumulativeThisWeekWsteth},
-            curve:{
-              observedAt:curve.observedAt,
-              apr:curve.canonicalProductivityAprPct,
-              formulaApr:curve.formulaReproducedAprPct,
-              rollingFeesCrvUSD:curve.drivers.rollingFourWeekFeesCrvUSD,
-              rollingAverageVeSupply:curve.drivers.rollingAverageVeSupply,
-              latestWeekFeesCrvUSD:curve.drivers.latestCompletedWeek?.tokensCrvUSD
-            }
+            fxn:{observedAt:fx.observedAt,apr:fx.liveObservedAprPct,currentWeekWsteth:fx.drivers.cumulativeThisWeekWsteth,parity:fx.aprParityDeltaPctPoints},
+            curve:{observedAt:curve.observedAt,apr:curve.canonicalProductivityAprPct,formulaApr:curve.formulaReproducedAprPct,rollingFeesCrvUSD:curve.drivers.rollingFourWeekFeesCrvUSD,rollingAverageVeSupply:curve.drivers.rollingAverageVeSupply,latestWeekFeesCrvUSD:curve.drivers.latestCompletedWeek?.tokensCrvUSD}
           });
           NODE
 
@@ -199,7 +197,7 @@ jobs:
               echo "Publish conflict; refusing to guess."
               exit 1
             fi
-            node intelligence/economic-graph/economic-graph.mjs
+            node intelligence/economic-graph/economic-graph-canonical-runner.mjs
             git add "$GENERATED"
             if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
             if git push origin HEAD:main; then
