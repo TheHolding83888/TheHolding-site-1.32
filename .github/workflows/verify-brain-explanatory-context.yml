@@ -59,11 +59,13 @@ jobs:
           node --check intelligence/brain-chatgpt-bridge.mjs
           node --check intelligence/cognitive-stack-verifier.mjs
           node intelligence/cognitive-release-guard.mjs
+          grep -q "protocolAprContexts" intelligence/brain-reasoning-engine.mjs
+          grep -q "unresolved-beyond-formula" intelligence/brain-reasoning-engine.mjs
 
       - name: Build Grounded Brain locally
         run: node intelligence/brain-reasoning-engine.mjs
 
-      - name: Verify Explanatory grounding and causal boundary
+      - name: Verify multi-cohort Explanatory grounding and causal boundary
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
@@ -71,6 +73,7 @@ jobs:
           import { verifyGroundedBrainUpstreams, UPSTREAM_GUARD_VERSION } from './intelligence/brain-upstream-guard.mjs';
 
           const brain = JSON.parse(fs.readFileSync('intelligence/brain-intelligence.json', 'utf8'));
+          const explanatory = JSON.parse(fs.readFileSync('intelligence/explanatory/explanatory-context.json', 'utf8'));
           const upstream = verifyGroundedBrainUpstreams({ brain, requireFreshFlag: true });
           if (upstream.version !== '0.2-exact-canonical-source-binding-explanatory') {
             throw new Error(`Unexpected upstream guard: ${upstream.version}`);
@@ -82,34 +85,75 @@ jobs:
           if (!exp || exp.file !== 'intelligence/explanatory/explanatory-context.json' || exp.exactByteMatch !== true) {
             throw new Error('Explanatory exact-byte upstream binding missing');
           }
+          if (explanatory.engineVersion !== '0.3-multi-cohort-protocol-economic-context' || Number(explanatory.coverage?.protocolEconomicCohortCount) !== 2) {
+            throw new Error('Canonical Explanatory two-cohort source missing');
+          }
 
-          const q = brain.questions?.protocolAprContext;
-          if (q?.status !== 'context-available-causal-attribution-unresolved') {
-            throw new Error('Protocol APR context not available in Brain');
+          const legacy = brain.questions?.protocolAprContext;
+          if (legacy?.status !== 'context-available-causal-attribution-unresolved') {
+            throw new Error('Legacy veFXN protocol APR context not preserved in Brain');
           }
-          if (q?.causalAttribution !== 'unresolved' || q?.primaryDriver !== null) {
-            throw new Error('Brain promoted unproved causal attribution');
+          if (legacy?.causalAttribution !== 'unresolved' || legacy?.primaryDriver !== null) {
+            throw new Error('Brain promoted unproved veFXN causal attribution');
           }
-          if (!Number.isFinite(Number(q?.reportableMeasuredContext?.fxnLocked)) ||
-              !Number.isFinite(Number(q?.reportableMeasuredContext?.totalVeFxn))) {
-            throw new Error('Measured protocol drivers missing from Brain');
+          if (!Number.isFinite(Number(legacy?.reportableMeasuredContext?.fxnLocked)) ||
+              !Number.isFinite(Number(legacy?.reportableMeasuredContext?.totalVeFxn))) {
+            throw new Error('Measured veFXN protocol drivers missing from Brain');
           }
+
+          const contexts = brain.questions?.protocolAprContexts;
+          const fx = contexts?.['defitea-fxn-vefxn'];
+          const curve = contexts?.['defitea-curve-vecrv'];
+          if (!contexts || Object.keys(contexts).length !== 2 || !fx || !curve) {
+            throw new Error('Brain canonical protocolAprContexts must contain exactly f(x) + Curve');
+          }
+          if (fx.status !== 'context-available-causal-attribution-unresolved' || fx.causalAttribution !== 'unresolved' || fx.primaryDriver !== null) {
+            throw new Error('Brain veFXN canonical causal boundary drift');
+          }
+          if (curve.status !== 'mechanics-proven-upstream-cause-unresolved') {
+            throw new Error('Brain Curve mechanical context missing');
+          }
+          if (curve.mechanics?.status !== 'proven-canonical-collector-identity' || curve.mechanics?.mechanicalAttribution !== 'proven-within-apr-formula') {
+            throw new Error('Brain Curve proven mechanics missing');
+          }
+          if (curve.causalAttribution !== 'unresolved-beyond-formula' || curve.primaryDriver !== null) {
+            throw new Error('Brain over-promoted Curve upstream causality');
+          }
+          if (!Number.isFinite(Number(curve?.reportableMeasuredContext?.rollingFourWeekFeesCrvUSD)) ||
+              !Number.isFinite(Number(curve?.reportableMeasuredContext?.rollingAverageVeSupply)) ||
+              !Number.isFinite(Number(curve?.reportableMeasuredContext?.crvPriceUsd))) {
+            throw new Error('Brain Curve mechanical inputs missing');
+          }
+          if (Number(brain.currentPosture?.protocolEconomics?.cohortCount) !== 2 ||
+              brain.currentPosture?.protocolEconomics?.legacyAliasCohortId !== 'defitea-fxn-vefxn') {
+            throw new Error('Brain multi-cohort currentPosture contract missing');
+          }
+
           const whatChangedExp = (brain.questions?.whatChanged?.evidence ?? []).filter(ev =>
-            ev.source === 'intelligence/explanatory/explanatory-context.json' &&
-            ev.pointer === '/explanations/protocolAprChangeContext'
+            ev.source === 'intelligence/explanatory/explanatory-context.json'
           );
-          if (whatChangedExp.length !== 1 || whatChangedExp[0].sourceSha256 !== exp.sha256) {
-            throw new Error('Explanatory evidence missing from Brain handoff surface');
+          const pointers = new Set(whatChangedExp.map(ev => ev.pointer));
+          for (const pointer of [
+            '/explanations/protocolAprChangeContext',
+            '/explanations/protocolAprChangeContexts/defitea-fxn-vefxn',
+            '/explanations/protocolAprChangeContexts/defitea-curve-vecrv'
+          ]) {
+            if (!pointers.has(pointer)) throw new Error(`Explanatory evidence pointer missing from Brain: ${pointer}`);
+          }
+          if (whatChangedExp.some(ev => ev.sourceSha256 !== exp.sha256)) {
+            throw new Error('Brain multi-cohort Explanatory evidence hash mismatch');
           }
           if ((brain.reasoningCases ?? []).length > 25) throw new Error('Reasoning case capacity expanded unexpectedly');
           if (brain.constraints?.actionMode !== 'proposal-only' || brain.constraints?.autonomousCapitalActionAllowed !== false) {
             throw new Error('Brain authority regression');
           }
-          console.log('BRAIN EXPLANATORY CONTEXT PASS', {
+          console.log('BRAIN MULTI-COHORT EXPLANATORY CONTEXT PASS', {
             sources: upstream.sourceCount,
-            protocolContext: q.status,
-            causalAttribution: q.causalAttribution,
-            primaryDriver: q.primaryDriver,
+            cohorts: Object.keys(contexts).length,
+            fxnStatus: fx.status,
+            curveStatus: curve.status,
+            curveMechanicalAttribution: curve.mechanics.mechanicalAttribution,
+            curveUpstreamCause: curve.causalAttribution,
             reasoningCases: brain.reasoningCases.length,
           });
           NODE
@@ -121,7 +165,7 @@ jobs:
           node intelligence/brain-chatgpt-bridge.mjs
           node intelligence/brain-chatgpt-bridge.mjs --verify-current
 
-      - name: Verify Explanatory evidence reaches Bridge
+      - name: Verify multi-cohort Explanatory evidence reaches Bridge
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -133,18 +177,24 @@ jobs:
             throw new Error('Bridge does not validate five Brain upstream sources');
           }
           const expEvidence = (bridge.evidenceCatalog ?? []).filter(ev =>
-            ev.source === 'intelligence/explanatory/explanatory-context.json' &&
-            ev.pointer === '/explanations/protocolAprChangeContext'
+            ev.source === 'intelligence/explanatory/explanatory-context.json'
           );
-          if (expEvidence.length !== 1) throw new Error('Explanatory evidence absent or duplicated in Bridge');
+          const pointers = new Set(expEvidence.map(ev => ev.pointer));
+          for (const pointer of [
+            '/explanations/protocolAprChangeContext',
+            '/explanations/protocolAprChangeContexts/defitea-fxn-vefxn',
+            '/explanations/protocolAprChangeContexts/defitea-curve-vecrv'
+          ]) {
+            if (!pointers.has(pointer)) throw new Error(`Bridge missing canonical protocol evidence: ${pointer}`);
+          }
           if (bridge.constraints?.executionAllowed !== false ||
               bridge.constraints?.apiRequired !== false ||
               bridge.constraints?.modelCallPerformed !== false) {
             throw new Error('Bridge authority/cost boundary regression');
           }
-          console.log('BRIDGE EXPLANATORY CONTEXT PASS', {
+          console.log('BRIDGE MULTI-COHORT EXPLANATORY CONTEXT PASS', {
             upstreamSources: bridge.grounding.upstreamValidation.sourceCount,
-            evidenceId: expEvidence[0].evidenceId,
+            protocolEvidenceCount: [...pointers].filter(x => x.startsWith('/explanations/protocolAprChangeContext')).length,
             noExecution: bridge.constraints.executionAllowed === false,
           });
           NODE
@@ -166,7 +216,7 @@ jobs:
           if (stack.operatingContract?.executionAuthority !== 'none') {
             throw new Error('Cognitive Stack execution authority regression');
           }
-          console.log('COGNITIVE STACK EXPLANATORY INTEGRATION PASS', {
+          console.log('COGNITIVE STACK MULTI-COHORT EXPLANATORY INTEGRATION PASS', {
             status: stack.status,
             ready: stack.readyForManualInterpretation,
             chainHash: stack.integrity?.chainHash,

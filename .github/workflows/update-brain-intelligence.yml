@@ -108,28 +108,55 @@ jobs:
           if (explanatory.freshness !== 'fresh' || !explanatory.sha256) {
             throw new Error('Explanatory Context grounding is not fresh/exact');
           }
+
           const protocol = brain.questions?.protocolAprContext;
           if (protocol?.status !== 'context-available-causal-attribution-unresolved') {
-            throw new Error('Brain protocol APR context missing');
+            throw new Error('Legacy Brain veFXN protocol APR context missing');
           }
           if (protocol?.causalAttribution !== 'unresolved' || protocol?.primaryDriver !== null) {
-            throw new Error('Brain causal boundary weakened');
+            throw new Error('Legacy Brain veFXN causal boundary weakened');
           }
           if (!Array.isArray(protocol?.evidence) || protocol.evidence.length !== 1) {
-            throw new Error('Brain protocol context evidence missing');
+            throw new Error('Legacy Brain protocol context evidence missing');
           }
           const protocolEvidence = protocol.evidence[0];
           if (protocolEvidence.source !== 'intelligence/explanatory/explanatory-context.json' ||
               protocolEvidence.pointer !== '/explanations/protocolAprChangeContext' ||
               protocolEvidence.sourceSha256 !== explanatory.sha256) {
-            throw new Error('Brain protocol context is not exact-bound to Explanatory Context');
+            throw new Error('Legacy Brain protocol context is not exact-bound to Explanatory Context');
           }
-          if (!(brain.questions?.whatChanged?.evidence ?? []).some(ev =>
-            ev.source === 'intelligence/explanatory/explanatory-context.json' &&
-            ev.pointer === '/explanations/protocolAprChangeContext' &&
-            ev.sourceSha256 === explanatory.sha256
-          )) {
-            throw new Error('Explanatory evidence is not exposed through Brain whatChanged handoff');
+
+          const contexts = brain.questions?.protocolAprContexts;
+          const fx = contexts?.['defitea-fxn-vefxn'];
+          const curve = contexts?.['defitea-curve-vecrv'];
+          if (!contexts || Object.keys(contexts).length !== 2 || !fx || !curve) {
+            throw new Error('Canonical Brain protocolAprContexts must contain exactly two cohorts');
+          }
+          if (fx.causalAttribution !== 'unresolved' || fx.primaryDriver !== null) {
+            throw new Error('Canonical veFXN causal boundary weakened');
+          }
+          if (curve.status !== 'mechanics-proven-upstream-cause-unresolved' ||
+              curve.mechanics?.status !== 'proven-canonical-collector-identity' ||
+              curve.mechanics?.mechanicalAttribution !== 'proven-within-apr-formula') {
+            throw new Error('Canonical Curve mechanical context missing');
+          }
+          if (curve.causalAttribution !== 'unresolved-beyond-formula' || curve.primaryDriver !== null) {
+            throw new Error('Curve upstream causal boundary weakened');
+          }
+          if (Number(brain.currentPosture?.protocolEconomics?.cohortCount) !== 2 ||
+              brain.currentPosture?.protocolEconomics?.legacyAliasCohortId !== 'defitea-fxn-vefxn') {
+            throw new Error('Brain currentPosture multi-cohort contract missing');
+          }
+
+          const whatChangedPointers = new Set((brain.questions?.whatChanged?.evidence ?? [])
+            .filter(ev => ev.source === 'intelligence/explanatory/explanatory-context.json' && ev.sourceSha256 === explanatory.sha256)
+            .map(ev => ev.pointer));
+          for (const pointer of [
+            '/explanations/protocolAprChangeContext',
+            '/explanations/protocolAprChangeContexts/defitea-fxn-vefxn',
+            '/explanations/protocolAprChangeContexts/defitea-curve-vecrv'
+          ]) {
+            if (!whatChangedPointers.has(pointer)) throw new Error(`Brain whatChanged missing Explanatory evidence ${pointer}`);
           }
 
           if (history.version !== '0.1-brain-history') {
@@ -141,13 +168,16 @@ jobs:
           if (!brain.bridge?.inputCompositeHash || !brain.bridge?.snapshotHash) {
             throw new Error('Brain bridge hashes missing');
           }
-          console.log('Brain contract PASS', {
+          console.log('Brain multi-cohort contract PASS', {
             status: brain.status,
             mode: brain.mode,
             reasoningCases: brain.reasoningCases.length,
             evidence: brain.evidenceLedger.length,
             protocolContext: protocol.status,
             protocolCausalAttribution: protocol.causalAttribution,
+            protocolCohorts: Object.keys(contexts).length,
+            curveContext: curve.status,
+            curveUpstreamCause: curve.causalAttribution,
             explanatoryFreshness: explanatory.freshness,
             historyObservations: history.observationCount,
           });
@@ -236,7 +266,15 @@ jobs:
           }
           if (brain.questions?.protocolAprContext?.causalAttribution !== 'unresolved' ||
               brain.questions?.protocolAprContext?.primaryDriver !== null) {
-            throw new Error('Protocol context causal boundary changed after Brain build');
+            throw new Error('Legacy protocol context causal boundary changed after Brain build');
+          }
+          const contexts = brain.questions?.protocolAprContexts;
+          const curve = contexts?.['defitea-curve-vecrv'];
+          if (!contexts || Object.keys(contexts).length !== 2 ||
+              contexts?.['defitea-fxn-vefxn']?.causalAttribution !== 'unresolved' ||
+              curve?.causalAttribution !== 'unresolved-beyond-formula' ||
+              curve?.primaryDriver !== null) {
+            throw new Error('Canonical multi-cohort causal boundary changed after Brain build');
           }
           for (const item of brain.reasoningCases ?? []) {
             if (!item.evidence?.length) {
@@ -244,7 +282,7 @@ jobs:
             }
           }
 
-          console.log('Post-rebase grounding integrity PASS.');
+          console.log('Post-rebase multi-cohort grounding integrity PASS.');
           NODE
           }
 

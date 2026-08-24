@@ -48,6 +48,8 @@ const FILES = {
 const ENGINE_VERSION = '0.1-deterministic-evidence-bound-reasoner';
 const OUTPUT_VERSION = '0.1-grounded-reasoning-gateway';
 const HISTORY_VERSION = '0.1-brain-history';
+const FXN_COHORT_ID = 'defitea-fxn-vefxn';
+const CURVE_COHORT_ID = 'defitea-curve-vecrv';
 
 function fail(message) {
   throw new Error(message);
@@ -276,12 +278,43 @@ if (explanatory?.authority?.recommendationAuthority !== false || explanatory?.au
   fail('Explanatory Context authority widened unexpectedly');
 }
 
-const protocolAprContext = explanatory?.explanations?.protocolAprChangeContext;
-if (!protocolAprContext || protocolAprContext.status !== 'context-available-causal-attribution-unresolved') {
-  fail('Explanatory protocol APR context unavailable');
+const protocolAprContexts = explanatory?.explanations?.protocolAprChangeContexts;
+if (!protocolAprContexts || typeof protocolAprContexts !== 'object' || Array.isArray(protocolAprContexts)) {
+  fail('Canonical multi-cohort protocol APR context unavailable');
 }
-if (protocolAprContext.causalAttribution !== 'unresolved' || protocolAprContext.primaryDriver !== null) {
-  fail('Protocol APR context causal boundary weakened');
+const protocolCohortEntries = Object.entries(protocolAprContexts);
+if (protocolCohortEntries.length !== 2 || Number(explanatory?.coverage?.protocolEconomicCohortCount) !== 2) {
+  fail('Brain requires the current two-cohort Explanatory protocol-economic surface');
+}
+const fxnProtocolContext = protocolAprContexts[FXN_COHORT_ID];
+const curveProtocolContext = protocolAprContexts[CURVE_COHORT_ID];
+if (!fxnProtocolContext || !curveProtocolContext) fail('Required f(x)/Curve protocol cohorts missing');
+
+// Compatibility alias remains veFXN until downstream consumers migrate.
+const protocolAprContext = explanatory?.explanations?.protocolAprChangeContext;
+if (!protocolAprContext || protocolAprContext.coverage?.cohortId !== FXN_COHORT_ID) {
+  fail('Explanatory legacy veFXN protocol APR alias unavailable');
+}
+if (protocolAprContext.provenance?.observationId !== fxnProtocolContext.provenance?.observationId) {
+  fail('Legacy veFXN alias diverged from canonical cohort');
+}
+if (fxnProtocolContext.status !== 'context-available-causal-attribution-unresolved' ||
+    fxnProtocolContext.causalAttribution !== 'unresolved' || fxnProtocolContext.primaryDriver !== null) {
+  fail('veFXN causal boundary weakened');
+}
+if (curveProtocolContext.status !== 'mechanics-proven-upstream-cause-unresolved' ||
+    curveProtocolContext.mechanics?.status !== 'proven-canonical-collector-identity' ||
+    curveProtocolContext.mechanics?.mechanicalAttribution !== 'proven-within-apr-formula') {
+  fail('Curve proven mechanical context unavailable');
+}
+if (curveProtocolContext.causalAttribution !== 'unresolved-beyond-formula' || curveProtocolContext.primaryDriver !== null) {
+  fail('Curve upstream causal boundary weakened');
+}
+if (explanatory?.answerability?.['what-protocol-contexts-accompanied-apr'] !== 'answerable-by-canonical-multi-cohort-context') {
+  fail('Explanatory multi-cohort protocol answerability unavailable');
+}
+if (explanatory?.answerability?.['how-curve-vecrv-reference-apr-is-formed'] !== 'answerable-by-proven-mechanical-identity') {
+  fail('Explanatory Curve mechanical answerability unavailable');
 }
 if (explanatory?.answerability?.['why-protocol-apr-changed'] !== 'context-available-cause-unresolved') {
   fail('Explanatory protocol APR answerability boundary unexpected');
@@ -559,7 +592,31 @@ const baseWhatChangedAnswer = economicChangeCount === 0 && securityNewCount === 
   ? 'No new material Observer or Security change events are present in the current canonical inputs. Existing watch items remain active.'
   : `Current canonical inputs contain ${economicChangeCount} material Observer change(s), ${securityNewCount} new security finding event(s), and ${securityResolvedCount} resolved security finding event(s).`;
 
-const protocolContextSentence = `Canonical protocol-economic context is available for ${protocolAprContext.coverage?.protocol ?? 'the first protocol cohort'} ${protocolAprContext.coverage?.mechanism ?? ''}; measured driver context may be reported, while causal attribution remains unresolved.`;
+function summarizeProtocolContext(context) {
+  return {
+    cohortId: context.coverage?.cohortId ?? null,
+    status: context.status,
+    companyRegistry: context.coverage?.companyRegistry ?? null,
+    company: context.coverage?.company ?? null,
+    protocol: context.coverage?.protocol ?? null,
+    mechanism: context.coverage?.mechanism ?? null,
+    asset: context.coverage?.asset ?? null,
+    canonicalAprPct: context.apr?.canonicalProductivityPct ?? null,
+    aprDeltaFromPriorGraphObservationPctPoints: context.apr?.deltaFromPriorGraphObservationPctPoints ?? null,
+    mechanicalAttribution: context.mechanics?.mechanicalAttribution ?? null,
+    causalAttribution: context.causalAttribution,
+    primaryDriver: context.primaryDriver,
+    sourceObservationId: context.provenance?.observationId ?? null,
+  };
+}
+
+const protocolEconomicCohorts = Object.fromEntries(
+  protocolCohortEntries.map(([cohortId, context]) => [cohortId, summarizeProtocolContext(context)])
+);
+const protocolLabels = protocolCohortEntries.map(([, context]) =>
+  `${context.coverage?.protocol ?? 'unknown'} ${context.coverage?.mechanism ?? ''}`.trim()
+);
+const protocolContextSentence = `Canonical protocol-economic context is available across ${protocolCohortEntries.length} cohorts (${protocolLabels.join('; ')}). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.`;
 const whatChangedAnswer = `${baseWhatChangedAnswer} ${protocolContextSentence}`;
 
 const protocolContextEvidence = evidence(
@@ -569,14 +626,35 @@ const protocolContextEvidence = evidence(
   sourceMeta.explanatory.sha256,
   sourceMeta.explanatory.generatedAt,
   {
-    interpretation: 'normalized-measured-context-not-causal-attribution',
-    note: 'Canonical Explanatory Context derived from Economic Graph. Values are reportable; causal attribution remains explicitly unresolved.',
+    interpretation: 'legacy-vefxn-alias-measured-context-not-causal-attribution',
+    note: 'Compatibility alias for the veFXN cohort. Canonical multi-cohort evidence is also included separately.',
   }
 );
+
+const protocolContextEvidenceByCohort = Object.fromEntries(
+  protocolCohortEntries.map(([cohortId, context]) => [
+    cohortId,
+    evidence(
+      FILES.explanatory,
+      `/explanations/protocolAprChangeContexts/${cohortId}`,
+      context,
+      sourceMeta.explanatory.sha256,
+      sourceMeta.explanatory.generatedAt,
+      {
+        interpretation: context.mechanics?.status === 'proven-canonical-collector-identity'
+          ? 'normalized-proven-mechanical-context-upstream-cause-unresolved'
+          : 'normalized-measured-context-not-causal-attribution',
+        note: 'Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort.',
+      }
+    )
+  ])
+);
+const canonicalProtocolContextEvidence = Object.values(protocolContextEvidenceByCohort);
 
 const evidenceLedger = dedupeEvidence([
   ...reasoningCases.flatMap((item) => item.evidence),
   protocolContextEvidence,
+  ...canonicalProtocolContextEvidence,
 ]);
 
 const correctionMeta =
@@ -613,6 +691,7 @@ const output = {
       correctionPrecedence: correctionMeta?.interpretationPrecedence ?? null,
     },
     protocolEconomics: {
+      // Legacy scalar fields remain bound to veFXN until downstream consumers migrate.
       status: protocolAprContext.status,
       companyRegistry: protocolAprContext.coverage?.companyRegistry ?? null,
       company: protocolAprContext.coverage?.company ?? null,
@@ -624,6 +703,10 @@ const output = {
       causalAttribution: protocolAprContext.causalAttribution,
       primaryDriver: protocolAprContext.primaryDriver,
       sourceObservationId: protocolAprContext.provenance?.observationId ?? null,
+      legacyAliasCohortId: FXN_COHORT_ID,
+      cohortCount: protocolCohortEntries.length,
+      activeCohortIds: protocolCohortEntries.map(([cohortId]) => cohortId),
+      cohorts: protocolEconomicCohorts,
     },
     security: {
       status: security?.status ?? null,
@@ -654,6 +737,7 @@ const output = {
           sourceMeta.security.generatedAt
         ),
         protocolContextEvidence,
+        ...canonicalProtocolContextEvidence,
       ]),
     },
     protocolAprContext: {
@@ -665,6 +749,21 @@ const output = {
       measuredMovement: protocolAprContext.measuredMovement,
       evidence: [protocolContextEvidence],
     },
+    protocolAprContexts: Object.fromEntries(
+      protocolCohortEntries.map(([cohortId, context]) => [cohortId, {
+        answer: context.explanation,
+        status: context.status,
+        coverage: context.coverage,
+        apr: context.apr,
+        causalClass: context.causalClass ?? null,
+        causalAttribution: context.causalAttribution,
+        primaryDriver: context.primaryDriver,
+        reportableMeasuredContext: context.measuredDrivers,
+        measuredMovement: context.measuredMovement,
+        mechanics: context.mechanics ?? null,
+        evidence: [protocolContextEvidenceByCohort[cohortId]],
+      }])
+    ),
     whyItMatters: reasoningCases.map((item) => ({
       id: item.id,
       entity: item.entity,
@@ -706,6 +805,7 @@ const output = {
       'No reasoning case without evidence.',
       'Unknown or stale remains unknown or stale.',
       'Measured protocol-economic context is not causal attribution.',
+      'A proven mechanical identity may explain how a metric is formed without proving why its upstream inputs changed.',
       'Correction ledger interpretation takes precedence over superseded historical interpretation when applicable.',
       'Recommendations are proposals, not executable actions.',
       'Security-critical workflow-plane changes remain human-gated.',
@@ -749,6 +849,9 @@ const observation = {
   economicWatchCount,
   protocolAprContextStatus: protocolAprContext.status,
   protocolAprCausalAttribution: protocolAprContext.causalAttribution,
+  protocolAprContextCount: protocolCohortEntries.length,
+  protocolAprContextStatuses: Object.fromEntries(protocolCohortEntries.map(([id, context]) => [id, context.status])),
+  protocolAprCausalAttributions: Object.fromEntries(protocolCohortEntries.map(([id, context]) => [id, context.causalAttribution])),
   security: { critical, high, medium },
   sourceHashes: Object.fromEntries(
     Object.entries(sourceMeta).map(([k, v]) => [k, v.sha256])
@@ -790,15 +893,23 @@ const briefLines = [
   '### What changed',
   output.questions.whatChanged.answer,
   '',
-  '### Protocol economic context',
-  `- Cohort: ${protocolAprContext.coverage?.company ?? 'unknown'} · ${protocolAprContext.coverage?.protocol ?? 'unknown'} · ${protocolAprContext.coverage?.mechanism ?? 'unknown'}`,
-  `- Canonical APR: ${protocolAprContext.apr?.canonicalProductivityPct ?? 'unknown'}%`,
-  `- Context status: ${protocolAprContext.status}`,
-  `- Causal attribution: ${protocolAprContext.causalAttribution}`,
-  `- Primary driver: ${protocolAprContext.primaryDriver ?? 'unresolved'}`,
-  '',
-  '### Why it matters / What follows / What should be done',
+  `### Protocol economic contexts · ${protocolCohortEntries.length} cohorts`,
 ];
+
+for (const [cohortId, context] of protocolCohortEntries) {
+  briefLines.push(
+    '',
+    `#### ${context.coverage?.company ?? 'unknown'} · ${context.coverage?.protocol ?? 'unknown'} · ${context.coverage?.mechanism ?? 'unknown'}`,
+    `- Cohort ID: ${cohortId}`,
+    `- Canonical APR: ${context.apr?.canonicalProductivityPct ?? 'unknown'}%`,
+    `- Context status: ${context.status}`,
+    `- Mechanical attribution: ${context.mechanics?.mechanicalAttribution ?? 'not proven'}`,
+    `- Causal attribution: ${context.causalAttribution}`,
+    `- Primary driver: ${context.primaryDriver ?? 'unresolved'}`
+  );
+}
+
+briefLines.push('', '### Why it matters / What follows / What should be done');
 
 if (reasoningCases.length === 0) {
   briefLines.push('', '- No active reasoning cases.');
@@ -823,6 +934,7 @@ briefLines.push(
   '',
   'This layer does not execute capital actions, mutate methodology, rewrite source data, or modify the workflow plane.',
   'Measured protocol-economic context remains context until a protocol-specific formula or onchain accounting identity proves causation.',
+  'A proven mechanical identity never authorizes an unsupported upstream causal narrative.',
   'Every reasoning case is evidence-bound and proposal-only.',
   ''
 );
@@ -856,6 +968,8 @@ console.log(JSON.stringify({
   explanatorySourceFreshness: output.grounding.sources.explanatory?.freshness ?? null,
   protocolAprContextStatus: output.questions.protocolAprContext.status,
   protocolAprCausalAttribution: output.questions.protocolAprContext.causalAttribution,
+  protocolAprContextCount: Object.keys(output.questions.protocolAprContexts || {}).length,
+  curveProtocolContextStatus: output.questions.protocolAprContexts?.[CURVE_COHORT_ID]?.status ?? null,
   inputCompositeHash: output.bridge.inputCompositeHash,
   snapshotHash: output.bridge.snapshotHash,
 }, null, 2));
