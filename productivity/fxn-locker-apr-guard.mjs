@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · f(x) veFXN exact-source APR authority guard v0.3.2
+ * The Holding · f(x) veFXN exact-source APR authority guard v0.3.3
  *
  * The legacy collector can observe the dynamic f(x) page but historically
  * selected the first generic APR before falling back to the FXN Locker scope.
@@ -9,12 +9,11 @@
  * then verifies the materialized output before either canonical writer can
  * publish it.
  *
- * v0.3.2 also exposes a read-only economic-vitals probe for Defitea Economic
- * Graph. It reads APR, FXN Locked, locked share of circulating FXN, Total veFXN,
- * current-week wstETH revenue and previous-week wstETH revenue from the same
- * exact official Locker block. APR authority and Economic Graph now share the
- * same exact Locker-block selection path so a narrower ancestor cannot drift.
- * The economic probe does not mutate Productivity and does not infer causation.
+ * v0.3.3 also exposes a read-only economic-vitals probe for Defitea Economic
+ * Graph. APR authority and Economic Graph share the same exact Locker-block
+ * selection path. The browser waits for a numeric percentage bound to the APR
+ * label itself, so a faster-loading nearby circulating-supply percentage can
+ * never make the Locker look APR-ready before the real APR has loaded.
  *
  * Fail closed on ambiguity or missing source data.
  * No execution authority. No economic-methodology mutation.
@@ -87,9 +86,6 @@ export function extractFxnLockerApr(blocks) {
     if (start < 0) continue;
     const scoped = text.slice(start, start + 420);
 
-    // Current canonical layout is label-first: "FXN Locker APR 21.06% ...".
-    // Require the APR number to be directly attached to the APR label so the
-    // nearby "77.07% of FXN Circulating Supply" can never masquerade as APR.
     const labelFirst=scoped.match(/\bFXN Locker\b.{0,220}?\bAPR\b\s*[:\-]?\s*([0-9]+(?:[.,][0-9]+)?)\s*%/i);
     if(labelFirst){
       const apr=percentValue(labelFirst[1]);
@@ -97,8 +93,6 @@ export function extractFxnLockerApr(blocks) {
       continue;
     }
 
-    // Bounded compatibility for older value-first renderings only. This is
-    // evaluated only when no label-first APR exists in the exact Locker scope.
     const valueFirst=scoped.match(/\bFXN Locker\b.{0,220}?([0-9]+(?:[.,][0-9]+)?)\s*%.{0,60}?\bAPR\b/i);
     if(valueFirst){
       const apr=percentValue(valueFirst[1]);
@@ -218,7 +212,7 @@ export function applyExactFxnLockerApr(report, data, exactApr) {
 
   data.diagnostics=data.diagnostics||{};
   data.diagnostics.fxnLockerAprAuthority={
-    version:'0.3.2-exact-official-locker-block-authority',
+    version:'0.3.3-exact-apr-ready-locker-block-authority',
     source:FXN_LOCK_URL,
     sourceMetric:'veFXN Locker APR',
     previousCollectorApr:Number.isFinite(previousApr)?previousApr:null,
@@ -226,6 +220,7 @@ export function applyExactFxnLockerApr(report, data, exactApr) {
     adjustedCompanies,
     nearbyCirculatingSupplyPctCannotBecomeApr:true,
     aprAndEconomicVitalsShareExactBlockSelection:true,
+    aprReadinessRequiresAprBoundPercentage:true,
     historicalSnapshotsRewritten:false,
     executionAuthority:'none'
   };
@@ -242,7 +237,29 @@ async function collectLockerBlocks({requireEconomicVitals=false}={}) {
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0 Safari/537.36'
       });
       await page.goto(FXN_LOCK_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForTimeout(6000);
+
+      // Dynamic source values do not necessarily settle together. Wait until
+      // the actual APR label has its own percentage, rather than treating any
+      // percentage elsewhere in the Locker as evidence that APR is ready.
+      await page.waitForFunction(({requireEconomicVitals}) => {
+        const norm = value => String(value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+        const nodes = Array.from(document.querySelectorAll('body *')).filter(el => norm(el.textContent) === 'FXN Locker');
+        for (const label of nodes) {
+          let node=label;
+          for(let depth=0;node&&depth<12;depth++,node=node.parentElement){
+            const text=norm(node.innerText||node.textContent);
+            const start=text.toLowerCase().indexOf('fxn locker');
+            if(start<0) continue;
+            const scoped=text.slice(start,start+420);
+            const labelFirst=/\bFXN Locker\b.{0,220}?\bAPR\b\s*[:\-]?\s*[0-9]+(?:[.,][0-9]+)?\s*%/i.test(scoped);
+            const valueFirst=/\bFXN Locker\b.{0,220}?[0-9]+(?:[.,][0-9]+)?\s*%.{0,60}?\bAPR\b/i.test(scoped);
+            const hasVitals=/\bFXN Locked\b/i.test(text)&&/\bof FXN Circulating Supply\b/i.test(text)&&/\bTotal veFXN\b/i.test(text)&&/\bCumulative This Week\b/i.test(text)&&/\bPrevious Week\b/i.test(text);
+            if((labelFirst||valueFirst)&&(!requireEconomicVitals||hasVitals)) return true;
+          }
+        }
+        return false;
+      }, {requireEconomicVitals}, {timeout:20000,polling:500});
+
       const blocks = await page.evaluate(({requireEconomicVitals}) => {
         const norm = value => String(value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
         const nodes = Array.from(document.querySelectorAll('body *')).filter(el => norm(el.textContent) === 'FXN Locker');
@@ -251,9 +268,13 @@ async function collectLockerBlocks({requireEconomicVitals=false}={}) {
           let node = label;
           for (let depth = 0; node && depth < 12; depth++, node = node.parentElement) {
             const text = norm(node.innerText || node.textContent);
-            const hasApr=/\bAPR\b/i.test(text) && /[0-9]+(?:[.,][0-9]+)?\s*%/.test(text);
+            const start=text.toLowerCase().indexOf('fxn locker');
+            if(start<0) continue;
+            const scoped=text.slice(start,start+420);
+            const labelFirst=/\bFXN Locker\b.{0,220}?\bAPR\b\s*[:\-]?\s*[0-9]+(?:[.,][0-9]+)?\s*%/i.test(scoped);
+            const valueFirst=/\bFXN Locker\b.{0,220}?[0-9]+(?:[.,][0-9]+)?\s*%.{0,60}?\bAPR\b/i.test(scoped);
             const hasVitals=/\bFXN Locked\b/i.test(text)&&/\bof FXN Circulating Supply\b/i.test(text)&&/\bTotal veFXN\b/i.test(text)&&/\bCumulative This Week\b/i.test(text)&&/\bPrevious Week\b/i.test(text);
-            if (hasApr && (!requireEconomicVitals || hasVitals)) {
+            if ((labelFirst||valueFirst) && (!requireEconomicVitals || hasVitals)) {
               out.push(text);
               break;
             }
@@ -261,7 +282,7 @@ async function collectLockerBlocks({requireEconomicVitals=false}={}) {
         }
         return out;
       }, {requireEconomicVitals});
-      if(!Array.isArray(blocks)||!blocks.length) throw new Error(requireEconomicVitals?'f(x) economic-vitals probe: Locker block unavailable':'f(x) exact-source guard: Locker block unavailable');
+      if(!Array.isArray(blocks)||!blocks.length) throw new Error(requireEconomicVitals?'f(x) economic-vitals probe: APR-ready Locker block unavailable':'f(x) exact-source guard: APR-ready Locker block unavailable');
       return blocks;
     } catch (error) {
       lastError = error;
@@ -274,9 +295,6 @@ async function collectLockerBlocks({requireEconomicVitals=false}={}) {
 }
 
 async function collectExactFxnLockerApr() {
-  // Use the same exact full Locker block as the Economic Graph probe. This
-  // prevents a smaller ancestor that merely contains another percentage from
-  // becoming a separate APR authority path.
   return extractFxnLockerApr(await collectLockerBlocks({requireEconomicVitals:true}));
 }
 
