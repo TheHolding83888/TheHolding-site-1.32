@@ -39,6 +39,24 @@ jobs:
           node-version: '22'
           package-manager-cache: false
 
+      - name: Diagnostic exact release hashes
+        run: |
+          set -euo pipefail
+          sha256sum \
+            intelligence/brain-upstream-guard.mjs \
+            intelligence/brain-reasoning-engine.mjs \
+            intelligence/brain-policy.json \
+            intelligence/brain-chatgpt-bridge.mjs \
+            intelligence/brain-chatgpt-bridge-policy.json \
+            intelligence/brain-chatgpt-bridge-schema.json \
+            intelligence/cognitive-stack-verifier.mjs \
+            intelligence/cognitive-release-guard.mjs \
+            security/security-sentinel.mjs \
+            .github/workflows/update-brain-intelligence.yml \
+            .github/workflows/update-brain-chatgpt-bridge.yml \
+            .github/workflows/refresh-cognitive-stack.yml \
+            .github/workflows/security-sentinel.yml
+
       - name: Verify exact-byte cognitive release contract
         run: |
           set -euo pipefail
