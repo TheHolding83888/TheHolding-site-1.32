@@ -1,7 +1,7 @@
 {
   "version": "0.1-economic-graph",
   "engineVersion": "0.2-defitea-fxn-curve-multi-cohort",
-  "generatedAt": "2026-08-25T08:57:59.958Z",
+  "generatedAt": "2026-08-25T11:45:01.670Z",
   "status": "partial-first-cohort",
   "statusCompatibility": {
     "deprecated": true,
@@ -1415,11 +1415,12 @@
     "cross-protocol capital-flow edges and prospective pattern evaluation"
   ],
   "candidateLayer": {
-    "version": "0.1-aerodrome-veaero-shadow-admission",
+    "version": "0.2-multi-candidate-shadow-admission",
     "status": "shadow-admission-active",
-    "candidateCount": 1,
+    "candidateCount": 2,
     "candidateIds": [
-      "defitea-aerodrome-veaero"
+      "defitea-aerodrome-veaero",
+      "defitea-convex-vlcvx-votium"
     ],
     "canonicalCohortCountUnchanged": true,
     "rule": "Candidate telemetry may be measured and historized before downstream causal/consumer promotion. Candidate presence does not expand canonical cohort authority.",
@@ -2034,6 +2035,309 @@
         "primaryDriver": null,
         "blockedQuestion": "why-aerodrome-voting-rewards-or-reference-apr-changed",
         "unlockCondition": "canonical Aerodrome pool fee / incentive / emission / volume evidence tied to relevant voting-reward paths",
+        "promotionAuthority": "none"
+      }
+    },
+    "defitea-convex-vlcvx-votium": {
+      "cohortId": "defitea-convex-vlcvx-votium",
+      "status": "shadow-measured-not-promoted",
+      "identity": {
+        "companyRegistry": "004",
+        "company": "defitea.eth",
+        "protocol": "Convex / Votium / The Union",
+        "mechanism": "vlCVX delegation and incentive settlement",
+        "asset": "vlCVX"
+      },
+      "latest": {
+        "observation": {
+          "cohortId": "defitea-convex-vlcvx-votium",
+          "status": "shadow-measured-not-promoted",
+          "referenceObservedAt": "2026-08-25T06:05:25.503Z",
+          "rewardsObservedAt": "2026-08-23T05:33:45.851Z",
+          "company": {
+            "registry": "004",
+            "name": "defitea.eth"
+          },
+          "protocolStack": [
+            "Convex",
+            "Votium",
+            "The Union"
+          ],
+          "mechanism": "CVX lock → vlCVX voting delegation → Votium incentive market → Union settlement",
+          "asset": "vlCVX",
+          "referenceProductivity": {
+            "canonicalAprPct": 10.9209,
+            "status": "ok",
+            "sourceUrl": "https://www.convexfinance.com/lock-cvx",
+            "sourceType": "official-frontend",
+            "sourceMetric": "Locked CVX platform vAPR + last completed Votium incentives APR",
+            "nativeCadence": "biweekly",
+            "components": {
+              "platformVaprPct": 0.0009,
+              "votiumLastCompletedRoundAprPct": 10.92,
+              "reproducedAprPct": 10.9209,
+              "parityDeltaPctPoints": 0,
+              "votiumShareOfReferenceAprPct": 99.991759,
+              "status": "proven-canonical-reference-decomposition"
+            },
+            "semanticBoundary": "Reference APR only; not realised company income."
+          },
+          "companyRoute": {
+            "liveVlCvxBalance": 700.9384699877,
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "routeId": "votium-union",
+            "publicLabel": "Votium + Union · vlCVX",
+            "path": "vlCVX → Votium → The Union",
+            "delegate": {
+              "address": "0xde1E6A7ED0ad3F61D531a8a78E83CcDdbd6E0c49",
+              "identity": "votium",
+              "label": "Votium"
+            },
+            "forwarding": {
+              "registry": "0x92e6E43f99809dF84ed2D533e1FD8017eb966ee2",
+              "currentEpoch": 1786579200,
+              "start": 1786579200,
+              "to": "0xCC2a0F5e95C88AAbD7b8E0Db5C5252820Cd47f91",
+              "expiration": 68719476735,
+              "effective": true,
+              "identity": "union",
+              "label": "The Union"
+            },
+            "sourceStatus": "ok",
+            "settlementAsset": null,
+            "routeStateClass": "measured-current-canonical-rewards-route"
+          },
+          "rewardInventory": {
+            "current": {
+              "rowCount": 1,
+              "pricedRowCount": 1,
+              "knownUsd": 5.360202,
+              "complete": true,
+              "tokens": [
+                "scrvUSD"
+              ],
+              "currentClaimableUsd": 5.360202,
+              "semanticClass": "measured-current-entitlement-state"
+            },
+            "legacyResidual": {
+              "rowCount": 5,
+              "pricedRowCount": 5,
+              "knownUsd": 0.294216,
+              "complete": true,
+              "tokens": [
+                "USDC",
+                "FXN",
+                "DOLA",
+                "BOLD",
+                "frxUSD"
+              ],
+              "semanticClass": "measured-legacy-residual-rows-only"
+            },
+            "rule": "Current Votium→Union settlement and legacy direct Votium residuals are independent facts and must not be collapsed."
+          },
+          "marketBreathSeed": {
+            "cadence": "biweekly",
+            "measuredAtoms": [
+              "locked-CVX reference productivity",
+              "Votium completed-round incentive APR",
+              "current Votium delegation route",
+              "Union settlement route",
+              "current claim inventory",
+              "legacy residual claim inventory"
+            ],
+            "missingAtoms": [
+              "Votium round-wide incentive USD by proposal/pool",
+              "vlCVX vote distribution by gauge",
+              "round-to-round incentive flow migration",
+              "Curve gauge emission response",
+              "downstream pool liquidity/volume/fee response"
+            ],
+            "nextUnlock": "Add round-level Votium incentive + vlCVX vote-flow history, then join to Curve gauge / pool economics without causal overclaim."
+          },
+          "temporalBoundary": {
+            "sourceSnapshotsAreSameTime": false,
+            "sourceSkewHours": 48.527681,
+            "rule": "Never treat a completed-round Votium Reference APR and a later claimable snapshot as one same-time realised-yield formula."
+          },
+          "provenance": {
+            "productivityFile": "companies/productivity-data.json",
+            "productivityGeneratedAt": "2026-08-25T06:06:25.218Z",
+            "productivitySha256": "51a9d0d815353d51f18e02ca069d0dbe0e9c29cb7cbf2bb20f4de9e5dcce0ef1",
+            "rewardsFile": "companies/rewards-data.json",
+            "rewardsGeneratedAt": "2026-08-25T05:49:48.228Z",
+            "rewardsSha256": "fefd1b3e8a9f7995dd7fa1e330644d467df6593d8042550bddea6e2098519cfa"
+          },
+          "epistemic": {
+            "admissionClass": "shadow-candidate",
+            "referenceDecomposition": "proven-arithmetic-identity-from-canonical-productivity",
+            "routeState": "measured-from-canonical-rewards-route-graph",
+            "rewardInventory": "measured-or-explicitly-warming-by-canonical-rewards-state",
+            "causalAttribution": "unresolved-between-incentives-votes-emissions-liquidity-volume-fees-and-company-outcome",
+            "primaryDriver": null,
+            "recommendationAuthority": "none",
+            "predictionAuthority": "none",
+            "promotionAuthority": "none"
+          },
+          "id": "vlcvx-votium:2026-08-25:34916db0441070189133"
+        },
+        "movement": {
+          "priorObservationId": null,
+          "referenceElapsedHours": null,
+          "rewardsElapsedHours": null,
+          "referenceAprDeltaPctPoints": null,
+          "votiumAprDeltaPctPoints": null,
+          "liveVlCvxBalanceDelta": null,
+          "currentClaimableUsdDelta": null,
+          "comparable": false,
+          "note": "Like-for-like deltas only. No incentive→vote→fee causal delta is inferred."
+        }
+      },
+      "observationCount": 1,
+      "observations": [
+        {
+          "cohortId": "defitea-convex-vlcvx-votium",
+          "status": "shadow-measured-not-promoted",
+          "referenceObservedAt": "2026-08-25T06:05:25.503Z",
+          "rewardsObservedAt": "2026-08-23T05:33:45.851Z",
+          "company": {
+            "registry": "004",
+            "name": "defitea.eth"
+          },
+          "protocolStack": [
+            "Convex",
+            "Votium",
+            "The Union"
+          ],
+          "mechanism": "CVX lock → vlCVX voting delegation → Votium incentive market → Union settlement",
+          "asset": "vlCVX",
+          "referenceProductivity": {
+            "canonicalAprPct": 10.9209,
+            "status": "ok",
+            "sourceUrl": "https://www.convexfinance.com/lock-cvx",
+            "sourceType": "official-frontend",
+            "sourceMetric": "Locked CVX platform vAPR + last completed Votium incentives APR",
+            "nativeCadence": "biweekly",
+            "components": {
+              "platformVaprPct": 0.0009,
+              "votiumLastCompletedRoundAprPct": 10.92,
+              "reproducedAprPct": 10.9209,
+              "parityDeltaPctPoints": 0,
+              "votiumShareOfReferenceAprPct": 99.991759,
+              "status": "proven-canonical-reference-decomposition"
+            },
+            "semanticBoundary": "Reference APR only; not realised company income."
+          },
+          "companyRoute": {
+            "liveVlCvxBalance": 700.9384699877,
+            "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+            "routeId": "votium-union",
+            "publicLabel": "Votium + Union · vlCVX",
+            "path": "vlCVX → Votium → The Union",
+            "delegate": {
+              "address": "0xde1E6A7ED0ad3F61D531a8a78E83CcDdbd6E0c49",
+              "identity": "votium",
+              "label": "Votium"
+            },
+            "forwarding": {
+              "registry": "0x92e6E43f99809dF84ed2D533e1FD8017eb966ee2",
+              "currentEpoch": 1786579200,
+              "start": 1786579200,
+              "to": "0xCC2a0F5e95C88AAbD7b8E0Db5C5252820Cd47f91",
+              "expiration": 68719476735,
+              "effective": true,
+              "identity": "union",
+              "label": "The Union"
+            },
+            "sourceStatus": "ok",
+            "settlementAsset": null,
+            "routeStateClass": "measured-current-canonical-rewards-route"
+          },
+          "rewardInventory": {
+            "current": {
+              "rowCount": 1,
+              "pricedRowCount": 1,
+              "knownUsd": 5.360202,
+              "complete": true,
+              "tokens": [
+                "scrvUSD"
+              ],
+              "currentClaimableUsd": 5.360202,
+              "semanticClass": "measured-current-entitlement-state"
+            },
+            "legacyResidual": {
+              "rowCount": 5,
+              "pricedRowCount": 5,
+              "knownUsd": 0.294216,
+              "complete": true,
+              "tokens": [
+                "USDC",
+                "FXN",
+                "DOLA",
+                "BOLD",
+                "frxUSD"
+              ],
+              "semanticClass": "measured-legacy-residual-rows-only"
+            },
+            "rule": "Current Votium→Union settlement and legacy direct Votium residuals are independent facts and must not be collapsed."
+          },
+          "marketBreathSeed": {
+            "cadence": "biweekly",
+            "measuredAtoms": [
+              "locked-CVX reference productivity",
+              "Votium completed-round incentive APR",
+              "current Votium delegation route",
+              "Union settlement route",
+              "current claim inventory",
+              "legacy residual claim inventory"
+            ],
+            "missingAtoms": [
+              "Votium round-wide incentive USD by proposal/pool",
+              "vlCVX vote distribution by gauge",
+              "round-to-round incentive flow migration",
+              "Curve gauge emission response",
+              "downstream pool liquidity/volume/fee response"
+            ],
+            "nextUnlock": "Add round-level Votium incentive + vlCVX vote-flow history, then join to Curve gauge / pool economics without causal overclaim."
+          },
+          "temporalBoundary": {
+            "sourceSnapshotsAreSameTime": false,
+            "sourceSkewHours": 48.527681,
+            "rule": "Never treat a completed-round Votium Reference APR and a later claimable snapshot as one same-time realised-yield formula."
+          },
+          "provenance": {
+            "productivityFile": "companies/productivity-data.json",
+            "productivityGeneratedAt": "2026-08-25T06:06:25.218Z",
+            "productivitySha256": "51a9d0d815353d51f18e02ca069d0dbe0e9c29cb7cbf2bb20f4de9e5dcce0ef1",
+            "rewardsFile": "companies/rewards-data.json",
+            "rewardsGeneratedAt": "2026-08-25T05:49:48.228Z",
+            "rewardsSha256": "fefd1b3e8a9f7995dd7fa1e330644d467df6593d8042550bddea6e2098519cfa"
+          },
+          "epistemic": {
+            "admissionClass": "shadow-candidate",
+            "referenceDecomposition": "proven-arithmetic-identity-from-canonical-productivity",
+            "routeState": "measured-from-canonical-rewards-route-graph",
+            "rewardInventory": "measured-or-explicitly-warming-by-canonical-rewards-state",
+            "causalAttribution": "unresolved-between-incentives-votes-emissions-liquidity-volume-fees-and-company-outcome",
+            "primaryDriver": null,
+            "recommendationAuthority": "none",
+            "predictionAuthority": "none",
+            "promotionAuthority": "none"
+          },
+          "id": "vlcvx-votium:2026-08-25:34916db0441070189133"
+        }
+      ],
+      "attribution": {
+        "status": "reference-decomposition-proven-route-measured-causality-unresolved",
+        "referenceDecompositionProven": true,
+        "currentRouteMeasured": true,
+        "rewardInventoryContextMeasured": true,
+        "mechanicalInputs": [
+          "Locked CVX platform vAPR",
+          "last completed Votium incentives APR"
+        ],
+        "primaryDriver": null,
+        "blockedQuestion": "how-votium-incentive-flow-moves-vlcvx-votes-and-downstream-curve-pool-economics",
+        "unlockCondition": "round-level Votium incentives + vlCVX vote allocation + Curve gauge emission and pool fee/volume/liquidity evidence on aligned periods",
         "promotionAuthority": "none"
       }
     }
