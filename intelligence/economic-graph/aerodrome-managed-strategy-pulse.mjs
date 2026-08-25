@@ -322,12 +322,20 @@ function movement(current, prior) {
 
 async function buildPulse() {
   const graph = readJson(GRAPH_FILE);
+  const candidateLayer = graph?.candidateLayer;
   const candidate = graph?.candidateCohorts?.[CANDIDATE_ID];
   const candidateObs = candidate?.latest?.observation;
-  if (graph?.candidateLayer?.version !== '0.1-aerodrome-veaero-shadow-admission' || !candidateObs) {
-    throw new Error('Canonical Aerodrome shadow candidate is required before Managed Strategy Pulse');
+  const candidateIds = Array.isArray(candidateLayer?.candidateIds) ? candidateLayer.candidateIds : [];
+  if (
+    candidateLayer?.status !== 'shadow-admission-active' ||
+    candidateLayer?.canonicalCohortCountUnchanged !== true ||
+    !candidateIds.includes(CANDIDATE_ID) ||
+    candidate?.status !== 'shadow-measured-not-promoted' ||
+    !candidateObs
+  ) {
+    throw new Error('Active Aerodrome shadow candidate is required before Managed Strategy Pulse');
   }
-  if (Number(graph?.coverage?.cohortCount) !== 2 || graph?.candidateLayer?.promotionAuthority !== 'none') {
+  if (Number(graph?.coverage?.cohortCount) !== 2 || candidateLayer?.promotionAuthority !== 'none') {
     throw new Error('Managed Strategy Pulse refuses changed canonical/promotion authority');
   }
   const depositorTokenId = BigInt(candidateObs.actualManagedVeNft?.positions?.[0]?.tokenId || 0);
