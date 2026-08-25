@@ -83,8 +83,7 @@ function parseOn(text) {
         if (field) {
           workflowRunField = field[1];
           if (workflowRunField === 'workflows') {
-            const list = parseInlineList(field[2]);
-            list.forEach(v => workflowRunSources.push(v));
+            parseInlineList(field[2]).forEach(v => workflowRunSources.push(v));
           }
           continue;
         }
@@ -157,14 +156,32 @@ function permissionSignals(scopes) {
   };
 }
 
+function stripHeredocBodies(text) {
+  const lines = text.split(/\r?\n/);
+  const kept = [];
+  let terminator = null;
+
+  for (const line of lines) {
+    if (terminator) {
+      if (line.trim() === terminator) terminator = null;
+      continue;
+    }
+    kept.push(line);
+    const match = line.match(/<<-?\s*['"]?([A-Za-z_][A-Za-z0-9_]*)['"]?/);
+    if (match) terminator = match[1];
+  }
+  return kept.join('\n');
+}
+
 function extractDispatchTargets(text) {
+  const executableSurface = stripHeredocBodies(text);
   const targets = new Set();
   const patterns = [
     /gh\s+workflow\s+run\s+['"]?([^\s'"\\]+)['"]?/g,
     /actions\/workflows\/([^/\s'"}]+)\/dispatches/g
   ];
   for (const pattern of patterns) {
-    for (const match of text.matchAll(pattern)) targets.add(cleanScalar(match[1]));
+    for (const match of executableSurface.matchAll(pattern)) targets.add(cleanScalar(match[1]));
   }
   return [...targets].sort();
 }
@@ -387,7 +404,8 @@ export function buildControlPlane({ entries, policy }) {
     epistemics: {
       topology: 'MEASURED_FROM_WORKFLOW_SOURCE',
       repositoryWriterClassification: 'MEASURED_FROM_CONTENTS_PERMISSION_OR_REPOSITORY_MUTATION_SIGNAL',
-      workflowControlClassification: 'MEASURED_FROM_ACTIONS_PERMISSION_OR_DISPATCH_SIGNAL',
+      workflowControlClassification: 'MEASURED_FROM_ACTIONS_PERMISSION_OR_EXECUTABLE_DISPATCH_SIGNAL',
+      heredocBodiesExcludedFromExecutableDispatchDetection: true,
       otherWritePermissionClassification: 'SEPARATE_NOT_REPOSITORY_WRITER_BY_ITSELF',
       candidateWriterPaths: 'HEURISTIC',
       unresolvedEdgeMeansUnknown: true,
