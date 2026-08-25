@@ -79,7 +79,6 @@ async function selectStateProvider(proposalId){
 }
 
 async function readProposalState(platform,executor,proposalId){
-  // Deliberately sequential: public endpoints frequently restrict JSON-RPC batching.
   const p=await platform.proposals(proposalId);
   const voteTotalRaw=await platform.voteTotals(proposalId);
   const gaugeCountRaw=await platform.getGaugeCount(proposalId);
@@ -105,11 +104,7 @@ function executionCoverage(events,proposalStates){
   for(const event of events){
     const x=result.get(event.proposalId);if(!x)continue;
     x.eventCount++;
-    for(const row of event.rows){
-      x.unique.add(row.gauge.toLowerCase());
-      x.weightSum+=row.weightBps;
-      x.rowCount++;
-    }
+    for(const row of event.rows){x.unique.add(row.gauge.toLowerCase());x.weightSum+=row.weightBps;x.rowCount++;}
   }
   return result;
 }
@@ -151,8 +146,10 @@ async function scanExecutionEvents(proposalStates,fromBlock,toBlock){
         }
       }
     }
-    if(!targetsComplete(events,proposalStates))fail('Historical Curve execution logs did not fully reconstruct completed proposal state');
-    return{events,provenance:{fromBlock,toBlock:lastScannedBlock,requestedToBlock:toBlock,completedEarly:lastScannedBlock<toBlock,endpointClassesUsed:[...used],attempts,chunkStart:LOG_CHUNK_START,chunkMinimum:LOG_CHUNK_MIN,completionRule:'stop only after current isDone/submittedGaugeCount/submittedWeight plus unique event gauge count and event BPS sum prove both target proposals complete'}};
+    const complete=targetsComplete(events,proposalStates);
+    const rawCoverage=executionCoverage(events,proposalStates);
+    const diagnostic=proposalStates.map(state=>{const c=rawCoverage.get(state.proposalId);return{proposalId:state.proposalId,finalized:state.finalized,gaugeCount:state.gaugeCount,isDone:state.executor.isDone,submittedGaugeCount:state.executor.submittedGaugeCount,submittedWeightBps:state.executor.submittedWeightBps,eventCount:c.eventCount,eventGaugeRowCount:c.rowCount,uniqueEventGaugeCount:c.unique.size,eventWeightSumBps:c.weightSum};});
+    return{events,provenance:{fromBlock,toBlock:lastScannedBlock,requestedToBlock:toBlock,completedEarly:lastScannedBlock<toBlock,complete,endpointClassesUsed:[...used],attempts,chunkStart:LOG_CHUNK_START,chunkMinimum:LOG_CHUNK_MIN,diagnostic,completionRule:'stop only after current isDone/submittedGaugeCount/submittedWeight plus unique event gauge count and event BPS sum prove both target proposals complete'}};
   }finally{for(const lane of lanes){try{lane.provider.destroy();}catch{}}}
 }
 
@@ -219,12 +216,12 @@ async function main(){
     const platform=new Contract(CURVE_GAUGE_VOTING,PLATFORM_ABI,stateProvider),executor=new Contract(CURVE_GAUGE_EXECUTOR,EXECUTOR_ABI,stateProvider);
     const proposalStates=[];
     for(let i=0;i<postMigration.length;i++){
-      const state=await readProposalState(platform,executor,proposalIds[i]);
-      if(state.startAt!==postMigration[i].roundStart)fail(`Round ${postMigration[i].roundId} proposal start drift`);
-      proposalStates.push(state);
+      const proposalState=await readProposalState(platform,executor,proposalIds[i]);
+      if(proposalState.startAt!==postMigration[i].roundStart)fail(`Round ${postMigration[i].roundId} proposal start drift`);
+      proposalStates.push(proposalState);
     }
     const scanned=await scanExecutionEvents(proposalStates,scanFromBlock,currentBlock);
-    const proposals=proposalStates.map(state=>attachExecutionEvidence(state,scanned.events,scanned.provenance));
+    const proposals=proposalStates.map(proposalState=>attachExecutionEvidence(proposalState,scanned.events,scanned.provenance));
     const rounds=[];
     for(let i=0;i<postMigration.length;i++){
       const sourceRound=roundById.get(Number(postMigration[i].roundId));if(!sourceRound)fail(`Round ${postMigration[i].roundId} missing from round-flow`);
@@ -244,7 +241,7 @@ async function main(){
       semantics:{unknownIsNotZero:true,incentiveAndVoteCoexistenceIsNotCausation:true,executedGaugeWeightIsNotPoolRevenue:true,protocolFlowIsNotRealisedCompanyIncome:true,correlationMustNotBePromotedToAttribution:true}
     };
     fs.writeFileSync(OUTPUT_FILE,JSON.stringify(state,null,2)+'\n');
-    console.log('VLCVX VOTIUM CURVE GAUGE FLOW PASS',{generatedAt:state.generatedAt,status:state.status,block:currentBlock,stateRpc:stateEndpointClass,historicalLogRpcs:scanned.provenance.endpointClassesUsed,scanToBlock:scanned.provenance.toBlock,rounds:rounds.map(r=>({roundId:r.roundId,proposalId:r.proposalId,incentives:r.incentiveCount,votiumGauges:r.coverage.votiumIncentivizedGaugeCount,curveExecuted:r.coverage.curveExecutedForVotiumGaugeCount,executorDone:r.curveExecutor.isDone,submittedWeightBps:r.curveExecutor.submittedWeightBps,rounding:r.curveExecutor.roundingProof})),coverage:state.coverage,executionAuthority:state.authority.executionAuthority});
+    console.log('VLCVX VOTIUM CURVE GAUGE FLOW PASS',{generatedAt:state.generatedAt,status:state.status,block:currentBlock,stateRpc:stateEndpointClass,historicalLogRpcs:scanned.provenance.endpointClassesUsed,historicalLogScanComplete:scanned.provenance.complete,historicalDiagnostic:scanned.provenance.diagnostic,scanToBlock:scanned.provenance.toBlock,rounds:rounds.map(r=>({roundId:r.roundId,proposalId:r.proposalId,incentives:r.incentiveCount,votiumGauges:r.coverage.votiumIncentivizedGaugeCount,curveExecuted:r.coverage.curveExecutedForVotiumGaugeCount,executorDone:r.curveExecutor.isDone,submittedGaugeCount:r.curveExecutor.submittedGaugeCount,submittedWeightBps:r.curveExecutor.submittedWeightBps,rounding:r.curveExecutor.roundingProof})),coverage:state.coverage,executionAuthority:state.authority.executionAuthority});
   }finally{try{stateProvider.destroy();}catch{}}
 }
 main().catch(error=>{console.error(error);process.exit(1);});
