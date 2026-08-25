@@ -62,9 +62,11 @@ jobs:
           test -s intelligence/comparative/comparative-intelligence.json
           test -s intelligence/income-performance/income-performance.json
           test -s intelligence/economic-graph/economic-graph.json
+          test -s intelligence/economic-graph/economic-graph-canonical-runner.mjs
           test -s intelligence/economic-graph/vlcvx-votium-deep-evidence.mjs
           node --check intelligence/explanatory/explanatory-context.mjs
           node --check intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
+          node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           grep -q "multiCohortRule" intelligence/explanatory/explanatory-context.mjs
           grep -q "protocolAprChangeContexts" intelligence/explanatory/explanatory-context.mjs
           grep -q "mechanismRule" intelligence/explanatory/explanatory-context.mjs
@@ -75,6 +77,13 @@ jobs:
       - name: Build Explanatory Context
         run: |
           set -euo pipefail
+          # A PR checkout carries the last materialized Graph JSON from main.
+          # Rebuild it locally from the reviewed PR head so Explanatory validates
+          # exactly the Graph bytes this source package would produce. Production
+          # workflow_run/push paths consume the already-materialized Graph on main.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            node intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          fi
           node intelligence/explanatory/explanatory-context.mjs
           node intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
 
