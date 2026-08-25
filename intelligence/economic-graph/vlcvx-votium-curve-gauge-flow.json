@@ -1,0 +1,3605 @@
+{
+  "version": "0.1-vlcvx-votium-curve-gauge-flow",
+  "engineVersion": "0.1-votium-convex-curve-execution-bridge",
+  "generatedAt": "2026-08-25T13:42:50.119Z",
+  "status": "shadow-cross-protocol-flow-proven",
+  "purpose": "Connect Votium incentive accounting and proven vlCVX voting power to Convex GaugeVotePlatform and actually executed Curve gauge BPS weights, without claiming incentives caused votes or downstream pool economics.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "allocationAuthority": false,
+    "recommendationAuthority": false,
+    "predictionAuthority": false,
+    "causalClaimAuthority": "none",
+    "promotionAuthority": "none",
+    "methodologyMutationAuthority": false
+  },
+  "sourceBinding": {
+    "roundFlowFile": "intelligence/economic-graph/vlcvx-votium-round-flow.json",
+    "roundFlowSha256": "9956e6708fb4b3c85208f8487812e832db2642aacb852524691215aeecd339a0",
+    "votingProvenanceFile": "intelligence/economic-graph/vlcvx-votium-snapshot-proof.json",
+    "votingProvenanceSha256": "18b4a50d71a373780bc2c74197718e14b92afdcb6b7365f2aae55bfe0bbcde1d",
+    "companyRegistry": "004",
+    "candidateId": "defitea-convex-vlcvx-votium"
+  },
+  "protocolBridge": {
+    "chain": "Ethereum",
+    "votium": "0x63942E31E98f1833A234077f47880A66136a2D1e",
+    "convexCurveGaugeVoting": "0x64D9B5AC386B70af9EDCD20A58cE9262D2EAC278",
+    "convexCurveGaugeExecutor": "0x399382E82D9b6362ccAbd1f3C763bEE93E80c9e8",
+    "convexSourceRepository": "convex-eth/voting",
+    "convexSourceCommit": "242b592718ff939e0a15e490a7df9730267f0999",
+    "mechanicalIdentity": "CurveGaugeExecutor weight = floor(gaugeTotal * 10000 / proposal voteTotal), with the final rounding residual added to the last non-zero gauge once all voted gauges are submitted.",
+    "executionEventSemantics": "GaugeVotePlatform getGaugeCount/getGaugeEntry enumerate gauges with votes. CurveGaugeExecutor counts only submitted gauges with gaugeTotal > 0, but GaugeVoteExecuted emits the complete caller-supplied gauge array; therefore event-only gauges are valid only when live gaugeTotal = 0 and emitted BPS = 0."
+  },
+  "observation": {
+    "ethereumBlock": 25832584,
+    "ethereumBlockHash": "0x0f1a7eb35c2f3fccb95abcf8dc4d061bead0c14071a40200dad1e2fc1c2c5a8e",
+    "observedAt": "2026-08-25T13:42:35.000Z",
+    "rpcArchitecture": "split-current-state-and-historical-log-lanes",
+    "stateRpcEndpointClass": "ethereum-rpc.publicnode.com",
+    "historicalLogRpcEndpointClassesUsed": [
+      "eth.drpc.org"
+    ],
+    "historicalLogScan": {
+      "fromBlock": 25541500,
+      "toBlock": 25781499,
+      "requestedToBlock": 25832584,
+      "completedEarly": true,
+      "complete": true,
+      "endpointClassesUsed": [
+        "eth.drpc.org"
+      ],
+      "attempts": 49,
+      "chunkStart": 5000,
+      "chunkMinimum": 250,
+      "diagnostic": [
+        {
+          "proposalId": 0,
+          "finalized": true,
+          "gaugeCount": 70,
+          "isDone": true,
+          "submittedGaugeCount": 70,
+          "submittedWeightBps": 10000,
+          "eventCount": 3,
+          "eventGaugeRowCount": 81,
+          "uniqueEventGaugeCount": 81,
+          "eventWeightSumBps": 10000,
+          "platformGaugeEventMatchCount": 70,
+          "eventOnlyGaugeCount": 11,
+          "eventOnlyZeroWeightGaugeCount": 11,
+          "eventOnlyPositiveGaugeCount": 0,
+          "duplicateEventGaugeRows": 0
+        },
+        {
+          "proposalId": 1,
+          "finalized": true,
+          "gaugeCount": 66,
+          "isDone": true,
+          "submittedGaugeCount": 66,
+          "submittedWeightBps": 10000,
+          "eventCount": 3,
+          "eventGaugeRowCount": 73,
+          "uniqueEventGaugeCount": 73,
+          "eventWeightSumBps": 10000,
+          "platformGaugeEventMatchCount": 66,
+          "eventOnlyGaugeCount": 7,
+          "eventOnlyZeroWeightGaugeCount": 7,
+          "eventOnlyPositiveGaugeCount": 0,
+          "duplicateEventGaugeRows": 0
+        }
+      ],
+      "completionRule": "stop only after completed current executor state, every GaugeVotePlatform voted gauge is present in execution events, all event-only gauges have zero BPS, no event gauge is duplicated, and total executed BPS equals 10000 for both target proposals"
+    },
+    "rpcBatching": "disabled-for-public-endpoint-compatibility",
+    "stateReadMode": "latest-persistent-finalized-proposal-state",
+    "historicalStateReadsRequired": false,
+    "historicalExecutionEvidence": "GaugeVoteExecuted-event-logs"
+  },
+  "coverage": {
+    "roundCount": 2,
+    "completeRoundCount": 2,
+    "votiumGaugeCount": 79,
+    "curveExecutedVotiumGaugeCount": 79,
+    "eventOnlyGaugeCount": 18,
+    "eventOnlyPositiveGaugeCount": 0,
+    "complete": true
+  },
+  "rounds": [
+    {
+      "roundId": 128,
+      "roundStart": "2026-07-30T00:00:00.000Z",
+      "regime": "convex-onchain",
+      "proposalId": 0,
+      "incentiveCount": 46,
+      "tokenFlows": [
+        {
+          "token": {
+            "address": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+            "symbol": "ALCX",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 7,
+          "contractAmountRaw": "4949000000000000000000",
+          "contractAmount": 4949,
+          "distributedRaw": "4949000000000000000000",
+          "distributed": 4949,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+            "symbol": "BOLD",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 2,
+          "contractAmountRaw": "624684697106900913718",
+          "contractAmount": 624.684697106901,
+          "distributedRaw": "624684697106900913718",
+          "distributed": 624.684697106901,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+            "symbol": "crvUSD",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 11,
+          "contractAmountRaw": "85292761988037831910633",
+          "contractAmount": 85292.76198803783,
+          "distributedRaw": "85292761988037831910633",
+          "distributed": 85292.76198803783,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+            "symbol": "CVX",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 6,
+          "contractAmountRaw": "33886440000000000000000",
+          "contractAmount": 33886.44,
+          "distributedRaw": "33886440000000000000000",
+          "distributed": 33886.44,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+            "symbol": "DOLA",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 1,
+          "contractAmountRaw": "490000000000000000000",
+          "contractAmount": 490,
+          "distributedRaw": "490000000000000000000",
+          "distributed": 490,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+            "symbol": "frxUSD",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 1,
+          "contractAmountRaw": "2405400200000000000000",
+          "contractAmount": 2405.4002,
+          "distributedRaw": "2405400200000000000000",
+          "distributed": 2405.4002,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+            "symbol": "RSUP",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 4,
+          "contractAmountRaw": "185060573105839762070972",
+          "contractAmount": 185060.57310583975,
+          "distributedRaw": "185060573105839762070972",
+          "distributed": 185060.57310583975,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "symbol": "USDC",
+            "decimals": 6,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 1,
+          "contractAmountRaw": "9800000000",
+          "contractAmount": 9800,
+          "distributedRaw": "9800000000",
+          "distributed": 9800,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+            "symbol": "USDT",
+            "decimals": 6,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 2,
+          "contractAmountRaw": "11088700000",
+          "contractAmount": 11088.7,
+          "distributedRaw": "11088700000",
+          "distributed": 11088.7,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+            "symbol": "WFRAX",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 8,
+          "contractAmountRaw": "202306300000000000000000",
+          "contractAmount": 202306.3,
+          "distributedRaw": "202306300000000000000000",
+          "distributed": 202306.3,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x01791F726B4103694969820be083196cC7c045fF",
+            "symbol": "YB",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 3,
+          "contractAmountRaw": "205351146331355710087013",
+          "contractAmount": 205351.1463313557,
+          "distributedRaw": "205351146331355710087013",
+          "distributed": 205351.1463313557,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        }
+      ],
+      "totalVotiumVotesReceived": 32111516,
+      "curveExecutor": {
+        "isDone": true,
+        "submittedGaugeCount": 70,
+        "submittedWeightBps": 10000,
+        "executionEventCount": 3,
+        "eventGaugeRowCount": 81,
+        "uniqueEventGaugeCount": 81,
+        "platformGaugeEventMatchCount": 70,
+        "eventOnlyGaugeCount": 11,
+        "eventOnlyZeroWeightGaugeCount": 11,
+        "eventOnlyPositiveGaugeCount": 0,
+        "duplicateEventGaugeRows": 0,
+        "eventWeightSumBps": 10000,
+        "eventOnlyGaugeProof": [
+          {
+            "gauge": "0x4e227d29b33B77113F84bcC189a6F886755a1f24",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x6a253c9fe5AaFF662e072Aa694CE53b917aDb278",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x9E7641A394859860210203e6D9cb82044712421C",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x87F791090B09069b3F9c64E3be3cBBc0b45Fc9b6",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x26F7786de3E6D9Bd37Fcf47BE6F2bC455a21b74A",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x1211B5cB09Ba1aDa8F11de757d5a13C5CA407162",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x8C84B88562cED07F84aF488CC45d434186d07B6e",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x65B8b0B7D62bdcA3Ed3c3002C49db315b0f8Eb37",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x28a72343bFf5e10b36E72d86b1041ED2447Dc0Cc",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x0C5fa0C51C63CE937C588225C202b04c30F3CEeE",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x143f801bC6Aa4c3395379C9E28221BBaF45a69C8",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          }
+        ],
+        "roundingProof": {
+          "mechanicalWeightSumBps": 9966,
+          "residualBps": 34,
+          "executionMinusMechanicalDeltaSumBps": 34,
+          "negativeDeltaCount": 0,
+          "positiveDeltaCount": 1,
+          "complete": true
+        }
+      },
+      "coverage": {
+        "votiumIncentivizedGaugeCount": 42,
+        "curveExecutedForVotiumGaugeCount": 42,
+        "curveExecutedForVotiumGaugePct": 100,
+        "platformGaugeExecutionComplete": true,
+        "eventOnlyAllZero": true,
+        "complete": true
+      },
+      "gauges": [
+        {
+          "gauge": "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
+          "incentiveCount": 2,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+                "symbol": "BOLD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "284670146643670797983",
+              "contractAmount": 284.670146643671,
+              "distributedRaw": "284670146643670797983",
+              "distributed": 284.670146643671,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x69eFEc83296c711db4A403B1Ee281E87f99590d6"
+            },
+            {
+              "token": {
+                "address": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+                "symbol": "BOLD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "340014550463230115735",
+              "contractAmount": 340.01455046323,
+              "distributedRaw": "340014550463230115735",
+              "distributed": 340.01455046323,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x69eFEc83296c711db4A403B1Ee281E87f99590d6"
+            }
+          ],
+          "votiumVotesReceived": 77414,
+          "votiumVoteSharePct": 0.24107862,
+          "convexGaugeTotalRaw": "77413988759488011717646",
+          "curveMechanicalWeightBps": 18,
+          "curveExecutedWeightBps": 18,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x22804B0F6bE741a9Fa1BbaEcDD6c8D4116E96944",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x01791F726B4103694969820be083196cC7c045fF",
+                "symbol": "YB",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "68443537072240858172001",
+              "contractAmount": 68443.53707224086,
+              "distributedRaw": "68443537072240858172001",
+              "distributed": 68443.53707224086,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x5005DE019301aB6b744B6EFbB942E9A8999EEeC7"
+            }
+          ],
+          "votiumVotesReceived": 559066,
+          "votiumVoteSharePct": 1.74101403,
+          "convexGaugeTotalRaw": "559065061257645845738199",
+          "curveMechanicalWeightBps": 130,
+          "curveExecutedWeightBps": 130,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x4e6bB6B7447B7B2Aa268C16AB87F4Bb48BF57939",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x01791F726B4103694969820be083196cC7c045fF",
+                "symbol": "YB",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "68443537072240858172001",
+              "contractAmount": 68443.53707224086,
+              "distributedRaw": "68443537072240858172001",
+              "distributed": 68443.53707224086,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x5005DE019301aB6b744B6EFbB942E9A8999EEeC7"
+            }
+          ],
+          "votiumVotesReceived": 559065,
+          "votiumVoteSharePct": 1.74101092,
+          "convexGaugeTotalRaw": "559064039048656220494970",
+          "curveMechanicalWeightBps": 130,
+          "curveExecutedWeightBps": 130,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x95f00391cB5EebCd190EB58728B4CE23DbFa6ac1",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x01791F726B4103694969820be083196cC7c045fF",
+                "symbol": "YB",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "68464072186873993743011",
+              "contractAmount": 68464.072186874,
+              "distributedRaw": "68464072186873993743011",
+              "distributed": 68464.072186874,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x5005DE019301aB6b744B6EFbB942E9A8999EEeC7"
+            }
+          ],
+          "votiumVotesReceived": 559241,
+          "votiumVoteSharePct": 1.74155901,
+          "convexGaugeTotalRaw": "559240299405388279104914",
+          "curveMechanicalWeightBps": 130,
+          "curveExecutedWeightBps": 130,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xF3c43E7D722963b9569d1E39873dF9E2dFE8C087",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "symbol": "USDC",
+                "decimals": 6,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "9800000000",
+              "contractAmount": 9800,
+              "distributedRaw": "9800000000",
+              "distributed": 9800,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x5aD30fcA5A031c850b817f6F4dE1EE2D713EF850"
+            }
+          ],
+          "votiumVotesReceived": 1212682,
+          "votiumVoteSharePct": 3.77647072,
+          "convexGaugeTotalRaw": "1212681161933566218968912",
+          "curveMechanicalWeightBps": 283,
+          "curveExecutedWeightBps": 283,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x7970489a543FB237ABab63d62524d8A5CE165B86",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "980000000000000000000",
+              "contractAmount": 980,
+              "distributedRaw": "980000000000000000000",
+              "distributed": 980,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFC08757c505eA28709dF66E54870fB6dE09f0C5E"
+            }
+          ],
+          "votiumVotesReceived": 161356,
+          "votiumVoteSharePct": 0.5024864,
+          "convexGaugeTotalRaw": "161355164313197147599324",
+          "curveMechanicalWeightBps": 37,
+          "curveExecutedWeightBps": 37,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x29E9975561fAD3A7988CA96361AB5c5317CB32Af",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                "symbol": "RSUP",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "74024229242335904828390",
+              "contractAmount": 74024.2292423359,
+              "distributedRaw": "74024229242335904828390",
+              "distributed": 74024.2292423359,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFE11a5009f2121622271e7dd0FD470264e076af6"
+            }
+          ],
+          "votiumVotesReceived": 1040624,
+          "votiumVoteSharePct": 3.24065672,
+          "convexGaugeTotalRaw": "1040623990705336050041249",
+          "curveMechanicalWeightBps": 243,
+          "curveExecutedWeightBps": 243,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xaF01d68714E7eA67f43f08b5947e367126B889b1",
+          "incentiveCount": 2,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                "symbol": "RSUP",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "56536005083834047312682",
+              "contractAmount": 56536.00508383405,
+              "distributedRaw": "56536005083834047312682",
+              "distributed": 56536.00508383405,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFE11a5009f2121622271e7dd0FD470264e076af6"
+            },
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "30380000000000000000000",
+              "contractAmount": 30380,
+              "distributedRaw": "30380000000000000000000",
+              "distributed": 30380,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 4545543,
+          "votiumVoteSharePct": 14.15549176,
+          "convexGaugeTotalRaw": "4545542908044263619190379",
+          "curveMechanicalWeightBps": 1064,
+          "curveExecutedWeightBps": 1098,
+          "curveMechanicalDeltaBps": 34,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x09F62a6777032329C0d49F1FD4fBe9b3468CDa56",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                "symbol": "RSUP",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "31848924631515023052413",
+              "contractAmount": 31848.924631515023,
+              "distributedRaw": "31848924631515023052413",
+              "distributed": 31848.924631515023,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFE11a5009f2121622271e7dd0FD470264e076af6"
+            }
+          ],
+          "votiumVotesReceived": 447727,
+          "votiumVoteSharePct": 1.39428796,
+          "convexGaugeTotalRaw": "447726337648789627760502",
+          "curveMechanicalWeightBps": 104,
+          "curveExecutedWeightBps": 104,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x5C0B03914f68F2717d779a0211fd98C2CC45a4dD",
+          "incentiveCount": 2,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                "symbol": "RSUP",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "22651414148154786877487",
+              "contractAmount": 22651.41414815479,
+              "distributedRaw": "22651414148154786877487",
+              "distributed": 22651.41414815479,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFE11a5009f2121622271e7dd0FD470264e076af6"
+            },
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "6860000000000000000000",
+              "contractAmount": 6860,
+              "distributedRaw": "6860000000000000000000",
+              "distributed": 6860,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 1190836,
+          "votiumVoteSharePct": 3.70843905,
+          "convexGaugeTotalRaw": "1190835580577407188759365",
+          "curveMechanicalWeightBps": 278,
+          "curveExecutedWeightBps": 278,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xB53c23D2CC6219adf78ea22Bfd38bFfc50eC54cB",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "150486840000000000000000",
+              "contractAmount": 150486.84,
+              "distributedRaw": "150486840000000000000000",
+              "distributed": 150486.84,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 4949409,
+          "votiumVoteSharePct": 15.41319008,
+          "convexGaugeTotalRaw": "4949408725350642329221543",
+          "curveMechanicalWeightBps": 1158,
+          "curveExecutedWeightBps": 1158,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x4E21418095d32d15c6e2B96A9910772613A50d50",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "4522700000000000000000",
+              "contractAmount": 4522.7,
+              "distributedRaw": "4522700000000000000000",
+              "distributed": 4522.7,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 148751,
+          "votiumVoteSharePct": 0.46323257,
+          "convexGaugeTotalRaw": "148750900863449148337870",
+          "curveMechanicalWeightBps": 34,
+          "curveExecutedWeightBps": 34,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x821529Bb07c83803C9CC7763e5974386e9eFEdC7",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "18195660000000000000000",
+              "contractAmount": 18195.66,
+              "distributedRaw": "18195660000000000000000",
+              "distributed": 18195.66,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 598442,
+          "votiumVoteSharePct": 1.86363671,
+          "convexGaugeTotalRaw": "598441861941449989201739",
+          "curveMechanicalWeightBps": 140,
+          "curveExecutedWeightBps": 140,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xD1D981dDD0c9A0469E7d8cEE877f83B5877D7260",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3762220000000000000000",
+              "contractAmount": 3762.22,
+              "distributedRaw": "3762220000000000000000",
+              "distributed": 3762.22,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 123740,
+          "votiumVoteSharePct": 0.38534462,
+          "convexGaugeTotalRaw": "123739678067392246525097",
+          "curveMechanicalWeightBps": 28,
+          "curveExecutedWeightBps": 28,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x9a356132605Ad599ABA34651aa2a606730bacaAa",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "15048880000000000000000",
+              "contractAmount": 15048.88,
+              "distributedRaw": "15048880000000000000000",
+              "distributed": 15048.88,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 494953,
+          "votiumVoteSharePct": 1.54135669,
+          "convexGaugeTotalRaw": "494952401557149507910549",
+          "curveMechanicalWeightBps": 115,
+          "curveExecutedWeightBps": 115,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xA41eb3062FD68B6Fa9f11439C86503913806761D",
+          "incentiveCount": 2,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+                "symbol": "frxUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "2405400200000000000000",
+              "contractAmount": 2405.4002,
+              "distributedRaw": "2405400200000000000000",
+              "distributed": 2405.4002,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            },
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "6892761988037831910633",
+              "contractAmount": 6892.761988037832,
+              "distributedRaw": "6892761988037831910633",
+              "distributed": 6892.761988037832,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xA1148A1b94262540994Cf9Aa431A13ad39764228"
+            }
+          ],
+          "votiumVotesReceived": 1148673,
+          "votiumVoteSharePct": 3.57713725,
+          "convexGaugeTotalRaw": "1148672044116000000000000",
+          "curveMechanicalWeightBps": 268,
+          "curveExecutedWeightBps": 268,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x48100238C4a3CF44cFbF6C7693eD5C216881fAcE",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3920000000000000000000",
+              "contractAmount": 3920,
+              "distributedRaw": "3920000000000000000000",
+              "distributed": 3920,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 128923,
+          "votiumVoteSharePct": 0.40148525,
+          "convexGaugeTotalRaw": "128922487821001557585245",
+          "curveMechanicalWeightBps": 30,
+          "curveExecutedWeightBps": 30,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x7bA1e40dAe22847E6c521bA297d40fF1c5fD97dd",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "2450000000000000000000",
+              "contractAmount": 2450,
+              "distributedRaw": "2450000000000000000000",
+              "distributed": 2450,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 80585,
+          "votiumVoteSharePct": 0.25095358,
+          "convexGaugeTotalRaw": "80584420224388879102757",
+          "curveMechanicalWeightBps": 18,
+          "curveExecutedWeightBps": 18,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x8882eB84d0c4894753C0450f2D514E39883c0C82",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3920000000000000000000",
+              "contractAmount": 3920,
+              "distributedRaw": "3920000000000000000000",
+              "distributed": 3920,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 128925,
+          "votiumVoteSharePct": 0.40149148,
+          "convexGaugeTotalRaw": "128924118760541818490325",
+          "curveMechanicalWeightBps": 30,
+          "curveExecutedWeightBps": 30,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xbe0451815b546F705ef3f398B8179aE3AADDA14e",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "4900000000000000000000",
+              "contractAmount": 4900,
+              "distributedRaw": "4900000000000000000000",
+              "distributed": 4900,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 734859,
+          "votiumVoteSharePct": 2.28845938,
+          "convexGaugeTotalRaw": "734858734301526541129322",
+          "curveMechanicalWeightBps": 172,
+          "curveExecutedWeightBps": 172,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x3A55AAb28B4516ceB565a6e0577285C84F53520a",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "4900000000000000000000",
+              "contractAmount": 4900,
+              "distributedRaw": "4900000000000000000000",
+              "distributed": 4900,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 894213,
+          "votiumVoteSharePct": 2.78471125,
+          "convexGaugeTotalRaw": "894212480615815812295230",
+          "curveMechanicalWeightBps": 209,
+          "curveExecutedWeightBps": 209,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x6b3A14e237a70c7703A4ac4590c2c254065FB8dd",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "8820000000000000000000",
+              "contractAmount": 8820,
+              "distributedRaw": "8820000000000000000000",
+              "distributed": 8820,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 1198566,
+          "votiumVoteSharePct": 3.73251141,
+          "convexGaugeTotalRaw": "1198565745024326541129322",
+          "curveMechanicalWeightBps": 280,
+          "curveExecutedWeightBps": 280,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xAE1680Ef5EFc2486E73D8d5D0f8a8dB77DA5774E",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "10780000000000000000000",
+              "contractAmount": 10780,
+              "distributedRaw": "10780000000000000000000",
+              "distributed": 10780,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 1330917,
+          "votiumVoteSharePct": 4.14467196,
+          "convexGaugeTotalRaw": "1330916398358449929744093",
+          "curveMechanicalWeightBps": 311,
+          "curveExecutedWeightBps": 311,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x0621982CdA4fD4041964e91AF4080583C5F099e1",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "4900000000000000000000",
+              "contractAmount": 4900,
+              "distributedRaw": "4900000000000000000000",
+              "distributed": 4900,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 604960,
+          "votiumVoteSharePct": 1.88393472,
+          "convexGaugeTotalRaw": "604959055029329983967084",
+          "curveMechanicalWeightBps": 141,
+          "curveExecutedWeightBps": 141,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x7dCB252f7Ea2B8dA6fA59C79EdF63f793C8b63b6",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "2940000000000000000000",
+              "contractAmount": 2940,
+              "distributedRaw": "2940000000000000000000",
+              "distributed": 2940,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 362978,
+          "votiumVoteSharePct": 1.13036706,
+          "convexGaugeTotalRaw": "362977393539748904092855",
+          "curveMechanicalWeightBps": 84,
+          "curveExecutedWeightBps": 84,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xF3F6D6d412a77b680ec3a5E35EbB11BbEC319739",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "1960000000000000000000",
+              "contractAmount": 1960,
+              "distributedRaw": "1960000000000000000000",
+              "distributed": 1960,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 241986,
+          "votiumVoteSharePct": 0.75358012,
+          "convexGaugeTotalRaw": "241985374048118269209450",
+          "curveMechanicalWeightBps": 56,
+          "curveExecutedWeightBps": 56,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xCB25249bFA8CdB6012a75070E5C2885151368Bef",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "1960000000000000000000",
+              "contractAmount": 1960,
+              "distributedRaw": "1960000000000000000000",
+              "distributed": 1960,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 506607,
+          "votiumVoteSharePct": 1.57764897,
+          "convexGaugeTotalRaw": "506606738239008595579771",
+          "curveMechanicalWeightBps": 118,
+          "curveExecutedWeightBps": 118,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xfdce06c33c0b3ed0646034f5d14523fe538006ea21e408bb16428bafcbf7a95d",
+          "curveExecutionBlock": 25677877,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x7E1444BA99dcdFfE8fBdb42C02F0005D14f13BE1",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "9419760000000000000000",
+              "contractAmount": 9419.76,
+              "distributedRaw": "9419760000000000000000",
+              "distributed": 9419.76,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 1550958,
+          "votiumVoteSharePct": 4.82991211,
+          "convexGaugeTotalRaw": "1550957166302385908595143",
+          "curveMechanicalWeightBps": 363,
+          "curveExecutedWeightBps": 363,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xc2075702490F0426E84E00d8B328119027813AC5",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3316320000000000000000",
+              "contractAmount": 3316.32,
+              "distributedRaw": "3316320000000000000000",
+              "distributed": 3316.32,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 546029,
+          "votiumVoteSharePct": 1.70041489,
+          "convexGaugeTotalRaw": "546028920179913636089202",
+          "curveMechanicalWeightBps": 127,
+          "curveExecutedWeightBps": 127,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xfB18127c1471131468a1AaD4785c19678e521D86",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "19172720000000000000000",
+              "contractAmount": 19172.72,
+              "distributedRaw": "19172720000000000000000",
+              "distributed": 19172.72,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 3156770,
+          "votiumVoteSharePct": 9.83064767,
+          "convexGaugeTotalRaw": "3156769160277664727381067",
+          "curveMechanicalWeightBps": 738,
+          "curveExecutedWeightBps": 738,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x070EBC9F46d0a6A523D31eb4aE7901C56AD97ae2",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "166600000000000000000",
+              "contractAmount": 166.6,
+              "distributedRaw": "166600000000000000000",
+              "distributed": 166.6,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 27430,
+          "votiumVoteSharePct": 0.08542107,
+          "convexGaugeTotalRaw": "27429040395446352756681",
+          "curveMechanicalWeightBps": 6,
+          "curveExecutedWeightBps": 6,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x724476f141ED2DE4DA22eBDF435905dEf1118317",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "831040000000000000000",
+              "contractAmount": 831.04,
+              "distributedRaw": "831040000000000000000",
+              "distributed": 831.04,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 136831,
+          "votiumVoteSharePct": 0.42611193,
+          "convexGaugeTotalRaw": "136830195588691246445399",
+          "curveMechanicalWeightBps": 32,
+          "curveExecutedWeightBps": 32,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xbE6228125448E40F5DCBB2DbdF7fF3F5721000B4",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+                "symbol": "USDT",
+                "decimals": 6,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "10290000000",
+              "contractAmount": 10290,
+              "distributedRaw": "10290000000",
+              "distributed": 10290,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x42E24C894Dc784276828fE74f47B35B0c8A676fD"
+            }
+          ],
+          "votiumVotesReceived": 1272817,
+          "votiumVoteSharePct": 3.96373999,
+          "convexGaugeTotalRaw": "1272816257814753235710805",
+          "curveMechanicalWeightBps": 297,
+          "curveExecutedWeightBps": 297,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x8F4e42343AF1CBF4f364cE448252d801E3f73937",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+                "symbol": "USDT",
+                "decimals": 6,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "798700000",
+              "contractAmount": 798.7,
+              "distributedRaw": "798700000",
+              "distributed": 798.7,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x42E24C894Dc784276828fE74f47B35B0c8A676fD"
+            }
+          ],
+          "votiumVotesReceived": 98794,
+          "votiumVoteSharePct": 0.3076591,
+          "convexGaugeTotalRaw": "98793474367944379444568",
+          "curveMechanicalWeightBps": 23,
+          "curveExecutedWeightBps": 23,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x415F30505368fa1dB82Feea02EB778be04e75907",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+                "symbol": "ALCX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "1764000000000000000000",
+              "contractAmount": 1764,
+              "distributedRaw": "1764000000000000000000",
+              "distributed": 1764,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x9e2b6378ee8ad2A4A95Fe481d63CAba8FB0EBBF9"
+            }
+          ],
+          "votiumVotesReceived": 428014,
+          "votiumVoteSharePct": 1.33289876,
+          "convexGaugeTotalRaw": "428013177626862292097878",
+          "curveMechanicalWeightBps": 100,
+          "curveExecutedWeightBps": 100,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xB251c0885c7c1975D773B57e67c138FBcEaa6db4",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+                "symbol": "ALCX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "784000000000000000000",
+              "contractAmount": 784,
+              "distributedRaw": "784000000000000000000",
+              "distributed": 784,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x9e2b6378ee8ad2A4A95Fe481d63CAba8FB0EBBF9"
+            }
+          ],
+          "votiumVotesReceived": 190226,
+          "votiumVoteSharePct": 0.59239184,
+          "convexGaugeTotalRaw": "190225364389174741541025",
+          "curveMechanicalWeightBps": 44,
+          "curveExecutedWeightBps": 44,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x19f9266f349158b54a6D95dCe79297DF670f7F14",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+                "symbol": "ALCX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "441000000000000000000",
+              "contractAmount": 441,
+              "distributedRaw": "441000000000000000000",
+              "distributed": 441,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x9e2b6378ee8ad2A4A95Fe481d63CAba8FB0EBBF9"
+            }
+          ],
+          "votiumVotesReceived": 107003,
+          "votiumVoteSharePct": 0.33322313,
+          "convexGaugeTotalRaw": "107002115688735703477009",
+          "curveMechanicalWeightBps": 25,
+          "curveExecutedWeightBps": 25,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xB069D59fDDFE8e2e6E624951e306D4FdC056fA82",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+                "symbol": "ALCX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "784000000000000000000",
+              "contractAmount": 784,
+              "distributedRaw": "784000000000000000000",
+              "distributed": 784,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x9e2b6378ee8ad2A4A95Fe481d63CAba8FB0EBBF9"
+            }
+          ],
+          "votiumVotesReceived": 219805,
+          "votiumVoteSharePct": 0.68450521,
+          "convexGaugeTotalRaw": "219804959564264512883721",
+          "curveMechanicalWeightBps": 51,
+          "curveExecutedWeightBps": 51,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x83f12B0506a115E610c3e76292885192731e9b53",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+                "symbol": "ALCX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "196000000000000000000",
+              "contractAmount": 196,
+              "distributedRaw": "196000000000000000000",
+              "distributed": 196,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x9e2b6378ee8ad2A4A95Fe481d63CAba8FB0EBBF9"
+            }
+          ],
+          "votiumVotesReceived": 47562,
+          "votiumVoteSharePct": 0.14811509,
+          "convexGaugeTotalRaw": "47561238577611104883572",
+          "curveMechanicalWeightBps": 11,
+          "curveExecutedWeightBps": 11,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xAfcD73E242C6D880edFa87b8146825639BDa3881",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+                "symbol": "ALCX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "490000000000000000000",
+              "contractAmount": 490,
+              "distributedRaw": "490000000000000000000",
+              "distributed": 490,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x9e2b6378ee8ad2A4A95Fe481d63CAba8FB0EBBF9"
+            }
+          ],
+          "votiumVotesReceived": 118895,
+          "votiumVoteSharePct": 0.37025658,
+          "convexGaugeTotalRaw": "118894410746128414471632",
+          "curveMechanicalWeightBps": 27,
+          "curveExecutedWeightBps": 27,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xa9F71f07BB592c85B7a4257BE021Cc336Db2C627",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+                "symbol": "ALCX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "490000000000000000000",
+              "contractAmount": 490,
+              "distributedRaw": "490000000000000000000",
+              "distributed": 490,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x9e2b6378ee8ad2A4A95Fe481d63CAba8FB0EBBF9"
+            }
+          ],
+          "votiumVotesReceived": 118895,
+          "votiumVoteSharePct": 0.37025658,
+          "convexGaugeTotalRaw": "118894410746128414471632",
+          "curveMechanicalWeightBps": 27,
+          "curveExecutedWeightBps": 27,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xb110CDD5A25023e2A74542D7dC0644d2171bf556",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+                "symbol": "DOLA",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "490000000000000000000",
+              "contractAmount": 490,
+              "distributedRaw": "490000000000000000000",
+              "distributed": 490,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x9D5Df30F475CEA915b1ed4C0CCa59255C897b61B"
+            }
+          ],
+          "votiumVotesReceived": 60446,
+          "votiumVoteSharePct": 0.18823776,
+          "convexGaugeTotalRaw": "60445970498634048193758",
+          "curveMechanicalWeightBps": 14,
+          "curveExecutedWeightBps": 14,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x1563664333f2ad201f2e127ea9601cb9ca7e5bc29e414bc29491ceb10341d86b",
+          "curveExecutionBlock": 25677876,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        }
+      ],
+      "epistemic": {
+        "incentiveState": "measured",
+        "votingPower": "measured-and-cross-contract-proven",
+        "curveWeightMechanics": "attributed-by-source-formula",
+        "curveExecution": "measured-by-GaugeVoteExecuted-events",
+        "eventOnlyGaugeMeaning": "source-and-live-proven-zero-vote-zero-bps-rows",
+        "incentiveToVoteCausality": "unresolved",
+        "downstreamLiquidityVolumeFeeEffect": "not-yet-measured-by-v0.1",
+        "primaryDriver": null
+      }
+    },
+    {
+      "roundId": 129,
+      "roundStart": "2026-08-13T00:00:00.000Z",
+      "regime": "convex-onchain",
+      "proposalId": 1,
+      "incentiveCount": 42,
+      "tokenFlows": [
+        {
+          "token": {
+            "address": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+            "symbol": "BOLD",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 2,
+          "contractAmountRaw": "575515242802076921130",
+          "contractAmount": 575.515242802077,
+          "distributedRaw": "575515242802076921130",
+          "distributed": 575.515242802077,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+            "symbol": "CRV",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 11,
+          "contractAmountRaw": "313600000000000000000000",
+          "contractAmount": 313600,
+          "distributedRaw": "313600000000000000000000",
+          "distributed": 313600,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+            "symbol": "crvUSD",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 1,
+          "contractAmountRaw": "9572072964030162528317",
+          "contractAmount": 9572.072964030163,
+          "distributedRaw": "9572072964030162528317",
+          "distributed": 9572.072964030163,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+            "symbol": "CVX",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 6,
+          "contractAmountRaw": "33870760000000000000000",
+          "contractAmount": 33870.76,
+          "distributedRaw": "33870760000000000000000",
+          "distributed": 33870.76,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+            "symbol": "frxUSD",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 1,
+          "contractAmountRaw": "2514680000000000000000",
+          "contractAmount": 2514.68,
+          "distributedRaw": "2514680000000000000000",
+          "distributed": 2514.68,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+            "symbol": "RSUP",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 4,
+          "contractAmountRaw": "185988573136361649674404",
+          "contractAmount": 185988.57313636164,
+          "distributedRaw": "185988573136361649674404",
+          "distributed": 185988.57313636164,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "symbol": "USDC",
+            "decimals": 6,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 2,
+          "contractAmountRaw": "11760000000",
+          "contractAmount": 11760,
+          "distributedRaw": "11760000000",
+          "distributed": 11760,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+            "symbol": "USDT",
+            "decimals": 6,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 2,
+          "contractAmountRaw": "11564000000",
+          "contractAmount": 11564,
+          "distributedRaw": "11564000000",
+          "distributed": 11564,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+            "symbol": "WFRAX",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 10,
+          "contractAmountRaw": "185788400000000000000000",
+          "contractAmount": 185788.4,
+          "distributedRaw": "185788400000000000000000",
+          "distributed": 185788.4,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        },
+        {
+          "token": {
+            "address": "0x01791F726B4103694969820be083196cC7c045fF",
+            "symbol": "YB",
+            "decimals": 18,
+            "metadataClass": "onchain-erc20"
+          },
+          "incentiveCount": 3,
+          "contractAmountRaw": "330381602419297753240253",
+          "contractAmount": 330381.60241929773,
+          "distributedRaw": "330381602419297753240253",
+          "distributed": 330381.60241929773,
+          "recycledRaw": "0",
+          "recycled": 0,
+          "usdValue": null,
+          "usdValuationClass": "unknown-not-priced-by-v0.1"
+        }
+      ],
+      "totalVotiumVotesReceived": 34808169,
+      "curveExecutor": {
+        "isDone": true,
+        "submittedGaugeCount": 66,
+        "submittedWeightBps": 10000,
+        "executionEventCount": 3,
+        "eventGaugeRowCount": 73,
+        "uniqueEventGaugeCount": 73,
+        "platformGaugeEventMatchCount": 66,
+        "eventOnlyGaugeCount": 7,
+        "eventOnlyZeroWeightGaugeCount": 7,
+        "eventOnlyPositiveGaugeCount": 0,
+        "duplicateEventGaugeRows": 0,
+        "eventWeightSumBps": 10000,
+        "eventOnlyGaugeProof": [
+          {
+            "gauge": "0xFFf3e31fbAB60ea73ea4a11eA796877F73d77E0f",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x8F4e42343AF1CBF4f364cE448252d801E3f73937",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x543c88e9B7Bd90a4C14A31bdbf41dD509Ab666eD",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0xCFc25170633581Bf896CB6CDeE170e3E3Aa59503",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0xeE624fCbb0C197E41ffc58999e6D35b9B893533E",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          },
+          {
+            "gauge": "0x766752eFbE71Ba7897B205B53EfBd34EC85CA0Cf",
+            "executedWeightBps": 0,
+            "gaugeTotalRaw": "0",
+            "gaugeTotalIsZero": true
+          }
+        ],
+        "roundingProof": {
+          "mechanicalWeightSumBps": 9964,
+          "residualBps": 36,
+          "executionMinusMechanicalDeltaSumBps": 36,
+          "negativeDeltaCount": 0,
+          "positiveDeltaCount": 1,
+          "complete": true
+        }
+      },
+      "coverage": {
+        "votiumIncentivizedGaugeCount": 37,
+        "curveExecutedForVotiumGaugeCount": 37,
+        "curveExecutedForVotiumGaugePct": 100,
+        "platformGaugeExecutionComplete": true,
+        "eventOnlyAllZero": true,
+        "complete": true
+      },
+      "gauges": [
+        {
+          "gauge": "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
+          "incentiveCount": 2,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+                "symbol": "BOLD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "288388013825292934707",
+              "contractAmount": 288.388013825293,
+              "distributedRaw": "288388013825292934707",
+              "distributed": 288.388013825293,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x69eFEc83296c711db4A403B1Ee281E87f99590d6"
+            },
+            {
+              "token": {
+                "address": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+                "symbol": "BOLD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "287127228976783986423",
+              "contractAmount": 287.127228976784,
+              "distributedRaw": "287127228976783986423",
+              "distributed": 287.127228976784,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x69eFEc83296c711db4A403B1Ee281E87f99590d6"
+            }
+          ],
+          "votiumVotesReceived": 70463,
+          "votiumVoteSharePct": 0.20243237,
+          "convexGaugeTotalRaw": "70462210435732264965025",
+          "curveMechanicalWeightBps": 16,
+          "curveExecutedWeightBps": 16,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x6b3A14e237a70c7703A4ac4590c2c254065FB8dd",
+          "incentiveCount": 2,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "31360000000000000000000",
+              "contractAmount": 31360,
+              "distributedRaw": "31360000000000000000000",
+              "distributed": 31360,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            },
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "6762980000000000000000",
+              "contractAmount": 6762.98,
+              "distributedRaw": "6762980000000000000000",
+              "distributed": 6762.98,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 1160032,
+          "votiumVoteSharePct": 3.33264298,
+          "convexGaugeTotalRaw": "1160031301530005315426096",
+          "curveMechanicalWeightBps": 266,
+          "curveExecutedWeightBps": 266,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xbe0451815b546F705ef3f398B8179aE3AADDA14e",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "11760000000000000000000",
+              "contractAmount": 11760,
+              "distributedRaw": "11760000000000000000000",
+              "distributed": 11760,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 347839,
+          "votiumVoteSharePct": 0.99930278,
+          "convexGaugeTotalRaw": "347838040293420528420789",
+          "curveMechanicalWeightBps": 79,
+          "curveExecutedWeightBps": 79,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x3A55AAb28B4516ceB565a6e0577285C84F53520a",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "23520000000000000000000",
+              "contractAmount": 23520,
+              "distributedRaw": "23520000000000000000000",
+              "distributed": 23520,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 695681,
+          "votiumVoteSharePct": 1.99861418,
+          "convexGaugeTotalRaw": "695680819513188277159145",
+          "curveMechanicalWeightBps": 159,
+          "curveExecutedWeightBps": 159,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xAE1680Ef5EFc2486E73D8d5D0f8a8dB77DA5774E",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "23520000000000000000000",
+              "contractAmount": 23520,
+              "distributedRaw": "23520000000000000000000",
+              "distributed": 23520,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 695690,
+          "votiumVoteSharePct": 1.99864003,
+          "convexGaugeTotalRaw": "695689213213558664251368",
+          "curveMechanicalWeightBps": 159,
+          "curveExecutedWeightBps": 159,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x0621982CdA4fD4041964e91AF4080583C5F099e1",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "15680000000000000000000",
+              "contractAmount": 15680,
+              "distributedRaw": "15680000000000000000000",
+              "distributed": 15680,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 463795,
+          "votiumVoteSharePct": 1.33243148,
+          "convexGaugeTotalRaw": "463794683008823916918958",
+          "curveMechanicalWeightBps": 106,
+          "curveExecutedWeightBps": 106,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x7dCB252f7Ea2B8dA6fA59C79EdF63f793C8b63b6",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "11760000000000000000000",
+              "contractAmount": 11760,
+              "distributedRaw": "11760000000000000000000",
+              "distributed": 11760,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 347850,
+          "votiumVoteSharePct": 0.99933438,
+          "convexGaugeTotalRaw": "347849265366103670218007",
+          "curveMechanicalWeightBps": 79,
+          "curveExecutedWeightBps": 79,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xF3F6D6d412a77b680ec3a5E35EbB11BbEC319739",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "11760000000000000000000",
+              "contractAmount": 11760,
+              "distributedRaw": "11760000000000000000000",
+              "distributed": 11760,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 347841,
+          "votiumVoteSharePct": 0.99930852,
+          "convexGaugeTotalRaw": "347840911692288188228489",
+          "curveMechanicalWeightBps": 79,
+          "curveExecutedWeightBps": 79,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xaF01d68714E7eA67f43f08b5947e367126B889b1",
+          "incentiveCount": 2,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "117600000000000000000000",
+              "contractAmount": 117600,
+              "distributedRaw": "117600000000000000000000",
+              "distributed": 117600,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            },
+            {
+              "token": {
+                "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                "symbol": "RSUP",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "58121429105113015523252",
+              "contractAmount": 58121.42910511301,
+              "distributedRaw": "58121429105113015523252",
+              "distributed": 58121.42910511301,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFE11a5009f2121622271e7dd0FD470264e076af6"
+            }
+          ],
+          "votiumVotesReceived": 4265310,
+          "votiumVoteSharePct": 12.25376147,
+          "convexGaugeTotalRaw": "4265309121152519375275254",
+          "curveMechanicalWeightBps": 979,
+          "curveExecutedWeightBps": 979,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x5C0B03914f68F2717d779a0211fd98C2CC45a4dD",
+          "incentiveCount": 2,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "31360000000000000000000",
+              "contractAmount": 31360,
+              "distributedRaw": "31360000000000000000000",
+              "distributed": 31360,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            },
+            {
+              "token": {
+                "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                "symbol": "RSUP",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "16106610433608918861803",
+              "contractAmount": 16106.61043360892,
+              "distributedRaw": "16106610433608918861803",
+              "distributed": 16106.61043360892,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFE11a5009f2121622271e7dd0FD470264e076af6"
+            }
+          ],
+          "votiumVotesReceived": 1168237,
+          "votiumVoteSharePct": 3.35621503,
+          "convexGaugeTotalRaw": "1168236094055650587993366",
+          "curveMechanicalWeightBps": 268,
+          "curveExecutedWeightBps": 268,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xCB25249bFA8CdB6012a75070E5C2885151368Bef",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "23520000000000000000000",
+              "contractAmount": 23520,
+              "distributedRaw": "23520000000000000000000",
+              "distributed": 23520,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 695692,
+          "votiumVoteSharePct": 1.99864578,
+          "convexGaugeTotalRaw": "695691042306285649364089",
+          "curveMechanicalWeightBps": 159,
+          "curveExecutedWeightBps": 159,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xf84657ca6Db485EA38c63ca96dc396c2b3c6fdcC",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+                "symbol": "CRV",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "11760000000000000000000",
+              "contractAmount": 11760,
+              "distributedRaw": "11760000000000000000000",
+              "distributed": 11760,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 347845,
+          "votiumVoteSharePct": 0.99932002,
+          "convexGaugeTotalRaw": "347844424280651784024437",
+          "curveMechanicalWeightBps": 79,
+          "curveExecutedWeightBps": 79,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x29E9975561fAD3A7988CA96361AB5c5317CB32Af",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                "symbol": "RSUP",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "74395429254544659869763",
+              "contractAmount": 74395.42925454467,
+              "distributedRaw": "74395429254544659869763",
+              "distributed": 74395.42925454467,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFE11a5009f2121622271e7dd0FD470264e076af6"
+            }
+          ],
+          "votiumVotesReceived": 1007204,
+          "votiumVoteSharePct": 2.89358512,
+          "convexGaugeTotalRaw": "1007203752098160410377125",
+          "curveMechanicalWeightBps": 231,
+          "curveExecutedWeightBps": 231,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x09F62a6777032329C0d49F1FD4fBe9b3468CDa56",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+                "symbol": "RSUP",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "37365104343095055419586",
+              "contractAmount": 37365.10434309505,
+              "distributedRaw": "37365104343095055419586",
+              "distributed": 37365.10434309505,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFE11a5009f2121622271e7dd0FD470264e076af6"
+            }
+          ],
+          "votiumVotesReceived": 505869,
+          "votiumVoteSharePct": 1.4533054,
+          "convexGaugeTotalRaw": "505868272967221670109525",
+          "curveMechanicalWeightBps": 116,
+          "curveExecutedWeightBps": 116,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xbdAD82e8Be11dE145B238426e5CB7428c3AC88f7",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+                "symbol": "USDT",
+                "decimals": 6,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "784000000",
+              "contractAmount": 784,
+              "distributedRaw": "784000000",
+              "distributed": 784,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x42E24C894Dc784276828fE74f47B35B0c8A676fD"
+            }
+          ],
+          "votiumVotesReceived": 95910,
+          "votiumVoteSharePct": 0.27553877,
+          "convexGaugeTotalRaw": "95909399270236844225706",
+          "curveMechanicalWeightBps": 22,
+          "curveExecutedWeightBps": 22,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x7E1444BA99dcdFfE8fBdb42C02F0005D14f13BE1",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "9419760000000000000000",
+              "contractAmount": 9419.76,
+              "distributedRaw": "9419760000000000000000",
+              "distributed": 9419.76,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 1810601,
+          "votiumVoteSharePct": 5.20165539,
+          "convexGaugeTotalRaw": "1810600423772490274242458",
+          "curveMechanicalWeightBps": 415,
+          "curveExecutedWeightBps": 415,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xc2075702490F0426E84E00d8B328119027813AC5",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3316320000000000000000",
+              "contractAmount": 3316.32,
+              "distributedRaw": "3316320000000000000000",
+              "distributed": 3316.32,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 637443,
+          "votiumVoteSharePct": 1.83130288,
+          "convexGaugeTotalRaw": "637442399039976618580857",
+          "curveMechanicalWeightBps": 146,
+          "curveExecutedWeightBps": 146,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xfB18127c1471131468a1AaD4785c19678e521D86",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "19028660000000000000000",
+              "contractAmount": 19028.66,
+              "distributedRaw": "19028660000000000000000",
+              "distributed": 19028.66,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 3657565,
+          "votiumVoteSharePct": 10.50777764,
+          "convexGaugeTotalRaw": "3657564148554079440682581",
+          "curveMechanicalWeightBps": 840,
+          "curveExecutedWeightBps": 840,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x070EBC9F46d0a6A523D31eb4aE7901C56AD97ae2",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "164640000000000000000",
+              "contractAmount": 164.64,
+              "distributedRaw": "164640000000000000000",
+              "distributed": 164.64,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 31643,
+          "votiumVoteSharePct": 0.09090682,
+          "convexGaugeTotalRaw": "31642484526497741065642",
+          "curveMechanicalWeightBps": 7,
+          "curveExecutedWeightBps": 7,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x724476f141ED2DE4DA22eBDF435905dEf1118317",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "961380000000000000000",
+              "contractAmount": 961.38,
+              "distributedRaw": "961380000000000000000",
+              "distributed": 961.38,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277"
+            }
+          ],
+          "votiumVotesReceived": 184794,
+          "votiumVoteSharePct": 0.53089262,
+          "convexGaugeTotalRaw": "184793570011728711972109",
+          "curveMechanicalWeightBps": 42,
+          "curveExecutedWeightBps": 42,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x22804B0F6bE741a9Fa1BbaEcDD6c8D4116E96944",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x01791F726B4103694969820be083196cC7c045fF",
+                "symbol": "YB",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "110116188086351941154976",
+              "contractAmount": 110116.18808635195,
+              "distributedRaw": "110116188086351941154976",
+              "distributed": 110116.18808635195,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x5005DE019301aB6b744B6EFbB942E9A8999EEeC7"
+            }
+          ],
+          "votiumVotesReceived": 1037598,
+          "votiumVoteSharePct": 2.98090371,
+          "convexGaugeTotalRaw": "1037597770817361730896417",
+          "curveMechanicalWeightBps": 238,
+          "curveExecutedWeightBps": 238,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x4e6bB6B7447B7B2Aa268C16AB87F4Bb48BF57939",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x01791F726B4103694969820be083196cC7c045fF",
+                "symbol": "YB",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "110116188086351941154976",
+              "contractAmount": 110116.18808635195,
+              "distributedRaw": "110116188086351941154976",
+              "distributed": 110116.18808635195,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x5005DE019301aB6b744B6EFbB942E9A8999EEeC7"
+            }
+          ],
+          "votiumVotesReceived": 1037599,
+          "votiumVoteSharePct": 2.98090658,
+          "convexGaugeTotalRaw": "1037598599884144037596519",
+          "curveMechanicalWeightBps": 238,
+          "curveExecutedWeightBps": 238,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x95f00391cB5EebCd190EB58728B4CE23DbFa6ac1",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x01791F726B4103694969820be083196cC7c045fF",
+                "symbol": "YB",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "110149226246593870930301",
+              "contractAmount": 110149.22624659387,
+              "distributedRaw": "110149226246593870930301",
+              "distributed": 110149.22624659387,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x5005DE019301aB6b744B6EFbB942E9A8999EEeC7"
+            }
+          ],
+          "votiumVotesReceived": 1037907,
+          "votiumVoteSharePct": 2.98179143,
+          "convexGaugeTotalRaw": "1037906982571700536177871",
+          "curveMechanicalWeightBps": 238,
+          "curveExecutedWeightBps": 238,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xB53c23D2CC6219adf78ea22Bfd38bFfc50eC54cB",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "130413500000000000000000",
+              "contractAmount": 130413.5,
+              "distributedRaw": "130413500000000000000000",
+              "distributed": 130413.5,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 4482393,
+          "votiumVoteSharePct": 12.87741679,
+          "convexGaugeTotalRaw": "4482392875370485788508960",
+          "curveMechanicalWeightBps": 1029,
+          "curveExecutedWeightBps": 1029,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x4E21418095d32d15c6e2B96A9910772613A50d50",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3808280000000000000000",
+              "contractAmount": 3808.28,
+              "distributedRaw": "3808280000000000000000",
+              "distributed": 3808.28,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 130896,
+          "votiumVoteSharePct": 0.37604966,
+          "convexGaugeTotalRaw": "130895090762194131915691",
+          "curveMechanicalWeightBps": 30,
+          "curveExecutedWeightBps": 30,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x821529Bb07c83803C9CC7763e5974386e9eFEdC7",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "15154720000000000000000",
+              "contractAmount": 15154.72,
+              "distributedRaw": "15154720000000000000000",
+              "distributed": 15154.72,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 520875,
+          "votiumVoteSharePct": 1.49641597,
+          "convexGaugeTotalRaw": "520874770024412786183826",
+          "curveMechanicalWeightBps": 119,
+          "curveExecutedWeightBps": 119,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x9a356132605Ad599ABA34651aa2a606730bacaAa",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "13526940000000000000000",
+              "contractAmount": 13526.94,
+              "distributedRaw": "13526940000000000000000",
+              "distributed": 13526.94,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 464934,
+          "votiumVoteSharePct": 1.3357037,
+          "convexGaugeTotalRaw": "464933589192481341556514",
+          "curveMechanicalWeightBps": 106,
+          "curveExecutedWeightBps": 106,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x48100238C4a3CF44cFbF6C7693eD5C216881fAcE",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3920000000000000000000",
+              "contractAmount": 3920,
+              "distributedRaw": "3920000000000000000000",
+              "distributed": 3920,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 134728,
+          "votiumVoteSharePct": 0.38705857,
+          "convexGaugeTotalRaw": "134727931686529547403375",
+          "curveMechanicalWeightBps": 30,
+          "curveExecutedWeightBps": 30,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x7bA1e40dAe22847E6c521bA297d40fF1c5fD97dd",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "2450000000000000000000",
+              "contractAmount": 2450,
+              "distributedRaw": "2450000000000000000000",
+              "distributed": 2450,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 84205,
+          "votiumVoteSharePct": 0.2419116,
+          "convexGaugeTotalRaw": "84204583742920213486321",
+          "curveMechanicalWeightBps": 19,
+          "curveExecutedWeightBps": 19,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x8882eB84d0c4894753C0450f2D514E39883c0C82",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3920000000000000000000",
+              "contractAmount": 3920,
+              "distributedRaw": "3920000000000000000000",
+              "distributed": 3920,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 134739,
+          "votiumVoteSharePct": 0.38709017,
+          "convexGaugeTotalRaw": "134738004702829547403375",
+          "curveMechanicalWeightBps": 30,
+          "curveExecutedWeightBps": 30,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x98a6C35546be6F7c545c99EfB48F4673eD2c99fc",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "2450000000000000000000",
+              "contractAmount": 2450,
+              "distributedRaw": "2450000000000000000000",
+              "distributed": 2450,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 84207,
+          "votiumVoteSharePct": 0.24191735,
+          "convexGaugeTotalRaw": "84206879666536493631208",
+          "curveMechanicalWeightBps": 19,
+          "curveExecutedWeightBps": 19,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xD1D981dDD0c9A0469E7d8cEE877f83B5877D7260",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+                "symbol": "WFRAX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3381980000000000000000",
+              "contractAmount": 3381.98,
+              "distributedRaw": "3381980000000000000000",
+              "distributed": 3381.98,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 116240,
+          "votiumVoteSharePct": 0.3339446,
+          "convexGaugeTotalRaw": "116239931465165833855122",
+          "curveMechanicalWeightBps": 26,
+          "curveExecutedWeightBps": 26,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x81d837437fD18736ffD3B5C9A5a2aA835c7637e7",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "symbol": "USDC",
+                "decimals": 6,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "7840000000",
+              "contractAmount": 7840,
+              "distributedRaw": "7840000000",
+              "distributed": 7840,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x5aD30fcA5A031c850b817f6F4dE1EE2D713EF850"
+            }
+          ],
+          "votiumVotesReceived": 1016878,
+          "votiumVoteSharePct": 2.92137745,
+          "convexGaugeTotalRaw": "1016877332755551698646407",
+          "curveMechanicalWeightBps": 233,
+          "curveExecutedWeightBps": 233,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xF814283bfd37dC24B2fB5515982F5C0708E508b6",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "symbol": "USDC",
+                "decimals": 6,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "3920000000",
+              "contractAmount": 3920,
+              "distributedRaw": "3920000000",
+              "distributed": 3920,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x5aD30fcA5A031c850b817f6F4dE1EE2D713EF850"
+            }
+          ],
+          "votiumVotesReceived": 3002447,
+          "votiumVoteSharePct": 8.62569646,
+          "convexGaugeTotalRaw": "3002446778118289960799656",
+          "curveMechanicalWeightBps": 689,
+          "curveExecutedWeightBps": 689,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xbE6228125448E40F5DCBB2DbdF7fF3F5721000B4",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+                "symbol": "USDT",
+                "decimals": 6,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "10780000000",
+              "contractAmount": 10780,
+              "distributedRaw": "10780000000",
+              "distributed": 10780,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x42E24C894Dc784276828fE74f47B35B0c8A676fD"
+            }
+          ],
+          "votiumVotesReceived": 1318762,
+          "votiumVoteSharePct": 3.78865662,
+          "convexGaugeTotalRaw": "1318761935957789453029569",
+          "curveMechanicalWeightBps": 302,
+          "curveExecutedWeightBps": 302,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0x7970489a543FB237ABab63d62524d8A5CE165B86",
+          "incentiveCount": 1,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+                "symbol": "CVX",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "980000000000000000000",
+              "contractAmount": 980,
+              "distributedRaw": "980000000000000000000",
+              "distributed": 980,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xFC08757c505eA28709dF66E54870fB6dE09f0C5E"
+            }
+          ],
+          "votiumVotesReceived": 188366,
+          "votiumVoteSharePct": 0.54115458,
+          "convexGaugeTotalRaw": "188365911960063120322336",
+          "curveMechanicalWeightBps": 43,
+          "curveExecutedWeightBps": 43,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0x0c40e62ac4371ee106e3ee62c56174321f566823836cbf63455871dc68ca79ec",
+          "curveExecutionBlock": 25778308,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        },
+        {
+          "gauge": "0xA41eb3062FD68B6Fa9f11439C86503913806761D",
+          "incentiveCount": 2,
+          "incentiveTokens": [
+            {
+              "token": {
+                "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+                "symbol": "crvUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "9572072964030162528317",
+              "contractAmount": 9572.072964030163,
+              "distributedRaw": "9572072964030162528317",
+              "distributed": 9572.072964030163,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0xA1148A1b94262540994Cf9Aa431A13ad39764228"
+            },
+            {
+              "token": {
+                "address": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+                "symbol": "frxUSD",
+                "decimals": 18,
+                "metadataClass": "onchain-erc20"
+              },
+              "contractAmountRaw": "2514680000000000000000",
+              "contractAmount": 2514.68,
+              "distributedRaw": "2514680000000000000000",
+              "distributed": 2514.68,
+              "recycledRaw": "0",
+              "recycled": 0,
+              "depositor": "0x6e74053a3798e0fC9a9775F7995316b27f21c4D2"
+            }
+          ],
+          "votiumVotesReceived": 1478091,
+          "votiumVoteSharePct": 4.24639113,
+          "convexGaugeTotalRaw": "1478090581865509873741571",
+          "curveMechanicalWeightBps": 339,
+          "curveExecutedWeightBps": 339,
+          "curveMechanicalDeltaBps": 0,
+          "curveExecutionTxHash": "0xd83f9264b3f5648f3399a0999e3954628d98c782ce38b02c9143ac31710aadc1",
+          "curveExecutionBlock": 25778309,
+          "semantics": {
+            "incentives": "MEASURED-votium-contract",
+            "votes": "MEASURED-votium-and-cross-contract-provenance",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "incentiveToVote": "CORRELATED-same-round-only-not-causal"
+          }
+        }
+      ],
+      "epistemic": {
+        "incentiveState": "measured",
+        "votingPower": "measured-and-cross-contract-proven",
+        "curveWeightMechanics": "attributed-by-source-formula",
+        "curveExecution": "measured-by-GaugeVoteExecuted-events",
+        "eventOnlyGaugeMeaning": "source-and-live-proven-zero-vote-zero-bps-rows",
+        "incentiveToVoteCausality": "unresolved",
+        "downstreamLiquidityVolumeFeeEffect": "not-yet-measured-by-v0.1",
+        "primaryDriver": null
+      }
+    }
+  ],
+  "epistemic": {
+    "votiumIncentives": "MEASURED",
+    "votiumVotes": "MEASURED",
+    "convexToCurveWeightMechanics": "ATTRIBUTED",
+    "curveGaugeExecution": "MEASURED",
+    "executorEventExtraRows": "ATTRIBUTED-by-pinned-source-and-live-zero-total-proof",
+    "incentiveToVoteRelationship": "CORRELATED-only-not-causal",
+    "voteToExecutedCurveWeightRelationship": "ATTRIBUTED-and-execution-confirmed",
+    "liquidityVolumeFeesDownstream": "UNKNOWN-not-yet-joined",
+    "companyIncomeConnection": "not-attributed-by-this-layer",
+    "primaryDriver": null
+  },
+  "semantics": {
+    "unknownIsNotZero": true,
+    "incentiveAndVoteCoexistenceIsNotCausation": true,
+    "zeroVoteExecutorEventRowsAreNotVotedGauges": true,
+    "executedGaugeWeightIsNotPoolRevenue": true,
+    "protocolFlowIsNotRealisedCompanyIncome": true,
+    "correlationMustNotBePromotedToAttribution": true
+  }
+}
