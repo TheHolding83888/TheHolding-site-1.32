@@ -1,0 +1,102 @@
+name: Verify Economic Graph · vlCVX Votium shadow candidate
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence/economic-graph/vlcvx-votium-candidate.mjs'
+      - 'intelligence/economic-graph/economic-graph-canonical-runner.mjs'
+      - '.github/workflows/verify-vlcvx-votium-economic-candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout reviewed repository state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Build and verify vlCVX Votium shadow candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/economic-graph/vlcvx-votium-candidate.mjs
+          test -s intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          test -s companies/productivity-data.json
+          test -s companies/rewards-data.json
+          node --check intelligence/economic-graph/vlcvx-votium-candidate.mjs
+          node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          TMP="$(mktemp)"
+          ECONOMIC_GRAPH_FILE="$TMP" node intelligence/economic-graph/economic-graph-canonical-runner.mjs
+
+          node - "$TMP" <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const id='defitea-convex-vlcvx-votium';
+          const c=x.candidateCohorts?.[id];
+          const o=c?.latest?.observation;
+          const m=c?.latest?.movement;
+
+          if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.2-defitea-fxn-curve-multi-cohort')throw new Error('Canonical Economic Graph compatibility changed');
+          if(x.coverage?.status!=='partial-two-cohort'||Number(x.coverage?.cohortCount)!==2)throw new Error('Canonical cohort authority changed');
+          if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none')throw new Error('Economic Graph authority regression');
+          if(x.candidateLayer?.version!=='0.2-multi-candidate-shadow-admission'||x.candidateLayer?.status!=='shadow-admission-active')throw new Error('Multi-candidate shadow layer missing');
+          if(Number(x.candidateLayer?.candidateCount)!==2||!x.candidateLayer?.candidateIds?.includes(id)||!x.candidateLayer?.candidateIds?.includes('defitea-aerodrome-veaero'))throw new Error('Candidate registry mismatch');
+          if(x.candidateLayer?.canonicalCohortCountUnchanged!==true||x.candidateLayer?.promotionAuthority!=='none')throw new Error('Shadow admission boundary missing');
+
+          if(!c||c.status!=='shadow-measured-not-promoted'||c.cohortId!==id)throw new Error('vlCVX candidate cohort missing');
+          if(c.identity?.companyRegistry!=='004'||c.identity?.asset!=='vlCVX'||!String(c.identity?.protocol||'').includes('Votium'))throw new Error('vlCVX candidate identity drift');
+          if(c.attribution?.referenceDecompositionProven!==true||c.attribution?.currentRouteMeasured!==true||c.attribution?.rewardInventoryContextMeasured!==true)throw new Error('vlCVX attribution evidence missing');
+          if(c.attribution?.primaryDriver!==null||c.attribution?.promotionAuthority!=='none')throw new Error('vlCVX causal/promotion authority leaked');
+
+          if(!o||o.status!=='shadow-measured-not-promoted')throw new Error('vlCVX latest observation missing');
+          if(o.referenceProductivity?.sourceUrl!=='https://www.convexfinance.com/lock-cvx'||o.referenceProductivity?.sourceType!=='official-frontend')throw new Error('vlCVX Reference source authority drift');
+          if(o.referenceProductivity?.sourceMetric!=='Locked CVX platform vAPR + last completed Votium incentives APR')throw new Error('vlCVX Reference metric drift');
+          if(o.referenceProductivity?.components?.status!=='proven-canonical-reference-decomposition')throw new Error('vlCVX APR decomposition proof missing');
+          if(Math.abs(Number(o.referenceProductivity?.components?.parityDeltaPctPoints))>0.0001)throw new Error('vlCVX APR decomposition parity failed');
+          const sum=Number(o.referenceProductivity?.components?.platformVaprPct)+Number(o.referenceProductivity?.components?.votiumLastCompletedRoundAprPct);
+          if(Math.abs(sum-Number(o.referenceProductivity?.canonicalAprPct))>0.0001)throw new Error('vlCVX component sum mismatch');
+          if(o.referenceProductivity?.semanticBoundary!=='Reference APR only; not realised company income.')throw new Error('Reference-vs-realised semantic boundary missing');
+
+          if(!(Number(o.companyRoute?.liveVlCvxBalance)>0))throw new Error('Defitea live vlCVX balance missing');
+          if(o.companyRoute?.routeId!=='votium-union'||o.companyRoute?.delegate?.identity!=='votium'||o.companyRoute?.forwarding?.identity!=='union'||o.companyRoute?.forwarding?.effective!==true)throw new Error('Defitea Votium→Union route not proven');
+          if(!['ok','partial','warming'].includes(o.companyRoute?.sourceStatus))throw new Error('vlCVX route source status invalid');
+          if(o.companyRoute?.sourceStatus==='ok'&&!Number.isFinite(Number(o.rewardInventory?.current?.currentClaimableUsd)))throw new Error('Known current entitlement was coerced to unknown');
+          if(o.companyRoute?.sourceStatus!=='ok'&&o.rewardInventory?.current?.currentClaimableUsd!==null)throw new Error('Partial/warming entitlement was coerced to a number');
+          if(o.rewardInventory?.rule?.includes('independent facts')!==true)throw new Error('Current vs legacy reward separation missing');
+
+          if(!Array.isArray(o.marketBreathSeed?.measuredAtoms)||!o.marketBreathSeed.measuredAtoms.includes('Votium completed-round incentive APR'))throw new Error('vlCVX measured market atoms missing');
+          if(!Array.isArray(o.marketBreathSeed?.missingAtoms)||!o.marketBreathSeed.missingAtoms.includes('round-to-round incentive flow migration'))throw new Error('vlCVX next market-breath gap missing');
+          if(o.epistemic?.causalAttribution!=='unresolved-between-incentives-votes-emissions-liquidity-volume-fees-and-company-outcome')throw new Error('vlCVX causal boundary drift');
+          if(o.epistemic?.primaryDriver!==null||o.epistemic?.recommendationAuthority!=='none'||o.epistemic?.predictionAuthority!=='none'||o.epistemic?.promotionAuthority!=='none')throw new Error('vlCVX authority leak');
+          if(!/^[0-9a-f]{64}$/i.test(o.provenance?.productivitySha256||'')||!/^[0-9a-f]{64}$/i.test(o.provenance?.rewardsSha256||''))throw new Error('vlCVX exact source provenance missing');
+          if(!Number.isFinite(Date.parse(o.referenceObservedAt))||!Number.isFinite(Date.parse(o.rewardsObservedAt)))throw new Error('vlCVX source timestamps invalid');
+          if(o.temporalBoundary?.rule?.includes('Never treat')!==true)throw new Error('vlCVX temporal boundary missing');
+          if(Number(c.observationCount)!==1||m?.priorObservationId!==null)throw new Error('Fresh vlCVX candidate baseline history unexpected');
+
+          console.log('VLCVX VOTIUM SHADOW CANDIDATE PASS',{
+            canonicalCohorts:x.coverage.cohortCount,
+            candidateCount:x.candidateLayer.candidateCount,
+            referenceApr:o.referenceProductivity.canonicalAprPct,
+            platformVapr:o.referenceProductivity.components.platformVaprPct,
+            votiumApr:o.referenceProductivity.components.votiumLastCompletedRoundAprPct,
+            liveVlCvx:o.companyRoute.liveVlCvxBalance,
+            route:o.companyRoute.routeId,
+            currentClaimableUsd:o.rewardInventory.current.currentClaimableUsd,
+            promotionAuthority:o.epistemic.promotionAuthority,
+            executionAuthority:x.authority.executionAuthority
+          });
+          NODE
+          rm -f "$TMP"
+          git diff --check
