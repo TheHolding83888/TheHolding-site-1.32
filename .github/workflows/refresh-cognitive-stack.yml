@@ -94,6 +94,7 @@ jobs:
           REQUIRED=(
             "security/security-sentinel.mjs"
             "intelligence/brain-reasoning-engine.mjs"
+            "intelligence/brain-vlcvx-votium-curve-shadow-context.mjs"
             "intelligence/brain-policy.json"
             "intelligence/brain-chatgpt-bridge.mjs"
             "intelligence/brain-chatgpt-bridge-policy.json"
@@ -104,6 +105,7 @@ jobs:
             "intelligence/cognitive-stack-release.json"
             "intelligence/change-intelligence.json"
             "intelligence/system-memory.json"
+            "intelligence/explanatory/explanatory-context.json"
           )
           for f in "${REQUIRED[@]}"; do
             test -s "$f"
@@ -111,6 +113,7 @@ jobs:
 
           node --check security/security-sentinel.mjs
           node --check intelligence/brain-reasoning-engine.mjs
+          node --check intelligence/brain-vlcvx-votium-curve-shadow-context.mjs
           node --check intelligence/brain-chatgpt-bridge.mjs
           node --check intelligence/brain-upstream-guard.mjs
           node --check intelligence/cognitive-stack-verifier.mjs
@@ -202,7 +205,10 @@ jobs:
           NODE
 
       - name: Build Grounded Brain from fresh canonical state
-        run: node intelligence/brain-reasoning-engine.mjs
+        run: |
+          set -euo pipefail
+          node intelligence/brain-reasoning-engine.mjs
+          node intelligence/brain-vlcvx-votium-curve-shadow-context.mjs
       - name: Validate Grounded Brain
         shell: bash
         run: |
@@ -241,13 +247,32 @@ jobs:
             }
           }
 
+          const flow = brain.questions?.protocolFlowContexts?.['defitea-convex-vlcvx-votium'];
+          if (Number(brain.currentPosture?.protocolEconomics?.cohortCount) !== 2 || Number(brain.currentPosture?.protocolFlows?.contextCount) !== 1 || !flow) {
+            throw new Error('Grounded Brain canonical/shadow protocol boundary missing');
+          }
+          if (Number(flow.coverage?.curveExecutedVotiumGaugeRows) !== 79 || Number(flow.coverage?.currentCurvePoolContextsComplete) !== 31 || flow.downstreamCurrentContext?.exactFeeUsd !== 'UNKNOWN') {
+            throw new Error('Grounded Brain vlCVX/Votium downstream context drift');
+          }
+          if (flow.measuredRelations?.voteToExecutedCurveGaugeBps?.class !== 'ATTRIBUTED' || flow.measuredRelations?.incentiveToVote?.class !== 'CORRELATED' || flow.measuredRelations?.historicalVoteToCurrentPoolState?.class !== 'CORRELATED') {
+            throw new Error('Grounded Brain vlCVX/Votium epistemic relation drift');
+          }
+          if (flow.authority?.executionAuthority !== 'none' || flow.authority?.causalClaimAuthority !== 'none') {
+            throw new Error('Grounded Brain vlCVX/Votium authority drift');
+          }
+
           if (history.version !== '0.1-brain-history') {
             throw new Error(`Unexpected Brain History version: ${history.version}`);
           }
-          console.log('Grounded Brain PASS', {
+          console.log('Grounded Brain + vlCVX/Votium shadow context PASS', {
             generatedAt: brain.generatedAt,
             status: brain.status,
             cases: brain.reasoningCases.length,
+            canonicalCohorts: brain.currentPosture.protocolEconomics.cohortCount,
+            shadowFlowContexts: brain.currentPosture.protocolFlows.contextCount,
+            curveExecutedGaugeRows: flow.coverage.curveExecutedVotiumGaugeRows,
+            currentPoolContexts: flow.coverage.currentCurvePoolContextsComplete,
+            exactFeeUsd: flow.downstreamCurrentContext.exactFeeUsd,
             historyObservations: history.observationCount,
             snapshotHash: brain.bridge?.snapshotHash,
           });
@@ -280,17 +305,22 @@ jobs:
           if (!(bridge.grounding?.upstreamValidation?.sources ?? []).every((x) => x.exactByteMatch === true)) {
             throw new Error('Bridge upstream vector has a non-matching source');
           }
+          const flowPointer='/explanations/protocolFlowContexts/defitea-convex-vlcvx-votium';
+          if (!(bridge.evidenceCatalog ?? []).some(ev => ev.source === 'intelligence/explanatory/explanatory-context.json' && ev.pointer === flowPointer)) {
+            throw new Error('Bridge missing vlCVX/Votium shadow flow evidence');
+          }
 
           if (bridge.constraints?.apiRequired !== false ||
               bridge.constraints?.modelCallPerformed !== false ||
               bridge.constraints?.executionAllowed !== false) {
             throw new Error('Bridge zero-cost / no-execution boundary failed');
           }
-          console.log('Exact-upstream Bridge PASS', {
+          console.log('Exact-upstream Bridge + vlCVX/Votium evidence PASS', {
             generatedAt: bridge.generatedAt,
             status: bridge.status,
             cases: bridge.cases?.length ?? null,
             evidence: bridge.evidenceCatalog?.length ?? null,
+            vlcvxFlowEvidence: true,
             sourceBrainSha256: bridge.sourceBrain?.sha256 ?? null,
           });
           NODE

@@ -34,6 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s intelligence/brain-reasoning-engine.mjs
+          test -s intelligence/brain-vlcvx-votium-curve-shadow-context.mjs
           test -s intelligence/brain-policy.json
           test -s intelligence/change-intelligence.json
           test -s intelligence/system-memory.json
@@ -42,9 +43,13 @@ jobs:
           test -s intelligence/explanatory/explanatory-context.json
 
           node --check intelligence/brain-reasoning-engine.mjs
+          node --check intelligence/brain-vlcvx-votium-curve-shadow-context.mjs
 
       - name: Build grounded reasoning packet
-        run: node intelligence/brain-reasoning-engine.mjs
+        run: |
+          set -euo pipefail
+          node intelligence/brain-reasoning-engine.mjs
+          node intelligence/brain-vlcvx-votium-curve-shadow-context.mjs
       - name: Validate Brain contract
         shell: bash
         run: |
@@ -148,13 +153,28 @@ jobs:
             throw new Error('Brain currentPosture multi-cohort contract missing');
           }
 
+          const flow = brain.questions?.protocolFlowContexts?.['defitea-convex-vlcvx-votium'];
+          if (brain.extensions?.vlCvxVotiumCurve !== '0.1-vlcvx-votium-curve-shadow-context' || !flow) {
+            throw new Error('Brain vlCVX/Votium shadow flow context missing');
+          }
+          if (Number(brain.currentPosture?.protocolFlows?.contextCount) !== 1 || Number(flow.coverage?.curveExecutedVotiumGaugeRows) !== 79 || Number(flow.coverage?.currentCurvePoolContextsComplete) !== 31) {
+            throw new Error('Brain vlCVX/Votium flow coverage drift');
+          }
+          if (flow.measuredRelations?.voteToExecutedCurveGaugeBps?.class !== 'ATTRIBUTED' || flow.measuredRelations?.incentiveToVote?.class !== 'CORRELATED' || flow.measuredRelations?.historicalVoteToCurrentPoolState?.class !== 'CORRELATED') {
+            throw new Error('Brain vlCVX/Votium relation semantics drift');
+          }
+          if (flow.downstreamCurrentContext?.exactFeeUsd !== 'UNKNOWN' || flow.causalBoundary?.primaryDriver !== null || flow.authority?.executionAuthority !== 'none' || flow.authority?.causalClaimAuthority !== 'none') {
+            throw new Error('Brain vlCVX/Votium unknown/authority boundary drift');
+          }
+
           const whatChangedPointers = new Set((brain.questions?.whatChanged?.evidence ?? [])
             .filter(ev => ev.source === 'intelligence/explanatory/explanatory-context.json' && ev.sourceSha256 === explanatory.sha256)
             .map(ev => ev.pointer));
           for (const pointer of [
             '/explanations/protocolAprChangeContext',
             '/explanations/protocolAprChangeContexts/defitea-fxn-vefxn',
-            '/explanations/protocolAprChangeContexts/defitea-curve-vecrv'
+            '/explanations/protocolAprChangeContexts/defitea-curve-vecrv',
+            '/explanations/protocolFlowContexts/defitea-convex-vlcvx-votium'
           ]) {
             if (!whatChangedPointers.has(pointer)) throw new Error(`Brain whatChanged missing Explanatory evidence ${pointer}`);
           }
@@ -168,16 +188,17 @@ jobs:
           if (!brain.bridge?.inputCompositeHash || !brain.bridge?.snapshotHash) {
             throw new Error('Brain bridge hashes missing');
           }
-          console.log('Brain multi-cohort contract PASS', {
+          console.log('Brain multi-cohort + vlCVX shadow contract PASS', {
             status: brain.status,
             mode: brain.mode,
             reasoningCases: brain.reasoningCases.length,
             evidence: brain.evidenceLedger.length,
-            protocolContext: protocol.status,
-            protocolCausalAttribution: protocol.causalAttribution,
             protocolCohorts: Object.keys(contexts).length,
+            shadowFlowContexts: brain.currentPosture.protocolFlows.contextCount,
             curveContext: curve.status,
-            curveUpstreamCause: curve.causalAttribution,
+            vlcvxCurveExecutedGaugeRows: flow.coverage.curveExecutedVotiumGaugeRows,
+            vlcvxCurrentPoolContexts: flow.coverage.currentCurvePoolContextsComplete,
+            exactFeeUsd: flow.downstreamCurrentContext.exactFeeUsd,
             explanatoryFreshness: explanatory.freshness,
             historyObservations: history.observationCount,
           });
@@ -276,13 +297,17 @@ jobs:
               curve?.primaryDriver !== null) {
             throw new Error('Canonical multi-cohort causal boundary changed after Brain build');
           }
+          const flow = brain.questions?.protocolFlowContexts?.['defitea-convex-vlcvx-votium'];
+          if (!flow || flow?.authority?.executionAuthority !== 'none' || flow?.authority?.causalClaimAuthority !== 'none' || flow?.downstreamCurrentContext?.exactFeeUsd !== 'UNKNOWN') {
+            throw new Error('vlCVX/Votium shadow context changed after Brain build');
+          }
           for (const item of brain.reasoningCases ?? []) {
             if (!item.evidence?.length) {
               throw new Error(`Reasoning case ${item.id} lost evidence`);
             }
           }
 
-          console.log('Post-rebase multi-cohort grounding integrity PASS.');
+          console.log('Post-rebase multi-cohort + vlCVX shadow grounding integrity PASS.');
           NODE
           }
 

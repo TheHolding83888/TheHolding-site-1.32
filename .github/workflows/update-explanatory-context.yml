@@ -20,6 +20,7 @@ on:
       - "intelligence/income-performance/income-performance.json"
       - "intelligence/economic-graph/economic-graph.json"
       - "intelligence/explanatory/explanatory-context.mjs"
+      - "intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs"
       - ".github/workflows/update-explanatory-context.yml"
 
 permissions:
@@ -57,10 +58,15 @@ jobs:
         run: |
           set -euo pipefail
           test -s intelligence/explanatory/explanatory-context.mjs
+          test -s intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
           test -s intelligence/comparative/comparative-intelligence.json
           test -s intelligence/income-performance/income-performance.json
           test -s intelligence/economic-graph/economic-graph.json
+          test -s intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          test -s intelligence/economic-graph/vlcvx-votium-deep-evidence.mjs
           node --check intelligence/explanatory/explanatory-context.mjs
+          node --check intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
+          node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           grep -q "multiCohortRule" intelligence/explanatory/explanatory-context.mjs
           grep -q "protocolAprChangeContexts" intelligence/explanatory/explanatory-context.mjs
           grep -q "mechanismRule" intelligence/explanatory/explanatory-context.mjs
@@ -69,7 +75,17 @@ jobs:
           grep -q "causalClaimAuthority: 'none'" intelligence/explanatory/explanatory-context.mjs
 
       - name: Build Explanatory Context
-        run: node intelligence/explanatory/explanatory-context.mjs
+        run: |
+          set -euo pipefail
+          # A PR checkout carries the last materialized Graph JSON from main.
+          # Rebuild it locally from the reviewed PR head so Explanatory validates
+          # exactly the Graph bytes this source package would produce. Production
+          # workflow_run/push paths consume the already-materialized Graph on main.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            node intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          fi
+          node intelligence/explanatory/explanatory-context.mjs
+          node intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
 
       - name: Validate multi-cohort explanation semantics
         shell: bash
@@ -127,25 +143,38 @@ jobs:
           if (!Number.isFinite(Number(curve.measuredDrivers?.rollingFourWeekFeesCrvUSD)) || !Number.isFinite(Number(curve.measuredDrivers?.rollingAverageVeSupply)) || !Number.isFinite(Number(curve.measuredDrivers?.crvPriceUsd))) throw new Error('Curve mechanical drivers missing');
           if (curve.provenance?.sourceType !== 'onchain') throw new Error('Curve source authority drift');
 
+          const flow = x.explanations?.protocolFlowContexts?.['defitea-convex-vlcvx-votium'];
+          if (x.extensions?.vlCvxVotiumCurve !== '0.1-vlcvx-votium-curve-shadow-context') throw new Error('vlCVX shadow extension version missing');
+          if (Number(x.coverage?.shadowProtocolFlowContextCount) !== 1 || !flow) throw new Error('vlCVX shadow flow context missing');
+          if (flow.coverage?.canonicalProtocolEconomicCohort !== false || flow.coverage?.shadowCandidate !== true) throw new Error('vlCVX shadow/canonical boundary drift');
+          if (Number(flow.coverage?.onchainVotiumGaugesExactMatched) !== 79 || Number(flow.coverage?.curveExecutedVotiumGaugeRows) !== 79 || Number(flow.coverage?.currentCurvePoolContextsComplete) !== 31 || Number(flow.coverage?.unresolvedEligiblePoolContexts) !== 0) throw new Error('vlCVX downstream proof coverage drift');
+          if (flow.measuredRelations?.voteToExecutedCurveGaugeBps?.class !== 'ATTRIBUTED') throw new Error('vlCVX mechanical execution attribution missing');
+          if (flow.measuredRelations?.incentiveToVote?.class !== 'CORRELATED' || flow.measuredRelations?.historicalVoteToCurrentPoolState?.class !== 'CORRELATED') throw new Error('vlCVX causal boundary weakened');
+          if (flow.downstreamCurrentContext?.exactFeeUsd !== 'UNKNOWN') throw new Error('Exact Curve fee USD must remain UNKNOWN');
+          if (flow.causalBoundary?.primaryDriver !== null || flow.authority?.executionAuthority !== 'none' || flow.authority?.causalClaimAuthority !== 'none' || flow.authority?.promotionAuthority !== 'none') throw new Error('vlCVX authority/causal boundary drift');
+
           if (x.answerability?.['what-protocol-contexts-accompanied-apr'] !== 'answerable-by-canonical-multi-cohort-context') throw new Error('multi-cohort answerability missing');
           if (x.answerability?.['how-curve-vecrv-reference-apr-is-formed'] !== 'answerable-by-proven-mechanical-identity') throw new Error('Curve formula answerability missing');
           if (x.answerability?.['why-protocol-apr-changed'] !== 'context-available-cause-unresolved') throw new Error('generic upstream causal guard weakened');
           if (x.answerability?.['why-curve-fee-distributions-changed'] !== 'blocked-no-upstream-fee-origin-evidence') throw new Error('Curve upstream causal guard missing');
           if (x.answerability?.['why-market-moved'] !== 'blocked-no-market-causal-evidence') throw new Error('market causal guard missing');
+          if (x.answerability?.['how-votium-votes-reached-curve-gauges'] !== 'answerable-by-proven-mechanical-execution-bridge') throw new Error('Votium → Curve mechanical answerability missing');
+          if (x.answerability?.['did-votium-incentives-cause-vlcvx-votes'] !== 'blocked-causal-link-unproven') throw new Error('Votium incentive causal guard missing');
+          if (x.answerability?.['did-vlcvx-votes-cause-current-curve-pool-outcomes'] !== 'blocked-causal-link-unproven') throw new Error('Curve pool causal guard missing');
 
           const graphBytes = fs.readFileSync('intelligence/economic-graph/economic-graph.json');
           const graphHash = crypto.createHash('sha256').update(graphBytes).digest('hex');
           if (x.sourceState?.economicGraph?.sha256 !== graphHash || Number(x.sourceState?.economicGraph?.cohortCount) !== 2) throw new Error('Economic Graph exact-byte/coverage binding missing');
-          if (fx.provenance?.graphSha256 !== graphHash || curve.provenance?.graphSha256 !== graphHash) throw new Error('multi-cohort provenance hash mismatch');
+          if (fx.provenance?.graphSha256 !== graphHash || curve.provenance?.graphSha256 !== graphHash || flow.provenance?.graphSha256 !== graphHash) throw new Error('protocol context provenance hash mismatch');
 
-          console.log('EXPLANATORY CONTEXT v0.3 PASS', {
-            cohorts:x.coverage.protocolEconomicCohortCount,
-            fxnApr:fx.apr.canonicalProductivityPct,
+          console.log('EXPLANATORY CONTEXT v0.3 + VLCVX SHADOW PASS', {
+            canonicalCohorts:x.coverage.protocolEconomicCohortCount,
+            shadowFlowContexts:x.coverage.shadowProtocolFlowContextCount,
             fxnCausality:fx.causalAttribution,
-            curveApr:curve.apr.canonicalProductivityPct,
-            curveFormulaApr:curve.apr.formulaReproducedPct,
-            curveFormulaParity:curve.apr.formulaParityDeltaPctPoints,
-            curveUpstreamCause:curve.causalAttribution,
+            curveMechanicalAttribution:curve.mechanics.mechanicalAttribution,
+            vlcvxCurveExecutedGaugeRows:flow.coverage.curveExecutedVotiumGaugeRows,
+            vlcvxCurrentPoolContexts:flow.coverage.currentCurvePoolContextsComplete,
+            exactFeeUsd:flow.downstreamCurrentContext.exactFeeUsd,
             executionAuthority:x.authority.executionAuthority
           });
           NODE
@@ -186,6 +215,7 @@ jobs:
             fi
 
             node intelligence/explanatory/explanatory-context.mjs
+            node intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
             git add "$GENERATED"
             if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
 
@@ -196,7 +226,9 @@ jobs:
               test "$REMOTE_ENGINE" = "0.3-multi-cohort-protocol-economic-context"
               REMOTE_COHORTS="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).coverage?.protocolEconomicCohortCount))")"
               test "$REMOTE_COHORTS" = "2"
-              echo "Verified Explanatory Context v0.3 multi-cohort state on remote main."
+              REMOTE_SHADOW="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).coverage?.shadowProtocolFlowContextCount))")"
+              test "$REMOTE_SHADOW" = "1"
+              echo "Verified Explanatory Context v0.3 + vlCVX shadow flow state on remote main."
               exit 0
             fi
 
