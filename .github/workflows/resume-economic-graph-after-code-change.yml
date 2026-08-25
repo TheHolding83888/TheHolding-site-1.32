@@ -8,6 +8,7 @@ on:
       - 'intelligence/economic-graph/economic-graph.mjs'
       - 'intelligence/economic-graph/economic-graph-canonical-runner.mjs'
       - 'intelligence/economic-graph/aerodrome-veaero-candidate.mjs'
+      - 'intelligence/economic-graph/vlcvx-votium-candidate.mjs'
       - '.github/workflows/update-economic-graph.yml'
       - '.github/workflows/resume-economic-graph-after-code-change.yml'
 
@@ -36,14 +37,17 @@ jobs:
           test -s intelligence/economic-graph/economic-graph.mjs
           test -s intelligence/economic-graph/economic-graph-canonical-runner.mjs
           test -s intelligence/economic-graph/aerodrome-veaero-candidate.mjs
+          test -s intelligence/economic-graph/vlcvx-votium-candidate.mjs
           test -s intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
           test -s .github/workflows/update-aerodrome-managed-pulse.yml
           node --check intelligence/economic-graph/economic-graph.mjs
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           node --check intelligence/economic-graph/aerodrome-veaero-candidate.mjs
+          node --check intelligence/economic-graph/vlcvx-votium-candidate.mjs
           node --check intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
 
-      - name: Dispatch and await canonical Unified Capital writer
+      - name: Attempt canonical Unified Capital writer
+        id: unified
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -62,11 +66,17 @@ jobs:
             sleep 2
           done
           if [ -z "$RUN_ID" ]; then
-            echo "ERROR: could not identify newly dispatched Unified Capital run"
-            exit 1
+            echo "Unified Capital dispatch could not be identified; bounded Graph fallback required."
+            echo "success=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           echo "Watching Unified Capital run $RUN_ID"
-          gh run watch "$RUN_ID" --exit-status
+          if gh run watch "$RUN_ID" --exit-status; then
+            echo "success=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Unified Capital is currently unavailable. Its fail-closed contract remains unchanged; bounded Graph fallback will use the already-canonical Productivity snapshot."
+            echo "success=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Verify normal workflow_run handoff or request bounded fallback
         id: handoff
@@ -81,20 +91,28 @@ jobs:
           const fs=require('fs');
           const p=JSON.parse(fs.readFileSync('/tmp/productivity.json','utf8'));
           const g=JSON.parse(fs.readFileSync('/tmp/economic-graph.json','utf8'));
-          const c=g.candidateCohorts?.['defitea-aerodrome-veaero'];
+          const aero=g.candidateCohorts?.['defitea-aerodrome-veaero'];
+          const vlcvx=g.candidateCohorts?.['defitea-convex-vlcvx-votium'];
           if(g.sourceState?.productivity?.generatedAt!==p.generatedAt)process.exit(1);
-          if(g.candidateLayer?.version!=='0.1-aerodrome-veaero-shadow-admission')process.exit(1);
-          if(g.candidateLayer?.status!=='shadow-admission-active'||Number(g.candidateLayer?.candidateCount)!==1)process.exit(1);
+          if(g.candidateLayer?.version!=='0.2-multi-candidate-shadow-admission')process.exit(1);
+          if(g.candidateLayer?.status!=='shadow-admission-active'||Number(g.candidateLayer?.candidateCount)!==2)process.exit(1);
+          if(!g.candidateLayer?.candidateIds?.includes('defitea-aerodrome-veaero')||!g.candidateLayer?.candidateIds?.includes('defitea-convex-vlcvx-votium'))process.exit(1);
           if(g.candidateLayer?.canonicalCohortCountUnchanged!==true||g.candidateLayer?.promotionAuthority!=='none')process.exit(1);
-          if(!c||c.status!=='shadow-measured-not-promoted')process.exit(1);
+          if(!aero||aero.status!=='shadow-measured-not-promoted'||!vlcvx||vlcvx.status!=='shadow-measured-not-promoted')process.exit(1);
           if(Number(g.coverage?.cohortCount)!==2)process.exit(1);
           process.exit(0);
           NODE
           }
 
+          if [ "${{ steps.unified.outputs.success }}" != "true" ]; then
+            echo "Unified Capital did not complete; requesting bounded Economic Graph fallback."
+            echo "fallback_needed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           for attempt in $(seq 1 18); do
             if verify_graph; then
-              echo "Normal Unified → workflow_run → Economic Graph handoff materialized canonical candidate state."
+              echo "Normal Unified → workflow_run → Economic Graph handoff materialized multi-candidate state."
               echo "fallback_needed=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -141,26 +159,34 @@ jobs:
           const fs=require('fs');
           const p=JSON.parse(fs.readFileSync('/tmp/productivity.json','utf8'));
           const g=JSON.parse(fs.readFileSync('/tmp/economic-graph.json','utf8'));
-          const c=g.candidateCohorts?.['defitea-aerodrome-veaero'];
-          const o=c?.latest?.observation;
+          const aero=g.candidateCohorts?.['defitea-aerodrome-veaero'];
+          const ao=aero?.latest?.observation;
+          const vlcvx=g.candidateCohorts?.['defitea-convex-vlcvx-votium'];
+          const vo=vlcvx?.latest?.observation;
           if(g.sourceState?.productivity?.generatedAt!==p.generatedAt)throw new Error('Economic Graph not bound to current canonical Productivity snapshot');
-          if(g.candidateLayer?.version!=='0.1-aerodrome-veaero-shadow-admission'||g.candidateLayer?.status!=='shadow-admission-active')throw new Error('Aerodrome candidate layer missing');
-          if(Number(g.candidateLayer?.candidateCount)!==1||g.candidateLayer?.canonicalCohortCountUnchanged!==true||g.candidateLayer?.promotionAuthority!=='none')throw new Error('Aerodrome admission authority boundary missing');
+          if(g.candidateLayer?.version!=='0.2-multi-candidate-shadow-admission'||g.candidateLayer?.status!=='shadow-admission-active')throw new Error('Multi-candidate shadow layer missing');
+          if(Number(g.candidateLayer?.candidateCount)!==2||!g.candidateLayer?.candidateIds?.includes('defitea-aerodrome-veaero')||!g.candidateLayer?.candidateIds?.includes('defitea-convex-vlcvx-votium'))throw new Error('Multi-candidate registry mismatch');
+          if(g.candidateLayer?.canonicalCohortCountUnchanged!==true||g.candidateLayer?.promotionAuthority!=='none')throw new Error('Shadow admission authority boundary missing');
           if(Number(g.coverage?.cohortCount)!==2)throw new Error('Canonical cohort count changed during shadow admission');
-          if(!c||c.status!=='shadow-measured-not-promoted'||!o)throw new Error('Aerodrome shadow cohort not materialized');
-          if(Math.abs(Number(o.referenceProductivity?.formula?.parityDeltaPctPoints))>0.01)throw new Error('Aerodrome Reference APR formula parity failed');
-          if(!(Number(o.actualManagedVeNft?.positionCount)>=1)||!Number.isFinite(Number(o.actualManagedVeNft?.currentAccruedAero)))throw new Error('Aerodrome actual managed veNFT state missing');
-          if(o.epistemic?.primaryDriver!==null||o.epistemic?.promotionAuthority!=='none')throw new Error('Aerodrome causal/promotion authority leaked');
+          if(!aero||aero.status!=='shadow-measured-not-promoted'||!ao)throw new Error('Aerodrome shadow cohort not materialized');
+          if(Math.abs(Number(ao.referenceProductivity?.formula?.parityDeltaPctPoints))>0.01)throw new Error('Aerodrome Reference APR formula parity failed');
+          if(!(Number(ao.actualManagedVeNft?.positionCount)>=1)||!Number.isFinite(Number(ao.actualManagedVeNft?.currentAccruedAero)))throw new Error('Aerodrome actual managed veNFT state missing');
+          if(ao.epistemic?.primaryDriver!==null||ao.epistemic?.promotionAuthority!=='none')throw new Error('Aerodrome causal/promotion authority leaked');
+          if(!vlcvx||vlcvx.status!=='shadow-measured-not-promoted'||!vo)throw new Error('vlCVX/Votium shadow cohort not materialized');
+          if(vo.companyRoute?.routeId!=='votium-union'||vo.companyRoute?.delegate?.identity!=='votium'||vo.companyRoute?.forwarding?.identity!=='union'||vo.companyRoute?.forwarding?.effective!==true)throw new Error('vlCVX Votium→Union route missing');
+          if(Math.abs(Number(vo.referenceProductivity?.components?.parityDeltaPctPoints))>0.0001)throw new Error('vlCVX Reference APR decomposition parity failed');
+          if(vo.referenceProductivity?.semanticBoundary!=='Reference APR only; not realised company income.')throw new Error('vlCVX Reference-vs-realised boundary missing');
+          if(vo.epistemic?.primaryDriver!==null||vo.epistemic?.recommendationAuthority!=='none'||vo.epistemic?.predictionAuthority!=='none'||vo.epistemic?.promotionAuthority!=='none')throw new Error('vlCVX authority leaked');
           console.log('ECONOMIC GRAPH RECOVERY PHYSICAL PASS',{
             productivityGeneratedAt:p.generatedAt,
             graphGeneratedAt:g.generatedAt,
             canonicalCohorts:g.coverage.cohortCount,
             candidateCount:g.candidateLayer.candidateCount,
-            aerodromeReferenceApr:o.referenceProductivity.canonicalAprPct,
-            aerodromeReferenceParity:o.referenceProductivity.formula.parityDeltaPctPoints,
-            managedVeNfts:o.actualManagedVeNft.positionCount,
-            currentAccruedAero:o.actualManagedVeNft.currentAccruedAero,
-            promotionAuthority:o.epistemic.promotionAuthority,
+            aerodromeReferenceApr:ao.referenceProductivity.canonicalAprPct,
+            vlCvxReferenceApr:vo.referenceProductivity.canonicalAprPct,
+            vlCvxVotiumApr:vo.referenceProductivity.components.votiumLastCompletedRoundAprPct,
+            vlCvxRoute:vo.companyRoute.routeId,
+            promotionAuthority:g.candidateLayer.promotionAuthority,
             executionAuthority:g.authority.executionAuthority
           });
           NODE
