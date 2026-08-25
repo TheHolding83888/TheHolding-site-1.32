@@ -1,0 +1,1073 @@
+{
+  "version": "0.2-vlcvx-votium-voting-provenance",
+  "engineVersion": "0.2-transition-aware-snapshot-to-convex-onchain",
+  "generatedAt": "2026-08-25T12:50:27.029Z",
+  "status": "shadow-voting-provenance-proven",
+  "purpose": "Prove the Votium vlCVX voting-source transition from legacy cvx.eth Snapshot to Convex onchain GaugeVotePlatform and bind post-migration Votium votesReceived to exact onchain vlCVX gauge totals.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "allocationAuthority": false,
+    "recommendationAuthority": false,
+    "predictionAuthority": false,
+    "causalClaimAuthority": "none",
+    "promotionAuthority": "none",
+    "methodologyMutationAuthority": false
+  },
+  "sourceBinding": {
+    "roundFlowFile": "intelligence/economic-graph/vlcvx-votium-round-flow.json",
+    "roundFlowSha256": "9956e6708fb4b3c85208f8487812e832db2642aacb852524691215aeecd339a0",
+    "companyRegistry": "004",
+    "candidateId": "defitea-convex-vlcvx-votium"
+  },
+  "observation": {
+    "ethereumBlock": 25832322,
+    "rpcEndpointClass": "ethereum-rpc.publicnode.com",
+    "snapshotEndpoint": "https://hub.snapshot.org/graphql"
+  },
+  "sourceAuthority": {
+    "legacyVotium": {
+      "contractRepo": "oo-00/Votium",
+      "contractCommit": "e01cf1401c67cb81cfbd5158654b878bd9db1102",
+      "toolingRepo": "oo-00/votium.js",
+      "toolingCommit": "f7f02dccbcff65acf6a35fe692481f1119452a8a",
+      "method": "cvx.eth Gauge Weight for Week proposal matched inside official 72-hour round window"
+    },
+    "convexOnchain": {
+      "repository": "convex-eth/voting",
+      "commit": "242b592718ff939e0a15e490a7df9730267f0999",
+      "currentCurveGaugeVoting": "0x64D9B5AC386B70af9EDCD20A58cE9262D2EAC278",
+      "oldCurveGaugeVoting": "0x21F304a9DF75E087A035B4c5792bD4e6BB7AF8aF",
+      "mechanics": "GaugeVotePlatform stores raw 18-decimal vlCVX voteTotals/gaugeTotals; GaugeProposer starts biweekly proposals at vlCVX epoch timestamps; Votium post-migration votesReceived equals ceil(gaugeTotal / 1e18) for every incentivized gauge observed."
+    }
+  },
+  "transition": {
+    "lastLegacyRound": 127,
+    "lastLegacyRoundStart": "2026-07-16T00:00:00.000Z",
+    "firstConvexOnchainRound": 128,
+    "firstConvexOnchainRoundStart": "2026-07-30T00:00:00.000Z",
+    "boundaryStatus": "live-cross-source-proven"
+  },
+  "coverage": {
+    "roundCount": 3,
+    "provenRoundCount": 3,
+    "legacySnapshotRoundCount": 1,
+    "convexOnchainRoundCount": 2,
+    "onchainVotiumGaugeCount": 79,
+    "onchainExactGaugeMatchCount": 79,
+    "complete": true
+  },
+  "rounds": [
+    {
+      "roundId": 127,
+      "roundStartUnix": 1784160000,
+      "roundStart": "2026-07-16T00:00:00.000Z",
+      "regime": "legacy-snapshot",
+      "status": "proven",
+      "snapshot": {
+        "status": "exact-official-window-title-match",
+        "candidateCount": 1,
+        "proposal": {
+          "id": "0x9f54e8a9f781a5fa3535172019eb6ea9001435aa9d002ba809f5b9946f4a424e",
+          "title": "Gauge Weight for Week of 16th Jul 2026",
+          "created": 1784160123,
+          "createdAt": "2026-07-16T00:02:03.000Z",
+          "start": 1784160000,
+          "startAt": "2026-07-16T00:00:00.000Z",
+          "end": 1784592000,
+          "endAt": "2026-07-21T00:00:00.000Z",
+          "snapshotBlock": 25541500,
+          "choiceCount": 676
+        }
+      },
+      "oldOnchainProposal": {
+        "platformAddress": "0x21F304a9DF75E087A035B4c5792bD4e6BB7AF8aF",
+        "proposalId": 0,
+        "startAt": "2026-07-16T00:00:00.000Z",
+        "endAt": "2026-07-21T00:00:00.000Z",
+        "epoch": 228,
+        "voteTotalVlCvx": 21065484.239454508,
+        "gaugeCount": 36,
+        "comparison": {
+          "votiumGaugeCount": 31,
+          "onchainMatchedGaugeCount": 30,
+          "exactCeilMatchCount": 0,
+          "coveragePct": 96.7741,
+          "exactCeilMatchPct": 0,
+          "complete": false,
+          "gauges": [
+            {
+              "gauge": "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
+              "votiumVotesReceived": "128620",
+              "onchainGaugeTotalRaw": "72131678640000000000000",
+              "onchainGaugeTotalVlCvx": 72131.67864,
+              "onchainGaugeTotalCeilVlCvx": "72132",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x415F30505368fa1dB82Feea02EB778be04e75907",
+              "votiumVotesReceived": "514734",
+              "onchainGaugeTotalRaw": "287524885690000000000000",
+              "onchainGaugeTotalVlCvx": 287524.88569,
+              "onchainGaugeTotalCeilVlCvx": "287525",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xB251c0885c7c1975D773B57e67c138FBcEaa6db4",
+              "votiumVotesReceived": "231012",
+              "onchainGaugeTotalRaw": "128234095360000000000000",
+              "onchainGaugeTotalVlCvx": 128234.09536,
+              "onchainGaugeTotalCeilVlCvx": "128235",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x19f9266f349158b54a6D95dCe79297DF670f7F14",
+              "votiumVotesReceived": "128682",
+              "onchainGaugeTotalRaw": "72131678640000000000000",
+              "onchainGaugeTotalVlCvx": 72131.67864,
+              "onchainGaugeTotalCeilVlCvx": "72132",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xAfcD73E242C6D880edFa87b8146825639BDa3881",
+              "votiumVotesReceived": "142981",
+              "onchainGaugeTotalRaw": "80146309600000000000000",
+              "onchainGaugeTotalVlCvx": 80146.3096,
+              "onchainGaugeTotalCeilVlCvx": "80147",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xB49ec875DC7e1DDcE5c5dA17249a5eA3904b5eB3",
+              "votiumVotesReceived": "142982",
+              "onchainGaugeTotalRaw": null,
+              "onchainGaugeTotalVlCvx": null,
+              "onchainGaugeTotalCeilVlCvx": null,
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xB069D59fDDFE8e2e6E624951e306D4FdC056fA82",
+              "votiumVotesReceived": "242088",
+              "onchainGaugeTotalRaw": "128234095360000000000000",
+              "onchainGaugeTotalVlCvx": 128234.09536,
+              "onchainGaugeTotalCeilVlCvx": "128235",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x83f12B0506a115E610c3e76292885192731e9b53",
+              "votiumVotesReceived": "57191",
+              "onchainGaugeTotalRaw": "32058523840000000000000",
+              "onchainGaugeTotalVlCvx": 32058.52384,
+              "onchainGaugeTotalCeilVlCvx": "32059",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xbE6228125448E40F5DCBB2DbdF7fF3F5721000B4",
+              "votiumVotesReceived": "1493030",
+              "onchainGaugeTotalRaw": "832619053380000000000000",
+              "onchainGaugeTotalVlCvx": 832619.05338,
+              "onchainGaugeTotalCeilVlCvx": "832620",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x22804B0F6bE741a9Fa1BbaEcDD6c8D4116E96944",
+              "votiumVotesReceived": "912126",
+              "onchainGaugeTotalRaw": "506252061310000000000000",
+              "onchainGaugeTotalVlCvx": 506252.06131,
+              "onchainGaugeTotalCeilVlCvx": "506253",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x4e6bB6B7447B7B2Aa268C16AB87F4Bb48BF57939",
+              "votiumVotesReceived": "923658",
+              "onchainGaugeTotalRaw": "506252061310000000000000",
+              "onchainGaugeTotalVlCvx": 506252.06131,
+              "onchainGaugeTotalCeilVlCvx": "506253",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x95f00391cB5EebCd190EB58728B4CE23DbFa6ac1",
+              "votiumVotesReceived": "915136",
+              "onchainGaugeTotalRaw": "506252061310000000000000",
+              "onchainGaugeTotalVlCvx": 506252.06131,
+              "onchainGaugeTotalCeilVlCvx": "506253",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x9a356132605Ad599ABA34651aa2a606730bacaAa",
+              "votiumVotesReceived": "574931",
+              "onchainGaugeTotalRaw": "318581580660000000000000",
+              "onchainGaugeTotalVlCvx": 318581.58066,
+              "onchainGaugeTotalCeilVlCvx": "318582",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x821529Bb07c83803C9CC7763e5974386e9eFEdC7",
+              "votiumVotesReceived": "679222",
+              "onchainGaugeTotalRaw": "376687655120000000000000",
+              "onchainGaugeTotalVlCvx": 376687.65512,
+              "onchainGaugeTotalCeilVlCvx": "376688",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x4E21418095d32d15c6e2B96A9910772613A50d50",
+              "votiumVotesReceived": "168413",
+              "onchainGaugeTotalRaw": "93170084910000000000000",
+              "onchainGaugeTotalVlCvx": 93170.08491,
+              "onchainGaugeTotalCeilVlCvx": "93171",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xB53c23D2CC6219adf78ea22Bfd38bFfc50eC54cB",
+              "votiumVotesReceived": "5986639",
+              "onchainGaugeTotalRaw": "3224532352021043096114723",
+              "onchainGaugeTotalVlCvx": 3224532.352021043,
+              "onchainGaugeTotalCeilVlCvx": "3224533",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xA41eb3062FD68B6Fa9f11439C86503913806761D",
+              "votiumVotesReceived": "830204",
+              "onchainGaugeTotalRaw": "455380852620000000000000",
+              "onchainGaugeTotalVlCvx": 455380.85262,
+              "onchainGaugeTotalCeilVlCvx": "455381",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x29E9975561fAD3A7988CA96361AB5c5317CB32Af",
+              "votiumVotesReceived": "622563",
+              "onchainGaugeTotalRaw": "347634617890000000000000",
+              "onchainGaugeTotalVlCvx": 347634.61789,
+              "onchainGaugeTotalCeilVlCvx": "347635",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xaF01d68714E7eA67f43f08b5947e367126B889b1",
+              "votiumVotesReceived": "1543627",
+              "onchainGaugeTotalRaw": "251459046370000000000000",
+              "onchainGaugeTotalVlCvx": 251459.04637,
+              "onchainGaugeTotalCeilVlCvx": "251460",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x09F62a6777032329C0d49F1FD4fBe9b3468CDa56",
+              "votiumVotesReceived": "278489",
+              "onchainGaugeTotalRaw": "155283474850000000000000",
+              "onchainGaugeTotalVlCvx": 155283.47485,
+              "onchainGaugeTotalCeilVlCvx": "155284",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x5C0B03914f68F2717d779a0211fd98C2CC45a4dD",
+              "votiumVotesReceived": "440895",
+              "onchainGaugeTotalRaw": "116212148920000000000000",
+              "onchainGaugeTotalVlCvx": 116212.14892,
+              "onchainGaugeTotalCeilVlCvx": "116213",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x7E1444BA99dcdFfE8fBdb42C02F0005D14f13BE1",
+              "votiumVotesReceived": "1594238",
+              "onchainGaugeTotalRaw": "910991988700000000000000",
+              "onchainGaugeTotalVlCvx": 910991.9887,
+              "onchainGaugeTotalCeilVlCvx": "910992",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xc2075702490F0426E84E00d8B328119027813AC5",
+              "votiumVotesReceived": "566697",
+              "onchainGaugeTotalRaw": "315576094050000000000000",
+              "onchainGaugeTotalVlCvx": 315576.09405,
+              "onchainGaugeTotalCeilVlCvx": "315577",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xfB18127c1471131468a1AaD4785c19678e521D86",
+              "votiumVotesReceived": "3257432",
+              "onchainGaugeTotalRaw": "1825332201140000000000000",
+              "onchainGaugeTotalVlCvx": 1825332.20114,
+              "onchainGaugeTotalCeilVlCvx": "1825333",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x070EBC9F46d0a6A523D31eb4aE7901C56AD97ae2",
+              "votiumVotesReceived": "28582",
+              "onchainGaugeTotalRaw": "16029261920000000000000",
+              "onchainGaugeTotalVlCvx": 16029.26192,
+              "onchainGaugeTotalCeilVlCvx": "16030",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x724476f141ED2DE4DA22eBDF435905dEf1118317",
+              "votiumVotesReceived": "141870",
+              "onchainGaugeTotalRaw": "79144480730000000000000",
+              "onchainGaugeTotalVlCvx": 79144.48073,
+              "onchainGaugeTotalCeilVlCvx": "79145",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xb110CDD5A25023e2A74542D7dC0644d2171bf556",
+              "votiumVotesReceived": "68259",
+              "onchainGaugeTotalRaw": "38069497060000000000000",
+              "onchainGaugeTotalVlCvx": 38069.49706,
+              "onchainGaugeTotalCeilVlCvx": "38070",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x8B0aBcFC78a5c14520682FCD76A0E52B71126079",
+              "votiumVotesReceived": "955994",
+              "onchainGaugeTotalRaw": "535305098540000000000000",
+              "onchainGaugeTotalVlCvx": 535305.09854,
+              "onchainGaugeTotalCeilVlCvx": "535306",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x7970489a543FB237ABab63d62524d8A5CE165B86",
+              "votiumVotesReceived": "170962",
+              "onchainGaugeTotalRaw": "93170084910000000000000",
+              "onchainGaugeTotalVlCvx": 93170.08491,
+              "onchainGaugeTotalCeilVlCvx": "93171",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0xF3c43E7D722963b9569d1E39873dF9E2dFE8C087",
+              "votiumVotesReceived": "1429110",
+              "onchainGaugeTotalRaw": "768600954070000000000000",
+              "onchainGaugeTotalVlCvx": 768600.95407,
+              "onchainGaugeTotalCeilVlCvx": "768601",
+              "exactCeilEquality": false
+            },
+            {
+              "gauge": "0x8F4e42343AF1CBF4f364cE448252d801E3f73937",
+              "votiumVotesReceived": "181031",
+              "onchainGaugeTotalRaw": "99181058130000000000000",
+              "onchainGaugeTotalVlCvx": 99181.05813,
+              "onchainGaugeTotalCeilVlCvx": "99182",
+              "exactCeilEquality": false
+            }
+          ]
+        }
+      },
+      "currentOnchainProposal": null
+    },
+    {
+      "roundId": 128,
+      "roundStartUnix": 1785369600,
+      "roundStart": "2026-07-30T00:00:00.000Z",
+      "regime": "convex-onchain",
+      "status": "proven",
+      "snapshot": {
+        "status": "no-official-window-match",
+        "candidateCount": 0,
+        "proposal": null
+      },
+      "oldOnchainProposal": null,
+      "currentOnchainProposal": {
+        "platformAddress": "0x64D9B5AC386B70af9EDCD20A58cE9262D2EAC278",
+        "proposalId": 0,
+        "startAt": "2026-07-30T00:00:00.000Z",
+        "endAt": "2026-08-04T00:00:00.000Z",
+        "epoch": 230,
+        "voteTotalVlCvx": 42718755.51684957,
+        "gaugeCount": 70,
+        "comparison": {
+          "votiumGaugeCount": 42,
+          "onchainMatchedGaugeCount": 42,
+          "exactCeilMatchCount": 42,
+          "coveragePct": 100,
+          "exactCeilMatchPct": 100,
+          "complete": true,
+          "gauges": [
+            {
+              "gauge": "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
+              "votiumVotesReceived": "77414",
+              "onchainGaugeTotalRaw": "77413988759488011717646",
+              "onchainGaugeTotalVlCvx": 77413.98875948801,
+              "onchainGaugeTotalCeilVlCvx": "77414",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x22804B0F6bE741a9Fa1BbaEcDD6c8D4116E96944",
+              "votiumVotesReceived": "559066",
+              "onchainGaugeTotalRaw": "559065061257645845738199",
+              "onchainGaugeTotalVlCvx": 559065.0612576458,
+              "onchainGaugeTotalCeilVlCvx": "559066",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x4e6bB6B7447B7B2Aa268C16AB87F4Bb48BF57939",
+              "votiumVotesReceived": "559065",
+              "onchainGaugeTotalRaw": "559064039048656220494970",
+              "onchainGaugeTotalVlCvx": 559064.0390486562,
+              "onchainGaugeTotalCeilVlCvx": "559065",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x95f00391cB5EebCd190EB58728B4CE23DbFa6ac1",
+              "votiumVotesReceived": "559241",
+              "onchainGaugeTotalRaw": "559240299405388279104914",
+              "onchainGaugeTotalVlCvx": 559240.2994053883,
+              "onchainGaugeTotalCeilVlCvx": "559241",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xF3c43E7D722963b9569d1E39873dF9E2dFE8C087",
+              "votiumVotesReceived": "1212682",
+              "onchainGaugeTotalRaw": "1212681161933566218968912",
+              "onchainGaugeTotalVlCvx": 1212681.1619335662,
+              "onchainGaugeTotalCeilVlCvx": "1212682",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x7970489a543FB237ABab63d62524d8A5CE165B86",
+              "votiumVotesReceived": "161356",
+              "onchainGaugeTotalRaw": "161355164313197147599324",
+              "onchainGaugeTotalVlCvx": 161355.16431319714,
+              "onchainGaugeTotalCeilVlCvx": "161356",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x29E9975561fAD3A7988CA96361AB5c5317CB32Af",
+              "votiumVotesReceived": "1040624",
+              "onchainGaugeTotalRaw": "1040623990705336050041249",
+              "onchainGaugeTotalVlCvx": 1040623.9907053361,
+              "onchainGaugeTotalCeilVlCvx": "1040624",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xaF01d68714E7eA67f43f08b5947e367126B889b1",
+              "votiumVotesReceived": "4545543",
+              "onchainGaugeTotalRaw": "4545542908044263619190379",
+              "onchainGaugeTotalVlCvx": 4545542.908044264,
+              "onchainGaugeTotalCeilVlCvx": "4545543",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x09F62a6777032329C0d49F1FD4fBe9b3468CDa56",
+              "votiumVotesReceived": "447727",
+              "onchainGaugeTotalRaw": "447726337648789627760502",
+              "onchainGaugeTotalVlCvx": 447726.33764878963,
+              "onchainGaugeTotalCeilVlCvx": "447727",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x5C0B03914f68F2717d779a0211fd98C2CC45a4dD",
+              "votiumVotesReceived": "1190836",
+              "onchainGaugeTotalRaw": "1190835580577407188759365",
+              "onchainGaugeTotalVlCvx": 1190835.5805774073,
+              "onchainGaugeTotalCeilVlCvx": "1190836",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xB53c23D2CC6219adf78ea22Bfd38bFfc50eC54cB",
+              "votiumVotesReceived": "4949409",
+              "onchainGaugeTotalRaw": "4949408725350642329221543",
+              "onchainGaugeTotalVlCvx": 4949408.725350643,
+              "onchainGaugeTotalCeilVlCvx": "4949409",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x4E21418095d32d15c6e2B96A9910772613A50d50",
+              "votiumVotesReceived": "148751",
+              "onchainGaugeTotalRaw": "148750900863449148337870",
+              "onchainGaugeTotalVlCvx": 148750.90086344915,
+              "onchainGaugeTotalCeilVlCvx": "148751",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x821529Bb07c83803C9CC7763e5974386e9eFEdC7",
+              "votiumVotesReceived": "598442",
+              "onchainGaugeTotalRaw": "598441861941449989201739",
+              "onchainGaugeTotalVlCvx": 598441.86194145,
+              "onchainGaugeTotalCeilVlCvx": "598442",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xD1D981dDD0c9A0469E7d8cEE877f83B5877D7260",
+              "votiumVotesReceived": "123740",
+              "onchainGaugeTotalRaw": "123739678067392246525097",
+              "onchainGaugeTotalVlCvx": 123739.67806739225,
+              "onchainGaugeTotalCeilVlCvx": "123740",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x9a356132605Ad599ABA34651aa2a606730bacaAa",
+              "votiumVotesReceived": "494953",
+              "onchainGaugeTotalRaw": "494952401557149507910549",
+              "onchainGaugeTotalVlCvx": 494952.4015571495,
+              "onchainGaugeTotalCeilVlCvx": "494953",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xA41eb3062FD68B6Fa9f11439C86503913806761D",
+              "votiumVotesReceived": "1148673",
+              "onchainGaugeTotalRaw": "1148672044116000000000000",
+              "onchainGaugeTotalVlCvx": 1148672.044116,
+              "onchainGaugeTotalCeilVlCvx": "1148673",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x48100238C4a3CF44cFbF6C7693eD5C216881fAcE",
+              "votiumVotesReceived": "128923",
+              "onchainGaugeTotalRaw": "128922487821001557585245",
+              "onchainGaugeTotalVlCvx": 128922.48782100156,
+              "onchainGaugeTotalCeilVlCvx": "128923",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x7bA1e40dAe22847E6c521bA297d40fF1c5fD97dd",
+              "votiumVotesReceived": "80585",
+              "onchainGaugeTotalRaw": "80584420224388879102757",
+              "onchainGaugeTotalVlCvx": 80584.42022438887,
+              "onchainGaugeTotalCeilVlCvx": "80585",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x8882eB84d0c4894753C0450f2D514E39883c0C82",
+              "votiumVotesReceived": "128925",
+              "onchainGaugeTotalRaw": "128924118760541818490325",
+              "onchainGaugeTotalVlCvx": 128924.11876054182,
+              "onchainGaugeTotalCeilVlCvx": "128925",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xbe0451815b546F705ef3f398B8179aE3AADDA14e",
+              "votiumVotesReceived": "734859",
+              "onchainGaugeTotalRaw": "734858734301526541129322",
+              "onchainGaugeTotalVlCvx": 734858.7343015266,
+              "onchainGaugeTotalCeilVlCvx": "734859",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x3A55AAb28B4516ceB565a6e0577285C84F53520a",
+              "votiumVotesReceived": "894213",
+              "onchainGaugeTotalRaw": "894212480615815812295230",
+              "onchainGaugeTotalVlCvx": 894212.4806158158,
+              "onchainGaugeTotalCeilVlCvx": "894213",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x6b3A14e237a70c7703A4ac4590c2c254065FB8dd",
+              "votiumVotesReceived": "1198566",
+              "onchainGaugeTotalRaw": "1198565745024326541129322",
+              "onchainGaugeTotalVlCvx": 1198565.7450243265,
+              "onchainGaugeTotalCeilVlCvx": "1198566",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xAE1680Ef5EFc2486E73D8d5D0f8a8dB77DA5774E",
+              "votiumVotesReceived": "1330917",
+              "onchainGaugeTotalRaw": "1330916398358449929744093",
+              "onchainGaugeTotalVlCvx": 1330916.39835845,
+              "onchainGaugeTotalCeilVlCvx": "1330917",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x0621982CdA4fD4041964e91AF4080583C5F099e1",
+              "votiumVotesReceived": "604960",
+              "onchainGaugeTotalRaw": "604959055029329983967084",
+              "onchainGaugeTotalVlCvx": 604959.05502933,
+              "onchainGaugeTotalCeilVlCvx": "604960",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x7dCB252f7Ea2B8dA6fA59C79EdF63f793C8b63b6",
+              "votiumVotesReceived": "362978",
+              "onchainGaugeTotalRaw": "362977393539748904092855",
+              "onchainGaugeTotalVlCvx": 362977.3935397489,
+              "onchainGaugeTotalCeilVlCvx": "362978",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xF3F6D6d412a77b680ec3a5E35EbB11BbEC319739",
+              "votiumVotesReceived": "241986",
+              "onchainGaugeTotalRaw": "241985374048118269209450",
+              "onchainGaugeTotalVlCvx": 241985.37404811828,
+              "onchainGaugeTotalCeilVlCvx": "241986",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xCB25249bFA8CdB6012a75070E5C2885151368Bef",
+              "votiumVotesReceived": "506607",
+              "onchainGaugeTotalRaw": "506606738239008595579771",
+              "onchainGaugeTotalVlCvx": 506606.7382390086,
+              "onchainGaugeTotalCeilVlCvx": "506607",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x7E1444BA99dcdFfE8fBdb42C02F0005D14f13BE1",
+              "votiumVotesReceived": "1550958",
+              "onchainGaugeTotalRaw": "1550957166302385908595143",
+              "onchainGaugeTotalVlCvx": 1550957.166302386,
+              "onchainGaugeTotalCeilVlCvx": "1550958",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xc2075702490F0426E84E00d8B328119027813AC5",
+              "votiumVotesReceived": "546029",
+              "onchainGaugeTotalRaw": "546028920179913636089202",
+              "onchainGaugeTotalVlCvx": 546028.9201799136,
+              "onchainGaugeTotalCeilVlCvx": "546029",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xfB18127c1471131468a1AaD4785c19678e521D86",
+              "votiumVotesReceived": "3156770",
+              "onchainGaugeTotalRaw": "3156769160277664727381067",
+              "onchainGaugeTotalVlCvx": 3156769.1602776647,
+              "onchainGaugeTotalCeilVlCvx": "3156770",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x070EBC9F46d0a6A523D31eb4aE7901C56AD97ae2",
+              "votiumVotesReceived": "27430",
+              "onchainGaugeTotalRaw": "27429040395446352756681",
+              "onchainGaugeTotalVlCvx": 27429.040395446355,
+              "onchainGaugeTotalCeilVlCvx": "27430",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x724476f141ED2DE4DA22eBDF435905dEf1118317",
+              "votiumVotesReceived": "136831",
+              "onchainGaugeTotalRaw": "136830195588691246445399",
+              "onchainGaugeTotalVlCvx": 136830.19558869125,
+              "onchainGaugeTotalCeilVlCvx": "136831",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xbE6228125448E40F5DCBB2DbdF7fF3F5721000B4",
+              "votiumVotesReceived": "1272817",
+              "onchainGaugeTotalRaw": "1272816257814753235710805",
+              "onchainGaugeTotalVlCvx": 1272816.2578147533,
+              "onchainGaugeTotalCeilVlCvx": "1272817",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x8F4e42343AF1CBF4f364cE448252d801E3f73937",
+              "votiumVotesReceived": "98794",
+              "onchainGaugeTotalRaw": "98793474367944379444568",
+              "onchainGaugeTotalVlCvx": 98793.47436794438,
+              "onchainGaugeTotalCeilVlCvx": "98794",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x415F30505368fa1dB82Feea02EB778be04e75907",
+              "votiumVotesReceived": "428014",
+              "onchainGaugeTotalRaw": "428013177626862292097878",
+              "onchainGaugeTotalVlCvx": 428013.1776268623,
+              "onchainGaugeTotalCeilVlCvx": "428014",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xB251c0885c7c1975D773B57e67c138FBcEaa6db4",
+              "votiumVotesReceived": "190226",
+              "onchainGaugeTotalRaw": "190225364389174741541025",
+              "onchainGaugeTotalVlCvx": 190225.36438917473,
+              "onchainGaugeTotalCeilVlCvx": "190226",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x19f9266f349158b54a6D95dCe79297DF670f7F14",
+              "votiumVotesReceived": "107003",
+              "onchainGaugeTotalRaw": "107002115688735703477009",
+              "onchainGaugeTotalVlCvx": 107002.1156887357,
+              "onchainGaugeTotalCeilVlCvx": "107003",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xB069D59fDDFE8e2e6E624951e306D4FdC056fA82",
+              "votiumVotesReceived": "219805",
+              "onchainGaugeTotalRaw": "219804959564264512883721",
+              "onchainGaugeTotalVlCvx": 219804.9595642645,
+              "onchainGaugeTotalCeilVlCvx": "219805",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x83f12B0506a115E610c3e76292885192731e9b53",
+              "votiumVotesReceived": "47562",
+              "onchainGaugeTotalRaw": "47561238577611104883572",
+              "onchainGaugeTotalVlCvx": 47561.238577611104,
+              "onchainGaugeTotalCeilVlCvx": "47562",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xAfcD73E242C6D880edFa87b8146825639BDa3881",
+              "votiumVotesReceived": "118895",
+              "onchainGaugeTotalRaw": "118894410746128414471632",
+              "onchainGaugeTotalVlCvx": 118894.41074612841,
+              "onchainGaugeTotalCeilVlCvx": "118895",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xa9F71f07BB592c85B7a4257BE021Cc336Db2C627",
+              "votiumVotesReceived": "118895",
+              "onchainGaugeTotalRaw": "118894410746128414471632",
+              "onchainGaugeTotalVlCvx": 118894.41074612841,
+              "onchainGaugeTotalCeilVlCvx": "118895",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xb110CDD5A25023e2A74542D7dC0644d2171bf556",
+              "votiumVotesReceived": "60446",
+              "onchainGaugeTotalRaw": "60445970498634048193758",
+              "onchainGaugeTotalVlCvx": 60445.97049863405,
+              "onchainGaugeTotalCeilVlCvx": "60446",
+              "exactCeilEquality": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "roundId": 129,
+      "roundStartUnix": 1786579200,
+      "roundStart": "2026-08-13T00:00:00.000Z",
+      "regime": "convex-onchain",
+      "status": "proven",
+      "snapshot": {
+        "status": "no-official-window-match",
+        "candidateCount": 0,
+        "proposal": null
+      },
+      "oldOnchainProposal": null,
+      "currentOnchainProposal": {
+        "platformAddress": "0x64D9B5AC386B70af9EDCD20A58cE9262D2EAC278",
+        "proposalId": 1,
+        "startAt": "2026-08-13T00:00:00.000Z",
+        "endAt": "2026-08-18T00:00:00.000Z",
+        "epoch": 232,
+        "voteTotalVlCvx": 43526331.643120535,
+        "gaugeCount": 66,
+        "comparison": {
+          "votiumGaugeCount": 37,
+          "onchainMatchedGaugeCount": 37,
+          "exactCeilMatchCount": 37,
+          "coveragePct": 100,
+          "exactCeilMatchPct": 100,
+          "complete": true,
+          "gauges": [
+            {
+              "gauge": "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
+              "votiumVotesReceived": "70463",
+              "onchainGaugeTotalRaw": "70462210435732264965025",
+              "onchainGaugeTotalVlCvx": 70462.21043573227,
+              "onchainGaugeTotalCeilVlCvx": "70463",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x6b3A14e237a70c7703A4ac4590c2c254065FB8dd",
+              "votiumVotesReceived": "1160032",
+              "onchainGaugeTotalRaw": "1160031301530005315426096",
+              "onchainGaugeTotalVlCvx": 1160031.3015300054,
+              "onchainGaugeTotalCeilVlCvx": "1160032",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xbe0451815b546F705ef3f398B8179aE3AADDA14e",
+              "votiumVotesReceived": "347839",
+              "onchainGaugeTotalRaw": "347838040293420528420789",
+              "onchainGaugeTotalVlCvx": 347838.04029342055,
+              "onchainGaugeTotalCeilVlCvx": "347839",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x3A55AAb28B4516ceB565a6e0577285C84F53520a",
+              "votiumVotesReceived": "695681",
+              "onchainGaugeTotalRaw": "695680819513188277159145",
+              "onchainGaugeTotalVlCvx": 695680.8195131883,
+              "onchainGaugeTotalCeilVlCvx": "695681",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xAE1680Ef5EFc2486E73D8d5D0f8a8dB77DA5774E",
+              "votiumVotesReceived": "695690",
+              "onchainGaugeTotalRaw": "695689213213558664251368",
+              "onchainGaugeTotalVlCvx": 695689.2132135587,
+              "onchainGaugeTotalCeilVlCvx": "695690",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x0621982CdA4fD4041964e91AF4080583C5F099e1",
+              "votiumVotesReceived": "463795",
+              "onchainGaugeTotalRaw": "463794683008823916918958",
+              "onchainGaugeTotalVlCvx": 463794.6830088239,
+              "onchainGaugeTotalCeilVlCvx": "463795",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x7dCB252f7Ea2B8dA6fA59C79EdF63f793C8b63b6",
+              "votiumVotesReceived": "347850",
+              "onchainGaugeTotalRaw": "347849265366103670218007",
+              "onchainGaugeTotalVlCvx": 347849.2653661037,
+              "onchainGaugeTotalCeilVlCvx": "347850",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xF3F6D6d412a77b680ec3a5E35EbB11BbEC319739",
+              "votiumVotesReceived": "347841",
+              "onchainGaugeTotalRaw": "347840911692288188228489",
+              "onchainGaugeTotalVlCvx": 347840.9116922882,
+              "onchainGaugeTotalCeilVlCvx": "347841",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xaF01d68714E7eA67f43f08b5947e367126B889b1",
+              "votiumVotesReceived": "4265310",
+              "onchainGaugeTotalRaw": "4265309121152519375275254",
+              "onchainGaugeTotalVlCvx": 4265309.121152519,
+              "onchainGaugeTotalCeilVlCvx": "4265310",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x5C0B03914f68F2717d779a0211fd98C2CC45a4dD",
+              "votiumVotesReceived": "1168237",
+              "onchainGaugeTotalRaw": "1168236094055650587993366",
+              "onchainGaugeTotalVlCvx": 1168236.0940556505,
+              "onchainGaugeTotalCeilVlCvx": "1168237",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xCB25249bFA8CdB6012a75070E5C2885151368Bef",
+              "votiumVotesReceived": "695692",
+              "onchainGaugeTotalRaw": "695691042306285649364089",
+              "onchainGaugeTotalVlCvx": 695691.0423062857,
+              "onchainGaugeTotalCeilVlCvx": "695692",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xf84657ca6Db485EA38c63ca96dc396c2b3c6fdcC",
+              "votiumVotesReceived": "347845",
+              "onchainGaugeTotalRaw": "347844424280651784024437",
+              "onchainGaugeTotalVlCvx": 347844.4242806518,
+              "onchainGaugeTotalCeilVlCvx": "347845",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x29E9975561fAD3A7988CA96361AB5c5317CB32Af",
+              "votiumVotesReceived": "1007204",
+              "onchainGaugeTotalRaw": "1007203752098160410377125",
+              "onchainGaugeTotalVlCvx": 1007203.7520981604,
+              "onchainGaugeTotalCeilVlCvx": "1007204",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x09F62a6777032329C0d49F1FD4fBe9b3468CDa56",
+              "votiumVotesReceived": "505869",
+              "onchainGaugeTotalRaw": "505868272967221670109525",
+              "onchainGaugeTotalVlCvx": 505868.2729672217,
+              "onchainGaugeTotalCeilVlCvx": "505869",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xbdAD82e8Be11dE145B238426e5CB7428c3AC88f7",
+              "votiumVotesReceived": "95910",
+              "onchainGaugeTotalRaw": "95909399270236844225706",
+              "onchainGaugeTotalVlCvx": 95909.39927023684,
+              "onchainGaugeTotalCeilVlCvx": "95910",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x7E1444BA99dcdFfE8fBdb42C02F0005D14f13BE1",
+              "votiumVotesReceived": "1810601",
+              "onchainGaugeTotalRaw": "1810600423772490274242458",
+              "onchainGaugeTotalVlCvx": 1810600.4237724904,
+              "onchainGaugeTotalCeilVlCvx": "1810601",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xc2075702490F0426E84E00d8B328119027813AC5",
+              "votiumVotesReceived": "637443",
+              "onchainGaugeTotalRaw": "637442399039976618580857",
+              "onchainGaugeTotalVlCvx": 637442.3990399766,
+              "onchainGaugeTotalCeilVlCvx": "637443",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xfB18127c1471131468a1AaD4785c19678e521D86",
+              "votiumVotesReceived": "3657565",
+              "onchainGaugeTotalRaw": "3657564148554079440682581",
+              "onchainGaugeTotalVlCvx": 3657564.1485540792,
+              "onchainGaugeTotalCeilVlCvx": "3657565",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x070EBC9F46d0a6A523D31eb4aE7901C56AD97ae2",
+              "votiumVotesReceived": "31643",
+              "onchainGaugeTotalRaw": "31642484526497741065642",
+              "onchainGaugeTotalVlCvx": 31642.48452649774,
+              "onchainGaugeTotalCeilVlCvx": "31643",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x724476f141ED2DE4DA22eBDF435905dEf1118317",
+              "votiumVotesReceived": "184794",
+              "onchainGaugeTotalRaw": "184793570011728711972109",
+              "onchainGaugeTotalVlCvx": 184793.5700117287,
+              "onchainGaugeTotalCeilVlCvx": "184794",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x22804B0F6bE741a9Fa1BbaEcDD6c8D4116E96944",
+              "votiumVotesReceived": "1037598",
+              "onchainGaugeTotalRaw": "1037597770817361730896417",
+              "onchainGaugeTotalVlCvx": 1037597.7708173618,
+              "onchainGaugeTotalCeilVlCvx": "1037598",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x4e6bB6B7447B7B2Aa268C16AB87F4Bb48BF57939",
+              "votiumVotesReceived": "1037599",
+              "onchainGaugeTotalRaw": "1037598599884144037596519",
+              "onchainGaugeTotalVlCvx": 1037598.599884144,
+              "onchainGaugeTotalCeilVlCvx": "1037599",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x95f00391cB5EebCd190EB58728B4CE23DbFa6ac1",
+              "votiumVotesReceived": "1037907",
+              "onchainGaugeTotalRaw": "1037906982571700536177871",
+              "onchainGaugeTotalVlCvx": 1037906.9825717006,
+              "onchainGaugeTotalCeilVlCvx": "1037907",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xB53c23D2CC6219adf78ea22Bfd38bFfc50eC54cB",
+              "votiumVotesReceived": "4482393",
+              "onchainGaugeTotalRaw": "4482392875370485788508960",
+              "onchainGaugeTotalVlCvx": 4482392.875370486,
+              "onchainGaugeTotalCeilVlCvx": "4482393",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x4E21418095d32d15c6e2B96A9910772613A50d50",
+              "votiumVotesReceived": "130896",
+              "onchainGaugeTotalRaw": "130895090762194131915691",
+              "onchainGaugeTotalVlCvx": 130895.09076219413,
+              "onchainGaugeTotalCeilVlCvx": "130896",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x821529Bb07c83803C9CC7763e5974386e9eFEdC7",
+              "votiumVotesReceived": "520875",
+              "onchainGaugeTotalRaw": "520874770024412786183826",
+              "onchainGaugeTotalVlCvx": 520874.7700244128,
+              "onchainGaugeTotalCeilVlCvx": "520875",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x9a356132605Ad599ABA34651aa2a606730bacaAa",
+              "votiumVotesReceived": "464934",
+              "onchainGaugeTotalRaw": "464933589192481341556514",
+              "onchainGaugeTotalVlCvx": 464933.58919248136,
+              "onchainGaugeTotalCeilVlCvx": "464934",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x48100238C4a3CF44cFbF6C7693eD5C216881fAcE",
+              "votiumVotesReceived": "134728",
+              "onchainGaugeTotalRaw": "134727931686529547403375",
+              "onchainGaugeTotalVlCvx": 134727.93168652954,
+              "onchainGaugeTotalCeilVlCvx": "134728",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x7bA1e40dAe22847E6c521bA297d40fF1c5fD97dd",
+              "votiumVotesReceived": "84205",
+              "onchainGaugeTotalRaw": "84204583742920213486321",
+              "onchainGaugeTotalVlCvx": 84204.58374292021,
+              "onchainGaugeTotalCeilVlCvx": "84205",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x8882eB84d0c4894753C0450f2D514E39883c0C82",
+              "votiumVotesReceived": "134739",
+              "onchainGaugeTotalRaw": "134738004702829547403375",
+              "onchainGaugeTotalVlCvx": 134738.00470282955,
+              "onchainGaugeTotalCeilVlCvx": "134739",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x98a6C35546be6F7c545c99EfB48F4673eD2c99fc",
+              "votiumVotesReceived": "84207",
+              "onchainGaugeTotalRaw": "84206879666536493631208",
+              "onchainGaugeTotalVlCvx": 84206.8796665365,
+              "onchainGaugeTotalCeilVlCvx": "84207",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xD1D981dDD0c9A0469E7d8cEE877f83B5877D7260",
+              "votiumVotesReceived": "116240",
+              "onchainGaugeTotalRaw": "116239931465165833855122",
+              "onchainGaugeTotalVlCvx": 116239.93146516584,
+              "onchainGaugeTotalCeilVlCvx": "116240",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x81d837437fD18736ffD3B5C9A5a2aA835c7637e7",
+              "votiumVotesReceived": "1016878",
+              "onchainGaugeTotalRaw": "1016877332755551698646407",
+              "onchainGaugeTotalVlCvx": 1016877.3327555517,
+              "onchainGaugeTotalCeilVlCvx": "1016878",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xF814283bfd37dC24B2fB5515982F5C0708E508b6",
+              "votiumVotesReceived": "3002447",
+              "onchainGaugeTotalRaw": "3002446778118289960799656",
+              "onchainGaugeTotalVlCvx": 3002446.77811829,
+              "onchainGaugeTotalCeilVlCvx": "3002447",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xbE6228125448E40F5DCBB2DbdF7fF3F5721000B4",
+              "votiumVotesReceived": "1318762",
+              "onchainGaugeTotalRaw": "1318761935957789453029569",
+              "onchainGaugeTotalVlCvx": 1318761.9359577894,
+              "onchainGaugeTotalCeilVlCvx": "1318762",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0x7970489a543FB237ABab63d62524d8A5CE165B86",
+              "votiumVotesReceived": "188366",
+              "onchainGaugeTotalRaw": "188365911960063120322336",
+              "onchainGaugeTotalVlCvx": 188365.91196006312,
+              "onchainGaugeTotalCeilVlCvx": "188366",
+              "exactCeilEquality": true
+            },
+            {
+              "gauge": "0xA41eb3062FD68B6Fa9f11439C86503913806761D",
+              "votiumVotesReceived": "1478091",
+              "onchainGaugeTotalRaw": "1478090581865509873741571",
+              "onchainGaugeTotalVlCvx": 1478090.58186551,
+              "onchainGaugeTotalCeilVlCvx": "1478091",
+              "exactCeilEquality": true
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "voteUnitSemantics": {
+    "status": "proven-human-scale-vlcvx-voting-power",
+    "legacyClass": "official-votium-snapshot-voting-power",
+    "postMigrationClass": "ceil-of-convex-onchain-18dp-vlcvx-gauge-total",
+    "decimalRule": "Votium votesReceived = ceil(Convex GaugeVotePlatform gaugeTotal / 1e18) after migration",
+    "proofClass": "official-source-mechanics-plus-live-cross-contract-gauge-equality"
+  },
+  "epistemic": {
+    "votingSourceTransition": "attributed-by-live-cross-source-mechanics",
+    "postMigrationGaugeEquality": "measured-exact-integer-ceiling-equality",
+    "incentiveToVoteCausality": "not-claimed",
+    "downstreamCurveEconomicCausality": "not-claimed",
+    "companyIncomeConnection": "not-attributed-by-this-layer",
+    "primaryDriver": null
+  },
+  "semantics": {
+    "unknownIsNotZero": true,
+    "missingSnapshotAfterMigrationIsExpected": true,
+    "proposalAssociationIsNotEconomicCausation": true,
+    "votingSourceProofIsNotIncentiveCausality": true,
+    "protocolVotingPowerIsNotRealisedCompanyIncome": true
+  }
+}
