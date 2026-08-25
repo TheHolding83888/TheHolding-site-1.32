@@ -1,0 +1,132 @@
+name: "The Holding · Votium vlCVX Round Flow"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * 3"
+  push:
+    branches: [main]
+    paths:
+      - "intelligence/economic-graph/vlcvx-votium-round-flow.mjs"
+      - "scripts/verify-vlcvx-votium-round-flow.mjs"
+      - ".github/workflows/update-vlcvx-votium-round-flow.yml"
+  pull_request:
+    paths:
+      - "intelligence/economic-graph/vlcvx-votium-round-flow.mjs"
+      - "scripts/verify-vlcvx-votium-round-flow.mjs"
+      - ".github/workflows/update-vlcvx-votium-round-flow.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-vlcvx-votium-round-flow
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout reviewed canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Install existing read-only chain dependencies
+        working-directory: productivity
+        run: npm install --no-audit --no-fund
+
+      - name: Expose existing dependency tree
+        run: ln -sfn productivity/node_modules node_modules
+
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          node --check intelligence/economic-graph/vlcvx-votium-round-flow.mjs
+          node --check scripts/verify-vlcvx-votium-round-flow.mjs
+          test -s intelligence/economic-graph/economic-graph.json
+          git diff --check
+
+      - name: Build protocol-native completed round flow
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            TMP="$(mktemp)"
+            VLCVX_VOTIUM_ROUND_FLOW_FILE="$TMP" node intelligence/economic-graph/vlcvx-votium-round-flow.mjs
+            cp "$TMP" /tmp/vlcvx-votium-round-flow.json
+            rm -f "$TMP"
+          else
+            node intelligence/economic-graph/vlcvx-votium-round-flow.mjs
+            cp intelligence/economic-graph/vlcvx-votium-round-flow.json /tmp/vlcvx-votium-round-flow.json
+          fi
+
+      - name: Verify epistemic and authority boundary
+        run: |
+          set -euo pipefail
+          VLCVX_VOTIUM_ROUND_FLOW_FILE=/tmp/vlcvx-votium-round-flow.json node scripts/verify-vlcvx-votium-round-flow.mjs
+          git diff --check
+
+      - name: Publish generated round flow atomically
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED="intelligence/economic-graph/vlcvx-votium-round-flow.json"
+          GRAPH="intelligence/economic-graph/economic-graph.json"
+          test -s "$GENERATED"
+
+          artifact_graph_hash="$(node - "$GENERATED" <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          process.stdout.write(String(x.sourceBinding?.economicGraphSha256||''));
+          NODE
+          )"
+          gh api --method GET -H "Accept: application/vnd.github.raw+json" "repos/${GITHUB_REPOSITORY}/contents/${GRAPH}" -f ref=main > /tmp/remote-economic-graph.json
+          remote_graph_hash="$(sha256sum /tmp/remote-economic-graph.json | cut -d' ' -f1)"
+          if [ "$artifact_graph_hash" != "$remote_graph_hash" ]; then
+            echo "ERROR: Economic Graph changed after Votium measurement; refusing stale publish."
+            exit 1
+          fi
+
+          remote_sha="$(gh api "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}?ref=main" --jq '.sha' 2>/dev/null || true)"
+          payload="$(mktemp)"
+          node - "$GENERATED" "$remote_sha" > "$payload" <<'NODE'
+          const fs=require('fs');
+          const file=process.argv[2];
+          const sha=process.argv[3];
+          const payload={message:'intelligence: refresh vlcvx votium round flow',content:fs.readFileSync(file).toString('base64'),branch:'main'};
+          if(sha)payload.sha=sha;
+          process.stdout.write(JSON.stringify(payload));
+          NODE
+          gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}" --input "$payload" >/tmp/votium-publish.json
+          cat /tmp/votium-publish.json | jq -r '.commit.sha'
+
+      - name: Prove physical state on main
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            if gh api --method GET -H "Accept: application/vnd.github.raw+json" "repos/${GITHUB_REPOSITORY}/contents/intelligence/economic-graph/vlcvx-votium-round-flow.json" -f ref=main > /tmp/physical-votium.json 2>/dev/null; then
+              if VLCVX_VOTIUM_ROUND_FLOW_FILE=/tmp/physical-votium.json node scripts/verify-vlcvx-votium-round-flow.mjs; then
+                echo "Votium round-flow physical main proof PASS"
+                exit 0
+              fi
+            fi
+            sleep 3
+          done
+          echo "ERROR: Votium round-flow physical main proof did not materialize"
+          exit 1
