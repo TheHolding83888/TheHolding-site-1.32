@@ -1,16 +1,16 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-25T08:03:43.511Z
+Generated: 2026-08-25T10:50:48.786Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-25T08:03:43.311Z
-Brain snapshot: 69b6885614d0a4c00be9b84db214e320ac1d5fcd497ea98cdd076f117edc0504
+Brain generated: 2026-08-25T10:50:48.612Z
+Brain snapshot: 84cc8f3d7f2904e8c9f3480a9515d2a9bba3f2d2e3e0db4a16dc973ec4211789
 Cases: 25
 Evidence objects: 30
 
 ## What changed
 
-Current canonical inputs contain 15 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
+Current canonical inputs contain 15 material Observer change(s), 0 new security finding event(s), and 1 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
 
 ## Active deterministic cases
 
@@ -27,7 +27,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-05dbf817018fd00b
+Evidence: EV-1aec63b7f550cbaf
 
 ### 2. .github/workflows/production-deployment-smoke.yml
 
@@ -42,7 +42,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-bac37db4d4eb4866
+Evidence: EV-0a3459c96aa40052
 
 ### 3. 38 current findings
 
@@ -57,7 +57,7 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-3961573c94dd52ec
+Evidence: EV-2a309797537a3f79
 
 ### 4. pendle_spendle
 
