@@ -12,12 +12,14 @@ on:
     branches: [main]
     paths:
       - "intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs"
+      - "intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs"
       - "intelligence/economic-graph/aerodrome-veaero-candidate.mjs"
       - "intelligence/economic-graph/economic-graph-canonical-runner.mjs"
       - ".github/workflows/update-aerodrome-managed-pulse.yml"
   pull_request:
     paths:
       - "intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs"
+      - "intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs"
       - "intelligence/economic-graph/aerodrome-veaero-candidate.mjs"
       - "intelligence/economic-graph/economic-graph-canonical-runner.mjs"
       - ".github/workflows/update-aerodrome-managed-pulse.yml"
@@ -37,7 +39,7 @@ jobs:
         (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
       }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout reviewed canonical state
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -62,6 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
+          node --check intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs
           test -s intelligence/economic-graph/economic-graph.json
           git diff --check
 
@@ -78,6 +81,19 @@ jobs:
             rm -f "$TMP"
           else
             node intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
+            cp intelligence/economic-graph/aerodrome-managed-pulse.json /tmp/aerodrome-managed-pulse.json
+          fi
+
+      - name: Enrich protocol-native epoch flow accounting
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            AERODROME_PULSE_FILE=/tmp/aerodrome-managed-pulse.json node intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs
+          else
+            AERODROME_PULSE_FILE=intelligence/economic-graph/aerodrome-managed-pulse.json node intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs
             cp intelligence/economic-graph/aerodrome-managed-pulse.json /tmp/aerodrome-managed-pulse.json
           fi
 
@@ -104,11 +120,25 @@ jobs:
           for(const p of o.pools){
             if(!p.pool||!p.gauge?.address||!p.feeVotingReward?.address||!p.bribeVotingReward?.address)throw new Error('Pool/gauge/reward graph incomplete');
             if(p.epistemic?.voteToRewardDeposit!=='proven-onchain-contract-relationship')throw new Error('Pool accounting relationship class missing');
+            for(const lane of [p.feeVotingReward,p.bribeVotingReward]){
+              if(lane?.epochAccountingClass!=='proven-reward-contract-accounting')throw new Error('Pool epoch accounting class missing');
+              for(const row of lane.rewards||[]){
+                if(!Array.isArray(row.epochInflows)||row.epochInflows.length!==3)throw new Error('Reward token three-epoch accounting missing');
+                if(row.epochInflows[0]?.epochStatus!=='in-progress'||row.epochInflows[1]?.epochStatus!=='completed'||row.epochInflows[2]?.epochStatus!=='completed')throw new Error('Reward epoch status ordering mismatch');
+              }
+            }
           }
           if(!Number.isFinite(Number(o.depositorManagedRewards?.lockedAeroAmount))||Number(o.depositorManagedRewards.lockedAeroAmount)<0)throw new Error('Depositor LockedManagedReward state missing');
           if(o.epistemic?.voteToFeeAndBribeRewardDeposit!=='proven-by-aerodrome-voter-accounting-identity')throw new Error('Voter accounting identity missing');
           if(o.epistemic?.referenceAprConnection!=='not-attributed-by-this-pulse'||o.epistemic?.causalAttribution!=='unresolved-beyond-contract-accounting-identities'||o.epistemic?.primaryDriver!==null||o.epistemic?.promotionAuthority!=='none')throw new Error('Pulse causal boundary weakened');
           if(x.semantics?.referenceAprIsSeparateEvidenceLane!==true||x.semantics?.actualManagedRewardsAreSeparateEvidenceLane!==true||x.semantics?.candidateNotCanonical!==true)throw new Error('Pulse evidence-lane separation missing');
+          const e=x.epochFlowAccounting;
+          if(e?.version!=='0.1-aerodrome-reward-epoch-accounting'||Number(e.blockNumber)!==Number(o.blockNumber)||e.blockHash!==o.blockHash)throw new Error('Epoch flow same-block binding missing');
+          if(!Array.isArray(e.epochs)||e.epochs.length!==3||e.epochs[0]?.status!=='in-progress'||e.epochs[1]?.status!=='completed'||e.epochs[2]?.status!=='completed')throw new Error('Protocol-native three-epoch surface missing');
+          if(e.comparisonPolicy?.completedEpochsComparable!==true||e.comparisonPolicy?.currentToDateVsCompletedComparable!==false)throw new Error('Epoch comparability boundary missing');
+          if(e.officialContractSource?.repository!=='aerodrome-finance/contracts'||e.officialContractSource?.commit!=='1ba30815bba620f7e9faa34769ffd00c214c9b82')throw new Error('Official Aerodrome accounting source pin missing');
+          if(e.epistemic?.contractWideInflowsAreNotCompanyEarnedShare!==true||e.epistemic?.referenceAprConnection!=='not-attributed-by-this-overlay'||e.epistemic?.primaryDriver!==null||e.epistemic?.promotionAuthority!=='none')throw new Error('Epoch flow epistemic boundary weakened');
+          if(x.semantics?.epochFlowAccounting!==true||x.semantics?.rewardContractInflowsAreNotCompanyEarnedShare!==true)throw new Error('Epoch flow semantic boundary missing');
           console.log('AERODROME MANAGED STRATEGY PULSE semantic PASS',{
             block:o.blockNumber,
             managedTokenId:o.identity.managedTokenId,
@@ -117,6 +147,9 @@ jobs:
             gaugeClaimableAero:o.aggregates.totalGaugeClaimableAero,
             gaugeWeeklyEmissionAero:o.aggregates.totalGaugeWeeklyEmissionRateAero,
             lockedManagedAero:o.depositorManagedRewards.lockedAeroAmount,
+            feeEpochTokens:e.lanes.feeVotingRewards.byToken.length,
+            bribeEpochTokens:e.lanes.bribeVotingRewards.byToken.length,
+            lockedEpochTokens:e.lanes.lockedManagedRewards.byToken.length,
             graphHash,
             primaryDriver:o.epistemic.primaryDriver,
             promotionAuthority:o.epistemic.promotionAuthority,
@@ -156,6 +189,8 @@ jobs:
           if(pulse.sourceBinding?.economicGraphSha256!==graphHash)throw new Error('Pulse sourceBinding does not match exact Graph bytes');
           if(pulse.latest?.provenance?.economicGraphSha256!==graphHash||pulse.latest?.provenance?.sameBlockRead!==true)throw new Error('Pulse provenance binding missing');
           if(pulse.authority?.executionAuthority!=='none'||pulse.authority?.promotionAuthority!=='none'||pulse.latest?.epistemic?.primaryDriver!==null)throw new Error('Pulse authority boundary regression');
+          if(pulse.epochFlowAccounting?.version!=='0.1-aerodrome-reward-epoch-accounting'||Number(pulse.epochFlowAccounting?.blockNumber)!==Number(pulse.latest?.blockNumber))throw new Error('Pulse epoch-flow enrichment missing');
+          if(pulse.epochFlowAccounting?.epistemic?.contractWideInflowsAreNotCompanyEarnedShare!==true||pulse.epochFlowAccounting?.epistemic?.primaryDriver!==null)throw new Error('Pulse epoch-flow authority boundary regression');
           NODE
           }
 
@@ -181,10 +216,9 @@ jobs:
           validate_binding
 
           # Publish exactly one generated file through the repository Contents API.
-          # This removes git rebase/push races with unrelated generated commits while
-          # retaining a fail-closed exact Economic Graph source binding. If Graph
-          # bytes changed after measurement, rebuild against the new reviewed Graph;
-          # otherwise preserve the already-measured same-block observation.
+          # Unrelated main churn cannot invalidate an already measured same-block
+          # Pulse. A genuine Economic Graph byte change forces a full re-measure
+          # and epoch-accounting enrichment before publication.
           for attempt in 1 2 3 4 5 6; do
             fetch_remote_graph
             REMOTE_GRAPH_HASH="$(sha256sum /tmp/remote-economic-graph.json | awk '{print $1}')"
@@ -199,6 +233,7 @@ jobs:
               cp /tmp/remote-economic-graph.json "$GRAPH"
               fetch_remote_pulse_if_present || true
               node intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
+              AERODROME_PULSE_FILE="$GENERATED" node intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs
               validate_binding
               continue
             fi
@@ -250,7 +285,9 @@ jobs:
           if(x.authority?.executionAuthority!=='none'||x.authority?.promotionAuthority!=='none')throw new Error('Remote pulse authority regression');
           if(x.sourceBinding?.economicGraphSha256!==graphHash||x.latest?.provenance?.economicGraphSha256!==graphHash||x.latest?.provenance?.sameBlockRead!==true)throw new Error('Remote Pulse is not bound to current exact Economic Graph bytes');
           if(x.latest?.epistemic?.primaryDriver!==null)throw new Error('Remote pulse unearned primaryDriver');
-          console.log('Verified Aerodrome Managed Strategy Pulse on remote main via atomic Contents API publication.');
+          if(x.epochFlowAccounting?.version!=='0.1-aerodrome-reward-epoch-accounting'||Number(x.epochFlowAccounting?.blockNumber)!==Number(x.latest?.blockNumber))throw new Error('Remote epoch-flow accounting missing');
+          if(x.epochFlowAccounting?.epistemic?.contractWideInflowsAreNotCompanyEarnedShare!==true||x.epochFlowAccounting?.epistemic?.primaryDriver!==null||x.epochFlowAccounting?.epistemic?.promotionAuthority!=='none')throw new Error('Remote epoch-flow boundary weakened');
+          console.log('Verified Aerodrome Managed Strategy Pulse + epoch flow accounting on remote main.');
           NODE
               exit 0
             fi
