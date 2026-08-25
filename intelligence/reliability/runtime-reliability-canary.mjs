@@ -18,7 +18,7 @@ function run(id, { minsAgo, duration = 1, status = 'completed', conclusion = 'su
     html_url: `https://example.invalid/${nextId}`, run_number: nextId
   };
 }
-function baseEnvelope(runs, extra = {}) { return { runs, pageCount: 1, truncated: false, knownIncidentFingerprints: [], ...extra }; }
+function baseEnvelope(runs, extra = {}) { return { runs, handoffRuns: runs, handoffCoverageComplete: true, pageCount: 1, truncated: false, knownIncidentFingerprints: [], ...extra }; }
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
 
 const healthyRuns = [
@@ -48,6 +48,14 @@ assert(stuck.findings.some(f => f.type === 'running-too-long' && f.severity === 
 
 const handoffMiss = analyzeRuntime(baseEnvelope([run('update-economic-graph', { minsAgo: 50 })]), policy, NOW);
 assert(handoffMiss.findings.some(f => f.type === 'critical-handoff-miss' && f.evidence.consumer === 'update-explanatory-context'), 'handoff miss not detected');
+
+const skewProducer = run('update-economic-graph', { minsAgo: 50, duration: 1 });
+const skewConsumer = run('update-explanatory-context', { minsAgo: 49.5, duration: 1 });
+const skewOk = analyzeRuntime(baseEnvelope([skewProducer, skewConsumer]), policy, NOW);
+assert(!skewOk.findings.some(f => f.type === 'critical-handoff-miss' && f.subject === 'update-economic-graph'), 'small GitHub timestamp skew must not create false Graph→Explanatory RED');
+
+const incompleteHandoff = analyzeRuntime(baseEnvelope([], { handoffRuns: [], handoffCoverageComplete: false }), policy, NOW);
+assert(incompleteHandoff.status === 'WATCH' && incompleteHandoff.findings.some(f => f.type === 'critical-handoff-coverage-partial'), 'incomplete dedicated handoff evidence must be WATCH, not false RED/GREEN');
 
 const fanoutRuns = Array.from({ length: 41 }, (_, i) => run(`fanout-${i}`, { minsAgo: 5 }));
 const fanout = analyzeRuntime(baseEnvelope(fanoutRuns), policy, NOW);
