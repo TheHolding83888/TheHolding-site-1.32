@@ -1,0 +1,123 @@
+name: "The Holding · Votium vlCVX Snapshot Proof"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "31 9 * * 3"
+  push:
+    branches: [main]
+    paths:
+      - "intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs"
+      - "scripts/verify-vlcvx-votium-snapshot-proof.mjs"
+      - ".github/workflows/update-vlcvx-votium-snapshot-proof.yml"
+  pull_request:
+    paths:
+      - "intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs"
+      - "scripts/verify-vlcvx-votium-snapshot-proof.mjs"
+      - ".github/workflows/update-vlcvx-votium-snapshot-proof.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-holding-vlcvx-votium-snapshot-proof
+  cancel-in-progress: false
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout reviewed canonical state
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          node --check intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs
+          node --check scripts/verify-vlcvx-votium-snapshot-proof.mjs
+          test -s intelligence/economic-graph/vlcvx-votium-round-flow.json
+          git diff --check
+
+      - name: Build live Snapshot proposal proof
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            TMP="$(mktemp)"
+            VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE="$TMP" node intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs
+            cp "$TMP" /tmp/vlcvx-votium-snapshot-proof.json
+            rm -f "$TMP"
+          else
+            node intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs
+            cp intelligence/economic-graph/vlcvx-votium-snapshot-proof.json /tmp/vlcvx-votium-snapshot-proof.json
+          fi
+
+      - name: Verify source, mapping and epistemic boundaries
+        run: |
+          set -euo pipefail
+          VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE=/tmp/vlcvx-votium-snapshot-proof.json node scripts/verify-vlcvx-votium-snapshot-proof.mjs
+          git diff --check
+
+      - name: Publish generated Snapshot proof atomically
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED="intelligence/economic-graph/vlcvx-votium-snapshot-proof.json"
+          UPSTREAM="intelligence/economic-graph/vlcvx-votium-round-flow.json"
+          test -s "$GENERATED"
+
+          artifact_hash="$(node - "$GENERATED" <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          process.stdout.write(String(x.sourceBinding?.roundFlowSha256||''));
+          NODE
+          )"
+          gh api --method GET -H "Accept: application/vnd.github.raw+json" "repos/${GITHUB_REPOSITORY}/contents/${UPSTREAM}" -f ref=main > /tmp/remote-votium-round-flow.json
+          remote_hash="$(sha256sum /tmp/remote-votium-round-flow.json | cut -d' ' -f1)"
+          if [ "$artifact_hash" != "$remote_hash" ]; then
+            echo "ERROR: Votium round-flow changed after Snapshot proof; refusing stale publish."
+            exit 1
+          fi
+
+          remote_sha="$(gh api "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}?ref=main" --jq '.sha' 2>/dev/null || true)"
+          payload="$(mktemp)"
+          node - "$GENERATED" "$remote_sha" > "$payload" <<'NODE'
+          const fs=require('fs');
+          const file=process.argv[2];
+          const sha=process.argv[3];
+          const payload={message:'intelligence: refresh vlcvx votium snapshot proof',content:fs.readFileSync(file).toString('base64'),branch:'main'};
+          if(sha)payload.sha=sha;
+          process.stdout.write(JSON.stringify(payload));
+          NODE
+          gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}" --input "$payload" >/tmp/votium-snapshot-publish.json
+          cat /tmp/votium-snapshot-publish.json | jq -r '.commit.sha'
+
+      - name: Prove physical state on main
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            if gh api --method GET -H "Accept: application/vnd.github.raw+json" "repos/${GITHUB_REPOSITORY}/contents/intelligence/economic-graph/vlcvx-votium-snapshot-proof.json" -f ref=main > /tmp/physical-votium-snapshot.json 2>/dev/null; then
+              if VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE=/tmp/physical-votium-snapshot.json node scripts/verify-vlcvx-votium-snapshot-proof.mjs; then
+                echo "Votium Snapshot proof physical main proof PASS"
+                exit 0
+              fi
+            fi
+            sleep 3
+          done
+          echo "ERROR: Votium Snapshot proof physical main state did not materialize"
+          exit 1
