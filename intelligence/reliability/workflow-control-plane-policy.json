@@ -1,0 +1,74 @@
+{
+  "version": "0.1-workflow-control-plane",
+  "mode": "no-new-debt",
+  "purpose": "Maintain one deterministic read-only control view of GitHub Actions topology and prevent new workflow/writer debt while existing production-proven debt is reduced only through bounded migrations.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "classification": {
+    "repositoryWriterSignals": [
+      "contents:write",
+      "git-commit",
+      "git-push",
+      "contents-api-write"
+    ],
+    "workflowControlSignals": [
+      "actions:write",
+      "executable-workflow-dispatch"
+    ],
+    "candidateWriterPathsAreHeuristic": true,
+    "workflowRunAndDispatchEdgesAreMeasuredFromExecutableWorkflowSource": true,
+    "unknownIsNotZero": true
+  },
+  "newPrivilegedWorkflowContract": {
+    "repositoryWriter": [
+      "concurrency",
+      "# holding-control-plane: repository-writer",
+      "# holding-truth-plane: <declared output/truth plane>",
+      "# holding-control-domain: <bounded domain>"
+    ],
+    "workflowController": [
+      "concurrency",
+      "# holding-control-plane: workflow-controller",
+      "# holding-control-domain: <bounded domain>"
+    ],
+    "otherWritePermission": [
+      "concurrency",
+      "# holding-control-plane: external-writer",
+      "# holding-control-domain: <bounded domain>"
+    ]
+  },
+  "hardFailures": [
+    "baseline-integrity-failure",
+    "control-plane-authority-expansion",
+    "repository-writer-without-concurrency",
+    "workflow-controller-without-concurrency",
+    "new-privileged-workflow-without-explicit-declaration",
+    "write-all",
+    "broad-git-add",
+    "new-or-widened-duplicate-candidate-writer",
+    "unresolved-workflow-edge",
+    "workflow-cycle",
+    "new-pull-request-target",
+    "privileged-pull-request-target"
+  ],
+  "legacyDebtPolicy": {
+    "baselineIsCeilingNotTarget": true,
+    "debtReductionAlwaysAllowed": true,
+    "debtExpansionBlocked": true,
+    "existingProvenWritersNotMassRewritten": true
+  },
+  "nextMigrationOrder": [
+    "review-seven-existing-duplicate-candidate-writer-planes",
+    "separate-authoritative-writer-from-refresh-or-enrichment-writers",
+    "coalesce-safe-trigger-fanout",
+    "reduce-auto-commit-chains-where-proof-allows",
+    "keep-protocol-expansion-compatible-with-declared-control-contract"
+  ]
+}

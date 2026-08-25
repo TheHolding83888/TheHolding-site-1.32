@@ -1,0 +1,142 @@
+name: "The Holding Reliability · Workflow Control Plane"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - "intelligence/reliability/workflow-control-plane*"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - "intelligence/reliability/workflow-control-plane*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workflow-control-plane-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static control-plane preflight and canaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/reliability/workflow-control-plane-policy.json
+          test -s intelligence/reliability/workflow-control-plane-baseline.json
+          test -s intelligence/reliability/workflow-control-plane.mjs
+          test -s intelligence/reliability/workflow-control-plane-canary.mjs
+          test -s intelligence/reliability/workflow-control-plane-enforce.mjs
+          test -s intelligence/reliability/workflow-control-plane-enforce-canary.mjs
+          node --check intelligence/reliability/workflow-control-plane.mjs
+          node --check intelligence/reliability/workflow-control-plane-canary.mjs
+          node --check intelligence/reliability/workflow-control-plane-enforce.mjs
+          node --check intelligence/reliability/workflow-control-plane-enforce-canary.mjs
+          node intelligence/reliability/workflow-control-plane-canary.mjs
+          node intelligence/reliability/workflow-control-plane-enforce-canary.mjs
+
+      - name: Verify frozen measured baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git hash-object intelligence/reliability/workflow-control-plane-baseline.json)"
+          expected="4efd7dd509111683fdf24430d4e9f4cb403673a1"
+          if [ "$actual" != "$expected" ]; then
+            echo "Workflow Control Plane baseline changed: expected=$expected actual=$actual" >&2
+            echo "Baseline expansion requires an explicit bounded maintenance procedure; ordinary workflow changes may only reduce debt." >&2
+            exit 1
+          fi
+          echo "Frozen Workflow Control Plane baseline PASS: $actual"
+
+      - name: Build read-only workflow topology
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/reliability/workflow-control-plane.mjs --json > /tmp/workflow-control-plane.json
+          node - <<'NODE'
+          const r = require('/tmp/workflow-control-plane.json');
+          console.log('=== WORKFLOW CONTROL PLANE SUMMARY ===');
+          console.log(JSON.stringify(r.summary, null, 2));
+          console.log('=== REPOSITORY WRITERS ===');
+          for (const w of r.workflows.filter(x => x.repositoryWriterCapable)) {
+            console.log(`${w.id}\tconcurrency=${w.hasConcurrency}\tcontentsWrite=${w.contentsWrite}\tsignals=${w.writeSignals.join(',')}\tcandidates=${w.candidateWriterPaths.join(',') || '-'}`);
+          }
+          console.log('=== WORKFLOW CONTROL ACTORS ===');
+          for (const w of r.workflows.filter(x => x.workflowControlCapable)) {
+            console.log(`${w.id}\tconcurrency=${w.hasConcurrency}\tactionsWrite=${w.actionsWrite}\tdispatchTargets=${w.dispatchTargets.join(',') || '-'}\tsignals=${w.writeSignals.join(',')}`);
+          }
+          console.log('=== OTHER WRITE PERMISSIONS ===');
+          for (const w of r.workflows.filter(x => x.otherWritePermission)) {
+            console.log(`${w.id}\tpermissions=${w.otherWritePermissions.join(',')}`);
+          }
+          console.log('=== GRAPH EDGES ===');
+          for (const e of r.graph.edges) console.log(`${e.type}\t${e.from} -> ${e.to}`);
+          console.log('=== OBSERVED LEGACY DEBT ===');
+          for (const f of r.findings) console.log(`${f.severity}\t${f.id}\t${f.workflow}\t${f.detail}`);
+          if (!r.summary.workflowCount) throw new Error('workflow inventory unexpectedly empty');
+          NODE
+
+      - name: Enforce no-new-debt gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/reliability/workflow-control-plane-enforce.mjs --json > /tmp/workflow-control-plane-enforcement.json
+          node - <<'NODE'
+          const r = require('/tmp/workflow-control-plane-enforcement.json');
+          console.log('=== NO-NEW-DEBT ENFORCEMENT ===');
+          console.log(JSON.stringify({
+            baseline:r.baseline,
+            baselineIntegrity:r.baselineIntegrity,
+            noNewDebt:r.noNewDebt,
+            violationCount:r.violationCount,
+            workflowCount:r.summary.workflowCount,
+            repositoryWriterCount:r.summary.repositoryWriterCount,
+            workflowControlCount:r.summary.workflowControlCount,
+            duplicateCandidateWriterPathCount:r.summary.duplicateCandidateWriterPathCount,
+            unresolvedEdgeCount:r.summary.unresolvedEdgeCount,
+            cycleCount:r.summary.cycleCount
+          }, null, 2));
+          if (r.noNewDebt !== 'PASS' || r.baselineIntegrity !== 'PASS') throw new Error('no-new-debt enforcement did not pass');
+          NODE
+
+      - name: Verify read-only authority boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const policy = require('./intelligence/reliability/workflow-control-plane-policy.json');
+          const a = policy.authority || {};
+          const expected = {
+            readOnly: true,
+            executionAuthority: 'none',
+            repositoryMutationAuthority: false,
+            workflowDispatchAuthority: false,
+            capitalExecution: false,
+            walletAuthority: false,
+            methodologyMutationAuthority: false
+          };
+          for (const [k, v] of Object.entries(expected)) {
+            if (a[k] !== v) throw new Error(`authority expansion: ${k}`);
+          }
+          if (policy.mode !== 'no-new-debt') throw new Error(`unexpected policy mode: ${policy.mode}`);
+          console.log('Workflow Control Plane read-only authority boundary PASS');
+          NODE
+          git diff --check
