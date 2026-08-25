@@ -1,0 +1,64 @@
+{
+  "version": "0.1-repository-hygiene",
+  "purpose": "Prevent accidental temporary, placeholder, editor and meaningless artifacts from entering canonical repository state while preserving intentional source, diagnostic and generated artifacts.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "repositoryMutationAuthority": false,
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "hardForbiddenBasenames": [
+    ".DS_Store",
+    "Thumbs.db",
+    "desktop.ini",
+    "npm-debug.log",
+    "yarn-debug.log",
+    "yarn-error.log",
+    "pnpm-debug.log"
+  ],
+  "hardForbiddenSuffixes": [
+    ".swp",
+    ".swo",
+    ".tmp",
+    ".bak",
+    ".orig",
+    ".rej",
+    "~"
+  ],
+  "suspiciousAddedPathSegments": [
+    "tmp",
+    "temp",
+    "scratch"
+  ],
+  "suspiciousAddedBasenameTokens": [
+    "placeholder",
+    "scratch",
+    "debug-dump",
+    "debug-output"
+  ],
+  "meaninglessAddedContent": {
+    "maxBytes": 96,
+    "tokens": [
+      "x",
+      "xx",
+      "xxx",
+      "test",
+      "placeholder",
+      "tmp",
+      "temp",
+      "todo",
+      "tbd",
+      "debug"
+    ]
+  },
+  "allowPathPrefixes": [],
+  "allowExactPaths": [],
+  "rules": {
+    "scanHardForbiddenAcrossTrackedRepository": true,
+    "scanSuspiciousPathsForNewFilesOnly": true,
+    "scanMeaninglessContentForNewFilesOnly": true,
+    "unknownIsNotSafe": true
+  }
+}
