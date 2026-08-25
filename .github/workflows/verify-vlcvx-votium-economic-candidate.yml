@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - 'intelligence/economic-graph/vlcvx-votium-candidate.mjs'
+      - 'intelligence/economic-graph/vlcvx-votium-deep-evidence.mjs'
+      - 'intelligence/economic-graph/vlcvx-votium-round-flow.json'
+      - 'intelligence/economic-graph/vlcvx-votium-snapshot-proof.json'
+      - 'intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json'
+      - 'intelligence/economic-graph/vlcvx-votium-curve-pool-context.json'
       - 'intelligence/economic-graph/economic-graph-canonical-runner.mjs'
       - '.github/workflows/verify-vlcvx-votium-economic-candidate.yml'
   workflow_dispatch:
@@ -31,22 +36,34 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -s intelligence/economic-graph/vlcvx-votium-candidate.mjs
-          test -s intelligence/economic-graph/economic-graph-canonical-runner.mjs
-          test -s companies/productivity-data.json
-          test -s companies/rewards-data.json
+          REQUIRED=(
+            intelligence/economic-graph/vlcvx-votium-candidate.mjs
+            intelligence/economic-graph/vlcvx-votium-deep-evidence.mjs
+            intelligence/economic-graph/economic-graph-canonical-runner.mjs
+            intelligence/economic-graph/vlcvx-votium-round-flow.json
+            intelligence/economic-graph/vlcvx-votium-snapshot-proof.json
+            intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json
+            intelligence/economic-graph/vlcvx-votium-curve-pool-context.json
+            companies/productivity-data.json
+            companies/rewards-data.json
+          )
+          for f in "${REQUIRED[@]}"; do test -s "$f"; done
           node --check intelligence/economic-graph/vlcvx-votium-candidate.mjs
+          node --check intelligence/economic-graph/vlcvx-votium-deep-evidence.mjs
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           TMP="$(mktemp)"
           ECONOMIC_GRAPH_FILE="$TMP" node intelligence/economic-graph/economic-graph-canonical-runner.mjs
 
           node - "$TMP" <<'NODE'
           const fs=require('fs');
+          const crypto=require('crypto');
           const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
           const id='defitea-convex-vlcvx-votium';
           const c=x.candidateCohorts?.[id];
           const o=c?.latest?.observation;
           const m=c?.latest?.movement;
+          const deep=c?.deepEconomicEvidence;
+          const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 
           if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.2-defitea-fxn-curve-multi-cohort')throw new Error('Canonical Economic Graph compatibility changed');
           if(x.coverage?.status!=='partial-two-cohort'||Number(x.coverage?.cohortCount)!==2)throw new Error('Canonical cohort authority changed');
@@ -58,6 +75,8 @@ jobs:
           if(!c||c.status!=='shadow-measured-not-promoted'||c.cohortId!==id)throw new Error('vlCVX candidate cohort missing');
           if(c.identity?.companyRegistry!=='004'||c.identity?.asset!=='vlCVX'||!String(c.identity?.protocol||'').includes('Votium'))throw new Error('vlCVX candidate identity drift');
           if(c.attribution?.referenceDecompositionProven!==true||c.attribution?.currentRouteMeasured!==true||c.attribution?.rewardInventoryContextMeasured!==true)throw new Error('vlCVX attribution evidence missing');
+          if(c.attribution?.votingProvenanceProven!==true||c.attribution?.curveGaugeExecutionProven!==true||c.attribution?.currentCurvePoolContextComplete!==true)throw new Error('vlCVX deep execution/context attribution missing');
+          if(c.attribution?.status!=='cross-protocol-execution-and-current-pool-context-proven-causality-unresolved')throw new Error('vlCVX deep attribution status drift');
           if(c.attribution?.primaryDriver!==null||c.attribution?.promotionAuthority!=='none')throw new Error('vlCVX causal/promotion authority leaked');
 
           if(!o||o.status!=='shadow-measured-not-promoted')throw new Error('vlCVX latest observation missing');
@@ -76,24 +95,45 @@ jobs:
           if(o.companyRoute?.sourceStatus!=='ok'&&o.rewardInventory?.current?.currentClaimableUsd!==null)throw new Error('Partial/warming entitlement was coerced to a number');
           if(o.rewardInventory?.rule?.includes('independent facts')!==true)throw new Error('Current vs legacy reward separation missing');
 
-          if(!Array.isArray(o.marketBreathSeed?.measuredAtoms)||!o.marketBreathSeed.measuredAtoms.includes('Votium completed-round incentive APR'))throw new Error('vlCVX measured market atoms missing');
-          if(!Array.isArray(o.marketBreathSeed?.missingAtoms)||!o.marketBreathSeed.missingAtoms.includes('round-to-round incentive flow migration'))throw new Error('vlCVX next market-breath gap missing');
-          if(o.epistemic?.causalAttribution!=='unresolved-between-incentives-votes-emissions-liquidity-volume-fees-and-company-outcome')throw new Error('vlCVX causal boundary drift');
+          if(!deep||deep.version!=='0.1-vlcvx-votium-curve-cognitive-close'||deep.status!=='shadow-cross-protocol-downstream-context-proven')throw new Error('vlCVX deep evidence missing');
+          if(deep.candidateId!==id||deep.companyRegistry!=='004')throw new Error('vlCVX deep evidence identity drift');
+          if(deep.sourceBinding?.roundFlow?.sha256!==hash('intelligence/economic-graph/vlcvx-votium-round-flow.json'))throw new Error('round-flow exact binding mismatch');
+          if(deep.sourceBinding?.votingProvenance?.sha256!==hash('intelligence/economic-graph/vlcvx-votium-snapshot-proof.json'))throw new Error('voting provenance exact binding mismatch');
+          if(deep.sourceBinding?.curveGaugeFlow?.sha256!==hash('intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json'))throw new Error('gauge flow exact binding mismatch');
+          if(deep.sourceBinding?.curvePoolContext?.sha256!==hash('intelligence/economic-graph/vlcvx-votium-curve-pool-context.json'))throw new Error('pool context exact binding mismatch');
+          if(deep.coverage?.complete!==true||Number(deep.coverage?.completedVotiumRoundsMeasured)!==3||Number(deep.coverage?.votingProvenanceRoundsProven)!==3)throw new Error('Votium round/provenance completeness drift');
+          if(Number(deep.coverage?.onchainVotiumGaugesExactMatched)!==79||Number(deep.coverage?.curveExecutedVotiumGaugeRows)!==79)throw new Error('Votium/Curve gauge proof coverage drift');
+          if(Number(deep.coverage?.currentCurveGaugeUniverseClassified)!==47||Number(deep.coverage?.currentCurvePoolEligibleGauges)!==31||Number(deep.coverage?.currentCurvePoolContextsComplete)!==31||Number(deep.coverage?.unresolvedEligiblePoolContexts)!==0)throw new Error('Curve pool context coverage drift');
+          if(Number(deep.coverage?.exactFeeUsdResolved)!==0)throw new Error('Exact fee USD must remain unresolved');
+          if(deep.relations?.voteToExecutedCurveGaugeBps!=='ATTRIBUTED-mechanical-execution-proven'||deep.relations?.incentiveToVote!=='CORRELATED-only-not-causal'||deep.relations?.historicalVoteToCurrentPoolState!=='CORRELATED-temporal-context-only-not-causal')throw new Error('vlCVX deep epistemic relation drift');
+          if(deep.authority?.executionAuthority!=='none'||deep.authority?.causalClaimAuthority!=='none'||deep.authority?.promotionAuthority!=='none')throw new Error('vlCVX deep authority leak');
+
+          if(!Array.isArray(o.marketBreathSeed?.measuredAtoms)||!o.marketBreathSeed.measuredAtoms.some(v=>v.includes('79/79 Votium gauge rows mechanically bridged')))throw new Error('Curve execution measured atom missing');
+          if(!o.marketBreathSeed.measuredAtoms.some(v=>v.includes('31/31 currently eligible Curve gauges')))throw new Error('Curve pool context measured atom missing');
+          if(!Array.isArray(o.marketBreathSeed?.missingAtoms)||o.marketBreathSeed.missingAtoms.includes('downstream pool liquidity/volume/fee response'))throw new Error('Closed downstream pool context still listed as missing');
+          if(!o.marketBreathSeed.missingAtoms.some(v=>v.includes('exact pool fee USD')))throw new Error('Exact fee USD unknown missing');
+          if(!o.marketBreathSeed.missingAtoms.some(v=>v.includes('whether Votium incentives caused')))throw new Error('Incentive→vote causal unknown missing');
+          if(!o.marketBreathSeed.missingAtoms.some(v=>v.includes('whether historical vlCVX vote allocation caused')))throw new Error('vote→pool causal unknown missing');
+          if(o.epistemic?.votingProvenance!=='proven-transition-aware-snapshot-to-convex-onchain'||o.epistemic?.curveGaugeExecution!=='proven-mechanical-execution-bridge'||o.epistemic?.downstreamPoolContext!=='measured-current-temporal-context-not-causal-response')throw new Error('vlCVX deep epistemic state missing');
+          if(o.epistemic?.causalAttribution!=='unresolved-incentive-to-vote-and-vote-to-pool-outcome')throw new Error('vlCVX causal boundary drift');
           if(o.epistemic?.primaryDriver!==null||o.epistemic?.recommendationAuthority!=='none'||o.epistemic?.predictionAuthority!=='none'||o.epistemic?.promotionAuthority!=='none')throw new Error('vlCVX authority leak');
           if(!/^[0-9a-f]{64}$/i.test(o.provenance?.productivitySha256||'')||!/^[0-9a-f]{64}$/i.test(o.provenance?.rewardsSha256||''))throw new Error('vlCVX exact source provenance missing');
           if(!Number.isFinite(Date.parse(o.referenceObservedAt))||!Number.isFinite(Date.parse(o.rewardsObservedAt)))throw new Error('vlCVX source timestamps invalid');
           if(o.temporalBoundary?.rule?.includes('Never treat')!==true)throw new Error('vlCVX temporal boundary missing');
           if(Number(c.observationCount)!==1||m?.priorObservationId!==null)throw new Error('Fresh vlCVX candidate baseline history unexpected');
+          if(x.sourceState?.vlCvxVotiumDeepEvidence?.status!=='shadow-cross-protocol-downstream-context-proven'||x.sourceState?.vlCvxVotiumDeepEvidence?.executionAuthority!=='none')throw new Error('Economic Graph deep source state missing');
 
-          console.log('VLCVX VOTIUM SHADOW CANDIDATE PASS',{
+          console.log('VLCVX VOTIUM → CURVE DEEP SHADOW CANDIDATE PASS',{
             canonicalCohorts:x.coverage.cohortCount,
             candidateCount:x.candidateLayer.candidateCount,
             referenceApr:o.referenceProductivity.canonicalAprPct,
-            platformVapr:o.referenceProductivity.components.platformVaprPct,
-            votiumApr:o.referenceProductivity.components.votiumLastCompletedRoundAprPct,
-            liveVlCvx:o.companyRoute.liveVlCvxBalance,
             route:o.companyRoute.routeId,
-            currentClaimableUsd:o.rewardInventory.current.currentClaimableUsd,
+            provenRounds:deep.coverage.votingProvenanceRoundsProven,
+            gaugeMatches:deep.coverage.onchainVotiumGaugesExactMatched,
+            curveExecutedGaugeRows:deep.coverage.curveExecutedVotiumGaugeRows,
+            currentPoolContexts:deep.coverage.currentCurvePoolContextsComplete,
+            exactFeeUsdResolved:deep.coverage.exactFeeUsdResolved,
+            causalAuthority:deep.authority.causalClaimAuthority,
             promotionAuthority:o.epistemic.promotionAuthority,
             executionAuthority:x.authority.executionAuthority
           });
