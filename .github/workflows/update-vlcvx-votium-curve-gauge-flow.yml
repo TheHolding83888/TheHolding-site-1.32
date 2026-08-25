@@ -91,7 +91,7 @@ jobs:
           read -r artifact_round_hash artifact_provenance_hash < <(node - "$GENERATED" <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
-          process.stdout.write(`${x.sourceBinding?.roundFlowSha256||''} ${x.sourceBinding?.votingProvenanceSha256||''}`);
+          process.stdout.write(`${x.sourceBinding?.roundFlowSha256||''} ${x.sourceBinding?.votingProvenanceSha256||''}\n`);
           NODE
           )
           gh api --method GET -H "Accept: application/vnd.github.raw+json" "repos/${GITHUB_REPOSITORY}/contents/${ROUND}" -f ref=main > /tmp/remote-votium-round-flow.json
