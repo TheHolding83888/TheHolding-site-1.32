@@ -18,6 +18,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { buildEconomicGraph } from './economic-graph.mjs';
 import { applyAerodromeCandidate } from './aerodrome-veaero-candidate.mjs';
+import { applyVlCvxVotiumCandidate } from './vlcvx-votium-candidate.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -76,8 +77,16 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     sourceSha256,
     productivityEngineSha256
   });
-  return applyAerodromeCandidate({
+  const withAerodrome=applyAerodromeCandidate({
     state:base,
+    previousState,
+    productivity,
+    rewards,
+    productivitySha256:sourceSha256,
+    rewardsSha256
+  });
+  return applyVlCvxVotiumCandidate({
+    state:withAerodrome,
     previousState,
     productivity,
     rewards,
@@ -103,7 +112,8 @@ async function main(){
   const fxn=state.cohorts?.['defitea-fxn-vefxn']?.latest?.observation;
   const curve=state.cohorts?.['defitea-curve-vecrv']?.latest?.observation;
   const aero=state.candidateCohorts?.['defitea-aerodrome-veaero']?.latest?.observation;
-  console.log('ECONOMIC GRAPH canonical + shadow candidate PASS',{
+  const vlcvx=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.latest?.observation;
+  console.log('ECONOMIC GRAPH canonical + shadow candidates PASS',{
     engineVersion:state.engineVersion,
     canonicalCohortCount:state.coverage?.cohortCount,
     candidateCount:state.candidateLayer?.candidateCount,
@@ -115,7 +125,11 @@ async function main(){
     aerodromeReferenceAprPct:aero?.referenceProductivity?.canonicalAprPct,
     aerodromeFormulaParityDeltaPctPoints:aero?.referenceProductivity?.formula?.parityDeltaPctPoints,
     aerodromeManagedAccruedAero:aero?.actualManagedVeNft?.currentAccruedAero,
-    aerodromePromotionAuthority:aero?.epistemic?.promotionAuthority,
+    vlCvxReferenceAprPct:vlcvx?.referenceProductivity?.canonicalAprPct,
+    vlCvxVotiumAprPct:vlcvx?.referenceProductivity?.components?.votiumLastCompletedRoundAprPct,
+    vlCvxLiveBalance:vlcvx?.companyRoute?.liveVlCvxBalance,
+    vlCvxRoute:vlcvx?.companyRoute?.routeId,
+    promotionAuthority:state.candidateLayer?.promotionAuthority,
     executionAuthority:state.authority?.executionAuthority
   });
 }
