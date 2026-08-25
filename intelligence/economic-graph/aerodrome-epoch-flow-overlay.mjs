@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING · Aerodrome Epoch Flow Accounting Overlay v0.1
+ * THE HOLDING · Aerodrome Epoch Flow Accounting Overlay v0.2
  *
  * Additive, read-only enrichment for the existing Aerodrome Managed Strategy
  * Pulse. Reads Aerodrome Reward.tokenRewardsPerEpoch at the exact Pulse block
  * for current-to-date plus two completed protocol epochs. It does not promote
  * Aerodrome into the canonical cohort set and does not treat contract-wide
  * reward inflows as Defitea-earned rewards.
+ *
+ * After the existing Market Breath + managed vote epoch-history chain has
+ * completed, this same canonical overlay also builds a bounded descriptive
+ * vote-flow context: completed-epoch allocation changes are joined to
+ * fee/incentive token-lane direction only where reward-contract coverage is
+ * physically present. Missing historical-only pools are excluded, never zeroed.
  */
 import fs from 'node:fs';
 import process from 'node:process';
@@ -155,6 +161,197 @@ function completedEpochComparison(rows) {
   });
 }
 
+function tokenLaneDirection(prior, previous) {
+  const a = Number(prior || 0), b = Number(previous || 0);
+  if (a === 0 && b === 0) return 'flat-zero';
+  if (a === 0 && b > 0) return 'activated';
+  if (a > 0 && b === 0) return 'extinguished';
+  if (b > a) return 'increased';
+  if (b < a) return 'decreased';
+  return 'flat-active';
+}
+function allocationDirection(state) {
+  if (state === 'newly-voted' || state === 'increased') return 'allocation-expanded';
+  if (state === 'no-longer-voted' || state === 'decreased') return 'allocation-contracted';
+  return 'allocation-flat';
+}
+function rewardLaneContext(rewardState) {
+  const movements = (rewardState?.rewards || []).map(row => {
+    const prior = row.epochInflows?.find(x => x.key === 'priorCompleted')?.amount ?? 0;
+    const previous = row.epochInflows?.find(x => x.key === 'previousCompleted')?.amount ?? 0;
+    return {
+      token: row.token,
+      symbol: row.symbol,
+      priorCompletedAmount: Number(prior),
+      previousCompletedAmount: Number(previous),
+      direction: tokenLaneDirection(prior, previous)
+    };
+  });
+  const expanding = movements.filter(x => x.direction === 'activated' || x.direction === 'increased').length;
+  const contracting = movements.filter(x => x.direction === 'extinguished' || x.direction === 'decreased').length;
+  const activePairUniverse = movements.filter(x => x.priorCompletedAmount > 0 || x.previousCompletedAmount > 0).length;
+  let direction = 'balanced-or-flat';
+  if (expanding > contracting) direction = 'token-lanes-expanding';
+  else if (contracting > expanding) direction = 'token-lanes-contracting';
+  return {
+    rewardContract: rewardState?.address ?? null,
+    tokenUniverseCount: movements.length,
+    activePairUniverseCount: activePairUniverse,
+    expandingTokenLaneCount: expanding,
+    contractingTokenLaneCount: contracting,
+    netDirectionalCount: expanding - contracting,
+    direction,
+    movements,
+    weighting: 'equal-token-lane-direction-only-not-value-weighted'
+  };
+}
+function jointState(allocation, flow) {
+  return `${allocation}|${flow}`;
+}
+function summarizeJoint(rows, laneKey) {
+  const counts = {};
+  let aligned = 0, opposed = 0, indeterminate = 0;
+  for (const row of rows) {
+    const allocation = row.allocationDirection;
+    const flow = row[laneKey].direction;
+    const key = jointState(allocation, flow);
+    counts[key] = (counts[key] || 0) + 1;
+    const allocationUp = allocation === 'allocation-expanded';
+    const allocationDown = allocation === 'allocation-contracted';
+    const flowUp = flow === 'token-lanes-expanding';
+    const flowDown = flow === 'token-lanes-contracting';
+    if ((allocationUp && flowUp) || (allocationDown && flowDown)) aligned++;
+    else if ((allocationUp && flowDown) || (allocationDown && flowUp)) opposed++;
+    else indeterminate++;
+  }
+  return {
+    jointStateCounts: counts,
+    directionalAlignmentCount: aligned,
+    directionalOppositionCount: opposed,
+    indeterminateCount: indeterminate,
+    statisticalCorrelationComputed: false,
+    interpretation: 'descriptive-joint-directional-context-only'
+  };
+}
+
+function addVoteFlowContext() {
+  const pulse = readJson(PULSE_FILE);
+  const vote = pulse.voteEpochHistory?.completedEpochComparison;
+  const flow = pulse.epochFlowAccounting;
+  if (pulse.voteEpochHistory?.version !== '0.1-aerodrome-managed-vote-event-reconstruction' || vote?.comparable !== true) {
+    throw new Error('Comparable managed vote epoch history required for vote-flow context');
+  }
+  if (flow?.version !== '0.1-aerodrome-reward-epoch-accounting' || pulse.marketBreath?.version !== '0.1-aerodrome-completed-epoch-directional-breadth') {
+    throw new Error('Completed-epoch reward accounting and Market Breath required for vote-flow context');
+  }
+  if (pulse.authority?.executionAuthority !== 'none' || pulse.authority?.promotionAuthority !== 'none' || pulse.authority?.causalClaimAuthority !== 'none') {
+    throw new Error('Vote-flow context refuses expanded authority');
+  }
+  if (vote.priorCompletedEpochStart !== flow.epochs?.find(x => x.key === 'priorCompleted')?.epochStartIso ||
+      vote.previousCompletedEpochStart !== flow.epochs?.find(x => x.key === 'previousCompleted')?.epochStartIso) {
+    throw new Error('Vote and reward-flow completed-epoch boundaries do not match');
+  }
+
+  const currentPools = new Map((pulse.latest?.pools || []).map(pool => [String(pool.pool).toLowerCase(), pool]));
+  const allVoteChanges = Array.isArray(vote.allChanges) ? vote.allChanges : [];
+  const rows = [];
+  const excluded = [];
+  for (const change of allVoteChanges) {
+    const pool = currentPools.get(String(change.pool).toLowerCase());
+    if (!pool) {
+      excluded.push({
+        pool: change.pool,
+        pair: change.pair ?? null,
+        reason: 'historical-vote-pool-not-present-in-current-pulse-reward-contract-universe',
+        treatment: 'excluded-not-zero'
+      });
+      continue;
+    }
+    rows.push({
+      pool: change.pool,
+      pair: change.pair ?? pool.pair ?? null,
+      voteState: change.state,
+      allocationDirection: allocationDirection(change.state),
+      priorCompletedAllocationPct: Number(change.priorCompletedAllocationPct || 0),
+      previousCompletedAllocationPct: Number(change.previousCompletedAllocationPct || 0),
+      allocationDeltaPctPoints: Number(change.deltaPctPoints || 0),
+      feeInflows: rewardLaneContext(pool.feeVotingReward),
+      incentiveInflows: rewardLaneContext(pool.bribeVotingReward)
+    });
+  }
+
+  const comparisonPoolCount = allVoteChanges.length;
+  const matchedPoolCount = rows.length;
+  pulse.voteFlowContext = {
+    version: '0.1-aerodrome-completed-epoch-vote-flow-context',
+    generatedAt: new Date().toISOString(),
+    basis: {
+      priorCompletedEpochStart: vote.priorCompletedEpochStart,
+      previousCompletedEpochStart: vote.previousCompletedEpochStart,
+      comparisonClass: 'completed-epoch-vote-allocation-vs-completed-epoch-reward-lane-direction',
+      currentIncompleteEpochExcluded: true
+    },
+    coverage: {
+      voteComparisonPoolCount: comparisonPoolCount,
+      matchedCurrentRewardContractPoolCount: matchedPoolCount,
+      excludedHistoricalOnlyPoolCount: excluded.length,
+      matchedCoveragePct: comparisonPoolCount > 0 ? round(matchedPoolCount / comparisonPoolCount * 100, 8) : null,
+      missingHistoricalPoolTreatment: 'excluded-not-zero',
+      fullHistoricalRewardContractCoverage: excluded.length === 0
+    },
+    poolContexts: rows,
+    excludedPools: excluded,
+    associations: {
+      feeInflows: summarizeJoint(rows, 'feeInflows'),
+      incentiveInflows: summarizeJoint(rows, 'incentiveInflows')
+    },
+    epistemic: {
+      relationshipClass: 'correlated-context-not-causal-attribution',
+      sourceVoteState: 'measured-event-reconstructed-completed-epoch-allocation',
+      sourceRewardFlows: 'proven-tokenRewardsPerEpoch-accounting',
+      equalTokenLaneDirectionOnly: true,
+      heterogeneousTokenAmountsNotSummed: true,
+      missingHistoricalPoolsAreUnknownNotZero: true,
+      statisticalCorrelationComputed: false,
+      causalAttribution: 'unresolved',
+      primaryDriver: null,
+      referenceAprConnection: 'not-attributed-by-this-context',
+      companyOutcomeConnection: 'not-attributed-by-this-context',
+      recommendationAuthority: false,
+      predictionAuthority: 'none',
+      promotionAuthority: 'none',
+      executionAuthority: 'none'
+    }
+  };
+
+  pulse.semantics = {
+    ...pulse.semantics,
+    voteFlowContext: true,
+    voteFlowContextIsCorrelatedNotCausal: true,
+    historicalPoolCoverageIsExplicit: true,
+    missingHistoricalPoolsAreNotZeroed: true
+  };
+  pulse.nextUnlocks = (pulse.nextUnlocks || []).filter(item => item !== 'relate completed-epoch vote allocation changes to fee/incentive inflow lanes without causal over-promotion');
+  const coverageUnlock = 'expand reward-contract coverage to historical-only voted pools before full pool-universe vote-flow association';
+  if (excluded.length > 0 && !pulse.nextUnlocks.includes(coverageUnlock)) pulse.nextUnlocks.unshift(coverageUnlock);
+
+  fs.writeFileSync(PULSE_FILE, `${JSON.stringify(pulse, null, 2)}\n`);
+  console.log('AERODROME VOTE-FLOW CONTEXT PASS', {
+    priorCompleted: vote.priorCompletedEpochStart,
+    previousCompleted: vote.previousCompletedEpochStart,
+    voteComparisonPools: comparisonPoolCount,
+    matchedPools: matchedPoolCount,
+    excludedHistoricalOnlyPools: excluded.length,
+    matchedCoveragePct: pulse.voteFlowContext.coverage.matchedCoveragePct,
+    feeAligned: pulse.voteFlowContext.associations.feeInflows.directionalAlignmentCount,
+    feeOpposed: pulse.voteFlowContext.associations.feeInflows.directionalOppositionCount,
+    incentiveAligned: pulse.voteFlowContext.associations.incentiveInflows.directionalAlignmentCount,
+    incentiveOpposed: pulse.voteFlowContext.associations.incentiveInflows.directionalOppositionCount,
+    causalAttribution: pulse.voteFlowContext.epistemic.causalAttribution,
+    promotionAuthority: pulse.voteFlowContext.epistemic.promotionAuthority
+  });
+}
+
 async function main() {
   const pulse = readJson(PULSE_FILE);
   if (pulse.version !== '0.1-aerodrome-managed-strategy-pulse' || pulse.status !== 'shadow-measured-not-promoted') {
@@ -282,6 +479,7 @@ async function main() {
 
 main()
   .then(() => import('./aerodrome-market-breath-overlay.mjs'))
+  .then(() => addVoteFlowContext())
   .catch(error => {
     console.error(error?.stack || error);
     process.exit(1);
