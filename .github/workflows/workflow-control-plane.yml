@@ -7,12 +7,14 @@ on:
       - ".github/workflows/**"
       - "intelligence/reliability/workflow-control-plane*"
       - "intelligence/reliability/workflow-fanout*"
+      - "intelligence/reliability/workflow-definition-diff*"
   push:
     branches: [main]
     paths:
       - ".github/workflows/**"
       - "intelligence/reliability/workflow-control-plane*"
       - "intelligence/reliability/workflow-fanout*"
+      - "intelligence/reliability/workflow-definition-diff*"
 
 permissions:
   contents: read
@@ -30,7 +32,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -54,6 +56,9 @@ jobs:
           test -s intelligence/reliability/workflow-fanout-canary.mjs
           test -s intelligence/reliability/workflow-fanout-enforce.mjs
           test -s intelligence/reliability/workflow-fanout-enforce-canary.mjs
+          test -s intelligence/reliability/workflow-definition-diff-policy.json
+          test -s intelligence/reliability/workflow-definition-diff-guard.mjs
+          test -s intelligence/reliability/workflow-definition-diff-guard-canary.mjs
           node --check intelligence/reliability/workflow-control-plane.mjs
           node --check intelligence/reliability/workflow-control-plane-canary.mjs
           node --check intelligence/reliability/workflow-control-plane-enforce.mjs
@@ -62,10 +67,13 @@ jobs:
           node --check intelligence/reliability/workflow-fanout-canary.mjs
           node --check intelligence/reliability/workflow-fanout-enforce.mjs
           node --check intelligence/reliability/workflow-fanout-enforce-canary.mjs
+          node --check intelligence/reliability/workflow-definition-diff-guard.mjs
+          node --check intelligence/reliability/workflow-definition-diff-guard-canary.mjs
           node intelligence/reliability/workflow-control-plane-canary.mjs
           node intelligence/reliability/workflow-control-plane-enforce-canary.mjs
           node intelligence/reliability/workflow-fanout-canary.mjs
           node intelligence/reliability/workflow-fanout-enforce-canary.mjs
+          node intelligence/reliability/workflow-definition-diff-guard-canary.mjs
 
       - name: Exercise common GitHub Actions compatibility surface
         shell: bash
@@ -82,6 +90,30 @@ jobs:
           path: /tmp/holding-control-plane/common-actions-canary.txt
           if-no-files-found: error
           retention-days: 1
+
+      - name: Guard workflow definition changes
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/reliability/workflow-definition-diff-guard.mjs --json > /tmp/workflow-definition-diff.json
+          node - <<'NODE'
+          const r = require('/tmp/workflow-definition-diff.json');
+          console.log('=== WORKFLOW DEFINITION DIFF GUARD ===');
+          console.log(JSON.stringify({
+            version:r.version,
+            baseSha:r.baseSha,
+            headSha:r.headSha,
+            changedWorkflowCount:r.changedWorkflowCount,
+            passCount:r.passCount,
+            failCount:r.failCount
+          }, null, 2));
+          for (const row of r.results) console.log(`${row.status}\t${row.file}\t${row.proof}`);
+          if (r.failCount !== 0) throw new Error('workflow definition diff guard did not pass');
+          NODE
 
       - name: Verify frozen measured baselines
         shell: bash
@@ -205,6 +237,7 @@ jobs:
           node - <<'NODE'
           const policy = require('./intelligence/reliability/workflow-control-plane-policy.json');
           const fanout = require('./intelligence/reliability/workflow-fanout-policy.json');
+          const definitions = require('./intelligence/reliability/workflow-definition-diff-policy.json');
           const expected = {
             readOnly: true,
             executionAuthority: 'none',
@@ -217,9 +250,11 @@ jobs:
           for (const [k, v] of Object.entries(expected)) {
             if (policy.authority?.[k] !== v) throw new Error(`authority expansion: control-plane.${k}`);
             if (fanout.authority?.[k] !== v) throw new Error(`authority expansion: fanout.${k}`);
+            if (definitions.authority?.[k] !== v) throw new Error(`authority expansion: workflow-definition-diff.${k}`);
           }
           if (policy.mode !== 'no-new-debt') throw new Error(`unexpected policy mode: ${policy.mode}`);
           if (fanout.mode !== 'no-new-fanout-debt') throw new Error(`unexpected fanout mode: ${fanout.mode}`);
-          console.log('Workflow Control Plane + Fan-out read-only authority boundary PASS');
+          if (definitions.mode !== 'fail-closed-unverified-workflow-logic-change') throw new Error(`unexpected workflow definition guard mode: ${definitions.mode}`);
+          console.log('Workflow Control Plane + Fan-out + Definition Diff read-only authority boundary PASS');
           NODE
           git diff --check
