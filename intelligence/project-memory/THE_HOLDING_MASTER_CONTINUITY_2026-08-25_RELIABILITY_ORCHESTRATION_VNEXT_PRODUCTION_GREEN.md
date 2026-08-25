@@ -426,3 +426,27 @@ Resume normal The Holding development from live `main` under the new reliability
 If returning to protocol expansion, first identify the next protocol objective from current live state; do not reopen Convex/Votium or this modernization merely because they are the latest prose subjects.
 
 If returning to reliability debt reduction, start with a fresh Control Plane run and one bounded candidate writer plane only.
+
+---
+
+# 18. INHERITED DURABLE CLOSURES — MUST CARRY FORWARD
+
+This architecture checkpoint is intentionally additive. It does **not** reopen or erase earlier production closures. The following durable invariants are inherited from the prior master continuity and remain authoritative unless fresh live evidence proves a regression:
+
+- **PROJECT X + HYPERLEND CLOSED.**
+- `resolver completeness != promotion completeness`.
+- **HyperLend base lending interest = Compounded / Embedded**; external incentives remain a separate lane.
+- `rewardAssetCount = 0` means no separately represented external reward asset; it must not be converted into a fabricated zero-dollar reward row.
+- Historical governance wording remains preserved: **generic implementation permission != merge permission**. Current routine merge behavior is governed by the later bounded Owner Collaboration canon and still does not grant capital, security-policy, methodology or destructive authority.
+- **GREEN workflow != physically materialized production artifact**. Production closure still requires physical `main` / generated-state proof where applicable.
+
+Market Data / onchain authority remains inherited as a closed production foundation:
+
+- canonical coverage was closed at **26/26** reviewed assets;
+- canonical top-level provenance is **per-asset-authority**;
+- **CoinGecko** remains fallback/sanity/source-lane context rather than normal production authority for the canonical onchain-primary set;
+- cross-source **divergence** is telemetry when the onchain route is otherwise healthy, not automatic evidence that onchain authority is wrong;
+- the historical close sequence includes **PR #227** and **PR #233**;
+- durable close marker: **Market Data / onchain tracking: fat check**.
+
+These phrases are intentionally explicit because Project Memory verifies that every newest master continuity carries forward prior closed-system invariants instead of allowing a topical checkpoint to accidentally erase them.
