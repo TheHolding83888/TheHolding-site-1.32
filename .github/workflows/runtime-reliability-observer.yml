@@ -128,17 +128,32 @@ jobs:
             }
           }
 
+          const criticalWorkflowIds = [...new Set((policy.criticalHandoffs || []).flatMap(edge => [edge.producer, edge.consumer]))];
+          const handoffRuns = [];
+          let handoffCoverageComplete = true;
+          for (const workflowId of criticalWorkflowIds) {
+            try {
+              const data = await get(`${base}/actions/workflows/${encodeURIComponent(`${workflowId}.yml`)}/runs?branch=${encodeURIComponent(policy.productionBranch || 'main')}&per_page=20`);
+              handoffRuns.push(...(data?.workflow_runs || []));
+            } catch (error) {
+              handoffCoverageComplete = false;
+              console.warn(`Dedicated handoff fetch failed for ${workflowId}: ${error.message}`);
+            }
+          }
+
           const issueData = await get(`${base}/issues?state=all&per_page=100&sort=updated&direction=desc`);
           const issues = (issueData || []).filter(x => !x.pull_request);
           const envelope = {
             fetchedAt: new Date().toISOString(),
             pageCount,
             truncated: !windowBoundReached,
+            handoffCoverageComplete,
+            handoffRuns: [...new Map(handoffRuns.map(run => [run.id, run])).values()],
             knownIncidentFingerprints: extractKnownFingerprints(issues),
             runs
           };
           fs.writeFileSync(out, `${JSON.stringify(envelope, null, 2)}\n`);
-          console.log(`Fetched ${runs.length} production runs across ${pageCount} page(s); truncated=${envelope.truncated}; knownIncidentFingerprints=${envelope.knownIncidentFingerprints.length}`);
+          console.log(`Fetched ${runs.length} general production runs across ${pageCount} page(s); truncated=${envelope.truncated}; dedicatedHandoffRuns=${envelope.handoffRuns.length}; handoffCoverageComplete=${handoffCoverageComplete}; knownIncidentFingerprints=${envelope.knownIncidentFingerprints.length}`);
           NODE
 
       - name: Analyze runtime reliability
