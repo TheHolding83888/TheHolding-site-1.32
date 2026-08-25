@@ -41,6 +41,10 @@ const entries = [
     text: `name: Dispatcher\non: workflow_dispatch\npermissions:\n  contents: read\n  actions: write\nconcurrency: dispatcher\njobs:\n  dispatch:\n    runs-on: ubuntu-latest\n    steps:\n      - run: gh workflow run downstream.yml\n`
   },
   {
+    file: '.github/workflows/verifier.yml',
+    text: `name: Verifier\non: pull_request\npermissions:\n  contents: read\njobs:\n  verify:\n    runs-on: ubuntu-latest\n    steps:\n      - run: |\n          node - <<'NODE'\n          const required = ['gh workflow run downstream.yml --ref main'];\n          console.log(required);\n          NODE\n`
+  },
+  {
     file: '.github/workflows/cycle-a.yml',
     text: `name: Cycle A\non: workflow_dispatch\npermissions:\n  actions: write\nconcurrency: cycle-a\njobs:\n  x:\n    runs-on: ubuntu-latest\n    steps:\n      - run: gh workflow run cycle-b.yml\n`
   },
@@ -67,4 +71,7 @@ const copilot = report.workflows.find(w => w.id === 'copilot-shadow');
 if (!copilot?.otherWritePermission || copilot.repositoryWriterCapable || copilot.workflowControlCapable) throw new Error('other write-permission taxonomy canary failed');
 if (report.findings.some(f => f.workflow === 'copilot-shadow' && /without-concurrency/.test(f.id))) throw new Error('other write permission incorrectly requires orchestration concurrency');
 
-console.log('Workflow Control Plane Canary PASS (repo-writer / control / workflow_run field scope / duplicate-writer / cycle / read-only / other-write-permission)');
+const verifier = report.workflows.find(w => w.id === 'verifier');
+if (!verifier || verifier.workflowControlCapable || verifier.dispatchTargets.length) throw new Error('verifier heredoc text misclassified as executable dispatch');
+
+console.log('Workflow Control Plane Canary PASS (repo-writer / control / workflow_run field scope / executable dispatch / duplicate-writer / cycle / read-only / other-write-permission)');
