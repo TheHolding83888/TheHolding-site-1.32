@@ -2,6 +2,10 @@ name: "The Holding Brain · Refresh Cognitive Stack"
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "The Holding · Explanatory Context"
+    types: [completed]
   schedule:
     # Canonical daily cognition after Observer (06:27 UTC) and the independent
     # Security Sentinel pass (06:47 UTC). This integrated cycle refreshes Security
@@ -18,6 +22,11 @@ concurrency:
 
 jobs:
   refresh:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
 
@@ -392,5 +401,6 @@ jobs:
             echo "Main moved during push; retrying ($attempt/3)..."
             sleep $((attempt * 2))
           done
+
           echo "ERROR: unable to publish coherent Cognitive Stack after 3 attempts."
           exit 1
