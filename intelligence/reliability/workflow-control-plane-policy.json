@@ -1,0 +1,49 @@
+{
+  "version": "0.1-workflow-control-plane",
+  "mode": "observe-then-tighten",
+  "purpose": "Build one deterministic read-only control view of GitHub Actions topology before changing proven production writers.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "classification": {
+    "writerSignals": [
+      "write-permission",
+      "git-commit",
+      "git-push",
+      "contents-api-write"
+    ],
+    "edgeSignals": [
+      "workflow_run",
+      "workflow-dispatch-command",
+      "workflow-dispatch-api"
+    ],
+    "candidateWriterPathsAreHeuristic": true,
+    "unknownIsNotZero": true
+  },
+  "v01HardFailures": [
+    "scanner-integrity-failure",
+    "control-plane-authority-expansion"
+  ],
+  "observedDebtDoesNotFailV01": [
+    "write-capable-without-concurrency",
+    "duplicate-candidate-writer",
+    "unresolved-workflow-edge",
+    "broad-git-add",
+    "write-all-permission",
+    "pull-request-target"
+  ],
+  "nextTighteningOrder": [
+    "freeze-current-topology-baseline",
+    "block-new-write-capable-workflows-without-concurrency",
+    "require-declared-truth-plane-for-new-writers",
+    "block-new-duplicate-candidate-writers",
+    "block-new-workflow-cycles",
+    "migrate-existing-debt-in-bounded-prs"
+  ]
+}
