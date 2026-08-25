@@ -55,90 +55,7 @@ jobs:
           node --check intelligence/economic-graph/protocol-lifecycle-canary.mjs
           node intelligence/economic-graph/protocol-lifecycle-canary.mjs
 
-      - name: Attempt canonical Unified Capital writer
-        id: unified
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          BEFORE="$(gh run list --workflow unified-capital-refresh.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-          gh workflow run unified-capital-refresh.yml --ref main
-
-          RUN_ID=""
-          for attempt in $(seq 1 30); do
-            CANDIDATE="$(gh run list --workflow unified-capital-refresh.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-            if [ "$CANDIDATE" != "0" ] && [ "$CANDIDATE" != "$BEFORE" ]; then
-              RUN_ID="$CANDIDATE"
-              break
-            fi
-            sleep 2
-          done
-          if [ -z "$RUN_ID" ]; then
-            echo "Unified Capital dispatch could not be identified; bounded Graph fallback required."
-            echo "success=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "Watching Unified Capital run $RUN_ID"
-          if gh run watch "$RUN_ID" --exit-status; then
-            echo "success=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Unified Capital is currently unavailable. Its fail-closed contract remains unchanged; bounded Graph fallback will use the already-canonical Productivity snapshot."
-            echo "success=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Verify normal workflow_run handoff or request bounded fallback
-        id: handoff
-        shell: bash
-        run: |
-          set -euo pipefail
-          verify_graph() {
-            git fetch origin main >/dev/null 2>&1
-            git show origin/main:companies/productivity-data.json > /tmp/productivity.json
-            git show origin/main:intelligence/economic-graph/economic-graph.json > /tmp/economic-graph.json
-            node - <<'NODE'
-          const fs=require('fs');
-          const p=JSON.parse(fs.readFileSync('/tmp/productivity.json','utf8'));
-          const g=JSON.parse(fs.readFileSync('/tmp/economic-graph.json','utf8'));
-          const aero=g.candidateCohorts?.['defitea-aerodrome-veaero'];
-          const vlcvx=g.candidateCohorts?.['defitea-convex-vlcvx-votium'];
-          const lifecycle=g.protocolLifecycle;
-          if(g.sourceState?.productivity?.generatedAt!==p.generatedAt)process.exit(1);
-          if(g.candidateLayer?.version!=='0.2-multi-candidate-shadow-admission')process.exit(1);
-          if(g.candidateLayer?.status!=='shadow-admission-active'||Number(g.candidateLayer?.candidateCount)!==2)process.exit(1);
-          if(!g.candidateLayer?.candidateIds?.includes('defitea-aerodrome-veaero')||!g.candidateLayer?.candidateIds?.includes('defitea-convex-vlcvx-votium'))process.exit(1);
-          if(g.candidateLayer?.canonicalCohortCountUnchanged!==true||g.candidateLayer?.promotionAuthority!=='none')process.exit(1);
-          if(!aero||aero.status!=='shadow-measured-not-promoted'||!vlcvx||vlcvx.status!=='shadow-measured-not-promoted')process.exit(1);
-          if(Number(g.coverage?.cohortCount)!==2)process.exit(1);
-          if(lifecycle?.version!=='0.1-protocol-intelligence-lifecycle'||lifecycle?.policyVersion!=='0.1-protocol-intelligence-lifecycle-policy')process.exit(1);
-          if(lifecycle?.authority?.executionAuthority!=='none'||lifecycle?.authority?.repositoryMutationAuthority!==false||lifecycle?.authority?.workflowDispatchAuthority!==false||lifecycle?.authority?.causalClaimAuthority!=='none')process.exit(1);
-          if(lifecycle?.protocols?.['defitea-fxn-vefxn']?.maturityStage!=='canonical'||lifecycle?.protocols?.['defitea-curve-vecrv']?.maturityStage!=='canonical')process.exit(1);
-          if(!['verified','canonical'].includes(lifecycle?.protocols?.['defitea-aerodrome-veaero']?.maturityStage))process.exit(1);
-          if(!['verified','canonical'].includes(lifecycle?.protocols?.['defitea-convex-vlcvx-votium']?.maturityStage))process.exit(1);
-          process.exit(0);
-          NODE
-          }
-
-          if [ "${{ steps.unified.outputs.success }}" != "true" ]; then
-            echo "Unified Capital did not complete; requesting bounded Economic Graph fallback."
-            echo "fallback_needed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          for attempt in $(seq 1 18); do
-            if verify_graph; then
-              echo "Normal Unified → workflow_run → Economic Graph handoff materialized multi-candidate + lifecycle state."
-              echo "fallback_needed=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            sleep 5
-          done
-
-          echo "Normal workflow_run handoff did not materialize the required Graph + lifecycle state in the bounded window."
-          echo "fallback_needed=true" >> "$GITHUB_OUTPUT"
-
-      - name: Dispatch canonical Economic Graph fallback
-        if: steps.handoff.outputs.fallback_needed == 'true'
+      - name: Dispatch and await canonical Economic Graph rebuild
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -157,13 +74,13 @@ jobs:
             sleep 2
           done
           if [ -z "$RUN_ID" ]; then
-            echo "ERROR: could not identify newly dispatched Economic Graph fallback run"
+            echo "ERROR: could not identify newly dispatched Economic Graph rebuild"
             exit 1
           fi
-          echo "Watching Economic Graph fallback run $RUN_ID"
+          echo "Watching Economic Graph rebuild run $RUN_ID"
           gh run watch "$RUN_ID" --exit-status
 
-      - name: Prove physical Economic Graph state on main
+      - name: Prove physical Economic Graph lifecycle state on main
         shell: bash
         run: |
           set -euo pipefail
@@ -202,7 +119,7 @@ jobs:
           if(fxStage!=='canonical'||curveStage!=='canonical')throw new Error(`Canonical lifecycle regression: f(x)=${fxStage}, Curve=${curveStage}`);
           if(!['verified','canonical'].includes(aeroStage))throw new Error(`Aerodrome lifecycle below verified: ${aeroStage}`);
           if(!['verified','canonical'].includes(vlcvxStage))throw new Error(`vlCVX/Votium lifecycle below verified: ${vlcvxStage}`);
-          console.log('ECONOMIC GRAPH RECOVERY PHYSICAL PASS',{
+          console.log('ECONOMIC GRAPH FAST RECOVERY PHYSICAL PASS',{
             productivityGeneratedAt:p.generatedAt,
             graphGeneratedAt:g.generatedAt,
             canonicalCohorts:g.coverage.cohortCount,
@@ -217,7 +134,47 @@ jobs:
           });
           NODE
 
-      - name: Dispatch and await canonical Aerodrome Managed Strategy Pulse
+      - name: Preflight existing Aerodrome Managed Strategy Pulse
+        id: pulse_preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          if ! git show origin/main:intelligence/economic-graph/aerodrome-managed-pulse.json > /tmp/aerodrome-managed-pulse.json 2>/dev/null; then
+            echo "Aerodrome Pulse missing; refresh required."
+            echo "refresh_needed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/aerodrome-managed-pulse.json','utf8'));
+          const o=x.latest;
+          if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.engineVersion!=='0.1-defitea-managed-venft-same-block-pulse')process.exit(1);
+          if(x.status!=='shadow-measured-not-promoted')process.exit(1);
+          if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none'||x.authority?.promotionAuthority!=='none')process.exit(1);
+          if(Number(x.sourceBinding?.canonicalCohortCountAtObservation)!==2||x.sourceBinding?.canonicalCohortCountUnchanged!==true)process.exit(1);
+          if(!o||o.chain!=='Base'||o.identity?.companyRegistry!=='004'||o.identity?.managedTokenId!=='10298'||o.identity?.depositorTokenId!=='103935')process.exit(1);
+          if(o.provenance?.sameBlockRead!==true||Number(o.provenance?.blockNumber)!==Number(o.blockNumber)||o.provenance?.blockHash!==o.blockHash)process.exit(1);
+          if(!Array.isArray(o.pools)||o.pools.length!==Number(o.voting?.votedPoolCount))process.exit(1);
+          for(const p of o.pools){
+            if(!p.pool||!p.gauge?.address||!p.feeVotingReward?.address||!p.bribeVotingReward?.address)process.exit(1);
+            if(p.epistemic?.voteToRewardDeposit!=='proven-onchain-contract-relationship')process.exit(1);
+          }
+          if(!Number.isFinite(Number(o.depositorManagedRewards?.lockedAeroAmount))||Number(o.depositorManagedRewards.lockedAeroAmount)<0)process.exit(1);
+          if(o.epistemic?.referenceAprConnection!=='not-attributed-by-this-pulse'||o.epistemic?.causalAttribution!=='unresolved-beyond-contract-accounting-identities'||o.epistemic?.primaryDriver!==null||o.epistemic?.promotionAuthority!=='none')process.exit(1);
+          console.log('AERODROME PULSE PREFLIGHT PASS',{generatedAt:x.generatedAt,block:o.blockNumber});
+          NODE
+          then
+            echo "Existing Aerodrome Pulse is semantically valid; heavy refresh skipped."
+            echo "refresh_needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Existing Aerodrome Pulse is missing/invalid; bounded refresh required."
+            echo "refresh_needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dispatch and await Aerodrome Managed Strategy Pulse repair
+        if: steps.pulse_preflight.outputs.refresh_needed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -236,10 +193,10 @@ jobs:
             sleep 2
           done
           if [ -z "$RUN_ID" ]; then
-            echo "ERROR: could not identify newly dispatched Aerodrome Pulse run"
+            echo "ERROR: could not identify newly dispatched Aerodrome Pulse repair run"
             exit 1
           fi
-          echo "Watching Aerodrome Managed Strategy Pulse run $RUN_ID"
+          echo "Watching Aerodrome Managed Strategy Pulse repair run $RUN_ID"
           gh run watch "$RUN_ID" --exit-status
 
       - name: Prove physical Aerodrome Managed Strategy Pulse on main
@@ -265,7 +222,7 @@ jobs:
           }
           if(!Number.isFinite(Number(o.depositorManagedRewards?.lockedAeroAmount))||Number(o.depositorManagedRewards.lockedAeroAmount)<0)throw new Error('Depositor LockedManagedReward state missing');
           if(o.epistemic?.referenceAprConnection!=='not-attributed-by-this-pulse'||o.epistemic?.causalAttribution!=='unresolved-beyond-contract-accounting-identities'||o.epistemic?.primaryDriver!==null||o.epistemic?.promotionAuthority!=='none')throw new Error('Pulse causal boundary weakened');
-          console.log('AERODROME PULSE RECOVERY PHYSICAL PASS',{
+          console.log('AERODROME PULSE FAST RECOVERY PHYSICAL PASS',{
             generatedAt:x.generatedAt,
             block:o.blockNumber,
             managedTokenId:o.identity.managedTokenId,
