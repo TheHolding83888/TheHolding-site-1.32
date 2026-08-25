@@ -49,7 +49,7 @@ function normalizeListItem(text) {
 
 function actionFamilyFromChangedLine(line) {
   const body = stripDiffPrefix(line);
-  const m = body.match(/^uses:\s*([^@\s]+)@[^\s#]+(?:\s*#.*)?$/);
+  const m = body.match(/^(?:-\s*)?uses:\s*([^@\s]+)@[^\s#]+(?:\s*#.*)?$/);
   return m ? m[1] : null;
 }
 
