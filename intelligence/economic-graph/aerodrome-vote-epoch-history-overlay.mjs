@@ -3,25 +3,22 @@
  * THE HOLDING · Aerodrome Managed Vote Epoch History Overlay v0.1
  *
  * Reconstructs managed-veNFT allocation state from canonical Aerodrome Voter
- * Voted/Abstained events. The overlay is additive, read-only, shadow-only and
- * does not claim that vote allocation changes caused Reference APR, reward
- * inflows, protocol fees or company outcomes.
+ * Voted/Abstained events. Additive, read-only and shadow-only: vote allocation
+ * changes are not treated as causes of APR, reward inflows or company outcomes.
  */
 import fs from 'node:fs';
 import process from 'node:process';
-import {
-  Interface,
-  JsonRpcProvider,
-  getAddress,
-  toBeHex,
-  zeroPadValue
-} from 'ethers';
+import { Interface, JsonRpcProvider, getAddress, toBeHex, zeroPadValue } from 'ethers';
 
 const PULSE_FILE = process.env.AERODROME_PULSE_FILE || 'intelligence/economic-graph/aerodrome-managed-pulse.json';
 const WEEK = 7 * 24 * 60 * 60;
 const VOTER = '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5';
 const SOURCE_REPO = 'aerodrome-finance/contracts';
 const SOURCE_COMMIT = '1ba30815bba620f7e9faa34769ffd00c214c9b82';
+// Base targets ~2s blocks. 1.6m blocks is a conservative >4-week query
+// horizon without requiring historical eth_getBlockByNumber archive access.
+// Exact epoch boundaries come from timestamps emitted by Voter events.
+const LOOKBACK_BLOCKS = 1_600_000;
 const EVENT_IFACE = new Interface([
   'event Voted(address indexed voter,address indexed pool,uint256 indexed tokenId,uint256 weight,uint256 totalWeight,uint256 timestamp)',
   'event Abstained(address indexed voter,address indexed pool,uint256 indexed tokenId,uint256 weight,uint256 totalWeight,uint256 timestamp)'
@@ -68,38 +65,19 @@ async function providerWithFallback() {
   throw lastError || new Error('No working Base RPC');
 }
 
-async function blockAtOrAfterTimestamp(provider, targetTimestamp, highBlock) {
-  let lo = 1;
-  let hi = Number(highBlock);
-  let answer = hi;
-  while (lo <= hi) {
-    const mid = Math.floor((lo + hi) / 2);
-    const block = await provider.getBlock(mid);
-    if (!block) throw new Error(`Base block ${mid} unavailable during timestamp search`);
-    if (Number(block.timestamp) >= Number(targetTimestamp)) {
-      answer = mid;
-      hi = mid - 1;
-    } else {
-      lo = mid + 1;
-    }
-  }
-  return answer;
-}
-
 async function getLogsChunked(provider, filter, fromBlock, toBlock) {
   const out = [];
   let cursor = Number(fromBlock);
   const finalBlock = Number(toBlock);
-  let chunkSize = 100000;
-  const minChunk = 2500;
-
+  let chunkSize = 100_000;
+  const minChunk = 2_500;
   while (cursor <= finalBlock) {
     const end = Math.min(finalBlock, cursor + chunkSize - 1);
     try {
       const logs = await provider.getLogs({ ...filter, fromBlock: cursor, toBlock: end });
       out.push(...logs);
       cursor = end + 1;
-      if (chunkSize < 100000) chunkSize = Math.min(100000, chunkSize * 2);
+      if (chunkSize < 100_000) chunkSize = Math.min(100_000, chunkSize * 2);
     } catch (error) {
       if (chunkSize <= minChunk) throw error;
       chunkSize = Math.max(minChunk, Math.floor(chunkSize / 2));
@@ -132,13 +110,7 @@ function groupTransactions(events) {
     const key = `${event.blockNumber}:${event.transactionHash}`;
     let group = groups.at(-1);
     if (!group || group.key !== key) {
-      group = {
-        key,
-        blockNumber: event.blockNumber,
-        transactionHash: event.transactionHash,
-        timestamp: event.timestamp,
-        events: []
-      };
+      group = { key, blockNumber: event.blockNumber, transactionHash: event.transactionHash, timestamp: event.timestamp, events: [] };
       groups.push(group);
     }
     group.events.push(event);
@@ -155,23 +127,15 @@ function allocationSnapshot(state, pairMap) {
   const rows = [...state.entries()].map(([pool, weight]) => ({ pool, weight: BigInt(weight) }));
   const total = rows.reduce((sum, row) => sum + row.weight, 0n);
   if (total === 0n) {
-    return {
-      usedWeightRaw: '0',
-      poolCount: 0,
-      allocationHhi: null,
-      topAllocationPct: null,
-      allocations: []
-    };
+    return { usedWeightRaw: '0', poolCount: 0, allocationHhi: null, topAllocationPct: null, allocations: [] };
   }
-  const allocations = rows
-    .map(row => ({
-      pool: row.pool,
-      pair: pairMap.get(row.pool.toLowerCase()) ?? null,
-      weightRaw: row.weight.toString(),
-      allocationPct: bigPct(row.weight, total, 8)
-    }))
-    .sort((a, b) => Number(b.allocationPct || 0) - Number(a.allocationPct || 0) || a.pool.localeCompare(b.pool));
-  const hhi = allocations.reduce((sum, row) => sum + (Number(row.allocationPct || 0) ** 2), 0);
+  const allocations = rows.map(row => ({
+    pool: row.pool,
+    pair: pairMap.get(row.pool.toLowerCase()) ?? null,
+    weightRaw: row.weight.toString(),
+    allocationPct: bigPct(row.weight, total, 8)
+  })).sort((a, b) => Number(b.allocationPct || 0) - Number(a.allocationPct || 0) || a.pool.localeCompare(b.pool));
+  const hhi = allocations.reduce((sum, row) => sum + Number(row.allocationPct || 0) ** 2, 0);
   return {
     usedWeightRaw: total.toString(),
     poolCount: allocations.length,
@@ -189,10 +153,8 @@ function compareCompleted(prior, previous) {
   const b = new Map((previous.allocations || []).map(row => [row.pool.toLowerCase(), row]));
   const pools = [...new Set([...a.keys(), ...b.keys()])];
   const changes = pools.map(key => {
-    const before = a.get(key);
-    const after = b.get(key);
-    const priorPct = Number(before?.allocationPct || 0);
-    const previousPct = Number(after?.allocationPct || 0);
+    const before = a.get(key), after = b.get(key);
+    const priorPct = Number(before?.allocationPct || 0), previousPct = Number(after?.allocationPct || 0);
     let state = 'flat';
     if (!before && after) state = 'newly-voted';
     else if (before && !after) state = 'no-longer-voted';
@@ -225,10 +187,31 @@ function compareCompleted(prior, previous) {
     removedAllocationPct: round(removedAllocation, 8),
     allocationHhiDelta: prior.allocationHhi === null || previous.allocationHhi === null ? null : round(previous.allocationHhi - prior.allocationHhi, 8),
     changedPoolCount: changes.filter(row => Math.abs(Number(row.deltaPctPoints || 0)) > 0.00000001).length,
-    topAbsoluteAllocationShifts: [...changes]
-      .sort((x, y) => Math.abs(Number(y.deltaPctPoints || 0)) - Math.abs(Number(x.deltaPctPoints || 0)))
-      .slice(0, 15),
+    topAbsoluteAllocationShifts: [...changes].sort((x, y) => Math.abs(Number(y.deltaPctPoints || 0)) - Math.abs(Number(x.deltaPctPoints || 0))).slice(0, 15),
     allChanges: changes
+  };
+}
+
+function proveCurrentParity(pulse, current) {
+  if (!current?.stateKnownAtEnd) throw new Error('Current managed vote state was not reconstructed from event evidence');
+  const livePools = new Map((pulse?.latest?.pools || []).map(row => [String(row.pool).toLowerCase(), row]));
+  if (current.poolCount !== Number(pulse?.latest?.voting?.votedPoolCount)) {
+    throw new Error(`Event-reconstructed current pool count ${current.poolCount} != Pulse ${pulse?.latest?.voting?.votedPoolCount}`);
+  }
+  if (BigInt(current.usedWeightRaw) !== BigInt(pulse?.latest?.voting?.usedVotingWeightRaw || 0)) {
+    throw new Error('Event-reconstructed current used weight != same-block Voter state');
+  }
+  for (const row of current.allocations || []) {
+    const live = livePools.get(row.pool.toLowerCase());
+    if (!live || BigInt(live.managedVoteWeightRaw || 0) !== BigInt(row.weightRaw)) {
+      throw new Error(`Event-reconstructed current pool weight mismatch for ${row.pool}`);
+    }
+  }
+  return {
+    status: 'exact-current-state-parity',
+    poolCount: current.poolCount,
+    usedWeightRaw: current.usedWeightRaw,
+    allPoolWeightsMatch: true
   };
 }
 
@@ -253,55 +236,45 @@ async function main() {
 
   const { provider, endpointClass } = await providerWithFallback();
   try {
-    const pulseBlock = await provider.getBlock(blockTag);
-    if (!pulseBlock || pulseBlock.hash !== blockHash) throw new Error('Pulse block hash no longer matches canonical Base block');
-
-    // Query enough pre-history to establish an authoritative event-reconstructed
-    // state before the two completed epochs used by Market Breath.
-    const coverageStart = activePeriodSec - 4 * WEEK;
-    const fromBlock = await blockAtOrAfterTimestamp(provider, coverageStart, blockTag);
+    const currentBlockNumber = await provider.getBlockNumber();
+    if (currentBlockNumber < blockTag) throw new Error('RPC head is behind Pulse block');
+    const fromBlock = Math.max(1, blockTag - LOOKBACK_BLOCKS);
+    const requiredCoverageStart = activePeriodSec - 4 * WEEK;
     const tokenTopic = zeroPadValue(toBeHex(managedTokenId), 32);
     const logs = await getLogsChunked(provider, {
       address: VOTER,
       topics: [[VOTED_TOPIC, ABSTAINED_TOPIC], null, null, tokenTopic]
     }, fromBlock, blockTag);
-    const events = logs
-      .map(decodeLog)
-      .filter(Boolean)
+    const events = logs.map(decodeLog).filter(Boolean)
       .sort((a, b) => a.blockNumber - b.blockNumber || a.transactionIndex - b.transactionIndex || a.logIndex - b.logIndex);
+    if (!events.length) throw new Error('No Aerodrome Voter events found for managed tokenId in conservative lookback');
     const txGroups = groupTransactions(events);
     const pairs = pairLookup(pulse);
 
     const targets = [
       { key: 'priorCompleted', start: activePeriodSec - 2 * WEEK, end: activePeriodSec - WEEK, status: 'completed' },
       { key: 'previousCompleted', start: activePeriodSec - WEEK, end: activePeriodSec, status: 'completed' },
-      { key: 'currentToDate', start: activePeriodSec, end: Number(pulseBlock.timestamp) + 1, status: 'in-progress' }
+      { key: 'currentToDate', start: activePeriodSec, end: Math.floor(Date.parse(pulse.latest.observedAt) / 1000) + 1, status: 'in-progress' }
     ];
 
     const state = new Map();
-    let stateKnown = false;
-    let cursor = 0;
-    let lastMutation = null;
+    let stateKnown = false, cursor = 0, lastMutation = null;
     const snapshots = [];
-
     for (const target of targets) {
       while (cursor < txGroups.length && txGroups[cursor].timestamp < target.end) {
         const group = txGroups[cursor++];
         for (const event of group.events) {
           if (event.event === 'Abstained') state.delete(event.pool.toLowerCase());
-          else if (event.event === 'Voted') state.set(event.pool.toLowerCase(), BigInt(event.weightRaw));
+          else state.set(event.pool.toLowerCase(), BigInt(event.weightRaw));
         }
-        // _vote always executes a full reset before emitting the replacement
-        // Voted set; reset-only transactions emit the complete Abstained set.
-        // Therefore any observed state-transition transaction makes the post-tx
-        // allocation authoritative from event evidence forward.
+        // Official Voter._vote performs a full _reset before emitting the
+        // replacement Voted set. A reset-only transaction emits the complete
+        // Abstained set. Therefore post-transaction allocation is authoritative.
         stateKnown = true;
         lastMutation = group;
       }
-
       const alloc = stateKnown ? allocationSnapshot(state, pairs) : allocationSnapshot(new Map(), pairs);
       const eventsWithin = events.filter(event => event.timestamp >= target.start && event.timestamp < target.end);
-      const txWithin = new Set(eventsWithin.map(event => event.transactionHash));
       snapshots.push({
         key: target.key,
         epochStart: iso(target.start),
@@ -309,7 +282,7 @@ async function main() {
         epochStatus: target.status,
         stateKnownAtEnd: stateKnown,
         sourceEventCountWithinEpoch: eventsWithin.length,
-        sourceTransactionCountWithinEpoch: txWithin.size,
+        sourceTransactionCountWithinEpoch: new Set(eventsWithin.map(event => event.transactionHash)).size,
         lastMutationAtOrBeforeEnd: lastMutation ? iso(lastMutation.timestamp) : null,
         lastMutationBlock: lastMutation?.blockNumber ?? null,
         lastMutationTransactionHash: lastMutation?.transactionHash ?? null,
@@ -321,28 +294,37 @@ async function main() {
     const previous = snapshots.find(x => x.key === 'previousCompleted');
     const current = snapshots.find(x => x.key === 'currentToDate');
     const completedComparison = compareCompleted(prior, previous);
+    if (!completedComparison.comparable) {
+      throw new Error(`Two completed Aerodrome vote epochs are not reconstructably comparable: ${completedComparison.reason}`);
+    }
+    const currentParity = proveCurrentParity(pulse, current);
 
     pulse.voteEpochHistory = {
       version: '0.1-aerodrome-managed-vote-event-reconstruction',
       generatedAt: new Date().toISOString(),
       managedTokenId: managedTokenId.toString(),
       sourceCoverage: {
-        fromTimestamp: iso(coverageStart),
+        method: 'conservative-recent-block-lookback-no-archive-state-read',
+        minimumRequiredTimestamp: iso(requiredCoverageStart),
         fromBlock,
+        lookbackBlocks: LOOKBACK_BLOCKS,
         toBlock: blockTag,
-        toBlockHash: pulseBlock.hash,
+        toBlockHash: blockHash,
         eventCount: events.length,
         transactionCount: txGroups.length,
+        firstObservedEventTimestamp: iso(events[0].timestamp),
+        lastObservedEventTimestamp: iso(events.at(-1).timestamp),
         rpcEndpointClass: endpointClass
       },
+      currentStateParity: currentParity,
       snapshots,
       completedEpochComparison: completedComparison,
       currentStateContext: {
-        currentEpochStart: current?.epochStart ?? null,
-        currentEpochMutationCount: current?.sourceTransactionCountWithinEpoch ?? null,
-        currentStateKnown: current?.stateKnownAtEnd ?? false,
-        currentPoolCount: current?.poolCount ?? null,
-        currentTopAllocationPct: current?.topAllocationPct ?? null,
+        currentEpochStart: current.epochStart,
+        currentEpochMutationCount: current.sourceTransactionCountWithinEpoch,
+        currentStateKnown: current.stateKnownAtEnd,
+        currentPoolCount: current.poolCount,
+        currentTopAllocationPct: current.topAllocationPct,
         comparisonToCompletedEpochOutcome: 'not-attributed'
       },
       officialContractSource: {
@@ -354,6 +336,7 @@ async function main() {
       },
       semantics: {
         reconstructionBasis: 'ordered-onchain-Voted-and-Abstained-events',
+        noHistoricalArchiveStateRequired: true,
         endOfEpochStateIsStorageAllocationSnapshot: true,
         voteTimestampDoesNotByItselfIdentifyRewardCausality: true,
         currentIncompleteEpochIsNotCompletedOutcome: true,
@@ -362,7 +345,8 @@ async function main() {
       epistemic: {
         observationClass: 'direct-onchain-voter-event-reconstruction',
         stateTransitionClass: 'proven-by-official-Voter-reset-and-vote-accounting',
-        completedEpochAllocationComparison: completedComparison.comparable ? 'measured-event-reconstructed' : 'insufficient-event-state-coverage',
+        completedEpochAllocationComparison: 'measured-event-reconstructed',
+        currentStateParity: 'proven-against-same-block-voter-state',
         referenceAprConnection: 'not-attributed-by-this-overlay',
         rewardInflowConnection: 'not-attributed-by-this-overlay',
         companyOutcomeConnection: 'not-attributed-by-this-overlay',
@@ -389,13 +373,14 @@ async function main() {
       managedTokenId: managedTokenId.toString(),
       events: events.length,
       transactions: txGroups.length,
-      priorPoolCount: prior?.poolCount ?? null,
-      previousPoolCount: previous?.poolCount ?? null,
-      currentPoolCount: current?.poolCount ?? null,
+      priorPoolCount: prior.poolCount,
+      previousPoolCount: previous.poolCount,
+      currentPoolCount: current.poolCount,
       completedComparable: completedComparison.comparable,
-      reallocatedPct: completedComparison.reallocatedPct ?? null,
-      retainedAllocationPct: completedComparison.retainedAllocationPct ?? null,
-      currentEpochMutationCount: current?.sourceTransactionCountWithinEpoch ?? null,
+      reallocatedPct: completedComparison.reallocatedPct,
+      retainedAllocationPct: completedComparison.retainedAllocationPct,
+      currentEpochMutationCount: current.sourceTransactionCountWithinEpoch,
+      currentParity: currentParity.status,
       primaryDriver: pulse.voteEpochHistory.epistemic.primaryDriver,
       promotionAuthority: pulse.voteEpochHistory.epistemic.promotionAuthority
     });
@@ -404,7 +389,9 @@ async function main() {
   }
 }
 
-main().catch(error => {
+try {
+  await main();
+} catch (error) {
   console.error(error?.stack || error);
   process.exit(1);
-});
+}
