@@ -1,0 +1,36 @@
+{
+  "version": "0.1-workflow-fanout-audit",
+  "mode": "observe-then-freeze",
+  "purpose": "Measure pull-request workflow fan-out from exact workflow source, distinguish intentionally global safety checks from domain-local wakeups, and provide a deterministic basis for bounded no-safety-loss reductions.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "protectedWorkflowChangeChecks": [
+    "workflow-control-plane",
+    "repository-hygiene-guard",
+    "commit-identity-privacy-guard",
+    "public-surface-privacy-guard",
+    "security-sentinel",
+    "security-hardening-actions"
+  ],
+  "epistemics": {
+    "workflowSource": "MEASURED_FROM_EXACT_WORKFLOW_YAML",
+    "workflowFleetScenario": "SIMULATED_ALL_WORKFLOW_FILES_CHANGED",
+    "selfDefinitionScenario": "SIMULATED_ONLY_OWN_WORKFLOW_FILE_CHANGED",
+    "potentialReduction": "CANDIDATE_NOT_AUTOMATIC_AUTHORIZATION",
+    "unknownIsNotZero": true
+  },
+  "reductionLaw": [
+    "Never remove a domain check merely to reduce run count.",
+    "Common action-pin compatibility may be proven centrally before domain workflow self-triggers are removed.",
+    "Real domain source changes must continue to wake the relevant verifier.",
+    "Privileged writers/controllers must not gain PR authority as part of fan-out reduction.",
+    "Every reduction batch requires exact-head checks and post-merge production proof."
+  ]
+}
