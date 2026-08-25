@@ -77,12 +77,16 @@ export function analyzeRuntime(envelope, policy, nowIso = new Date().toISOString
   const nowMs = Date.parse(nowIso);
   if (!Number.isFinite(nowMs)) throw new Error('invalid now');
   const rawRuns = Array.isArray(envelope) ? envelope : (envelope?.runs || []);
+  const rawHandoffRuns = Array.isArray(envelope?.handoffRuns) ? envelope.handoffRuns : rawRuns;
   const knownFingerprints = new Set(envelope?.knownIncidentFingerprints || []);
   const ignored = new Set(policy.ignoredWorkflowIds || []);
   const branch = policy.productionBranch || 'main';
   const cutoffMs = nowMs - Number(policy.coverage?.lookbackHours || 6) * 3600000;
   const runs = rawRuns.map(normalizeRun)
     .filter(r => r.branch === branch && !ignored.has(r.workflowId) && (r.createdMs === null || r.createdMs >= cutoffMs))
+    .sort((a, b) => (b.createdMs || 0) - (a.createdMs || 0));
+  const handoffRuns = rawHandoffRuns.map(normalizeRun)
+    .filter(r => r.branch === branch && !ignored.has(r.workflowId))
     .sort((a, b) => (b.createdMs || 0) - (a.createdMs || 0));
   const findings = [];
   const t = policy.thresholds || {};
@@ -156,28 +160,36 @@ export function analyzeRuntime(envelope, policy, nowIso = new Date().toISOString
     }
   }
 
-  for (const edge of policy.criticalHandoffs || []) {
-    const producerRuns = runs.filter(r => r.workflowId === edge.producer && r.status === 'completed' && r.conclusion === 'success' && r.updatedMs !== null);
-    if (!producerRuns.length) continue;
-    const producer = producerRuns[0];
-    const grace = Number(edge.graceMinutes ?? t.handoffGraceMinutes ?? 20);
-    if (nowMs - producer.updatedMs < grace * 60000) continue;
-    const searchWindow = Number(edge.searchWindowMinutes ?? t.handoffSearchWindowMinutes ?? 60) * 60000;
-    const consumer = runs.find(r =>
-      r.workflowId === edge.consumer &&
-      r.createdMs !== null &&
-      r.createdMs >= producer.updatedMs &&
-      r.createdMs <= producer.updatedMs + searchWindow
-    );
-    if (!consumer) {
-      findings.push(finding('critical-handoff-miss', 'red', edge.producer, `${edge.producer} succeeded but ${edge.consumer} did not materialize within ${Math.round(searchWindow / 60000)}m`, {
-        producer: edge.producer,
-        consumer: edge.consumer,
-        producerRunId: producer.id,
-        createdAt: producer.createdAt,
-        completedAt: producer.updatedAt,
-        url: producer.url
-      }));
+  const handoffCoverageComplete = Array.isArray(envelope) ? true : envelope?.handoffCoverageComplete !== false;
+  if (!handoffCoverageComplete) {
+    findings.push(finding('critical-handoff-coverage-partial', 'watch', 'repository', 'dedicated critical-workflow evidence could not be fetched completely', {
+      createdAt: nowIso
+    }));
+  } else {
+    const skewMs = Number(t.handoffTimestampSkewSeconds || 90) * 1000;
+    for (const edge of policy.criticalHandoffs || []) {
+      const producerRuns = handoffRuns.filter(r => r.workflowId === edge.producer && r.status === 'completed' && r.conclusion === 'success' && r.updatedMs !== null);
+      if (!producerRuns.length) continue;
+      const producer = producerRuns[0];
+      const grace = Number(edge.graceMinutes ?? t.handoffGraceMinutes ?? 20);
+      if (nowMs - producer.updatedMs < grace * 60000) continue;
+      const searchWindow = Number(edge.searchWindowMinutes ?? t.handoffSearchWindowMinutes ?? 60) * 60000;
+      const consumer = handoffRuns.find(r =>
+        r.workflowId === edge.consumer &&
+        r.createdMs !== null &&
+        r.createdMs >= producer.updatedMs - skewMs &&
+        r.createdMs <= producer.updatedMs + searchWindow
+      );
+      if (!consumer) {
+        findings.push(finding('critical-handoff-miss', 'red', edge.producer, `${edge.producer} succeeded but ${edge.consumer} did not materialize within ${Math.round(searchWindow / 60000)}m`, {
+          producer: edge.producer,
+          consumer: edge.consumer,
+          producerRunId: producer.id,
+          createdAt: producer.createdAt,
+          completedAt: producer.updatedAt,
+          url: producer.url
+        }));
+      }
     }
   }
 
@@ -214,6 +226,8 @@ export function analyzeRuntime(envelope, policy, nowIso = new Date().toISOString
       analyzedRunCount: runs.length,
       pageCount: Number(envelope?.pageCount || 0),
       truncated,
+      handoffCoverageComplete,
+      handoffEvidenceRunCount: handoffRuns.length,
       epistemicStatus: truncated ? 'PARTIAL_API_WINDOW' : 'BOUNDED_COMPLETE_WINDOW'
     },
     summary: {
