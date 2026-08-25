@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'intelligence/economic-graph/aerodrome-veaero-candidate.mjs'
+      - 'intelligence/economic-graph/vlcvx-votium-candidate.mjs'
       - 'intelligence/economic-graph/economic-graph-canonical-runner.mjs'
       - '.github/workflows/verify-aerodrome-economic-candidate.yml'
   workflow_dispatch:
@@ -27,15 +28,17 @@ jobs:
           node-version: '22'
           package-manager-cache: false
 
-      - name: Build canonical Graph with Aerodrome shadow candidate
+      - name: Build canonical Graph with shadow candidates
         shell: bash
         run: |
           set -euo pipefail
           test -s intelligence/economic-graph/aerodrome-veaero-candidate.mjs
+          test -s intelligence/economic-graph/vlcvx-votium-candidate.mjs
           test -s intelligence/economic-graph/economic-graph-canonical-runner.mjs
           test -s companies/productivity-data.json
           test -s companies/rewards-data.json
           node --check intelligence/economic-graph/aerodrome-veaero-candidate.mjs
+          node --check intelligence/economic-graph/vlcvx-votium-candidate.mjs
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           TMP="$(mktemp)"
           ECONOMIC_GRAPH_FILE="$TMP" node intelligence/economic-graph/economic-graph-canonical-runner.mjs
@@ -51,8 +54,9 @@ jobs:
           if(x.version!=='0.1-economic-graph'||x.engineVersion!=='0.2-defitea-fxn-curve-multi-cohort')throw new Error('Canonical Economic Graph compatibility changed');
           if(x.coverage?.status!=='partial-two-cohort'||Number(x.coverage?.cohortCount)!==2)throw new Error('Canonical two-cohort authority changed during shadow admission');
           if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none')throw new Error('Economic Graph authority regression');
-          if(x.candidateLayer?.version!=='0.1-aerodrome-veaero-shadow-admission'||x.candidateLayer?.status!=='shadow-admission-active')throw new Error('Aerodrome candidate layer missing');
-          if(Number(x.candidateLayer?.candidateCount)!==1||x.candidateLayer?.canonicalCohortCountUnchanged!==true||x.candidateLayer?.promotionAuthority!=='none')throw new Error('Aerodrome shadow admission boundary missing');
+          if(x.candidateLayer?.version!=='0.2-multi-candidate-shadow-admission'||x.candidateLayer?.status!=='shadow-admission-active')throw new Error('Multi-candidate shadow layer missing');
+          if(Number(x.candidateLayer?.candidateCount)!==2||!x.candidateLayer?.candidateIds?.includes(id)||!x.candidateLayer?.candidateIds?.includes('defitea-convex-vlcvx-votium'))throw new Error('Shadow candidate registry mismatch');
+          if(x.candidateLayer?.canonicalCohortCountUnchanged!==true||x.candidateLayer?.promotionAuthority!=='none')throw new Error('Shadow admission boundary missing');
           if(!c||c.status!=='shadow-measured-not-promoted'||c.cohortId!==id)throw new Error('Aerodrome candidate cohort missing');
           if(c.identity?.companyRegistry!=='004'||c.identity?.protocol!=='Aerodrome'||c.identity?.asset!=='AERO')throw new Error('Aerodrome candidate identity drift');
           if(c.attribution?.formulaProven!==true||c.attribution?.actualPositionContextMeasured!==true||c.attribution?.primaryDriver!==null||c.attribution?.promotionAuthority!=='none')throw new Error('Aerodrome candidate attribution boundary invalid');
