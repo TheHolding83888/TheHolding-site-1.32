@@ -181,7 +181,10 @@ function main() {
   });
 }
 
-try { main(); } catch (error) {
+try {
+  main();
+  await import('./aerodrome-vote-epoch-history-overlay.mjs');
+} catch (error) {
   console.error(error?.stack || error);
   process.exit(1);
 }
