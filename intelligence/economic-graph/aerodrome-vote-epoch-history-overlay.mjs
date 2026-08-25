@@ -2,8 +2,8 @@
 /**
  * THE HOLDING · Aerodrome Managed Vote Epoch History Overlay v0.1
  *
- * Reconstructs managed-veNFT allocation state from canonical Aerodrome Voter
- * Voted/Abstained events. Additive, read-only and shadow-only: vote allocation
+ * Reconstructs managed-veNFT allocation state from official Aerodrome Voter
+ * Voted/Abstained events. Additive, read-only and shadow-only: allocation
  * changes are not treated as causes of APR, reward inflows or company outcomes.
  */
 import fs from 'node:fs';
@@ -15,9 +15,8 @@ const WEEK = 7 * 24 * 60 * 60;
 const VOTER = '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5';
 const SOURCE_REPO = 'aerodrome-finance/contracts';
 const SOURCE_COMMIT = '1ba30815bba620f7e9faa34769ffd00c214c9b82';
-// Base targets ~2s blocks. 1.6m blocks is a conservative >4-week query
-// horizon without requiring historical eth_getBlockByNumber archive access.
-// Exact epoch boundaries come from timestamps emitted by Voter events.
+// Base targets ~2s blocks. This conservative range covers the four-week
+// pre-history plus the partial current epoch without historical block reads.
 const LOOKBACK_BLOCKS = 1_600_000;
 const EVENT_IFACE = new Interface([
   'event Voted(address indexed voter,address indexed pool,uint256 indexed tokenId,uint256 weight,uint256 totalWeight,uint256 timestamp)',
@@ -39,37 +38,30 @@ function bigPct(part, whole, digits = 8) {
   return Number((p * 100n * scale) / w) / Number(scale);
 }
 function rpcCandidates() {
+  // Historical logs need a different capability profile than current-state
+  // Pulse reads. Prefer Base's public archive-capable endpoint, then LlamaRPC;
+  // PublicNode remains a last fallback because its anonymous endpoint may
+  // require a personal token for historical requests.
   return [...new Set([
+    process.env.BASE_ARCHIVE_RPC_URL,
     process.env.BASE_RPC_URL,
     process.env.BASE_RPC_URL_2,
-    'https://base-rpc.publicnode.com',
-    'https://mainnet.base.org'
+    'https://mainnet.base.org',
+    'https://base.llamarpc.com',
+    'https://base-rpc.publicnode.com'
   ].filter(Boolean))];
 }
 function rpcLabel(url) {
-  if (url === process.env.BASE_RPC_URL || url === process.env.BASE_RPC_URL_2) return 'configured-secret';
+  if ([process.env.BASE_ARCHIVE_RPC_URL, process.env.BASE_RPC_URL, process.env.BASE_RPC_URL_2].includes(url)) return 'configured-secret';
   try { return new URL(url).hostname; } catch { return 'configured'; }
 }
-async function providerWithFallback() {
-  let lastError = null;
-  for (const url of rpcCandidates()) {
-    const provider = new JsonRpcProvider(url, 8453, { staticNetwork: true });
-    try {
-      await provider.getBlockNumber();
-      return { provider, endpointClass: rpcLabel(url) };
-    } catch (error) {
-      lastError = error;
-      try { provider.destroy(); } catch {}
-    }
-  }
-  throw lastError || new Error('No working Base RPC');
-}
+function makeProvider(url) { return new JsonRpcProvider(url, 8453, { staticNetwork: true }); }
 
 async function getLogsChunked(provider, filter, fromBlock, toBlock) {
   const out = [];
   let cursor = Number(fromBlock);
   const finalBlock = Number(toBlock);
-  let chunkSize = 100_000;
+  let chunkSize = 50_000;
   const minChunk = 2_500;
   while (cursor <= finalBlock) {
     const end = Math.min(finalBlock, cursor + chunkSize - 1);
@@ -77,13 +69,37 @@ async function getLogsChunked(provider, filter, fromBlock, toBlock) {
       const logs = await provider.getLogs({ ...filter, fromBlock: cursor, toBlock: end });
       out.push(...logs);
       cursor = end + 1;
-      if (chunkSize < 100_000) chunkSize = Math.min(100_000, chunkSize * 2);
+      if (chunkSize < 50_000) chunkSize = Math.min(50_000, chunkSize * 2);
     } catch (error) {
       if (chunkSize <= minChunk) throw error;
       chunkSize = Math.max(minChunk, Math.floor(chunkSize / 2));
     }
   }
   return out;
+}
+
+async function historicalLogsWithFallback(filter, fromBlock, toBlock) {
+  let lastError = null;
+  const failures = [];
+  for (const url of rpcCandidates()) {
+    const provider = makeProvider(url);
+    try {
+      const head = await provider.getBlockNumber();
+      if (head < toBlock) throw new Error(`RPC head ${head} behind Pulse block ${toBlock}`);
+      // Capability probe: force a tiny historical eth_getLogs before the long
+      // scan so an endpoint that requires archive credentials fails quickly.
+      const probeEnd = Math.min(toBlock, fromBlock + 9);
+      await provider.getLogs({ ...filter, fromBlock, toBlock: probeEnd });
+      const logs = await getLogsChunked(provider, filter, fromBlock, toBlock);
+      return { provider, logs, endpointClass: rpcLabel(url), failedEndpointClasses: failures };
+    } catch (error) {
+      lastError = error;
+      failures.push({ endpointClass: rpcLabel(url), error: String(error?.shortMessage || error?.message || error).slice(0, 240) });
+      try { provider.destroy(); } catch {}
+    }
+  }
+  const detail = failures.map(x => `${x.endpointClass}: ${x.error}`).join(' | ');
+  throw new Error(`No Base RPC with historical Voter log capability. ${detail}`, { cause: lastError });
 }
 
 function decodeLog(log) {
@@ -118,28 +134,23 @@ function groupTransactions(events) {
   }
   return groups;
 }
-
 function pairLookup(pulse) {
   return new Map((pulse?.latest?.pools || []).map(row => [String(row.pool).toLowerCase(), row.pair || null]));
 }
-
 function allocationSnapshot(state, pairMap) {
   const rows = [...state.entries()].map(([pool, weight]) => ({ pool, weight: BigInt(weight) }));
   const total = rows.reduce((sum, row) => sum + row.weight, 0n);
-  if (total === 0n) {
-    return { usedWeightRaw: '0', poolCount: 0, allocationHhi: null, topAllocationPct: null, allocations: [] };
-  }
+  if (total === 0n) return { usedWeightRaw: '0', poolCount: 0, allocationHhi: null, topAllocationPct: null, allocations: [] };
   const allocations = rows.map(row => ({
     pool: row.pool,
     pair: pairMap.get(row.pool.toLowerCase()) ?? null,
     weightRaw: row.weight.toString(),
     allocationPct: bigPct(row.weight, total, 8)
   })).sort((a, b) => Number(b.allocationPct || 0) - Number(a.allocationPct || 0) || a.pool.localeCompare(b.pool));
-  const hhi = allocations.reduce((sum, row) => sum + Number(row.allocationPct || 0) ** 2, 0);
   return {
     usedWeightRaw: total.toString(),
     poolCount: allocations.length,
-    allocationHhi: round(hhi, 8),
+    allocationHhi: round(allocations.reduce((sum, row) => sum + Number(row.allocationPct || 0) ** 2, 0), 8),
     topAllocationPct: allocations[0]?.allocationPct ?? null,
     allocations
   };
@@ -171,8 +182,6 @@ function compareCompleted(prior, previous) {
   });
   const absoluteDelta = changes.reduce((sum, row) => sum + Math.abs(Number(row.deltaPctPoints || 0)), 0);
   const retained = changes.reduce((sum, row) => sum + Math.min(Number(row.priorCompletedAllocationPct || 0), Number(row.previousCompletedAllocationPct || 0)), 0);
-  const newAllocation = changes.filter(row => row.state === 'newly-voted').reduce((sum, row) => sum + Number(row.previousCompletedAllocationPct || 0), 0);
-  const removedAllocation = changes.filter(row => row.state === 'no-longer-voted').reduce((sum, row) => sum + Number(row.priorCompletedAllocationPct || 0), 0);
   return {
     comparable: true,
     comparisonClass: 'event-reconstructed-completed-epoch-end-allocation-vs-completed-epoch-end-allocation',
@@ -183,8 +192,8 @@ function compareCompleted(prior, previous) {
     poolCountDelta: previous.poolCount - prior.poolCount,
     reallocatedPct: round(absoluteDelta / 2, 8),
     retainedAllocationPct: round(retained, 8),
-    newlyVotedAllocationPct: round(newAllocation, 8),
-    removedAllocationPct: round(removedAllocation, 8),
+    newlyVotedAllocationPct: round(changes.filter(x => x.state === 'newly-voted').reduce((s, x) => s + Number(x.previousCompletedAllocationPct || 0), 0), 8),
+    removedAllocationPct: round(changes.filter(x => x.state === 'no-longer-voted').reduce((s, x) => s + Number(x.priorCompletedAllocationPct || 0), 0), 8),
     allocationHhiDelta: prior.allocationHhi === null || previous.allocationHhi === null ? null : round(previous.allocationHhi - prior.allocationHhi, 8),
     changedPoolCount: changes.filter(row => Math.abs(Number(row.deltaPctPoints || 0)) > 0.00000001).length,
     topAbsoluteAllocationShifts: [...changes].sort((x, y) => Math.abs(Number(y.deltaPctPoints || 0)) - Math.abs(Number(x.deltaPctPoints || 0))).slice(0, 15),
@@ -195,62 +204,37 @@ function compareCompleted(prior, previous) {
 function proveCurrentParity(pulse, current) {
   if (!current?.stateKnownAtEnd) throw new Error('Current managed vote state was not reconstructed from event evidence');
   const livePools = new Map((pulse?.latest?.pools || []).map(row => [String(row.pool).toLowerCase(), row]));
-  if (current.poolCount !== Number(pulse?.latest?.voting?.votedPoolCount)) {
-    throw new Error(`Event-reconstructed current pool count ${current.poolCount} != Pulse ${pulse?.latest?.voting?.votedPoolCount}`);
-  }
-  if (BigInt(current.usedWeightRaw) !== BigInt(pulse?.latest?.voting?.usedVotingWeightRaw || 0)) {
-    throw new Error('Event-reconstructed current used weight != same-block Voter state');
-  }
+  if (current.poolCount !== Number(pulse?.latest?.voting?.votedPoolCount)) throw new Error('Event-reconstructed current pool count != same-block Pulse state');
+  if (BigInt(current.usedWeightRaw) !== BigInt(pulse?.latest?.voting?.usedVotingWeightRaw || 0)) throw new Error('Event-reconstructed current used weight != same-block Voter state');
   for (const row of current.allocations || []) {
     const live = livePools.get(row.pool.toLowerCase());
-    if (!live || BigInt(live.managedVoteWeightRaw || 0) !== BigInt(row.weightRaw)) {
-      throw new Error(`Event-reconstructed current pool weight mismatch for ${row.pool}`);
-    }
+    if (!live || BigInt(live.managedVoteWeightRaw || 0) !== BigInt(row.weightRaw)) throw new Error(`Event-reconstructed current pool weight mismatch for ${row.pool}`);
   }
-  return {
-    status: 'exact-current-state-parity',
-    poolCount: current.poolCount,
-    usedWeightRaw: current.usedWeightRaw,
-    allPoolWeightsMatch: true
-  };
+  return { status: 'exact-current-state-parity', poolCount: current.poolCount, usedWeightRaw: current.usedWeightRaw, allPoolWeightsMatch: true };
 }
 
 async function main() {
   const pulse = readJson(PULSE_FILE);
-  if (pulse.version !== '0.1-aerodrome-managed-strategy-pulse' || pulse.status !== 'shadow-measured-not-promoted') {
-    throw new Error('Aerodrome Managed Strategy Pulse v0.1 shadow artifact required');
-  }
-  if (pulse.authority?.executionAuthority !== 'none' || pulse.authority?.promotionAuthority !== 'none') {
-    throw new Error('Vote history overlay refuses expanded Pulse authority');
-  }
-  if (pulse.marketBreath?.version !== '0.1-aerodrome-completed-epoch-directional-breadth') {
-    throw new Error('Aerodrome Market Breath descriptor required before vote epoch history');
-  }
+  if (pulse.version !== '0.1-aerodrome-managed-strategy-pulse' || pulse.status !== 'shadow-measured-not-promoted') throw new Error('Aerodrome Managed Strategy Pulse v0.1 shadow artifact required');
+  if (pulse.authority?.executionAuthority !== 'none' || pulse.authority?.promotionAuthority !== 'none') throw new Error('Vote history overlay refuses expanded Pulse authority');
+  if (pulse.marketBreath?.version !== '0.1-aerodrome-completed-epoch-directional-breadth') throw new Error('Aerodrome Market Breath descriptor required before vote epoch history');
+
   const blockTag = Number(pulse?.latest?.blockNumber);
   const blockHash = pulse?.latest?.blockHash;
   const managedTokenId = BigInt(pulse?.latest?.identity?.managedTokenId || 0);
   const activePeriodSec = Math.floor(Date.parse(pulse?.latest?.protocolEpoch?.activePeriod || '') / 1000);
-  if (!Number.isInteger(blockTag) || blockTag <= 0 || !blockHash || managedTokenId <= 0n || !Number.isFinite(activePeriodSec)) {
-    throw new Error('Pulse block / managed token / active period unavailable');
-  }
+  if (!Number.isInteger(blockTag) || blockTag <= 0 || !blockHash || managedTokenId <= 0n || !Number.isFinite(activePeriodSec)) throw new Error('Pulse block / managed token / active period unavailable');
 
-  const { provider, endpointClass } = await providerWithFallback();
+  const fromBlock = Math.max(1, blockTag - LOOKBACK_BLOCKS);
+  const tokenTopic = zeroPadValue(toBeHex(managedTokenId), 32);
+  const filter = { address: VOTER, topics: [[VOTED_TOPIC, ABSTAINED_TOPIC], null, null, tokenTopic] };
+  const { provider, logs, endpointClass, failedEndpointClasses } = await historicalLogsWithFallback(filter, fromBlock, blockTag);
   try {
-    const currentBlockNumber = await provider.getBlockNumber();
-    if (currentBlockNumber < blockTag) throw new Error('RPC head is behind Pulse block');
-    const fromBlock = Math.max(1, blockTag - LOOKBACK_BLOCKS);
-    const requiredCoverageStart = activePeriodSec - 4 * WEEK;
-    const tokenTopic = zeroPadValue(toBeHex(managedTokenId), 32);
-    const logs = await getLogsChunked(provider, {
-      address: VOTER,
-      topics: [[VOTED_TOPIC, ABSTAINED_TOPIC], null, null, tokenTopic]
-    }, fromBlock, blockTag);
     const events = logs.map(decodeLog).filter(Boolean)
       .sort((a, b) => a.blockNumber - b.blockNumber || a.transactionIndex - b.transactionIndex || a.logIndex - b.logIndex);
     if (!events.length) throw new Error('No Aerodrome Voter events found for managed tokenId in conservative lookback');
     const txGroups = groupTransactions(events);
     const pairs = pairLookup(pulse);
-
     const targets = [
       { key: 'priorCompleted', start: activePeriodSec - 2 * WEEK, end: activePeriodSec - WEEK, status: 'completed' },
       { key: 'previousCompleted', start: activePeriodSec - WEEK, end: activePeriodSec, status: 'completed' },
@@ -268,8 +252,7 @@ async function main() {
           else state.set(event.pool.toLowerCase(), BigInt(event.weightRaw));
         }
         // Official Voter._vote performs a full _reset before emitting the
-        // replacement Voted set. A reset-only transaction emits the complete
-        // Abstained set. Therefore post-transaction allocation is authoritative.
+        // replacement Voted set; reset-only emits the complete Abstained set.
         stateKnown = true;
         lastMutation = group;
       }
@@ -294,9 +277,7 @@ async function main() {
     const previous = snapshots.find(x => x.key === 'previousCompleted');
     const current = snapshots.find(x => x.key === 'currentToDate');
     const completedComparison = compareCompleted(prior, previous);
-    if (!completedComparison.comparable) {
-      throw new Error(`Two completed Aerodrome vote epochs are not reconstructably comparable: ${completedComparison.reason}`);
-    }
+    if (!completedComparison.comparable) throw new Error(`Two completed Aerodrome vote epochs are not reconstructably comparable: ${completedComparison.reason}`);
     const currentParity = proveCurrentParity(pulse, current);
 
     pulse.voteEpochHistory = {
@@ -304,8 +285,8 @@ async function main() {
       generatedAt: new Date().toISOString(),
       managedTokenId: managedTokenId.toString(),
       sourceCoverage: {
-        method: 'conservative-recent-block-lookback-no-archive-state-read',
-        minimumRequiredTimestamp: iso(requiredCoverageStart),
+        method: 'capability-selected-historical-event-logs-no-archive-state-read',
+        minimumRequiredTimestamp: iso(activePeriodSec - 4 * WEEK),
         fromBlock,
         lookbackBlocks: LOOKBACK_BLOCKS,
         toBlock: blockTag,
@@ -314,7 +295,8 @@ async function main() {
         transactionCount: txGroups.length,
         firstObservedEventTimestamp: iso(events[0].timestamp),
         lastObservedEventTimestamp: iso(events.at(-1).timestamp),
-        rpcEndpointClass: endpointClass
+        rpcEndpointClass: endpointClass,
+        failedEndpointClasses
       },
       currentStateParity: currentParity,
       snapshots,
@@ -357,30 +339,19 @@ async function main() {
       }
     };
 
-    pulse.semantics = {
-      ...pulse.semantics,
-      managedVoteEpochHistory: true,
-      managedVoteHistoryIsEventReconstructed: true,
-      voteAllocationChangeIsNotCausalAttribution: true
-    };
+    pulse.semantics = { ...pulse.semantics, managedVoteEpochHistory: true, managedVoteHistoryIsEventReconstructed: true, voteAllocationChangeIsNotCausalAttribution: true };
     pulse.nextUnlocks = (pulse.nextUnlocks || []).filter(item => item !== 'historize managed vote allocation across epochs');
-    if (!pulse.nextUnlocks.includes('relate completed-epoch vote allocation changes to fee/incentive inflow lanes without causal over-promotion')) {
-      pulse.nextUnlocks.unshift('relate completed-epoch vote allocation changes to fee/incentive inflow lanes without causal over-promotion');
-    }
+    const next = 'relate completed-epoch vote allocation changes to fee/incentive inflow lanes without causal over-promotion';
+    if (!pulse.nextUnlocks.includes(next)) pulse.nextUnlocks.unshift(next);
 
     fs.writeFileSync(PULSE_FILE, `${JSON.stringify(pulse, null, 2)}\n`);
     console.log('AERODROME MANAGED VOTE EPOCH HISTORY PASS', {
-      managedTokenId: managedTokenId.toString(),
-      events: events.length,
-      transactions: txGroups.length,
-      priorPoolCount: prior.poolCount,
-      previousPoolCount: previous.poolCount,
-      currentPoolCount: current.poolCount,
-      completedComparable: completedComparison.comparable,
-      reallocatedPct: completedComparison.reallocatedPct,
+      managedTokenId: managedTokenId.toString(), events: events.length, transactions: txGroups.length,
+      priorPoolCount: prior.poolCount, previousPoolCount: previous.poolCount, currentPoolCount: current.poolCount,
+      completedComparable: true, reallocatedPct: completedComparison.reallocatedPct,
       retainedAllocationPct: completedComparison.retainedAllocationPct,
       currentEpochMutationCount: current.sourceTransactionCountWithinEpoch,
-      currentParity: currentParity.status,
+      currentParity: currentParity.status, rpcEndpointClass: endpointClass,
       primaryDriver: pulse.voteEpochHistory.epistemic.primaryDriver,
       promotionAuthority: pulse.voteEpochHistory.epistemic.promotionAuthority
     });
@@ -389,9 +360,7 @@ async function main() {
   }
 }
 
-try {
-  await main();
-} catch (error) {
+try { await main(); } catch (error) {
   console.error(error?.stack || error);
   process.exit(1);
 }
