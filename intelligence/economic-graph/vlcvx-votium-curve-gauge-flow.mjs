@@ -42,7 +42,7 @@ function rpcLabel(url){if(url===process.env.ETH_RPC_URL)return'configured-secret
 async function providerWithFallback(scanFromBlock){
   let last=null;
   for(const url of rpcCandidates()){
-    const provider=new JsonRpcProvider(url,1,{staticNetwork:true});
+    const provider=new JsonRpcProvider(url,1,{staticNetwork:true,batchMaxCount:1});
     try{
       const block=await provider.getBlock('latest');
       if(!block)throw new Error('Latest Ethereum block unavailable');
@@ -82,10 +82,15 @@ function requireUpstreams(roundFlow,provenance){
 }
 
 async function readProposal(platform,executor,proposalId,currentBlock,scanFromBlock){
-  const [p,voteTotalRaw,gaugeCountRaw,finalized,submittedCountRaw,submittedWeightRaw,done]=await Promise.all([
-    platform.proposals(proposalId),platform.voteTotals(proposalId),platform.getGaugeCount(proposalId),platform.isFinalized(proposalId),
-    executor.submittedGaugeCount(proposalId),executor.submittedWeight(proposalId),executor.isDone(proposalId)
-  ]);
+  // Deliberately sequential: some public RPCs reject even modest JSON-RPC batches.
+  const p=await platform.proposals(proposalId);
+  const voteTotalRaw=await platform.voteTotals(proposalId);
+  const gaugeCountRaw=await platform.getGaugeCount(proposalId);
+  const finalized=await platform.isFinalized(proposalId);
+  const submittedCountRaw=await executor.submittedGaugeCount(proposalId);
+  const submittedWeightRaw=await executor.submittedWeight(proposalId);
+  const done=await executor.isDone(proposalId);
+
   const gaugeCount=Number(gaugeCountRaw),gauges=[];
   for(let i=0;i<gaugeCount;i++){
     const entry=await platform.getGaugeEntry(proposalId,i);
@@ -183,7 +188,7 @@ async function main(){
       authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,walletAuthority:false,allocationAuthority:false,recommendationAuthority:false,predictionAuthority:false,causalClaimAuthority:'none',promotionAuthority:'none',methodologyMutationAuthority:false},
       sourceBinding:{roundFlowFile:'intelligence/economic-graph/vlcvx-votium-round-flow.json',roundFlowSha256:sha256File(ROUND_FLOW_FILE),votingProvenanceFile:'intelligence/economic-graph/vlcvx-votium-snapshot-proof.json',votingProvenanceSha256:sha256File(PROVENANCE_FILE),companyRegistry:'004',candidateId:'defitea-convex-vlcvx-votium'},
       protocolBridge:{chain:'Ethereum',votium:'0x63942E31E98f1833A234077f47880A66136a2D1e',convexCurveGaugeVoting:CURVE_GAUGE_VOTING,convexCurveGaugeExecutor:CURVE_GAUGE_EXECUTOR,convexSourceRepository:'convex-eth/voting',convexSourceCommit:CONVEX_SOURCE_SHA,mechanicalIdentity:'CurveGaugeExecutor weight = floor(gaugeTotal * 10000 / proposal voteTotal), with the final rounding residual added to the last non-zero gauge once all gauges are submitted.'},
-      observation:{ethereumBlock:currentBlock,ethereumBlockHash:block.hash,observedAt:iso(block.timestamp),rpcEndpointClass:endpointClass,rpcSelectionRule:'latest-state-plus-historical-GaugeVoteExecuted-log-capability',stateReadMode:'latest-persistent-finalized-proposal-state',historicalStateReadsRequired:false,historicalExecutionEvidence:'GaugeVoteExecuted-event-logs'},
+      observation:{ethereumBlock:currentBlock,ethereumBlockHash:block.hash,observedAt:iso(block.timestamp),rpcEndpointClass:endpointClass,rpcSelectionRule:'latest-state-plus-historical-GaugeVoteExecuted-log-capability',rpcBatching:'disabled-for-public-endpoint-compatibility',stateReadMode:'latest-persistent-finalized-proposal-state',historicalStateReadsRequired:false,historicalExecutionEvidence:'GaugeVoteExecuted-event-logs'},
       coverage:{roundCount:rounds.length,completeRoundCount:rounds.filter(r=>r.coverage.complete).length,votiumGaugeCount:rounds.reduce((s,r)=>s+r.coverage.votiumIncentivizedGaugeCount,0),curveExecutedVotiumGaugeCount:rounds.reduce((s,r)=>s+r.coverage.curveExecutedForVotiumGaugeCount,0),complete},
       rounds,
       epistemic:{votiumIncentives:'MEASURED',votiumVotes:'MEASURED',convexToCurveWeightMechanics:'ATTRIBUTED',curveGaugeExecution:'MEASURED',incentiveToVoteRelationship:'CORRELATED-only-not-causal',voteToExecutedCurveWeightRelationship:'ATTRIBUTED-and-execution-confirmed',liquidityVolumeFeesDownstream:'UNKNOWN-not-yet-joined',companyIncomeConnection:'not-attributed-by-this-layer',primaryDriver:null},
