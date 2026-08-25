@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { buildEconomicGraph } from './economic-graph.mjs';
 import { applyAerodromeCandidate } from './aerodrome-veaero-candidate.mjs';
 import { applyVlCvxVotiumCandidate } from './vlcvx-votium-candidate.mjs';
+import { applyVlCvxVotiumDeepEvidence } from './vlcvx-votium-deep-evidence.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -85,7 +86,7 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     productivitySha256:sourceSha256,
     rewardsSha256
   });
-  return applyVlCvxVotiumCandidate({
+  const withVlCvx=applyVlCvxVotiumCandidate({
     state:withAerodrome,
     previousState,
     productivity,
@@ -93,6 +94,7 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     productivitySha256:sourceSha256,
     rewardsSha256
   });
+  return applyVlCvxVotiumDeepEvidence({state:withVlCvx,root:ROOT});
 }
 
 async function main(){
@@ -113,6 +115,7 @@ async function main(){
   const curve=state.cohorts?.['defitea-curve-vecrv']?.latest?.observation;
   const aero=state.candidateCohorts?.['defitea-aerodrome-veaero']?.latest?.observation;
   const vlcvx=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.latest?.observation;
+  const vlcvxDeep=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.deepEconomicEvidence;
   console.log('ECONOMIC GRAPH canonical + shadow candidates PASS',{
     engineVersion:state.engineVersion,
     canonicalCohortCount:state.coverage?.cohortCount,
@@ -129,6 +132,9 @@ async function main(){
     vlCvxVotiumAprPct:vlcvx?.referenceProductivity?.components?.votiumLastCompletedRoundAprPct,
     vlCvxLiveBalance:vlcvx?.companyRoute?.liveVlCvxBalance,
     vlCvxRoute:vlcvx?.companyRoute?.routeId,
+    vlCvxCurveExecutedGaugeRows:vlcvxDeep?.coverage?.curveExecutedVotiumGaugeRows,
+    vlCvxCurrentPoolContexts:vlcvxDeep?.coverage?.currentCurvePoolContextsComplete,
+    vlCvxCausalAuthority:vlcvxDeep?.authority?.causalClaimAuthority,
     promotionAuthority:state.candidateLayer?.promotionAuthority,
     executionAuthority:state.authority?.executionAuthority
   });
