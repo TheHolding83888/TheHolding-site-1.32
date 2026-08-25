@@ -36,16 +36,35 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
-      - name: Static control-plane preflight
+      - name: Static control-plane preflight and canaries
         shell: bash
         run: |
           set -euo pipefail
           test -s intelligence/reliability/workflow-control-plane-policy.json
+          test -s intelligence/reliability/workflow-control-plane-baseline.json
           test -s intelligence/reliability/workflow-control-plane.mjs
           test -s intelligence/reliability/workflow-control-plane-canary.mjs
+          test -s intelligence/reliability/workflow-control-plane-enforce.mjs
+          test -s intelligence/reliability/workflow-control-plane-enforce-canary.mjs
           node --check intelligence/reliability/workflow-control-plane.mjs
           node --check intelligence/reliability/workflow-control-plane-canary.mjs
+          node --check intelligence/reliability/workflow-control-plane-enforce.mjs
+          node --check intelligence/reliability/workflow-control-plane-enforce-canary.mjs
           node intelligence/reliability/workflow-control-plane-canary.mjs
+          node intelligence/reliability/workflow-control-plane-enforce-canary.mjs
+
+      - name: Verify frozen measured baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git hash-object intelligence/reliability/workflow-control-plane-baseline.json)"
+          expected="4efd7dd509111683fdf24430d4e9f4cb403673a1"
+          if [ "$actual" != "$expected" ]; then
+            echo "Workflow Control Plane baseline changed: expected=$expected actual=$actual" >&2
+            echo "Baseline expansion requires an explicit bounded maintenance procedure; ordinary workflow changes may only reduce debt." >&2
+            exit 1
+          fi
+          echo "Frozen Workflow Control Plane baseline PASS: $actual"
 
       - name: Build read-only workflow topology
         shell: bash
@@ -70,12 +89,35 @@ jobs:
           }
           console.log('=== GRAPH EDGES ===');
           for (const e of r.graph.edges) console.log(`${e.type}\t${e.from} -> ${e.to}`);
-          console.log('=== FINDINGS ===');
+          console.log('=== OBSERVED LEGACY DEBT ===');
           for (const f of r.findings) console.log(`${f.severity}\t${f.id}\t${f.workflow}\t${f.detail}`);
           if (!r.summary.workflowCount) throw new Error('workflow inventory unexpectedly empty');
           NODE
 
-      - name: Verify observation-only authority boundary
+      - name: Enforce no-new-debt gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/reliability/workflow-control-plane-enforce.mjs --json > /tmp/workflow-control-plane-enforcement.json
+          node - <<'NODE'
+          const r = require('/tmp/workflow-control-plane-enforcement.json');
+          console.log('=== NO-NEW-DEBT ENFORCEMENT ===');
+          console.log(JSON.stringify({
+            baseline:r.baseline,
+            baselineIntegrity:r.baselineIntegrity,
+            noNewDebt:r.noNewDebt,
+            violationCount:r.violationCount,
+            workflowCount:r.summary.workflowCount,
+            repositoryWriterCount:r.summary.repositoryWriterCount,
+            workflowControlCount:r.summary.workflowControlCount,
+            duplicateCandidateWriterPathCount:r.summary.duplicateCandidateWriterPathCount,
+            unresolvedEdgeCount:r.summary.unresolvedEdgeCount,
+            cycleCount:r.summary.cycleCount
+          }, null, 2));
+          if (r.noNewDebt !== 'PASS' || r.baselineIntegrity !== 'PASS') throw new Error('no-new-debt enforcement did not pass');
+          NODE
+
+      - name: Verify read-only authority boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -94,6 +136,7 @@ jobs:
           for (const [k, v] of Object.entries(expected)) {
             if (a[k] !== v) throw new Error(`authority expansion: ${k}`);
           }
-          console.log('Workflow Control Plane authority boundary PASS');
+          if (policy.mode !== 'no-new-debt') throw new Error(`unexpected policy mode: ${policy.mode}`);
+          console.log('Workflow Control Plane read-only authority boundary PASS');
           NODE
           git diff --check
