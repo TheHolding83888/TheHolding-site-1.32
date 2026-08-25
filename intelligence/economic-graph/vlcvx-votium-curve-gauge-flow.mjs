@@ -37,16 +37,21 @@ function iso(sec){return new Date(Number(sec)*1000).toISOString();}
 function round(v,d=8){return Number.isFinite(Number(v))?Number(Number(v).toFixed(d)):null;}
 function pct(a,b,d=6){return b?round(Number(a)/Number(b)*100,d):null;}
 function fail(message){throw new Error(message);}
-function rpcCandidates(){return [...new Set([process.env.ETH_RPC_URL,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com'].filter(Boolean))];}
+function rpcCandidates(){return [...new Set([process.env.ETH_RPC_URL,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com','https://eth.drpc.org','https://1rpc.io/eth'].filter(Boolean))];}
 function rpcLabel(url){if(url===process.env.ETH_RPC_URL)return'configured-secret';try{return new URL(url).hostname;}catch{return'configured';}}
-async function providerWithFallback(){
+async function providerWithFallback(scanFromBlock){
   let last=null;
   for(const url of rpcCandidates()){
     const provider=new JsonRpcProvider(url,1,{staticNetwork:true});
-    try{const block=await provider.getBlock('latest');if(block)return{provider,endpointClass:rpcLabel(url),block};}
-    catch(e){last=e;try{provider.destroy();}catch{}}
+    try{
+      const block=await provider.getBlock('latest');
+      if(!block)throw new Error('Latest Ethereum block unavailable');
+      const probeTo=Math.min(Number(block.number),scanFromBlock+1);
+      await provider.getLogs({address:CURVE_GAUGE_EXECUTOR,fromBlock:scanFromBlock,toBlock:probeTo});
+      return{provider,endpointClass:rpcLabel(url),block};
+    }catch(e){last=e;try{provider.destroy();}catch{}}
   }
-  throw last||new Error('No working Ethereum RPC');
+  throw last||new Error('No Ethereum RPC with historical-log capability');
 }
 
 function eventScanStartBlock(provenance){
@@ -77,8 +82,6 @@ function requireUpstreams(roundFlow,provenance){
 }
 
 async function readProposal(platform,executor,proposalId,currentBlock,scanFromBlock){
-  // Finalized proposal/execution state is persistent, so latest-state eth_call is sufficient.
-  // Historical evidence itself is independently reconstructed from GaugeVoteExecuted logs.
   const [p,voteTotalRaw,gaugeCountRaw,finalized,submittedCountRaw,submittedWeightRaw,done]=await Promise.all([
     platform.proposals(proposalId),platform.voteTotals(proposalId),platform.getGaugeCount(proposalId),platform.isFinalized(proposalId),
     executor.submittedGaugeCount(proposalId),executor.submittedWeight(proposalId),executor.isDone(proposalId)
@@ -161,7 +164,7 @@ async function main(){
   const postMigration=provenance.rounds.filter(r=>r.regime==='convex-onchain'&&r.status==='proven');
   if(postMigration.length<2)fail('Need at least two proven post-migration Votium rounds');
   const scanFromBlock=eventScanStartBlock(provenance);
-  const {provider,endpointClass,block}=await providerWithFallback();
+  const {provider,endpointClass,block}=await providerWithFallback(scanFromBlock);
   try{
     const currentBlock=Number(block.number);
     const platform=new Contract(CURVE_GAUGE_VOTING,PLATFORM_ABI,provider),executor=new Contract(CURVE_GAUGE_EXECUTOR,EXECUTOR_ABI,provider);
@@ -180,14 +183,14 @@ async function main(){
       authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,walletAuthority:false,allocationAuthority:false,recommendationAuthority:false,predictionAuthority:false,causalClaimAuthority:'none',promotionAuthority:'none',methodologyMutationAuthority:false},
       sourceBinding:{roundFlowFile:'intelligence/economic-graph/vlcvx-votium-round-flow.json',roundFlowSha256:sha256File(ROUND_FLOW_FILE),votingProvenanceFile:'intelligence/economic-graph/vlcvx-votium-snapshot-proof.json',votingProvenanceSha256:sha256File(PROVENANCE_FILE),companyRegistry:'004',candidateId:'defitea-convex-vlcvx-votium'},
       protocolBridge:{chain:'Ethereum',votium:'0x63942E31E98f1833A234077f47880A66136a2D1e',convexCurveGaugeVoting:CURVE_GAUGE_VOTING,convexCurveGaugeExecutor:CURVE_GAUGE_EXECUTOR,convexSourceRepository:'convex-eth/voting',convexSourceCommit:CONVEX_SOURCE_SHA,mechanicalIdentity:'CurveGaugeExecutor weight = floor(gaugeTotal * 10000 / proposal voteTotal), with the final rounding residual added to the last non-zero gauge once all gauges are submitted.'},
-      observation:{ethereumBlock:currentBlock,ethereumBlockHash:block.hash,observedAt:iso(block.timestamp),rpcEndpointClass:endpointClass,stateReadMode:'latest-persistent-finalized-proposal-state',historicalStateReadsRequired:false,historicalExecutionEvidence:'GaugeVoteExecuted-event-logs'},
+      observation:{ethereumBlock:currentBlock,ethereumBlockHash:block.hash,observedAt:iso(block.timestamp),rpcEndpointClass:endpointClass,rpcSelectionRule:'latest-state-plus-historical-GaugeVoteExecuted-log-capability',stateReadMode:'latest-persistent-finalized-proposal-state',historicalStateReadsRequired:false,historicalExecutionEvidence:'GaugeVoteExecuted-event-logs'},
       coverage:{roundCount:rounds.length,completeRoundCount:rounds.filter(r=>r.coverage.complete).length,votiumGaugeCount:rounds.reduce((s,r)=>s+r.coverage.votiumIncentivizedGaugeCount,0),curveExecutedVotiumGaugeCount:rounds.reduce((s,r)=>s+r.coverage.curveExecutedForVotiumGaugeCount,0),complete},
       rounds,
       epistemic:{votiumIncentives:'MEASURED',votiumVotes:'MEASURED',convexToCurveWeightMechanics:'ATTRIBUTED',curveGaugeExecution:'MEASURED',incentiveToVoteRelationship:'CORRELATED-only-not-causal',voteToExecutedCurveWeightRelationship:'ATTRIBUTED-and-execution-confirmed',liquidityVolumeFeesDownstream:'UNKNOWN-not-yet-joined',companyIncomeConnection:'not-attributed-by-this-layer',primaryDriver:null},
       semantics:{unknownIsNotZero:true,incentiveAndVoteCoexistenceIsNotCausation:true,executedGaugeWeightIsNotPoolRevenue:true,protocolFlowIsNotRealisedCompanyIncome:true,correlationMustNotBePromotedToAttribution:true}
     };
     fs.writeFileSync(OUTPUT_FILE,JSON.stringify(state,null,2)+'\n');
-    console.log('VLCVX VOTIUM CURVE GAUGE FLOW PASS',{generatedAt:state.generatedAt,status:state.status,block:currentBlock,rounds:rounds.map(r=>({roundId:r.roundId,proposalId:r.proposalId,incentives:r.incentiveCount,votiumGauges:r.coverage.votiumIncentivizedGaugeCount,curveExecuted:r.coverage.curveExecutedForVotiumGaugeCount,executorDone:r.curveExecutor.isDone,submittedWeightBps:r.curveExecutor.submittedWeightBps,rounding:r.curveExecutor.roundingProof})),coverage:state.coverage,executionAuthority:state.authority.executionAuthority});
+    console.log('VLCVX VOTIUM CURVE GAUGE FLOW PASS',{generatedAt:state.generatedAt,status:state.status,block:currentBlock,rpcEndpointClass:endpointClass,rounds:rounds.map(r=>({roundId:r.roundId,proposalId:r.proposalId,incentives:r.incentiveCount,votiumGauges:r.coverage.votiumIncentivizedGaugeCount,curveExecuted:r.coverage.curveExecutedForVotiumGaugeCount,executorDone:r.curveExecutor.isDone,submittedWeightBps:r.curveExecutor.submittedWeightBps,rounding:r.curveExecutor.roundingProof})),coverage:state.coverage,executionAuthority:state.authority.executionAuthority});
   }finally{try{provider.destroy();}catch{}}
 }
 main().catch(error=>{console.error(error);process.exit(1);});
