@@ -56,9 +56,17 @@ jobs:
           const r = require('/tmp/workflow-control-plane.json');
           console.log('=== WORKFLOW CONTROL PLANE SUMMARY ===');
           console.log(JSON.stringify(r.summary, null, 2));
-          console.log('=== WRITE-CAPABLE WORKFLOWS ===');
-          for (const w of r.workflows.filter(x => x.writeCapable)) {
-            console.log(`${w.id}\tconcurrency=${w.hasConcurrency}\tcontentsWrite=${w.contentsWrite}\tactionsWrite=${w.actionsWrite}\tsignals=${w.writeSignals.join(',')}\tcandidates=${w.candidateWriterPaths.join(',') || '-'}`);
+          console.log('=== REPOSITORY WRITERS ===');
+          for (const w of r.workflows.filter(x => x.repositoryWriterCapable)) {
+            console.log(`${w.id}\tconcurrency=${w.hasConcurrency}\tcontentsWrite=${w.contentsWrite}\tsignals=${w.writeSignals.join(',')}\tcandidates=${w.candidateWriterPaths.join(',') || '-'}`);
+          }
+          console.log('=== WORKFLOW CONTROL ACTORS ===');
+          for (const w of r.workflows.filter(x => x.workflowControlCapable)) {
+            console.log(`${w.id}\tconcurrency=${w.hasConcurrency}\tactionsWrite=${w.actionsWrite}\tdispatchTargets=${w.dispatchTargets.join(',') || '-'}\tsignals=${w.writeSignals.join(',')}`);
+          }
+          console.log('=== OTHER WRITE PERMISSIONS ===');
+          for (const w of r.workflows.filter(x => x.otherWritePermission)) {
+            console.log(`${w.id}\tpermissions=${w.otherWritePermissions.join(',')}`);
           }
           console.log('=== GRAPH EDGES ===');
           for (const e of r.graph.edges) console.log(`${e.type}\t${e.from} -> ${e.to}`);
