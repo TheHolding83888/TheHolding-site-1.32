@@ -96,6 +96,9 @@ function main() {
   if (e.comparisonPolicy?.completedEpochsComparable !== true || e.comparisonPolicy?.currentToDateVsCompletedComparable !== false) {
     throw new Error('Completed-epoch comparability contract missing');
   }
+  if (e.epistemic?.contractWideInflowsAreNotCompanyEarnedShare !== true || e.epistemic?.primaryDriver !== null || e.epistemic?.promotionAuthority !== 'none') {
+    throw new Error('Market Breath refuses weakened upstream epistemic boundary');
+  }
   const previous = e.epochs?.find(x => x.key === 'previousCompleted');
   const prior = e.epochs?.find(x => x.key === 'priorCompleted');
   if (!previous || !prior || previous.status !== 'completed' || prior.status !== 'completed') {
