@@ -21,30 +21,40 @@ if(x.sourceBinding?.candidateId!=='defitea-convex-vlcvx-votium'||x.sourceBinding
 if(String(x.protocolBridge?.convexCurveGaugeVoting||'').toLowerCase()!=='0x64d9b5ac386b70af9edcd20a58ce9262d2eac278')fail('Convex GaugeVotePlatform drift');
 if(String(x.protocolBridge?.convexCurveGaugeExecutor||'').toLowerCase()!=='0x399382e82d9b6362ccabd1f3c763bee93e80c9e8')fail('CurveGaugeExecutor drift');
 if(x.protocolBridge?.convexSourceCommit!=='242b592718ff939e0a15e490a7df9730267f0999')fail('Convex voting source pin drift');
+if(!String(x.protocolBridge?.executionEventSemantics||'').includes('GaugeVotePlatform getGaugeCount/getGaugeEntry enumerate gauges with votes'))fail('Curve executor event semantics source proof missing');
 
 if(!Number.isInteger(Number(x.observation?.ethereumBlock))||!x.observation?.ethereumBlockHash)fail('Votium→Curve observation provenance missing');
 if(x.observation?.rpcArchitecture!=='split-current-state-and-historical-log-lanes'||!x.observation?.stateRpcEndpointClass)fail('Votium→Curve split RPC architecture missing');
 if(!Array.isArray(x.observation?.historicalLogRpcEndpointClassesUsed)||x.observation.historicalLogRpcEndpointClassesUsed.length<1)fail('Votium→Curve historical-log RPC provenance missing');
 const scan=x.observation?.historicalLogScan;
 if(!Number.isInteger(Number(scan?.fromBlock))||!Number.isInteger(Number(scan?.toBlock))||Number(scan.toBlock)<Number(scan.fromBlock)||!Number.isInteger(Number(scan?.attempts))||Number(scan.attempts)<1)fail('Votium→Curve historical-log scan provenance invalid');
-if(scan?.completionRule!=='stop only after current isDone/submittedGaugeCount/submittedWeight plus unique event gauge count and event BPS sum prove both target proposals complete')fail('Votium→Curve historical-log completion rule weakened');
+if(scan?.complete!==true)fail('Votium→Curve historical-log reconstruction incomplete');
+if(scan?.completionRule!=='stop only after completed current executor state, every GaugeVotePlatform voted gauge is present in execution events, all event-only gauges have zero BPS, no event gauge is duplicated, and total executed BPS equals 10000 for both target proposals')fail('Votium→Curve historical-log completion rule weakened');
 if(x.observation?.stateReadMode!=='latest-persistent-finalized-proposal-state'||x.observation?.historicalStateReadsRequired!==false||x.observation?.historicalExecutionEvidence!=='GaugeVoteExecuted-event-logs')fail('Votium→Curve archive-free evidence contract missing');
 if(x.coverage?.complete!==true||Number(x.coverage.roundCount)!==2||Number(x.coverage.completeRoundCount)!==2)fail('Votium→Curve round coverage incomplete');
 if(Number(x.coverage.votiumGaugeCount)!==79||Number(x.coverage.curveExecutedVotiumGaugeCount)!==79)fail('Votium→Curve expected post-migration 79/79 gauge coverage missing');
+if(Number(x.coverage.eventOnlyPositiveGaugeCount)!==0)fail('Votium→Curve event-only positive gauge detected');
 if(!Array.isArray(x.rounds)||x.rounds.map(r=>r.roundId).join(',')!=='128,129')fail('Votium→Curve round set mismatch');
 
 for(const r of x.rounds){
   if(r.regime!=='convex-onchain')fail(`Round ${r.roundId} is not proven onchain regime`);
-  if(r.coverage?.complete!==true||Number(r.coverage.curveExecutedForVotiumGaugePct)!==100)fail(`Round ${r.roundId} Votium gauge execution coverage incomplete`);
-  if(r.curveExecutor?.isDone!==true||Number(r.curveExecutor.submittedWeightBps)!==10000)fail(`Round ${r.roundId} Curve executor not complete`);
-  const rounding=r.curveExecutor?.roundingProof;
+  if(r.coverage?.complete!==true||r.coverage?.platformGaugeExecutionComplete!==true||r.coverage?.eventOnlyAllZero!==true||Number(r.coverage.curveExecutedForVotiumGaugePct)!==100)fail(`Round ${r.roundId} Votium/Curve execution coverage incomplete`);
+  const e=r.curveExecutor;
+  if(e?.isDone!==true||Number(e.submittedWeightBps)!==10000||Number(e.submittedGaugeCount)!==Number(e.platformGaugeEventMatchCount))fail(`Round ${r.roundId} Curve executor not complete`);
+  if(Number(e.eventWeightSumBps)!==10000||Number(e.eventOnlyPositiveGaugeCount)!==0||Number(e.eventOnlyGaugeCount)!==Number(e.eventOnlyZeroWeightGaugeCount)||Number(e.duplicateEventGaugeRows)!==0)fail(`Round ${r.roundId} Curve executor event-set semantics not proven`);
+  if(Number(e.uniqueEventGaugeCount)!==Number(e.submittedGaugeCount)+Number(e.eventOnlyGaugeCount))fail(`Round ${r.roundId} Curve executor event partition mismatch`);
+  if(!Array.isArray(e.eventOnlyGaugeProof)||e.eventOnlyGaugeProof.length!==Number(e.eventOnlyGaugeCount))fail(`Round ${r.roundId} event-only gauge proof depth mismatch`);
+  for(const extra of e.eventOnlyGaugeProof){
+    if(!/^0x[0-9a-f]{40}$/i.test(String(extra.gauge||''))||Number(extra.executedWeightBps)!==0||String(extra.gaugeTotalRaw)!=='0'||extra.gaugeTotalIsZero!==true)fail(`Round ${r.roundId} event-only gauge is not live-proven zero`);
+  }
+  const rounding=e?.roundingProof;
   if(rounding?.complete!==true||Number(rounding.mechanicalWeightSumBps)>10000||Number(rounding.residualBps)<0||Number(rounding.executionMinusMechanicalDeltaSumBps)!==Number(rounding.residualBps)||Number(rounding.negativeDeltaCount)!==0||Number(rounding.positiveDeltaCount)>1)fail(`Round ${r.roundId} Curve rounding identity not proven`);
   if(!Array.isArray(r.gauges)||r.gauges.length!==Number(r.coverage.votiumIncentivizedGaugeCount))fail(`Round ${r.roundId} gauge rows missing`);
   let executedSumForSubset=0;
   for(const g of r.gauges){
     if(!/^0x[0-9a-f]{40}$/i.test(String(g.gauge||'')))fail(`Round ${r.roundId} invalid gauge`);
     if(!Number.isFinite(Number(g.votiumVotesReceived))||Number(g.votiumVotesReceived)<=0)fail(`Round ${r.roundId} Votium votes missing`);
-    if(!/^\d+$/.test(String(g.convexGaugeTotalRaw||'')))fail(`Round ${r.roundId} Convex gauge total missing`);
+    if(!/^\d+$/.test(String(g.convexGaugeTotalRaw||''))||BigInt(g.convexGaugeTotalRaw)<=0n)fail(`Round ${r.roundId} Convex positive gauge total missing`);
     if(!Number.isInteger(Number(g.curveMechanicalWeightBps))||Number(g.curveMechanicalWeightBps)<0)fail(`Round ${r.roundId} Curve mechanical BPS missing`);
     if(!Number.isInteger(Number(g.curveExecutedWeightBps))||Number(g.curveExecutedWeightBps)<0)fail(`Round ${r.roundId} Curve executed BPS missing`);
     if(!Number.isInteger(Number(g.curveMechanicalDeltaBps))||Number(g.curveMechanicalDeltaBps)<0)fail(`Round ${r.roundId} Curve rounding delta invalid`);
@@ -53,17 +63,18 @@ for(const r of x.rounds){
     executedSumForSubset+=Number(g.curveExecutedWeightBps);
   }
   if(executedSumForSubset<=0||executedSumForSubset>10000)fail(`Round ${r.roundId} invalid executed BPS subset`);
-  if(r.epistemic?.incentiveToVoteCausality!=='unresolved'||r.epistemic?.downstreamLiquidityVolumeFeeEffect!=='not-yet-measured-by-v0.1'||r.epistemic?.primaryDriver!==null)fail(`Round ${r.roundId} causal boundary weakened`);
+  if(r.epistemic?.eventOnlyGaugeMeaning!=='source-and-live-proven-zero-vote-zero-bps-rows'||r.epistemic?.incentiveToVoteCausality!=='unresolved'||r.epistemic?.downstreamLiquidityVolumeFeeEffect!=='not-yet-measured-by-v0.1'||r.epistemic?.primaryDriver!==null)fail(`Round ${r.roundId} causal/source boundary weakened`);
 }
 
-if(x.epistemic?.votiumIncentives!=='MEASURED'||x.epistemic?.votiumVotes!=='MEASURED'||x.epistemic?.convexToCurveWeightMechanics!=='ATTRIBUTED'||x.epistemic?.curveGaugeExecution!=='MEASURED')fail('Votium→Curve epistemic classes incomplete');
+if(x.epistemic?.votiumIncentives!=='MEASURED'||x.epistemic?.votiumVotes!=='MEASURED'||x.epistemic?.convexToCurveWeightMechanics!=='ATTRIBUTED'||x.epistemic?.curveGaugeExecution!=='MEASURED'||x.epistemic?.executorEventExtraRows!=='ATTRIBUTED-by-pinned-source-and-live-zero-total-proof')fail('Votium→Curve epistemic classes incomplete');
 if(x.epistemic?.incentiveToVoteRelationship!=='CORRELATED-only-not-causal'||x.epistemic?.voteToExecutedCurveWeightRelationship!=='ATTRIBUTED-and-execution-confirmed'||x.epistemic?.liquidityVolumeFeesDownstream!=='UNKNOWN-not-yet-joined'||x.epistemic?.companyIncomeConnection!=='not-attributed-by-this-layer'||x.epistemic?.primaryDriver!==null)fail('Votium→Curve causal boundary weakened');
-if(x.semantics?.unknownIsNotZero!==true||x.semantics?.incentiveAndVoteCoexistenceIsNotCausation!==true||x.semantics?.executedGaugeWeightIsNotPoolRevenue!==true||x.semantics?.protocolFlowIsNotRealisedCompanyIncome!==true||x.semantics?.correlationMustNotBePromotedToAttribution!==true)fail('Votium→Curve semantic invariants missing');
+if(x.semantics?.unknownIsNotZero!==true||x.semantics?.incentiveAndVoteCoexistenceIsNotCausation!==true||x.semantics?.zeroVoteExecutorEventRowsAreNotVotedGauges!==true||x.semantics?.executedGaugeWeightIsNotPoolRevenue!==true||x.semantics?.protocolFlowIsNotRealisedCompanyIncome!==true||x.semantics?.correlationMustNotBePromotedToAttribution!==true)fail('Votium→Curve semantic invariants missing');
 
 console.log('VLCVX VOTIUM CURVE GAUGE FLOW VERIFY PASS',{
   roundFlowHash,provenanceHash,
   rounds:x.rounds.map(r=>r.roundId),
   gauges:`${x.coverage.curveExecutedVotiumGaugeCount}/${x.coverage.votiumGaugeCount}`,
+  eventOnlyZeroGauges:x.coverage.eventOnlyGaugeCount,
   stateRpc:x.observation.stateRpcEndpointClass,
   historicalLogRpcs:x.observation.historicalLogRpcEndpointClassesUsed,
   archiveStateRequired:x.observation.historicalStateReadsRequired,
