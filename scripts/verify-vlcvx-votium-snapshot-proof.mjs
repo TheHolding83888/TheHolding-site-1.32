@@ -8,45 +8,53 @@ const x=JSON.parse(fs.readFileSync(file,'utf8'));
 const roundFlowHash=crypto.createHash('sha256').update(fs.readFileSync(roundFlowFile)).digest('hex');
 function fail(message){throw new Error(message);}
 
-if(x.version!=='0.1-vlcvx-votium-snapshot-proof')fail('Votium Snapshot proof version mismatch');
-if(x.engineVersion!=='0.1-official-votium-snapshot-methodology-proof')fail('Votium Snapshot proof engine mismatch');
-if(x.status!=='shadow-source-and-live-mapping-proven')fail(`Votium Snapshot proof incomplete: ${x.status}`);
-if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none'||x.authority?.promotionAuthority!=='none')fail('Votium Snapshot proof authority regression');
-if(x.sourceBinding?.roundFlowSha256!==roundFlowHash)fail('Votium Snapshot proof not bound to exact round-flow bytes');
-if(x.sourceBinding?.candidateId!=='defitea-convex-vlcvx-votium'||x.sourceBinding?.companyRegistry!=='004')fail('Votium Snapshot proof candidate binding mismatch');
-if(x.officialMethodologyEvidence?.votiumContract?.commit!=='e01cf1401c67cb81cfbd5158654b878bd9db1102')fail('Votium contract source pin drift');
-if(x.officialMethodologyEvidence?.votiumJs?.commit!=='f7f02dccbcff65acf6a35fe692481f1119452a8a')fail('Votium tooling source pin drift');
-if(x.officialMethodologyEvidence?.roundProposalRule?.space!=='cvx.eth'||x.officialMethodologyEvidence?.roundProposalRule?.titlePrefix!=='Gauge Weight for Week')fail('Votium official Snapshot mapping rule drift');
-if(x.voteUnitSemantics?.status!=='source-proven-human-scale-vlcvx-voting-power'||x.voteUnitSemantics?.decimalRescalingRequired!==false)fail('Votium vote-unit semantics not proven');
-if(x.voteUnitSemantics?.liveSnapshotVoteRecomputation!=='not-yet-performed-by-v0.1')fail('Votium Snapshot proof overstates live vote recomputation');
-if(!Array.isArray(x.roundMappings)||x.roundMappings.length<2)fail('Votium Snapshot proof round depth insufficient');
-if(Number(x.coverage?.requestedRounds)!==x.roundMappings.length||Number(x.coverage?.exactMappedRounds)!==x.roundMappings.length||x.coverage?.complete!==true)fail('Votium Snapshot proposal coverage incomplete');
+if(x.version!=='0.2-vlcvx-votium-voting-provenance')fail('Votium voting provenance version mismatch');
+if(x.engineVersion!=='0.2-transition-aware-snapshot-to-convex-onchain')fail('Votium voting provenance engine mismatch');
+if(x.status!=='shadow-voting-provenance-proven')fail(`Votium voting provenance incomplete: ${x.status}`);
+if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none'||x.authority?.promotionAuthority!=='none')fail('Votium voting provenance authority regression');
+if(x.sourceBinding?.roundFlowSha256!==roundFlowHash)fail('Votium voting provenance not bound to exact round-flow bytes');
+if(x.sourceBinding?.candidateId!=='defitea-convex-vlcvx-votium'||x.sourceBinding?.companyRegistry!=='004')fail('Votium voting provenance candidate binding mismatch');
+if(x.sourceAuthority?.legacyVotium?.contractCommit!=='e01cf1401c67cb81cfbd5158654b878bd9db1102'||x.sourceAuthority?.legacyVotium?.toolingCommit!=='f7f02dccbcff65acf6a35fe692481f1119452a8a')fail('Legacy Votium source pin drift');
+if(x.sourceAuthority?.convexOnchain?.commit!=='242b592718ff939e0a15e490a7df9730267f0999')fail('Convex onchain voting source pin drift');
+if(String(x.sourceAuthority?.convexOnchain?.currentCurveGaugeVoting||'').toLowerCase()!=='0x64d9b5ac386b70af9edcd20a58ce9262d2eac278')fail('Current Curve GaugeVotePlatform address drift');
+if(x.transition?.lastLegacyRound!==127||x.transition?.firstConvexOnchainRound!==128||x.transition?.boundaryStatus!=='live-cross-source-proven')fail('Votium voting transition boundary not proven');
+if(!Array.isArray(x.rounds)||x.rounds.length!==3||x.rounds.map(r=>r.roundId).join(',')!=='127,128,129')fail('Votium voting provenance round set mismatch');
+if(x.coverage?.complete!==true||Number(x.coverage.provenRoundCount)!==3||Number(x.coverage.legacySnapshotRoundCount)!==1||Number(x.coverage.convexOnchainRoundCount)!==2)fail('Votium voting provenance coverage incomplete');
+if(Number(x.coverage.onchainVotiumGaugeCount)<=0||Number(x.coverage.onchainExactGaugeMatchCount)!==Number(x.coverage.onchainVotiumGaugeCount))fail('Post-migration Votium/onchain gauge equality incomplete');
 
-const ids=new Set();
-for(const row of x.roundMappings){
-  if(row.mappingStatus!=='exact-official-window-title-match')fail(`Round ${row.roundId} Snapshot proposal unresolved`);
-  if(Number(row.candidateCount)!==1)fail(`Round ${row.roundId} Snapshot proposal ambiguous`);
-  if(!row.proposal?.id||!String(row.proposal.title||'').startsWith('Gauge Weight for Week'))fail(`Round ${row.roundId} Snapshot proposal identity missing`);
-  if(ids.has(row.proposal.id))fail(`Snapshot proposal reused across rounds: ${row.proposal.id}`);
-  ids.add(row.proposal.id);
-  if(Number(row.proposal.created)<=Number(row.roundStartUnix)||Number(row.proposal.created)>=Number(row.proposalWindowEndUnix))fail(`Round ${row.roundId} proposal outside official window`);
-  if(!Number.isFinite(Number(row.proposal.snapshotBlock))||Number(row.proposal.snapshotBlock)<=0)fail(`Round ${row.roundId} Snapshot block missing`);
-  if(!Array.isArray(row.proposal.choices)||Number(row.proposal.choiceCount)!==row.proposal.choices.length||row.proposal.choices.length<1)fail(`Round ${row.roundId} Snapshot choices missing`);
-  if(!/^\d+$/.test(String(row.onchainRound?.totalVotesReceivedRaw||'')))fail(`Round ${row.roundId} onchain votes missing`);
-  if(!Number.isFinite(Number(row.onchainRound?.totalVotesReceivedContractUnits))||Number(row.onchainRound.totalVotesReceivedContractUnits)<=0)fail(`Round ${row.roundId} human-scale vote total missing`);
+const legacy=x.rounds[0];
+if(legacy.regime!=='legacy-snapshot'||legacy.status!=='proven')fail('Round 127 legacy Snapshot regime missing');
+if(legacy.snapshot?.status!=='exact-official-window-title-match'||Number(legacy.snapshot?.candidateCount)!==1||!legacy.snapshot?.proposal?.id)fail('Round 127 Snapshot proposal not uniquely bound');
+if(!String(legacy.snapshot.proposal.title||'').startsWith('Gauge Weight for Week'))fail('Round 127 Snapshot proposal title mismatch');
+if(Number(legacy.snapshot.proposal.snapshotBlock)<=0)fail('Round 127 Snapshot block missing');
+
+for(const row of x.rounds.slice(1)){
+  if(row.regime!=='convex-onchain'||row.status!=='proven')fail(`Round ${row.roundId} onchain regime missing`);
+  if(row.snapshot?.status!=='no-official-window-match'||Number(row.snapshot?.candidateCount)!==0)fail(`Round ${row.roundId} unexpected legacy Snapshot match`);
+  const p=row.currentOnchainProposal;
+  if(!p||String(p.platformAddress||'').toLowerCase()!=='0x64d9b5ac386b70af9edcd20a58ce9262d2eac278')fail(`Round ${row.roundId} current onchain proposal missing`);
+  if(p.startAt!==row.roundStart)fail(`Round ${row.roundId} onchain proposal not anchored to exact round start`);
+  if(!p.comparison?.complete||Number(p.comparison.coveragePct)!==100||Number(p.comparison.exactCeilMatchPct)!==100)fail(`Round ${row.roundId} Votium/onchain gauge proof incomplete`);
+  if(Number(p.comparison.onchainMatchedGaugeCount)!==Number(p.comparison.votiumGaugeCount)||Number(p.comparison.exactCeilMatchCount)!==Number(p.comparison.votiumGaugeCount))fail(`Round ${row.roundId} Votium/onchain gauge counts mismatch`);
+  if(!Array.isArray(p.comparison.gauges)||p.comparison.gauges.length!==Number(p.comparison.votiumGaugeCount))fail(`Round ${row.roundId} gauge proof rows missing`);
+  for(const gauge of p.comparison.gauges){
+    if(!/^0x[0-9a-f]{40}$/i.test(String(gauge.gauge||'')))fail(`Round ${row.roundId} invalid gauge`);
+    if(!/^\d+$/.test(String(gauge.votiumVotesReceived||''))||!/^\d+$/.test(String(gauge.onchainGaugeTotalRaw||''))||!/^\d+$/.test(String(gauge.onchainGaugeTotalCeilVlCvx||'')))fail(`Round ${row.roundId} gauge vote evidence missing`);
+    if(gauge.exactCeilEquality!==true||String(gauge.votiumVotesReceived)!==String(gauge.onchainGaugeTotalCeilVlCvx))fail(`Round ${row.roundId} exact ceiling equality failed for ${gauge.gauge}`);
+  }
 }
 
-if(x.epistemic?.proposalMapping!=='measured-live-snapshot-plus-official-rule')fail('Votium Snapshot proposal epistemics weakened');
-if(x.epistemic?.voteUnitMeaning!=='attributed-by-official-votium-accounting-and-tooling-mechanics')fail('Votium vote-unit attribution missing');
-if(x.epistemic?.liveVoteTotalEquality!=='not-recomputed-by-v0.1'||x.epistemic?.incentiveToVoteCausality!=='not-claimed'||x.epistemic?.downstreamCurveEconomicCausality!=='not-claimed'||x.epistemic?.companyIncomeConnection!=='not-attributed-by-this-layer'||x.epistemic?.primaryDriver!==null)fail('Votium Snapshot epistemic boundary weakened');
-if(x.semantics?.unknownIsNotZero!==true||x.semantics?.proposalAssociationIsNotCausation!==true||x.semantics?.sourceMechanicsCanProveUnitMeaningWithoutProvingEconomicCause!==true||x.semantics?.snapshotVotePowerIsNotRealisedCompanyIncome!==true||x.semantics?.roundIncentivesDoNotByThemselvesProveVoteMigrationCause!==true)fail('Votium Snapshot semantic invariants missing');
+if(x.voteUnitSemantics?.status!=='proven-human-scale-vlcvx-voting-power'||x.voteUnitSemantics?.postMigrationClass!=='ceil-of-convex-onchain-18dp-vlcvx-gauge-total')fail('Votium vote-unit semantics not proven');
+if(x.epistemic?.votingSourceTransition!=='attributed-by-live-cross-source-mechanics'||x.epistemic?.postMigrationGaugeEquality!=='measured-exact-integer-ceiling-equality')fail('Votium voting provenance epistemics incomplete');
+if(x.epistemic?.incentiveToVoteCausality!=='not-claimed'||x.epistemic?.downstreamCurveEconomicCausality!=='not-claimed'||x.epistemic?.companyIncomeConnection!=='not-attributed-by-this-layer'||x.epistemic?.primaryDriver!==null)fail('Votium voting provenance causal boundary weakened');
+if(x.semantics?.unknownIsNotZero!==true||x.semantics?.missingSnapshotAfterMigrationIsExpected!==true||x.semantics?.proposalAssociationIsNotEconomicCausation!==true||x.semantics?.votingSourceProofIsNotIncentiveCausality!==true||x.semantics?.protocolVotingPowerIsNotRealisedCompanyIncome!==true)fail('Votium voting provenance semantic invariants missing');
 
-console.log('VLCVX VOTIUM SNAPSHOT PROOF VERIFY PASS',{
+console.log('VLCVX VOTIUM VOTING PROVENANCE VERIFY PASS',{
   roundFlowHash,
-  rounds:x.roundMappings.map(row=>row.roundId),
-  proposalIds:x.roundMappings.map(row=>row.proposal.id),
+  transition:`${x.transition.lastLegacyRound}->${x.transition.firstConvexOnchainRound}`,
+  provenRounds:x.coverage.provenRoundCount,
+  exactPostMigrationGauges:`${x.coverage.onchainExactGaugeMatchCount}/${x.coverage.onchainVotiumGaugeCount}`,
   voteUnitSemantics:x.voteUnitSemantics.status,
-  liveVoteTotalEquality:x.epistemic.liveVoteTotalEquality,
   promotionAuthority:x.authority.promotionAuthority,
   executionAuthority:x.authority.executionAuthority
 });
