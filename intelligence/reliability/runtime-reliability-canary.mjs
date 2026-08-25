@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { analyzeRuntime } from './runtime-reliability.mjs';
 
+// Exact-head proof fixture for the hardened dedicated handoff observer.
 const policy = JSON.parse(fs.readFileSync(new URL('./runtime-reliability-policy.json', import.meta.url), 'utf8'));
 const NOW = '2026-08-25T17:30:00.000Z';
 let nextId = 1000;
