@@ -5,11 +5,11 @@ const baseline = {
   version: 'canary-baseline',
   observedHead: 'canary',
   summary: {
-    repositoryWriterCount: 1,
+    repositoryWriterCount: 2,
     workflowControlCount: 1,
     otherWritePermissionWorkflowCount: 1
   },
-  knownRepositoryWriters: ['writer-a'],
+  knownRepositoryWriters: ['writer-a', 'writer-b'],
   knownWorkflowControllers: ['controller-a'],
   knownOtherWritePermissionWorkflows: ['external-a'],
   allowedPullRequestTargetWorkflows: ['trusted-prt'],
