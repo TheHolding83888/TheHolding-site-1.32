@@ -1,0 +1,199 @@
+# holding-control-plane: external-writer
+# holding-truth-plane: runtime-reliability-incident-ledger
+# holding-control-domain: runtime-reliability-incidents
+name: "The Holding Reliability · Runtime Observer"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "13,43 * * * *"
+  pull_request:
+    paths:
+      - "intelligence/reliability/runtime-reliability-*.mjs"
+      - "intelligence/reliability/runtime-reliability-policy.json"
+      - ".github/workflows/runtime-reliability-observer.yml"
+  push:
+    branches: [main]
+    paths:
+      - "intelligence/reliability/runtime-reliability-*.mjs"
+      - "intelligence/reliability/runtime-reliability-policy.json"
+      - ".github/workflows/runtime-reliability-observer.yml"
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: runtime-reliability-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Static and deterministic canaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/reliability/runtime-reliability-policy.json
+          test -s intelligence/reliability/runtime-reliability.mjs
+          test -s intelligence/reliability/runtime-reliability-canary.mjs
+          test -s intelligence/reliability/runtime-reliability-incident-sink.mjs
+          test -s intelligence/reliability/runtime-reliability-incident-sink-canary.mjs
+          node --check intelligence/reliability/runtime-reliability.mjs
+          node --check intelligence/reliability/runtime-reliability-canary.mjs
+          node --check intelligence/reliability/runtime-reliability-incident-sink.mjs
+          node --check intelligence/reliability/runtime-reliability-incident-sink-canary.mjs
+          node intelligence/reliability/runtime-reliability-canary.mjs
+          node intelligence/reliability/runtime-reliability-incident-sink-canary.mjs
+
+      - name: Verify bounded authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const policy = require('./intelligence/reliability/runtime-reliability-policy.json');
+          const a = policy.authority || {};
+          if (a.executionAuthority !== 'none') throw new Error('runtime reliability gained execution authority');
+          if (a.repositoryMutationAuthority !== false) throw new Error('runtime reliability gained repository mutation authority');
+          if (a.workflowDispatchAuthority !== false || a.workflowCancellationAuthority !== false || a.workflowRerunAuthority !== false) {
+            throw new Error('runtime reliability gained workflow-control authority');
+          }
+          if (a.productionMergeAuthority !== false || a.methodologyMutationAuthority !== false) throw new Error('runtime reliability gained governance authority');
+          if (a.capitalExecution !== false || a.walletAuthority !== false) throw new Error('runtime reliability gained capital authority');
+          if (a.issueMetadataWrite !== true) throw new Error('incident-ledger metadata boundary missing');
+          console.log('Runtime Reliability authority boundary PASS');
+          NODE
+
+      - name: Fetch bounded production runtime window
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          OUT_FILE: ${{ runner.temp }}/runtime-envelope.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { extractKnownFingerprints } from './intelligence/reliability/runtime-reliability-incident-sink.mjs';
+
+          const token = process.env.GH_TOKEN;
+          const repo = process.env.REPOSITORY;
+          const out = process.env.OUT_FILE;
+          const policy = JSON.parse(fs.readFileSync('intelligence/reliability/runtime-reliability-policy.json', 'utf8'));
+          const base = `https://api.github.com/repos/${repo}`;
+          const headers = {
+            Accept: 'application/vnd.github+json',
+            Authorization: `Bearer ${token}`,
+            'X-GitHub-Api-Version': '2022-11-28',
+            'User-Agent': 'the-holding-runtime-reliability'
+          };
+          async function get(url) {
+            const res = await fetch(url, { headers });
+            const text = await res.text();
+            if (!res.ok) throw new Error(`GET ${url} -> ${res.status}: ${text.slice(0, 300)}`);
+            return text ? JSON.parse(text) : null;
+          }
+
+          const maxPages = Number(policy.coverage.maxPages || 3);
+          const perPage = Number(policy.coverage.perPage || 100);
+          const lookbackMs = Number(policy.coverage.lookbackHours || 6) * 3600000;
+          const cutoff = Date.now() - lookbackMs;
+          const runs = [];
+          let pageCount = 0;
+          let windowBoundReached = false;
+
+          for (let page = 1; page <= maxPages; page += 1) {
+            const data = await get(`${base}/actions/runs?branch=${encodeURIComponent(policy.productionBranch || 'main')}&per_page=${perPage}&page=${page}`);
+            const pageRuns = data?.workflow_runs || [];
+            pageCount += 1;
+            runs.push(...pageRuns);
+            const oldest = pageRuns.length ? Date.parse(pageRuns[pageRuns.length - 1].created_at || '') : NaN;
+            if (pageRuns.length < perPage || (Number.isFinite(oldest) && oldest < cutoff)) {
+              windowBoundReached = true;
+              break;
+            }
+          }
+
+          const criticalWorkflowIds = [...new Set((policy.criticalHandoffs || []).flatMap(edge => [edge.producer, edge.consumer]))];
+          const handoffRuns = [];
+          let handoffCoverageComplete = true;
+          for (const workflowId of criticalWorkflowIds) {
+            try {
+              const data = await get(`${base}/actions/workflows/${encodeURIComponent(`${workflowId}.yml`)}/runs?branch=${encodeURIComponent(policy.productionBranch || 'main')}&per_page=20`);
+              handoffRuns.push(...(data?.workflow_runs || []));
+            } catch (error) {
+              handoffCoverageComplete = false;
+              console.warn(`Dedicated handoff fetch failed for ${workflowId}: ${error.message}`);
+            }
+          }
+
+          const issueData = await get(`${base}/issues?state=all&per_page=100&sort=updated&direction=desc`);
+          const issues = (issueData || []).filter(x => !x.pull_request);
+          const envelope = {
+            fetchedAt: new Date().toISOString(),
+            pageCount,
+            truncated: !windowBoundReached,
+            handoffCoverageComplete,
+            handoffRuns: [...new Map(handoffRuns.map(run => [run.id, run])).values()],
+            knownIncidentFingerprints: extractKnownFingerprints(issues),
+            runs
+          };
+          fs.writeFileSync(out, `${JSON.stringify(envelope, null, 2)}\n`);
+          console.log(`Fetched ${runs.length} general production runs across ${pageCount} page(s); truncated=${envelope.truncated}; dedicatedHandoffRuns=${envelope.handoffRuns.length}; handoffCoverageComplete=${handoffCoverageComplete}; knownIncidentFingerprints=${envelope.knownIncidentFingerprints.length}`);
+          NODE
+
+      - name: Analyze runtime reliability
+        id: analyze
+        env:
+          ENVELOPE: ${{ runner.temp }}/runtime-envelope.json
+          REPORT: ${{ runner.temp }}/runtime-reliability-report.json
+          MARKDOWN: ${{ runner.temp }}/runtime-reliability-summary.md
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/reliability/runtime-reliability.mjs \
+            --runs "$ENVELOPE" \
+            --policy intelligence/reliability/runtime-reliability-policy.json \
+            --out "$REPORT" \
+            --markdown "$MARKDOWN"
+          cat "$MARKDOWN" >> "$GITHUB_STEP_SUMMARY"
+          node - "$REPORT" "$GITHUB_OUTPUT" <<'NODE'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          fs.appendFileSync(process.argv[3], `status=${report.status}\nmaterial=${report.summary.materialIncidentCount}\n`);
+          for (const f of report.findings || []) {
+            const line = `${f.severity.toUpperCase()} ${f.type} ${f.subject}: ${f.detail}`;
+            console.log(f.severity === 'red' ? `::warning::${line}` : line);
+          }
+          console.log(`Observed runtime status=${report.status}; materialIncidents=${report.summary.materialIncidentCount}`);
+          NODE
+
+      - name: Persist material incidents without repository commits
+        if: ${{ github.event_name != 'pull_request' && steps.analyze.outputs.material != '0' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          REPORT: ${{ runner.temp }}/runtime-reliability-report.json
+        run: node intelligence/reliability/runtime-reliability-incident-sink.mjs "$REPORT" intelligence/reliability/runtime-reliability-policy.json
+
+      - name: Final invariant check
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -z "$(git status --porcelain)" || { git status --short; exit 1; }
+          echo "Runtime observer completed without repository mutation."

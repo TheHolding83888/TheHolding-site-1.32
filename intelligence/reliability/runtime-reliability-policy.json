@@ -1,0 +1,82 @@
+{
+  "version": "0.2-runtime-reliability-learning-loop",
+  "mode": "observe-learn-no-autoremediation",
+  "productionBranch": "main",
+  "coverage": {
+    "lookbackHours": 6,
+    "maxPages": 3,
+    "perPage": 100
+  },
+  "thresholds": {
+    "queuedMinutes": 15,
+    "runningMinutes": 30,
+    "repeatedFailureCount": 2,
+    "supersededCancelWindowMinutes": 15,
+    "fanoutWindowMinutes": 15,
+    "fanoutWatchCount": 40,
+    "slowMultiplier": 3,
+    "slowFloorMinutes": 10,
+    "slowMinimumSamples": 3,
+    "handoffGraceMinutes": 20,
+    "handoffSearchWindowMinutes": 60,
+    "handoffTimestampSkewSeconds": 90
+  },
+  "failureConclusions": [
+    "failure",
+    "timed_out",
+    "action_required",
+    "startup_failure"
+  ],
+  "ignoredWorkflowIds": [
+    "runtime-reliability-observer"
+  ],
+  "criticalHandoffs": [
+    {
+      "producer": "unified-capital-refresh",
+      "consumer": "update-economic-graph",
+      "graceMinutes": 20
+    },
+    {
+      "producer": "update-economic-graph",
+      "consumer": "update-explanatory-context",
+      "graceMinutes": 15
+    },
+    {
+      "producer": "update-explanatory-context",
+      "consumer": "refresh-cognitive-stack",
+      "graceMinutes": 20
+    }
+  ],
+  "incidentSink": {
+    "enabled": true,
+    "mode": "github-issues",
+    "minimumSeverity": "red",
+    "maxWritesPerRun": 3,
+    "commentCooldownHours": 6,
+    "titlePrefix": "[Runtime Reliability]"
+  },
+  "learning": {
+    "rootCauseDefaultsTo": "UNKNOWN_UNTIL_REVIEWED",
+    "regressionRequiresKnownFingerprint": true,
+    "chain": [
+      "incident",
+      "root-cause-review",
+      "durable-lesson",
+      "preventive-invariant",
+      "canary"
+    ]
+  },
+  "authority": {
+    "readOnlyRuntimeObservation": true,
+    "executionAuthority": "none",
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "workflowCancellationAuthority": false,
+    "workflowRerunAuthority": false,
+    "productionMergeAuthority": false,
+    "methodologyMutationAuthority": false,
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "issueMetadataWrite": true
+  }
+}
