@@ -42,6 +42,16 @@ function parseInlineList(value) {
   return raw.slice(1, -1).split(',').map(cleanScalar).filter(Boolean);
 }
 
+function parseControlMetadata(text) {
+  const roles = new Set();
+  for (const match of text.matchAll(/^\s*#\s*holding-control-plane:\s*(.+?)\s*$/gmi)) {
+    for (const role of match[1].split(',').map(v => v.trim().toLowerCase()).filter(Boolean)) roles.add(role);
+  }
+  const truthPlane = text.match(/^\s*#\s*holding-truth-plane:\s*(.+?)\s*$/mi)?.[1]?.trim() || null;
+  const controlDomain = text.match(/^\s*#\s*holding-control-domain:\s*(.+?)\s*$/mi)?.[1]?.trim() || null;
+  return { roles: [...roles].sort(), truthPlane, controlDomain };
+}
+
 function parseOn(text) {
   const lines = text.split(/\r?\n/);
   const triggers = new Set();
@@ -82,9 +92,7 @@ function parseOn(text) {
         const field = line.match(/^\s{4}([A-Za-z0-9_-]+):(?:\s*(.*))?$/);
         if (field) {
           workflowRunField = field[1];
-          if (workflowRunField === 'workflows') {
-            parseInlineList(field[2]).forEach(v => workflowRunSources.push(v));
-          }
+          if (workflowRunField === 'workflows') parseInlineList(field[2]).forEach(v => workflowRunSources.push(v));
           continue;
         }
 
@@ -211,6 +219,7 @@ function scanWorkflowText(filePath, text) {
   const on = parseOn(text);
   const permissionScopes = parsePermissions(text);
   const perm = permissionSignals(permissionScopes);
+  const controlMetadata = parseControlMetadata(text);
   const hasConcurrency = /^\s*concurrency:\s*/m.test(text);
   const gitCommit = /\bgit\s+commit\b/.test(text);
   const gitPush = /\bgit\s+push\b/.test(text);
@@ -242,6 +251,7 @@ function scanWorkflowText(filePath, text) {
     workflowRunSources: on.workflowRunSources,
     dispatchTargets,
     permissions: permissionScopes,
+    controlMetadata,
     hasConcurrency,
     repositoryWriterCapable,
     workflowControlCapable,
@@ -344,12 +354,8 @@ export function buildControlPlane({ entries, policy }) {
   const findings = [];
 
   for (const w of workflows) {
-    if (w.repositoryWriterCapable && !w.hasConcurrency) {
-      findings.push(finding('repository-writer-without-concurrency', 'watch', w.id, 'repository writer candidate has no concurrency declaration'));
-    }
-    if (w.workflowControlCapable && !w.hasConcurrency) {
-      findings.push(finding('workflow-control-without-concurrency', 'watch', w.id, 'workflow control actor has no concurrency declaration'));
-    }
+    if (w.repositoryWriterCapable && !w.hasConcurrency) findings.push(finding('repository-writer-without-concurrency', 'watch', w.id, 'repository writer candidate has no concurrency declaration'));
+    if (w.workflowControlCapable && !w.hasConcurrency) findings.push(finding('workflow-control-without-concurrency', 'watch', w.id, 'workflow control actor has no concurrency declaration'));
     if (w.writeAll) findings.push(finding('write-all-permission', 'high', w.id, 'write-all permission detected'));
     if (w.pullRequestTarget) findings.push(finding('pull-request-target', 'high', w.id, 'pull_request_target trigger detected'));
     if (w.broadGitAdd) findings.push(finding('broad-git-add', 'watch', w.id, 'broad git add detected'));
@@ -367,9 +373,7 @@ export function buildControlPlane({ entries, policy }) {
   }
 
   const triggerCounts = {};
-  for (const w of workflows) {
-    for (const trigger of w.triggers) triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
-  }
+  for (const w of workflows) for (const trigger of w.triggers) triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
 
   const repositoryWriters = workflows.filter(w => w.repositoryWriterCapable);
   const workflowControllers = workflows.filter(w => w.workflowControlCapable);
@@ -406,6 +410,7 @@ export function buildControlPlane({ entries, policy }) {
       repositoryWriterClassification: 'MEASURED_FROM_CONTENTS_PERMISSION_OR_REPOSITORY_MUTATION_SIGNAL',
       workflowControlClassification: 'MEASURED_FROM_ACTIONS_PERMISSION_OR_EXECUTABLE_DISPATCH_SIGNAL',
       heredocBodiesExcludedFromExecutableDispatchDetection: true,
+      controlMetadata: 'DECLARED_BY_WORKFLOW_COMMENT_AND_NEVER_SELF_AUTHORIZING',
       otherWritePermissionClassification: 'SEPARATE_NOT_REPOSITORY_WRITER_BY_ITSELF',
       candidateWriterPaths: 'HEURISTIC',
       unresolvedEdgeMeansUnknown: true,
@@ -453,11 +458,11 @@ function main() {
     console.log(`Workflow Control Plane ${report.version} · ${report.mode}`);
     console.log(JSON.stringify(report.summary, null, 2));
     if (report.graph.cycles.length) console.log(`Cycles: ${report.graph.cycles.join(' | ')}`);
-    console.log('Workflow Control Plane audit PASS (observation mode)');
+    console.log('Workflow Control Plane audit PASS');
   }
 }
 
 const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invoked) main();
 
-export { scanWorkflowText, detectCycles, duplicateWriterCandidates };
+export { scanWorkflowText, detectCycles, duplicateWriterCandidates, readEntries };
