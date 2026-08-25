@@ -61,6 +61,10 @@ jobs:
           node --check productivity/yieldring-productivity-overlay.mjs
           node --check intelligence/economic-graph/economic-graph.mjs
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          node --check intelligence/economic-graph/protocol-lifecycle.mjs
+          node --check intelligence/economic-graph/protocol-lifecycle-canary.mjs
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/economic-graph/protocol-lifecycle-policy.json','utf8')); console.log('PROTOCOL LIFECYCLE POLICY JSON PASS')"
+          node intelligence/economic-graph/protocol-lifecycle-canary.mjs
           node productivity/fxn-locker-apr-guard-validation.mjs
           TMP="$(mktemp)"
           ECONOMIC_GRAPH_FILE="$TMP" node intelligence/economic-graph/economic-graph.mjs --deterministic-validation
@@ -164,10 +168,21 @@ jobs:
           if(Math.abs(Number(curve.formulaParityDeltaPctPoints))>0.01)throw new Error('canonical Curve formula parity failed');
           if(curve.formula?.status!=='proven-canonical-collector-identity')throw new Error('canonical Curve formula identity missing');
           if(curve.epistemic?.mechanicalAttribution!=='proven-within-apr-formula'||curve.epistemic?.causalAttribution!=='unresolved-beyond-formula'||curve.epistemic?.primaryDriver!==null)throw new Error('canonical Curve epistemic boundary regression');
-          console.log('ECONOMIC GRAPH canonical source PASS',{
+          const l=x.protocolLifecycle;
+          if(l?.version!=='0.1-protocol-intelligence-lifecycle'||l?.policyVersion!=='0.1-protocol-intelligence-lifecycle-policy')throw new Error('Protocol lifecycle materialization missing');
+          if(l?.authority?.executionAuthority!=='none'||l?.authority?.repositoryMutationAuthority!==false||l?.authority?.workflowDispatchAuthority!==false||l?.authority?.causalClaimAuthority!=='none')throw new Error('Protocol lifecycle authority expansion');
+          const fxStage=l?.protocols?.['defitea-fxn-vefxn']?.maturityStage;
+          const curveStage=l?.protocols?.['defitea-curve-vecrv']?.maturityStage;
+          const aeroStage=l?.protocols?.['defitea-aerodrome-veaero']?.maturityStage;
+          const vlcvxStage=l?.protocols?.['defitea-convex-vlcvx-votium']?.maturityStage;
+          if(fxStage!=='canonical'||curveStage!=='canonical')throw new Error(`Existing canonical lifecycle stages regressed: f(x)=${fxStage}, Curve=${curveStage}`);
+          if(!['verified','canonical'].includes(aeroStage))throw new Error(`Aerodrome lifecycle stage below verified: ${aeroStage}`);
+          if(!['verified','canonical'].includes(vlcvxStage))throw new Error(`vlCVX/Votium lifecycle stage below verified: ${vlcvxStage}`);
+          console.log('ECONOMIC GRAPH canonical + lifecycle source PASS',{
             cohorts:x.coverage.cohortCount,
             fxn:{observedAt:fx.observedAt,apr:fx.liveObservedAprPct,currentWeekWsteth:fx.drivers.cumulativeThisWeekWsteth,parity:fx.aprParityDeltaPctPoints},
-            curve:{observedAt:curve.observedAt,apr:curve.canonicalProductivityAprPct,formulaApr:curve.formulaReproducedAprPct,rollingFeesCrvUSD:curve.drivers.rollingFourWeekFeesCrvUSD,rollingAverageVeSupply:curve.drivers.rollingAverageVeSupply,latestWeekFeesCrvUSD:curve.drivers.latestCompletedWeek?.tokensCrvUSD}
+            curve:{observedAt:curve.observedAt,apr:curve.canonicalProductivityAprPct,formulaApr:curve.formulaReproducedAprPct,rollingFeesCrvUSD:curve.drivers.rollingFourWeekFeesCrvUSD,rollingAverageVeSupply:curve.drivers.rollingAverageVeSupply,latestWeekFeesCrvUSD:curve.drivers.latestCompletedWeek?.tokensCrvUSD},
+            lifecycle:{fxn:fxStage,curve:curveStage,aerodrome:aeroStage,vlcvx:vlcvxStage,transitions:l.transitions?.length||0}
           });
           NODE
 
@@ -207,7 +222,9 @@ jobs:
               test "$REMOTE_ENGINE" = "0.2-defitea-fxn-curve-multi-cohort"
               REMOTE_COHORTS="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).coverage?.cohortCount))")"
               test "$REMOTE_COHORTS" = "2"
-              echo "Verified Economic Graph v0.2 dual-cohort state on remote main."
+              REMOTE_LIFECYCLE="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).protocolLifecycle?.version))")"
+              test "$REMOTE_LIFECYCLE" = "0.1-protocol-intelligence-lifecycle"
+              echo "Verified Economic Graph v0.2 + Protocol Lifecycle v0.1 on remote main."
               exit 0
             fi
             echo "Main moved during push; retrying ($attempt/3)..."
