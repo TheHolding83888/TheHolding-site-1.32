@@ -23,6 +23,7 @@ const PLATFORM_ABI=[
   'function voteTotals(uint256) view returns (uint256)',
   'function getGaugeCount(uint256) view returns (uint256)',
   'function getGaugeEntry(uint256,uint256) view returns (address gauge,uint256 totalWeight)',
+  'function gaugeTotal(uint256,address) view returns (uint256)',
   'function isFinalized(uint256) view returns (bool)'
 ];
 const EXECUTOR_ABI=[
@@ -92,28 +93,42 @@ async function readProposalState(platform,executor,proposalId){
     const raw=BigInt(entry.totalWeight);
     gauges.push({gauge:getAddress(entry.gauge),gaugeTotalRaw:raw.toString(),mechanicalWeightBps:Number(raw*WEIGHT_BPS/BigInt(voteTotalRaw))});
   }
+  if(new Set(gauges.map(g=>g.gauge.toLowerCase())).size!==gaugeCount)fail(`Proposal ${proposalId} GaugeVotePlatform contains duplicate gauge entries`);
   return{
     proposalId,startTime:Number(p.startTime),startAt:iso(p.startTime),endTime:Number(p.endTime),endAt:iso(p.endTime),epoch:Number(p.epoch),finalized:Boolean(finalized),voteTotalRaw:voteTotalRaw.toString(),gaugeCount,gauges,
     executor:{submittedGaugeCount:Number(submittedCountRaw),submittedWeightBps:Number(submittedWeightRaw),isDone:Boolean(done)}
   };
 }
 
-function executionCoverage(events,proposalStates){
-  const result=new Map();
-  for(const state of proposalStates){result.set(state.proposalId,{unique:new Set(),weightSum:0,eventCount:0,rowCount:0});}
+function classifyExecution(events,state){
+  const platformSet=new Set(state.gauges.map(g=>g.gauge.toLowerCase()));
+  const eventMap=new Map();
+  let eventCount=0,rowCount=0,eventWeightSumBps=0,duplicateEventGaugeRows=0;
   for(const event of events){
-    const x=result.get(event.proposalId);if(!x)continue;
-    x.eventCount++;
-    for(const row of event.rows){x.unique.add(row.gauge.toLowerCase());x.weightSum+=row.weightBps;x.rowCount++;}
+    if(event.proposalId!==state.proposalId)continue;
+    eventCount++;
+    for(const row of event.rows){
+      const key=row.gauge.toLowerCase();
+      rowCount++;eventWeightSumBps+=row.weightBps;
+      if(eventMap.has(key))duplicateEventGaugeRows++;
+      eventMap.set(key,row);
+    }
   }
-  return result;
+  let platformGaugeEventMatchCount=0;
+  for(const gauge of platformSet)if(eventMap.has(gauge))platformGaugeEventMatchCount++;
+  const eventOnly=[];
+  for(const [key,row] of eventMap)if(!platformSet.has(key))eventOnly.push(row);
+  return{
+    eventCount,eventGaugeRowCount:rowCount,uniqueEventGaugeCount:eventMap.size,eventWeightSumBps,duplicateEventGaugeRows,
+    platformUniqueGaugeCount:platformSet.size,platformGaugeEventMatchCount,
+    eventOnlyGaugeCount:eventOnly.length,eventOnlyZeroWeightGaugeCount:eventOnly.filter(r=>r.weightBps===0).length,eventOnlyPositiveGaugeCount:eventOnly.filter(r=>r.weightBps>0).length,eventOnly
+  };
 }
 
 function targetsComplete(events,proposalStates){
-  const coverage=executionCoverage(events,proposalStates);
   return proposalStates.every(state=>{
-    const x=coverage.get(state.proposalId);
-    return state.executor.isDone===true&&state.executor.submittedGaugeCount===state.gaugeCount&&state.executor.submittedWeightBps===10000&&x.unique.size===state.gaugeCount&&x.weightSum===10000;
+    const x=classifyExecution(events,state);
+    return state.finalized===true&&state.executor.isDone===true&&state.executor.submittedGaugeCount===state.gaugeCount&&state.executor.submittedWeightBps===10000&&x.platformUniqueGaugeCount===state.gaugeCount&&x.platformGaugeEventMatchCount===state.gaugeCount&&x.eventOnlyPositiveGaugeCount===0&&x.duplicateEventGaugeRows===0&&x.eventWeightSumBps===10000;
   });
 }
 
@@ -147,16 +162,25 @@ async function scanExecutionEvents(proposalStates,fromBlock,toBlock){
       }
     }
     const complete=targetsComplete(events,proposalStates);
-    const rawCoverage=executionCoverage(events,proposalStates);
-    const diagnostic=proposalStates.map(state=>{const c=rawCoverage.get(state.proposalId);return{proposalId:state.proposalId,finalized:state.finalized,gaugeCount:state.gaugeCount,isDone:state.executor.isDone,submittedGaugeCount:state.executor.submittedGaugeCount,submittedWeightBps:state.executor.submittedWeightBps,eventCount:c.eventCount,eventGaugeRowCount:c.rowCount,uniqueEventGaugeCount:c.unique.size,eventWeightSumBps:c.weightSum};});
-    return{events,provenance:{fromBlock,toBlock:lastScannedBlock,requestedToBlock:toBlock,completedEarly:lastScannedBlock<toBlock,complete,endpointClassesUsed:[...used],attempts,chunkStart:LOG_CHUNK_START,chunkMinimum:LOG_CHUNK_MIN,diagnostic,completionRule:'stop only after current isDone/submittedGaugeCount/submittedWeight plus unique event gauge count and event BPS sum prove both target proposals complete'}};
+    const diagnostic=proposalStates.map(state=>{
+      const c=classifyExecution(events,state);
+      return{proposalId:state.proposalId,finalized:state.finalized,gaugeCount:state.gaugeCount,isDone:state.executor.isDone,submittedGaugeCount:state.executor.submittedGaugeCount,submittedWeightBps:state.executor.submittedWeightBps,eventCount:c.eventCount,eventGaugeRowCount:c.eventGaugeRowCount,uniqueEventGaugeCount:c.uniqueEventGaugeCount,eventWeightSumBps:c.eventWeightSumBps,platformGaugeEventMatchCount:c.platformGaugeEventMatchCount,eventOnlyGaugeCount:c.eventOnlyGaugeCount,eventOnlyZeroWeightGaugeCount:c.eventOnlyZeroWeightGaugeCount,eventOnlyPositiveGaugeCount:c.eventOnlyPositiveGaugeCount,duplicateEventGaugeRows:c.duplicateEventGaugeRows};
+    });
+    return{events,provenance:{fromBlock,toBlock:lastScannedBlock,requestedToBlock:toBlock,completedEarly:lastScannedBlock<toBlock,complete,endpointClassesUsed:[...used],attempts,chunkStart:LOG_CHUNK_START,chunkMinimum:LOG_CHUNK_MIN,diagnostic,completionRule:'stop only after completed current executor state, every GaugeVotePlatform voted gauge is present in execution events, all event-only gauges have zero BPS, no event gauge is duplicated, and total executed BPS equals 10000 for both target proposals'}};
   }finally{for(const lane of lanes){try{lane.provider.destroy();}catch{}}}
 }
 
-function attachExecutionEvidence(state,allEvents,scanProvenance){
+async function attachExecutionEvidence(platform,state,allEvents,scanProvenance){
   const events=allEvents.filter(e=>e.proposalId===state.proposalId);
   const executed=new Map();
-  for(const event of events){for(const row of event.rows)executed.set(row.gauge.toLowerCase(),{weightBps:row.weightBps,txHash:event.txHash,blockNumber:event.blockNumber});}
+  for(const event of events){for(const row of event.rows)executed.set(row.gauge.toLowerCase(),{gauge:row.gauge,weightBps:row.weightBps,txHash:event.txHash,blockNumber:event.blockNumber});}
+  const classification=classifyExecution(allEvents,state);
+  const eventOnlyGaugeProof=[];
+  for(const row of classification.eventOnly){
+    const raw=BigInt(await platform.gaugeTotal(state.proposalId,row.gauge));
+    eventOnlyGaugeProof.push({gauge:row.gauge,executedWeightBps:row.weightBps,gaugeTotalRaw:raw.toString(),gaugeTotalIsZero:raw===0n});
+  }
+  const eventOnlyAllZero=eventOnlyGaugeProof.every(row=>row.executedWeightBps===0&&row.gaugeTotalIsZero===true);
   const joined=state.gauges.map(g=>{
     const e=executed.get(g.gauge.toLowerCase())||null;
     return{...g,executedWeightBps:e?.weightBps??null,executionTxHash:e?.txHash??null,executionBlock:e?.blockNumber??null,mechanicalDeltaBps:e?e.weightBps-g.mechanicalWeightBps:null};
@@ -169,13 +193,15 @@ function attachExecutionEvidence(state,allEvents,scanProvenance){
   const negativeDeltaCount=joined.filter(g=>g.mechanicalDeltaBps!==null&&g.mechanicalDeltaBps<0).length;
   const positiveDeltaCount=joined.filter(g=>Number(g.mechanicalDeltaBps)>0).length;
   const roundingComplete=residualBps>=0&&deltaSum===residualBps&&negativeDeltaCount===0&&positiveDeltaCount<=1;
-  const complete=state.finalized&&state.executor.isDone&&state.executor.submittedGaugeCount===state.gaugeCount&&state.executor.submittedWeightBps===10000&&executedCount===state.gaugeCount&&executed.size===state.gaugeCount&&executedWeightSum===10000&&roundingComplete;
+  const complete=state.finalized&&state.executor.isDone&&state.executor.submittedGaugeCount===state.gaugeCount&&state.executor.submittedWeightBps===10000&&classification.platformUniqueGaugeCount===state.gaugeCount&&classification.platformGaugeEventMatchCount===state.gaugeCount&&executedCount===state.gaugeCount&&classification.duplicateEventGaugeRows===0&&classification.eventOnlyPositiveGaugeCount===0&&eventOnlyAllZero&&classification.eventWeightSumBps===10000&&executedWeightSum===10000&&roundingComplete;
   return{
     ...state,
-    executor:{...state.executor,executionEventCount:events.length,eventGaugeRowCount:events.reduce((s,e)=>s+e.gaugeCount,0),uniqueExecutedGaugeCount:executed.size,executedWeightSumBps:executedWeightSum},
+    executor:{...state.executor,executionEventCount:classification.eventCount,eventGaugeRowCount:classification.eventGaugeRowCount,uniqueEventGaugeCount:classification.uniqueEventGaugeCount,platformGaugeEventMatchCount:classification.platformGaugeEventMatchCount,eventOnlyGaugeCount:classification.eventOnlyGaugeCount,eventOnlyZeroWeightGaugeCount:classification.eventOnlyZeroWeightGaugeCount,eventOnlyPositiveGaugeCount:classification.eventOnlyPositiveGaugeCount,duplicateEventGaugeRows:classification.duplicateEventGaugeRows,eventWeightSumBps:classification.eventWeightSumBps,platformExecutedWeightSumBps:executedWeightSum},
+    eventOnlyGaugeProof,
     roundingProof:{mechanicalWeightSumBps:mechanicalWeightSum,residualBps,executionMinusMechanicalDeltaSumBps:deltaSum,negativeDeltaCount,positiveDeltaCount,complete:roundingComplete},
-    eventQuery:{fromBlock:scanProvenance.fromBlock,toBlock:scanProvenance.toBlock,windowRule:'single shared GaugeVoteExecuted scan from exact pre-migration Snapshot anchor until both current completed proposal states are fully reconstructed'},
-    events,gauges:joined,coverage:{executedGaugeCount:executedCount,totalGaugeCount:state.gaugeCount,executedGaugeCoveragePct:pct(executedCount,state.gaugeCount),complete}
+    eventQuery:{fromBlock:scanProvenance.fromBlock,toBlock:scanProvenance.toBlock,windowRule:'single shared GaugeVoteExecuted scan from exact pre-migration Snapshot anchor until source-aware execution completeness is proven'},
+    events,gauges:joined,
+    coverage:{executedGaugeCount:executedCount,totalGaugeCount:state.gaugeCount,executedGaugeCoveragePct:pct(executedCount,state.gaugeCount),platformGaugeEventMatchCount:classification.platformGaugeEventMatchCount,eventOnlyGaugeCount:classification.eventOnlyGaugeCount,eventOnlyAllZero,complete}
   };
 }
 
@@ -195,10 +221,10 @@ function buildRoundContext(roundFlowRound,provenanceRound,proposal){
   return{
     roundId:Number(roundFlowRound.roundId),roundStart:provenanceRound.roundStart,regime:provenanceRound.regime,proposalId:proposal.proposalId,
     incentiveCount:Number(roundFlowRound.incentiveCount),tokenFlows:roundFlowRound.tokenFlows,totalVotiumVotesReceived:Number(roundFlowRound.totalVotesReceivedContractUnits),
-    curveExecutor:{isDone:proposal.executor.isDone,submittedGaugeCount:proposal.executor.submittedGaugeCount,submittedWeightBps:proposal.executor.submittedWeightBps,executionEventCount:proposal.executor.executionEventCount,roundingProof:proposal.roundingProof},
-    coverage:{votiumIncentivizedGaugeCount:gauges.length,curveExecutedForVotiumGaugeCount:curveExecutedCount,curveExecutedForVotiumGaugePct:pct(curveExecutedCount,gauges.length),complete:curveExecutedCount===gauges.length&&proposal.coverage.complete},
+    curveExecutor:{isDone:proposal.executor.isDone,submittedGaugeCount:proposal.executor.submittedGaugeCount,submittedWeightBps:proposal.executor.submittedWeightBps,executionEventCount:proposal.executor.executionEventCount,eventGaugeRowCount:proposal.executor.eventGaugeRowCount,uniqueEventGaugeCount:proposal.executor.uniqueEventGaugeCount,platformGaugeEventMatchCount:proposal.executor.platformGaugeEventMatchCount,eventOnlyGaugeCount:proposal.executor.eventOnlyGaugeCount,eventOnlyZeroWeightGaugeCount:proposal.executor.eventOnlyZeroWeightGaugeCount,eventOnlyPositiveGaugeCount:proposal.executor.eventOnlyPositiveGaugeCount,duplicateEventGaugeRows:proposal.executor.duplicateEventGaugeRows,eventWeightSumBps:proposal.executor.eventWeightSumBps,eventOnlyGaugeProof:proposal.eventOnlyGaugeProof,roundingProof:proposal.roundingProof},
+    coverage:{votiumIncentivizedGaugeCount:gauges.length,curveExecutedForVotiumGaugeCount:curveExecutedCount,curveExecutedForVotiumGaugePct:pct(curveExecutedCount,gauges.length),platformGaugeExecutionComplete:proposal.coverage.complete,eventOnlyAllZero:proposal.coverage.eventOnlyAllZero,complete:curveExecutedCount===gauges.length&&proposal.coverage.complete},
     gauges,
-    epistemic:{incentiveState:'measured',votingPower:'measured-and-cross-contract-proven',curveWeightMechanics:'attributed-by-source-formula',curveExecution:'measured-by-GaugeVoteExecuted-events',incentiveToVoteCausality:'unresolved',downstreamLiquidityVolumeFeeEffect:'not-yet-measured-by-v0.1',primaryDriver:null}
+    epistemic:{incentiveState:'measured',votingPower:'measured-and-cross-contract-proven',curveWeightMechanics:'attributed-by-source-formula',curveExecution:'measured-by-GaugeVoteExecuted-events',eventOnlyGaugeMeaning:'source-and-live-proven-zero-vote-zero-bps-rows',incentiveToVoteCausality:'unresolved',downstreamLiquidityVolumeFeeEffect:'not-yet-measured-by-v0.1',primaryDriver:null}
   };
 }
 
@@ -221,7 +247,8 @@ async function main(){
       proposalStates.push(proposalState);
     }
     const scanned=await scanExecutionEvents(proposalStates,scanFromBlock,currentBlock);
-    const proposals=proposalStates.map(proposalState=>attachExecutionEvidence(proposalState,scanned.events,scanned.provenance));
+    const proposals=[];
+    for(const proposalState of proposalStates)proposals.push(await attachExecutionEvidence(platform,proposalState,scanned.events,scanned.provenance));
     const rounds=[];
     for(let i=0;i<postMigration.length;i++){
       const sourceRound=roundById.get(Number(postMigration[i].roundId));if(!sourceRound)fail(`Round ${postMigration[i].roundId} missing from round-flow`);
@@ -233,15 +260,15 @@ async function main(){
       purpose:'Connect Votium incentive accounting and proven vlCVX voting power to Convex GaugeVotePlatform and actually executed Curve gauge BPS weights, without claiming incentives caused votes or downstream pool economics.',
       authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,walletAuthority:false,allocationAuthority:false,recommendationAuthority:false,predictionAuthority:false,causalClaimAuthority:'none',promotionAuthority:'none',methodologyMutationAuthority:false},
       sourceBinding:{roundFlowFile:'intelligence/economic-graph/vlcvx-votium-round-flow.json',roundFlowSha256:sha256File(ROUND_FLOW_FILE),votingProvenanceFile:'intelligence/economic-graph/vlcvx-votium-snapshot-proof.json',votingProvenanceSha256:sha256File(PROVENANCE_FILE),companyRegistry:'004',candidateId:'defitea-convex-vlcvx-votium'},
-      protocolBridge:{chain:'Ethereum',votium:'0x63942E31E98f1833A234077f47880A66136a2D1e',convexCurveGaugeVoting:CURVE_GAUGE_VOTING,convexCurveGaugeExecutor:CURVE_GAUGE_EXECUTOR,convexSourceRepository:'convex-eth/voting',convexSourceCommit:CONVEX_SOURCE_SHA,mechanicalIdentity:'CurveGaugeExecutor weight = floor(gaugeTotal * 10000 / proposal voteTotal), with the final rounding residual added to the last non-zero gauge once all gauges are submitted.'},
+      protocolBridge:{chain:'Ethereum',votium:'0x63942E31E98f1833A234077f47880A66136a2D1e',convexCurveGaugeVoting:CURVE_GAUGE_VOTING,convexCurveGaugeExecutor:CURVE_GAUGE_EXECUTOR,convexSourceRepository:'convex-eth/voting',convexSourceCommit:CONVEX_SOURCE_SHA,mechanicalIdentity:'CurveGaugeExecutor weight = floor(gaugeTotal * 10000 / proposal voteTotal), with the final rounding residual added to the last non-zero gauge once all voted gauges are submitted.',executionEventSemantics:'GaugeVotePlatform getGaugeCount/getGaugeEntry enumerate gauges with votes. CurveGaugeExecutor counts only submitted gauges with gaugeTotal > 0, but GaugeVoteExecuted emits the complete caller-supplied gauge array; therefore event-only gauges are valid only when live gaugeTotal = 0 and emitted BPS = 0.'},
       observation:{ethereumBlock:currentBlock,ethereumBlockHash:block.hash,observedAt:iso(block.timestamp),rpcArchitecture:'split-current-state-and-historical-log-lanes',stateRpcEndpointClass:stateEndpointClass,historicalLogRpcEndpointClassesUsed:scanned.provenance.endpointClassesUsed,historicalLogScan:scanned.provenance,rpcBatching:'disabled-for-public-endpoint-compatibility',stateReadMode:'latest-persistent-finalized-proposal-state',historicalStateReadsRequired:false,historicalExecutionEvidence:'GaugeVoteExecuted-event-logs'},
-      coverage:{roundCount:rounds.length,completeRoundCount:rounds.filter(r=>r.coverage.complete).length,votiumGaugeCount:rounds.reduce((s,r)=>s+r.coverage.votiumIncentivizedGaugeCount,0),curveExecutedVotiumGaugeCount:rounds.reduce((s,r)=>s+r.coverage.curveExecutedForVotiumGaugeCount,0),complete},
+      coverage:{roundCount:rounds.length,completeRoundCount:rounds.filter(r=>r.coverage.complete).length,votiumGaugeCount:rounds.reduce((s,r)=>s+r.coverage.votiumIncentivizedGaugeCount,0),curveExecutedVotiumGaugeCount:rounds.reduce((s,r)=>s+r.coverage.curveExecutedForVotiumGaugeCount,0),eventOnlyGaugeCount:rounds.reduce((s,r)=>s+r.curveExecutor.eventOnlyGaugeCount,0),eventOnlyPositiveGaugeCount:rounds.reduce((s,r)=>s+r.curveExecutor.eventOnlyPositiveGaugeCount,0),complete},
       rounds,
-      epistemic:{votiumIncentives:'MEASURED',votiumVotes:'MEASURED',convexToCurveWeightMechanics:'ATTRIBUTED',curveGaugeExecution:'MEASURED',incentiveToVoteRelationship:'CORRELATED-only-not-causal',voteToExecutedCurveWeightRelationship:'ATTRIBUTED-and-execution-confirmed',liquidityVolumeFeesDownstream:'UNKNOWN-not-yet-joined',companyIncomeConnection:'not-attributed-by-this-layer',primaryDriver:null},
-      semantics:{unknownIsNotZero:true,incentiveAndVoteCoexistenceIsNotCausation:true,executedGaugeWeightIsNotPoolRevenue:true,protocolFlowIsNotRealisedCompanyIncome:true,correlationMustNotBePromotedToAttribution:true}
+      epistemic:{votiumIncentives:'MEASURED',votiumVotes:'MEASURED',convexToCurveWeightMechanics:'ATTRIBUTED',curveGaugeExecution:'MEASURED',executorEventExtraRows:'ATTRIBUTED-by-pinned-source-and-live-zero-total-proof',incentiveToVoteRelationship:'CORRELATED-only-not-causal',voteToExecutedCurveWeightRelationship:'ATTRIBUTED-and-execution-confirmed',liquidityVolumeFeesDownstream:'UNKNOWN-not-yet-joined',companyIncomeConnection:'not-attributed-by-this-layer',primaryDriver:null},
+      semantics:{unknownIsNotZero:true,incentiveAndVoteCoexistenceIsNotCausation:true,zeroVoteExecutorEventRowsAreNotVotedGauges:true,executedGaugeWeightIsNotPoolRevenue:true,protocolFlowIsNotRealisedCompanyIncome:true,correlationMustNotBePromotedToAttribution:true}
     };
     fs.writeFileSync(OUTPUT_FILE,JSON.stringify(state,null,2)+'\n');
-    console.log('VLCVX VOTIUM CURVE GAUGE FLOW PASS',{generatedAt:state.generatedAt,status:state.status,block:currentBlock,stateRpc:stateEndpointClass,historicalLogRpcs:scanned.provenance.endpointClassesUsed,historicalLogScanComplete:scanned.provenance.complete,historicalDiagnostic:scanned.provenance.diagnostic,scanToBlock:scanned.provenance.toBlock,rounds:rounds.map(r=>({roundId:r.roundId,proposalId:r.proposalId,incentives:r.incentiveCount,votiumGauges:r.coverage.votiumIncentivizedGaugeCount,curveExecuted:r.coverage.curveExecutedForVotiumGaugeCount,executorDone:r.curveExecutor.isDone,submittedGaugeCount:r.curveExecutor.submittedGaugeCount,submittedWeightBps:r.curveExecutor.submittedWeightBps,rounding:r.curveExecutor.roundingProof})),coverage:state.coverage,executionAuthority:state.authority.executionAuthority});
+    console.log('VLCVX VOTIUM CURVE GAUGE FLOW PASS',{generatedAt:state.generatedAt,status:state.status,block:currentBlock,stateRpc:stateEndpointClass,historicalLogRpcs:scanned.provenance.endpointClassesUsed,historicalLogScanComplete:scanned.provenance.complete,historicalDiagnostic:scanned.provenance.diagnostic,scanToBlock:scanned.provenance.toBlock,rounds:rounds.map(r=>({roundId:r.roundId,proposalId:r.proposalId,incentives:r.incentiveCount,votiumGauges:r.coverage.votiumIncentivizedGaugeCount,curveExecuted:r.coverage.curveExecutedForVotiumGaugeCount,executorDone:r.curveExecutor.isDone,submittedGaugeCount:r.curveExecutor.submittedGaugeCount,submittedWeightBps:r.curveExecutor.submittedWeightBps,eventOnlyGaugeCount:r.curveExecutor.eventOnlyGaugeCount,eventOnlyPositiveGaugeCount:r.curveExecutor.eventOnlyPositiveGaugeCount,eventOnlyAllZero:r.coverage.eventOnlyAllZero,rounding:r.curveExecutor.roundingProof})),coverage:state.coverage,executionAuthority:state.authority.executionAuthority});
   }finally{try{stateProvider.destroy();}catch{}}
 }
 main().catch(error=>{console.error(error);process.exit(1);});
