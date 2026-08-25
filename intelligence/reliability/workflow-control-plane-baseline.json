@@ -6,7 +6,8 @@
     "topology": "MEASURED_FROM_EXACT_WORKFLOW_SOURCE",
     "candidateWriterPaths": "HEURISTIC",
     "baselineIsDebtCeilingNotDesiredEndState": true,
-    "reducingExistingDebtIsAlwaysAllowed": true
+    "reducingExistingDebtIsAlwaysAllowed": true,
+    "baselineExpansionRequiresExplicitMaintenance": true
   },
   "summary": {
     "workflowCount": 125,
@@ -92,6 +93,9 @@
     "resume-cognitive-stack-after-release",
     "resume-economic-graph-after-code-change",
     "resume-unified-capital-after-fxn-guard"
+  ],
+  "knownOtherWritePermissionWorkflows": [
+    "ask-experience"
   ],
   "allowedPullRequestTargetWorkflows": [
     "production-boundary-guard",
