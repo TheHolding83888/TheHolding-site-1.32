@@ -23,6 +23,11 @@ if(String(x.protocolBridge?.convexCurveGaugeExecutor||'').toLowerCase()!=='0x399
 if(x.protocolBridge?.convexSourceCommit!=='242b592718ff939e0a15e490a7df9730267f0999')fail('Convex voting source pin drift');
 
 if(!Number.isInteger(Number(x.observation?.ethereumBlock))||!x.observation?.ethereumBlockHash)fail('Votium→Curve observation provenance missing');
+if(x.observation?.rpcArchitecture!=='split-current-state-and-historical-log-lanes'||!x.observation?.stateRpcEndpointClass)fail('Votium→Curve split RPC architecture missing');
+if(!Array.isArray(x.observation?.historicalLogRpcEndpointClassesUsed)||x.observation.historicalLogRpcEndpointClassesUsed.length<1)fail('Votium→Curve historical-log RPC provenance missing');
+const scan=x.observation?.historicalLogScan;
+if(!Number.isInteger(Number(scan?.fromBlock))||!Number.isInteger(Number(scan?.toBlock))||Number(scan.toBlock)<Number(scan.fromBlock)||!Number.isInteger(Number(scan?.attempts))||Number(scan.attempts)<1)fail('Votium→Curve historical-log scan provenance invalid');
+if(scan?.completionRule!=='stop only after current isDone/submittedGaugeCount/submittedWeight plus unique event gauge count and event BPS sum prove both target proposals complete')fail('Votium→Curve historical-log completion rule weakened');
 if(x.observation?.stateReadMode!=='latest-persistent-finalized-proposal-state'||x.observation?.historicalStateReadsRequired!==false||x.observation?.historicalExecutionEvidence!=='GaugeVoteExecuted-event-logs')fail('Votium→Curve archive-free evidence contract missing');
 if(x.coverage?.complete!==true||Number(x.coverage.roundCount)!==2||Number(x.coverage.completeRoundCount)!==2)fail('Votium→Curve round coverage incomplete');
 if(Number(x.coverage.votiumGaugeCount)!==79||Number(x.coverage.curveExecutedVotiumGaugeCount)!==79)fail('Votium→Curve expected post-migration 79/79 gauge coverage missing');
@@ -59,6 +64,8 @@ console.log('VLCVX VOTIUM CURVE GAUGE FLOW VERIFY PASS',{
   roundFlowHash,provenanceHash,
   rounds:x.rounds.map(r=>r.roundId),
   gauges:`${x.coverage.curveExecutedVotiumGaugeCount}/${x.coverage.votiumGaugeCount}`,
+  stateRpc:x.observation.stateRpcEndpointClass,
+  historicalLogRpcs:x.observation.historicalLogRpcEndpointClassesUsed,
   archiveStateRequired:x.observation.historicalStateReadsRequired,
   curveExecution:x.epistemic.curveGaugeExecution,
   voteToCurve:x.epistemic.voteToExecutedCurveWeightRelationship,
