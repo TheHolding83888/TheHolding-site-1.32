@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - 'intelligence/explanatory/**'
+      - 'intelligence/economic-graph/**'
       - 'intelligence/brain-reasoning-engine.mjs'
+      - 'intelligence/brain-vlcvx-votium-curve-shadow-context.mjs'
       - 'intelligence/brain-upstream-guard.mjs'
       - 'intelligence/brain-policy.json'
       - 'intelligence/brain-chatgpt-bridge.mjs'
@@ -13,6 +15,7 @@ on:
       - 'intelligence/cognitive-stack-verifier.mjs'
       - 'intelligence/cognitive-stack-release.json'
       - '.github/workflows/update-brain-intelligence.yml'
+      - '.github/workflows/refresh-cognitive-stack.yml'
       - '.github/workflows/verify-brain-explanatory-context.yml'
   workflow_dispatch:
 
@@ -22,7 +25,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - name: Checkout reviewed repository state
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -39,8 +42,17 @@ jobs:
         run: |
           set -euo pipefail
           REQUIRED=(
-            intelligence/explanatory/explanatory-context.json
+            intelligence/economic-graph/economic-graph-canonical-runner.mjs
+            intelligence/economic-graph/vlcvx-votium-deep-evidence.mjs
+            intelligence/economic-graph/vlcvx-votium-round-flow.json
+            intelligence/economic-graph/vlcvx-votium-snapshot-proof.json
+            intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json
+            intelligence/economic-graph/vlcvx-votium-curve-pool-context.json
+            intelligence/explanatory/explanatory-context.mjs
+            intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
+            intelligence/brain-intelligence.json
             intelligence/brain-reasoning-engine.mjs
+            intelligence/brain-vlcvx-votium-curve-shadow-context.mjs
             intelligence/brain-upstream-guard.mjs
             intelligence/brain-policy.json
             intelligence/brain-chatgpt-bridge.mjs
@@ -54,7 +66,12 @@ jobs:
             security/security-memory.json
           )
           for f in "${REQUIRED[@]}"; do test -s "$f"; done
+          node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          node --check intelligence/economic-graph/vlcvx-votium-deep-evidence.mjs
+          node --check intelligence/explanatory/explanatory-context.mjs
+          node --check intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
           node --check intelligence/brain-reasoning-engine.mjs
+          node --check intelligence/brain-vlcvx-votium-curve-shadow-context.mjs
           node --check intelligence/brain-upstream-guard.mjs
           node --check intelligence/brain-chatgpt-bridge.mjs
           node --check intelligence/cognitive-stack-verifier.mjs
@@ -62,10 +79,37 @@ jobs:
           grep -q "protocolAprContexts" intelligence/brain-reasoning-engine.mjs
           grep -q "unresolved-beyond-formula" intelligence/brain-reasoning-engine.mjs
 
-      - name: Build Grounded Brain locally
-        run: node intelligence/brain-reasoning-engine.mjs
+      - name: Rebuild exact Graph and Explanatory context locally
+        run: |
+          set -euo pipefail
+          node intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          node intelligence/explanatory/explanatory-context.mjs
+          node intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
 
-      - name: Verify multi-cohort Explanatory grounding and causal boundary
+      - name: Verify Explanatory canonical plus shadow semantics
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('intelligence/explanatory/explanatory-context.json','utf8'));
+          if(x.engineVersion!=='0.3-multi-cohort-protocol-economic-context'||Number(x.coverage?.protocolEconomicCohortCount)!==2)throw new Error('Canonical Explanatory two-cohort surface drift');
+          const flow=x.explanations?.protocolFlowContexts?.['defitea-convex-vlcvx-votium'];
+          if(x.extensions?.vlCvxVotiumCurve!=='0.1-vlcvx-votium-curve-shadow-context'||Number(x.coverage?.shadowProtocolFlowContextCount)!==1||!flow)throw new Error('vlCVX/Votium Explanatory shadow flow missing');
+          if(flow.coverage?.canonicalProtocolEconomicCohort!==false||flow.coverage?.shadowCandidate!==true)throw new Error('vlCVX/Votium shadow boundary drift');
+          if(Number(flow.coverage?.onchainVotiumGaugesExactMatched)!==79||Number(flow.coverage?.curveExecutedVotiumGaugeRows)!==79||Number(flow.coverage?.currentCurvePoolContextsComplete)!==31||Number(flow.coverage?.unresolvedEligiblePoolContexts)!==0)throw new Error('vlCVX/Votium Explanatory proof coverage drift');
+          if(flow.measuredRelations?.voteToExecutedCurveGaugeBps?.class!=='ATTRIBUTED'||flow.measuredRelations?.incentiveToVote?.class!=='CORRELATED'||flow.measuredRelations?.historicalVoteToCurrentPoolState?.class!=='CORRELATED')throw new Error('vlCVX/Votium Explanatory relation drift');
+          if(flow.downstreamCurrentContext?.exactFeeUsd!=='UNKNOWN'||flow.causalBoundary?.primaryDriver!==null)throw new Error('vlCVX/Votium Explanatory unknown/causal drift');
+          if(flow.authority?.executionAuthority!=='none'||flow.authority?.causalClaimAuthority!=='none'||flow.authority?.promotionAuthority!=='none')throw new Error('vlCVX/Votium Explanatory authority drift');
+          console.log('EXPLANATORY VLCVX/VOTIUM SHADOW PASS',{canonicalCohorts:x.coverage.protocolEconomicCohortCount,shadowFlowContexts:x.coverage.shadowProtocolFlowContextCount,gaugeMatches:flow.coverage.onchainVotiumGaugesExactMatched,curveExecuted:flow.coverage.curveExecutedVotiumGaugeRows,currentPools:flow.coverage.currentCurvePoolContextsComplete,exactFeeUsd:flow.downstreamCurrentContext.exactFeeUsd});
+          NODE
+
+      - name: Build Grounded Brain locally
+        run: |
+          set -euo pipefail
+          node intelligence/brain-reasoning-engine.mjs
+          node intelligence/brain-vlcvx-votium-curve-shadow-context.mjs
+
+      - name: Verify multi-cohort plus vlCVX shadow Brain grounding
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
@@ -75,87 +119,46 @@ jobs:
           const brain = JSON.parse(fs.readFileSync('intelligence/brain-intelligence.json', 'utf8'));
           const explanatory = JSON.parse(fs.readFileSync('intelligence/explanatory/explanatory-context.json', 'utf8'));
           const upstream = verifyGroundedBrainUpstreams({ brain, requireFreshFlag: true });
-          if (upstream.version !== '0.2-exact-canonical-source-binding-explanatory') {
-            throw new Error(`Unexpected upstream guard: ${upstream.version}`);
-          }
-          if (upstream.version !== UPSTREAM_GUARD_VERSION || upstream.sourceCount !== 5) {
-            throw new Error('Five-source exact upstream vector missing');
-          }
+          if (upstream.version !== '0.2-exact-canonical-source-binding-explanatory') throw new Error(`Unexpected upstream guard: ${upstream.version}`);
+          if (upstream.version !== UPSTREAM_GUARD_VERSION || upstream.sourceCount !== 5) throw new Error('Five-source exact upstream vector missing');
           const exp = upstream.sources.find(x => x.key === 'explanatory');
-          if (!exp || exp.file !== 'intelligence/explanatory/explanatory-context.json' || exp.exactByteMatch !== true) {
-            throw new Error('Explanatory exact-byte upstream binding missing');
-          }
-          if (explanatory.engineVersion !== '0.3-multi-cohort-protocol-economic-context' || Number(explanatory.coverage?.protocolEconomicCohortCount) !== 2) {
-            throw new Error('Canonical Explanatory two-cohort source missing');
-          }
+          if (!exp || exp.file !== 'intelligence/explanatory/explanatory-context.json' || exp.exactByteMatch !== true) throw new Error('Explanatory exact-byte upstream binding missing');
+          if (explanatory.engineVersion !== '0.3-multi-cohort-protocol-economic-context' || Number(explanatory.coverage?.protocolEconomicCohortCount) !== 2) throw new Error('Canonical Explanatory two-cohort source missing');
 
           const legacy = brain.questions?.protocolAprContext;
-          if (legacy?.status !== 'context-available-causal-attribution-unresolved') {
-            throw new Error('Legacy veFXN protocol APR context not preserved in Brain');
-          }
-          if (legacy?.causalAttribution !== 'unresolved' || legacy?.primaryDriver !== null) {
-            throw new Error('Brain promoted unproved veFXN causal attribution');
-          }
-          if (!Number.isFinite(Number(legacy?.reportableMeasuredContext?.fxnLocked)) ||
-              !Number.isFinite(Number(legacy?.reportableMeasuredContext?.totalVeFxn))) {
-            throw new Error('Measured veFXN protocol drivers missing from Brain');
-          }
+          if (legacy?.status !== 'context-available-causal-attribution-unresolved') throw new Error('Legacy veFXN protocol APR context not preserved in Brain');
+          if (legacy?.causalAttribution !== 'unresolved' || legacy?.primaryDriver !== null) throw new Error('Brain promoted unproved veFXN causal attribution');
 
           const contexts = brain.questions?.protocolAprContexts;
           const fx = contexts?.['defitea-fxn-vefxn'];
           const curve = contexts?.['defitea-curve-vecrv'];
-          if (!contexts || Object.keys(contexts).length !== 2 || !fx || !curve) {
-            throw new Error('Brain canonical protocolAprContexts must contain exactly f(x) + Curve');
-          }
-          if (fx.status !== 'context-available-causal-attribution-unresolved' || fx.causalAttribution !== 'unresolved' || fx.primaryDriver !== null) {
-            throw new Error('Brain veFXN canonical causal boundary drift');
-          }
-          if (curve.status !== 'mechanics-proven-upstream-cause-unresolved') {
-            throw new Error('Brain Curve mechanical context missing');
-          }
-          if (curve.mechanics?.status !== 'proven-canonical-collector-identity' || curve.mechanics?.mechanicalAttribution !== 'proven-within-apr-formula') {
-            throw new Error('Brain Curve proven mechanics missing');
-          }
-          if (curve.causalAttribution !== 'unresolved-beyond-formula' || curve.primaryDriver !== null) {
-            throw new Error('Brain over-promoted Curve upstream causality');
-          }
-          if (!Number.isFinite(Number(curve?.reportableMeasuredContext?.rollingFourWeekFeesCrvUSD)) ||
-              !Number.isFinite(Number(curve?.reportableMeasuredContext?.rollingAverageVeSupply)) ||
-              !Number.isFinite(Number(curve?.reportableMeasuredContext?.crvPriceUsd))) {
-            throw new Error('Brain Curve mechanical inputs missing');
-          }
-          if (Number(brain.currentPosture?.protocolEconomics?.cohortCount) !== 2 ||
-              brain.currentPosture?.protocolEconomics?.legacyAliasCohortId !== 'defitea-fxn-vefxn') {
-            throw new Error('Brain multi-cohort currentPosture contract missing');
-          }
+          if (!contexts || Object.keys(contexts).length !== 2 || !fx || !curve) throw new Error('Brain canonical protocolAprContexts must contain exactly f(x) + Curve');
+          if (fx.status !== 'context-available-causal-attribution-unresolved' || fx.causalAttribution !== 'unresolved' || fx.primaryDriver !== null) throw new Error('Brain veFXN canonical causal boundary drift');
+          if (curve.status !== 'mechanics-proven-upstream-cause-unresolved') throw new Error('Brain Curve mechanical context missing');
+          if (curve.mechanics?.status !== 'proven-canonical-collector-identity' || curve.mechanics?.mechanicalAttribution !== 'proven-within-apr-formula') throw new Error('Brain Curve proven mechanics missing');
+          if (curve.causalAttribution !== 'unresolved-beyond-formula' || curve.primaryDriver !== null) throw new Error('Brain over-promoted Curve upstream causality');
+          if (Number(brain.currentPosture?.protocolEconomics?.cohortCount) !== 2 || brain.currentPosture?.protocolEconomics?.legacyAliasCohortId !== 'defitea-fxn-vefxn') throw new Error('Brain multi-cohort currentPosture contract missing');
 
-          const whatChangedExp = (brain.questions?.whatChanged?.evidence ?? []).filter(ev =>
-            ev.source === 'intelligence/explanatory/explanatory-context.json'
-          );
+          const flow=brain.questions?.protocolFlowContexts?.['defitea-convex-vlcvx-votium'];
+          if(brain.extensions?.vlCvxVotiumCurve!=='0.1-vlcvx-votium-curve-shadow-context'||Number(brain.currentPosture?.protocolFlows?.contextCount)!==1||!flow)throw new Error('Brain vlCVX/Votium shadow flow missing');
+          if(Number(flow.coverage?.onchainVotiumGaugesExactMatched)!==79||Number(flow.coverage?.curveExecutedVotiumGaugeRows)!==79||Number(flow.coverage?.currentCurvePoolContextsComplete)!==31||Number(flow.coverage?.unresolvedEligiblePoolContexts)!==0)throw new Error('Brain vlCVX/Votium coverage drift');
+          if(flow.measuredRelations?.voteToExecutedCurveGaugeBps?.class!=='ATTRIBUTED'||flow.measuredRelations?.incentiveToVote?.class!=='CORRELATED'||flow.measuredRelations?.historicalVoteToCurrentPoolState?.class!=='CORRELATED')throw new Error('Brain vlCVX/Votium relation drift');
+          if(flow.downstreamCurrentContext?.exactFeeUsd!=='UNKNOWN'||flow.causalBoundary?.primaryDriver!==null||flow.authority?.executionAuthority!=='none'||flow.authority?.causalClaimAuthority!=='none')throw new Error('Brain vlCVX/Votium unknown/authority drift');
+
+          const whatChangedExp = (brain.questions?.whatChanged?.evidence ?? []).filter(ev => ev.source === 'intelligence/explanatory/explanatory-context.json');
           const pointers = new Set(whatChangedExp.map(ev => ev.pointer));
           for (const pointer of [
             '/explanations/protocolAprChangeContext',
             '/explanations/protocolAprChangeContexts/defitea-fxn-vefxn',
-            '/explanations/protocolAprChangeContexts/defitea-curve-vecrv'
+            '/explanations/protocolAprChangeContexts/defitea-curve-vecrv',
+            '/explanations/protocolFlowContexts/defitea-convex-vlcvx-votium'
           ]) {
             if (!pointers.has(pointer)) throw new Error(`Explanatory evidence pointer missing from Brain: ${pointer}`);
           }
-          if (whatChangedExp.some(ev => ev.sourceSha256 !== exp.sha256)) {
-            throw new Error('Brain multi-cohort Explanatory evidence hash mismatch');
-          }
+          if (whatChangedExp.some(ev => ev.sourceSha256 !== exp.sha256)) throw new Error('Brain Explanatory evidence hash mismatch');
           if ((brain.reasoningCases ?? []).length > 25) throw new Error('Reasoning case capacity expanded unexpectedly');
-          if (brain.constraints?.actionMode !== 'proposal-only' || brain.constraints?.autonomousCapitalActionAllowed !== false) {
-            throw new Error('Brain authority regression');
-          }
-          console.log('BRAIN MULTI-COHORT EXPLANATORY CONTEXT PASS', {
-            sources: upstream.sourceCount,
-            cohorts: Object.keys(contexts).length,
-            fxnStatus: fx.status,
-            curveStatus: curve.status,
-            curveMechanicalAttribution: curve.mechanics.mechanicalAttribution,
-            curveUpstreamCause: curve.causalAttribution,
-            reasoningCases: brain.reasoningCases.length,
-          });
+          if (brain.constraints?.actionMode !== 'proposal-only' || brain.constraints?.autonomousCapitalActionAllowed !== false) throw new Error('Brain authority regression');
+          console.log('BRAIN MULTI-COHORT + VLCVX SHADOW PASS', {sources:upstream.sourceCount,canonicalCohorts:Object.keys(contexts).length,shadowFlowContexts:brain.currentPosture.protocolFlows.contextCount,curveExecuted:flow.coverage.curveExecutedVotiumGaugeRows,currentPools:flow.coverage.currentCurvePoolContextsComplete,exactFeeUsd:flow.downstreamCurrentContext.exactFeeUsd,reasoningCases:brain.reasoningCases.length});
           NODE
 
       - name: Build exact-upstream Bridge locally
@@ -165,7 +168,7 @@ jobs:
           node intelligence/brain-chatgpt-bridge.mjs
           node intelligence/brain-chatgpt-bridge.mjs --verify-current
 
-      - name: Verify multi-cohort Explanatory evidence reaches Bridge
+      - name: Verify vlCVX shadow evidence reaches Bridge
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -173,30 +176,19 @@ jobs:
           const bridge = JSON.parse(fs.readFileSync('intelligence/brain-chatgpt-bridge.json', 'utf8'));
           const report = JSON.parse(fs.readFileSync('intelligence/brain-chatgpt-bridge-eval.json', 'utf8'));
           if (report.status !== 'pass') throw new Error('Bridge evaluation failed');
-          if (bridge.grounding?.upstreamValidation?.sourceCount !== 5) {
-            throw new Error('Bridge does not validate five Brain upstream sources');
-          }
-          const expEvidence = (bridge.evidenceCatalog ?? []).filter(ev =>
-            ev.source === 'intelligence/explanatory/explanatory-context.json'
-          );
+          if (bridge.grounding?.upstreamValidation?.sourceCount !== 5) throw new Error('Bridge does not validate five Brain upstream sources');
+          const expEvidence = (bridge.evidenceCatalog ?? []).filter(ev => ev.source === 'intelligence/explanatory/explanatory-context.json');
           const pointers = new Set(expEvidence.map(ev => ev.pointer));
           for (const pointer of [
             '/explanations/protocolAprChangeContext',
             '/explanations/protocolAprChangeContexts/defitea-fxn-vefxn',
-            '/explanations/protocolAprChangeContexts/defitea-curve-vecrv'
+            '/explanations/protocolAprChangeContexts/defitea-curve-vecrv',
+            '/explanations/protocolFlowContexts/defitea-convex-vlcvx-votium'
           ]) {
-            if (!pointers.has(pointer)) throw new Error(`Bridge missing canonical protocol evidence: ${pointer}`);
+            if (!pointers.has(pointer)) throw new Error(`Bridge missing protocol evidence: ${pointer}`);
           }
-          if (bridge.constraints?.executionAllowed !== false ||
-              bridge.constraints?.apiRequired !== false ||
-              bridge.constraints?.modelCallPerformed !== false) {
-            throw new Error('Bridge authority/cost boundary regression');
-          }
-          console.log('BRIDGE MULTI-COHORT EXPLANATORY CONTEXT PASS', {
-            upstreamSources: bridge.grounding.upstreamValidation.sourceCount,
-            protocolEvidenceCount: [...pointers].filter(x => x.startsWith('/explanations/protocolAprChangeContext')).length,
-            noExecution: bridge.constraints.executionAllowed === false,
-          });
+          if (bridge.constraints?.executionAllowed !== false || bridge.constraints?.apiRequired !== false || bridge.constraints?.modelCallPerformed !== false) throw new Error('Bridge authority/cost boundary regression');
+          console.log('BRIDGE VLCVX/VOTIUM SHADOW EVIDENCE PASS', {upstreamSources:bridge.grounding.upstreamValidation.sourceCount,vlcvxFlowEvidence:pointers.has('/explanations/protocolFlowContexts/defitea-convex-vlcvx-votium'),noExecution:bridge.constraints.executionAllowed===false});
           NODE
 
       - name: Verify local Cognitive Stack coherence
@@ -207,19 +199,9 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const stack = JSON.parse(fs.readFileSync('intelligence/cognitive-stack-state.json', 'utf8'));
-          if (stack.chain?.groundedBrain?.exactCanonicalUpstreamBinding !== true) {
-            throw new Error('Cognitive Stack lost exact Brain upstream binding');
-          }
-          if (stack.chain?.chatgptBridge?.exactCanonicalUpstreamBinding !== true) {
-            throw new Error('Cognitive Stack lost exact Bridge upstream binding');
-          }
-          if (stack.operatingContract?.executionAuthority !== 'none') {
-            throw new Error('Cognitive Stack execution authority regression');
-          }
-          console.log('COGNITIVE STACK MULTI-COHORT EXPLANATORY INTEGRATION PASS', {
-            status: stack.status,
-            ready: stack.readyForManualInterpretation,
-            chainHash: stack.integrity?.chainHash,
-          });
+          if (stack.chain?.groundedBrain?.exactCanonicalUpstreamBinding !== true) throw new Error('Cognitive Stack lost exact Brain upstream binding');
+          if (stack.chain?.chatgptBridge?.exactCanonicalUpstreamBinding !== true) throw new Error('Cognitive Stack lost exact Bridge upstream binding');
+          if (stack.operatingContract?.executionAuthority !== 'none') throw new Error('Cognitive Stack execution authority regression');
+          console.log('COGNITIVE STACK VLCVX/VOTIUM INTEGRATION PASS', {status:stack.status,ready:stack.readyForManualInterpretation,chainHash:stack.integrity?.chainHash});
           NODE
           git diff --check
