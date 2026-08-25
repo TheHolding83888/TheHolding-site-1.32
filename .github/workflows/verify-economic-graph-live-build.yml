@@ -52,17 +52,22 @@ jobs:
           for(const required of [
             "intelligence/economic-graph/economic-graph.mjs",
             ".github/workflows/update-economic-graph.yml",
-            "gh workflow run unified-capital-refresh.yml --ref main"
+            "gh workflow run update-economic-graph.yml --ref main",
+            "Preflight existing Aerodrome Managed Strategy Pulse",
+            "steps.pulse_preflight.outputs.refresh_needed == 'true'"
           ]){
-            if(!resume.includes(required))throw new Error(`Economic Graph recovery topology missing: ${required}`);
+            if(!resume.includes(required))throw new Error(`Economic Graph fast recovery topology missing: ${required}`);
           }
+          if(resume.includes('gh workflow run unified-capital-refresh.yml --ref main'))throw new Error('Economic Graph recovery regressed to redundant Unified Capital dispatch');
           if(!/actions:\s*write/.test(resume))throw new Error('Economic Graph recovery dispatcher lacks actions:write');
           if(!/contents:\s*read/.test(resume))throw new Error('Economic Graph recovery dispatcher widened contents permission');
           if(/contents:\s*write/.test(resume))throw new Error('Economic Graph recovery dispatcher may not write repository contents');
           console.log('ECONOMIC GRAPH refresh topology PASS',{
             directCodePushBuild:false,
             canonicalProductivityPushBuild:true,
-            codeChangeDispatch:'unified-capital-refresh.yml',
+            codeChangeDispatch:'update-economic-graph.yml',
+            redundantUnifiedDispatch:false,
+            aerodromePulsePolicy:'semantic-preflight-then-bounded-repair',
             dispatcherContents:'read',
             dispatcherActions:'write'
           });
@@ -117,7 +122,7 @@ jobs:
               exit "$rc"
             fi
             echo 'EXPECTED PRE-REFRESH DRIFT DETECTED: strict APR parity guard rejected stale canonical Productivity.'
-            echo 'Production code-change topology routes through Unified Capital before Economic Graph publication.'
+            echo 'Production code-change topology dispatches the canonical Economic Graph rebuild directly from current canonical Productivity.'
           fi
 
           rm -f "$TMP" "$LOG"
