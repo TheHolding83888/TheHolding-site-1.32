@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-25T13:38:02.658Z",
+  "generatedAt": "2026-08-25T13:42:35.823Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 38,
+    "medium": 39,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 619,
-    "bytesScanned": 15173253,
+    "bytesScanned": 15173255,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Mon, 24 Aug 2026 14:32:09 GMT",
+        "lastModified": "Sat, 22 Aug 2026 01:21:42 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,22 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "a6353c31f0ff3b20fd74b5a0a19e17e0949a3cd61d15a5db5ae31849b5ad7aa3",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-vlcvx-votium-curve-gauge-flow.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "9b7758d01bd2e6244a2b9ad6e2748426382a81688339964241dce7d4fe297373",
+          "currentSha256": "22997db9809de22c41c08b9201141451ef9b1615d5e95d8fe61e67869248914d"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -80,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "a6353c31f0ff3b20fd74b5a0a19e17e0949a3cd61d15a5db5ae31849b5ad7aa3",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-vlcvx-votium-curve-gauge-flow.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "9b7758d01bd2e6244a2b9ad6e2748426382a81688339964241dce7d4fe297373",
+        "currentSha256": "22997db9809de22c41c08b9201141451ef9b1615d5e95d8fe61e67869248914d"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -692,12 +721,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "f32367196f0f68e050927a6ff991c5b54af1aea5bbb65d5ba6cf0f8940efa078",
+    "snapshotHash": "2b00ff36f4a78035295c1ad0416715cad9c2bd6e7afa802c6ce30996a33314c4",
     "securityVault": {
-      "runCount": 501,
+      "runCount": 502,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-25T13-38-02-658Z-f32367196f.json",
-      "latestRecordHash": "756988dfacc7a194d9b01258aa53bb8a3936d9322d6ee557bfff7b273f9cc898",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-25T13-42-35-823Z-2b00ff36f4.json",
+      "latestRecordHash": "5e342336e14cf2387e82966e6cf725d7b6618bab539a457d7b50481810be8ce6",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
