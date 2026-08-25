@@ -125,9 +125,10 @@ jobs:
           NODE
           git diff --check
 
-      - name: Publish generated pulse safely
+      - name: Publish generated pulse atomically
         if: github.event_name != 'pull_request'
         env:
+          GH_TOKEN: ${{ github.token }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
         shell: bash
@@ -137,20 +138,6 @@ jobs:
           GRAPH="intelligence/economic-graph/economic-graph.json"
           test -s "$GENERATED"
           test -s "$GRAPH"
-          git config user.name "The Holding Aerodrome Pulse"
-          git config user.email "aerodrome-pulse@theholding.ai"
-          git add "$GENERATED"
-          staged_bad="$(git diff --cached --name-only | grep -Ev '^intelligence/economic-graph/aerodrome-managed-pulse\.json$' || true)"
-          if [ -n "$staged_bad" ]; then
-            echo "ERROR: Aerodrome Pulse attempted to stage outside generated boundary:"
-            echo "$staged_bad"
-            exit 1
-          fi
-          if git diff --cached --quiet; then
-            echo "Aerodrome managed pulse already current."
-            exit 0
-          fi
-          git commit -m "intelligence: refresh aerodrome managed pulse"
 
           artifact_graph_hash() {
             node - "$GENERATED" <<'NODE'
@@ -160,63 +147,117 @@ jobs:
           NODE
           }
 
-          remote_graph_hash() {
-            git show "origin/main:$GRAPH" | sha256sum | awk '{print $1}'
+          validate_binding() {
+            node - "$GENERATED" "$GRAPH" <<'NODE'
+          const fs=require('fs');
+          const crypto=require('crypto');
+          const pulse=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const graphHash=crypto.createHash('sha256').update(fs.readFileSync(process.argv[3])).digest('hex');
+          if(pulse.sourceBinding?.economicGraphSha256!==graphHash)throw new Error('Pulse sourceBinding does not match exact Graph bytes');
+          if(pulse.latest?.provenance?.economicGraphSha256!==graphHash||pulse.latest?.provenance?.sameBlockRead!==true)throw new Error('Pulse provenance binding missing');
+          if(pulse.authority?.executionAuthority!=='none'||pulse.authority?.promotionAuthority!=='none'||pulse.latest?.epistemic?.primaryDriver!==null)throw new Error('Pulse authority boundary regression');
+          NODE
           }
 
-          # The live pulse can take >1 minute across the current voted-pool set.
-          # Preserve an already measured same-block observation across unrelated
-          # main churn. Re-measure only when the exact Economic Graph bytes that
-          # the artifact is cryptographically bound to have actually changed.
+          fetch_remote_graph() {
+            gh api --method GET \
+              -H "Accept: application/vnd.github.raw+json" \
+              "repos/${GITHUB_REPOSITORY}/contents/${GRAPH}" \
+              -f ref=main > /tmp/remote-economic-graph.json
+          }
+
+          fetch_remote_pulse_if_present() {
+            if gh api --method GET \
+              -H "Accept: application/vnd.github.raw+json" \
+              "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}" \
+              -f ref=main > /tmp/remote-aerodrome-pulse.json 2>/dev/null; then
+              cp /tmp/remote-aerodrome-pulse.json "$GENERATED"
+              return 0
+            fi
+            rm -f /tmp/remote-aerodrome-pulse.json "$GENERATED"
+            return 1
+          }
+
+          validate_binding
+
+          # Publish exactly one generated file through the repository Contents API.
+          # This removes git rebase/push races with unrelated generated commits while
+          # retaining a fail-closed exact Economic Graph source binding. If Graph
+          # bytes changed after measurement, rebuild against the new reviewed Graph;
+          # otherwise preserve the already-measured same-block observation.
           for attempt in 1 2 3 4 5 6; do
-            git fetch origin main
+            fetch_remote_graph
+            REMOTE_GRAPH_HASH="$(sha256sum /tmp/remote-economic-graph.json | awk '{print $1}')"
             ARTIFACT_GRAPH_HASH="$(artifact_graph_hash)"
-            REMOTE_GRAPH_HASH="$(remote_graph_hash)"
-            if [ -z "$ARTIFACT_GRAPH_HASH" ] || [ -z "$REMOTE_GRAPH_HASH" ]; then
+            if [ -z "$REMOTE_GRAPH_HASH" ] || [ -z "$ARTIFACT_GRAPH_HASH" ]; then
               echo "ERROR: missing Aerodrome Pulse / Economic Graph binding hash"
               exit 1
             fi
 
-            if ! git rebase origin/main; then
-              git rebase --abort || true
-              echo "Aerodrome Pulse publish conflict; refusing to guess."
-              exit 1
-            fi
-
             if [ "$ARTIFACT_GRAPH_HASH" != "$REMOTE_GRAPH_HASH" ]; then
-              echo "Economic Graph changed since Pulse measurement; rebuilding against reviewed latest main."
+              echo "Economic Graph changed since Pulse measurement; rebuilding against exact remote Graph bytes."
+              cp /tmp/remote-economic-graph.json "$GRAPH"
+              fetch_remote_pulse_if_present || true
               node intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
-              git add "$GENERATED"
-              if git diff --cached --quiet; then
-                echo "ERROR: Graph changed but Pulse rebuild produced no staged update"
-                exit 1
-              fi
-              git commit --amend --no-edit
+              validate_binding
               continue
             fi
 
-            LOCAL_GRAPH_HASH="$(sha256sum "$GRAPH" | awk '{print $1}')"
-            if [ "$LOCAL_GRAPH_HASH" != "$ARTIFACT_GRAPH_HASH" ]; then
-              echo "ERROR: local Graph bytes diverged from Pulse source binding after rebase"
-              exit 1
+            REMOTE_SHA=""
+            if REMOTE_SHA="$(gh api --method GET "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}" -f ref=main --jq '.sha' 2>/dev/null)"; then
+              :
+            else
+              REMOTE_SHA=""
             fi
 
-            if git push origin HEAD:main; then
-              git fetch origin main
-              git show origin/main:"$GENERATED" > /tmp/remote-aerodrome-pulse.json
+            node - "$GENERATED" "$REMOTE_SHA" > /tmp/aerodrome-pulse-put.json <<'NODE'
+          const fs=require('fs');
+          const [file,sha]=process.argv.slice(2);
+          const payload={
+            message:'intelligence: refresh aerodrome managed pulse',
+            content:fs.readFileSync(file).toString('base64'),
+            branch:'main'
+          };
+          if(sha) payload.sha=sha;
+          process.stdout.write(JSON.stringify(payload));
+          NODE
+
+            if gh api --method PUT \
+              "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}" \
+              --input /tmp/aerodrome-pulse-put.json > /tmp/aerodrome-pulse-publish-response.json; then
               node - <<'NODE'
-              const fs=require('fs');
-              const x=JSON.parse(fs.readFileSync('/tmp/remote-aerodrome-pulse.json','utf8'));
-              if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.status!=='shadow-measured-not-promoted')throw new Error('Remote pulse version/status mismatch');
-              if(x.authority?.executionAuthority!=='none'||x.authority?.promotionAuthority!=='none')throw new Error('Remote pulse authority regression');
-              if(x.latest?.provenance?.sameBlockRead!==true||x.latest?.provenance?.economicGraphSha256!==x.sourceBinding?.economicGraphSha256)throw new Error('Remote pulse source/same-block provenance mismatch');
-              if(x.latest?.epistemic?.primaryDriver!==null)throw new Error('Remote pulse unearned primaryDriver');
-              console.log('Verified Aerodrome Managed Strategy Pulse on remote main.');
-              NODE
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/aerodrome-pulse-publish-response.json','utf8'));
+          if(!r?.commit?.sha||r?.content?.path!=='intelligence/economic-graph/aerodrome-managed-pulse.json')throw new Error('Unexpected Contents API publication response');
+          console.log('Aerodrome Pulse atomic publication commit',r.commit.sha);
+          NODE
+
+              gh api --method GET \
+                -H "Accept: application/vnd.github.raw+json" \
+                "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}" \
+                -f ref=main > /tmp/remote-aerodrome-pulse.json
+              gh api --method GET \
+                -H "Accept: application/vnd.github.raw+json" \
+                "repos/${GITHUB_REPOSITORY}/contents/${GRAPH}" \
+                -f ref=main > /tmp/remote-economic-graph-after.json
+
+              node - <<'NODE'
+          const fs=require('fs');
+          const crypto=require('crypto');
+          const x=JSON.parse(fs.readFileSync('/tmp/remote-aerodrome-pulse.json','utf8'));
+          const graphHash=crypto.createHash('sha256').update(fs.readFileSync('/tmp/remote-economic-graph-after.json')).digest('hex');
+          if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.status!=='shadow-measured-not-promoted')throw new Error('Remote pulse version/status mismatch');
+          if(x.authority?.executionAuthority!=='none'||x.authority?.promotionAuthority!=='none')throw new Error('Remote pulse authority regression');
+          if(x.sourceBinding?.economicGraphSha256!==graphHash||x.latest?.provenance?.economicGraphSha256!==graphHash||x.latest?.provenance?.sameBlockRead!==true)throw new Error('Remote Pulse is not bound to current exact Economic Graph bytes');
+          if(x.latest?.epistemic?.primaryDriver!==null)throw new Error('Remote pulse unearned primaryDriver');
+          console.log('Verified Aerodrome Managed Strategy Pulse on remote main via atomic Contents API publication.');
+          NODE
               exit 0
             fi
-            echo "Main moved during fast Aerodrome Pulse push; retrying without re-measure unless Graph changed ($attempt/6)..."
+
+            echo "Contents API publication raced or was rejected; retrying bounded attempt $attempt/6..."
             sleep $attempt
           done
-          echo "Aerodrome Pulse publish failed after 6 bounded attempts."
+
+          echo "Aerodrome Pulse atomic publication failed after 6 bounded attempts."
           exit 1
