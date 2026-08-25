@@ -1,0 +1,27 @@
+{
+  "version": "0.1-workflow-definition-diff-guard",
+  "mode": "fail-closed-unverified-workflow-logic-change",
+  "purpose": "Allow PR workflow self-triggers to be removed without losing review safety: common action-pin-only changes are covered centrally, deliberate self-trigger removal is recognized as bounded topology debt reduction, and all other workflow logic changes must still wake their own domain verifier through a relevant changed source path.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "centrallyProvenActionFamilies": [
+    "actions/checkout",
+    "actions/setup-node",
+    "actions/upload-artifact"
+  ],
+  "laws": [
+    "If a changed workflow still wakes on its own definition file, its existing verifier remains the proof path.",
+    "If a changed workflow no longer self-wakes, a pin-only update is allowed only for action families exercised by the central Control Plane compatibility canary.",
+    "Removing only the workflow's own path entry from pull_request.paths is allowed only when the workflow keeps pull_request enabled and retains at least one non-workflow domain path.",
+    "Any other workflow logic change that does not self-wake must be paired with a changed non-workflow path that wakes the current workflow verifier.",
+    "Added or deleted workflow definitions without a verifiable proof path fail closed.",
+    "Unknown diff semantics fail closed."
+  ]
+}
