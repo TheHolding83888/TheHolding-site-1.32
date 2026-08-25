@@ -36,47 +36,73 @@ function collectYamlBlock(lines, startIndex) {
   return block;
 }
 
+function parseInlineList(value) {
+  const raw = cleanScalar(value);
+  if (!raw.startsWith('[') || !raw.endsWith(']')) return [];
+  return raw.slice(1, -1).split(',').map(cleanScalar).filter(Boolean);
+}
+
 function parseOn(text) {
   const lines = text.split(/\r?\n/);
   const triggers = new Set();
   const schedules = [];
   const workflowRunSources = [];
+
   for (let i = 0; i < lines.length; i += 1) {
     const match = lines[i].match(/^on:\s*(.*?)\s*$/);
     if (!match) continue;
     const inline = match[1];
     if (inline) {
-      if (inline.startsWith('[') && inline.endsWith(']')) {
-        inline.slice(1, -1).split(',').map(cleanScalar).filter(Boolean).forEach(v => triggers.add(v));
-      } else triggers.add(cleanScalar(inline));
+      const list = parseInlineList(inline);
+      if (list.length) list.forEach(v => triggers.add(v));
+      else triggers.add(cleanScalar(inline));
       break;
     }
+
     const block = collectYamlBlock(lines, i);
     let activeTop = null;
+    let workflowRunField = null;
+
     for (const line of block) {
       const top = line.match(/^\s{2}([A-Za-z0-9_-]+):(?:\s*(.*))?$/);
       if (top) {
         activeTop = top[1];
+        workflowRunField = null;
         triggers.add(activeTop);
         continue;
       }
+
       if (activeTop === 'schedule') {
         const cron = line.match(/cron:\s*['"]?([^'"]+)['"]?\s*$/);
         if (cron) schedules.push(cron[1].trim());
+        continue;
       }
+
       if (activeTop === 'workflow_run') {
-        const inlineSources = line.match(/workflows:\s*\[(.+)\]/);
-        if (inlineSources) {
-          inlineSources[1].split(',').map(cleanScalar).filter(Boolean).forEach(v => workflowRunSources.push(v));
-        } else {
-          const listItem = line.match(/^\s+-\s*['"]?(.+?)['"]?\s*$/);
+        const field = line.match(/^\s{4}([A-Za-z0-9_-]+):(?:\s*(.*))?$/);
+        if (field) {
+          workflowRunField = field[1];
+          if (workflowRunField === 'workflows') {
+            const list = parseInlineList(field[2]);
+            list.forEach(v => workflowRunSources.push(v));
+          }
+          continue;
+        }
+
+        if (workflowRunField === 'workflows') {
+          const listItem = line.match(/^\s{6,}-\s*['"]?(.+?)['"]?\s*$/);
           if (listItem) workflowRunSources.push(cleanScalar(listItem[1]));
         }
       }
     }
     break;
   }
-  return { triggers: [...triggers].sort(), schedules: [...new Set(schedules)].sort(), workflowRunSources: [...new Set(workflowRunSources)].sort() };
+
+  return {
+    triggers: [...triggers].sort(),
+    schedules: [...new Set(schedules)].sort(),
+    workflowRunSources: [...new Set(workflowRunSources)].sort()
+  };
 }
 
 function parsePermissions(text) {
@@ -106,23 +132,29 @@ function parsePermissions(text) {
 
 function permissionSignals(scopes) {
   const signals = [];
-  let anyWrite = false;
+  const otherWritePermissions = new Set();
   let contentsWrite = false;
   let actionsWrite = false;
   let writeAll = false;
+
   for (const scope of scopes) {
     for (const [key, valueRaw] of Object.entries(scope.entries)) {
       const value = String(valueRaw).toLowerCase();
-      if (value === 'write' || value === 'write-all') {
-        anyWrite = true;
-        signals.push(`permission:${key}:${value}`);
-      }
+      if (value === 'write' || value === 'write-all') signals.push(`permission:${key}:${value}`);
       if (key === 'contents' && value === 'write') contentsWrite = true;
-      if (key === 'actions' && value === 'write') actionsWrite = true;
+      else if (key === 'actions' && value === 'write') actionsWrite = true;
+      else if (value === 'write' && key !== '*') otherWritePermissions.add(key);
       if ((key === '*' && value === 'write-all') || value === 'write-all') writeAll = true;
     }
   }
-  return { anyWrite, contentsWrite, actionsWrite, writeAll, signals: [...new Set(signals)].sort() };
+
+  return {
+    contentsWrite,
+    actionsWrite,
+    writeAll,
+    otherWritePermissions: [...otherWritePermissions].sort(),
+    signals: [...new Set(signals)].sort()
+  };
 }
 
 function extractDispatchTargets(text) {
@@ -170,13 +202,20 @@ function scanWorkflowText(filePath, text) {
   const dispatchTargets = extractDispatchTargets(text);
   const candidate = extractCandidateWriterPaths(text);
   const pullRequestTarget = on.triggers.includes('pull_request_target') || /^\s*pull_request_target\s*:/m.test(text);
+
+  const repositoryWriterCapable = perm.contentsWrite || gitCommit || gitPush || contentsApiWrite || perm.writeAll;
+  const workflowControlCapable = perm.actionsWrite || dispatchTargets.length > 0 || perm.writeAll;
+  const otherWritePermission = perm.otherWritePermissions.length > 0;
+  const privilegedWorkflow = repositoryWriterCapable || workflowControlCapable || otherWritePermission || perm.writeAll;
+
   const writeSignals = [
     ...perm.signals,
     ...(gitCommit ? ['git-commit'] : []),
     ...(gitPush ? ['git-push'] : []),
-    ...(contentsApiWrite ? ['contents-api-write'] : [])
+    ...(contentsApiWrite ? ['contents-api-write'] : []),
+    ...(dispatchTargets.length ? ['workflow-dispatch'] : [])
   ];
-  const writeCapable = perm.anyWrite || gitCommit || gitPush || contentsApiWrite;
+
   return {
     file: filePath.replaceAll('\\', '/'),
     id: base.replace(/\.ya?ml$/i, ''),
@@ -187,7 +226,11 @@ function scanWorkflowText(filePath, text) {
     dispatchTargets,
     permissions: permissionScopes,
     hasConcurrency,
-    writeCapable,
+    repositoryWriterCapable,
+    workflowControlCapable,
+    otherWritePermission,
+    otherWritePermissions: perm.otherWritePermissions,
+    privilegedWorkflow,
     contentsWrite: perm.contentsWrite,
     actionsWrite: perm.actionsWrite,
     writeAll: perm.writeAll,
@@ -200,7 +243,8 @@ function scanWorkflowText(filePath, text) {
 
 function resolveWorkflowTarget(target, byName, byId) {
   const normalized = cleanScalar(target);
-  if (byId.has(normalized.replace(/\.ya?ml$/i, ''))) return byId.get(normalized.replace(/\.ya?ml$/i, ''));
+  const normalizedId = normalized.replace(/\.ya?ml$/i, '');
+  if (byId.has(normalizedId)) return byId.get(normalizedId);
   if (byName.has(normalized)) return byName.get(normalized);
   return null;
 }
@@ -210,6 +254,7 @@ function buildGraph(workflows) {
   const byId = new Map(workflows.map(w => [w.id, w.id]));
   const edges = [];
   const unresolved = [];
+
   for (const workflow of workflows) {
     for (const source of workflow.workflowRunSources) {
       const from = resolveWorkflowTarget(source, byName, byId);
@@ -222,16 +267,21 @@ function buildGraph(workflows) {
       else unresolved.push({ from: workflow.id, to: target, type: 'workflow-dispatch' });
     }
   }
-  const uniqueEdges = [...new Map(edges.map(e => [`${e.from}|${e.to}|${e.type}`, e])).values()].sort((a, b) => `${a.from}|${a.to}|${a.type}`.localeCompare(`${b.from}|${b.to}|${b.type}`));
+
+  const uniqueEdges = [...new Map(edges.map(e => [`${e.from}|${e.to}|${e.type}`, e])).values()]
+    .sort((a, b) => `${a.from}|${a.to}|${a.type}`.localeCompare(`${b.from}|${b.to}|${b.type}`));
   return { edges: uniqueEdges, unresolved };
 }
 
 function detectCycles(workflows, edges) {
   const adjacency = new Map(workflows.map(w => [w.id, []]));
-  for (const edge of edges) if (adjacency.has(edge.from) && adjacency.has(edge.to)) adjacency.get(edge.from).push(edge.to);
+  for (const edge of edges) {
+    if (adjacency.has(edge.from) && adjacency.has(edge.to)) adjacency.get(edge.from).push(edge.to);
+  }
   const state = new Map();
   const stack = [];
   const cycles = new Set();
+
   function visit(node) {
     state.set(node, 1);
     stack.push(node);
@@ -239,13 +289,13 @@ function detectCycles(workflows, edges) {
       if (!state.has(next)) visit(next);
       else if (state.get(next) === 1) {
         const start = stack.lastIndexOf(next);
-        const cycle = [...stack.slice(start), next];
-        cycles.add(cycle.join(' -> '));
+        cycles.add([...stack.slice(start), next].join(' -> '));
       }
     }
     stack.pop();
     state.set(node, 2);
   }
+
   for (const workflow of workflows) if (!state.has(workflow.id)) visit(workflow.id);
   return [...cycles].sort();
 }
@@ -253,6 +303,7 @@ function detectCycles(workflows, edges) {
 function duplicateWriterCandidates(workflows) {
   const owners = new Map();
   for (const workflow of workflows) {
+    if (!workflow.repositoryWriterCapable) continue;
     for (const p of workflow.candidateWriterPaths) {
       if (!owners.has(p)) owners.set(p, []);
       owners.get(p).push(workflow.id);
@@ -274,8 +325,14 @@ export function buildControlPlane({ entries, policy }) {
   const cycles = detectCycles(workflows, graph.edges);
   const duplicates = duplicateWriterCandidates(workflows);
   const findings = [];
+
   for (const w of workflows) {
-    if (w.writeCapable && !w.hasConcurrency) findings.push(finding('write-capable-without-concurrency', 'watch', w.id, 'writer candidate has no concurrency declaration'));
+    if (w.repositoryWriterCapable && !w.hasConcurrency) {
+      findings.push(finding('repository-writer-without-concurrency', 'watch', w.id, 'repository writer candidate has no concurrency declaration'));
+    }
+    if (w.workflowControlCapable && !w.hasConcurrency) {
+      findings.push(finding('workflow-control-without-concurrency', 'watch', w.id, 'workflow control actor has no concurrency declaration'));
+    }
     if (w.writeAll) findings.push(finding('write-all-permission', 'high', w.id, 'write-all permission detected'));
     if (w.pullRequestTarget) findings.push(finding('pull-request-target', 'high', w.id, 'pull_request_target trigger detected'));
     if (w.broadGitAdd) findings.push(finding('broad-git-add', 'watch', w.id, 'broad git add detected'));
@@ -286,15 +343,28 @@ export function buildControlPlane({ entries, policy }) {
 
   const sourceHash = crypto.createHash('sha256');
   for (const entry of entries.slice().sort((a, b) => a.file.localeCompare(b.file))) {
-    sourceHash.update(entry.file); sourceHash.update('\0'); sourceHash.update(entry.text); sourceHash.update('\0');
+    sourceHash.update(entry.file);
+    sourceHash.update('\0');
+    sourceHash.update(entry.text);
+    sourceHash.update('\0');
   }
 
   const triggerCounts = {};
-  for (const w of workflows) for (const trigger of w.triggers) triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
+  for (const w of workflows) {
+    for (const trigger of w.triggers) triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
+  }
+
+  const repositoryWriters = workflows.filter(w => w.repositoryWriterCapable);
+  const workflowControllers = workflows.filter(w => w.workflowControlCapable);
+  const privileged = workflows.filter(w => w.privilegedWorkflow);
   const summary = {
     workflowCount: workflows.length,
-    writeCapableCount: workflows.filter(w => w.writeCapable).length,
-    writeCapableWithoutConcurrencyCount: workflows.filter(w => w.writeCapable && !w.hasConcurrency).length,
+    repositoryWriterCount: repositoryWriters.length,
+    repositoryWriterWithoutConcurrencyCount: repositoryWriters.filter(w => !w.hasConcurrency).length,
+    workflowControlCount: workflowControllers.length,
+    workflowControlWithoutConcurrencyCount: workflowControllers.filter(w => !w.hasConcurrency).length,
+    otherWritePermissionWorkflowCount: workflows.filter(w => w.otherWritePermission).length,
+    privilegedWorkflowCount: privileged.length,
     contentsWriteCount: workflows.filter(w => w.contentsWrite).length,
     actionsWriteCount: workflows.filter(w => w.actionsWrite).length,
     scheduledCount: workflows.filter(w => w.schedules.length).length,
@@ -316,6 +386,9 @@ export function buildControlPlane({ entries, policy }) {
     authority: policy.authority,
     epistemics: {
       topology: 'MEASURED_FROM_WORKFLOW_SOURCE',
+      repositoryWriterClassification: 'MEASURED_FROM_CONTENTS_PERMISSION_OR_REPOSITORY_MUTATION_SIGNAL',
+      workflowControlClassification: 'MEASURED_FROM_ACTIONS_PERMISSION_OR_DISPATCH_SIGNAL',
+      otherWritePermissionClassification: 'SEPARATE_NOT_REPOSITORY_WRITER_BY_ITSELF',
       candidateWriterPaths: 'HEURISTIC',
       unresolvedEdgeMeansUnknown: true,
       observedDebtIsNotAutomaticallyFailureInV01: true
