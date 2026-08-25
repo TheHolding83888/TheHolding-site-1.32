@@ -280,7 +280,9 @@ async function main() {
   }
 }
 
-main().catch(error => {
-  console.error(error?.stack || error);
-  process.exit(1);
-});
+main()
+  .then(() => import('./aerodrome-market-breath-overlay.mjs'))
+  .catch(error => {
+    console.error(error?.stack || error);
+    process.exit(1);
+  });
