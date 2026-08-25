@@ -1,4 +1,4 @@
-name: "The Holding · Votium vlCVX Snapshot Proof"
+name: "The Holding · Votium vlCVX Voting Provenance"
 
 on:
   workflow_dispatch:
@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: the-holding-vlcvx-votium-snapshot-proof
+  group: the-holding-vlcvx-votium-voting-provenance
   cancel-in-progress: false
 
 jobs:
@@ -40,6 +40,13 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
+      - name: Install existing read-only chain dependencies
+        working-directory: productivity
+        run: npm install --no-audit --no-fund
+
+      - name: Expose existing dependency tree
+        run: ln -sfn productivity/node_modules node_modules
+
       - name: Static validation
         run: |
           set -euo pipefail
@@ -48,7 +55,9 @@ jobs:
           test -s intelligence/economic-graph/vlcvx-votium-round-flow.json
           git diff --check
 
-      - name: Build live Snapshot proposal proof
+      - name: Build live voting provenance proof
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -67,7 +76,7 @@ jobs:
           VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE=/tmp/vlcvx-votium-snapshot-proof.json node scripts/verify-vlcvx-votium-snapshot-proof.mjs
           git diff --check
 
-      - name: Publish generated Snapshot proof atomically
+      - name: Publish generated voting provenance atomically
         if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -77,7 +86,6 @@ jobs:
           GENERATED="intelligence/economic-graph/vlcvx-votium-snapshot-proof.json"
           UPSTREAM="intelligence/economic-graph/vlcvx-votium-round-flow.json"
           test -s "$GENERATED"
-
           artifact_hash="$(node - "$GENERATED" <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
@@ -87,22 +95,21 @@ jobs:
           gh api --method GET -H "Accept: application/vnd.github.raw+json" "repos/${GITHUB_REPOSITORY}/contents/${UPSTREAM}" -f ref=main > /tmp/remote-votium-round-flow.json
           remote_hash="$(sha256sum /tmp/remote-votium-round-flow.json | cut -d' ' -f1)"
           if [ "$artifact_hash" != "$remote_hash" ]; then
-            echo "ERROR: Votium round-flow changed after Snapshot proof; refusing stale publish."
+            echo "ERROR: Votium round-flow changed after voting provenance measurement; refusing stale publish."
             exit 1
           fi
-
           remote_sha="$(gh api "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}?ref=main" --jq '.sha' 2>/dev/null || true)"
           payload="$(mktemp)"
           node - "$GENERATED" "$remote_sha" > "$payload" <<'NODE'
           const fs=require('fs');
           const file=process.argv[2];
           const sha=process.argv[3];
-          const payload={message:'intelligence: refresh vlcvx votium snapshot proof',content:fs.readFileSync(file).toString('base64'),branch:'main'};
+          const payload={message:'intelligence: refresh vlcvx votium voting provenance',content:fs.readFileSync(file).toString('base64'),branch:'main'};
           if(sha)payload.sha=sha;
           process.stdout.write(JSON.stringify(payload));
           NODE
-          gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}" --input "$payload" >/tmp/votium-snapshot-publish.json
-          cat /tmp/votium-snapshot-publish.json | jq -r '.commit.sha'
+          gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${GENERATED}" --input "$payload" >/tmp/votium-provenance-publish.json
+          cat /tmp/votium-provenance-publish.json | jq -r '.commit.sha'
 
       - name: Prove physical state on main
         if: github.event_name != 'pull_request'
@@ -111,13 +118,13 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 12); do
-            if gh api --method GET -H "Accept: application/vnd.github.raw+json" "repos/${GITHUB_REPOSITORY}/contents/intelligence/economic-graph/vlcvx-votium-snapshot-proof.json" -f ref=main > /tmp/physical-votium-snapshot.json 2>/dev/null; then
-              if VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE=/tmp/physical-votium-snapshot.json node scripts/verify-vlcvx-votium-snapshot-proof.mjs; then
-                echo "Votium Snapshot proof physical main proof PASS"
+            if gh api --method GET -H "Accept: application/vnd.github.raw+json" "repos/${GITHUB_REPOSITORY}/contents/intelligence/economic-graph/vlcvx-votium-snapshot-proof.json" -f ref=main > /tmp/physical-votium-provenance.json 2>/dev/null; then
+              if VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE=/tmp/physical-votium-provenance.json node scripts/verify-vlcvx-votium-snapshot-proof.mjs; then
+                echo "Votium voting provenance physical main proof PASS"
                 exit 0
               fi
             fi
             sleep 3
           done
-          echo "ERROR: Votium Snapshot proof physical main state did not materialize"
+          echo "ERROR: Votium voting provenance physical main state did not materialize"
           exit 1
