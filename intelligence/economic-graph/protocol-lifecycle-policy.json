@@ -1,0 +1,66 @@
+{
+  "version": "0.1-protocol-intelligence-lifecycle-policy",
+  "stageOrder": ["discovery", "shadow", "verified", "canonical"],
+  "operatingModes": ["warming", "shadow-monitoring", "continuous-monitoring"],
+  "scope": {
+    "companyRegistry": "004",
+    "company": "defitea.eth",
+    "protocolIds": [
+      "defitea-fxn-vefxn",
+      "defitea-curve-vecrv",
+      "defitea-aerodrome-veaero",
+      "defitea-convex-vlcvx-votium"
+    ]
+  },
+  "authority": {
+    "automaticStageEvaluation": true,
+    "automaticEvidencePromotion": true,
+    "automaticProtocolWidePromotion": true,
+    "promotionRuleMutationAuthority": false,
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "allocationAuthority": false,
+    "recommendationAuthority": false,
+    "predictionAuthority": false,
+    "causalClaimAuthority": "none",
+    "methodologyMutationAuthority": false
+  },
+  "laws": {
+    "evidenceMechanismFirst": true,
+    "unknownIsNotZero": true,
+    "correlationIsNotCausation": true,
+    "referenceAprIsNotRealizedIncome": true,
+    "canonicalDoesNotMeanAllCausalityResolved": true,
+    "canonicalRequiresExplicitSemanticBoundaries": true,
+    "stageTransitionsAreDeterministic": true,
+    "stageRegressionIsAllowedWhenEvidenceRegresses": true,
+    "historyIsAppendOnlyByTransitionFingerprint": true
+  },
+  "protocols": {
+    "defitea-fxn-vefxn": {
+      "label": "f(x) / veFXN",
+      "existingAuthority": "canonical",
+      "canonicalGate": "existing-canonical-cohort-with-exact-source-and-apr-parity"
+    },
+    "defitea-curve-vecrv": {
+      "label": "Curve / veCRV",
+      "existingAuthority": "canonical",
+      "canonicalGate": "existing-canonical-cohort-with-onchain-formula-parity"
+    },
+    "defitea-aerodrome-veaero": {
+      "label": "Aerodrome / veAERO",
+      "existingAuthority": "shadow",
+      "verifiedMinimumObservationCount": 3,
+      "canonicalGate": "verified-candidate-plus-completed-epoch-accounting-event-reconstructed-vote-state-and-pool-volume-context"
+    },
+    "defitea-convex-vlcvx-votium": {
+      "label": "Convex / vlCVX / Votium → Curve",
+      "existingAuthority": "shadow",
+      "verifiedMinimumObservationCount": 2,
+      "canonicalGate": "verified-candidate-plus-complete-deep-economic-evidence-mechanical-vote-to-gauge-execution-and-aligned-longitudinal-response"
+    }
+  }
+}

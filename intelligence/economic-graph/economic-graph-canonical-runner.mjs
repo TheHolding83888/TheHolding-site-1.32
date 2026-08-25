@@ -8,6 +8,8 @@
  *
  * The canonical f(x) + Curve surface remains unchanged while bounded protocol
  * candidates may be attached in shadow mode before downstream promotion.
+ * Protocol Intelligence Lifecycle evaluates those existing evidence surfaces
+ * deterministically without adding a collector, writer or execution authority.
  * No execution, recommendation, allocation or methodology-mutation authority.
  */
 
@@ -20,6 +22,7 @@ import { buildEconomicGraph } from './economic-graph.mjs';
 import { applyAerodromeCandidate } from './aerodrome-veaero-candidate.mjs';
 import { applyVlCvxVotiumCandidate } from './vlcvx-votium-candidate.mjs';
 import { applyVlCvxVotiumDeepEvidence } from './vlcvx-votium-deep-evidence.mjs';
+import { applyProtocolLifecycle } from './protocol-lifecycle.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -94,7 +97,8 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     productivitySha256:sourceSha256,
     rewardsSha256
   });
-  return applyVlCvxVotiumDeepEvidence({state:withVlCvx,root:ROOT});
+  const withDeepEvidence=applyVlCvxVotiumDeepEvidence({state:withVlCvx,root:ROOT});
+  return applyProtocolLifecycle({state:withDeepEvidence,previousState,root:ROOT});
 }
 
 async function main(){
@@ -116,7 +120,8 @@ async function main(){
   const aero=state.candidateCohorts?.['defitea-aerodrome-veaero']?.latest?.observation;
   const vlcvx=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.latest?.observation;
   const vlcvxDeep=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.deepEconomicEvidence;
-  console.log('ECONOMIC GRAPH canonical + shadow candidates PASS',{
+  const lifecycle=state.protocolLifecycle;
+  console.log('ECONOMIC GRAPH canonical + lifecycle candidates PASS',{
     engineVersion:state.engineVersion,
     canonicalCohortCount:state.coverage?.cohortCount,
     candidateCount:state.candidateLayer?.candidateCount,
@@ -135,6 +140,8 @@ async function main(){
     vlCvxCurveExecutedGaugeRows:vlcvxDeep?.coverage?.curveExecutedVotiumGaugeRows,
     vlCvxCurrentPoolContexts:vlcvxDeep?.coverage?.currentCurvePoolContextsComplete,
     vlCvxCausalAuthority:vlcvxDeep?.authority?.causalClaimAuthority,
+    lifecycleStages:Object.fromEntries(Object.entries(lifecycle?.protocols||{}).map(([id,p])=>[id,p.maturityStage])),
+    lifecycleTransitions:lifecycle?.transitions?.length,
     promotionAuthority:state.candidateLayer?.promotionAuthority,
     executionAuthority:state.authority?.executionAuthority
   });
