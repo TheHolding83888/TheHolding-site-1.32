@@ -1,0 +1,38 @@
+{
+  "version": "0.2-workflow-fanout-control",
+  "mode": "no-new-fanout-debt",
+  "purpose": "Measure pull-request workflow fan-out from exact workflow source, preserve intentionally global safety checks, block silent fan-out growth, and provide a deterministic basis for bounded no-safety-loss reductions.",
+  "authority": {
+    "readOnly": true,
+    "executionAuthority": "none",
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false
+  },
+  "protectedWorkflowChangeChecks": [
+    "workflow-control-plane",
+    "repository-hygiene-guard",
+    "commit-identity-privacy-guard",
+    "public-surface-privacy-guard",
+    "security-sentinel",
+    "security-hardening-actions"
+  ],
+  "epistemics": {
+    "workflowSource": "MEASURED_FROM_EXACT_WORKFLOW_YAML",
+    "workflowFleetScenario": "SIMULATED_ALL_WORKFLOW_FILES_CHANGED",
+    "selfDefinitionScenario": "SIMULATED_ONLY_OWN_WORKFLOW_FILE_CHANGED",
+    "potentialReduction": "CANDIDATE_NOT_AUTOMATIC_AUTHORIZATION",
+    "baseline": "FROZEN_CEILING_NOT_TARGET",
+    "unknownIsNotZero": true
+  },
+  "reductionLaw": [
+    "Never remove a domain check merely to reduce run count.",
+    "Common action-pin compatibility may be proven centrally before domain workflow self-triggers are removed.",
+    "Real domain source changes must continue to wake the relevant verifier.",
+    "Privileged writers/controllers must not gain PR authority as part of fan-out reduction.",
+    "Protected global workflow-change checks fail closed if silently removed.",
+    "Every reduction batch requires exact-head checks and post-merge production proof."
+  ]
+}

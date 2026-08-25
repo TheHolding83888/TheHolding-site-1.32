@@ -1,0 +1,37 @@
+{
+  "version": "0.1-workflow-fanout-baseline",
+  "status": "FROZEN_NO_NEW_FANOUT_DEBT",
+  "observedHead": "d0a33ecaae52f5d61a1697fa3cc2a8e0b60cbf8c",
+  "observedBy": "The Holding Reliability · Workflow Control Plane #32",
+  "epistemics": {
+    "source": "MEASURED_FROM_EXACT_WORKFLOW_SOURCE",
+    "workflowFleetScenario": "SIMULATED_ALL_WORKFLOW_FILES_CHANGED",
+    "historicalParity": "EXACT_MATCH_TO_PR_109_OBSERVED_PULL_REQUEST_RUN_COUNT_76",
+    "baselineIsCeilingNotTarget": true,
+    "debtReductionAlwaysAllowed": true
+  },
+  "ceilings": {
+    "workflowFleetWakeCount": 76,
+    "reductionCandidateWorkflowFleetWakeCount": 72,
+    "selfDefinitionWakeCount": 76,
+    "unboundedPullRequestCount": 3
+  },
+  "protectedWorkflowFleetWakeIds": [
+    "commit-identity-privacy-guard",
+    "public-surface-privacy-guard",
+    "repository-hygiene-guard",
+    "workflow-control-plane"
+  ],
+  "measuredSummary": {
+    "workflowCount": 126,
+    "pullRequestWorkflowCount": 76,
+    "workflowFleetWakeCount": 76,
+    "protectedWorkflowFleetWakeCount": 4,
+    "reductionCandidateWorkflowFleetWakeCount": 72,
+    "selfDefinitionWakeCount": 76,
+    "boundedSelfDefinitionWakeCount": 73,
+    "unboundedPullRequestCount": 3,
+    "theoreticalProtectedFloorCount": 4
+  },
+  "rule": "Future changes may reduce these fan-out counts freely. Any increase above a frozen ceiling or silent loss of a protected global workflow-change check fails closed and requires an explicit bounded baseline maintenance procedure."
+}

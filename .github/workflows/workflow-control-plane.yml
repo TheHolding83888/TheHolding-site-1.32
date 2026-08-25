@@ -6,11 +6,13 @@ on:
     paths:
       - ".github/workflows/**"
       - "intelligence/reliability/workflow-control-plane*"
+      - "intelligence/reliability/workflow-fanout*"
   push:
     branches: [main]
     paths:
       - ".github/workflows/**"
       - "intelligence/reliability/workflow-control-plane*"
+      - "intelligence/reliability/workflow-fanout*"
 
 permissions:
   contents: read
@@ -46,25 +48,61 @@ jobs:
           test -s intelligence/reliability/workflow-control-plane-canary.mjs
           test -s intelligence/reliability/workflow-control-plane-enforce.mjs
           test -s intelligence/reliability/workflow-control-plane-enforce-canary.mjs
+          test -s intelligence/reliability/workflow-fanout-policy.json
+          test -s intelligence/reliability/workflow-fanout-baseline.json
+          test -s intelligence/reliability/workflow-fanout-audit.mjs
+          test -s intelligence/reliability/workflow-fanout-canary.mjs
+          test -s intelligence/reliability/workflow-fanout-enforce.mjs
+          test -s intelligence/reliability/workflow-fanout-enforce-canary.mjs
           node --check intelligence/reliability/workflow-control-plane.mjs
           node --check intelligence/reliability/workflow-control-plane-canary.mjs
           node --check intelligence/reliability/workflow-control-plane-enforce.mjs
           node --check intelligence/reliability/workflow-control-plane-enforce-canary.mjs
+          node --check intelligence/reliability/workflow-fanout-audit.mjs
+          node --check intelligence/reliability/workflow-fanout-canary.mjs
+          node --check intelligence/reliability/workflow-fanout-enforce.mjs
+          node --check intelligence/reliability/workflow-fanout-enforce-canary.mjs
           node intelligence/reliability/workflow-control-plane-canary.mjs
           node intelligence/reliability/workflow-control-plane-enforce-canary.mjs
+          node intelligence/reliability/workflow-fanout-canary.mjs
+          node intelligence/reliability/workflow-fanout-enforce-canary.mjs
 
-      - name: Verify frozen measured baseline
+      - name: Exercise common GitHub Actions compatibility surface
         shell: bash
         run: |
           set -euo pipefail
-          actual="$(git hash-object intelligence/reliability/workflow-control-plane-baseline.json)"
-          expected="4efd7dd509111683fdf24430d4e9f4cb403673a1"
-          if [ "$actual" != "$expected" ]; then
-            echo "Workflow Control Plane baseline changed: expected=$expected actual=$actual" >&2
+          mkdir -p /tmp/holding-control-plane
+          printf '%s\n' "checkout+setup-node+upload-artifact compatibility canary" > /tmp/holding-control-plane/common-actions-canary.txt
+          test -s /tmp/holding-control-plane/common-actions-canary.txt
+
+      - name: Upload common Actions compatibility canary
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: workflow-control-plane-common-actions-${{ github.run_id }}
+          path: /tmp/holding-control-plane/common-actions-canary.txt
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Verify frozen measured baselines
+        shell: bash
+        run: |
+          set -euo pipefail
+          control_actual="$(git hash-object intelligence/reliability/workflow-control-plane-baseline.json)"
+          control_expected="4efd7dd509111683fdf24430d4e9f4cb403673a1"
+          if [ "$control_actual" != "$control_expected" ]; then
+            echo "Workflow Control Plane baseline changed: expected=$control_expected actual=$control_actual" >&2
             echo "Baseline expansion requires an explicit bounded maintenance procedure; ordinary workflow changes may only reduce debt." >&2
             exit 1
           fi
-          echo "Frozen Workflow Control Plane baseline PASS: $actual"
+          fanout_actual="$(git hash-object intelligence/reliability/workflow-fanout-baseline.json)"
+          fanout_expected="4eea6bf2cbfc066763a0b23d3b724db5e9f04853"
+          if [ "$fanout_actual" != "$fanout_expected" ]; then
+            echo "Workflow Fan-out baseline changed: expected=$fanout_expected actual=$fanout_actual" >&2
+            echo "Fan-out baseline expansion requires an explicit bounded maintenance procedure; reductions do not require baseline widening." >&2
+            exit 1
+          fi
+          echo "Frozen Workflow Control Plane baseline PASS: $control_actual"
+          echo "Frozen Workflow Fan-out baseline PASS: $fanout_actual"
 
       - name: Build read-only workflow topology
         shell: bash
@@ -94,14 +132,57 @@ jobs:
           if (!r.summary.workflowCount) throw new Error('workflow inventory unexpectedly empty');
           NODE
 
-      - name: Enforce no-new-debt gate
+      - name: Measure pull-request fan-out debt
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/reliability/workflow-fanout-audit.mjs --json > /tmp/workflow-fanout.json
+          node - <<'NODE'
+          const r = require('/tmp/workflow-fanout.json');
+          console.log('=== WORKFLOW FAN-OUT SUMMARY ===');
+          console.log(JSON.stringify(r.summary, null, 2));
+          console.log('=== PROTECTED WORKFLOW-CHANGE CHECKS ===');
+          for (const x of r.workflows.filter(x => x.workflowFleetWake && x.protectedWorkflowChangeCheck)) {
+            console.log(`${x.id}\tclass=${x.wakeClass}`);
+          }
+          console.log('=== FAN-OUT REDUCTION CANDIDATES ===');
+          for (const x of r.reductionCandidates) {
+            console.log(`${x.id}\tclass=${x.wakeClass}\tunbounded=${x.unbounded}\tself=${x.selfDefinitionWake}`);
+          }
+          if (!Number.isInteger(r.summary.workflowFleetWakeCount) || r.summary.workflowFleetWakeCount < 1) {
+            throw new Error('workflow fan-out measurement unexpectedly empty');
+          }
+          if (r.authority?.readOnly !== true || r.authority?.repositoryMutationAuthority !== false || r.authority?.workflowDispatchAuthority !== false) {
+            throw new Error('workflow fan-out audit authority expansion');
+          }
+          NODE
+
+      - name: Enforce no-new fan-out debt
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/reliability/workflow-fanout-enforce.mjs --json > /tmp/workflow-fanout-enforcement.json
+          node - <<'NODE'
+          const r = require('/tmp/workflow-fanout-enforcement.json');
+          console.log('=== NO-NEW FAN-OUT DEBT ENFORCEMENT ===');
+          console.log(JSON.stringify({
+            baseline:r.baseline,
+            baselineIntegrity:r.baselineIntegrity,
+            noNewFanoutDebt:r.noNewFanoutDebt,
+            violationCount:r.violationCount,
+            summary:r.summary
+          }, null, 2));
+          if (r.noNewFanoutDebt !== 'PASS' || r.baselineIntegrity !== 'PASS') throw new Error('no-new fan-out debt enforcement did not pass');
+          NODE
+
+      - name: Enforce structural no-new-debt gate
         shell: bash
         run: |
           set -euo pipefail
           node intelligence/reliability/workflow-control-plane-enforce.mjs --json > /tmp/workflow-control-plane-enforcement.json
           node - <<'NODE'
           const r = require('/tmp/workflow-control-plane-enforcement.json');
-          console.log('=== NO-NEW-DEBT ENFORCEMENT ===');
+          console.log('=== STRUCTURAL NO-NEW-DEBT ENFORCEMENT ===');
           console.log(JSON.stringify({
             baseline:r.baseline,
             baselineIntegrity:r.baselineIntegrity,
@@ -114,7 +195,7 @@ jobs:
             unresolvedEdgeCount:r.summary.unresolvedEdgeCount,
             cycleCount:r.summary.cycleCount
           }, null, 2));
-          if (r.noNewDebt !== 'PASS' || r.baselineIntegrity !== 'PASS') throw new Error('no-new-debt enforcement did not pass');
+          if (r.noNewDebt !== 'PASS' || r.baselineIntegrity !== 'PASS') throw new Error('structural no-new-debt enforcement did not pass');
           NODE
 
       - name: Verify read-only authority boundary
@@ -123,7 +204,7 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const policy = require('./intelligence/reliability/workflow-control-plane-policy.json');
-          const a = policy.authority || {};
+          const fanout = require('./intelligence/reliability/workflow-fanout-policy.json');
           const expected = {
             readOnly: true,
             executionAuthority: 'none',
@@ -134,9 +215,11 @@ jobs:
             methodologyMutationAuthority: false
           };
           for (const [k, v] of Object.entries(expected)) {
-            if (a[k] !== v) throw new Error(`authority expansion: ${k}`);
+            if (policy.authority?.[k] !== v) throw new Error(`authority expansion: control-plane.${k}`);
+            if (fanout.authority?.[k] !== v) throw new Error(`authority expansion: fanout.${k}`);
           }
           if (policy.mode !== 'no-new-debt') throw new Error(`unexpected policy mode: ${policy.mode}`);
-          console.log('Workflow Control Plane read-only authority boundary PASS');
+          if (fanout.mode !== 'no-new-fanout-debt') throw new Error(`unexpected fanout mode: ${fanout.mode}`);
+          console.log('Workflow Control Plane + Fan-out read-only authority boundary PASS');
           NODE
           git diff --check
