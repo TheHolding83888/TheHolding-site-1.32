@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-25T10:55:17.264Z",
+  "generatedAt": "2026-08-25T11:38:54.436Z",
   "status": "watch",
-  "snapshotHash": "2b2c8926d85ebba76d4775a0f60395b48b1fafe3343eeca4851032a09973f402",
+  "snapshotHash": "b68d9190ef87d66f09eca66f9daf19613ba6fb405a69d53f481fac8e10676a88",
   "repository": {
-    "filesScanned": 606,
-    "bytesScanned": 14743417,
+    "filesScanned": 608,
+    "bytesScanned": 14771157,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
@@ -97,7 +97,7 @@
       ".github/workflows/validate-yieldring-capital-state.yml": "c28e0cc1c1c5ef565af1d6e11e3d116ffbf28d605e9f554fc8515c3c250a0611",
       ".github/workflows/validate-yieldring-production-cascade.yml": "30f957d11497e44eac291b927f7c8c6572fce5fa5cd73ac924ed0cf9d9acd8f0",
       ".github/workflows/value-company-010-gmx-reader.yml": "a96d7751ece9b73d49c463331585b1377e45068910d18535d7937dcfbfa08457",
-      ".github/workflows/verify-aerodrome-economic-candidate.yml": "84927c792972333999c8b8076a0f5df17a307980ee5cf4a07b94ff2829d2500a",
+      ".github/workflows/verify-aerodrome-economic-candidate.yml": "df2348d8cd1dcc0328b55650db51545a541914f58d490a134e619de796843d5f",
       ".github/workflows/verify-ask-conversation-gauntlet.yml": "7ce0ab6f36789a9898dddc455b41cb3fb8ff414f02c6b1ac9f23b3273940dc0a",
       ".github/workflows/verify-brain-explanatory-context.yml": "9ba5f1b487bcb129fc0574423fa9df738a32ab43d0a50b6f2e76e1d883b59506",
       ".github/workflows/verify-cognitive-recovery-order.yml": "bd9120b94369ec11b1135d58dd13363494b98e0f8d94431c5c7fdf1a38b41e87",
@@ -126,6 +126,7 @@
       ".github/workflows/verify-rewards-protocol-asset-label-parity.yml": "3d07655054df28402dbd71d3279317407e0acf5f8afc05a36b78b1d5000aa2af",
       ".github/workflows/verify-security-eval-detector.yml": "a40eac7a66c388e955c8445a94d5751a06c9ddfb801e2f59ab852f6ebc903f8a",
       ".github/workflows/verify-vlcvx-full-registry-audit.yml": "e84787fb2a4a92b0e66cf75e77c1261b6cf8504cd859e8f513c7893c773bf59c",
+      ".github/workflows/verify-vlcvx-votium-economic-candidate.yml": "f3e582939f21b36aad1ee45862c051bd16e4dbee5b7a4edf97a0e6a4b4a825ad",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "02b5437a85c8beaf86c68df213cf89cfcb5accd383c848e6b008dfe02098f6c4",
       "index.html": "935c7a3f058e0a2cb509c81adecdedffcc429dca572506d9b474f5716e34864b",
@@ -397,6 +398,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "fc89a12cb504d9639a5f3d28d6979ca7717f096bc5e66065bf404fc989169d07",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-aerodrome-economic-candidate.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-aerodrome-economic-candidate.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "84927c792972333999c8b8076a0f5df17a307980ee5cf4a07b94ff2829d2500a",
+        "currentSha256": "df2348d8cd1dcc0328b55650db51545a541914f58d490a134e619de796843d5f"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -999,10 +1014,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 493,
+    "runCount": 494,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-25T10-55-17-264Z-2b2c8926d8.json",
-    "latestRecordHash": "7100a16be073604b9df2ad6d5db696eacaee9f78cd73edab5c4d889abe30cbfb",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-25T11-38-54-436Z-b68d9190ef.json",
+    "latestRecordHash": "4b80328e46d81f4e06872557db40d5dfd06d5c4a4fa255bcf17c5f6796c908b9",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
