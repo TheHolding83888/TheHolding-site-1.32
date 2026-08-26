@@ -51,6 +51,8 @@ No automatic promotion/regression or execution authority unless a future explici
 
 ## 3. AUTONOMOUS LEARNING / NEURAL GRAPH / BRAIN
 
+Primary lane: **Autonomous Observational / World Learning**.
+
 Load:
 - `THE_HOLDING_AUTONOMOUS_OBSERVATIONAL_WORLD_LEARNING_v0.1_PRODUCTION_CANON_2026-08-23.md`;
 - live observational-learning + Neural Graph artifacts;
